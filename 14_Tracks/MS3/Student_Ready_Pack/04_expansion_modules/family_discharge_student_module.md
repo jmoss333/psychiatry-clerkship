@@ -18,7 +18,7 @@ not done.
 
 - **The window is highest right after discharge.** Suicide risk in the first week post-discharge is on the order of ~2,950 per 100,000 person-years — with days 0–3 the highest — roughly 200× the general-population rate (Chung et al., *BMJ Open* 2019; the overall post-discharge rate of 484 per 100,000 person-years is from Chung et al., *JAMA Psychiatry* 2017). The realism of the plan matters *most* in exactly the days after the patient leaves.
 - **Follow-up is often the weak link.** About 12–15% of psychiatric patients are readmitted within 30 days (20–25% for schizophrenia), and only ~50% receive a mental-health visit within 7 days. A *scheduled* appointment (not "they'll call to arrange one") is itself the intervention — pre-discharge 7-day follow-up is associated with substantially lower suicide risk.
-- **Means safety is a lethality intervention, not a formality.** Firearms are involved in ~50% of US suicides and are lethal in 85–90% of attempts; structured lethal-means counseling matters: in a large quasi-experimental cohort (Boggs et al. 2020), patients with documented lethal-means assessment had fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%) — an association, not a randomized effect. This is why the "who can confirm items are secured?" phrase below is a clinical act.
+- **Means safety is a lethality intervention, not a formality.** Firearms are involved in more than half (~55%) of US suicides and are lethal in 85–90% of attempts; structured lethal-means counseling matters: in a large quasi-experimental cohort (Boggs et al. 2020), patients with documented lethal-means assessment had fewer suicide attempts and deaths at 180 days (0.83% vs 3.3%) — an association, not a randomized effect. This is why the "who can confirm items are secured?" phrase below is a clinical act.
 - **Bringing the family in changes outcomes.** Family psychoeducation lowers relapse from ~37% to ~10% (OR 0.18), and family involvement during admission nearly triples the odds of 7-day follow-up (Haselden 2019).
 
 *Numbers are evidence-anchored and reviewed and attested by Joshua Moss, MD (2026-07-09); use them to explain the "why," not to quote at families.*
@@ -128,6 +128,10 @@ moments:
 | Transportation | Can the patient get to appointments? |  |  |
 | Work/school | What role demands resume immediately? |  |  |
 | Crisis plan | What happens if symptoms return? |  |  |
+
+## Related ReConnect directory
+
+<a href="https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html" target="_blank" rel="noopener noreferrer">Open the ReConnect Resource Finder</a>. External listings can change. Confirm current details with the organization, and do not place patient-identifying information in a link.
 
 ## Family Education Handout Use
 

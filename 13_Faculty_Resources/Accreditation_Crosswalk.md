@@ -25,12 +25,12 @@
 | **Transitions / disposition** | Risk-stratified discharge; post-discharge kit; Week 6 | EPA 8 | Discharge-plan reasoning |
 
 ## B. Weekly arc → competency emphasis
-Week 1 Foundations (interview, MSE, capacity) · Week 2 Mood/Psychosis/Pharm (diagnosis, psychopharm) · Week 3 Psychotherapy/Personality (alliance, common factors) · Week 4 Family/Systems/EE (family-centered care) · Week 5 Acute/Emergency (risk, delirium, withdrawal) · Week 6 Integration/Exam (disposition, shelf, OSCE).
+Week 1 Foundations & the MSE (interview, MSE, capacity) · Week 2 Mood, Psychosis & Pharm (diagnosis, psychopharm) · Week 3 Psychotherapy & Personality (alliance, common factors) · Week 4 Family Systems & EE (family-centered care) · Week 5 Acute & Emergency (risk, delirium, withdrawal) · Week 6 Integration & Exam (disposition, shelf, OSCE).
 
 ## C. Assessment toolkit included
 Oral-presentation rubric + entrustment anchors (levels 1–4); 6-station OSCE set with checklists; documentation exemplars; reflection/PIF prompts; shelf high-yield + self-check; Journal-Club packets for teaching rounds.
 
 ## D. Shelf alignment
-The Core-Topic one-pagers, DDx scaffolds, and shelf guide target the content of the **NBME Psychiatry subject exam**, so the same curriculum that structures the rotation also prepares students for the shelf.
+UNE COM students sit the **NBOME COMAT Clinical Psychiatry** exam; the **NBME Psychiatry subject exam** is its counterpart in MD programs. The Core-Topic one-pagers, DDx scaffolds, and shelf guide target the content both exams sample (blueprints in `09_Exam_Prep/shelf_comat_bank/01_BLUEPRINT_CROSSWALK.md`), so the same curriculum that structures the rotation also prepares UNE students for the COMAT.
 
 *Joshua Moss, MD | Psychiatrist · Crosswalk for the MS3 inpatient psychiatry clerkship. EPA set: AAMC Core EPAs for Entering Residency; competency domains per standard psychiatry-clerkship frameworks (alignable to UNE COM objectives).*

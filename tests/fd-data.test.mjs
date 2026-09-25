@@ -1,8 +1,9 @@
 // Contract for the front-door join layer. Evaluates the real snippet body via new Function,
 // following tests/fd-state.test.mjs. Exercised against BOTH a small fixture (for shape) and the
-// repo's REAL curriculum.json + topic_meta.json (for the join actually holding on live data) --
-// a fixture-only suite would not have caught a topic_meta field being renamed.
+// repo's REAL curriculum.json + SOURCE topic_meta.json (for the join actually holding on live
+// data) -- a fixture-only suite would not have caught a topic_meta field being renamed.
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -21,6 +22,15 @@ const F = make();
 
 const readJson = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const CUR = readJson('../curriculum.json');
+
+test('the resident audience offers APPs an explicit role without changing MS3 choices', () => {
+  assert.deepEqual(CUR.roles.ms3.map((role) => role.id), ['student', 'subi', 'staff']);
+  assert.deepEqual(CUR.roles.resident.map((role) => role.id), ['pgy1', 'pgy2', 'app', 'staff']);
+  assert.equal(CUR.roles.resident.find((role) => role.id === 'app').name, 'APP / PA / NP');
+});
+// The SOURCE topic_meta.json. The BUILT copy may demote a drifted page's facultyReview to
+// `pending` (attestation_hash.project_topic_meta_faculty_review), so the attestation premises
+// below are facts about the faculty's own record, not about what either site serves today.
 const META = readJson('../topic_meta.json');
 const TOOLS = readJson('../tool_registry.json');
 const MAN = readJson('../13_Faculty_Resources/_automation/site_build/site_manifest.json');
@@ -44,6 +54,32 @@ const FIX_CUR = {
   ],
   libraryColumns: [{ name: 'Col', accent: 'topic', refs: ['a.md', 'b.md'] }],
   libraryExclude: [],
+  careResources: [
+    { id: 'resource-finder', title: 'Find services and community supports',
+      description: 'Treatment, housing, food, transportation, and family supports.',
+      group: 'support',
+      url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
+      searchTerms: ['community resources', 'housing help', 'transportation help'] },
+    { id: 'meeting-calendar', title: 'Find a recovery meeting',
+      description: 'Current recovery-meeting options from ReConnect.',
+      group: 'support',
+      url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html',
+      searchTerms: ['recovery meeting', 'aa meeting', 'na meeting'] },
+  ],
+  careNavigator: [
+    { id: 'services', label: 'Find community services',
+      explanation: 'Start with the Resource Finder to review practical and treatment supports by need.',
+      primaryResourceId: 'resource-finder', alternativeResourceIds: ['meeting-calendar'] },
+    { id: 'meetings', label: 'Locate recovery meetings',
+      explanation: 'Start with the meeting calendar when the immediate task is locating recovery support.',
+      primaryResourceId: 'meeting-calendar', alternativeResourceIds: ['resource-finder'] },
+  ],
+  teachingResources: [
+    { id: 'family-therapy-companion', title: 'Family Therapy Seminar Companion',
+      description: 'Practice family-meeting structure with de-identified teaching cases.',
+      url: 'https://family-therapy-seminar-companion.netlify.app/',
+      note: 'Answers stay on this device. Do not enter names or identifying details.' },
+  ],
   safetyKit: [{ ref: 'a.md', sub: 'Sub line' }],
   roles: { ms3: [], resident: [] },
   synonyms: {},
@@ -87,6 +123,24 @@ test('an item joins minutes, summary, points and attestation from topic_meta', (
   assert.deepEqual(i.points, ['p1', 'p2']);
   assert.equal(i.attested, true);
   assert.equal(i.toolRef, 't.html');
+});
+
+test('landing destinations resolve titles without becoming week items, Library rows or daily picks', () => {
+  const cur = structuredClone(FIX_CUR);
+  cur.weeks[0].landingRef = 'week1.md';
+  const man = structuredClone(FIX_MAN);
+  man.md.push(['', 'week1.md', 'Week 1 — Foundations & the MSE']);
+  const index = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, man);
+  assert.equal(index.byRef['week1.md']?.title, 'Week 1 — Foundations & the MSE');
+  assert.equal(index.known['week1.md'], true);
+  assert.equal(index.byRef['week1.md'].readerOnly, true);
+  assert.deepEqual(index.weeks[0].items.map(item => item.ref), ['a.md']);
+  assert.deepEqual(index.columns[0].items.map(item => item.ref), ['a.md', 'b.md']);
+  assert.deepEqual(F.fdLibraryOnlyReads(index).map(item => item.ref), ['b.md']);
+  cur.libraryColumns[0].refs.push('week1.md');
+  const placed = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, man);
+  assert.notEqual(placed.byRef['week1.md'].readerOnly, true);
+  assert.deepEqual(F.fdLibraryOnlyReads(placed).map(item => item.ref), ['b.md', 'week1.md']);
 });
 
 test('a page with no topic_meta entry still yields a usable item', () => {
@@ -160,6 +214,75 @@ test('the kit carries its subtitle alongside the resolved item', () => {
   assert.equal(idx.kit[0].item.ref, 'a.md');
 });
 
+test('patient-care resources join as a defensive copy outside the shipped-page inventory', () => {
+  const cur = structuredClone(FIX_CUR);
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.careResources, FIX_CUR.careResources);
+  assert.notStrictEqual(idx.careResources, cur.careResources);
+  assert.notStrictEqual(idx.careResources[0].searchTerms, cur.careResources[0].searchTerms);
+  assert.equal(idx.careResources[0].group, 'support');
+  assert.equal(idx.byRef['resource-finder'], undefined,
+    'an external link must not masquerade as a shipped or attestable Clerkship page');
+  idx.careResources[0].searchTerms.push('mutated');
+  assert.doesNotMatch(JSON.stringify(cur), /mutated/);
+});
+
+test('care navigator intents join defensively outside content inventories', () => {
+  const cur = structuredClone(FIX_CUR);
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.careNavigator, FIX_CUR.careNavigator);
+  assert.notStrictEqual(idx.careNavigator, cur.careNavigator);
+  assert.notStrictEqual(idx.careNavigator[0].alternativeResourceIds,
+    cur.careNavigator[0].alternativeResourceIds);
+  assert.equal(idx.byRef.services, undefined);
+  assert.equal(idx.known.services, undefined);
+  idx.careNavigator[0].alternativeResourceIds.push('mutated');
+  assert.doesNotMatch(JSON.stringify(cur), /mutated/);
+});
+
+test('malformed navigator records cannot break index construction', () => {
+  const cur = structuredClone(FIX_CUR);
+  cur.careNavigator = [null, { id: 'services', label: 'Find community services',
+    explanation: 'Start with the Resource Finder.', primaryResourceId: 'resource-finder',
+    alternativeResourceIds: 'not-an-array' }];
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.equal(idx.careNavigator.length, 1);
+  assert.deepEqual(idx.careNavigator[0].alternativeResourceIds, []);
+  assert.equal(idx.careResources.length, FIX_CUR.careResources.length);
+});
+
+test('external teaching resources join defensively without becoming shipped pages', () => {
+  const cur = structuredClone(FIX_CUR);
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.teachingResources, FIX_CUR.teachingResources);
+  assert.notStrictEqual(idx.teachingResources, cur.teachingResources);
+  assert.equal(idx.byRef['family-therapy-companion'], undefined);
+});
+
+test('the real curriculum exposes the same five canonical care resources to both site projections', () => {
+  for (const site of ['ms3', 'resident']) {
+    const sourcePath = CUR.learningPaths[site];
+    const projected = { ...CUR, path: { id: sourcePath.id, weekCount: sourcePath.weeks.length },
+      weeks: sourcePath.weeks };
+    const idx = F.fdBuildIndex(projected, META, TOOLS, MAN);
+    assert.deepEqual(idx.careResources.map(({ id, url }) => ({ id, url })), [
+      { id: 'resource-finder', url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html' },
+      { id: 'meeting-calendar', url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html' },
+      { id: 'education-library', url: 'https://mental-health-education-library.netlify.app/patient' },
+      { id: 'podcast-navigator', url: 'https://reconnect-tools.netlify.app/tools/podcast-navigator.html' },
+      { id: 'book-shelf', url: 'https://reconnect-tools.netlify.app/tools/relational-bibliotherapy.html' },
+    ], site);
+    assert.deepEqual(idx.careNavigator.map(({ id, primaryResourceId }) => (
+      { id, primaryResourceId }
+    )), CUR.careNavigator.map(({ id, primaryResourceId }) => (
+      { id, primaryResourceId }
+    )), site);
+    assert.deepEqual(idx.teachingResources.map(({ id, url }) => ({ id, url })), [
+      { id: 'family-therapy-companion', url: 'https://family-therapy-seminar-companion.netlify.app/' },
+    ], site);
+  }
+});
+
 test('fdItemsForWeek returns that week only, and [] for an unknown week', () => {
   const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
   assert.equal(F.fdItemsForWeek(idx, 1).length, 1);
@@ -219,7 +342,12 @@ test('the real curriculum joins without throwing and routes every week item', ()
       n += 1;
     }
   }
-  assert.equal(n, 40, 'expected the 40 week items curriculum.json ships');
+  // 39 = 40 minus cssrs.html, which left Week 5 on 2026-09-16: a rights reference is a Library
+  // row, not a path step (tests/path-rights-references.test.mjs).
+  // 48 = 39 + the nine simulation steps WP-5 part 1 put on the Path (2026-09-24):
+  // sp-interview.html in weeks 1-2, diagnostic-reasoning.html in weeks 2 and 4, and
+  // one-patient-six-weeks.html in weeks 1-5 (it was already in week 6).
+  assert.equal(n, 48, 'expected the 48 week items curriculum.json ships');
 });
 
 test('every real library column item resolves', () => {
@@ -231,11 +359,123 @@ test('every real library column item resolves', () => {
   assert.equal(placed, 83, 'expected the 83 pages curriculum.json places');
 });
 
+// Source-copy premise: these five are attested in topic_meta.json. On a site whose build found
+// their sources drifted, the BUILT registry reads pending and the Front Door drops the attested
+// affordance -- that projection is pinned in tests/attestation-projection-build.test.mjs.
 test('all five real kit items are attested and carry safety steps', () => {
   const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
   assert.equal(idx.kit.length, 5);
   for (const k of idx.kit) {
     assert.equal(k.item.attested, true, `${k.item.ref} must be attested to appear in the kit`);
     assert.ok(META[k.item.ref].safetySteps.length >= 3, `${k.item.ref} needs safetySteps`);
+  }
+});
+
+// ---- libraryHints: the one-line "use this when…" a Library tool row carries ------------------
+
+test('an item joins its libraryHints line as `hint`, and a ref with none reads as empty', () => {
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.libraryHints = { 'a.md': 'Read this first.', 'ghost.html': 'never placed' };
+  const idx = F.fdBuildIndex(cur, {}, { tools: [] }, { tools: [], md: [['s', 'a.md', 'A']] });
+  assert.equal(idx.byRef['a.md'].hint, 'Read this first.');
+  const bare = F.fdBuildIndex(FIX_CUR, {}, { tools: [] }, { tools: [], md: [['s', 'a.md', 'A']] });
+  assert.equal(bare.byRef['a.md'].hint, '', 'no libraryHints block at all still joins cleanly');
+  assert.equal(typeof bare.byRef['a.md'].hint, 'string');
+});
+
+test('every real column-placed tool carries a hint, and every hint names a placed tool', () => {
+  // The contract validate_curriculum.py enforces at build time, pinned here so it also turns
+  // `node --test` red: a tool without its one-line hint is a bare title in the only browse
+  // surface, and a hint for a ref no column places is copy nobody can read.
+  const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
+  const placedTools = [];
+  for (const c of idx.columns) for (const it of c.items) if (it.kind === 'tool') placedTools.push(it.ref);
+  assert.ok(placedTools.length >= 20, `fixture sanity: the real Library places ${placedTools.length} tools`);
+  for (const ref of placedTools) {
+    const hint = idx.byRef[ref].hint;
+    assert.ok(hint && hint.trim().length >= 20, `${ref} needs a one-line hint (got ${JSON.stringify(hint)})`);
+    assert.ok(hint.length <= 110, `${ref}'s hint must stay one line (${hint.length} chars)`);
+  }
+  const placedEverywhere = new Set(placedTools);
+  for (const addition of (CUR.siteLibrary.resident.additions || [])) for (const ref of addition.refs) placedEverywhere.add(ref);
+  for (const ref of Object.keys(CUR.libraryHints || {})) {
+    assert.ok(placedEverywhere.has(ref), `libraryHints names ${ref}, which no Library column places`);
+  }
+});
+
+// ---- Essentials: a resolved view over the canonical audience projection -----------------
+
+test('Essentials resolves known refs in authored order, reuses canonical items, and counts drops', () => {
+  const cur = structuredClone(FIX_CUR);
+  cur.essentials = [
+    { name: 'Second & first', accent: 'safety', refs: ['b.md', 'missing.md', 'a.md'] },
+    { name: 'Tool', accent: 'tool', refs: ['t.html'] },
+  ];
+  const before = structuredClone(cur);
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.essentials.map(col => ({
+    name: col.name, accent: col.accent, refs: col.items.map(item => item.ref),
+  })), [
+    { name: 'Second & first', accent: 'safety', refs: ['b.md', 'a.md'] },
+    { name: 'Tool', accent: 'tool', refs: [] },
+  ]);
+  assert.strictEqual(idx.essentials[0].items[0], idx.byRef['b.md']);
+  assert.strictEqual(idx.essentials[0].items[1], idx.byRef['a.md']);
+  assert.equal(idx.essentialsDropped, 2);
+  assert.equal(idx.byRef['missing.md'], undefined, 'an unknown essential must never enter byRef');
+  assert.equal(idx.byRef['t.html'], undefined, 'known-to-manifest but unplaced must not be ensured by Essentials');
+  assert.deepEqual(cur, before, 'building the view must not mutate the projected curriculum');
+});
+
+test('a missing Essentials array degrades to an empty view with a numeric zero drop count', () => {
+  const idx = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.essentials, []);
+  assert.equal(idx.essentialsDropped, 0);
+});
+
+const ROOT = new URL('../', import.meta.url);
+const projections = JSON.parse(execFileSync('python3', ['-B', '-c', `
+import json,sys
+sys.path.insert(0,'13_Faculty_Resources/_automation/site_build')
+from frontdoor_catalog import build_frontdoor_payload
+from shipped_pages import load_shipped_pages
+cur=json.load(open('curriculum.json')); shipped=load_shipped_pages('.')
+out={}
+for site,key in [('ms3','ms3'),('res','resident')]:
+    nav=[{'section':'Resources','items':[{'f':p['slug'],'t':p['title'],
+        'k':'tool' if p['kind']=='tool' else 'md',
+        'governance':{'status':'pending','riskKind':'general','riskLevel':'low'}}
+        for p in shipped['pages'] if site in p['sites']]}]
+    out[site]=build_frontdoor_payload(key,cur,nav,'0'*40,shipped=shipped)
+print(json.dumps(out))
+`], { cwd: ROOT, encoding: 'utf8' }));
+
+for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93]]) {
+  test(`${site}: real projected Essentials resolves ${expectedKit} of ${expectedFull} Library pages`, () => {
+    const payload = projections[site];
+    const idx = F.fdBuildIndex(payload.curriculum, META, TOOLS, payload.manifest);
+    const actual = idx.essentials.reduce((n, col) => n + col.items.length, 0);
+    const full = idx.columns.reduce((n, col) => n + col.items.length, 0);
+    assert.equal(actual, expectedKit);
+    assert.equal(full, expectedFull);
+    assert.equal(idx.essentialsDropped, 0);
+    assert.deepEqual(idx.essentials.map(col => col.items.map(item => item.ref)),
+      payload.curriculum.essentials.map(col => col.refs), 'projection order must be display order');
+    for (const col of idx.essentials) for (const item of col.items) {
+      assert.strictEqual(item, idx.byRef[item.ref], `${item.ref} must reuse its canonical object`);
+      assert.ok(item.title && item.kind && item.href, `${item.ref} keeps joined display metadata`);
+    }
+  });
+}
+
+test('inherited object names are unresolved Essentials refs and preserve the canonical index', () => {
+  const canonical = F.fdBuildIndex(FIX_CUR, FIX_META, FIX_TOOLS, FIX_MAN);
+  const cur = structuredClone(FIX_CUR);
+  cur.essentials = [{name:'Unresolved', accent:'topic', refs:['__proto__','constructor','toString']}];
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  assert.deepEqual(idx.essentials[0].items, []);
+  assert.equal(idx.essentialsDropped, 3);
+  for (const key of Object.keys(canonical).filter(key => !key.startsWith('essentials'))) {
+    assert.deepEqual(idx[key], canonical[key], `${key} must remain the canonical index`);
   }
 });

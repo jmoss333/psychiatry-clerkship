@@ -10,13 +10,17 @@
 // The pull itself is exercised against a throwaway repo with a `git-lfs` SHIM on PATH — never
 // against the real checkout — so this suite can run inside a Netlify build (it does: the build
 // runs tests/*.test.mjs before the pull step) without spending a byte of LFS bandwidth.
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, chmodSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, chmodSync, statSync, utimesSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Builds git repositories: an inherited GIT_DIR would aim them at the repo running this file.
+scrubInheritedGitEnv();
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_BUILD = join(ROOT, '13_Faculty_Resources', '_automation', 'site_build');
@@ -24,6 +28,13 @@ const SCRIPT = join(SITE_BUILD, 'lfs_pull_cached.sh');
 const BUILD_AND_CHECK = readFileSync(join(SITE_BUILD, 'build_and_check.sh'), 'utf8');
 
 const POINTER = 'version https://git-lfs.github.com/spec/v1\noid sha256:' + 'ab'.repeat(32) + '\nsize 1234\n';
+
+// Every repo, shim and cache below lives under this one root, removed when the file finishes.
+// Each run used to leave 21 directories in $TMPDIR, each pulled cache holding the shim's 2 MiB
+// object; ~45,000 had piled up on one Mac by 2026-09-24 (roughly 7 GiB), enough to stall
+// bin/preview-site.sh (see tests/preview-site-isolation.test.mjs).
+const SCRATCH = mkdtempSync(join(tmpdir(), 'lfs-suite-'));
+after(() => rmSync(SCRATCH, { recursive: true, force: true }));
 
 // Env with every Netlify / CI marker removed, so the result does not depend on where the suite
 // itself runs (a laptop, GitHub Actions, or inside a Netlify build).
@@ -44,7 +55,7 @@ function git(cwd, args) {
 
 // A throwaway repo shaped like ours: .gitattributes tracks *.m4a via LFS, two pointer stubs.
 function makeRepo() {
-  const repo = mkdtempSync(join(tmpdir(), 'lfs-repo-'));
+  const repo = mkdtempSync(join(SCRATCH, 'lfs-repo-'));
   git(repo, ['init', '-q']);
   git(repo, ['config', 'user.email', 'test@example.invalid']);
   git(repo, ['config', 'user.name', 'test']);
@@ -67,7 +78,7 @@ function makeRepo() {
 // `git lfs …` resolves to a `git-lfs` executable on PATH; this shim records the pull args,
 // simulates a pull (pointer → bytes, one object into lfs.storage) or a failure on demand.
 function makeShim() {
-  const dir = mkdtempSync(join(tmpdir(), 'lfs-shim-'));
+  const dir = mkdtempSync(join(SCRATCH, 'lfs-shim-'));
   const shim = join(dir, 'git-lfs');
   writeFileSync(shim, `#!/usr/bin/env bash
 case "\${1:-}" in
@@ -75,7 +86,8 @@ case "\${1:-}" in
   pull)
     shift; printf '%s\\n' "$@" > "\${LFS_SHIM_LOG:?}"
     if [ -n "\${LFS_SHIM_FAIL:-}" ]; then echo "\${LFS_SHIM_FAIL}" >&2; exit 2; fi
-    store="$(git config lfs.storage)"; mkdir -p "$store/objects"; head -c 2097152 /dev/zero > "$store/objects/obj"
+    store="$(git config lfs.storage)"; mkdir -p "$store/objects"
+    if [ ! -f "$store/objects/obj" ]; then head -c 2097152 /dev/zero > "$store/objects/obj"; fi
     for f in $(git ls-files -- '*.m4a'); do printf 'REALBYTES' > "$f"; done;;
   *) exit 0;;
 esac
@@ -121,7 +133,7 @@ test('inside GitHub Actions the step defers to the deliberate lfs:false checkout
 
 test('deploy previews keep shipping stubs unless opted in — they never spent LFS bandwidth and must not start', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const base = { NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}` };
   const skipped = run(scrubbedEnv({ ...base, CONTEXT: 'deploy-preview' }), repo);
@@ -139,7 +151,7 @@ test('deploy previews keep shipping stubs unless opted in — they never spent L
 
 test('on Netlify it pulls through lfs.storage under the persistent cache and reports the download', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const env = scrubbedEnv({ NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}` });
   const r = run(env, repo);
@@ -155,21 +167,26 @@ test('on Netlify it pulls through lfs.storage under the persistent cache and rep
 
 test('a second build with a warm cache downloads nothing', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const env = scrubbedEnv({ NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}` });
   assert.equal(run(env, repo).status, 0);
+  // A cache hit must reuse the object, not truncate/rewrite it and change its disk allocation.
+  const object = join(cache, 'git-lfs', 'objects', 'obj');
+  const cachedAt = new Date('2000-01-01T00:00:00Z');
+  utimesSync(object, cachedAt, cachedAt);
   // Next build = fresh clone: the tree is pointer stubs again, the cache dir survives.
   writeFileSync(join(repo, 'audio', 'a.m4a'), POINTER);
   writeFileSync(join(repo, 'audio', 'b.m4a'), POINTER);
   const r = run(env, repo);
   assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(statSync(object).mtimeMs, cachedAt.getTime(), 'a cache hit must not rewrite the existing LFS object');
   assert.match(r.stdout, /~0 MB downloaded from GitHub this build, store now [23] MB/);
 });
 
 test('GIT_LFS_FETCH_INCLUDE is honoured and files it excludes are reported, not failed', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const env = scrubbedEnv({ NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, GIT_LFS_FETCH_INCLUDE: '*.mp4', PATH: `${makeShim()}:${process.env.PATH}` });
   const r = run(env, repo);
@@ -178,21 +195,31 @@ test('GIT_LFS_FETCH_INCLUDE is honoured and files it excludes are reported, not 
   assert.match(r.stdout, /honouring GIT_LFS_FETCH_INCLUDE=\*\.mp4/);
 });
 
-test('when the clone already materialised real bytes it does nothing and says why (legacy env var)', () => {
+test('when the checkout already materialised real bytes it does nothing and reports only that', () => {
   const repo = makeRepo();
   writeFileSync(join(repo, 'audio', 'a.m4a'), 'REALBYTES');
   writeFileSync(join(repo, 'audio', 'b.m4a'), 'REALBYTES');
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const env = scrubbedEnv({ NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, PATH: `${makeShim()}:${process.env.PATH}` });
   const r = run(env, repo);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /all 2 LFS-tracked file\(s\) are already real bytes -> nothing to do/);
-  assert.match(r.stdout, /Remove GIT_LFS_ENABLED and/);
+  assert.match(r.stdout, /whether or not GIT_LFS_ENABLED is set/);
+
+  // The message may not assert a CAUSE it cannot observe. The old wording claimed the
+  // clone fetched them "(GIT_LFS_ENABLED is still set on this site)" and that this cost
+  // the full bandwidth "on EVERY build"; on 2026-09-14 both sites had the var removed and
+  // still hit this branch, so the script was printing a reason that did not exist. This
+  // script sees the tree, never the site's env config or the checkout's behaviour.
+  assert.doesNotMatch(r.stdout, /GIT_LFS_ENABLED is still set/,
+    'must not assert why the bytes are real — it cannot see the site configuration');
+  assert.doesNotMatch(r.stdout, /EVERY build/,
+    'must not claim a per-build cost — a cache-reusing build downloads nothing');
 });
 
 test('a quota refusal from GitHub fails the build early and names the cause', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   const log = join(cache, 'shim.log');
   const env = scrubbedEnv({
     NETLIFY: 'true', NETLIFY_CACHE_DIR: cache, LFS_SHIM_LOG: log, PATH: `${makeShim()}:${process.env.PATH}`,
@@ -208,9 +235,9 @@ test('a quota refusal from GitHub fails the build early and names the cause', ()
 
 test('without git-lfs on PATH it steps aside and leaves the failure to the media gate', () => {
   const repo = makeRepo();
-  const cache = mkdtempSync(join(tmpdir(), 'lfs-cache-'));
+  const cache = mkdtempSync(join(SCRATCH, 'lfs-cache-'));
   // A shim that reports no git-lfs at all: `git lfs version` must fail.
-  const dir = mkdtempSync(join(tmpdir(), 'lfs-noshim-'));
+  const dir = mkdtempSync(join(SCRATCH, 'lfs-noshim-'));
   const shim = join(dir, 'git-lfs');
   writeFileSync(shim, '#!/usr/bin/env bash\nexit 1\n');
   chmodSync(shim, 0o755);

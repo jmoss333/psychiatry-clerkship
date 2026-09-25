@@ -1,15 +1,20 @@
 {
   "name": "psychiatry-clerkship-smoke",
   "private": true,
+  "engines": {
+    "node": ">=22 <23"
+  },
   "type": "module",
   "scripts": {
     "test": "playwright test",
     "test:nav": "playwright test --project=nav-ms3 --project=nav-res",
+    "test:dana-conversation": "playwright test --config=dana-conversation.config.js",
+    "test:family-visit": "playwright test --config=family-visit.config.js",
     "test:lfs": "playwright test --project=lfs",
     "test:visual": "playwright test --project=visual",
     "update-baselines": "playwright test visual-regression.spec.js --project=visual --update-snapshots=all"
   },
   "devDependencies": {
-    "@playwright/test": "1.62.1"
+    "@playwright/test": "1.63.0"
   }
 }

@@ -1127,7 +1127,7 @@ Using a fictional, synthetic, or fully de-identified case:
 - **Workflow modes:** `ward`, `family`, `safety`
 - **Shelf blueprint tags:** `relational`
 - **EPA crosswalk:** `EPA9`
-- **Call-to-action buttons:** Open the Family Meeting Playbook; Practice family conflict; Map discharge family roles; Open collateral workflow
+- **Call-to-action buttons:** Open the Family Meeting Playbook; Practice family conflict; Map discharge family roles; Open collateral workflow; Run a 2-minute Post-Event Learning Huddle (discharge)
 
 #### Page text (as shipped)
 

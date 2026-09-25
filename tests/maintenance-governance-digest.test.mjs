@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 import {
   buildGovernanceDigest,
   main,
   parseAttestationValidatorResult,
+  parseStaleAttestationResult,
   renderGovernanceMarkdown,
 } from '../13_Faculty_Resources/_automation/maintenance/governance_digest.mjs';
 
@@ -106,6 +109,7 @@ function inputs(overrides = {}) {
       'missing.md': { status: 'attested', by: 'PRIVATE THIRD REVIEWER' },
     },
     needsReattest: { slugs: ['other.md', 't_mood.md'] },
+    staleAttestations: { slugs: [] },
     attestationErrors: [],
     ...overrides,
   };
@@ -170,7 +174,7 @@ test('attestation drift blocks and exposes only bounded codes and slug prefixes'
 test('attestation subprocess output is recognized narrowly', () => {
   assert.deepEqual(parseAttestationValidatorResult({
     status: 0,
-    stdout: 'attestation consistency OK — 87 manifest item(s), 13 topic facultyReview entries aligned.\n',
+    stdout: 'attestation consistency OK — 87 shipped item(s), 13 topic facultyReview entries aligned.\n',
     stderr: '',
   }), []);
   assert.deepEqual(parseAttestationValidatorResult({
@@ -191,7 +195,7 @@ test('attestation subprocess output is recognized narrowly', () => {
     {
       status: 0,
       stdout: [
-        'attestation consistency OK — 87 manifest item(s), 13 topic facultyReview entries aligned.',
+        'attestation consistency OK — 87 shipped item(s), 13 topic facultyReview entries aligned.',
         '  - t_mood.md: contradictory drift',
       ].join('\n'),
       stderr: '',
@@ -212,6 +216,145 @@ test('attestation subprocess output is recognized narrowly', () => {
       /validator|stderr/i,
     );
   }
+});
+
+/* THE FIXTURES ABOVE ARE COPIES, AND A COPY CAN GO STALE.
+
+   It did. #522 renamed the validator's success line from "N manifest item(s)" to
+   "N shipped item(s)" when the shipped set stopped coming from site_manifest.json.
+   parseAttestationValidatorResult's regex still demanded the old noun, so every real
+   run fell through to `throw new Error('attestation validator did not return a
+   recognized contract')` and main() printed "governance digest failed" and returned 1.
+   The daily maintenance workflow had been red on every run since, silently, because
+   nothing here ever ran the validator — both sides of the contract were fixtures in
+   this file, and they agreed with each other.
+
+   So: run the real validator and hold the real parser against its real stdout. If the
+   wording drifts again, this goes red in the same commit that moves it. */
+test('the contract matches the CURRENT validator, not a fixture of it', () => {
+  const repo = path.resolve(import.meta.dirname, '..');
+  const result = spawnSync('python3', [
+    path.join(repo, '13_Faculty_Resources/_automation/validate_attestation_consistency.py'),
+  ], { cwd: repo, encoding: 'utf8', maxBuffer: 1_048_576 });
+
+  assert.doesNotThrow(
+    () => parseAttestationValidatorResult(result),
+    'validate_attestation_consistency.py\'s real output no longer matches the contract '
+    + 'parseAttestationValidatorResult enforces. The digest fails closed on an '
+    + 'unrecognized contract, so this is the daily governance-digest workflow going red: '
+    + 'update the regex in governance_digest.mjs (and the fixtures above) to the wording '
+    + 'the validator prints now. Its stdout was:\n' + JSON.stringify(result.stdout),
+  );
+});
+
+/* A reviewed page whose attested inputs no longer match its contentHash is drift, not a
+   broken record: the page really was reviewed, and the text it was reviewed as no longer
+   exists. The learner sites render it pending (surface_governance.load_effective_ledger);
+   the digest has to say so too, or the weekly report keeps counting it as covered. */
+test('stale attestations are counted, sorted, and open a review queue', () => {
+  const digest = buildGovernanceDigest(inputs({
+    bank: [{ ...READY_ITEM, status: 'attested' }],
+    manifestPages: ['t_mood.md'],
+    manifestItems: ['t_mood.md'],
+    topicMeta: { 't_mood.md': TOPIC_META['t_mood.md'] },
+    reviewed: { 't_mood.md': { status: 'reviewed' } },
+    needsReattest: { slugs: [] },
+    staleAttestations: { slugs: ['tool.html', 't_mood.md', 't_mood.md'] },
+  }));
+
+  assert.deepEqual(digest.staleAttestations, {
+    count: 2,
+    slugs: ['t_mood.md', 'tool.html'],
+  });
+  // Nothing else in that digest is a queue -- the drift alone moves the gate.
+  assert.equal(digest.gate, 'review');
+});
+
+test('no stale attestation leaves an otherwise clean digest ready', () => {
+  const digest = buildGovernanceDigest(inputs({
+    bank: [{ ...READY_ITEM, status: 'attested' }],
+    manifestPages: ['t_mood.md'],
+    manifestItems: ['t_mood.md'],
+    topicMeta: { 't_mood.md': TOPIC_META['t_mood.md'] },
+    reviewed: { 't_mood.md': { status: 'reviewed' } },
+    needsReattest: { slugs: [] },
+  }));
+
+  assert.deepEqual(digest.staleAttestations, { count: 0, slugs: [] });
+  assert.equal(digest.gate, 'ready');
+});
+
+/* The tool's exit codes are a contract (docs/RATCHETS.md): 0 clean, 1 a finding, 2 COULD
+   NOT CHECK. Reading a 2 as "no stale rows" is the silent-shrink failure this whole PR
+   exists to end, so anything but 0 or 1 fails the digest rather than reporting zero. */
+test('the stale-attestation tool is read narrowly and 2 is never zero', () => {
+  const report = (stale) => JSON.stringify({ schemaVersion: 1, stale, exitCode: 0 });
+
+  assert.deepEqual(parseStaleAttestationResult({
+    status: 0,
+    stdout: report({}),
+    stderr: '',
+  }), []);
+  assert.deepEqual(parseStaleAttestationResult({
+    status: 0,
+    stdout: report({
+      'tool.html': { stored: 'a'.repeat(40), actual: 'b'.repeat(40), at: '2026-07-03' },
+      't_mood.md': { stored: 'c'.repeat(40), actual: 'd'.repeat(40), at: '2026-07-03' },
+    }),
+    stderr: '',
+  }), ['t_mood.md', 'tool.html']);
+  // Exit 1 is a finding (an unbound or malformed row), and the report is still a report.
+  assert.deepEqual(parseStaleAttestationResult({
+    status: 1,
+    stdout: JSON.stringify({ schemaVersion: 1, stale: {}, unbound: ['x.md'], exitCode: 1 }),
+    stderr: '',
+  }), []);
+
+  for (const result of [
+    { status: 2, stdout: '', stderr: 'could not check: cannot read topic_meta.json' },
+    { status: 2, stdout: report({}), stderr: '' },
+    { status: 0, stdout: 'Traceback: PRIVATE', stderr: '' },
+    { status: 0, stdout: JSON.stringify({ schemaVersion: 2, stale: {} }), stderr: '' },
+    { status: 0, stdout: JSON.stringify({ schemaVersion: 1 }), stderr: '' },
+    { status: 0, stdout: JSON.stringify({ schemaVersion: 1, stale: [] }), stderr: '' },
+    {
+      status: 0,
+      stdout: JSON.stringify({ schemaVersion: 1, stale: { '../escape.md': {} } }),
+      stderr: '',
+    },
+  ]) {
+    assert.throws(() => parseStaleAttestationResult(result), /attestation|governance|slug/i);
+  }
+  // A spawn that never ran re-raises its own error, so a failure to RUN the tool is
+  // never mistaken for a clean report either.
+  assert.throws(
+    () => parseStaleAttestationResult({
+      status: null,
+      stdout: '',
+      stderr: '',
+      error: new Error('spawn failed'),
+    }),
+    /spawn failed/,
+  );
+});
+
+/* Same lesson as the validator contract above: both sides of this one must not be
+   fixtures that agree with each other. Run the real tool against the real tree. */
+test('the stale-attestation contract matches the CURRENT tool, not a fixture of it', () => {
+  const repo = path.resolve(import.meta.dirname, '..');
+  const result = spawnSync('python3', [
+    path.join(repo, 'bin/check_attestation_hashes.py'),
+    '--format',
+    'json',
+  ], { cwd: repo, encoding: 'utf8', maxBuffer: 8_388_608 });
+
+  assert.doesNotThrow(
+    () => parseStaleAttestationResult(result),
+    'bin/check_attestation_hashes.py --format json no longer matches the contract '
+    + 'parseStaleAttestationResult enforces, so the weekly governance digest fails '
+    + 'closed. Its status was ' + result.status + ' and its stderr was:\n'
+    + JSON.stringify(result.stderr),
+  );
 });
 
 test('topic metadata is grouped by high-risk versus other topics', () => {
@@ -300,6 +443,7 @@ test('markdown is content-free and reports faculty authority', () => {
   const markdown = renderGovernanceMarkdown(buildGovernanceDigest(inputs()));
   assert.match(markdown, /Faculty review remains required/i);
   assert.match(markdown, /Blocked question IDs: qb_mood_003/);
+  assert.match(markdown, /Stale attestations: 0\./);
   assert.doesNotMatch(markdown, /Synthetic teaching vignette|PRIVATE|correct answer/);
 });
 
@@ -313,6 +457,8 @@ test('malformed inputs fail closed', () => {
     { topicMeta: [] },
     { reviewed: [] },
     { needsReattest: { slugs: ['unsafe/path.md'] } },
+    { staleAttestations: { slugs: ['unsafe/path.md'] } },
+    { staleAttestations: [] },
     { attestationErrors: [{ code: 'bad code!', slugPrefix: 't_mood.md' }] },
   ];
   for (const override of invalid) {
@@ -323,11 +469,23 @@ test('malformed inputs fail closed', () => {
   }
 });
 
-function cliDependencies({ bank = [READY_ITEM], attestationErrors = [] } = {}) {
+function cliDependencies({
+  bank = [READY_ITEM],
+  attestationErrors = [],
+  staleSlugs = [],
+} = {}) {
   const files = {
-    '13_Faculty_Resources/_automation/site_build/site_manifest.json': {
-      md: [['source.md', 't_mood.md', 'PRIVATE PAGE TITLE']],
-      tools: [],
+    // The CLI reads the derived "what ships" listing (ADR-002), not site_manifest.json.
+    '13_Faculty_Resources/_automation/site_build/shipped_pages.json': {
+      version: 1,
+      pages: [{
+        slug: 't_mood.md',
+        kind: 'page',
+        sites: ['ms3', 'res'],
+        title: 'PRIVATE PAGE TITLE',
+        source: 'source.md',
+        producer: 'site_manifest',
+      }],
     },
     'question_bank.json': { items: bank },
     'topic_meta.json': { 't_mood.md': TOPIC_META['t_mood.md'] },
@@ -351,6 +509,10 @@ function cliDependencies({ bank = [READY_ITEM], attestationErrors = [] } = {}) {
       runAttestationValidator() {
         return structuredClone(attestationErrors);
       },
+      runStaleAttestations() {
+        if (staleSlugs instanceof Error) throw staleSlugs;
+        return structuredClone(staleSlugs);
+      },
       writeFile(outputPath, value, encoding) {
         assert.equal(encoding, 'utf8');
         writes.set(outputPath, value);
@@ -371,6 +533,7 @@ test('CLI writes both artifacts and returns 0 for a non-blocking review queue', 
   assert.deepEqual([...harness.writes.keys()].sort(), ['/tmp/digest.json', '/tmp/digest.md']);
   const digest = JSON.parse(harness.writes.get('/tmp/digest.json'));
   assert.equal(digest.gate, 'review');
+  assert.deepEqual(digest.staleAttestations, { count: 0, slugs: [] });
   assert.match(harness.writes.get('/tmp/digest.md'), /Faculty review remains required/);
   assert.doesNotMatch(
     [...harness.writes.values()].join('\n'),
@@ -398,6 +561,28 @@ test('CLI writes artifacts before returning 2 for blockers or attestation drift'
     assert.equal(harness.writes.size, 2);
     assert.equal(JSON.parse(harness.writes.get('/tmp/blocked.json')).gate, 'blocked');
   }
+});
+
+test('CLI reports drift and fails closed when the drift tool cannot be read', () => {
+  const drifted = cliDependencies({ staleSlugs: ['t_mood.md'] });
+  assert.equal(
+    main(['--out-json', '/tmp/drift.json', '--out-md', '/tmp/drift.md'], drifted.dependencies),
+    0,
+  );
+  const digest = JSON.parse(drifted.writes.get('/tmp/drift.json'));
+  assert.deepEqual(digest.staleAttestations, { count: 1, slugs: ['t_mood.md'] });
+  assert.equal(digest.gate, 'review');
+
+  // "Could not check" must never render as "0 stale": the digest fails instead.
+  const unreadable = cliDependencies({
+    staleSlugs: new Error('could not check: cannot read topic_meta.json'),
+  });
+  assert.equal(
+    main(['--out-json', '/tmp/x.json', '--out-md', '/tmp/x.md'], unreadable.dependencies),
+    1,
+  );
+  assert.equal(unreadable.writes.size, 0);
+  assert.deepEqual(unreadable.errors, ['governance digest failed']);
 });
 
 test('CLI returns 1 and writes no artifacts for malformed or runtime input', () => {

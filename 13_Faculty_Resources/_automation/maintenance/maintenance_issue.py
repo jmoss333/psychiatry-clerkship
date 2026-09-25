@@ -104,6 +104,43 @@ def _has_ownership_marker(body, marker):
     return isinstance(body, str) and body.splitlines()[:1] == [marker]
 
 
+# How many drifted slugs the routed issue names before it starts counting instead. Five is
+# enough to recognise which corner of the library drifted without turning a bounded issue body
+# into a queue dump; the total is always stated, so nothing is hidden by the truncation.
+STALE_SLUG_PREVIEW = 5
+
+
+def _stale_attestation_line(report):
+    """One line saying why `Gate: review` fired, or that nothing measured it.
+
+    A digest written by governance_digest.mjs always carries `staleAttestations`. An OLDER
+    artifact replayed through this module does not, and rendering that absence as 0 would
+    assert an empty re-attestation queue that nobody measured -- so it reports `not reported`.
+    Unknown, never zero.
+    """
+    stale = report.get("staleAttestations")
+    if stale is None:
+        return "Stale attestations: not reported"
+    if not isinstance(stale, dict):
+        raise IssueRoutingError("governance stale attestation summary is invalid")
+    count = _bounded_count(stale.get("count"), "governance stale attestations")
+    slugs = stale.get("slugs")
+    if not isinstance(slugs, list) or len(slugs) > 256:
+        raise IssueRoutingError("governance stale attestation slugs are invalid")
+    slugs = sorted(_safe_id(value, "stale attestation slug") for value in slugs)
+    # The digest derives count from this same list, so a disagreement is a garbled or edited
+    # report rather than a stale one -- and this body reaches a GitHub issue.
+    if len(slugs) != count:
+        raise IssueRoutingError("governance stale attestation count disagrees with its slugs")
+    if count == 0:
+        return "Stale attestations: 0"
+    preview = ", ".join(slugs[:STALE_SLUG_PREVIEW])
+    hidden = count - len(slugs[:STALE_SLUG_PREVIEW])
+    if hidden:
+        return f"Stale attestations: {count} ({preview}; {hidden} more)"
+    return f"Stale attestations: {count} ({preview})"
+
+
 def _governance_body(report, run_url, artifact_url):
     gate = report.get("gate")
     if gate not in {"ready", "review", "blocked"}:
@@ -145,6 +182,10 @@ def _governance_body(report, run_url, artifact_url):
             + ", ".join(f"{key}={normalized[key]}" for key in sorted(normalized))
         ),
         "Blocked question IDs: " + (", ".join(blocked_ids) or "none"),
+        # Why the gate is what it is: a review-gated digest whose question counts are clean was
+        # almost certainly opened by the drift queue, and an issue that does not say so reads as
+        # noise. See governance_digest.mjs `reviewQueuePresent`.
+        _stale_attestation_line(report),
         *_links(run_url, artifact_url),
         "",
         DISCLAIMER,
@@ -185,6 +226,18 @@ def _monthly_body(report, run_url, artifact_url):
     new_regressions = media.get("newRegressions")
     if not isinstance(new_regressions, list) or len(new_regressions) > MAX_COUNT:
         raise IssueRoutingError("new accessibility regressions are invalid")
+    # Why the cadence number moved. Since 2026-09-19 a green guideline-surveillance
+    # examination counts as the review, so "due or overdue" is smaller than the count
+    # of faculty dates alone. Unexplained, that reads as findings having been quietly
+    # dismissed; named, it reads as work the job did. Strict, like every other figure
+    # here: a report without the block is a malformed report, not a zero.
+    credit = evidence.get("surveillanceCredit")
+    if not isinstance(credit, dict):
+        raise IssueRoutingError("evidence surveillance credit is invalid")
+    credited = _bounded_count(
+        credit.get("sourcesCredited"),
+        "surveillance-credited reviews",
+    )
     stale_runbooks = _bounded_count(runbooks.get("stale"), "stale runbooks")
     unknown_runbooks = _bounded_count(runbooks.get("unknown"), "unknown runbooks")
     marker = "<!-- maintenance:monthly -->"
@@ -196,6 +249,7 @@ def _monthly_body(report, run_url, artifact_url):
         f"Evidence records: {total}",
         f"Pending or unknown identities: {identity_pending + identity_unknown}",
         f"Evidence cadence due or overdue: {cadence_due + cadence_overdue}",
+        f"Reviews credited to guideline surveillance: {credited}",
         f"Served media missing alternatives: {served_missing}",
         f"New accessibility regressions: {len(new_regressions)}",
         f"Stale or unknown runbooks: {stale_runbooks + unknown_runbooks}",

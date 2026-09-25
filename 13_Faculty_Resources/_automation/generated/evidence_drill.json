@@ -12,24 +12,24 @@
    "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
-     "sourceId": "aacap-parameters",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "c": true,
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "U.S. Food and Drug Administration · 2025",
      "sourceId": "clozapine-rems",
-     "key": "C"
+     "key": "B"
     },
     {
      "t": "U.S. Food and Drug Administration · 2026",
      "sourceId": "fda-drug-safety",
+     "key": "C"
+    },
+    {
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "sourceId": "nolen-2019-lithium-levels",
      "key": "D"
     }
    ],
@@ -68,8 +68,8 @@
      "key": "C"
     },
     {
-     "t": "Links et al. · 2025 · Am J Psychother",
-     "sourceId": "links-ross-2025",
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "sourceId": "nolen-2019-lithium-levels",
      "key": "D"
     }
    ],
@@ -108,8 +108,8 @@
      "key": "C"
     },
     {
-     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
-     "sourceId": "project-beta-psychopharm-agitation-2012",
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "sourceId": "nolen-2019-lithium-levels",
      "key": "D"
     }
    ],
@@ -123,6 +123,46 @@
    }
   },
   {
+   "id": "ed_med_monitoring_nolen-2019-lithium-levels",
+   "status": "draft",
+   "review": null,
+   "page": "med_monitoring.md",
+   "sourceId": "nolen-2019-lithium-levels",
+   "claim": "Level ~5 days after start/change (12-h trough; mmol/L = mEq/L): acute mania 0.8–1.2; maintenance usually 0.6–0.8 — 0.4–0.6 if the response is good but tolerance poor, 0.8–1.0 if the response is inadequate and tolerance good; older adults usually 0.4–0.6 (at most ~0.7–0.8 at 65–79, ~0.7 at ≥80); renal + TSH periodically",
+   "stem": "This claim on med_monitoring.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-drug-safety",
+     "key": "C"
+    },
+    {
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "c": true,
+     "sourceId": "nolen-2019-lithium-levels",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the WP-1 lithium cluster (target serum levels on med_monitoring, t_mood, cl_reference and rounds_questions). For adults the Task Force reached consensus on a standard maintenance level of 0.60-0.80 mmol/L (0.40-0.60 for good response but poor tolerance; 0.80-1.00 for insufficient response and good tolerance). For older adults there was NO consensus - a majority endorsed usually 0.40-0.60 mmol/L, at most 0.70 or 0.80 at ages 65-79 and at most 0.70 over 80 - so the older-adult range must not be called a consensus. The paper reports mmol/L. Annotation is AI-drafted and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "What is the optimal serum level for lithium in the maintenance treatment of bipolar disorder? A systematic review and recommendations from the ISBD/IGSLI Task Force on treatment with lithium",
+    "doi": "10.1111/bdi.12805",
+    "pmid": "31112628",
+    "url": "https://doi.org/10.1111/bdi.12805"
+   }
+  },
+  {
    "id": "ed_psychopharm_primer_boyer-shannon-2005-serotonin-syndrome",
    "status": "draft",
    "review": null,
@@ -132,14 +172,14 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
-     "c": true,
-     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "t": "American Psychiatric Association · 2026",
+     "sourceId": "apa-practice-guidelines",
      "key": "A"
     },
     {
-     "t": "American Psychiatric Association Publishing · 2022",
-     "sourceId": "dsm-5-tr",
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
      "key": "B"
     },
     {
@@ -148,8 +188,8 @@
      "key": "C"
     },
     {
-     "t": "Rush et al. · 2006 · American Journal of Psychiatry",
-     "sourceId": "rush-2006-stard",
+     "t": "Volkow et al. · 2016 · New England Journal of Medicine",
+     "sourceId": "volkow-2016-addiction-brain-disease",
      "key": "D"
     }
    ],
@@ -177,19 +217,19 @@
      "key": "A"
     },
     {
-     "t": "U.S. Food and Drug Administration · 2026",
-     "c": true,
-     "sourceId": "fda-prozac-label-maoi-switching",
+     "t": "Decker et al. · 2015 · Clin J Am Soc Nephrol",
+     "sourceId": "decker-2015-extrip-lithium",
      "key": "B"
     },
     {
-     "t": "Schneider et al. · 2005 · JAMA",
-     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
+     "t": "U.S. Food and Drug Administration · 2026",
+     "c": true,
+     "sourceId": "fda-prozac-label-maoi-switching",
      "key": "C"
     },
     {
-     "t": "Wibbelink et al. · 2026 · JAMA Psychiatry",
-     "sourceId": "wibbelink-2026",
+     "t": "Saxler et al. · 2024 · Front Psychol",
+     "sourceId": "saxler-2024",
      "key": "D"
     }
    ],
@@ -223,13 +263,13 @@
      "key": "B"
     },
     {
-     "t": "Cuijpers et al. · 2026 · Clin Psychol Rev",
-     "sourceId": "cuijpers-2026",
+     "t": "Gurrera et al. · 2011 · J Clin Psychiatry",
+     "sourceId": "gurrera-2011-nms-criteria",
      "key": "C"
     },
     {
-     "t": "Penzenik et al. · 2026 · J Rural Health",
-     "sourceId": "penzenik-2026",
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "sourceId": "nolen-2019-lithium-levels",
      "key": "D"
     }
    ],
@@ -263,13 +303,13 @@
      "key": "B"
     },
     {
-     "t": "March et al. · 2004 · JAMA",
-     "sourceId": "march-2004-tads",
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "sourceId": "nolen-2019-lithium-levels",
      "key": "C"
     },
     {
-     "t": "Volkow et al. · 2016 · New England Journal of Medicine",
-     "sourceId": "volkow-2016-addiction-brain-disease",
+     "t": "Vigen et al. · 2011 · Am J Psychiatry",
+     "sourceId": "vigen-2011-catie-ad-cognition",
      "key": "D"
     }
    ],
@@ -283,12 +323,52 @@
    }
   },
   {
+   "id": "ed_t_mood_nolen-2019-lithium-levels",
+   "status": "draft",
+   "review": null,
+   "page": "t_mood.md",
+   "sourceId": "nolen-2019-lithium-levels",
+   "claim": "Lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults): check baseline and periodic renal, thyroid and calcium (parathyroid) function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+   "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "c": true,
+     "sourceId": "nolen-2019-lithium-levels",
+     "key": "C"
+    },
+    {
+     "t": "Penzenik et al. · 2026 · J Rural Health",
+     "sourceId": "penzenik-2026",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the WP-1 lithium cluster (target serum levels on med_monitoring, t_mood, cl_reference and rounds_questions). For adults the Task Force reached consensus on a standard maintenance level of 0.60-0.80 mmol/L (0.40-0.60 for good response but poor tolerance; 0.80-1.00 for insufficient response and good tolerance). For older adults there was NO consensus - a majority endorsed usually 0.40-0.60 mmol/L, at most 0.70 or 0.80 at ages 65-79 and at most 0.70 over 80 - so the older-adult range must not be called a consensus. The paper reports mmol/L. Annotation is AI-drafted and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "What is the optimal serum level for lithium in the maintenance treatment of bipolar disorder? A systematic review and recommendations from the ISBD/IGSLI Task Force on treatment with lithium",
+    "doi": "10.1111/bdi.12805",
+    "pmid": "31112628",
+    "url": "https://doi.org/10.1111/bdi.12805"
+   }
+  },
+  {
    "id": "ed_t_neurocog_fda-drug-safety",
    "status": "draft",
    "review": null,
    "page": "t_neurocog.md",
    "sourceId": "fda-drug-safety",
-   "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis — use the lowest dose for the shortest time, document informed consent, and reassess.",
+   "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis (it applies equally to brexpiprazole, FDA-approved in 2023 for agitation associated with Alzheimer dementia) — use the lowest dose for the shortest time, document informed consent, and reassess.",
    "stem": "This claim on t_neurocog.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -452,13 +532,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Stanley et al. · 2018 · JAMA Psychiatry",
-     "sourceId": "stanley-brown-2018",
+     "t": "Bot et al. · 2026 · Acta Psychiatr Scand",
+     "sourceId": "bot-2026-benzodiazepines-catatonia",
      "key": "A"
     },
     {
-     "t": "U.S. Department of Veterans Affairs / Department of Defense · 2024",
-     "sourceId": "va-dod-suicide-cpg-2024",
+     "t": "De et al. · 2025 · Clin Psychol Psychother",
+     "sourceId": "desalve-2025",
      "key": "B"
     },
     {
@@ -492,13 +572,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Boggs et al. · 2020 · J Gen Intern Med",
-     "sourceId": "boggs-2020-lethal-means-assessment",
+     "t": "Rush et al. · 2006 · American Journal of Psychiatry",
+     "sourceId": "rush-2006-stard",
      "key": "A"
     },
     {
-     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
-     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "t": "Studdert et al. · 2020 · The New England Journal of Medicine",
+     "sourceId": "studdert-2020-handgun-suicide",
      "key": "B"
     },
     {
@@ -703,8 +783,8 @@
      "key": "B"
     },
     {
-     "t": "Huggett et al. · 2024 · Clin Psychol Rev",
-     "sourceId": "huggett-2024",
+     "t": "Rosenberg et al. · 2015 · Orphanet J Rare Dis",
+     "sourceId": "rosenberg-2015-malignant-hyperthermia",
      "key": "C"
     },
     {
@@ -743,13 +823,13 @@
      "key": "B"
     },
     {
-     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
-     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "t": "Rosenberg et al. · 2015 · Orphanet J Rare Dis",
+     "sourceId": "rosenberg-2015-malignant-hyperthermia",
      "key": "C"
     },
     {
-     "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
-     "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
      "key": "D"
     }
    ],
@@ -760,6 +840,46 @@
     "doi": "10.1056/NEJMra041867",
     "pmid": "15784664",
     "url": "https://doi.org/10.1056/NEJMra041867"
+   }
+  },
+  {
+   "id": "ed_toxidromes_rosenberg-2015-malignant-hyperthermia",
+   "status": "draft",
+   "review": null,
+   "page": "toxidromes.md",
+   "sourceId": "rosenberg-2015-malignant-hyperthermia",
+   "claim": "Anesthesia emergency: stop the trigger; dantrolene",
+   "stem": "This claim on toxidromes.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "British Association for Psychopharmacology · 2023",
+     "sourceId": "bap-catatonia-2023",
+     "key": "A"
+    },
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "B"
+    },
+    {
+     "t": "Rosenberg et al. · 2015 · Orphanet J Rare Dis",
+     "c": true,
+     "sourceId": "rosenberg-2015-malignant-hyperthermia",
+     "key": "C"
+    },
+    {
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "key": "D"
+    }
+   ],
+   "why": "Added for peer-review finding M05-001 and the ECT anesthesia teaching (toxidromes, ect_neuromodulation). Narrative review: MH is a pharmacogenetic disorder of skeletal muscle presenting as a hypermetabolic response to potent volatile anesthetics and succinylcholine; a rise in end-tidal CO2 despite increased minute ventilation is an early diagnostic clue; dantrolene is the specific antagonist. It is not a source for NMS or serotonin syndrome management. Annotation is AI-drafted and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Malignant hyperthermia: a review",
+    "doi": "10.1186/s13023-015-0310-1",
+    "pmid": "26238698",
+    "url": "https://doi.org/10.1186/s13023-015-0310-1"
    }
   },
   {
@@ -782,8 +902,8 @@
      "key": "B"
     },
     {
-     "t": "Cipriani et al. · 2013 · BMJ",
-     "sourceId": "cipriani-2013-lithium-suicide",
+     "t": "Rosenberg et al. · 2015 · Orphanet J Rare Dis",
+     "sourceId": "rosenberg-2015-malignant-hyperthermia",
      "key": "C"
     },
     {

@@ -12,7 +12,7 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 - **Slug:** `welcome.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/Resident/resident_welcome.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
+- **Governance:** status=`pending` · riskKind=`general` · riskLevel=`low`
 - **Length:** 385 words
 
 <!-- topic_meta overlay -->
@@ -22,13 +22,13 @@ Pages appear in sidebar order. Each page carries its `topic_meta.json` overlay (
 
 **TL;DR (shown above the page text):**
 
-> Start with orientation, then use Today / Progress for repeat visits — the hub is meant to answer what to do before rounds, after rounds, before leaving, and before exam study.
+> Start with the four-week Rotation Plan, then use the core references and Resident Depth pages to prepare for patient care and supervision.
 
 **Key points (bulleted card):**
 
-- First visit: open the orientation packet and learn the safety/supervision boundaries before using bedside tools.
-- Repeat visits: use Today / Progress to choose one ward task, one practice drill, and one review item.
-- Nothing here replaces supervision; the hub should help you ask better questions and escalate earlier.
+- Start with the 4-Week Rotation Plan.
+- Use Resident Depth for advanced psychopharmacology, systems and med-legal work, supervision, and teaching.
+- Bring an agenda to supervision and expect frequent, specific, behavior-based feedback.
 
 **Clinical-workflow narration (per-stage coaching text):**
 
@@ -334,7 +334,7 @@ The boiled-down starting set for the inpatient rotation. Read these fourteen and
 - **Slug:** `pg_interview.md` · **Type:** md · **Sidebar:** listed
 - **Source:** `14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md`
 - **Governance:** status=`reviewed` · riskKind=`clinical` · riskLevel=`moderate`
-- **Length:** 1,126 words
+- **Length:** 1,403 words
 
 <!-- topic_meta overlay -->
 #### Structured metadata (`topic_meta.json` → this page)
@@ -456,6 +456,24 @@ Vulnerability:
 
 - "Has anyone hurt, threatened, coerced, or exploited you?"
 - "Do you feel safe returning to where you were living?"
+
+A positive answer anywhere above goes to your resident or attending now, not at the
+end of the day — the disposition call is theirs. These are the contacts that belong
+in what you hand the patient:
+
+> <div class="crisis-block-hook" hidden></div>
+>
+> ### If someone is in crisis
+>
+> On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+>
+> - **988 Suicide & Crisis Lifeline** — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+> - **Crisis Text Line** — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+> - **Maine Crisis Line** — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+> - **Veterans Crisis Line** — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+> - **Emergency services** — 911. 24/7. For imminent danger to life.
+>
+> *Contacts verified 2026-07-27 against official sources. Maintained in `crisis_resources.json`; do not edit these numbers inline.*
 
 ## Substance And Withdrawal Screen
 
@@ -581,7 +599,14 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 **Static shell text:**
 
 - Mental Status Exam — Teaching Module Reviewed by Joshua Moss, MD on 2026-06-30
-- Skip to content
+- Skip to content If someone is in crisis
+- On the unit, a patient in immediate danger is an escalation to your supervising resident or attending and the charge nurse — not a phone call. These lines are what you put IN a patient's safety plan, what families use after discharge, and what you can use yourself.
+- 988 Suicide & Crisis Lifeline — Call or text 988. Chat at chat.988lifeline.org. 24/7, free, confidential. Spanish available by call, text, and chat; a dedicated line serves Deaf/Hard-of-Hearing callers. Calls placed in Maine route to Maine crisis specialists.
+- Crisis Text Line — Text HOME to 741741. Text HOLA to 741741 for Spanish. 24/7, free. Text-only. Often the most acceptable option for adolescents and young adults who will not make a phone call.
+- Maine Crisis Line — 1-888-568-1112. Text and chat available via the Maine Crisis Line website. 24/7. Staffed by clinically trained crisis workers and the gateway to Maine's mobile crisis teams — the number that actually dispatches a face-to-face response.
+- Veterans Crisis Line — Dial 988 then press 1. Text 838255. 24/7. No VA enrollment required. Ask about service history — it changes which line is the right referral.
+- Emergency services — 911. 24/7. For imminent danger to life.
+- Contacts verified 2026-07-27 against official sources. Maintained in crisis_resources.json ; do not edit these numbers inline.
 
 **Authored clinical strings (85):**
 

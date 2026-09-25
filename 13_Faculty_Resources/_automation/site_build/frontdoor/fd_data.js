@@ -16,8 +16,9 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */
-function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights){
+function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights, libraryHints){
   var m=topicMeta[ref]||{};
+  var hints=libraryHints||{};
   var t=toolIndex[ref]||null;
   var fr=m.facultyReview||{};
   var manifest=manifestIndex[ref]||{};
@@ -46,8 +47,24 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights){
     toolRef: (m.relatedTools&&m.relatedTools.length)?m.relatedTools[0]:null,
     risk: (t&&t.riskLevel)||m.safetyLevel||null,
     governance: manifest.governance||null,
+    /* The Library's one-line "use this when…" for a tool row (curriculum.libraryHints). A
+       string always, empty when the ref has none, so renderers test truthiness rather than
+       type. Reads keep bare titles: their tldr is clinical, not navigational. */
+    hint: (typeof hints[ref]==='string')?hints[ref]:'',
     href: (isTool?'?tool=':'?page=')+ref
   };
+}
+
+/* The fallback item for a ref the index knows but does not carry (curriculum.libraryExclude:
+   the feedback form, the faculty curator, the week pages, the rp-* trainers). Same shape as a
+   byRef item so every consumer -- the Reader, the resource mount, the live open path, the
+   document title -- reads it the same way; the title comes from index.titles (the site manifest)
+   and only falls back to the ref when no manifest entry exists, which is how a bare test index
+   ({byRef:{}}) keeps its old behaviour. kind is the caller's when it has one, else the extension. */
+function fdKnownItem(index, ref, kind){
+  var idx=index||{}, titles=idx.titles||{}, r=ref||'';
+  return { ref:r, kind:kind||(fdIsTool(r)?'tool':'read'), title:titles[r]||r, minutes:null,
+    summary:'', points:[], attested:false, toolRef:null, risk:null, href:'' };
 }
 
 function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
@@ -68,16 +85,21 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
 
   /* Rights references are a property of the PAGE, not of where it happens to be linked from, so
      the lookup has to be global rather than per-call-site. ensure() memoises by ref and the first
-     caller wins: cssrs.html is a week item on ms3 but reaches the resident index only through a
-     library column -- so a per-call-site flag would leave the same page a plain tool on one site
-     and a reference on the other. The list is derived from instrument_rights.json and
+     caller wins: a page can reach the index through a week item on one site and only through a
+     library column on the other (cssrs.html did, until the stubs left the paths on 2026-09-16)
+     -- so a per-call-site flag would leave the same page a plain tool on one site and a
+     reference on the other. The list is derived from instrument_rights.json and
      validate_curriculum.py fails if the two disagree. */
   var rightsRefs={}, rr=cur.rightsReferences||[];
   for(var rq=0;rq<rr.length;rq++){ rightsRefs[rr[rq]]=true; }
 
-  var byRef={};
+  var byRef={}, libraryHints=(cur.libraryHints&&typeof cur.libraryHints==='object')?cur.libraryHints:{};
   function ensure(ref, kind){
-    if(!byRef[ref]) byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true);
+    if(!byRef[ref]){
+      byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true, libraryHints);
+      byRef[ref].searchAliases=((cur.searchAliases||{})[ref]||[]).slice();
+      byRef[ref].searchTitle=(cur.searchTitles||{})[ref]||byRef[ref].title;
+    }
     return byRef[ref];
   }
 
@@ -85,13 +107,18 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
   for(var w=0;w<cw.length;w++){
     var items=[], src=cw[w].items||[];
     for(var j=0;j<src.length;j++){ items.push(ensure(src[j].ref, src[j].kind)); }
-    weeks.push({
+    var week={
       n:cw[w].n,
       title:cw[w].title,
       theme:cw[w].theme,
       focusCategories:(cw[w].focusCategories||[]).slice(),
       items:items
-    });
+    };
+    // Landing destinations need reader identity without becoming assigned items or Library rows.
+    if(typeof cw[w].landingRef==='string'&&cw[w].landingRef){
+      week.landingRef=cw[w].landingRef;
+    }
+    weeks.push(week);
   }
 
   var columns=[], cc=cur.libraryColumns||[];
@@ -109,6 +136,22 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     kit.push({ item: ensure(ck[k].ref, null), sub: ck[k].sub, triggers: (ck[k].triggers||[]).slice() });
   }
 
+  // Resolve unplaced landing pages after browse items, so existing placements keep their behavior.
+  for(var l=0;l<weeks.length;l++){
+    var landing=weeks[l].landingRef;
+    if(landing&&!byRef[landing]) ensure(landing, 'read').readerOnly=true;
+  }
+
+  // Search covers shipped teaching resources independently of browse/assignment placement.
+  // Keep search-only pages out of daily recommendations, including week landing pages.
+  var searchRefs=cur.searchResources||[];
+  for(var sr=0;sr<searchRefs.length;sr++){
+    var prior=byRef[searchRefs[sr]];
+    var searchItem=ensure(searchRefs[sr], null);
+    if(!prior||prior.readerOnly) searchItem.searchOnly=true;
+    searchItem.readerOnly=false;
+  }
+
   var sourcePath=cur.path||{};
   var pathInfo={
     id:(typeof sourcePath.id==='string')?sourcePath.id:'',
@@ -117,8 +160,7 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
 
   /* known = "this ref names a real page on this site", which is NOT the same as "byRef has it".
      libraryExclude registers pages that ship and are reachable but are deliberately absent from
-     the Library projection -- orientation-video.html ("surfaced from the Start-here card"), the
-     week*.md pages, the rp-* tools. Treating those as unknown would send a working link to a
+     the Library projection -- the week*.md pages and the rp-* tools. Treating those as unknown would send a working link to a
      not-found surface, so the reader needs both sets to tell a valid direct route apart from a
      dead slug (Fresh Eyes Audit A4). */
   var known={}, kr;
@@ -128,7 +170,70 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     if(lx[lxi]&&typeof lx[lxi].ref==='string') known[lx[lxi].ref]=true;
   }
 
-  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known };
+  /* titles = the manifest title of EVERY manifest entry, indexed or not. A known-but-excluded ref
+     (see above) has no byRef item, and until 2026-09-19 every reader-side fallback synthesized
+     {title: ref}: ?tool=feedback.html painted "feedback.html" as the page heading, the iframe's
+     title and the document title while the manifest had carried "Improve this library — send
+     feedback" all along. fdKnownItem below is the one place that fallback is built now. */
+  var titles={}, tk;
+  for(tk in manifestIndex){ if(manifestIndex[tk]&&typeof manifestIndex[tk].title==='string') titles[tk]=manifestIndex[tk].title; }
+
+  /* Essentials is a view of the canonical Library, not another source of items. Resolve it only
+     after every ordinary producer has populated byRef, reuse those exact objects, and count
+     stale/unknown refs without ensuring them into search or any other surface. */
+  var essentials=[], essentialsDropped=0, ce=Array.isArray(cur.essentials)?cur.essentials:[];
+  for(var ec=0;ec<ce.length;ec++){
+    var eitems=[], erefs=ce[ec].refs||[];
+    for(var er=0;er<erefs.length;er++){
+      if(Object.prototype.hasOwnProperty.call(byRef,erefs[er])) eitems.push(byRef[erefs[er]]);
+      else essentialsDropped++;
+    }
+    essentials.push({ name:ce[ec].name, accent:ce[ec].accent, items:eitems });
+  }
+
+  /* These are stable navigation destinations, not Clerkship pages. Keep them outside byRef/known
+     so they never enter attestation, completion, or shipped-page accounting. Copy every field;
+     careResources also feed local search, which never forwards its query across sites. */
+  var careResources=[], cr=Array.isArray(cur.careResources)?cur.careResources:[];
+  for(var cri=0;cri<cr.length;cri++){
+    careResources.push({
+      id:cr[cri].id,
+      group:cr[cri].group,
+      title:cr[cri].title,
+      description:cr[cri].description,
+      url:cr[cri].url,
+      searchTerms:(cr[cri].searchTerms||[]).slice()
+    });
+  }
+
+  var careNavigator=[], cn=Array.isArray(cur.careNavigator)?cur.careNavigator:[];
+  for(var cni=0;cni<cn.length;cni++){
+    var navigatorIntent=cn[cni];
+    if(!navigatorIntent||typeof navigatorIntent!=='object') continue;
+    careNavigator.push({
+      id:navigatorIntent.id,
+      label:navigatorIntent.label,
+      explanation:navigatorIntent.explanation,
+      primaryResourceId:navigatorIntent.primaryResourceId,
+      alternativeResourceIds:Array.isArray(navigatorIntent.alternativeResourceIds)
+        ?navigatorIntent.alternativeResourceIds.slice():[]
+    });
+  }
+
+  var teachingResources=[], tr=Array.isArray(cur.teachingResources)?cur.teachingResources:[];
+  for(var tri=0;tri<tr.length;tri++){
+    teachingResources.push({
+      id:tr[tri].id,
+      title:tr[tri].title,
+      description:tr[tri].description,
+      url:tr[tri].url,
+      note:tr[tri].note
+    });
+  }
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known,
+    titles:titles, essentials:essentials, essentialsDropped:essentialsDropped,
+    careResources:careResources, careNavigator:careNavigator, teachingResources:teachingResources };
 }
 
 /* The browser receives exactly one projected path. Treat that small object as untrusted at the
@@ -189,7 +294,7 @@ function fdLibraryOnlyReads(index){
   var out=[];
   for(var ref in index.byRef){
     var it=index.byRef[ref];
-    if(it.kind==='read'&&!inWeek[ref]) out.push(it);
+    if(it.kind==='read'&&!it.readerOnly&&!it.searchOnly&&!inWeek[ref]) out.push(it);
   }
   out.sort(function(a,b){ return a.ref<b.ref?-1:(a.ref>b.ref?1:0); });
   return out;

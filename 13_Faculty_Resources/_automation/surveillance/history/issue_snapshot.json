@@ -1,0 +1,1638 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-22T12:44:24+00:00",
+  "issues": [
+    {
+      "number": 8,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/8",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:41Z",
+      "fingerprint": "link:www.sciencedirect.com::broken-link::f879319e4151d0ce",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 9,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/9",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:41Z",
+      "fingerprint": "link:www.qualityreportingcenter.com::broken-link::f622b175a8a03acf",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 10,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/10",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:41Z",
+      "fingerprint": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 11,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/11",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:25Z",
+      "fingerprint": "link:unknown::broken-link::5917a7dbc2c315b7",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 12,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/12",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:25Z",
+      "fingerprint": "link:reconnectpractice.com::broken-link::660b002e81baed0a",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 13,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/13",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:25Z",
+      "fingerprint": "link:docs.google.com::broken-link::ece1ec151fe550e8",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 14,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/14",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:24Z",
+      "fingerprint": "link:docs.google.com::broken-link::80bc6f214097afaf",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 15,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/15",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:24Z",
+      "fingerprint": "link:docs.google.com::broken-link::98344248d35c1eb9",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 16,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/16",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:24Z",
+      "fingerprint": "link:docs.google.com::broken-link::fe933ac3a2d7a0c4",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 17,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/17",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:23Z",
+      "fingerprint": "link:docs.google.com::broken-link::51a243d2a9e4e985",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 18,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/18",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:23Z",
+      "fingerprint": "link:docs.google.com::broken-link::121e5ec6d6d258dd",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 19,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/19",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:23Z",
+      "fingerprint": "link:docs.google.com::broken-link::2bbac0cfbe0f74b5",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 20,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/20",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:23Z",
+      "fingerprint": "link:doi.org::broken-link::bb75af820bedc237",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 21,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/21",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:22Z",
+      "fingerprint": "link:doi.org::broken-link::f7eb0ef1de2be01e",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 22,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/22",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:22Z",
+      "fingerprint": "link:doi.org::broken-link::c8dc49505f02c029",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 23,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/23",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:22Z",
+      "fingerprint": "link:doi.org::broken-link::9b92507eebdad442",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 24,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/24",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:21Z",
+      "fingerprint": "link:doi.org::broken-link::8abe5bc1974d14a8",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 25,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/25",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:21Z",
+      "fingerprint": "link:doi.org::broken-link::c4a70a1d6d0e9ce8",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 26,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/26",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:20Z",
+      "fingerprint": "link:doi.org::broken-link::2812e284052b9c8b",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 27,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/27",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:21Z",
+      "fingerprint": "link:doi.org::broken-link::9bedc444cd259ded",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 28,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/28",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:20Z",
+      "fingerprint": "link:doi.org::broken-link::44c8bb030c3bc1ec",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 29,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/29",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:20Z",
+      "fingerprint": "link:doi.org::broken-link::4cc8addb61be42c1",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 30,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/30",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:19Z",
+      "fingerprint": "link:doi.org::broken-link::590d69a31b1cb7fe",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 31,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/31",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:20Z",
+      "fingerprint": "link:doi.org::broken-link::04e087ee4d5b4ac1",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 32,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/32",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:18Z",
+      "fingerprint": "link:doi.org::broken-link::1180f55b1ef72b47",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 33,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/33",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:19Z",
+      "fingerprint": "link:doi.org::broken-link::9c7859cc8069dc3a",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 34,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/34",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:16Z",
+      "fingerprint": "link:doi.org::broken-link::c19286c9b3d2c18c",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 35,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/35",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:12Z",
+      "fingerprint": "link:doi.org::broken-link::20002a18eac8904e",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 36,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/36",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:14Z",
+      "fingerprint": "link:doi.org::broken-link::2a2997ae669c4f58",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 37,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/37",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:07Z",
+      "fingerprint": "link:doi.org::broken-link::b342f68de356fc67",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 38,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/38",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:09Z",
+      "fingerprint": "link:doi.org::broken-link::ea137ae4224de3fb",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 39,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/39",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:03Z",
+      "fingerprint": "link:doi.org::broken-link::62324e5e2c815a71",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 40,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/40",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:05Z",
+      "fingerprint": "link:doi.org::broken-link::9ad8aba5add71160",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 41,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/41",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:31:00Z",
+      "fingerprint": "link:doi.org::broken-link::81545adfbcf019aa",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 42,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/42",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:56Z",
+      "fingerprint": "link:doi.org::broken-link::3968d0e2ccd314c9",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 43,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/43",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:58Z",
+      "fingerprint": "link:doi.org::broken-link::4d75a89158b3cb9f",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 44,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/44",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:52Z",
+      "fingerprint": "link:doi.org::broken-link::4028e1cd8fcc3fc6",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 45,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/45",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:54Z",
+      "fingerprint": "link:doi.org::broken-link::4e3f269e92a91006",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 46,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/46",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:48Z",
+      "fingerprint": "link:doi.org::broken-link::3cfa991d840b7e6b",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 47,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/47",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:50Z",
+      "fingerprint": "link:doi.org::broken-link::26ae15c580e7af27",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 48,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/48",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:46Z",
+      "fingerprint": "link:doi.org::broken-link::b59d7eaa499c12f4",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 49,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/49",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:44Z",
+      "fingerprint": "link:doi.org::broken-link::0752fb62bdb6822c",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 50,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/50",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:38Z",
+      "fingerprint": "link:doi.org::broken-link::d56329cad2876481",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 51,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/51",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:40Z",
+      "fingerprint": "link:doi.org::broken-link::2ea998b52b297cf2",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 52,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/52",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:42Z",
+      "fingerprint": "link:doi.org::broken-link::eb57565dcdc523a9",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 53,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/53",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:35Z",
+      "fingerprint": "link:doi.org::broken-link::a106b75a768e33ae",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 54,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/54",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:33Z",
+      "fingerprint": "link:doi.org::broken-link::9214381b12ed6bd9",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 55,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/55",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:31Z",
+      "fingerprint": "link:doi.org::broken-link::e956e5ae2edbd211",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 56,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/56",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:29Z",
+      "fingerprint": "link:doi.org::broken-link::234bac4237a70125",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 57,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/57",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:25Z",
+      "fingerprint": "link:doi.org::broken-link::4bf4f74fc1d58e92",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 58,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/58",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:27Z",
+      "fingerprint": "link:doi.org::broken-link::ebca6487dba58e73",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 59,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/59",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:23Z",
+      "fingerprint": "link:doi.org::broken-link::b88f4b2ff378ef51",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 60,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/60",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:21Z",
+      "fingerprint": "link:doi.org::broken-link::61a4afee1cdd2834",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 61,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/61",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:17Z",
+      "fingerprint": "link:doi.org::broken-link::dff057f36cfd7744",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 62,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/62",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:19Z",
+      "fingerprint": "link:doi.org::broken-link::0b80ce00fdfe7816",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 63,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/63",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:12Z",
+      "fingerprint": "link:doi.org::broken-link::b3b3550a08643fec",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 64,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/64",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:15Z",
+      "fingerprint": "link:doi.org::broken-link::a3ea21548bc5de2c",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 65,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/65",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:06Z",
+      "fingerprint": "link:www.appi.org::broken-link::84a1b42c50a5af9a",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 66,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/66",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:08Z",
+      "fingerprint": "link:www.appi.org::broken-link::ca28d53585d3940a",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 67,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/67",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:10Z",
+      "fingerprint": "link:www.appi.org::broken-link::62e8151ad521db06",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 68,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/68",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:02Z",
+      "fingerprint": "link:psychiatryonline.org::broken-link::77106e98896fe899",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 69,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/69",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:04Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::d5328f1ee8d71c58",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 70,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/70",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:30:00Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::96514eb365bd9df7",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 71,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/71",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:55Z",
+      "fingerprint": "link:toxnet.nlm.nih.gov::broken-link::dde752aed3197417",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 72,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/72",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:58Z",
+      "fingerprint": "link:www3.parinc.com::broken-link::5b2944404e7ae5c4",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 73,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/73",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:51Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::c7b1455b5fd41c9d",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 74,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/74",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:53Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::ac6668fadbf63bfd",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 75,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/75",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:49Z",
+      "fingerprint": "link:www.cdc.gov::broken-link::111b755cda41122a",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 76,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/76",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:45Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::08a8e22260b5585e",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 77,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/77",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:47Z",
+      "fingerprint": "link:www.dbsalliance.org::broken-link::291aa349150ee97a",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 78,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/78",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:42Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::19b9ebcbc14a7b33",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 79,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/79",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:40Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::bb858ac8dc4ca34c",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 80,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/80",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:36Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::78c33d5795a95ce6",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 81,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/81",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:38Z",
+      "fingerprint": "link:doi.org::broken-link::7d6b2ab70222167b",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 82,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/82",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:32Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::a08eaef7b8fb556e",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 83,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/83",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:30Z",
+      "fingerprint": "link:www.samhsa.gov::broken-link::26fadf234a19e81e",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 84,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/84",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:34Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::780f4cf9049c633e",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 85,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/85",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:25Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::35c9a4bbd86636a9",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 86,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/86",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:28Z",
+      "fingerprint": "link:www.mededportal.org::broken-link::76638cb15ce7bf9b",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 87,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/87",
+      "state": "CLOSED",
+      "closedAt": "2026-07-03T21:29:23Z",
+      "fingerprint": "link:www.dsm5.org::broken-link::d2a41adfd7f46486",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 88,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/88",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T19:15:25Z",
+      "fingerprint": "link:reconnectpractice.com::broken-link::660b002e81baed0a",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 90,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/90",
+      "state": "CLOSED",
+      "closedAt": "2026-07-04T02:08:47Z",
+      "fingerprint": "clozapine-rems::removed::a4030c90bee637b5",
+      "labels": [
+        "P1",
+        "guideline-surveillance",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 91,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/91",
+      "state": "CLOSED",
+      "closedAt": "2026-07-04T02:08:50Z",
+      "fingerprint": "spravato-rems::removed::a4030c90bee637b5",
+      "labels": [
+        "P1",
+        "guideline-surveillance",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 92,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/92",
+      "state": "CLOSED",
+      "closedAt": "2026-07-04T02:08:53Z",
+      "fingerprint": "aacap-parameters::removed::a4030c90bee637b5",
+      "labels": [
+        "P1",
+        "guideline-surveillance",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 123,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/123",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T19:15:25Z",
+      "fingerprint": "link:reconnectpractice.com::broken-link::660b002e81baed0a",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 124,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/124",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T16:54:24Z",
+      "fingerprint": "fda-drug-safety::broken-link::7415e355b41cccda",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 125,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/125",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T17:10:40Z",
+      "fingerprint": "clozapine-rems::broken-link::c3bc2eee71bde598",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 126,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/126",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:16Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 127,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/127",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:18Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 128,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/128",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:20Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 129,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/129",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:22Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 130,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/130",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:24Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 131,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/131",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:26Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/132",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:28Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 133,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/133",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:30Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 134,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/134",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:32Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 135,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/135",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:34Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 136,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/136",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:35Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 137,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/137",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:37Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 138,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/138",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:39Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 139,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/139",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:41Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 140,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/140",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:43Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 141,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/141",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:44Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 142,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/142",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:47Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 143,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/143",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:48Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 144,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/144",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:51Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 145,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/145",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:53Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 146,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/146",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:55Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 147,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/147",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:57Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 148,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/148",
+      "state": "CLOSED",
+      "closedAt": "2026-07-08T18:34:59Z",
+      "fingerprint": "doi:10.1001",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 211,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/211",
+      "state": "CLOSED",
+      "closedAt": "2026-08-03T15:39:32Z",
+      "fingerprint": "link:www.samhsa.gov::broken-link::6bae3107ce29193b",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 212,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/212",
+      "state": "CLOSED",
+      "closedAt": "2026-08-03T15:39:42Z",
+      "fingerprint": "clozapine-rems::broken-link::f48ddedaa541bacf",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 246,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/246",
+      "state": "CLOSED",
+      "closedAt": "2026-08-03T15:39:34Z",
+      "fingerprint": "link:www.samhsa.gov::broken-link::6bae3107ce29193b",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 247,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/247",
+      "state": "CLOSED",
+      "closedAt": "2026-08-03T15:39:37Z",
+      "fingerprint": "link:www.fda.gov::broken-link::7415e355b41cccda",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 248,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/248",
+      "state": "CLOSED",
+      "closedAt": "2026-08-03T15:39:39Z",
+      "fingerprint": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 265,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/265",
+      "state": "CLOSED",
+      "closedAt": "2026-08-11T12:03:18Z",
+      "fingerprint": "link:www.samhsa.gov::broken-link::6bae3107ce29193b",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 266,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/266",
+      "state": "CLOSED",
+      "closedAt": "2026-08-11T12:03:17Z",
+      "fingerprint": "link:www.fda.gov::broken-link::7415e355b41cccda",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 267,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/267",
+      "state": "CLOSED",
+      "closedAt": "2026-08-11T12:03:17Z",
+      "fingerprint": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 282,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/282",
+      "state": "CLOSED",
+      "closedAt": "2026-08-11T12:03:17Z",
+      "fingerprint": "clozapine-rems::modified::f63cb8be644c7b97",
+      "labels": [
+        "P1",
+        "guideline-surveillance",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 288,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/288",
+      "state": "CLOSED",
+      "closedAt": "2026-08-03T15:39:48Z",
+      "fingerprint": "link:localhost:8080::broken-link::b7424e5c2c8d7110",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 289,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/289",
+      "state": "CLOSED",
+      "closedAt": "2026-08-03T15:39:44Z",
+      "fingerprint": "link:www.samhsa.gov::broken-link::6bae3107ce29193b",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 290,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/290",
+      "state": "CLOSED",
+      "closedAt": "2026-08-03T15:39:46Z",
+      "fingerprint": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 422,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/422",
+      "state": "CLOSED",
+      "closedAt": "2026-09-17T11:38:21Z",
+      "fingerprint": "link:www.admsep.org::broken-link::378d5c25815a68ca",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 423,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/423",
+      "state": "CLOSED",
+      "closedAt": "2026-09-17T11:38:22Z",
+      "fingerprint": "link:www.admsep.org::broken-link::56951baa3f00270a",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 432,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/432",
+      "state": "CLOSED",
+      "closedAt": "2026-09-19T14:38:15Z",
+      "fingerprint": "apa-practice-guidelines::modified::2d0cd2d4ec9454f7",
+      "labels": [
+        "P0",
+        "guideline-surveillance",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 433,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/433",
+      "state": "CLOSED",
+      "closedAt": "2026-09-16T17:24:26Z",
+      "fingerprint": "link:www.psychiatry.org::broken-link::bd3915ec4648b4aa",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 434,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/434",
+      "state": "CLOSED",
+      "closedAt": "2026-09-16T17:09:43Z",
+      "fingerprint": "link:mmc-psychiatry-residents-sanford.netlify.app::broken-link::5f23c76090d86d50",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 435,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/435",
+      "state": "CLOSED",
+      "closedAt": "2026-09-16T17:09:40Z",
+      "fingerprint": "link:mental-health-education-library.netlify.app::broken-link::fcccb5fd3259148f",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 436,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/436",
+      "state": "CLOSED",
+      "closedAt": "2026-09-16T17:09:38Z",
+      "fingerprint": "link:www.aacom.org::broken-link::6dd84325c5cc19fc",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 437,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/437",
+      "state": "CLOSED",
+      "closedAt": "2026-09-16T17:09:35Z",
+      "fingerprint": "link:www.aacom.org::broken-link::1ddf232122ce855b",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 631,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/631",
+      "state": "CLOSED",
+      "closedAt": "2026-09-16T17:09:33Z",
+      "fingerprint": "link:www.healthquality.va.gov::broken-link::40b119081ac9d66c",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 632,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/632",
+      "state": "CLOSED",
+      "closedAt": "2026-09-16T17:09:31Z",
+      "fingerprint": "link:cssrs.columbia.edu::broken-link::a760d796e6de851c",
+      "labels": [
+        "P0",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 665,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/665",
+      "state": "CLOSED",
+      "closedAt": "2026-09-17T01:03:05Z",
+      "fingerprint": "link:www.fda.gov::broken-link::7415e355b41cccda",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 666,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/666",
+      "state": "CLOSED",
+      "closedAt": "2026-09-17T01:03:07Z",
+      "fingerprint": "link:www.healthquality.va.gov::broken-link::40b119081ac9d66c",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 721,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/721",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "fda-drug-safety::broken-link::7415e355b41cccda",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 722,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/722",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "clozapine-rems::broken-link::f48ddedaa541bacf",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    }
+  ]
+}

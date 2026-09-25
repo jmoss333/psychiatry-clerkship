@@ -31,7 +31,7 @@ they happen on the unit:
 
 ## Medication principles
 
-Treat the suspected cause. Prefer the oral, collaborative route over an intramuscular injection whenever the situation allows it — an offered medication the patient accepts is both safer and more therapeutic than a forced one. Avoid benzodiazepines in delirium and in older adults, where they tend to worsen confusion. Use caution when combining agents, and watch closely for over-sedation, which carries its own airway and aspiration risks (Wilson et al. 2012). Do not memorize specific drugs or doses from a teaching page — defer to your institution's agitation order set and your supervising clinician for what to give and how much.
+Treat the suspected cause. Prefer the oral, collaborative route over an intramuscular injection whenever the situation allows it — an offered medication the patient accepts is both safer and more therapeutic than a forced one. Avoid benzodiazepines in delirium and in older adults, where they tend to worsen confusion — except in alcohol or sedative withdrawal and in catatonia, where they are the treatment. Use caution when combining agents, and watch closely for over-sedation, which carries its own airway and aspiration risks (Wilson et al. 2012). Do not memorize specific drugs or doses from a teaching page — defer to your institution's agitation order set and your supervising clinician for what to give and how much.
 
 ## Restraint and seclusion
 

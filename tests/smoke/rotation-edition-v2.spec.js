@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
+import { essentialsResourceRefs, essentialsResources } from './essentials-inventory.js';
 import {
   ROTATION_CURATOR_PATH,
   ROTATION_EDITION_AFFIRMATIONS,
@@ -666,10 +667,24 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
     expect(week).toBeLessThanOrEqual(weekMaximum);
   }
   const activateTab = async (name) => {
-    const control = page.locator(`.fd-tab[data-fd-tab="${name.toLowerCase()}"]`);
-    await keyboardActivate(control);
-    await expect(page.locator(`.fd-tab[data-fd-tab="${name.toLowerCase()}"]`))
-      .toHaveAttribute('aria-current', 'page');
+    const tab = name.toLowerCase();
+    const desktopTab = page.locator(`.fd-tabs .fd-tab[data-fd-tab="${tab}"]:visible`);
+    if (await desktopTab.count()) {
+      await keyboardActivate(desktopTab);
+      await expect(desktopTab).toHaveAttribute('aria-current', 'page');
+    } else if (tab === 'library') {
+      // The phone dock keeps Path in slot two; Library is reached through Search.
+      await keyboardActivate(page.locator('.fd-header .fd-searchbtn[data-fd-search]:visible'));
+      await keyboardActivate(page.getByRole('dialog', { name: 'Search' })
+        .getByRole('button', { name: 'Browse the Library' }));
+      const currentLibraryTab = page.locator('.fd-tabs .fd-tab[data-fd-tab="library"]');
+      await expect(page.locator('.fd-library')).toBeVisible();
+      await expect(currentLibraryTab).toHaveAttribute('aria-current', 'page');
+    } else {
+      const dockTab = page.locator(`.fd-dock [data-fd-tab="${tab}"]:visible`);
+      await keyboardActivate(dockTab);
+      await expect(dockTab).toHaveAttribute('aria-current', 'page');
+    }
   };
   const placement = config.pathItems[0];
   const placementEvidence = artifact.pathEvidence.find((row) => row.instanceId === placement.instanceId);
@@ -717,7 +732,7 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   await activateTab('Path');
   await expect(page.locator('.fd-path')).toBeVisible();
   await expect(page.locator('.fd-path__h1')).toHaveText(
-    audience === 'ms3' ? 'Your 6-week path' : 'Your 4-week path',
+    audience === 'ms3' ? 'Suggested learning plan' : 'Your 4-week path',
   );
   await keyboardActivate(page.locator(`.fd-timeline__row[data-fd-view-week="${placement.week}"]`));
   const placementRow = page.locator(`.fd-detail [data-fd-open="${placement.ref}"]`);
@@ -729,6 +744,14 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
 
   await activateTab('Library');
   await expect(page.locator('.fd-library')).toBeVisible();
+  // A4: the real Curator-generated edition opens the trainee Library at The Essentials.
+  await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
+  await expect(essentialsResources(page)).toHaveCount(audience === 'ms3' ? 30 : 35);
+  const essentials = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8')).essentials;
+  expect((await essentialsResourceRefs(page)).sort())
+    .toEqual(essentials[audience === 'ms3' ? 'ms3' : 'resident'].flatMap(column => column.refs).sort());
+  await expect(page.locator('.fd-tabs [data-fd-tab="library"]')).toHaveText('The Essentials');
+  await keyboardActivate(page.locator('[data-fd-library-view="full"]'));
   const libraryItems = await page.locator('.fd-library .fd-collink[data-fd-open]').evaluateAll((links) => (
     links.map((link) => ({
       ref: link.getAttribute('data-fd-open'),
@@ -756,6 +779,8 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   await expect(page.getByRole('heading', { name: library.omitted.title, exact: true }).first()).toBeVisible();
 
   await activateTab('Library');
+  await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
+  await keyboardActivate(page.locator('[data-fd-library-view="full"]'));
   await expect(page.locator(`.fd-collink[data-fd-open="${library.omitted.ref}"]`)).toBeVisible();
   await activateTab('Today');
   await expect(page.locator('.fd-today')).toBeVisible();
@@ -1205,6 +1230,8 @@ async function coreRenderSignature(page) {
       const app = document.getElementById('fdApp').cloneNode(true);
       app.querySelector('#governanceMount')?.replaceChildren();
       app.querySelector('#routeStatus')?.replaceChildren();
+      // Offline readiness updates independently; offline.spec.js owns that surface's behavior.
+      app.querySelector('[data-fd-offline-entry]')?.remove();
       return app.outerHTML;
     })(),
   }));
@@ -1862,6 +1889,11 @@ test('hostile dialog on a real switch preserves the active edition and leaves no
     await expect(learner.page.locator('.fd-today')).toBeVisible();
     await setCanonicalLearnerWeek(learner.page, first.envelope.config.pathItems[0].week);
     const canonicalCore = await coreRenderSignature(learner.page);
+    // Today renders the learner's reading history (cw_last → "You were reading", 2026-09-16), and
+    // verifying the first edition below opens a Library page. That is learner state, not edition
+    // state, so the canonical signature is only comparable once cw_last is put back to what it
+    // was when the signature was taken.
+    const canonicalLastRead = await learner.page.evaluate(() => localStorage.getItem('cw_last'));
     await gotoFreshEditionDocument(learner.page, first.link);
     await expectLearnerEdition(learner.page, first, audience);
     const before = await storageSnapshot(learner.page, audience);
@@ -1870,6 +1902,10 @@ test('hostile dialog on a real switch preserves the active edition and leaves no
     expect(activeCore).not.toEqual(canonicalCore);
     expect(before[keys.edition]).toBe(first.backupJson);
     const channelOffsets = [consoleMessages.length, nativeDialogs.length, pageErrors.length];
+    await learner.page.evaluate((value) => {
+      if (value === null) localStorage.removeItem('cw_last');
+      else localStorage.setItem('cw_last', value);
+    }, canonicalLastRead);
     await learner.page.evaluate(() => { window.__task8ResetStorageOperations(); });
     const target = new URL(second.link);
     target.searchParams.set('task8-fault', 'dialog');

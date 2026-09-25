@@ -10,7 +10,7 @@
 
 **Cultural Formulation Interview (CFI)** — DSM-5-TR provides the **CFI**, a set of standardized questions across four domains: (1) cultural definition of the problem, (2) cultural perceptions of cause, context, and support, (3) cultural factors affecting self-coping and past help-seeking, and (4) cultural factors affecting current help-seeking. Use it to build the **cultural formulation** within your biopsychosocial assessment.
 
-**Disparities & bias — what's tested and true** — Mental-health disparities are driven by access, stigma, social determinants, and clinician bias, not by different rates of underlying illness. A classic, exam-relevant example: **Black (and some other minority) patients are disproportionately *over*-diagnosed with schizophrenia and *under*-diagnosed with mood disorders** relative to comparable presentations. Social determinants — poverty, housing, trauma, discrimination — are core clinical data, not background. Structural and cultural humility means examining how the *system* and *your own defaults* contribute.
+**Disparities & bias — what's tested and true** — Mental-health disparities in care are driven largely by access, stigma, social determinants, and clinician bias. Some groups do have higher rates of certain disorders — for example, psychotic disorders are about twice as common among migrants and some ethnic-minority groups in Europe — but because the excess persists into the second generation and varies by host country, it points to social adversity and exclusion rather than inherent biological difference. A classic, exam-relevant example: **Black (and some other minority) patients are disproportionately *over*-diagnosed with schizophrenia and *under*-diagnosed with mood disorders** relative to comparable presentations. Social determinants — poverty, housing, trauma, discrimination — are core clinical data, not background. Structural and cultural humility means examining how the *system* and *your own defaults* contribute.
 
 **Working with interpreters** — Use a **trained professional interpreter** (in person or via phone/video) for any language barrier — **not family members or children**, who introduce error and confidentiality/role problems. Speak **to the patient** in the first and second person, in short segments; allow extra time; and remember interpreters convey meaning, not just words.
 
@@ -28,7 +28,7 @@
 - The DSM-5-TR Cultural Formulation Interview is the standardized tool — know it exists and what it covers.
 - Cultural concepts of distress (e.g., *ataque de nervios*) can mimic panic or psychosis — ask before you label.
 - Use trained interpreters, not family/children; speak directly to the patient.
-- Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
+- Black (and some other minority) patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.
 - Social determinants of mental health are clinical data; address them in the formulation and plan.
 
 **Pair with** — the [Interview & MSE pocket guide](?page=pg_interview.md), the [Formulation & DDx pocket guide](?page=pg_formulation.md), [Ethics & the Law](?page=ethics_legal.md), and the <a href="tools/mse.html" target="_blank" rel="noopener">Mental Status Exam trainer</a>.

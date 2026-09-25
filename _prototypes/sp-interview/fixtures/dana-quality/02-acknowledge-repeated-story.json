@@ -1,0 +1,35 @@
+{
+  "id": "acknowledge-repeated-story",
+  "title": "Empathy about repeating last night’s story",
+  "synthetic": true,
+  "tags": [
+    "screenshot",
+    "empathy"
+  ],
+  "priorTranscript": [
+    {
+      "who": "pt",
+      "text": "Hi. Sorry — I already told the other doctor everything last night. Is this going to take long?",
+      "playbackStatus": "played"
+    }
+  ],
+  "currentLearnerUtterance": "I'm sorry you had to tell The doctor everything last night",
+  "expectations": {
+    "should": [
+      "Understand the acknowledgement in relation to Dana’s opening.",
+      "Allow a brief, ordinary response without starting the whole story again."
+    ],
+    "mustNot": [
+      "Do not ask what this clear acknowledgement means.",
+      "Do not invent details of last night’s interview."
+    ]
+  },
+  "sourceFactIds": [
+    "persona.opening",
+    "persona.presentingContext"
+  ],
+  "relevantGates": [
+    "si_active"
+  ],
+  "expectedUnlockedGates": []
+}

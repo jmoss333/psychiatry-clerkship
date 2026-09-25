@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Generate the COWS item array from SPEC section 2.2, verbatim.
 
+DECISION: cows-anchors-retired (2026-09-10) — "verbatim" now means verbatim against the
+SPEC, whose COWS ladders are abbreviated descriptors written in-house. The published anchor
+wording came down when the interim waiver closed; item names and legal score values are the
+scale itself and are unchanged. This generator is the enforcement point: restoring the
+authors' wording means editing the spec, which is a rights change, not an edit.
+
 Ground Rule 1 of the remediation handoff forbids retyping a clinical anchor from memory. This
 parses the SPEC's own table and emits the JS, so every anchor string in the shipped tool is a
 byte-for-byte copy of the spec row it came from. Run it, diff the output against the tool, and

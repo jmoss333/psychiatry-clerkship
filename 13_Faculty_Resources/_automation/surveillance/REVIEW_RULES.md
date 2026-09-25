@@ -14,15 +14,21 @@ governance layer for `config/finding.schema.json`.
 
 Escalation override: any finding whose `affects[]` includes a path in
 `04_Acute_and_Safety/**` is bumped one level (P2→P1, P1→P0).
+When a collector records an explicit `severity_cap` for lower-confidence evidence,
+the bump cannot exceed that cap. A browser-required source returning a runner-only
+4xx therefore remains P1 until it is verified from a non-runner network.
 
 ## 2. Idempotency (no duplicate issues)
 
 - Every finding carries a stable `fingerprint = hash(source_id + change_type + change_signature)`.
-- Before opening an issue, the sync **searches open+closed issues** for that
-  fingerprint (carried in a hidden `<!-- surveillance:fp=... -->` marker and a label).
-  - Match found & open → **comment/update**, do not create.
-  - Match found & **dismissed/closed-as-wontfix** → **do nothing** (a dismissed
-    fingerprint is not reopened; the source must produce a *new* signature to re-fire).
+- Before opening an issue, the sync reads all issues for the hidden
+  `<!-- surveillance:fp=... -->` fingerprint and loads `config/dismissed.json`.
+  - Match found & open → do not create a duplicate. If fresh routing changes the
+    automation-managed severity/job labels, replace those labels and refresh the
+    generated title/body while preserving human-added labels and comments.
+  - Match found & closed → treat a fresh detection as a recurrence and open a new issue.
+  - Fingerprint registered in `config/dismissed.json` → **do nothing**; this is the
+    only permanent suppression and records the human reason.
 - Issue title format (also aids human dedup): `[P0][fda-drug-safety] <summary>`.
 
 ## 3. Human gate (hard rule)
@@ -79,6 +85,15 @@ Escalation override: any finding whose `affects[]` includes a path in
 A finding is `actioned` only when either (a) the affected page(s) were re-stamped in
 `reviewed.json`, or (b) a human explicitly confirmed no change was warranted (logged in
 the issue). Nothing auto-closes.
+
+Three records carry that human decision, and `bin/check_review_cadence.py` honours all
+three when deciding whether a guideline-surveillance examination may count as a source's
+review (policy 2026-09-19): the newest dated report row for the fingerprint says
+`actioned`/`dismissed`; the fingerprint is in `config/dismissed.json`; or the issue that
+carries the fingerprint is CLOSED in `history/issue_snapshot.json`, which
+`sync_findings.py` writes on every scheduled run (content-free: number, url, state,
+closedAt, fingerprint, labels). A dated report freezes the status a finding had that day,
+so the snapshot is what lets an offline reader see a closure made since.
 
 ## 8. Generated-report publication boundary
 

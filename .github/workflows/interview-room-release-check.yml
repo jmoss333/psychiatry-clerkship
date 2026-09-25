@@ -1,0 +1,50 @@
+name: Interview Room — Hosted release check
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: Expected full commit SHA (blank uses the selected branch tip)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  public-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          lfs: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22"
+      - name: Check public assets against the intended commit
+        env:
+          EXPECTED_REVISION: ${{ inputs.revision || github.sha }}
+        run: |
+          # Bounded retries accommodate an in-progress publish. No passcode,
+          # provider request, Netlify token, or automatic deployment is needed.
+          for attempt in 1 2 3; do
+            if node sp-preview/qa/release-check.mjs \
+              --revision "$EXPECTED_REVISION" \
+              --out "$RUNNER_TEMP/interview-room-release.json"; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then sleep 30; fi
+          done
+          exit 1
+      - name: Upload release receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: interview-room-release-${{ github.run_id }}
+          path: ${{ runner.temp }}/interview-room-release.json
+          if-no-files-found: error
+          retention-days: 90

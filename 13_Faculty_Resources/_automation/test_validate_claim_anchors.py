@@ -20,11 +20,29 @@ REGISTRY_TOOLS = ROOT / "tools" / "evidence_registry"
 
 
 def write_synthetic_repository(root: Path, page_body: str, evidence_ids):
-    """Minimal repo the validator can run against: manifest, meta, registry, page."""
-    manifest_path = root / "13_Faculty_Resources/_automation/site_build/site_manifest.json"
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
-    manifest_path.write_text(
-        json.dumps({"md": [["03_Core_Topics/Synthetic/page.md", "t_synthetic.md"]]}),
+    """Minimal repo the validator can run against: listing, meta, registry, page.
+
+    The validator asks site_build/shipped_pages.json what ships (ADR-002), so the
+    synthetic repo carries that listing rather than the producers behind it.
+    """
+    shipped_path = root / "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
+    shipped_path.parent.mkdir(parents=True, exist_ok=True)
+    shipped_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "pages": [
+                    {
+                        "slug": "t_synthetic.md",
+                        "kind": "page",
+                        "sites": ["ms3", "res"],
+                        "title": "Synthetic",
+                        "source": "03_Core_Topics/Synthetic/page.md",
+                        "producer": "site_manifest",
+                    }
+                ],
+            }
+        ),
         encoding="utf-8",
     )
 

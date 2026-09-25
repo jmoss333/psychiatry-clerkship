@@ -1885,7 +1885,8 @@ for (const [kind, startupFault, route] of [
     expect(hydration).toBeGreaterThan(-1);
     expect(commit).toBeGreaterThan(hydration);
     expect(await page.evaluate(() => history.state?.fd === true)).toBe(true);
-    expect(await page.evaluate(() => window.__fdActiveStartupListeners().length)).toBe(8);
+    // The Markdown Reader installs one additional resize listener for device-only reading place.
+    expect(await page.evaluate(() => window.__fdActiveStartupListeners().length)).toBe(kind === 'Markdown' ? 9 : 8);
     expect(await page.evaluate(() => window.__fdUnhandledRejections)).toEqual([]);
     expect(pageErrors).toEqual([]);
   });
@@ -1941,7 +1942,9 @@ test('completion updates desktop, mobile, and the audience-correct rail immediat
   if (resident) {
     await expect(railLabel).toHaveCount(0);
   } else {
-    await expect(railLabel).toContainText('1 of 9 done');
+    // Week 1 of the MS3 Path has 11 steps since WP-5 part 1 added sp-interview.html and
+    // one-patient-six-weeks.html (2026-09-24); the rail counts every step of the week.
+    await expect(railLabel).toContainText('1 of 11 done');
     await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
       .toHaveText('Completed');
   }
@@ -1949,8 +1952,11 @@ test('completion updates desktop, mobile, and the audience-correct rail immediat
     document.querySelector('.fd-article') === window.__completionArticle
       && document.querySelector('.fd-article iframe') === window.__completionFrame
   ))).toBe(true);
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1'))['question-bank-practice.html'].done))
-    .toBe(true);
+  const savedCompletion = await page.evaluate(() => (
+    JSON.parse(localStorage.getItem('cw_progress_v1'))['question-bank-practice.html']
+  ));
+  expect(savedCompletion.done).toBe(true);
+  if (!resident) expect(savedCompletion.practiceWeeks['1'].done).toBe(true);
 
   await page.reload();
   await expect(page.locator('.fd-article iframe')).toBeVisible();
@@ -1969,7 +1975,7 @@ test('completion updates desktop, mobile, and the audience-correct rail immediat
   if (resident) {
     await expect(railLabel).toHaveCount(0);
   } else {
-    await expect(railLabel).toContainText('0 of 9 done');
+    await expect(railLabel).toContainText('0 of 11 done');
     await expect(page.locator('.fd-railnav__row[data-fd-open="question-bank-practice.html"] .fd-visually-hidden'))
       .toHaveCount(0);
   }
@@ -1977,9 +1983,14 @@ test('completion updates desktop, mobile, and the audience-correct rail immediat
     document.querySelector('.fd-article') === window.__completionArticle
       && document.querySelector('.fd-article iframe') === window.__completionFrame
   ))).toBe(true);
-  expect(await page.evaluate(() => Object.hasOwn(
-    JSON.parse(localStorage.getItem('cw_progress_v1')), 'question-bank-practice.html',
-  ))).toBe(false);
+  const afterUndo = await page.evaluate(() => (
+    JSON.parse(localStorage.getItem('cw_progress_v1'))['question-bank-practice.html']
+  ));
+  if (resident) {
+    expect(afterUndo).toBeUndefined();
+  } else {
+    expect(afterUndo).toEqual({ ...savedCompletion, practiceWeeks: {} });
+  }
 });
 
 test('legacy aliases canonicalize on load, delegated actions, messages, and history without fake resource IO', async ({ page }) => {
@@ -2028,7 +2039,8 @@ test('legacy aliases canonicalize on load, delegated actions, messages, and hist
       data: { type: 'openPage', f: '__start__' }, origin: location.origin,
     }));
   });
-  await expect(page).toHaveURL(/\/\?page=__progress__&case=c1$/);
+  // The legacy Start alias resets its return origin to Today, even when opened from Path.
+  await expect(page).toHaveURL(/\/\?page=__progress__&case=c1&tab=today$/);
   await expect(page.locator('#pgRoot')).toBeVisible();
   expect(aliasRequests).toEqual([]);
   expect(await page.evaluate(() => localStorage.getItem('cw_last'))).toBeNull();
@@ -2093,8 +2105,9 @@ test('capture refreshes Today and search matches without replacing its live laun
   await expect(page.locator('#capText')).toBeFocused();
   const triage = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
   await expect(triage).toContainText('psychosis');
-  await expect(triage.locator('[data-cap-open]')).toHaveAttribute('data-cap-ref', 't_psychosis.md');
-  await expect(triage.locator('[data-cap-review]')).toHaveAttribute('data-cap-ref', 't_psychosis.md');
+  await expect(triage.locator('.fd-capture__new')).toHaveText('View all 1');
+  await expect(page.locator('.cap-next [data-cap-open]')).toHaveAttribute('data-cap-ref', 't_psychosis.md');
+  await expect(page.locator('.cap-next [data-cap-review]')).toHaveAttribute('data-cap-ref', 't_psychosis.md');
   expect(await page.evaluate((selector) => {
     const current = document.querySelector(selector);
     return current === window.__captureLauncher && current.isConnected;
@@ -2107,7 +2120,9 @@ test('capture refreshes Today and search matches without replacing its live laun
   await page.locator('#capText').fill('orientation packet');
   await page.locator('#capSave').click();
   await expect(page.locator('#capText')).toBeFocused();
-  await expect(triage).toContainText('orientation packet');
+  await expect(triage.locator('.fd-capture__question')).toHaveText('psychosis');
+  await expect(triage.locator('.fd-capture__new')).toHaveText('View all 2');
+  await expect(page.locator('.cap-list li')).toContainText(['psychosis', 'orientation packet']);
   await page.keyboard.press('Escape');
   expect(await page.evaluate(() => document.activeElement === window.__captureLauncher)).toBe(true);
 
@@ -2155,7 +2170,7 @@ test('slow search hydration preserves capture focus while revealing same-session
   await expect(page.locator('#capText')).toBeFocused();
   const triage = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
   await expect(triage).toContainText('psychosis');
-  await expect(triage.locator('[data-cap-open]')).toHaveCount(0);
+  await expect(page.locator('.cap-next [data-cap-open]')).toHaveCount(0);
   await page.evaluate((selector) => {
     window.__hydrationFocus = document.activeElement;
     window.__hydrationLauncher = document.querySelector(selector);
@@ -2166,7 +2181,7 @@ test('slow search hydration preserves capture focus while revealing same-session
   ));
   releaseIndex();
   await indexResponse;
-  await expect(triage.locator('[data-cap-open]')).toHaveAttribute('data-cap-ref', 't_psychosis.md');
+  await expect(page.locator('.cap-next [data-cap-open]')).toHaveAttribute('data-cap-ref', 't_psychosis.md');
   expect.soft(await page.evaluate(() => {
     const active = document.activeElement;
     return active === window.__hydrationFocus
@@ -2217,7 +2232,7 @@ test('same-route data hydration preserves focused header and Today controls', as
       && !document.querySelector('#content').matches(':focus-visible')
   ))).toBe(true);
 
-  const search = page.locator('[data-fd-search]');
+  const search = page.locator('.fd-header .fd-searchbtn[data-fd-search]');
   await search.focus();
   await page.evaluate(() => { window.__hydrationSearch = document.activeElement; });
 
@@ -2271,7 +2286,9 @@ test('Back from an interrupted resource load still focuses the restored route', 
   await page.evaluate(() => history.back());
   await expect(page).not.toHaveURL(new RegExp(`\\?page=${ref}`));
   await expect(page.locator('.fd-today')).toBeVisible();
-  await expect(page.locator('#content')).toBeFocused();
+  // #427: returning lands on the link that opened the resource, not on the main region.
+  const origin = page.locator(`.fd-today [data-fd-open="${ref}"]:visible`).first();
+  await expect(origin).toBeFocused();
 
   const staleResponseFinished = page.waitForResponse((response) => (
     new URL(response.url()).pathname.endsWith(`/content/${ref}`)
@@ -2285,7 +2302,7 @@ test('Back from an interrupted resource load still focuses the restored route', 
   await expect(page).not.toHaveURL(new RegExp(`\\?page=${ref}`));
   await expect(page.locator('.fd-today')).toBeVisible();
   await expect(page.locator('.fd-reader')).toHaveCount(0);
-  await expect(page.locator('#content')).toBeFocused();
+  await expect(origin).toBeFocused();
 });
 
 test('Today card capture restores focus to its recreated launcher after save', async ({ page }) => {
@@ -2317,7 +2334,9 @@ test('Today card capture restores focus to its recreated launcher after save', a
   await page.locator('#capSave').click();
 
   await expect(page.locator('#capText')).toBeFocused();
-  await expect(page.locator('.fd-capture')).toContainText('orientation packet');
+  await expect(page.locator('.fd-capture__question')).toHaveText('psychosis');
+  await expect(page.locator('.fd-capture__new')).toHaveText('View all 2');
+  await expect(page.locator('.cap-list li')).toContainText(['psychosis', 'orientation packet']);
   expect(await page.evaluate(() => {
     const current = document.querySelector('.fd-capture__new[data-capture-open]');
     return !window.__captureCardLauncher.isConnected && current !== window.__captureCardLauncher;
@@ -2485,10 +2504,19 @@ test('theme, Week, and capture focus obey one ordinary modal lifecycle', async (
   await seedCompleteSetup(page);
   await page.goto('/');
 
-  const theme = page.locator('[data-fd-theme]');
-  await theme.focus();
-  await theme.click();
-  await expect(page.locator('[data-fd-theme]')).toBeFocused();
+  // The theme control moved inside the settings panel, so the lifecycle under test now has two
+  // steps: the gear opens an ordinary sheet, and choosing a mode leaves focus on the mode chosen
+  // (a bare [data-fd-theme] would match all three buttons under strict mode). The sheet has to be
+  // closed again before the Week block -- its backdrop covers the header, and the dialog count
+  // asserted further down is 1.
+  const settings = page.locator('[data-fd-settings]');
+  await settings.focus();
+  await settings.click();
+  const dark = page.locator('[data-fd-theme="dark"]');
+  await dark.click();
+  await expect(dark).toBeFocused();
+  await page.locator('.fd-sheet__close').click();
+  await expect(settings).toBeFocused();
 
   await page.locator('[data-fd-change-week]').click();
   await expect(page.locator('.fd-setup .fd-h1')).toBeFocused();
@@ -2541,9 +2569,9 @@ test('document title resets for tabs and updates for successful resources and in
   });
   await page.goto('/');
   await expect(page).toHaveTitle(/^Today — /);
-  await page.locator('[data-fd-tab="path"]').click();
+  await page.locator('[data-fd-tab="path"]:visible').click();
   await expect(page).toHaveTitle(/^Path — /);
-  await page.locator('[data-fd-tab="library"]').click();
+  await page.locator('[data-fd-tab="library"]:visible').click();
   await expect(page).toHaveTitle(/^Library — /);
   await page.goto('/?page=welcome.md');
   await expect(page.locator('.fd-article')).toBeVisible();
@@ -2586,4 +2614,146 @@ test('corrupt saved plan without placement opens placement and preserves progres
   await expect(page.locator('#ptRoot h1')).toHaveText('2-minute placement');
   expect(await page.evaluate(() => localStorage.getItem('cw_plan_v1'))).toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1')))).toEqual(progress);
+});
+
+// ---- #426 / #428: every retained capture stays inspectable, named, deletable and announced ----
+// Today surfaces only the oldest unrouted question; View all in Capture retains every route.
+// Opening a resource alone does not complete a question. Erase all covers the whole store.
+
+function captureErrors(page) {
+  const runtimeErrors = [];
+  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`);
+  });
+  return runtimeErrors;
+}
+
+test('a routed capture stays in View all and deletable, each control named, 44px, and announced (#426, #428)', async ({ page }) => {
+  const runtimeErrors = captureErrors(page);
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 2,
+        items: [
+          { id: 'c_new', text: 'why lithium levels at twelve hours', at: 1, ctx: null, route: null, state: 'open' },
+          { id: 'c_old', text: 'when does clozapine need a white count', at: 2, ctx: null, route: 'rounds', state: 'open' },
+        ],
+      },
+    },
+  });
+  await page.goto('/');
+  // The compact Today card shows one unrouted question and the size of the full inbox.
+  const card = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
+  await expect(card.locator('.fd-capture__question')).toHaveText('why lithium levels at twelve hours');
+  await expect(card.locator('.fd-capture__new')).toHaveText('View all 2');
+  await expect(card).not.toContainText('clozapine');
+
+  await card.locator('.fd-capture__new').click();
+  const rows = page.locator('.cap-list li');
+  await expect(rows).toHaveCount(2);
+  await expect(rows.nth(0)).toHaveAttribute('data-cap-route-state', 'unrouted');
+  await expect(rows.nth(1)).toHaveAttribute('data-cap-route-state', 'rounds');
+  await expect(rows.nth(1)).toContainText('clozapine');
+  await expect(rows.nth(1).locator('.cap-list__status')).toHaveText('Ask on rounds');
+
+  const names = await page.locator('[data-cap-del]').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
+  expect(names).toEqual([
+    'Delete question: why lithium levels at twelve hours',
+    'Delete question: when does clozapine need a white count',
+  ]);
+  const boxes = await page.locator('[data-cap-del]').evaluateAll((els) => els.map((el) => {
+    const r = el.getBoundingClientRect();
+    return { w: r.width, h: r.height };
+  }));
+  for (const box of boxes) {
+    expect(box.w).toBeGreaterThanOrEqual(44);
+    expect(box.h).toBeGreaterThanOrEqual(44);
+  }
+
+  await rows.nth(1).locator('[data-cap-del]').click();
+  await expect(rows).toHaveCount(1);
+  await expect(page.locator('#capStatus')).toHaveText('Question deleted. 1 saved question remains.');
+  await expect(page.locator('#capText')).toBeFocused();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')).items.map((it) => it.id)))
+    .toEqual(['c_new']);
+
+  await rows.nth(0).locator('[data-cap-del]').click();
+  await expect(rows).toHaveCount(0);
+  await expect(page.locator('#capEraseAll')).toHaveCount(0);
+  await expect(page.locator('#capStatus')).toHaveText('Question deleted. No saved questions remain.');
+  expect(await page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('Erase all stays available while only routed captures remain (#426)', async ({ page }) => {
+  const runtimeErrors = captureErrors(page);
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 2,
+        items: [{ id: 'c_old', text: 'when does clozapine need a white count', at: 2, ctx: null, route: 'later', state: 'open' }],
+      },
+    },
+  });
+  await page.goto('/');
+  await expect(page.locator('.fd-capture')).toHaveCount(0);
+  await page.locator(CAPTURE).click();
+  await expect(page.locator('.cap-list li[data-cap-route-state="later"]')).toHaveCount(1);
+  const erase = page.locator('#capEraseAll');
+  await expect(erase).toBeVisible();
+  page.once('dialog', (dialog) => dialog.accept());
+  await erase.click();
+  await expect(page.locator('.cap-list li')).toHaveCount(0);
+  await expect(page.locator('#capStatus')).toHaveText('All saved questions erased.');
+  expect(await page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('Capture -> Open keeps the opened question inspectable and deletable in the sheet (#426)', async ({ page }) => {
+  const runtimeErrors = captureErrors(page);
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, {
+    storage: {
+      cw_capture_v1: {
+        v: 1,
+        items: [{ id: 'c_open', text: 'psychosis', at: 1, ctx: null, triaged: false }],
+      },
+    },
+  });
+  await page.goto('/');
+  const triage = page.locator('.fd-capture', { hasText: 'Questions from the unit' });
+  await expect(triage).toContainText('psychosis');
+  await page.locator(CAPTURE).click();
+  await expect(page.locator('.cap-next [data-cap-open]')).toHaveCount(0);
+  await page.locator('#capText').fill('psychosis');
+  await page.locator('#capSave').click();
+  await page.locator('.cap-next [data-cap-open]').click();
+  await expect(page.locator('.fd-article')).toBeVisible();
+  // Opening a suggested resource does not route or finish either retained question.
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')).items.map((it) => it.route))).toEqual([null, null]);
+
+  await page.locator(CAPTURE).click();
+  const row = page.locator('.cap-list li');
+  await expect(row).toHaveCount(2);
+  await expect(row.nth(0)).toHaveAttribute('data-cap-route-state', 'unrouted');
+  await expect(row).toContainText(['psychosis', 'psychosis']);
+  await expect(page.locator('#capEraseAll')).toBeVisible();
+  await row.nth(1).locator('[data-cap-del]').click();
+  await expect(row).toHaveCount(1);
+  await row.locator('[data-cap-del]').click();
+  await expect(row).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('cw_capture_v1'))).toBeNull();
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('reduced motion zeroes the skip-link transition along with the rest of the shell (#428)', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await seedCompleteSetup(page);
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const durations = await page.locator('.skip-link').evaluate((el) => getComputedStyle(el).transitionDuration);
+  expect(durations.split(',').map((d) => d.trim())).toEqual(['0s']);
 });

@@ -38,14 +38,64 @@ function riskSearchTerms(risk) {
   return risk ? [risk.kind, risk.kind.replace(/-/g, ' '), risk.level] : [];
 }
 
+/* WHO the reviewer is attesting this item as suitable FOR.
+
+   Derived from `sites` — every deployment that publishes the item — and never from
+   `site`, which is only where the preview is fetched from. The two disagree for the 91
+   pages that ship on both deployments, and they disagree for every resident-only page.
+
+   `null` when the server sent no `sites`. That case deliberately does NOT fall back to
+   MS3: until 2026-09-14 the console asserted "appropriate for a third-year student" on
+   every item including the 22 resident-only pages, and a silent default is exactly how
+   that survived unnoticed. An unknown audience is stated as unknown, so the reviewer can
+   see that the console does not know rather than being handed a confident wrong claim. */
+export function audienceSites(value) {
+  if (!Array.isArray(value) || !value.length) return null;
+  const sites = value.map(clean);
+  if (sites.some(site => !SITES.has(site))) throw new TypeError('Invalid content review item sites.');
+  // Deduplicate and order deterministically so the wording never depends on input order.
+  return ['ms3', 'res'].filter(site => sites.includes(site));
+}
+
+const AUDIENCE_COPY = {
+  ms3: { long: 'a third-year medical student', short: 'MS3' },
+  res: { long: 'a psychiatry resident', short: 'resident' },
+  both: { long: 'both a third-year medical student and a psychiatry resident', short: 'MS3 + resident' },
+  unknown: { long: 'this item\u2019s intended audience', short: 'intended audience' },
+};
+
+function audienceKey(sites) {
+  const resolved = audienceSites(sites);
+  if (!resolved) return 'unknown';
+  if (resolved.length > 1) return 'both';
+  return resolved[0];
+}
+
+export function audienceLabel(sites) {
+  return AUDIENCE_COPY[audienceKey(sites)].long;
+}
+
+export function audienceShortLabel(sites) {
+  return AUDIENCE_COPY[audienceKey(sites)].short;
+}
+
 function completion(type, status) {
   return type === 'question'
     ? (status === 'attested' ? 'complete' : 'needs-review')
     : (status === 'reviewed' ? 'complete' : 'needs-review');
 }
 
+/* The Essentials first, within each type. A page in either site's Essentials selection is
+   what a learner sees before anything else, so its attestation is the one that matters
+   most; sorting it ahead of the long tail turns the queue into the signing order. Type
+   order still wins (pages, then tools, then questions) so Next/Previous keep their shape. */
+function essentialsRank(item) {
+  return item.essential ? 0 : 1;
+}
+
 function compareItems(left, right) {
   return TYPE_ORDER[left.type] - TYPE_ORDER[right.type]
+    || essentialsRank(left) - essentialsRank(right)
     || left.title.localeCompare(right.title)
     || left.identity.localeCompare(right.identity);
 }
@@ -65,13 +115,21 @@ export function normalizeReviewItems(server = {}) {
     const rawSite = record?.site;
     const site = rawSite === undefined || rawSite === null ? 'ms3' : clean(rawSite);
     if (!SITES.has(site)) throw new TypeError('Invalid content review item site.');
+    // Which deployments list the item in The Essentials (server-derived; absent means
+    // "not flagged", never "unknown" — the server reports essentialsSource separately).
+    const essentialSites = audienceSites(record?.essentialSites) || [];
     items.push({
       key: `${type}:${identity}`, type, identity, site,
+      // Audience, not preview routing — see audienceSites(). Absent stays null.
+      sites: audienceSites(record?.sites),
       title: clean(record.title) || identity,
       savedStatus: clean(record.status), completion: completion(type, record.status),
       revision: '', gate: '',
       risk,
-      searchText: [record.title, identity, ...riskSearchTerms(risk)].map(clean).join(' ').toLowerCase(),
+      essential: essentialSites.length > 0,
+      essentialSites,
+      searchText: [record.title, identity, ...riskSearchTerms(risk), ...(essentialSites.length ? ['essentials'] : [])]
+        .map(clean).join(' ').toLowerCase(),
       record,
     });
   }
@@ -79,11 +137,12 @@ export function normalizeReviewItems(server = {}) {
     const identity = clean(record?.id);
     if (!identity) throw new TypeError('Invalid question review item.');
     items.push({
-      key: `question:${identity}`, type: 'question', identity, site: 'ms3',
+      key: `question:${identity}`, type: 'question', identity, site: 'ms3', sites: null,
       title: identity, savedStatus: clean(record.status),
       completion: completion('question', record.status),
       revision: clean(record.revision), gate: clean(record.assessment?.gate),
       risk: null,
+      essential: false, essentialSites: [],
       searchText: [identity, record.stem, record.category, record.evidence, ...list(record.pages)]
         .map(clean).join(' ').toLowerCase(),
       record,
@@ -112,10 +171,19 @@ export function filterReviewItems(items, filters = {}) {
 }
 
 export function deriveReviewCounts(items) {
-  const counts = { total: 0, needsReview: 0, complete: 0, page: 0, tool: 0, question: 0 };
+  const counts = {
+    total: 0, needsReview: 0, complete: 0, page: 0, tool: 0, question: 0,
+    // The Essentials subset, so the summary can say how many of the pages learners see
+    // first are still unsigned — the number that should read 0 before a cohort starts.
+    essentialTotal: 0, essentialNeedsReview: 0,
+  };
   for (const item of list(items)) {
     counts.total += 1; counts[item.type] += 1;
     counts[item.completion === 'complete' ? 'complete' : 'needsReview'] += 1;
+    if (item.essential) {
+      counts.essentialTotal += 1;
+      if (item.completion !== 'complete') counts.essentialNeedsReview += 1;
+    }
   }
   return counts;
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Behavior tests for the eleven-registry Draft-07 schema gate."""
+"""Behavior tests for the fifteen-registry Draft-07 schema gate."""
 
 import json
 import shutil
@@ -26,19 +26,24 @@ PAIRS = (
     ("instrument_rights.json", "instrument_rights.schema.json"),
     ("decisions.json", "decisions.schema.json"),
     ("pairings.json", "pairings.schema.json"),
+    ("standards.json", "standards.schema.json"),
+    ("vocabulary.json", "vocabulary.schema.json"),
     (
         "13_Faculty_Resources/_automation/site_build/shipped_pages.json",
         "13_Faculty_Resources/_automation/site_build/shipped_pages.schema.json",
     ),
+    (
+        "13_Faculty_Resources/_automation/site_build/analytics_events.json",
+        "13_Faculty_Resources/_automation/site_build/analytics_events.schema.json",
+    ),
 )
 
-# pairings_integrity_diagnostics resolves page/tool/audio_oe references against these two
-# shipped files. A synthetic registry copy must carry them, or the gate would have nothing
-# to resolve against and would silently stop checking the thing it exists to check.
-PAIRINGS_RESOLUTION_SOURCES = (
-    Path("13_Faculty_Resources/_automation/site_build/site_manifest.json"),
-    Path("12_Media/audio_oe/MANIFEST.csv"),
-)
+# pairings_integrity_diagnostics resolves page and tool references against
+# shipped_pages.json, which a synthetic copy already carries because it is one of the
+# PAIRS above. Only the audio brief manifest has to be copied separately -- without it the
+# gate would have nothing to resolve against and would silently stop checking the thing it
+# exists to check.
+PAIRINGS_RESOLUTION_SOURCES = (Path("12_Media/audio_oe/MANIFEST.csv"),)
 
 
 def run_validator(
@@ -123,13 +128,82 @@ class RegistrySchemaGateTests(unittest.TestCase):
         self.assertNotIn("Traceback", result.stderr)
         return result.stdout
 
+    def _mutated_curriculum(self, root: Path, mutate) -> str:
+        document = json.loads((root / "curriculum.json").read_text(encoding="utf-8"))
+        mutate(document)
+        (root / "curriculum.json").write_text(
+            json.dumps(document, indent=2) + "\n", encoding="utf-8"
+        )
+        result = run_validator(root)
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        return result.stdout
+
+    def test_care_navigator_rejects_unknown_resource_reference(self) -> None:
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(
+                Path(temporary),
+                lambda document: document["careNavigator"][0].update(
+                    {"primaryResourceId": "missing-resource"}
+                ),
+            )
+        self.assertIn("unknown care resource 'missing-resource'", stdout)
+
+    def test_care_navigator_rejects_duplicate_alternatives(self) -> None:
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(
+                Path(temporary),
+                lambda document: document["careNavigator"][2].update(
+                    {"alternativeResourceIds": ["book-shelf", "book-shelf"]}
+                ),
+            )
+        self.assertIn("duplicates alternative 'book-shelf'", stdout)
+
+    def test_care_navigator_rejects_primary_repeated_as_alternative(self) -> None:
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(
+                Path(temporary),
+                lambda document: document["careNavigator"][1].update(
+                    {"alternativeResourceIds": ["meeting-calendar"]}
+                ),
+            )
+        self.assertIn("repeats its primary resource", stdout)
+
+    def test_care_navigator_requires_every_approved_intent_once(self) -> None:
+        def remove_family_intent(document):
+            document["careNavigator"] = [
+                intent for intent in document["careNavigator"]
+                if intent["id"] != "family-conversation"
+            ]
+
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(Path(temporary), remove_family_intent)
+        self.assertIn("missing intent 'family-conversation'", stdout)
+
+    def test_care_navigator_rejects_duplicate_intent_ids(self) -> None:
+        with self.make_registry_copy() as temporary:
+            stdout = self._mutated_curriculum(
+                Path(temporary),
+                lambda document: document["careNavigator"][-1].update({"id": "services"}),
+            )
+        self.assertIn("'services' duplicates /careNavigator/0", stdout)
+
+    def test_care_navigator_invalid_shapes_report_schema_error_without_traceback(self) -> None:
+        for field in ("careNavigator", "careResources"):
+            with self.subTest(field=field), self.make_registry_copy() as temporary:
+                stdout = self._mutated_curriculum(
+                    Path(temporary),
+                    lambda document: document.update({field: None}),
+                )
+            self.assertIn(f"curriculum.json: INVALID at /{field}", stdout)
+
     def test_pairings_dangling_page_reference_fails(self) -> None:
         def mutate(document):
             document["pairings"][0]["items"][0]["ref"] = "no_such_page.md"
 
         with self.make_registry_copy() as temporary:
             stdout = self._mutated_pairings(Path(temporary), mutate)
-        self.assertIn("page 'no_such_page.md' is not in site_manifest.json", stdout)
+        self.assertIn("page 'no_such_page.md' is not in shipped_pages.json", stdout)
 
     def test_pairings_dangling_tool_reference_fails(self) -> None:
         def mutate(document):
@@ -139,7 +213,31 @@ class RegistrySchemaGateTests(unittest.TestCase):
 
         with self.make_registry_copy() as temporary:
             stdout = self._mutated_pairings(Path(temporary), mutate)
-        self.assertIn("tool 'no-such-tool.html' is not in site_manifest.json", stdout)
+        self.assertIn("tool 'no-such-tool.html' is not in shipped_pages.json", stdout)
+
+    def test_broken_shipped_pages_is_reported_not_crashed(self) -> None:
+        """The gate reads a file this validator also validates -- report, never crash.
+
+        pairings_integrity_diagnostics resolves against shipped_pages.json, and
+        shipped_pages.json is itself one of the PAIRS. A broken one must still be
+        REPORTED by its own pair, with the pairings gate degrading to one line.
+        """
+        for content in ('{"version": 99, "pages": []}\n', "{not json}\n", None):
+            with self.subTest(content=content), self.make_registry_copy() as temporary:
+                root = Path(temporary)
+                target = root / "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
+                if content is None:
+                    target.unlink()
+                else:
+                    target.write_text(content, encoding="utf-8")
+
+                result = run_validator(root)
+
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                # the broken file is named by its own pair, not swallowed by the gate
+                self.assertIn("shipped_pages.json", result.stdout)
+                self.assertIn("pairings.json: cannot resolve references", result.stdout)
 
     def test_pairings_dangling_audio_brief_fails(self) -> None:
         def mutate(document):
@@ -497,6 +595,17 @@ class RegistrySchemaGateTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("curriculum.json: INVALID at /", result.stdout)
         self.assertIn("synonyms", result.stdout)
+
+    def test_curriculum_requires_the_strict_app_pathway_contract(self) -> None:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "curriculum.json").read_text(encoding="utf-8"))
+            document.pop("appPathway", None)
+            (root / "curriculum.json").write_text(json.dumps(document), encoding="utf-8")
+            result = run_validator(root)
+
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("curriculum.json: INVALID at /", result.stdout)
 
     def test_curriculum_rejects_malformed_synonyms(self) -> None:
         with self.make_registry_copy() as temporary:

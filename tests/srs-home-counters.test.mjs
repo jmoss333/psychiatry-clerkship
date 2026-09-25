@@ -37,7 +37,8 @@ const dueCode = slice(source, 'function srsState(', '/* ---- end due breakdown -
 // RETIRED_IDS / DRAFT_IDS stand in for the build injection (the source literals stay
 // empty lists; build_deploy.py verified-replaces them).
 // eslint-disable-next-line no-new-func
-const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RETIRED_IDS', 'DRAFT_IDS', `
+const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RETIRED_IDS', 'DRAFT_IDS', 'Clock', `
+  var Date = Clock || globalThis.Date;
   var window = {};
   ${seedCode}
   ${servCode}
@@ -93,11 +94,19 @@ test('empty TOPIC_META (fetch failed) never triggers the migration', () => {
 
 test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable only', () => {
   const ls = memStorage();
-  const past = Date.now() - 60000;
-  const twoDaysAgo = Date.now() - 86400000 * 2;
-  const future = Date.now() + 86400000;
+  // "One minute ago" must remain today: a wall-clock run just after midnight
+  // otherwise makes this card overdue and tests the fixture's timing, not routing.
+  // Freeze the fixture and the extracted implementation to the same local noon.
+  const now = new Date(2026, 8, 10, 12, 0, 0, 0).getTime();
+  class FixtureDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [now])); }
+    static now() { return now; }
+  }
+  const past = now - 60000;
+  const twoDaysAgo = now - 86400000 * 2;
+  const future = now + 86400000;
   ls.setItem('cw_srs_v1', JSON.stringify({ v: 1, cards: {
-    'deck#0#1': { due: past },
+    'AR-50#1': { due: past },
     'TOPIC#mse.md': { due: twoDaysAgo },
     'QB#qb_moo_001': { due: past },
     'QB#qb_moo_002': { due: future },
@@ -106,7 +115,7 @@ test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable onl
     'REASON#mania_psychosis_substance_001#problem_representation': { due: twoDaysAgo },
     'REAS#case#step': { due: past },
   } }));
-  const srs = makeSrs(ls, QUIZ_META, docStub);
+  const srs = makeSrs(ls, QUIZ_META, docStub, undefined, undefined, FixtureDate);
   const b = srs.dueBreakdown();
   assert.equal(b.daily.due, 2);
   assert.equal(b.daily.overdue, 1);
@@ -144,4 +153,29 @@ test('dueBreakdown counts only servable QB# cards: retired never, drafts only wh
   ls.setItem('cw_qb_drafts_v1', 'nonsense');
   srs = makeSrs(ls, QUIZ_META, docStub, ['qb_retired'], ['qb_draft']);
   assert.equal(srs.dueBreakdown().qb.due, 1, 'anything but the exact opt-in value fails closed');
+});
+
+// The landmark decks are where most Daily Review cards come from, and until 2026-09-24 not one
+// of them reached the daily bucket: srsBucket matched a `deck#` prefix that nothing writes, while
+// review.html builds `<deck id>#<question index>` from quizzes.json. They landed in `other`,
+// which fd_block.js deliberately leaves out of a timed block, so a learner with only landmark
+// cards due was told nothing was due in the block. The fixture above used the invented prefix,
+// which is how the test stayed green over the defect. This reads the REAL decks, so a new deck
+// family (a prefix other than AR-/SP-) turns it red instead of silently falling into `other`.
+test('every card id Daily Review builds from quizzes.json buckets as daily', () => {
+  const quizzes = JSON.parse(readFileSync(new URL(
+    '../07_Evidence_and_Reading/Landmark_Trials/quizzes.json', import.meta.url,
+  ), 'utf8'));
+  const srs = makeSrs(memStorage(), QUIZ_META, docStub);
+  const ids = [];
+  for (const deck of quizzes.decks) {
+    (deck.questions || []).forEach((q, i) => { if (q && q.q && q.o) ids.push(`${deck.id}#${i}`); });
+  }
+  assert.ok(ids.length > 400, `expected the full landmark set, found ${ids.length} cards`);
+  const misrouted = ids.filter((id) => srs.srsBucket(id) !== 'daily');
+  assert.deepEqual(misrouted.slice(0, 5), [], `${misrouted.length} deck cards are not in the daily bucket`);
+  // And the shape is exact, not a loose prefix: near-misses stay visible in `other`.
+  for (const id of ['AR-50', 'AR-50#', 'AR-x#1', 'ARX-1#0', 'SP-3#1#2', 'deck#0#1']) {
+    assert.equal(srs.srsBucket(id), 'other', id);
+  }
 });

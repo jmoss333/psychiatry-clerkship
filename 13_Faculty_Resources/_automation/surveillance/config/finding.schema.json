@@ -17,7 +17,7 @@
     },
     "job": {
       "type": "string",
-      "enum": ["guideline-surveillance", "link-source-monitor", "resource-intake"]
+      "enum": ["guideline-surveillance", "link-source-monitor", "resource-intake", "source-integrity"]
     },
     "source_id": {
       "type": "string",
@@ -37,12 +37,17 @@
     "detected_at": { "type": "string", "format": "date-time" },
     "change_type": {
       "type": "string",
-      "enum": ["new", "modified", "removed", "broken-link", "soft-404", "redirect", "tls-error", "candidate"]
+      "enum": ["new", "modified", "removed", "broken-link", "soft-404", "redirect", "tls-error", "candidate", "retracted", "erratum", "expression-of-concern", "superseded", "identifier-unresolved", "check-unavailable"]
     },
     "severity": {
       "type": "string",
       "enum": ["P0", "P1", "P2"],
       "description": "P0 issue immediately + notify; P1 issue; P2 batched digest. See REVIEW_RULES.md."
+    },
+    "severity_cap": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2"],
+      "description": "Maximum severity allowed after routing escalation when the collector has explicit lower-confidence evidence."
     },
     "summary": {
       "type": "string",
@@ -75,6 +80,12 @@
       "type": "string",
       "enum": ["new", "triaged", "issue-open", "actioned", "dismissed"],
       "default": "new"
+    },
+    "disposition": {
+      "type": "string",
+      "enum": ["actionable", "environment", "needs-judgment"],
+      "default": "actionable",
+      "description": "What KIND of finding this is, which decides whether it opens an issue. `actionable` = a defect in the library, and the only value that files. `environment` = real detection this runner cannot verify (config/ci_unreachable_hosts.json) -- reported and counted in the digest, never silenced, because reachability is a fact about the environment and not a content finding. `needs-judgment` = a person must decide. Added 2026-09-16 after fda.gov and healthquality.va.gov filed P1s for URLs that answer 200 to any ordinary browser; a second probe cannot catch that, because it runs from the same address."
     },
     "github_issue": {
       "type": "string",

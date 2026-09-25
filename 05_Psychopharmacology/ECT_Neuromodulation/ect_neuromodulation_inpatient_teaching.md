@@ -6,17 +6,17 @@
 
 ## Electroconvulsive therapy (ECT)
 
-**Indications** — Severe major depression (especially with **psychotic features, catatonia, or high suicide risk**), treatment-resistant depression, **acute mania**, and **catatonia/neuroleptic malignant syndrome**. Choose ECT when a **rapid, definitive response is needed** — active suicidality, refusal to eat or drink, pregnancy where medications are undesirable, or prior good ECT response.
+**Indications** — Severe major depression (especially with **psychotic features, catatonia, or high suicide risk**), treatment-resistant depression, **acute mania**, and **catatonia/neuroleptic malignant syndrome**. Choose ECT when a **rapid, definitive response is needed** — active suicidality, refusal to eat or drink, or prior good ECT response (pregnancy makes ECT preferred over drugs once one of these is present).
 
 **How it works / course** — A brief generalized seizure is induced under general anesthesia with a muscle relaxant; a typical acute course is ~6–12 treatments 2–3×/week. Because relapse is high after a successful course, **continuation/maintenance** is essential — pharmacotherapy (e.g., lithium + nortriptyline reduced post-ECT relapse in the Sackeim trial) and/or maintenance ECT.
 
-**Workup & safety** — Pre-ECT: history/exam, cardiac and anesthesia assessment, and medication review (hold/adjust benzodiazepines and anticonvulsants, which raise seizure threshold; caution with lithium). **There are no absolute contraindications**; raised intracranial pressure and recent MI/unstable cardiac disease are the major relative risks. Side effects: transient **cognitive effects (anterograde/retrograde memory disturbance, usually improving over weeks)**, post-ictal confusion, headache, myalgia, nausea; anesthesia risks. Right unilateral placement is gentler on memory; bitemporal is faster/more potent.
+**Workup & safety** — Pre-ECT: history/exam, cardiac and anesthesia assessment (the usual ECT muscle relaxant is succinylcholine — ask about a personal or family history of malignant hyperthermia and of pseudocholinesterase deficiency), and medication review (hold/adjust benzodiazepines and anticonvulsants, which raise seizure threshold; caution with lithium). **There are no absolute contraindications**; raised intracranial pressure and recent MI/unstable cardiac disease are the major relative risks. Side effects: transient **cognitive effects (anterograde/retrograde memory disturbance, usually improving over weeks)**, post-ictal confusion, headache, myalgia, nausea; anesthesia risks. Right unilateral placement is gentler on memory; bitemporal is faster/more potent.
 
 ## Other neuromodulation
 
 - **Repetitive transcranial magnetic stimulation (rTMS)** — FDA-cleared for **treatment-resistant depression** (and OCD); outpatient, **no anesthesia**, no memory effects; main risk is a small seizure risk. Less potent than ECT but far better tolerated.
 - **Vagus nerve stimulation (VNS)** — an implanted device for chronic, highly treatment-resistant depression; slow onset.
-- **Deep brain stimulation (DBS)** — investigational for refractory depression and OCD.
+- **Deep brain stimulation (DBS)** — investigational for refractory depression; available for severe treatment-refractory OCD under an FDA Humanitarian Device Exemption (2009).
 
 ## Rapid-acting and light-based options
 
@@ -33,7 +33,7 @@
 **High-yield pearls**
 - ECT is the single most effective treatment for severe/psychotic/catatonic depression and works in catatonia and NMS.
 - No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones.
-- Hold benzodiazepines/anticonvulsants before ECT (they blunt the seizure).
+- Minimise or time benzodiazepines and mood-stabilising anticonvulsants before ECT (they blunt the seizure) — but continue antiepileptics given for epilepsy.
 - rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.
 - Ketamine/esketamine act within hours on *depressive symptoms* — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.
 - Bright light therapy now has evidence as an adjunct in *nonseasonal* depression, not just SAD.

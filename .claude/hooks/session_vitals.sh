@@ -12,6 +12,24 @@ command -v git >/dev/null 2>&1 || { echo "vitals: git not available"; exit 0; }
 echo "== clerkship vitals =="
 echo "branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null) @ $(git rev-parse --short HEAD 2>/dev/null)"
 
+# The shared .git/config — every worktree reads it, and a test fixture that inherited a hook's
+# GIT_DIR has corrupted it twice (core.bare=true, a fixture [user], LFS filters set to `cat`).
+# When that happens every git probe below prints nonsense and the gates can fail open, so say it
+# first and loudly. Report-only: the repair is per line and the owner's (the tool prints it).
+if [ -f bin/check_git_config_health.py ]; then
+  if CFG_HEALTH="$(python3 bin/check_git_config_health.py --root "$ROOT" 2>&1)"; then
+    echo "git config: healthy (no core.bare=true, fixture identity or non-git-lfs filter)"
+  else
+    echo "!!! $CFG_HEALTH" | sed '2,$s/^/    /'
+  fi
+fi
+
+# Offline and report-only: stale remote knowledge is explicitly labelled as cached.
+# Run before the slower network probes so divergence is visible even if they time out.
+if [ -f bin/sync_status.py ]; then
+  python3 bin/sync_status.py || echo "sync: report unavailable (not evidence of synchronization)"
+fi
+
 # Git LFS — the single most common sandbox trap.
 if git lfs version >/dev/null 2>&1; then
   echo "git-lfs: installed ($(git lfs ls-files 2>/dev/null | wc -l | tr -d ' ') tracked media files)"
@@ -26,6 +44,12 @@ HOOK_DIR="$(git rev-parse --git-common-dir 2>/dev/null)/hooks"
 PRE_COMMIT="not installed"; PRE_PUSH="not installed"
 [ -f "$HOOK_DIR/pre-commit" ] && grep -q precommit_gate "$HOOK_DIR/pre-commit" 2>/dev/null && PRE_COMMIT="installed"
 [ -f "$HOOK_DIR/pre-push" ] && grep -q verify.sh "$HOOK_DIR/pre-push" 2>/dev/null && PRE_PUSH="installed"
+# Hooks installed before 2026-09-24 exit 0 when they cannot find the work tree, i.e. they gate
+# nothing exactly when the repository is broken. They are copies, so re-installing is the fix.
+[ "$PRE_COMMIT" = installed ] && ! grep -q 'FAILS CLOSED' "$HOOK_DIR/pre-commit" 2>/dev/null \
+  && PRE_COMMIT="installed but STALE (fails open)"
+[ "$PRE_PUSH" = installed ] && ! grep -q 'FAILS CLOSED' "$HOOK_DIR/pre-push" 2>/dev/null \
+  && PRE_PUSH="installed but STALE (fails open)"
 echo "git hooks: pre-commit $PRE_COMMIT · pre-push $PRE_PUSH  (install both: bash bin/install-hooks.sh)"
 
 # Toolchain the gate needs.
@@ -59,5 +83,16 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
 else
   echo "github: gh not authenticated here — check scheduled-workflow health in the Actions tab yourself (the heartbeat cannot escalate its own failure)"
 fi
+# Egress capability. Which hosts this environment can reach decides which repo tasks are
+# possible today, and sessions have repeatedly burned an hour discovering that the hard way.
+# Cached (6h) and hard-bounded to well under 6s. That ceiling is sized against the 30s the WHOLE
+# vitals block gets: on a gh-authenticated machine the lines above already commit ~18s, one of
+# them unbounded, and a hook killed at 30s loses every vital printed here — which would make a
+# cold session strictly worse than no probe at all. The probe reports and gates nothing.
+# Opt out with CLERKSHIP_SKIP_EGRESS_PROBE=1.
+if [ -z "${CLERKSHIP_SKIP_EGRESS_PROBE:-}" ] && [ -f bin/probe_egress.py ]; then
+  timeout 6 python3 bin/probe_egress.py --vitals 2>/dev/null || echo "egress: probe unavailable"
+fi
+
 echo "== end vitals =="
 exit 0

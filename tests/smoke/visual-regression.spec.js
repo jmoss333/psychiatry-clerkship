@@ -42,6 +42,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { essentialsResources } from './essentials-inventory.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const VIEWPORTS = [
@@ -71,7 +72,15 @@ async function waitForStableFrontDoor(page, surface) {
 
 async function waitForStableReader(page) {
   await waitForStableFrontDoor(page, '.fd-reader .fd-article__body');
-  await expect(page.locator('.fd-reader .governance-notice.reviewed-receipt')).toBeVisible();
+  // A governance notice of SOME kind must have rendered -- that is what proves the ledger
+  // arrived and the reader painted it, which is the only thing a baseline needs settled.
+  // It deliberately does NOT require the reviewed receipt: a baselined page whose attestation
+  // drifts renders pending-high or pending-compact instead, and an assertion failure (unlike
+  // snapshot drift) cannot be fixed by refreshing baselines -- it would red the visual and
+  // nav projects until the owner re-attests, which is the deadlock D1 exists to prevent.
+  // `unavailable` stays banned: baselining "Review status unavailable" would freeze a
+  // governance FETCH FAILURE into the reference images, which is the real hazard here.
+  await expect(page.locator('.fd-reader .governance-notice').first()).toBeVisible();
   await expect(page.locator('.fd-reader .governance-notice.unavailable')).toHaveCount(0);
 }
 
@@ -82,13 +91,16 @@ async function waitForStableReader(page) {
 const READER_ARCHETYPES = [
   {
     slug: 'sections',
-    page: 'osce.md',
+    page: 'exp_tx.md',
     title: 'collapsed sections + tables',
     // Chosen over evidence_inpatient.md (14 h2, 21 tables) which exercises the same
     // machinery at four times the byte size: a larger page means more unrelated
     // content churn re-opening this baseline for reasons that have nothing to do
-    // with the collapse UI. osce.md is 9 h2 / 6 tables / ~10KB and carries no audio,
-    // video or iframe, so it has no nondeterministic element to mask.
+    // with the collapse UI. exp_tx.md is 9 h2 / 1 table / ~4KB, carries no audio,
+    // video or iframe, and has not changed since the baseline commit.
+    // It must never carry a crisis marker: makeCollapsible() returns early on any
+    // body with .crisis-block-hook, so a crisis surface has no .sec-c to settle on.
+    // osce.md held this slot until peer-review WP-8 (J3) made it a crisis surface.
     async settle(page) {
       // The collapse pass must have actually run — sections plus its toolbar.
       await expect(page.locator('.fd-reader .sec-c').first()).toBeVisible();
@@ -148,4 +160,30 @@ for (const viewport of VIEWPORTS) {
       });
     }
   });
+}
+
+// Phase 2 extends, rather than replaces, the resident reader/archetype baselines above.
+for (const site of ['ms3', 'res']) {
+  for (const viewport of VIEWPORTS) {
+    test.describe(`Essentials ${site} visual @ ${viewport.label}`, () => {
+      test.use({ viewport: { width: viewport.width, height: viewport.height } });
+      for (const view of ['kit', 'full', ...(site === 'ms3' ? ['today'] : [])]) {
+        test(`${view} first viewport`, async ({ page }) => {
+          await page.clock.setFixedTime(FROZEN_NOW);
+          await page.addInitScript(role => {
+            localStorage.setItem('cw_rotation_start', '2026-08-17');
+            localStorage.setItem('cw_frontdoor_v1', JSON.stringify({ role, tab: 'today', viewWeek: 1 }));
+            localStorage.setItem('cw_theme', 'light');
+          }, site === 'ms3' ? 'student' : 'pgy1');
+          const base = site === 'ms3' ? process.env.MS3_BASE_URL || 'http://localhost:4200' : process.env.RES_BASE_URL || 'http://localhost:4201';
+          await page.goto(`${base}/?tab=${view === 'today' ? 'today' : 'library'}${view === 'full' ? '&library=full' : ''}`);
+          await waitForStableFrontDoor(page, view === 'today' ? '.fd-today' : '.fd-library');
+          if (view !== 'today') await expect(
+            view === 'full' ? page.locator('.fd-collink') : essentialsResources(page),
+          ).toHaveCount(view === 'full' ? (site === 'ms3' ? 83 : 93) : (site === 'ms3' ? 30 : 35));
+          await expect(page).toHaveScreenshot(`essentials-${site}-${view}-${viewport.label}.png`);
+        });
+      }
+    });
+  }
 }

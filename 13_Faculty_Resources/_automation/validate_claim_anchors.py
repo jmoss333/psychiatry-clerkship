@@ -42,7 +42,6 @@ evidence batch instead of demanding one flag-day conversion.
 Exits non-zero and prints every violation.
 Usage:  python3 validate_claim_anchors.py [repo_root]
 """
-import ast
 import json
 import os
 import re
@@ -52,10 +51,11 @@ from pathlib import Path
 HERE = Path(os.path.abspath(__file__)).parent
 REPO_ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else HERE.parent.parent
 
+sys.path.insert(0, str(HERE / "site_build"))
+from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
+
 TOPIC_META = REPO_ROOT / "topic_meta.json"
 REGISTRY = REPO_ROOT / "evidence_registry.json"
-MANIFEST = REPO_ROOT / "13_Faculty_Resources/_automation/site_build/site_manifest.json"
-SITE_EXTRAS = REPO_ROOT / "13_Faculty_Resources/_automation/site_build/site_extras.py"
 
 # `[^id]` where id is a registry stable id: lowercase alphanumerics and hyphens.
 # Deliberately narrow so ordinary markdown (footnotes, escaped brackets, regex in
@@ -81,45 +81,27 @@ def load_evidence_ids():
 def shipped_name_to_source():
     """Map shipped page name (topic_meta key) -> source markdown path.
 
-    Two producers ship markdown: site_manifest.json for the shared hub, and
-    RESIDENT_EXTRA_PAGES in site_build/site_extras.py for resident-only pages.
-    Those pairs lived inside resident_section.py until 2026-09 and were read
-    statically because resident_section CANNOT be imported — importing it
-    rmtree's and rebuilds the output dir. They now live in site_extras.py
-    (ADR-002); the static read is kept so this validator still takes no import
-    dependency at all inside the Netlify build.
-    """
-    mapping = {}
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    for row in manifest.get("md", []):
-        if isinstance(row, list) and len(row) > 1:
-            mapping[row[1]] = row[0]
+    "What ships" is READ from site_build/shipped_pages.json -- the one generated
+    listing, assembled from every producer by site_build/shipped_pages.py and
+    verified against the real build output on every build (ADR-002, beside that
+    file). It is not re-assembled here.
 
-    if SITE_EXTRAS.exists():
-        tree = ast.parse(SITE_EXTRAS.read_text(encoding="utf-8"))
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Assign):
-                continue
-            if not any(
-                isinstance(t, ast.Name)
-                and t.id in ("RESIDENT_COTW_INDEX", "RESIDENT_TRACK_PAGES")
-                for t in node.targets
-            ):
-                continue
-            for sub in ast.walk(node.value):
-                # (source, built slug, display title) — the site_manifest.json shape.
-                if not isinstance(sub, ast.Tuple) or len(sub.elts) != 3:
-                    continue
-                src, shipped = sub.elts[0], sub.elts[1]
-                if (
-                    isinstance(src, ast.Constant)
-                    and isinstance(src.value, str)
-                    and isinstance(shipped, ast.Constant)
-                    and isinstance(shipped.value, str)
-                ):
-                    # site_manifest wins: a shared page is authored once.
-                    mapping.setdefault(shipped.value, src.value)
-    return mapping
+    Until 2026-09 this function read site_manifest.json for the shared hub and
+    AST-parsed site_extras.py for the resident-only pages: two producers out of
+    four, so a page arriving by either other route was silently unanchorable.
+    The AST parse existed because resident_section.py cannot be imported (it
+    rmtree's and rebuilds the output dir); reading the derived listing costs no
+    import dependency at all, so the Netlify build is no worse off.
+
+    Markdown pages only. A claim anchor is markdown prose; the tools ship as
+    single-file .html and carry none.
+    """
+    document = load_shipped_pages(REPO_ROOT)
+    return {
+        page["slug"]: page["source"]
+        for page in document["pages"]
+        if page["kind"] == "page"
+    }
 
 
 def main():
@@ -134,7 +116,11 @@ def main():
         print("evidence_registry.json INVALID — %s" % exc)
         return 1
 
-    sources = shipped_name_to_source()
+    try:
+        sources = shipped_name_to_source()
+    except ShippedPagesError as exc:
+        print("shipped_pages.json INVALID — %s" % exc)
+        return 1
     anchored_pages = 0
     anchor_count = 0
 
@@ -143,8 +129,9 @@ def main():
             continue
         src_rel = sources.get(key)
         if src_rel is None:
-            # Generated pages (case-of-the-week) and tool-backed entries have no
-            # single authored source file. Nothing to scan; not an error.
+            # A topic_meta key that names no shipped markdown page -- a tool
+            # entry, or a record kept for a page that no longer ships. Nothing
+            # to scan; not an error.
             continue
         src = REPO_ROOT / src_rel
         if not src.exists():

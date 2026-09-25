@@ -13,9 +13,9 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 # Dual-mode: this module runs both as a package (tests) and as a script (workflows).
 try:  # package
-    from .receipt_summary import report
+    from .receipt_summary import BLOCKED_EXIT, classify, report
 except ImportError:  # script - siblings are on sys.path
-    from receipt_summary import report
+    from receipt_summary import BLOCKED_EXIT, classify, report
 
 
 PUBLIC_STATUS_URL = (
@@ -71,6 +71,20 @@ FAILURE_KEYS = {
     "checkedAt",
 }
 MINIMAL_FAILURE_STATES = {"missing", "malformed", "unavailable"}
+
+# This module's half of receipt_summary.classify's contract, and it is empty on
+# purpose: nothing else watches the Interview Room. The escalation issue reports
+# that THIS monitor went red; it has no independent view of the proxy, so there
+# is no second watcher to hand a state to. Every non-success state below is this
+# steward's to raise, including one it has never seen.
+#
+# One candidate was considered and rejected: `actor_budget` is the canary
+# spending the rotation cap it shares with learners rather than a provider
+# outage, so it looks delegable to rotation_readiness. But it is a *failureCode*
+# inside state="failed", not a state, and deciding that a budget-capped
+# Interview Room is not a failure changes what this monitor promises. That is a
+# governance call, not a refactor. See the note beside FAILURE_CODES.
+DELEGATED_STATES = frozenset()
 
 
 class _NoRedirect(HTTPRedirectHandler):
@@ -260,7 +274,8 @@ def main(argv=None, *, opener=None, now=_utc_now):
     # Say which of the FAILURE_CODES fired before exiting. Without this the
     # Actions log carries only "exit code 2" and the cause lives solely in the
     # receipt artifact. See receipt_summary for why that mattered.
-    report(receipt, "sp-health", stream=sys.stderr)
+    own, _delegated = classify(receipt, delegated=DELEGATED_STATES)
+    report(receipt, "sp-health", stream=sys.stderr, failed=bool(own))
     try:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(
@@ -268,9 +283,9 @@ def main(argv=None, *, opener=None, now=_utc_now):
             encoding="utf-8",
         )
     except OSError:
-        print("sp-health: receipt write failed", file=sys.stderr)
-        return 2
-    return 0 if receipt["gate"] == "ready" else 2
+        print("sp-health failed: receipt write failed", file=sys.stderr)
+        return BLOCKED_EXIT
+    return BLOCKED_EXIT if own else 0
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ name: Automation — Failure Escalation
 on:
   workflow_run:
     workflows:
+      - "Maintenance — Autonomous Queue Runner"
       - "Maintenance — Evidence and Operations Review"
       - "Maintenance — Faculty Governance Digest"
       - "Maintenance — Interview Room Health Monitor"
@@ -72,6 +73,25 @@ jobs:
             | head -n 5 > "$RUNNER_TEMP/failure.log" || true
           touch "$RUNNER_TEMP/failure.log"
 
+      - name: Read the successful queue run outcome
+        id: queue_outcome
+        if: >-
+          ${{ github.event.workflow_run.name == 'Maintenance — Autonomous Queue Runner' &&
+              github.event.workflow_run.conclusion == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -uo pipefail
+          # Best effort: absent or incomplete evidence must never imply that
+          # a successful no-op repaired an earlier publication failure.
+          if gh run download "$RUN_ID" \
+            --name "maintenance-queue-runner-${RUN_ID}" \
+            --dir "$RUNNER_TEMP/queue-run-outcome"; then
+            cp "$RUNNER_TEMP/queue-run-outcome/outcome.txt" \
+              "$RUNNER_TEMP/queue-outcome.txt" 2>/dev/null || true
+          fi
+
       - name: Render the escalation decision
         id: render
         env:
@@ -89,6 +109,7 @@ jobs:
             --run-url "$RUN_URL" \
             --at "$RUN_AT" \
             --log "$RUNNER_TEMP/failure.log" \
+            --outcome-file "$RUNNER_TEMP/queue-outcome.txt" \
             --body-out "$RUNNER_TEMP/escalation-body.md" \
             --output "$GITHUB_OUTPUT"
 

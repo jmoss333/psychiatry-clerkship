@@ -24,6 +24,10 @@ try:
 except ModuleNotFoundError:
     governance = None
 
+# The digest itself is pinned in tests/maintenance/test_attestation_hash.py; imported
+# here so the fixtures below compute a contentHash with the rule rather than restating it.
+import attestation_hash
+
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_SOURCE = ROOT / "13_Faculty_Resources" / "reviewed.schema.json"
@@ -101,6 +105,49 @@ DEFAULT_RESIDENT_NAV_SOURCE = (
 DEFAULT_COTW_REGISTRY: dict = {"weeks": []}
 
 
+def shipped_pages_document(
+    tool_entries: list | None = None, cotw_registry: dict | None = None
+) -> dict:
+    """A synthetic site_build/shipped_pages.json in the shape shipped_pages.py
+    writes it.
+
+    ADR-002 Phase 2: build_risk_proposal() reads that one derived listing now
+    instead of opening site_manifest.json and cotw_registry.json for itself, so
+    the fixtures below describe what ships the same way the real repository
+    does. Takes the same (source, slug, title) tool rows and the same weekly-
+    case registry those two producer files used to be written with, so a test
+    still only declares the piece it is exercising.
+    """
+    pages = []
+    for source_relative, built_slug, title in tool_entries or []:
+        pages.append(
+            {
+                "slug": built_slug,
+                "kind": "tool",
+                "sites": ["ms3", "res"],
+                "title": title,
+                "source": source_relative,
+                "producer": "site_manifest",
+            }
+        )
+    registry = cotw_registry if cotw_registry is not None else DEFAULT_COTW_REGISTRY
+    for week in registry.get("weeks", []):
+        stem = "cotw_" + week["date"].replace("-", "") + "_" + week["topic"]
+        for level in ("ms3", "res"):
+            built_slug = stem + "_" + level + ".md"
+            pages.append(
+                {
+                    "slug": built_slug,
+                    "kind": "page",
+                    "sites": [level],
+                    "title": "%s — %s" % (week.get("label", ""), level),
+                    "source": "08_Cases_and_Simulation/case-of-the-week/" + built_slug,
+                    "producer": "cotw_registry",
+                }
+            )
+    return {"version": 1, "pages": sorted(pages, key=lambda page: page["slug"])}
+
+
 def write_proposal_root(
     root: Path,
     ledger: dict,
@@ -114,9 +161,9 @@ def write_proposal_root(
     """Write a full synthetic repository root for build_risk_proposal()/
     the --write-proposal CLI: reviewed.json (legacy shape, no schema
     needed since this path never validates against it), topic_meta.json,
-    site_manifest.json, stand-in nav-building sources, and a Case of the
-    Week registry. Every parameter defaults to a minimal-but-valid stand-in
-    so a test only has to override the one piece it is exercising.
+    the derived shipped_pages.json listing, and stand-in nav-building
+    sources. Every parameter defaults to a minimal-but-valid stand-in so a
+    test only has to override the one piece it is exercising.
     """
     faculty = root / "13_Faculty_Resources"
     faculty.mkdir(parents=True, exist_ok=True)
@@ -126,19 +173,88 @@ def write_proposal_root(
     )
     site_build = faculty / "_automation" / "site_build"
     site_build.mkdir(parents=True, exist_ok=True)
-    manifest = {
-        "tools": tool_manifest_entries if tool_manifest_entries is not None else [],
-        "md": [],
-    }
-    (site_build / "site_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
-    (site_build / "build_deploy.py").write_text(ms3_nav_source, encoding="utf-8")
-    (site_build / "resident_section.py").write_text(resident_nav_source, encoding="utf-8")
-    cotw_dir = root / "08_Cases_and_Simulation" / "case-of-the-week"
-    cotw_dir.mkdir(parents=True, exist_ok=True)
-    (cotw_dir / "cotw_registry.json").write_text(
-        json.dumps(cotw_registry if cotw_registry is not None else DEFAULT_COTW_REGISTRY),
+    (site_build / "shipped_pages.json").write_text(
+        json.dumps(shipped_pages_document(tool_manifest_entries, cotw_registry)),
         encoding="utf-8",
     )
+    (site_build / "build_deploy.py").write_text(ms3_nav_source, encoding="utf-8")
+    (site_build / "resident_section.py").write_text(resident_nav_source, encoding="utf-8")
+
+
+SHIPPED_PAGES_RELATIVE = Path(
+    "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
+)
+DEFAULT_EFFECTIVE_PAGES = (("synthetic.md", "page", "content/synthetic.md"),)
+DEFAULT_EFFECTIVE_SOURCES = {"content/synthetic.md": "Synthetic body\n"}
+
+
+def write_effective_root(
+    root: Path,
+    ledger: dict,
+    *,
+    sources: dict | None = None,
+    topic_meta: dict | None = None,
+    pages: tuple | list | None = None,
+) -> None:
+    """Write every input load_effective_ledger() reads, under one synthetic root.
+
+    write_ledger() above writes reviewed.json and the schema only, which is all the
+    validation path needs; the projection also reads the derived shipped listing, the
+    SOURCE topic_meta.json, and the attested source bytes themselves.
+    """
+    write_ledger(root, ledger)
+    (root / "topic_meta.json").write_text(
+        json.dumps(topic_meta if topic_meta is not None else {}), encoding="utf-8"
+    )
+    shipped = root / SHIPPED_PAGES_RELATIVE
+    shipped.parent.mkdir(parents=True, exist_ok=True)
+    shipped.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "pages": [
+                    {
+                        "slug": slug,
+                        "kind": kind,
+                        "sites": ["ms3", "res"],
+                        "title": "Synthetic title",
+                        "source": source,
+                        "producer": "site_manifest",
+                    }
+                    for slug, kind, source in (
+                        DEFAULT_EFFECTIVE_PAGES if pages is None else pages
+                    )
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    for relative, text in (
+        DEFAULT_EFFECTIVE_SOURCES if sources is None else sources
+    ).items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+
+def bind_ledger(root: Path) -> dict:
+    """Give every reviewed row the contentHash the tree under `root` produces NOW.
+
+    The digest is computed by attestation_hash itself rather than restated here: a
+    fixture that hard-codes a hash pins the fixture, not the rule.
+    """
+    faculty = root / "13_Faculty_Resources" / "reviewed.json"
+    ledger = json.loads(faculty.read_text(encoding="utf-8"))
+    shipped = json.loads((root / SHIPPED_PAGES_RELATIVE).read_text(encoding="utf-8"))
+    topic_meta = json.loads((root / "topic_meta.json").read_text(encoding="utf-8"))
+    for slug, entry in ledger.items():
+        if entry.get("status") != "reviewed":
+            continue
+        entry["contentHash"] = attestation_hash.digest_from_tree(
+            root, shipped, topic_meta, slug
+        )
+    faculty.write_text(json.dumps(ledger), encoding="utf-8")
+    return ledger
 
 
 class LedgerValidationTests(unittest.TestCase):
@@ -407,6 +523,200 @@ class LedgerValidationTests(unittest.TestCase):
             )
             self.assertNotIn("2026-08-14", message)
 
+    def test_content_hash_is_a_40_hex_blob_sha_and_not_a_64_hex_digest(self) -> None:
+        """contentHash is `git hash-object` output -- sha1, 40 hex -- not a sha256.
+
+        The 64-hex pattern predates any implementation of the digest;
+        attestation_hash.blob_sha emits 40. Leaving the old pattern in place would let
+        a value no tool in the repository can produce sit in the ledger and validate,
+        which is a binding nothing can ever check. claimsHash and evidenceHash are
+        unrelated sha256 digests and stay at 64 -- asserted here so a blanket
+        search-and-replace across the three cannot pass unnoticed.
+        """
+        valid = reviewed_entry()
+        valid.update(
+            {"contentHash": "a" * 40, "claimsHash": "b" * 64, "evidenceHash": "c" * 64}
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_ledger(root, {"synthetic.md": valid})
+
+            loaded = governance.load_validated_ledger(root)
+
+        self.assertEqual(loaded["synthetic.md"]["contentHash"], "a" * 40)
+        self.assertEqual(loaded["synthetic.md"]["claimsHash"], "b" * 64)
+        self.assertEqual(loaded["synthetic.md"]["evidenceHash"], "c" * 64)
+
+        stale_width = reviewed_entry()
+        stale_width["contentHash"] = "a" * 64
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_ledger(root, {"synthetic.md": stale_width})
+
+            with self.assertRaises(governance.SurfaceGovernanceError) as raised:
+                governance.load_validated_ledger(root)
+
+        message = str(raised.exception)
+        self.assertEqual(
+            message, "reviewed.json: synthetic.md invalid at /synthetic.md/contentHash"
+        )
+        self.assertNotIn("a" * 64, message)
+
+
+class EffectiveLedgerTests(unittest.TestCase):
+    """load_effective_ledger(): the ledger as a learner surface must RENDER it.
+
+    The digest and the projection are pinned in tests/maintenance/test_attestation_hash.py.
+    What is pinned here is the wiring this module owns: that it reads the three inputs
+    from a repository root, that a drifted entry arrives at presentation_entry() as a
+    pending record carrying a reason, that the source ledger on disk is never rewritten,
+    and that a shape only a hand edit produces surfaces as SurfaceGovernanceError -- the
+    error every caller of this module already catches -- rather than as a bare
+    AttestationHashError escaping through a build script.
+    """
+
+    def test_a_bound_entry_loads_unchanged_and_is_reported_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_effective_root(root, {"synthetic.md": reviewed_entry()})
+            source = bind_ledger(root)
+
+            ledger, report = governance.load_effective_ledger(root)
+
+        self.assertEqual(ledger, source)
+        self.assertEqual(report["stale"], {})
+        self.assertEqual(set(report["bound"]), {"synthetic.md"})
+
+    def test_an_edited_source_renders_pending_and_keeps_the_review_date(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_effective_root(root, {"synthetic.md": reviewed_entry()})
+            source = bind_ledger(root)
+            (root / "content/synthetic.md").write_text(
+                "Synthetic body, revised after the review\n", encoding="utf-8"
+            )
+
+            ledger, report = governance.load_effective_ledger(root)
+            on_disk = json.loads(
+                (root / "13_Faculty_Resources" / "reviewed.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+
+        entry = ledger["synthetic.md"]
+        self.assertEqual(entry["status"], "pending")
+        self.assertEqual(entry["by"], attestation_hash.PENDING_SENTINEL)
+        self.assertEqual(
+            entry["reason"],
+            attestation_hash.STALE_REASON.format(at="2026-07-26"),
+        )
+        # The review really happened, on that date, over the older text -- and the
+        # stored hash is the evidence of what drifted, so neither is rewritten.
+        self.assertEqual(entry["at"], "2026-07-26")
+        self.assertEqual(entry["contentHash"], source["synthetic.md"]["contentHash"])
+        self.assertEqual(set(report["stale"]), {"synthetic.md"})
+        # The faculty's own record is theirs; only the console writes it.
+        self.assertEqual(on_disk, source)
+
+    def test_an_edited_topic_meta_record_renders_pending(self) -> None:
+        meta = {"synthetic.md": {"tldr": "Synthetic summary"}}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_effective_root(
+                root, {"synthetic.md": reviewed_entry()}, topic_meta=meta
+            )
+            bind_ledger(root)
+            edited = {"synthetic.md": {"tldr": "Synthetic summary, rewritten"}}
+            (root / "topic_meta.json").write_text(json.dumps(edited), encoding="utf-8")
+
+            ledger, report = governance.load_effective_ledger(root)
+
+        self.assertEqual(ledger["synthetic.md"]["status"], "pending")
+        self.assertEqual(set(report["stale"]), {"synthetic.md"})
+
+    def test_a_faculty_review_only_edit_leaves_the_entry_reviewed(self) -> None:
+        """Governance state is not content: attesting must not invalidate itself."""
+        meta = {"synthetic.md": {"tldr": "Synthetic summary"}}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_effective_root(
+                root, {"synthetic.md": reviewed_entry()}, topic_meta=meta
+            )
+            bind_ledger(root)
+            reviewed_meta = {
+                "synthetic.md": {
+                    "tldr": "Synthetic summary",
+                    "facultyReview": {"status": "reviewed", "lastReviewed": "2026-07-26"},
+                }
+            }
+            (root / "topic_meta.json").write_text(
+                json.dumps(reviewed_meta), encoding="utf-8"
+            )
+
+            ledger, report = governance.load_effective_ledger(root)
+
+        self.assertEqual(ledger["synthetic.md"]["status"], "reviewed")
+        self.assertEqual(report["stale"], {})
+
+    def test_an_unbound_reviewed_entry_fails_as_a_surface_governance_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_effective_root(root, {"synthetic.md": reviewed_entry()})
+
+            with self.assertRaises(governance.SurfaceGovernanceError) as raised:
+                governance.load_effective_ledger(root)
+
+        message = str(raised.exception)
+        self.assertIn("synthetic.md", message)
+        self.assertIn("unbound", message)
+
+    def test_the_build_log_line_names_the_count_and_truncates_the_list(self) -> None:
+        """Both builds print this line; the count is what a deploy log is read for."""
+        report = {"bound": {"a.md": "x"}, "stale": {}}
+        self.assertEqual(
+            governance.hash_report_summary(report),
+            "attestation hash: 1 bound, 0 stale",
+        )
+
+        report = {
+            "bound": {},
+            "stale": {name: {} for name in ("c.md", "a.md", "b.md")},
+        }
+        self.assertEqual(
+            governance.hash_report_summary(report, preview=2),
+            "attestation hash: 0 bound, 3 stale → rendered pending: a.md, b.md, …",
+        )
+
+    def test_a_projected_entry_reaches_a_learner_site_as_pending(self) -> None:
+        """The whole point: a drifted page renders pending, with the fixed copy."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_effective_root(root, {"synthetic.md": reviewed_entry()})
+            bind_ledger(root)
+            (root / "content/synthetic.md").write_text(
+                "Synthetic body, revised after the review\n", encoding="utf-8"
+            )
+
+            ledger, _report = governance.load_effective_ledger(root)
+
+        nav = [{"section": "S", "items": [{"t": "T", "f": "synthetic.md", "k": "md"}]}]
+        document = governance.build_site_document(ledger, nav, "ms3")
+        item = document["items"]["synthetic.md"]
+
+        self.assertEqual(item["status"], "pending")
+        self.assertEqual(
+            item["warning"],
+            "This page includes high-risk clinical teaching that has not "
+            "completed faculty attestation. Verify decisions with your "
+            "supervising clinician.",
+        )
+        self.assertEqual(
+            item["reason"], attestation_hash.STALE_REASON.format(at="2026-07-26")
+        )
+        serialized = json.dumps(document)
+        self.assertNotIn("contentHash", serialized)
+        self.assertNotIn("claimsHash", serialized)
+
 
 class SiteDocumentTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -426,7 +736,7 @@ class SiteDocumentTests(unittest.TestCase):
         reviewed.update(
             {
                 "note": "Internal faculty note — never shipped",
-                "contentHash": "a" * 64,
+                "contentHash": "a" * 40,
                 "claimsHash": "b" * 64,
                 "evidenceHash": "c" * 64,
                 "evidenceThrough": "2026-07-01",
@@ -499,7 +809,7 @@ class SiteDocumentTests(unittest.TestCase):
         )
         serialized = json.dumps(document)
         self.assertNotIn("Internal faculty note", serialized)
-        self.assertNotIn("a" * 64, serialized)
+        self.assertNotIn("a" * 40, serialized)
         self.assertNotIn("contentHash", serialized)
         self.assertNotIn("claimsHash", serialized)
         self.assertNotIn("evidenceHash", serialized)
@@ -992,7 +1302,7 @@ class BuildContractTests(unittest.TestCase):
         reviewed.update(
             {
                 "note": "Internal faculty note — never shipped",
-                "contentHash": "a" * 64,
+                "contentHash": "a" * 40,
                 "claimsHash": "b" * 64,
                 "evidenceHash": "c" * 64,
                 "evidenceThrough": "2026-07-01",
@@ -1010,7 +1320,7 @@ class BuildContractTests(unittest.TestCase):
             raw = output.read_text(encoding="utf-8")
 
         self.assertNotIn("Internal faculty note", raw)
-        self.assertNotIn("a" * 64, raw)
+        self.assertNotIn("a" * 40, raw)
         self.assertNotIn("contentHash", raw)
         self.assertNotIn("claimsHash", raw)
         self.assertNotIn("evidenceHash", raw)

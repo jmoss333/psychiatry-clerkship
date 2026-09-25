@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "reviewStatus": "pending-faculty-review",
+  "purpose": "A separate fresh-phrasing faculty exercise. No expected grades or faculty judgments are encoded. Do not tune the engine to these examples before independent review.",
+  "pairs": [
+    {
+      "id": "r2-01",
+      "case": "Dana",
+      "setup": "warm",
+      "before": [],
+      "sides": [
+        {"turns": ["Lately, you have considered ending your own life."]},
+        {"turns": ["Lately, have you considered ending your own life?"]}
+      ],
+      "discussion": "How do you describe the learner's conversational move in each version? Does the patient reply support the same or a different observation?"
+    },
+    {
+      "id": "r2-02",
+      "case": "Marcus",
+      "setup": "warm",
+      "before": [],
+      "sides": [
+        {"turns": ["During this week, have thoughts about suicide come up?"]},
+        {"turns": ["During this week, you haven't had thoughts about suicide, right?"]}
+      ],
+      "discussion": "Does the wording invite the same range of responses? Discuss the learner's move separately from the information in the actual patient reply."
+    },
+    {
+      "id": "r2-03",
+      "case": "Ray",
+      "setup": "warm",
+      "before": [],
+      "sides": [
+        {"turns": ["Since arriving here, have you wanted to kill yourself?"]},
+        {"turns": ["At handover I read, “Since arriving here, have you wanted to kill yourself?”"]}
+      ],
+      "discussion": "What supports your interpretation of who is being addressed? Distinguish reading a quoted question from directing a question to the patient; retain uncertainty if the exchange does not settle it."
+    },
+    {
+      "id": "r2-04",
+      "case": "Dana",
+      "setup": "warm",
+      "before": ["Have you had thoughts of killing yourself?"],
+      "sides": [
+        {"turns": ["Have you made any plans to end your life?", "Could you get to those pills?", "What helps you choose to stay alive?"]},
+        {"turns": ["Have you made any plans to end your life? Could you get to those pills? What helps you choose to stay alive?"]}
+      ],
+      "discussion": "Which questions received relevant answers in each exchange? Compare the entire follow-up sequence, and separate wording the engine missed from information the patient did or did not provide."
+    }
+  ]
+}

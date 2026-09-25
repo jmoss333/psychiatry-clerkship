@@ -5,7 +5,7 @@
 **What this is.** A teaching index of the structured order sets used on the unit. These are *institutional protocols* — this page orients you to what each is for and when it's used. **Always pull exact medications, doses, and monitoring from the live EHR order set, not from memory or from this page.**
 
 ## Withdrawal
-- **Alcohol withdrawal (CIWA-Ar–driven).** Symptom-triggered benzodiazepine dosing scored on the CIWA-Ar, with escalation for seizure/delirium-tremens risk; thiamine before or with glucose. Practice the scoring with the **Withdrawal (CIWA-Ar/COWS) card**.
+- **Alcohol withdrawal (CIWA-Ar–driven).** Symptom-triggered benzodiazepine dosing guided by serial CIWA-Ar assessments on your unit's form, with escalation for seizure/delirium-tremens risk; thiamine before or with glucose. The **Withdrawal recognition card** covers the alcohol-withdrawal timeline and scores the COWS; it does not reproduce the CIWA-Ar.
 - **Opioid withdrawal (COWS-driven).** COWS scoring guides supportive care and buprenorphine induction once objective withdrawal is present. Same card.
 - **Benzodiazepine taper.** A structured, gradual taper to prevent withdrawal seizures/destabilization (the unit's BHU2 benzodiazepine-taper order-set spec).
 

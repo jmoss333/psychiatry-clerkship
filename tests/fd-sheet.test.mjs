@@ -7,9 +7,11 @@
 // This is the 2am surface, so two of the assertions below are load-bearing beyond ordinary markup
 // coverage:
 //
-//   1. "every real kit protocol renders >= 3 steps" runs against the LIVE topic_meta.json, not a
-//      fixture, so a safetySteps array emptied by an unrelated edit fails here rather than on the
-//      ward.
+//   1. "every real kit protocol renders >= 3 steps" runs against the SOURCE topic_meta.json, not
+//      a fixture, so a safetySteps array emptied by an unrelated edit fails here rather than on
+//      the ward. (Source, not built: the built copy may demote a drifted page's facultyReview to
+//      pending -- see attestation_hash.project_topic_meta_faculty_review -- which changes only
+//      governance state, never safetySteps.)
 //   2. "no protocol step or doc line is a literal in fd_sheet.js" pins the single most important
 //      rule of the module: protocol content is faculty-attested content owned by topic_meta.json,
 //      and a hardcoded copy in the renderer would be unreviewed clinical text on the one surface
@@ -43,6 +45,10 @@ const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/
 
 const readJson = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const REAL_CUR = readJson('../curriculum.json');
+// The SOURCE topic_meta.json -- the faculty's own record, which this suite asserts against. The
+// BUILT copy may demote a drifted page's facultyReview to `pending` (see
+// attestation_hash.project_topic_meta_faculty_review), so a `reviewed` premise below is a fact
+// about the source, not about what either site serves today.
 const REAL_META = readJson('../topic_meta.json');
 const REAL_TOOLS = readJson('../tool_registry.json');
 const REAL_MAN = readJson(`${BUILD}/site_manifest.json`);
@@ -122,6 +128,16 @@ function crisisTemplateInitSource() {
   return shellSrc.slice(start, end);
 }
 
+// fdLiveState now resolves the stored theme through fd_shell.js's fdThemeMode -- the render half
+// of the settings panel's Appearance section. The REAL function is spliced into the boundary
+// rather than stubbed: a stub returning a constant would keep this green if live state ever
+// stopped normalising, which is the exact defect (everyone shows System) the panel would hide.
+function themeModeSource() {
+  const m = read('frontdoor/fd_shell.js').match(/function fdThemeMode\(stored\)\{[\s\S]*?\n\}/);
+  assert.ok(m, 'fdThemeMode must remain extractable from fd_shell.js');
+  return m[0];
+}
+
 function minimalTemplateDocument(templateHtml) {
   const template = { innerHTML: templateHtml };
   return {
@@ -135,6 +151,17 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
   const boundary = new Function('fdSheet', 'index', 'topicMeta', 'document', `
     ${failureCopyGlobalSource()}
     var FD_INDEX=index;
+    // fdLiveState reads the build-injected role list for the settings panel's You section.
+    // A realistic one rather than [] so nothing in the boundary is degenerate; this file's
+    // subject is protocol failure copy, and no assertion here depends on its contents.
+    var FD_ROLES=[{id:'student',name:'Core rotation'}];
+    var facultyPreviewRequest=null, location={search:''};
+    // The browser globals fdLiveState reads, stubbed the same way location is. An empty window
+    // is the shipped case rather than a degenerate one: analytics.js is injected only where
+    // CLERKSHIP_ANALYTICS named the site, so on today's builds there is no cwAnalytics and the
+    // settings panel's Usage section renders nothing. Omit these and the boundary throws on a
+    // global that always exists in the page this source is extracted from.
+    var window={}, navigator={};
     ${crisisTemplateInitSource()}
     function fdClone(value){var out={};for(var key in value){out[key]=value[key];}return out;}
     function progLoad(){return {};}
@@ -143,12 +170,14 @@ function liveShellBoundary(index, topicMeta, templateHtml) {
     function capRead(){return {v:1,items:[]};}
     function fdActivityDays(){return [false,false,false,false,false,false,false];}
     function fdProgressDoneMap(){return {};}
+    function fdProgressWeek(state){return state.week;}
     function LS(){return '';}
     function fdFindWeek(index,n){for(var i=0;i<index.weeks.length;i++){if(index.weeks[i].n===n)return index.weeks[i];}return null;}
     function fdRotationWeek(){return null;}
     function fdRoleName(id){return id||'';}
     function fdItemsForWeek(){return [];}
     function fdTodayProgress(){return {pct:0};}
+    ${themeModeSource()}
     ${liveStateSource()}
     return function(state){
       var live=fdLiveState(state);
@@ -191,7 +220,7 @@ test('the kit variant has no back affordance -- it is the root of the sheet', ()
 
 // ---- the protocol view ----------------------------------------------------------------------
 
-test('every real kit protocol renders at least 3 steps from the live topic_meta.json', () => {
+test('every real kit protocol renders at least 3 steps from the source topic_meta.json', () => {
   for (const ref of KIT_REFS) {
     const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref });
     const n = html.split('class="fd-step"').length - 1;
@@ -290,11 +319,18 @@ test('the live shell boundary renders a valid reviewed protocol without failure 
     sheet: 'delirium.md', week: 1, done: {},
   });
   const html = rendered.html;
+  // Fixture premise, and a SOURCE-copy fact: the built topic_meta.json may read `pending` for
+  // this same slug once its attestation drifts (project_topic_meta_faculty_review), which is
+  // exactly the Front Door behaviour PR 1b adds. This assertion pins the renderer's reviewed
+  // branch, not what either site serves today.
   assert.equal(REAL_META['delirium.md'].facultyReview.status, 'reviewed', 'fixture premise');
   assert.equal(html.includes(rendered.copy), false,
     'valid reviewed data must not render the owner-approved failure copy');
   assert.doesNotMatch(html, /class="fd-sheet__failure"/);
-  assert.match(html, /<div class="fd-sheet__attribution">✓ From: delirium\.md · faculty-attested<\/div>/);
+  // "From:" names the page a learner would recognise, never the file; the ref rides on data-ref.
+  const deliriumTitle = F.fdEsc(REAL_INDEX.byRef['delirium.md'].title).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  assert.match(html, new RegExp(`<div class="fd-sheet__attribution" data-ref="delirium\\.md">✓ From: ${deliriumTitle} · faculty-attested</div>`));
+  assert.doesNotMatch(html, /From: delirium\.md/, 'the slug is not learner-facing copy');
   assert.doesNotMatch(html, /fd-sheet__pending|Not yet faculty-reviewed/);
   assert.equal(html.split(crisisHtml).length - 1, 1,
     'the template-derived canonical crisis block appears once in a protocol sheet');
@@ -314,8 +350,9 @@ test('the live shell boundary renders a valid pending protocol without failure c
   assert.doesNotMatch(html, /fd-sheet__attribution/);
   assert.doesNotMatch(html, /✓ From:/);
   assert.match(html,
-    /<p class="fd-sheet__pending">Not yet faculty-reviewed · From: evil\.md<\/p>/,
-    'absence of the attested treatment is not an observable pending-review state');
+    /<p class="fd-sheet__pending" data-ref="evil\.md">Not yet faculty-reviewed · From: &lt;b&gt;Evil&lt;\/b&gt;<\/p>/,
+    'absence of the attested treatment is not an observable pending-review state; the page title is named and escaped');
+  assert.doesNotMatch(html, /From: <b>|From: evil\.md/);
   assert.equal(html.split(crisisHtml).length - 1, 1,
     'the template-derived canonical crisis block appears once in a protocol sheet');
 });

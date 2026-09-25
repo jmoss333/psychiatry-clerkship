@@ -584,7 +584,7 @@ test('malformed members cannot shrink a four-item batch below the balance thresh
   assert.deepEqual(codes(result.issues), ['batch.answer_key_balance']);
 });
 
-test('current repository bank has 189 blocker-free active items with a balanced draft answer-key spread', () => {
+test('current repository bank: every active item is blocker-free, statuses partition it, and the draft answer keys stay balanced', () => {
   const bank = JSON.parse(fs.readFileSync(path.join(repo, 'question_bank.json'), 'utf8'));
   const manifest = JSON.parse(fs.readFileSync(path.join(repo, '13_Faculty_Resources/_automation/site_build/site_manifest.json'), 'utf8'));
   const manifestPages = (manifest.md || []).map(([, slug]) => slug);
@@ -607,12 +607,34 @@ test('current repository bank has 189 blocker-free active items with a balanced 
   // attest/pending, and landed 2026-08-27 — this time the replay was verified against that
   // doctrine first: the item's content is byte-identical (status aside) between the branch
   // base and main, so the status still describes the content it was given for.
-  assert.equal(result.counts.total, 189);
-  assert.equal(result.counts.draft, 45);
-  assert.equal(result.counts.attested, 144);
-  assert.equal(Object.keys(result.byId).length, 189);
+  // The 2026-09-24 joint safety PR (peer-review WP-1 + architecture WP-1a) corrected ten
+  // attested items and demoted each attested->draft in the same diff, as Gate B requires
+  // (J4 cap: <= 10 per PR): qb_cog_002, qb_cog_014, qb_eth_007, qb_mood_002, qb_mood_013,
+  // qb_oth_001, qb_otherdx_001, qb_sud_002, qb_sud_005, qb_sud_014. Their correct keys join
+  // the draft spread (still balanced); the counts return as the faculty console re-attests them.
+  //
+  // 2026-09-25: THE DRAFT/ATTESTED SPLIT IS NO LONGER PINNED. It is the faculty's queue, not
+  // the code's behaviour, and CLAUDE.md's rule is explicit — "a test may not depend on live
+  // governance state ... faculty draining that queue turns it red" (#729). This assertion
+  // did exactly that: 39 console attestations on rolling PR #781 took draft 55 -> 16, and the
+  // pinned 55 / 134 / {A:15,B:13,C:14,D:13} turned the build red for being right, blocking the
+  // attestations it was counting. What stays pinned is what the code must guarantee whatever
+  // the queue: every active item assessed and blocker-free, draft + attested partitioning the
+  // active bank, the key tally covering exactly the drafts, and the drafts' keys still passing
+  // the batch balance rule the console enforces.
+  const active = bank.items.filter(entry => !entry.retired);
+  const drafts = active.filter(entry => entry.status === 'draft');
+  assert.equal(result.counts.total, active.length);
+  assert.equal(result.counts.draft + result.counts.attested, result.counts.total);
+  assert.equal(result.counts.draft, drafts.length);
+  assert.equal(Object.keys(result.byId).length, active.length);
   assert.equal(Object.values(result.byId).flatMap(entry => entry.blockers).length, 0);
-  assert.deepEqual(result.answerKeys, { A: 12, B: 12, C: 11, D: 10 });
+  assert.deepEqual(Object.keys(result.answerKeys).sort(), [...OPTION_KEYS].sort());
+  assert.equal(Object.values(result.answerKeys).reduce((sum, n) => sum + n, 0), result.counts.draft);
+  if (drafts.length >= 4) {
+    assert.equal(codes(assessBatch(drafts).issues).includes('batch.answer_key_balance'), false,
+      'the remaining drafts keep a balanced answer-key spread');
+  }
   for (const item of bank.items.filter(entry => entry.retired)) {
     assert.equal(Object.hasOwn(result.byId, item.id), false);
   }

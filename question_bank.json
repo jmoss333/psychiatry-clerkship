@@ -243,7 +243,7 @@
     },
     {
       "id": "qb_mood_002",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -293,7 +293,7 @@
       ],
       "why": "Treat the number not the patient, Missing the interaction, and Wrong toxidrome are the traps. Lithium has a narrow therapeutic window; NSAIDs reduce prostaglandin-mediated renal clearance and push lithium levels into the toxic range — a textbook drug interaction. The 2-day picture of tremor, confusion, and vomiting in a lithium-maintained patient who just started an NSAID is lithium toxicity until proven otherwise.",
       "pearl": "NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push lithium levels toward toxicity — check the list when lithium patients deteriorate.",
-      "evidence": "t_mood.md 'Lithium' — lithium runs a narrow therapeutic window (~0.6–1.2 mEq/L); NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+      "evidence": "t_mood.md 'Lithium' — lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults); NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
       "tier2": {
         "q": "Why does ibuprofen raise lithium levels?",
         "options": [
@@ -532,7 +532,7 @@
     },
     {
       "id": "qb_sud_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -544,7 +544,7 @@
         "t_sud.md"
       ],
       "link": {
-        "label": "Score at the bedside — CIWA-Ar / COWS",
+        "label": "Withdrawal recognition card (COWS)",
         "href": "tools/withdrawal.html"
       },
       "stem": "A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. The most important step before administering the glucose is which of the following?",
@@ -585,7 +585,7 @@
     },
     {
       "id": "qb_cog_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -633,8 +633,8 @@
         }
       ],
       "why": "Psychosis = schizophrenia drives the dangerous action: haloperidol in an unexcluded catatonia can precipitate NMS. Waxy flexibility (sustained posturing) is a catatonic sign — catatonia must be rated before any dopamine blocker is started. Restraint first violates least-restrictive principle; Quiet patient = stable patient defers an urgent evaluation.",
-      "pearl": "Avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia; the lorazepam challenge is both diagnostic and therapeutic.",
-      "evidence": "catatonia.md 'Management principles' — avoid antipsychotics until catatonia is excluded — they can precipitate or worsen NMS and malignant catatonia. A positive lorazepam challenge both supports the diagnosis and begins treatment."
+      "pearl": "Avoid antipsychotics until catatonia is excluded or has responded to treatment — they can precipitate or worsen NMS and malignant catatonia; the lorazepam challenge is both diagnostic and therapeutic.",
+      "evidence": "catatonia.md 'Management principles' — avoid antipsychotics until catatonia is excluded or has responded to treatment — they can precipitate or worsen NMS and malignant catatonia; if the underlying psychosis then needs one, the team introduces it cautiously, with benzodiazepine cover. A positive lorazepam challenge both supports the diagnosis and begins treatment."
     },
     {
       "id": "qb_pha_001",
@@ -715,7 +715,7 @@
     },
     {
       "id": "qb_pha_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -737,12 +737,12 @@
           "t": "Monthly liver function tests — clozapine is heavily metabolized by the liver and hepatotoxicity is the primary dose-limiting toxicity",
           "trap": {
             "name": "Wrong monitoring target",
-            "note": "Hepatotoxicity is not the primary safety concern for clozapine — agranulocytosis is the life-threatening adverse effect that drives mandatory blood monitoring."
+            "note": "Hepatotoxicity is not the primary safety concern for clozapine — agranulocytosis is the life-threatening adverse effect that drives ongoing ANC monitoring."
           }
         },
         {
           "key": "B",
-          "t": "Absolute neutrophil count monitoring per prescribing requirements — clozapine carries a risk of agranulocytosis",
+          "t": "Absolute neutrophil count monitoring per the prescribing information — clozapine carries a risk of agranulocytosis",
           "c": true
         },
         {
@@ -750,7 +750,7 @@
           "t": "Serum clozapine levels at every visit — toxicity is reliably predicted by drug concentration",
           "trap": {
             "name": "Treat the number, not the patient",
-            "note": "Serum levels inform clinical decisions but do not replace the ANC monitoring that is the mandatory safety requirement for this medication."
+            "note": "Serum levels inform clinical decisions but do not replace the ANC monitoring that the prescribing information calls for."
           }
         },
         {
@@ -758,13 +758,13 @@
           "t": "Monthly QTc interval on ECG — clozapine's primary dose-limiting toxicity is cardiac arrhythmia",
           "trap": {
             "name": "Wrong monitoring target",
-            "note": "QTc prolongation is the primary concern for other antipsychotics (thioridazine, ziprasidone); clozapine's specific mandatory monitoring is the ANC for agranulocytosis."
+            "note": "QTc prolongation is the primary concern for other antipsychotics (thioridazine, ziprasidone); clozapine's specific safety monitoring is the ANC for agranulocytosis."
           }
         }
       ],
-      "why": "Wrong monitoring target in two forms — LFTs and QTc — and Treat the number not the patient (serum levels without ANC) are the traps. Clozapine's mandated monitoring is the absolute neutrophil count due to the risk of potentially fatal agranulocytosis. Serum levels and LFTs may be checked but do not constitute the primary safety obligation.",
-      "pearl": "Clozapine requires mandatory ANC monitoring for agranulocytosis; also watch for myocarditis, severe constipation/ileus, and seizures.",
-      "evidence": "psychopharm_primer.md — Clozapine for treatment-resistant schizophrenia: ANC monitoring per prescribing information; also watch for myocarditis, severe constipation/ileus, and seizures."
+      "why": "Wrong monitoring target in two forms — LFTs and QTc — and Treat the number not the patient (serum levels without ANC) are the traps. Clozapine's key safety monitoring is the absolute neutrophil count per the prescribing information (the REMS was eliminated in 2025, so this now rests on the prescriber) due to the risk of potentially fatal agranulocytosis. Serum levels and LFTs may be checked but do not constitute the primary safety obligation.",
+      "pearl": "Clozapine requires ANC monitoring for agranulocytosis per its prescribing information (the REMS was eliminated in 2025); also watch for myocarditis, severe constipation/ileus, and seizures.",
+      "evidence": "psychopharm_primer.md — Clozapine's power comes packaged with ongoing ANC monitoring (per prescribing information; the FDA eliminated the clozapine REMS in 2025) — and watch for myocarditis, severe constipation/ileus, and seizures."
     },
     {
       "id": "qb_saf_001",
@@ -928,7 +928,7 @@
     },
     {
       "id": "qb_per_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -950,7 +950,7 @@
           "t": "Prescribe lorazepam PRN — addressing the anxiety will help her engage with skills",
           "trap": {
             "name": "The reflexive benzodiazepine",
-            "note": "Benzodiazepines in BPD carry the highest risk of attempted or completed suicide of any psychotropic class studied and worsen disinhibition — they are contraindicated in this context."
+            "note": "Benzodiazepines in BPD are associated with the highest risk of suicide attempt or suicide death of any psychotropic class studied and worsen disinhibition — they are contraindicated in this context."
           }
         },
         {
@@ -971,13 +971,13 @@
         },
         {
           "key": "D",
-          "t": "Minimize pharmacotherapy — if needed, a single low-risk agent for ≤1 week, preferring a sedating antihistamine or low-dose quetiapine over a benzodiazepine.",
+          "t": "Minimize pharmacotherapy — if needed, a single low-risk agent for ≤1 week, such as a sedating antihistamine, rather than a benzodiazepine.",
           "c": true
         }
       ],
-      "why": "The reflexive benzodiazepine in two forms (PRN and scheduled) and Polypharmacy first are the traps. No medication treats BPD itself; the evidence base supports skills over pills, and benzodiazepines in BPD carry the highest risk of attempted or completed suicide of any psychotropic class studied (HR 1.61, Lieslehto 2023). The NICE-aligned approach is a single, low-risk agent at the minimum dose for ≤1 week — sedating antihistamine or low-dose quetiapine preferred over benzodiazepines.",
-      "pearl": "Benzodiazepines in BPD carry the highest risk of attempted or completed suicide of any class studied — reach for skills, not pills.",
-      "evidence": "t_personality.md — do not start or escalate benzodiazepines — they carry the highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, Lieslehto 2023) and worsen disinhibition. If a crisis genuinely needs pharmacology, follow the NICE rule: a single agent at the minimum effective dose for ≤1 week (prefer a sedating antihistamine or low-dose quetiapine over benzodiazepines and TCAs)."
+      "why": "The reflexive benzodiazepine in two forms (PRN and scheduled) and Polypharmacy first are the traps. No medication treats BPD itself; the evidence base supports skills over pills, and benzodiazepines in BPD are associated with the highest risk of suicide attempt or suicide death of any psychotropic class studied (HR 1.61, Lieslehto 2023, registry data). The NICE-aligned approach is a single, low-risk agent at the minimum dose for ≤1 week — NICE names a sedative antihistamine (low side-effect burden, low misuse potential, relatively safe in overdose) rather than a benzodiazepine.",
+      "pearl": "Benzodiazepines in BPD are associated with the highest risk of suicide attempt or suicide death of any class studied (registry data) — reach for skills, not pills.",
+      "evidence": "t_personality.md — do not start or escalate benzodiazepines — they carry the highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, Lieslehto 2023) and worsen disinhibition. If a crisis genuinely needs pharmacology, follow the NICE rule: a single agent at the minimum effective dose for ≤1 week (NICE names a sedative antihistamine — low side-effect burden, low misuse potential, relatively safe in overdose — rather than a benzodiazepine)."
     },
     {
       "id": "qb_chd_001",
@@ -1085,7 +1085,7 @@
     },
     {
       "id": "qb_oth_001",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -1101,41 +1101,41 @@
         "label": "Open the Eating Disorders page",
         "href": "?page=t_eating.md"
       },
-      "stem": "A 16-year-old with severe anorexia nervosa has been restrictive for 4 months and is medically admitted with critically low weight. Before nutritional rehabilitation begins, which approach most directly reduces the risk of refeeding syndrome?",
+      "stem": "A 16-year-old with anorexia nervosa is medically admitted at about 75% of median BMI with a resting heart rate of 42 bpm. Potassium, phosphate, and magnesium are normal, and she has no other acute illness. Which initial nutrition plan is most appropriate?",
       "options": [
         {
           "key": "A",
-          "t": "Start full nutritional rehabilitation immediately at a standard adult caloric target to restore weight as rapidly as possible.",
+          "t": "Start at no more than 1,000 kcal/day and advance slowly over the first one to two weeks, because a low starting target is the safest way to prevent refeeding syndrome.",
           "trap": {
-            "name": "Faster is safer",
-            "note": "Rapid nutritional restoration in the severely malnourished is the trigger for refeeding syndrome — the metabolic shift to anabolism precipitates life-threatening electrolyte shifts; starting at a conservative rate is essential."
+            "name": "Underfeeding as safety",
+            "note": "Her malnutrition is moderate and she has no highest-risk features, so a low start prolongs underfeeding without making refeeding safer — refeeding risk tracks the degree of malnutrition, not the starting calories. A cautious start is kept for the highest-risk patients."
           }
         },
         {
           "key": "B",
-          "t": "Give prophylactic anxiolytics and monitor for 24 hours before introducing nutrition — anxiety increases metabolic demand in malnourished patients.",
+          "t": "Give a prophylactic anxiolytic and observe for 24 hours before introducing any nutrition, because anxiety raises metabolic demand.",
           "trap": {
             "name": "Sedation before nutrition",
-            "note": "Refeeding syndrome risk is metabolic (phosphate, potassium, and magnesium shifts), not anxiety-driven — benzodiazepines are not part of the refeeding protocol; the intervention is conservative caloric refeeding with electrolyte monitoring."
+            "note": "Refeeding risk is metabolic (phosphate, potassium, and magnesium shifts), not anxiety-driven; sedation is not part of refeeding, and delaying nutrition only prolongs starvation."
           }
         },
         {
           "key": "C",
-          "t": "Correct all electrolyte abnormalities to normal before introducing any nutrition — electrolyte imbalances worsen if nutrition begins before they are stable.",
+          "t": "Hold all nutrition until her electrolytes have been stable for 48 hours, then begin feeding.",
           "trap": {
             "name": "Normalize first",
-            "note": "Waiting for perfect electrolytes before any nutrition is not standard — some electrolyte correction runs in parallel with conservative refeeding; withholding all nutrition delays recovery without preventing the syndrome."
+            "note": "Her electrolytes are already normal, and feeding is not delayed to normalise electrolytes in any case — monitoring and repletion run alongside refeeding."
           }
         },
         {
           "key": "D",
-          "t": "Start caloric refeeding at a conservative initial target and advance slowly; administer thiamine before or with carbohydrate and check phosphate, potassium, and magnesium at least daily early in refeeding.",
+          "t": "Start at a higher-calorie target, advance daily, and check phosphate, potassium, and magnesium closely; give thiamine.",
           "c": true
         }
       ],
-      "why": "Faster is safer, Sedation before nutrition, and Normalize first all create delay or metabolic risk. The source's 'start low, go slow' principle is the safety framework: conservative start, daily electrolyte checks, and thiamine before carbohydrate to prevent Wernicke encephalopathy.",
-      "pearl": "Refeeding syndrome prevention: start low, go slow, give thiamine before carbohydrate, check phosphate daily.",
-      "evidence": "t_eating.md — Refeeding syndrome: the safe posture is 'start low, go slow': begin conservative caloric refeeding, check phosphate/potassium/magnesium at least daily early, supplement phosphate and give thiamine before or with carbohydrate, and advance calories per protocol as electrolytes stay stable."
+      "why": "Underfeeding as safety, Sedation before nutrition, and Normalize first all delay nutrition without making refeeding safer. For a medically admitted adolescent with moderate malnutrition and no highest-risk features, current guidance supports starting at a higher-calorie target and advancing daily with close phosphate, potassium, and magnesium monitoring, because refeeding risk tracks the degree of malnutrition rather than the starting calories. A cautious start is reserved for the highest-risk patients — for example adults with BMI < 13 plus acute illness or abnormal electrolytes.",
+      "pearl": "Refeeding: risk tracks malnutrition, not the starting calories — start higher unless highest-risk, check phosphate/K/Mg daily, give thiamine, and don't underfeed.",
+      "evidence": "t_eating.md — Refeeding syndrome = watch the phosphate — risk tracks the degree of malnutrition, not the starting calories; most patients can start higher with daily phosphate/K/Mg checks, and the most malnourished or medically unstable start cautiously; give thiamine."
     },
     {
       "id": "qb_oth_002",
@@ -2001,7 +2001,7 @@
     },
     {
       "id": "qb_cog_014",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "neurocog",
       "competency": [
@@ -2035,7 +2035,7 @@
         },
         {
           "key": "C",
-          "t": "Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia.",
+          "t": "Stop all antipsychotics immediately, transfer to a medical unit for hemodynamic monitoring and supportive care, continue lorazepam, and obtain urgent psychiatric and neurology consultation — ECT should be considered for malignant or refractory catatonia.",
           "c": true
         },
         {
@@ -2048,7 +2048,7 @@
         }
       ],
       "why": "Underestimate the emergency and Agitation = antipsychotic are the two clinical catastrophes. This is NMS/malignant catatonia: fever, autonomic instability, lead-pipe rigidity, elevated CK after antipsychotic escalation. The correct sequence is stop all antipsychotics, transfer to a medical unit for hemodynamic monitoring, continue lorazepam — benzodiazepines remain first-line pharmacotherapy for malignant catatonia while ECT is arranged — and pursue ECT emergently if the patient does not rapidly improve; the error in option A is observation on the psychiatric unit, not the lorazepam, and certainly not more antipsychotic.",
-      "pearl": "Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, and consider ECT urgently.",
+      "pearl": "Malignant catatonia overlaps with NMS: fever + rigidity + elevated CK + autonomic instability after antipsychotic exposure — stop antipsychotics, transfer to medical, continue lorazepam, and consider ECT urgently.",
       "evidence": "catatonia.md — The emergency you must never miss is malignant catatonia: autonomic instability, hyperthermia, and rigidity that clinically overlaps with neuroleptic malignant syndrome (NMS). ECT is the treatment for severe, malignant, or benzodiazepine-refractory catatonia and should not be delayed when the patient is deteriorating.",
       "tier2": {
         "q": "Why does ECT have a role in malignant catatonia when benzodiazepines have not been effective?",
@@ -2063,7 +2063,7 @@
           },
           {
             "key": "C",
-            "t": "ECT directly treats the catatonic syndrome regardless of etiology — it is the definitive treatment for malignant or benzodiazepine-refractory catatonia and its effectiveness does not depend on removing the antipsychotic.",
+            "t": "ECT directly treats the catatonic syndrome regardless of etiology — it is the definitive treatment for malignant or benzodiazepine-refractory catatonia and it can work before the antipsychotic has fully cleared (the antipsychotic is still stopped).",
             "c": true
           },
           {
@@ -2071,7 +2071,7 @@
             "t": "ECT is a last resort used only after a second antipsychotic trial has failed in treatment-resistant psychosis."
           }
         ],
-        "why": "ECT acts directly on the motor and autonomic systems driving catatonia — its mechanism bypasses the pharmacologic state that triggered the syndrome. The BAP 2023 catatonia guideline endorses ECT for severe, refractory, or malignant catatonia as a treatment that should not be delayed when the patient is deteriorating. The example here illustrates this: benzodiazepines are insufficient for malignant presentations; ECT can be lifesaving even when the antipsychotic cannot be fully cleared."
+        "why": "ECT acts directly on the motor and autonomic systems driving catatonia — its mechanism bypasses the pharmacologic state that triggered the syndrome. The BAP 2023 catatonia guideline endorses ECT for severe, refractory, or malignant catatonia as a treatment that should not be delayed when the patient is deteriorating. The example here illustrates this: benzodiazepines alone may be insufficient for malignant presentations, so ECT should not be delayed if lorazepam does not produce rapid improvement — the antipsychotic is still stopped, and ECT can be lifesaving before it has fully cleared."
       }
     },
     {
@@ -2288,7 +2288,7 @@
     },
     {
       "id": "qb_saf_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2319,10 +2319,10 @@
         },
         {
           "key": "C",
-          "t": "Professional status significantly reduces suicide risk — healthcare workers have lower rates of completed suicide than the general population.",
+          "t": "Professional status significantly reduces suicide risk — healthcare workers have lower suicide death rates than the general population.",
           "trap": {
             "name": "Face-value reassurance",
-            "note": "Healthcare workers do not have lower rates of completed suicide — professional identity may create barriers to seeking help rather than functioning as a protective factor."
+            "note": "Healthcare workers do not have lower suicide death rates — female nurses die by suicide at about twice the rate of women in the general population (Davis, JAMA Psychiatry 2021), and professional identity may create barriers to seeking help rather than functioning as a protective factor."
           }
         },
         {
@@ -2340,7 +2340,7 @@
     },
     {
       "id": "qb_saf_006",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2387,7 +2387,7 @@
           }
         }
       ],
-      "why": "Document and continue, Denies SI = low risk, and Quotes = documentation all replace formulation with something easier to write. Strong safety documentation names chronic factors, acute drivers, protective factors with limits, modifiable targets, and the current plan. 'Denies SI/HI. No acute safety concerns.' is the example the page uses for the weakest possible documentation.",
+      "why": "Document and continue, Denies SI = low risk, and Quotes = documentation all replace formulation with something easier to write. Strong safety documentation names chronic factors, acute drivers, protective factors with limits (omitted in the keyed example for brevity — add them), modifiable targets, and the current plan. 'Denies SI/HI. No acute safety concerns.' is the example the page uses for the weakest possible documentation.",
       "pearl": "Strong safety documentation = chronic factors + acute drivers + protective factors with limits + modifiable targets + current plan — not 'denies SI/HI.'",
       "evidence": "pg_suicide.md 'Documentation Sentence' — Strong: [detailed formulation with acute risk factors, chronic risk, means safety status, and plan]. Weak: 'Denies SI/HI. No acute safety concerns.'"
     },
@@ -2552,7 +2552,7 @@
     },
     {
       "id": "qb_saf_010",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2571,10 +2571,10 @@
       "options": [
         {
           "key": "A",
-          "t": "Black patients are restrained at similar rates to White patients after adjusting for clinical acuity — the apparent disparity is explained by severity of presentation.",
+          "t": "Black patients are restrained at similar rates to White patients after adjusting for clinical acuity — the apparent disparity is explained by severity of presentation and does not belong in the post-restraint debrief.",
           "trap": {
             "name": "No disparity exists",
-            "note": "The adjusted disparity persists after controlling for clinical factors — it is a quality-of-care issue, not an acuity artifact."
+            "note": "The disparity persists after adjustment for measured clinical factors — adjustment cannot rule out every residual confounder, but a disparity that survives it is treated as a quality-of-care issue."
           }
         },
         {
@@ -2587,7 +2587,7 @@
         },
         {
           "key": "C",
-          "t": "Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units — this disparity is a quality-of-care issue, not an acuity artifact.",
+          "t": "Black patients faced roughly 1.85× the adjusted odds of a restraint event in a large inpatient psychiatric sample — a disparity that persists after adjustment and should be treated as a quality-of-care issue.",
           "c": true
         },
         {
@@ -2599,8 +2599,8 @@
           }
         }
       ],
-      "why": "No disparity exists in three forms. The page explicitly states: 'Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote.' This is the only data point cited on the page for this topic and is explicitly framed as belonging in a post-restraint debrief.",
-      "pearl": "Black patients face ~1.85× the adjusted odds of a restraint event on inpatient psychiatric units — a quality-of-care disparity that belongs in every post-restraint debrief.",
+      "why": "No disparity exists in three forms. The page explicitly states: 'Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote.' Singal et al. is one health system's retrospective chart review (adolescents and adults), so adjustment cannot exclude residual confounding by acuity: the defensible claim is a disparity that persists after adjustment, and the page frames it as belonging in a post-restraint debrief.",
+      "pearl": "In a large inpatient psychiatric sample, Black patients faced ~1.85× the adjusted odds of a restraint event — a disparity that persists after adjustment and belongs in every post-restraint debrief.",
       "evidence": "agitation.md 'Restraint and seclusion' — Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote."
     },
     {
@@ -2845,7 +2845,7 @@
     },
     {
       "id": "qb_sud_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2872,7 +2872,7 @@
         },
         {
           "key": "B",
-          "t": "Wait until objective withdrawal is established (COWS roughly ≥8–12) before initiating buprenorphine induction — this is required to avoid precipitating withdrawal.",
+          "t": "Wait until objective withdrawal is established (COWS roughly ≥8–12) before initiating standard buprenorphine induction — this is how standard induction avoids precipitating withdrawal (low-dose initiation is a separate, structured multi-day protocol, not a single test dose).",
           "c": true
         },
         {
@@ -2892,7 +2892,7 @@
           }
         }
       ],
-      "why": "Comfort-first induction in two forms is the central trap. Buprenorphine is a partial agonist with high receptor affinity — it displaces full agonists. If taken before sufficient withdrawal, it precipitates sudden, severe withdrawal. The COWS threshold (≥8–12) ensures residual full agonist has cleared enough receptors that induction is safe.",
+      "why": "Comfort-first induction in two forms is the central trap. Buprenorphine is a partial agonist with high receptor affinity — it displaces full agonists. If taken before sufficient withdrawal, it precipitates sudden, severe withdrawal. The COWS threshold (≥8–12) makes it likely that residual full agonist has cleared enough receptors for induction to be tolerated — though with fentanyl, precipitated withdrawal can still occur at these scores.",
       "pearl": "COWS ≥8–12 before buprenorphine induction — the scoring threshold prevents precipitated withdrawal, not patient readiness.",
       "evidence": "t_sud.md — Begin buprenorphine induction only once objective withdrawal is present (roughly COWS ≥8 to 12) to avoid precipitated withdrawal from displacing residual full agonist too early."
     },
@@ -2950,7 +2950,7 @@
     },
     {
       "id": "qb_sud_007",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2997,7 +2997,7 @@
           }
         }
       ],
-      "why": "It's just withdrawal in two forms. The Wernicke triad — confusion, ataxia, ophthalmoplegia — is classically taught as a complete triad but occurs frequently in incomplete forms. The threshold for treatment is low because thiamine is cheap and Wernicke untreated progresses to Korsakoff syndrome, which is irreversible.",
+      "why": "It's just withdrawal in two forms. The Wernicke triad — confusion, ataxia, ophthalmoplegia — is classically taught as a complete triad but occurs frequently in incomplete forms. The threshold for treatment is low because thiamine is cheap and safe. Untreated Wernicke can be fatal or progress to Korsakoff syndrome, which is often permanent.",
       "pearl": "Wernicke encephalopathy: confusion + ataxia + ophthalmoplegia — often incomplete; treat with IV thiamine immediately without waiting for the complete triad.",
       "evidence": "t_sud.md — Wernicke encephalopathy (confusion, ophthalmoplegia, ataxia — often incomplete, so a low threshold is correct)."
     },
@@ -3289,7 +3289,7 @@
     },
     {
       "id": "qb_sud_013",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3338,11 +3338,11 @@
       ],
       "why": "Contraindication confusion and Long half-life equals smooth coverage are the two active errors. The clinical principle: lorazepam and oxazepam are preferred in hepatic impairment precisely because their glucuronidation pathway is preserved while oxidative metabolism (which processes chlordiazepoxide and diazepam) is impaired in cirrhosis. All drugs equal ignores a clinically important pharmacokinetic distinction.",
       "pearl": "Hepatic impairment + alcohol withdrawal: use lorazepam or oxazepam (glucuronidation preserved); avoid long-acting benzodiazepines that accumulate.",
-      "evidence": "substance_use_inpatient_teaching.md 'Benzodiazepine choice in hepatic impairment' — Lorazepam, oxazepam, and temazepam (the LOT drugs) bypass oxidative CYP450 metabolism; they are conjugated by glucuronidation, a pathway that is relatively preserved in cirrhosis, and produce no clinically significant active metabolites. Chlordiazepoxide and diazepam rely on hepatic oxidative metabolism and produce long-lived active metabolites that accumulate in significant hepatic impairment, risking progressive over-sedation and worsening hepatic encephalopathy (Schuckit, N Engl J Med 2014; Saitz, N Engl J Med 1998)."
+      "evidence": "substance_use_inpatient_teaching.md 'Benzodiazepine choice in hepatic impairment' — Lorazepam, oxazepam, and temazepam (the LOT drugs) bypass oxidative CYP450 metabolism; they are conjugated by glucuronidation, a pathway that is relatively preserved in cirrhosis, and produce no clinically significant active metabolites. Chlordiazepoxide and diazepam rely on hepatic oxidative metabolism and produce long-lived active metabolites that accumulate in significant hepatic impairment, risking progressive over-sedation and worsening hepatic encephalopathy (Schuckit, N Engl J Med 2014; Saitz, Alcohol Health Res World 1998)."
     },
     {
       "id": "qb_sud_014",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "substance",
       "competency": [
@@ -3388,8 +3388,8 @@
           "c": true
         }
       ],
-      "why": "Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. CIWA-Ar-guided benzodiazepines are the treatment, and DT vigilance is the priority.",
-      "pearl": "Prior withdrawal seizure = highest predictor of future seizures; aggressive CIWA-Ar-guided benzodiazepines + DT monitoring is the standard.",
+      "why": "Underestimate the emergency in two forms, and Agitation = antipsychotic. Prior withdrawal seizure is explicitly the most robust predictor of future seizure risk. Antipsychotics lower seizure threshold and are contraindicated for seizure prevention in alcohol withdrawal. Prompt benzodiazepine with front-loaded or fixed-schedule dosing, supplemented by CIWA-Ar-triggered doses, is the treatment, and DT vigilance is the priority.",
+      "pearl": "Prior withdrawal seizure = strong predictor of future seizures; give a benzodiazepine promptly with front-loaded or fixed-schedule dosing plus symptom-triggered supplementation (not score-gated dosing alone) + DT monitoring.",
       "evidence": "t_sud.md — Alcohol withdrawal: score serially with the CIWA-Ar and treat symptom-driven with benzodiazepines, escalating vigilance for seizures and delirium tremens in high-risk patients.",
       "tier2": {
         "q": "Why does abrupt alcohol cessation cause seizures, whereas opioid withdrawal does not?",
@@ -3523,7 +3523,7 @@
     },
     {
       "id": "qb_pha_005",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "pharm",
       "competency": [
@@ -3548,7 +3548,7 @@
         },
         {
           "key": "B",
-          "t": "Lithium's anti-suicidal effect is secondary to mood stabilization — any effective mood stabilizer achieves equivalent reduction in completed suicide.",
+          "t": "Lithium's anti-suicidal effect is secondary to mood stabilization — any effective mood stabilizer achieves equivalent reduction in suicide deaths.",
           "trap": {
             "name": "Anti-suicidal = just mood stabilization",
             "note": "The page notes lithium's anti-suicidal evidence as distinct from other mood stabilizers — worth remembering when the team weighs risk, implying it is not simply a mood-stabilization effect."
@@ -3595,12 +3595,12 @@
             "t": "Renal monitoring is a regulatory requirement without a strong pharmacokinetic rationale."
           }
         ],
-        "why": "Lithium is renally cleared without protein binding and without hepatic transformation. This means the serum level is determined almost entirely by renal clearance. Any factor that reduces GFR — dehydration, NSAIDs, ACE inhibitors, loop diuretics, or simply age-related decline — will raise the level. The therapeutic and toxic windows are close enough that a modest change in clearance can shift a stable patient into toxicity. This is why renal function is monitored longitudinally, not just at baseline."
+        "why": "Lithium is renally cleared without protein binding and without hepatic transformation. This means the serum level is determined almost entirely by renal clearance. Any factor that reduces renal lithium clearance — dehydration, NSAIDs, ACE inhibitors or ARBs, thiazide or loop diuretics, or simply age-related decline — will raise the level. The therapeutic and toxic windows are close enough that a modest change in clearance can shift a stable patient into toxicity. This is why renal function is monitored longitudinally, not just at baseline."
       }
     },
     {
       "id": "qb_pha_006",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3628,15 +3628,15 @@
         },
         {
           "key": "B",
-          "t": "Obtain neurology sign-off — valproate is primarily an anticonvulsant and requires specialist authorization before psychiatric use.",
+          "t": "Obtain neurology sign-off — valproate was first approved as an anticonvulsant, so it requires specialist authorization before any psychiatric use.",
           "trap": {
             "name": "Specialist equals prerequisite",
-            "note": "Valproate is a first-line mood stabilizer in psychiatry; specialist authorization is not a prerequisite — the teratogenicity screening is."
+            "note": "Valproate is an established mood stabilizer in psychiatry; specialist authorization is not a prerequisite — the teratogenicity screening is."
           }
         },
         {
           "key": "C",
-          "t": "Confirm she is not pregnant and discuss contraception — valproate is a known teratogen (neural tube defects and other major malformations); this must be addressed before initiating in any person who could become pregnant.",
+          "t": "Confirm she is not pregnant, discuss contraception, and first consider whether an alternative (e.g., lithium or an antipsychotic) is suitable.",
           "c": true
         },
         {
@@ -3644,17 +3644,17 @@
           "t": "Start valproate at a low dose and monitor for teratogenic risk — low doses are safe in pregnancy.",
           "trap": {
             "name": "Low dose equals safe",
-            "note": "Valproate teratogenicity is not dose-dependent in a way that makes low doses safe during early organogenesis — the page states should not be started in people who may become pregnant."
+            "note": "Valproate teratogenicity is not dose-dependent in a way that makes low doses safe during early organogenesis — the page states it should not be started in people who may become pregnant."
           }
         }
       ],
-      "why": "Hepatotox before teratogenicity, Specialist equals prerequisite, and Low dose equals safe all miss or displace the must-act-first check. The page is explicit: valproate should not be started in people who may become pregnant given teratogenicity — this check must come before the first dose, not afterward.",
-      "pearl": "Before valproate in any person who could become pregnant: confirm not pregnant, discuss contraception — this is the pre-prescribing gate, not a post-hoc conversation.",
-      "evidence": "psychopharm_primer.md — Valproate is effective but should not be started in people who may become pregnant given teratogenicity; flag this before it is ordered."
+      "why": "Hepatotox before teratogenicity, Specialist equals prerequisite, and Low dose equals safe all miss or displace the must-act-first check (baseline LFTs and a CBC with platelets are also obtained before starting, but they do not replace the pregnancy gate). The page is explicit: valproate should not be started in people who may become pregnant given teratogenicity — this check must come before the first dose, not afterward. Valproate is a known teratogen (neural tube defects and other major malformations); per its boxed warning it should not be used in any person who could become pregnant unless other medications have failed or are unacceptable.",
+      "pearl": "Before valproate in any person who could become pregnant: confirm not pregnant, discuss contraception, and first consider an alternative (per its boxed warning) — a pre-prescribing gate, not a post-hoc conversation.",
+      "evidence": "psychopharm_primer.md — Valproate is effective but should not be started in people who may become pregnant given teratogenicity; flag this before it's ordered."
     },
     {
       "id": "qb_pha_007",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3701,7 +3701,7 @@
           }
         }
       ],
-      "why": "Diagnosis by symptom alone, Treat before diagnose, and Precautionary polypharmacy all bypass the screening step. The page states: 'screen for bipolarity before starting' an antidepressant — an antidepressant alone can destabilize bipolar illness. A positive family history, especially multiple first-degree relatives, makes this screening step particularly important.",
+      "why": "Diagnosis by symptom alone, Treat before diagnose, and Precautionary polypharmacy all bypass the screening step. The page states: 'screen for bipolarity before starting' an antidepressant — an antidepressant alone can destabilize bipolar illness. A positive family history, especially multiple affected relatives (here two second-degree relatives), makes this screening step particularly important.",
       "pearl": "Screen for prior hypomania or mania before every first antidepressant prescription — family history of bipolar disorder elevates the index of suspicion.",
       "evidence": "psychopharm_primer.md — Two cautions matter on an inpatient unit: screen for bipolarity before starting (an antidepressant alone can destabilize bipolar illness)."
     },
@@ -3760,7 +3760,7 @@
     },
     {
       "id": "qb_pha_009",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3799,14 +3799,14 @@
         },
         {
           "key": "D",
-          "t": "The warning concerns completed suicide — the medications increase the likelihood of a lethal attempt.",
+          "t": "The warning concerns suicide deaths — the medications increase the likelihood of a lethal attempt.",
           "trap": {
             "name": "Partial citation",
-            "note": "The black box warning concerns suicidal thinking and behavior, not specifically completed suicide — the absolute risk is small and the NNT for response is near 10."
+            "note": "The black box warning concerns suicidal thinking and behavior, not specifically suicide deaths — the absolute risk is small, and in pediatric trials the NNT for response was near 10."
           }
         }
       ],
-      "why": "Selective citation, Partial citation: Selective citation, Partial citation in two forms. The FDA black box warning covers all antidepressants through age 24 — not just TCAs, not just under-18 patients. The correct framing is that it mandates close monitoring early in treatment, not that it prohibits treatment. The absolute increase in suicidal ideation/behavior is roughly 1 per 110 treated, against an NNT near 10 for response.",
+      "why": "Selective citation and Partial citation (in two forms) misread the warning's scope. The FDA black box warning covers all antidepressants through age 24 — not just TCAs, not just under-18 patients. The correct framing is that it mandates close monitoring early in treatment, not that it prohibits treatment. In pediatric depression trials (Bridge et al., JAMA 2007) the absolute increase in suicidal ideation/behavior was roughly 1 per 110 treated, against an NNT near 10 for response.",
       "pearl": "FDA black box: all antidepressants + all ages through 24 = monitor closely early; it is a monitoring mandate, not a contraindication.",
       "evidence": "psychopharm_primer.md — The FDA black-box warning for suicidality spans all antidepressants through age 24, not just children — relevant to your young-adult admissions."
     },
@@ -3963,7 +3963,7 @@
           "t": "Both patients have NMS — elevated temperature and rigidity after antipsychotic exposure is the defining feature of NMS in both cases.",
           "trap": {
             "name": "All rigidity equals NMS",
-            "note": "Patient A's presentation (hyperreflexia, clonus, rapid onset after serotonergic agents) is serotonin syndrome — lead-pipe rigidity plus hyperthermia plus elevated CK after antipsychotic initiation is NMS; they are pharmacologically distinct emergencies."
+            "note": "Patient A's presentation (myoclonic twitching, hyperreflexia, diaphoresis, rapid onset after serotonergic agents) is serotonin syndrome — lead-pipe rigidity plus hyperthermia plus elevated CK after antipsychotic initiation is NMS; they are pharmacologically distinct emergencies."
           }
         },
         {
@@ -3984,7 +3984,7 @@
         },
         {
           "key": "D",
-          "t": "Patient A has serotonin syndrome (clonus, hyperreflexia, rapid onset after adding a serotonergic agent); Patient B has NMS (lead-pipe rigidity, hyperthermia, elevated CK, slower onset after antipsychotic). These are distinct emergencies with different mechanisms and treatments.",
+          "t": "Patient A has serotonin syndrome (myoclonic twitching, hyperreflexia, diaphoresis, rapid onset after adding a serotonergic agent); Patient B has NMS (lead-pipe rigidity, hyperthermia, elevated CK, slower onset after antipsychotic). These are distinct emergencies with different mechanisms and treatments.",
           "c": true
         }
       ],
@@ -3996,7 +3996,7 @@
     },
     {
       "id": "qb_pha_013",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -4014,12 +4014,12 @@
       "options": [
         {
           "key": "A",
-          "t": "Lithium toxicity — ACE inhibitors reduce renal lithium clearance, leading to lithium level elevation; tremor, ataxia, and confusion are early-to-moderate toxicity signs.",
+          "t": "Lithium toxicity — ACE inhibitors reduce renal lithium clearance and raise the level; tremor, ataxia, and confusion are early-to-moderate toxicity signs.",
           "c": true
         },
         {
           "key": "B",
-          "t": "Essential tremor triggered by a new antihypertensive — beta-blockers, not ACE inhibitors, cause tremor.",
+          "t": "Essential tremor unmasked by a new antihypertensive — the new drug has exposed a benign familial tremor.",
           "trap": {
             "name": "Neurological symptoms equal neurological diagnosis",
             "note": "The tremor onset after starting lisinopril in a patient on lithium must be attributed to lithium toxicity until proven otherwise — the drug interaction, not a new neurological diagnosis, is the first explanation."
@@ -4027,10 +4027,10 @@
         },
         {
           "key": "C",
-          "t": "Bipolar mixed state with neurological features — the combination of mood instability and motor symptoms represents bipolar cycling.",
+          "t": "Bipolar mixed state with neurological features — the combination of mood instability and motor symptoms represents bipolar cycling, so the lithium dose should be increased.",
           "trap": {
             "name": "Bipolar by default",
-            "note": "Tremor, ataxia, and confusion in a lithium-treated patient who recently started an interacting drug is lithium toxicity until proven otherwise — attributing it to bipolar cycling before checking a level is a diagnostic error."
+            "note": "Tremor, ataxia, and confusion in a lithium-treated patient who recently started an interacting drug is lithium toxicity until proven otherwise — attributing it to bipolar cycling before checking a level is a diagnostic error, and raising the dose would deepen the toxicity."
           }
         },
         {
@@ -4048,7 +4048,7 @@
     },
     {
       "id": "qb_pha_014",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -4096,9 +4096,9 @@
           }
         }
       ],
-      "why": "Pharmacotherapy first at any severity, Newer = better, and Ordering by recency all delay the most effective and most appropriate intervention. ECT's indications include exactly this constellation: severe, psychotic, treatment-resistant depression with active suicidality and refusal to eat/drink. The page lists 'rapid, definitive response needed' as the specific framing that points to ECT.",
+      "why": "Pharmacotherapy first at any severity, Newer = better, and Ordering by recency all delay the most effective and most appropriate intervention. ECT's indications include exactly this constellation: severe, psychotic, treatment-resistant depression with active suicidality and refusal to eat/drink. The page lists 'rapid, definitive response is needed' as the specific framing that points to ECT.",
       "pearl": "ECT is the most effective treatment for severe, psychotic, or catatonic depression — choose it when a rapid, definitive response is needed (active suicidality, not eating/drinking, prior good ECT response).",
-      "evidence": "ect_neuromodulation.md — ECT indications: severe MDD (especially with psychotic features, catatonia, or high suicide risk), treatment-resistant depression, acute mania, and catatonia/NMS. Choose ECT when a rapid, definitive response is needed — active suicidality, refusal to eat or drink, pregnancy where medications are undesirable, or prior good ECT response."
+      "evidence": "ect_neuromodulation.md — Severe major depression (especially with psychotic features, catatonia, or high suicide risk), treatment-resistant depression, acute mania, and catatonia/neuroleptic malignant syndrome. Choose ECT when a rapid, definitive response is needed — active suicidality, refusal to eat or drink, or prior good ECT response (pregnancy makes ECT preferred over drugs once one of these is present)."
     },
     {
       "id": "qb_pha_015",
@@ -4782,7 +4782,7 @@
     },
     {
       "id": "qb_mood_013",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4828,7 +4828,7 @@
           }
         }
       ],
-      "why": "Psychosis = schizophrenia, All psychosis in elderly = delirium, and Concurrent = schizoaffective all misdiagnose the presentation. Psychotic depression produces mood-congruent delusions (nihilistic, guilt-laden) within the context of a severe depressive episode — the alert, attentive patient without fluctuating consciousness rules out delirium.",
+      "why": "Psychosis = schizophrenia, All psychosis in elderly = delirium, and Concurrent = schizoaffective all misdiagnose the presentation. Psychotic depression produces mood-congruent delusions (nihilistic, guilt-laden) within the context of a severe depressive episode — the alert, attentive patient makes delirium less likely — though one exam cannot exclude a fluctuating course, so reassess and complete the medical workup.",
       "pearl": "Mood-congruent psychotic features (nihilistic/guilt-laden delusions) in severe depression = psychotic depression, not schizophrenia — psychosis confined to the mood episode is the discriminator.",
       "evidence": "t_mood.md — Severe unipolar depression can include mood-congruent psychosis (nihilistic or guilt-laden delusions)."
     },
@@ -6265,7 +6265,7 @@
     },
     {
       "id": "qb_eth_007",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6281,7 +6281,7 @@
         "label": "Open the Ethics & Law page",
         "href": "?page=ethics_legal.md"
       },
-      "stem": "During an outpatient psychiatry session, a 34-year-old man with paranoid schizophrenia states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
+      "stem": "During an outpatient psychiatry session, a 34-year-old man with schizophrenia (prominent persecutory delusions) states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
       "options": [
         {
           "key": "A",
@@ -6581,7 +6581,7 @@
     },
     {
       "id": "qb_per_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -6601,7 +6601,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Benzodiazepines should not be started or escalated for BPD symptoms or crisis distress — they are associated with the highest risk of attempted or completed suicide of any psychotropic class studied in this population and worsen disinhibition.",
+          "t": "Benzodiazepines should not be started for BPD symptoms or crisis distress — of the classes studied, they had the highest suicide risk.",
           "c": true
         },
         {
@@ -6617,7 +6617,7 @@
           "t": "Benzodiazepines are acceptable in BPD when prescribed at the lowest effective dose — the risk-benefit ratio favors treatment for acute distress.",
           "trap": {
             "name": "Low dose = safe",
-            "note": "The page gives no dose-based exception — the recommendation is to avoid starting or escalating benzodiazepines in BPD; the risk-benefit calculation in this population does not favor initiation."
+            "note": "The page gives no dose-based exception — the recommendation is to avoid starting or escalating benzodiazepines for BPD symptoms or crisis distress; the risk-benefit calculation in this population does not favor initiation."
           }
         },
         {
@@ -6629,9 +6629,9 @@
           }
         }
       ],
-      "why": "Inpatient benzos safe short-term, Low dose = safe, and Benzo for BPD emotional dysregulation all lead to starting a contraindicated drug class. The page is explicit: 'Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.'",
-      "pearl": "Never start or escalate benzodiazepines for BPD symptoms or crisis distress — they carry the highest suicide risk of any psychotropic class in this population; use skills, not pills.",
-      "evidence": "t_personality.md — Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, 95% CI 1.45–1.78; Lieslehto 2023) and worsen disinhibition."
+      "why": "Inpatient benzos safe short-term, Low dose = safe, and Benzo for BPD emotional dysregulation all lead to starting a drug class to avoid for this indication. The rule, scoped as the key scopes it: never start or escalate benzodiazepines for BPD symptoms or crisis distress — highest risk of suicide attempt or suicide death of any class (Lieslehto 2023); reach for skills, not pills. Withdrawal and catatonia remain benzodiazepine indications. In that Swedish registry cohort benzodiazepine use was associated with suicide attempt or death at HR 1.61 (95% CI 1.45–1.78), the highest of the classes studied — an association, not proof of cause — and benzodiazepines also worsen disinhibition.",
+      "pearl": "Never start or escalate benzodiazepines for BPD symptoms or crisis distress — they are associated with the highest suicide risk of any psychotropic class studied in this population; use skills, not pills.",
+      "evidence": "t_personality.md — Minimize polypharmacy; no medication treats BPD itself, and accumulating agents adds risk without benefit. In particular, do not start or escalate benzodiazepines — they carry the highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, 95% CI 1.45–1.78; Lieslehto 2023) and worsen disinhibition."
     },
     {
       "id": "qb_per_006",
@@ -6846,7 +6846,7 @@
     },
     {
       "id": "qb_cdev_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -6867,20 +6867,20 @@
           "t": "Risperidone is FDA-approved to improve the core social-communication deficits of autism, including eye contact, reciprocal conversation, and restricted interests.",
           "trap": {
             "name": "Antipsychotic treats core ASD features",
-            "note": "No medication treats the core social-communication features of ASD; the FDA approval for risperidone is specifically limited to irritability and aggression associated with autism."
+            "note": "No medication treats the core social-communication features of ASD; the FDA approval for risperidone is specifically limited to irritability and aggression associated with autism in children and adolescents."
           }
         },
         {
           "key": "B",
-          "t": "Risperidone is effective for all ASD-related behavioral symptoms when used at sufficient doses — including social withdrawal, repetitive behaviors, and communication deficits.",
+          "t": "Risperidone is effective for all ASD-related behavioral symptoms when used at sufficient doses — including social withdrawal, repetitive behaviors, and communication deficits — so the dose should be raised until those improve.",
           "trap": {
             "name": "Sufficient dose treats all features",
-            "note": "The FDA approval is explicitly limited to irritability/aggression associated with autism; dose escalation does not expand the approved indication or the therapeutic range of the drug."
+            "note": "The FDA approval is explicitly limited to irritability/aggression associated with autism in children and adolescents; dose escalation does not expand the approved indication or the therapeutic range of the drug."
           }
         },
         {
           "key": "C",
-          "t": "Risperidone and aripiprazole are FDA-approved for irritability and aggression associated with autism — they do not treat the core social-communication features; target symptoms must be explicitly defined, and metabolic monitoring is required.",
+          "t": "Risperidone and aripiprazole are FDA-approved for autism-associated irritability in children and adolescents (off-label at 18) — neither treats the core social-communication features.",
           "c": true
         },
         {
@@ -6892,8 +6892,8 @@
           }
         }
       ],
-      "why": "Antipsychotic treats core ASD features, Sufficient dose treats all features, and Prophylactic antipsychotic all misstate the indication. The page is specific: 'Risperidone and aripiprazole are FDA-approved for irritability/aggression associated with autism (they do NOT treat the core social-communication features), so target symptoms explicitly, monitor metabolically, and avoid reflexive standing antipsychotics.'",
-      "pearl": "Risperidone/aripiprazole treat autism-associated irritability/aggression (FDA-approved) — they do NOT treat core social-communication features; always document the target symptom.",
+      "why": "Antipsychotic treats core ASD features, Sufficient dose treats all features, and Prophylactic antipsychotic all misstate the indication. Risperidone and aripiprazole are FDA-approved for irritability (including aggression and self-injury) associated with autism in children and adolescents (risperidone 5–16 years, aripiprazole 6–17 years; use at 18 is off-label) — they do not treat the core social-communication features. The page is specific: 'target symptoms explicitly, monitor metabolically, and avoid reflexive standing antipsychotics.'",
+      "pearl": "Risperidone/aripiprazole treat autism-associated irritability/aggression (FDA-approved in children and adolescents; off-label in adults) — they do NOT treat core social-communication features; always document the target symptom.",
       "evidence": "t_neurodev.md — Antipsychotics (risperidone, aripiprazole) treat autism-associated irritability, not the core social-communication features."
     },
     {
@@ -7590,7 +7590,7 @@
     },
     {
       "id": "qb_otherdx_001",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -7634,13 +7634,13 @@
           "t": "Thiamine deficiency — the neurological symptoms indicate Wernicke encephalopathy from B1 deficiency.",
           "trap": {
             "name": "Thiamine over phosphate",
-            "note": "Thiamine deficiency is a real risk in eating disorders and requires prophylactic replacement before carbohydrate loading, but a falling phosphate on day 3 of refeeding with weakness and confusion is the classic refeeding syndrome presentation — phosphate is the hallmark electrolyte."
+            "note": "Thiamine deficiency is a real risk in eating disorders and requires prophylactic replacement when refeeding starts, but a falling phosphate on day 3 of refeeding with weakness and confusion is the classic refeeding syndrome presentation — phosphate is the hallmark electrolyte."
           }
         }
       ],
-      "why": "Pre-existing deficiency only, Functional explanation for metabolic emergency, and Thiamine over phosphate all miss the refeeding-specific mechanism. The page calls refeeding syndrome 'the complication that kills' — hypophosphatemia is the hallmark. Note that D (thiamine) is also clinically relevant and the page specifically says 'give thiamine before or with carbohydrate' — but the presenting electrolyte abnormality and timing point to refeeding syndrome as the primary diagnosis.",
-      "pearl": "Refeeding syndrome: watch phosphate — the hallmark is hypophosphatemia after starting nutrition in the severely malnourished; start low, go slow; supplement phosphate; give thiamine before carbs.",
-      "evidence": "t_eating.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine before or with carbohydrate.",
+      "why": "Pre-existing deficiency only, Functional explanation for metabolic emergency, and Thiamine over phosphate all miss the refeeding-specific mechanism. The page calls refeeding syndrome 'the complication that kills' — hypophosphatemia is the hallmark. Note that D (thiamine) is also clinically relevant and the page specifically says to give thiamine (and other vitamins) when refeeding starts — but the presenting electrolyte abnormality and timing point to refeeding syndrome as the primary diagnosis.",
+      "pearl": "Refeeding syndrome: watch phosphate — the hallmark is hypophosphatemia after starting nutrition; risk tracks malnutrition, so monitor phosphate daily; supplement phosphate; give thiamine.",
+      "evidence": "t_eating.md — Refeeding syndrome — the complication that kills: hypophosphatemia is the hallmark; the danger is cardiac failure, arrhythmia, respiratory failure, and delirium. Supplement phosphate and give thiamine (and other vitamins) when refeeding starts.",
       "tier2": {
         "q": "Why does hypophosphatemia develop after initiating refeeding in a severely malnourished patient, rather than during the starvation period itself?",
         "options": [
@@ -8073,7 +8073,7 @@
     },
     {
       "id": "qb_otherdx_008",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -8094,15 +8094,15 @@
           "t": "Black patients present with more severe schizophrenia symptoms on average, which explains the higher diagnostic rate.",
           "trap": {
             "name": "Severity explains disparity",
-            "note": "The higher rate of schizophrenia diagnoses in Black patients is not explained by symptom severity — it reflects a documented diagnostic bias; the same presentations in Black patients are more often labeled schizophrenia and less often labeled mood disorder."
+            "note": "The higher rate of schizophrenia diagnoses in Black patients is not explained by symptom severity — clinician diagnostic bias is a documented contributor; the same presentations in Black patients are more often labeled schizophrenia and less often labeled mood disorder."
           }
         },
         {
           "key": "B",
-          "t": "The diagnostic difference reflects differential rates of schizophrenia across demographic groups — epidemiological data confirm higher prevalence in this population.",
+          "t": "The diagnostic difference reflects differential rates of schizophrenia across demographic groups — epidemiological data confirm higher prevalence in this population, so no allowance for clinician bias is needed.",
           "trap": {
             "name": "Epidemiology explains disparity",
-            "note": "The prevalence difference in diagnosis rates does not reflect true prevalence differences — it reflects clinician diagnostic bias; the page specifically states these disparities are driven by clinician bias, not different rates of underlying illness."
+            "note": "Prevalence alone does not explain the gap: comparable presentations are diagnosed differently by race, and clinician diagnostic bias is a documented contributor — so the difference cannot be read as confirmed higher prevalence."
           }
         },
         {
@@ -8110,18 +8110,18 @@
           "t": "Cultural mistrust in the clinical encounter leads Black patients to endorse more psychotic symptoms on screening, creating a false-positive signal.",
           "trap": {
             "name": "Patient behavior explains disparity",
-            "note": "The documented disparity is driven by clinician diagnostic behavior (over-applying schizophrenia, under-applying mood disorders), not by patient reporting patterns."
+            "note": "The documented contributor is clinician diagnostic behavior (over-applying schizophrenia, under-applying mood disorders), not a false-positive signal from patient reporting."
           }
         },
         {
           "key": "D",
-          "t": "Black patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented clinician bias that is not explained by symptom profile or true prevalence differences.",
+          "t": "Black patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a robust disparity to which clinician bias is a documented contributor.",
           "c": true
         }
       ],
-      "why": "Severity explains disparity, Epidemiology explains disparity, and Patient behavior explains disparity all misattribute the cause. The page is explicit: 'Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented bias to guard against.' This is a patient-safety issue that requires active self-monitoring.",
-      "pearl": "Documented bias: Black patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — not due to prevalence differences, but clinician diagnostic bias; guard against it.",
-      "evidence": "cultural_psychiatry.md — Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations — a documented bias to guard against."
+      "why": "Severity explains disparity, Epidemiology explains disparity, and Patient behavior explains disparity each explain the gap away with a single cause the evidence does not support. The page is explicit: 'Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations.' The evidence shows a robust disparity that persists even with structured interviews, to which clinician bias (e.g., under-weighting affective symptoms) is a documented contributor — guard against it. This is a patient-safety issue that requires active self-monitoring.",
+      "pearl": "Documented bias: Black patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a disparity that persists after accounting for symptom profile, with clinician bias a documented contributor; guard against it.",
+      "evidence": "cultural_psychiatry.md — Black (and some other minority) patients are disproportionately over-diagnosed with schizophrenia and under-diagnosed with mood disorders relative to comparable presentations."
     },
     {
       "id": "qb_otherdx_009",
@@ -9388,7 +9388,7 @@
           "t": "Disulfiram as the automatic first choice for everyone",
           "trap": {
             "name": "Adherence trap",
-            "note": "Disulfiram is aversive and adherence-dependent; it is not first-line and requires abstinence and reliability."
+            "note": "Disulfiram is aversive, adherence-dependent and hepatotoxic; it is not first-line, requires abstinence and reliability, and should be avoided in cirrhosis."
           }
         },
         {
@@ -9400,8 +9400,8 @@
           }
         }
       ],
-      "why": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis/opioid use) and acamprosate (supports abstinence; usable in liver disease, adjust in renal impairment) are first-line for AUD. Disulfiram is second-line and adherence-dependent.",
-      "pearl": "AUD maintenance: naltrexone or acamprosate first-line; disulfiram is adherence-dependent second-line.",
+      "why": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis, decompensated cirrhosis/liver failure, or opioid use; monitor LFTs in compensated cirrhosis) and acamprosate (supports abstinence; usable in liver disease, adjust in renal impairment) are first-line for AUD. Disulfiram is second-line and adherence-dependent, and should be avoided in cirrhosis because of hepatotoxicity.",
+      "pearl": "AUD maintenance: naltrexone or acamprosate first-line; disulfiram is adherence-dependent second-line and should be avoided in cirrhosis.",
       "evidence": "t_sud.md — Alcohol use disorder pharmacotherapy.",
       "retired": true,
       "retiredReason": "Redundant: AUD maintenance (naltrexone/acamprosate first-line) duplicates attested qb_sud_009; fold the compensated-cirrhosis nuance into qb_sud_009 if desired."

@@ -40,29 +40,101 @@ function fdPathDotCls(isDone, isNow){
   return 'fd-dot';
 }
 
+function fdPathViewWeek(index, state){
+  var idx=index||{weeks:[]},weeks=idx.weeks||[];
+  var found=fdFindWeek(idx,state&&state.viewWeek);
+  return found?found.n:(weeks[0]?weeks[0].n:null);
+}
+
+/* A pure roving-tab calculation shared by the renderer tests and the controller. Supporting both
+   axes lets the same controls behave naturally on the desktop curve and the phone's vertical
+   rail. Arrow movement wraps; Home and End jump to the projected audience's real endpoints. */
+function fdPathMoveWeek(index, current, key){
+  var weeks=index&&index.weeks||[],at=-1,i;
+  if(!weeks.length) return null;
+  if(key==='Home') return weeks[0].n;
+  if(key==='End') return weeks[weeks.length-1].n;
+  if(key!=='ArrowLeft'&&key!=='ArrowRight'&&key!=='ArrowUp'&&key!=='ArrowDown') return null;
+  for(i=0;i<weeks.length;i++){ if(weeks[i].n===current){ at=i;break; } }
+  if(at<0) at=0;
+  if(key==='ArrowLeft'||key==='ArrowUp') at=(at+weeks.length-1)%weeks.length;
+  else at=(at+1)%weeks.length;
+  return weeks[at].n;
+}
+
+/* Observable skills mirror the Orientation Packet's "What Students Should Practice Each
+   Week" table. The short feedback requests apply its "one behavior at a time" guidance.
+   These are practice suggestions, never assignments or a competence assessment. */
+var FD_PATH_PRACTICE=[
+  null,
+  {skill:'Present a focused interview/MSE and name what you would escalate immediately',
+    feedback:'Can you watch my MSE language today?'},
+  {skill:'Build a differential beyond the primary psychiatric diagnosis',
+    feedback:'Can you review whether my differential shows reasoning?'},
+  {skill:'Explain why one non-medication intervention fits the formulation and complete a supervised collaborative safety plan',
+    feedback:'Can you review my rationale for this treatment plan?'},
+  {skill:'Draft a family-meeting agenda and discharge barrier map',
+    feedback:'Can you review my family-meeting agenda and discharge barriers?'},
+  {skill:'Deepen the suicide/violence risk formulation practised since Week 1 (and used for Week 3 safety planning), recognize delirium/catatonia/withdrawal, and document supervised escalation reasoning',
+    feedback:'Can you tell me if my risk formulation separates chronic and acute risk?'},
+  {skill:'Present a full case with formulation, risk reasoning, and plan',
+    feedback:'Can you help me make my presentation more concise?'}
+];
+
+function fdPathPractice(index, week){
+  if(!index.path||index.path.id!=='ms3-six-week') return '';
+  var practice=FD_PATH_PRACTICE[week];
+  if(!practice) return '';
+  return '<div class="fd-detail__practice">'+
+    '<p><strong>Practice one skill</strong><br>'+fdEsc(practice.skill)+'.</p>'+
+    '<p><strong>Ask for feedback</strong><br>“'+fdEsc(practice.feedback)+'”</p>'+
+    '<a href="?page=orientation.md">Open Orientation →</a>'+
+  '</div>';
+}
+
 /* One timeline row. .fd-timeline__line is emitted unconditionally on every row, including the
    last -- frontdoor.css hides it there via :last-child, and skipping it in markup instead
    would break the spine on any row the CSS selector does not happen to cover (CLASS-INVENTORY
    ⚠). data-fd-view-week carries the row's browsing target; data-fd-week remains setup-only. */
 function fdPathTimelineRow(index, w, state){
   var items=fdItemsForWeek(index, w.n);
-  var progress=fdTodayProgress(items, state.done);
+  var progress=fdTodayProgress(items, fdProgressForWeek(index,state,w.n));
   var isNow=(typeof state.week==='number'&&!isNaN(state.week))&&state.week===w.n;
-  var isSel=state.viewWeek===w.n;
+  var isSel=fdPathViewWeek(index,state)===w.n;
   var isDone=progress.total>0&&progress.pct===100;
   var rowCls=isSel?'fd-timeline__row is-sel':'fd-timeline__row';
-  var nLabel='Week '+fdEsc(w.n)+(isNow?' · you are here':'');
-  return '<button type="button" class="'+rowCls+'" data-fd-view-week="'+fdEsc(w.n)+'">'+
+  var nLabel='Week '+fdEsc(w.n);
+  var status=isDone?(isNow?'Complete · Current':'Complete'):(isNow?'Current':'');
+  return '<button type="button" class="'+rowCls+'" data-fd-view-week="'+fdEsc(w.n)+'"'+
+    ' id="fd-path-week-'+fdEsc(w.n)+'" role="tab" aria-selected="'+(isSel?'true':'false')+'"'+
+    ' tabindex="'+(isSel?'0':'-1')+'" aria-controls="fd-path-detail"'+
+    (isNow?' aria-current="step"':'')+'>'+
     '<span class="fd-timeline__gutter">'+
       '<span class="'+fdPathDotCls(isDone, isNow)+'"></span>'+
       '<span class="fd-timeline__line"></span>'+
     '</span>'+
     '<span class="fd-timeline__body">'+
       '<span class="fd-timeline__n">'+nLabel+'</span>'+
+      '<span class="fd-timeline__number" aria-hidden="true">'+fdEsc(w.n)+'</span>'+
       '<span class="fd-timeline__title">'+fdEsc(w.title)+'</span>'+
+      '<span class="fd-timeline__theme">'+fdEsc(w.theme||'')+'</span>'+
+      (status?'<span class="fd-timeline__status">'+status+'</span>':'')+
     '</span>'+
     '<span class="fd-timeline__count">'+progress.done+'/'+progress.total+'</span>'+
   '</button>';
+}
+
+function fdPathRoute(index, state){
+  var idx=index||{weeks:[]},weeks=idx.weeks||[];
+  var count=fdPathWeekCount(idx),out='';
+  out+='<nav class="fd-pathroute" aria-label="Explore the Path">';
+  out+='<svg class="fd-pathroute__curve" viewBox="0 0 1000 260" preserveAspectRatio="none" aria-hidden="true" focusable="false">';
+  out+='<path class="fd-pathroute__connector" d="M45 154 C145 54 235 62 323 156 S490 226 580 124 S755 58 842 145 S938 184 970 118"></path>';
+  out+='</svg>';
+  out+='<div class="fd-pathroute__weeks fd-pathroute__weeks--'+fdEsc(count)+'" role="tablist" aria-label="Path weeks">';
+  for(var i=0;i<weeks.length;i++){ out+=fdPathTimelineRow(idx,weeks[i],state); }
+  out+='</div></nav>';
+  return out;
 }
 
 /* The detail card for whichever week state.viewWeek names. Falls back to the index's first
@@ -71,19 +143,21 @@ function fdPathTimelineRow(index, w, state){
 function fdPathDetail(index, state){
   var idx=index||{weeks:[]};
   var weeks=idx.weeks||[];
-  var wk=fdFindWeek(idx,state.viewWeek)||weeks[0]||null;
+  var wk=fdFindWeek(idx,fdPathViewWeek(idx,state))||weeks[0]||null;
   var viewN=wk?wk.n:null;
   var items=fdItemsForWeek(idx, viewN);
+  var done=fdProgressForWeek(idx,state,viewN);
   var isCurrent=(typeof state.week==='number'&&!isNaN(state.week))&&state.week===viewN;
 
-  var out='<div class="fd-detail">';
+  var out='<div class="fd-detail" id="fd-path-detail" role="tabpanel" aria-labelledby="fd-path-week-'+fdEsc(viewN)+'" aria-live="polite">';
   out+='<div class="fd-detail__head">';
   out+='<span class="fd-eyebrow">Week '+fdEsc(viewN)+'</span>';
   if(isCurrent) out+='<span class="fd-detail__here">you are here</span>';
   out+='</div>';
   out+='<h2 class="fd-detail__h2">'+fdEsc(wk?wk.title:'')+'</h2>';
+  out+=fdPathPractice(idx,viewN);
   out+='<div class="fd-detail__list">';
-  for(var i=0;i<items.length;i++){ out+=fdRow(items[i], i, state.done, true); }
+  for(var i=0;i<items.length;i++){ out+=fdRow(items[i], i, done, true); }
   out+='</div>';
   if(!isCurrent){
     out+='<button type="button" class="fd-btn fd-btn--accent" data-fd-setweek="'+fdEsc(viewN)+'">'+
@@ -96,14 +170,13 @@ function fdPathDetail(index, state){
 function fdPath(index, state){
   var st=state||{};
   var idx=index||{weeks:[]};
-  var weeks=idx.weeks||[];
   if(!fdActivePathValid(idx)) return fdPathFallback('path');
+  var suggested=idx.path.id==='ms3-six-week';
   var out='<section class="fd-path">';
-  out+='<h1 class="fd-path__h1">Your '+fdEsc(fdPathWeekCount(idx))+'-week path</h1>';
+  out+='<h1 class="fd-path__h1">'+(suggested?'Suggested learning plan':'Your '+fdEsc(fdPathWeekCount(idx))+'-week path')+'</h1>';
+  if(suggested) out+='<p class="fd-path__intro">Six weeks of suggested practice. Confirm required work with your supervising team. Checkmarks record completed activities; your supervising team assesses clinical skills.</p>';
+  out+=fdPathRoute(idx,st);
   out+='<div class="fd-path__cols">';
-  out+='<div class="fd-timeline">';
-  for(var i=0;i<weeks.length;i++){ out+=fdPathTimelineRow(idx, weeks[i], st); }
-  out+='</div>';
   out+=fdPathDetail(idx, st);
   out+='</div>';
   out+='</section>';

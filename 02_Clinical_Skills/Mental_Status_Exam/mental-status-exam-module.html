@@ -12,7 +12,7 @@
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
-    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
     --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
     --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
     --success:#357160; --success-light:#e7f1ed;
@@ -144,7 +144,7 @@ var DOMAINS = [
    pearl:'Process = the connections between ideas. Reserve "disorganized" for genuinely incoherent output, not merely talkative.'},
   {key:'thoughtContent', title:'Thought content', observe:'What the patient is thinking: SI/HI, delusions, obsessions, preoccupations.',
    prose:'Thought content notable for ', options:['no SI/HI','passive SI','active SI','homicidal ideation','paranoid delusions','grandiose delusions','obsessions','no delusions'],
-   pearl:'Always document suicidal and homicidal ideation explicitly — including their absence. "Denies SI/HI" is not optional.', danger:true},
+   pearl:'Always document suicidal and homicidal ideation explicitly — including their absence, with what you asked (e.g., "denies SI/HI when asked directly about thoughts, plan, and recent steps").', danger:true},
   {key:'perception', title:'Perception', observe:'Hallucinations (auditory, visual, other), illusions, dissociation, responding to internal stimuli.',
    prose:'with ', options:['no perceptual disturbances','auditory hallucinations','visual hallucinations','responding to internal stimuli','denies hallucinations'],
    pearl:'Note both what the patient reports and what you observe (e.g., appearing to respond to internal stimuli).'},
@@ -441,5 +441,12 @@ function App(){
 
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
 </script>
+<!-- Static (non-React) on purpose: crisis contacts must render even if the app script
+     fails. Build-injected from crisis_resources.json — do not hand-edit numbers here.
+     This surface qualifies under the scope rule: the Safety stage rehearses the suicide,
+     violence and vulnerability elicitation ladders verbatim (ideation, plan, steps taken,
+     means access), which is doing risk work, not reading about it. Its sibling page
+     pg_interview.md carries the block for the same reason (MS3V01-F005). -->
+<!-- crisis-block-html -->
 </body>
 </html>

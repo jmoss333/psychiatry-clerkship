@@ -399,6 +399,41 @@ async function log(page) {
   return page.evaluate(() => JSON.parse(JSON.stringify(window.__voiceTestLog)));
 }
 
+test('spoken entry leaves the embedded tool in the same tab without carrying access credentials', async ({ page }) => {
+  await openRoom(page);
+  const toolUrl = page.url();
+  await page.setContent('<iframe id="spoken-entry-frame" title="Interview Room" style="width:100%;height:900px"></iframe>');
+  await page.locator('#spoken-entry-frame').evaluate((frame, url) => { frame.src = url; }, toolUrl);
+  const frame = page.frameLocator('#spoken-entry-frame');
+  const card = frame.getByRole('region', { name: 'Spoken interviews' });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('Dana, Marcus, or Ray');
+  const link = card.getByRole('link', { name: 'Start a spoken interview', exact: true });
+  const destination = 'https://interview-room-faculty-preview.netlify.app/';
+  let navigation;
+  await page.route(destination, async (route) => {
+    navigation = route.request();
+    await route.fulfill({ contentType: 'text/html', body: '<h1>Spoken practice invitation</h1>' });
+  });
+  await link.click();
+  await expect(page).toHaveURL(destination);
+  await expect(page.getByRole('heading', { name: 'Spoken practice invitation' })).toBeVisible();
+  expect(page.context().pages()).toHaveLength(1);
+  expect(navigation.method()).toBe('GET');
+  expect(navigation.postData()).toBeNull();
+  expect(navigation.headers()['x-preview-key']).toBeUndefined();
+  expect(navigation.headers()['x-student-key']).toBeUndefined();
+});
+
+test('spoken entry is offered before case selection and stays out of an existing encounter', async ({ page }) => {
+  await openRoom(page);
+  const card = page.getByRole('region', { name: 'Spoken interviews' });
+  await expect(card).toBeVisible();
+  expect(await card.evaluate((element) => !!(element.compareDocumentPosition(document.querySelector('.casegrid')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  await beginSupported(page);
+  await expect(card).toHaveCount(0);
+});
+
 test('voice mode is keyboard-operable and managed identity stays canonical across one room', async ({ page }) => {
   await openRoom(page);
   const select = voiceMode(page);

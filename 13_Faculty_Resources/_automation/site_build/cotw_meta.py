@@ -20,6 +20,12 @@ old way still builds and still clears the warning:
     "epa"       : list[str]  AAMC Core EPA codes, EPA1..EPA13
     "read"      : int        estimated read time in minutes
     "tldr"      : str        one-line summary rendered above the prose
+    "tldr_ms3" / "tldr_res"  per-level override of "tldr". The MS3 and resident pages of one
+                             week are DIFFERENT patients (the 2026-07-27 OUD pair: naloxone-
+                             precipitated withdrawal for MS3, buprenorphine-precipitated for
+                             the resident), so one shared summary can be true of only one of
+                             them (peer-review finding M11-001). A level without its own key
+                             falls back to "tldr".
     "stages"    : list[str]  workflowStages override; defaults to a base set plus whatever
                              the row's "blueprint" codes imply (see _BLUEPRINT_STAGES)
     "workflow"  : dict       clinicalWorkflow override, merged OVER the derived default so a
@@ -186,7 +192,9 @@ def entry_for(week, level):
     if not isinstance(read, int):
         read = _DEFAULT_READ[level]
 
-    tldr = week.get("tldr")
+    tldr = week.get("tldr_" + level)
+    if not isinstance(tldr, str) or not tldr.strip():
+        tldr = week.get("tldr")
     if not isinstance(tldr, str) or not tldr.strip():
         tldr = "Case of the Week — %s. Guided discussion questions, a ranked differential, and a workup-and-management ladder." % label
 
@@ -197,7 +205,15 @@ def entry_for(week, level):
         "points": [
             "~20-30 minute small-group discussion - no pre-reading required.",
             "De-identified synthetic case; each discussion question is paired with a teaching point.",
-            "%s. Facilitator notes are kept separate from the learner-facing stem." % _LEVEL_LABEL[level],
+            # This bullet used to read "Facilitator notes are kept separate from the
+            # learner-facing stem." That was not true of anything the build does: the
+            # facilitator section is part of the same markdown source and ships inside
+            # the same page on the learner site, so every reader saw the claim and the
+            # notes together (2026-09-14 attestation review). Whether the notes SHOULD be
+            # separated is a release-policy decision for faculty and is open — see
+            # docs/superpowers/plans/2026-09-15-facilitator-material-release.md. Until it
+            # is made, this line states only what is actually true.
+            "%s. Each discussion question is paired with a teaching point." % _LEVEL_LABEL[level],
         ],
         "safetyLevel": "moderate",
         "facultyReview": {

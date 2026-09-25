@@ -112,7 +112,14 @@ def render_html(data):
             "border-left:4px solid var(--cw-accent,#8c5a3b);"
             "border-radius:6px;background:var(--cw-surface,#faf6f1);"
             'color:var(--cw-text,#2c2622);">',
-            '  <h2 id="crisis-block-heading" style="margin:0 0 .5rem;font-size:1rem;">%s</h2>'
+            # color:inherit is load-bearing. The block is injected into HTML pages whose
+            # own h2 rules set an accent colour, and that colour wins over the
+            # section's inline `color`. On 2026-09-10 that put a dark-mode terracotta
+            # heading on this block's light ground at 2.59:1 — on the crisis surface.
+            # Inheriting --cw-text makes the heading immune to whatever the host page
+            # does to h2, in either theme.
+            '  <h2 id="crisis-block-heading" style="margin:0 0 .5rem;font-size:1rem;'
+            'color:inherit;">%s</h2>'
             % _esc(HEADING),
             '  <p style="margin:.25rem 0 .75rem;">%s</p>' % _esc(data["unitEscalationNote"]),
             '  <ul style="margin:0;padding-left:1.25rem;">',

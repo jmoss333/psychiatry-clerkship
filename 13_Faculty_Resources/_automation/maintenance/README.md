@@ -19,10 +19,11 @@ GitHub and Netlify cron expressions are UTC. A GitHub schedule is active only wh
 workflow file is on the repository's default branch; a branch-local cron is not an active
 schedule. Until merge, any external status report must call it `pending_merge`.
 
-The three Codex heartbeats below are controller-activated automations specified for the
-operational handoff. They are not repository jobs and must not be reported as active until
-their definitions and next-run times have been inspected in Codex. Their clock is
-`America/New_York`, so daylight-saving changes do not move the human-facing local time.
+The operational handoff specifies one consolidated Codex heartbeat, daily at 08:30
+`America/New_York`. Monday rotation-readiness and first Tuesday policy/provider/evidence
+(including Zotero) work run conditionally inside that heartbeat, not as separate schedules.
+It is controller-managed, not a repository job: verify its definition and next-run time
+in Codex before reporting it active. Daylight-saving changes preserve the local time.
 
 ## Schedule and evidence matrix
 
@@ -31,21 +32,21 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 
 | Check | Cadence | Workflow or home | Artifact and retention |
 |---|---|---|---|
-| Interview Room authenticated GET | Every 6 hours, `0 */6 * * *` | Netlify `sp-health-canary` | Blob store `sp-health-canary`, key `latest`; not a GitHub artifact |
+| Interview Room contract and conditional actor canary | Every 6 hours, `0 */6 * * *` | Netlify `sp-health-canary` | Blob store `sp-health-canary`, key `latest`; not a GitHub artifact |
 | Interview Room receipt monitor | Every 12 hours at minute 15, `15 */12 * * *` | `maintenance-sp-health-monitor.yml` | `maintenance-sp-health-${{ github.run_id }}` — 90 days |
+| Autonomous queue runner | Daily 04:40 UTC, `40 4 * * *` | `maintenance-queue-runner.yml` | `maintenance-queue-runner-${{ github.run_id }}` — 90 days |
 | Production learner canary | Daily 09:20 UTC, `20 9 * * *` | `maintenance-production-canary.yml` | `maintenance-production-canary-${{ github.run_id }}` — 90 days |
-| Internal workflow heartbeat | Daily 10:45 UTC, `45 10 * * *` | `maintenance-heartbeat.yml` | `maintenance-workflow-heartbeat-${{ github.run_id }}` — 90 days |
+| Internal workflow heartbeat | Daily 10:45 UTC, `45 10 * * *` | `maintenance-heartbeat.yml` | `maintenance-workflow-heartbeat-${{ github.run_id }}`, `maintenance-stranded-prs-${{ github.run_id }}`, `maintenance-automation-branch-prs-${{ github.run_id }}` — 90 days each |
 | Clean-room release rehearsal | Sunday 08:00 UTC, `0 8 * * 0` | `ci.yml` | `smoke-test-results-${{ github.run_number }}` — 14 days |
 | Faculty governance digest | Monday 12:30 UTC, `30 12 * * 1` | `maintenance-governance-digest.yml` | `maintenance-governance-${{ github.run_id }}` — 90 days |
+| Stranded faculty attestations | Monday 12:30 UTC, with the governance digest | `maintenance-governance-digest.yml` | `maintenance-governance-${{ github.run_id }}` — 90 days |
 | Evidence and operations review | First day monthly 13:00 UTC, `0 13 1 * *` | `maintenance-monthly-review.yml` | `maintenance-monthly-${{ github.run_id }}` — 90 days |
 | Rotation readiness | Daily 13:15 UTC, `15 13 * * *` | `maintenance-rotation-readiness.yml` | `maintenance-rotation-${{ github.run_id }}` — 90 days |
 | Link surveillance | Monday 06:00 UTC, `0 6 * * 1` | `surveillance-link-monitor.yml` | `surveillance-link-monitor-${{ github.run_id }}` — 90 days |
 | Citation surveillance | Monday 07:00 UTC, `0 7 * * 1` | `surveillance-citations.yml` | `surveillance-citation-monitor-${{ github.run_id }}` — 90 days |
 | Guideline surveillance | First day monthly 06:00 UTC, `0 6 1 * *` | `surveillance-guideline.yml` | `surveillance-guideline-monitor-${{ github.run_id }}` — 90 days |
 | Resource intake | On demand only | `surveillance-resource-intake.yml` | `surveillance-resource-intake-${{ github.run_id }}` — 90 days |
-| External automation deadman | Daily 08:30 local | Controller-managed Codex heartbeat; verify current status | Notification; no repository artifact |
-| Policy/provider/Zotero review | First Tuesday 09:00 local | Controller-managed Codex heartbeat; verify current status | Read-only review proposal |
-| Rotation follow-up | Monday 09:15 local | Controller-managed Codex heartbeat; verify current status | Notification only when actionable |
+| Consolidated external deadman and conditional reviews | Daily 08:30 America/New_York; Monday rotation and first-Tuesday policy/evidence work inside the same run | Controller-managed Codex heartbeat; verify current status | Notify only when actionable; no repository artifact |
 
 ## State meanings
 
@@ -61,6 +62,55 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 - `pending_first_run`: the exact current workflow blob was recently activated and no
   qualifying scheduled run exists yet, within that workflow's freshness allowance.
   It is temporary grace, not success. It becomes `missing` and blocks when grace expires.
+
+## Gate versus exit code
+
+**A receipt can read `blocked` on a job that exited green, and that is correct.**
+`gate` records every reason a row is not clean — it is the full record and never
+narrows. The exit code answers something narrower: *is any of this mine?*
+
+Each steward declares one thing, `DELEGATED_STATES` in its own module, naming the
+states another watcher already owns; `receipt_summary.classify` subtracts those,
+plus the healthy and the merely-not-yet-fresh (`DEFERRED_ROW_STATES`), and the
+steward exits non-zero on whatever is left. Anything unrecognised counts as its
+own, so a state added later goes red rather than passing in silence.
+
+- **Workflow heartbeat** delegates `failed` to `automation-failure-escalation.yml`,
+  **but only for the workflows that escalation actually watches**. A watched
+  workflow that fired exactly on schedule and then failed is that escalation's
+  rolling issue, not a heartbeat failure — the heartbeat's subject is whether the
+  schedule still fires at all. When it defers, it says so on stderr and names where
+  the rows are tracked, so a green run is never a silent one.
+- **Interview Room monitor** and **stranded-PR monitor** delegate nothing
+  (`frozenset()`): nothing else watches the proxy or auto-merge, so everything they
+  see is theirs. The empty set is a deliberate declaration, not an omission.
+
+Operator consequence: when triaging a red steward, read its **first stderr line**,
+which names the rows that actually stopped it. Do not infer the exit code from
+`gate` in the artifact — for the heartbeat the two legitimately differ, and its
+receipt records the distinction in an additional `pulse` field.
+
+### A delegation is a claim, and claims get checked
+
+Naming a watcher does not make it watch. The escalation's `workflow_run` trigger
+covers every `maintenance-*` and `surveillance-*` workflow **and nothing else**,
+while the heartbeat also watches `ci.yml` for the Sunday clean-room release
+rehearsal. From #531 until 2026-09-09 a scheduled CI run that fired on time and
+failed was handed to a watcher that had never been listening: heartbeat green,
+escalation silent, failing release rehearsal visible nowhere.
+
+So `classify` takes a second restriction — which **rows** may be handed off, not
+just which states — and `ci.yml` failures stay the heartbeat's own. The pairing is
+re-derived from both YAML files by `DelegationHandoffTests`, which resolves each
+watched filename to the `name:` the escalation matches on and checks it **both
+ways**: narrowing the escalation's list fails the test, and so does widening it
+past what the heartbeat still keeps.
+
+Operator consequence: a red heartbeat naming `ci.yml:failed` is correct and is
+nobody else's. If you ever want that row escalated instead, the escalation must
+first learn to watch CI — and because `ci.yml` also runs on every pull request,
+that needs a `github.event.workflow_run.event == 'schedule'` guard or the rolling
+issue fills with ordinary red PRs.
 
 ## Local operator checks
 
@@ -126,24 +176,31 @@ is not serialized into the bounded heartbeat receipt.
 
 ## Interview Room health path
 
-Netlify runs `sp-health-canary` at `0 */6 * * *`. It reuses the server-only learner
-passcode for one authenticated `GET /api/sp`, makes no actor, evaluator, speech, budget,
-transcription, or synthesis call, and replaces strong-consistency Blob key
-`sp-health-canary/latest` with a bounded receipt. The public credential-free
+Netlify runs `sp-health-canary` every six hours at `0 */6 * * *`. It reuses the
+server-only learner passcode for one authenticated `GET /api/sp` contract check and,
+only when `learnerReady` is true, one live actor `POST /api/sp`. That POST spends one
+actor turn against the shared rotation budget; the canary never invokes evaluator,
+speech, transcription, or synthesis. It replaces strong-consistency Blob key
+`sp-health-canary/latest` with a bounded, content-free receipt; prompts and replies
+are not retained. The public credential-free
 `GET /api/sp/health-status` response is `Cache-Control: no-store`.
 
-GitHub checks that status 15 minutes after each slot. A success blocks if it is more than
-eight hours old or if `nextRun` is more than ten minutes late; missing, malformed, failed,
-and unavailable receipts also block. A prior success therefore cannot hide a missed slot
-or Blob-write loss.
+GitHub checks that status every 12 hours at minute 15 (`15 */12 * * *`): nominally
+00:15 and 12:15 UTC, sampling the 00:00 and 12:00 canary slots. It samples alternating
+six-hour slots, not every slot. A success blocks if it is more than eight hours old or
+if `nextRun` is more than ten minutes late; missing, malformed, failed, and unavailable
+receipts also block. These freshness checks detect stale or lost receipts when polled,
+but do not provide continuous coverage of intervening slots.
 
 The public receipt is the alert surface, not the only operational proof. After a deploy,
 pack/model change, credential rotation, or forced canary failure, inspect Netlify's
 `sp-health-canary` scheduled-function invocations and logs. Confirm the expected six-hour
 slots and that failure logs contain only `event`, `state`, and an allow-listed
 `failureCode`. Apply red-team check D6 to both a success and a forced failure. A green
-receipt proves authenticated read-only reachability only; it does not replace the full
-red-team checklist or faculty/privacy activation gates.
+learner-ready receipt proves the authenticated contract and one bounded actor reply,
+not evaluator behavior, the safety screen, voice behavior, clinical quality, privacy
+approval, or release readiness. A non-learner-ready success does not prove actor capability.
+Neither replaces the full red-team checklist or faculty/privacy activation gates.
 
 ## Production cache and integrity contract
 
@@ -200,12 +257,20 @@ authority for the edit, review stamp, and issue closure.
 
 ## Failure escalation
 
-Every workflow above reports its completion to `automation-failure-escalation.yml`
+The watched maintenance and surveillance workflows report completion to
+`automation-failure-escalation.yml`
 (`workflow_run`), which folds the event into one rolling issue,
 `automation: scheduled job failures`, under the marker
 `<!-- automation:failure-escalation -->`. The body lists each failing workflow, its
-consecutive-failure count, the run link, and the first error line; a success flips that row
-to recovered and resets the count.
+consecutive-failure count, the run link, and the first error line. A successful non-queue
+workflow flips its failing row to recovered and resets the count.
+
+For the exact workflow `Maintenance — Autonomous Queue Runner`, a successful run must
+also supply `outcome.txt` from its queue artifact: only `did-work` can recover that
+workflow's failing row. `nothing-to-do` is idle/neutral and cannot recover a prior failure;
+a missing or unrecognized outcome (including unreadable evidence) is unverified. Both
+leave the prior failing row unchanged. Workflow recovery does not resolve older branches
+without PRs; the independent branch steward below continues to report them.
 
 It shares no code path with `maintenance_issue.py` on purpose — the escalation has to keep
 reporting when that path is the thing that broke. State round-trips through a JSON block in
@@ -217,6 +282,59 @@ closes the row.** A person closes it once the underlying job is genuinely health
 enforced, not merely documented — `validate_scheduled_workflows.py` rejects an issue-closing
 command in any scoped workflow, and `tests/maintenance/test_escalation_issue.py` asserts that
 no input produces a close decision.
+
+## A pushed branch with no pull request
+
+The independent `automation_branch_prs.py` steward runs inside the internal heartbeat,
+even when the other checks fail. It uses GitHub GET only and owns exact
+`automation/surveillance-inbox` plus the queue grammar imported from
+`queue_pr_fallback.py`: `automation/queue-[a-z0-9][a-z0-9-]{0,63}-YYYY-MM-DD`.
+Other automation names are not rendered. Its bounded, content-free receipt lists
+`missing_open_pr` for each owned branch without an exact same-repository open head;
+an open draft counts, but closed/merged PRs and same-named fork heads do not.
+Any incomplete, ambiguous, malformed, over-limit, or inaccessible evidence produces
+state `unavailable`, `gate=blocked`, and exit 2, never an empty healthy result.
+Missing-PR rows also block with exit 2. The steward never opens or closes PRs or issues,
+never edits or merges them, and never deletes branches; resolution remains human after
+reviewing the exact branch and its evidence. This receipt is separate from the queue
+publication fallback below, which can create or update its own issue.
+
+The queue runner pushes its branch and *then* asks GitHub to open the draft pull request.
+Those two operations do not share a permission. `contents: write` covers the push; opening
+a pull request is additionally gated by **Settings → Actions → General → Workflow
+permissions → Allow GitHub Actions to create and approve pull requests**, which no workflow
+file can grant itself. With that box off, `gh pr create` is refused:
+
+```
+pull request create failed: GraphQL: GitHub Actions is not permitted to
+create or approve pull requests (createPullRequest)
+```
+
+Before `queue_pr_fallback.py` the refusal simply killed the step, leaving the branch on the
+remote carrying completed, verified work with nothing anywhere saying why it had no pull
+request. Four consecutive scheduled runs failed that way (2026-09-10 … 2026-09-13); two
+orphan branches survived it and one needed its pull request opened by hand days later.
+
+The fallback folds the refusal into one marker-owned rolling issue,
+`automation: queue branch pushed without a pull request`, under
+`<!-- automation:queue-branch-without-pull-request -->`, listing each branch, its task, how
+many nights it has recurred, the verbatim refusal, and a **pre-filled compare URL** so a
+person resolves a row in one click. Filing an issue works precisely because `issues: write`
+is an ordinary workflow permission — it is not gated by the setting that just refused the
+pull request, which is the whole reason this report can exist.
+
+**It does not turn the run green.** The workflow's job is to deliver a reviewable draft pull
+request; delivering half of that is not a pass, and reporting success over the half that
+worked is the failure `docs/SILENT_SHRINK_CHECKLIST.md` is a list of. The refused step stays
+red, so the heartbeat and the escalation deadman go on seeing the truth; this issue carries
+the detail neither of them can. Classification is subtractive — a refusal the module does
+not recognise is reported verbatim as `unknown`, never dropped.
+
+`tests/maintenance/test_queue_pr_fallback.py` executes the workflow's own `run:` bodies
+against a fake `gh`, because every defect this exists for lived in a path nobody ran until
+04:40 UTC. That is how the truncation bug in the decision handoff was found: the module
+appends to `--output`, so a file that is not truncated yields `create\nupdate` and an issue
+number with a newline in it.
 
 ## Rotation configuration and manual boundary
 
@@ -246,9 +364,12 @@ confirms them:
 ```
 
 Never add a name, email, learner/institution ID, assignment, patient information, or a
-secret. A human must supply the authoritative dates and non-identifying ID. Before a new
-block, an authorized operator separately rotates the learner passcode and operations
-credential, preserves the prior content-free usage receipt, and runs the Interview Room
+secret. A human must supply the authoritative dates and non-identifying ID. The
+learner passcode is fixed and non-rotating at ordinary block turnover; only the separate
+operations credential rotates then, performed by an authorized operator. An incident
+involving suspected disclosure requires separate incident response, including emergency
+learner-passcode replacement when appropriate.
+Before the new block, preserve the prior content-free usage receipt and run the Interview Room
 red-team checklist and golden transcript. Do not put credential values in git, issues,
 artifacts, chat, or logs. Managed voice remains disabled until all required external
 faculty and privacy gates are recorded.
@@ -311,6 +432,65 @@ and external deadman so their expected blocking state is explicit. To resume, re
 schedule through review, deploy, confirm a fresh six-hour invocation and receipt, and run
 the required success/failure log check plus red-team checklist. Never delete or invalidate
 a credential merely to simulate a pause.
+
+## Netlify production deploy health
+
+`bin/check_netlify_deploy_health.py` runs inside the daily production canary and is the
+alarm for a deploy FREEZE — the failure mode a liveness crawl cannot see, because a site
+whose builds are all failing keeps serving its last good publish. That is what happened on
+2026-08-31, when the GitHub-LFS budget was exhausted and every production deploy failed for
+a day and a half with both learner sites still up.
+
+Netlify's own alarm for this is a per-site "Deploy failed" email, and it stopped being
+usable the moment any site used a build-ignore rule: Netlify records a SKIP as a failed
+deploy, state `error`, message `Canceled build due to no content change`. From 2026-09-03
+the repository resolved that by never skipping (`ignore = "/bin/false"` everywhere), which
+kept the email honest and cost about $110/month, because a Netlify production deploy is 15
+credits (~$0.10) flat while build minutes, deploy previews, branch deploys and cancelled
+deploys are not metered at all. Since 2026-09-10 the satellites skip no-op builds again
+(`site_build/netlify_ignore_scoped.sh`) and this tool carries the alarm.
+
+Reading the result:
+
+| Receipt `status` | Meaning | Action |
+| --- | --- | --- |
+| `success` | No non-benign production failure in the lookback window | none |
+| `failed` | A real failed production deploy, or a deploy state this tool does not recognise | read `findings`, open the deploy in Netlify |
+| `skipped` | `NETLIFY_AUTH_TOKEN` is not set, so nothing was read | add the repository secret; **the alarm is not armed until you do** |
+| `undetermined` | The API was unreachable or unparseable (exit 2) | re-run; if it persists, treat it as an outage, not a pass |
+
+`skipped` exits 0 by design — a daily steward that goes red for a missing secret trains
+everyone to ignore it — so `skipped` is what to look for when asking "is this actually
+watching anything?". An unrecognised deploy state is a FINDING rather than silence, so
+Netlify adding a state surfaces as noise rather than as a quiet gap in coverage.
+
+Per-site notification settings that must match this arrangement: keep "Deploy failed" ON
+for `une-ms3-psychiatry` and `mmc-psychiatry-residents-sanford` (they still always build,
+so the email never fires on a no-op); turn it OFF for `sp-interview-proxy`,
+`clerkship-faculty-attest` and `psychiatry-workforce-tour`.
+
+### The preview gate (since 2026-09-25)
+
+The same daily run also runs `bin/check_preview_gate.py`: every Netlify preview that
+`main`'s ruleset REQUIRES must be one its site can actually build. On 2026-09-25 #802 moved
+the learner sites' production branch to `release`. Netlify builds a PR preview only when the
+PR's base is the production branch or a branch-deploy branch, so PRs into `main` stopped
+getting learner-site previews while the ruleset still required them. Every PR sat blocked for
+seven hours with all its own checks green. Nothing flagged it: production was fine, and the
+ruleset had not changed.
+
+It checks two things, independently:
+
+| Check | What it reads | Rings when |
+| --- | --- | --- |
+| Settings (predictive) | the committed ruleset fixture + each site's Netlify settings | a required site cannot build a preview for a PR into `main`: previews off, builds stopped, linked elsewhere, or `main` is neither its production nor a branch-deploy branch |
+| Evidence (symptom) | the deploy records this run already paged | a PR got previews on the sibling sites more than an hour ago but has none (in any state) on a required site |
+
+A finding fails the canary step exactly like a failed production deploy; the receipt's
+`previewGate` section names the site, the check it strands, and the fix. The usual fix is
+free: Netlify → the site → Branches and deploy contexts → Branch deploys → add `main`
+(previews and branch deploys cost 0 credits). Its `--self-test` runs in `bin/verify.sh` and
+also fails any push whose ruleset requires a preview from a site missing from `SITES`.
 
 ## Operator response
 

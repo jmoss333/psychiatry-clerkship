@@ -25,7 +25,7 @@ JOB = "build-test-validate"
 
 # name-prefix -> why verify.sh does not run it.
 ALLOWED = {
-    "Install —": "environment setup, not a gate; verify.sh installs sp-proxy deps itself",
+    "Install —": "environment setup, not a gate; verify.sh installs sp-proxy and\n        sp-preview deps itself",
     "Agent docs parity": "verify.sh runs the equivalent `diff -q CLAUDE.md AGENTS.md`",
     "Build + static QA gate": "verify.sh runs both site builds as their own steps",
     "Unit — root node regression": "verify.sh runs `node --test tests/*.test.mjs`",

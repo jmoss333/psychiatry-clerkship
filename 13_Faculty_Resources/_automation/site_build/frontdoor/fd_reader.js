@@ -55,14 +55,15 @@
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
 
-var FD_READER_TAB_LABELS={ today:'Today', path:'Path', library:'Library' };
+var FD_READER_TAB_LABELS={ today:'Today', path:'Path', library:'Library', care:'Patient care resources' };
 
 /* backLabel names whichever tab the reader was opened FROM (state.fromTab), not the item's own
    week -- a page can be reached from Today, Path, or Library, and "back" always means "return to
    that tab", which fd_shell.js's data-fd-back handler reads from state.fromTab directly (this
    file never needs to know the URL/routing mechanics, only the label). Defaults to 'Today',
    matching fd_shell.js's fdTabs() fallback for an unrecognised tab id. */
-function fdReaderBackLabel(fromTab){
+function fdReaderBackLabel(fromTab, roleId, appMode){
+  if(fromTab==='today'&&(roleId==='app'||appMode===true)) return 'On shift';
   return FD_READER_TAB_LABELS[fromTab]||'Today';
 }
 
@@ -138,19 +139,7 @@ function fdReaderKeyPoints(points){
   return out;
 }
 
-/* data-fd-open="<ref>" plus the bare data-fd-sheet modifier -- the branch contract fd_search.js
-   (header note, "Sheet-vs-navigate signalling") states and fd_sheet.js's attribute table repeats:
-   data-fd-open alone NAVIGATES to the page; the same attribute with a bare data-fd-sheet beside it
-   means "open that ref as a preview side sheet instead". This button must carry the modifier,
-   because its own sub-copy one line below promises the page stays put, and because the prototype
-   opens Try-it-now as a sheet unconditionally while a list row's data-fd-open navigates.
-
-   An earlier version of this file left the modifier off and justified it by saying the wiring
-   layer could infer the sheet presentation from the click having come from .fd-trynow. That
-   rationale is deleted, not merely superseded: a second, undocumented mechanism for one decision
-   is exactly how this button came to promise one thing and encode another. The attribute is now
-   the only signal, and tests/fd-reader.test.mjs pins it.
-
+/* Related tools open directly so a learner reaches the working controls in one action.
    toolTitle falls back to the raw ref for a toolRef that resolves to nothing in the index -- the
    same missing-entry degradation fd_data.js already uses for titles, rather than throwing on a
    dangling reference. */
@@ -163,12 +152,10 @@ function fdReaderTryNow(item, index){
      title cannot overflow the button -- the same structural, non-colour inline style fd_shell.js
      uses for the analogous .fd-role grouping span (fd_shell.js:84). No class in frontdoor.css
      covers this bare grouping, same as that precedent. */
-  return '<button type="button" class="fd-trynow" data-fd-open="'+fdEsc(item.toolRef)+'" '+
-    'data-fd-sheet>'+
+  return '<button type="button" class="fd-trynow" data-fd-open="'+fdEsc(item.toolRef)+'">'+
     '<span class="fd-trynow__icon">▶</span>'+
     '<span style="flex:1;min-width:0">'+
-      '<span class="fd-trynow__title">Try it now · '+fdEsc(toolTitle)+'</span>'+
-      '<span class="fd-trynow__sub">Opens as a side sheet — this page stays put.</span>'+
+      '<span class="fd-trynow__title">Open tool · '+fdEsc(toolTitle)+'</span>'+
     '</span>'+
   '</button>';
 }
@@ -276,7 +263,7 @@ function fdReaderActionBar(item, doneLabel, isDone, backLabel){
   return '<div class="fd-actionbar">'+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-back aria-label="Back to '+fdEsc(backLabel)+'">‹</button>'+
     '<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="'+fdEsc(item.ref)+'" '+
-      'aria-pressed="'+(isDone?'true':'false')+'">'+
+      'aria-pressed="'+(isDone?'true':'false')+'" data-fd-dock-source="primary-reader" data-fd-dock-label="'+fdEsc(doneLabel)+'">'+
       '<span>'+fdEsc(doneLabel)+'</span></button>'+
   '</div>';
 }
@@ -324,27 +311,32 @@ function fdReader(index, state, bodyHtml){
      applies to a fully-built index -- a caller passing a bare {byRef:{}} (tests, early boot)
      keeps the old degrade-gracefully path rather than showing every page as missing. */
   if(idx.known&&st.ref&&!idx.known[st.ref]) return fdNotFound(st.ref);
-  var item=(idx.byRef&&idx.byRef[st.ref])|| {
+  var item=(idx.byRef&&idx.byRef[st.ref])||(typeof fdKnownItem==='function'?fdKnownItem(idx, st.ref):{
     ref: st.ref||'', kind:'read', title: st.ref||'', minutes:null, summary:'',
     points:[], attested:false, toolRef:null, risk:null, href:'',
-  };
-  /* Direct .html routes such as orientation-video.html can be intentionally absent from the
+  });
+  /* Direct .html routes such as the rp-* tools can be intentionally absent from the
      Library projection while still being governed tool routes. Extension inference keeps the
      shared control literal across all tools instead of silently treating those routes as reads. */
   var isTool=item.kind==='tool'||fdIsTool(item.ref||st.ref);
 
-  var hasWeek=(typeof st.week==='number')&&!isNaN(st.week);
-  var weekItems=hasWeek?fdItemsForWeek(idx, st.week):[];
+  var readerWeek=fdProgressWeek(st,idx);
+  var hasWeek=(typeof readerWeek==='number')&&!isNaN(readerWeek);
+  var weekItems=hasWeek?fdItemsForWeek(idx, readerWeek):[];
+  var doneMap=fdProgressForWeek(idx,st,readerWeek);
   var inWeek=false;
   for(var w=0;w<weekItems.length;w++){
     if(weekItems[w].ref===item.ref){ inWeek=true; break; }
   }
 
-  var neighbours=fdReaderNeighbours(idx, item.ref, st.week);
-  var nextAfter=inWeek?fdReaderNextUnread(weekItems, item.ref, st.done):null;
-  var isDone=!!(st.done||{})[item.ref];
-  var backLabel=fdReaderBackLabel(st.fromTab);
+  var neighbours=fdReaderNeighbours(idx, item.ref, readerWeek);
+  var nextAfter=inWeek?fdReaderNextUnread(weekItems, item.ref, doneMap):null;
+  var isDone=!!doneMap[item.ref];
+  var backLabel=fdReaderBackLabel(st.fromTab,st.roleId,st.appMode);
   var doneLabel=fdReaderDoneLabel(isDone, nextAfter, backLabel);
+  var blockHandoff=typeof fdBlockPageHandoff==='function'
+    ?fdBlockPageHandoff(st.block, item.ref, doneMap):null;
+  if(blockHandoff) doneLabel=fdBlockHandoffLabel(blockHandoff);
 
   /* A rights reference keeps every TOOL MECHANIC below (it is still an .html artifact in the tool
      frame, with the same toolbar and expand control) but must not be LABELLED one: "Interactive
@@ -353,7 +345,7 @@ function fdReader(index, state, bodyHtml){
      the copy branches. */
   var isRights=(item.rights===true);
   var kindLabel=isRights?'Reference':(isTool?'Interactive tool':'Reading');
-  var eyebrowText=inWeek?('Week '+fdEsc(st.week)+' · '+kindLabel):kindLabel;
+  var eyebrowText=inWeek?('Week '+fdEsc(readerWeek)+' · '+kindLabel):kindLabel;
   var metaText=isRights?'instrument not reproduced here'
     :(isTool?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):''));
 
@@ -378,6 +370,10 @@ function fdReader(index, state, bodyHtml){
   article+=fdReaderTryNow(item, idx);
   article+='<div class="fd-article__source"><span>Source:</span>'+
     '<span class="fd-src">'+fdEsc(item.ref)+'</span></div>';
+  if(!isTool&&st.readingPlaceEligible!==false){
+    article+='<p class="fd-reading-place" data-fd-reading-status></p>'+
+      '<button type="button" class="fd-reading-place__top" data-fd-reading-top hidden>Start at top</button>';
+  }
   article+=fdReaderActions(item, doneLabel, backLabel, isDone);
   article+=fdReaderPrevNext(neighbours);
   article+='</div>'; /* .fd-article */
@@ -392,7 +388,7 @@ function fdReader(index, state, bodyHtml){
   } else out+=back;
   out+='<div class="fd-reader__cols">';
   out+=article;
-  if(inWeek) out+=fdReaderRailNav(weekItems, st, st.week);
+  if(inWeek) out+=fdReaderRailNav(weekItems, {ref:st.ref,done:doneMap}, readerWeek);
   out+='</div>';
   out+='<div class="fd-actionbar__spacer"></div>';
   out+='</article>';

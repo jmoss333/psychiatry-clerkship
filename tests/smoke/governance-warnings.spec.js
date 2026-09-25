@@ -32,6 +32,7 @@ async function seedCompleteSetup(page) {
 async function loadPlacedNavItems(page, request, baseURL) {
   await seedCompleteSetup(page);
   await page.goto(`${baseURL}/?tab=library`, { waitUntil: 'domcontentloaded' });
+  await page.locator('[data-fd-library-view="full"]').click();
   const placed = new Set(await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open'))
   )));
@@ -113,10 +114,18 @@ test.describe('risk-aware review status (shared shell)', () => {
     await expect(page.locator('.surface-governance-direct:visible')).toHaveCount(1);
   });
 
-  // Asserts over EVERY placed pending/non-high item rather than one arbitrary find(), so the
-  // test strengthens as content grows and stops depending on one item keeping its status. When
-  // the set is empty the end-to-end wiring simply has no live example to exercise; the branch
-  // itself stays pinned by tests/surface-governance-ui.test.mjs, which renders a synthetic
+  // How many pending moderate/low items this test actually loads. It used to visit EVERY one,
+  // which was affordable while the ledger held a handful — and stopped being affordable the moment
+  // drift projection landed: 70 (ms3) / 76 (res) placed items today, each a full page.goto inside
+  // one 60s test, in CANARY_SHARED_SPECS. The property under test is per-item and identical for
+  // every item, so a bounded deterministic sample buys the same signal at a fixed cost; the total
+  // is annotated so a reader never mistakes the sample for the population.
+  const COMPACT_SAMPLE = 8;
+
+  // Asserts over a deterministic sample of placed pending/non-high items rather than one
+  // arbitrary find(), so the test does not depend on one item keeping its status. When the set
+  // is empty the end-to-end wiring simply has no live example to exercise; the branch itself
+  // stays pinned by tests/surface-governance-ui.test.mjs, which renders a synthetic
   // pending/moderate ledger and asserts the compact markup directly. Skipping is visible in the
   // report and annotated with the count; throwing read as a governance regression and was not.
   test('every pending moderate/low item shows a compact status, never an alert', async ({
@@ -126,9 +135,13 @@ test.describe('risk-aware review status (shared shell)', () => {
     const targets = items.filter(
       (it) => it.governance && it.governance.status === 'pending' && it.governance.riskLevel !== 'high',
     );
+    // Sorted before slicing: nav order is a build artefact, so an unsorted head would silently
+    // change which items are covered whenever a section moves.
+    const sample = [...targets].sort((a, b) => a.f.localeCompare(b.f)).slice(0, COMPACT_SAMPLE);
     testInfo.annotations.push({
       type: 'placed-pending-non-high',
-      description: `${targets.length} placed item(s): ${targets.map((it) => it.f).join(', ') || 'none'}`,
+      description: `${targets.length} placed item(s); asserting ${sample.length}: `
+        + `${sample.map((it) => it.f).join(', ') || 'none'}`,
     });
     test.skip(
       targets.length === 0,
@@ -136,7 +149,7 @@ test.describe('risk-aware review status (shared shell)', () => {
       + 'is pinned by tests/surface-governance-ui.test.mjs',
     );
 
-    for (const target of targets) {
+    for (const target of sample) {
       const url = target.k === 'tool'
         ? `${baseURL}/?tool=${encodeURIComponent(target.f)}`
         : `${baseURL}/?page=${encodeURIComponent(target.f)}`;
@@ -203,7 +216,7 @@ test.describe('risk-aware review status (shared shell)', () => {
     await expect(libraryBadge).toHaveText(label);
     await expect(libraryBadge).toHaveAttribute('aria-label', label);
 
-    await page.locator('[data-fd-search]').click();
+    await page.locator('.fd-header .fd-searchbtn[data-fd-search]').click();
     await page.locator('.fd-searchpanel__input').fill(target.f);
     const exactResults = page.locator('.fd-result[data-fd-open]');
     await expect(exactResults).toHaveCount(1);

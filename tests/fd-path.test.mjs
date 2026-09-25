@@ -20,7 +20,7 @@ const make = new Function(`
   ${read('frontdoor/fd_today.js')}
   ${pathSrc}
   return { fdPath: fdPath, fdBuildIndex: fdBuildIndex, fdItemsForWeek: fdItemsForWeek,
-           fdTodayProgress: fdTodayProgress };
+           fdTodayProgress: fdTodayProgress, fdPathMoveWeek: fdPathMoveWeek };
 `);
 const F = make();
 
@@ -77,7 +77,7 @@ const s = (over) => Object.assign({}, BASE_STATE, over);
 // button, so a non-greedy match up to the first </button> after the data-fd-view-week attribute
 // safely captures just that row.
 function rowFor(html, n) {
-  const m = html.match(new RegExp('<button type="button" class="([^"]*)" data-fd-view-week="' + n + '">([\\s\\S]*?)</button>'));
+  const m = html.match(new RegExp('<button type="button" class="([^"]*)" data-fd-view-week="' + n + '"[^>]*>([\\s\\S]*?)</button>'));
   if (!m) throw new Error('no timeline row for week ' + n);
   return { cls: m[1], body: m[2] };
 }
@@ -109,6 +109,48 @@ test('Path renders the projected path length and falls back only to an actual fi
   const empty = F.fdPath({ path: { id: '', weekCount: 0 }, weeks: [] },
     { week: null, viewWeek: null, done: {} });
   assert.match(empty, /class="fd-fallback"[^>]*role="alert"/);
+});
+
+test('Path exposes one roving tab set linked to the selected week detail', () => {
+  const html = F.fdPath(IDX, s({ week: 2, viewWeek: 5 }));
+  assert.match(html, /class="fd-pathroute"/);
+  assert.match(html, /class="fd-pathroute__weeks fd-pathroute__weeks--6"/);
+  assert.doesNotMatch(html, /class="fd-timeline fd-pathroute__weeks/);
+  assert.match(html, /role="tablist" aria-label="Path weeks"/);
+  assert.equal((html.match(/role="tab"/g) || []).length, 6);
+  assert.equal((html.match(/aria-selected="true" tabindex="0"/g) || []).length, 1);
+  assert.equal((html.match(/aria-selected="false" tabindex="-1"/g) || []).length, 5);
+  assert.match(html, /id="fd-path-week-5"[^>]*aria-selected="true"[^>]*aria-controls="fd-path-detail"/);
+  assert.match(html, /id="fd-path-detail"[^>]*role="tabpanel"[^>]*aria-labelledby="fd-path-week-5"/);
+});
+
+test('the production connector is neutral and does not imply ordered completion', () => {
+  const html = F.fdPath(IDX, s({ week: 2, viewWeek: 5, done: { 'w1a.md': true, 'w4a.md': true } }));
+  assert.equal((html.match(/class="fd-pathroute__connector"/g) || []).length, 1);
+  assert.doesNotMatch(html, /fd-pathroute__connector[^>]*(?:active|progress|selected|done)/i);
+  assert.doesNotMatch(html, /stroke-dasharray|stroke-dashoffset|path-progress/);
+});
+
+test('route nodes expose canonical themes plus independent selected, current, and complete text', () => {
+  const html = F.fdPath(IDX, s({ week: 2, viewWeek: 5, done: { 'w4a.md': true } }));
+  assert.match(rowFor(html, 2).body, /class="fd-timeline__status">Current<\/span>/);
+  assert.doesNotMatch(rowFor(html, 2).body, /you are here/i);
+  assert.match(rowFor(html, 4).body, /class="fd-timeline__status">Complete<\/span>/);
+  assert.match(rowFor(html, 5).body, /class="fd-timeline__theme">T5<\/span>/);
+  assert.doesNotMatch(rowFor(html, 5).body, /Current|Complete/);
+  assert.match(html, /data-fd-view-week="5"[^>]*aria-selected="true"/);
+});
+
+test('Arrow, Home, and End movement follows the projected weeks and wraps', () => {
+  assert.equal(F.fdPathMoveWeek(IDX, 2, 'ArrowRight'), 3);
+  assert.equal(F.fdPathMoveWeek(IDX, 2, 'ArrowDown'), 3);
+  assert.equal(F.fdPathMoveWeek(IDX, 2, 'ArrowLeft'), 1);
+  assert.equal(F.fdPathMoveWeek(IDX, 2, 'ArrowUp'), 1);
+  assert.equal(F.fdPathMoveWeek(IDX, 1, 'ArrowLeft'), 6);
+  assert.equal(F.fdPathMoveWeek(IDX, 6, 'ArrowRight'), 1);
+  assert.equal(F.fdPathMoveWeek(FOUR_INDEX, 3, 'Home'), 1);
+  assert.equal(F.fdPathMoveWeek(FOUR_INDEX, 3, 'End'), 4);
+  assert.equal(F.fdPathMoveWeek(FOUR_INDEX, 3, 'Enter'), null);
 });
 
 // ---- dot state: is-current only on state.week; is-done only when actually complete ----
@@ -154,6 +196,29 @@ test('per-week counts render as done/total', () => {
   const html = F.fdPath(IDX, s({ week: 2, viewWeek: 2, done: { 'w5a.md': true } }));
   assert.match(rowFor(html, 5).body, /<span class="fd-timeline__count">1\/2<\/span>/);
   assert.match(rowFor(html, 1).body, /<span class="fd-timeline__count">0\/1<\/span>/);
+});
+
+test('repeated practice counters and selected detail read their own week from saved progress', () => {
+  const weeks = WEEK_DEFS.map((w) => ({ ...w, refs: [['practice.html', 'tool']] }));
+  const idx = F.fdBuildIndex(buildCurriculum(weeks), {}, {}, buildManifest(weeks));
+  const html = F.fdPath(idx, s({ week: 1, viewWeek: 2, done: { 'practice.html': true },
+    progressRaw: { 'practice.html': { done: true, practiceWeeks: { 1: { done: true, at: '2026-08-03' } } } },
+  }));
+  assert.match(rowFor(html, 1).body, /class="fd-timeline__count">1\/1/);
+  for (let n = 2; n <= 6; n++) assert.match(rowFor(html, n).body, /class="fd-timeline__count">0\/1/);
+  assert.match(html, /data-fd-toggle="practice.html"[^>]*aria-pressed="false"/);
+});
+
+test('weekly practice skills come from Orientation and are absent from other learning paths', () => {
+  const orientation = readFileSync(new URL('../14_Tracks/MS3/Student_Ready_Pack/01_orientation/MS3_orientation_packet.md', import.meta.url), 'utf8');
+  const sourceSkills = [...orientation.matchAll(/^\| ([1-6]) \| [^|]+ \| ([^|]+) \|$/gm)];
+  assert.equal(sourceSkills.length, 6);
+  const idx = { ...IDX, path: { id: 'ms3-six-week', weekCount: 6 } };
+  for (const [, n, skill] of sourceSkills) {
+    const html = F.fdPath(idx, s({ viewWeek: Number(n) }));
+    assert.ok(html.includes(skill), 'Week ' + n + ' preserves the skill in Orientation');
+  }
+  assert.doesNotMatch(F.fdPath(FOUR_INDEX, s({})), /class="fd-detail__practice"/);
 });
 
 // ---- detail card: "you are here" only for the current week ----------------------------

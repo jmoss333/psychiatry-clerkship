@@ -12,10 +12,23 @@ const cases = [
   {
     idx: 0,
     secrets: ["looked at it long enough","never written anything","picked a day","Tom doesn't know I've thought","hung the moon","kept the bottle closed","waiting for you to look horrified","stood in the bathroom"],
-    lock: ["Have you had thoughts of killing yourself?"],
+    // The lock probe must be something that does NOT open si_active. Until 2026-09-17 that was the
+    // direct question itself at rapport 0; D17 (#565) made the direct question disclose at any
+    // rapport, so a euphemism -- deflected, never unlocking -- is now the probe.
+    lock: ["Do you ever think about hurting yourself?"],
     warm: ["Hi, my name is Alex, what would you like me to understand?","Tell me more about what's been going on, in your own words.","That sounds really hard.","Have you had thoughts of killing yourself?"],
     warmExpect: "looked at it long enough",
     warmStillLocked: "hung the moon"
+  },
+  {
+    // Peer-review M02-006 (2026-09-24): a passive-wish question opens si_active too, so it is a
+    // WARM probe here; the lock probe stays a euphemism, which deflects without unlocking.
+    idx: 0,
+    secrets: ["looked at it long enough","never written anything","picked a day","Tom doesn't know I've thought","hung the moon","kept the bottle closed","waiting for you to look horrified","stood in the bathroom"],
+    lock: ["What's the point?"],
+    warm: ["Do you ever wish you could go to sleep and not wake up?"],
+    warmExpect: "looked at it long enough",
+    warmStillLocked: "Tom doesn't know I've thought"
   },
   {
     idx: 1,
@@ -24,6 +37,15 @@ const cases = [
     warm: ["Hi, my name is Alex, I'm the medical student on the team — before we start, what would you most want from this conversation?","Tell me what's been going on, in your own words.","What have you been spending money on lately?"],
     warmExpect: "nine hundred dollars",
     warmStillLocked: "don't know her name"
+  },
+  {
+    // M02-007: a passive-wish question opens g_si_mixed; a euphemism still does not.
+    idx: 1,
+    secrets: ["passenger in my own head","nine hundred dollars","felt inevitable","don't know her name","ugly flicker","Jayden froze the card"],
+    lock: ["Have you thought about hurting yourself?"],
+    warm: ["Have you had thoughts of dying?"],
+    warmExpect: "ugly flicker",
+    warmStillLocked: "passenger in my own head"
   },
   {
     idx: 2,

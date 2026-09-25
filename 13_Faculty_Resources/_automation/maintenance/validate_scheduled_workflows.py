@@ -21,6 +21,7 @@ EXPECTED_CRONS = {
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
     "surveillance-guideline.yml": "0 6 1 * *",
+    "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",
@@ -62,6 +63,14 @@ SCOPED_FILES = set(EXPECTED_CRONS) | {
 }
 EXPECTED_PERMISSIONS = {
     "ci.yml": {"contents": "read"},
+    "maintenance-queue-runner.yml": {
+        "contents": "write",
+        # The fallback that records a pushed branch whose pull request GitHub
+        # refused. Filing an issue is deliberately the one report that does not
+        # depend on the setting which caused the refusal.
+        "issues": "write",
+        "pull-requests": "write",
+    },
     "maintenance-sp-health-monitor.yml": {"contents": "read"},
     "maintenance-production-canary.yml": {"contents": "read"},
     "maintenance-heartbeat.yml": {
@@ -72,6 +81,8 @@ EXPECTED_PERMISSIONS = {
     "maintenance-governance-digest.yml": {
         "contents": "read",
         "issues": "write",
+        # Read-only listing of the rolling attestation review request.
+        "pull-requests": "read",
     },
     "maintenance-monthly-review.yml": {
         "contents": "read",
@@ -101,10 +112,14 @@ RES_URL = "https://mmc-psychiatry-residents-sanford.netlify.app"
 EXPECTED_CONCURRENCY = {
     "ci.yml": {
         "group": "ci-${{ github.event_name }}-${{ github.ref }}",
-        "cancel-in-progress": "${{ github.event_name != 'schedule' }}",
+        "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
     },
     "maintenance-governance-digest.yml": {
         "group": "maintenance-governance",
+        "cancel-in-progress": False,
+    },
+    "maintenance-queue-runner.yml": {
+        "group": "maintenance-queue-runner",
         "cancel-in-progress": False,
     },
     "maintenance-monthly-review.yml": {
@@ -129,6 +144,7 @@ EXPECTED_CONCURRENCY = {
 }
 EXPECTED_JOB_IDS = {
     "ci.yml": {"build-test-validate", "smoke-tests"},
+    "maintenance-queue-runner.yml": {"queue-runner"},
     "maintenance-sp-health-monitor.yml": {"monitor"},
     "maintenance-production-canary.yml": {"production-canary"},
     "maintenance-heartbeat.yml": {"heartbeat"},
@@ -151,6 +167,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Unit — scheduled maintenance"),
             ("name", "Validate — scheduled workflow contracts"),
             ("name", "Lint — no hard-coded machine paths in tracked Python"),
+            ("name", "Guard — governance/content separation"),
             ("name", "Unit — media guard"),
             ("name", "Unit — shared build logic (common.py)"),
             ("name", "Unit — pairing block renderer"),
@@ -186,9 +203,14 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
             ("name", "Validate — WCAG AA contrast tokens"),
             ("name", "Validate — shipped_pages.json is derived from current producers"),
+            ("name", "Validate — analytics allowlist freshness"),
+            ("name", "Install — metrics collector dependencies"),
+            ("name", "Unit — metrics collector"),
             ("name", "Unit — faculty console modules and pending-visibility invariant"),
             ("name", "Install — managed SP proxy dependencies"),
             ("name", "Test — SP Interview and managed proxy"),
+            ("name", "Install — hosted Dana preview dependencies"),
+            ("name", "Test — hosted Dana preview suite and public build"),
             ("name", "Red-team tier 1 — gate integrity (deterministic probes)"),
             ("name", "Build + static QA gate (ms3)"),
             ("name", "Build + static QA gate (res)"),
@@ -207,6 +229,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Check 2: LFS integrity — Netlify deploy preview"),
             ("name", "Check 3: visual regression — resident site"),
             ("name", "Check 4: offline shell — service worker"),
+            ("name", "Check 5: prototype contract — file:// with the network blocked"),
+            ("name", "Check 6: hosted preview in a browser under its deployed CSP"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -217,6 +241,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install — governance digest dependencies"),
             ("uses", "actions/setup-node"),
             ("name", "Build faculty governance digest"),
+            ("name", "Detect stranded faculty attestations"),
             ("uses", "actions/upload-artifact"),
             ("name", "Route faculty governance review"),
             ("name", "Preserve governance gate result"),
@@ -229,7 +254,9 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install workflow parser"),
             ("name", "Evaluate scheduled workflow freshness"),
             ("name", "Detect stranded auto-merge pull requests"),
+            ("name", "Detect automation branches without open pull requests"),
             ("name", "Detect branch ruleset drift"),
+            ("uses", "actions/upload-artifact"),
             ("uses", "actions/upload-artifact"),
             ("uses", "actions/upload-artifact"),
         ),
@@ -253,6 +280,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install Playwright and Chromium"),
             ("name", "Crawl both public learner sites"),
             ("name", "Build content-free release twin"),
+            ("name", "Read Netlify production deploy health"),
+            ("name", "Check learner production revision parity"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -264,6 +293,23 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/upload-artifact"),
             ("name", "Route due rotation review"),
             ("name", "Translate rotation routing result"),
+        ),
+    },
+    "maintenance-queue-runner.yml": {
+        "queue-runner": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install — validator dependencies"),
+            ("uses", "actions/setup-node"),
+            ("name", "Skip while an automated queue pull request is still open"),
+            ("name", "Run the one autonomous queue task"),
+            ("name", "Validate — registry schemas and clinical contracts"),
+            ("name", "Validate — shipped pages are derived from current producers"),
+            ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
+            ("name", "Push the automation branch"),
+            ("name", "Open the draft pull request"),
+            ("name", "Record the pushed branch that has no pull request"),
+            ("uses", "actions/upload-artifact"),
         ),
     },
     "maintenance-sp-health-monitor.yml": {
@@ -337,6 +383,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/setup-python"),
             ("name", "Read the rolling escalation issue"),
             ("name", "Capture the first error line from the failed run"),
+            ("name", "Read the successful queue run outcome"),
             ("name", "Render the escalation decision"),
             ("name", "Upsert the rolling escalation issue"),
         ),
@@ -347,20 +394,23 @@ EXPECTED_STEP_INVENTORIES = {
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
-        "97cce854ae22f6fcbf24a87d220582ea4f125d8136d4c8d306deb9492bcdf5be"
+        "674b60ea33bcf8545c60ce5094fc0aa64fc27c241db417e74ed26c5842670677"
     ),
-    "ci.yml": "313a973be1715874d25e0935c97d63aaa06ae588d79d5d4b92670b90ba258241",
+    "ci.yml": "babeede50264b1de455e816e3ac38c353152f69a823356024b64e278187c207b",
     "maintenance-governance-digest.yml": (
-        "d819d2eafa59d6d62fcdf5f4d82b5eaf374f2b58d728d7c7f748fa7160bf6c10"
+        "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),
     "maintenance-heartbeat.yml": (
-        "2657e218acd9d67f48e4ee39a6069c918056efaeebb3f15506693d4011163837"
+        "2fd18edc8a3d3cf15ea82c4838e28fb4d075513f027fd751b995dee3ea887261"
     ),
     "maintenance-monthly-review.yml": (
         "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
     ),
+    "maintenance-queue-runner.yml": (
+        "2044dc589d3df7e1f850fca0468637fa2aa8e6798012cc1fda481b8c6d0fbf65"
+    ),
     "maintenance-production-canary.yml": (
-        "a7be8923488ec6d1d824fcdfc2fc59feefe258ac937bb9cf42ee1127485e94e7"
+        "d4c32a08473580eb3ecea8eecad2c7a7202d52e3532541b697500305874e78a0"
     ),
     "maintenance-rotation-readiness.yml": (
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
@@ -520,6 +570,25 @@ CRITICAL_STEPS = {
                 None,
                 "required CI gate",
             ),
+            # PR-only by design: `github.event.pull_request.base.sha` is the one base a
+            # push event does not carry, and the rule is about a PR's range. The `if` is
+            # therefore pinned as part of the contract — widening it to every event would
+            # make the step exit 2 on every push, and exit 2 is a failure, not a skip.
+            # The second command is load-bearing too: on attest/pending the console's own
+            # promotions still have to bind to the text they attest.
+            (
+                "Guard — governance/content separation",
+                'if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then '
+                'echo "::error::no base sha"; exit 2; fi\n'
+                "python3 bin/check_governance_separation.py "
+                '--base "$BASE_SHA" --head HEAD --head-branch "$HEAD_BRANCH"\n'
+                'if [ "$HEAD_BRANCH" = "attest/pending" ]; then\n'
+                "  python3 bin/check_attestation_hashes.py --strict "
+                '--base "$BASE_SHA"\n'
+                "fi",
+                "github.event_name == 'pull_request'",
+                "required CI gate",
+            ),
             (
                 "Unit — root node regression tests (tests/*.test.mjs)",
                 "node --test tests/*.test.mjs",
@@ -594,6 +663,14 @@ npx playwright test --project=lfs""",
     "maintenance-production-canary.yml": {
         "production-canary": (
             (
+                "Check learner production revision parity",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "production_revision_parity.py --attempts 3 --retry-delay 60 "
+                '--out "$RUNNER_TEMP/production-revision-parity.json"',
+                "always()",
+                "required production revision parity gate",
+            ),
+            (
                 "Install Playwright and Chromium",
                 "cd tests/smoke\nnpm ci\n"
                 "npx playwright install chromium --with-deps",
@@ -644,6 +721,13 @@ npx playwright test --project=lfs""",
                 "required stranded pull request gate",
             ),
             (
+                "Detect automation branches without open pull requests",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                'automation_branch_prs.py --out "$RUNNER_TEMP/automation-branch-prs.json"',
+                "always()",
+                "required automation branch pull request gate",
+            ),
+            (
                 "Detect branch ruleset drift",
                 "python3 bin/check_ruleset_drift.py",
                 "always()",
@@ -668,6 +752,19 @@ exit 0""",
                 "required governance capture",
             ),
             (
+                "Detect stranded faculty attestations",
+                """mkdir -p "$RUNNER_TEMP/maintenance-governance"
+set +e
+python3 13_Faculty_Resources/_automation/maintenance/stranded_attestations.py \\
+  --out "$RUNNER_TEMP/maintenance-governance/stranded-attestations.json"
+code=$?
+set -e
+echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+exit 0""",
+                None,
+                "required stranded-attestation capture",
+            ),
+            (
                 "Route faculty governance review",
                 "python3 13_Faculty_Resources/_automation/maintenance/"
                 "maintenance_issue.py --kind governance "
@@ -679,12 +776,15 @@ exit 0""",
             ),
             (
                 "Preserve governance gate result",
-                """code="${{ steps.governance.outputs.exit_code }}"
-case "$code" in
-  "0") exit 0 ;;
-  "1"|"2") exit "$code" ;;
-  *) exit 2 ;;
-esac""",
+                """for code in "${{ steps.governance.outputs.exit_code }}" \\
+            "${{ steps.attestations.outputs.exit_code }}"; do
+  case "$code" in
+    "0") ;;
+    "1"|"2") exit "$code" ;;
+    *) exit 2 ;;
+  esac
+done
+exit 0""",
                 "always()",
                 "governance finalizer",
             ),

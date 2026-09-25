@@ -2,6 +2,7 @@
 import copy
 import json
 import re
+from shipped_pages import load_shipped_pages as load_search_universe
 
 
 DATA_DEFAULTS = {
@@ -64,7 +65,7 @@ def _catalog_entries(catalog):
     return entries
 
 
-def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projection=None):
+def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projection=None, shipped=None):
     """Return a normalized Front Door projection after a site's nav is final.
 
     curriculum.json owns only placement.  The final site navigation owns every
@@ -103,12 +104,20 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
     if not isinstance(config, dict):
         raise ValueError("curriculum.siteLibrary.%s must be an object" % site)
 
+    essentials = curriculum.get("essentials")
+    selection = essentials.get(site) if isinstance(essentials, dict) else None
+    if not isinstance(selection, list) or not selection:
+        raise ValueError("curriculum.essentials.%s must be a non-empty list" % site)
+
     projected = copy.deepcopy(curriculum)
     projected.pop("learningPaths", None)
     projected.pop("roles", None)
     projected.pop("siteLibrary", None)
+    if site == "ms3":
+        projected.pop("appPathway", None)
     projected["path"] = {"id": expected_id, "weekCount": len(weeks)}
     projected["weeks"] = copy.deepcopy(weeks)
+    projected["essentials"] = copy.deepcopy(selection)
     columns = projected.get("libraryColumns")
     if not isinstance(columns, list):
         raise ValueError("curriculum.libraryColumns must be a list")
@@ -144,6 +153,29 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
         column["refs"] = [ref for ref in refs if ref not in excluded]
 
     catalog_entries = _catalog_entries(catalog)
+    app_refs = []
+    if site == "resident":
+        pathway = projected.get("appPathway")
+        if not isinstance(pathway, dict):
+            raise ValueError("curriculum.appPathway must be an object for resident")
+        bridges = pathway.get("bridges")
+        activities = pathway.get("activities")
+        if not isinstance(bridges, dict) or not isinstance(activities, list):
+            raise ValueError("curriculum.appPathway needs bridges and activities")
+        for bridge_id in ("pa", "pmhnp"):
+            bridge = bridges.get(bridge_id)
+            refs = bridge.get("refs") if isinstance(bridge, dict) else None
+            if not isinstance(refs, list):
+                raise ValueError("APP bridge '%s' needs refs" % bridge_id)
+            app_refs.extend(refs)
+        for activity in activities:
+            refs = activity.get("refs") if isinstance(activity, dict) else None
+            if not isinstance(refs, list):
+                raise ValueError("APP activity needs refs")
+            app_refs.extend(refs)
+        for ref in app_refs:
+            if ref not in catalog_entries:
+                raise ValueError("APP ref '%s' has no final resident catalog entry" % ref)
     placed = []
     for column in columns:
         for ref in column["refs"]:
@@ -154,7 +186,17 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
                 raise ValueError("placed ref '%s' has no final catalog entry" % ref)
 
     path_refs = []
+    landing_refs = []
     for week in weeks:
+        if "landingRef" in week:
+            landing_ref = week["landingRef"]
+            if (not isinstance(landing_ref, str) or landing_ref not in catalog_entries
+                    or catalog_entries[landing_ref][1] != "md"
+                    or not landing_ref.endswith(".md")):
+                raise ValueError("landingRef %r has no final %s Markdown catalog entry" %
+                                 (landing_ref, site))
+            if landing_ref not in landing_refs:
+                landing_refs.append(landing_ref)
         for item in week.get("items", []):
             ref, kind = item.get("ref"), item.get("kind")
             if ref not in catalog_entries:
@@ -183,6 +225,41 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
 
     manifest = {"tools": [], "md": []}
     manifest_refs = placed + [ref for ref in path_refs if ref not in placed]
+    manifest_refs += [ref for ref in landing_refs if ref not in manifest_refs]
+    manifest_refs += [ref for ref in app_refs if ref not in manifest_refs]
+    # A libraryExclude page ships and is reachable (the shell marks it `known`), so the shell
+    # needs its title: without an entry every reader-side fallback synthesized {title: ref} and
+    # ?tool=feedback.html painted "feedback.html" as heading, iframe title and document title
+    # (2026-09-18 critique). Search refs below cover most of them, but a page that is BOTH
+    # library- and search-excluded (the feedback form, the faculty curator) reached the shell
+    # with no entry at all. Only refs this site actually ships (a final catalog entry) qualify.
+    manifest_refs += [ref for ref in sorted(excluded_refs)
+                      if ref in catalog_entries and ref not in manifest_refs]
+
+    if shipped is not None:
+        # Search is independent of assignments and Library placement. Read the generated
+        # shipped universe, never reconstruct it from a subset of its producers.
+        build_site = "res" if site == "resident" else site
+        pages = {page["slug"]: page for page in shipped["pages"] if build_site in page["sites"]}
+        all_refs = {page["slug"] for page in shipped["pages"]}
+        excluded_search = set()
+        for entry in projected.get("searchExclude", []):
+            ref = entry.get("ref")
+            if (ref not in all_refs or ref in excluded_search or
+                    not isinstance(entry.get("reason"), str) or not entry["reason"].strip()):
+                raise ValueError("invalid searchExclude entry: %r" % entry)
+            if ref in placed or ref in path_refs:
+                raise ValueError("searchExclude cannot hide a placed resource: %s" % ref)
+            excluded_search.add(ref)
+        search_refs = sorted(set(pages) - excluded_search)
+        for ref in search_refs:
+            if ref not in catalog_entries:
+                raise ValueError("shipped search resource has no final catalog entry: %s" % ref)
+        projected["searchResources"] = search_refs
+        projected["searchTitles"] = {ref: pages[ref]["title"] for ref in search_refs}
+        projected["searchAliases"] = {ref: aliases for ref, aliases in
+                                      projected.get("searchAliases", {}).items() if ref in search_refs}
+        manifest_refs += [ref for ref in search_refs if ref not in manifest_refs]
     for ref in manifest_refs:
         title, kind, governance = catalog_entries[ref]
         manifest["tools" if kind == "tool" else "md"].append(["", ref, title, governance])
@@ -201,14 +278,11 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
 
 
 def reachable_refs(payload):
-    """Every ref a learner can reach by browsing this site: Library-placed plus Path.
+    """Browsing refs used by the separate full-text index's hidden-page policy.
 
-    This is exactly `payload["manifest"]`'s row set — built above as
-    `placed + path_refs`, with every entry already proven to resolve against the
-    FINAL site navigation. It is the correct input to common.build_search_index's
-    `reachable_refs`: a page the Library shows must be a page search can find, and
-    the manifest is the one place that set is already resolved per site (columns
-    plus siteLibrary additions, minus siteLibrary exclusions).
+    All manifest entries resolve against final site navigation.
+    The command search has its own complete searchResources inventory. Adding a
+    searchable week summary must not silently expand this older scorer's corpus.
     """
     manifest = payload.get("manifest") or {}
     refs = set()
@@ -216,7 +290,16 @@ def reachable_refs(payload):
         for row in manifest.get(group, []):
             if isinstance(row, list) and len(row) > 1 and isinstance(row[1], str):
                 refs.add(row[1])
-    return refs
+    curriculum = payload.get("curriculum") or {}
+    if "searchResources" in curriculum:
+        placed = {ref for column in curriculum.get("libraryColumns", []) for ref in column["refs"]}
+        placed.update(item["ref"] for week in curriculum.get("weeks", []) for item in week.get("items", []))
+        return refs & placed
+    weeks = curriculum.get("weeks") or []
+    landings = {week.get("landingRef") for week in weeks}
+    placed = {ref for column in curriculum.get("libraryColumns", []) for ref in column["refs"]}
+    placed.update(item["ref"] for week in weeks for item in week.get("items", []))
+    return refs - (landings - placed)
 
 
 def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):

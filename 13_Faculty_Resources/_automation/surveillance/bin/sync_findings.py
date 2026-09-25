@@ -6,9 +6,9 @@ Pipeline:
   1. Load findings (array conforming to config/finding.schema.json).
   2. Resolve affects[] via citation_index.json; escalate severity (acute paths).
   3. Ensure a stable fingerprint on each finding.
-  4. Dedup: fetch fingerprints already present in ANY surveillance issue
-     (state=all — open or closed), so re-runs never open duplicates and a
-     dismissed fingerprint is never reopened.
+  4. Dedup: fetch fingerprints already present in surveillance issues. An open
+     issue is updated when its automation-managed labels no longer match fresh
+     routing; a dismissed fingerprint is never reopened.
   5. P0/P1 with a NEW fingerprint -> open an issue. P2 -> monthly digest.
   6. Write a dated report, checked-source freshness stamps, and issue snapshot.
 
@@ -29,6 +29,13 @@ import lib_surveillance as L
 
 API = "https://api.github.com"
 DEFAULT_REPO = "jmoss333/psychiatry-clerkship"
+MANAGED_JOB_LABELS = {
+    "guideline-surveillance",
+    "link-source-monitor",
+    "citation-monitor",
+    "resource-intake",
+}
+MANAGED_SEVERITY_LABELS = set(L.SEVERITY_ORDER)
 
 
 def _gh(method, url, token, data=None):
@@ -88,13 +95,86 @@ def fetch_issue_snapshot(repo, token):
     return normalize_issue_snapshot(raw)
 
 
+def partition_by_disposition(findings):
+    """Split findings into (opens an issue, P2 digest, deferred-with-evidence).
+
+    Only `actionable` opens an issue. `environment` is a real detection this runner
+    cannot verify and `needs-judgment` needs a person -- neither is a defect an issue
+    can chase, so both go to the digest WITH their evidence rather than as a P0/P1.
+    Neither is ever dropped: silencing them is how a monitored set shrinks unnoticed.
+
+    This is a named function rather than three comprehensions inside main() because a
+    test that reimplements the filter proves nothing -- the first version of
+    test_only_actionable_findings_open_issues did exactly that and passed while the
+    real filter was reverted.
+    """
+    def actionable(finding):
+        return finding.get("disposition", "actionable") == "actionable"
+
+    unfiled = [f for f in findings if not actionable(f)]
+    issues = [f for f in findings if actionable(f) and f["severity"] in ("P0", "P1")]
+    digest = [f for f in findings if actionable(f) and f["severity"] == "P2"]
+    return issues, digest, unfiled
+
+
+def suppressed_fingerprints(issue_snapshot, dismissed):
+    """Fingerprints that must NOT open a new issue, and why each is suppressed.
+
+    An OPEN issue already tracks the condition -- a second issue is a duplicate.
+    A REGISTERED dismissal (config/dismissed.json) is a recorded human decision.
+    A CLOSED issue is neither: it means the condition was fixed, so detecting it
+    again is a recurrence and deserves a new issue. Suppressing on closure is how
+    the monitored set shrinks invisibly -- one URL per closure, no signal.
+    """
+    suppressed = {}
+    for item in issue_snapshot or []:
+        if str(item.get("state") or "").upper() == "OPEN":
+            suppressed[item["fingerprint"]] = "open issue #%s" % item.get("number")
+    for fp, record in (dismissed or {}).items():
+        suppressed.setdefault(fp, "dismissed: %s" % (record.get("reason") or "").strip())
+    return suppressed
+
+
 def create_issue(repo, token, f):
     data = {"title": L.issue_title(f), "body": L.issue_body(f), "labels": L.issue_labels(f)}
     res, _ = _gh("POST", f"{API}/repos/{repo}/issues", token, data)
     return res
 
 
-def main():
+def reconcile_open_issue(repo, token, issue, finding):
+    """Refresh generated fields when fresh routing disagrees with an open issue.
+
+    Severity and job labels are automation-owned. Other labels may record human
+    workflow decisions, so preserve them while replacing only the managed set.
+    A managed-label change also refreshes the generated title/body; this keeps
+    the issue's visible severity and evidence consistent with the fresh report.
+    """
+    current_labels = set(issue.get("labels") or [])
+    managed = MANAGED_SEVERITY_LABELS | MANAGED_JOB_LABELS | {"surveillance"}
+    labels = sorted((current_labels - managed) | set(L.issue_labels(finding)))
+    if labels == sorted(current_labels):
+        return False
+
+    data = {
+        "title": L.issue_title(finding),
+        "body": L.issue_body(finding),
+        "labels": labels,
+    }
+    updated, _ = _gh(
+        "PATCH",
+        f"{API}/repos/{repo}/issues/{issue['number']}",
+        token,
+        data,
+    )
+    normalized = normalize_issue_snapshot([updated])
+    if not normalized:
+        raise RuntimeError("GitHub issue update returned no surveillance fingerprint")
+    issue.clear()
+    issue.update(normalized[0])
+    return True
+
+
+def build_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument("--findings", required=True, help="JSON array of findings")
     ap.add_argument("--job", required=True,
@@ -107,7 +187,18 @@ def main():
     ap.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", DEFAULT_REPO))
     ap.add_argument("--dry-run", action="store_true", help="No GitHub calls; print intended actions")
     ap.add_argument("--existing-fixture", help="(dry-run) JSON array of fingerprints to treat as already-issued")
-    ap.add_argument("--out-dir", help="Override history/ output dir (used by tests)")
+    # DEFAULTS TO THE REAL history/ DIR, never None. Every scheduled workflow invokes this
+    # script WITHOUT --out-dir while every test passes one, so a None default is a code path
+    # only production takes — which is exactly what happened: from #711 (2026-09-19) until
+    # this fix, `os.makedirs(args.out_dir)` below raised TypeError on every scheduled run of
+    # all four surveillance jobs while the suite stayed green. Same shape as build_status.py.
+    ap.add_argument("--out-dir", default=L.HISTORY,
+                    help="Override history/ output dir (used by tests); defaults to history/")
+    return ap
+
+
+def main():
+    ap = build_parser()
     args = ap.parse_args()
 
     with open(args.findings, encoding="utf-8") as fh:
@@ -122,9 +213,9 @@ def main():
         L.escalate(f)
         L.ensure_fingerprint(f)
 
-    issue_findings = [f for f in findings if f["severity"] in ("P0", "P1")]
-    digest_findings = [f for f in findings if f["severity"] == "P2"]
+    issue_findings, digest_findings, unfiled = partition_by_disposition(findings)
 
+    dismissed = L.load_dismissed()
     token = os.environ.get("GITHUB_TOKEN")
     if args.dry_run:
         if args.existing_fixture:
@@ -132,31 +223,41 @@ def main():
                 fixture = json.load(fh)
             if fixture and isinstance(fixture[0], dict):
                 issue_snapshot = normalize_issue_snapshot(fixture)
-                existing = {item["fingerprint"] for item in issue_snapshot}
+                existing = suppressed_fingerprints(issue_snapshot, dismissed)
             else:
                 issue_snapshot = []
-                existing = set(fixture)
+                existing = {fp: "fixture" for fp in fixture}
         else:
-            issue_snapshot, existing = [], set()
+            issue_snapshot, existing = [], {}
     else:
         if not token:
             sys.exit("ERROR: GITHUB_TOKEN required (or use --dry-run)")
         issue_snapshot = fetch_issue_snapshot(args.repo, token)
-        existing = {item["fingerprint"] for item in issue_snapshot}
+        existing = suppressed_fingerprints(issue_snapshot, dismissed)
 
     max_new = int(os.environ.get("MAX_NEW_ISSUES", "25"))
-    created, deduped, overflow = [], [], []
+    open_issues = {
+        item["fingerprint"]: item
+        for item in issue_snapshot
+        if str(item.get("state") or "").upper() == "OPEN"
+    }
+    created, deduped, reconciled, overflow = [], [], [], []
     stop_creating = False
     for f in issue_findings:
         if f["fingerprint"] in existing:
             f["status"] = "triaged"
             deduped.append(f)
+            open_issue = open_issues.get(f["fingerprint"])
+            if not args.dry_run and open_issue is not None:
+                if reconcile_open_issue(args.repo, token, open_issue, f):
+                    reconciled.append(f)
+                    print(f"UPDATED {open_issue['url']}  {L.issue_title(f)}")
             continue
         if args.dry_run:
             print(f"[dry-run] CREATE  {L.issue_title(f)}")
             f["status"] = "issue-open"
             created.append(f)
-            existing.add(f["fingerprint"])
+            existing[f["fingerprint"]] = "created this run"
             continue
         if stop_creating or len(created) >= max_new:   # cap: rest -> digest
             f["status"] = "new"
@@ -175,24 +276,43 @@ def main():
         print(f"CREATED {f['github_issue']}  {L.issue_title(f)}")
         f["status"] = "issue-open"
         created.append(f)
-        existing.add(f["fingerprint"])
+        existing[f["fingerprint"]] = "created this run"
         normalized = normalize_issue_snapshot([created_issue])
         if normalized:
             issue_snapshot.extend(normalized)
         time.sleep(1.5)   # throttle: stay under GitHub's secondary rate limit
 
     reports = L.write_report(args.job, findings, base=args.out_dir)
-    digest = L.append_digest(digest_findings + overflow, base=args.out_dir)
+    digest = L.append_digest(digest_findings + overflow + unfiled, base=args.out_dir)
     L.update_last_run(checked_sources, base=args.out_dir)
+    ordered = sorted(issue_snapshot, key=lambda item: (item["number"] is None, item["number"] or 0))
     with open(args.issues_out, "w", encoding="utf-8") as fh:
-        json.dump(
-            sorted(issue_snapshot, key=lambda item: (item["number"] is None, item["number"] or 0)),
-            fh,
-            indent=2,
-        )
+        json.dump(ordered, fh, indent=2)
+    # The same content-free snapshot also lands in history/, so offline readers (the
+    # cadence guard, a session with no gh) see the issue truth as of the last scheduled run
+    # rather than the status frozen into a dated report. Content-free by construction
+    # (normalize_issue_snapshot keeps number, url, state, closedAt, fingerprint, labels).
+    os.makedirs(args.out_dir, exist_ok=True)
+    with open(os.path.join(args.out_dir, "issue_snapshot.json"), "w", encoding="utf-8") as fh:
+        json.dump({"schemaVersion": 1, "capturedAt": L.utcnow(), "issues": ordered}, fh, indent=2)
 
     print(f"\nSummary [{args.job}]: {len(created)} created, {len(deduped)} deduped, "
+          f"{len(reconciled)} reconciled, "
           f"{len(digest_findings)} P2 digested, {len(overflow)} overflow->digest.")
+    print(f"Suppression: {len(dismissed)} registered dismissal(s) in config/dismissed.json; "
+          f"a closed issue no longer suppresses its fingerprint.")
+    by_disposition = {}
+    for f in unfiled:
+        by_disposition[f["disposition"]] = by_disposition.get(f["disposition"], 0) + 1
+    if by_disposition:
+        print("Not filed as issues (reported in the digest, not silenced): "
+              + ", ".join(f"{n} {k}" for k, n in sorted(by_disposition.items())))
+    unreachable = L.load_ci_unreachable()
+    if unreachable:
+        age = L.oldest_verification_age(unreachable)
+        print(f"CI-unreachable hosts: {len(unreachable)} recorded; oldest verification "
+              f"{'unknown' if age is None else str(age) + ' day(s)'} old "
+              f"(re-verify from a real network, or an entry rots into a lie).")
     print("Reports: " + ", ".join(os.path.basename(r) for r in reports)
           + (f", {os.path.basename(digest)}" if digest else ""))
 

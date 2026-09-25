@@ -118,7 +118,8 @@ function reviewQueuePresent(digest) {
     || digest.topics.other.optionalGovernanceMissing > 0
     || digest.reviewed.pending > 0
     || digest.reviewed.missing > 0
-    || digest.reattestation.count > 0;
+    || digest.reattestation.count > 0
+    || digest.staleAttestations.count > 0;
 }
 
 export function buildGovernanceDigest(inputs) {
@@ -135,6 +136,12 @@ export function buildGovernanceDigest(inputs) {
   const reviewed = object(source.reviewed, 'reviewed');
   const needsReattest = object(source.needsReattest, 'needsReattest');
   const reattestationSlugs = uniqueSlugs(needsReattest.slugs, 'needsReattest.slugs');
+  const staleAttestations = object(source.staleAttestations, 'staleAttestations');
+  /* Deliberately NOT cross-checked against manifestItems the way needsReattest.slugs is:
+     a stale row is one the drift tool already resolved THROUGH shipped_pages.json (an
+     unshipped reviewed row is refused there, never reported stale), so a second
+     membership test could only ever disagree with the listing both sides read. */
+  const staleSlugs = uniqueSlugs(staleAttestations.slugs, 'staleAttestations.slugs');
   if (reattestationSlugs.some((slug) => !manifestItems.includes(slug))) {
     fail('needsReattest.slugs contains an item outside the shipped manifest');
   }
@@ -165,6 +172,7 @@ export function buildGovernanceDigest(inputs) {
     topics: topicSummary(manifestPages, topicMeta),
     reviewed: reviewedSummary(manifestItems, reviewed),
     reattestation: { count: reattestationSlugs.length, slugs: reattestationSlugs },
+    staleAttestations: { count: staleSlugs.length, slugs: staleSlugs },
     attestation: {
       status: errors.length ? 'invalid' : 'ready',
       errorCount: errors.length,
@@ -192,6 +200,7 @@ export function renderGovernanceMarkdown(digest) {
     `Reviewed coverage: ${digest.reviewed.reviewed}/${digest.reviewed.total}; `
       + `${digest.reviewed.pending} pending; ${digest.reviewed.missing} missing.`,
     `Re-attestation queue: ${digest.reattestation.count}.`,
+    `Stale attestations: ${digest.staleAttestations.count}.`,
     `Attestation consistency: ${digest.attestation.status} (${digest.attestation.errorCount} error(s)).`,
     '',
     'Faculty review remains required. This automation does not attest, approve, or modify content.',
@@ -203,14 +212,32 @@ function readJson(relativePath) {
   return JSON.parse(readFileSync(path.join(ROOT, relativePath), 'utf8'));
 }
 
-function manifestInputs(manifest) {
-  const md = Array.isArray(manifest.md) ? manifest.md : fail('manifest md must be an array');
-  const tools = Array.isArray(manifest.tools) ? manifest.tools : fail('manifest tools must be an array');
-  const slugs = (rows, label) => rows.map((row, index) => {
-    if (!Array.isArray(row) || row.length < 2) fail(`${label}[${index}] must be a manifest tuple`);
-    return safeSlug(row[1], `${label}[${index}] slug`);
+/* "What ships" comes from shipped_pages.json, the one derived listing ADR-002 introduced,
+   and no longer from site_manifest.json. The manifest is one of five producers: it does not
+   carry the 22 Case-of-the-Week pages, the six resident-only pages, the resident-only
+   prototype tools or the MS3 orientation video, every one of which a learner site publishes
+   and faculty must therefore be able to attest. Reading the manifest here under-counted
+   reviewed coverage by exactly those items, and made the needsReattest guard in
+   buildGovernanceDigest reject two resident-only pages (cl_reference.md,
+   systems_medlegal.md) that legitimately ship — the same short-universe failure #517 was.
+
+   `kind` is the shipped listing's own page/tool split, so `manifestPages` stays what it has
+   always been (the content pages topic_meta and the question bank anchor against) and
+   `manifestItems` stays everything faculty attest. */
+function shippedInputs(document) {
+  const pages = object(document, 'shipped_pages').pages;
+  if (!Array.isArray(pages) || pages.length === 0) {
+    fail('shipped_pages.pages must be a non-empty array');
+  }
+  const manifestItems = [];
+  const manifestPages = [];
+  pages.forEach((entry, index) => {
+    object(entry, `shipped_pages.pages[${index}]`);
+    const slug = safeSlug(entry.slug, `shipped_pages.pages[${index}] slug`);
+    manifestItems.push(slug);
+    if (entry.kind === 'page') manifestPages.push(slug);
   });
-  return { manifestPages: slugs(md, 'manifest md'), manifestItems: [...slugs(md, 'manifest md'), ...slugs(tools, 'manifest tools')] };
+  return { manifestPages, manifestItems };
 }
 
 export function parseAttestationValidatorResult(result) {
@@ -221,7 +248,7 @@ export function parseAttestationValidatorResult(result) {
   if (stderr.trim()) throw new Error('attestation validator wrote unexpected stderr');
   if (
     result.status === 0
-    && /^attestation consistency OK — [1-9][0-9]* manifest item\(s\), [0-9]+ topic facultyReview (?:entry|entries) aligned\.\n?$/.test(stdout)
+    && /^attestation consistency OK — [1-9][0-9]* shipped item\(s\), [0-9]+ topic facultyReview (?:entry|entries) aligned\.\n?$/.test(stdout)
   ) {
     return [];
   }
@@ -242,6 +269,46 @@ export function parseAttestationValidatorResult(result) {
     }
   }
   throw new Error('attestation validator did not return a recognized contract');
+}
+
+/* A reviewed page whose attested inputs no longer match its stored contentHash. The
+   learner sites render it pending (surface_governance.load_effective_ledger); this is how
+   the weekly digest learns the same thing, from the same tool an auditor would run.
+
+   EXIT CODES ARE A CONTRACT (docs/RATCHETS.md): 0 clean, 1 a finding (an unbound,
+   malformed or unshipped-and-unlisted row -- still a complete report), 2 COULD NOT CHECK.
+   Anything but 0 or 1 throws, so the digest fails rather than reporting "0 stale" over a
+   set it never read: a check reporting success over nothing is the failure this whole
+   contract exists to end (docs/SILENT_SHRINK_CHECKLIST.md §D2/§D4). stderr is not
+   inspected -- on 0 and 1 the tool writes its report to stdout and nothing else, and it is
+   the exit code, not a stray line, that says whether the report can be trusted. */
+export function parseStaleAttestationResult(result) {
+  object(result, 'stale attestation result');
+  if (result.error) throw result.error;
+  if (result.status !== 0 && result.status !== 1) {
+    fail(`stale attestation check could not check (exit ${result.status})`);
+  }
+  let payload;
+  try {
+    payload = JSON.parse(typeof result.stdout === 'string' ? result.stdout : '');
+  } catch {
+    fail('stale attestation report is not JSON');
+  }
+  object(payload, 'stale attestation report');
+  if (payload.schemaVersion !== 1) fail('stale attestation report has an unknown schema');
+  const stale = object(payload.stale, 'stale attestation report stale');
+  return Object.keys(stale)
+    .map((slug) => safeSlug(slug, 'stale attestation slug'))
+    .sort();
+}
+
+function runStaleAttestations() {
+  const tool = path.join(ROOT, 'bin/check_attestation_hashes.py');
+  return parseStaleAttestationResult(spawnSync('python3', [tool, '--format', 'json'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 8_388_608,
+  }));
 }
 
 function runAttestationValidator() {
@@ -269,12 +336,13 @@ export function main(argv = process.argv.slice(2), dependencies = {}) {
   const read = dependencies.readJson ?? readJson;
   const validateAttestation = dependencies.runAttestationValidator
     ?? runAttestationValidator;
+  const staleAttestations = dependencies.runStaleAttestations ?? runStaleAttestations;
   const write = dependencies.writeFile ?? writeFileSync;
   const logError = dependencies.logError ?? console.error;
   try {
     const args = parseArgs(argv);
-    const manifest = read('13_Faculty_Resources/_automation/site_build/site_manifest.json');
-    const { manifestPages, manifestItems } = manifestInputs(manifest);
+    const shipped = read('13_Faculty_Resources/_automation/site_build/shipped_pages.json');
+    const { manifestPages, manifestItems } = shippedInputs(shipped);
     const bankWrapper = read('question_bank.json');
     const digest = buildGovernanceDigest({
       bank: bankWrapper.items,
@@ -285,6 +353,7 @@ export function main(argv = process.argv.slice(2), dependencies = {}) {
       needsReattest: read(
         '13_Faculty_Resources/_automation/surveillance/config/needs_reattest.json',
       ),
+      staleAttestations: { slugs: staleAttestations() },
       attestationErrors: validateAttestation(),
     });
     write(args['--out-json'], `${JSON.stringify(digest, null, 2)}\n`, 'utf8');

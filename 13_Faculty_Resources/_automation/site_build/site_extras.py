@@ -1,12 +1,15 @@
 """Pages and tools that ship OUTSIDE site_manifest.json's shared lists.
 
 WHY THIS MODULE EXISTS: "what ships" is not one list. site_manifest.json carries
-the shared md/tools both learner sites publish, but three more routes reach a
-built site without touching it:
+the shared md/tools both learner sites publish, but more routes reach a built
+site without touching it:
 
-  1. build_deploy.py copies the MS3 orientation video tool from _prototypes/.
+  1. MS3-only tools (MS3_EXTRA_TOOLS). Empty since 2026-09-25, when the MS3
+     orientation video tool (_prototypes/orientation-video/) was retired from
+     both sites along with the welcome and orientation videos; the route is
+     kept so a future MS3-only tool has one declared home.
   2. resident_section.py copies resident-only markdown (RES_EXTRA).
-  3. resident_section.py copies three resident-only role-play tools (PROTO_TOOLS).
+  3. resident_section.py copies the resident-only role-play tools (PROTO_TOOLS).
 
 Until 2026-09 each list was a literal inside the build script that used it, so
 nothing outside that script could enumerate the real shipped set without
@@ -16,19 +19,18 @@ so nothing could. shipped_pages.py needs exactly these lists and must not
 re-type them; hoisting them here is what makes the derivation a read rather
 than a transcription.
 
-Entries use the same 3-tuple shape as site_manifest.json --
+Page and tool entries use the same 3-tuple shape as site_manifest.json --
 ``(source path relative to the repo root, built filename, display title)`` --
 so a reader that already understands the manifest understands these too. The
 titles are the ones the two site navs use.
 
-Fourth route, deliberately NOT here: the Case-of-the-Week pages, which are
+Fifth route, deliberately NOT here: the Case-of-the-Week pages, which are
 registry-driven and derived by cotw_slug.py.
 
 DECISION: shipped-pages-single-source
 """
 
 __all__ = [
-    "MS3_ORIENT_VIDEO",
     "MS3_EXTRA_TOOLS",
     "RESIDENT_COTW_INDEX",
     "RESIDENT_TRACK_PAGES",
@@ -36,32 +38,11 @@ __all__ = [
     "RESIDENT_PROTO_TOOLS",
 ]
 
-# ---- MS3-only: the orientation video tool and the media it plays ---------------
-# The .html is a shipped, attestable tool; the three media files ride along with
-# it and are not pages. build_deploy.py copies all four; shipped_pages.py takes
-# the .html entries only (MS3_EXTRA_TOOLS below).
-MS3_ORIENT_VIDEO = [
-    (
-        "_prototypes/orientation-video/orientation-video.html",
-        "orientation-video.html",
-        "Orientation Video",
-    ),
-    (
-        "_prototypes/orientation-video/Inpatient_Psych_Orientation.mp4",
-        "Inpatient_Psych_Orientation.mp4",
-        None,
-    ),
-    (
-        "_prototypes/orientation-video/Inpatient_Psych_Orientation.vtt",
-        "Inpatient_Psych_Orientation.vtt",
-        None,
-    ),
-    ("_prototypes/orientation-video/poster.jpg", "poster.jpg", None),
-]
-
-# The subset of the above that is a shipped tool rather than a media asset.
-# resident_section.py strips these from the resident build, so they are MS3-only.
-MS3_EXTRA_TOOLS = [entry for entry in MS3_ORIENT_VIDEO if entry[1].endswith(".html")]
+# ---- MS3-only tools ---------------------------------------------------------------
+# Shipped, attestable tools the MS3 site serves and the resident build does not.
+# resident_section.py strips these from the resident build. Empty since 2026-09-25:
+# the orientation video tool it held was retired with the welcome/orientation videos.
+MS3_EXTRA_TOOLS = []
 
 # ---- resident-only markdown ---------------------------------------------------
 # Two of these deliberately reuse a slug the manifest already ships
@@ -111,9 +92,10 @@ RESIDENT_EXTRA_PAGES = RESIDENT_COTW_INDEX + RESIDENT_TRACK_PAGES
 # ---- resident-only prototype tools --------------------------------------------
 # These DO ship: they are in _build/res/tools/ on every resident deploy. They are
 # not in site_manifest.json's shared tools list because the MS3 site does not
-# serve them. surface_governance.py's _ADDITIONAL_TOOL_SOURCES and
-# validate_tool_governance.py's SITE_EXTRAS carry the same three source paths for
-# their own purposes; those are Phase-2 migrations (ADR-002).
+# serve them. surface_governance.py and validate_tool_governance.py used to carry
+# hand-synced copies of these source paths (_ADDITIONAL_TOOL_SOURCES, SITE_EXTRAS);
+# both were migrated to shipped_pages.json in ADR-002 Phase 2 and deleted, so this
+# is now the only place the resident-only tool sources are written down.
 RESIDENT_PROTO_TOOLS = [
     (
         "_prototypes/agitation-trainer/rp-agitation.html",

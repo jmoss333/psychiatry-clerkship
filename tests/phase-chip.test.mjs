@@ -19,13 +19,24 @@ test('the canonical phase-policy snippet remains injected once with no local clo
 
 test('the old renderHome phase chip is retired, and Today uses the Front Door countdown', () => {
   assert.doesNotMatch(shell, /window\.renderHome|\/\* ---- phase chip ---- \*\/|class="hm-phase"/);
-  assert.match(today, /var countdown=fdExamCountdown\(st\.week,idx\.weeks,nowMs,st\.rotationStart\)/);
+  // Through the audience gate since 2026-09-24 (fdPathExamCountdown, fd_state.js), which passes
+  // the same arguments on to fdExamCountdown: residents have no end-of-block exam.
+  assert.match(today, /var countdown=fdPathExamCountdown\(idx\.path&&idx\.path\.id,st\.week,idx\.weeks,nowMs,st\.rotationStart\)/);
   assert.match(today, /if\(countdown\) sub\+=' '\+countdown/);
 });
 
-test('Progress retains a device-local exam-date writer through stable delegation', () => {
-  assert.match(shell, /id="fdExamDate" type="date"/);
-  assert.match(shell, /data-progress-action="save-exam"/);
-  assert.match(shell, /localStorage\.setItem\('cw_shelf_date',value\)/);
-  assert.match(shell, /localStorage\.removeItem\('cw_shelf_date'\)/);
+// The device-local exam-date WRITER left Progress for the settings panel (fd_sheet.js's Pacing
+// section, committed through fd_wire.js's changeHandler). Progress keeps a read-only signpost, so
+// this pins the move rather than the old control: the shell reads the key for the panel and for
+// that signpost, and writes it nowhere. Two writable homes for one key silently desync --
+// fd_state.js:17 records the same rule for progress, and tests/fd-settings.test.mjs is where the
+// panel's half is pinned.
+test('the exam-date writer left Progress; the shell only reads the key now', () => {
+  assert.doesNotMatch(shell, /fdExamDate/, 'the Progress input and every reference to it are gone');
+  assert.doesNotMatch(shell, /save-exam/, 'and its delegated handler with it');
+  assert.equal(shell.split("localStorage.setItem('cw_shelf_date'").length - 1, 0,
+    'the shell must not write the key at all');
+  assert.equal(shell.split("localStorage.removeItem('cw_shelf_date'").length - 1, 0);
+  assert.match(shell, /out\.examDate=LS\('cw_shelf_date'\)/,
+    'it reads the key into the state the settings panel renders');
 });

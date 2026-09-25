@@ -102,10 +102,11 @@ test('warning prose is never derived from topic_meta.facultyReview', () => {
 });
 
 test('Front Door index and both live browse renderers preserve the shared governance badge contract', () => {
-  assert.match(source, /function governanceBadge\(triplet\)\{/);
+  assert.match(source, /function governanceBadge\(triplet,opts\)\{/);
   assert.match(source, /Pending review · High risk/);
   assert.match(dataModule, /risk: \(t&&t\.riskLevel\)\|\|m\.safetyLevel\|\|null/);
   assert.match(libraryModule, /governanceBadge\(item\.governance\)/);
+  assert.match(libraryModule, /governanceBadge\(item\.governance,\{compact:true\}\)/);
   assert.match(searchModule, /governanceBadge\(it\.governance\)/);
   assert.match(source, /governanceNotice:renderGovernanceNotice/);
 });

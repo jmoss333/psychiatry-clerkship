@@ -6,9 +6,11 @@
 // (WP-02d). Rights that cannot be established are not rights, so the abbreviated in-house
 // descriptors were withdrawn rather than left published on a second-hand notice.
 //
-// COWS is NOT affected. It shares this page under a separately recorded interim waiver
-// ("flagged, not reverted, pending the author's call"), and this file asserts it still scores —
-// a retirement that quietly took the other instrument with it would be its own defect.
+// COWS shares this page. It was NOT touched by the CIWA-Ar retirement; its own interim waiver
+// (2026-08-23) was closed on 2026-09-10 by decision `cows-anchors-retired`, which withdrew the
+// 45 anchor strings and kept the item names and score values. This file asserts the waiver left
+// nothing behind AND that the page still scores COWS — a retirement that quietly took the tool
+// with it would be its own defect.
 //
 // The descriptor list below is transcribed from the retirement record, independent of the page.
 // If a future edit reintroduces one of these strings, THAT EDIT is the finding — do not "fix" it
@@ -79,17 +81,27 @@ test('COWS still scores — the retirement did not take the other instrument wit
   assert.match(html, /items:\s*COWS\b/, 'the COWS scale must still render');
 });
 
-test('the COWS interim waiver is still recorded and still scoped to this page', () => {
+// Rewritten 2026-09-10, decision `cows-anchors-retired`. These two pinned that the CIWA-Ar
+// retirement had NOT touched COWS — true then, and the right guard for that change. COWS has
+// since been retired on its own evidence, so the pins invert: the waiver must be gone, and
+// gone completely. A closed waiver that survives anywhere is the failure this now guards.
+test('the COWS interim waiver is closed, and left nothing behind', () => {
   const cows = rights.instruments.find((i) => i.id === 'cows');
-  assert.equal(cows.status, 'flagged-interim');
-  assert.ok(cows.interimWaiver, 'the waiver must not be collateral damage of the CIWA retirement');
-  assert.ok(cows.interimWaiver.files.includes('withdrawal.html'));
+  assert.equal(cows.status, 'retired');
+  assert.equal(cows.interimWaiver, undefined,
+    'the waiver closed — a retired entry must not still carry one');
+  assert.match(cows.decisionRef, /DECISION: cows-anchors-retired/,
+    'the retirement must name the decision that made it');
+  assert.ok(cows.officialSource && cows.officialSource.formUrl,
+    'INV-IR2: a retired instrument must still leave a route');
 });
 
-test('the page is still a tool, not a rights reference — it reproduces COWS', () => {
+test('the page is still a tool — it scores COWS without reproducing it', () => {
   const cur = JSON.parse(readFileSync(path.join(ROOT, 'curriculum.json'), 'utf8'));
   assert.equal((cur.rightsReferences || []).includes('withdrawal.html'), false,
-    'rightsReferences means the page reproduces NOTHING; withdrawal.html still ships COWS');
+    'rightsReferences means the page reproduces NOTHING and offers no tool; this page still scores');
+  assert.match(html, /the wording under each score here is ours/,
+    'scoring without reproducing is only honest if the page says whose words these are');
 });
 
 test('attribution for both instruments survives', () => {

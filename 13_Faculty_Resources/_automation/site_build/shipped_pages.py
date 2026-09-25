@@ -42,6 +42,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
 import site_extras  # noqa: E402
+import teaching_dependencies  # noqa: E402
 from cotw_slug import COTW_DIR, COTW_REGISTRY, cotw_slug, cotw_weeks  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
@@ -174,15 +175,35 @@ def derive(root=ROOT):
     # 4 -- resident-only markdown. Two entries deliberately reuse a slug the
     # manifest already ships (welcome.md, cotw_index.md): the resident build
     # OVERWRITES the inherited page rather than adding one, so those are not new
-    # shipped pages and must not appear twice.
+    # shipped pages and must not appear twice. The override's own file is still an
+    # attested input of that slug -- attestation_hash.sources_for_slug reads the UNION
+    # of `source` and `extraSources` -- so it is recorded there rather than dropped.
     for source, slug, title in site_extras.RESIDENT_EXTRA_PAGES:
-        if slug in by_slug:
-            continue  # resident override of a page that already ships on both sites
+        existing = by_slug.get(slug)
+        if existing is not None:
+            if source != existing["source"]:
+                existing.setdefault("extraSources", []).append(source)
+            continue
         add(_page(slug, "page", ["res"], title, source, "resident_extra"))
 
     # 5 -- resident-only prototype tools. These DO ship: _build/res/tools/.
     for source, slug, title in site_extras.RESIDENT_PROTO_TOOLS:
         add(_page(slug, "tool", ["res"], title, source, "resident_tool"))
+
+    # A tool's HTML is only its shell. Data and first-party scripts that supply
+    # its teaching belong to the same attestation, on either audience's site.
+    try:
+        for page in by_slug.values():
+            if page["kind"] != "tool":
+                continue
+            dependencies = set(page.get("extraSources", []))
+            for site in page["sites"]:
+                dependencies.update(teaching_dependencies.discover(root, page, manifest, site))
+            dependencies.discard(page["source"])
+            if dependencies:
+                page["extraSources"] = sorted(dependencies)
+    except teaching_dependencies.DependencyError as error:
+        raise ShippedPagesError(str(error)) from error
 
     generated_from = {}
     for relative in INPUT_FILES:
@@ -336,6 +357,20 @@ def check_build(out_dir, site, root=ROOT):
     only_tracked = sorted(expected - actual)
     only_built = sorted(actual - expected)
     if not only_tracked and not only_built:
+        try:
+            manifest = _load_json(os.path.join(root, MANIFEST_RELATIVE), "site_manifest.json")
+            for page in document["pages"]:
+                if page["kind"] != "tool" or site not in page["sites"]:
+                    continue
+                dependencies = teaching_dependencies.discover(root, page, manifest, site, out_dir)
+                untracked = dependencies - set(page.get("extraSources", [])) - {page["source"]}
+                if untracked:
+                    raise teaching_dependencies.DependencyError(
+                        "%s has untracked teaching sources: %s. Run: %s"
+                        % (page["slug"], ", ".join(sorted(untracked)), WRITE_COMMAND))
+        except (teaching_dependencies.DependencyError, ShippedPagesError) as error:
+            print("shipped_pages --check-build FAILED — %s" % error)
+            return 1
         print(
             "shipped_pages --check-build OK — %s publishes exactly the %d tracked slug(s)"
             % (site, len(expected))

@@ -17,6 +17,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 
 import { createHandler } from '../faculty-console/netlify/functions/attest.mjs';
 
@@ -32,6 +33,10 @@ const BRANCH_HEAD = 'b'.repeat(40);
 const REVIEWED_SHA = 'c'.repeat(40);
 const WRITTEN_SHA = 'd'.repeat(40);
 
+// The page every fixture here ships from; `contentsFor` below serves the listing that
+// names it and the tree route serves its blob sha.
+const ANKI_SOURCE = 'x/anki.md';
+
 // Task 5 (risk-aware publishing warnings): the content-mutation handler now refuses
 // to act on a slug whose current ledger record lacks a valid `risk` — this fixture
 // must carry one or every attestRequest() in this file 502s instead of committing.
@@ -44,6 +49,18 @@ const REVIEWED = {
     reason: 'Synthetic review is pending',
   },
 };
+
+// Attesting binds the row to page text, so the write path reads the shipped listing, the
+// topic metadata and one recursive git tree — all from the attestation branch. Serving one
+// blob for every path (what this mock did before) made every attest 400 on a missing source.
+const SOURCE_BYTES = Buffer.from('# Anki\n\nSynthetic source.\n', 'utf8');
+
+function blobShaOf(bytes) {
+  return createHash('sha1')
+    .update(Buffer.from(`blob ${bytes.length}\0`, 'utf8'))
+    .update(bytes)
+    .digest('hex');
+}
 
 function jsonResponse(status, body) {
   return new Response(JSON.stringify(body), {
@@ -71,6 +88,7 @@ function makeMock({
   failPullRequest = false,
 } = {}) {
   const calls = [];
+  let created = false;
   const fetchImpl = async (input, init = {}) => {
     const url = String(input);
     const method = (init.method || 'GET').toUpperCase();
@@ -80,11 +98,15 @@ function makeMock({
       return jsonResponse(200, { object: { type: 'commit', sha: BASE_HEAD } });
     }
     if (method === 'GET' && url.endsWith(`/git/ref/heads/${ATTEST}`)) {
-      return branchMissing
+      // Once the ref has been created the branch HAS a head, and the write path asks for
+      // it to read the tree its digests come from. A mock that kept answering 404 would
+      // make the created-branch case look like a repository failure.
+      return branchMissing && !created
         ? jsonResponse(404, { message: 'Not Found' })
         : jsonResponse(200, { object: { type: 'commit', sha: BRANCH_HEAD } });
     }
     if (method === 'POST' && url.endsWith('/git/refs')) {
+      created = true;
       return jsonResponse(201, { ref: `refs/heads/${ATTEST}` });
     }
     if (method === 'PATCH' && url.endsWith(`/git/refs/heads/${ATTEST}`)) {
@@ -93,8 +115,21 @@ function makeMock({
     if (method === 'GET' && url.includes('/compare/')) {
       return jsonResponse(200, { ahead_by: ahead, behind_by: behind });
     }
+    if (method === 'GET' && url.includes('/git/trees/')) {
+      return jsonResponse(200, {
+        sha: BRANCH_HEAD,
+        truncated: false,
+        tree: [{
+          path: ANKI_SOURCE,
+          mode: '100644',
+          type: 'blob',
+          sha: blobShaOf(SOURCE_BYTES),
+          size: SOURCE_BYTES.length,
+        }],
+      });
+    }
     if (method === 'GET' && url.includes('/contents/')) {
-      const serialized = JSON.stringify(REVIEWED);
+      const serialized = JSON.stringify(contentsFor(url));
       return jsonResponse(200, {
         sha: REVIEWED_SHA,
         size: Buffer.byteLength(serialized, 'utf8'),
@@ -135,6 +170,17 @@ function handlerWith(mock, envOverrides = {}) {
       ATTESTER_NAME: 'Synthetic Reviewer',
       ...envOverrides,
     },
+  });
+}
+
+function ensurePrRequest() {
+  const headers = new Headers({ 'Content-Type': 'application/json' });
+  headers.set('x-faculty-key', FACULTY_KEY);
+  headers.set('Origin', API_ORIGIN);
+  return new Request(API_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ action: 'branch.ensure-pr' }),
   });
 }
 
@@ -296,11 +342,16 @@ const SHIPPED_FIXTURE = {
   ],
 };
 const QBANK_FIXTURE = { items: [] };
+// The other half of a content hash. Served explicitly: before this existed the fallthrough
+// handed the LEDGER back for topic_meta.json, and a digest computed over that would have
+// been a hash of the attestation record rather than of the page's metadata.
+const TOPIC_META_FIXTURE = { 'anki.md': { title: 'Anki' } };
 
 function contentsFor(url) {
   if (url.includes('question_bank.json')) return QBANK_FIXTURE;
   if (url.includes('shipped_pages.json')) return SHIPPED_FIXTURE;
   if (url.includes('site_manifest.json')) return MANIFEST_FIXTURE;
+  if (url.includes('topic_meta.json')) return TOPIC_META_FIXTURE;
   return REVIEWED;
 }
 
@@ -370,12 +421,94 @@ test('GET below the lag threshold with a rolling PR open does not alarm', async 
   assert.deepEqual(payload.branchSync.reasons, []);
 });
 
-test('GET on a merely-behind branch does not alarm and does not fast-forward', async () => {
+/* ------------------------------------------------------------------------- *
+ * GET freshens when it safely can (2026-09-07). Until this change only POST
+ * called ensureBranchFresh, so a branch that was merely behind stayed behind
+ * until somebody attested — and on 2026-09-04 nobody could, because the file
+ * the queue is derived from existed only on the base. A behind-only branch is
+ * exactly the case fast-forwarding cannot lose anything in, so the read path
+ * takes it too; an AHEAD branch is still left alone.
+ * ------------------------------------------------------------------------- */
+
+test('GET fast-forwards a behind-only branch before reading it', async () => {
   const mock = makeStateMock({ ahead: 0, behind: 9 });
+  const response = await handlerWith(mock)(stateRequest());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.branchSync.alarmed, false, 'freshening is not an alarm');
+  assert.equal(payload.branchFresh.action, 'fast-forwarded');
+
+  const patched = called(mock.calls, 'PATCH', `/git/refs/heads/${ATTEST}`);
+  assert.equal(patched.length, 1, 'a behind-only branch carries nothing to lose');
+  assert.deepEqual(patched[0].body, { sha: BASE_HEAD, force: false });
+
+  const patchIndex = mock.calls.findIndex((c) => c.method === 'PATCH');
+  const readIndex = mock.calls.findIndex((c) => c.method === 'GET' && c.url.includes('/contents/'));
+  assert.ok(patchIndex < readIndex, 'freshen before reading the queue, not after');
+});
+
+test('GET leaves a branch holding unmerged attestations alone', async () => {
+  const mock = makeStateMock({ ahead: 2, behind: 9, openPull: { html_url: 'https://github.example/pull/9' } });
   const payload = await (await handlerWith(mock)(stateRequest())).json();
-  assert.equal(payload.branchSync.alarmed, false);
-  assert.equal(payload.branchSync.behindBy, 9);
-  assert.deepEqual(mutations(mock.calls), [], 'the write path fast-forwards; the probe never does');
+  assert.equal(payload.branchFresh.action, 'pending');
+  assert.equal(called(mock.calls, 'PATCH', '/git/refs/heads/').length, 0,
+    'fast-forwarding an ahead branch would discard signed-off attestations');
+});
+
+test('a failed freshen on GET is advisory and still serves the queue', async () => {
+  const mock = makeStateMock({ ahead: 0, behind: 9 });
+  const base = mock.fetchImpl;
+  const failing = {
+    calls: mock.calls,
+    fetchImpl: async (input, init = {}) => {
+      const method = (init.method || 'GET').toUpperCase();
+      if (method === 'PATCH' && String(input).includes(`/git/refs/heads/${ATTEST}`)) {
+        mock.calls.push({ url: String(input), method, body: null });
+        return jsonResponse(500, { message: 'ref update unavailable' });
+      }
+      return base(input, init);
+    },
+  };
+  const response = await handlerWith(failing)(stateRequest());
+  assert.equal(response.status, 200, 'a freshen is an improvement to the read, not a gate on it');
+  const payload = await response.json();
+  assert.ok(Array.isArray(payload.items) && payload.items.length, 'the queue still loads');
+  assert.deepEqual(payload.branchFresh, { action: 'error' });
+});
+
+test('GET flags attestations stranded with no open review request', async () => {
+  // The 2026-09-04 state: five attestations on the branch, no rolling PR, and
+  // nothing in the payload that said so until the console could load at all.
+  const mock = makeStateMock({ ahead: 5, behind: 0 });
+  const payload = await (await handlerWith(mock)(stateRequest())).json();
+  assert.equal(payload.branchSync.aheadBy, 5);
+  assert.equal(payload.branchSync.rollingPr, null);
+  assert.equal(payload.branchSync.rollingPrChecked, true,
+    '"looked, found none" must be distinguishable from "never looked"');
+  assert.equal(payload.branchSync.branch, ATTEST);
+  assert.equal(payload.branchSync.baseBranch, BASE);
+  assert.deepEqual(payload.branchSync.reasons, ['stranded-no-pr']);
+  assert.equal(called(mock.calls, 'GET', '/pulls').length, 1, 'one list call for the probe');
+  assert.equal(called(mock.calls, 'POST', '/pulls').length, 0, 'a GET never opens one');
+});
+
+test('branch.ensure-pr opens the rolling review request on demand', async () => {
+  const mock = makeMock({ ahead: 4, behind: 0 });
+  const response = await handlerWith(mock)(ensurePrRequest());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.ok, true);
+  assert.equal(payload.pullRequest, 'https://github.example/pull/1');
+  assert.equal(called(mock.calls, 'POST', '/pulls').length, 1);
+  assert.equal(called(mock.calls, 'PATCH', '/git/refs/heads/').length, 0, 'no ref is moved');
+  assert.equal(called(mock.calls, 'PUT', '/contents/').length, 0, 'no file is written');
+});
+
+test('branch.ensure-pr reuses an open review request rather than opening a second', async () => {
+  const mock = makeMock({ ahead: 4, openPull: { html_url: 'https://github.example/pull/7' } });
+  const payload = await (await handlerWith(mock)(ensurePrRequest())).json();
+  assert.equal(payload.pullRequest, 'https://github.example/pull/7');
+  assert.equal(called(mock.calls, 'POST', '/pulls').length, 0);
 });
 
 test('ATTEST_BASE_LAG_ALARM overrides the lag threshold', async () => {
@@ -396,10 +529,63 @@ test('a failed probe degrades to an error marker without failing the load', asyn
   assert.deepEqual(payload.branchSync, { error: true });
 });
 
+test('GET carries the base lag as branchLag and verifies freshness at the branch head', async () => {
+  const openPull = { html_url: 'https://github.example/pull/9' };
+  const mock = makeStateMock({ ahead: 2, behind: 4, openPull });
+  const payload = await (await handlerWith(mock)(stateRequest())).json();
+
+  // A content hash compares a page to the ledger, both read from the attestation branch —
+  // so an internally consistent queue can still be four commits behind what main ships.
+  // That is a fact only the probe knows, and the payload has to carry it to the banner.
+  assert.equal(payload.branchLag, 4);
+  assert.equal(payload.freshness, 'verified');
+  const item = payload.items.find(entry => entry.slug === 'anki.md');
+  assert.equal(item.status, 'unreviewed', 'the pending fixture row is unchanged');
+  assert.equal(Object.hasOwn(item, 'stale'), false, 'a pending row claims nothing about text');
+});
+
+test('a branch level with the base reports no lag', async () => {
+  const mock = makeStateMock({ ahead: 0, behind: 0 });
+  const payload = await (await handlerWith(mock)(stateRequest())).json();
+  assert.equal(payload.branchLag, 0);
+});
+
 /* The UI half: a pure notice model the shell renders as a load-time banner.
  * Pinned here beside the probe so the wire format and its presentation cannot
  * drift apart. */
-import { branchSyncNotice } from '../faculty-console/app.mjs';
+import {
+  branchLagNotice,
+  branchSyncNotice,
+  freshnessNotice,
+  shippedPagesNotice,
+} from '../faculty-console/app.mjs';
+
+test('the branch-lag banner names the branch, the base and the number of commits', () => {
+  assert.equal(branchLagNotice(null), null);
+  assert.equal(branchLagNotice({ branchLag: 0 }), null, 'a branch in sync says nothing');
+  const notice = branchLagNotice({
+    branchLag: 4,
+    branchSync: { branch: ATTEST, baseBranch: BASE },
+  });
+  assert.equal(notice.tone, 'alert');
+  assert.equal(
+    notice.message,
+    'attest/pending is 4 commits behind main — sync before re-attesting',
+  );
+  const single = branchLagNotice({
+    branchLag: 1,
+    branchSync: { branch: ATTEST, baseBranch: BASE },
+  });
+  assert.match(single.message, /is 1 commit behind/);
+});
+
+test('the freshness banner appears exactly when nothing could be checked', () => {
+  assert.equal(freshnessNotice(null), null);
+  assert.equal(freshnessNotice({ freshness: 'verified' }), null);
+  const notice = freshnessNotice({ freshness: 'unknown' });
+  assert.equal(notice.tone, 'muted');
+  assert.equal(notice.message, 'Freshness unknown — reload');
+});
 
 test('no notice when the probe is absent, healthy, or non-isolated', () => {
   assert.equal(branchSyncNotice(undefined), null);
@@ -418,18 +604,45 @@ test('a failed probe yields a quiet staleness caveat, not an alarm', () => {
   assert.equal(notice.href, null);
 });
 
-test('the stranded-no-pr alarm says the attestations have no route to main', () => {
+test('the stranded-no-pr alarm names the branch and offers the repair', () => {
   const notice = branchSyncNotice({
-    isolated: true, aheadBy: 3, behindBy: 9, rollingPr: null,
+    isolated: true, aheadBy: 3, behindBy: 9, rollingPr: null, rollingPrChecked: true,
     threshold: 3, reasons: ['stranded-no-pr', 'base-lag'], alarmed: true,
+    branch: ATTEST, baseBranch: BASE,
   });
   assert.equal(notice.tone, 'alert');
-  assert.match(notice.message, /3 unmerged attestations/);
-  assert.match(notice.message, /no rolling pull request is open/i);
+  assert.match(notice.message, /3 attestations are on `attest\/pending`/);
+  assert.match(notice.message, /no open review request/i);
+  assert.match(notice.message, /press Reopen review request/);
   assert.match(notice.message, /9 commits behind main/);
   assert.match(notice.message, /queue below may be stale/i);
   assert.match(notice.message, /merge commit, not squash/i);
   assert.equal(notice.href, null);
+  assert.equal(notice.action, 'ensure-pr', 'the alarm carries its own repair');
+});
+
+test('one stranded attestation reads in the singular and still offers the repair', () => {
+  const notice = branchSyncNotice({
+    isolated: true, aheadBy: 1, behindBy: 0, rollingPr: null, rollingPrChecked: true,
+    threshold: 3, reasons: ['stranded-no-pr'], alarmed: true,
+    branch: ATTEST, baseBranch: BASE,
+  });
+  assert.match(notice.message, /1 attestation is on `attest\/pending`/);
+  assert.equal(notice.action, 'ensure-pr');
+});
+
+test('the derived-listing fallback is a one-line notice, not an alarm', () => {
+  assert.equal(shippedPagesNotice(null), null);
+  assert.equal(shippedPagesNotice({ shippedPagesSource: 'branch' }), null,
+    'the ordinary case says nothing');
+  const notice = shippedPagesNotice({
+    shippedPagesSource: 'base',
+    shippedPagesBranch: BASE,
+  });
+  assert.equal(notice.tone, 'muted');
+  assert.match(notice.message, /Review queue derived from `main`/);
+  assert.match(notice.message, /missing shipped_pages\.json/);
+  assert.match(notice.message, /merge the rolling review request/i);
 });
 
 test('the base-lag alarm links the rolling pull request, https only', () => {

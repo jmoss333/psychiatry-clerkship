@@ -12,7 +12,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // because it went red: you (or a concurrent PR) changed a shared ceiling — bump the pins below
 // IN THE SAME DIFF as the change, after confirming the other agent's PRs in flight.
 
-const EXPECTED_MARKER_COUNT = 29; // +1 (2026-09-03): shared cw_srs_v1 store adapter (srs_store.js).
+// +1 (2026-09-22): APP one-detail practice engine (fd_app_practice.js).
+// +1 (2026-09-23): device reading-place helper (fd_reading_place.js).
+// +1 (2026-09-23): pure Capture faculty email builder (fd_capture_email.js).
+// +1 (2026-09-23): Patient care resources destination (fd_care.js).
+// +1 (2026-09-23): Fixed-choice Care navigator (fd_care_navigator.js).
+// +1 (2026-09-23): Patient resource pack renderer (fd_care_pack.js).
+// +1 (2026-09-23): Verified offline readiness model (fd_offline.js).
+const EXPECTED_MARKER_COUNT = 38;
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(
@@ -31,9 +38,17 @@ test('qa-baseline.json matches the pinned ceilings exactly', () => {
   // now read localStorage[SRS_KEY] through the shared srs_store.js snippet rather than a
   // literal, the same indirection already accepted for family, question-bank, review and
   // shelf-mode. (res counts the resident-only tools too, hence its higher ceiling.)
+  //
+  // blueprint-gap 0 -> 6 (2026-09-18, PR 1b): §4a2 counts pages the BUILT governance.json
+  // calls "reviewed", and the builds now render an attestation whose attested inputs have
+  // drifted as pending — 94 of 108 reviewed shipped rows on the tree that day. Six
+  // blueprint codes lost their last attested page as a result. This ceiling is a count of
+  // work the owner still has to do, not a defect to design around: every re-attestation
+  // lowers it, and the gate prints an invitation to lock the drop in. Do not fix a red
+  // here by widening it — check what stopped being attested first.
   const expected = {
-    ms3: { metadata: 1, 'computed-key': 7, 'legacy-metadata': 1 },
-    res: { metadata: 1, 'computed-key': 10, 'legacy-metadata': 1 },
+    ms3: { metadata: 1, 'blueprint-gap': 6, 'computed-key': 7, 'legacy-metadata': 1 },
+    res: { metadata: 1, 'blueprint-gap': 6, 'computed-key': 10, 'legacy-metadata': 1 },
   };
   assert.deepEqual(actual, expected,
     'qa-baseline.json changed — a computed-key or soft-class ceiling moved; update this pin deliberately');

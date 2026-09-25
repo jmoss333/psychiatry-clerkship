@@ -1,0 +1,81 @@
+{
+  "_note": "Published content-outline bands for the two exams the clerkship question bank serves (WP-8). Factual data only: the category names and percentage ranges as each board publishes them, with the source URL and access date. No outline text beyond the category names is reproduced. `key` is the value an item carries in question_bank.json `blueprint` (the controlled vocabulary of 09_Exam_Prep/shelf_comat_bank/02_ITEM_SCHEMA.json, which the pilot items use); `name` is the exact published label. The item schema's enums are these keys: bin/qbank_blueprint_report.py --self-test fails if they drift. Re-verify against the live pages before trusting this snapshot past its access date; bands verified 2026-09-24 equal the repo transcription in 09_Exam_Prep/shelf_comat_bank/01_BLUEPRINT_CROSSWALK.md §2-§3.",
+  "version": 1,
+  "exams": {
+    "nbme": {
+      "exam": "NBME Psychiatry Clinical Science Subject Exam",
+      "page_title": "Psychiatry Subject Exam - Content Outline",
+      "source_url": "https://www.nbme.org/institutions/assess-learn/subject-exams/clinical-science/psychiatry/",
+      "requested_url": "https://www.nbme.org/subject-exams/clinical-science/psychiatry",
+      "page_date_modified": "2026-06-17",
+      "accessed": "2026-09-24",
+      "dimensions": {
+        "system": {
+          "name": "Systems",
+          "categories": [
+            {"key": "General Principles", "name": "General Principles, Including Normal Age-Related Findings and Care of the Well Patient", "min": 5, "max": 10},
+            {"key": "Behavioral Health", "name": "Behavioral Health", "min": 65, "max": 70},
+            {"key": "Nervous System & Special Senses", "name": "Nervous System & Special Senses", "min": 10, "max": 15},
+            {"key": "Other Systems", "name": "Other Systems, including Multisystem Processes & Disorders", "min": 5, "max": 10},
+            {"key": "Social Sciences", "name": "Social Sciences", "min": 1, "max": 5}
+          ]
+        },
+        "physician_task": {
+          "name": "Physician Task",
+          "categories": [
+            {"key": "Diagnosis", "name": "Diagnosis, including Foundational Science Concepts", "min": 65, "max": 70},
+            {"key": "Pharmacotherapy/Intervention/Management", "name": "Pharmacotherapy, Intervention & Management", "min": 30, "max": 35}
+          ]
+        },
+        "site_of_care": {
+          "name": "Site of Care",
+          "categories": [
+            {"key": "Ambulatory", "name": "Ambulatory", "min": 60, "max": 65},
+            {"key": "Emergency Department", "name": "Emergency Department", "min": 20, "max": 30},
+            {"key": "Inpatient", "name": "Inpatient", "min": 5, "max": 10}
+          ]
+        },
+        "patient_age": {
+          "name": "Patient Age",
+          "categories": [
+            {"key": "Birth to 12", "name": "Birth to 12", "min": 10, "max": 15},
+            {"key": "13 and older", "name": "13 and older", "min": 85, "max": 90}
+          ]
+        }
+      }
+    },
+    "comat": {
+      "exam": "NBOME COMAT Clinical Psychiatry",
+      "page_title": "COMAT Clinical – Psychiatry",
+      "source_url": "https://www.nbome.org/assessments/comat/clinical-subject-exams/comat-clinical-psychiatry/",
+      "page_date_modified": "2026-06-17",
+      "accessed": "2026-09-24",
+      "dimensions": {
+        "presentation": {
+          "name": "Dimension 1 – Patient/Clinical Presentations",
+          "categories": [
+            {"key": "Anxiety/Trauma/Dissociative/OCD", "name": "Anxiety Disorders; Trauma and Stressor Related/Dissociative Disorders; Obsessive Compulsive and Related Disorders", "min": 20, "max": 25},
+            {"key": "Neurocognitive", "name": "Neurocognitive Disorders", "min": 9, "max": 10},
+            {"key": "Neurodevelopmental/Gender Dysphoria/Disruptive-Impulse-Conduct", "name": "Neurodevelopmental Disorders; Gender Dysphoria; Disruptive, Impulse Control, and Conduct Disorders", "min": 9, "max": 15},
+            {"key": "Depressive/Bipolar/Related", "name": "Depressive, Bipolar, and Related Disorders", "min": 20, "max": 25},
+            {"key": "Personality", "name": "Personality Disorders", "min": 5, "max": 8},
+            {"key": "Schizophrenia Spectrum/Psychotic", "name": "Schizophrenia Spectrum and Other Psychotic Disorders", "min": 8, "max": 10},
+            {"key": "Psychiatric Illness due to Medical Condition/Somatic/Sleep-Wake", "name": "Psychiatric Illness due to Another Medical Condition; Somatic Symptom and Related Disorders; Sleep-Wake Disorders", "min": 6, "max": 10},
+            {"key": "Substance-Related/Addictive", "name": "Substance-Related and Addictive Disorders", "min": 8, "max": 10},
+            {"key": "Feeding-Eating-Elimination/Sexual-Paraphilic", "name": "Feeding, Eating, and Elimination Disorders; Sexual Dysfunctions and Paraphilic Disorders", "min": 5, "max": 6}
+          ]
+        },
+        "physician_task": {
+          "name": "Dimension 2 – Physician Tasks",
+          "categories": [
+            {"key": "Health Promotion/Prevention/Care Delivery", "name": "Health Promotion/Disease Prevention/Health Care Delivery", "min": 8, "max": 20},
+            {"key": "History & Physical (incl. Dx)", "name": "History and Physical (includes Diagnosis)", "min": 30, "max": 45},
+            {"key": "Diagnostic Technologies", "name": "Diagnostic Technologies", "min": 5, "max": 6},
+            {"key": "Management", "name": "Management", "min": 30, "max": 45},
+            {"key": "Scientific Mechanisms of Disease", "name": "Scientific Mechanisms of Disease", "min": 8, "max": 10}
+          ]
+        }
+      }
+    }
+  }
+}

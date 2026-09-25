@@ -45,6 +45,11 @@ RESIDENT_EXTRAS = [
 
 
 DEFAULT_GOVERNANCE = {"status": "reviewed", "riskKind": "general", "riskLevel": "low"}
+PRACTICE_IDS = [
+    "training-briefing",
+    "workshop-equipment-checkout",
+    "community-event-handoff",
+]
 
 
 def _catalog(refs, governance_by_ref=None):
@@ -58,9 +63,101 @@ def _catalog(refs, governance_by_ref=None):
     ]}]
 
 
+def _practice_packs():
+    return [
+        {
+            "id": "training-briefing", "title": "Training-room briefing",
+            "snapshot": [
+                "A facilitator asks you to prepare a two-minute update from a shared brief.",
+                "The update has a named owner and a scheduled review time.",
+            ],
+            "change": "A source note is now marked unconfirmed.",
+            "statements": [
+                {"id": "review-time", "text": "The scheduled review time has not changed."},
+                {"id": "source-status", "text": "Every source in the brief is confirmed."},
+                {"id": "verification-owner", "text": "The person responsible for checking the source note is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "name-uncertainty", "text": "Which uncertainty should I name in the update?"},
+                {"id": "confirm-owner", "text": "Who should confirm the source note?"},
+                {"id": "prepare-review", "text": "What should I prepare before we review it together?"},
+            ],
+        },
+        {
+            "id": "workshop-equipment-checkout", "title": "Workshop equipment checkout",
+            "snapshot": [
+                "A workshop kit has a named setup owner.",
+                "The delivery window is listed on the shared schedule.",
+            ],
+            "change": "The delivery window moves to after the setup owner leaves.",
+            "statements": [
+                {"id": "setup-owner", "text": "The setup owner is still named."},
+                {"id": "delivery-window", "text": "The kit will arrive during the original delivery window."},
+                {"id": "new-time-owner", "text": "The person who will receive the kit at the new time is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "handoff-owner", "text": "Who should own the handoff at the new time?"},
+                {"id": "plan-parts", "text": "Which parts of the original plan still hold?"},
+                {"id": "confirm-before-start", "text": "What needs confirmation before the workshop starts?"},
+            ],
+        },
+        {
+            "id": "community-event-handoff", "title": "Community event handoff",
+            "snapshot": [
+                "A volunteer says the welcome table is set up.",
+                "One volunteer owns the remaining setup checklist.",
+            ],
+            "change": "The accessibility signs have not arrived.",
+            "statements": [
+                {"id": "table-status", "text": "The welcome table is set up."},
+                {"id": "item-status", "text": "Every setup item has arrived."},
+                {"id": "sign-owner", "text": "The person who will obtain the signs is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "remaining-owner", "text": "Who should own the remaining setup?"},
+                {"id": "handoff-check", "text": "Which part of the handoff needs confirmation?"},
+                {"id": "opening-check", "text": "What should be checked before the event opens?"},
+            ],
+        },
+    ]
+
+
+def _app_pathway():
+    return {
+        "intro": "Choose the starting route that fits what you want to revisit.",
+        "practicePacks": _practice_packs(),
+        "bridges": {
+            "pa": {
+                "name": "PA psychiatry bridge", "summary": "First route",
+                "refs": ["shared-%02d.md" % number for number in range(1, 9)],
+                "selfCheck": {"prompt": "Choose a private next step.",
+                              "actions": ["revisit", "supervisor", "another"]},
+            },
+            "pmhnp": {
+                "name": "PMHNP medical-systems bridge", "summary": "Second route",
+                "refs": ["shared-%02d.md" % number for number in range(9, 17)],
+                "selfCheck": {"prompt": "Choose a private next step.",
+                              "actions": ["revisit", "supervisor", "another"]},
+            },
+        },
+        "activities": [
+            {"id": activity_id, "name": name, "practiceId": PRACTICE_IDS[index],
+             "purpose": "Prepare for supervision.",
+             "refs": ["shared-%02d.md" % number],
+             "actions": ["prepare", "rehearse", "observe"]}
+            for index, (activity_id, name, number) in enumerate((
+                ("initial-evaluation", "Initial psychiatric evaluation and presentation", 1),
+                ("medication-follow-through", "Medication plan and follow-through", 2),
+                ("collateral-transition", "Collateral and safe transition", 3),
+            ))
+        ],
+    }
+
+
 def _curriculum():
     shared = ["shared-%02d.md" % number for number in range(1, 82)]
     return {
+        "appPathway": _app_pathway(),
         "learningPaths": {
             "ms3": {"id": "ms3-six-week", "weeks": [
                 {"n": n, "title": "M%d" % n, "theme": "MT%d" % n,
@@ -101,6 +198,12 @@ def _curriculum():
                 "exclusions": [],
             },
         },
+        "essentials": {
+            "_note": "Synthetic source only",
+            "ms3": [{"name": "Core kit", "accent": "topic", "refs": [shared[0]]}],
+            "resident": [{"name": "Practice kit", "accent": "tool",
+                          "refs": ["rp-agitation.html"]}],
+        },
     }
 
 
@@ -110,6 +213,140 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.shared = list(self.curriculum["libraryColumns"][0]["refs"])
         self.ms3_catalog = _catalog(self.shared)
         self.resident_catalog = _catalog(self.shared + RESIDENT_EXTRAS)
+
+    def test_essentials_projects_only_selected_audience_in_order(self):
+        for site, catalog in (("ms3", self.ms3_catalog),
+                              ("resident", self.resident_catalog)):
+            with self.subTest(site=site):
+                curriculum = copy.deepcopy(self.curriculum)
+                curriculum["essentials"][site].append(
+                    {"name": "More", "accent": "topic",
+                     "refs": [self.shared[2], self.shared[1]]})
+                payload = build_frontdoor_payload(site, curriculum, catalog, REVISION)
+                selection = payload["curriculum"]["essentials"]
+                self.assertIsInstance(selection, list)
+                self.assertEqual(selection, curriculum["essentials"][site])
+
+    def test_essentials_projection_is_deep_copied(self):
+        source = copy.deepcopy(self.curriculum)
+        ms3 = build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION)
+        resident = build_frontdoor_payload(
+            "resident", self.curriculum, self.resident_catalog, REVISION)
+        self.assertIsInstance(ms3["curriculum"]["essentials"], list)
+        self.assertIsInstance(resident["curriculum"]["essentials"], list)
+        resident_before = copy.deepcopy(resident["curriculum"]["essentials"])
+        ms3["curriculum"]["essentials"][0]["name"] = "Changed"
+        ms3["curriculum"]["essentials"][0]["refs"].append(self.shared[1])
+        self.assertEqual(self.curriculum, source)
+        self.assertEqual(resident["curriculum"]["essentials"], resident_before)
+
+    def test_essentials_projection_rejects_missing_empty_or_wrong_typed_selection(self):
+        cases = [
+            lambda c: c.pop("essentials"),
+            lambda c: c.__setitem__("essentials", None),
+            lambda c: c.__setitem__("essentials", []),
+            lambda c: c["essentials"].pop("ms3"),
+        ]
+        for value in (None, {}, [], "bad"):
+            cases.append(lambda c, value=value: c["essentials"].__setitem__("ms3", value))
+        for mutate in cases:
+            with self.subTest(mutate=repr(mutate)):
+                curriculum = copy.deepcopy(self.curriculum)
+                mutate(curriculum)
+                with self.assertRaisesRegex(ValueError, r"curriculum\.essentials\.ms3"):
+                    build_frontdoor_payload("ms3", curriculum, self.ms3_catalog, REVISION)
+
+    def test_essentials_does_not_change_full_payload_inventory(self):
+        for site, catalog, replacement in (
+            ("ms3", self.ms3_catalog, self.shared[1]),
+            ("resident", self.resident_catalog, self.shared[1]),
+        ):
+            with self.subTest(site=site):
+                changed = copy.deepcopy(self.curriculum)
+                changed["essentials"][site][0]["refs"] = [replacement]
+                before = build_frontdoor_payload(site, self.curriculum, catalog, REVISION)
+                after = build_frontdoor_payload(site, changed, catalog, REVISION)
+                before["curriculum"].pop("essentials")
+                after["curriculum"].pop("essentials")
+                self.assertEqual(after, before)
+
+    def test_reachable_refs_ignores_essentials_with_and_without_search_resources(self):
+        listing = {"pages": [
+            {"slug": ref, "title": "Full " + ref,
+             "kind": "tool" if ref.endswith(".html") else "page",
+             "sites": (["ms3", "res"] if ref in self.shared else ["res"])}
+            for ref in self.shared + RESIDENT_EXTRAS
+        ]}
+        for site, catalog in (("ms3", self.ms3_catalog),
+                              ("resident", self.resident_catalog)):
+            for shipped in (None, listing):
+                with self.subTest(site=site, search=shipped is not None):
+                    payload = build_frontdoor_payload(
+                        site, self.curriculum, catalog, REVISION, shipped=shipped)
+                    expected = reachable_refs(payload)
+                    self.assertTrue(expected)
+                    self.assertIn(self.shared[-1], expected)
+                    payload["curriculum"]["essentials"] = [
+                        {"name": "Changed", "accent": "topic", "refs": [self.shared[1]]}]
+                    self.assertEqual(reachable_refs(payload), expected)
+                    del payload["curriculum"]["essentials"]
+                    self.assertEqual(reachable_refs(payload), expected)
+
+    def test_search_covers_shipped_cases_without_changing_library_or_assignments(self):
+        case = {"slug": "case.md", "title": "Full teaching case name", "kind": "page", "sites": ["ms3"]}
+        other = {"slug": "resident-case.md", "title": "Resident case", "kind": "page", "sites": ["res"]}
+        listing = {"pages": [case, other] + [
+            {"slug": ref, "title": "Full " + ref, "kind": "page", "sites": ["ms3"]}
+            for ref in self.shared]}
+        payload = build_frontdoor_payload("ms3", self.curriculum,
+            _catalog(self.shared + ["case.md"]), REVISION, shipped=listing)
+        self.assertIn("case.md", payload["curriculum"]["searchResources"])
+        self.assertNotIn("resident-case.md", payload["curriculum"]["searchResources"])
+        self.assertEqual(payload["curriculum"]["searchTitles"]["case.md"], "Full teaching case name")
+        self.assertEqual(payload["curriculum"]["libraryColumns"], self.curriculum["libraryColumns"])
+        self.assertNotIn("case.md", reachable_refs(payload))
+        self.assertEqual(reachable_refs(payload), set(self.shared))
+        # A missing nav record must fail, not quietly shrink the shipped universe.
+        with self.assertRaisesRegex(ValueError, "case.md"):
+            build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION, shipped=listing)
+
+    def test_search_exclusion_cannot_hide_a_placed_resource_or_unknown_slug(self):
+        listing = {"pages": [{"slug": ref, "title": ref, "kind": "page", "sites": ["ms3"]}
+                             for ref in self.shared]}
+        for ref in (self.shared[0], "not-shipped.md"):
+            self.curriculum["searchExclude"] = [{"ref": ref, "reason": "fixture"}]
+            with self.assertRaisesRegex(ValueError, "searchExclude"):
+                build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION, shipped=listing)
+
+    def test_landing_destinations_get_reader_metadata_without_library_or_path_placement(self):
+        original = copy.deepcopy(self.curriculum)
+        refs = ["week%d.md" % n for n in range(1, 7)]
+        for week, ref in zip(self.curriculum["learningPaths"]["ms3"]["weeks"], refs):
+            week["landingRef"] = ref
+        payload = build_frontdoor_payload(
+            "ms3", self.curriculum, _catalog(self.shared + refs), REVISION
+        )
+        titles = {row[1]: row[2] for row in payload["manifest"]["md"]}
+        for ref in refs:
+            self.assertEqual(titles.get(ref), "Title for " + ref)
+        self.assertEqual(payload["curriculum"]["libraryColumns"], original["libraryColumns"])
+        self.assertEqual([w["items"] for w in payload["curriculum"]["weeks"]],
+                         [w["items"] for w in original["learningPaths"]["ms3"]["weeks"]])
+        self.assertTrue(set(refs).isdisjoint(reachable_refs(payload)))
+        self.curriculum["libraryColumns"][0]["refs"].append("week1.md")
+        placed = build_frontdoor_payload(
+            "ms3", self.curriculum, _catalog(self.shared + refs), REVISION
+        )
+        self.assertIn("week1.md", reachable_refs(placed))
+
+    def test_landing_destinations_fail_closed_without_final_markdown_catalog_metadata(self):
+        for ref in ("missing.md", "landing.html"):
+            with self.subTest(ref=ref):
+                self.curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"] = ref
+                with self.assertRaisesRegex(ValueError, "landingRef"):
+                    build_frontdoor_payload(
+                        "ms3", self.curriculum, _catalog(self.shared + ["landing.html"]), REVISION
+                    )
 
     def test_site_projections_have_expected_placed_counts_and_roles(self):
         ms3 = build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION)
@@ -125,6 +362,21 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(ms3["roles"], self.curriculum["roles"]["ms3"])
         self.assertEqual(resident["roles"], self.curriculum["roles"]["resident"])
         self.assertNotEqual(ms3["roles"], resident["roles"])
+        self.assertNotIn("appPathway", ms3["curriculum"])
+        self.assertEqual(
+            [pack["id"] for pack in resident["curriculum"]["appPathway"]["practicePacks"]],
+            ["training-briefing", "workshop-equipment-checkout", "community-event-handoff"],
+        )
+        self.assertEqual(resident["curriculum"]["appPathway"], self.curriculum["appPathway"])
+        app_refs = {
+            ref
+            for bridge in resident["curriculum"]["appPathway"]["bridges"].values()
+            for ref in bridge["refs"]
+        }
+        manifest_refs = {
+            entry[1] for group in resident["manifest"].values() for entry in group
+        }
+        self.assertTrue(app_refs.issubset(manifest_refs))
         self.assertTrue(all(isinstance(ref, str)
                             for column in resident["curriculum"]["libraryColumns"]
                             for ref in column["refs"]))
@@ -186,6 +438,28 @@ class FrontdoorCatalogTest(unittest.TestCase):
             self.assertEqual(resolved[ref], "Title for " + ref)
         self.assertEqual({entry[1] for entry in payload["manifest"]["tools"]},
                          {ref for ref in self.shared + RESIDENT_EXTRAS if ref.endswith(".html")})
+
+    def test_library_excluded_pages_keep_their_title_in_the_shell_manifest(self):
+        """A libraryExclude page is `known` to the shell, so it needs a manifest entry (2026-09-19).
+
+        Until then every reader-side fallback synthesized {title: ref}: ?tool=feedback.html painted
+        "feedback.html" as the page heading, the iframe title and the document title. Only refs
+        with a final catalog entry on this site qualify; an excluded ref the site does not ship
+        must not conjure an entry."""
+        curriculum = copy.deepcopy(self.curriculum)
+        curriculum["libraryExclude"] = [
+            {"ref": "extra.html", "reason": "excluded but shipped"},
+            {"ref": "ghost.html", "reason": "excluded and not shipped anywhere"},
+        ]
+        catalog = _catalog(self.shared + ["extra.html"])
+        payload = build_frontdoor_payload("ms3", curriculum, catalog, REVISION)
+        entries = {entry[1]: entry for group in payload["manifest"].values() for entry in group}
+        self.assertIn("extra.html", entries)
+        self.assertEqual(entries["extra.html"][2], "Title for extra.html")
+        self.assertEqual(entries["extra.html"][3], DEFAULT_GOVERNANCE)
+        self.assertNotIn("ghost.html", entries)
+        placed_refs = {ref for column in payload["curriculum"]["libraryColumns"] for ref in column["refs"]}
+        self.assertNotIn("extra.html", placed_refs, "a manifest entry is identity, not Library placement")
 
     def test_projected_manifest_preserves_each_site_governance_triplet_without_mutating_inputs(self):
         shared_pending = {"status": "pending", "riskKind": "clinical", "riskLevel": "high"}
@@ -336,6 +610,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
         }
         refs.update(ref for addition in curriculum["siteLibrary"]["resident"]["additions"]
                     for ref in addition["refs"])
+        refs.update(week["landingRef"] for week in curriculum["learningPaths"]["ms3"]["weeks"])
         catalog = _catalog(sorted(refs))
         ms3 = build_frontdoor_payload("ms3", curriculum, catalog, REVISION)
         resident = build_frontdoor_payload("resident", curriculum, catalog, REVISION)
@@ -359,6 +634,14 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 83)
         # 93 as of 2026-09-04: +rp-post-event-huddle.html in the resident "Interactive tools" column.
         self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 93)
+        for site, payload, count in (("ms3", ms3, 30), ("resident", resident, 35)):
+            selection = payload["curriculum"]["essentials"]
+            essential_refs = [ref for section in selection for ref in section["refs"]]
+            placed_refs = {ref for column in payload["curriculum"]["libraryColumns"]
+                           for ref in column["refs"]}
+            self.assertEqual(selection, curriculum["essentials"][site])
+            self.assertEqual(len(essential_refs), count)
+            self.assertTrue(set(essential_refs).issubset(placed_refs))
         self.assertEqual(resident_additions, RESIDENT_EXTRAS)
         self.assertTrue(set(RESIDENT_EXTRAS).issubset(resident_placed))
         self.assertTrue(set(RESIDENT_EXTRAS).isdisjoint(resident_excluded))
@@ -481,6 +764,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
             for addition in curriculum["siteLibrary"]["resident"]["additions"]
             for ref in addition["refs"]
         )
+        refs.update(week["landingRef"] for week in curriculum["learningPaths"]["ms3"]["weeks"])
         catalog = _catalog(sorted(refs))
         ms3 = build_frontdoor_payload("ms3", curriculum, catalog, "a" * 40)
         resident = build_frontdoor_payload("resident", curriculum, catalog, "b" * 40)
@@ -510,7 +794,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
 
 
 class ReachableRefsTest(unittest.TestCase):
-    """reachable_refs feeds common.build_search_index; it must equal the manifest."""
+    """Search includes manifest refs except destinations added only for reader identity."""
 
     def test_returns_every_manifest_ref(self):
         payload = {"manifest": {

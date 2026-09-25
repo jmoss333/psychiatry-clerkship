@@ -11,6 +11,7 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const phase = readFileSync(new URL(`${BUILD}/phase_policy.js`, import.meta.url), 'utf8');
 const fdState = readFileSync(new URL(`${BUILD}/frontdoor/fd_state.js`, import.meta.url), 'utf8');
+const readingPlace = readFileSync(new URL(`${BUILD}/frontdoor/fd_reading_place.js`, import.meta.url), 'utf8');
 
 function memStorage() {
   const m = new Map();
@@ -25,15 +26,19 @@ function memStorage() {
 const make = new Function('localStorage', `
   ${phase}
   ${fdState}
+  ${readingPlace}
   return {
     FD_STORE: FD_STORE,
     fdLoad: fdLoad,
     fdSave: fdSave,
     fdProgressDoneMap: fdProgressDoneMap,
     fdProgressToggle: fdProgressToggle,
+    progressWeek: function(state,index){ return fdProgressWeek(state,index); },
     fdRotationWeek: fdRotationWeek,
     fdRotationStartForWeek: fdRotationStartForWeek,
     fdExamCountdown: fdExamCountdown,
+    fdPathExamCountdown: fdPathExamCountdown,
+    fdExamDatePrompt: fdExamDatePrompt,
     fdDailyPick: fdDailyPick,
     fdRingStep: fdRingStep,
     fdActivityDays: fdActivityDays,
@@ -76,17 +81,166 @@ test('fdSave round-trips through fdLoad', () => {
     'the focused preference must overwrite an earlier expanded preference');
 });
 
+test('fdSave retains other allowlisted state while persisting bounded reading places', () => {
+  const ls = memStorage();
+  const { fdSave, fdLoad } = make(ls);
+  const readingPlaces = {};
+  for (let i = 0; i < 51; i++) {
+    readingPlaces[`page-${i}.md`] = { heading: `heading-${i}`, offset: i, updatedAt: i };
+  }
+  assert.equal(fdSave({ role: 'ms3', tab: 'path', viewWeek: 4, scrollPos: 120, readingPlaces }), true);
+  const loaded = fdLoad();
+  assert.equal(loaded.role, 'ms3');
+  assert.equal(loaded.tab, 'path');
+  assert.equal(loaded.viewWeek, 4);
+  assert.equal(loaded.scrollPos, 120);
+  assert.equal(Object.keys(loaded.readingPlaces).length, 50);
+  assert.equal(loaded.readingPlaces['page-0.md'], undefined);
+  assert.deepEqual(loaded.readingPlaces['page-50.md'], {
+    heading: 'heading-50', offset: 50, updatedAt: 50,
+  });
+});
+
+test('fdSave drops malformed and prototype-like reading-place entries before writing', () => {
+  const ls = memStorage();
+  const { fdSave } = make(ls);
+  const readingPlaces = {
+    'good.md': { heading: 'chapter-one', offset: 4, updatedAt: 7 },
+    'bad.md': { heading: '', offset: -2 },
+    'wrong.md': { heading: 'chapter-two', offset: Infinity, updatedAt: 8 },
+  };
+  Object.defineProperty(readingPlaces, '__proto__', {
+    value: { heading: 'injected', offset: 1, updatedAt: 9 }, enumerable: true,
+  });
+  readingPlaces.constructor = { heading: 'injected', offset: 1, updatedAt: 9 };
+  assert.equal(fdSave({ tab: 'today', readingPlaces }), true);
+  assert.deepEqual(JSON.parse(ls.getItem('cw_frontdoor_v1')), {
+    tab: 'today', readingPlaces: {
+      'good.md': { heading: 'chapter-one', offset: 4, updatedAt: 7 },
+    },
+  });
+  assert.equal(fdSave({ tab: 'today', readingPlaces: { 'bad.md': { heading: '', offset: -2 } } }), true);
+  assert.deepEqual(JSON.parse(ls.getItem('cw_frontdoor_v1')), { tab: 'today', readingPlaces: {} });
+});
+
+test('fdSave reports a failed write without changing the previously stored value', () => {
+  const ls = memStorage();
+  const first = make(ls);
+  assert.equal(first.fdSave({ tab: 'path' }), true);
+  const prior = ls.getItem('cw_frontdoor_v1');
+  const failingStorage = {
+    getItem: key => ls.getItem(key),
+    setItem: () => { throw new Error('QuotaExceededError'); },
+  };
+  assert.equal(make(failingStorage).fdSave({ tab: 'today', readingPlaces: {
+    'good.md': { heading: 'chapter-one', offset: 4, updatedAt: 7 },
+  } }), false);
+  assert.equal(ls.getItem('cw_frontdoor_v1'), prior);
+});
+
 test('fdSave persists only whitelisted keys, never done/streak/week', () => {
   const ls = memStorage();
   const { fdSave, fdLoad } = make(ls);
   // done lives in cw_progress_v1, streak in cw_srs_v1, week in cw_rotation_start.
   // Duplicating them here is exactly the desync the spec forbids.
-  fdSave({ role: 'ms3', done: { 'x.md': true }, streak: 9, week: 3 });
+  fdSave({ role: 'ms3', done: { 'x.md': true }, streak: 9, week: 3,
+    careIntentId: 'services' });
   const out = fdLoad();
   assert.equal(out.role, 'ms3');
   assert.equal(out.done, undefined);
   assert.equal(out.streak, undefined);
   assert.equal(out.week, undefined);
+  assert.equal(out.careIntentId, undefined);
+});
+
+test('APP bridge is the only APP choice persisted; reflection, work-task, and practice state stay in memory', () => {
+  const ls = memStorage();
+  const { fdSave, fdLoad } = make(ls);
+  fdSave({ role: 'app', appBridge: 'pmhnp', appActivity: 'initial-evaluation',
+    appInvite: true,
+    appReflection: 'supervisor', appPractice: { pack: { id: 'training-briefing' }, revealed: true,
+      classifications: { 'review-time': 'still-known' }, questionId: 'confirm-owner' } });
+  assert.deepEqual(fdLoad(), { role: 'app', appBridge: 'pmhnp' });
+});
+
+// A resource may recur in the plan; doing its practice once must not complete every week.
+const PRACTICE_INDEX = {
+  byRef: { 'practice.html': { kind: 'tool' }, 'guide.md': { kind: 'read' },
+    'reference.html': { kind: 'tool', rights: true } },
+  weeks: [1, 2, 3].map((n) => ({ n, items: [
+    { ref: 'practice.html', kind: 'tool' }, { ref: 'guide.md', kind: 'read' },
+    { ref: 'reference.html', kind: 'tool', rights: true },
+  ] })),
+};
+
+test('repeated practice completes only the selected week while reading history remains shared', () => {
+  const { fdProgressDoneMap: project, fdProgressToggle: toggle } = make(memStorage());
+  const before = { 'guide.md': { done: true, at: '2026-08-03' },
+    'reference.html': { done: true, at: '2026-08-03' } };
+  const after = toggle(before, 'practice.html', true, atDay(0), PRACTICE_INDEX, 1);
+  assert.equal(project(after, PRACTICE_INDEX, 1)['practice.html'], true);
+  assert.notEqual(project(after, PRACTICE_INDEX, 2)['practice.html'], true);
+  assert.equal(project(after, PRACTICE_INDEX, 2)['guide.md'], true);
+  assert.equal(project(after, PRACTICE_INDEX, 2)['reference.html'], true);
+  assert.equal(before['practice.html'], undefined, 'writes do not mutate their input');
+});
+
+test('old unscoped practice history is preserved without guessing which week it completed', () => {
+  const { fdProgressDoneMap: project, fdProgressToggle: toggle } = make(memStorage());
+  const previous = { done: true, at: '2026-07-02', note: 'keep-existing-field' };
+  const raw = { 'practice.html': previous };
+  assert.equal(project(raw)['practice.html'], true, 'legacy readers still see saved history');
+  for (const n of [1, 2, 3]) assert.notEqual(project(raw, PRACTICE_INDEX, n)['practice.html'], true);
+  const after = toggle(raw, 'practice.html', true, atDay(0), PRACTICE_INDEX, 2);
+  assert.equal(after['practice.html'].note, previous.note);
+  assert.equal(raw['practice.html'].at, '2026-07-02');
+  assert.notEqual(project(after, PRACTICE_INDEX, 1)['practice.html'], true);
+  assert.equal(project(after, PRACTICE_INDEX, 2)['practice.html'], true);
+});
+
+test('undoing one practice week retains other practice weeks and timestamps for activity history', () => {
+  const { fdProgressDoneMap: project, fdProgressToggle: toggle, fdActivityDays: activity } = make(memStorage());
+  const one = toggle({}, 'practice.html', true, atDay(0), PRACTICE_INDEX, 1);
+  const two = toggle(one, 'practice.html', true, atDay(2), PRACTICE_INDEX, 2);
+  const undo = toggle(two, 'practice.html', false, atDay(3), PRACTICE_INDEX, 2);
+  assert.equal(project(undo, PRACTICE_INDEX, 1)['practice.html'], true);
+  assert.notEqual(project(undo, PRACTICE_INDEX, 2)['practice.html'], true);
+  assert.equal(project(two, PRACTICE_INDEX, 2)['practice.html'], true, 'older snapshot remains intact');
+  assert.deepEqual(activity({ progress: two }, atDay(3)), [false, false, false, true, false, true, false]);
+});
+
+test('unscoped browsing can toggle practice history without awarding or erasing weekly practice', () => {
+  const { fdProgressDoneMap: project, fdProgressToggle: toggle } = make(memStorage());
+  for (const week of [null, '1', 0, 99, NaN, 1.5]) {
+    const raw = { 'practice.html': { note: 'keep', practiceWeeks: { 2: { done: true, at: '2026-08-02' } } } };
+    const done = toggle(raw, 'practice.html', true, atDay(0), PRACTICE_INDEX, week);
+    assert.equal(project(done, PRACTICE_INDEX, week)['practice.html'], true);
+    assert.notEqual(project(done, PRACTICE_INDEX, 1)['practice.html'], true);
+    assert.equal(project(done, PRACTICE_INDEX, 2)['practice.html'], true);
+    const undone = toggle(done, 'practice.html', false, atDay(1), PRACTICE_INDEX, week);
+    assert.notEqual(project(undone, PRACTICE_INDEX, week)['practice.html'], true);
+    assert.equal(project(undone, PRACTICE_INDEX, 2)['practice.html'], true);
+    assert.equal(undone['practice.html'].note, 'keep');
+    assert.deepEqual(undone['practice.html'].practiceWeeks, raw['practice.html'].practiceWeeks);
+    assert.equal(raw['practice.html'].done, undefined, 'previous snapshot remains intact');
+  }
+});
+
+test('malformed saved practice values cannot award weekly completion', () => {
+  const { fdProgressDoneMap: project } = make(memStorage());
+  for (const practiceWeeks of [true, [], 'bad', { 1: true }, { 1: { done: 'true' } }]) {
+    assert.notEqual(project({ 'practice.html': { done: true, practiceWeeks } }, PRACTICE_INDEX, 1)['practice.html'], true);
+  }
+  assert.deepEqual(project('bad', PRACTICE_INDEX, 1), {});
+  assert.deepEqual(project([{ done: true }]), {});
+});
+
+test('progress context follows the viewed Path week and the current week on Today', () => {
+  const { progressWeek } = make(memStorage());
+  assert.equal(progressWeek({ tab: 'path', week: 1, viewWeek: 3 }, PRACTICE_INDEX), 3);
+  assert.equal(progressWeek({ tab: 'today', week: 1, viewWeek: 3 }, PRACTICE_INDEX), 1);
+  assert.equal(progressWeek({ tab: 'today', openId: 'practice.html', fromTab: 'path', week: 1, viewWeek: 3 }, PRACTICE_INDEX), 3);
+  assert.equal(progressWeek({ tab: 'path', week: 2, viewWeek: 99 }, PRACTICE_INDEX), 1);
 });
 
 test('rotation week and start derive from explicit path membership', () => {
@@ -261,6 +415,87 @@ test('one day out is singular', () => {
   assert.equal(fdExamCountdown(6, SIX, thu), '· exam in ~1 day');
 });
 
+// ---- whose countdown it is (2026-09-24) ----------------------------------------------
+//
+// fdExamCountdown is arithmetic; fdPathExamCountdown decides whether Today shows it at all. Only
+// the MS3 path ends in a scheduled exam. Before this gate the resident Today read "exam in ~N
+// days" through the last two weeks of a block that has no exam.
+const MS3_PATH = 'ms3-six-week';
+const RES_PATH = 'resident-four-week';
+
+test('the MS3 path shows the countdown exactly as the arithmetic computes it', () => {
+  const { fdExamCountdown, fdPathExamCountdown } = make(memStorage());
+  for (let d = 0; d < 7; d += 1) {
+    for (const w of [4, 5, 6]) {
+      const now = new Date(2026, 7, 10 + d, 9, 0, 0).getTime();
+      assert.equal(fdPathExamCountdown(MS3_PATH, w, SIX, now), fdExamCountdown(w, SIX, now),
+        `week ${w}, day ${d}: the gate must not change the number, only whether it shows`);
+    }
+  }
+  assert.equal(fdPathExamCountdown(MS3_PATH, 6, SIX, new Date(2026, 7, 12, 9, 0, 0).getTime()),
+    '· exam in ~2 days');
+});
+
+test('the resident path shows no countdown without a stored date, in any week, on any day', () => {
+  const { fdPathExamCountdown } = make(memStorage());
+  for (let d = 0; d < 14; d += 1) {
+    for (const w of [1, 2, 3, 4]) {
+      assert.equal(fdPathExamCountdown(RES_PATH, w, FOUR, new Date(2026, 7, 10 + d, 9, 0, 0).getTime()), '');
+    }
+  }
+});
+
+test('a stored date opens the countdown on the resident path; a junk one does not', () => {
+  const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  const ls = memStorage();
+  ls.setItem('cw_shelf_date', '2026-08-21');
+  assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 4, FOUR, wed), '· exam in ~9 days');
+  assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 2, FOUR, wed), '',
+    'the final-two-weeks window still applies once a date is stored');
+  ls.setItem('cw_shelf_date', 'banana');
+  assert.equal(make(ls).fdPathExamCountdown(RES_PATH, 4, FOUR, wed), '',
+    'an unparseable value is no date: phasePolicy and the arithmetic read it the same way');
+});
+
+// ---- Today's exam-date prompt (2026-09-25) --------------------------------------------
+//
+// Without a stored date phasePolicy is 'unset' -- no taper -- and the countdown guesses from the
+// path grid. The date's only home was the settings panel, so fdExamDatePrompt asks for it on
+// Today, on the exam path only, until a PARSEABLE date is stored.
+test('the exam path asks for a date until one is stored, then never again', () => {
+  const now = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  const ls = memStorage();
+  assert.equal(make(ls).fdExamDatePrompt(MS3_PATH, now), 'Exam date', 'no date: ask');
+  ls.setItem('cw_shelf_date', 'banana');
+  assert.equal(make(ls).fdExamDatePrompt(MS3_PATH, now), 'Exam date',
+    'an unparseable value is no date -- phasePolicy reads it the same way, so keep asking');
+  ls.setItem('cw_shelf_date', '2026-09-18');
+  assert.equal(make(ls).fdExamDatePrompt(MS3_PATH, now), '', 'a stored date is an answer');
+  ls.setItem('cw_shelf_date', '2026-08-01');
+  assert.equal(make(ls).fdExamDatePrompt(MS3_PATH, now), '',
+    'a past date is still an answer: the learner set it, and Settings is where to change it');
+});
+
+test('only the exam path asks: other paths and missing ids never show the prompt', () => {
+  const now = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  const { fdExamDatePrompt } = make(memStorage());
+  for (const id of [RES_PATH, '', undefined, null, 'ms3']) {
+    assert.equal(fdExamDatePrompt(id, now), '', `path ${JSON.stringify(id)}`);
+  }
+});
+
+test('the prompt label is audience-neutral', () => {
+  assert.doesNotMatch(make(memStorage()).fdExamDatePrompt(MS3_PATH, Date.now()), AUDIENCE_TOKEN_RE);
+});
+
+test('a missing or unknown path id fails closed', () => {
+  const { fdPathExamCountdown } = make(memStorage());
+  const wed = new Date(2026, 7, 12, 9, 0, 0).getTime();
+  for (const id of [undefined, null, '', 'ms3', 'MS3-six-week']) {
+    assert.equal(fdPathExamCountdown(id, 6, SIX, wed), '', String(id));
+  }
+});
+
 // Scoped to the RETURNED strings, not the file. AUDIENCE_TOKEN_RE bans tokens in
 // user-visible copy — tests/phase-policy.test.mjs:193,200 apply it to label values for
 // the same reason. A whole-file scan would fail on identifiers and comments that never
@@ -429,4 +664,10 @@ test('the day normaliser accepts ms and Y-M-D strings only', () => {
   assert.equal(F2.fdActivityDayIndex(0), null, 'zero is the capsule\'s "unset" value, not epoch day');
   assert.equal(F2.fdActivityDayIndex('yesterday'), null);
   assert.equal(F2.fdActivityDayIndex(null), null);
+});
+
+test('Library view is never a persisted device preference', () => {
+  const {fdSave,fdLoad} = make(memStorage());
+  fdSave({tab:'library',libraryView:'full'});
+  assert.deepEqual(fdLoad(), {tab:'library'});
 });

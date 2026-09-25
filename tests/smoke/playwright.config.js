@@ -32,7 +32,11 @@ const REMOTE = [MS3_URL, RES_URL, FACULTY_URL, SP_INTERVIEW_URL].some(isRemoteTa
 //
 // Keep this list small and production-truthful. Its composition is pinned by
 // tests/canary-scope.test.mjs — widen it deliberately, never as a side effect of a feature PR.
-const CANARY_SHARED_SPECS = ['nav-crawl.spec.js', 'governance-warnings.spec.js'];
+// contrast.spec.js earns its place by the rule above — production CAN be wrong about it in a
+// way a local build cannot. Every other colour guard in this repo reads a FILE; a resolved
+// cascade only exists in a browser, and that is where both 2026-09-10 defects lived (a private
+// palette that never flipped, and an injected block styled through an undefined namespace).
+const CANARY_SHARED_SPECS = ['nav-crawl.spec.js', 'governance-warnings.spec.js', 'contrast.spec.js'];
 const CANARY_MS3_SPECS = [...CANARY_SHARED_SPECS, 'qbank-retired.spec.js'];
 const CANARY_RES_SPECS = [...CANARY_SHARED_SPECS];
 
@@ -75,19 +79,19 @@ export default defineConfig({
     // page.route CANNOT intercept requests once a SW controls the page, which silently breaks
     // every spec that simulates failures via route fulfillment (first casualty: the faculty
     // console's preview-failure spec — its clean-fallback tab registers the SW mid-test).
-    // Block SWs everywhere; the dedicated 'offline' project opts back in below.
+    // Block SWs everywhere; the two dedicated offline projects opt back in below.
     serviceWorkers: 'block',
   },
 
   projects: [
     {
       name: 'nav-ms3',
-      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rounds-prep.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'care-resource-pack.spec.js', 'app-pathway.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rounds-prep.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
     },
     {
       name: 'nav-res',
-      testMatch: ['nav-crawl.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'communication-practice.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rounds-prep.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js'],
+      testMatch: ['nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'care-resource-pack.spec.js', 'app-pathway.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rounds-prep.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: RES_URL },
     },
     // Production-only. See CANARY_SHARED_SPECS above for why these are narrower than nav-*.
@@ -106,6 +110,23 @@ export default defineConfig({
       testMatch: 'lfs-integrity.spec.js',
       use: { ...devices['Desktop Chrome'] },
     },
+    // No baseURL on purpose (the lfs precedent): prototypes are driven over file://, because
+    // that is how a person opens them. The spec blocks the network itself, so this project
+    // needs no server and behaves identically in CI and in a sandbox.
+    {
+      name: 'prototypes',
+      testMatch: 'prototypes.spec.js',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // No baseURL, like 'lfs' and 'prototypes': this spec serves sp-preview/dist itself,
+    // with the response headers read from the preview's own netlify.toml, because the
+    // point is to exercise the page under the Content-Security-Policy it deploys with.
+    // It needs no server from start-local-servers.sh and makes no network call.
+    {
+      name: 'hosted-preview',
+      testMatch: 'hosted-preview-browser.spec.js',
+      use: { ...devices['Desktop Chrome'] },
+    },
     {
       name: 'visual',
       testMatch: 'visual-regression.spec.js',
@@ -122,10 +143,15 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], baseURL: FACULTY_URL },
     },
     {
-      name: 'offline',
+      name: 'offline-ms3',
       testMatch: 'offline.spec.js',
-      // The one project whose subject IS the service worker.
+      // These two projects exercise the service worker emitted for each learner site.
       use: { ...devices['Desktop Chrome'], baseURL: MS3_URL, serviceWorkers: 'allow' },
+    },
+    {
+      name: 'offline-res',
+      testMatch: 'offline.spec.js',
+      use: { ...devices['Desktop Chrome'], baseURL: RES_URL, serviceWorkers: 'allow' },
     },
   ],
 

@@ -6,6 +6,8 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { lfsStubReason } from '../../../tests/_lfs_media.mjs';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const MANIFEST = path.join(
   ROOT,
@@ -53,7 +55,7 @@ function run(command, args, options = {}) {
   });
 }
 
-test('manifest drives both Interview Room runtime assets into a real site build', () => {
+test('manifest drives both Interview Room runtime assets into a real site build', (t) => {
   const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
   const interviewAssets = manifest.toolAssets.filter(([source, destination]) =>
     source.startsWith('_prototypes/sp-interview/') || destination.startsWith('sp-interview.'));
@@ -61,6 +63,10 @@ test('manifest drives both Interview Room runtime assets into a real site build'
   for (const [source] of EXPECTED_ASSETS) {
     assert.equal(fs.existsSync(path.join(ROOT, source)), true, `missing source asset: ${source}`);
   }
+
+  // The manifest half above needs no build and has already run. The rest spawns one.
+  const noBuild = lfsStubReason(ROOT);
+  if (noBuild) return t.skip(noBuild);
 
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'sp-build-contract-'));
   const output = path.join(temporary, 'site');
@@ -83,7 +89,10 @@ test('manifest drives both Interview Room runtime assets into a real site build'
   }
 });
 
-test('both builders emit governance inventories matching their final tools', () => {
+test('both builders emit governance inventories matching their final tools', (t) => {
+  const noBuild = lfsStubReason(ROOT);
+  if (noBuild) return t.skip(noBuild);
+
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'tool-governance-build-'));
   const ms3 = path.join(temporary, 'ms3');
   const resident = path.join(temporary, 'resident');
@@ -102,7 +111,9 @@ test('both builders emit governance inventories matching their final tools', () 
       timeout: 60_000,
     });
     assert.equal(built.status, 0, built.stdout + built.stderr);
-    assertInventory(ms3, 23); // +rotation-curator.html (#377); standalone timeline is the governed Path tab
+    // +rotation-curator.html (#377); standalone timeline is the governed Path tab; 23 -> 22 when the
+    // MS3-only orientation-video tool was retired (2026-09-25).
+    assertInventory(ms3, 22);
     assert.match(
       fs.readFileSync(path.join(ms3, '_headers'), 'utf8'),
       /\/tool-governance\.json\n  Cache-Control: public, max-age=0, must-revalidate/,
@@ -274,7 +285,10 @@ test('static QA accepts preferred and legacy metadata markers but rejects missin
   }
 });
 
-test('resident build removes copied governance output when resident generation fails', () => {
+test('resident build removes copied governance output when resident generation fails', (t) => {
+  const noBuild = lfsStubReason(ROOT);
+  if (noBuild) return t.skip(noBuild);
+
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resident-governance-failure-'));
   const ms3 = path.join(temporary, 'ms3');
   const resident = path.join(temporary, 'resident');
@@ -327,7 +341,7 @@ const SMOKE_LAUNCHER_COMMAND = 'bash tests/smoke/start-local-servers.sh';
 const SMOKE_CONFIGURATION_PATTERN = /\bSMOKE_[A-Z0-9_]+\b/;
 const MANAGED_GATE_ORDER = [
   '- uses: actions/setup-node',
-  'node-version: "20"',
+  'node-version: "22"',
   'run: npm --prefix sp-proxy ci',
   'npm --prefix sp-proxy test',
   'bash _prototypes/sp-interview/tests/run-all.sh',
@@ -636,7 +650,7 @@ function assertSmokeLauncherContract(ci) {
     'npx playwright test --project=faculty-console',
     'npx playwright test --project=lfs',
     'npx playwright test --project=visual',
-    'npx playwright test --project=offline',
+    'npx playwright test --project=offline-ms3 --project=offline-res',
   ];
   let prior = -1;
   for (const command of ordered) {
@@ -734,7 +748,7 @@ test('smoke launcher contract ignores labels and rejects boundary drift', () => 
     'npx playwright test --project=faculty-console',
     'npx playwright test --project=lfs',
     'npx playwright test --project=visual',
-    'npx playwright test --project=offline',
+    'npx playwright test --project=offline-ms3 --project=offline-res',
   ]) {
     const movedProject = ci
       .replace(projectCommand, '')

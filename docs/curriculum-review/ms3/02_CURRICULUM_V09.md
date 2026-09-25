@@ -22,7 +22,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Skip to content Practice Questions
 - Loading question bank…
 
-**Authored clinical strings (228):**
+**Authored clinical strings (146):**
 
 - s toolExtraFromParams passthrough (spa_index.html) — no shell change needed to reach this tool
 - s next step. */ var BLOCK_REQUEST = (function(){ try{ var sp=new URLSearchParams(location.search); if(sp.get(
@@ -58,200 +58,118 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - s progress on Today) and by the session receipt inside a tool (to mark the step that just finished and offer the next one). Injected via /*__BLOCK_STORE__*\/ so the shell and every tool share one implementation. Shape: {v:1, minutes, createdAt, steps:[{kind:
 - , ref, title, min, n?, cat?, done?, doneAt?}]}. A page step is never marked here — its done state is derived from cw_progress_v1 at render time, so ticking the page anywhere counts. A block older than CW_BLOCK_TTL_MS is pruned on load: a plan built for one morning
 - s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
-- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
-- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
-- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
-- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
-- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
-- +encodeURIComponent(String(s.n||1)); if(s.kind===
-- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
-- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
-- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
-- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
-- )) return; var st=document.createElement(
-- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
-- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
-- ); return; }catch(_){ } } try{ location.href=
-- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
-- ) return; cwReceiptWired=true; document.addEventListener(
-- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
-- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
-- ); return; } cwReceiptNavigate(t.getAttribute(
-- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
-- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
-- ){ if(s.blockKind&&typeof blockMarkStep===
-- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
-- ; var stats=s.stats||[]; if(stats.length){ h+=
-- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
-- ; } var reread=s.reread||[]; if(reread.length){ h+=
-- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
-- cw-receipt__tag'+(r.warn?' is-warn':'')+'
-- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
-- cw-receipt__btn is-primary
-- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
-- cw-receipt__btn'+(a.primary?' is-primary':'')+'
-- ; if(!next&&typeof blockClear===
-- ; return {html:h, marked:marked, next:next||null}; } function srsUpdate(item, confidence, correct, twoTierResult){ var s = srsLoad(); var cardId =
-- +item.id; var card = s.cards[cardId]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; var grade = srsGrade(item, confidence, correct, twoTierResult); s.cards[cardId] = applyGrade(card, grade, {fuzzKey:cardId}); /* update aggregate stats */ s.stats.totalReviews = (s.stats.totalReviews||0)+1; if(correct) s.stats.correct=(s.stats.correct||0)+1; s.stats.seen=(s.stats.seen||0)+1; srsSave(s); return grade; } /* ---- queue building ----------------------------------------------------------- */ function buildQueue(items, catFilter, diffFilter, sizeLimit){ var q = items.filter(function(it){ if(catFilter!==
-- && it.category!==catFilter) return false; if(diffFilter!==
-- && String(it.difficulty)!==diffFilter) return false; return true; }); q = shuffle(q); if(sizeLimit!==
-- ) q = q.slice(0, parseInt(sizeLimit,10)||20); return q; } /* Items eligible to serve to learners. Two gates: — Retired items (near-duplicate/redundant per question_bank.schema.json) are NEVER queued. — Un-attested items serve ONLY when the learner opts in via the setup-screen toggle (persisted as cw_qb_drafts_v1). The default pool is faculty-attested items only, and every surface that shows an included draft labels it — see renderMeta() and the .draft-notice callout in renderQuestion(). Policy history, because this has flipped before: the 2026-07-15 decision log recorded "serve drafts, marked" after a04a848 gated to attested-only by ACCIDENT — the pool fell 192->143 with no UI trace, and #284 restored serving. The 2026-08-20 Taplinger response plan (PLAN_Taplinger_Feedback_and_Therapy_Library_2026-08-20.md §A2 / WP-37, urgency per FEEDBACK_IMPACT_Taplinger_Verbatim_2026-08-20.md §3) reverses that decision deliberately now that an external course page links to the site: attested-only BY DEFAULT, drafts opt-in and labelled. Unlike a04a848, this flip is visible — the setup screen states the exclusion, shows the excluded count, and carries the toggle. Fail-safe direction: only an explicit status===
-- reaches the default pool, so a new or misspelled status is withheld rather than served as reviewed (mirrors the label logic, which marks anything not attested). `status` is still the source of truth; nothing here mutates it, and attestation stays server-side. */ function includeDrafts(){ return lsGet(
-- )===true; } function setIncludeDrafts(on){ lsSet(
-- , !!on); } function activeItems(){ var inc = includeDrafts(); return (BANK && BANK.items ? BANK.items : []).filter(function(it){ if(it.retired) return false; if(!inc && it.status!==
-- ) return false; return true; }); } /* Focus-mode presets, built from the learner
-- s cw_qb_drafts_v1 opt-in is set (see the policy comment above). */ function missedItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.correct === false; }); } function certWrongItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.certWrong === true; }); } /* Due-first serving. This tool has WRITTEN QB# cards to cw_srs_v1 since SRS seeding landed, but nothing ever read the schedule — Daily Review serves TOPIC# cards only (the false "resurfaces in Daily Review" copy was corrected in #344). This makes the schedule real: cards that have come due return at the FRONT of the next practice session here, most-overdue first. Routed through activeItems(), so a since-retired item can never resurface no matter what its card says. */ function dueQbItems(){ var s = srsLoad(); if(!s || !s.cards) return []; var now = Date.now(), due = {}; Object.keys(s.cards).forEach(function(id){ if(id.indexOf(
-- ) !== 0) return; var c = s.cards[id]; if(c && typeof c.due ===
-- && c.due <= now) due[id.slice(3)] = c.due; }); return activeItems() .filter(function(it){ return Object.prototype.hasOwnProperty.call(due, it.id); }) .sort(function(a, b){ return due[a.id] - due[b.id]; }); } /* ---- rendering helpers -------------------------------------------------------- */ function diffDots(n){ var h=
-- ; for(var i=1;i<=3;i++) h+=
-- diff-dot'+(i<=n?' on':'')+'
-- ; } function renderSetup(){ var items = activeItems(); var cats = {}; items.forEach(function(it){ cats[it.category]=1; }); var catOpts =
-- ; Object.keys(CAT_LABELS).forEach(function(k){ if(cats[k]) catOpts+=
-- ; }); var total = items.length; /* bankDraftCount is toggle-independent (all non-retired, non-attested items in the bank); draftCount is how many of those are in the SERVED pool right now. The note renders whenever the bank has drafts, in whichever wording matches the toggle — excluded-by-default (off) or labelled-in-pool (on). */ var draftsOn = includeDrafts(); var bankDraftCount = (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired && it.status!==
-- ; }).length; var draftCount = draftsOn ? bankDraftCount : 0; var missedCount = missedItems().length; var certWrongCount = certWrongItems().length; var dueCount = dueQbItems().length; return
-- ; } function renderMeta(item){ var h =
-- ; h += diffDots(item.difficulty); if(item.type===
-- ; /* The glyph is decorative — the wording carries the meaning, so the label never depends on colour or on the icon being announced. */ if(item.status!==
-- ; return h; } function renderConfidence(disabled){ var ds = disabled ?
-- ; } function renderOptions(item, state){ /* state:
-- — locked after answer. Letters come from DISPLAY position, not the authored key: 46 of 47 draft items are keyed A, so rendering opt.key after the shuffle both scrambled the letter sequence and let "A." follow the correct answer around the screen. data-key still carries the authored key for answer logic. A locked re-render reuses the session
-- Select the best rationale — then see your full feedback.
-- <button class="opt" data-tier2key="
-- ✓ Right answer — shaky reasoning
-- · Confidently wrong — flagged for review
-- Right answer, wrong reason — your SRS interval is capped at Hard , so this item comes due again soon and will serve at the front of a future session here. The correct rationale:
-- <a class="fb-link" href="
-- target="_blank" rel="noopener"
-- ⚠ Draft — not yet faculty-reviewed.
-- This question and its explanation have not been checked by faculty. Practise with it,
-- but verify anything you would act on against a primary source.
-- s own. */ var certWrongList = responses.filter(function(r){return r.confidence===
-- &&!r.correct;}); var certWrong = certWrongList.length; var guessRight = responses.filter(function(r){return r.confidence===
-- &&r.correct;}).length; var wrong = total-correct; var headline = correct+
-- )); var sub = certWrong ?
-- ); var reread = []; responses.forEach(function(r){ if(r.correct && r.confidence!==
-- ) return; if(reread.length>=5) return; var chosen = (r.item.options||[]).filter(function(o){ return o && o.key===r.key; })[0]; var trap = chosen && chosen.trap ? chosen.trap : null; var trapName = trap && trap.name ? trap.name : null; var page = (r.item.pages&&r.item.pages[0]) || null; reread.push({ tag: r.correct ?
-- ), warn: !r.correct && r.confidence===
-- , title: String(r.item.stem||
-- ), ref: page, refTitle: page ? pageTitle(page) : null }); }); var stats = [ {label:
-- , value:String(certWrong), tone:certWrong?
-- , value:String(guessRight)}, {label:
-- , value:String(wrong), tone:wrong?
-- } ]; var receipt = cwReceipt({ /* Only a session the block itself opened (?block=1) may mark the block
-- Calibration gap: You were certain
-- Miscalibration on the wards is more dangerous than ignorance —
-- replay your confidently-wrong items from this summary.
-- s own link label when it points at that page, else a readable form of the file name (the tool has no nav registry of its own). */ function pageTitle(file){ var f=String(file||
-- ); return f.replace(/^pg_/,
-- ).replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* ---- DOM helpers -------------------------------------------------------------- */ var root = document.getElementById(
-- ); var progLabel = document.getElementById(
-- ); var qprog = document.getElementById(
-- ); var qprogFill = document.getElementById(
-- ); function setRoot(html){ root.innerHTML=html; } function updateProgress(){ if(!SESSION) return; var idx=SESSION.idx, total=SESSION.queue.length; if(total===0) return; var pct=Math.round((idx/total)*100); progLabel.textContent =
-- +total; qprog.hidden=false; qprogFill.style.width=pct+
-- ; } /* ---- app state transitions ---------------------------------------------------- */ function showSetup(){ SESSION=null; progLabel.textContent=
-- ; qprog.hidden=true; setRoot(renderSetup()); bindSetup(); } function bindSetup(){ var catSel=document.getElementById(
-- ); var diffSel=document.getElementById(
-- ); var sizeSel=document.getElementById(
-- ); var countEl=document.getElementById(
-- ); var startBtn=document.getElementById(
-- ); var redoMissesBtn=document.getElementById(
-- ); var certWrongBtn=document.getElementById(
-- ); var dueBtn=document.getElementById(
-- ); function updateCount(){ var cat=catSel?catSel.value:
-- , diff=diffSel?diffSel.value:
-- ; var n = activeItems().filter(function(it){ if(cat!==
-- &&it.category!==cat) return false; if(diff!==
-- &&String(it.difficulty)!==diff) return false; return true; }).length; var size=sizeSel?sizeSel.value:
-- )?n:Math.min(n,parseInt(size,10)||20); if(countEl) countEl.textContent=(showing===n?n:showing+
-- ; if(startBtn) startBtn.disabled=(n===0); } if(catSel) catSel.addEventListener(
-- ,updateCount); if(diffSel) diffSel.addEventListener(
-- ,updateCount); if(sizeSel) sizeSel.addEventListener(
-- ,updateCount); updateCount(); if(startBtn) startBtn.addEventListener(
-- ,function(){ var cat=catSel?catSel.value:
-- ; var diff=diffSel?diffSel.value:
-- ; var size=sizeSel?sizeSel.value:
-- ; startSession(cat,diff,size); }); if(redoMissesBtn) redoMissesBtn.addEventListener(
-- ,function(){ startSessionWithQueue(missedItems()); }); if(certWrongBtn) certWrongBtn.addEventListener(
-- ,function(){ startSessionWithQueue(certWrongItems()); }); /* Deliberately NOT startSessionWithQueue: due cards keep most-overdue-first order rather than being shuffled — the schedule is the point of this focus mode. */ if(dueBtn) dueBtn.addEventListener(
-- ,function(){ beginSession(dueQbItems()); }); /* Draft opt-in (WP-37). Persist, then re-render the whole setup so every count (pool size, match count, focus-mode buttons) reflects the new pool; refocus the toggle so keyboard users are not dropped at the top of the re-rendered screen. */ var draftToggle=document.getElementById(
-- ); if(draftToggle) draftToggle.addEventListener(
-- ,function(){ setIncludeDrafts(draftToggle.checked); showSetup(); var t=document.getElementById(
-- ); if(t) t.focus(); }); } function startSession(catFilter, diffFilter, sizeLimit){ /* Due cards matching the same filters serve FIRST (most-overdue first, unshuffled — priority order is the point); the shuffled fresh selection fills the remainder of the size limit. A due card never appears twice in one queue. */ var due = dueQbItems().filter(function(it){ if(catFilter!==
-- && String(it.difficulty)!==diffFilter) return false; return true; }); var cap = (sizeLimit===
-- ) ? Infinity : (parseInt(sizeLimit,10)||20); due = due.slice(0, cap===Infinity ? due.length : cap); var dueIds = {}; due.forEach(function(it){ dueIds[it.id]=1; }); var rest = buildQueue(activeItems().filter(function(it){ return !dueIds[it.id]; }), catFilter, diffFilter,
-- ); if(cap!==Infinity) rest = rest.slice(0, Math.max(0, cap-due.length)); beginSession(due.concat(rest)); } /* Focus-mode entry point: starts the exact queue passed in (shuffled), bypassing the category/difficulty/size filters entirely. */ function startSessionWithQueue(queue){ beginSession(shuffle(queue)); } function beginSession(queue){ if(!queue.length){ setRoot(
-- ); return; } SESSION = { queue: queue, idx: 0, responses: [], confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
-- /* conf | tier2 | feedback */ }; showQuestion(); } function showReviewItem(item){ SESSION = { queue:[item], idx:0, responses:[], confidence:null, tier1Key:null, displayOrder:[], tier2DisplayOrder:[], state:
-- , reviewOnly:true }; showQuestion(); postReviewItemStatus(
-- ); } /* ---- session capsule (cw_sess_v1) — question-boundary checkpoint + resume -------- Written ONLY from advance(), and only when there is a next question to show — never mid-question. showQuestion() resets confidence/tier1Key/state/displayOrder/ tier2DisplayOrder on every entry (the option shuffles aren
-- s queueIds filtered through activeItems() — an id removed or retired by a deploy between checkpoint and resume is silently dropped rather than crashing the restore (queueIds order is preserved). idx is RE-DERIVED by counting how many of the front (pre-checkpoint) queueIds survive that same filter, rather than trusted verbatim: trusting the stored idx directly would silently skip a still-unanswered question whenever a deploy retires/removes an item positioned BEFORE the checkpointed idx (the raw idx overshoots once the queue is filtered shorter). This exploits the invariant that responses.length === idx at every checkpoint — advance() checkpoints immediately after commitResponse() pushes a response, and this app has no skip-without-answering path, so counting surviving front ids gives the correct new position. Reconstructed responses are built from that identical surviving-front-id set, so the resumed summary population can never disagree with the resumed queue position. Absent/expired capsule (sessLoad owns load-validate-expire) or an empty resulting queue falls through to a normal setup start. Returns true iff a session was actually resumed. */ function tryResumeSession(){ var cap = sessLoad(
-- , Date.now()); if(!cap || !cap.queueIds || !cap.queueIds.length) return false; var idMap = {}; activeItems().forEach(function(it){ idMap[it.id]=it; }); var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean); if(!queue.length) return false; var capIdx = (typeof cap.idx===
-- && cap.idx>=0) ? cap.idx : 0; var survivingFrontIds = cap.queueIds.slice(0, capIdx).filter(function(id){ return !!idMap[id]; }); var idx = survivingFrontIds.length; var respById = {}; (cap.responses||[]).forEach(function(r){ respById[r.id]=r; }); var responses = survivingFrontIds.map(function(id){ var r = respById[id]; if(!r) return null; return { item: idMap[id], key: null, tier2Key: null, confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at }; }).filter(Boolean); SESSION = { queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state:
-- }; showQuestion(); return true; } function showQuestion(){ if(!SESSION || SESSION.idx >= SESSION.queue.length){ showSummary(); return; } SESSION.confidence = null; SESSION.tier1Key = null; SESSION.state =
-- ; SESSION.displayOrder = []; SESSION.tier2DisplayOrder = []; updateProgress(); var item = SESSION.queue[SESSION.idx]; setRoot(renderQuestion(item)); bindQuestion(item); } function bindQuestion(item){ /* confidence buttons */ var confBtns = root.querySelectorAll(
-- ); var confHint = document.getElementById(
-- ); confBtns.forEach(function(btn){ btn.addEventListener(
-- ,function(){ if(SESSION.state!==
-- ) return; confBtns.forEach(function(b){ b.classList.remove(
-- ); }); btn.classList.add(
-- ); SESSION.confidence = btn.getAttribute(
-- ); if(confHint) confHint.classList.remove(
-- ); }); }); /* tier1 option buttons */ var optBtns = root.querySelectorAll(
-- ); optBtns.forEach(function(btn){ btn.addEventListener(
-- ) return; if(!SESSION.confidence){ if(confHint) confHint.classList.add(
-- ); /* briefly shake the confidence section */ var cs=root.querySelector(
-- ); if(cs){ cs.style.outline=
-- ; setTimeout(function(){cs.style.outline=
-- ;},600); } return; } var key = btn.getAttribute(
-- ); onTier1Answer(item, key); }); }); } function onTier1Answer(item, key){ SESSION.tier1Key = key; var isCorrect = item.options.some(function(o){ return o.key===key && o.c; }); /* lock tier1 options and highlight */ var optBtns = root.querySelectorAll(
-- ); optBtns.forEach(function(btn){ btn.disabled = true; btn.classList.add(
-- ); var k = btn.getAttribute(
-- ); if(k===key && isCorrect) btn.classList.add(
-- ); else if(k===key && !isCorrect) btn.classList.add(
-- ); else if(item.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
-- ); }); /* lock confidence buttons */ root.querySelectorAll(
-- ).forEach(function(b){ b.disabled=true; }); if(item.type===
-- && isCorrect){ /* show tier2 before feedback */ SESSION.state =
-- ; var qcard = root.querySelector(
-- ); if(qcard){ var t2html = renderTier2(item); qcard.insertAdjacentHTML(
-- , t2html); bindTier2(item); } } else { /* for wrong tier1 on two-tier, still show tier2 (spec: "tier 2 still shown and answered — the feedback teaches against both selections") */ if(item.type===
-- && !isCorrect){ SESSION.state =
-- ; var qcard2 = root.querySelector(
-- ); if(qcard2){ var t2html2 = renderTier2(item); qcard2.insertAdjacentHTML(
-- , t2html2); bindTier2(item); } } else { /* sba / relational: show feedback directly */ SESSION.state =
-- ; var twoTierResult = null; commitResponse(item, key, null, SESSION.confidence, isCorrect, twoTierResult); showFeedback(item, key, null, SESSION.confidence, isCorrect, null); } } } function bindTier2(item){ var t2Btns = root.querySelectorAll(
-- ); t2Btns.forEach(function(btn){ btn.addEventListener(
-- ) return; var tier2Key = btn.getAttribute(
-- ); onTier2Answer(item, tier2Key); }); }); } function onTier2Answer(item, tier2Key){ SESSION.state =
-- ; var tier1Key = SESSION.tier1Key; var tier1Correct = item.options.some(function(o){ return o.key===tier1Key && o.c; }); var tier2Correct = item.tier2.options.some(function(o){ return o.key===tier2Key && o.c; }); /* lock tier2 options + highlight */ var t2Btns = root.querySelectorAll(
-- ); t2Btns.forEach(function(btn){ btn.disabled=true; btn.classList.add(
-- ); var k=btn.getAttribute(
-- ); if(k===tier2Key && tier2Correct) btn.classList.add(
-- ); else if(k===tier2Key && !tier2Correct) btn.classList.add(
-- ); else if(item.tier2.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add(
-- ); }); /* scoring: both right = correct; right answer/wrong reason = shaky; wrong tier1 = wrong */ var correct, twoTierResult; if(!tier1Correct){ correct=false; twoTierResult=
-- ; } else if(tier2Correct){ correct=true; twoTierResult=
-- ; } else { correct=true; twoTierResult=
-- ; /* right answer, wrong reason — cap at Hard */ } commitResponse(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); showFeedback(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); } function commitResponse(item, key, tier2Key, confidence, correct, twoTierResult){ if(SESSION && SESSION.reviewOnly){ SESSION.responses.push({ item:item, key:key, tier2Key:tier2Key, confidence:confidence, correct:correct, twoTierResult:twoTierResult, ts:Date.now() }); return; } var rec = qbRecord(item, key, tier2Key, confidence, correct, twoTierResult); srsUpdate(item, confidence, correct, twoTierResult); SESSION.responses.push({ item: item, key: key, tier2Key: tier2Key, confidence: confidence, correct: correct, twoTierResult: twoTierResult, ts: rec.ts }); } function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){ var fbHtml = getFeedbackHtml(item, key, tier2Key, confidence, correct, twoTierResult); var qcard = root.querySelector(
-- ); if(qcard){ /* remove any tier2 section first if it already exists */ var existing = qcard.querySelector(
-- ); if(existing) existing.parentNode.removeChild(existing); qcard.insertAdjacentHTML(
-- , fbHtml); var _live=document.getElementById(
-- ); if(_live){ _live.textContent = (twoTierResult===
-- ); } /* scroll feedback into view */ var fb = document.getElementById(
-- ); if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:
-- }); },80); } if(SESSION && SESSION.reviewOnly) return; /* bind spa nav links */ root.querySelectorAll(
-- ).forEach(function(a){ a.addEventListener(
-- ,function(ev){ ev.preventDefault(); var href=a.getAttribute(
-- ; try{ window.parent.postMessage({type:
-- ); } catch(_){ window.location.href=href; } }); }); /* next button */ var nextBtn = document.getElementById(
-- ); if(nextBtn) nextBtn.addEventListener(
-- , advance); } function advance(){ if(!SESSION) return; SESSION.idx++; /* Checkpoint at this question boundary only when there is a next question to resume into — completion is handled by showSummary()
-- s own button (data-cw-receipt-home); the receipt snippet routes it through the shell
-- This question is not present on the current deployment
-- Could not load question bank.
-- question_bank.json was not found alongside this tool.
-- Make sure the build ran successfully and question_bank.json is at the site root.
+- s parameters; ordinary practice leaves a saved block alone. Pure apart from those two writes: returns {html, marked, next}. Copy is audience-neutral (no MS3/clerkship/student/shelf/resident tokens) because it ships to both sites. Navigation inside a tool iframe goes through the shell
+- > Session receipt '; if(s.context) h+=' '+cwReceiptEsc(s.context)+' '; h+=' '; if(s.headline) h+='<h2 class=
+- >'+cwReceiptEsc(s.headline)+' '; if(s.sub) h+='<p class=
+- >'+cwReceiptEsc(s.sub)+' '; var stats=s.stats||[]; if(stats.length){ h+='<div class=
+- >'; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone==='warn'?' is-warn':(st.tone==='good'?' is-good':''); h+='<div class=
+- >'+cwReceiptEsc(st.label)+' <span class=
+- >'+cwReceiptEsc(st.value)+' '; } h+=' '; } var reread=s.reread||[]; if(reread.length){ h+='<div class=
+- >Worth a second look '; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+='<div class=
+- >'; if(r.tag) h+='<span class=
+- >'+cwReceiptEsc(r.tag)+' '; h+='<span style=
+- >'+cwReceiptEsc(r.title)+' '; if(r.note) h+='<span class=
+- >'+cwReceiptEsc(r.note)+' '; if(r.ref) h+='<a class=
+- data-cw-receipt-next data-cw-receipt-ref=
+- >Re-read: '+cwReceiptEsc(r.refTitle||r.ref)+' → '; h+=' '; } } if(marked){ var practiceWeek=cwReceiptPracticeWeek(); h+='<div class=
+- >✓ '+(practiceWeek?'Week '+practiceWeek+' practice recorded:':'Activity recorded:')+' '+cwReceiptEsc(s.refTitle||s.ref)+'. '; } h+='<div class=
+- >'; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+='<button type=
+- >Next in your block: '+cwReceiptEsc(next.title)+(next.min?' ~'+cwReceiptEsc(next.min)+' min ':'')+' '; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+='<button type=
+- ':'')+'>'+cwReceiptEsc(a.label)+' '; } } h+='<button type=
+- data-cw-receipt-home'+(s.homeId?' id=
+- ':'')+'>Back to Today '; if(progress){ h+='<span class=
+- >'+(next?('Block · '+progress.done+' of '+progress.total+' done'):('Block complete · '+progress.total+' of '+progress.total+' done'))+' '; if(!next&&typeof blockClear==='function') blockClear(); } h+=' '; return {html:h, marked:marked, next:next||null}; } function srsUpdate(item, confidence, correct, twoTierResult){ var s = srsLoad(); var cardId = 'QB#'+item.id; var card = s.cards[cardId]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; var grade = srsGrade(item, confidence, correct, twoTierResult); s.cards[cardId] = applyGrade(card, grade, {fuzzKey:cardId}); /* update aggregate stats */ s.stats.totalReviews = (s.stats.totalReviews||0)+1; if(correct) s.stats.correct=(s.stats.correct||0)+1; s.stats.seen=(s.stats.seen||0)+1; srsSave(s); return grade; } /* ---- queue building ----------------------------------------------------------- */ function buildQueue(items, catFilter, diffFilter, sizeLimit){ var q = items.filter(function(it){ if(catFilter!=='all' && it.category!==catFilter) return false; if(diffFilter!=='all' && String(it.difficulty)!==diffFilter) return false; return true; }); q = shuffle(q); if(sizeLimit!=='all') q = q.slice(0, parseInt(sizeLimit,10)||20); return q; } /* Items eligible to serve to learners. Two gates: — Retired items (near-duplicate/redundant per question_bank.schema.json) are NEVER queued. — Un-attested items serve ONLY when the learner opts in via the setup-screen toggle (persisted as cw_qb_drafts_v1). The default pool is faculty-attested items only, and every surface that shows an included draft labels it — see renderMeta() and the .draft-notice callout in renderQuestion(). Policy history, because this has flipped before: the 2026-07-15 decision log recorded
+- after a04a848 gated to attested-only by ACCIDENT — the pool fell 192->143 with no UI trace, and #284 restored serving. The 2026-08-20 Taplinger response plan (PLAN_Taplinger_Feedback_and_Therapy_Library_2026-08-20.md §A2 / WP-37, urgency per FEEDBACK_IMPACT_Taplinger_Verbatim_2026-08-20.md §3) reverses that decision deliberately now that an external course page links to the site: attested-only BY DEFAULT, drafts opt-in and labelled. Unlike a04a848, this flip is visible — the setup screen states the exclusion, shows the excluded count, and carries the toggle. Fail-safe direction: only an explicit status==='attested' reaches the default pool, so a new or misspelled status is withheld rather than served as reviewed (mirrors the label logic, which marks anything not attested). `status` is still the source of truth; nothing here mutates it, and attestation stays server-side. */ function includeDrafts(){ return lsGet('cw_qb_drafts_v1')===true; } function setIncludeDrafts(on){ lsSet('cw_qb_drafts_v1', !!on); } function activeItems(){ var inc = includeDrafts(); return (BANK && BANK.items ? BANK.items : []).filter(function(it){ if(it.retired) return false; if(!inc && it.status!=='attested') return false; return true; }); } /* Focus-mode presets, built from the learner's own cw_qb_v1 history. Both start from activeItems(), so a leftover record for a since-retired item (or one dropped from the bank entirely) can never surface here — the item has to still be servable today. That same routing applies the draft rule: a record for a draft item surfaces only while the learner's cw_qb_drafts_v1 opt-in is set (see the policy comment above). */ function missedItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.correct === false; }); } function certWrongItems(){ var records = qbLoad(); return activeItems().filter(function(it){ var rec = records[it.id]; return !!rec && rec.certWrong === true; }); } /* Due-first serving. This tool has WRITTEN QB# cards to cw_srs_v1 since SRS seeding landed, but nothing ever read the schedule — Daily Review serves TOPIC# cards only (the false
+- copy was corrected in #344). This makes the schedule real: cards that have come due return at the FRONT of the next practice session here, most-overdue first. Routed through activeItems(), so a since-retired item can never resurface no matter what its card says. */ function dueQbItems(){ var s = srsLoad(); if(!s || !s.cards) return []; var now = Date.now(), due = {}; Object.keys(s.cards).forEach(function(id){ if(id.indexOf('QB#') !== 0) return; var c = s.cards[id]; if(c && typeof c.due === 'number' && c.due <= now) due[id.slice(3)] = c.due; }); return activeItems() .filter(function(it){ return Object.prototype.hasOwnProperty.call(due, it.id); }) .sort(function(a, b){ return due[a.id] - due[b.id]; }); } /* ---- rendering helpers -------------------------------------------------------- */ function diffDots(n){ var h='<div class=
+- >'; for(var i=1;i<=3;i++) h+='<span class=
+- > '; return h+' '; } function renderSetup(){ var items = activeItems(); var cats = {}; items.forEach(function(it){ cats[it.category]=1; }); var catOpts = '<option value=
+- >All categories '; Object.keys(CAT_LABELS).forEach(function(k){ if(cats[k]) catOpts+='<option value=
+- >'+CAT_LABELS[k]+' '; }); var total = items.length; /* bankDraftCount is toggle-independent (all non-retired, non-attested items in the bank); draftCount is how many of those are in the SERVED pool right now. The note renders whenever the bank has drafts, in whichever wording matches the toggle — excluded-by-default (off) or labelled-in-pool (on). */ var draftsOn = includeDrafts(); var bankDraftCount = (BANK && BANK.items ? BANK.items : []).filter(function(it){ return !it.retired && it.status!=='attested'; }).length; var draftCount = draftsOn ? bankDraftCount : 0; var missedCount = missedItems().length; var certWrongCount = certWrongItems().length; var dueCount = dueQbItems().length; return '<div class=
+- >' +' Practice bank ' +'<p class=
+- >'+total+' items across 12 categories. Select filters, then start. ' +'Retired near-duplicates are excluded. ' +(bankDraftCount ? '<p class=
+- >⚠ Draft — not yet faculty-reviewed ' +(draftsOn ? draftCount+' of these '+total+' questions carry this label. They have not yet been ' +'reviewed by faculty, so treat their answers and explanations as unverified — check them ' +'against a primary source before relying on them clinically. Every draft is labelled again ' +'on the question itself. ' : bankDraftCount+' draft question'+(bankDraftCount===1?' is':'s are')+' not served by default — ' +'this bank serves only faculty-reviewed questions unless you include drafts. ') +'<label class=
+- '+(draftsOn?' checked':'')+'> ' +'Include draft questions ' : '') +'<div class=
+- >Focus modes ' +'<p class=
+- >Jump straight into a targeted set, skipping the filters below. ' +'<div class=
+- '+(dueCount?'':' disabled')+'>Due for review ('+dueCount+') ' +'<button class=
+- '+(missedCount?'':' disabled')+'>Redo my misses ('+missedCount+') ' +'<button class=
+- '+(certWrongCount?'':' disabled')+'>Confidently wrong ('+certWrongCount+') ' +' ' +' ' +'<div class=
+- >'+catOpts+' ' +'<div class=
+- >All levels <option value=
+- >1 — Recognition <option value=
+- >2 — Shelf-standard <option value=
+- >3 — Stretch ' +'<div class=
+- >Session size <select id=
+- >10 questions <option value=
+- selected>20 questions <option value=
+- >All matching ' +' ' +'<div class=
+- >Start practice ' +'<span class=
+- >'+total+' questions match ' +' ' +' '; } function renderMeta(item){ var h = '<div class=
+- >'+esc(CAT_LABELS[item.category]||item.category)+' '; h += diffDots(item.difficulty); if(item.type==='two-tier') h+='<span class=
+- >Two-tier '; if(item.type==='relational') h+='<span class=
+- >Relational '; if(item.hy) h+='<span class=
+- >★ High-yield '; /* The glyph is decorative — the wording carries the meaning, so the label never depends on colour or on the icon being announced. */ if(item.status!=='attested') h+='<span class=
+- >⚠ Draft — not yet faculty-reviewed '; h += ' '; return h; } function renderConfidence(disabled){ var ds = disabled ? ' disabled' : ''; return '<div class=
+- >Your confidence — select before answering ' +'<div class=
+- '+ds+'>Guess <small style=
+- >uncertain ' +'<button class=
+- '+ds+'>Likely <small style=
+- >confident ' +'<button class=
+- '+ds+'>Certain <small style=
+- >no doubt ' +' ' +'<div class=
+- >Select your confidence level first. ' +' '; } function renderOptions(item, state){ /* state: 'active'|'locked' — locked after answer. Letters come from DISPLAY position, not the authored key: 46 of 47 draft items are keyed A, so rendering opt.key after the shuffle both scrambled the letter sequence and let
+- follow the correct answer around the screen. data-key still carries the authored key for answer logic. A locked re-render reuses the session's stored order — reshuffling at lock would visibly jump the options mid-question. */ var displayOrder = (state==='locked' && SESSION.displayOrder && SESSION.displayOrder.length) ? SESSION.displayOrder : shuffle(item.options.slice()); SESSION.displayOrder = displayOrder; var h = '<div class=
+- >'; displayOrder.forEach(function(opt, i){ var letter = String.fromCharCode(65+i); var cls = 'opt'; if(state==='locked') cls += ' locked'; h += '<button class=
+- ' + (state==='locked'?'disabled ':'')+' aria-label=
+- >'+letter+'. '+esc(opt.t) + ' '; }); h += ' '; return h; } function renderTier2(item){ var t2 = item.tier2; var displayOrder = shuffle(t2.options.slice()); SESSION.tier2DisplayOrder = displayOrder; var h = '<div class=
+- >Now the reason ' +'<p class=
+- >'+esc(t2.q)+' ' +'<p class=
+- >Select the best rationale — then see your full feedback. ' +'<div class=
+- >'; displayOrder.forEach(function(opt, i){ var letter = String.fromCharCode(65+i); h += '<button class=
+- >'+letter+'. '+esc(opt.t)+' '; }); h += ' '; return h; } function getFeedbackHtml(item, selectedKey, tier2Key, confidence, correct, twoTierResult){ var reviewOnly = SESSION && SESSION.reviewOnly; var h = '<div class=
+- >'; /* verdict */ var verdClass, verdText; if(twoTierResult==='shaky'){ verdClass='shaky'; verdText='✓ Right answer — shaky reasoning'; } else if(correct){ verdClass='correct'; verdText='✓ Correct'; if(confidence==='certain') verdText+=' · Nailed it'; else if(confidence==='guess') verdText+=' · Lucky — review soon'; } else { verdClass='wrong'; verdText='✗ Incorrect'; if(confidence==='certain') verdText+=' · Confidently wrong — flagged for review'; } h += '<div class=
+- >'+verdText+' '; /* trap feedback for wrong answers */ if(!correct){ var wrongOpt = item.options.filter(function(o){return o.key===selectedKey;})[0]; if(wrongOpt&&wrongOpt.trap){ h += '<div class=
+- >You fell for: '+esc(wrongOpt.trap.name)+' ' +'<div class=
+- >'+esc(wrongOpt.trap.note)+' ' +' '; } /* reveal correct option — letter must match what the learner SAW (display position), not the authored key */ var correctOpt = item.options.filter(function(o){return o.c;})[0]; if(correctOpt){ var cIdx = (SESSION.displayOrder||[]).indexOf(correctOpt); var cLetter = cIdx>=0 ? String.fromCharCode(65+cIdx) : correctOpt.key; h += '<div class=
+- >Correct answer ' + ' '+esc(cLetter)+'. '+esc(correctOpt.t)+' '; } } /* shaky reason feedback */ if(twoTierResult==='shaky'){ var correctT2 = item.tier2.options.filter(function(o){return o.c;})[0]; h += '<div class=
+- >Right answer, wrong reason — your SRS interval is capped at Hard , so this item comes due again soon and will serve at the front of a future session here. The correct rationale: '+esc(correctT2?correctT2.t:'—')+' '; h += '<div class=
+- >Why that rationale '+esc(item.tier2.why)+' '; } /* standard why / pearl / evidence */ h += '<div class=
+- >Why '+esc(item.why)+' '; h += '<div class=
+- >Pearl '+esc(item.pearl)+' '; h += '<div class=
+- >Source '+esc(item.evidence)+' '; /* deep link */ if(!reviewOnly && item.link&&item.link.href){ var linkHref = item.link.href; /* route through SPA shell if running inside iframe */ var isSPA = (window.self!==window.top); if(isSPA && linkHref.indexOf('?page=')===-1 && linkHref.indexOf('?tool=')===-1){ linkHref = '?tool='+encodeURIComponent(linkHref); } h += '<a class=
+- ')+'>' + esc(item.link.label||'Continue reading')+(isSPA?'':' →')+' '; } if(!reviewOnly){ h += '<div class=
+- >Next question → ' + ' '; } h += ' '; return h; } /* Un-attested items are served (2026-07-15 decision) but never served silently: the meta chip above marks them at a glance, and this callout states plainly what
+- means before the learner reads the stem. role=
+- so it is reachable as its own region and is not mistaken for part of the question. */ function renderDraftNotice(item){ if(item.status==='attested') return ''; return '<div class=
+- >⚠ Draft — not yet faculty-reviewed. ' +'This question and its explanation have not been checked by faculty. Practise with it, ' +'but verify anything you would act on against a primary source.' +' '; } function renderQuestion(item){ var h = '<div class=
+- >'; h += renderMeta(item); h += renderDraftNotice(item); h += '<div class=
+- >'; if(item.type==='relational'&&item.subtype){ h += '<span class=
+- >'+esc(SUBTYPE_LABELS[item.subtype]||item.subtype)+' '; } h += esc(item.stem); h += ' '; h += renderConfidence(false); h += renderOptions(item, 'active'); h += ' '; return h; } /* ---- render session summary -------------------------------------------------- */ function renderSummary(){ var responses = SESSION.responses; var total = responses.length; var correct = responses.filter(function(r){return r.correct;}).length; var pct = total ? Math.round(correct/total*100) : 0; /* calibration: certain answers that were correct */ var certTotal=0, certCorrect=0; responses.forEach(function(r){ if(r.confidence==='certain'){ certTotal++; if(r.correct) certCorrect++; } }); var certPct = certTotal ? Math.round(certCorrect/certTotal*100) : null; /* calibration by category */ var byCat={}; responses.forEach(function(r){ var c=r.item.category; if(!byCat[c]) byCat[c]={cert:0,certC:0}; if(r.confidence==='certain'){ byCat[c].cert++; if(r.correct)byCat[c].certC++; } }); /* The shared session receipt carries the headline, the stat grid, the
+- list and the next action; the calibration analysis that follows is this tool's own. */ var certWrongList = responses.filter(function(r){return r.confidence==='certain'&&!r.correct;}); var certWrong = certWrongList.length; var guessRight = responses.filter(function(r){return r.confidence==='guess'&&r.correct;}).length; var wrong = total-correct; var headline = correct+' of '+total+(certWrong?(' — and '+(certWrong===1?'one':certWrong)+' you were sure about.'):(wrong?'.':' — clean set.')); var sub = certWrong ? 'The score matters less than the '+(certWrong===1?'item':'items')+' below: you marked Certain and were wrong. Those are the ones an exam catches.' : (guessRight?'You got '+guessRight+' right while guessing — a re-read turns a guess into a rule you own.':'Every miss is scheduled to come back in Daily Review.'); var reread = []; responses.forEach(function(r){ if(r.correct && r.confidence!=='guess') return; if(reread.length>=5) return; var chosen = (r.item.options||[]).filter(function(o){ return o && o.key===r.key; })[0]; var trap = chosen && chosen.trap ? chosen.trap : null; var trapName = trap && trap.name ? trap.name : null; var page = (r.item.pages&&r.item.pages[0]) || null; reread.push({ tag: r.correct ? 'Guess · right' : (r.confidence==='certain' ? 'Certain · wrong' : 'Wrong'), warn: !r.correct && r.confidence==='certain', title: String(r.item.stem||'').slice(0,140)+(String(r.item.stem||'').length>140?'…':''), note: trapName ? ('Trap: '+trapName+(trap.note?' — '+trap.note:'')) : (r.item.pearl||''), ref: page, refTitle: page ? pageTitle(page) : null }); }); var stats = [ {label:'Correct', value:correct+' / '+total}, {label:'Certain & wrong', value:String(certWrong), tone:certWrong?'warn':'plain'}, {label:'Guess & right', value:String(guessRight)}, {label:'Sent to review', value:String(wrong), tone:wrong?'good':'plain'} ]; var receipt = cwReceipt({ /* Only a session the block itself opened (?block=1) may mark the block's question step — a one-question sitting in an unrelated category must not tick it. */ tool:'qbank', ref:'question-bank-practice.html', refTitle:'Practice Questions', blockKind:(SESSION&&SESSION.fromBlock)?'qb':null, context: total+' question'+(total!==1?'s':'')+(SESSION.catLabel?' · '+SESSION.catLabel:''), headline: headline, sub: sub, stats: stats, reread: reread, actions: [{id:'practiceMoreBtn', label:'Practice more', primary:true}], homeId:'goHomeBtn' }); var h = '<div class=
+- >' + receipt.html; /* calibration warning */ if(certTotal>=3 && certPct!==null && certPct<80){ h += '<div class=
+- >' + ' Calibration gap: You were certain '+certTotal+' time'+(certTotal!==1?'s':'') + ' but only '+certPct+'% accurate when certain. ' + 'Miscalibration on the wards is more dangerous than ignorance — ' + 'replay your confidently-wrong items from this summary. '; } /* per-category calibration bars */ var catKeys = Object.keys(byCat).filter(function(k){ return byCat[k].cert>=2; }); if(catKeys.length){ h += '<div class=
+- > Calibration by category '; catKeys.forEach(function(k){ var d=byCat[k], p=Math.round(d.certC/d.cert*100); h += '<div class=
+- >'+esc(CAT_LABELS[k]||k)+' ' +'<span class=
+- >'+p+'% '; }); h += ' '; } h += ' '; return h; } /* Page title for a re-read link: the bank's own link label when it points at that page, else a readable form of the file name (the tool has no nav registry of its own). */ function pageTitle(file){ var f=String(file||''); return f.replace(/^pg_/,'').replace(/^t_/,'').replace(/\.md$/,'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* ---- DOM helpers -------------------------------------------------------------- */ var root = document.getElementById('root'); var progLabel = document.getElementById('progLabel'); var qprog = document.getElementById('qprog'); var qprogFill = document.getElementById('qprogFill'); function setRoot(html){ root.innerHTML=html; } function updateProgress(){ if(!SESSION) return; var idx=SESSION.idx, total=SESSION.queue.length; if(total===0) return; var pct=Math.round((idx/total)*100); progLabel.textContent = 'Question '+(idx+1)+' of '+total; qprog.hidden=false; qprogFill.style.width=pct+'%'; } /* ---- app state transitions ---------------------------------------------------- */ function showSetup(){ SESSION=null; progLabel.textContent=''; qprog.hidden=true; setRoot(renderSetup()); bindSetup(); } function bindSetup(){ var catSel=document.getElementById('f-cat'); var diffSel=document.getElementById('f-diff'); var sizeSel=document.getElementById('f-size'); var countEl=document.getElementById('itemCount'); var startBtn=document.getElementById('startBtn'); var redoMissesBtn=document.getElementById('redoMissesBtn'); var certWrongBtn=document.getElementById('certWrongBtn'); var dueBtn=document.getElementById('dueBtn'); function updateCount(){ var cat=catSel?catSel.value:'all', diff=diffSel?diffSel.value:'all'; var n = activeItems().filter(function(it){ if(cat!=='all'&&it.category!==cat) return false; if(diff!=='all'&&String(it.difficulty)!==diff) return false; return true; }).length; var size=sizeSel?sizeSel.value:'20'; var showing = (size==='all')?n:Math.min(n,parseInt(size,10)||20); if(countEl) countEl.textContent=(showing===n?n:showing+' of '+n)+' question'+(n!==1?'s':'')+' match'; if(startBtn) startBtn.disabled=(n===0); } if(catSel) catSel.addEventListener('change',updateCount); if(diffSel) diffSel.addEventListener('change',updateCount); if(sizeSel) sizeSel.addEventListener('change',updateCount); updateCount(); if(startBtn) startBtn.addEventListener('click',function(){ var cat=catSel?catSel.value:'all'; var diff=diffSel?diffSel.value:'all'; var size=sizeSel?sizeSel.value:'20'; startSession(cat,diff,size); }); if(redoMissesBtn) redoMissesBtn.addEventListener('click',function(){ startSessionWithQueue(missedItems()); }); if(certWrongBtn) certWrongBtn.addEventListener('click',function(){ startSessionWithQueue(certWrongItems()); }); /* Deliberately NOT startSessionWithQueue: due cards keep most-overdue-first order rather than being shuffled — the schedule is the point of this focus mode. */ if(dueBtn) dueBtn.addEventListener('click',function(){ beginSession(dueQbItems()); }); /* Draft opt-in (WP-37). Persist, then re-render the whole setup so every count (pool size, match count, focus-mode buttons) reflects the new pool; refocus the toggle so keyboard users are not dropped at the top of the re-rendered screen. */ var draftToggle=document.getElementById('draftToggle'); if(draftToggle) draftToggle.addEventListener('change',function(){ setIncludeDrafts(draftToggle.checked); showSetup(); var t=document.getElementById('draftToggle'); if(t) t.focus(); }); } function startSession(catFilter, diffFilter, sizeLimit){ /* Due cards matching the same filters serve FIRST (most-overdue first, unshuffled — priority order is the point); the shuffled fresh selection fills the remainder of the size limit. A due card never appears twice in one queue. */ var due = dueQbItems().filter(function(it){ if(catFilter!=='all' && it.category!==catFilter) return false; if(diffFilter!=='all' && String(it.difficulty)!==diffFilter) return false; return true; }); var cap = (sizeLimit==='all') ? Infinity : (parseInt(sizeLimit,10)||20); due = due.slice(0, cap===Infinity ? due.length : cap); var dueIds = {}; due.forEach(function(it){ dueIds[it.id]=1; }); var rest = buildQueue(activeItems().filter(function(it){ return !dueIds[it.id]; }), catFilter, diffFilter, 'all'); if(cap!==Infinity) rest = rest.slice(0, Math.max(0, cap-due.length)); beginSession(due.concat(rest)); } /* Focus-mode entry point: starts the exact queue passed in (shuffled), bypassing the category/difficulty/size filters entirely. */ function startSessionWithQueue(queue){ beginSession(shuffle(queue)); } function beginSession(queue){ if(!queue.length){ setRoot('<div class=
+- >No questions match the selected filters. '); return; } SESSION = { queue: queue, idx: 0, responses: [], confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state: 'conf' /* conf | tier2 | feedback */ }; showQuestion(); } function showReviewItem(item){ SESSION = { queue:[item], idx:0, responses:[], confidence:null, tier1Key:null, displayOrder:[], tier2DisplayOrder:[], state:'conf', reviewOnly:true }; showQuestion(); postReviewItemStatus('ready'); } /* ---- session capsule (cw_sess_v1) — question-boundary checkpoint + resume -------- Written ONLY from advance(), and only when there is a next question to show — never mid-question. showQuestion() resets confidence/tier1Key/state/displayOrder/ tier2DisplayOrder on every entry (the option shuffles aren't reconstructable), so a mid-question restore would be structurally broken and is not attempted; the checkpoint is deleted instead, in showSummary(), on session completion. Never written for a reviewOnly (faculty-preview) session. Grading state is never duplicated here — qbRecord()/srsUpdate() already persist each answer per-interaction (commitResponse); the capsule stores position + session bookkeeping only, so a resumed showSummary() covers the WHOLE session without a second write against the SM-2 stats contract. */ function checkpointSession(){ if(!SESSION || SESSION.reviewOnly) return; var now = Date.now(); sessSave('qbank', { at: now, expiresAt: now + DAY, queueIds: SESSION.queue.map(function(it){ return it.id; }), idx: SESSION.idx, responses: SESSION.responses.map(function(r){ return { id: r.item.id, correct: r.correct, confidence: r.confidence }; }) }); } /* Resume path for ?resume=1. Rebuilds the queue from the capsule's queueIds filtered through activeItems() — an id removed or retired by a deploy between checkpoint and resume is silently dropped rather than crashing the restore (queueIds order is preserved). idx is RE-DERIVED by counting how many of the front (pre-checkpoint) queueIds survive that same filter, rather than trusted verbatim: trusting the stored idx directly would silently skip a still-unanswered question whenever a deploy retires/removes an item positioned BEFORE the checkpointed idx (the raw idx overshoots once the queue is filtered shorter). This exploits the invariant that responses.length === idx at every checkpoint — advance() checkpoints immediately after commitResponse() pushes a response, and this app has no skip-without-answering path, so counting surviving front ids gives the correct new position. Reconstructed responses are built from that identical surviving-front-id set, so the resumed summary population can never disagree with the resumed queue position. Absent/expired capsule (sessLoad owns load-validate-expire) or an empty resulting queue falls through to a normal setup start. Returns true iff a session was actually resumed. */ function tryResumeSession(){ var cap = sessLoad('qbank', Date.now()); if(!cap || !cap.queueIds || !cap.queueIds.length) return false; var idMap = {}; activeItems().forEach(function(it){ idMap[it.id]=it; }); var queue = cap.queueIds.map(function(id){ return idMap[id]; }).filter(Boolean); if(!queue.length) return false; var capIdx = (typeof cap.idx==='number' && cap.idx>=0) ? cap.idx : 0; var survivingFrontIds = cap.queueIds.slice(0, capIdx).filter(function(id){ return !!idMap[id]; }); var idx = survivingFrontIds.length; var respById = {}; (cap.responses||[]).forEach(function(r){ respById[r.id]=r; }); var responses = survivingFrontIds.map(function(id){ var r = respById[id]; if(!r) return null; return { item: idMap[id], key: null, tier2Key: null, confidence: r.confidence, correct: r.correct, twoTierResult: null, ts: cap.at }; }).filter(Boolean); SESSION = { queue: queue, idx: idx, responses: responses, confidence: null, tier1Key: null, displayOrder: [], tier2DisplayOrder: [], state: 'conf' }; showQuestion(); return true; } function showQuestion(){ if(!SESSION || SESSION.idx >= SESSION.queue.length){ showSummary(); return; } SESSION.confidence = null; SESSION.tier1Key = null; SESSION.state = 'conf'; SESSION.displayOrder = []; SESSION.tier2DisplayOrder = []; updateProgress(); var item = SESSION.queue[SESSION.idx]; setRoot(renderQuestion(item)); bindQuestion(item); } function bindQuestion(item){ /* confidence buttons */ var confBtns = root.querySelectorAll('.conf-btn'); var confHint = document.getElementById('confHint'); confBtns.forEach(function(btn){ btn.addEventListener('click',function(){ if(SESSION.state!=='conf') return; confBtns.forEach(function(b){ b.classList.remove('on'); }); btn.classList.add('on'); SESSION.confidence = btn.getAttribute('data-conf'); if(confHint) confHint.classList.remove('show'); }); }); /* tier1 option buttons */ var optBtns = root.querySelectorAll('#optsList .opt'); optBtns.forEach(function(btn){ btn.addEventListener('click',function(){ if(SESSION.state!=='conf') return; if(!SESSION.confidence){ if(confHint) confHint.classList.add('show'); /* briefly shake the confidence section */ var cs=root.querySelector('.conf-section'); if(cs){ cs.style.outline='2px solid var(--danger)'; cs.style.borderRadius='8px'; setTimeout(function(){cs.style.outline='';cs.style.borderRadius='';},600); } return; } var key = btn.getAttribute('data-key'); onTier1Answer(item, key); }); }); } function onTier1Answer(item, key){ SESSION.tier1Key = key; var isCorrect = item.options.some(function(o){ return o.key===key && o.c; }); /* lock tier1 options and highlight */ var optBtns = root.querySelectorAll('#optsList .opt'); optBtns.forEach(function(btn){ btn.disabled = true; btn.classList.add('locked'); var k = btn.getAttribute('data-key'); if(k===key && isCorrect) btn.classList.add('selected-correct'); else if(k===key && !isCorrect) btn.classList.add('selected-wrong'); else if(item.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add('correct-reveal'); }); /* lock confidence buttons */ root.querySelectorAll('.conf-btn').forEach(function(b){ b.disabled=true; }); if(item.type==='two-tier' && isCorrect){ /* show tier2 before feedback */ SESSION.state = 'tier2'; var qcard = root.querySelector('.qcard'); if(qcard){ var t2html = renderTier2(item); qcard.insertAdjacentHTML('beforeend', t2html); bindTier2(item); } } else { /* for wrong tier1 on two-tier, still show tier2 (spec:
+- ) */ if(item.type==='two-tier' && !isCorrect){ SESSION.state = 'tier2'; var qcard2 = root.querySelector('.qcard'); if(qcard2){ var t2html2 = renderTier2(item); qcard2.insertAdjacentHTML('beforeend', t2html2); bindTier2(item); } } else { /* sba / relational: show feedback directly */ SESSION.state = 'feedback'; var twoTierResult = null; commitResponse(item, key, null, SESSION.confidence, isCorrect, twoTierResult); showFeedback(item, key, null, SESSION.confidence, isCorrect, null); } } } function bindTier2(item){ var t2Btns = root.querySelectorAll('#tier2Opts .opt'); t2Btns.forEach(function(btn){ btn.addEventListener('click',function(){ if(SESSION.state!=='tier2') return; var tier2Key = btn.getAttribute('data-tier2key'); onTier2Answer(item, tier2Key); }); }); } function onTier2Answer(item, tier2Key){ SESSION.state = 'feedback'; var tier1Key = SESSION.tier1Key; var tier1Correct = item.options.some(function(o){ return o.key===tier1Key && o.c; }); var tier2Correct = item.tier2.options.some(function(o){ return o.key===tier2Key && o.c; }); /* lock tier2 options + highlight */ var t2Btns = root.querySelectorAll('#tier2Opts .opt'); t2Btns.forEach(function(btn){ btn.disabled=true; btn.classList.add('locked'); var k=btn.getAttribute('data-tier2key'); if(k===tier2Key && tier2Correct) btn.classList.add('selected-correct'); else if(k===tier2Key && !tier2Correct) btn.classList.add('selected-wrong'); else if(item.tier2.options.some(function(o){return o.key===k&&o.c;})) btn.classList.add('correct-reveal'); }); /* scoring: both right = correct; right answer/wrong reason = shaky; wrong tier1 = wrong */ var correct, twoTierResult; if(!tier1Correct){ correct=false; twoTierResult='wrong'; } else if(tier2Correct){ correct=true; twoTierResult='both_right'; } else { correct=true; twoTierResult='shaky'; /* right answer, wrong reason — cap at Hard */ } commitResponse(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); showFeedback(item, tier1Key, tier2Key, SESSION.confidence, correct, twoTierResult); } function commitResponse(item, key, tier2Key, confidence, correct, twoTierResult){ if(SESSION && SESSION.reviewOnly){ SESSION.responses.push({ item:item, key:key, tier2Key:tier2Key, confidence:confidence, correct:correct, twoTierResult:twoTierResult, ts:Date.now() }); return; } var rec = qbRecord(item, key, tier2Key, confidence, correct, twoTierResult); srsUpdate(item, confidence, correct, twoTierResult); SESSION.responses.push({ item: item, key: key, tier2Key: tier2Key, confidence: confidence, correct: correct, twoTierResult: twoTierResult, ts: rec.ts }); } function showFeedback(item, key, tier2Key, confidence, correct, twoTierResult){ var fbHtml = getFeedbackHtml(item, key, tier2Key, confidence, correct, twoTierResult); var qcard = root.querySelector('.qcard'); if(qcard){ /* remove any tier2 section first if it already exists */ var existing = qcard.querySelector('.feedback'); if(existing) existing.parentNode.removeChild(existing); qcard.insertAdjacentHTML('beforeend', fbHtml); var _live=document.getElementById('qb-live'); if(_live){ _live.textContent = (twoTierResult==='shaky'?'Right answer, shaky reasoning. ':correct?'Correct. ':'Incorrect. ') + (item.pearl||''); } /* scroll feedback into view */ var fb = document.getElementById('feedbackPanel'); if(fb) setTimeout(function(){ fb.scrollIntoView({behavior:'smooth',block:'nearest'}); },80); } if(SESSION && SESSION.reviewOnly) return; /* bind spa nav links */ root.querySelectorAll('.fb-link[data-spa-nav=
+- ]').forEach(function(a){ a.addEventListener('click',function(ev){ ev.preventDefault(); var href=a.getAttribute('href')||''; try{ window.parent.postMessage({type:'openPage',f:decodeURIComponent(href.replace(/^\?(?:page|tool)=/,''))},'*'); } catch(_){ window.location.href=href; } }); }); /* next button */ var nextBtn = document.getElementById('nextBtn'); if(nextBtn) nextBtn.addEventListener('click', advance); } function advance(){ if(!SESSION) return; SESSION.idx++; /* Checkpoint at this question boundary only when there is a next question to resume into — completion is handled by showSummary()'s sessClear instead. */ if(SESSION.idx < SESSION.queue.length) checkpointSession(); showQuestion(); } function showSummary(){ /* Session complete (or a resume landed exactly at the end) — clear the capsule so a stale slot never lingers past its own session. Never touched for reviewOnly, which never reaches this function via advance() (no Next button is rendered for a faculty-preview session — see getFeedbackHtml/showFeedback). */ if(!(SESSION && SESSION.reviewOnly)) sessClear('qbank'); progLabel.textContent='Session complete'; qprog.hidden=false; qprogFill.style.width='100%'; setRoot(renderSummary()); var moreBtn=document.getElementById('practiceMoreBtn'); if(moreBtn) moreBtn.addEventListener('click',showSetup); /*
+- is the receipt's own button (data-cw-receipt-home); the receipt snippet routes it through the shell's openPage message, exactly as goHomeBtn used to. */ } /* ---- init --------------------------------------------------------------------- */ (function init(){ /* try relative path (built: /tools/question-bank-practice.html → /question_bank.json) */ fetch('../question_bank.json') .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }) .then(function(data){ BANK = data; if(REVIEW_CONTEXT){ var reviewItem = (data.items || []).find(function(item){ return item && item.id === REVIEW_CONTEXT.reviewItem && item.retired !== true; }); if(!reviewItem){ root.innerHTML = '<div class=
+- > This question is not present on the current deployment '; postReviewItemStatus('not_found'); return; } showReviewItem(reviewItem); return; } if(RESUME_REQUESTED && tryResumeSession()) return; if(BLOCK_REQUEST){ var _blockCat = (BLOCK_REQUEST.cat!=='all' && CAT_LABELS[BLOCK_REQUEST.cat]) ? BLOCK_REQUEST.cat : 'all'; startSession(_blockCat, 'all', String(BLOCK_REQUEST.n)); if(SESSION){ SESSION.catLabel = _blockCat==='all' ? '' : (CAT_LABELS[_blockCat]||''); SESSION.fromBlock = true; } return; } showSetup(); /* adaptive engine handoff: home may set cw_qb_focus to a blueprint category so the learner lands in their weakest area with the filter preselected. */ try{ var _focus=localStorage.getItem('cw_qb_focus'); if(_focus){ localStorage.removeItem('cw_qb_focus'); var _cs=document.getElementById('f-cat'); if(_cs){ for(var _i=0;_i<_cs.options.length;_i++){ if(_cs.options[_i].value===_focus){ _cs.value=_focus; break; } } var _cnt=document.getElementById('itemCount'), _n=activeItems().filter(function(it){return it.category===_focus;}).length; if(_cnt) _cnt.textContent=_n+' question'+(_n!==1?'s':'')+' match'; } } }catch(_){ } }) .catch(function(err){ root.innerHTML='<div class=
+- >' +' Could not load question bank. ' +'question_bank.json was not found alongside this tool. ' +'Make sure the build ran successfully and question_bank.json is at the site root.' +' <small style=
+- ); }); /* handle filter count updates before bank loads */ root.addEventListener(
+- ,function(ev){ var t=ev.target; if(t&&(t.id===
+- )){ var catSel=document.getElementById(
+- ); if(!BANK||!countEl) return; var cat=catSel?catSel.value:
+- ; var n=activeItems().filter(function(it){ return (cat===
+- ||String(it.difficulty)===diff); }).length; var size=sizeSel?sizeSel.value:
+- )?n:Math.min(n,parseInt(size,10)||20); countEl.textContent=(showing===n?n:showing+
+- ; } }); /* dark mode sync from parent SPA */ window.addEventListener(
+- ,function(ev){ var d=ev.data||{}; if(d.type===
+- )){ document.documentElement.setAttribute(
+- ,d.mode); try{localStorage.setItem(
+- ,d.mode);}catch(_){} } }); try{ var t=localStorage.getItem(
+- ) document.documentElement.setAttribute(
 
 ---
 
@@ -327,7 +245,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Daily Review — Spaced Repetition Reviewed by Joshua Moss, MD on 2026-07-05
 - Skip to content
 
-**Authored clinical strings (99):**
+**Authored clinical strings (111):**
 
 - t lean on position memory. Letters are display-position-derived (String.fromCharCode(65+pos)), so relabeling is automatic. */ /* FNV-1a seed + xorshift32 steps — NOT a bare LCG: an LCG
 - s inject_shared_snippets() expands at build time (same mechanism as crisis blocks). Grades are the strings
@@ -357,77 +275,89 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - s progress on Today) and by the session receipt inside a tool (to mark the step that just finished and offer the next one). Injected via /*__BLOCK_STORE__*\/ so the shell and every tool share one implementation. Shape: {v:1, minutes, createdAt, steps:[{kind:
 - , ref, title, min, n?, cat?, done?, doneAt?}]}. A page step is never marked here — its done state is derived from cw_progress_v1 at render time, so ticking the page anywhere counts. A block older than CW_BLOCK_TTL_MS is pruned on load: a plan built for one morning
 - s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
-- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
-- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
-- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
-- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
-- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
-- +encodeURIComponent(String(s.n||1)); if(s.kind===
-- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
-- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
-- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
-- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
-- )) return; var st=document.createElement(
-- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
-- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
-- ); return; }catch(_){ } } try{ location.href=
-- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
-- ) return; cwReceiptWired=true; document.addEventListener(
-- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
-- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
-- ); return; } cwReceiptNavigate(t.getAttribute(
-- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
-- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
-- ){ if(s.blockKind&&typeof blockMarkStep===
-- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
-- ; var stats=s.stats||[]; if(stats.length){ h+=
-- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
-- ; } var reread=s.reread||[]; if(reread.length){ h+=
-- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
-- cw-receipt__tag'+(r.warn?' is-warn':'')+'
-- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
-- cw-receipt__btn is-primary
-- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
-- cw-receipt__btn'+(a.primary?' is-primary':'')+'
-- ; if(!next&&typeof blockClear===
-- ; return {html:h, marked:marked, next:next||null}; } /* Family retrieval prompts — the one definition of what a FAM# card ASKS and what it reveals. Injected via the shared-snippet marker into BOTH consumers: family-systems-practice.html, which authors these cards and grades them beside their scenario, and review.html, which serves the due ones in the daily queue. It has to be shared rather than copied because the card id embeds the prompt id (famCardId) — two drifting copies of this list would file one schedule under a prompt the learner never saw, which is exactly the silent id-collision failure the repo
-- s own authored text — its opening line or one of its authored sections. This file introduces no clinical wording of its own, so nothing here needs faculty attestation that family_systems_scenarios.json has not already had. Pure: no DOM, no storage, no clock, no escaping (each consumer escapes for its own renderer). ES5 only, matching the other injected snippets. */ var FAM_DEFAULT_RETRIEVAL=[ {id:
-- } ]; /* The card id both tools schedule under. Scenario id and prompt id are joined with the same separator the QB#/TOPIC# namespaces use, so srsBucket keeps reading FAM# as the family bucket. */ function famCardId(scenarioId,promptId){return
-- +promptId;} /* What a prompt reveals: an explicit revealText when the scenario authors one, else the scenario
-- s re-read links so one page never gets two spellings. */ function prettyRef(k){ return String(k||"").replace(/^t_/,"").replace(/^pg_/,"").replace(/\.md$/,"").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* Family retrieval cards for the daily queue — the third card source, after the landmark decks and the per-topic quizzes. One card per authored prompt per scenario, under the SAME ids family-systems-practice.html writes (famCardId, injected above), so a prompt graded in either place moves one schedule rather than two. The reveal text is the scenario
-- s context on screen (a family prompt beside its scenario, a reasoning step beside its patient brief), not sprung cold as a new card here. So this page reviews what the tools taught; it never introduces. The flag is per-card and not per-kind: the family cards are `recall` and the communication and reasoning cards are `choice`, but all three are seeded by their own tool. Decks and topic quizzes carry no flag and remain the only sources feeding the daily new-card allowance. */ function queueable(card, cardState){ return !card || !card.seededOnly || !!cardState; } /* Map a tool
-- s option shape. Both tools grade an option by `quality` rather than a boolean, so `best` becomes the correct answer and the option
-- s twenty-second spoken rep before the choices appear; this is recognition practice on a line the learner has already tried to say. */ function commChoiceCards(data){ var list=(data&&data.cases)||[], out=[], i; if(Object.prototype.toString.call(list)!==
-- ) return out; for(i=0;i<list.length;i++){ var c=list[i]; if(!c||!c.id||!c.prompt) continue; var opts=choiceOptions(c.choices); if(!opts) continue; out.push({ id:"COMM#"+c.id, deck:"COMM", deckTitle:"Communication · "+(c.title||c.id), kind:"choice", seededOnly:true, q:c.prompt, o:opts, stem:c.setting||null }); } return out; } /* Reasoning cards — one per STEP, under the same ids diagnostic-reasoning.html writes. A case
-- s stem because it is NOT optional context: a step asks things like "which one-liner best captures the syndrome", which is unanswerable without the case. In the tool the brief is on screen throughout; a step without it here would be a different, harder, and unfair question. A step whose case has no brief is dropped rather than served bare. */ function reasonChoiceCards(data){ var list=(data&&data.cases)||[], out=[], i, j; if(Object.prototype.toString.call(list)!==
-- ) return out; for(i=0;i<list.length;i++){ var c=list[i]; if(!c||!c.id||!c.patientBrief) continue; var steps=(Object.prototype.toString.call(c.steps)===
-- )?c.steps:[]; for(j=0;j<steps.length;j++){ var st=steps[j]; if(!st||!st.id||!st.prompt) continue; var opts=choiceOptions(st.choices); if(!opts) continue; out.push({ id:"REASON#"+c.id+"#"+st.id, deck:"REASON", deckTitle:"Reasoning · "+(c.title||c.id)+" · "+(st.title||st.id), kind:"choice", seededOnly:true, q:st.prompt, o:opts, stem:c.patientBrief }); } } return out; } /* A reveal is either the scenario
-- s queue-build call — patching only one leaves the other unthrottled. An explicit learner choice (setNewPerDay, which sets settings.userSet) always wins over the rotation-phase cap; phasePolicy() itself never throws, but the try/catch keeps this helper safe even if that contract ever changes. */ function effectiveNewPerDay(s){ var set=(s.settings&&s.settings.newPerDay)||12; if(s.settings&&s.settings.userSet) return set; /* explicit choice always wins */ var cap=12; try{ cap=phasePolicy().newPerDayCap; }catch(_){ } return Math.min(set, cap); } var gradedThisSession={}; // session-local: has card.id already been graded once this session? (a requeued Again-card
-- s rq flag). Reset in start(). function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl 0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;} /* ---------- theme ---------- */ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",nx);try{localStorage.setItem("cw_theme",nx);}catch(_){ } setTheme(nx); if(framed){try{window.parent.postMessage({type:"theme",mode:nx},"*");}catch(_){ }}} function App(){ var ld=useState(null),cards=ld[0],setCards=ld[1]; var er=useState(false),err=er[0],setErr=er[1]; var sv=useState(loadS()),store=sv[0],setStore=sv[1]; var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh} var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1]; var tick=useState(0),setTick=tick[1]; var sessRef=useRef(null); sessRef.current=sess; var blockAutoStart=useRef(null), blockLimit=useRef(null); useEffect(function(){ if(cards&&blockAutoStart.current&&!sess){ blockLimit.current=blockAutoStart.current; blockAutoStart.current=null; start(false); } },[cards]); useEffect(function(){ Promise.all([ fetch("quizzes.json?v=5e005edffa93").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}), fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}), fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}), fetch("../communication_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}), /* the res build overwrites this file with reasoning_cases_resident.json, so one path serves the right audience without the page knowing which site it is on */ fetch("../reasoning_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}) ]).then(function(res){ /* One builder per source, concatenated into the single queue. A source that fails to load contributes nothing and the rest still runs; another source later is a builder plus a fetch. Order matters only for which cards a same-due-time tie serves first — the queue is sorted by due date below. */ var j=res[0]||{}, tm=res[1]||{}, fam=res[2]||{}, comm=res[3]||{}, reason=res[4]||{}, out=[]; (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,kind:"choice",q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); }); Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+prettyRef(k),kind:"choice",q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } }); out=out.concat(famRecallCards(fam)); out=out.concat(commChoiceCards(comm)); out=out.concat(reasonChoiceCards(reason)); if(!out.length){ setErr(true); return; } setCards(out); /* ?block=1&limit=N — a timed block step from Today starts straight into a bounded session. */ try{ var bp=new URLSearchParams(location.search); if(bp.get("block")==="1"){ var lim=parseInt(bp.get("limit")||"",10); blockAutoStart.current=(lim>=1&&lim<=50)?lim:5; } }catch(_){ } }).catch(function(){setErr(true);}); },[]); useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]); useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s||!s.card)return; var k=ev.key; if(!s.revealed){ if(s.card.kind===
-- ){ if(k==="Enter")revealCard(); } else { var n=parseInt(k,10); if(s.card.o&&n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]); function persist(s){saveS(s);setStore(Object.assign({},s));} /* dashboard metrics */ function metrics(){ var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0; if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); } var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0; return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen}; } function start(ahead){ var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[]; cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);}); /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so long-interval cards that are only slightly late don
-- Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected.
-- Spaced repetition · Joshua Moss, MD
-- Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again.
-- Loading the question bank…
-- s calibLog event via closure. A recall card suggests nothing — there is no outcome to suggest from. */ var sug=isRecall?
-- ); var fbOpt=(!isRecall&&c.o[sess.chosen])||{}; var corrOpt=(!isRecall&&c.o[ci])||{}; var isNew=!loadS().cards[c.id]; return e("div",{className:"wrap"},head, e("div",{className:"sess"}, e("div",{className:"sbar"},e("i",{style:{width:pctp+"%"}})), e("div",{className:"sinner"}, e("div",{className:"smeta"}, e("span",{className:"deckchip"+(isNew?" snew":"")}, isNew?"New":"Review"), e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle), e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)), /* Context the card cannot be answered without (a reasoning case
-- 🎧 Listen — paper overview
-- One way to do it is shown. Rate how close your answer was.
-- Missed items can only be graded Again or Hard
-- Answer out loud or on scratch first, then reveal. Nothing is recorded.
-- Pick the best answer (or press 1–
-- One card came back for another look.
-- cards came back for another look.
-- A miss here is scheduled sooner, not scored — it returns within the day so the second pass is the one that sticks.
-- Held cards move out; the next pass is further away.
-- -day streak in Daily Review.
-- Nothing is due right now and you’ve hit today’s new-card limit. Come back tomorrow, or study ahead below.
-- Spaced repetition schedules each board-style question to return just before you’d forget it. A few minutes a day beats cramming. Grade yourself honestly.
-- Each question carries its own schedule. Answer, then grade:
-- (missed — comes back this session),
-- . Correct, confident cards stretch further out; missed ones come back soon. Questions are drawn from the hub’s board-style bank (
-- Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.
-- Spacing schedule is stored only in this browser.
+- s parameters; ordinary practice leaves a saved block alone. Pure apart from those two writes: returns {html, marked, next}. Copy is audience-neutral (no MS3/clerkship/student/shelf/resident tokens) because it ships to both sites. Navigation inside a tool iframe goes through the shell
+- > Session receipt '; if(s.context) h+=' '+cwReceiptEsc(s.context)+' '; h+=' '; if(s.headline) h+='<h2 class=
+- >'+cwReceiptEsc(s.headline)+' '; if(s.sub) h+='<p class=
+- >'+cwReceiptEsc(s.sub)+' '; var stats=s.stats||[]; if(stats.length){ h+='<div class=
+- >'; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone==='warn'?' is-warn':(st.tone==='good'?' is-good':''); h+='<div class=
+- >'+cwReceiptEsc(st.label)+' <span class=
+- >'+cwReceiptEsc(st.value)+' '; } h+=' '; } var reread=s.reread||[]; if(reread.length){ h+='<div class=
+- >Worth a second look '; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+='<div class=
+- >'; if(r.tag) h+='<span class=
+- >'+cwReceiptEsc(r.tag)+' '; h+='<span style=
+- >'+cwReceiptEsc(r.title)+' '; if(r.note) h+='<span class=
+- >'+cwReceiptEsc(r.note)+' '; if(r.ref) h+='<a class=
+- data-cw-receipt-next data-cw-receipt-ref=
+- >Re-read: '+cwReceiptEsc(r.refTitle||r.ref)+' → '; h+=' '; } } if(marked){ var practiceWeek=cwReceiptPracticeWeek(); h+='<div class=
+- >✓ '+(practiceWeek?'Week '+practiceWeek+' practice recorded:':'Activity recorded:')+' '+cwReceiptEsc(s.refTitle||s.ref)+'. '; } h+='<div class=
+- >'; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+='<button type=
+- >Next in your block: '+cwReceiptEsc(next.title)+(next.min?' ~'+cwReceiptEsc(next.min)+' min ':'')+' '; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+='<button type=
+- ':'')+'>'+cwReceiptEsc(a.label)+' '; } } h+='<button type=
+- data-cw-receipt-home'+(s.homeId?' id=
+- ':'')+'>Back to Today '; if(progress){ h+='<span class=
+- >'+(next?('Block · '+progress.done+' of '+progress.total+' done'):('Block complete · '+progress.total+' of '+progress.total+' done'))+' '; if(!next&&typeof blockClear==='function') blockClear(); } h+=' '; return {html:h, marked:marked, next:next||null}; } /* Family retrieval prompts — the one definition of what a FAM# card ASKS and what it reveals. Injected via the shared-snippet marker into BOTH consumers: family-systems-practice.html, which authors these cards and grades them beside their scenario, and review.html, which serves the due ones in the daily queue. It has to be shared rather than copied because the card id embeds the prompt id (famCardId) — two drifting copies of this list would file one schedule under a prompt the learner never saw, which is exactly the silent id-collision failure the repo's storage rule warns about. Reveal content is always the scenario's own authored text — its opening line or one of its authored sections. This file introduces no clinical wording of its own, so nothing here needs faculty attestation that family_systems_scenarios.json has not already had. Pure: no DOM, no storage, no clock, no escaping (each consumer escapes for its own renderer). ES5 only, matching the other injected snippets. */ var FAM_DEFAULT_RETRIEVAL=[ {id:'opening',prompt:'Say your opening line for this family out loud.',revealFrom:'opening'}, {id:'ask',prompt:'Name the collateral questions you would ask — out loud or on scratch.',revealFrom:'ask'}, {id:'avoid',prompt:'Name the trap here: what would you deliberately NOT do?',revealFrom:'avoid'}, {id:'handoff',prompt:'Say the rounds handoff for this family — what must it separate?',revealFrom:'handoff'}, {id:'safety',prompt:'When do you stop ordinary information-gathering and escalate — and to whom?',revealFrom:'safety'} ]; /* The card id both tools schedule under. Scenario id and prompt id are joined with the same separator the QB#/TOPIC# namespaces use, so srsBucket keeps reading FAM# as the family bucket. */ function famCardId(scenarioId,promptId){return 'FAM#'+scenarioId+'#'+promptId;} /* What a prompt reveals: an explicit revealText when the scenario authors one, else the scenario's opening line, else the named section. null means the scenario cannot answer this prompt, and famRetrievalFor drops it rather than showing an empty panel. */ function famRevealContent(it,rp){ if(!it||!rp)return null; if(rp.revealText)return rp.revealText; if(rp.revealFrom==='opening')return it.opening||null; var sec=(it.sections||{})[rp.revealFrom]; return (sec&&sec.length)?sec:null; } /* The prompts a given scenario actually supports, in authored order. A scenario may carry its own `retrieval` array to override the defaults wholesale. */ function famRetrievalFor(it){ if(!it)return []; if(Object.prototype.toString.call(it.retrieval)==='[object Array]'&&it.retrieval.length)return it.retrieval; var out=[],i; for(i=0;i<FAM_DEFAULT_RETRIEVAL.length;i++){ if(famRevealContent(it,FAM_DEFAULT_RETRIEVAL[i])!=null) out.push(FAM_DEFAULT_RETRIEVAL[i]); } return out; } /* Readable label for a content ref (
+- ). Shared by the topic-card titles and the receipt's re-read links so one page never gets two spellings. */ function prettyRef(k){ return String(k||
+- ).replace(/\b\w/g,function(c){return c.toUpperCase();}); } /* Family retrieval cards for the daily queue — the third card source, after the landmark decks and the per-topic quizzes. One card per authored prompt per scenario, under the SAME ids family-systems-practice.html writes (famCardId, injected above), so a prompt graded in either place moves one schedule rather than two. The reveal text is the scenario's own authored content; nothing clinical originates here. These cards are why the queue needed a second shape: a family prompt has no options to pick, so it is answered aloud and then self-rated against the model. See card.kind below. */ function famRecallCards(data){ var list=(data&&data.scenarios)||[], out=[], i, j; if(Object.prototype.toString.call(list)!=='[object Array]') return out; for(i=0;i<list.length;i++){ var it=list[i]; if(!it||!it.id) continue; var prompts=famRetrievalFor(it); for(j=0;j<prompts.length;j++){ var rp=prompts[j]; if(!rp||!rp.id||!rp.prompt) continue; var reveal=famRevealContent(it,rp); if(reveal==null) continue; out.push({ id:famCardId(it.id,rp.id), deck:
+- +(it.title||it.id), kind:
+- , seededOnly:true, q:rp.prompt, reveal:reveal, page:(it.linkedPages&&it.linkedPages[0])||null }); } } return out; } /* Which cards this tool may put in front of a learner. A card marked `seededOnly` qualifies only once it already has a schedule — i.e. the learner has met it in the tool that authored it. That is deliberate on both ends: the due row counts DUE cards, which by definition already have a schedule, so serving exactly those closes the counted-but-never-served gap; and every seededOnly card is written to be answered with its own tool's context on screen (a family prompt beside its scenario, a reasoning step beside its patient brief), not sprung cold as a new card here. So this page reviews what the tools taught; it never introduces. The flag is per-card and not per-kind: the family cards are `recall` and the communication and reasoning cards are `choice`, but all three are seeded by their own tool. Decks and topic quizzes carry no flag and remain the only sources feeding the daily new-card allowance. */ function queueable(card, cardState){ return !card || !card.seededOnly || !!cardState; } /* Map a tool's authored choices onto the queue's option shape. Both tools grade an option by `quality` rather than a boolean, so `best` becomes the correct answer and the option's own feedback becomes its explanation. Rejecting anything but exactly one `best` is the point of the guard, not a formality: correctIdx() takes the FIRST option flagged correct, so a case authored with two bests would score a learner who picked the second one wrong, and one authored with none would mark every answer wrong. Returning null drops that case from the queue instead — the tools themselves still teach it, and the schema validators still see it. */ function choiceOptions(choices){ var arr=(Object.prototype.toString.call(choices)==='[object Array]')?choices:[], out=[], best=0, i; for(i=0;i<arr.length;i++){ var ch=arr[i]; if(!ch||typeof ch.text!=='string'||!ch.text) return null; var isBest=(ch.quality==='best'); if(isBest) best++; out.push({t:ch.text, c:isBest, fb:typeof ch.feedback==='string'?ch.feedback:
+- }); } return (out.length>1&&best===1)?out:null; } /* Communication cards — one per case, under the SAME ids communication-practice.html writes. The case prompt is self-contained (it quotes the patient), so it needs no stem. What the review cannot reproduce is that tool's twenty-second spoken rep before the choices appear; this is recognition practice on a line the learner has already tried to say. */ function commChoiceCards(data){ var list=(data&&data.cases)||[], out=[], i; if(Object.prototype.toString.call(list)!=='[object Array]') return out; for(i=0;i<list.length;i++){ var c=list[i]; if(!c||!c.id||!c.prompt) continue; var opts=choiceOptions(c.choices); if(!opts) continue; out.push({ id:
+- , seededOnly:true, q:c.prompt, o:opts, stem:c.setting||null }); } return out; } /* Reasoning cards — one per STEP, under the same ids diagnostic-reasoning.html writes. A case's steps test different moves and a learner can be solid on one and lost on the next, so they schedule separately. The patient brief rides along as the card's stem because it is NOT optional context: a step asks things like
+- , which is unanswerable without the case. In the tool the brief is on screen throughout; a step without it here would be a different, harder, and unfair question. A step whose case has no brief is dropped rather than served bare. */ function reasonChoiceCards(data){ var list=(data&&data.cases)||[], out=[], i, j; if(Object.prototype.toString.call(list)!=='[object Array]') return out; for(i=0;i<list.length;i++){ var c=list[i]; if(!c||!c.id||!c.patientBrief) continue; var steps=(Object.prototype.toString.call(c.steps)==='[object Array]')?c.steps:[]; for(j=0;j<steps.length;j++){ var st=steps[j]; if(!st||!st.id||!st.prompt) continue; var opts=choiceOptions(st.choices); if(!opts) continue; out.push({ id:
+- +(st.title||st.id), kind:
+- , seededOnly:true, q:st.prompt, o:opts, stem:c.patientBrief }); } } return out; } /* A reveal is either the scenario's opening line (a string) or one of its authored sections (a list). Rendered as text, never as markup. */ function revealNodes(reveal){ if(typeof reveal==='string') return e(
+- }, reveal); var arr=(Object.prototype.toString.call(reveal)==='[object Array]')?reveal:[]; return e(
+- }, arr.map(function(x,i){ return e(
+- ,{key:i}, x); })); } /* effectiveNewPerDay: the single helper BOTH the metrics() display and start()'s queue-build call — patching only one leaves the other unthrottled. An explicit learner choice (setNewPerDay, which sets settings.userSet) always wins over the rotation-phase cap; phasePolicy() itself never throws, but the try/catch keeps this helper safe even if that contract ever changes. */ function effectiveNewPerDay(s){ var set=(s.settings&&s.settings.newPerDay)||12; if(s.settings&&s.settings.userSet) return set; /* explicit choice always wins */ var cap=12; try{ cap=phasePolicy().newPerDayCap; }catch(_){ } return Math.min(set, cap); } var gradedThisSession={}; // session-local: has card.id already been graded once this session? (a requeued Again-card's 2nd grade sets calibLog's rq flag). Reset in start(). function maturity(st){if(!st||!st.reps)return
+- ;} function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;} /* ---------- theme ---------- */ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute(
+- ,nx);}catch(_){ } setTheme(nx); if(framed){try{window.parent.postMessage({type:
+- );}catch(_){ }}} function App(){ var ld=useState(null),cards=ld[0],setCards=ld[1]; var er=useState(false),err=er[0],setErr=er[1]; var sv=useState(loadS()),store=sv[0],setStore=sv[1]; var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh} var th=useState((document.documentElement.getAttribute(
+- ),theme=th[0],setTheme=th[1]; var tick=useState(0),setTick=tick[1]; var sessRef=useRef(null); sessRef.current=sess; var blockAutoStart=useRef(null), blockLimit=useRef(null); useEffect(function(){ if(cards&&blockAutoStart.current&&!sess){ blockLimit.current=blockAutoStart.current; blockAutoStart.current=null; start(false); } },[cards]); useEffect(function(){ Promise.all([ fetch(
+- ).then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}), fetch(
+- ).then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}), fetch(
+- ).then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}), fetch(
+- ).then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}), /* the res build overwrites this file with reasoning_cases_resident.json, so one path serves the right audience without the page knowing which site it is on */ fetch(
+- ).then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}) ]).then(function(res){ /* One builder per source, concatenated into the single queue. A source that fails to load contributes nothing and the rest still runs; another source later is a builder plus a fetch. Order matters only for which cards a same-due-time tie serves first — the queue is sorted by due date below. */ var j=res[0]||{}, tm=res[1]||{}, fam=res[2]||{}, comm=res[3]||{}, reason=res[4]||{}, out=[]; (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+
+- ,q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); }); Object.keys(tm).forEach(function(k){ if(k.charAt(0)===
+- )return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:
+- ,q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||
+- )};})}); } }); out=out.concat(famRecallCards(fam)); out=out.concat(commChoiceCards(comm)); out=out.concat(reasonChoiceCards(reason)); if(!out.length){ setErr(true); return; } setCards(out); /* ?block=1&limit=N — a timed block step from Today starts straight into a bounded session. */ try{ var bp=new URLSearchParams(location.search); if(bp.get(
+- ){ var lim=parseInt(bp.get(
+- ,10); blockAutoStart.current=(lim>=1&&lim<=50)?lim:5; } }catch(_){ } }).catch(function(){setErr(true);}); },[]); useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type===
+- ,d.mode);setTheme(d.mode);}} window.addEventListener(
+- ,onMsg); return function(){window.removeEventListener(
+- ,onMsg);}; },[]); useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s||!s.card)return; var k=ev.key; if(!s.revealed){ if(s.card.kind==='recall'){ if(k===
+- )revealCard(); } else { var n=parseInt(k,10); if(s.card.o&&n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } } else { if(k===
+- )grade(3); } } window.addEventListener(
+- ,onKey); return function(){window.removeEventListener(
+- ,onKey);}; },[]); function persist(s){saveS(s);setStore(Object.assign({},s));} /* dashboard metrics */ function metrics(){ var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0; if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st){neu++;return;} seen++; var m=maturity(st); if(m===
+- )young++; else learn++; if(st.due =1); if(fromBlock&&limit Again or Hard only; the buttons disable to match, and this guard also covers the keyboard shortcuts (keys 3/4). A recall card has no objective outcome — the learner is rating their own answer against the model — so all four grades stand and the grade itself is what
+- means. */ if(!isRecall && g>1 && s.chosen!==correctIdx(s.card)) return; var st=loadS(); st=rollDay(st); var card=s.card; var existed=!!st.cards[card.id]; var was=st.cards[card.id]||{ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; st.cards[card.id]=applyGrade(was,GRADE_NAMES[g],{fuzzKey:card.id}); if(!existed){ st.day.newToday=(st.day.newToday||0)+1; } bumpStreak(st); st.stats.totalReviews=(st.stats.totalReviews||0)+1; var ci=correctIdx(card); var gotIt=isRecall?(g>=2):(s.chosen===ci); st.stats.seen=(st.stats.seen||0)+1; if(gotIt)st.stats.correct=(st.stats.correct||0)+1; saveS(st); setStore(Object.assign({},st)); var rq=gradedThisSession[card.id]?1:0; gradedThisSession[card.id]=1; calibLog({s:'rev',id:card.id,p:GRADE_NAMES[g]||g,sug:sug,a:gotIt?1:0,rq:rq,ts:Date.now()}); // advance queue var q=s.queue.slice(); var pos=s.pos; if(g===0){ q.push(card); } // requeue lapses to end of this session var nextPos=pos+1; var reviewed=s.reviewed+1, correct=s.correct+(gotIt?1:0); var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q,page:card.page||null}); if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses,fromBlock:!!s.fromBlock}); return; } setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses,fromBlock:!!s.fromBlock}); } function endSession(){ setSess(null); setTick(function(x){return x+1;}); } function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); } function resetAll(){ if(!window.confirm(
+- ))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); } var head=e(
+- )); /* ---- active session ---- */ if(sess && sess.queue){ var c=sess.card, isRecall=(c.kind==='recall'); var ci=correctIdx(c), pctp=Math.round(100*sess.pos/Math.max(1,sess.total)); var gotIt=(!isRecall&&sess.chosen===ci); /* single source of truth: feeds the 'sug' className below AND grade()'s calibLog event via closure. A recall card suggests nothing — there is no outcome to suggest from. */ var sug=isRecall?'':(gotIt?'Good':'Again'); var fbOpt=(!isRecall&&c.o[sess.chosen])||{}; var corrOpt=(!isRecall&&c.o[ci])||{}; var isNew=!loadS().cards[c.id]; return e(
+- }}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+
+- +sess.total)), /* Context the card cannot be answered without (a reasoning case's patient brief). Rendered above the question and visually subordinate to it, so the eye still lands on what is being asked. Text only — never markup. */ c.stem? e(
+- })) : null, isRecall ? (sess.revealed ? e(
+- ), revealNodes(c.reveal)) : e(
+- }, optOrder(c).map(function(oi,pos){ var o=c.o[oi]; var cls=
+- ; if(sess.revealed){ if(oi===ci)cls+=
+- ; else if(oi===sess.chosen)cls+=
+- ,{key:oi,className:cls,disabled:sess.revealed,onClick:function(){choose(oi);}}, e(
+- }, String.fromCharCode(65+pos)), e(
+- ,null,o.t)); })), (!isRecall&&sess.revealed)? e(
+- ), (fbOpt.fb||corrOpt.fb||
+- }, sess.revealed ? (isRecall ?
+- )) ))); } /* ---- session finished / empty ---- */ if(sess && sess.finished){ var rt=sess.reviewed?Math.round(100*sess.correct/sess.reviewed):0; var missed=(sess.misses||[]).length; if(!sess.receipt){ /* Built once per finished session: cwReceipt writes (block step, never a page here) and must not re-run on every re-render of this screen. */ sess.receipt=cwReceipt({ tool:'review', ref:null, blockKind:sess.fromBlock?'review':null, context: sess.reviewed+
+- , headline: missed? (missed===1?
+- }], reread:(sess.misses||[]).slice(0,5).map(function(m){ var topic=/^TOPIC#/.test(m.id)?m.id.slice(6):null; var ref=topic||m.page||null; return {tag:
+- ,warn:true,title:m.q,note:m.deckTitle,ref:ref,refTitle:ref?prettyRef(ref):null}; }), actions:[{id:
+- ,primary:true}] }); } return e(
+- ,onClick:function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(t){ ev.preventDefault(); endSession(); } }, dangerouslySetInnerHTML:{__html:sess.receipt.html}}))); } if(sess && sess.empty){ return e(
+- )))); } /* ---- dashboard ---- */ var m=metrics(); var pp=phasePolicy(); var canStart=(m.due+m.newRemain)>0; return e(
+- ,disabled:!canStart,onClick:function(){start(false);}}, canStart?(
+- ,min:5,max:30,step:1,value:store.settings.newPerDay||12,onChange:function(ev){setNewPerDay(+ev.target.value);}}), e(
+- ,null,store.settings.newPerDay||12)), e(
+- ) ); } ReactDOM.createRoot(document.getElementById(
 
 ---
 
@@ -446,7 +376,7 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Shelf Mode — Exam Simulation Reviewed by Joshua Moss, MD on 2026-07-05
 - Skip to content
 
-**Authored clinical strings (47):**
+**Authored clinical strings (91):**
 
 - Strong — exam-ready range.
 - Solid — tighten the misses.
@@ -454,47 +384,91 @@ _These tools are single-file HTML that render from inline JS data, so the clinic
 - Psychopharm & Med Emergencies
 - t label a draft mid-block without breaking the simulation, so the conservative subset is the attested 142. Categories map onto the existing BLUEPRINT topic regexes. */ var CAT_TOPIC={mood:"Mood",psychosis:"Psychosis",anxiety:"Anxiety, OCD & Trauma",substance:"Substance Use",pharm:"Psychopharm & Med Emergencies",neurocog:"Delirium, Dementia & MCI",personality:"Personality",childdev:"Child & Adolescent",otherdx:"Somatic & Related",safety:"Psychiatric Emergencies",ethics:"Interview, Ethics & Law",relational:"Relational & Family"}; function bankPool(data){ var out=[]; (((data&&data.items)||[])).forEach(function(it){ if(it.status!=="attested") return; if(!it.stem||!Array.isArray(it.options)||it.options.length<2) return; var hasCorrect=false; it.options.forEach(function(op){ if(op&&op.c)hasCorrect=true; }); if(!hasCorrect) return; /* Options are shuffled ONCE here (bank storage order is authoring order — the draft pool is known to lean on first-position answers) and letters relabel automatically because every render site derives them from array index (KEYS[i]). Correct option explains via the item
 - s own primary (spec.actions) beside "Back to Today"; 3. marks the tool
-- s openPage message — a plain href would be caught by the in-iframe interceptor and lose its query, so the delegated listener below posts the full route instead; outside an iframe it falls back to a real navigation. */ function cwReceiptEsc(s){ return String(s===undefined||s===null?
-- ); } function cwReceiptLocalDay(nowMs){ var d=new Date(nowMs), m=d.getMonth()+1, day=d.getDate(); return d.getFullYear()+
-- )+day; } /* Writes the legacy {done:true,at} entry the front door reads. Returns true only when this call changed the store, so "Marked done on Today" is said once, not on every re-render. */ function cwReceiptMarkDone(ref, nowMs){ if(!ref) return false; try{ var p=JSON.parse(localStorage.getItem(
-- ) p={}; if(p[ref]&&p[ref].done===true) return false; p[ref]={done:true,at:cwReceiptLocalDay(nowMs)}; localStorage.setItem(
-- , JSON.stringify(p)); return true; }catch(_){ return false; } } function cwReceiptStepRoute(step){ var s=step||{}; if(s.kind===
-- +encodeURIComponent(String(s.n||1)); if(s.kind===
-- )); } function cwReceiptNextStep(block, doneMap){ var b=block||{}, list=b.steps||[], d=doneMap||{}, i, s, done=0; var next=null; for(i=0;i<list.length;i++){ s=list[i]||{}; var isDone=(s.kind===
-- )?(d[s.ref]===true):(s.done===true); if(isDone) done++; else if(!next) next=s; } return {next:next, done:done, total:list.length}; } function cwReceiptDoneMap(){ var out={}; try{ var p=JSON.parse(localStorage.getItem(
-- ){ for(var k in p){ if(Object.prototype.hasOwnProperty.call(p,k)&&p[k]&&p[k].done===true) out[k]=true; } } }catch(_){ } return out; } var CW_RECEIPT_CSS=
-- ; function cwReceiptEnsureStyle(){ try{ if(typeof document===
-- )) return; var st=document.createElement(
-- ; st.textContent=CW_RECEIPT_CSS; document.head.appendChild(st); }catch(_){ } } var cwReceiptWired=false; function cwReceiptNavigate(ref, search){ var framed=false; try{ framed=(typeof window!==
-- )&&window.self!==window.top; }catch(_){ framed=true; } if(framed){ try{ window.parent.postMessage({type:
-- ); return; }catch(_){ } } try{ location.href=
-- +encodeURIComponent(ref)))); }catch(_){ } } function cwReceiptWire(){ if(cwReceiptWired||typeof document===
-- ) return; cwReceiptWired=true; document.addEventListener(
-- , function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
-- ):null; if(!t) return; ev.preventDefault(); if(t.hasAttribute(
-- ); return; } cwReceiptNavigate(t.getAttribute(
-- ); }, true); } function cwReceipt(spec){ var s=spec||{}, nowMs=(typeof s.nowMs===
-- )?s.nowMs:Date.now(), i; cwReceiptEnsureStyle(); cwReceiptWire(); var marked=cwReceiptMarkDone(s.ref, nowMs); var block=null, progress=null; if(typeof blockLoad===
-- ){ if(s.blockKind&&typeof blockMarkStep===
-- ) blockMarkStep(s.blockKind, nowMs); block=blockLoad(nowMs); if(block) progress=cwReceiptNextStep(block, cwReceiptDoneMap()); } var h=
-- ; var stats=s.stats||[]; if(stats.length){ h+=
-- ; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone===
-- ; } var reread=s.reread||[]; if(reread.length){ h+=
-- ; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+=
-- cw-receipt__tag'+(r.warn?' is-warn':'')+'
-- ; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+=
-- cw-receipt__btn is-primary
-- ; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+=
-- cw-receipt__btn'+(a.primary?' is-primary':'')+'
-- ; if(!next&&typeof blockClear===
-- ; return {html:h, marked:marked, next:next||null}; } function refHref(ref){ if(!ref) return null; return /\.html(\?|#|$)/.test(ref)? ("./"+ref) : ("../index.html?page="+encodeURIComponent(ref)); } function correctIdx(o){for(var i=0;i<o.length;i++){if(o[i]&&o[i].c)return i;}return -1;} // ---- Sample preview items (original, classic teaching points). Only used when no SHELF-* decks exist yet. // Clearly labeled as preview; NOT scored content for assessment until the faculty-reviewed bank lands. var SAMPLE=[ {topic:"Mood",diff:"easy",ref:"t_mood.md", q:"A 26-year-old woman is admitted after 5 days of decreased need for sleep, rapid speech, increased spending, and a belief that she has been chosen to reform the hospital. She has had two prior depressive episodes treated with sertraline. On exam she is irritable with pressured speech and flight of ideas. Which of the following is the most appropriate next step?", o:[{t:"Continue sertraline and add cognitive behavioral therapy",c:false,fb:"Antidepressant monotherapy can sustain or worsen mania; the priority is to stop it and start an antimanic agent."}, {t:"Discontinue sertraline and start a mood stabilizer or second-generation antipsychotic",c:true,fb:"Correct — acute mania (bipolar I): stop the antidepressant, begin lithium/valproate or an SGA, and protect sleep."}, {t:"Start fluoxetine for treatment-resistant depression",c:false,fb:"The presentation is mania, not depression; an antidepressant is contraindicated."}, {t:"Obtain brain MRI before initiating any treatment",c:false,fb:"Classic mania with prior mood episodes does not require imaging before treatment; do not delay antimanic therapy."}, {t:"Begin lorazepam as monotherapy",c:false,fb:"A benzodiazepine is adjunctive for agitation/sleep but does not treat the manic episode."}], tp:"Acute mania: stop the antidepressant, start a mood stabilizer or SGA, and protect sleep."}, {topic:"Psychopharm & Med Emergencies",diff:"med",ref:"psychopharm_primer.md", q:"A 30-year-old man on fluoxetine is brought in 8 hours after a friend gave him tramadol for back pain. He is agitated and diaphoretic. Temperature is 39.1°C, heart rate 124. Exam shows hyperreflexia and inducible clonus, greater in the lower extremities. Which of the following is the most likely diagnosis?", o:[{t:"Serotonin syndrome",c:true,fb:"Correct — rapid onset after adding a serotonergic agent (tramadol), with hyperthermia, autonomic instability, and neuromuscular hyperexcitability (clonus, hyperreflexia). Stop the agents, supportive care, consider cyproheptadine."}, {t:"Neuroleptic malignant syndrome",c:false,fb:"NMS follows dopamine antagonists, evolves over days, and features
-- rigidity and bradyreflexia — not clonus/hyperreflexia."}, {t:"Anticholinergic toxicity",c:false,fb:"Anticholinergic toxidrome gives dry skin, absent bowel sounds, and normal reflexes — not diaphoresis with clonus."}, {t:"Malignant hyperthermia",c:false,fb:"Malignant hyperthermia is triggered by volatile anesthetics/succinylcholine, not oral serotonergics."}, {t:"Sympathomimetic intoxication",c:false,fb:"Stimulant toxicity can mimic this but lacks the prominent clonus/hyperreflexia and the clear serotonergic trigger."}], tp:"Serotonin syndrome = serotonergic trigger + hyperthermia + clonus/hyperreflexia (lower-limb predominant); NMS = dopamine blocker + rigidity + hyporeflexia over days."}, {topic:"Substance Use",diff:"easy",ref:"withdrawal.html", q:"A 52-year-old man admitted for pancreatitis becomes tremulous and diaphoretic on hospital day 2, with heart rate 116, blood pressure 168/98, and visual misperceptions. He reports drinking a pint of vodka daily until admission. Which of the following is the most appropriate management?", o:[{t:"Symptom-triggered benzodiazepine dosing with CIWA-Ar monitoring, plus thiamine",c:true,fb:"Correct — alcohol withdrawal: benzodiazepines (often CIWA-Ar–guided) are first-line, with thiamine to prevent Wernicke encephalopathy."}, {t:"Scheduled haloperidol",c:false,fb:"Antipsychotics lower the seizure threshold and do not treat the underlying GABA/glutamate dysregulation; they are at most adjunctive for agitation."}, {t:"Intravenous dextrose before any other intervention",c:false,fb:"Give thiamine before/with glucose in at-risk patients — a glucose load alone can precipitate Wernicke encephalopathy."}, {t:"Physical restraints and observation",c:false,fb:"Restraints do not treat withdrawal and can worsen autonomic arousal; pharmacologic treatment is needed."}, {t:"Clonidine monotherapy",c:false,fb:"Clonidine may blunt autonomic signs but does not prevent withdrawal seizures or delirium tremens."}], tp:"Alcohol withdrawal: benzodiazepines (CIWA-Ar–guided) first-line; give thiamine before or with glucose."}, {topic:"Delirium, Dementia & MCI",diff:"med",ref:"delirium.md", q:"A 78-year-old woman is inattentive and intermittently drowsy two days after hip surgery. Her family says she was cognitively intact at baseline; symptoms fluctuate and worsen at night. She is on oxycodone and diphenhydramine for sleep. Which of the following is the most appropriate first step?", o:[{t:"Identify and treat underlying causes and remove deliriogenic medications",c:true,fb:"Correct — acute, fluctuating inattention with altered arousal is delirium. First-line is to find and fix the cause (pain meds, anticholinergics, infection, metabolic) and use nonpharmacologic measures."}, {t:"Start a scheduled long-acting benzodiazepine",c:false,fb:"Benzodiazepines worsen delirium (except in alcohol/benzo withdrawal) and increase fall risk."}, {t:"Begin donepezil for cognitive decline",c:false,fb:"Cholinesterase inhibitors treat chronic dementia, not acute delirium, and have no role here."}, {t:"Obtain an outpatient neuropsychology referral",c:false,fb:"This is an acute medical problem requiring inpatient workup, not deferred testing."}, {t:"Reassure the family this is expected post-operative confusion and observe",c:false,fb:"Delirium signals an underlying disturbance and predicts poor outcomes; it requires active workup, not watchful waiting."}], tp:"Delirium is a medical emergency: treat the cause and stop deliriogenic drugs; avoid benzodiazepines unless withdrawal-related."}, {topic:"Psychiatric Emergencies",diff:"med",ref:"capacity.html", q:"A 60-year-old man with diabetes and a necrotic foot refuses a recommended amputation. He can describe the gangrene, the risk of fatal sepsis without surgery, the option of amputation, and explains he would rather risk death than lose his leg, citing consistent long-held values. He has no psychosis or cognitive deficit. Which of the following best describes his decision-making capacity?", o:[{t:"He has capacity to refuse the amputation",c:true,fb:"Correct — he demonstrates the four abilities (understanding, appreciation, reasoning, and a stable choice). Capacity is decision-specific; a
-- choice with intact reasoning is still a capacitated refusal."}, {t:"He lacks capacity because the refusal is medically dangerous",c:false,fb:"Capacity is about the process of decision-making, not whether the choice matches the medical recommendation."}, {t:"He lacks capacity and a guardian should consent to surgery",c:false,fb:"There is no impairment in the four abilities; overriding a capacitated refusal would violate autonomy."}, {t:"Capacity cannot be assessed without neuropsychological testing",c:false,fb:"Capacity is a clinical, decision-specific bedside determination, not a test score."}, {t:"He has capacity only if he agrees to surgery",c:false,fb:"Capacity does not depend on agreeing with the team; that reasoning is circular."}], tp:"Capacity is decision-specific and rests on four abilities; a high-risk refusal with intact reasoning is still capacitated."} ]; function App(){ var d=useState(null),data=d[0],setData=d[1]; var er=useState(null),err=er[0],setErr=er[1]; var S=useState({view:"config",len:20,diff:"all",mode:"tutor",timed:true,topics:[], items:[],picks:[],flags:{},idx:0,secs:0,total:0,result:null,saved:false,preview:false,revFilter:"missed"}); var st=S[0],setS=S[1]; function set(p){setS(function(prev){return Object.assign({},prev,p);});} useEffect(function(){ fetch("../question_bank.json").then(function(r){return r.json()}).then(setData).catch(function(){setErr("Could not load the question bank (question_bank.json).");}); },[]); // derive pool + topics once data lands var pool=[], preview=false, topicsAll=[]; if(data){ pool=bankPool(data); if(pool.length===0){ pool=SAMPLE.slice(); preview=true; } var seen={}; pool.forEach(function(it){seen[it.topic]=(seen[it.topic]||0)+1;}); topicsAll=Object.keys(seen).sort(function(a,b){return orderRank(a)-orderRank(b);}).map(function(t){return {t:t,n:seen[t]};}); } // default-select all topics on first data load useEffect(function(){ if(data && st.topics.length===0 && topicsAll.length){ set({topics:topicsAll.map(function(x){return x.t;}), preview:preview}); } },[data]); // exam timer useEffect(function(){ if(st.view!=="exam") return; var id=setInterval(function(){ setS(function(p){ if(p.view!=="exam") return p; if(p.timed){ if(p.secs ="1" && ev.key =q.o.length) return p; if(p.mode==="tutor" && p.picks[p.idx]!=null) return p; // locked after answering in tutor mode var picks=p.picks.slice(); picks[p.idx]=oi; return Object.assign({},p,{picks:picks}); }); } function canAdvance(){ if(st.mode==="tutor") return st.picks[st.idx]!=null; return true; } function advance(){ setS(function(p){ if(p.idx+1 0?Object.assign({},p,{idx:p.idx-1}):p;}); } function toggleFlag(){ setS(function(p){var f=Object.assign({},p.flags);f[p.idx]=!f[p.idx];return Object.assign({},p,{flags:f});}); } function grade(p){ var correct=0, byTopic={}; p.items.forEach(function(q,i){ var ci=correctIdx(q.o), ok=(p.picks[i]===ci && ci>=0); if(ok) correct++; var bt=byTopic[q.topic]=byTopic[q.topic]||{c:0,n:0}; bt.n++; if(ok)bt.c++; }); var secsUsed = p.timed? (p.total-p.secs) : p.secs; var res={n:p.items.length,correct:correct,pct:Math.round(100*correct/Math.max(1,p.items.length)),byTopic:byTopic,secs:secsUsed}; return Object.assign({},p,{view:"result",result:res}); } // Persistent, unconditional live region: same DOM node across every view (config/exam/result), // so a screen reader binds to it once and hears only the CONTENT change when a result lands. var resultMsg = (st.view==="result" && st.result) ? resultMsgFor(st.result.pct) : ""; var liveRegion = e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"}, (st.view==="result" && st.result) ? (st.result.correct+" of "+st.result.n+" correct, "+st.result.pct+" percent. "+resultMsg) : ""); if(err) return e("div",{className:"wrap"},liveRegion,e("h1",null,"Shelf Mode"),e("div",{className:"card"},err)); if(!data) return e("div",{className:"wrap"},liveRegion,e("div",{className:"loading"},"Loading the question bank…")); // ---------------- CONFIG ---------------- if(st.view==="config"){ var L=loadLS(); var recent=(L.attempts||[]).slice(0,3); var avail=pool.filter(function(it){ var dd=normDiff(it.diff); if(dd==="review")return false; if(st.diff!=="all"&&dd!==st.diff)return false; return st.topics.indexOf(it.topic)>=0; }).length; var lens=[10,20,40].filter(function(n){return true;}); return e("div",{className:"wrap"}, liveRegion, e("h1",null,"Shelf Mode"), e("span",{className:"opt-pill"},"Optional practice · exam simulation"), e("div",{className:"sub"},"A timed, blueprint-weighted vignette set that mirrors the psychiatry COMAT / shelf. Choose your length, topics, and pacing. Single best answer, with feedback and a teaching point on every item."), preview? e("div",{className:"banner"},e("strong",null,"Preview mode. "),"The attested question bank didn
-- re back online for the full blueprint-weighted exam.") : null, e("div",{className:"card"}, e("div",{className:"field"}, e("label",{className:"h"},"Length"), e("div",{className:"seg"}, lens.map(function(n){ return e("button",{key:n,className:st.len===n?"on":"",onClick:function(){set({len:n})}}, n+" Q"); })) ), e("div",{className:"field"}, e("label",{className:"h"},"Difficulty"), e("div",{className:"seg"}, [["all","All"],["easy","Easy"],["med","Medium"],["hard","Hard"]].map(function(p){ return e("button",{key:p[0],className:st.diff===p[0]?"on":"",onClick:function(){set({diff:p[0]})}}, p[1]); })) ), e("div",{className:"field"}, e("label",{className:"h"},"Mode"), e("div",{className:"seg"}, e("button",{className:st.mode==="tutor"?"on":"",onClick:function(){set({mode:"tutor"})}},"Tutor — feedback after each"), e("button",{className:st.mode==="exam"?"on":"",onClick:function(){set({mode:"exam"})}},"Exam — feedback at end") ) ), e("div",{className:"field"}, e("label",{className:"h"},"Pacing"), e("div",{className:"seg"}, e("button",{className:st.timed?"on":"",onClick:function(){set({timed:true})}},"Timed · 1.5 min/Q"), e("button",{className:!st.timed?"on":"",onClick:function(){set({timed:false})}},"Untimed") ) ), e("div",{className:"field"}, e("label",{className:"h"},"Topics"), e("div",{className:"linkrow"}, e("button",{onClick:function(){set({topics:topicsAll.map(function(x){return x.t;})})}},"Select all"), e("button",{onClick:function(){set({topics:[]})}},"Clear") ), e("div",{className:"chips",style:{marginTop:"7px"}}, topicsAll.map(function(x){ var on=st.topics.indexOf(x.t)>=0; return e("button",{key:x.t,className:"chip"+(on?" on":""),onClick:function(){ var t=st.topics.slice(),i=t.indexOf(x.t); if(i>=0)t.splice(i,1); else t.push(x.t); set({topics:t}); }}, e("span",null,x.t), e("span",{className:"n"},x.n)); })) ), e("div",{className:"row between",style:{marginTop:"6px"}}, e("span",{className:"meta"}, avail+" item"+(avail===1?"":"s")+" available · drawing "+Math.min(st.len,avail)), e("button",{className:"btn primary",disabled:avail===0,onClick:startExam}, "Start "+Math.min(st.len,avail)+"-question set") ), e("div",{className:"kbd",style:{marginTop:"8px"}},"Tip: press 1–5 to answer, Enter to advance.") ), recent.length? e("div",{className:"card"}, e("label",{className:"h",style:{display:"block",marginBottom:"6px"}},"Recent attempts"), e("div",{className:"recent"}, recent.map(function(r,i){ return e("div",{className:"r",key:i}, e("span",null, r.at+" · "+(r.mode==="tutor"?"Tutor":"Exam")+(r.preview?" · sample":"")), e("span",null, r.correct+"/"+r.n+" ("+r.pct+"%)")); })) ):null, e("div",{className:"disc"},"Optional exam-prep simulation. Items are educational and use fictional composites only (no patient information). Verify management against current guidelines and your team. Progress is saved only in this browser. ",e("br"),"Joshua Moss, MD | Psychiatrist") ); } // ---------------- RESULT ---------------- if(st.view==="result"){ var R=st.result, msg=resultMsg; var bts=Object.keys(R.byTopic).sort(function(a,b){return orderRank(a)-orderRank(b);}); var revItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ if(st.revFilter==="all") return true; var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); if(!st.receipt){ var missedItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); var weakTopic=null; bts.forEach(function(t){ var b=R.byTopic[t]; var pc=b.c/Math.max(1,b.n); if(b.n>=2&&(weakTopic===null||pc<weakTopic.pc)) weakTopic={t:t,pc:pc}; }); st.receipt=cwReceipt({ tool:
-- Nothing to review — every item correct.
-- Joshua Moss, MD | Psychiatrist · Educational simulation; fictional composites only. Verify management against current guidelines.
-- End this set and discard progress?
-- Educational simulation; fictional composites only (no patient information). Joshua Moss, MD | Psychiatrist
+- s parameters; ordinary practice leaves a saved block alone. Pure apart from those two writes: returns {html, marked, next}. Copy is audience-neutral (no MS3/clerkship/student/shelf/resident tokens) because it ships to both sites. Navigation inside a tool iframe goes through the shell
+- > Session receipt '; if(s.context) h+=' '+cwReceiptEsc(s.context)+' '; h+=' '; if(s.headline) h+='<h2 class=
+- >'+cwReceiptEsc(s.headline)+' '; if(s.sub) h+='<p class=
+- >'+cwReceiptEsc(s.sub)+' '; var stats=s.stats||[]; if(stats.length){ h+='<div class=
+- >'; for(i=0;i<stats.length;i++){ var st=stats[i]||{}, tone=st.tone==='warn'?' is-warn':(st.tone==='good'?' is-good':''); h+='<div class=
+- >'+cwReceiptEsc(st.label)+' <span class=
+- >'+cwReceiptEsc(st.value)+' '; } h+=' '; } var reread=s.reread||[]; if(reread.length){ h+='<div class=
+- >Worth a second look '; for(i=0;i<reread.length;i++){ var r=reread[i]||{}; h+='<div class=
+- >'; if(r.tag) h+='<span class=
+- >'+cwReceiptEsc(r.tag)+' '; h+='<span style=
+- >'+cwReceiptEsc(r.title)+' '; if(r.note) h+='<span class=
+- >'+cwReceiptEsc(r.note)+' '; if(r.ref) h+='<a class=
+- data-cw-receipt-next data-cw-receipt-ref=
+- >Re-read: '+cwReceiptEsc(r.refTitle||r.ref)+' → '; h+=' '; } } if(marked){ var practiceWeek=cwReceiptPracticeWeek(); h+='<div class=
+- >✓ '+(practiceWeek?'Week '+practiceWeek+' practice recorded:':'Activity recorded:')+' '+cwReceiptEsc(s.refTitle||s.ref)+'. '; } h+='<div class=
+- >'; var next=progress&&progress.next; if(next){ var route=cwReceiptStepRoute(next); h+='<button type=
+- >Next in your block: '+cwReceiptEsc(next.title)+(next.min?' ~'+cwReceiptEsc(next.min)+' min ':'')+' '; }else{ var acts=s.actions||[]; for(i=0;i<acts.length;i++){ var a=acts[i]||{}; h+='<button type=
+- ':'')+'>'+cwReceiptEsc(a.label)+' '; } } h+='<button type=
+- data-cw-receipt-home'+(s.homeId?' id=
+- ':'')+'>Back to Today '; if(progress){ h+='<span class=
+- >'+(next?('Block · '+progress.done+' of '+progress.total+' done'):('Block complete · '+progress.total+' of '+progress.total+' done'))+' '; if(!next&&typeof blockClear==='function') blockClear(); } h+=' '; return {html:h, marked:marked, next:next||null}; } function refHref(ref){ if(!ref) return null; return /\.html(\?|#|$)/.test(ref)? (
+- +encodeURIComponent(ref)); } function correctIdx(o){for(var i=0;i<o.length;i++){if(o[i]&&o[i].c)return i;}return -1;} // ---- Sample preview items (original, classic teaching points). Only used when no SHELF-* decks exist yet. // Clearly labeled as preview; NOT scored content for assessment until the faculty-reviewed bank lands. var SAMPLE=[ {topic:
+- } ]; function App(){ var d=useState(null),data=d[0],setData=d[1]; var er=useState(null),err=er[0],setErr=er[1]; var S=useState({view:
+- ,timed:true,topics:[], items:[],picks:[],flags:{},idx:0,secs:0,total:0,result:null,saved:false,preview:false,revFilter:
+- }); var st=S[0],setS=S[1]; function set(p){setS(function(prev){return Object.assign({},prev,p);});} useEffect(function(){ fetch(
+- ).then(function(r){return r.json()}).then(setData).catch(function(){setErr(
+- );}); },[]); // derive pool + topics once data lands var pool=[], preview=false, topicsAll=[]; if(data){ pool=bankPool(data); if(pool.length===0){ pool=SAMPLE.slice(); preview=true; } var seen={}; pool.forEach(function(it){seen[it.topic]=(seen[it.topic]||0)+1;}); topicsAll=Object.keys(seen).sort(function(a,b){return orderRank(a)-orderRank(b);}).map(function(t){return {t:t,n:seen[t]};}); } // default-select all topics on first data load useEffect(function(){ if(data && st.topics.length===0 && topicsAll.length){ set({topics:topicsAll.map(function(x){return x.t;}), preview:preview}); } },[data]); // exam timer useEffect(function(){ if(st.view!==
+- ) return; var id=setInterval(function(){ setS(function(p){ if(p.view!==
+- ) return p; if(p.timed){ if(p.secs<=1){ return grade(Object.assign({},p,{secs:0})); } return Object.assign({},p,{secs:p.secs-1}); } return Object.assign({},p,{secs:p.secs+1}); }); },1000); return function(){clearInterval(id);}; },[st.view,st.timed]); // persist a finished attempt useEffect(function(){ if(st.view===
+- && !st.saved && st.result){ try{var L=loadLS(); L.attempts=(L.attempts||[]); L.attempts.unshift({at:new Date().toISOString().slice(0,10),n:st.result.n,correct:st.result.correct, pct:st.result.pct,mode:st.mode,timed:st.timed,secs:st.result.secs,preview:st.preview}); L.attempts=L.attempts.slice(0,20); localStorage.setItem(LS,JSON.stringify(L));}catch(_){} set({saved:true}); } },[st.view,st.saved]); // keyboard: 1-5 choose, Enter advance useEffect(function(){ if(st.view!==
+- ) return; function onKey(ev){ var q=st.items[st.idx]; if(!q) return; if(ev.key>=
+- && ev.key<=String(Math.min(9,q.o.length))){ choose(parseInt(ev.key,10)-1); } else if(ev.key===
+- ){ if(canAdvance()) advance(); } } window.addEventListener(
+- ,onKey); return function(){window.removeEventListener(
+- ,onKey);}; }); function startExam(){ var items=buildExam(pool, st.topics, st.len, st.diff); if(!items.length) return; set({view:
+- ,items:items,picks:items.map(function(){return null;}),flags:{},idx:0, secs: st.timed? items.length*PER_Q : 0, total:items.length*PER_Q, result:null, saved:false, preview:preview}); } function choose(oi){ setS(function(p){ var q=p.items[p.idx]; if(!q||oi>=q.o.length) return p; if(p.mode===
+- && p.picks[p.idx]!=null) return p; // locked after answering in tutor mode var picks=p.picks.slice(); picks[p.idx]=oi; return Object.assign({},p,{picks:picks}); }); } function canAdvance(){ if(st.mode===
+- ) return st.picks[st.idx]!=null; return true; } function advance(){ setS(function(p){ if(p.idx+1 0?Object.assign({},p,{idx:p.idx-1}):p;}); } function toggleFlag(){ setS(function(p){var f=Object.assign({},p.flags);f[p.idx]=!f[p.idx];return Object.assign({},p,{flags:f});}); } function grade(p){ var correct=0, byTopic={}; p.items.forEach(function(q,i){ var ci=correctIdx(q.o), ok=(p.picks[i]===ci && ci>=0); if(ok) correct++; var bt=byTopic[q.topic]=byTopic[q.topic]||{c:0,n:0}; bt.n++; if(ok)bt.c++; }); var secsUsed = p.timed? (p.total-p.secs) : p.secs; var res={n:p.items.length,correct:correct,pct:Math.round(100*correct/Math.max(1,p.items.length)),byTopic:byTopic,secs:secsUsed}; return Object.assign({},p,{view:
+- ,result:res}); } // Persistent, unconditional live region: same DOM node across every view (config/exam/result), // so a screen reader binds to it once and hears only the CONTENT change when a result lands. var resultMsg = (st.view===
+- && st.result) ? resultMsgFor(st.result.pct) :
+- && st.result) ? (st.result.correct+
+- },err)); if(!data) return e(
+- )); // ---------------- CONFIG ---------------- if(st.view===
+- ){ var L=loadLS(); var recent=(L.attempts||[]).slice(0,3); var avail=pool.filter(function(it){ var dd=normDiff(it.diff); if(dd===
+- )return false; if(st.diff!==
+- &&dd!==st.diff)return false; return st.topics.indexOf(it.topic)>=0; }).length; var lens=[10,20,40].filter(function(n){return true;}); return e(
+- t load, so this is running on a small set of sample items so you can see how it works. Reload when you
+- }, lens.map(function(n){ return e(
+- ,onClick:function(){set({len:n})}}, n+
+- ]].map(function(p){ return e(
+- ,onClick:function(){set({diff:p[0]})}}, p[1]); })) ), e(
+- ,{onClick:function(){set({topics:topicsAll.map(function(x){return x.t;})})}},
+- }}, topicsAll.map(function(x){ var on=st.topics.indexOf(x.t)>=0; return e(
+- ),onClick:function(){ var t=st.topics.slice(),i=t.indexOf(x.t); if(i>=0)t.splice(i,1); else t.push(x.t); set({topics:t}); }}, e(
+- +Math.min(st.len,avail)), e(
+- }, recent.map(function(r,i){ return e(
+- ) ); } // ---------------- RESULT ---------------- if(st.view===
+- ){ var R=st.result, msg=resultMsg; var bts=Object.keys(R.byTopic).sort(function(a,b){return orderRank(a)-orderRank(b);}); var revItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ if(st.revFilter===
+- ) return true; var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); if(!st.receipt){ var missedItems=st.items.map(function(q,i){return {q:q,i:i};}).filter(function(x){ var ci=correctIdx(x.q.o); return st.picks[x.i]!==ci; }); var weakTopic=null; bts.forEach(function(t){ var b=R.byTopic[t]; var pc=b.c/Math.max(1,b.n); if(b.n>=2&&(weakTopic===null||pc<weakTopic.pc)) weakTopic={t:t,pc:pc}; }); st.receipt=cwReceipt({ tool:'shelf', ref:null, blockKind:null, context: R.n+
+- +fmt(R.secs), headline: R.correct+
+- +msg) : msg, stats:[{label:
+- }], reread: missedItems.slice(0,5).map(function(x){ var ref=x.q.ref&&!/\.html/.test(x.q.ref)?x.q.ref:null; return {tag:x.q.topic||
+- ):null}; }), actions:[{id:
+- ,primary:true}] }); } return e(
+- ,{onClick:function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest(
+- ):null; if(t){ ev.preventDefault(); set({view:
+- ,saved:false}); } },dangerouslySetInnerHTML:{__html:st.receipt.html}}), e(
+- ,null, bts.map(function(t){ var b=R.byTopic[t], p=Math.round(100*b.c/Math.max(1,b.n)); return e(
+- ) ) ), revItems.length? revItems.map(function(x){ var q=x.q, ci=correctIdx(q.o), pick=st.picks[x.i]; return e(
+- +q.o[ci].t), (pick!=null && pick!==ci)? e(
+- +q.o[pick].t) : (pick==null? e(
+- ) ); } // ---------------- EXAM ---------------- var q=st.items[st.idx], pick=st.picks[st.idx], ci=correctIdx(q.o); var revealed = (st.mode===
+- && pick!=null); var answeredCount = st.picks.filter(function(p){return p!=null;}).length; var low = st.timed && st.secs<=Math.max(30, st.total*0.1); return e(
+- )}, st.timed? fmt(st.secs) : fmt(st.secs)+
+- +normDiff(q.diff)}), normDiff(q.diff)===
+- }, q.o.map(function(o,oi){ var cls=
+- ; if(revealed){ if(oi===ci) cls+=
+- ; else if(oi===pick) cls+=
+- ; } else if(oi===pick) cls+=
+- ,{key:oi,className:cls,disabled:revealed,onClick:function(){choose(oi)}}, e(
+- ,null,o.t), revealed&&o.fb? e(
+- },o.fb):null)); })), revealed? e(
+- ,onClick:toggleFlag}, st.flags[st.idx]?
+- ,disabled:!canAdvance(),onClick:advance}, st.idx+1<st.items.length?
+- ) ); } ReactDOM.createRoot(document.getElementById(
 
 ---
 
@@ -809,319 +783,3 @@ students do not treat test prep and clinical reasoning as separate tasks.
 - Serotonergic + poor sleep + weight/BMI tracking on antipsychotics = routine metabolic vigilance.
 
 *Joshua Moss, MD | Psychiatrist · High-yield recall aid; confirm every threshold/dose against the linked topic page and institutional references. Educational; fictional composites only, no PHI.*
-
-
----
-
-## OSCE Stations
-
-- **Slug:** `osce.md` · **Type:** md · **Sidebar:** listed
-- **Source:** `14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md`
-- **Governance:** status=`reviewed` · riskKind=`general` · riskLevel=`low`
-- **Length:** 1,546 words
-
-<!-- topic_meta overlay -->
-#### Structured metadata (`topic_meta.json` → this page)
-
-> est. read 4 min
-
-**TL;DR (shown above the page text):**
-
-> Six OSCE stations covering the skills most tested on rounds — suicide risk with collateral, capacity with delirium recognition, catatonia, alcohol withdrawal, family meeting agenda, and oral case presentation — with entrustment anchors 1–4.
-
-**Key points (bulleted card):**
-
-- Each station specifies behaviors to practice, not answers to memorize — rater focus is on clinical reasoning, communication, and appropriate escalation, not on naming the correct drug first.
-- Station 2 (capacity) and Station 3 (catatonia) test whether you avoid premature psychiatric labels when a medical mimic is present — both require recognizing the underlying driver before concluding behavior.
-- Target entrustment level 3 by end of rotation: able to perform routine parts with indirect supervision and escalate appropriately — safe and organized, not yet independent.
-
-**Clinical-workflow narration (per-stage coaching text):**
-
-- **ask** — For each OSCE station, first identify the task: risk, capacity, catatonia, withdrawal, family meeting, or oral presentation.
-- **mse** — Use observable MSE findings to justify your next step; stations reward saying what you saw, not only naming a diagnosis.
-- **safety** — State when you would stop the station and get supervision, medical evaluation, or emergency support.
-- **say** — I want to ask this directly because safety matters: have you had thoughts of killing yourself?
-- **collateral** — Use collateral to test baseline, time course, risk, and discharge feasibility rather than asking for global impressions.
-- **rounds** — Give a concise assessment, your immediate safety action, and the data that would change your plan.
-- **exam** — Practice stations aloud: opening line, core questions, safety escalation, and summary.
-- **actions** — Practice direct suicide question; Open reasoning workbench; Open rounding prep
-
-**Cross-references and tagging:**
-
-- **Related tools:** `communication-practice.html`, `diagnostic-reasoning.html`, `family-systems.html`, `oral.html`, `cssrs.html`, `capacity.html`
-- **Communication cases:** `suicide_direct_question_001`, `family_meeting_opening_001`, `collateral_questions_001`
-- **Workflow stages:** `encounter`, `safety`, `communication`, `team`, `exam`
-- **Workflow modes:** `ward`, `safety`, `family`, `shelf`
-
-#### Page text (as shipped)
-
-# MS3 Psychiatry OSCE Station Set
-
-Generated: 2026-06-27
-
-All cases are synthetic. No real patient details are used.
-
-## Station 1 - Suicide Risk With Collateral Hesitation
-
-**Time:** 12 minutes encounter, 3 minutes summary, 10 minutes feedback.
-
-**Student task**
-
-Conduct a focused suicide risk assessment, ask permission for collateral, and
-state an acute risk impression.
-
-**Patient brief**
-
-29-year-old retail worker admitted after sending a concerning text to a sibling.
-The patient says the ED overreacted. Sleep has been 3-4 hours nightly. Cannabis
-use increased. A goodbye letter exists but is not volunteered unless asked
-directly. Firearm access is at a parent's home.
-
-**Behaviors to practice**
-
-- Opens with role and purpose.
-- Asks directly about suicidal thoughts, plan, intent, preparation, past attempts.
-- Asks about means access.
-- Separates chronic and acute factors.
-- Asks permission for collateral.
-- Reflects the patient's worry about burdening family.
-- Names one next step.
-
-**Rater focus**
-
-Risk formulation, means restriction, collateral consent, tone.
-
-## Station 2 - Capacity To Refuse Medical Treatment
-
-**Time:** 12 minutes encounter, 5 minutes oral capacity summary.
-
-**Student task**
-
-Assess decision-making capacity for a specific refusal.
-
-**Patient brief**
-
-67-year-old admitted to medicine with infection and new paranoia that IV
-antibiotics are poison. The patient is intermittently inattentive and worse at
-night. The medical team asks, "Does the patient have capacity to refuse?"
-
-**Behaviors to practice**
-
-- Identifies the exact decision.
-- Assesses choice, understanding, appreciation, and reasoning.
-- Screens attention and fluctuation.
-- Considers delirium and psychosis.
-- Avoids equating disagreement with incapacity.
-- Presents which capacity ability is impaired.
-
-**Rater focus**
-
-Decision-specific reasoning and delirium recognition.
-
-## Station 3 - Possible Catatonia
-
-**Time:** 10 minutes observation/interview, 5 minutes team presentation.
-
-**Student task**
-
-Identify catatonia concern and escalate.
-
-**Patient brief**
-
-35-year-old with depression sits motionless, answers rarely, has eaten little,
-and intermittently holds the same posture. Nursing reports the patient is
-"refusing everything." Vital signs are stable but oral intake is poor.
-
-**Behaviors to practice**
-
-- Describes motor signs objectively.
-- Asks about intake, mobility, autonomic signs, and medication exposure.
-- Considers catatonia in differential.
-- Avoids labeling behavior as "noncompliance."
-- Escalates to resident/attending.
-
-**Rater focus**
-
-Recognition and language.
-
-## Station 4 - Alcohol Withdrawal Risk On Psychiatry Unit
-
-**Time:** 10 minutes encounter, 5 minutes presentation.
-
-**Student task**
-
-Screen for alcohol withdrawal risk and escalate appropriately.
-
-**Patient brief**
-
-48-year-old admitted for suicidal ideation after job loss. Reports drinking
-"more than usual." Last drink was yesterday morning. Prior tremors and one
-possible withdrawal seizure years ago, revealed only if asked.
-
-**Behaviors to practice**
-
-- Asks amount/frequency/last drink.
-- Asks prior withdrawal, seizure, delirium tremens.
-- Checks current symptoms and vitals.
-- Recognizes alcohol withdrawal risk.
-- Does not propose unsupervised management.
-
-**Rater focus**
-
-Withdrawal history and escalation.
-
-## Station 5 - Family Meeting Agenda Before Discharge
-
-**Time:** 15 minutes prep/presentation.
-
-**Student task**
-
-Prepare a family meeting agenda for a synthetic patient nearing discharge.
-
-**Case brief**
-
-22-year-old admitted for first manic episode. Sleep and agitation have improved.
-Family is frightened and divided: one parent wants strict control, another wants
-to avoid conflict. Patient wants discharge and refuses to discuss warning signs.
-
-**Behaviors to practice**
-
-- Names meeting goal.
-- Defines student/team role.
-- Includes patient voice.
-- Covers warning signs, medication plan, sleep, means safety, follow-up.
-- Avoids making family responsible for treatment adherence alone.
-- Names one unresolved discharge barrier.
-
-**Rater focus**
-
-Structure, boundaries, patient autonomy, family support.
-
-## Station 6 - Oral Presentation Of A New Admission
-
-**Time:** 6-minute presentation, 4-minute questions.
-
-**Student task**
-
-Present a synthetic admission with differential, risk, formulation, and plan.
-
-**Case brief**
-
-40-year-old with insomnia, paranoia, weight loss, and new stimulant use. Family
-history includes bipolar disorder. Patient has hypertension and recently started
-a corticosteroid burst.
-
-**Behaviors to practice**
-
-- Organized timeline.
-- Differential includes stimulant-induced psychosis, mania, steroid effect,
-  primary psychosis, medical/neurologic contributors.
-- MSE uses observable language.
-- Risk is explicit.
-- Plan matches differential and safety concerns.
-
-**Rater focus**
-
-Diagnostic reasoning and concision.
-
-## Entrustment Anchors
-
-| Level | Description |
-|---|---|
-| 1 | Needs full prompting; misses safety or diagnosis issue |
-| 2 | Identifies main issue but needs direct supervision |
-| 3 | Performs with indirect supervision for routine parts; escalates appropriately |
-| 4 | Organized, safe, concise, anticipates next step |
-
-## Shared Debrief Questions
-
-- What information changed your risk or differential?
-- What did you ask directly rather than imply?
-- What patient/family emotion did you notice?
-- What would you escalate immediately?
-- What would you document in one sentence?
-
-Plain-English note: these OSCEs practice what students actually do on an
-inpatient unit: ask safety questions, recognize medical mimics, talk to families,
-and present clearly.
-
----
-
-## Scored Checklists & Critical-Fail Criteria
-
-*Added 2026-07-04 — reviewed and attested by Joshua Moss, MD (2026-07-09). Each station is scored out of 10.
-**A critical-fail auto-fails the station regardless of the numeric score** (mark the station "1" on the entrustment anchor and debrief the safety miss).*
-
-**How to score.** Award the listed points for behaviors performed unprompted; give half credit if the examiner had to prompt. Pass = **≥ 7/10 AND no critical-fail**. Map the total to the entrustment anchors (≤4 → level 1; 5–6 → level 2; 7–8 → level 3; 9–10 → level 4).
-
-### Station 1 — Suicide risk with collateral hesitation (10 pts)
-
-- Introduces role, purpose, and the limits of confidentiality — 1
-- Asks directly about ideation, **plan, intent, and preparatory acts** — 2
-- Elicits the goodbye letter / preparation by asking directly (not volunteered) — 1
-- Asks about **means access, including the firearm at the parent's home** — 2
-- Separates chronic from acute risk factors; notes protective factors — 1
-- Asks permission for collateral — 1
-- Responds empathically to the "burden on family" worry — 1
-- States an acute risk impression **and** one concrete next step — 1
-
-**Critical-fail (auto-fail):** never asks about means/firearm access · never screens plan/intent/preparation · elicits an active plan yet states no protective step (means restriction, observation level, escalation).
-
-### Station 2 — Capacity to refuse medical treatment (10 pts)
-
-- Identifies the **exact decision** at stake (refuse IV antibiotics) — 2
-- Assesses all four abilities — choice, understanding, appreciation, reasoning — 4 (1 each)
-- Screens attention and fluctuation (delirium) — 1
-- Considers delirium/psychosis as contributors — 1
-- Names **which specific ability is impaired**; frames capacity as decision- and time-specific — 2
-
-**Critical-fail:** equates disagreement/refusal alone with incapacity · misses delirium in a clearly fluctuating patient (no attention screen) · declares the patient globally "incompetent" rather than decision-specific.
-
-### Station 3 — Possible catatonia (10 pts)
-
-- Describes motor signs objectively (immobility, mutism, posturing, negativism) — 2
-- Asks about intake, mobility, autonomic signs, medication exposure — 2
-- Names **catatonia** in the differential — 2
-- Recognizes escalation/benzodiazepine (lorazepam) challenge; does **not** reflexively give an antipsychotic — 1
-- Avoids "noncompliance / refusing everything" language — 1
-- Escalates to resident/attending — 1
-- Flags malignant catatonia / NMS as the dangerous end — 1
-
-**Critical-fail:** labels the patient "refusing/noncompliant" without considering catatonia · fails to escalate a patient with poor intake + motor signs · proposes an antipsychotic as the fix without recognizing catatonia/NMS risk.
-
-### Station 4 — Alcohol withdrawal risk (10 pts)
-
-- Asks amount / frequency / **last drink** — 2
-- Asks about prior withdrawal, **seizure, and DTs** (revealed only if asked) — 2
-- Checks current symptoms and vital signs — 2
-- Recognizes elevated withdrawal/seizure risk — 2
-- Escalates to a protocol (symptom-triggered benzodiazepine per team) and names **thiamine before or with glucose** — 1
-- Does **not** propose unsupervised management — 1
-
-**Critical-fail:** proposes unsupervised/self-directed management or discharge · never asks the withdrawal-seizure history (misses it) · fails to escalate a high-risk withdrawal.
-
-### Station 5 — Family meeting agenda before discharge (10 pts)
-
-- Names the meeting goal — 2
-- Defines the student/team role and boundaries — 1
-- Includes the patient's voice and protects autonomy — 2
-- Covers warning signs, medication plan, sleep, **means safety**, and follow-up — 2
-- Avoids making the family solely responsible for adherence — 1
-- Holds the divided parents without taking a side — 1
-- Names one unresolved discharge barrier — 1
-
-**Critical-fail:** omits means-safety and warning-signs for a first-manic patient who refuses to discuss them · proposes a discharge decision beyond MS3 scope · sidelines patient autonomy.
-
-### Station 6 — Oral presentation of a new admission (10 pts)
-
-- Organized one-liner and timeline — 2
-- Differential includes **stimulant-induced psychosis, mania, steroid effect, primary psychosis, and medical/neurologic** contributors — 3
-- MSE in observable language — 1
-- Risk stated explicitly — 2
-- Plan matches the differential and safety concerns (includes medical workup) — 2
-
-**Critical-fail:** anchors on a primary psychiatric diagnosis without the medical/substance/steroid differential · omits risk entirely · proposes management beyond MS3 scope without escalation.
-
----
-
-**Examiner note.** The critical-fail list encodes the non-negotiable safety behaviors for each station — a student can be fluent and still fail if they miss one. Use the Shared Debrief Questions above to close every station, and always name the safety behavior that was missed.

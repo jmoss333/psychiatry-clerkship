@@ -22,95 +22,20 @@
 //    stems. Asserting the regex over rendered real content would be a test that can only be
 //    satisfied by rewriting clinical text, which is not what the rule is for.
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import vm from 'node:vm';
 
-const ROOT = new URL('../', import.meta.url);
-const read = (p) => readFileSync(new URL(p, ROOT), 'utf8');
-const readJSON = (p) => JSON.parse(read(p));
-
-const SPA = '13_Faculty_Resources/_automation/site_build/spa_index.html';
-const source = read(SPA);
-
-function slice(src, startMarker, endMarker, { keepEnd = true } = {}) {
-  const a = src.indexOf(startMarker);
-  const b = src.indexOf(endMarker, a);
-  assert.ok(a !== -1 && b !== -1, `could not locate ${startMarker} .. ${endMarker}`);
-  return src.slice(a, keepEnd ? b + endMarker.length : b);
-}
-
-const panelCode = slice(source, '/* ---- practice panel ---- */', '/* ---- end practice panel ---- */');
-// buildWorkflow lives outside the panel block but is the third renderer that links tools.
-// keepEnd:false — the end marker is the NEXT declaration, not part of the slice.
-const workflowCode = slice(source, '  var WF_STAGE_LABELS=', '  function toolExtraFromParams', { keepEnd: false });
+// The render path itself lives in tests/_panel_render.mjs so that these assertions and the
+// snapshots in tests/__panels__/ run over the SAME rendered HTML. Two parallel renderers
+// could disagree, and a snapshot that disagrees with the assertions is worse than none.
+import {
+  F, renderAll, topicEntries, esc, actionKey, manifestTitle, source,
+  TOPIC_META, TOOL_REGISTRY, FD_INDEX, RIGHTS_REFS, CASE_TITLES, read,
+} from './_panel_render.mjs';
 
 test('the practice-panel marker pair appears exactly once in spa_index.html', () => {
   assert.equal(source.split('/* ---- practice panel ---- */').length - 1, 1);
   assert.equal(source.split('/* ---- end practice panel ---- */').length - 1, 1);
 });
-
-// ---- the real registries, joined exactly as the shell joins them ------------------------------
-const fdCtx = {};
-vm.createContext(fdCtx);
-vm.runInContext(read('13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js'), fdCtx);
-
-const CURRICULUM = readJSON('curriculum.json');
-const TOPIC_META = readJSON('topic_meta.json');
-const TOOL_REGISTRY = readJSON('tool_registry.json');
-const SITE_MANIFEST = readJSON('13_Faculty_Resources/_automation/site_build/site_manifest.json');
-const FD_INDEX = fdCtx.fdBuildIndex(CURRICULUM, TOPIC_META, TOOL_REGISTRY, SITE_MANIFEST);
-
-const RIGHTS_REFS = CURRICULUM.rightsReferences || [];
-const manifestTitle = (slug) => {
-  for (const group of [SITE_MANIFEST.tools || [], SITE_MANIFEST.md || []]) {
-    for (const entry of group) if (entry[1] === slug) return entry[2];
-  }
-  return null;
-};
-
-const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const ctaHref = (h) => {
-  h = h || '';
-  const m = h.match(/^tools\/([^/?#]+\.html)$/);
-  return m ? `?tool=${m[1]}` : h;
-};
-const ctaAttrs = (h) => (/^\?(page|tool)=/.test(h) ? '' : ' target="_blank" rel="noopener"');
-
-// The build injects case titles into a `var PRACTICE_CASE_TITLES={};` needle (build_deploy.py).
-// Doing the same replacement here pins that needle: if it is renamed or removed, this throws
-// rather than silently testing a panel whose drills have all lost their names.
-const CASE_TITLES = Object.fromEntries(
-  (readJSON('communication_cases.json').cases || [])
-    .filter((c) => c && c.id && c.title).map((c) => [c.id, c.title]),
-);
-const CASE_NEEDLE = 'var PRACTICE_CASE_TITLES={};';
-assert.equal(panelCode.split(CASE_NEEDLE).length - 1, 1,
-  'the practice panel must carry exactly one PRACTICE_CASE_TITLES injection needle');
-const injectedPanelCode = panelCode.replace(
-  CASE_NEEDLE, `var PRACTICE_CASE_TITLES=${JSON.stringify(CASE_TITLES)};`);
-
-const F = new Function('esc', 'ctaHref', 'ctaAttrs', 'FD_INDEX', 'FD_TOOL_REGISTRY', 'window',
-  `${workflowCode}\n${injectedPanelCode}\nreturn {
-     buildTpl: buildTpl, buildPracticeTools: buildPracticeTools, buildWorkflow: buildWorkflow,
-     practiceToolLabel: practiceToolLabel, practiceIsRights: practiceIsRights,
-     practiceActionLabel: practiceActionLabel, hasPracticeTpl: hasPracticeTpl,
-     WF_FIELDS: WF_FIELDS, WF_STAGE_LABELS: WF_STAGE_LABELS,
-     practiceCaseLabel: practiceCaseLabel, practiceIsSafe: practiceIsSafe,
-     practiceRegistryTools: practiceRegistryTools, practicePrimary: practicePrimary,
-     practiceReason: practiceReason, practiceLinkedTools: practiceLinkedTools };`,
-)(esc, ctaHref, ctaAttrs, FD_INDEX, TOOL_REGISTRY, {});
-
-const actionKey = (h) => {
-  const s = String(h || '');
-  const m = s.match(/[?&]tool=([^&#]+)/) || s.match(/^tools\/([^/?#]+\.html)$/);
-  return m ? decodeURIComponent(m[1]) : '';
-};
-
-const topicEntries = Object.entries(TOPIC_META).filter(([, m]) => m && typeof m === 'object');
-const renderAll = () => topicEntries
-  .filter(([, m]) => F.hasPracticeTpl(m))
-  .map(([ref, m]) => [ref, F.buildTpl(m, ref)]);
 
 // ---- WP-B · governance -------------------------------------------------------------------------
 
@@ -508,6 +433,51 @@ test('the reason is the promoted can\'t-miss, never a copy of a grid row', () =>
   }
 });
 
+// ---- WP-F · the quiz-less empty state ------------------------------------------------------------
+
+test('a quiz-less page offers retrieval without apologising for the missing quiz', () => {
+  let quizless = 0;
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m) || m.quiz) continue;
+    quizless += 1;
+    const html = F.buildTpl(m, ref);
+    assert.ok(!html.includes('No page-specific question yet'),
+      `${ref}: the panel still apologises for having no quiz`);
+    // The two retrieval actions MUST survive. review.html is hidden:true in nav on BOTH sites
+    // and appears nowhere else in the shell except practicePrimary's phase-gated branch and
+    // buildPracticeTools' empty state (which fires on only 3 pages), so dropping them here
+    // would make Daily Review unreachable on 28 of these pages.
+    assert.match(html, /href="\?tool=question-bank-practice\.html"/, `${ref}: lost Practice Questions`);
+    assert.match(html, /href="\?tool=review\.html"/, `${ref}: lost Daily Review`);
+  }
+  // A non-vacuity guard, NOT a corpus pin. It asserts only that the loop ran, so a broken
+  // hasPracticeTpl or an always-truthy m.quiz cannot make this test pass by iterating nothing.
+  // It deliberately does not pin HOW MANY quiz-less pages exist: authoring quizzes is the fix
+  // for that debt, and a threshold would fail the build for making the improvement — with 31
+  // today, a `>= 25` pin broke as soon as seven pages gained a quiz (Codex P2 on #534). The
+  // synthetic case below keeps the contract alive even if every page eventually carries one.
+  assert.ok(quizless >= 1, 'no quiz-less page was exercised; the empty state went untested');
+});
+
+test('the quiz-less empty state holds even when no real page is quiz-less', () => {
+  // Pins the same contract against a fixture rather than against content debt, so it survives
+  // the corpus reaching zero quiz-less pages — the state this test exists to protect is a
+  // property of the renderer, not a property of how much quiz authoring is outstanding.
+  const html = F.buildTpl({ tldr: 'A page with no quiz.' }, 'synthetic-quizless.md');
+  assert.ok(!html.includes('No page-specific question yet'), 'the panel apologises for having no quiz');
+  assert.match(html, /href="\?tool=question-bank-practice\.html"/, 'lost Practice Questions');
+  assert.match(html, /href="\?tool=review\.html"/, 'lost Daily Review');
+});
+
+test('every quiz-less page still routes to Daily Review somewhere in its panel', () => {
+  // Guards the reachability argument above as data, not as a comment: if a later change removes
+  // the fallback pair, this fails even if the apology assertion still passes.
+  for (const [ref, m] of topicEntries) {
+    if (!F.hasPracticeTpl(m) || m.quiz) continue;
+    assert.match(F.buildTpl(m, ref), /\?tool=review\.html/, `${ref}: no route to Daily Review`);
+  }
+});
+
 // ---- WP-E · density and grouping --------------------------------------------------------------
 
 const countActions = (html, cls) => [...html.matchAll(/<a class="practice-action([^"]*)"/g)]
@@ -598,4 +568,39 @@ test('the panel stylesheet block is unmodified (D-1: no new CSS)', () => {
     'existing practice-action styles must still be present');
   assert.ok(!/\.practice-action\.is-reference\s*\{/.test(source),
     'is-reference is intentionally an unstyled hook — adding CSS for it needs a baseline refresh');
+});
+
+// ---- Phone-first reading · the panel opens by default on a handheld -----------------------------
+//
+// The panel is the point-of-need content (Can't miss, Do this next, In 30 seconds, On the unit,
+// Test yourself, Tools) and D-1 above pins it CLOSED by default so the desktop visual baselines
+// hold. On a phone that default hid the ward content behind a tap on every topic page — the
+// 2026-07-12 seven-persona audit's dominant finding, back again. buildTpl now takes an opts
+// object; only the reader decides, from the viewport, whether to pass open:true. The closed
+// render stays byte-identical, and the open render differs from it by the attribute alone.
+
+test('opts.open renders the panel open, and nothing else changes', () => {
+  const [ref, closed] = renderAll()[0];
+  const meta = TOPIC_META[ref];
+  const CLOSED_TAG = '<details class="topic-tpl practice-panel">';
+  const OPEN_TAG = '<details class="topic-tpl practice-panel" open>';
+  const open = F.buildTpl(meta, ref, { open: true });
+  assert.ok(open.startsWith(OPEN_TAG), 'open:true must emit the open attribute on the panel');
+  assert.equal(open.slice(OPEN_TAG.length), closed.slice(CLOSED_TAG.length),
+    'the open render must differ from the closed one by the attribute alone');
+  assert.equal(F.buildTpl(meta, ref, {}), closed, 'an empty opts object keeps the closed default');
+  assert.equal(F.buildTpl(meta, ref, { open: false }), closed, 'open:false is the closed default');
+  assert.equal(F.buildTpl(meta, ref, { open: 'yes' }), closed, 'only boolean true opens the panel');
+});
+
+test('the reader opens the panel on a handheld viewport and keeps desktop closed', () => {
+  // Both call sites that inject the panel ask the same question. fdHandheld() is the shell's
+  // own "not desktop" threshold: rails and the desktop action pair appear at >=1000px
+  // (frontdoor.css), so a handheld is anything narrower.
+  const calls = source.match(/buildTpl\([^()]*\{open:fdHandheld\(\)\}\)/g) || [];
+  assert.equal(calls.length, 2, `every buildTpl call site passes the handheld flag: ${calls}`);
+  assert.match(source, /function fdHandheld\(\)\{[^}]*matchMedia\('\(max-width:999px\)'\)/,
+    'fdHandheld reads the 999px boundary, the mirror of the 1000px desktop breakpoint');
+  assert.doesNotMatch(source, /function fdHandheld\(\)\{[^}]*innerWidth/,
+    'use matchMedia, not innerWidth, so the answer agrees with the stylesheet');
 });

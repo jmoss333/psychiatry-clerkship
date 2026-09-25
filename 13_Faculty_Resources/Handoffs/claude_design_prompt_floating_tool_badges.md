@@ -46,7 +46,7 @@
 > Use these CSS custom properties (already defined by the host; your file should also define them at `:root` so the demo renders standalone), and a `[data-theme="dark"]` block that remaps them:
 > ```
 > --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
-> --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+> --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
 > --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
 > --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
 > --radius-pill:999px; --shadow-sm:0 1px 3px rgba(59,51,44,.06); --shadow-lg:0 8px 28px rgba(59,51,44,.10);

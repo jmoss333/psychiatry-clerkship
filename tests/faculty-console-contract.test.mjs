@@ -797,6 +797,7 @@ test('normalizes, filters, and counts the shared review queue', () => {
   }).map(item => item.key), ['tool:mse.html']);
   assert.deepEqual(deriveReviewCounts(items), {
     total: 4, needsReview: 3, complete: 1, page: 1, tool: 1, question: 2,
+    essentialTotal: 0, essentialNeedsReview: 0,
   });
 });
 
@@ -2920,12 +2921,101 @@ test('the attestation rail shows the stored pending reason read-only, never for 
     'reviewed items carry no pending reason');
 });
 
+/* Content-hash freshness in the console (2026-09-18). The server compares each reviewed
+   row's stored hash against a digest of the page's current text and says so on the wire;
+   these pin what faculty actually READ as a result. The rule the rail follows: a review
+   that could not be confirmed is never drawn as a clean one. */
+
+test('the rail states why a reviewed item is no longer bound to its page text', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        {
+          slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed',
+          stale: true,
+          risk: { kind: 'clinical', level: 'high' },
+          reason: 'Content changed since faculty review on 2026-07-01; awaiting re-attestation.',
+        },
+        {
+          slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'reviewed',
+          stale: true,
+          risk: { kind: 'general', level: 'low' },
+          reason: 'No content hash recorded; re-attest to bind this review to the page text.',
+        },
+      ],
+      questions: [],
+    })),
+  });
+
+  assert.equal(
+    document.getElementById('attestation-stale-notice')?.textContent,
+    'Content changed since faculty review on 2026-07-01; awaiting re-attestation.',
+  );
+  // One sentence, not two: a drifted item reads `unreviewed`, and the pending-reason line
+  // would otherwise repeat the same words under a "Pending because:" label.
+  assert.equal(document.getElementById('attestation-pending-reason'), null);
+
+  // A reviewed item can be stale too — an unbound row is recorded as reviewed and still
+  // cannot say what it reviewed. The rail says so rather than showing nothing.
+  await setValue(document, 'review-item-selector', 'tool:mse.html', 'change');
+  assert.equal(
+    document.getElementById('attestation-stale-notice')?.textContent,
+    'No content hash recorded; re-attest to bind this review to the page text.',
+  );
+});
+
+test('a clean reviewed item carries no staleness notice at all', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed' },
+      ],
+      questions: [],
+    })),
+  });
+  assert.equal(document.getElementById('attestation-stale-notice'), null);
+});
+
+test('the queue banners report branch lag and an unverifiable load', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse({
+      ...serverState({ questions: [] }),
+      branchLag: 4,
+      freshness: 'unknown',
+      branchSync: {
+        isolated: true, aheadBy: 0, behindBy: 4, rollingPr: null, rollingPrChecked: false,
+        threshold: 3, reasons: [], alarmed: false,
+        branch: 'attest/pending', baseBranch: 'main',
+      },
+    }),
+  });
+
+  assert.equal(
+    document.getElementById('branch-lag-notice')?.textContent,
+    'attest/pending is 4 commits behind main — sync before re-attesting',
+  );
+  assert.equal(document.getElementById('freshness-notice')?.textContent,
+    'Freshness unknown — reload');
+});
+
+test('neither queue banner appears on an ordinary, verified load', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse({
+      ...serverState({ questions: [] }),
+      branchLag: 0,
+      freshness: 'verified',
+    }),
+  });
+  assert.equal(document.getElementById('branch-lag-notice'), null);
+  assert.equal(document.getElementById('freshness-notice'), null);
+});
+
 test('page and tool use the same Live Review Resolve Confirm rail and clear content checks on selection', async () => {
   const harness = await startHarness({
     fetchImpl: async () => jsonResponse(serverState({
       items: [
-        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
-        { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' },
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed', sites: ['ms3'] },
+        { slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed', sites: ['ms3'] },
       ],
       questions: [],
     })),
@@ -2944,7 +3034,7 @@ test('page and tool use the same Live Review Resolve Confirm rail and clear cont
   await makeCurrentContentPreviewReady(harness);
   assert.ok(document.find('label', 'I reviewed the complete item'));
   assert.ok(document.find('label',
-    'I verified that this is accurate and appropriate for a third-year student.'));
+    'I verified that this is accurate and appropriate for a third-year medical student.'));
   assert.ok(document.find('label', 'I tested the relevant links, media, or interactions.'));
   await setChecked(document, 'review-complete-item');
   assert.match(document.getElementById('rail-step-resolve').className, /current/);
@@ -3002,7 +3092,7 @@ test('a question keeps Review current until its saved-revision and learner-view 
 // This test pins the no-further-pending case, where the hold behavior still applies.
 test('content attestation submits exactly one page slug, confirms it, and holds the completed item', async () => {
   let items = [
-    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed', sites: ['ms3'] },
   ];
   let posted;
   const fetchImpl = async (url, options = {}) => {
@@ -4133,7 +4223,7 @@ test('one click attests a page: no checkboxes, all three assertions recorded', a
   // clicks may not mean asserting less: pressing the button must set the same
   // three flags the checkboxes set, and its label must say so.
   let items = [
-    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed' },
+    { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'unreviewed', sites: ['ms3'] },
   ];
   let posted;
   const fetchImpl = async (url, options = {}) => {
@@ -5021,4 +5111,207 @@ test('a batch with no receipts stays blocked however the confirmations are recor
   const batch = document.getElementById('attest-selected-drafts');
   assert.equal(batch ? batch.disabled : true, true,
     'no receipts, no batch commit');
+});
+
+/* Re-sign by change (2026-09-25). A read-only list of the corrections that changed signed
+   pages, and each page's "what changed since you signed". Pinned here: the list costs
+   nothing until it is opened, nothing in it signs, a page opened from it lands on its own
+   change, and after one page is signed the next page from THAT correction opens — still
+   one press, one page. */
+
+const DRIFT = at => `Content changed since faculty review on ${at}; awaiting re-attestation.`;
+
+function driftedItem(slug, title, at = '2026-07-01') {
+  return { slug, title, kind: 'page', status: 'unreviewed', stale: true, at, reason: DRIFT(at), sites: ['ms3'] };
+}
+
+const CHANGES_VIEW = {
+  view: 'changes',
+  branch: 'main',
+  generatedAt: '2026-09-25T14:05:00.000Z',
+  drifted: 3,
+  partial: false,
+  unchecked: [],
+  unexplained: [],
+  groups: [
+    { id: 'pr:773', pr: 773, sha: '7'.repeat(40), title: 'Major/Moderate findings', date: '2026-09-24T12:00:00Z',
+      url: 'https://github.com/o/r/commit/773', slugs: ['rapid_review.md', 't_mood.md'] },
+    { id: 'pr:767', pr: 767, sha: '6'.repeat(40), title: 'Jurisdiction corrections', date: '2026-07-01T15:00:00Z',
+      url: 'https://github.com/o/r/commit/767', slugs: ['ddx.md', 't_mood.md'] },
+  ],
+  pages: {
+    'rapid_review.md': { title: 'Rapid review', kind: 'page', at: '2026-07-01', changes: [{ id: 'pr:773', sameDay: false }] },
+    't_mood.md': { title: 'Mood disorders', kind: 'page', at: '2026-07-01',
+      changes: [{ id: 'pr:773', sameDay: false }, { id: 'pr:767', sameDay: true }] },
+    'ddx.md': { title: 'Differential diagnosis', kind: 'page', at: '2026-07-01', changes: [{ id: 'pr:767', sameDay: true }] },
+  },
+};
+
+function diffView(slug, sha = '') {
+  return {
+    view: 'diff',
+    slug,
+    since: sha ? null : '2026-07-01',
+    base: 'b'.repeat(40),
+    head: sha || 'c'.repeat(40),
+    commit: sha ? { sha, pr: 767, title: 'Jurisdiction corrections', date: '2026-07-01T15:00:00Z', url: '' } : null,
+    compareUrl: 'https://github.com/o/r/compare/b...c',
+    files: [{
+      path: `01_Core/${slug}`,
+      status: 'modified',
+      changed: true,
+      truncated: false,
+      tooLarge: false,
+      hunks: [{ oldStart: 3, newStart: 3, rows: [
+        { kind: 'context', segments: [{ t: 'eq', s: '## Lithium' }] },
+        { kind: 'change', segments: [
+          { t: 'eq', s: 'Maintenance level ' },
+          { t: 'del', s: '0.8-1.2' },
+          { t: 'add', s: '0.6-1.0' },
+          { t: 'eq', s: ' mEq/L' },
+        ] },
+      ] }],
+    }],
+    record: [],
+  };
+}
+
+function resignHarnessFetch({ diffStatus = 200 } = {}) {
+  let items = [
+    { slug: 'anx.md', title: 'Anxiety disorders', kind: 'page', status: 'unreviewed', sites: ['ms3'] },
+    driftedItem('ddx.md', 'Differential diagnosis'),
+    driftedItem('t_mood.md', 'Mood disorders'),
+    driftedItem('rapid_review.md', 'Rapid review'),
+  ];
+  const calls = [];
+  const fetchImpl = async (url, options = {}) => {
+    const parsed = new URL(url, 'https://faculty.example');
+    calls.push({ method: options.method || 'GET', view: parsed.searchParams.get('view'), params: parsed.searchParams, body: options.body });
+    if (options.method === 'POST') {
+      const posted = JSON.parse(options.body);
+      const [[slug, reviewed]] = Object.entries(posted.changes);
+      items = items.map(item => (item.slug === slug
+        ? { slug: item.slug, title: item.title, kind: item.kind, sites: item.sites, status: reviewed ? 'reviewed' : 'unreviewed' }
+        : item));
+      return jsonResponse({ ok: true, updated: 1, commit: 'https://github.example/commit/resign' });
+    }
+    if (parsed.searchParams.get('view') === 'changes') return jsonResponse(CHANGES_VIEW);
+    if (parsed.searchParams.get('view') === 'diff') {
+      if (diffStatus !== 200) {
+        return jsonResponse({ error: { code: 'github_unavailable', message: 'GitHub is unavailable.' } }, { ok: false, status: diffStatus });
+      }
+      return jsonResponse(diffView(parsed.searchParams.get('slug'), parsed.searchParams.get('sha') || ''));
+    }
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  return { fetchImpl, calls };
+}
+
+async function openDetails(element) {
+  assert.ok(element, 'Missing disclosure');
+  element.open = true;
+  await element.dispatch('toggle');
+  await flushAsyncWork();
+}
+
+test('Re-sign by change is lazy, lists each correction, and holds no signing control', async () => {
+  const { fetchImpl, calls } = resignHarnessFetch();
+  const { document } = await startHarness({ fetchImpl });
+
+  const section = document.getElementById('resign-by-change');
+  assert.ok(section, 'drifted pages exist, so the section is offered');
+  assert.equal(section.open, false);
+  assert.equal(document.getElementById('resign-summary-text').textContent,
+    'Re-sign by change · 3 pages changed after you signed');
+  assert.equal(calls.some(call => call.view), false, 'nothing is asked of GitHub until it is opened');
+
+  await openDetails(section);
+  assert.equal(calls.filter(call => call.view === 'changes').length, 1);
+  const group = document.getElementById('resign-group-pr-773');
+  assert.ok(group);
+  assert.match(group.textContent, /#773 Major\/Moderate findings · 2 pages · 2 to re-sign · 2026-09-24/);
+  // A change that landed on the signing day may already have been read: said, not hidden.
+  assert.match(document.getElementById('resign-group-pr-767').textContent,
+    /landed on 2026-07-01, the day you signed, so you may already have read it/);
+  assert.match(document.getElementById('resign-group-pr-767').textContent, /Also changed by #773/);
+
+  // Nothing in the section signs: no attest control, no batch wording, and opening every
+  // group and page issues no POST.
+  const buttons = document.elements().filter(element => element.tagName === 'BUTTON' && section.contains(element));
+  assert.ok(buttons.length >= 4);
+  for (const button of buttons) {
+    assert.doesNotMatch(button.textContent, /attest|sign all|sign every|approve/i, button.textContent);
+  }
+  assert.equal(calls.some(call => call.method === 'POST'), false);
+});
+
+test('a page opened from a correction lands on its own change, and signing it opens the next one', async () => {
+  const { fetchImpl, calls } = resignHarnessFetch();
+  const harness = await startHarness({ fetchImpl });
+  const { controller, document } = harness;
+  await openDetails(document.getElementById('resign-by-change'));
+  await openDetails(document.getElementById('resign-group-pr-773'));
+
+  await document.getElementById('resign-start-pr-773').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(controller.state.selectedKey, 'page:rapid_review.md');
+  assert.equal(document.getElementById('resign-group-progress').textContent,
+    'Re-signing #773: 0 of 2 pages re-signed. After you sign this page, the next page this correction changed opens.');
+  const since = calls.filter(call => call.view === 'diff');
+  assert.equal(since.length, 1);
+  assert.equal(since[0].params.get('slug'), 'rapid_review.md');
+  assert.equal(since[0].params.has('sha'), false, 'the rail shows everything since signing');
+  const body = document.getElementById('changes-since-signed-body');
+  assert.ok(body);
+  assert.equal(body.textContent.includes('Maintenance level 0.8-1.20.6-1.0 mEq/L'), true);
+  assert.equal(document.findAll('del').some(node => node.textContent === '0.8-1.2'), true);
+  assert.equal(document.findAll('ins').some(node => node.textContent === '0.6-1.0'), true);
+
+  // The page is signed the ordinary way: its own preview, its own press.
+  await makeCurrentContentPreviewReady(harness);
+  await document.getElementById('attest-current-item').dispatch('click');
+  await flushAsyncWork();
+
+  const posts = calls.filter(call => call.method === 'POST');
+  assert.equal(posts.length, 1);
+  assert.deepEqual(JSON.parse(posts[0].body).changes, { 'rapid_review.md': true }, 'one press, one page');
+  // Alphabetically "Anxiety disorders" is next; the correction's own next page wins.
+  assert.equal(controller.state.selectedKey, 'page:t_mood.md');
+  assert.equal(document.getElementById('resign-group-progress').textContent.startsWith('Re-signing #773: 1 of 2'), true);
+  assert.equal(calls.filter(call => call.view === 'diff' && call.params.get('slug') === 't_mood.md').length, 1,
+    'the next page also opens on its own change');
+  assert.match(document.getElementById('resign-summary-text').textContent, /2 pages changed after you signed/);
+});
+
+test('a correction’s own diff loads on request and a failure is said, with a retry', async () => {
+  const { fetchImpl, calls } = resignHarnessFetch({ diffStatus: 502 });
+  const { document } = await startHarness({ fetchImpl });
+  await openDetails(document.getElementById('resign-by-change'));
+  await openDetails(document.getElementById('resign-group-pr-767'));
+
+  const toggle = document.getElementById('resign-diff-toggle-pr-767-ddx-md');
+  assert.ok(toggle);
+  assert.equal(toggle.textContent, 'Show what #767 changed on this page');
+  await openDetails(toggle.parentNode);
+  const request = calls.find(call => call.view === 'diff');
+  assert.equal(request.params.get('slug'), 'ddx.md');
+  assert.equal(request.params.get('sha'), '6'.repeat(40));
+  const body = document.getElementById('resign-diff-body-pr-767-ddx-md');
+  assert.match(body.textContent, /github_unavailable: GitHub is unavailable\./);
+  assert.ok(body.children.some(child => child.tagName === 'BUTTON' && child.textContent === 'Try again'));
+});
+
+test('no Re-sign by change surface appears when nothing drifted', async () => {
+  const { document } = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [
+        { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', status: 'reviewed', stale: true,
+          reason: 'No content hash recorded; re-attest to bind this review to the page text.' },
+      ],
+      questions: [],
+    })),
+  });
+  assert.equal(document.getElementById('resign-by-change'), null);
+  assert.equal(document.getElementById('changes-since-signed'), null,
+    'an unbound row has no change to show — only drift does');
 });

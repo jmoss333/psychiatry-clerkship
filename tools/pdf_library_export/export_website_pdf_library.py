@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+import sys
 import unicodedata
 
 from reportlab.lib import colors
@@ -18,8 +19,18 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer
 
+sys.path.insert(
+    0,
+    str(
+        Path(__file__).resolve().parents[2]
+        / "13_Faculty_Resources"
+        / "_automation"
+        / "site_build"
+    ),
+)
+from shipped_pages import RELATIVE_PATH as SHIPPED_PAGES_RELATIVE  # noqa: E402
+from shipped_pages import load_shipped_pages  # noqa: E402
 
-DEFAULT_MANIFEST = "13_Faculty_Resources/_automation/site_build/site_manifest.json"
 DEFAULT_OUT_DIR = "outputs/pdf_library"
 REVIEW_STATUS = "needs_faculty_review"
 
@@ -146,20 +157,48 @@ _BULLET_RE = re.compile(r"^\s*[-*+]\s+(.+)$")
 _TABLE_DIVIDER_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$")
 
 
-def load_manifest(repo_root: Path, manifest_path: Path) -> tuple[list[WebsiteEntry], list[WebsiteEntry]]:
-    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+def load_shipped_entries(repo_root: Path) -> tuple[list[WebsiteEntry], list[WebsiteEntry]]:
+    """Split the one derived listing of what ships into Markdown pages and tools.
+
+    Until 2026-09 this read the site manifest, which is one of FIVE producers of
+    "what ships" (ADR-002, site_build/ADR-002-shipped-pages-single-source.md). The
+    PDF library therefore covered 91 of the 124 surfaces the two learner sites
+    publish, and silently omitted every Case-of-the-Week case page, the MS3
+    orientation video, and the resident-only pages and tools. shipped_pages.json
+    enumerates all five producers and is verified against the real build output on
+    every build, so this exporter now maps to the whole website rather than to the
+    largest single producer of it.
+
+    Entries keep the listing's own order, which is by slug. Markdown pages are the
+    listing's "page" kind; interactive tools are its "tool" kind.
+    """
+    document = load_shipped_pages(repo_root)
+    pages = [page for page in document["pages"] if page["kind"] == "page"]
+    tools = [page for page in document["pages"] if page["kind"] == "tool"]
     md_entries = [
-        WebsiteEntry(source_path=src, site_slug=slug, title=title, entry_type="markdown", order=i + 1)
-        for i, (src, slug, title) in enumerate(data.get("md", []))
+        WebsiteEntry(
+            source_path=page["source"],
+            site_slug=page["slug"],
+            title=page["title"],
+            entry_type="markdown",
+            order=i + 1,
+        )
+        for i, page in enumerate(pages)
     ]
     tool_entries = [
-        WebsiteEntry(source_path=src, site_slug=slug, title=title, entry_type="interactive_tool", order=i + 1)
-        for i, (src, slug, title) in enumerate(data.get("tools", []))
+        WebsiteEntry(
+            source_path=page["source"],
+            site_slug=page["slug"],
+            title=page["title"],
+            entry_type="interactive_tool",
+            order=i + 1,
+        )
+        for i, page in enumerate(tools)
     ]
 
     missing = [entry.source_path for entry in md_entries + tool_entries if not (repo_root / entry.source_path).exists()]
     if missing:
-        raise FileNotFoundError("Website manifest references missing source files: " + ", ".join(missing))
+        raise FileNotFoundError("Shipped page listing references missing source files: " + ", ".join(missing))
     return md_entries, tool_entries
 
 
@@ -542,7 +581,7 @@ def build_index(records: list[PdfRecord], tool_entries: list[WebsiteEntry], gene
 
     lines.extend(["", "## Interactive Tools Not Converted To PDF", ""])
     lines.append(
-        "These remain HTML tools because their value is interaction, scoring, local practice history, or timers. They are included here so the PDF library still maps to the whole website manifest."
+        "These remain HTML tools because their value is interaction, scoring, local practice history, or timers. They are included here so the PDF library still maps to every surface the learner sites publish."
     )
     lines.extend(["", "| Title | Source | Site slug |", "|---|---|---|"])
     for entry in tool_entries:
@@ -554,16 +593,14 @@ def build_index(records: list[PdfRecord], tool_entries: list[WebsiteEntry], gene
 
 def export_website_pdf_library(
     repo_root: Path,
-    manifest_path: Path,
     out_dir: Path,
     generated_on: str,
     limit: int | None = None,
 ) -> dict[str, int | str]:
     format_library_date(generated_on)
     repo_root = repo_root.resolve()
-    manifest_path = manifest_path.resolve()
     out_dir = out_dir.resolve()
-    md_entries, tool_entries = load_manifest(repo_root, manifest_path)
+    md_entries, tool_entries = load_shipped_entries(repo_root)
     if limit is not None:
         md_entries = md_entries[:limit]
 
@@ -593,7 +630,7 @@ def export_website_pdf_library(
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest = {
         "generated_on": generated_on,
-        "source_manifest": str(manifest_path.relative_to(repo_root)) if manifest_path.is_relative_to(repo_root) else str(manifest_path),
+        "source_listing": SHIPPED_PAGES_RELATIVE,
         "pdf_count": len(records),
         "interactive_tools_not_converted": len(tool_entries),
         "review_status": REVIEW_STATUS,
@@ -615,28 +652,24 @@ def export_website_pdf_library(
     }
 
 
-def _resolve_cli_paths(repo_root: str, manifest: str, out_dir: str) -> tuple[Path, Path, Path]:
+def _resolve_cli_paths(repo_root: str, out_dir: str) -> tuple[Path, Path]:
     resolved_repo = Path(repo_root).expanduser().resolve()
-    manifest_path = Path(manifest).expanduser()
-    if not manifest_path.is_absolute():
-        manifest_path = resolved_repo / manifest_path
     out_path = Path(out_dir).expanduser()
     if not out_path.is_absolute():
         out_path = resolved_repo / out_path
-    return resolved_repo, manifest_path.resolve(), out_path.resolve()
+    return resolved_repo, out_path.resolve()
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Export website Markdown pages into an organized PDF library.")
     parser.add_argument("--repo-root", default=".", help="Repository root.")
-    parser.add_argument("--manifest", default=DEFAULT_MANIFEST, help="Website manifest JSON path.")
     parser.add_argument("--out-dir", default=DEFAULT_OUT_DIR, help="Output directory for generated PDFs and indexes.")
     parser.add_argument("--generated-on", default=_dt.date.today().isoformat(), help="ISO date stamped into generated outputs.")
     parser.add_argument("--limit", type=int, default=None, help="Generate only the first N Markdown PDFs, useful for smoke tests.")
     args = parser.parse_args()
 
-    repo_root, manifest_path, out_dir = _resolve_cli_paths(args.repo_root, args.manifest, args.out_dir)
-    result = export_website_pdf_library(repo_root, manifest_path, out_dir, args.generated_on, args.limit)
+    repo_root, out_dir = _resolve_cli_paths(args.repo_root, args.out_dir)
+    result = export_website_pdf_library(repo_root, out_dir, args.generated_on, args.limit)
     print(
         "Website PDF library export complete: "
         f"{result['pdf_count']} PDFs | "

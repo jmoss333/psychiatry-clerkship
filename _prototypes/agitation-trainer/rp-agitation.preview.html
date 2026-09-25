@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <link rel="icon" href="/favicon.svg">
 <!-- [RC-META] tool="Agitation Ladder — PRN Decision Trainer" version="0.2.0" built="2026-07-02" category="acute-safety" audience="resident,trainee" settings="inpatient,ED,C-L" time="8min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="draft-pending-attestation" summary="Teaching trainer for acute agitation: least-restrictive ladder, driver-first triage, de-escalation-gated pharmacologic reasoning with hazard feedback, and an ever-present Call-your-senior option. NOT an order set. Agents/doses/routes/monitoring are local-policy placeholders. Fictional composites; no PHI. No runtime CDN (React vendored locally)." -->
 <meta charset="UTF-8">
@@ -13,7 +13,7 @@
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
-    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
     --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
     --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
     --success:#357160; --success-light:#e7f1ed;
@@ -138,6 +138,7 @@
     { "id": "martel2021", "ref": "Martel ML, et al. Randomized double-blind trial of IM droperidol, ziprasidone, and lorazepam for acute agitation. Acad Emerg Med. 2021.", "doi": "", "url": "" },
     { "id": "heckers2023", "ref": "Heckers S, Walther S. Catatonia. N Engl J Med. 2023.", "doi": "", "url": "" },
     { "id": "beers2023", "ref": "American Geriatrics Society 2023 Updated AGS Beers Criteria. J Am Geriatr Soc. 2023.", "doi": "", "url": "" },
+    { "id": "nikooie2019", "ref": "Nikooie R, et al. Antipsychotics for Treating Delirium in Hospitalized Adults: A Systematic Review. Ann Intern Med. 2019;171(7):485-495.", "doi": "10.7326/M19-1860", "url": "https://doi.org/10.7326/M19-1860" },
     { "id": "cole2025", "ref": "Cole JB, et al. Oral medications for treating agitation in a safety-net emergency department. JAMA Netw Open. 2025.", "doi": "", "url": "" }
   ],
   "localPolicies": [
@@ -168,7 +169,7 @@
     ],
     "pharmApproach": [
       { "id": "sga", "label": "Second-generation antipsychotic", "tokenId": "agitation.po_options",
-        "hazardIf": { "parkinson_dlb": "Not a safe default in Parkinson disease / Lewy body dementia — risperidone and olanzapine can trigger severe, sometimes fatal neuroleptic sensitivity. If an antipsychotic is unavoidable the choice is narrow (quetiapine, clozapine, or pimavanserin) and belongs to your attending.", "catatonia": "Second-generation agents can also precipitate or worsen catatonia and NMS — hold antipsychotics until catatonia is excluded or treated." },
+        "hazardIf": { "parkinson_dlb": "Not a safe default in Parkinson disease / Lewy body dementia — risperidone and olanzapine can trigger severe, sometimes fatal neuroleptic sensitivity. If an antipsychotic is unavoidable the choice is narrow (quetiapine or clozapine acutely; pimavanserin is a maintenance option for PD psychosis, not for acute agitation) and belongs to your attending.", "catatonia": "Second-generation agents can also precipitate or worsen catatonia and NMS — hold antipsychotics until catatonia is excluded or treated." },
         "cautionIf": { "qtc_risk": "Some SGAs prolong QTc (e.g., ziprasidone highest) — check baseline QTc/interacting drugs.", "older_dementia": "All antipsychotics carry FDA black-box mortality warning in dementia-related psychosis." } },
       { "id": "d2_typical", "label": "Typical antipsychotic (D2 blocker)", "tokenId": "agitation.im_options",
         "hazardIf": { "parkinson_dlb": "D2 blockade worsens parkinsonism — contraindicated in Parkinson disease / Lewy body dementia.", "catatonia": "May precipitate/worsen catatonia and NMS — hold antipsychotics." },
@@ -233,7 +234,7 @@
         },
         "teachingPoints": [
           { "text": "New, fluctuating inattention in a hospitalized patient is delirium until proven otherwise — find and treat the cause and remove deliriogenic meds first.", "citationIds": ["beers2023"] },
-          { "text": "Benzodiazepines worsen non-withdrawal delirium. Haloperidol and second-generation agents are both used; the case for an SGA is a lower EPS burden, not faster onset — and because no antipsychotic shortens delirium or lowers mortality, reserve one for agitation that endangers the patient or staff after non-pharmacologic measures fail, at the lowest dose for the shortest time. No medication is FDA-approved for delirium.", "citationIds": ["beers2023", "zaman2017"] }
+          { "text": "Benzodiazepines worsen non-withdrawal delirium. Haloperidol and second-generation agents are both used; the case for an SGA is a lower EPS burden, not faster onset — and because no antipsychotic shortens delirium or lowers mortality, reserve one for agitation that endangers the patient or staff after non-pharmacologic measures fail, at the lowest dose for the shortest time. No medication is FDA-approved for delirium.", "citationIds": ["beers2023", "zaman2017", "nikooie2019"] }
         ],
         "citationIds": ["beers2023", "zaman2017"]
       },
@@ -254,7 +255,7 @@
           "stimulant_intox": ["Would expect recent stimulant use, not an alcohol history"]
         },
         "teachingPoints": [
-          { "text": "Alcohol/sedative-hypnotic withdrawal is the key exception where benzodiazepines are first-line — treat the withdrawal per your local protocol; antipsychotics are adjuncts, not monotherapy.", "citationIds": ["wilson2012"] },
+          { "text": "Alcohol/sedative-hypnotic withdrawal is the key exception where benzodiazepines are first-line — treat the withdrawal per your local protocol, give thiamine before or with any glucose (never delay dextrose for true hypoglycemia), and escalate the level of care if this is evolving delirium tremens; antipsychotics are adjuncts, not monotherapy.", "citationIds": ["wilson2012"] },
           { "text": "This is why the etiology step matters: the same class (benzodiazepine) that is a hazard in non-withdrawal delirium is the correct choice here.", "citationIds": ["zaman2017"] }
         ],
         "citationIds": ["wilson2012", "zaman2017"]

@@ -1,6 +1,6 @@
 # Website PDF Library Export
 
-This tool exports the Markdown pages that ship in the MS3 website manifest into an organized local PDF library.
+This tool exports every Markdown page the two learner sites publish into an organized local PDF library.
 
 Plain-language summary: the script prints the website curriculum into PDFs, grouped the same way a learner experiences the site. The Markdown files stay the curriculum source of truth; the PDFs are generated handouts for offline review, printing, or Adobe finishing.
 
@@ -8,8 +8,10 @@ Plain-language summary: the script prints the website curriculum into PDFs, grou
 
 The exporter reads:
 
-- `13_Faculty_Resources/_automation/site_build/site_manifest.json`
-- the Markdown source files referenced by that manifest
+- `13_Faculty_Resources/_automation/site_build/shipped_pages.json` - the one derived listing of what ships (ADR-002), covering all five producers
+- the Markdown source files that listing names
+
+Until 2026-09 it read the site manifest instead, which is one producer of five, so the library omitted every Case-of-the-Week page and the resident-only pages. There is no `--manifest` flag any more: the listing is found under `--repo-root`.
 
 Interactive HTML tools are indexed but not converted to PDF, because static PDFs would remove scoring, timers, local practice history, and other interactive behavior.
 
@@ -24,6 +26,8 @@ Generated files are written to `outputs/pdf_library/`:
 - `pdfs/` - organized generated PDFs.
 - `index.md` - human-readable library table.
 - `website_pdf_library_manifest.json` - machine-readable trace from PDF back to repo source and website slug.
+
+The trace file records its input as `source_listing` (it was `source_manifest` before the ADR-002 migration).
 
 ## Visible PDF Contract
 

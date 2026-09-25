@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vocabulary.json — the internal content vocabulary, as data",
+  "type": "object",
+  "required": ["schemaVersion", "codes"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "_note": { "type": "string" },
+    "codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/code" }
+    }
+  },
+  "$defs": {
+    "code": {
+      "type": "object",
+      "required": ["id", "label", "status"],
+      "additionalProperties": false,
+      "description": "One internal content code. ACTIVE codes must appear, byte for byte, at every hard-coded site bin/check_vocabulary.py knows about — INTERNAL_CODES, FOCUS_CATEGORIES and the four SHELF_VOCAB literals. PROPOSED codes must appear at NONE of them: a code that is half-shipped is the failure this registry exists to make impossible.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z-]*$",
+          "description": "The token that appears in shelfBlueprint arrays, focus categories and standards.json internalCodes. Stable forever — renaming one silently unpins every tagged page."
+        },
+        "label": { "type": "string", "minLength": 3 },
+        "status": {
+          "enum": ["active", "proposed", "retired"],
+          "description": "`active`: shipped to all six code sites and usable today. `proposed`: a QUEUE ENTRY, not a code — it must unblock a standards unit or supersede an existing code, and nothing may tag itself with it yet. `retired`: withdrawn; INV-IR2 applies, a withdrawal must leave a route."
+        },
+        "unblocks": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]*[A-Z0-9]$" },
+          "description": "standards.json unit codes that become mappable the day this code ships — an ACGME code such as SBP2, or a local student-framework code such as FC-SBP (the pattern admits the hyphen since 2026-09-24, when the Foundational Competencies, which publish no alphanumeric codes, were registered). Every entry must be a real unit whose mappingStatus is 'blocked-on-vocabulary' and whose blockedByCode names THIS code — the checker verifies both directions, so a proposed code cannot claim a payoff the spine does not agree it has."
+        },
+        "supersedes": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z][a-z-]*$" },
+          "description": "Active code ids this one would replace — used for splits, e.g. safety-risk and safety-systems both supersede safety. Each must resolve to an active code in this file."
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 20,
+          "description": "REQUIRED for proposed codes. Why this code and not a broadening of an existing one. A proposal nobody argued for is a proposal nobody can evaluate."
+        },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}

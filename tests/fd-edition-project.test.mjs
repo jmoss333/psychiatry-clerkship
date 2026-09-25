@@ -133,3 +133,33 @@ test('resolved reasons decorate placements without replacing canonical titles or
   assert.equal(projected.index.weeks[0].items[0].title, 'Synthetic core example');
   assert.deepEqual(projected.index.weeks[0].items[0].governance, ['clinical', 'reviewed']);
 });
+
+for (const audience of ['ms3','resident']) {
+  test(`generated ${audience} edition preserves kit, full Library, and safety projections`, async () => {
+    const {F,core,result} = await trusted(audience);
+    core.essentials = [{name:'Kit',accent:'topic',items:[core.byRef['library/example']]}];
+    core.essentialsDropped = 0;
+    const before = structuredClone(core);
+    const projected = F.fdProjectEdition(core,result);
+    assert.equal(projected.ok,true);
+    for (const key of ['essentials','essentialsDropped','columns','byRef','kit']) {
+      assert.deepEqual(projected.index[key],before[key],key);
+    }
+    const base = new URL('../13_Faculty_Resources/_automation/site_build/', import.meta.url);
+    const render = new Function(
+      'var governanceBadge=function(){return "";};\n'+readFileSync(new URL('frontdoor/fd_data.js',base),'utf8')+'\n'+
+      readFileSync(new URL('frontdoor/fd_library.js',base),'utf8')+
+      '\nreturn {kit:fdEssentials,full:fdLibrary};'
+    )();
+    assert.match(render.kit(projected.index),/>Core readings<\/h1>/);
+    assert.equal(render.kit(projected.index),render.kit(before));
+    const week = audience === 'ms3' ? 1 : 4;
+    const weekly = render.kit(projected.index,{week,kitSection:'week'});
+    assert.match(weekly,/data-fd-kit-section="week"[^>]*aria-pressed="true"[^>]*><span>This week<\/span><span class="fd-kit__index-count">1<\/span>/);
+    assert.equal((weekly.match(/data-fd-open="library\/example"/g)||[]).length,1);
+    assert.doesNotMatch(render.kit(before,{week,kitSection:'week'}),/value="week"/,
+      'weekly readings follow the edition placements, not the canonical Path');
+    assert.equal(render.full(projected.index),render.full(before));
+    assert.deepEqual(core,before,'projection cannot mutate the canonical kit');
+  });
+}

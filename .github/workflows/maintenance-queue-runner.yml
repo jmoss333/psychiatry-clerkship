@@ -1,0 +1,173 @@
+name: Maintenance — Autonomous Queue Runner
+
+on:
+  schedule:
+    - cron: "40 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: maintenance-queue-runner
+  cancel-in-progress: false
+
+jobs:
+  queue-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Install — validator dependencies
+        run: pip install --quiet -r requirements.txt
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22"
+
+      # One outstanding automated pull request at a time. The branch name carries the
+      # date, so without this the runner opens a fresh duplicate every night for as long
+      # as yesterday's draft sits unmerged: the task still measures as undone, because
+      # the base branch does not yet carry the fix.
+      - name: Skip while an automated queue pull request is still open
+        id: outstanding
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh pr list --state open --limit 100 --json headRefName \
+            --jq '[.[] | select(.headRefName | startswith("automation/queue-"))] | length')
+          echo "count=$count"
+          if [ "$count" != "0" ]; then
+            echo "open=true" >> "$GITHUB_OUTPUT"
+            echo "queue-runner: $count automated queue pull request(s) still open; standing down"
+          else
+            echo "open=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Selection, execution, verification and the four guards all live in the script, so
+      # they are unit-tested rather than being shell that only ever runs at 04:40 UTC.
+      - name: Run the one autonomous queue task
+        id: queue
+        if: steps.outstanding.outputs.open != 'true'
+        run: |
+          python3 bin/run_queue_task.py --out-dir "$RUNNER_TEMP/queue-runner"
+
+      - name: Validate — registry schemas and clinical contracts
+        if: steps.queue.outputs.committed == 'true'
+        run: |
+          python3 13_Faculty_Resources/_automation/validate_registry_schemas.py
+          python3 13_Faculty_Resources/_automation/validate_topic_meta.py
+          python3 13_Faculty_Resources/_automation/validate_attestation_consistency.py
+
+      - name: Validate — shipped pages are derived from current producers
+        if: steps.queue.outputs.committed == 'true'
+        run: python3 13_Faculty_Resources/_automation/site_build/shipped_pages.py --check
+
+      - name: Unit — root node regression tests (tests/*.test.mjs)
+        if: steps.queue.outputs.committed == 'true'
+        run: node --test tests/*.test.mjs
+
+      - name: Push the automation branch
+        if: steps.queue.outputs.committed == 'true'
+        env:
+          BRANCH: ${{ steps.queue.outputs.branch }}
+        run: git push --set-upstream origin "$BRANCH"
+
+      # Draft, always. The runner never marks a pull request ready and never merges;
+      # a person decides whether the change is right.
+      - name: Open the draft pull request
+        id: pr
+        if: steps.queue.outputs.committed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.queue.outputs.branch }}
+          TITLE: ${{ steps.queue.outputs.title }}
+          BODY_FILE: ${{ steps.queue.outputs.body_file }}
+          EVIDENCE: ${{ runner.temp }}/queue-runner
+        run: |
+          set -uo pipefail
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')
+          if [ -n "$existing" ]; then
+            echo "queue-runner: pull request #$existing already covers $BRANCH"
+            exit 0
+          fi
+          # The push above needed `contents: write`. This needs something no workflow
+          # file can grant itself -- the "Allow GitHub Actions to create and approve
+          # pull requests" setting -- so it can be refused while everything else
+          # succeeded. Keep the refusal rather than only dying on it: the branch is
+          # already on the remote with verified work on it, and the next step is the
+          # only thing that will ever say why it has no pull request.
+          gh pr create --draft --base "${{ github.event.repository.default_branch }}" \
+            --head "$BRANCH" --title "$TITLE" --body-file "$BODY_FILE" \
+            > "$EVIDENCE/pr-create.out" 2> "$EVIDENCE/pr-create.err"
+          code=$?
+          cat "$EVIDENCE/pr-create.out" || true
+          cat "$EVIDENCE/pr-create.err" >&2 || true
+          exit $code
+
+      # Reached only when the pull request itself was refused, never when an earlier
+      # step failed. `issues: write` is an ordinary workflow permission and is NOT
+      # gated by the setting that just refused the pull request, which is precisely
+      # why this fallback can report at all.
+      #
+      # It does not rescue the run. The workflow's job is to deliver a reviewable
+      # draft pull request; delivering half of that is not a pass, so the refused
+      # step stays red and the heartbeat and escalation deadman go on seeing the
+      # truth. This issue carries the detail neither of them can.
+      - name: Record the pushed branch that has no pull request
+        if: ${{ failure() && steps.pr.conclusion == 'failure' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.queue.outputs.branch }}
+          TASK: ${{ steps.queue.outputs.task }}
+          EVIDENCE: ${{ runner.temp }}/queue-runner
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          touch "$EVIDENCE/pr-create.err"
+          : > "$EVIDENCE/fallback.env"
+          gh issue list --state open --limit 200 --json number,body \
+            > "$EVIDENCE/open-issues.json" || echo '[]' > "$EVIDENCE/open-issues.json"
+          python3 13_Faculty_Resources/_automation/maintenance/queue_pr_fallback.py \
+            --issues "$EVIDENCE/open-issues.json" \
+            --branch "$BRANCH" \
+            --task "$TASK" \
+            --repository "${{ github.repository }}" \
+            --base "${{ github.event.repository.default_branch }}" \
+            --run-url "$RUN_URL" \
+            --at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --error "$EVIDENCE/pr-create.err" \
+            --body-out "$EVIDENCE/fallback-body.md" \
+            --output "$EVIDENCE/fallback.env"
+          # The module appends, matching GITHUB_OUTPUT semantics. Truncate first and
+          # read the last entry so a file that is somehow not fresh cannot yield a
+          # two-line "create\nupdate" that silently takes the wrong branch below.
+          decision=$(sed -n 's/^decision=//p' "$EVIDENCE/fallback.env" | tail -n 1)
+          number=$(sed -n 's/^issue_number=//p' "$EVIDENCE/fallback.env" | tail -n 1)
+          # Upsert only. This automation never resolves a row; a person does, by
+          # opening the branch's pull request or deleting the branch.
+          if [ "$decision" = "create" ]; then
+            gh issue create \
+              --title "automation: queue branch pushed without a pull request" \
+              --body-file "$EVIDENCE/fallback-body.md"
+          else
+            gh issue edit "$number" --body-file "$EVIDENCE/fallback-body.md"
+          fi
+
+      - name: Upload queue runner evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: maintenance-queue-runner-${{ github.run_id }}
+          path: ${{ runner.temp }}/queue-runner
+          if-no-files-found: warn
+          retention-days: 90

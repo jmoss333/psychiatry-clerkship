@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-08-21",
+  "updated": "2026-09-24",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -2770,6 +2770,119 @@
       }
     },
     {
+      "id": "katz-2022-lithium-va",
+      "type": "primary-study",
+      "citation": {
+        "title": "Lithium Treatment in the Prevention of Repeat Suicide-Related Outcomes in Veterans With Major Depression or Bipolar Disorder: A Randomized Clinical Trial.",
+        "authors": [
+          {
+            "family": "Katz",
+            "given": "Ira R"
+          },
+          {
+            "family": "Rogers",
+            "given": "Malcolm P"
+          },
+          {
+            "family": "Lew",
+            "given": "Robert"
+          },
+          {
+            "family": "Thwin",
+            "given": "Soe Soe"
+          },
+          {
+            "family": "Doros",
+            "given": "Gheorghe"
+          },
+          {
+            "family": "Ahearn",
+            "given": "Eileen"
+          },
+          {
+            "family": "Ostacher",
+            "given": "Michael J"
+          },
+          {
+            "family": "DeLisi",
+            "given": "Lynn E"
+          },
+          {
+            "family": "Smith",
+            "given": "Eric G"
+          },
+          {
+            "family": "Ringer",
+            "given": "Robert J"
+          },
+          {
+            "family": "Ferguson",
+            "given": "Ryan"
+          },
+          {
+            "family": "Hoffman",
+            "given": "Brian"
+          },
+          {
+            "family": "Kaufman",
+            "given": "James S"
+          },
+          {
+            "family": "Paik",
+            "given": "Julie M"
+          },
+          {
+            "family": "Conrad",
+            "given": "Chester H"
+          },
+          {
+            "family": "Holmberg",
+            "given": "Erika F"
+          },
+          {
+            "family": "Boney",
+            "given": "Tamara Y"
+          },
+          {
+            "family": "Huang",
+            "given": "Grant D"
+          },
+          {
+            "family": "Liang",
+            "given": "Matthew H"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "JAMA Psychiatry",
+        "volume": "79",
+        "pages": "24-32",
+        "doi": "10.1001/jamapsychiatry.2021.3170",
+        "pmid": "34787653",
+        "url": "https://doi.org/10.1001/jamapsychiatry.2021.3170"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-09-24",
+        "note": "PMID 34787653 resolved via NCBI efetch on 2026-09-24: all 19 named authors (plus the collective author Li+ plus Investigators), 2022, JAMA Psychiatry 79(1):24-32, DOI and PMC8600458 match; PubMed lists only CommentIn items (an editorial and a letter/reply), and Crossref records no update, so no erratum is known. The published title is the one recorded here; the working citation had paraphrased it as 'Effect of Lithium vs Placebo on the Risk of Suicide-Related Events'. VA Cooperative Studies Program trial CSP #590 (NCT01928446, confirmed on ClinicalTrials.gov): double-blind lithium vs placebo added to usual care in veterans with bipolar disorder or depression who had survived a recent suicide-related event, 29 VA medical centers. Stopped for futility after 519 were randomized (255 lithium, 264 placebo); no overall difference in repeated suicide-related events (HR 1.10, 95% CI 0.77-1.55). Mean lithium concentrations at 3 months were 0.54 mEq/L (bipolar) and 0.46 mEq/L (major depression). A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "PMID 34787653 resolved via NCBI efetch on 2026-09-24: all 19 named authors (plus the collective author Li+ plus Investigators), 2022, JAMA Psychiatry 79(1):24-32, DOI and PMC8600458 match; PubMed lists only CommentIn items (an editorial and a letter/reply), and Crossref records no update, so no erratum is known. The published title is the one recorded here; the working citation had paraphrased it as 'Effect of Lithium vs Placebo on the Risk of Suicide-Related Events'. VA Cooperative Studies Program trial CSP #590 (NCT01928446, confirmed on ClinicalTrials.gov): double-blind lithium vs placebo added to usual care in veterans with bipolar disorder or depression who had survived a recent suicide-related event, 29 VA medical centers. Stopped for futility after 519 were randomized (255 lithium, 264 placebo); no overall difference in repeated suicide-related events (HR 1.10, 95% CI 0.77-1.55). Mean lithium concentrations at 3 months were 0.54 mEq/L (bipolar) and 0.46 mEq/L (major depression). A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population.",
+            "reason": "Peer-review remediation WP8 (2026-09-24): canon_200.md now pairs Cipriani 2013 with the VA Li+ trial, stopped for futility after lithium added to usual care did not reduce suicide-related events. A claim about what a paper found needs that paper's own words, so the source enters the registry with a stored results span in evidence_annotations.json."
+          }
+        ]
+      }
+    },
+    {
       "id": "apa-eating-disorders-2023",
       "type": "guideline",
       "citation": {
@@ -4272,6 +4385,79 @@
             "date": "2026-08-21",
             "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending).",
             "reason": "therapy-curriculum WP-T2 promotion (Taplinger request #5; closes review finding F19 for the therapy domain)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "studdert-2020-handgun-suicide",
+      "type": "primary-study",
+      "citation": {
+        "title": "Handgun Ownership and Suicide in California.",
+        "authors": [
+          {
+            "family": "Studdert",
+            "given": "David M"
+          },
+          {
+            "family": "Zhang",
+            "given": "Yifan"
+          },
+          {
+            "family": "Swanson",
+            "given": "Sonja A"
+          },
+          {
+            "family": "Prince",
+            "given": "Lea"
+          },
+          {
+            "family": "Rodden",
+            "given": "Jonathan A"
+          },
+          {
+            "family": "Holsinger",
+            "given": "Erin E"
+          },
+          {
+            "family": "Spittal",
+            "given": "Matthew J"
+          },
+          {
+            "family": "Wintemute",
+            "given": "Garen J"
+          },
+          {
+            "family": "Miller",
+            "given": "Matthew"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "The New England Journal of Medicine",
+        "volume": "382",
+        "pages": "2220-2229",
+        "doi": "10.1056/NEJMsa1916744",
+        "pmid": "32492303",
+        "url": "https://doi.org/10.1056/NEJMsa1916744"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "pubmed",
+        "verifiedAt": "2026-09-24",
+        "note": "PMID 32492303 resolved via NCBI efetch on 2026-09-24: title, all nine authors, 2020, N Engl J Med 382(23):2220-2229 and DOI match; PubMed lists only a CommentIn editorial (PMID 32492309) and Crossref records no update, so no erratum is known. Cohort of 26.3 million California adults without prior handgun acquisition, followed for up to 12 years: suicide by any method was higher among handgun owners, adjusted HR 3.34 (95% CI 3.13-3.56) for men and 7.16 (6.22-8.24) for women versus same-sex nonowners, driven by suicide by firearm (HR 7.82 men, 35.15 women); owners did not have higher rates of suicide by other methods or higher all-cause mortality. Observational: it licenses an individual-level association, not the effect of removing access. Backs the individual-cohort sentence beside Shank 2026 on therapy_reading_room.md."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "PMID 32492303 resolved via NCBI efetch on 2026-09-24: title, all nine authors, 2020, N Engl J Med 382(23):2220-2229 and DOI match; PubMed lists only a CommentIn editorial (PMID 32492309) and Crossref records no update, so no erratum is known. Cohort of 26.3 million California adults without prior handgun acquisition, followed for up to 12 years: suicide by any method was higher among handgun owners, adjusted HR 3.34 (95% CI 3.13-3.56) for men and 7.16 (6.22-8.24) for women versus same-sex nonowners, driven by suicide by firearm (HR 7.82 men, 35.15 women); owners did not have higher rates of suicide by other methods or higher all-cause mortality. Observational: it licenses an individual-level association, not the effect of removing access. Backs the individual-cohort sentence beside Shank 2026 on therapy_reading_room.md.",
+            "reason": "Peer-review remediation WP8 (2026-09-24): therapy_reading_room.md says individual cohort data link handgun ownership to a three- to sevenfold higher suicide rate. A claim about what a paper found needs that paper's own words, so the source enters the registry with a stored results span in evidence_annotations.json."
           }
         ]
       }
@@ -5839,6 +6025,455 @@
       }
     },
     {
+      "id": "alon-2024-sdoh-mdd-umbrella",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Social determinants of mental health in major depressive disorder: Umbrella review of 26 meta-analyses and systematic reviews",
+        "authors": [
+          {
+            "family": "Alon",
+            "given": "N"
+          },
+          {
+            "family": "Macrynikola",
+            "given": "N"
+          },
+          {
+            "family": "Jester",
+            "given": "DJ"
+          },
+          {
+            "family": "Keshavan",
+            "given": "M"
+          },
+          {
+            "family": "Reynolds",
+            "given": "CF"
+          },
+          {
+            "family": "Saxena",
+            "given": "S"
+          },
+          {
+            "family": "Thomas",
+            "given": "ML"
+          },
+          {
+            "family": "Torous",
+            "given": "J"
+          },
+          {
+            "family": "Jeste",
+            "given": "DV"
+          }
+        ],
+        "organization": "",
+        "year": 2024,
+        "journal": "Psychiatry Res",
+        "volume": "335",
+        "pages": "115854",
+        "doi": "10.1016/j.psychres.2024.115854",
+        "pmid": "38554496",
+        "url": "https://doi.org/10.1016/j.psychres.2024.115854"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 38554496): title, all nine authors, journal, volume, article number and DOI match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-011/AQ3-012: audio-quiz deck AR-29 credited this umbrella review's method (26 meta-analyses and systematic reviews) and its medium-effect MDD associations to Kirkbride et al., World Psychiatry 2024, a narrative evidence-and-prevention roadmap. Scope: MDD only; associations from published syntheses, not causal estimates. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "umbrella review of meta-analyses and systematic reviews",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "social-determinants",
+          "depression",
+          "umbrella-review"
+        ],
+        "clerkshipRelevance": "The umbrella review behind the audio-quiz deck on social determinants (AR-29): across 26 meta-analyses and systematic reviews, childhood abuse and neglect, intimate partner violence in females and food insecurity were associated with MDD with medium effect sizes. It is about MDD only, and it is not the Kirkbride et al. World Psychiatry 2024 roadmap the deck used to name.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-011/AQ3-012: audio-quiz deck AR-29 credited this umbrella review's method (26 meta-analyses and systematic reviews) and its medium-effect MDD associations to Kirkbride et al., World Psychiatry 2024, a narrative evidence-and-prevention roadmap. Scope: MDD only; associations from published syntheses, not causal estimates. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-011, AQ3-012)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cuijpers-2023-cbt-depression-meta",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Cognitive behavior therapy vs. control conditions, other psychotherapies, pharmacotherapies and combined treatment for depression: a comprehensive meta-analysis including 409 trials with 52,702 patients",
+        "authors": [
+          {
+            "family": "Cuijpers",
+            "given": "P"
+          },
+          {
+            "family": "Miguel",
+            "given": "C"
+          },
+          {
+            "family": "Harrer",
+            "given": "M"
+          },
+          {
+            "family": "Plessen",
+            "given": "CY"
+          },
+          {
+            "family": "Ciharova",
+            "given": "M"
+          },
+          {
+            "family": "Ebert",
+            "given": "D"
+          },
+          {
+            "family": "Karyotaki",
+            "given": "E"
+          }
+        ],
+        "organization": "",
+        "year": 2023,
+        "journal": "World Psychiatry",
+        "volume": "22",
+        "pages": "105-115",
+        "doi": "10.1002/wps.21069",
+        "pmid": "36640411",
+        "url": "https://doi.org/10.1002/wps.21069"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 36640411): title, all seven authors, journal, volume, pages, DOI and PMC id (PMC9840507) match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-016..AQ3-020: audio-quiz deck AR-18 keyed 'combined treatment is superior to either pharmacotherapy or psychotherapy alone' and taught 'no significant differences' between psychotherapies. The paper found combined treatment better than pharmacotherapy alone but not better than CBT alone, and a statistically significant but trivial CBT advantage (g=0.06) that became non-significant in most sensitivity analyses. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "depression",
+          "cbt",
+          "psychotherapy",
+          "combined-treatment"
+        ],
+        "clerkshipRelevance": "What the largest CBT-for-depression meta-analysis did and did not find: combined treatment beat pharmacotherapy alone (g=0.51 short term, 0.32 long term) but was not more effective than CBT alone at either time point, and CBT's edge over other psychotherapies was trivial (g=0.06) and not robust in sensitivity analyses.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-016..AQ3-020: audio-quiz deck AR-18 keyed 'combined treatment is superior to either pharmacotherapy or psychotherapy alone' and taught 'no significant differences' between psychotherapies. The paper found combined treatment better than pharmacotherapy alone but not better than CBT alone, and a statistically significant but trivial CBT advantage (g=0.06) that became non-significant in most sensitivity analyses. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-016, AQ3-017, AQ3-018, AQ3-019, AQ3-020)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "aoki-2022-cochrane-sdm",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Shared decision-making interventions for people with mental health conditions",
+        "authors": [
+          {
+            "family": "Aoki",
+            "given": "Y"
+          },
+          {
+            "family": "Yaju",
+            "given": "Y"
+          },
+          {
+            "family": "Utsumi",
+            "given": "T"
+          },
+          {
+            "family": "Sanyaolu",
+            "given": "L"
+          },
+          {
+            "family": "Storm",
+            "given": "M"
+          },
+          {
+            "family": "Takaesu",
+            "given": "Y"
+          },
+          {
+            "family": "Watanabe",
+            "given": "K"
+          },
+          {
+            "family": "Watanabe",
+            "given": "N"
+          },
+          {
+            "family": "Duncan",
+            "given": "E"
+          },
+          {
+            "family": "Edwards",
+            "given": "AG"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "11",
+        "pages": "CD007297",
+        "doi": "10.1002/14651858.CD007297.pub3",
+        "pmid": "36367232",
+        "url": "https://doi.org/10.1002/14651858.CD007297.pub3"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 36367232): title, all ten authors, journal, volume, article number, DOI and PMC id (PMC9650912) match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-001..AQ3-005: audio-quiz deck AR-20 keyed 'patient satisfaction and knowledge' as the review's improved outcome and its feedback said satisfaction and engagement improve. The review was uncertain on both; the only improved primary outcome was SDM-specific user-reported involvement immediately after the encounter (low certainty). Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review (Cochrane; GRADE low to very low certainty)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "shared-decision-making",
+          "patient-engagement",
+          "cochrane"
+        ],
+        "clerkshipRelevance": "The honest summary of SDM evidence in mental health: 15 RCTs, low-certainty evidence that people perceive greater involvement immediately after the encounter (SMD 0.63), and uncertainty about knowledge, overall satisfaction, clinical outcomes, treatment continuation and the clinician relationship. SDM stays an ethical and guideline standard; the outcome claims should stay this modest.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-001..AQ3-005: audio-quiz deck AR-20 keyed 'patient satisfaction and knowledge' as the review's improved outcome and its feedback said satisfaction and engagement improve. The review was uncertain on both; the only improved primary outcome was SDM-specific user-reported involvement immediately after the encounter (low certainty). Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-001, AQ3-002, AQ3-003, AQ3-004, AQ3-005)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vigen-2011-catie-ad-cognition",
+      "type": "primary-study",
+      "citation": {
+        "title": "Cognitive effects of atypical antipsychotic medications in patients with Alzheimer's disease: outcomes from CATIE-AD",
+        "authors": [
+          {
+            "family": "Vigen",
+            "given": "CL"
+          },
+          {
+            "family": "Mack",
+            "given": "WJ"
+          },
+          {
+            "family": "Keefe",
+            "given": "RS"
+          },
+          {
+            "family": "Sano",
+            "given": "M"
+          },
+          {
+            "family": "Sultzer",
+            "given": "DL"
+          },
+          {
+            "family": "Stroup",
+            "given": "TS"
+          },
+          {
+            "family": "Dagerman",
+            "given": "KS"
+          },
+          {
+            "family": "Hsiao",
+            "given": "JK"
+          },
+          {
+            "family": "Lebowitz",
+            "given": "BD"
+          },
+          {
+            "family": "Lyketsos",
+            "given": "CG"
+          },
+          {
+            "family": "Tariot",
+            "given": "PN"
+          },
+          {
+            "family": "Zheng",
+            "given": "L"
+          },
+          {
+            "family": "Schneider",
+            "given": "LS"
+          }
+        ],
+        "organization": "",
+        "year": 2011,
+        "journal": "Am J Psychiatry",
+        "volume": "168",
+        "pages": "831-9",
+        "doi": "10.1176/appi.ajp.2011.08121844",
+        "pmid": "21572163",
+        "url": "https://doi.org/10.1176/appi.ajp.2011.08121844"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 21572163): title, all thirteen authors, journal, volume, pages, DOI and PMC id (PMC3310182) match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-013/AQ3-014: audio-quiz deck AR-23 presented the whole-sample MMSE decline (2.4 points over 36 weeks) as the antipsychotic-minus-placebo difference. Span taken from the NIHMS author-manuscript abstract in PMC, which carries the between-group p-values (MMSE p=0.004) that the PubMed abstract omits. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "randomized trial, secondary cognitive outcomes",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "dementia",
+          "antipsychotics",
+          "cognition",
+          "catie-ad"
+        ],
+        "clerkshipRelevance": "The cognitive cost of antipsychotics in Alzheimer's disease: every group declined (MMSE 2.4 points over 36 weeks overall), and antipsychotic-treated patients declined more than placebo on the MMSE, BPRS cognitive subscale and a cognitive summary score, a magnitude the authors equated to about one year's deterioration. The 2.4 points is the whole-sample decline, not the drug-placebo difference.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-013/AQ3-014: audio-quiz deck AR-23 presented the whole-sample MMSE decline (2.4 points over 36 weeks) as the antipsychotic-minus-placebo difference. Span taken from the NIHMS author-manuscript abstract in PMC, which carries the between-group p-values (MMSE p=0.004) that the PubMed abstract omits. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-013, AQ3-014)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "miklowitz-2007-stepbd-psychotherapy",
+      "type": "primary-study",
+      "citation": {
+        "title": "Psychosocial treatments for bipolar depression: a 1-year randomized trial from the Systematic Treatment Enhancement Program",
+        "authors": [
+          {
+            "family": "Miklowitz",
+            "given": "DJ"
+          },
+          {
+            "family": "Otto",
+            "given": "MW"
+          },
+          {
+            "family": "Frank",
+            "given": "E"
+          },
+          {
+            "family": "Reilly-Harrington",
+            "given": "NA"
+          },
+          {
+            "family": "Wisniewski",
+            "given": "SR"
+          },
+          {
+            "family": "Kogan",
+            "given": "JN"
+          },
+          {
+            "family": "Nierenberg",
+            "given": "AA"
+          },
+          {
+            "family": "Calabrese",
+            "given": "JR"
+          },
+          {
+            "family": "Marangell",
+            "given": "LB"
+          },
+          {
+            "family": "Gyulai",
+            "given": "L"
+          },
+          {
+            "family": "Araga",
+            "given": "M"
+          },
+          {
+            "family": "Gonzalez",
+            "given": "JM"
+          },
+          {
+            "family": "Shirley",
+            "given": "ER"
+          },
+          {
+            "family": "Thase",
+            "given": "ME"
+          },
+          {
+            "family": "Sachs",
+            "given": "GS"
+          }
+        ],
+        "organization": "",
+        "year": 2007,
+        "journal": "Arch Gen Psychiatry",
+        "volume": "64",
+        "pages": "419-26",
+        "doi": "10.1001/archpsyc.64.4.419",
+        "pmid": "17404119",
+        "url": "https://doi.org/10.1001/archpsyc.64.4.419"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 17404119): title, all fifteen authors, journal, volume, pages, DOI and PMC id (PMC3579612) match; no erratum, retraction or update in PubMed CommentsCorrections",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings AQ3-008..AQ3-010: audio-quiz deck AR-26 compared this trial's recovery rate with the separate STEP-BD antidepressant trial and called the comparator 'medication-only'. Both arms here received protocol pharmacotherapy; the comparator was brief collaborative care. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "randomized controlled trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "bipolar",
+          "depression",
+          "psychotherapy",
+          "step-bd"
+        ],
+        "clerkshipRelevance": "The STEP-BD psychosocial trial: with everyone on protocol pharmacotherapy, intensive psychotherapy (family-focused, interpersonal and social rhythm, or cognitive behavior therapy) produced higher year-end recovery than brief collaborative care (64.4% vs 51.5%). It is a separate randomization from the STEP-BD antidepressant trial, so the two trials' recovery rates cannot be set against each other.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings AQ3-008..AQ3-010: audio-quiz deck AR-26 compared this trial's recovery rate with the separate STEP-BD antidepressant trial and called the comparator 'medication-only'. Both arms here received protocol pharmacotherapy; the comparator was brief collaborative care. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-3 audio-quiz decks (findings AQ3-008, AQ3-009, AQ3-010)"
+          }
+        ]
+      }
+    },
+    {
       "id": "diefenbach-2025",
       "type": "primary-study",
       "citation": {
@@ -7261,6 +7896,1283 @@
             "date": "2026-09-02",
             "note": "Added for curriculum-review finding MS3V07-F001: three surfaces credited 'structured lethal-means counseling (CALM)' with cutting attempts/deaths 3.3%->0.83%. The exposure in this study is documented lethal-means ASSESSMENT, not CALM delivery, and the design is quasi-experimental (instrumental variable), not randomised. Annotation is AI-drafted from the abstract and awaits faculty signature.",
             "reason": "curriculum-review remediation WP-5c (finding MS3V07-F001)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "schnurr-2024-vadod-ptsd-cpg-synopsis",
+      "type": "guideline",
+      "citation": {
+        "title": "The Management of Posttraumatic Stress Disorder and Acute Stress Disorder: Synopsis of the 2023 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guideline",
+        "authors": [
+          {
+            "family": "Schnurr",
+            "given": "PP"
+          },
+          {
+            "family": "Hamblen",
+            "given": "JL"
+          },
+          {
+            "family": "Wolf",
+            "given": "J"
+          },
+          {
+            "family": "Coller",
+            "given": "R"
+          },
+          {
+            "family": "Collie",
+            "given": "C"
+          },
+          {
+            "family": "Fuller",
+            "given": "MA"
+          },
+          {
+            "family": "Holtzheimer",
+            "given": "PE"
+          },
+          {
+            "family": "Kelly",
+            "given": "U"
+          },
+          {
+            "family": "Lang",
+            "given": "AJ"
+          },
+          {
+            "family": "McGraw",
+            "given": "K"
+          },
+          {
+            "family": "Morganstein",
+            "given": "JC"
+          },
+          {
+            "family": "Norman",
+            "given": "SB"
+          },
+          {
+            "family": "Papke",
+            "given": "K"
+          },
+          {
+            "family": "Petrakis",
+            "given": "I"
+          },
+          {
+            "family": "Riggs",
+            "given": "D"
+          },
+          {
+            "family": "Sall",
+            "given": "JA"
+          },
+          {
+            "family": "Shiner",
+            "given": "B"
+          },
+          {
+            "family": "Wiechers",
+            "given": "I"
+          },
+          {
+            "family": "Kelber",
+            "given": "MS"
+          }
+        ],
+        "organization": "U.S. Department of Veterans Affairs / Department of Defense",
+        "year": 2024,
+        "journal": "Ann Intern Med",
+        "volume": "177",
+        "pages": "363-374",
+        "doi": "10.7326/M23-2757",
+        "pmid": "38408360",
+        "url": "https://doi.org/10.7326/M23-2757"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 38408360): title, all 19 authors, journal, volume, issue, pages and DOI match",
+        "verifiedAt": "2026-09-16",
+        "note": "Added for issue #441 (surfaced by guideline-surveillance #432): rounds_questions.md Q39 already cited this synopsis for first-line PTSD treatment and the benzodiazepine recommendation, but the source was in neither registry. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "clinical practice guideline (synopsis)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-16",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "ptsd",
+          "trauma",
+          "psychotherapy",
+          "benzodiazepines"
+        ],
+        "clerkshipRelevance": "The current (2023) VA/DoD PTSD guideline in one abstract: manualized trauma-focused psychotherapy (PE, CPT, EMDR) over pharmacotherapy; paroxetine, sertraline or venlafaxine when medication is used; and a recommendation against benzodiazepines, cannabis and cannabis-derived products. Supersedes the 2017 edition that the APA index dropped on 2026-08-31.",
+        "noteHistory": [
+          {
+            "date": "2026-09-16",
+            "note": "Added for issue #441 (surfaced by guideline-surveillance #432): rounds_questions.md Q39 already cited this synopsis for first-line PTSD treatment and the benzodiazepine recommendation, but the source was in neither registry. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "issue #441 remediation (PTSD claims on rounds_questions.md carried no stored span)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "williams-2022-cochrane-ptsd-pharmacotherapy",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Pharmacotherapy for post traumatic stress disorder (PTSD)",
+        "authors": [
+          {
+            "family": "Williams",
+            "given": "T"
+          },
+          {
+            "family": "Phillips",
+            "given": "NJ"
+          },
+          {
+            "family": "Stein",
+            "given": "DJ"
+          },
+          {
+            "family": "Ipser",
+            "given": "JC"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "3",
+        "pages": "CD002795",
+        "doi": "10.1002/14651858.CD002795.pub3",
+        "pmid": "35234292",
+        "url": "https://doi.org/10.1002/14651858.CD002795.pub3"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 35234292): title, all four authors, journal, volume, issue, pages, DOI and PMC id (PMC8889888) match",
+        "verifiedAt": "2026-09-16",
+        "note": "Added for issue #441: rounds_questions.md Q39 quoted an SSRI treatment-response RR of 0.66 attributed to this review (WP-3, 2026-09-02) with no stored span behind the number. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-16",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "ptsd",
+          "ssri",
+          "pharmacotherapy"
+        ],
+        "clerkshipRelevance": "The number behind 'SSRIs work for PTSD': treatment response RR 0.66 (95% CI 0.59-0.74) vs placebo across 8 trials and 1,078 participants, improvement in 58% vs 35%, moderate certainty. Also the reason mirtazapine and amitriptyline get a mention (single small trials, low certainty) and antipsychotics do not.",
+        "noteHistory": [
+          {
+            "date": "2026-09-16",
+            "note": "Added for issue #441: rounds_questions.md Q39 quoted an SSRI treatment-response RR of 0.66 attributed to this review (WP-3, 2026-09-02) with no stored span behind the number. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "issue #441 remediation (PTSD claims on rounds_questions.md carried no stored span)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "decker-2015-extrip-lithium",
+      "type": "consensus",
+      "citation": {
+        "title": "Extracorporeal Treatment for Lithium Poisoning: Systematic Review and Recommendations from the EXTRIP Workgroup",
+        "authors": [
+          {
+            "family": "Decker",
+            "given": "BS"
+          },
+          {
+            "family": "Goldfarb",
+            "given": "DS"
+          },
+          {
+            "family": "Dargan",
+            "given": "PI"
+          },
+          {
+            "family": "Friesen",
+            "given": "M"
+          },
+          {
+            "family": "Gosselin",
+            "given": "S"
+          },
+          {
+            "family": "Hoffman",
+            "given": "RS"
+          },
+          {
+            "family": "Lavergne",
+            "given": "V"
+          },
+          {
+            "family": "Nolin",
+            "given": "TD"
+          },
+          {
+            "family": "Ghannoum",
+            "given": "M"
+          }
+        ],
+        "organization": "EXTRIP Workgroup",
+        "year": 2015,
+        "journal": "Clin J Am Soc Nephrol",
+        "volume": "10",
+        "pages": "875-887",
+        "doi": "10.2215/CJN.10021014",
+        "pmid": "25583292",
+        "url": "https://doi.org/10.2215/CJN.10021014"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 25583292): title, all nine named authors plus the EXTRIP Workgroup, journal, volume, issue, pages, DOI and PMC id (PMC4422246) match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings R01-001/R01-002 (cl_reference.md lithium dialysis thresholds). EXTRIP recommends extracorporeal treatment if kidney function is impaired and [Li+] >4.0 mEq/L, or with a decreased level of consciousness, seizures or life-threatening dysrhythmias irrespective of [Li+] (1D); it suggests it if [Li+] >5.0 mEq/L, significant confusion is present, or the expected time to reach [Li+] <1.0 mEq/L is >36 hours (2D). It does NOT support a flat >4.0 threshold in every patient or a >2.5 threshold, and every recommendation rests on very low quality evidence (mostly case reports). Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review with Delphi consensus recommendations (GRADE 1D/2D)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "lithium",
+          "toxicity",
+          "hemodialysis"
+        ],
+        "clerkshipRelevance": "The dialysis criteria for lithium poisoning as EXTRIP actually wrote them: recommended for [Li+] >4.0 mEq/L with impaired kidney function, or for decreased consciousness, seizures or life-threatening dysrhythmias at any level; suggested for >5.0 mEq/L, significant confusion, or an expected >36 h to fall below 1.0 mEq/L. The evidence is very low quality, so the grades are 1D/2D - treat the patient and the kidney function, not a single number.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings R01-001/R01-002 (cl_reference.md lithium dialysis thresholds). EXTRIP recommends extracorporeal treatment if kidney function is impaired and [Li+] >4.0 mEq/L, or with a decreased level of consciousness, seizures or life-threatening dysrhythmias irrespective of [Li+] (1D); it suggests it if [Li+] >5.0 mEq/L, significant confusion is present, or the expected time to reach [Li+] <1.0 mEq/L is >36 hours (2D). It does NOT support a flat >4.0 threshold in every patient or a >2.5 threshold, and every recommendation rests on very low quality evidence (mostly case reports). Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (findings R01-001, R01-002)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "larochelle-2018-moud-mortality",
+      "type": "primary-study",
+      "citation": {
+        "title": "Medication for Opioid Use Disorder After Nonfatal Opioid Overdose and Association With Mortality: A Cohort Study",
+        "authors": [
+          {
+            "family": "Larochelle",
+            "given": "MR"
+          },
+          {
+            "family": "Bernson",
+            "given": "D"
+          },
+          {
+            "family": "Land",
+            "given": "T"
+          },
+          {
+            "family": "Stopka",
+            "given": "TJ"
+          },
+          {
+            "family": "Wang",
+            "given": "N"
+          },
+          {
+            "family": "Xuan",
+            "given": "Z"
+          },
+          {
+            "family": "Bagley",
+            "given": "SM"
+          },
+          {
+            "family": "Liebschutz",
+            "given": "JM"
+          },
+          {
+            "family": "Walley",
+            "given": "AY"
+          }
+        ],
+        "organization": "",
+        "year": 2018,
+        "journal": "Ann Intern Med",
+        "volume": "169",
+        "pages": "137-145",
+        "doi": "10.7326/M17-3107",
+        "pmid": "29913516",
+        "url": "https://doi.org/10.7326/M17-3107"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 29913516): title, all nine authors, journal, volume, issue, pages, DOI and PMC id (PMC6387681) match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M09-001: rapid_review.md said MOUD (buprenorphine/methadone/naltrexone) reduces mortality. In 17 568 Massachusetts adults who survived an opioid overdose, methadone maintenance (all-cause AHR 0.47) and buprenorphine (AHR 0.63) were associated with decreased all-cause mortality; no association was identified for naltrexone (AHR 1.44, CI 0.84-2.46) and the authors state that few naltrexone events preclude confident conclusions. It licenses 'naltrexone has not been shown to reduce mortality', not 'naltrexone does not reduce mortality'. Observational cohort, not randomised. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "retrospective cohort (linked state data, time-varying exposure)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "opioid use disorder",
+          "moud",
+          "mortality",
+          "overdose"
+        ],
+        "clerkshipRelevance": "Why the post-overdose MOUD conversation matters: after a nonfatal overdose, methadone (AHR 0.47) and buprenorphine (AHR 0.63) were associated with lower all-cause mortality. Naltrexone showed no association (AHR 1.44, wide CI, few events), so teach it as 'not shown to reduce mortality', and keep the observational design attached to the numbers.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M09-001: rapid_review.md said MOUD (buprenorphine/methadone/naltrexone) reduces mortality. In 17 568 Massachusetts adults who survived an opioid overdose, methadone maintenance (all-cause AHR 0.47) and buprenorphine (AHR 0.63) were associated with decreased all-cause mortality; no association was identified for naltrexone (AHR 1.44, CI 0.84-2.46) and the authors state that few naltrexone events preclude confident conclusions. It licenses 'naltrexone has not been shown to reduce mortality', not 'naltrexone does not reduce mortality'. Observational cohort, not randomised. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (finding M09-001)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "nolen-2019-lithium-levels",
+      "type": "consensus",
+      "citation": {
+        "title": "What is the optimal serum level for lithium in the maintenance treatment of bipolar disorder? A systematic review and recommendations from the ISBD/IGSLI Task Force on treatment with lithium",
+        "authors": [
+          {
+            "family": "Nolen",
+            "given": "WA"
+          },
+          {
+            "family": "Licht",
+            "given": "RW"
+          },
+          {
+            "family": "Young",
+            "given": "AH"
+          },
+          {
+            "family": "Malhi",
+            "given": "GS"
+          },
+          {
+            "family": "Tohen",
+            "given": "M"
+          },
+          {
+            "family": "Vieta",
+            "given": "E"
+          },
+          {
+            "family": "Kupka",
+            "given": "RW"
+          },
+          {
+            "family": "Zarate",
+            "given": "C"
+          },
+          {
+            "family": "Nielsen",
+            "given": "RE"
+          },
+          {
+            "family": "Baldessarini",
+            "given": "RJ"
+          },
+          {
+            "family": "Severus",
+            "given": "E"
+          }
+        ],
+        "organization": "ISBD/IGSLI Task Force on the treatment with lithium",
+        "year": 2019,
+        "journal": "Bipolar Disord",
+        "volume": "21",
+        "pages": "394-409",
+        "doi": "10.1111/bdi.12805",
+        "pmid": "31112628",
+        "url": "https://doi.org/10.1111/bdi.12805"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 31112628): title, all eleven named authors plus the ISBD/IGSLI Task Force, journal, volume, issue, pages, DOI and PMC id (PMC6688930) match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for the WP-1 lithium cluster (target serum levels on med_monitoring, t_mood, cl_reference and rounds_questions). For adults the Task Force reached consensus on a standard maintenance level of 0.60-0.80 mmol/L (0.40-0.60 for good response but poor tolerance; 0.80-1.00 for insufficient response and good tolerance). For older adults there was NO consensus - a majority endorsed usually 0.40-0.60 mmol/L, at most 0.70 or 0.80 at ages 65-79 and at most 0.70 over 80 - so the older-adult range must not be called a consensus. The paper reports mmol/L. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review with Delphi consensus (80% endorsement threshold)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "lithium",
+          "bipolar disorder",
+          "therapeutic drug monitoring",
+          "older adults"
+        ],
+        "clerkshipRelevance": "The maintenance lithium target in one line: 0.60-0.80 mmol/L for adults by consensus, adjusted down (0.40-0.60) for good response with poor tolerance or up (0.80-1.00) for insufficient response with good tolerance. The older-adult ranges (usually 0.40-0.60; ceilings 0.70-0.80 at 65-79 and 0.70 over 80) are a majority view, not a consensus.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for the WP-1 lithium cluster (target serum levels on med_monitoring, t_mood, cl_reference and rounds_questions). For adults the Task Force reached consensus on a standard maintenance level of 0.60-0.80 mmol/L (0.40-0.60 for good response but poor tolerance; 0.80-1.00 for insufficient response and good tolerance). For older adults there was NO consensus - a majority endorsed usually 0.40-0.60 mmol/L, at most 0.70 or 0.80 at ages 65-79 and at most 0.70 over 80 - so the older-adult range must not be called a consensus. The paper reports mmol/L. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (lithium / EXTRIP cluster)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sahm-2022-restrictive-ed",
+      "type": "guideline",
+      "citation": {
+        "title": "Medical Management of Restrictive Eating Disorders in Adolescents and Young Adults",
+        "authors": [],
+        "organization": "Society for Adolescent Health and Medicine",
+        "year": 2022,
+        "journal": "J Adolesc Health",
+        "volume": "71",
+        "pages": "648-654",
+        "doi": "10.1016/j.jadohealth.2022.08.006",
+        "pmid": "36058805",
+        "url": "https://doi.org/10.1016/j.jadohealth.2022.08.006"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 36058805): title, corporate author (Society for Adolescent Health and Medicine), journal, volume, issue, pages, DOI and PMC id (PMC10864000) match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings M04-001/M04-002 (t_eating.md 'start low, go slow'). The SAHM position paper (adolescents and young adults) states that research supports inpatient refeeding protocols with close medical monitoring that start with higher calories and advance more rapidly than protocols starting at <1,200 kcals/day (Grade IA), and that refeeding hypophosphatemia tracks the degree of malnutrition on admission rather than the initial calories prescribed. It also says prospective trials are still required for extreme malnutrition (<60% mBMI), atypical AN and ARFID, so it does not license higher-calorie starts there. Span from the PMC author manuscript, not the abstract. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "position paper (graded; Grade IA for position 7)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "eating disorders",
+          "anorexia nervosa",
+          "refeeding"
+        ],
+        "clerkshipRelevance": "The refeeding update in adolescents and young adults: with close medical monitoring, higher-calorie starts that advance faster than the old <1,200 kcal/day protocols are supported (Grade IA), and refeeding hypophosphatemia tracks how malnourished the patient is on admission rather than the starting calories. Extreme malnutrition (<60% mBMI), atypical AN and ARFID still need trials.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings M04-001/M04-002 (t_eating.md 'start low, go slow'). The SAHM position paper (adolescents and young adults) states that research supports inpatient refeeding protocols with close medical monitoring that start with higher calories and advance more rapidly than protocols starting at <1,200 kcals/day (Grade IA), and that refeeding hypophosphatemia tracks the degree of malnutrition on admission rather than the initial calories prescribed. It also says prospective trials are still required for extreme malnutrition (<60% mBMI), atypical AN and ARFID, so it does not license higher-calorie starts there. Span from the PMC author manuscript, not the abstract. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (findings M04-001, M04-002)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rcpsych-meed-2022",
+      "type": "guideline",
+      "citation": {
+        "title": "Medical Emergencies in Eating Disorders: Guidance on Recognition and Management (Replacing MARSIPAN and Junior MARSIPAN)",
+        "authors": [],
+        "organization": "Royal College of Psychiatrists",
+        "year": 2022,
+        "journal": "College Report CR233",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.rcpsych.ac.uk/docs/default-source/improving-care/better-mh-policy/college-reports/college-report-cr233-medical-emergencies-in-eating-disorders-(meed)-guidance.pdf"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Royal College of Psychiatrists publisher PDF (CR233, May 2022, updated December 2025) retrieved 2026-09-24: title, report number, publisher and dates match; no PMID or DOI is assigned",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings M04-001/M04-002/M04-004 (t_eating.md refeeding wording; MEED replaced MARSIPAN and Junior MARSIPAN). CR233, May 2022, PDF updated December 2025 (the only correction notice adds Table C, AGREE scores). Chapter 4, pp. 81-82: it is not necessary to delay starting feeding to correct electrolytes (an HDU may be the right place when electrolytes are significantly deranged); adults with active medical comorbidity, particularly if acutely ill, or BMI <13 should be refed cautiously; in all cases monitor frequently, give vitamins (especially thiamine) and avoid underfeeding. No PMID or DOI is assigned to RCPsych College Reports; identity was checked against the College's own PDF. Its span is held out of evidence_annotations.json because bin/verify_spans.py can only cache by PMID. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "national guidance (expert consensus; adult refeeding evidence described as weak)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "eating disorders",
+          "anorexia nervosa",
+          "refeeding",
+          "medical emergencies"
+        ],
+        "clerkshipRelevance": "The UK medical-emergency guidance that replaced MARSIPAN: do not delay feeding to correct electrolytes, refeed cautiously only the adults at high risk (active medical comorbidity or acute illness, or BMI <13), give thiamine, and treat underfeeding as a risk in its own right.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings M04-001/M04-002/M04-004 (t_eating.md refeeding wording; MEED replaced MARSIPAN and Junior MARSIPAN). CR233, May 2022, PDF updated December 2025 (the only correction notice adds Table C, AGREE scores). Chapter 4, pp. 81-82: it is not necessary to delay starting feeding to correct electrolytes (an HDU may be the right place when electrolytes are significantly deranged); adults with active medical comorbidity, particularly if acutely ill, or BMI <13 should be refed cautiously; in all cases monitor frequently, give vitamins (especially thiamine) and avoid underfeeding. No PMID or DOI is assigned to RCPsych College Reports; identity was checked against the College's own PDF. Its span is held out of evidence_annotations.json because bin/verify_spans.py can only cache by PMID. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (findings M04-001, M04-002, M04-004)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "asam-hpso-bup-2023",
+      "type": "consensus",
+      "citation": {
+        "title": "ASAM Clinical Considerations: Buprenorphine Treatment of Opioid Use Disorder for Individuals Using High-potency Synthetic Opioids",
+        "authors": [
+          {
+            "family": "Weimer",
+            "given": "MB"
+          },
+          {
+            "family": "Herring",
+            "given": "AA"
+          },
+          {
+            "family": "Kawasaki",
+            "given": "SS"
+          },
+          {
+            "family": "Meyer",
+            "given": "M"
+          },
+          {
+            "family": "Kleykamp",
+            "given": "BA"
+          },
+          {
+            "family": "Ramsey",
+            "given": "KS"
+          }
+        ],
+        "organization": "American Society of Addiction Medicine",
+        "year": 2023,
+        "journal": "J Addict Med",
+        "volume": "17",
+        "pages": "632-639",
+        "doi": "10.1097/ADM.0000000000001202",
+        "pmid": "37934520",
+        "url": "https://doi.org/10.1097/ADM.0000000000001202"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 37934520): title, all six authors, journal, volume, issue, pages and DOI match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings M05-014, M08-008, M09-007, Q4-003 and Q4-004 (COWS thresholds and precipitated withdrawal with fentanyl). Expert-consensus clinical considerations, not a graded guideline. Table 3 lists opioid withdrawal with COWS >=8 with 1 objective sign of opioid withdrawal as a situation for 'standard initiation or HDB' (high-dose buprenorphine) in outpatient, ED and residential/hospital settings, and COWS <8 as standard initiation or low-dose initiation with opioid continuation; KQ2 says the most effective treatment for withdrawal after initiation remains additional buprenorphine. It does not make COWS >=8 a requirement and does not set a higher threshold for fentanyl. No PMC copy; span from the journal's version of record. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "clinical considerations (narrative review and expert consensus)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "opioid use disorder",
+          "buprenorphine",
+          "fentanyl",
+          "precipitated withdrawal",
+          "cows"
+        ],
+        "clerkshipRelevance": "How buprenorphine starts look once fentanyl is in the supply: COWS >=8 with an objective sign supports standard or high-dose initiation, lower scores point to standard or low-dose initiation with opioid continuation, and withdrawal after the first dose is treated with more buprenorphine. These are options by setting, not one cutoff.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings M05-014, M08-008, M09-007, Q4-003 and Q4-004 (COWS thresholds and precipitated withdrawal with fentanyl). Expert-consensus clinical considerations, not a graded guideline. Table 3 lists opioid withdrawal with COWS >=8 with 1 objective sign of opioid withdrawal as a situation for 'standard initiation or HDB' (high-dose buprenorphine) in outpatient, ED and residential/hospital settings, and COWS <8 as standard initiation or low-dose initiation with opioid continuation; KQ2 says the most effective treatment for withdrawal after initiation remains additional buprenorphine. It does not make COWS >=8 a requirement and does not set a higher threshold for fentanyl. No PMC copy; span from the journal's version of record. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (findings M05-014, M08-008, M09-007, Q4-003, Q4-004)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "asam-oud-2020",
+      "type": "guideline",
+      "citation": {
+        "title": "The ASAM National Practice Guideline for the Treatment of Opioid Use Disorder: 2020 Focused Update",
+        "authors": [],
+        "organization": "American Society of Addiction Medicine",
+        "year": 2020,
+        "journal": "J Addict Med",
+        "volume": "14",
+        "pages": "1-91",
+        "doi": "10.1097/ADM.0000000000000633",
+        "pmid": "32511106",
+        "url": "https://doi.org/10.1097/ADM.0000000000000633"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 32511106, not the erratum PMID 32487948): title, journal, volume 14 (2S Suppl 1), pages 1-91 and DOI match; no personal authors listed; ErratumIn PMID 32487948",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings M08-008, M09-007 and AQ1-006 (architecture handoff 7-C). Part 5, Initiation: during office-based initiation a COWS score of 11-12 or more is generally indicative of sufficient withdrawal for a safe and comfortable buprenorphine initiation; the same passage says some clinicians wait for COWS 13 or higher with fentanyl but that there is little existing evidence addressing this issue. It does not license a higher threshold for fentanyl. DECOY: PMID 32487948 is the one-page erratum (J Addict Med 2020;14(3):267), not the guideline; that erratum is why correctionStatus is 'corrected' - its text was not retrievable, and the current version of record still carries the quoted sentences. PubMed has no abstract for this record. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "national practice guideline (focused update)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "opioid use disorder",
+          "buprenorphine",
+          "cows",
+          "initiation"
+        ],
+        "clerkshipRelevance": "The standard-initiation number most learners were taught: COWS 11-12 or more is 'generally indicative' of enough withdrawal for a comfortable office start. The same paragraph declines to set a higher threshold for fentanyl for lack of evidence - one of several reference points, not the rule.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings M08-008, M09-007 and AQ1-006 (architecture handoff 7-C). Part 5, Initiation: during office-based initiation a COWS score of 11-12 or more is generally indicative of sufficient withdrawal for a safe and comfortable buprenorphine initiation; the same passage says some clinicians wait for COWS 13 or higher with fentanyl but that there is little existing evidence addressing this issue. It does not license a higher threshold for fentanyl. DECOY: PMID 32487948 is the one-page erratum (J Addict Med 2020;14(3):267), not the guideline; that erratum is why correctionStatus is 'corrected' - its text was not retrievable, and the current version of record still carries the quoted sentences. PubMed has no abstract for this record. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (findings M08-008, M09-007, AQ1-006)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "samhsa-tip63-2021",
+      "type": "guideline",
+      "citation": {
+        "title": "Medications for Opioid Use Disorder: For Healthcare and Addiction Professionals, Policymakers, Patients, and Families: Updated 2021",
+        "authors": [],
+        "organization": "Substance Abuse and Mental Health Services Administration",
+        "year": 2021,
+        "journal": "Treatment Improvement Protocol (TIP) Series 63",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "34928548",
+        "url": "https://library.samhsa.gov/sites/default/files/pep21-02-01-002.pdf"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 34928548, PubmedBookArticle, NCBI Bookshelf NBK574910 'tip63v2'): title 'Updated 2021', publisher SAMHSA and TIP collection match the SAMHSA PDF PEP21-02-01-002 (PDF metadata title 'TIP 63: Medications for Opioid Use Disorder'); not the 2018 edition PMID 30566313",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review findings M08-008, M09-007, AQ1-006 and AQ1-007. Chapter 3D (p. 3-61): the patient should exhibit signs of opioid withdrawal before the first buprenorphine dose to avoid precipitated withdrawal; 'for example', the buprenorphine REMS indicates a COWS score of 12 or higher is typically adequate for a first dose. That is an example, not a required threshold. PMID 34928548 is the NCBI Bookshelf record of this 2021 update (NBK574910); DECOY: PMID 30566313 (NBK535268) is the superseded 2018 edition. Span from SAMHSA's own PDF (PEP21-02-01-002). Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "federal treatment improvement protocol (consensus-based guidance)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "opioid use disorder",
+          "buprenorphine",
+          "cows",
+          "initiation"
+        ],
+        "clerkshipRelevance": "The federal TIP's version of the induction rule: wait for signs of withdrawal before the first dose, and the REMS offers COWS 12 or higher as typically adequate - an example to calibrate against, not a gate.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review findings M08-008, M09-007, AQ1-006 and AQ1-007. Chapter 3D (p. 3-61): the patient should exhibit signs of opioid withdrawal before the first buprenorphine dose to avoid precipitated withdrawal; 'for example', the buprenorphine REMS indicates a COWS score of 12 or higher is typically adequate for a first dose. That is an example, not a required threshold. PMID 34928548 is the NCBI Bookshelf record of this 2021 update (NBK574910); DECOY: PMID 30566313 (NBK535268) is the superseded 2018 edition. Span from SAMHSA's own PDF (PEP21-02-01-002). Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (findings M08-008, M09-007, AQ1-006, AQ1-007)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "donofrio-2026-ed-bup",
+      "type": "primary-study",
+      "citation": {
+        "title": "Emergency Department-Initiated Buprenorphine for Opioid Use Disorder: A Randomized Clinical Trial",
+        "authors": [
+          {
+            "family": "D'Onofrio",
+            "given": "G"
+          },
+          {
+            "family": "Herring",
+            "given": "AA"
+          },
+          {
+            "family": "Hawk",
+            "given": "KF"
+          },
+          {
+            "family": "Perrone",
+            "given": "J"
+          },
+          {
+            "family": "Cowan",
+            "given": "E"
+          },
+          {
+            "family": "McCormack",
+            "given": "RP"
+          },
+          {
+            "family": "Dziura",
+            "given": "J"
+          },
+          {
+            "family": "Matthews",
+            "given": "AG"
+          },
+          {
+            "family": "Pantalon",
+            "given": "MV"
+          },
+          {
+            "family": "Owens",
+            "given": "P"
+          },
+          {
+            "family": "Martel",
+            "given": "S"
+          },
+          {
+            "family": "Coupet",
+            "given": "E"
+          },
+          {
+            "family": "Lofwall",
+            "given": "MR"
+          },
+          {
+            "family": "Walsh",
+            "given": "SL"
+          },
+          {
+            "family": "Edelman",
+            "given": "EJ"
+          },
+          {
+            "family": "Carpenter",
+            "given": "JE"
+          },
+          {
+            "family": "Strout",
+            "given": "TD"
+          },
+          {
+            "family": "Baumann",
+            "given": "MR"
+          },
+          {
+            "family": "Anderson",
+            "given": "E"
+          },
+          {
+            "family": "Barrett",
+            "given": "TW"
+          },
+          {
+            "family": "Dorey",
+            "given": "A"
+          },
+          {
+            "family": "Taillac",
+            "given": "P"
+          },
+          {
+            "family": "Cochran",
+            "given": "G"
+          },
+          {
+            "family": "Crandall",
+            "given": "CS"
+          },
+          {
+            "family": "Wilson",
+            "given": "J"
+          },
+          {
+            "family": "Manteuffel",
+            "given": "J"
+          },
+          {
+            "family": "Cole",
+            "given": "JB"
+          },
+          {
+            "family": "Whiteside",
+            "given": "LK"
+          },
+          {
+            "family": "Jones",
+            "given": "C"
+          },
+          {
+            "family": "Samuels",
+            "given": "E"
+          },
+          {
+            "family": "Huntley",
+            "given": "K"
+          },
+          {
+            "family": "Fiellin",
+            "given": "DA"
+          }
+        ],
+        "organization": "ED INNOVATION Investigators",
+        "year": 2026,
+        "journal": "JAMA",
+        "volume": "335",
+        "pages": "948-960",
+        "doi": "10.1001/jama.2025.27019",
+        "pmid": "41670966",
+        "url": "https://doi.org/10.1001/jama.2025.27019"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 41670966): title, all 32 named authors plus the ED INNOVATION Investigators, journal, volume, issue, pages, DOI and PMC id (PMC12895321) match; ErratumIn PMID 41915466 read on PMC (PMC13040460)",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for the WP-1 withdrawal/COWS/OUD cluster (architecture handoff 7-C). In a 29-ED randomised trial of extended-release vs sublingual buprenorphine (991 vs 1003 analysed; 31% had an initial COWS score of 4 to 7; 76% tested positive for fentanyl), precipitated withdrawal was rare: 6 (0.6%) extended-release and 8 (0.8%) sublingual. The sublingual arm received an ED dose only when COWS was 8 or higher. Engagement at 7 days did not differ. ErratumIn PMID 41915466 (JAMA 2026;335(16):1452): the Figure 2 dot-plot labels were reversed - it does not touch the numbers quoted here. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "multicenter randomized clinical trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "opioid use disorder",
+          "buprenorphine",
+          "emergency department",
+          "fentanyl",
+          "precipitated withdrawal"
+        ],
+        "clerkshipRelevance": "The fentanyl-era safety number for ED buprenorphine: with 76% of patients fentanyl-positive, precipitated withdrawal occurred in 0.6% (extended-release) and 0.8% (sublingual). Rare is not never - and the sublingual arm was dosed in the ED only at COWS 8 or higher.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for the WP-1 withdrawal/COWS/OUD cluster (architecture handoff 7-C). In a 29-ED randomised trial of extended-release vs sublingual buprenorphine (991 vs 1003 analysed; 31% had an initial COWS score of 4 to 7; 76% tested positive for fentanyl), precipitated withdrawal was rare: 6 (0.6%) extended-release and 8 (0.8%) sublingual. The sublingual arm received an ED dose only when COWS was 8 or higher. Engagement at 7 days did not differ. ErratumIn PMID 41915466 (JAMA 2026;335(16):1452): the Figure 2 dot-plot labels were reversed - it does not touch the numbers quoted here. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (architecture handoff 7-C; findings M08-008, M09-007)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "winkelman-2025-aasm-rls",
+      "type": "guideline",
+      "citation": {
+        "title": "Treatment of restless legs syndrome and periodic limb movement disorder: an American Academy of Sleep Medicine clinical practice guideline",
+        "authors": [
+          {
+            "family": "Winkelman",
+            "given": "JW"
+          },
+          {
+            "family": "Berkowski",
+            "given": "JA"
+          },
+          {
+            "family": "DelRosso",
+            "given": "LM"
+          },
+          {
+            "family": "Koo",
+            "given": "BB"
+          },
+          {
+            "family": "Scharf",
+            "given": "MT"
+          },
+          {
+            "family": "Sharon",
+            "given": "D"
+          },
+          {
+            "family": "Zak",
+            "given": "RS"
+          },
+          {
+            "family": "Kazmi",
+            "given": "U"
+          },
+          {
+            "family": "Falck-Ytter",
+            "given": "Y"
+          },
+          {
+            "family": "Shelgikar",
+            "given": "AV"
+          },
+          {
+            "family": "Trotti",
+            "given": "LM"
+          },
+          {
+            "family": "Walters",
+            "given": "AS"
+          }
+        ],
+        "organization": "American Academy of Sleep Medicine",
+        "year": 2025,
+        "journal": "J Clin Sleep Med",
+        "volume": "21",
+        "pages": "137-152",
+        "doi": "10.5664/jcsm.11390",
+        "pmid": "39324694",
+        "url": "https://doi.org/10.5664/jcsm.11390"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 39324694, not the companion systematic review PMID 39324664): title, all twelve authors, journal, volume, issue, pages, DOI and PMC id (PMC11701286) match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M04-016 (t_sleep.md paired iron with 'dopaminergic/alpha-2-delta agents'). The AASM guideline (not the companion evidence review, PMID 39324664) recommends gabapentin enacarbil, gabapentin and pregabalin (each strong, moderate certainty) and IV ferric carboxymaltose (strong) in adults with RLS, and suggests against the standard use of pramipexole, ropinirole and transdermal rotigotine (conditional; augmentation). The iron thresholds (ferritin <=75 ng/mL or transferrin saturation <20%) are a good practice statement drawn from consensus guidelines that the guideline says have not been empirically tested. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "clinical practice guideline (GRADE)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "restless legs syndrome",
+          "iron",
+          "gabapentinoids",
+          "dopamine agonists",
+          "augmentation"
+        ],
+        "clerkshipRelevance": "The RLS reversal learners need: alpha-2-delta ligands (gabapentin enacarbil, gabapentin, pregabalin) are now the strong first-line recommendations and dopamine agonists are suggested against for standard use because of augmentation. Check ferritin and transferrin saturation first - iron at ferritin <=75 ng/mL or TSAT <20% is consensus-based, not trial-tested.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M04-016 (t_sleep.md paired iron with 'dopaminergic/alpha-2-delta agents'). The AASM guideline (not the companion evidence review, PMID 39324664) recommends gabapentin enacarbil, gabapentin and pregabalin (each strong, moderate certainty) and IV ferric carboxymaltose (strong) in adults with RLS, and suggests against the standard use of pramipexole, ropinirole and transdermal rotigotine (conditional; augmentation). The iron thresholds (ferritin <=75 ng/mL or transferrin saturation <20%) are a good practice statement drawn from consensus guidelines that the guideline says have not been empirically tested. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (finding M04-016)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rosenberg-2015-malignant-hyperthermia",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Malignant hyperthermia: a review",
+        "authors": [
+          {
+            "family": "Rosenberg",
+            "given": "H"
+          },
+          {
+            "family": "Pollock",
+            "given": "N"
+          },
+          {
+            "family": "Schiemann",
+            "given": "A"
+          },
+          {
+            "family": "Bulger",
+            "given": "T"
+          },
+          {
+            "family": "Stowell",
+            "given": "K"
+          }
+        ],
+        "organization": "",
+        "year": 2015,
+        "journal": "Orphanet J Rare Dis",
+        "volume": "10",
+        "pages": "93",
+        "doi": "10.1186/s13023-015-0310-1",
+        "pmid": "26238698",
+        "url": "https://doi.org/10.1186/s13023-015-0310-1"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 26238698): title, all five authors, journal, volume, article number 93, DOI and PMC id (PMC4524368) match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M05-001 and the ECT anesthesia teaching (toxidromes, ect_neuromodulation). Narrative review: MH is a pharmacogenetic disorder of skeletal muscle presenting as a hypermetabolic response to potent volatile anesthetics and succinylcholine; a rise in end-tidal CO2 despite increased minute ventilation is an early diagnostic clue; dantrolene is the specific antagonist. It is not a source for NMS or serotonin syndrome management. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "narrative review",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "malignant hyperthermia",
+          "succinylcholine",
+          "ect",
+          "hyperthermia",
+          "dantrolene"
+        ],
+        "clerkshipRelevance": "Why MH belongs on the hyperthermia differential of a psychiatry service: it is triggered by volatile anesthetics and succinylcholine (the ECT relaxant), it announces itself with a rising end-tidal CO2 despite more ventilation, and dantrolene is its specific antagonist.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M05-001 and the ECT anesthesia teaching (toxidromes, ect_neuromodulation). Narrative review: MH is a pharmacogenetic disorder of skeletal muscle presenting as a hypermetabolic response to potent volatile anesthetics and succinylcholine; a rise in end-tidal CO2 despite increased minute ventilation is an early diagnostic clue; dantrolene is the specific antagonist. It is not a source for NMS or serotonin syndrome management. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (finding M05-001; ECT anesthesia)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "selten-2020-migration-psychosis",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Migration and psychosis: a meta-analysis of incidence studies",
+        "authors": [
+          {
+            "family": "Selten",
+            "given": "JP"
+          },
+          {
+            "family": "van der Ven",
+            "given": "E"
+          },
+          {
+            "family": "Termorshuizen",
+            "given": "F"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "Psychol Med",
+        "volume": "50",
+        "pages": "303-313",
+        "doi": "10.1017/S0033291719000035",
+        "pmid": "30722795",
+        "url": "https://doi.org/10.1017/S0033291719000035"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 30722795): title, all three authors, journal, volume, issue, pages, DOI and PMC id (PMC7083571) match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M05-009 (cultural_psychiatry.md said disparities never involve different rates of illness). Meta-analysis of population-based incidence studies in migrants and their children: RR 2.13 (95% CI 1.99-2.27) for non-affective psychotic disorder, adjusted for age and sex; the RRs diminished but persisted after adjustment for SES. The RR was higher for migration to Europe from outside Europe (2.94) than within Europe (1.88) and lower in Israel (1.22) and Canada (1.21), both with confidence intervals that include the null. Note: Psychol Med 2020, not a World Psychiatry paper. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "migration",
+          "psychosis",
+          "social determinants",
+          "cultural psychiatry"
+        ],
+        "clerkshipRelevance": "The corrective to 'disparities are never differences in illness': migrants and their children have about twice the incidence of non-affective psychosis (RR 2.13), the excess shrinks but persists after SES adjustment, and it varies by setting and origin - the pattern that points to social exclusion rather than inherent group difference.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M05-009 (cultural_psychiatry.md said disparities never involve different rates of illness). Meta-analysis of population-based incidence studies in migrants and their children: RR 2.13 (95% CI 1.99-2.27) for non-affective psychotic disorder, adjusted for age and sex; the RRs diminished but persisted after adjustment for SES. The RR was higher for migration to Europe from outside Europe (2.94) than within Europe (1.88) and lower in Israel (1.22) and Canada (1.21), both with confidence intervals that include the null. Note: Psychol Med 2020, not a World Psychiatry paper. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (finding M05-009)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bourque-2011-migration-psychosis",
+      "type": "systematic-review",
+      "citation": {
+        "title": "A meta-analysis of the risk for psychotic disorders among first- and second-generation immigrants",
+        "authors": [
+          {
+            "family": "Bourque",
+            "given": "F"
+          },
+          {
+            "family": "van der Ven",
+            "given": "E"
+          },
+          {
+            "family": "Malla",
+            "given": "A"
+          }
+        ],
+        "organization": "",
+        "year": 2011,
+        "journal": "Psychol Med",
+        "volume": "41",
+        "pages": "897-910",
+        "doi": "10.1017/S0033291710001406",
+        "pmid": "20663257",
+        "url": "https://doi.org/10.1017/S0033291710001406"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 20663257): title, all three authors, journal, volume, issue, pages and DOI match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M05-009. Meta-analysis of 21 population-based incidence studies: IRR 2.3 for first-generation and 2.1 for second-generation immigrants, with no significant risk difference between generations but significant differences according to ethno-racial status and host country. The authors read the persistence into the second generation as pointing to post-migration factors, and the variability as suggesting the risk is mediated by the social context. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "migration",
+          "psychosis",
+          "second generation",
+          "social determinants",
+          "cultural psychiatry"
+        ],
+        "clerkshipRelevance": "The second-generation finding is the teaching point: the children of immigrants carry nearly the same excess psychosis risk as their parents (IRR 2.1 vs 2.3), which argues against selective migration and for post-migration social context - and the risk differs by ethno-racial status and host country.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M05-009. Meta-analysis of 21 population-based incidence studies: IRR 2.3 for first-generation and 2.1 for second-generation immigrants, with no significant risk difference between generations but significant differences according to ethno-racial status and host country. The authors read the persistence into the second generation as pointing to post-migration factors, and the variability as suggesting the risk is mediated by the social context. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (finding M05-009)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "gurrera-2011-nms-criteria",
+      "type": "consensus",
+      "citation": {
+        "title": "An international consensus study of neuroleptic malignant syndrome diagnostic criteria using the Delphi method",
+        "authors": [
+          {
+            "family": "Gurrera",
+            "given": "RJ"
+          },
+          {
+            "family": "Caroff",
+            "given": "SN"
+          },
+          {
+            "family": "Cohen",
+            "given": "A"
+          },
+          {
+            "family": "Carroll",
+            "given": "BT"
+          },
+          {
+            "family": "DeRoos",
+            "given": "F"
+          },
+          {
+            "family": "Francis",
+            "given": "A"
+          },
+          {
+            "family": "Frucht",
+            "given": "S"
+          },
+          {
+            "family": "Gupta",
+            "given": "S"
+          },
+          {
+            "family": "Levenson",
+            "given": "JL"
+          },
+          {
+            "family": "Mahmood",
+            "given": "A"
+          },
+          {
+            "family": "Mann",
+            "given": "SC"
+          },
+          {
+            "family": "Policastro",
+            "given": "MA"
+          },
+          {
+            "family": "Rosebush",
+            "given": "PI"
+          },
+          {
+            "family": "Rosenberg",
+            "given": "H"
+          },
+          {
+            "family": "Sachdev",
+            "given": "PS"
+          },
+          {
+            "family": "Trollor",
+            "given": "JN"
+          },
+          {
+            "family": "Velamoor",
+            "given": "VR"
+          },
+          {
+            "family": "Watson",
+            "given": "CB"
+          },
+          {
+            "family": "Wilkinson",
+            "given": "JR"
+          }
+        ],
+        "organization": "",
+        "year": 2011,
+        "journal": "J Clin Psychiatry",
+        "volume": "72",
+        "pages": "1222-1228",
+        "doi": "10.4088/JCP.10m06438",
+        "pmid": "21733489",
+        "url": "https://doi.org/10.4088/JCP.10m06438"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 21733489): title, all nineteen authors, journal, volume, issue, pages and DOI match",
+        "verifiedAt": "2026-09-24",
+        "note": "Added for peer-review finding M08-005 (rounds_questions.md: CK 'typically markedly elevated, often >10,000'). International multispecialty Delphi consensus on NMS diagnostic criteria; the consensus critical value for creatine kinase elevation is at least 4 times the upper limit of normal. The authors state the criteria require validation before being applied in clinical settings. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Delphi expert consensus (diagnostic criteria)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-24",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "neuroleptic malignant syndrome",
+          "creatine kinase",
+          "diagnostic criteria"
+        ],
+        "clerkshipRelevance": "The consensus NMS criteria with their critical values: CK at least 4 times the upper limit of normal (not 'often >10,000'), temperature >38.0 C on at least 2 occasions, and autonomic thresholds - criteria the authors say still need validation before clinical use.",
+        "noteHistory": [
+          {
+            "date": "2026-09-24",
+            "note": "Added for peer-review finding M08-005 (rounds_questions.md: CK 'typically markedly elevated, often >10,000'). International multispecialty Delphi consensus on NMS diagnostic criteria; the consensus critical value for creatine kinase elevation is at least 4 times the upper limit of normal. The authors state the criteria require validation before being applied in clinical settings. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "peer-review remediation 2026-09-24, WP-1 joint clinical-safety PR (finding M08-005)"
           }
         ]
       }

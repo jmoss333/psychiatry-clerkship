@@ -10,8 +10,9 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataPath = path.join(repo, 'crisis_resources.json');
 const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
-// Source surfaces that must carry the build marker. The build asserts the same set, so this
-// test catches a dropped marker at `node --test` time rather than only at deploy time.
+// Source surfaces that must carry the build marker. The build asserts the same set — pinned
+// below against the build's own registries, so the two cannot drift — and this test catches a
+// dropped marker at `node --test` time rather than only at deploy time.
 // Scope rule: surfaces where a learner is plausibly DOING risk work — assessing, rehearsing,
 // or planning disposition — not reference pages that merely mention suicide.
 const MD = '<!-- crisis-block -->';
@@ -23,6 +24,9 @@ const markedSources = new Map([
   // direct risk assessment & acute safety
   ['04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md', MD],
   ['14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/suicide_risk_and_safety_pocket_card.md', MD],
+  // the pocket guide has the learner rehearse the suicide, violence and vulnerability
+  // elicitation ladders verbatim — risk work, not a page that merely mentions suicide
+  ['14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md', MD],
   ['04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md', MD],
   ['04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md', MD],
   ['03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md', MD],
@@ -38,6 +42,9 @@ const markedSources = new Map([
   ['03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md', MD],
   // bedside work & disposition — peri-discharge is the highest-risk window
   ['02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md', MD],
+  // teaches safety-plan delivery, lethal-means counseling and discharge bridging — the learner
+  // is doing risk work here (the Reading Room list, by contrast, carries no block)
+  ['02_Clinical_Skills/Psychotherapy/therapy_on_the_unit_inpatient_teaching.md', MD],
   ['14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md', MD],
   ['06_Family_and_Relational/family_meeting_playbook_90min.md', MD],
   ['06_Family_and_Relational/collateral_micro_workflow.md', MD],
@@ -48,11 +55,17 @@ const markedSources = new Map([
   ['08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md', MD],
   ['08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_MS3.md', MD],
   ['08_Cases_and_Simulation/case-of-the-week/2026-07-23_suicide-risk-assessment-safety-planning_Resident.md', MD],
+  // J3 (2026-09-24): the MS3 MDD case's passive-SI safety-planning question, and OSCE Station 1
+  ['08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md', MD],
+  ['14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md', MD],
   // resident-only Case-of-the-Week pages that rehearse risk work. These do NOT reach
   // build_deploy.py's md loop — resident_section.py writes them fresh from source and runs
   // its own crisis_block.inject_markdown pass, gated by _CRISIS_REQUIRED_RES_MD there.
   ['08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_Resident.md', MD],
   ['08_Cases_and_Simulation/case-of-the-week/2026-08-27_borderline-personality-disorder_Resident.md', MD],
+  // J3 (2026-09-24): FEP discharge disposition with a safety plan; MDD passive-SI assessment
+  ['08_Cases_and_Simulation/case-of-the-week/2026-09-07_first-episode-psychosis_Resident.md', MD],
+  ['08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_Resident.md', MD],
   // tools where the learner is actively assessing or rehearsing risk
   ['04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html', HTML],
   ['04_Acute_and_Safety/Violence_Risk/violence-risk-one-pager.html', HTML],
@@ -62,6 +75,8 @@ const markedSources = new Map([
   ['02_Clinical_Skills/Communication_Practice/communication-practice.html', HTML],
   ['06_Family_and_Relational/family-systems-practice.html', HTML],
   ['08_Cases_and_Simulation/one-patient-six-weeks.html', HTML],
+  // the MSE module's Safety stage rehearses the same elicitation ladders as pg_interview.md
+  ['02_Clinical_Skills/Mental_Status_Exam/mental-status-exam-module.html', HTML],
 ]);
 
 // Front Door modules can feed the Safety Kit without carrying the build marker themselves. Scan
@@ -72,6 +87,48 @@ const frontDoorSafetySources = fs.readdirSync(path.join(repo, frontDoorRelative)
   .filter((name) => name.endsWith('.js'))
   .map((name) => path.posix.join(frontDoorRelative, name));
 const scannedSafetySources = [...new Set([...markedSources.keys(), ...frontDoorSafetySources])];
+
+// The build's OWN required-surface registries — _CRISIS_REQUIRED_TOOLS and _CRISIS_REQUIRED_MD
+// in build_deploy.py, _CRISIS_REQUIRED_RES_MD in resident_section.py — read through the same
+// parser bin/check_crisis_surfaces.py uses (literal_set: the AST, never an import, because
+// importing build_deploy.py runs a site build) and mapped from shipped slug to source path
+// through shipped_pages.json, the one derived listing of what ships (ADR-002). Every failure
+// path aborts rather than shrinks the set: an unparseable registry, a required slug absent
+// from the shipped universe, or a shipped page with no source path all fail the test instead
+// of quietly producing a smaller expected set that the map would then "match".
+function buildRequiredSurfaces() {
+  const program = [
+    'import json, sys',
+    'sys.path.insert(0, sys.argv[1])',
+    'import check_crisis_surfaces as c',
+    'registries = {',
+    '    "_CRISIS_REQUIRED_TOOLS": c.literal_set(c.BUILD_DEPLOY, "_CRISIS_REQUIRED_TOOLS"),',
+    '    "_CRISIS_REQUIRED_MD": c.literal_set(c.BUILD_DEPLOY, "_CRISIS_REQUIRED_MD"),',
+    '    "_CRISIS_REQUIRED_RES_MD": c.literal_set(c.RESIDENT_SECTION, "_CRISIS_REQUIRED_RES_MD"),',
+    '}',
+    'pages = {page["slug"]: page for page in c.load_shipped_pages(c.REPO)["pages"]}',
+    'rows = []',
+    'for registry, slugs in registries.items():',
+    '    for slug in sorted(slugs):',
+    '        page = pages.get(slug)',
+    '        if page is None:',
+    '            raise SystemExit(f"{registry}: {slug} is NOT IN shipped_pages.json")',
+    '        source = page.get("source")',
+    '        if not isinstance(source, str) or not source:',
+    '            raise SystemExit(f"shipped_pages.json: {slug} has no source path")',
+    '        rows.append({"registry": registry, "slug": slug, "source": source})',
+    'print(json.dumps(rows))',
+  ].join('\n');
+  const result = spawnSync('python3', ['-c', program, path.join(repo, 'bin')], {
+    cwd: repo,
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0,
+    `could not read the build's crisis registries:\n${result.stdout}\n${result.stderr}`);
+  const rows = JSON.parse(result.stdout);
+  assert.ok(rows.length > 0, 'the build registries resolved to no required surfaces');
+  return rows;
+}
 
 function compactContact(value) {
   return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -157,6 +214,21 @@ test('provenance points at ReConnect and forbids unreviewed sync', () => {
   assert.equal(data.provenance.relation, 'derived-and-independently-verified');
   assert.equal(data.provenance.syncPolicy, 'manual-reviewed-only');
   assert.match(data.provenance.upstreamRepository, /reconnect-psychiatry-system/);
+});
+
+test('the marked-source map matches the build\'s required-surface registries exactly', () => {
+  const required = buildRequiredSurfaces();
+  const expectedSources = new Set(required.map((row) => row.source));
+  const mappedSources = new Set([...markedSources.keys()].filter((rel) => rel !== shellRelative));
+  const drift = {
+    lagging: required.filter((row) => !mappedSources.has(row.source))
+      .map((row) => `${row.slug} <- ${row.source} (${row.registry})`),
+    surplus: [...mappedSources].filter((rel) => !expectedSources.has(rel)),
+  };
+  assert.deepEqual(drift, { lagging: [], surplus: [] },
+    'markedSources drifted from the build registries: `lagging` rows are required by the build '
+    + 'but missing from the map (add them); `surplus` rows are in the map but no registry '
+    + 'requires them (register the surface in the build, or drop the row)');
 });
 
 test('each required safety surface still carries its build marker', () => {

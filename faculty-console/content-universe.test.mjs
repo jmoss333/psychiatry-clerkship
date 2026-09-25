@@ -34,6 +34,38 @@ const MANIFEST = readJson('13_Faculty_Resources/_automation/site_build/site_mani
 const REGISTRY = readJson('08_Cases_and_Simulation/case-of-the-week/cotw_registry.json');
 const REVIEWED = readJson('13_Faculty_Resources/reviewed.json');
 
+// The one number that legitimately moves every week. Every CotW-sized expectation below
+// derives from it, because a weekly content PR may not touch faculty-console/ under the
+// governance/content separation gate (bin/check_governance_separation.py L1) — hand-pinned
+// counts here would deadlock the weekly workflow. This is NOT vacuous: the registry is the
+// producers' input, and the assertions below still cross-check shipped_pages.json and the
+// JS-derived universe against it, so registry↔shipped drift still fails. The deliberate
+// hand-bumped weekly pin lives in tests/panel-snapshots.test.mjs, which a content PR may
+// legitimately carry.
+const WEEKS = REGISTRY.weeks.length;
+
+// site_extras.py's literal lists, read out of the module by Python itself. The MS3-only
+// tool count derives from them for the same reason WEEKS derives from the registry:
+// adding or retiring an MS3-only extra (the orientation-video tool is one) is
+// registration a content PR carries in site_extras.py, and a count hand-pinned here would
+// deadlock that PR under L1. Not vacuous: the parity test below still checks every listed
+// extra against shipped_pages.json slug by slug, so extras and shipped cannot drift apart.
+const EXTRAS = JSON.parse(execFileSync('python3', [
+  '-c',
+  [
+    'import json,sys',
+    'sys.path.insert(0, sys.argv[1])',
+    'import site_extras as e',
+    'print(json.dumps({',
+    '  "ms3_tools": e.MS3_EXTRA_TOOLS,',
+    '  "resident_pages": e.RESIDENT_EXTRA_PAGES,',
+    '  "resident_tools": e.RESIDENT_PROTO_TOOLS,',
+    '}))',
+  ].join('\n'),
+  new URL('13_Faculty_Resources/_automation/site_build/', ROOT).pathname,
+], { encoding: 'utf8' }));
+const MS3_TOOLS = EXTRAS.ms3_tools.length;
+
 // The exact Python expression the one shared slug helper uses. Asserting on the source
 // text — not on a hand-copied restatement of it — is what makes "byte-identical" a claim
 // a test can actually break when someone edits the Python side alone.
@@ -69,25 +101,29 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
   const tools = items.filter(item => item.kind === 'tool');
   const cotw = items.filter(item => isCotwSlug(item.slug));
 
-  // 69 shared pages + 22 shared tools + 1 MS3-only tool (orientation-video.html)
-  // + 22 Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools
-  // (rp-post-event-huddle.html joined the three role-play tools on 2026-09-04).
+  // 69 shared pages + 22 shared tools + the MS3-only tools site_extras.py lists
+  // + 2×WEEKS Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools
+  // (rp-post-event-huddle.html joined the three role-play tools on 2026-09-04; the CotW
+  // term was registry-derived on 2026-09-24 — at 13 weeks — and the MS3-only tool term
+  // derived from site_extras.py on 2026-09-25, so content PRs stop editing this
+  // governance file for either).
   assert.equal(MANIFEST.md.length, 69);
   assert.equal(MANIFEST.tools.length, 22);
-  assert.equal(REGISTRY.weeks.length, 11);
-  assert.equal(items.length, 124);
-  assert.equal(pages.length, 69 + 22 + 6);
-  assert.equal(tools.length, 22 + 1 + 4);
-  assert.equal(cotw.length, 22);
+  assert.ok(WEEKS >= 13, 'the CotW registry only ever grows');
+  assert.equal(items.length, 69 + 22 + MS3_TOOLS + 6 + 4 + 2 * WEEKS);
+  assert.equal(pages.length, 69 + 2 * WEEKS + 6);
+  assert.equal(tools.length, 22 + MS3_TOOLS + 4);
+  assert.equal(cotw.length, 2 * WEEKS);
 
   const byProducer = {};
   for (const entry of SHIPPED.pages) {
     byProducer[entry.producer] = (byProducer[entry.producer] ?? 0) + 1;
   }
+  // A producer with nothing to ship emits no entry, so its key is absent, not zero.
   assert.deepEqual(byProducer, {
     site_manifest: 91,
-    ms3_extra_tool: 1,
-    cotw_registry: 22,
+    ...(MS3_TOOLS ? { ms3_extra_tool: MS3_TOOLS } : {}),
+    cotw_registry: 2 * WEEKS,
     resident_extra: 6,
     resident_tool: 4,
   });
@@ -97,8 +133,8 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
     [...new Set(cotw.map(item => `${item.kind}:${item.site}`))].sort(),
     ['page:ms3', 'page:res'],
   );
-  assert.equal(cotw.filter(item => item.site === 'ms3').length, 11);
-  assert.equal(cotw.filter(item => item.site === 'res').length, 11);
+  assert.equal(cotw.filter(item => item.site === 'ms3').length, WEEKS);
+  assert.equal(cotw.filter(item => item.site === 'res').length, WEEKS);
 
   // site is the ONE deployment to preview against: resident-only items say 'res',
   // everything shared says 'ms3'.
@@ -106,7 +142,7 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
     entry => entry.sites.length === 1 && entry.sites[0] === 'res',
   );
   assert.equal(residentOnly.length, items.filter(item => item.site === 'res').length);
-  assert.equal(residentOnly.length, 11 + 6 + 4);
+  assert.equal(residentOnly.length, WEEKS + 6 + 4);
 });
 
 /* THE JS-SIDE PARITY CHECK. shipped_pages.json is generated Python-side; this
@@ -123,21 +159,7 @@ test('shipped_pages.json agrees with the producers it claims to be derived from'
     expected.set(slug, { slug, kind: 'tool', sites: ['ms3', 'res'], title, source });
   }
 
-  // site_extras.py's literal lists, read out of the module by Python itself.
-  const extras = JSON.parse(execFileSync('python3', [
-    '-c',
-    [
-      'import json,sys',
-      'sys.path.insert(0, sys.argv[1])',
-      'import site_extras as e',
-      'print(json.dumps({',
-      '  "ms3_tools": e.MS3_EXTRA_TOOLS,',
-      '  "resident_pages": e.RESIDENT_EXTRA_PAGES,',
-      '  "resident_tools": e.RESIDENT_PROTO_TOOLS,',
-      '}))',
-    ].join('\n'),
-    new URL('13_Faculty_Resources/_automation/site_build/', ROOT).pathname,
-  ], { encoding: 'utf8' }));
+  const extras = EXTRAS;
 
   for (const [source, slug, title] of extras.ms3_tools) {
     expected.set(slug, { slug, kind: 'tool', sites: ['ms3'], title, source });
@@ -180,6 +202,22 @@ test('shipped_pages.json agrees with the producers it claims to be derived from'
   for (const [slug, want] of expected) assert.deepEqual(actual.get(slug), want, slug);
 });
 
+test('a resident override is recorded on the shared page as extraSources', () => {
+  // The parity check above compares a five-field projection, which drops this key —
+  // so the key needs an assertion against the raw file. attestation_hash's
+  // sources_for_slug reads source + extraSources, and that union is what makes an edit
+  // to the resident file drift the shared slug's attestation instead of going unnoticed.
+  const bySlug = new Map(SHIPPED.pages.map(page => [page.slug, page]));
+  assert.deepEqual(
+    bySlug.get('welcome.md').extraSources,
+    ['14_Tracks/Resident/resident_welcome.md'],
+  );
+  assert.deepEqual(
+    bySlug.get('cotw_index.md').extraSources,
+    ['08_Cases_and_Simulation/case-of-the-week/index_resident.md'],
+  );
+});
+
 test('the derived slug is byte-identical to cotw_slug() in the shared Python helper', () => {
   const helper = read('13_Faculty_Resources/_automation/site_build/cotw_slug.py');
   assert.ok(
@@ -217,7 +255,7 @@ test('the derived slug is byte-identical to cotw_slug() in the shared Python hel
 
   const fromJs = REGISTRY.weeks.flatMap(w => ['ms3', 'res'].map(level => cotwSlug(w, level)));
   assert.deepEqual(fromJs, fromPython);
-  assert.equal(fromPython.length, 22);
+  assert.equal(fromPython.length, 2 * WEEKS);
   assert.ok(fromPython.includes('cotw_20260831_catatonia_ms3.md'));
   assert.ok(fromPython.includes('cotw_20260831_catatonia_res.md'));
 });
@@ -238,12 +276,14 @@ test('titles name the audience so the Case-of-the-Week twins sort next to each o
       title: 'Catatonia (Aug 31) — MS3',
       kind: 'page',
       site: 'ms3',
+      sites: ['ms3'],
     },
     {
       slug: 'cotw_20260831_catatonia_res.md',
       title: 'Catatonia (Aug 31) — Resident',
       kind: 'page',
       site: 'res',
+      sites: ['res'],
     },
   ]);
   // localeCompare on the shared label prefix puts "— MS3" immediately before
@@ -302,14 +342,14 @@ test('cotwTwinSlug pairs the two halves and ignores everything else', () => {
   // Every real twin resolves to a slug that is itself in the universe.
   const universe = contentUniverseSlugs({ shipped: SHIPPED });
   const cotw = [...universe].filter(isCotwSlug);
-  assert.equal(cotw.length, 22);
+  assert.equal(cotw.length, 2 * WEEKS);
   for (const slug of cotw) assert.ok(universe.has(cotwTwinSlug(slug)), slug);
 });
 
-test('the pending-visibility invariant fails when a producer stops being read', () => {
-  // The July 2026 state reconstructed exactly: the shared manifest alone, which is what
-  // the console used to derive its universe from. Every one of the 22 built
-  // Case-of-the-Week pages falls outside it while reviewed.json still calls them pending.
+test('the current universe exposes the former manifest-only reader\'s blind spot', () => {
+  // Current counterfactual: substitute the shared-manifest reader the console formerly
+  // used. Faculty statuses legitimately change, so define the blind spot by producer
+  // rather than pinning today's pending total or treating the live ledger as July history.
   const manifestOnly = new Set([
     ...MANIFEST.md.map(([, slug]) => slug),
     ...MANIFEST.tools.map(([, slug]) => slug),
@@ -319,20 +359,25 @@ test('the pending-visibility invariant fails when a producer stops being read', 
     .filter(([, entry]) => entry && typeof entry === 'object' && entry.status === 'pending')
     .map(([slug]) => slug);
 
-  // Hand-registered pages may also be pending (for example, after a teaching update).
-  // Pin the historically invisible subset, then check visibility of EVERY pending page.
-  const invisibleBefore = pending.filter(slug => !manifestOnly.has(slug) && !allowlist.has(slug));
-  assert.equal(invisibleBefore.length, 24);
-  assert.equal(invisibleBefore.filter(isCotwSlug).length, 22);
-  // The two that are NOT Case-of-the-Week pages are the resident-only role-play tools —
-  // the ones #517's allowlist called undeployed while the resident site served them.
+  // Welcome ships from the shared manifest, so it is visible even to the former reader
+  // whatever its review status is today.
+  assert.ok(manifestOnly.has('welcome.md'));
+
+  const universe = contentUniverseSlugs({ shipped: SHIPPED });
+  const nonManifestProducerSlugs = SHIPPED.pages
+    .filter(entry => entry.producer !== 'site_manifest')
+    .map(entry => entry.slug)
+    .sort();
+  const missedByManifestOnly = [...universe]
+    .filter(slug => !manifestOnly.has(slug))
+    .sort();
   assert.deepEqual(
-    invisibleBefore.filter(slug => !isCotwSlug(slug)).sort(),
-    ['rp-agitation.html', 'rp-brief-psych.html'],
+    missedByManifestOnly,
+    nonManifestProducerSlugs,
+    'the former reader must miss exactly the surfaces shipped by non-manifest producers',
   );
 
   // Reading the one derived listing, nothing pending is unreachable and nothing is excluded.
-  const universe = contentUniverseSlugs({ shipped: SHIPPED });
   assert.deepEqual(pending.filter(slug => !universe.has(slug) && !allowlist.has(slug)), []);
   // …and no exclusion masks a live item. The list is empty; see content-universe.mjs.
   assert.deepEqual(NOT_REVIEWABLE_IN_CONSOLE.filter(slug => universe.has(slug)), []);

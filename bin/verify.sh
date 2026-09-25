@@ -41,10 +41,25 @@ QUICK=0
 [ "${1:-}" = "--quick" ] && QUICK=1
 
 FAILED=()
+# Every step runs with TMPDIR pointed at a private directory of its own, which is removed as soon
+# as the step ends; anything still in it is a LEAK, printed by prefix and counted as a failure.
+# On 2026-09-24 the Mac's shared $TMPDIR held ~122,700 entries, ~103k of them fixtures three test
+# files never removed — invisible until python3 started taking 20 s to import from that
+# directory and tests/preview-site.test.mjs blocked pushes. See bin/tmp_leak_report.sh. The
+# export is inside the $(…), so step() itself still sees the caller's TMPDIR.
+CUR_STEP_TMP=''
+trap '[ -n "$CUR_STEP_TMP" ] && rm -rf "$CUR_STEP_TMP"' EXIT
+trap 'exit 129' HUP; trap 'exit 130' INT; trap 'exit 143' TERM
 step() {
   local name="$1"; shift
-  local out rc
-  out="$("$@" 2>&1)"; rc=$?
+  local out rc tmp leaks
+  tmp="${TMPDIR:-/tmp}"
+  CUR_STEP_TMP="$(mktemp -d "${tmp%/}/verify-step.XXXXXX")" || CUR_STEP_TMP=''
+  if [ -n "$CUR_STEP_TMP" ]; then
+    out="$(export TMPDIR="$CUR_STEP_TMP"; "$@" 2>&1)"; rc=$?
+  else
+    out="could not create a private TMPDIR under $tmp"; rc=2
+  fi
   if [ $rc -eq 0 ]; then
     printf '  PASS  %-42s %s\n' "$name" "$(printf '%s' "$out" | tail -1 | cut -c1-58)"
   else
@@ -52,6 +67,11 @@ step() {
     printf '%s\n' "$out" | tail -15 | sed 's/^/        | /'
     FAILED+=("$name")
   fi
+  if [ -n "$CUR_STEP_TMP" ] && ! leaks="$("$BASH" "$REPO/bin/tmp_leak_report.sh" "$CUR_STEP_TMP")"; then
+    printf '  LEAK  %-42s %s\n' "$name" "$leaks"
+    FAILED+=("$name (temp-dir leak)")
+  fi
+  CUR_STEP_TMP=''
 }
 
 # ci.yml greps for machine-specific paths and fails when it FINDS them, so the exit codes
@@ -72,11 +92,41 @@ lint_machine_paths() {
 echo "verify.sh — $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
 echo "─────────────────────────────────────────────────────────────────────"
 
+# --- the shared .git/config is still this repository's own ---
+# Every worktree reads one .git/config, and a fixture that inherits a hook's GIT_DIR writes into
+# it: core.bare=true + a fixture [user] on 2026-08-20, and again on 2026-09-24 with a
+# `filter.lfs … = cat` that switched Git-LFS off. Checked FIRST, so a corrupted config is named
+# before forty steps fail for no stated reason, and again as the LAST step below, so a suite that
+# corrupts it during this very run fails the run instead of breaking the next session.
+step "unit — git config health"             python3 bin/check_git_config_health.py --self-test
+step "git config health (before the run)"   python3 bin/check_git_config_health.py
+
 # --- contract: CLAUDE.md and AGENTS.md are byte-identical (CI enforces this) ---
 step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
 
 # --- contract: this script still mirrors ci.yml's gate (it silently drifted before) ---
 step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
+# The sibling contract. check-verify-coverage.py asks whether every CI step has a local
+# equivalent; this asks whether every falsification is RUN BY ANYTHING. Both exist because a
+# gate nobody executes looks exactly like a gate.
+step "unit — vacuity checker"               python3 bin/check_vacuity.py --self-test
+step "every falsification is on a gate"     python3 bin/check_vacuity.py
+step "unit — PR preflight"                  python3 bin/pr_preflight.py --self-test
+step "unit — attestation authorship"        python3 bin/check_attestation_authorship.py --self-test
+step "attestation authorship"               python3 bin/check_attestation_authorship.py
+# The sibling question. Authorship asks WHO signed; this asks WHAT they signed — every
+# reviewed row must name the text it attested, and the name must still fit. Drift is a
+# notice here and exits 0 on purpose (see the tool's docstring); an unbound, malformed or
+# unshipped-and-unlisted row is a finding.
+step "unit — attestation hashes"            python3 bin/check_attestation_hashes.py --self-test
+step "attestation hashes"                   python3 bin/check_attestation_hashes.py
+# The third question, about the DIFF rather than the ledger: who may promote an attestation,
+# and in what company. A content PR may register and demote; only the console, on
+# attest/pending, may promote. On a branch stacked on an unmerged PR the default base is
+# merge-base with origin/main and so includes the PARENT's commits — push with
+# CLERKSHIP_PR_BASE=origin/<parent-branch> git push and the gate compares against the parent.
+step "unit — governance/content separation" python3 bin/check_governance_separation.py --self-test
+step "governance/content separation"        python3 bin/check_governance_separation.py
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
@@ -87,7 +137,18 @@ step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
 A=13_Faculty_Resources/_automation
 step "validate_registry_schemas"            python3 $A/validate_registry_schemas.py
 step "test_validate_registry_schemas"       python3 $A/test_validate_registry_schemas.py
+step "unit — curriculum contract"            python3 $A/test_validate_curriculum.py
+step "unit — MS3 welcome compass"            python3 $A/site_build/test_welcome_compass.py
 step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
+# Six passing tests for topic_meta's safety contract that ran NOWHERE — found by
+# bin/check_vacuity.py, which is why that checker is a step above. Its own docstring says it
+# exists because "validate_topic_meta.py has no existing harness", and then no gate ever ran
+# the harness. (test_validate_curriculum.py was the same defect and is now the step above,
+# wired by #527, which also repaired the seven accept-cases its stale fixture had been
+# failing since safetyKit `triggers` became mandatory on 2026-08-28 — for months, silently,
+# because nothing ran the file. Two people hitting the same rot is the argument for the
+# checker, not against it.)
+step "test_validate_topic_meta_safety"      python3 $A/test_validate_topic_meta_safety.py
 # ci.yml runs this validator's own unit suite inside the "Test — SP Interview and managed
 # proxy" step, which check-verify-coverage.py exempts wholesale — so until 2026-09 it ran
 # in CI and nowhere else. A change to validate_attestation_consistency.py that broke its
@@ -95,11 +156,24 @@ step "validate_topic_meta"                  python3 $A/validate_topic_meta.py
 # minutes later. One line closes that.
 step "test_validate_attestation_consistency" python3 $A/test_validate_attestation_consistency.py
 step "validate_attestation_consistency"     python3 $A/validate_attestation_consistency.py
+step "unit — canonical claim scoping"      python3 bin/validate_canonical_claims.py --self-test
 step "canonical clinical claims"            python3 bin/validate_canonical_claims.py
 step "unit — scheduled maintenance"         bash -c "python3 -m unittest discover -s tests/maintenance -p 'test_*.py'"
 step "validate_scheduled_workflows"         python3 $A/maintenance/validate_scheduled_workflows.py
 step "unit — media guard"                   python3 $A/site_build/test_media_guard.py
 step "unit — shared build logic"            python3 $A/site_build/test_common.py
+step "unit — analytics allowlist"           python3 $A/site_build/test_analytics_events.py
+step "analytics allowlist freshness"        python3 $A/site_build/analytics_events.py --check
+step "book library ISBN-13 consistency"     python3 bin/derive_isbn13.py --check
+# metrics/node_modules is gitignored (matches sp-proxy's own pattern further below);
+# ci.yml's "Install — metrics collector dependencies" step covers a fresh checkout
+# there, so mirror it here rather than let a fresh clone fail this step for a reason
+# that has nothing to do with the code under test.
+if [ ! -d metrics/node_modules/@netlify/blobs ]; then
+  echo "  ....  installing metrics collector deps (required by metrics/tests/*)"
+  npm --prefix metrics ci >/dev/null 2>&1 || true
+fi
+step "unit — metrics collector"             bash -c "cd metrics && node --test tests/*.test.mjs"
 step "unit — pairing block renderer"        python3 $A/site_build/test_pairings_block.py
 step "unit — front door catalog"            python3 $A/site_build/test_frontdoor_catalog.py
 step "unit — path coverage"                 python3 bin/check_path_coverage.py --self-test
@@ -113,9 +187,107 @@ step "test_validate_claim_anchors"          python3 $A/test_validate_claim_ancho
 step "validate_claim_anchors"               python3 $A/validate_claim_anchors.py
 step "unit — evidence annotations"          python3 $A/validate_evidence_annotations.py --self-test
 step "validate_evidence_annotations"        python3 $A/validate_evidence_annotations.py
+# Both audits below are RATCHETS (docs/RATCHETS.md): the finding counts each one reports are
+# pinned in a committed bin/*_baseline.json beside the tool, a rise fails, a fall is a note, and
+# `--update-baseline` lowers the pin as part of a reviewed reduction. Until 2026-09-16 the span
+# audit gated REWORDED sentences only, so the pott-2022 defect it was built for -- a clause
+# deleted MID-sentence classifies as EDITED -- exited 0, and a wrong cache path printed
+# "0 clean ... 49 uncached" and passed. Both are red now. The --self-test proves a synthetic
+# regression exits 1 and the live tree exits 0; check_vacuity.py requires it on a hard step.
+step "unit — span audit"                    python3 bin/verify_spans.py --self-test
 step "span audit (verbatim vs paper)"       python3 bin/verify_spans.py
+step "unit — research dock"                 python3 bin/research-dock.py --self-test
+step "research return dock"                 python3 bin/research-dock.py check --strict
+# Two gates here, ONE principle: a gate may only block on something the person in front of
+# it can actually fix. They reach it by different routes, which is why the flags differ.
+#   - The DOCK blocks, but narrowly. `--strict` exits 1 on BLOCKING defects only -- a
+#     property of the tracked JSON, wrong in every checkout and fixable in seconds. It never
+#     exits on advisory ones: staleness, or a `returnFile` that exists only in the checkout
+#     that owns the returns (they are gitignored, so ~25 worktrees carry the registry without
+#     the answers). See `Defect` in bin/research-dock.py. Before this split the step ran
+#     WITHOUT --strict and the exit code was `1 if args.strict else 0`, so it printed defects
+#     and passed while the doc called it a gate.
+#   - STANDARDS COVERAGE reports. An undecided standards unit is a faculty decision, not a
+#     file anyone can edit, so it must never stop a clinical correction from being pushed.
+#     `--strict` exists there for deliberate use.
+# `--self-test` BLOCKS for both: it is a real falsification and check_vacuity.py requires it.
+step "unit — standards coverage"            python3 bin/check_standards_coverage.py --self-test
+step "standards spine coverage"             python3 bin/check_standards_coverage.py
+# The vocabulary is data now, and six literals in two languages have to agree with it. The
+# --self-test BLOCKS (check_vacuity.py requires a falsification to be on a gate, and this
+# one ends by asserting the LIVE tree agrees, so a real drift fails here). The plain run
+# REPORTS: a vocabulary gap is a curriculum decision, not a broken file, and must never be
+# able to stop a clinical correction from being pushed. Same split as standards coverage.
+step "unit — vocabulary registry"           python3 bin/check_vocabulary.py --self-test
+step "vocabulary vs code sites"             python3 bin/check_vocabulary.py
 step "unit — qbank coherence"              python3 bin/check_qbank_coherence.py --self-test
+# WP-7 / WP-8 (2026-09-24). The length-cue ratchet also runs for real, beside qbank coherence
+# below. The blueprint report runs ONLY its --self-test: no attested item carries a blueprint
+# tag yet, so the report itself exits 2 (a PARTIAL distribution is could-not-check, never a
+# pass) and would block every push until tagging is complete. The content PR that tags the
+# last attested item pins bin/qbank_blueprint_baseline.json with --update-baseline and adds
+# the report here as its own step.
+step "unit — qbank length cue"              python3 bin/check_qbank_length_cue.py --self-test
+step "unit — qbank blueprint report"        python3 bin/qbank_blueprint_report.py --self-test
+# Four tools shipped a --self-test that NO gate invoked — found by bin/check_vacuity.py after
+# Codex pointed out it was inventorying only test FILES, not the --self-test modes its own
+# doctrine calls the paired falsification. Each passes; none needed an exemption. The guards
+# themselves run on a schedule or on demand, but a falsification that never runs is worth
+# nothing wherever its guard runs.
+step "unit — decision drift"                python3 bin/check_decision_drift.py --self-test
+step "unit — ruleset drift"                 python3 bin/check_ruleset_drift.py --self-test
+# Only the SELF-TEST runs here. The real sweep needs `gh`, `npm audit --include=dev`
+# and every local worktree, so it is a monthly, human-run step whose receipt
+# monthly_review.py ages -- exactly like check_ruleset_drift.py --check-bypass. A
+# stale claim needs a person to re-verify it, not a red build.
+step "unit — stale claims"                  python3 bin/check_stale_claims.py --self-test
+step "unit — claim exposure"                python3 bin/claim_exposure.py --self-test
+step "unit — offrunner findings"            python3 bin/verify_findings_offrunner.py --self-test
+# A fifth joined that class straight away: #536 (WP-5p) shipped bin/check_twin_parity.py with
+# a --self-test that no gate ran, because #548's branch was cut before the tool existed. Same
+# defect, one merge later — which is the argument for the mechanical check, not against it.
+step "unit — twin parity"                   python3 bin/check_twin_parity.py --self-test
+# Only the SELF-TEST runs here, for the same reason as the two above: the real check reads
+# production deploy state from the Netlify API and needs a NETLIFY_AUTH_TOKEN that only the
+# owner holds. The daily steward is maintenance-production-canary.yml; this proves the
+# classifier can still fail -- that a real build failure is a finding, that a
+# no-content-change cancel is not, and that an unrecognised deploy state is a finding rather
+# than a pass. Without that last one the alarm would quietly match nothing.
+step "unit — netlify deploy health"         python3 bin/check_netlify_deploy_health.py --self-test
+# The preview gate (2026-09-25) runs for real inside that same daily steward. Its self-test runs
+# here because it also checks the COMMITTED ruleset: every Netlify preview main requires must
+# come from a site in SITES -- so a new required preview check for a site nobody watches fails
+# this push instead of silently stranding every PR, which is what #802 did for seven hours.
+step "unit — netlify preview gate"          python3 bin/check_preview_gate.py --self-test
+# Currency guards (2026-09-18). Only the SELF-TESTS run here for the first two: the real
+# source-integrity run asks PubMed and Crossref for every identified source (~60s, real egress,
+# and a datacenter runner is bot-blocked by some hosts), and the real cadence run is a faculty
+# queue — 8 monthly-cadence sources were 41 days overdue on the day it was written, and an
+# overdue review needs a person, not a red push. The ICD check is offline (its code tables are
+# committed under bin/data/), so it runs for real: a retiring F-code fires BEFORE October 1.
+step "unit — source integrity"              python3 bin/check_source_integrity.py --self-test
+step "unit — review cadence"                python3 bin/check_review_cadence.py --self-test
+step "unit — icd-10-cm codes"               python3 bin/check_icd_codes.py --self-test
+step "icd-10-cm codes in force"             python3 bin/check_icd_codes.py
+# Only the SELF-TEST runs here: the real comparison fetches a newer abstract from Europe PMC
+# for one (source, DOI) pair a human names, after the source-integrity job has reported a
+# supersession. Advisory by design -- the located sentences are the evidence, the verdict a pointer.
+step "unit — claim direction"                python3 bin/check_claim_direction.py --self-test
+# Ratchet against bin/check_qbank_coherence_baseline.json (pairs = 0 today); the pin is what
+# the --self-test step above asserts the exit code against. See the span-audit comment above.
 step "qbank coherence"                     python3 bin/check_qbank_coherence.py
+# Reviewer instructions pasted as learner text ("Rewrite the item…, e.g. stem: '…' keyed to '…'"):
+# the 2026-09-01 remediation shipped three into the audio-quiz decks and every validator passed,
+# because each is a valid string (2026-09-24 peer review, pattern A / decision J5). A ratchet
+# against bin/editorial_leaks_baseline.json (16 today, all in those three items across both deck
+# copies); the self-test plants every pattern and asserts the live tree agrees with the pin.
+step "unit — editorial leaks"               python3 bin/check_editorial_leaks.py --self-test
+step "editorial leaks in learner text"      python3 bin/check_editorial_leaks.py
+# Ratchet against bin/qbank_length_cue_baseline.json (attested 125, live 155 on 2026-09-25): an
+# item whose keyed option is the UNIQUELY longest rewards test-wiseness, not knowledge (WP-7,
+# target attested <= 35%). A rise fails; a rewrite batch lowers the pin with --update-baseline.
+step "qbank length cue (WP-7)"              python3 bin/check_qbank_length_cue.py
+step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
 step "evidence drill is regenerated"        python3 $A/generate_evidence_drill.py --check
 step "test_longitudinal_case"               python3 $A/test_longitudinal_case.py
@@ -139,6 +311,7 @@ step "production rotation edition locked"   python3 bin/check-rotation-edition-l
 # Scoped to the *.test.mjs glob on purpose: tests/smoke/*.spec.js is a separate Playwright
 # suite with its own deps and is not runnable from repo root.
 step "node --test tests/*.test.mjs"         bash -c 'node --test tests/*.test.mjs'
+step "runtime contract"                     node bin/check-runtime-contract.mjs
 step "contrast-check"                       node tests/contrast-check.mjs
 
 # --- "what ships" is one derived file, and it must be current (ADR-002) ---
@@ -169,11 +342,28 @@ fi
 step "sp-proxy test suite"                  npm --prefix sp-proxy test
 step "sp-interview suites (incl. parity)"   bash _prototypes/sp-interview/tests/run-all.sh
 
+# --- hosted Dana faculty preview: the spoken-turn lifecycle and its public build ---
+# build.test.mjs imports esbuild (a devDependency) and the Function entry, which pulls
+# @netlify/blobs, so install with --include=dev for the same reason sp-proxy does above.
+# The paid hosted proof is deliberately absent: `npm --prefix sp-preview run test:hosted`
+# makes real provider calls and is opt-in only, here and in ci.yml.
+if [ ! -d sp-preview/node_modules/esbuild ] || [ ! -d sp-preview/node_modules/@netlify/blobs ]; then
+  echo "  ....  installing sp-preview deps incl. dev (required by the build + handler tests)"
+  npm --prefix sp-preview ci --include=dev >/dev/null 2>&1 || true
+fi
+step "hosted Dana preview suite"            npm --prefix sp-preview test
+step "hosted Dana preview public build"     npm --prefix sp-preview run build
+
 # Red-team tier 1: the deterministic gate probes from sp-proxy/REDTEAM_CHECKLIST.md,
 # run against the real sp.mjs gate logic. No model call, ~1s, so it belongs in the gate.
 # It is NOT a red-team pass — sections A, C1/C4/C5, D and E are human/live checks.
 # See docs/RED_TEAM_RUNBOOK.md.
 step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
+# Report-only, same idiom as "path coverage (report-only)" above: the script itself always
+# exits 0 (see the SHOW_COVERAGE comment in bin/redteam-offline.mjs), so this cannot fail the
+# gate. It exists so a gate added to the pack with no probe is visible in every verify.sh run
+# rather than only when someone remembers to run --coverage by hand.
+step "red-team gate coverage (report-only)" node bin/redteam-offline.mjs --coverage
 
 # --- build + static QA gate, both sites ---
 if [ $QUICK -eq 0 ]; then
@@ -182,6 +372,29 @@ if [ $QUICK -eq 0 ]; then
 else
   echo "  SKIP  build_and_check ms3/res             (--quick; NOT a gate run)"
 fi
+
+# --- build-OUTPUT contracts: these need the tree the two builds above just produced ---
+# Deliberately after the builds and not in tests/: `node --test` runs before BOTH
+# build_and_check.sh invocations and _build/ starts absent in CI, so a build-output assertion
+# placed there skips exactly where it matters (CLAUDE.md, build-output test paragraph).
+# check_crisis_surfaces.py reads _build/ and skips itself, with the rebuild command, whenever
+# that tree is absent or older than its inputs — so under --quick it checks a build left over
+# from an earlier run if one is current, and says why it checked nothing if not.
+step "unit — crisis surfaces checker"       python3 bin/check_crisis_surfaces.py --self-test
+step "crisis contacts in the built sites"   python3 bin/check_crisis_surfaces.py
+
+# Design-system drift. Its C4 check reads the BUILT pages, not the sources, because the
+# dark-mode stylesheet is injected at build time (common.py) — a tool source can look
+# self-consistently light, pass every source-level test, and still ship a page whose ground
+# flips to dark while its own ink stays near-black. That is exactly what shipped on five tool
+# pages until 2026-09-10 (family-systems.html measured 1.06:1 on production). Placed here,
+# after both builds, for the same reason check_crisis_surfaces.py is.
+step "unit — design drift checker"          python3 bin/check_design_drift.py --self-test
+step "design system drift"                  python3 bin/check_design_drift.py
+
+# Last on purpose: every suite above has run, and a fixture that wrote into the shared config
+# while doing so (see the first step) fails this push here rather than the next session.
+step "git config health (after the run)"    python3 bin/check_git_config_health.py
 
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then

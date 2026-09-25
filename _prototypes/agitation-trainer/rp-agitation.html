@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <link rel="icon" href="/favicon.svg">
 <!-- [CLERKSHIP-META v1] tool="Agitation Ladder — PRN Decision Trainer" version="0.2.0" built="2026-07-02" category="acute-safety" audience="resident,trainee" settings="inpatient,ED,C-L" time="8min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="draft-pending-attestation" summary="Teaching trainer for acute agitation: least-restrictive ladder, driver-first triage, de-escalation-gated pharmacologic reasoning with hazard feedback, and an ever-present Call-your-senior option. NOT an order set. Agents/doses/routes/monitoring are local-policy placeholders. Fictional composites; no PHI. No runtime CDN (React vendored locally)." -->
 <meta charset="UTF-8">
+<meta name="cw-frame" content="viewport">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Agitation Ladder — PRN Decision Trainer</title>
 <meta name="description" content="Teaching trainer for reasoning through acute agitation using a least-restrictive ladder. Educational only; not clinical decision support.">
@@ -13,7 +14,7 @@
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
-    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
     --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
     --text:#3b332c; --text-mid:#64574b; --text-light:#665a4f;
     --success:#357160; --success-light:#e7f1ed;
@@ -304,7 +305,7 @@
             e('div',null,e('button',{className:'btn primary',onClick:startPlay},mode==='challenge'?'Start a random scenario':'Start scenario'),
               mode==='guided'?e('div',{style:{marginTop:'14px'}},e('div',{className:'steplabel'},'Or pick a scenario'),
                 pack.content.scenarios.map(function(scn){return e('button',{key:scn.id,className:'opt',onClick:function(){pickScenario(scn);}},e('span',{className:'lab'},scn.stem.slice(0,92)+'…'));})):null)),
-        e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},e(FlagButton,{ctx:'home'}),e('span',{className:'cite'},'v0.2.0 · Draft — pending faculty review')));
+        e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},e(FlagButton,{ctx:'home'}),e('span',{className:'cite'},'v0.2.0')));
     }
     if(phase==='refmap'){
       var b=pack.choiceBanks;

@@ -1,0 +1,67 @@
+[
+ {
+  "id": "AQ4-001", "chunk": "AQ4", "audience": "both",
+  "surface": "AR-08 Q6",
+  "locus": "item", "severity": "Moderate", "category": "citation problems", "pattern": "nnt-misattributed-to-trial",
+  "quote": "According to the POTS trial results, what is the 'Number Needed to Treat' (NNT) for SSRIs in the context of pediatric OCD?",
+  "problem": "POTS reported no NNT, and in POTS sertraline alone did not separate from placebo on remission (21.4% vs 3.6%, P = .10). An NNT of about 5 comes from pooled pediatric SSRI trials, not from POTS. The deck's own Q2 feedback states the sertraline remission difference was not significant, so the two items contradict each other.",
+  "whyItMatters": "Learners will cite POTS as proof of a clean SSRI NNT of 5. The trial actually shows sertraline monotherapy was the weakest active arm and supports starting with CBT or combined treatment.",
+  "evidence": "POTS Team, JAMA 2004;292:1969-76 (doi:10.1001/jama.292.16.1969): remission 53.6/39.3/21.4/3.6% for combined/CBT/sertraline/placebo, and sertraline vs placebo P = .10. The pooled pediatric OCD SSRI NNT is about 6 (Bridge et al., JAMA 2007).",
+  "correction": "Across pediatric SSRI trials for OCD (a pooled estimate, not POTS alone), what is the approximate 'Number Needed to Treat' (NNT) for SSRIs?",
+  "confidence": "high",
+  "verified": "PubMed abstract PMID 15507582 (POTS 2004); Bridge 2007 NNT from recall",
+  "persistsFrom": null
+ },
+ {
+  "id": "AQ4-002", "chunk": "AQ4", "audience": "both",
+  "surface": "AR-08 Q1",
+  "locus": "rationale", "severity": "Moderate", "category": "misleading wording", "pattern": null,
+  "quote": "The trial demonstrated that combination therapy was superior to both CBT monotherapy and sertraline monotherapy, achieving the highest remission rate at 53.6%.",
+  "problem": "Combined treatment beat both monotherapies only on the primary CY-BOCS change outcome. On remission it did not differ from CBT alone (53.6% vs 39.3%, P = .42). Setting 'superior to both' beside the remission figure implies a remission advantage over CBT alone that the trial did not find.",
+  "whyItMatters": "Learners will believe combined treatment is required over CBT alone. POTS itself concludes that treatment should begin with CBT plus an SSRI or with CBT alone, which matters when a family prefers to avoid medication.",
+  "evidence": "POTS Team, JAMA 2004;292:1969-76: combined was superior to CBT (P = .008) and to sertraline (P = .006) on CY-BOCS change; on remission, combined vs CBT P = .42. Authors' conclusion: begin with combined treatment or CBT alone.",
+  "correction": "The trial demonstrated that combination therapy was superior to both monotherapies on symptom reduction and had the highest remission rate (53.6%), although its remission rate did not differ significantly from CBT alone (39.3%).",
+  "confidence": "high",
+  "verified": "PubMed abstract PMID 15507582",
+  "persistsFrom": null
+ },
+ {
+  "id": "AQ4-003", "chunk": "AQ4", "audience": "both",
+  "surface": "AR-12 Q5",
+  "locus": "rationale", "severity": "Moderate", "category": "misleading wording", "pattern": "observational-causal-overclaim",
+  "quote": "While the study proves a mortality benefit, the metabolic risks of these drugs are real and still require active clinical monitoring.",
+  "problem": "FIN11 is an observational registry cohort. It shows an association between antipsychotic use and lower mortality, and residual confounding (for example healthy-adherer effects) cannot be excluded, so it cannot 'prove' a benefit. This is the deck's own limitations question, and it teaches the causal overclaim it should be warning against.",
+  "whyItMatters": "Learners will present an observational association as proven causation on rounds. That is the main critical-appraisal error to avoid with this study.",
+  "evidence": "Tiihonen et al., Lancet 2009;374:620-7 (FIN11): a nationwide cohort using Cox models with adjustment. The authors discuss confounding as a limitation.",
+  "correction": "While the study shows a strong association with lower mortality (observational data, so residual confounding cannot be excluded), the metabolic risks of these drugs are real and still require active clinical monitoring.",
+  "confidence": "high",
+  "verified": "recall",
+  "persistsFrom": null
+ },
+ {
+  "id": "AQ4-004", "chunk": "AQ4", "audience": "both",
+  "surface": "AR-13 Q4",
+  "locus": "rationale", "severity": "Moderate", "category": "outdated recommendations", "pattern": "clozapine-rems-outdated",
+  "quote": "it is not the primary focus of the specialized monitoring system required for clozapine.",
+  "problem": "The feedback describes a 'specialized monitoring system required for clozapine', which is the Clozapine REMS. FDA eliminated the REMS in 2025. ANC monitoring is still recommended in the labeling, but REMS enrollment and ANC reporting are no longer required.",
+  "whyItMatters": "Learners will believe REMS certification and reporting are still a precondition for prescribing or dispensing. That is outdated regulatory teaching for 2026.",
+  "evidence": "FDA Drug Safety Communication, 'FDA removes REMS program for the antipsychotic drug clozapine' (2025). ANC monitoring recommendations remain in the prescribing information.",
+  "correction": "it is not the primary focus of clozapine's labeled hematologic (ANC) monitoring; the former Clozapine REMS program was eliminated by FDA in 2025.",
+  "confidence": "high",
+  "verified": "WebSearch: FDA page 'FDA removes risk evaluation and mitigation strategy (REMS) program for the antipsychotic drug Clozapine'; Psychiatric Times 'FDA Officially Eliminates Clozapine REMS'",
+  "persistsFrom": null
+ },
+ {
+  "id": "AQ4-005", "chunk": "AQ4", "audience": "both",
+  "surface": "AR-16 Q6",
+  "locus": "rationale", "severity": "Minor", "category": "factual inaccuracies", "pattern": null,
+  "quote": "The study specifically focused on patients with chronic psychosis, which was its most significant application.",
+  "problem": "The 1952 Delay–Deniker communications described chlorpromazine in manic excitation and acute psychotic agitation. Its use in chronic schizophrenia was established in later reports (for example Lehmann & Hanrahan 1954).",
+  "whyItMatters": "This gets the population of the landmark paper wrong. Wrong populations are the defect class these machine-extracted decks are known for. It has no direct clinical consequence.",
+  "evidence": "Delay J, Deniker P, Harl JM, Ann Med Psychol 1952 (series of patients with manic and psychotic excitation); López-Muñoz et al., Ann Clin Psychiatry 2005 (history of chlorpromazine).",
+  "correction": "The 1952 reports described patients with manic excitation and acute psychotic agitation; use in chronic psychosis followed in later studies.",
+  "confidence": "medium",
+  "verified": "recall",
+  "persistsFrom": null
+ }
+]

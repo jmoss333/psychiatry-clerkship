@@ -25,11 +25,13 @@ function make(governanceBadge) {
     ${read('frontdoor/fd_state.js')}
     ${read('frontdoor/fd_data.js')}
     ${searchSrc}
+    ${read('frontdoor/fd_wire.js')}
     return {
       fdExpandQuery: fdExpandQuery, fdSearchResults: fdSearchResults,
       fdSearchOverlay: fdSearchOverlay, fdSearchResultRow: fdSearchResultRow,
       fdBuildIndex: fdBuildIndex, fdSearchContentWords: fdSearchContentWords,
       fdSearchScore: fdSearchScore, fdSearchTriggerHit: fdSearchTriggerHit,
+      fdDispatch: fdDispatch,
     };
   `)(governanceBadge || function () { return ''; });
 }
@@ -74,6 +76,33 @@ test('protocols rank ahead of ordinary items for the same query', () => {
     'a student typing "suicide" mid-shift needs the protocol first, not a topic page');
 });
 
+test('care-intent searches surface the matching ReConnect resource without forwarding the query', () => {
+  const housing = F.fdSearchResults(REAL_INDEX, 'housing help', SYN, {});
+  assert.equal(housing[0].kind, 'care');
+  assert.equal(housing[0].item.id, 'resource-finder');
+  const meeting = F.fdSearchResults(REAL_INDEX, 'aa meeting near me', SYN, {});
+  assert.equal(meeting[0].kind, 'care');
+  assert.equal(meeting[0].item.id, 'meeting-calendar');
+  const books = F.fdSearchResults(REAL_INDEX, 'book shelf', SYN, {});
+  assert.equal(books[0].kind, 'care');
+  assert.equal(books[0].item.id, 'book-shelf');
+
+  const html = F.fdSearchOverlay(REAL_INDEX, 'housing help', SYN, {});
+  const row = html.match(/<a class="fd-result is-care"[^>]*>[\s\S]*?<\/a>/)?.[0] || '';
+  assert.match(row, /data-care-resource="resource-finder"/);
+  assert.match(row, /href="https:\/\/reconnect-tools\.netlify\.app\/tools\/reconnect-resource-finder-v7\.html"/);
+  assert.match(row, /target="_blank" rel="noopener noreferrer"/);
+  assert.doesNotMatch(row, /housing|\?/i,
+    'the destination is static; the learner query and patient context never cross sites');
+  assert.match(html, /External care resources open in a new tab/);
+});
+
+test('care suggestions never outrank an explicit safety trigger', () => {
+  const results = F.fdSearchResults(REAL_INDEX, 'suicide recovery meeting', SYN, {});
+  assert.equal(results[0].kind, 'protocol');
+  assert.ok(results.some((result) => result.kind === 'care' && result.item.id === 'meeting-calendar'));
+});
+
 test('results are capped at 8 however many match', () => {
   assert.ok(F.fdSearchResults(REAL_INDEX, 'a', SYN, {}).length <= 8);
 });
@@ -85,6 +114,14 @@ test('a query matching nothing returns an empty list rather than throwing', () =
 test('the empty-state message escapes the user query', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, '<img src=x onerror=1>', SYN, {});
   assert.doesNotMatch(html, /<img/, 'the query is echoed back into the empty state');
+});
+
+test('standard Search offers Library browsing above results while APP keeps its direct Essentials dock route', () => {
+  const standard = F.fdSearchOverlay(REAL_INDEX, '', SYN, { appMode: false });
+  const app = F.fdSearchOverlay(REAL_INDEX, '', SYN, { appMode: true });
+  assert.match(standard, /data-fd-tab="library"[^>]*>Browse the Library<\/button>/);
+  assert.ok(standard.indexOf('Browse the Library') < standard.indexOf('fd-searchpanel__body'));
+  assert.doesNotMatch(app, /Browse the Library/);
 });
 
 // ---- additional coverage this task's brief asked for: matching over title + ref + summary -----
@@ -147,7 +184,7 @@ test('renders the panel skeleton with input, esc button, and footer copy', () =>
   assert.match(html, /<div class="fd-searchpanel">/);
   assert.match(html, /<input type="text" class="fd-searchpanel__input" value=""/);
   assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>esc<\/button>/);
-  assert.match(html, /<div class="fd-searchpanel__foot">↵ opens as a side sheet/);
+  assert.match(html, /<div class="fd-searchpanel__foot">Choose a result to open it/);
 });
 
 test('the results list announces its count politely (Fresh Eyes Audit A6)', () => {
@@ -173,9 +210,15 @@ test('a protocol result carries data-fd-safety, not data-fd-open', () => {
   assert.match(html, /<button type="button" class="fd-result" data-fd-safety="pg_suicide\.md">/);
 });
 
-test('an item result carries data-fd-open plus the data-fd-sheet modifier -- never a bare data-fd-open', () => {
+test('choosing an ordinary search result navigates directly to its tool', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, 'mental status', SYN, {});
-  assert.match(html, /<button type="button" class="fd-result" data-fd-open="mse\.html" data-fd-sheet>/);
+  const button = html.match(/<button[^>]*data-fd-open="mse\.html"[^>]*>/)[0];
+  const attrs = { 'data-fd-open': 'mse.html' };
+  if (/data-fd-sheet/.test(button)) attrs['data-fd-sheet'] = '';
+  const action = F.fdDispatch(attrs, { search: '' }, { tab: 'path', searchOpen: true });
+  assert.equal(action.route, '?tool=mse.html');
+  assert.equal(action.patch.sheet, null);
+  assert.equal(action.patch.fromTab, 'path');
 });
 
 test('search rows pass projected governance to the shared badge helper between title and meta', () => {
@@ -347,6 +390,67 @@ test('a trigger matches whole words only, so "diet" does not summon the suicide 
   assert.equal(protocolRefs('diet and nutrition').includes('pg_suicide.md'), false);
 });
 
+// Cutting and overdose, the way the unit says them. Measured 2026-09-24 before these triggers
+// existed: "cut her wrist", "she cut herself" and "cut myself" reached the suicide sheet only
+// because "cut" is a substring of "acute" in its summary, and arrived SECOND or THIRD, behind the
+// Consult Questions and Delirium sheets that the same accident pulled in. "cuts herself" reached
+// no protocol at all. "od", "intentional od", "od on tylenol" and "she od'd" led with the
+// Substance Use and Consult sheets and never reached the suicide sheet, although "overdose" was
+// already a trigger; "overdosed" and "overdosing" returned nothing whatsoever. Each phrasing
+// below is now an explicit trigger, so the suicide sheet leads by the crisis contract rather than
+// by a copy-edit's accident.
+for (const q of ['cut her wrist', 'cut his wrists', 'she cut herself', 'he cut himself',
+  'cut myself', 'cuts herself', 'have you ever cut yourself', 'od', 'OD', 'intentional od',
+  'od on tylenol', "she od'd", 'she od’d', 'overdosed', 'overdosing']) {
+  test(`"${q}" leads with the suicide protocol by explicit trigger`, () => {
+    const rows = F.fdSearchResults(REAL_INDEX, q, SYN, {});
+    assert.equal(rows[0]?.kind, 'protocol', `${q}: ${rows.map((r) => r.item.ref).join(', ')}`);
+    assert.equal(rows[0]?.item.ref, 'pg_suicide.md', `${q}: ${rows.map((r) => r.item.ref).join(', ')}`);
+  });
+}
+
+test('"cut" and "od" triggers are phrase- and whole-word-bound, not bare substrings', () => {
+  // A bare "cut" trigger would route the CAGE question ("cut down on drinking") to the suicide
+  // sheet by rule; a bare-substring "od" would fire inside mood, food, period and ODT. The
+  // triggers are matched against the space-padded query (fdSearchTriggerHit), so neither can.
+  // This pins the TRIGGER route only: "cut down" still reaches the suicide sheet today through
+  // the loose protocol haystack ("cut" inside "acute"), which is a separate, pre-existing route.
+  const suicide = REAL_CUR.safetyKit.find((k) => k.ref === 'pg_suicide.md').triggers;
+  for (const q of ['cut down on drinking', 'cut down', 'cut off', 'cutoff score', 'paper cut',
+    'mood', 'food', 'odd behavior', 'period', 'olanzapine odt', 'oppositional defiant']) {
+    assert.equal(F.fdSearchTriggerHit(suicide, ` ${q} `), false, `"${q}" fired a suicide trigger`);
+  }
+});
+
+// A patient pulling out an IV. Before these triggers the agitation sheet led for these queries
+// only because the two-letter "iv" is a bare substring somewhere in its haystack -- the same
+// accident that leads with it for "iv fluids" and "haldol iv". A rank assertion alone would
+// therefore pass without the triggers, so this pins the TRIGGER route itself (which fails on the
+// old vocabulary) as well as the position, and pins that an ordinary IV query fires no trigger.
+// Pulling at lines is as much a hyperactive-delirium sign as an agitation one, so the same
+// phrases trigger both sheets. Trigger-matched protocols keep kit order, which puts Agitation
+// first and Delirium second. Delirium used to appear for some of these only by accident ("her"
+// inside a longer word), and a strict protocol pass would have dropped it.
+test('pulling out an IV reaches the agitation and delirium sheets by explicit trigger', () => {
+  const agitation = REAL_CUR.safetyKit.find((k) => k.ref === 'agitation.md').triggers;
+  const delirium = REAL_CUR.safetyKit.find((k) => k.ref === 'delirium.md').triggers;
+  for (const q of ['pulled out iv', 'pulled out her iv', 'pulling out his iv', 'pulled out IV',
+    'she pulled her iv out', 'he pulled his iv', 'pt pulled out iv overnight']) {
+    const padded = ` ${q.toLowerCase()} `;
+    assert.ok(F.fdSearchTriggerHit(agitation, padded), `"${q}" fired no agitation trigger`);
+    assert.ok(F.fdSearchTriggerHit(delirium, padded), `"${q}" fired no delirium trigger`);
+    const rows = F.fdSearchResults(REAL_INDEX, q, SYN, {});
+    const refs = rows.map((r) => r.item.ref).join(', ');
+    assert.equal(rows[0]?.item.ref, 'agitation.md', `${q}: ${refs}`);
+    assert.equal(rows[1]?.item.ref, 'delirium.md', `${q}: ${refs}`);
+    assert.equal(rows[1]?.kind, 'protocol', `${q}: ${refs}`);
+  }
+  for (const q of ['haldol iv', 'iv fluids', 'iv access', 'iv thiamine', 'ativan iv', 'iv']) {
+    assert.equal(F.fdSearchTriggerHit(agitation, ` ${q} `), false, `"${q}" fired an agitation trigger`);
+    assert.equal(F.fdSearchTriggerHit(delirium, ` ${q} `), false, `"${q}" fired a delirium trigger`);
+  }
+});
+
 test('stopwords no longer summon the safety kit for an ordinary content query', () => {
   // The A1 leak: "on"/"the" substring-matched every protocol haystack, so all five ranked above
   // the page the learner named, and pressing Enter opened the suicide sheet.
@@ -421,6 +525,70 @@ test('"patient refuses medication" surfaces Decisional Capacity', () => {
     `capacity.html missing: ${topRefs('patient refuses medication', 5)}`);
 });
 
+// ---- #429: a medication-refusal query ranks the Decisional Capacity tool FIRST ----------------
+// The 2026-08-31 production audit saw Consult Questions, Delirium, Decisional Capacity. Two
+// mechanisms put the two protocols ahead of the tool: exp_consult.md carried "refuses" (and
+// "capacity", "decisional") as crisis TRIGGERS, and delirium.md's summary contains "patient",
+// which promoted it positionally through the haystack pass. Neither is crisis routing. The
+// consult protocol keeps its AMA / leaving / consent triggers, "patient" is a stopword, and a
+// protocol reached only by a topic word now competes on score (still rendered as a protocol
+// row that opens the safety sheet). The intent mapping is faculty's to ratify (#429).
+
+const REAL_RES_CUR = {
+  ...REAL_CUR,
+  path: { id: 'resident', weekCount: REAL_CUR.learningPaths.resident.weeks.length },
+  weeks: REAL_CUR.learningPaths.resident.weeks,
+};
+const REAL_RES_INDEX = F.fdBuildIndex(REAL_RES_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
+const refsOn = (index, q) => F.fdSearchResults(index, q, SYN, {}).map((r) => r.item.ref);
+
+for (const [label, index] of [['ms3', REAL_INDEX], ['resident', REAL_RES_INDEX]]) {
+  test(`[${label}] every medication-refusal phrasing ranks capacity.html first (#429)`, () => {
+    for (const q of ['patient refuses medication', 'refuses medication', 'patient refusing medications',
+      'refusing meds', 'patient refused medication', 'declines medication',
+      // Codex on #682: an unlisted inflection or an inserted ordinary word must not lose the tool.
+      'patient refused treatment', 'declining medications', 'patient refuses to take medication',
+      'he refused his meds this morning']) {
+      const refs = refsOn(index, q);
+      assert.equal(refs[0], 'capacity.html', `${JSON.stringify(q)} -> ${refs.slice(0, 4).join(', ')}`);
+    }
+  });
+
+  test(`[${label}] the consult protocol stays reachable below the tool, as a protocol row (#429)`, () => {
+    for (const q of ['patient refuses medication', 'patient refused treatment', 'declining medications',
+      'patient refuses to take medication']) {
+      const r = F.fdSearchResults(index, q, SYN, {});
+      const consult = r.find((x) => x.item.ref === 'exp_consult.md');
+      assert.ok(consult, `${JSON.stringify(q)}: exp_consult.md missing: ${r.map((x) => x.item.ref).join(', ')}`);
+      assert.equal(consult.kind, 'protocol', 'it still opens the safety sheet');
+      assert.ok(r.findIndex((x) => x.item.ref === 'exp_consult.md') > r.findIndex((x) => x.item.ref === 'capacity.html'),
+        `${JSON.stringify(q)}: the tool answers the question; the sheet follows it`);
+    }
+    const r = F.fdSearchResults(index, 'patient refuses medication', SYN, {});
+    assert.equal(refsOn(index, 'patient refuses medication').includes('delirium.md'), false,
+      '"patient" alone no longer drags Delirium into a refusal query');
+  });
+
+  test(`[${label}] "declining" alone is not a refusal query: cognition queries keep their own results (#429)`, () => {
+    const refs = refsOn(index, 'declining cognition');
+    assert.notEqual(refs[0], 'capacity.html', `declining cognition -> ${refs.slice(0, 4).join(', ')}`);
+  });
+
+  test(`[${label}] exact tool title wins; a bare "capacity" still lists the consult sheet second (#429)`, () => {
+    assert.equal(refsOn(index, 'decisional capacity')[0], 'capacity.html');
+    assert.deepEqual(refsOn(index, 'capacity').slice(0, 2), ['capacity.html', 'exp_consult.md']);
+  });
+
+  test(`[${label}] crisis routing is untouched: triggers stay positional (#429)`, () => {
+    assert.equal(F.fdSearchResults(index, 'patient is suicidal', SYN, {})[0].item.ref, 'pg_suicide.md');
+    assert.equal(F.fdSearchResults(index, 'she said she wants to die', SYN, {})[0].kind, 'protocol');
+    assert.equal(F.fdSearchResults(index, 'confused patient', SYN, {})[0].item.ref, 'delirium.md');
+    const ama = F.fdSearchResults(index, 'patient wants to leave ama', SYN, {}).map((x) => x.item.ref);
+    assert.ok(ama.includes('exp_consult.md') && ama.includes('pg_suicide.md'), ama.join(', '));
+    assert.equal(F.fdSearchResults(index, 'delirium', SYN, {})[0].item.ref, 'delirium.md');
+  });
+}
+
 // ---- the collateral a per-word synonym would have caused --------------------------------------
 
 test('"first line treatment" is untouched — the phrase never matches', () => {
@@ -469,4 +637,73 @@ test('every multi-word synonym key is lowercase and genuinely multi-word', () =>
     assert.equal(key, key.trim().toLowerCase(), `"${key}" must be lowercase and trimmed`);
     assert.ok(key.split(/\s+/).length > 1, `"${key}" is not a phrase`);
   }
+});
+
+// ---- short words do not match inside other words (2026-09-24) ---------------------------------
+//
+// Every haystack test used to be a bare substring, so "im" in "haldol im" matched "claim" and
+// "time", "ect" matched every page that says "effect", and "mi" matched "family". The rule in
+// fdSearchWordIn: two characters or fewer must be a whole word; exactly three must START a word
+// (so type-ahead "del" still finds Delirium); four or more match anywhere, as before. Ordinary
+// results only -- the safety-kit pass keeps the old substring test, pinned below, because some
+// crisis phrasings reach their protocol only through it.
+
+function shortWordIndex() {
+  const mk = (ref, title, summary) => ({ ref, title, summary, kind: 'read' });
+  return {
+    byRef: {
+      'claims.md': mk('claims.md', 'Insurance claims', 'Prior authorization time limits.'),
+      'im-route.md': mk('im-route.md', 'Routes of administration', 'IM, IV and PO: onset compared.'),
+      'effects.md': mk('effects.md', 'Side effects overview', 'Common adverse effects.'),
+      'ect-page.md': mk('ect-page.md', 'ECT basics', 'Electroconvulsive therapy.'),
+      'delirium.md': mk('delirium.md', 'Delirium', 'Acute confusion.'),
+      'lithium.md': mk('lithium.md', 'Lithium', 'Levels and toxicity.'),
+      'acute-care.md': mk('acute-care.md', 'Acute care pathways', 'Emergency department flow.'),
+    },
+    kit: [{
+      item: { ref: 'kit-suicide.md', title: 'Suicide Risk Card', summary: 'Acute risk formulation.', kind: 'read' },
+      triggers: ['suicidal'],
+    }],
+    weeks: [], columns: [],
+  };
+}
+const refsOf = (rows) => rows.map((r) => r.item.ref);
+
+test('a two-letter word matches only as a whole word ("im" is not inside "claims" or "time")', () => {
+  const refs = refsOf(F.fdSearchResults(shortWordIndex(), 'im', {}, {}));
+  assert.deepEqual(refs, ['im-route.md']);
+});
+
+test('a three-letter word must start a word: "ect" finds ECT, not "effects"', () => {
+  const refs = refsOf(F.fdSearchResults(shortWordIndex(), 'ect', {}, {}));
+  assert.ok(refs.includes('ect-page.md'), refs.join(','));
+  assert.ok(!refs.includes('effects.md'), 'ect matched inside "effects"');
+});
+
+test('type-ahead keeps working on the third keystroke: "del" still finds Delirium', () => {
+  assert.equal(refsOf(F.fdSearchResults(shortWordIndex(), 'del', {}, {}))[0], 'delirium.md');
+});
+
+test('four letters or more still match anywhere, exactly as before: "lith" finds Lithium', () => {
+  assert.ok(refsOf(F.fdSearchResults(shortWordIndex(), 'lith', {}, {})).includes('lithium.md'));
+});
+
+test('a short word earns no title score from inside another word', () => {
+  const idx = shortWordIndex();
+  assert.equal(F.fdSearchScore(idx.byRef['effects.md'], 'ect', ['ect']), 0);
+  assert.ok(F.fdSearchScore(idx.byRef['ect-page.md'], 'ect', ['ect']) > 0);
+});
+
+test('the safety-kit pass keeps the substring test: "cut her wrist" still reaches the protocol', () => {
+  // "cut" sits inside "Acute" in the kit card's summary, and that is the ONLY route this phrasing
+  // has to the suicide card today. The ordinary page with "Acute" in its title must not match.
+  const rows = F.fdSearchResults(shortWordIndex(), 'cut her wrist', {}, {});
+  assert.equal(rows[0]?.kind, 'protocol');
+  assert.equal(rows[0]?.item.ref, 'kit-suicide.md');
+  assert.ok(!refsOf(rows).includes('acute-care.md'), 'an ordinary page matched "cut" inside "acute"');
+});
+
+test('on the real index, "haldol im" no longer drags in pages through "im" inside other words', () => {
+  const items = F.fdSearchResults(REAL_INDEX, 'im', SYN, {}).filter((r) => r.kind === 'item');
+  assert.deepEqual(refsOf(items), [], `"im" alone matched: ${refsOf(items).join(', ')}`);
 });

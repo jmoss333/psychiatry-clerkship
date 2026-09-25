@@ -21,7 +21,7 @@ Baseline QIDS-C is 15 (moderate). TSH, CBC, CMP unremarkable. She is engaged, wo
 ### Guided Discussion Questions
 
 **Q1. Is this an adequate first-line trial, and how do you stage her treatment resistance?**
-*Teaching point:* Sertraline 200 mg × 7 weeks is an **adequate dose and duration** — this is a genuine non-response, not pseudoresistance. Because it's her first adequately dosed antidepressant *this* episode, she is at the threshold of **Stage I treatment resistance**; a second adequate failure would meet the common ≥2-trial definition of **treatment-resistant depression (TRD)**. Probe residents on the limits of TRD staging systems (Thase-Rush, Maudsley) — heterogeneous definitions complicate the augmentation-trial literature and generalizability of network meta-analyses [5,6].
+*Teaching point:* Sertraline 200 mg × 7 weeks is an **adequate dose and duration** — but dose and duration are only two of the three things non-response requires, and the third is the one residents skip. **Adequate exposure is not the same as adequate trial.** Before calling this a genuine non-response rather than pseudoresistance, establish (a) **adherence** — verify it, ideally against pharmacy refill history, rather than accepting report; and (b) **change from pretreatment symptoms** — a measured baseline compared with a measured now, since "no better" recalled at 7 weeks is a notoriously poor guide and a partial response is a different decision from none. If both hold, this is a genuine non-response and she sits at the threshold of **Stage I treatment resistance**; a second adequate failure would meet the common ≥2-trial definition of **treatment-resistant depression (TRD)**. If either is unestablished, the conclusion is conditional and the next move is to establish it — escalating on an unverified trial is how a patient acquires a resistance label she does not have, and it follows her through every subsequent decision. Probe residents on the limits of TRD staging systems (Thase-Rush, Maudsley) — heterogeneous definitions complicate the augmentation-trial literature and generalizability of network meta-analyses [5,6].
 
 **Q2. Switch, augment, or optimize — how does the evidence adjudicate, and what does VAST-D actually show?**
 *Teaching point:* She is already near-maximal on sertraline, so "optimize" is largely exhausted. The **VAST-D** RCT (n=1,522, predominantly male VA sample) compared switch-to-bupropion vs. augment-with-bupropion vs. augment-with-aripiprazole after ≥1 failed antidepressant: **aripiprazole augmentation** yielded higher remission (28.9% vs. 22.3%; RR 1.30, 95% CI 1.05–1.60) and response (74.3%) than switching, but with more akathisia, somnolence, and weight gain [2]. Key nuances to draw out: modest absolute benefit (~6.6% remission difference), the male-predominant sample limits generalizability to this patient, and the weight-gain signal is directly relevant given her BMI and stated concerns.
@@ -49,6 +49,8 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 **Q8 (Safety).** She has **passive SI without plan/intent**. Structure the assessment and disposition.
 *Teaching point:* Conduct a structured risk assessment (ideation, intent, plan, access to means, protective factors, prior attempts, recent losses), formulate **acute vs. chronic risk**, and build a **collaborative safety plan** with means-safety counseling. Consider lithium's anti-suicidal evidence when weighing augmentation. Keep the teaching oriented to recognition, formulation, and escalation — not method detail. Reassess risk at each visit during cross-titration.
 
+<!-- crisis-block -->
+
 ---
 
 ### Ranked Differential / Diagnostic Reconsideration
@@ -67,7 +69,7 @@ Given her obesity and weight concern, a **low-metabolic-risk partial agonist** (
 
 **Management sequence for this patient:**
 1. **Augment** the (adequately dosed) sertraline with a **low-metabolic-risk agent** — aripiprazole/brexpiprazole/cariprazine or lithium — chosen collaboratively around her weight and sexual-function priorities [2,6,7].
-2. If augmentation fails or is not tolerated → **switch class** (e.g., SNRI or bupropion), or escalate to **esketamine** adjunct given emerging TRD status and passive SI [8].
+2. If augmentation fails or is not tolerated → **switch class** (e.g., SNRI or bupropion), or escalate to **esketamine** adjunct given emerging TRD status (not as a treatment for her passive SI) [8].
 3. Add **structured psychotherapy** (sequential model) for residual symptoms and relapse prevention [4].
 4. **Reserve ECT** for severe, refractory, catatonic, psychotic, or high-acuity presentations; discuss rTMS as a non-pharmacologic option for moderate TRD.
 5. **Maintenance:** given ≥3 lifetime episodes, plan long-term/indefinite maintenance and monitor for residual-symptom relapse predictors.

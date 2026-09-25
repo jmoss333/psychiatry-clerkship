@@ -1,33 +1,68 @@
 #!/usr/bin/env python3
 """Contract tests for validate_curriculum.py.
 
-Mirrors the harness convention of test_validate_registry_schemas.py: build a
-minimal in-memory curriculum + manifest in a tmp dir, run the validator as a
-subprocess, and assert on exit code and message. Nothing here reads the real
-curriculum.json, so a content edit never turns these red.
+Most tests build a minimal in-memory curriculum + shipped-pages listing in a
+tmp dir, run the validator as a subprocess, and assert on exit code and message.
+The Essentials smoke and schema tests deliberately read the real curriculum so
+the selected audience counts and closed schema stay pinned to shipped data.
 
-The manifest IS synthetic, but the validator's shipped set is manifest + the
-extras it derives from validate_tool_governance.py and resident_section.py (see
-its docstring). Those extras are therefore present in every run, synthetic
-manifest or not, so each fixture excludes them — imported from the validator
-rather than restated, so the fixture cannot drift from the derivation.
+The validator asks site_build/shipped_pages.json what ships (ADR-002), so the
+fixture writes that listing rather than the producers behind it. The listing it
+writes is the synthetic manifest rows PLUS the real build extras — the per-site
+tools and resident-only pages — copied from the repo's own shipped_pages.json
+rather than restated here, so the fixture cannot drift from what ships. The
+per-site assertions below are about those real entries (rp-canon-quiz.html is
+resident-only) plus one synthetic MS3-only tool, MS3_ONLY_FIXTURE: no MS3-only extra
+has shipped since the orientation video tool was retired on 2026-09-25, and a
+cross-site guard proved against an unknown slug would pass for the wrong reason.
+
+The weekly-case pages are dropped, matching the validator: it excludes the
+"cotw_registry" producer by the decision recorded in its docstring.
+
+Two groups of synthetic manifest rows exist to satisfy checks the validator makes
+against data OUTSIDE this fixture, and both must stay: the rights-reference tools
+(the validator compares curriculum.json's rightsReferences against the repo's real
+instrument_rights.json, which is not synthesised here) and the six MS3 week landing
+pages (welcome_compass.prepare_cards requires every MS3 week's landingRef to be a
+shipped MS3 Markdown page). Drop either and every "accepts" test turns red.
 """
 import json
+import copy
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-VALIDATOR = os.path.join(HERE, "validate_curriculum.py")
+from jsonschema import Draft7Validator
 
-if HERE not in sys.path:
-    sys.path.insert(0, HERE)
-import validate_curriculum  # noqa: E402  (path set above)
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+VALIDATOR = os.path.join(HERE, "validate_curriculum.py")
+SHIPPED_RELATIVE = os.path.join(
+    "13_Faculty_Resources", "_automation", "site_build", "shipped_pages.json")
+
+# The rights-reference contract (INV-IR1). validate_curriculum.py resolves
+# instrument_rights.json from ITS OWN location, not from the fixture root, so a fixture must
+# satisfy the REAL contract to be accepted. Derived here rather than restated: a hard-coded
+# copy is exactly how this fixture rotted before — the contract gained a field, the copy did
+# not, and no gate ran the test to say so.
+with open(os.path.join(ROOT, "instrument_rights.json"), encoding="utf-8") as _fh:
+    RIGHTS_REFS = tuple(sorted({
+        page["file"]
+        for entry in json.load(_fh).get("instruments", [])
+        for page in entry.get("pages", [])
+        if page.get("requiredDisclaimerType") == "instrument-not-reproduced"
+    }))
+
+# The six MS3 week landing pages, shaped like the real ones: shared Markdown rows the
+# manifest ships to both sites. prepare_cards resolves each week's landingRef against
+# the listing, so they belong in the listing, not in a second synthetic document.
+WEEK_ROWS = [["src/week%d.md" % n, "week%d.md" % n, "Week %d" % n] for n in range(1, 7)]
 
 MANIFEST = {
-    "tools": [["src/a.html", "mse.html", "Mental Status Exam"]],
+    "tools": [["src/a.html", "mse.html", "Mental Status Exam"]]
+    + [["src/%s" % ref, ref, "%s reference" % ref[:-5].upper()] for ref in RIGHTS_REFS],
     "md": [
         ["src/b.md", "welcome.md", "Welcome to the Rotation"],
         ["src/pg_suicide.md", "pg_suicide.md", "Suicide Safety"],
@@ -35,10 +70,39 @@ MANIFEST = {
         ["src/exp_consult.md", "exp_consult.md", "Capacity"],
         ["src/t_sud.md", "t_sud.md", "Withdrawal"],
         ["src/delirium.md", "delirium.md", "Delirium"],
-    ],
+    ] + WEEK_ROWS,
 }
-MANIFEST_SLUGS = {"mse.html", "welcome.md", "pg_suicide.md", "agitation.md",
-                  "exp_consult.md", "t_sud.md", "delirium.md"}
+# Derived, not restated: a row added above must not need a second edit here.
+MANIFEST_SLUGS = {row[1] for rows in MANIFEST.values() for row in rows}
+
+# The real build extras: everything the repo's own listing ships that neither
+# site_manifest.json nor the weekly-case registry produces. Read, not restated.
+with open(os.path.join(ROOT, SHIPPED_RELATIVE), encoding="utf-8") as _fh:
+    REAL_EXTRAS = [
+        page for page in json.load(_fh)["pages"]
+        if page["producer"] not in ("site_manifest", "cotw_registry")
+    ]
+# No MS3-only extra ships today, so the fixture adds a synthetic one. The per-site guards
+# must be proved against a page that really is MS3-only; an unknown slug would fail them
+# for a different reason ("not shipped" anywhere) and the tests would pass vacuously.
+MS3_ONLY_FIXTURE = "ms3-only-fixture.html"
+FIXTURE_EXTRAS = REAL_EXTRAS + [{
+    "slug": MS3_ONLY_FIXTURE, "kind": "tool", "sites": ["ms3"],
+    "title": "MS3-only fixture tool", "source": "src/ms3-only-fixture.html",
+    "producer": "ms3_extra_tool",
+}]
+EXTRA_SHIPPED = frozenset(page["slug"] for page in FIXTURE_EXTRAS)
+
+
+def _shipped_document():
+    """The synthetic manifest rows plus the real extras, in listing shape."""
+    pages = [
+        {"slug": slug, "kind": kind, "sites": ["ms3", "res"],
+         "title": title, "source": source, "producer": "site_manifest"}
+        for kind, key in (("tool", "tools"), ("page", "md"))
+        for source, slug, title in MANIFEST[key]
+    ]
+    return {"version": 1, "pages": pages + list(FIXTURE_EXTRAS)}
 SAFETY_REFS = (
     "pg_suicide.md",
     "agitation.md",
@@ -46,16 +110,91 @@ SAFETY_REFS = (
     "t_sud.md",
     "delirium.md",
 )
+PRACTICE_IDS = (
+    "training-briefing",
+    "workshop-equipment-checkout",
+    "community-event-handoff",
+)
+
+
+def _practice_packs():
+    return [
+        {
+            "id": "training-briefing",
+            "title": "Training-room briefing",
+            "snapshot": [
+                "A facilitator asks you to prepare a two-minute update from a shared brief.",
+                "The update has a named owner and a scheduled review time.",
+            ],
+            "change": "A source note is now marked unconfirmed.",
+            "statements": [
+                {"id": "review-time", "text": "The scheduled review time has not changed."},
+                {"id": "source-status", "text": "Every source in the brief is confirmed."},
+                {"id": "verification-owner", "text": "The person responsible for checking the source note is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "name-uncertainty", "text": "Which uncertainty should I name in the update?"},
+                {"id": "confirm-owner", "text": "Who should confirm the source note?"},
+                {"id": "prepare-review", "text": "What should I prepare before we review it together?"},
+            ],
+        },
+        {
+            "id": "workshop-equipment-checkout",
+            "title": "Workshop equipment checkout",
+            "snapshot": [
+                "A workshop kit has a named setup owner.",
+                "The delivery window is listed on the shared schedule.",
+            ],
+            "change": "The delivery window moves to after the setup owner leaves.",
+            "statements": [
+                {"id": "setup-owner", "text": "The setup owner is still named."},
+                {"id": "delivery-window", "text": "The kit will arrive during the original delivery window."},
+                {"id": "new-time-owner", "text": "The person who will receive the kit at the new time is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "handoff-owner", "text": "Who should own the handoff at the new time?"},
+                {"id": "plan-parts", "text": "Which parts of the original plan still hold?"},
+                {"id": "confirm-before-start", "text": "What needs confirmation before the workshop starts?"},
+            ],
+        },
+        {
+            "id": "community-event-handoff",
+            "title": "Community event handoff",
+            "snapshot": [
+                "A volunteer says the welcome table is set up.",
+                "One volunteer owns the remaining setup checklist.",
+            ],
+            "change": "The accessibility signs have not arrived.",
+            "statements": [
+                {"id": "table-status", "text": "The welcome table is set up."},
+                {"id": "item-status", "text": "Every setup item has arrived."},
+                {"id": "sign-owner", "text": "The person who will obtain the signs is clear."},
+            ],
+            "supervisorQuestions": [
+                {"id": "remaining-owner", "text": "Who should own the remaining setup?"},
+                {"id": "handoff-check", "text": "Which part of the handoff needs confirmation?"},
+                {"id": "opening-check", "text": "What should be checked before the event opens?"},
+            ],
+        },
+    ]
+
+
+def _safety_column():
+    return {"name": "Safety", "accent": "safety", "refs": list(SAFETY_REFS)}
 
 # Keep the two manifest slugs out of this list: the totality tests below assert on
 # exactly those, and blanket-excluding them would hide what they are checking.
 EXTRA_EXCLUDES = [
     {"ref": slug, "reason": "outside this fixture — a build extra, not a manifest page"}
-    for slug in sorted(validate_curriculum.EXTRA_SHIPPED - MANIFEST_SLUGS)
+    for slug in sorted(EXTRA_SHIPPED - MANIFEST_SLUGS)
 ]
-FIXTURE_SAFETY_EXCLUDES = [
-    {"ref": ref, "reason": "outside this fixture — supplied only for safety-kit validation"}
-    for ref in SAFETY_REFS
+FIXTURE_RIGHTS_EXCLUDES = [
+    {"ref": ref, "reason": "outside this fixture — supplied only for rights-reference validation"}
+    for ref in RIGHTS_REFS
+]
+FIXTURE_WEEK_EXCLUDES = [
+    {"ref": row[1], "reason": "outside this fixture — supplied only for landing-ref validation"}
+    for row in WEEK_ROWS
 ]
 
 
@@ -76,44 +215,105 @@ def _evidence_registry():
     return {"sources": [{"id": "evidence-ok"}]}
 
 
-def _write(tmp, curriculum, topic_meta=None, evidence_registry=None):
+def _write(tmp, curriculum, topic_meta=None, evidence_registry=None, shipped_pages=None):
+    """Write the synthetic repo into `tmp`; return (curriculum path, repo root).
+
+    `shipped_pages` replaces the standard listing wholesale — the landing-ref tests
+    pass a mutated copy of `_shipped_document()` rather than a fresh document, so the
+    totality guard keeps passing and the compass failure is the only one reported.
+    """
     cpath = os.path.join(tmp, "curriculum.json")
-    mpath = os.path.join(tmp, "site_manifest.json")
+    spath = os.path.join(tmp, SHIPPED_RELATIVE)
     tpath = os.path.join(tmp, "topic_meta.json")
     epath = os.path.join(tmp, "evidence_registry.json")
+    os.makedirs(os.path.dirname(spath), exist_ok=True)
     with open(cpath, "w", encoding="utf-8") as fh:
         json.dump(curriculum, fh)
-    with open(mpath, "w", encoding="utf-8") as fh:
-        json.dump(MANIFEST, fh)
+    with open(spath, "w", encoding="utf-8") as fh:
+        json.dump(_shipped_document() if shipped_pages is None else shipped_pages, fh)
     with open(tpath, "w", encoding="utf-8") as fh:
         json.dump(_topic_meta() if topic_meta is None else topic_meta, fh)
     with open(epath, "w", encoding="utf-8") as fh:
         json.dump(_evidence_registry() if evidence_registry is None else evidence_registry, fh)
-    return cpath, mpath
+    return cpath, tmp
 
 
-def _run(cpath, mpath, tpath=None, epath=None):
+def _run(cpath, root, tpath=None, epath=None):
     tpath = tpath or os.path.join(os.path.dirname(cpath), "topic_meta.json")
     epath = epath or os.path.join(os.path.dirname(cpath), "evidence_registry.json")
     return subprocess.run(
-        [sys.executable, VALIDATOR, cpath, mpath, tpath, epath],
+        [sys.executable, VALIDATOR, cpath, root, tpath, epath],
         capture_output=True, text=True,
     )
 
 
-def _weeks(count, first_items=None):
-    return [
-        {"n": n, "title": "T%d" % n, "theme": "Th%d" % n,
-         "focusCategories": ["safety"],
-         "items": list(first_items or []) if n == 1 else []}
-        for n in range(1, count + 1)
-    ]
+def _weeks(count, first_items=None, landing_refs=False):
+    """The MS3 path carries a landingRef per week; the resident path has none."""
+    weeks = []
+    for n in range(1, count + 1):
+        week = {
+            "n": n,
+            "title": "T%d" % n,
+            "theme": "Th%d" % n,
+            "focusCategories": ["safety"],
+            "items": list(first_items or []) if n == 1 else [],
+        }
+        if landing_refs:
+            week["landingRef"] = "week%d.md" % n
+        weeks.append(week)
+    return weeks
+
+
+def _shipped_with(target, **changes):
+    """`_shipped_document()` with one page altered — the landing-ref mutation tests.
+
+    `target` is the slug to find; `changes` may itself set `slug`, which is how the
+    tool-landing test moves week1.md to week1.html.
+    """
+    document = _shipped_document()
+    for page in document["pages"]:
+        if page["slug"] == target:
+            page.update(changes)
+            return document
+    raise AssertionError("fixture listing has no page %r" % target)
 
 
 def _curriculum(items):
+    resident_refs = [
+        page["slug"] for page in _shipped_document()["pages"] if "res" in page["sites"]
+    ][:16]
     return {
+        "appPathway": {
+            "intro": "Choose a route.",
+            "practicePacks": _practice_packs(),
+            "bridges": {
+                "pa": {
+                    "name": "PA psychiatry bridge", "summary": "First route",
+                    "refs": resident_refs[:8],
+                    "selfCheck": {"prompt": "Choose a private next step.",
+                                  "actions": ["revisit", "supervisor", "another"]},
+                },
+                "pmhnp": {
+                    "name": "PMHNP medical-systems bridge", "summary": "Second route",
+                    "refs": resident_refs[8:16],
+                    "selfCheck": {"prompt": "Choose a private next step.",
+                                  "actions": ["revisit", "supervisor", "another"]},
+                },
+            },
+            "activities": [
+                {"id": activity_id, "name": name, "practiceId": PRACTICE_IDS[index],
+                 "purpose": "Prepare for supervision.",
+                 "refs": [resident_refs[index]],
+                 "actions": ["prepare", "rehearse", "observe"]}
+                for index, (activity_id, name) in enumerate((
+                    ("initial-evaluation", "Initial psychiatric evaluation and presentation"),
+                    ("medication-follow-through", "Medication plan and follow-through"),
+                    ("collateral-transition", "Collateral and safe transition"),
+                ))
+            ],
+        },
         "learningPaths": {
-            "ms3": {"id": "ms3-six-week", "weeks": _weeks(6, items)},
+            "ms3": {"id": "ms3-six-week", "weeks": _weeks(6, items, landing_refs=True)},
             "resident": {"id": "resident-four-week", "weeks": _weeks(4)},
         },
         # Default coverage keeps the fixture VALID under the totality check. Tests that
@@ -122,48 +322,195 @@ def _curriculum(items):
         "libraryColumns": [
             {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
             {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+            _safety_column(),
         ],
-        "libraryExclude": list(EXTRA_EXCLUDES) + list(FIXTURE_SAFETY_EXCLUDES),
+        "libraryExclude": copy.deepcopy(
+            list(EXTRA_EXCLUDES) + list(FIXTURE_RIGHTS_EXCLUDES)
+            + list(FIXTURE_WEEK_EXCLUDES)
+        ),
+        "rightsReferences": list(RIGHTS_REFS),
+        # Every column-placed tool needs its one-line Library hint (2026-09-16); the default
+        # column above places exactly one tool, so the fixture stays valid with exactly one.
+        "libraryHints": {"mse.html": "Draft a written exam from a descriptor bank."},
+        # `triggers` became mandatory on 2026-08-28, when "i want to kill myself" was found to
+        # reach pg_suicide.md only through the stopword "to". This fixture went without it for
+        # months and every accept-case here failed — invisibly, because no gate ran the file.
         "safetyKit": [
-            {"ref": ref, "sub": "Protocol " + str(index + 1)}
+            {"ref": ref, "sub": "Protocol " + str(index + 1), "triggers": ["safety"]}
             for index, ref in enumerate(SAFETY_REFS)
         ],
-        "roles": {"ms3": [], "resident": []},
+        "roles": {
+            "ms3": [],
+            "resident": [{"id": "app", "name": "APP", "desc": "Preview role"}],
+        },
         "synonyms": {},
         "siteLibrary": {
             "ms3": {"additions": [], "exclusions": []},
             "resident": {"additions": [], "exclusions": []},
         },
+        "essentials": {
+            site: [
+                {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
+                _safety_column(),
+            ]
+            for site in ("ms3", "resident")
+        },
     }
 
 
 class ValidateCurriculumTest(unittest.TestCase):
+    def test_app_pathway_requires_two_eight_resource_bridges_and_three_activities(self):
+        mutations = (
+            lambda pathway: pathway["bridges"]["pa"]["refs"].append(
+                pathway["bridges"]["pa"]["refs"][0]),
+            lambda pathway: pathway["bridges"]["pa"]["refs"].__setitem__(
+                0, MS3_ONLY_FIXTURE),
+            lambda pathway: pathway["activities"][0].__setitem__(
+                "actions", ["prepare", "score", "observe"]),
+        )
+        for mutate in mutations:
+            with self.subTest(mutate=mutate), tempfile.TemporaryDirectory() as tmp:
+                curriculum = _curriculum([])
+                mutate(curriculum["appPathway"])
+                c, root = _write(tmp, curriculum)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("appPathway", result.stdout)
+
+    def test_app_practice_requires_unique_resolved_nonclinical_packs(self):
+        mutations = (
+            lambda p: p["activities"][0].__setitem__("practiceId", "missing-pack"),
+            lambda p: p["practicePacks"][1].__setitem__("id", p["practicePacks"][0]["id"]),
+            lambda p: p["practicePacks"][0]["statements"].pop(),
+            lambda p: p["practicePacks"][0].__setitem__("statements", 1),
+            lambda p: p["practicePacks"][0].__setitem__("change", "A patient detail changed."),
+            lambda p: p["practicePacks"][0].__setitem__("score", 1),
+        )
+        for mutate in mutations:
+            with self.subTest(mutate=mutate), tempfile.TemporaryDirectory() as tmp:
+                curriculum = _curriculum([])
+                mutate(curriculum["appPathway"])
+                cpath, root = _write(tmp, curriculum)
+                result = _run(cpath, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("appPathway.practicePacks", result.stdout)
+
+    def test_app_pathway_is_required(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            del curriculum["appPathway"]
+            c, root = _write(tmp, curriculum)
+            result = _run(c, root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("appPathway", result.stdout)
+
+    def test_search_aliases_reject_unknown_refs_empty_values_and_duplicate_vocabulary(self):
+        for aliases in ({"ghost.md": ["ghost"]}, {"mse.html": []},
+                        {"mse.html": ["mse", "mse"]}, {"mse.html": [" MSE "]}):
+            with self.subTest(aliases=aliases), tempfile.TemporaryDirectory() as tmp:
+                curriculum = _curriculum([])
+                c, root = _write(tmp, curriculum)
+                baseline = _run(c, root)
+                self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+                curriculum["searchAliases"] = aliases
+                c, root = _write(tmp, curriculum)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("searchAliases", result.stdout)
+
+    def test_accepts_six_shipped_ms3_landing_refs_without_resident_landing_refs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, root = _write(tmp, _curriculum([]))
+            result = _run(c, root)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_rejects_ms3_week_missing_landing_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            del curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"]
+            c, root = _write(tmp, curriculum)
+            result = _run(c, root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("landingRef", result.stdout)
+
+    def test_rejects_empty_or_non_string_ms3_landing_ref(self):
+        for value in ("", 1):
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as tmp:
+                curriculum = _curriculum([])
+                curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"] = value
+                c, root = _write(tmp, curriculum)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("landingRef", result.stdout)
+
+    def test_rejects_duplicate_ms3_landing_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            curriculum["learningPaths"]["ms3"]["weeks"][1]["landingRef"] = "week1.md"
+            c, root = _write(tmp, curriculum)
+            result = _run(c, root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("landingRef", result.stdout)
+
+    def test_rejects_unshipped_ms3_landing_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"] = "ghost.md"
+            c, root = _write(tmp, curriculum)
+            result = _run(c, root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("ghost.md", result.stdout)
+
+    def test_rejects_tool_html_ms3_landing_ref(self):
+        # A week may not land on a tool. The listing entry moves with the ref so the
+        # totality guard stays satisfied and the compass rejection is what fails.
+        with tempfile.TemporaryDirectory() as tmp:
+            curriculum = _curriculum([])
+            curriculum["learningPaths"]["ms3"]["weeks"][0]["landingRef"] = "week1.html"
+            for entry in curriculum["libraryExclude"]:
+                if entry["ref"] == "week1.md":
+                    entry["ref"] = "week1.html"
+            c, root = _write(tmp, curriculum,
+                             shipped_pages=_shipped_with("week1.md", slug="week1.html",
+                                                         kind="tool"))
+            result = _run(c, root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("week1.html", result.stdout)
+
+    def test_rejects_resident_only_ms3_landing_ref(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            c, root = _write(tmp, _curriculum([]),
+                             shipped_pages=_shipped_with("week1.md", sites=["res"]))
+            result = _run(c, root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("week1.md", result.stdout)
+
     def test_accepts_refs_that_resolve_to_shipped_slugs(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, _curriculum([
+            c, root = _write(tmp, _curriculum([
                 {"ref": "welcome.md", "kind": "read"},
                 {"ref": "mse.html", "kind": "tool"},
             ]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
             self.assertIn("OK", r.stdout)
 
     def test_rejects_a_ref_that_is_not_shipped(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, _curriculum([
+            c, root = _write(tmp, _curriculum([
                 {"ref": "does-not-exist.md", "kind": "read"},
             ]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("learningPaths.ms3 week 1", r.stdout)
             self.assertIn("does-not-exist.md", r.stdout)
 
     def test_rejects_kind_that_disagrees_with_the_slug_type(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, _curriculum([
+            c, root = _write(tmp, _curriculum([
                 {"ref": "mse.html", "kind": "read"},
             ]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("learningPaths.ms3 week 1", r.stdout)
             self.assertIn("kind", r.stdout)
@@ -173,38 +520,110 @@ class ValidateCurriculumTest(unittest.TestCase):
             cur = _curriculum([])
             cur["learningPaths"]["ms3"]["weeks"][0]["items"] = [
                 {"ref": "rp-canon-quiz.html", "kind": "tool"}]
-            c, m = _write(tmp, cur)
-            result = _run(c, m)
+            c, root = _write(tmp, cur)
+            result = _run(c, root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("ms3", result.stdout)
         self.assertIn("rp-canon-quiz.html", result.stdout)
+
+    def test_rejects_a_rights_reference_as_a_path_item(self):
+        # A rights reference exists to say an instrument is NOT reproduced here. It belongs in
+        # the Library (INV-IR2 keeps the custodian route alive) but never on a learning path:
+        # a checklist step that opens a "no longer reproduced" stub is a dead end the learner
+        # is asked to tick. Both stubs sat on the shipped paths until 2026-09-16.
+        stub = RIGHTS_REFS[0]
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site), tempfile.TemporaryDirectory() as tmp:
+                cur = _curriculum([])
+                cur["learningPaths"][site]["weeks"][0]["items"] = [
+                    {"ref": stub, "kind": "tool"}]
+                c, root = _write(tmp, cur)
+                result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn(site, result.stdout)
+            self.assertIn(stub, result.stdout)
+            self.assertIn("rights reference", result.stdout)
+
+    def test_library_hints_require_one_line_per_placed_tool_and_no_strays(self):
+        # A placed .html ref is a tool row in the only browse surface; without its one-line
+        # "use this when" it is a bare title. Both directions are enforced: a placed tool with
+        # no hint, and a hint for a ref no column (or site addition) places.
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["libraryColumns"][0]["refs"] = ["mse.html", "rp-canon-quiz.html"]
+            cur["libraryExclude"] = [e for e in cur["libraryExclude"]
+                                     if e["ref"] != "rp-canon-quiz.html"]
+            cur["libraryHints"] = {"mse.html": "Draft a written exam from a descriptor bank."}
+            c, root = _write(tmp, cur)
+            missing = _run(c, root)
+            self.assertEqual(missing.returncode, 1, missing.stdout + missing.stderr)
+            self.assertIn("libraryHints", missing.stdout)
+            self.assertIn("rp-canon-quiz.html", missing.stdout)
+
+            cur["libraryHints"]["rp-canon-quiz.html"] = "Drill the landmark-paper decks."
+            c, root = _write(tmp, cur)
+            complete = _run(c, root)
+            self.assertEqual(complete.returncode, 0, complete.stdout + complete.stderr)
+
+            cur["libraryHints"]["welcome.md"] = "A read is not a tool row."
+            c, root = _write(tmp, cur)
+            stray = _run(c, root)
+            self.assertEqual(stray.returncode, 1, stray.stdout + stray.stderr)
+            self.assertIn("welcome.md", stray.stdout)
+            del cur["libraryHints"]["welcome.md"]
+
+            for bad_value in ("", "   ", "x" * 111, 7):
+                cur["libraryHints"]["mse.html"] = bad_value
+                c, root = _write(tmp, cur)
+                result = _run(c, root)
+                self.assertEqual(result.returncode, 1, repr(bad_value))
+                self.assertIn("libraryHints", result.stdout)
+
+    def test_a_site_addition_tool_needs_a_hint_too(self):
+        # rp-* tools reach the resident Library through siteLibrary additions, not the shared
+        # columns; the completeness rule covers them or the resident column ships bare rows.
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            cur["libraryHints"] = {"mse.html": "Draft a written exam from a descriptor bank."}
+            # Shaped like the real file: an rp-* tool stays in the shared libraryExclude and
+            # reaches one site's Library through that site's additions.
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["rp-canon-quiz.html"]}]
+            c, root = _write(tmp, cur)
+            result = _run(c, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("rp-canon-quiz.html", result.stdout)
+            cur["libraryHints"]["rp-canon-quiz.html"] = "Drill the landmark-paper decks."
+            c, root = _write(tmp, cur)
+            ok = _run(c, root)
+            self.assertEqual(ok.returncode, 0, ok.stdout + ok.stderr)
 
     def test_accepts_resident_only_ref_on_resident_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["learningPaths"]["resident"]["weeks"][0]["items"] = [
                 {"ref": "rp-canon-quiz.html", "kind": "tool"}]
-            c, m = _write(tmp, cur)
-            result = _run(c, m)
+            c, root = _write(tmp, cur)
+            result = _run(c, root)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_rejects_ms3_only_ref_on_resident_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["learningPaths"]["resident"]["weeks"][0]["items"] = [
-                {"ref": "orientation-video.html", "kind": "tool"}]
-            c, m = _write(tmp, cur)
-            result = _run(c, m)
+                {"ref": MS3_ONLY_FIXTURE, "kind": "tool"}]
+            c, root = _write(tmp, cur)
+            result = _run(c, root)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("resident", result.stdout)
-        self.assertIn("orientation-video.html", result.stdout)
+        self.assertIn(MS3_ONLY_FIXTURE, result.stdout)
 
     def test_rejects_a_missing_or_duplicated_week_number(self):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
             cur["learningPaths"]["ms3"]["weeks"][5]["n"] = 5
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("learningPaths.ms3", r.stdout)
             self.assertIn("week", r.stdout.lower())
@@ -218,8 +637,8 @@ class ValidateCurriculumTest(unittest.TestCase):
             with self.subTest(label=label), tempfile.TemporaryDirectory() as tmp:
                 cur = _curriculum([])
                 mutate(cur)
-                c, m = _write(tmp, cur)
-                r = _run(c, m)
+                c, root = _write(tmp, cur)
+                r = _run(c, root)
                 self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
                 self.assertIn("learningPaths.resident", r.stdout)
 
@@ -237,18 +656,18 @@ class ValidateCurriculumTest(unittest.TestCase):
             with self.subTest(label=label), tempfile.TemporaryDirectory() as tmp:
                 cur = _curriculum([])
                 mutate(cur)
-                c, m = _write(tmp, cur)
-                r = _run(c, m)
+                c, root = _write(tmp, cur)
+                r = _run(c, root)
                 self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
                 self.assertIn("learningPaths.resident week 1", r.stdout)
 
     def test_reports_every_violation_not_just_the_first(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, _curriculum([
+            c, root = _write(tmp, _curriculum([
                 {"ref": "nope-one.md", "kind": "read"},
                 {"ref": "nope-two.md", "kind": "read"},
             ]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("learningPaths.ms3 week 1", r.stdout)
             self.assertIn("nope-one.md", r.stdout)
@@ -258,8 +677,8 @@ class ValidateCurriculumTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
             del cur["learningPaths"]["ms3"]["weeks"][0]["n"]
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("learningPaths.ms3", r.stdout)
@@ -268,8 +687,8 @@ class ValidateCurriculumTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
             cur["learningPaths"]["ms3"]["weeks"][0]["n"] = None
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("learningPaths.ms3", r.stdout)
@@ -278,22 +697,623 @@ class ValidateCurriculumTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([{"ref": "welcome.md", "kind": "read"}])
             cur["learningPaths"]["ms3"]["weeks"][0]["n"] = True
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("learningPaths.ms3", r.stdout)
 
     def test_rejects_a_non_string_ref_in_a_week_item_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, _curriculum([
+            c, root = _write(tmp, _curriculum([
                 {"ref": {"nested": "dict"}, "kind": "read"},
             ]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("learningPaths.ms3 week 1", r.stdout)
             self.assertIn("must be a string", r.stdout)
+
+
+def _set_items(site, week_index, items):
+    """A mutation placing `items` on one week of one audience path."""
+    return lambda cur: cur["learningPaths"][site]["weeks"][week_index].__setitem__(
+        "items", copy.deepcopy(items))
+
+
+class RequiredCoreTierTest(unittest.TestCase):
+    """Decision `required-core-tier` (D2, 2026-09-24): priority / window / query on Path items.
+
+    An absent priority means `recommended`. The `required` items of one week may total at most
+    120 read-minutes, taken from topic_meta.json `read`: a required READ with no integer minutes
+    is an error (the budget cannot be checked over a page that states none), a required TOOL
+    counts 0 unless topic_meta gives it minutes. `query` is allowed only on a tool item, and
+    `window` only in week 1. Every case is a synthetic curriculum; none reads live state.
+    """
+
+    def _result(self, mutate, minutes=None, shipped_pages=None):
+        cur = _curriculum([])
+        mutate(cur)
+        meta = _topic_meta()
+        for ref, value in (minutes or {}).items():
+            meta.setdefault(ref, {})["read"] = value
+        with tempfile.TemporaryDirectory() as tmp:
+            cpath, root = _write(tmp, cur, topic_meta=meta, shipped_pages=shipped_pages)
+            return _run(cpath, root)
+
+    def assert_ok(self, result):
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def assert_rejected(self, result, *markers):
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        for marker in markers:
+            self.assertIn(marker, result.stdout)
+
+    def test_absent_recommended_and_optional_priorities_do_not_count(self):
+        items = [
+            {"ref": "welcome.md", "kind": "read"},
+            {"ref": "agitation.md", "kind": "read", "priority": "recommended"},
+            {"ref": "delirium.md", "kind": "read", "priority": "optional"},
+        ]
+        self.assert_ok(self._result(
+            _set_items("ms3", 0, items),
+            {"welcome.md": 200, "agitation.md": 200, "delirium.md": 200}))
+
+    def test_required_minutes_pass_at_the_budget_and_fail_one_minute_over(self):
+        # The break-test for the 120-minute rule: 120 passes, 121 fails, whether the minutes
+        # come from one page or are summed across two.
+        cases = (
+            ({"welcome.md": 120}, ["welcome.md"], True),
+            ({"welcome.md": 121}, ["welcome.md"], False),
+            ({"welcome.md": 60, "agitation.md": 60}, ["welcome.md", "agitation.md"], True),
+            ({"welcome.md": 60, "agitation.md": 61}, ["welcome.md", "agitation.md"], False),
+        )
+        for minutes, refs, ok in cases:
+            items = [{"ref": ref, "kind": "read", "priority": "required"} for ref in refs]
+            with self.subTest(minutes=minutes):
+                result = self._result(_set_items("ms3", 0, items), minutes)
+                if ok:
+                    self.assert_ok(result)
+                else:
+                    self.assert_rejected(result, "learningPaths.ms3 week 1", "Required Core",
+                                         "121", "120")
+
+    def test_the_budget_is_per_week_and_applies_to_every_path(self):
+        required = [{"ref": "welcome.md", "kind": "read", "priority": "required"}]
+
+        def both_weeks(cur):
+            _set_items("ms3", 0, required)(cur)
+            _set_items("ms3", 1, required)(cur)
+
+        with self.subTest("ms3 weeks 1 and 2 at 120 each"):
+            self.assert_ok(self._result(both_weeks, {"welcome.md": 120}))
+        with self.subTest("resident week 1 at 121"):
+            self.assert_rejected(
+                self._result(_set_items("resident", 0, required), {"welcome.md": 121}),
+                "learningPaths.resident week 1", "Required Core")
+
+    def test_a_required_read_without_integer_minutes_is_an_error(self):
+        required = [{"ref": "welcome.md", "kind": "read", "priority": "required"}]
+        for label, minutes in (("no record", None), ("string", {"welcome.md": "5 min"}),
+                               ("boolean", {"welcome.md": True}),
+                               ("negative", {"welcome.md": -5})):
+            with self.subTest(label=label):
+                self.assert_rejected(self._result(_set_items("ms3", 0, required), minutes),
+                                     "learningPaths.ms3 week 1", "welcome.md", "read minutes")
+        with self.subTest("the same page, not required, is fine without minutes"):
+            self.assert_ok(self._result(_set_items("ms3", 0, [
+                {"ref": "welcome.md", "kind": "read", "priority": "recommended"}])))
+
+    def test_a_required_tool_counts_zero_unless_topic_meta_gives_minutes(self):
+        items = [
+            {"ref": "mse.html", "kind": "tool", "priority": "required"},
+            {"ref": "welcome.md", "kind": "read", "priority": "required"},
+        ]
+        with self.subTest("tool without minutes counts 0"):
+            self.assert_ok(self._result(_set_items("ms3", 0, items), {"welcome.md": 120}))
+        with self.subTest("tool with topic_meta minutes counts them"):
+            self.assert_rejected(
+                self._result(_set_items("ms3", 0, items), {"welcome.md": 120, "mse.html": 1}),
+                "Required Core", "121")
+
+    def test_rejects_an_unknown_priority_value(self):
+        # Fail closed: a misspelt `required` must not silently escape the budget.
+        for value in ("Required", "core", 1, None):
+            with self.subTest(value=value):
+                self.assert_rejected(self._result(_set_items("ms3", 0, [
+                    {"ref": "welcome.md", "kind": "read", "priority": value}])),
+                    "learningPaths.ms3 week 1", "priority")
+
+    def test_query_is_only_allowed_on_a_tool_item(self):
+        with self.subTest("tool"):
+            self.assert_ok(self._result(_set_items("ms3", 0, [
+                {"ref": "mse.html", "kind": "tool", "query": "case=demo_case_001"}])))
+        with self.subTest("read"):
+            self.assert_rejected(self._result(_set_items("ms3", 0, [
+                {"ref": "welcome.md", "kind": "read", "query": "week=1"}])),
+                "learningPaths.ms3 week 1", "welcome.md", "query")
+
+    def _with_sp_interview(self, items):
+        """The adopted D3 spine's week-1 shape needs sp-interview.html, which this fixture's
+        synthetic listing does not ship. Ship it here and exclude it from the Library, so the
+        totality guard stays quiet and within-week uniqueness is the only thing judged."""
+        shipped = _shipped_document()
+        shipped["pages"].append({
+            "slug": "sp-interview.html", "kind": "tool", "sites": ["ms3", "res"],
+            "title": "The Interview Room", "source": "src/sp-interview.html",
+            "producer": "site_manifest"})
+
+        def mutate(cur):
+            _set_items("ms3", 0, items)(cur)
+            cur["libraryExclude"].append(
+                {"ref": "sp-interview.html", "reason": "outside this fixture — spine shape"})
+
+        return self._result(mutate, shipped_pages=shipped)
+
+    def test_a_tool_may_repeat_in_a_week_with_distinct_queries(self):
+        # The D3 spine's week 1 opens The Interview Room twice, on two different cases.
+        self.assert_ok(self._with_sp_interview([
+            {"ref": "sp-interview.html", "kind": "tool", "priority": "required",
+             "window": "days-1-3", "query": "case=sp_depression_gated_si_001"},
+            {"ref": "sp-interview.html", "kind": "tool",
+             "query": "case=sp_psychosis_paranoid_001"},
+        ]))
+
+    def test_a_tool_repeated_with_the_same_query_is_a_duplicate(self):
+        item = {"ref": "sp-interview.html", "kind": "tool",
+                "query": "case=sp_depression_gated_si_001"}
+        self.assert_rejected(self._with_sp_interview([item, dict(item)]),
+                             "learningPaths.ms3 week 1",
+                             "duplicate ref 'sp-interview.html' with query "
+                             "'case=sp_depression_gated_si_001' within the week")
+
+    def test_a_ref_repeated_without_a_query_is_still_a_duplicate(self):
+        # A read cannot carry a query at all, so a read can never repeat within a week; a
+        # tool with no query keeps the original error text word for word.
+        for label, item in (("tool", {"ref": "sp-interview.html", "kind": "tool"}),
+                            ("read", {"ref": "welcome.md", "kind": "read"})):
+            with self.subTest(label=label):
+                self.assert_rejected(self._with_sp_interview([item, dict(item)]),
+                                     "learningPaths.ms3 week 1",
+                                     "duplicate ref '%s' within the week" % item["ref"])
+
+    def test_window_is_only_allowed_in_week_1(self):
+        item = [{"ref": "welcome.md", "kind": "read", "window": "days-1-3"}]
+        for site, week_index, ok in (("ms3", 0, True), ("resident", 0, True),
+                                     ("ms3", 1, False), ("resident", 2, False)):
+            with self.subTest(site=site, week=week_index + 1):
+                result = self._result(_set_items(site, week_index, item))
+                if ok:
+                    self.assert_ok(result)
+                else:
+                    self.assert_rejected(result, "learningPaths.%s week %d" %
+                                         (site, week_index + 1), "window", "week 1")
+
+
+class CurriculumSchemaCase(unittest.TestCase):
+    """Exercise the checked-in Draft 7 schema directly with pinned jsonschema."""
+
+    def _document(self):
+        with open(os.path.join(ROOT, "curriculum.json"), encoding="utf-8") as fh:
+            document = json.load(fh)
+        document["essentials"] = {
+            "_note": "Synthetic schema fixture",
+            "ms3": [{"name": "Kit", "accent": "safety", "refs": ["mse.html"]}],
+            "resident": [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]}],
+        }
+        document["appPathway"]["practicePacks"] = _practice_packs()
+        for index, activity in enumerate(document["appPathway"]["activities"]):
+            activity["practiceId"] = PRACTICE_IDS[index]
+        return document
+
+    def _errors(self, document):
+        with open(os.path.join(ROOT, "curriculum.schema.json"), encoding="utf-8") as fh:
+            schema = json.load(fh)
+        return sorted(Draft7Validator(schema).iter_errors(document),
+                      key=lambda error: tuple(str(part) for part in error.absolute_path))
+
+    @staticmethod
+    def _render(errors):
+        return "\n".join("/%s: %s" % (
+            "/".join(str(part) for part in error.absolute_path), error.message)
+            for error in errors)
+
+    def assert_schema_mutation(self, mutate, marker):
+        original = self._document()
+        self.assertEqual(self._errors(original), [])
+        changed = copy.deepcopy(original)
+        mutate(changed)
+        rendered = self._render(self._errors(changed))
+        self.assertIn(marker, rendered, rendered)
+        self.assertEqual(self._errors(original), [])
+
+
+class CurriculumSchemaEssentialsTest(CurriculumSchemaCase):
+    def test_curriculum_accepts_essentials(self):
+        document = self._document()
+        document["essentials"]["ms3"].extend([
+            {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+            {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
+        ])
+        self.assertEqual(self._errors(document), [])
+        document["unexpectedRootKey"] = True
+        self.assertIn("unexpectedRootKey", self._render(self._errors(document)))
+
+    def test_curriculum_practice_packs_use_the_closed_three_item_contract(self):
+        document = self._document()
+        self.assertEqual(self._errors(document), [])
+        cases = [
+            (lambda c: c["appPathway"]["practicePacks"][0].pop("change"),
+             "/appPathway/practicePacks/0"),
+            (lambda c: c["appPathway"]["practicePacks"][0].__setitem__("score", 1),
+             "/appPathway/practicePacks/0"),
+            (lambda c: c["appPathway"]["practicePacks"][0].__setitem__(
+                "statements", c["appPathway"]["practicePacks"][0]["statements"][:2]),
+             "/appPathway/practicePacks/0/statements"),
+            (lambda c: c["appPathway"]["practicePacks"][0].__setitem__(
+                "supervisorQuestions", c["appPathway"]["practicePacks"][0]["supervisorQuestions"] + [
+                    {"id": "extra-question", "text": "What should I share?"}]),
+             "/appPathway/practicePacks/0/supervisorQuestions"),
+        ]
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+    def test_curriculum_essentials_requires_both_audiences(self):
+        cases = [
+            (lambda c: c.pop("essentials"), "essentials"),
+            (lambda c: c["essentials"].pop("ms3"), "ms3"),
+            (lambda c: c["essentials"].pop("resident"), "resident"),
+        ]
+        for value in (None, [], {}):
+            cases.append((lambda c, value=value: c.__setitem__("essentials", value),
+                          "essentials"))
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+    def test_curriculum_essentials_requires_nonempty_section_arrays(self):
+        cases = []
+        for site in ("ms3", "resident"):
+            for value in (None, {}, "bad", []):
+                cases.append((lambda c, site=site, value=value:
+                              c["essentials"].__setitem__(site, value),
+                              "/essentials/%s" % site))
+        cases.extend([
+            (lambda c: c["essentials"]["ms3"].__setitem__(0, None),
+             "/essentials/ms3/0"),
+            (lambda c: c["essentials"]["ms3"][0].pop("refs"),
+             "/essentials/ms3/0"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", []),
+             "/essentials/ms3/0/refs"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", None),
+             "/essentials/ms3/0/refs"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [""]),
+             "/essentials/ms3/0/refs/0"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [1]),
+             "/essentials/ms3/0/refs/0"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__(
+                "refs", ["mse.html", "mse.html"]),
+             "/essentials/ms3/0/refs"),
+        ])
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+    def test_curriculum_essentials_uses_closed_library_section_shape(self):
+        cases = [
+            (lambda c: c["essentials"]["ms3"][0].pop("name"), "/essentials/ms3/0"),
+            (lambda c: c["essentials"]["ms3"][0].pop("accent"), "/essentials/ms3/0"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("name", ""),
+             "/essentials/ms3/0/name"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("accent", "urgent"),
+             "/essentials/ms3/0/accent"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("extra", True),
+             "/essentials/ms3/0"),
+            (lambda c: c["essentials"].__setitem__("faculty", []), "/essentials"),
+            (lambda c: c["essentials"].__setitem__("_note", 7), "/essentials/_note"),
+        ]
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+
+class CurriculumSchemaPathItemTest(CurriculumSchemaCase):
+    """The optional Path-item and week fields for decision `required-core-tier` (D2).
+
+    Every field is optional, so the curriculum with none of them set stays valid (the base
+    document asserts that before each mutation). Each field then has accepted and rejected
+    shapes. `week.practice` is an object, not the handoff's "practice (string)": it replaces
+    fd_path.js FD_PATH_PRACTICE, whose rows are {skill, feedback}, and a string would drop the
+    feedback prompt the Path renders.
+    """
+
+    ITEM = "/learningPaths/ms3/weeks/0/items/0"
+    WEEK = "/learningPaths/ms3/weeks/0"
+    PRACTICE = {"skill": "Present a focused interview and MSE",
+                "feedback": "Can you watch my MSE language today?", "card": "DO-1"}
+
+    @staticmethod
+    def _item(document):
+        return document["learningPaths"]["ms3"]["weeks"][0]["items"][0]
+
+    @staticmethod
+    def _week(document):
+        return document["learningPaths"]["ms3"]["weeks"][0]
+
+    def test_accepts_each_new_field_in_a_valid_shape(self):
+        accepted = [
+            lambda c: self._item(c).update({"priority": "required", "window": "days-1-3",
+                                            "query": "case=sp_depression_gated_si_001"}),
+            lambda c: self._item(c).update({"priority": "recommended", "query": "week=3"}),
+            lambda c: self._item(c).update({"priority": "optional", "query": "case=A-b_9"}),
+            lambda c: self._week(c).__setitem__("practice", dict(self.PRACTICE)),
+            lambda c: self._week(c).__setitem__(
+                "practice", {"skill": "Build a differential", "feedback": "Can you review it?"}),
+        ]
+        for index, mutate in enumerate(accepted):
+            with self.subTest(case=index):
+                document = self._document()
+                mutate(document)
+                self.assertEqual(self._render(self._errors(document)), "")
+
+    def test_rejects_malformed_priority_window_and_query(self):
+        cases = []
+        for value in ("mandatory", "Required", 1, None):
+            cases.append((lambda c, v=value: self._item(c).__setitem__("priority", v),
+                          self.ITEM + "/priority"))
+        for value in ("days-1-4", "", 1):
+            cases.append((lambda c, v=value: self._item(c).__setitem__("window", v),
+                          self.ITEM + "/window"))
+        for value in ("case=a b", "Case=x", "case=", "=x", "a=b&c=d", "case=x/y", "case", 3):
+            cases.append((lambda c, v=value: self._item(c).__setitem__("query", v),
+                          self.ITEM + "/query"))
+        # The Path item stays a closed shape: the three fields are the only additions.
+        cases.append((lambda c: self._item(c).__setitem__("order", 1), self.ITEM))
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+    def test_week_practice_is_a_closed_skill_feedback_card_object(self):
+        def practice(**changes):
+            value = dict(self.PRACTICE)
+            for key, new in changes.items():
+                if new is None:
+                    value.pop(key)
+                else:
+                    value[key] = new
+            return lambda c: self._week(c).__setitem__("practice", value)
+
+        cases = [
+            (lambda c: self._week(c).__setitem__("practice", "Observed interview + MSE"),
+             self.WEEK + "/practice"),
+            (lambda c: self._week(c).__setitem__("practice", {}), self.WEEK + "/practice"),
+            (practice(feedback=None),
+             self.WEEK + "/practice: 'feedback' is a required property"),
+            (practice(skill=None), self.WEEK + "/practice: 'skill' is a required property"),
+            (practice(skill=""), self.WEEK + "/practice/skill"),
+            (practice(feedback=""), self.WEEK + "/practice/feedback"),
+            (practice(card="do-1"), self.WEEK + "/practice/card"),
+            (practice(card="DO-"), self.WEEK + "/practice/card"),
+            (practice(card="DO-1a"), self.WEEK + "/practice/card"),
+            (practice(card="OSCE-1"), self.WEEK + "/practice/card"),
+            (practice(rubric="pass"), self.WEEK + "/practice"),
+        ]
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_schema_mutation(mutate, marker)
+
+
+class EssentialsTest(unittest.TestCase):
+    def assert_mutation(self, mutate, code, marker):
+        with tempfile.TemporaryDirectory() as tmp:
+            original = _curriculum([])
+            cpath, root = _write(tmp, original)
+            baseline = _run(cpath, root)
+            self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+            changed = copy.deepcopy(original)
+            mutate(changed)
+            cpath, root = _write(tmp, changed)
+            result = _run(cpath, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn(code, result.stdout)
+            self.assertIn(marker, result.stdout)
+            self.assertNotIn("Traceback", result.stderr)
+            cpath, root = _write(tmp, original)
+            restored = _run(cpath, root)
+            self.assertEqual(restored.returncode, 0, restored.stdout + restored.stderr)
+
+    def test_missing_essentials_is_E1(self):
+        self.assert_mutation(lambda c: c.pop("essentials"), "E1", "essentials")
+
+    def test_essentials_requires_object_and_both_nonempty_audiences(self):
+        cases = []
+        for value in (None, [], {}):
+            cases.append((lambda c, value=value: c.__setitem__("essentials", value),
+                          "essentials"))
+        for site in ("ms3", "resident"):
+            cases.append((lambda c, site=site: c["essentials"].pop(site), site))
+            for value in (None, {}, [], "bad"):
+                cases.append((lambda c, site=site, value=value:
+                              c["essentials"].__setitem__(site, value), site))
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_mutation(mutate, "E1", marker)
+
+    def test_sections_and_refs_fail_loudly_when_malformed(self):
+        cases = [
+            (lambda c: c["essentials"]["ms3"].__setitem__(0, None), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].pop("name"), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("name", " "), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("accent", "urgent"), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].pop("refs"), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", None), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", []), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [7]), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [" "]), "ms3[0]"),
+            (lambda c: c["essentials"]["ms3"][0].__setitem__("refs", [["mse.html"]]),
+             "ms3[0]"),
+        ]
+        for mutate, marker in cases:
+            with self.subTest(marker=marker):
+                self.assert_mutation(mutate, "E1", marker)
+
+    def test_unknown_ref_is_E2(self):
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site):
+                self.assert_mutation(
+                    lambda c, site=site: c["essentials"][site][0]["refs"].append("ghost.md"),
+                    "E2", "ghost.md")
+
+    def test_other_audiences_page_is_E2(self):
+        cases = (("ms3", "rp-agitation.html"),
+                 ("resident", MS3_ONLY_FIXTURE))
+        for site, ref in cases:
+            with self.subTest(site=site):
+                self.assert_mutation(
+                    lambda c, site=site, ref=ref:
+                    c["essentials"][site][0]["refs"].append(ref), "E2", ref)
+
+    def test_shipped_but_unplaced_is_E3(self):
+        with open(os.path.join(ROOT, "curriculum.json"), encoding="utf-8") as fh:
+            original = json.load(fh)
+        self.assertIn("essentials", original, "Phase 1 curriculum data is missing essentials")
+        changed = copy.deepcopy(original)
+        changed["essentials"]["resident"][0]["refs"].append("t_sleep.md")
+        for column in changed["libraryColumns"]:
+            if "t_sleep.md" in column["refs"]:
+                column["refs"].remove("t_sleep.md")
+        changed["libraryExclude"].append(
+            {"ref": "t_sleep.md", "reason": "Synthetic E3 subset mutation"})
+        with tempfile.TemporaryDirectory() as tmp:
+            cpath = os.path.join(tmp, "curriculum.json")
+            with open(cpath, "w", encoding="utf-8") as fh:
+                json.dump(original, fh)
+            baseline = _run(cpath, ROOT, os.path.join(ROOT, "topic_meta.json"),
+                            os.path.join(ROOT, "evidence_registry.json"))
+            self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+            with open(cpath, "w", encoding="utf-8") as fh:
+                json.dump(changed, fh)
+            result = _run(cpath, ROOT, os.path.join(ROOT, "topic_meta.json"),
+                          os.path.join(ROOT, "evidence_registry.json"))
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("E3", result.stdout)
+            self.assertIn("t_sleep.md", result.stdout)
+            self.assertNotIn("appears in no column", result.stdout)
+            with open(cpath, "w", encoding="utf-8") as fh:
+                json.dump(original, fh)
+            restored = _run(cpath, ROOT, os.path.join(ROOT, "topic_meta.json"),
+                            os.path.join(ROOT, "evidence_registry.json"))
+            self.assertEqual(restored.returncode, 0, restored.stdout + restored.stderr)
+
+    def test_matching_site_addition_satisfies_E3(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            original = _curriculum([])
+            original["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "refs": ["rp-agitation.html"]}]
+            original["libraryHints"]["rp-agitation.html"] = "Practice first-line agitation care."
+            original["essentials"]["resident"][0]["refs"].append("rp-agitation.html")
+            cpath, root = _write(tmp, original)
+            baseline = _run(cpath, root)
+            self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+            changed = copy.deepcopy(original)
+            changed["siteLibrary"]["resident"]["additions"] = []
+            del changed["libraryHints"]["rp-agitation.html"]
+            cpath, root = _write(tmp, changed)
+            result = _run(cpath, root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("E3", result.stdout)
+            self.assertIn("rp-agitation.html", result.stdout)
+            cpath, root = _write(tmp, original)
+            restored = _run(cpath, root)
+            self.assertEqual(restored.returncode, 0, restored.stdout + restored.stderr)
+
+    def test_site_exclusion_cannot_hide_an_essential(self):
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site):
+                def exclude(c, site=site):
+                    c["siteLibrary"][site]["exclusions"] = ["mse.html"]
+                with tempfile.TemporaryDirectory() as tmp:
+                    original = _curriculum([])
+                    cpath, root = _write(tmp, original)
+                    self.assertEqual(_run(cpath, root).returncode, 0)
+                    changed = copy.deepcopy(original)
+                    exclude(changed)
+                    cpath, root = _write(tmp, changed)
+                    result = _run(cpath, root)
+                    self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                    self.assertIn("E3", result.stdout)
+                    self.assertIn(site, result.stdout)
+                    self.assertNotIn("E2", result.stdout)
+                    cpath, root = _write(tmp, original)
+                    restored = _run(cpath, root)
+                    self.assertEqual(restored.returncode, 0,
+                                     restored.stdout + restored.stderr)
+
+    def test_duplicate_ref_is_E4(self):
+        for site in ("ms3", "resident"):
+            mutations = (
+                lambda c, site=site: c["essentials"][site][0]["refs"].append("mse.html"),
+                lambda c, site=site: c["essentials"][site].append(
+                    {"name": "Again", "accent": "tool", "refs": ["mse.html"]}),
+            )
+            for mutate in mutations:
+                with self.subTest(site=site):
+                    self.assert_mutation(mutate, "E4", "mse.html")
+
+    def test_missing_safety_ref_is_E5(self):
+        for site in ("ms3", "resident"):
+            for ref in SAFETY_REFS:
+                with self.subTest(site=site, ref=ref):
+                    self.assert_mutation(
+                        lambda c, site=site, ref=ref:
+                        c["essentials"][site][1]["refs"].remove(ref), "E5", ref)
+
+    def test_no_html_tool_is_E6(self):
+        for site in ("ms3", "resident"):
+            with self.subTest(site=site):
+                self.assert_mutation(
+                    lambda c, site=site: c["essentials"][site].pop(0), "E6", ".html")
+
+    def test_no_populated_safety_section_is_E6(self):
+        for site in ("ms3", "resident"):
+            def strip_safety(c, site=site):
+                c["essentials"][site][1]["accent"] = "topic"
+
+            def add_empty_safety(c, site=site):
+                strip_safety(c, site)
+                c["essentials"][site].append(
+                    {"name": "Empty safety", "accent": "safety", "refs": []})
+
+            with self.subTest(site=site, empty=False):
+                self.assert_mutation(strip_safety, "E6", "safety")
+            with self.subTest(site=site, empty=True):
+                self.assert_mutation(add_empty_safety, "E6", "safety")
+
+    def test_real_curriculum_passes_and_pins_selection_counts(self):
+        with open(os.path.join(ROOT, "curriculum.json"), encoding="utf-8") as fh:
+            curriculum = json.load(fh)
+        self.assertIn("essentials", curriculum,
+                      "Phase 1 curriculum data is missing essentials")
+        with tempfile.TemporaryDirectory() as tmp:
+            cpath = os.path.join(tmp, "curriculum.json")
+            with open(cpath, "w", encoding="utf-8") as fh:
+                json.dump(curriculum, fh)
+            result = _run(cpath, ROOT, os.path.join(ROOT, "topic_meta.json"),
+                          os.path.join(ROOT, "evidence_registry.json"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for site, count in (("ms3", 30), ("resident", 35)):
+            refs = [ref for section in curriculum["essentials"][site]
+                    for ref in section["refs"]]
+            placed = {ref for column in curriculum["libraryColumns"] for ref in column["refs"]}
+            for addition in curriculum["siteLibrary"][site]["additions"]:
+                placed.update(addition["refs"])
+            placed.difference_update(curriculum["siteLibrary"][site]["exclusions"])
+            self.assertEqual(len(refs), count)
+            self.assertEqual(len(set(refs)), count)
+            self.assertTrue(set(SAFETY_REFS).issubset(refs))
+            self.assertTrue(set(refs).issubset(placed))
 
 
 class LibraryTotalityTest(unittest.TestCase):
@@ -305,75 +1325,76 @@ class LibraryTotalityTest(unittest.TestCase):
 
     def _cur(self, columns, exclude):
         c = _curriculum([])
-        c["libraryColumns"] = columns
-        c["libraryExclude"] = list(exclude) + EXTRA_EXCLUDES + FIXTURE_SAFETY_EXCLUDES
+        c["libraryColumns"] = columns + [_safety_column()]
+        c["libraryExclude"] = (list(exclude) + EXTRA_EXCLUDES
+                               + FIXTURE_RIGHTS_EXCLUDES + FIXTURE_WEEK_EXCLUDES)
         return c
 
     def test_accepts_full_coverage(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
                  {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]}],
                 []))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
 
     def test_accepts_a_slug_placed_only_in_the_exclude_list(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]}],
                 [{"ref": "welcome.md", "reason": "surfaced by the Path tab"}]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
 
     def test_rejects_a_shipped_slug_that_is_neither_placed_nor_excluded(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]}], []))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("welcome.md", r.stdout)
 
     def test_rejects_a_column_ref_that_is_not_shipped(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 [{"name": "Tools", "accent": "tool", "refs": ["mse.html", "ghost.html"]}],
                 [{"ref": "welcome.md", "reason": "n/a"}]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("ghost.html", r.stdout)
 
     def test_rejects_an_exclude_entry_with_an_empty_reason(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]}],
                 [{"ref": "welcome.md", "reason": ""}]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("reason", r.stdout)
 
     def test_rejects_a_non_string_column_ref_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 [{"name": "Tools", "accent": "tool",
                   "refs": ["mse.html", ["nested", "list"]]}],
                 [{"ref": "welcome.md", "reason": "n/a"}]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("must be a string", r.stdout)
 
     def test_rejects_a_non_string_exclude_ref_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 [{"name": "Tools", "accent": "tool", "refs": ["mse.html"]}],
                 [{"ref": {"nested": "dict"}, "reason": "n/a"}]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("must be a string", r.stdout)
@@ -386,8 +1407,8 @@ class SiteLibraryTest(unittest.TestCase):
             cur["siteLibrary"]["resident"]["additions"] = [
                 {"column": "Missing column", "refs": ["mse.html"]}
             ]
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("Missing column", r.stdout)
 
@@ -397,8 +1418,8 @@ class SiteLibraryTest(unittest.TestCase):
             cur["siteLibrary"]["resident"]["additions"] = [
                 {"column": "Tools", "refs": ["mse.html", "mse.html"]}
             ]
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("duplicate", r.stdout)
 
@@ -408,8 +1429,8 @@ class SiteLibraryTest(unittest.TestCase):
             cur["siteLibrary"]["resident"]["additions"] = [
                 {"column": "Tools", "refs": ["ghost.md"]}
             ]
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("ghost.md", r.stdout)
             self.assertIn("not shipped on resident", r.stdout)
@@ -418,8 +1439,8 @@ class SiteLibraryTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["siteLibrary"]["resident"]["exclusions"] = ["ghost.md"]
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("ghost.md", r.stdout)
             self.assertIn("not shipped on resident", r.stdout)
@@ -428,12 +1449,12 @@ class SiteLibraryTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["siteLibrary"]["resident"]["additions"] = [
-                {"column": "Tools", "refs": ["orientation-video.html"]}
+                {"column": "Tools", "refs": [MS3_ONLY_FIXTURE]}
             ]
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
-            self.assertIn("orientation-video.html", r.stdout)
+            self.assertIn(MS3_ONLY_FIXTURE, r.stdout)
             self.assertIn("not shipped on resident", r.stdout)
 
     def test_rejects_ms3_addition_of_a_resident_only_extra(self):
@@ -442,23 +1463,23 @@ class SiteLibraryTest(unittest.TestCase):
             cur["siteLibrary"]["ms3"]["additions"] = [
                 {"column": "Tools", "refs": ["rp-agitation.html"]}
             ]
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("rp-agitation.html", r.stdout)
             self.assertIn("not shipped on ms3", r.stdout)
 
     def test_rejects_cross_site_exclusions(self):
         cases = (
-            ("resident", "orientation-video.html"),
+            ("resident", MS3_ONLY_FIXTURE),
             ("ms3", "rp-agitation.html"),
         )
         for site, ref in cases:
             with self.subTest(site=site, ref=ref), tempfile.TemporaryDirectory() as tmp:
                 cur = _curriculum([])
                 cur["siteLibrary"][site]["exclusions"] = [ref]
-                c, m = _write(tmp, cur)
-                r = _run(c, m)
+                c, root = _write(tmp, cur)
+                r = _run(c, root)
                 self.assertEqual(r.returncode, 1)
                 self.assertIn(ref, r.stdout)
                 self.assertIn("not shipped on " + site, r.stdout)
@@ -473,26 +1494,28 @@ class ShippedSetTest(unittest.TestCase):
     """
 
     def test_extras_cover_the_per_site_tools_and_resident_only_pages(self):
-        extras = validate_curriculum.EXTRA_SHIPPED
-        for slug in ("orientation-video.html", "rp-agitation.html",
+        extras = EXTRA_SHIPPED
+        for slug in ("rp-agitation.html",
                      "rp-brief-psych.html", "rp-canon-quiz.html", "rotation.md",
                      "adv_psychopharm.md", "systems_medlegal.md", "supervision_teaching.md",
                      "canon_200.md", "cl_reference.md"):
             self.assertIn(slug, extras)
 
     def test_library_exclude_accepts_a_page_outside_site_manifest(self):
-        # The spec names orientation-video.html as an exclusion example, and the guard
-        # used to reject it as "not a shipped slug" purely because it has no manifest row.
+        # The spec named orientation-video.html as an exclusion example (retired 2026-09-25),
+        # and the guard used to reject such a page as "not a shipped slug" purely because it
+        # has no manifest row. The synthetic MS3-only fixture tool stands in for it.
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["libraryColumns"] = [
                 {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
                 {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+                _safety_column(),
             ]
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-            self.assertNotIn("orientation-video.html", r.stdout)
+            self.assertNotIn(MS3_ONLY_FIXTURE, r.stdout)
 
     def test_a_build_extra_left_unplaced_and_unexcluded_still_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -500,13 +1523,15 @@ class ShippedSetTest(unittest.TestCase):
             cur["libraryColumns"] = [
                 {"name": "Tools", "accent": "tool", "refs": ["mse.html"]},
                 {"name": "Topics", "accent": "topic", "refs": ["welcome.md"]},
+                _safety_column(),
             ]
-            cur["libraryExclude"] = [e for e in EXTRA_EXCLUDES
-                                     if e["ref"] != "orientation-video.html"]
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            cur["libraryExclude"] = ([e for e in EXTRA_EXCLUDES
+                                      if e["ref"] != MS3_ONLY_FIXTURE]
+                                     + FIXTURE_RIGHTS_EXCLUDES + FIXTURE_WEEK_EXCLUDES)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
-            self.assertIn("orientation-video.html", r.stdout)
+            self.assertIn(MS3_ONLY_FIXTURE, r.stdout)
 
 
 class SafetyKitTest(unittest.TestCase):
@@ -515,8 +1540,8 @@ class SafetyKitTest(unittest.TestCase):
         if mutate:
             mutate(cur)
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, cur, topic_meta, evidence_registry)
-            return _run(c, m)
+            c, root = _write(tmp, cur, topic_meta, evidence_registry)
+            return _run(c, root)
 
     def test_accepts_the_current_five_reviewed_protocols(self):
         r = self._run()
@@ -623,56 +1648,57 @@ class RolesTest(unittest.TestCase):
 
     def test_accepts_well_formed_audience_neutral_roles(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 ms3=[{"id": "student", "name": "Core rotation",
                       "desc": "The six-week inpatient rotation", "hint": "most common"},
                      {"id": "staff", "name": "Nursing · SW · family",
                       "desc": "Unit staff and families", "hint": ""}],
                 resident=[{"id": "pgy1", "name": "PGY-1",
-                           "desc": "First year on inpatient psychiatry", "hint": "most common"}]))
-            r = _run(c, m)
+                           "desc": "First year on inpatient psychiatry", "hint": "most common"},
+                          {"id": "app", "name": "APP", "desc": "Preview role", "hint": ""}]))
+            r = _run(c, root)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
 
     def test_rejects_a_role_missing_a_required_field(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 ms3=[{"id": "student", "name": "", "desc": "The rotation", "hint": ""}]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("name", r.stdout)
 
     def test_rejects_a_role_with_a_non_string_field_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 ms3=[{"id": "student", "name": {"nested": "dict"}, "desc": "The rotation"}]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("must be a non-empty string", r.stdout)
 
     def test_rejects_a_role_that_is_not_an_object_without_crashing(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(ms3=["just a string"]))
-            r = _run(c, m)
+            c, root = _write(tmp, self._cur(ms3=["just a string"]))
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("must be an object", r.stdout)
 
     def test_rejects_a_role_name_carrying_an_audience_specific_token(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 ms3=[{"id": "student", "name": "MS3 · clerkship student",
                       "desc": "The rotation", "hint": ""}]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("audience-specific token", r.stdout)
 
     def test_rejects_a_role_desc_carrying_an_audience_specific_token(self):
         with tempfile.TemporaryDirectory() as tmp:
-            c, m = _write(tmp, self._cur(
+            c, root = _write(tmp, self._cur(
                 resident=[{"id": "pgy1", "name": "PGY-1",
                            "desc": "Resident on the unit", "hint": ""}]))
-            r = _run(c, m)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1)
             self.assertIn("audience-specific token", r.stdout)
 
@@ -680,8 +1706,8 @@ class RolesTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cur = _curriculum([])
             cur["roles"] = {"ms3": []}  # no "resident" key at all
-            c, m = _write(tmp, cur)
-            r = _run(c, m)
+            c, root = _write(tmp, cur)
+            r = _run(c, root)
             self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
             self.assertNotIn("Traceback", r.stderr)
             self.assertIn("roles.resident", r.stdout)

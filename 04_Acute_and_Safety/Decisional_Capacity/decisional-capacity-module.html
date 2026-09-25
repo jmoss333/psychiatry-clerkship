@@ -11,7 +11,7 @@
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
-    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
     --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
     --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
     --success:#357160; --success-light:#e7f1ed;
@@ -173,7 +173,7 @@ function App(){
   var assess=e('div',{key:'a'},
     e('div',{className:'card'},
       e('span',{className:'label'},'The specific decision being assessed'),
-      e('input',{type:'text',value:ctx.decision,placeholder:'e.g., refusal of recommended inpatient admission',onChange:function(ev){setCtx(Object.assign({},ctx,{decision:ev.target.value}));setCopied(false);}}),
+      e('input',{type:'text',value:ctx.decision,placeholder:'e.g., refusal of a recommended medical admission or procedure',onChange:function(ev){setCtx(Object.assign({},ctx,{decision:ev.target.value}));setCopied(false);}}),
       e('span',{className:'label'},'Risk / reversibility of the decision'),
       e('div',{className:'seg'},
         ['low','moderate','high'].map(function(r){

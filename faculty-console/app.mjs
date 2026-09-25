@@ -21,11 +21,14 @@ import {
   isValidReopenReason,
   matchesPreviewStatus,
   normalizeReviewItems,
+  audienceLabel,
+  audienceShortLabel,
   normalizeStudentBase,
   parseDeepLink,
   reviewedRevisionMatches,
   twinOf,
 } from './review-model.mjs';
+import { isDriftReason } from './change-history.mjs';
 
 const API = '/api/attest';
 const KEY_STORAGE = 'fac_key';
@@ -128,24 +131,72 @@ export function branchSyncNotice(branchSync) {
   }
   const ahead = Number(branchSync.aheadBy) || 0;
   const behind = Number(branchSync.behindBy) || 0;
-  const parts = [
-    `${ahead} unmerged attestation${ahead === 1 ? '' : 's'} `
-      + `${ahead === 1 ? 'is' : 'are'} waiting on the attestation branch.`,
-  ];
-  if (branchSync.reasons.includes('stranded-no-pr')) {
-    parts.push('No rolling pull request is open — they have no route to main.');
-  }
+  const branch = text(branchSync.branch) || 'the attestation branch';
+  const baseBranch = text(branchSync.baseBranch) || 'main';
+  // A stranded branch has no pull request to link or to merge, so it gets its own
+  // sentence and its own repair: the Reopen button beside this notice, which asks the
+  // server to open the rolling request. Saying "merge the rolling pull request" to
+  // someone who has none is what made the 2026-09 stranding survive being noticed.
+  const stranded = branchSync.reasons.includes('stranded-no-pr');
+  const parts = [stranded
+    ? `${ahead} attestation${ahead === 1 ? '' : 's'} ${ahead === 1 ? 'is' : 'are'} on `
+      + `\`${branch}\` with no open review request — press Reopen review request.`
+    : `${ahead} unmerged attestation${ahead === 1 ? '' : 's'} `
+      + `${ahead === 1 ? 'is' : 'are'} waiting on \`${branch}\`.`];
   if (branchSync.reasons.includes('base-lag')) {
-    parts.push(`Its base is ${behind} commit${behind === 1 ? '' : 's'} behind main, `
+    parts.push(`Its base is ${behind} commit${behind === 1 ? '' : 's'} behind ${baseBranch}, `
       + 'so the queue below may be stale.');
   }
-  parts.push('Merge the rolling pull request (merge commit, not squash) before attesting further.');
+  parts.push(stranded
+    ? 'Reopen it, then merge it (merge commit, not squash) before attesting further.'
+    : 'Merge the rolling pull request (merge commit, not squash) before attesting further.');
   let href = null;
   try {
     const url = new URL(String(branchSync.rollingPr));
     if (url.protocol === 'https:') href = url.href;
   } catch { /* no link */ }
-  return { tone: 'alert', href, message: parts.join(' ') };
+  return { tone: 'alert', href, action: stranded ? 'ensure-pr' : null, message: parts.join(' ') };
+}
+
+// The derived review queue (shipped_pages.json) is read from the base branch whenever
+// the attestation branch does not carry it — a lagging branch costs this one line
+// instead of the whole console (2026-09-04). Pure and exported for the same reason as
+// branchSyncNotice: the wire field and the sentence faculty read stay pinned together.
+export function shippedPagesNotice(server) {
+  if (!server || typeof server !== 'object' || server.shippedPagesSource !== 'base') return null;
+  const baseBranch = text(server.shippedPagesBranch) || 'main';
+  return {
+    tone: 'muted',
+    message: `Review queue derived from \`${baseBranch}\`; the attestation branch is missing `
+      + 'shipped_pages.json — merge the rolling review request.',
+  };
+}
+
+// How far the attestation branch trails the base (2026-09-18). A content hash compares a
+// page to the ledger row that attests it — both read from the SAME branch — so a lagging
+// branch can be perfectly self-consistent while every page it shows is behind what the
+// learner sites serve. That is the one staleness the per-item check cannot see, which is
+// why it gets its own sentence rather than being folded into the item rail. Pure and
+// exported for the same reason as the notices above.
+export function branchLagNotice(server) {
+  if (!server || typeof server !== 'object') return null;
+  const behind = Number(server.branchLag) || 0;
+  if (behind <= 0) return null;
+  const branch = text(server.branchSync?.branch) || 'attest/pending';
+  const baseBranch = text(server.branchSync?.baseBranch) || 'main';
+  return {
+    tone: 'alert',
+    message: `${branch} is ${behind} commit${behind === 1 ? '' : 's'} behind ${baseBranch} `
+      + '— sync before re-attesting',
+  };
+}
+
+// The load could not check any page against its stored hash — the tree read failed, or the
+// queue came from the base branch while the text would have come from another ref. Every
+// reviewed item is then marked unverified rather than clean, and this says why once.
+export function freshnessNotice(server) {
+  if (!server || typeof server !== 'object' || server.freshness !== 'unknown') return null;
+  return { tone: 'muted', message: 'Freshness unknown — reload' };
 }
 
 function parseDelimited(value) {
@@ -223,8 +274,20 @@ export function startFacultyConsole({
     navigationAfterSave: null,
     reauthAction: null,
     loadGeneration: 0,
+    // Re-sign by change (read-only views; see renderResignByChange). Nothing here is
+    // review progress: it is what the server said changed, and which disclosures are open.
+    changeView: null,
+    changeViewOpen: false,
+    openChangeGroups: new Set(),
+    diffViews: new Map(),
+    openDiffs: new Set(),
+    resignGroupId: null,
+    viewGeneration: 0,
   };
   let renderedIssueRecords = [];
+  // Where each diff is on screen (key → element ids), so a diff that arrives later is drawn
+  // into every place that asked for it without re-rendering the page around the reader.
+  const renderedDiffBodies = new Map();
 
   /* ?item=<key> deep links (2026-09). The requested key is read ONCE, at startup, and
      held in this closure — never in sessionStorage, never re-read from the address bar
@@ -776,6 +839,23 @@ export function startFacultyConsole({
     return visibleReviewItems().some(item => item.key === twin.key) ? twin.key : null;
   }
 
+  /* The next page, in the correction the reviewer opened it from, that still needs its
+     own signature. Selection only — like advanceToTwin, it never signs and never leaves
+     the queue filters the reviewer set. */
+  function advanceWithinChangeGroup(fromKey) {
+    const group = activeChangeGroup();
+    const from = findReviewItem(fromKey);
+    if (!group || !from || !group.slugs.includes(from.identity)) return null;
+    const visible = new Set(visibleReviewItems().map(item => item.key));
+    const start = group.slugs.indexOf(from.identity);
+    const order = [...group.slugs.slice(start + 1), ...group.slugs.slice(0, start)];
+    for (const slug of order) {
+      const item = contentItemBySlug(slug, text(record(state.changeView?.data?.pages?.[slug]).kind));
+      if (item && isDriftedItem(item) && visible.has(item.key)) return item.key;
+    }
+    return null;
+  }
+
   function advanceToNextPendingContent(fromKey) {
     const visible = visibleReviewItems();
     const start = visible.findIndex(item => item.key === fromKey);
@@ -973,9 +1053,15 @@ export function startFacultyConsole({
       // since a content attest never leaves unsaved question-editor state behind for a
       // guard to hold open, but kept symmetric so the invariant still holds if that
       // ever changes.
+      // Re-sign by change: when the reviewer is working through one correction's pages,
+      // the next page THAT correction changed comes before the next page alphabetically.
+      // Twin first still — a Case-of-the-Week pair is read as one case.
       const advanceKey = contentHoldKey && !state.navigationGuard
-        ? (advanceToTwin(contentHoldKey) || advanceToNextPendingContent(contentHoldKey))
+        ? (advanceToTwin(contentHoldKey)
+          || advanceWithinChangeGroup(contentHoldKey)
+          || advanceToNextPendingContent(contentHoldKey))
         : null;
+      if (advanceKey) openChangesSinceSigned(findReviewItem(advanceKey), { onlyInGroup: true });
       const holdKey = advanceKey ? null : (completedHoldKey || contentHoldKey || state.completedHoldKey);
       const heldItem = holdKey ? findReviewItem(holdKey) : null;
       state.completedHoldKey = heldItem?.completion === 'complete' ? heldItem.key : null;
@@ -1019,6 +1105,51 @@ export function startFacultyConsole({
     }
   }
 
+  // The repair the stranded-branch alarm names. One POST asks the server to open (or
+  // to find) the rolling review request; the silent reload that follows clears the
+  // alarm from the refreshed probe rather than from local optimism. No file is written
+  // here, so there is no draft to protect and no conflict to resolve — a failure is
+  // announced and the notice stays exactly as it was.
+  async function reopenReviewRequest() {
+    if (state.pending) return false;
+    state.pending = true;
+    renderShell();
+    try {
+      const response = await fetchImpl(API, {
+        method: 'POST',
+        headers: apiHeaders(true),
+        body: JSON.stringify({ action: 'branch.ensure-pr' }),
+      });
+      const payload = await responseJson(response);
+      if (response.status === 401) {
+        clearKey();
+        state.pending = false;
+        renderLogin('Key not accepted. Enter the faculty key and try again.');
+        return false;
+      }
+      if (!response.ok) {
+        state.pending = false;
+        announce(stableResponseMessage(payload, 'The review request was not reopened.'));
+        renderShell();
+        return false;
+      }
+      const reloaded = await load({ silent: true });
+      if (reloaded) {
+        announce(text(payload.pullRequest)
+          ? 'Review request reopened. The attestations on the attestation branch now have a route to the base branch.'
+          : 'Review request confirmed open.');
+      }
+      return reloaded;
+    } catch (error) {
+      state.pending = false;
+      announce(error instanceof Error
+        ? `network_error: ${error.message}`
+        : 'network_error: The review request was not reopened.');
+      renderShell();
+      return false;
+    }
+  }
+
   function performNavigation(target) {
     if (!target || typeof target !== 'object') return;
     // The deep-link notice is a landing message about the link the reviewer arrived on.
@@ -1034,6 +1165,7 @@ export function startFacultyConsole({
       state.navigationAfterSave = null;
       state.reauthAction = null;
       state.reopenConfirmation = null;
+      resetChangeViews();
       renderLogin();
       return;
     }
@@ -1803,7 +1935,7 @@ export function startFacultyConsole({
     return el('fieldset', { class: 'content-review-checks', disabled: state.pending }, [
       el('legend', {}, ['Content checks']),
       ...[
-        ['accuracy', 'review-content-accuracy', 'I verified that this is accurate and appropriate for a third-year student.'],
+        ['accuracy', 'review-content-accuracy', `I verified that this is accurate and appropriate for ${audienceLabel(item.sites)}.`],
         ['interactions', 'review-content-interactions', 'I tested the relevant links, media, or interactions.'],
       ].map(([key, id, copy]) => el('label', { for: id }, [
         el('input', {
@@ -1980,14 +2112,578 @@ export function startFacultyConsole({
 
   // The ledger's stored reason for a pending item, read-only. The reopen dialog
   // owns writing reasons; this only surfaces what the learner-facing badge says.
+  // A stale item is handled by renderStaleNotice below: its reason is computed for this
+  // load rather than stored, and labelling it "Pending because" would both mislabel it
+  // and print the same sentence twice.
   function renderPendingReason(item) {
     if (!item || item.type === 'question' || item.savedStatus === 'reviewed') return null;
+    if (item.record?.stale === true) return null;
     const reason = typeof item.record?.reason === 'string' ? item.record.reason.trim() : '';
     if (!reason) return null;
     return el('p', { id: 'attestation-pending-reason', class: 'hint' }, [
       'Pending because: ',
       reason,
     ]);
+  }
+
+  /* Why this item's review no longer stands for its text (2026-09-18).
+     The server compares each reviewed row's stored contentHash against a digest of the
+     page's current sources and topic_meta record, and sends the finding — drifted, never
+     bound, or unverifiable this load. Rendered verbatim, with no lead-in: each sentence
+     already says which of the three it is, and a single label would be wrong for two of
+     them ("re-attest" is not the answer when the tree call simply failed). Shown for a
+     reviewed item as well as an unreviewed one, which is the whole point — a row recorded
+     as reviewed that cannot say WHAT it reviewed is exactly the state this closes. */
+  function renderStaleNotice(item) {
+    if (!item || item.type === 'question' || item.record?.stale !== true) return null;
+    const reason = typeof item.record?.reason === 'string' ? item.record.reason.trim() : '';
+    if (!reason) return null;
+    return el('p', { id: 'attestation-stale-notice', class: 'hint' }, [reason]);
+  }
+
+  /* ── Re-sign by change (2026-09-25) ─────────────────────────────────────────────────
+     A signed page drifts when a correction changes text it was signed against. When one
+     correction set drifts dozens of pages at once, re-reading each whole page to find a
+     few changed sentences is the slow, error-prone way to re-review. These views answer
+     "which correction changed which page, and what exactly did it say", so re-signing is a
+     review of the change — the way interval changes are reviewed on a chart.
+     What they never do is sign. No control in them records anything: each page opens in
+     the ordinary review flow and is signed there by its own press, after its own preview
+     (the standing one-attestation-per-press rule). The server views they read
+     (?view=changes, ?view=diff) are GET-only and never move a branch. */
+
+  const KEY_REJECTED_FOR_VIEW = 'Key not accepted. Lock the console and enter the faculty key again.';
+
+  function isDriftedItem(item) {
+    return Boolean(item) && item.type !== 'question'
+      && item.record?.stale === true && isDriftReason(item.record?.reason);
+  }
+
+  function contentItemBySlug(slug, kind = '') {
+    return (kind ? findReviewItem(`${kind}:${slug}`) : null)
+      || state.reviewItems.find(item => item.type !== 'question' && item.identity === slug)
+      || null;
+  }
+
+  function diffKey(slug, sha = '') {
+    return `${slug}|${sha}`;
+  }
+
+  function splitDiffKey(key) {
+    const at = key.lastIndexOf('|');
+    return [key.slice(0, at), key.slice(at + 1)];
+  }
+
+  function resetChangeViews() {
+    state.changeView = null;
+    state.changeViewOpen = false;
+    state.openChangeGroups = new Set();
+    state.diffViews = new Map();
+    state.openDiffs = new Set();
+    state.resignGroupId = null;
+    state.viewGeneration += 1;
+    renderedDiffBodies.clear();
+  }
+
+  function activeChangeGroup() {
+    if (!state.resignGroupId) return null;
+    return list(state.changeView?.data?.groups).find(group => group?.id === state.resignGroupId) || null;
+  }
+
+  function changeLabel(change) {
+    if (Number.isSafeInteger(change?.pr)) return `#${change.pr}`;
+    return text(change?.sha).slice(0, 7) || 'a change';
+  }
+
+  function changeIdLabel(id) {
+    const value = text(id);
+    if (value.startsWith('pr:')) return `#${value.slice(3)}`;
+    if (value.startsWith('sha:')) return value.slice(4, 11);
+    return value;
+  }
+
+  function dayOf(value) {
+    const day = text(value).slice(0, 10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : '';
+  }
+
+  function pluralize(count, noun) {
+    return `${count} ${noun}${count === 1 ? '' : 's'}`;
+  }
+
+  async function viewRequest(query, fallback, expectedView) {
+    let response;
+    try {
+      response = await fetchImpl(`${API}?${new URLSearchParams(query)}`, { headers: apiHeaders() });
+    } catch (error) {
+      throw new Error(`network_error: ${error instanceof Error ? error.message : fallback}`);
+    }
+    const payload = await responseJson(response);
+    if (response.status === 401) throw new Error(KEY_REJECTED_FOR_VIEW);
+    if (!response.ok || payload?.view !== expectedView) {
+      throw new Error(stableResponseMessage(payload, fallback));
+    }
+    return payload;
+  }
+
+  async function loadChangeView() {
+    if (state.changeView?.status === 'loading') return;
+    const generation = state.viewGeneration;
+    const previous = state.changeView?.data || null;
+    state.changeView = { status: 'loading', data: previous };
+    refreshResignByChange();
+    let next;
+    try {
+      const data = await viewRequest(
+        { view: 'changes' },
+        'The list of changes could not be loaded.',
+        'changes',
+      );
+      if (!Array.isArray(data.groups)) throw new Error('The server returned an incomplete list of changes.');
+      next = { status: 'ready', data };
+    } catch (error) {
+      next = {
+        status: 'error',
+        data: previous,
+        message: error instanceof Error ? error.message : 'The list of changes could not be loaded.',
+      };
+    }
+    if (generation !== state.viewGeneration || !state.server) return;
+    state.changeView = next;
+    refreshResignByChange();
+    announce(next.status === 'ready'
+      ? `${pluralize(next.data.groups.length, 'correction')} changed pages you had signed.`
+      : next.message);
+  }
+
+  async function loadDiff(slug, sha = '') {
+    const key = diffKey(slug, sha);
+    const current = state.diffViews.get(key);
+    if (current && current.status !== 'error') return;
+    const generation = state.viewGeneration;
+    state.diffViews.set(key, { status: 'loading' });
+    refreshDiffBodies(key);
+    let next;
+    try {
+      const data = await viewRequest(
+        sha ? { view: 'diff', slug, sha } : { view: 'diff', slug },
+        'This change could not be loaded.',
+        'diff',
+      );
+      next = { status: 'ready', data };
+    } catch (error) {
+      next = {
+        status: 'error',
+        message: error instanceof Error ? error.message : 'This change could not be loaded.',
+      };
+    }
+    if (generation !== state.viewGeneration || !state.server) return;
+    state.diffViews.set(key, next);
+    refreshDiffBodies(key);
+  }
+
+  /* Opens "What changed since you signed" for a page the reviewer is about to re-sign, so
+     they land on the change rather than hunting for it. `onlyInGroup`: only while they are
+     working through a correction and this page is part of it. */
+  function openChangesSinceSigned(item, { onlyInGroup = false } = {}) {
+    if (!isDriftedItem(item)) return;
+    if (onlyInGroup && !activeChangeGroup()?.slugs.includes(item.identity)) return;
+    const key = diffKey(item.identity, '');
+    state.openDiffs.add(key);
+    void loadDiff(item.identity, '');
+  }
+
+  function openFromChangeView(item, groupId, returnFocus) {
+    if (!item) return;
+    state.resignGroupId = groupId;
+    openChangesSinceSigned(item);
+    const focusId = isDriftedItem(item) ? 'changes-since-signed-toggle' : null;
+    if (item.key === state.selectedKey) {
+      // Already open: no navigation (that would reload the preview), just show the change.
+      refreshAttestationRail(focusId || returnFocus);
+      return;
+    }
+    requestNavigation({ kind: 'review', key: item.key, focusId }, returnFocus);
+  }
+
+  const FILE_STATUS_LABELS = {
+    modified: 'changed',
+    added: 'added since then',
+    removed: 'removed since then',
+    binary: 'a binary file changed',
+  };
+
+  function renderHunks(hunks) {
+    return el('div', { class: 'diff-hunks' }, list(hunks).map(hunk => el('div', { class: 'diff-hunk' }, [
+      el('p', { class: 'diff-where' }, [`Near line ${Number(hunk?.newStart) || 1}`]),
+      el('pre', { class: 'diff-text' }, list(hunk?.rows).map(row => el('span', {
+        class: `diff-row ${['change', 'del', 'add'].includes(row?.kind) ? row.kind : 'context'}`,
+      }, [
+        ...list(row?.segments).map(segment => {
+          if (segment?.t === 'del') return el('del', {}, [text(segment.s)]);
+          if (segment?.t === 'add') return el('ins', {}, [text(segment.s)]);
+          return text(segment?.s);
+        }),
+        '\n',
+      ]))),
+    ])));
+  }
+
+  function renderDiffSection(label, change) {
+    return el('section', { class: 'diff-file' }, [
+      el('p', { class: 'diff-file-name' }, label),
+      change.status === 'binary'
+        ? el('p', { class: 'hint' }, ['A binary file changed. Open the full comparison to see it.'])
+        : change.tooLarge
+        ? el('p', { class: 'hint' }, ['Too much changed to show here. Open the full comparison below.'])
+        : renderHunks(change.hunks),
+      change.truncated ? el('p', { class: 'hint' }, ['Only the first 60 changed passages are shown.']) : null,
+    ]);
+  }
+
+  // Elements only (no bare text nodes): refreshDiffBodies moves these with replaceChildren.
+  function renderDiff(data) {
+    const sections = [];
+    for (const file of list(data?.files)) {
+      if (!file || ['unchanged', 'missing'].includes(file.status)) continue;
+      sections.push(renderDiffSection([
+        el('code', {}, [text(file.path)]),
+        ` · ${FILE_STATUS_LABELS[file.status] || text(file.status)}`,
+      ], file));
+    }
+    for (const change of list(data?.record)) {
+      if (!change) continue;
+      sections.push(renderDiffSection([
+        'Page record field ',
+        el('code', {}, [text(change.key)]),
+        ' (quiz, key points, evidence and other metadata live here)',
+      ], change));
+    }
+    const commit = record(data?.commit);
+    const compare = safeExternalUrl(data?.compareUrl);
+    return [
+      data?.commit
+        ? el('p', { class: 'diff-context' }, [
+          `${changeLabel(commit)} · ${text(commit.title)}${dayOf(commit.date) ? ` · ${dayOf(commit.date)}` : ''}`,
+        ])
+        : el('p', { class: 'diff-context' }, [
+          `Every change to this page${'’'}s text and record since the start of ${text(data?.since) || 'the day you signed'}.`,
+        ]),
+      ...(sections.length ? sections : [el('p', { class: 'hint' }, [
+        'Neither this page’s source files nor its record changed between these two versions. '
+        + 'Its fingerprint moved for another reason (for example, a file newly counted as part of '
+        + 'the page), so review the page as it now reads.',
+      ])]),
+      compare ? el('p', { class: 'diff-compare' }, [el('a', {
+        href: compare,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      }, ['Open the full comparison on GitHub ↗'])]) : null,
+    ].filter(Boolean);
+  }
+
+  function renderDiffContent(key) {
+    const entry = state.diffViews.get(key);
+    if (!entry || entry.status === 'loading') {
+      return [el('p', { class: 'hint' }, ['Loading the change…'])];
+    }
+    if (entry.status === 'error') {
+      const [slug, sha] = splitDiffKey(key);
+      return [
+        el('p', { class: 'hint diff-error' }, [entry.message]),
+        el('button', {
+          type: 'button',
+          class: 'quiet',
+          onClick: () => void loadDiff(slug, sha),
+        }, ['Try again']),
+      ];
+    }
+    return renderDiff(entry.data);
+  }
+
+  function renderDiffDisclosure({ key, slug, sha = '', label, summaryId, bodyId }) {
+    const ids = renderedDiffBodies.get(key) || new Set();
+    ids.add(bodyId);
+    renderedDiffBodies.set(key, ids);
+    return el('details', {
+      class: 'diff-disclosure',
+      open: state.openDiffs.has(key),
+      onToggle: event => {
+        if (event.currentTarget.open) {
+          state.openDiffs.add(key);
+          void loadDiff(slug, sha);
+        } else {
+          state.openDiffs.delete(key);
+        }
+      },
+    }, [
+      el('summary', { id: summaryId }, [label]),
+      el('div', { id: bodyId, class: 'diff-body', 'data-diff-key': key }, renderDiffContent(key)),
+    ]);
+  }
+
+  function refreshDiffBodies(key) {
+    const ids = renderedDiffBodies.get(key);
+    if (!ids) return;
+    for (const id of [...ids]) {
+      const node = document.getElementById(id);
+      if (!node || node.getAttribute('data-diff-key') !== key) {
+        ids.delete(id);
+        continue;
+      }
+      node.replaceChildren(...renderDiffContent(key));
+    }
+  }
+
+  // The rail's half: what changed on THIS page since it was signed, one disclosure away.
+  function renderChangesSinceSigned(item) {
+    if (!isDriftedItem(item)) return null;
+    const at = text(item.record?.at);
+    return el('div', { id: 'changes-since-signed', class: 'changes-since-signed' }, [
+      renderDiffDisclosure({
+        key: diffKey(item.identity, ''),
+        slug: item.identity,
+        label: `What changed since you signed${/^\d{4}-\d{2}-\d{2}$/.test(at) ? ` on ${at}` : ''}`,
+        summaryId: 'changes-since-signed-toggle',
+        bodyId: 'changes-since-signed-body',
+      }),
+    ]);
+  }
+
+  // Where the reviewer is in the correction they opened this page from.
+  function renderResignGroupProgress(item) {
+    const group = activeChangeGroup();
+    if (!group || !item || !group.slugs.includes(item.identity)) return null;
+    const pages = group.slugs.map(slug => contentItemBySlug(slug)).filter(Boolean);
+    const remaining = pages.filter(isDriftedItem).length;
+    return el('p', { id: 'resign-group-progress', class: 'resign-progress' }, [
+      `Re-signing ${changeLabel(group)}: ${pages.length - remaining} of ${pages.length} pages re-signed. `,
+      remaining
+        ? 'After you sign this page, the next page this correction changed opens.'
+        : 'Every page this correction changed is re-signed.',
+    ]);
+  }
+
+  function renderResignPage(group, slug, data) {
+    const page = record(data.pages?.[slug]);
+    const item = contentItemBySlug(slug, text(page.kind));
+    const title = item?.title || text(page.title) || slug;
+    const token = domToken(`${group.id}-${slug}`);
+    const drifted = isDriftedItem(item);
+    const status = !item ? 'Not in the current queue'
+      : drifted ? 'Needs your signature'
+      : item.completion === 'complete' ? '✓ Re-signed'
+      : 'Needs review';
+    const changes = list(page.changes);
+    const thisChange = changes.find(change => change?.id === group.id);
+    const others = changes.filter(change => change?.id && change.id !== group.id).map(change => changeIdLabel(change.id));
+    return el('li', { class: `resign-page${drifted ? '' : ' settled'}` }, [
+      el('div', { class: 'resign-page-line' }, [
+        el('button', {
+          id: `resign-open-${token}`,
+          type: 'button',
+          class: 'quiet resign-open',
+          disabled: !item || state.pending,
+          'aria-current': item && item.key === state.selectedKey ? 'true' : null,
+          onClick: () => openFromChangeView(item, group.id, `resign-open-${token}`),
+        }, [title]),
+        el('span', { class: 'resign-page-status' }, [status]),
+      ]),
+      thisChange?.sameDay ? el('p', { class: 'hint' }, [
+        `This correction landed on ${text(page.at)}, the day you signed, so you may already have read it.`,
+      ]) : null,
+      others.length ? el('p', { class: 'hint' }, [`Also changed by ${others.join(', ')}.`]) : null,
+      renderDiffDisclosure({
+        key: diffKey(slug, text(group.sha)),
+        slug,
+        sha: text(group.sha),
+        label: `Show what ${changeLabel(group)} changed on this page`,
+        summaryId: `resign-diff-toggle-${token}`,
+        bodyId: `resign-diff-body-${token}`,
+      }),
+    ]);
+  }
+
+  function renderResignGroup(group, data) {
+    const pages = group.slugs.map(slug => contentItemBySlug(slug, text(record(data.pages?.[slug]).kind)));
+    const waiting = pages.filter(isDriftedItem);
+    const token = domToken(group.id);
+    const url = safeExternalUrl(group.url);
+    return el('details', {
+      id: `resign-group-${token}`,
+      class: 'resign-group',
+      open: state.openChangeGroups.has(group.id),
+      onToggle: event => {
+        if (event.currentTarget.open) state.openChangeGroups.add(group.id);
+        else state.openChangeGroups.delete(group.id);
+      },
+    }, [
+      el('summary', {}, [
+        el('strong', {}, [changeLabel(group)]),
+        ` ${text(group.title)} · ${pluralize(group.slugs.length, 'page')}`
+        + ` · ${waiting.length ? `${waiting.length} to re-sign` : 'all re-signed'}`
+        + (dayOf(group.date) ? ` · ${dayOf(group.date)}` : ''),
+      ]),
+      el('div', { class: 'resign-group-body' }, [
+        el('div', { class: 'resign-group-actions' }, [
+          el('button', {
+            id: `resign-start-${token}`,
+            type: 'button',
+            disabled: !waiting.length || state.pending,
+            onClick: () => openFromChangeView(waiting[0], group.id, `resign-start-${token}`),
+          }, [waiting.length ? 'Open the next page to re-sign' : 'Nothing left to re-sign']),
+          url ? el('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, ['This correction on GitHub ↗']) : null,
+        ]),
+        el('ul', { class: 'resign-pages' }, group.slugs.map(slug => renderResignPage(group, slug, data))),
+      ]),
+    ]);
+  }
+
+  function renderResignBody() {
+    const view = state.changeView;
+    const data = view?.data;
+    const children = [el('p', { class: 'hint' }, [
+      'Pages you signed whose text changed afterwards, grouped by the correction that changed '
+      + 'them. Read one correction across its pages, then sign each page on its own in the '
+      + 'usual review — one press signs one page. Nothing in this list signs anything.',
+    ])];
+    if (!view || (view.status === 'loading' && !data)) {
+      children.push(el('p', { class: 'hint' }, ['Finding which corrections changed these pages…']));
+      return children;
+    }
+    if (view.status === 'error') {
+      children.push(el('div', { class: 'session-notice individual' }, [
+        el('p', {}, [view.message]),
+        el('button', {
+          id: 'resign-retry',
+          type: 'button',
+          class: 'quiet',
+          onClick: () => void loadChangeView(),
+        }, ['Try again']),
+      ]));
+      if (!data) return children;
+    }
+    if (data.partial) {
+      children.push(el('p', { class: 'session-notice individual' }, [
+        `${pluralize(list(data.unchecked).length, 'page')} could not be checked this time and `
+        + 'are still in the queue as usual: ' + list(data.unchecked).join(', ') + '.',
+      ]));
+    }
+    for (const group of list(data.groups)) {
+      if (group && Array.isArray(group.slugs)) children.push(renderResignGroup(group, data));
+    }
+    const unexplained = list(data.unexplained);
+    if (unexplained.length) {
+      children.push(el('details', {
+        id: 'resign-unexplained',
+        class: 'resign-group',
+        open: state.openChangeGroups.has('unexplained'),
+        onToggle: event => {
+          if (event.currentTarget.open) state.openChangeGroups.add('unexplained');
+          else state.openChangeGroups.delete('unexplained');
+        },
+      }, [
+        el('summary', {}, [
+          el('strong', {}, ['No text change']),
+          ` · ${pluralize(unexplained.length, 'page')} whose record or fingerprint scope changed`,
+        ]),
+        el('div', { class: 'resign-group-body' }, [
+          el('p', { class: 'hint' }, [
+            'No correction touched these pages’ source files after you signed. Their record '
+            + '(quiz, key points, evidence) or what the fingerprint covers changed instead; '
+            + 'each page shows exactly what.',
+          ]),
+          el('ul', { class: 'resign-pages' }, unexplained.map(slug => {
+            const page = record(data.pages?.[slug]);
+            const item = contentItemBySlug(slug, text(page.kind));
+            const token = domToken(`unexplained-${slug}`);
+            return el('li', { class: `resign-page${isDriftedItem(item) ? '' : ' settled'}` }, [
+              el('div', { class: 'resign-page-line' }, [
+                el('button', {
+                  id: `resign-open-${token}`,
+                  type: 'button',
+                  class: 'quiet resign-open',
+                  disabled: !item || state.pending,
+                  onClick: () => openFromChangeView(item, null, `resign-open-${token}`),
+                }, [item?.title || text(page.title) || slug]),
+                el('span', { class: 'resign-page-status' }, [
+                  !item ? 'Not in the current queue'
+                    : isDriftedItem(item) ? 'Needs your signature'
+                    : item.completion === 'complete' ? '✓ Re-signed' : 'Needs review',
+                ]),
+              ]),
+              renderDiffDisclosure({
+                key: diffKey(slug, ''),
+                slug,
+                label: 'Show what changed since you signed',
+                summaryId: `resign-diff-toggle-${token}`,
+                bodyId: `resign-diff-body-${token}`,
+              }),
+            ]);
+          })),
+        ]),
+      ]));
+    }
+    const checkedAt = text(data.generatedAt);
+    children.push(el('div', { class: 'resign-footer' }, [
+      el('p', { class: 'hint' }, [
+        `Checked against ${text(data.branch) || 'the base branch'}`
+        + (checkedAt ? ` at ${checkedAt.slice(11, 16)} UTC` : '')
+        + (view.status === 'loading' ? ' · checking again…' : '.'),
+      ]),
+      el('button', {
+        id: 'resign-refresh',
+        type: 'button',
+        class: 'quiet',
+        disabled: view.status === 'loading',
+        onClick: () => {
+          // "Since you signed" diffs run to the base branch head, which may have moved.
+          for (const key of [...state.diffViews.keys()]) {
+            if (key.endsWith('|')) state.diffViews.delete(key);
+          }
+          void loadChangeView();
+        },
+      }, ['Check again']),
+    ]));
+    return children;
+  }
+
+  function resignSummaryText() {
+    const drifted = state.reviewItems.filter(isDriftedItem).length;
+    return drifted
+      ? `Re-sign by change · ${pluralize(drifted, 'page')} changed after you signed`
+      : 'Re-sign by change · every changed page is re-signed';
+  }
+
+  function renderResignByChange() {
+    const drifted = state.reviewItems.some(isDriftedItem);
+    if (!drifted && !state.changeView?.data) return null;
+    return el('details', {
+      id: 'resign-by-change',
+      class: 'resign-by-change',
+      open: state.changeViewOpen,
+      onToggle: event => {
+        state.changeViewOpen = event.currentTarget.open;
+        if (state.changeViewOpen && !state.changeView) void loadChangeView();
+      },
+    }, [
+      el('summary', {}, [el('span', { id: 'resign-summary-text' }, [resignSummaryText()])]),
+      el('div', { id: 'resign-body', class: 'resign-body' }, renderResignBody()),
+    ]);
+  }
+
+  // Redraws the section in place (summary text and body), so a list that arrives while the
+  // reviewer reads never moves the rest of the page or steals the preview's frame.
+  function refreshResignByChange() {
+    const summary = document.getElementById('resign-summary-text');
+    const body = document.getElementById('resign-body');
+    if (!summary || !body) return;
+    const hadFocus = body.contains(document.activeElement);
+    summary.textContent = resignSummaryText();
+    body.replaceChildren(...renderResignBody());
+    if (hadFocus && !body.contains(document.activeElement)) {
+      (document.getElementById('resign-refresh') || document.getElementById('resign-retry'))?.focus();
+    }
   }
 
   /* Case-of-the-Week twin (2026-09). Names the partner page and offers one hop to it.
@@ -2056,6 +2752,9 @@ export function startFacultyConsole({
       ]),
       renderTwinContext(item),
       renderRiskContext(item),
+      renderStaleNotice(item),
+      renderResignGroupProgress(item),
+      renderChangesSinceSigned(item),
       renderPendingReason(item),
       renderActionFeedback(item),
       el('section', {
@@ -2113,7 +2812,7 @@ export function startFacultyConsole({
           disabled: state.pending || !(oneClick ? oneClickEligibility.eligible : eligibility.eligible),
           onClick: () => void (oneClick ? attestContentInOneClick(item) : attestContentItem(item)),
         }, [oneClick
-          ? `Attest this ${item.type} — reviewed · accurate for MS3 · links tested`
+          ? `Attest this ${item.type} — reviewed · accurate for ${audienceShortLabel(item.sites)} · links tested`
           : `Attest this ${item.type}`]),
       ]),
       question ? renderBatchTray() : null,
@@ -2229,7 +2928,39 @@ export function startFacultyConsole({
             target: '_blank',
             rel: 'noopener noreferrer',
           }, ['Open the rolling pull request']) : null,
+          syncNotice.action === 'ensure-pr' ? el('button', {
+            id: 'reopen-review-request',
+            class: 'quiet',
+            type: 'button',
+            disabled: state.pending === true,
+            onClick: () => void reopenReviewRequest(),
+          }, ['Reopen review request']) : null,
         ]);
+      })(),
+      (() => {
+        const shippedNotice = shippedPagesNotice(state.server);
+        if (!shippedNotice) return null;
+        return el('div', {
+          id: 'shipped-pages-notice',
+          class: `session-notice branch-sync ${shippedNotice.tone}`,
+        }, [el('p', {}, [shippedNotice.message])]);
+      })(),
+      (() => {
+        const lagNotice = branchLagNotice(state.server);
+        if (!lagNotice) return null;
+        return el('div', {
+          id: 'branch-lag-notice',
+          class: `session-notice branch-sync ${lagNotice.tone}`,
+          role: 'alert',
+        }, [el('p', {}, [lagNotice.message])]);
+      })(),
+      (() => {
+        const staleness = freshnessNotice(state.server);
+        if (!staleness) return null;
+        return el('div', {
+          id: 'freshness-notice',
+          class: `session-notice branch-sync ${staleness.tone}`,
+        }, [el('p', {}, [staleness.message])]);
       })(),
       el('section', { class: 'reviewer-strip', 'aria-label': 'Reviewer context' }, [
         el('div', { class: 'field' }, [
@@ -2428,7 +3159,7 @@ export function startFacultyConsole({
       value: item.key,
       selected: item.key === state.selectedKey,
       'aria-current': item.key === state.selectedKey ? 'true' : null,
-    }, [`${itemTypeLabel(item.type)} · ${item.title} · ${savedStatusLabel(item)}`])) : [
+    }, [`${itemTypeLabel(item.type)} · ${item.title}${item.essential ? ' · Essentials' : ''} · ${savedStatusLabel(item)}`])) : [
       option('', 'No items match the active filters', ''),
     ]);
     return el('section', {
@@ -2482,6 +3213,7 @@ export function startFacultyConsole({
           ? el('p', { id: 'deep-link-notice', class: 'deep-link-notice' }, [state.deepLinkNotice])
           : null,
       ]),
+      renderResignByChange(),
       renderSessionStatus(),
       el('div', { class: 'queue-filters' }, [
         filterSelect(
@@ -2499,7 +3231,10 @@ export function startFacultyConsole({
           event => updateQueueFilter('status', event.target.value, 'review-status-filter'),
         ),
         el('p', { id: 'review-queue-counts', class: 'queue-counts' }, [
-          `${counts.total} shown · ${counts.needsReview} need review · ${counts.complete} complete`,
+          `${counts.total} shown · ${counts.needsReview} need review · ${counts.complete} complete`
+          + (counts.essentialTotal
+            ? ` · ${counts.essentialNeedsReview} of ${counts.essentialTotal} Essentials need review`
+            : ''),
         ]),
       ]),
       el('details', {

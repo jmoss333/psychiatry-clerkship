@@ -9,43 +9,52 @@ every ref it names is a page the build actually ships:
   - weeks are exactly 1..6, each present once
   - every item ref resolves to a shipped slug
   - item kind agrees with the slug's type (.html => tool, .md => read)
-  - refs within a week are unique
+  - items within a week are unique by (ref, query): a tool may repeat on distinct
+    queries, and a read (which cannot carry one) never repeats
   - every shipped slug is placed in a library column or explicitly excluded
+  - every MS3 week's landingRef is a shipped MS3 Markdown page (welcome_compass.prepare_cards)
+  - Essentials fails closed: E1 shape, E2 shipped audience, E3 Library subset,
+    E4 uniqueness, E5 Safety Kit coverage, and E6 tool/safety-section presence
+  - the Required Core tier (decision required-core-tier), on every path: an item's
+    priority is required, recommended or optional, and absent means recommended; one
+    week's required items total at most 120 read-minutes from topic_meta.json `read`
+    (a required read with no integer minutes is an error, a required tool counts 0
+    unless topic_meta gives it minutes); `query` only on a tool item; `window` only
+    in week 1
 
 WHAT "SHIPPED" COVERS — read this before trusting the totality guard.
-site_manifest.json is the registry of *shared* pages, but it is not the whole
-build. The guard therefore reasons about the union of three enumerable sets:
+The shipped set is READ, not re-derived: site_build/shipped_pages.json is the one
+generated listing of what the two builds publish. shipped_pages.py assembles it
+from every producer and build_and_check.sh verifies it against the real build
+output on every build, so this guard cannot see a narrower universe than the one
+that actually ships (ADR-002, beside that file).
 
-  1. site_manifest.json — 21 tools + 67 markdown pages, shipped to both sites.
-  2. SITE_EXTRAS in validate_tool_governance.py — the per-site tools the build
-     copies outside the manifest: orientation-video.html (ms3), rp-agitation.html / rp-brief-psych.html /
-     rp-canon-quiz.html (resident). Read from that module rather than restated
-     here, so the two can never disagree.
-  3. RESIDENT_EXTRA_PAGES in site_build/site_extras.py — the resident-only
-     markdown pages (rotation.md, adv_psychopharm.md, systems_medlegal.md,
-     supervision_teaching.md, canon_200.md, cl_reference.md). Also read from
-     source, not restated. (These lived as literals inside resident_section.py
-     until 2026-09; they were hoisted so shipped_pages.py could enumerate them
-     without executing a build — see ADR-002.)
+Until 2026-09 this validator rebuilt the set here from three of the producers —
+the shared registry, the per-site extra-tools table in validate_tool_governance.py,
+and the resident track pages in site_build/site_extras.py, the last two by AST
+parse. Every list was correct; the exposure was that a fourth route would appear
+and this guard would go on guarding the three it knew. That is the shape of the
+failure ADR-002 exists to end.
 
 WHAT IT DOES NOT COVER — this is a DECISION, not an oversight; do not "fix" it.
-The case-of-the-week pages are outside the guard on purpose. resident_section.py
-builds cotw_<date>_<topic>_{ms3,res}.md by comprehension over cotw_registry.json,
-so their slugs change every time a case is published. Folding them in would mean
-publishing a teaching case — a purely editorial act — also required an edit to
-curriculum.json, and would fail the build until someone made it. That tradeoff
-was weighed and declined. Also outside: non-page build outputs (media,
-.pack.json sidecars, index.html).
+The case-of-the-week pages are outside the guard on purpose: the listing marks
+them with the producer "cotw_registry" and this validator drops exactly those.
+resident_section.py builds cotw_<date>_<topic>_{ms3,res}.md by comprehension over
+the weekly registry, so their slugs change every time a case is published.
+Folding them in would mean publishing a teaching case — a purely editorial act —
+also required an edit to curriculum.json, and would fail the build until someone
+made it. That tradeoff was weighed and declined. Also outside: non-page build
+outputs (media, .pack.json sidecars, index.html).
 
-A new *durable* page in none of the three sets above is likewise invisible here.
-Registering it in site_manifest.json is what brings it under the rule, and is
-the intended route.
+A new *durable* page reaches this guard as soon as it reaches shipped_pages.json.
+Registering it in site_manifest.json is the intended route; a page arriving by any
+other route must be wired into shipped_pages.py, which the build gate enforces.
 
 Exits non-zero and prints every violation.
-Usage:  python3 validate_curriculum.py [curriculum.json] [site_manifest.json]
+Usage:  python3 validate_curriculum.py [curriculum.json] [repo root holding
+        13_Faculty_Resources/_automation/site_build/shipped_pages.json]
         [topic_meta.json] [evidence_registry.json]
 """
-import ast
 import json
 import os
 import re
@@ -54,83 +63,35 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 
-GOVERNANCE_PY = os.path.join(HERE, "validate_tool_governance.py")
-SITE_EXTRAS_PY = os.path.join(HERE, "site_build", "site_extras.py")
+sys.path.insert(0, os.path.join(HERE, "site_build"))
+from shipped_pages import ShippedPagesError, load_shipped_pages  # noqa: E402
+from welcome_compass import CompassContractError, prepare_cards  # noqa: E402
+
+# The weekly-case producer, excluded from every set below by the decision recorded
+# in this module's docstring. Named once so the exclusion is greppable.
+COTW_PRODUCER = "cotw_registry"
 
 
-def _top_level_assign(path, name):
-    """Return the AST node assigned to a module-level `name`, or None.
+def shipped_sets(root):
+    """What ships, split the three ways this validator asks about it.
 
-    Parsed, never imported: validate_tool_governance.py pulls in jsonschema and
-    the surface-governance ledger, and this validator runs inside the Netlify
-    build (build_and_check.sh) where taking that dependency would be a new way
-    for the deploy to fail.
+    Returns ``(tool_slugs, md_slugs, site_shipped)``. ``site_shipped`` is keyed by
+    this validator's audience names ("ms3", "resident"); the listing uses the build's
+    site names ("ms3", "res").
+
+    Fails loudly rather than silently narrowing: an unreadable or malformed listing
+    raises, because a short shipped set makes the totality guard false-green, which
+    is the exact failure mode ADR-002 was written about.
     """
-    with open(path, encoding="utf-8") as fh:
-        tree = ast.parse(fh.read(), filename=path)
-    for node in tree.body:
-        if isinstance(node, ast.Assign):
-            for target in node.targets:
-                if isinstance(target, ast.Name) and target.id == name:
-                    return node.value
-    return None
-
-
-def _slugs_from_pairs(node):
-    """Collect the built slug from every literal (source, slug[, title]) tuple.
-
-    site_manifest.json and site_extras.py both put the built filename second, so
-    element 1 is the slug in either the 2- or the 3-element shape.
-    """
-    out = set()
-    for sub in ast.walk(node):
-        if not isinstance(sub, ast.Tuple) or len(sub.elts) not in (2, 3):
-            continue
-        source, slug = sub.elts[0], sub.elts[1]
-        if all(
-            isinstance(element, ast.Constant) and isinstance(element.value, str)
-            for element in (source, slug)
-        ):
-            out.add(slug.value)
-    return out
-
-
-def site_extra_shipped_slugs():
-    """Return the build extras, separated by the one site that ships each slug.
-
-    Fails loudly rather than silently narrowing: a rename in either source file
-    must break this validator, not quietly shrink the set it guards.
-    """
-    site_extras = _top_level_assign(GOVERNANCE_PY, "SITE_EXTRAS")
-    if site_extras is None:
-        raise SystemExit(
-            "validate_curriculum: SITE_EXTRAS not found in %s — the extra-tool source moved; "
-            "fix this derivation rather than hardcoding a second list." % GOVERNANCE_PY)
-    declared_extras = ast.literal_eval(site_extras)
-    extras = {
-        site: {
-            slug for _source, slug in declared_extras.get(site, ())
-            if slug.endswith(".html") or slug.endswith(".md")
-        }
-        for site in ("ms3", "resident")
+    document = load_shipped_pages(root)
+    pages = [page for page in document["pages"] if page["producer"] != COTW_PRODUCER]
+    tool_slugs = {page["slug"] for page in pages if page["kind"] == "tool"}
+    md_slugs = {page["slug"] for page in pages if page["kind"] == "page"}
+    site_shipped = {
+        "ms3": {page["slug"] for page in pages if "ms3" in page["sites"]},
+        "resident": {page["slug"] for page in pages if "res" in page["sites"]},
     }
-
-    res_extra = _top_level_assign(SITE_EXTRAS_PY, "RESIDENT_TRACK_PAGES")
-    if res_extra is None:
-        raise SystemExit(
-            "validate_curriculum: RESIDENT_TRACK_PAGES not found in %s — the resident-only "
-            "page source moved; fix this derivation rather than hardcoding a second list."
-            % SITE_EXTRAS_PY)
-    # Literal tuples only. The registry-driven case-of-the-week pages are out of scope
-    # per the docstring, and cotw_index.md is a shared manifest page the resident build
-    # overwrites (RESIDENT_COTW_INDEX), not a resident-only slug — hence TRACK_PAGES.
-    extras["resident"].update(_slugs_from_pairs(res_extra))
-
-    return {site: frozenset(slugs) for site, slugs in extras.items()}
-
-
-SITE_EXTRA_SHIPPED = site_extra_shipped_slugs()
-EXTRA_SHIPPED = frozenset().union(*SITE_EXTRA_SHIPPED.values())
+    return tool_slugs, md_slugs, site_shipped
 
 
 # roles[].name / roles[].desc are DISPLAYED copy (unlike id, an identifier) and curriculum.json
@@ -148,16 +109,60 @@ PATH_CONTRACT = {
     "ms3": ("ms3-six-week", 6),
     "resident": ("resident-four-week", 4),
 }
+# DECISION: required-core-tier  (decisions.json; bin/check_decision_drift.py)
+# D2, 2026-09-24, superseding faculty decision D4a ("suggested, not required"): a Path item may
+# be `required`. An absent priority means `recommended` -- the schema's `default` is annotation
+# only, so this validator is where that meaning is applied. One week's required items may total
+# at most REQUIRED_CORE_MINUTES read-minutes, a bounded weekly minimum (<= 2 h/week). The
+# minutes come from topic_meta.json, never from curriculum.json (which holds structure only).
+PATH_PRIORITIES = ("required", "recommended", "optional")
+DEFAULT_PATH_PRIORITY = "recommended"
+REQUIRED_CORE_MINUTES = 120
+
+
+def read_minutes(topic_meta, ref):
+    """A page's read-minutes from topic_meta.json, or None when it states no usable count.
+
+    Only a non-negative integer counts, and a bool is not one. That matches the front door,
+    which shows minutes only when `read` is a number (fd_data.js); a string such as "5 min"
+    is a label, not a count, and a negative one would let a page pay for another's minutes.
+    """
+    meta = topic_meta.get(ref) if isinstance(topic_meta, dict) else None
+    value = meta.get("read") if isinstance(meta, dict) else None
+    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+        return value
+    return None
+
+
 FOCUS_CATEGORIES = frozenset({
     "anxiety", "childdev", "ethics", "mood", "neurocog", "otherdx",
     "personality", "pharm", "psychosis", "relational", "safety", "substance",
 })
+APP_BRIDGE_NAMES = {
+    "pa": "PA psychiatry bridge",
+    "pmhnp": "PMHNP medical-systems bridge",
+}
+APP_SELF_CHECK_ACTIONS = ["revisit", "supervisor", "another"]
+APP_ACTIVITY_ACTIONS = ["prepare", "rehearse", "observe"]
+APP_ACTIVITIES = [
+    ("initial-evaluation", "Initial psychiatric evaluation and presentation", "training-briefing"),
+    ("medication-follow-through", "Medication plan and follow-through", "workshop-equipment-checkout"),
+    ("collateral-transition", "Collateral and safe transition", "community-event-handoff"),
+]
+APP_PRACTICE_FORBIDDEN_RE = re.compile(
+    r"clinical|patient|diagnos|medicat|dose|treatment|capacity|suicide|agitation|"
+    r"symptom|disease|disorder|score|pass|fail|correct|answer|competent|entrust|ready",
+    re.IGNORECASE,
+)
+APP_PRACTICE_KEYS = {
+    "id", "title", "snapshot", "change", "statements", "supervisorQuestions",
+}
+APP_PRACTICE_TEXT_KEYS = {"id", "text"}
 
 
 def main(argv):
     cur_path = argv[0] if len(argv) > 0 else os.path.join(REPO, "curriculum.json")
-    man_path = argv[1] if len(argv) > 1 else os.path.join(
-        REPO, "13_Faculty_Resources", "_automation", "site_build", "site_manifest.json")
+    shipped_root = argv[1] if len(argv) > 1 else REPO
     topic_path = argv[2] if len(argv) > 2 else os.path.join(REPO, "topic_meta.json")
     evidence_path = argv[3] if len(argv) > 3 else os.path.join(REPO, "evidence_registry.json")
 
@@ -166,21 +171,19 @@ def main(argv):
         return 0
 
     cur = json.load(open(cur_path, encoding="utf-8"))
-    man = json.load(open(man_path, encoding="utf-8"))
     topic_meta = json.load(open(topic_path, encoding="utf-8"))
     evidence_registry = json.load(open(evidence_path, encoding="utf-8"))
 
-    shared_tool_slugs = {e[1] for e in man.get("tools", [])}
-    shared_md_slugs = {e[1] for e in man.get("md", [])}
-    shared_shipped = shared_tool_slugs | shared_md_slugs
-    site_shipped = {
-        site: shared_shipped | SITE_EXTRA_SHIPPED[site]
-        for site in ("ms3", "resident")
-    }
-    tool_slugs = set(shared_tool_slugs)
-    md_slugs = set(shared_md_slugs)
-    tool_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".html")}
-    md_slugs |= {s for s in EXTRA_SHIPPED if s.endswith(".md")}
+    try:
+        tool_slugs, md_slugs, site_shipped = shipped_sets(shipped_root)
+        # The Compass gate below asks the listing about each week's landing page directly —
+        # kind, sites and slug together — which the three flattened sets no longer carry.
+        # Loading the document a second time keeps shipped_sets' signature the ADR-002 shape
+        # every other reader uses; the read is a small local JSON file.
+        shipped_document = load_shipped_pages(shipped_root)
+    except ShippedPagesError as error:
+        print("curriculum.json INVALID — %s" % error)
+        return 1
     shipped = tool_slugs | md_slugs
 
     # ---- rights references: curriculum.json must agree with the publication contract ----
@@ -201,6 +204,28 @@ def main(argv):
 
     def bad(where, msg):
         errs.append("%s: %s" % (where, msg))
+
+    # Discovery vocabulary names resources, not clinical advice. Validate against ALL
+    # shipped producers (including weekly cases), independently of Library placement.
+    search_slugs = {page["slug"] for page in shipped_document["pages"]}
+    aliases = cur.get("searchAliases", {})
+    if not isinstance(aliases, dict):
+        bad("searchAliases", "must be a ref-keyed object")
+        aliases = {}
+    for ref, phrases in aliases.items():
+        if ref not in search_slugs:
+            bad("searchAliases", "unknown shipped ref %r" % ref)
+        if not isinstance(phrases, list) or not phrases:
+            bad("searchAliases", "%s needs a non-empty list" % ref)
+            continue
+        seen_phrases = set()
+        for phrase in phrases:
+            if not isinstance(phrase, str) or not re.fullmatch(r"[a-z0-9]+(?: [a-z0-9]+)*", phrase):
+                bad("searchAliases", "%s has a malformed phrase %r" % (ref, phrase))
+            elif phrase in seen_phrases:
+                bad("searchAliases", "%s repeats %r" % (ref, phrase))
+            else:
+                seen_phrases.add(phrase)
 
     # Synonym keys: a key with a space is a PHRASE, matched whole-phrase against the raw query.
     # Both forms must be lowercase and trimmed or they can never match a lowercased query — a
@@ -273,7 +298,10 @@ def main(argv):
             if not isinstance(items, list):
                 bad(week_label, "items must be a list")
                 continue
-            seen_refs = set()
+            seen_items = set()
+            week_n = week.get("n")
+            is_week_one = week_n == 1 and not isinstance(week_n, bool)
+            required_minutes = []
             for item in items:
                 if not isinstance(item, dict):
                     bad(week_label, "each item must be an object")
@@ -282,9 +310,46 @@ def main(argv):
                 if not isinstance(ref, str):
                     bad(week_label, "item ref must be a string (got %r)" % (ref,))
                     continue
-                if ref in seen_refs:
-                    bad(week_label, "duplicate ref '%s' within the week" % ref)
-                seen_refs.add(ref)
+                # Uniqueness is per (ref, query): the adopted spine opens one tool twice in a
+                # week on two different cases (sp-interview.html, two case= deep links). A read
+                # cannot carry a query (below), so a read still never repeats within a week.
+                query = item.get("query")
+                query_key = query if query is None or isinstance(query, str) else repr(query)
+                if (ref, query_key) in seen_items:
+                    if query is None:
+                        bad(week_label, "duplicate ref '%s' within the week" % ref)
+                    else:
+                        bad(week_label, "duplicate ref '%s' with query %r within the week"
+                            % (ref, query))
+                seen_items.add((ref, query_key))
+                # Required Core tier (required-core-tier, above). An unknown priority fails
+                # closed: a misspelt `required` would otherwise escape the minutes budget.
+                priority = item.get("priority", DEFAULT_PATH_PRIORITY)
+                if priority not in PATH_PRIORITIES:
+                    bad(week_label, "ref '%s' has priority %r; it must be one of %s (absent "
+                        "means %s)" % (ref, priority, ", ".join(PATH_PRIORITIES),
+                                       DEFAULT_PATH_PRIORITY))
+                elif priority == "required":
+                    minutes = read_minutes(topic_meta, ref)
+                    if minutes is None and kind != "tool":
+                        bad(week_label, "required read '%s' has no read minutes in "
+                            "topic_meta.json -- the Required Core budget cannot be checked "
+                            "over a page that states none" % ref)
+                    else:
+                        required_minutes.append((ref, minutes or 0))
+                if "query" in item and kind != "tool":
+                    bad(week_label, "ref '%s' carries a query, which only a tool item may "
+                        "(it has kind %r)" % (ref, kind))
+                if "window" in item and not is_week_one:
+                    bad(week_label, "ref '%s' carries window %r; a window is only allowed in "
+                        "week 1" % (ref, item.get("window")))
+                # A rights reference exists to say an instrument is NOT reproduced here. It
+                # belongs in the Library (INV-IR2 keeps the custodian route alive), never on a
+                # path: a checklist step that opens a "no longer reproduced" stub is a dead end
+                # the learner is asked to tick. Both stubs shipped as steps until 2026-09-16.
+                if ref in rights_refs:
+                    bad(week_label, "ref '%s' is a rights reference — it belongs in a Library "
+                        "column, never as a path step" % ref)
                 if ref not in site_shipped[site]:
                     bad(week_label, "ref '%s' is not shipped on %s" % (ref, site))
                     continue
@@ -292,6 +357,17 @@ def main(argv):
                 if kind != expected_kind:
                     bad(week_label, "ref '%s' has kind '%s' but the build ships it as '%s'" %
                         (ref, kind, expected_kind))
+            required_total = sum(minutes for _, minutes in required_minutes)
+            if required_total > REQUIRED_CORE_MINUTES:
+                bad(week_label, "required items total %d read-minutes, over the Required Core "
+                    "budget of %d per week (%s)" % (
+                        required_total, REQUIRED_CORE_MINUTES,
+                        ", ".join("%s %d" % pair for pair in required_minutes)))
+        if site == "ms3":
+            try:
+                prepare_cards(weeks, shipped_document)
+            except CompassContractError as error:
+                bad(label, str(error))
         path_totals[site] = sum(len(w.get("items", [])) for w in weeks if isinstance(w, dict))
 
     # ---- library totality: every shipped slug is placed or explicitly excluded ----
@@ -354,6 +430,7 @@ def main(argv):
         bad("siteLibrary", "must be an object with ms3 and resident entries")
         site_library = {}
     column_names = {column.get("name") for column in columns if isinstance(column, dict)}
+    site_placed = {site: set(placed) for site in ("ms3", "resident")}
     for site in ("ms3", "resident"):
         overlay = site_library.get(site)
         if not isinstance(overlay, dict):
@@ -385,6 +462,7 @@ def main(argv):
                 if ref not in site_shipped[site]:
                     bad("siteLibrary %s" % site,
                         "addition ref '%s' is not shipped on %s" % (ref, site))
+        site_placed[site].update(added_refs)
         exclusions = overlay.get("exclusions")
         if not isinstance(exclusions, list):
             bad("siteLibrary %s" % site, "'exclusions' must be a list")
@@ -397,6 +475,92 @@ def main(argv):
             elif ref not in site_shipped[site]:
                 bad("siteLibrary %s" % site,
                     "exclusion ref '%s' is not shipped on %s" % (ref, site))
+        site_placed[site].difference_update(
+            ref for ref in exclusions if isinstance(ref, str))
+
+    # Essentials is a nonempty view of each site's effective full Library.
+    essentials = cur.get("essentials")
+    if not isinstance(essentials, dict):
+        bad("essentials", "E1: must be an object with ms3 and resident entries")
+        essentials = {}
+    source_kit = cur.get("safetyKit")
+    required_safety = {
+        entry["ref"] for entry in source_kit
+        if isinstance(entry, dict) and isinstance(entry.get("ref"), str)
+    } if isinstance(source_kit, list) else set()
+    # The existing Safety Kit block separately rejects missing/malformed kit data.
+    for site in ("ms3", "resident"):
+        label = "essentials.%s" % site
+        sections = essentials.get(site)
+        if not isinstance(sections, list) or not sections:
+            bad(label, "E1: must be a non-empty list of sections")
+            continue
+        seen = set()
+        has_tool = False
+        has_safety = False
+        for index, section in enumerate(sections):
+            where = "%s[%d]" % (label, index)
+            if not isinstance(section, dict):
+                bad(where, "E1: section must be an object")
+                continue
+            if not isinstance(section.get("name"), str) or not section["name"].strip():
+                bad(where, "E1: name must be a non-empty string")
+            accent = section.get("accent")
+            if accent not in ("tool", "safety", "topic"):
+                bad(where, "E1: accent must be tool, safety, or topic")
+            refs = section.get("refs")
+            if not isinstance(refs, list) or not refs:
+                bad(where, "E1: refs must be a non-empty list")
+                continue
+            for ref in refs:
+                if not isinstance(ref, str) or not ref.strip():
+                    bad(where, "E1: ref must be a non-empty string")
+                    continue
+                if ref not in site_shipped[site]:
+                    bad(where, "E2: ref '%s' is not shipped on %s" % (ref, site))
+                if ref not in site_placed[site]:
+                    bad(where, "E3: ref '%s' is not in the effective %s Library" % (ref, site))
+                if ref in seen:
+                    bad(where, "E4: duplicate ref '%s'" % ref)
+                seen.add(ref)
+                if ref in site_shipped[site] and ref in site_placed[site]:
+                    has_tool = has_tool or ref.endswith(".html")
+                    has_safety = has_safety or accent == "safety"
+        for ref in sorted(required_safety - seen):
+            bad(label, "E5: missing Safety Kit ref '%s'" % ref)
+        if not has_tool:
+            bad(label, "E6: must include at least one shipped .html tool")
+        if not has_safety:
+            bad(label, "E6: must include an item in a safety-accent section")
+
+    # ---- library hints: one line per placed tool, in both directions ----
+    # A placed .html ref is a tool row in the only browse surface, and 23-26 tool titles do not
+    # say what the tool does (The Interview Circle, What Do You Say Next?, Interaction Cards).
+    # Each carries a one-line "use this when" from curriculum.libraryHints. Enforced both ways
+    # so adding a tool means writing its line, and a line for a ref no column places is copy
+    # nobody can read. Reads keep bare titles: their tldr is clinical, not navigational.
+    hints = cur.get("libraryHints", {})
+    if not isinstance(hints, dict):
+        bad("libraryHints", "must be a ref-keyed object of one-line strings")
+        hints = {}
+    hinted_universe = {ref for ref in placed if ref in tool_slugs}
+    for site in ("ms3", "resident"):
+        overlay = site_library.get(site) if isinstance(site_library, dict) else None
+        additions = overlay.get("additions") if isinstance(overlay, dict) else None
+        for addition in additions if isinstance(additions, list) else []:
+            refs = addition.get("refs") if isinstance(addition, dict) else None
+            for ref in refs if isinstance(refs, list) else []:
+                if isinstance(ref, str) and ref in tool_slugs:
+                    hinted_universe.add(ref)
+    for ref, line in sorted(hints.items(), key=lambda kv: str(kv[0])):
+        if ref not in hinted_universe:
+            bad("libraryHints", "'%s' is not a tool any Library column places" % ref)
+        if not isinstance(line, str) or not line.strip():
+            bad("libraryHints", "'%s' needs a non-empty one-line hint" % ref)
+        elif len(line) > 110 or "\n" in line:
+            bad("libraryHints", "'%s' hint must stay one line (<=110 chars, no newline)" % ref)
+    for ref in sorted(hinted_universe - set(hints)):
+        bad("libraryHints", "placed tool '%s' has no one-line hint" % ref)
 
     # ---- safety kit: five reviewed, high-safety protocols with canonical evidence ----
     kit = cur.get("safetyKit")
@@ -475,6 +639,133 @@ def main(argv):
             bad("safetyKit %s" % ref,
                 "evidenceIds contains no canonical evidence ID (got %r)" % refs)
 
+    # ---- APP pathway: exactly two resident-preview bridges and three shared activities ----
+    app_pathway = cur.get("appPathway")
+    if not isinstance(app_pathway, dict):
+        bad("appPathway", "must be an object")
+        app_pathway = {}
+    if not isinstance(app_pathway.get("intro"), str) or not app_pathway.get("intro", "").strip():
+        bad("appPathway.intro", "must be a non-empty string")
+    bridges = app_pathway.get("bridges")
+    if not isinstance(bridges, dict) or set(bridges) != set(APP_BRIDGE_NAMES):
+        bad("appPathway.bridges", "must contain exactly pa and pmhnp")
+        bridges = bridges if isinstance(bridges, dict) else {}
+    for bridge_id, expected_name in APP_BRIDGE_NAMES.items():
+        bridge = bridges.get(bridge_id)
+        label = "appPathway.bridges.%s" % bridge_id
+        if not isinstance(bridge, dict):
+            bad(label, "must be an object")
+            continue
+        if bridge.get("name") != expected_name:
+            bad(label, "name must be %r" % expected_name)
+        if not isinstance(bridge.get("summary"), str) or not bridge.get("summary", "").strip():
+            bad(label, "summary must be a non-empty string")
+        refs = bridge.get("refs")
+        if not isinstance(refs, list) or len(refs) != 8:
+            bad(label, "refs must contain exactly eight entries")
+            refs = refs if isinstance(refs, list) else []
+        if len({ref for ref in refs if isinstance(ref, str)}) != len(refs):
+            bad(label, "refs must be unique strings")
+        for ref in refs:
+            if not isinstance(ref, str) or ref not in site_shipped["resident"]:
+                bad(label, "ref %r is not shipped on resident" % ref)
+        self_check = bridge.get("selfCheck")
+        if not isinstance(self_check, dict):
+            bad(label, "selfCheck must be an object")
+        else:
+            if (not isinstance(self_check.get("prompt"), str)
+                    or not self_check.get("prompt", "").strip()):
+                bad(label, "selfCheck.prompt must be a non-empty string")
+            if self_check.get("actions") != APP_SELF_CHECK_ACTIONS:
+                bad(label, "selfCheck.actions must be %r" % APP_SELF_CHECK_ACTIONS)
+
+    practice_packs = app_pathway.get("practicePacks")
+    if not isinstance(practice_packs, list) or len(practice_packs) != 3:
+        bad("appPathway.practicePacks", "must contain exactly three packs")
+        practice_packs = practice_packs if isinstance(practice_packs, list) else []
+    pack_ids = []
+    for pack_index, pack in enumerate(practice_packs):
+        label = "appPathway.practicePacks[%d]" % pack_index
+        if not isinstance(pack, dict):
+            bad(label, "must be an object")
+            continue
+        if set(pack) != APP_PRACTICE_KEYS:
+            bad(label, "must contain exactly %r" % sorted(APP_PRACTICE_KEYS))
+        pack_id = pack.get("id")
+        if not isinstance(pack_id, str) or not re.match(r"^[a-z0-9]+(?:-[a-z0-9]+)*$", pack_id):
+            bad(label, "id must be kebab-case")
+        else:
+            pack_ids.append(pack_id)
+        snapshot = pack.get("snapshot")
+        snapshot_values = snapshot if isinstance(snapshot, list) else []
+        if not isinstance(snapshot, list) or not 2 <= len(snapshot) <= 3:
+            bad(label, "snapshot must contain two or three strings")
+        practice_text_rows = []
+        for field in ("statements", "supervisorQuestions"):
+            rows = pack.get(field)
+            if not isinstance(rows, list) or len(rows) != 3:
+                bad(label, "%s must contain exactly three entries" % field)
+                rows = rows if isinstance(rows, list) else []
+            practice_text_rows.extend(rows)
+            row_ids = []
+            for row in rows:
+                if not isinstance(row, dict) or set(row) != APP_PRACTICE_TEXT_KEYS:
+                    bad(label, "%s entries must contain exactly id and text" % field)
+                    continue
+                row_id = row.get("id")
+                if not isinstance(row_id, str):
+                    bad(label, "%s ids must be strings" % field)
+                else:
+                    row_ids.append(row_id)
+            if len(set(row_ids)) != len(row_ids):
+                bad(label, "%s ids must be unique" % field)
+        for value in [pack.get("title"), pack.get("change")] + snapshot_values + [
+            row.get("text") for row in practice_text_rows if isinstance(row, dict)
+        ]:
+            if not isinstance(value, str) or not value.strip():
+                bad(label, "display strings must be non-empty")
+            elif APP_PRACTICE_FORBIDDEN_RE.search(value):
+                bad(label, "display strings must remain nonclinical and non-evaluative")
+    if pack_ids != [row[2] for row in APP_ACTIVITIES]:
+        bad("appPathway.practicePacks", "pack ids must match the three activity contracts")
+
+    activities = app_pathway.get("activities")
+    if not isinstance(activities, list) or len(activities) != len(APP_ACTIVITIES):
+        bad("appPathway.activities", "must contain exactly three activities")
+        activities = activities if isinstance(activities, list) else []
+    for index, (expected_id, expected_name, expected_practice_id) in enumerate(APP_ACTIVITIES):
+        label = "appPathway.activities[%d]" % index
+        if index >= len(activities) or not isinstance(activities[index], dict):
+            bad(label, "must be an object")
+            continue
+        activity = activities[index]
+        if activity.get("id") != expected_id:
+            bad(label, "id must be %r" % expected_id)
+        if activity.get("name") != expected_name:
+            bad(label, "name must be %r" % expected_name)
+        if activity.get("practiceId") != expected_practice_id:
+            bad(label, "practiceId must be %r" % expected_practice_id)
+        if not isinstance(activity.get("purpose"), str) or not activity.get("purpose", "").strip():
+            bad(label, "purpose must be a non-empty string")
+        refs = activity.get("refs")
+        if not isinstance(refs, list) or not refs:
+            bad(label, "refs must be a non-empty list")
+            refs = refs if isinstance(refs, list) else []
+        if len({ref for ref in refs if isinstance(ref, str)}) != len(refs):
+            bad(label, "refs must be unique strings")
+        for ref in refs:
+            if not isinstance(ref, str) or ref not in site_shipped["resident"]:
+                bad(label, "ref %r is not shipped on resident" % ref)
+        if activity.get("actions") != APP_ACTIVITY_ACTIONS:
+            bad(label, "actions must be %r" % APP_ACTIVITY_ACTIONS)
+    activity_practice_ids = [
+        activity.get("practiceId") if isinstance(activity, dict) else None
+        for activity in activities
+    ]
+    if activity_practice_ids != pack_ids:
+        bad("appPathway.practicePacks",
+            "activity practice ids must resolve to exactly one pack each")
+
     # ---- roles: id/name/desc non-empty, and the displayed text is audience-neutral ----
     # curriculum.json is one document read by both site builds, so a role's displayed name/desc
     # (id is an identifier, not copy, and is exempt) must not carry an audience-specific token —
@@ -501,6 +792,14 @@ def main(argv):
                 val = r.get(field)
                 if isinstance(val, str) and ROLE_AUDIENCE_TOKEN_RE.search(val):
                     bad(label, "'%s' contains an audience-specific token: %r" % (field, val))
+    ms3_role_ids = [role.get("id") for role in roles.get("ms3", []) if isinstance(role, dict)]
+    resident_role_ids = [
+        role.get("id") for role in roles.get("resident", []) if isinstance(role, dict)
+    ]
+    if "app" in ms3_role_ids:
+        bad("roles.ms3", "must not expose the APP preview")
+    if resident_role_ids.count("app") != 1:
+        bad("roles.resident", "must contain exactly one app role")
 
     if errs:
         print("curriculum.json INVALID — %d issue(s):" % len(errs))

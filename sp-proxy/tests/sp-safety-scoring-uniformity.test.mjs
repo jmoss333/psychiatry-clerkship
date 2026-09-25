@@ -12,6 +12,16 @@
 // Teeth-check: this file fails 60/124 against the pre-wave pack and passes 124/124
 // against the ratified one. A future pattern change that reintroduces per-case
 // divergence fails here first.
+//
+// Re-graded 2026-09-24 (peer-review WP-5, findings M02-006/-007; handoff §2.4): a
+// PASSIVE death-wish question — wish to be dead / not wake up, better off dead, not
+// worth living, no point going on, "what's the point of living", want to die,
+// thoughts of death — is its own intent, si_passive, and grades PARTIAL in every case
+// (c_si.partialIfOnly). It still opens the disclosure gate, but full critical credit now
+// needs a question about killing oneself / ending one's life / suicide (si_direct). The
+// 17 rows that ratified those phrasings as plain screens (D12 existential point, D13
+// plain gaps) keep their rows and groups, move O -> P, and now assert WHICH intent
+// graded them. Rows are unchanged in number; only their expected grade moved.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -39,6 +49,9 @@ function status(c, rowId, h) {
 const S = { O: 'observed', P: 'partial', M: 'missed' };
 const rows = [];
 const add = (group, ph, dmr, opts = {}) => rows.push({ group, ph, exp: [...dmr].map(k => S[k]), ...opts });
+// A passive-wish phrasing: credited to si_passive (partial), never to si_direct, in every case.
+const ALL3 = (ids) => ({ Dana: ids, Marcus: ids, Ray: ids });
+const passive = { must: ALL3(['si_passive']), mustNot: ALL3(['si_direct']) };
 
 // D12 — same words, same grade; euphemism = partial everywhere; existential point = plain everywhere
 add('D12', "What's the point?", 'PPP');
@@ -46,12 +59,12 @@ add('D12', 'What is the point?', 'PPP');
 add('D12', 'Whats the point anymore?', 'PPP');
 add('D12', "Do you ever feel like what's even the point?", 'PPP');
 add('D12', "You said what's the point — can you tell me more?", 'PPP');
-add('D12', "What's the point of going on?", 'OOO');
-add('D12', 'What is the point of going on?', 'OOO');
-add('D12', "What's the point of living?", 'OOO');
-add('D12', "What's the point of any of this?", 'OOO');
-add('D12', "What's the point of going on at all?", 'OOO');
-add('D12', "What's the point of continuing to live?", 'OOO');
+add('D12', "What's the point of going on?", 'PPP', passive);
+add('D12', 'What is the point of going on?', 'PPP', passive);
+add('D12', "What's the point of living?", 'PPP', passive);
+add('D12', "What's the point of any of this?", 'PPP', passive);
+add('D12', "What's the point of going on at all?", 'PPP', passive);
+add('D12', "What's the point of continuing to live?", 'PPP', passive);
 add('D12', 'Have you thought about hurting yourself?', 'PPP', { mustNot: { Ray: ['violence_screen'] } });
 add('D12', 'Have you thought about harming yourself?', 'PPP', { mustNot: { Ray: ['violence_screen'] } });
 add('D12', 'Have you had thoughts of doing something to yourself?', 'PPP');
@@ -64,8 +77,8 @@ add('D12-guard', "What's the point of going on about the irrigation project?", '
 add('D12-guard', "What's the point of trying?", 'MMM');
 add('D12-guard', "What's the point you're making?", 'MMM');
 add('D12-guard', "What's the point of the mood chart, in your view?", 'MMM');
-add('D12', "You said there's no point in going on — can you tell me more?", 'OOO');  // D11 dash residual closed
-add('D12', "What's the point of going on — has it felt like that?", 'OOO');
+add('D12', "You said there's no point in going on — can you tell me more?", 'PPP', passive);  // D11 dash residual closed
+add('D12', "What's the point of going on — has it felt like that?", 'PPP', passive);
 add('D12-guard', 'no point in going on the lithium?', 'MMM');
 add('D12-guard', "Do you think you're hurting yourself by sleeping only two hours?", 'MMM');
 add('D12-guard', "Do you think you're hurting yourself with all this spending?", 'MMM');
@@ -84,19 +97,19 @@ add('D13-B', 'Have you thought about hurting them?', 'MMM', { must: { Ray: ['vio
 add('D13-B', 'Have you thought about doing something to the neighbors?', 'MMM', { must: { Ray: ['violence_screen'] } });
 add('D13-B', 'Have you thought about stopping them?', 'MMM', { must: { Ray: ['violence_screen'] } });
 // D13 — plain-screen gaps measured while ratifying (not in #410's list)
-add('D13-plain', 'Do you want to die?', 'OOO');
-add('D13-plain', 'Have you wanted to die?', 'OOO');
-add('D13-plain', 'Have you had thoughts of death?', 'OOO');
-add('D13-plain', 'Any thoughts of ending it all?', 'OOO');
-add('D13-plain', 'Have you had thoughts of not being here anymore?', 'OOO');
-add('D13-plain', "Do you ever wish you weren't here?", 'OOO');
-add('D13-plain', 'Do you ever wish you could go to sleep and not wake up?', 'OOO');
-add('D13-plain', 'Have you had thoughts of killing yourself?', 'OOO');
-add('D13-plain', 'Are you having thoughts of suicide?', 'OOO');
-add('D13-plain', "Have you had any thoughts that life isn't worth living?", 'OOO');
-add('D13-plain', "Do you ever feel like life isn't worth living at all?", 'OOO');
-add('D13-plain', 'Do you ever feel your family would be better off without you?', 'OOO');
-add('D13-plain', 'Have you ever tried to kill yourself?', 'OOO');
+add('D13-plain', 'Do you want to die?', 'PPP', passive);
+add('D13-plain', 'Have you wanted to die?', 'PPP', passive);
+add('D13-plain', 'Have you had thoughts of death?', 'PPP', passive);
+add('D13-plain', 'Any thoughts of ending it all?', 'OOO', { must: ALL3(['si_direct']) });
+add('D13-plain', 'Have you had thoughts of not being here anymore?', 'PPP', passive);
+add('D13-plain', "Do you ever wish you weren't here?", 'PPP', passive);
+add('D13-plain', 'Do you ever wish you could go to sleep and not wake up?', 'PPP', passive);
+add('D13-plain', 'Have you had thoughts of killing yourself?', 'OOO', { must: ALL3(['si_direct']) });
+add('D13-plain', 'Are you having thoughts of suicide?', 'OOO', { must: ALL3(['si_direct']) });
+add('D13-plain', "Have you had any thoughts that life isn't worth living?", 'PPP', passive);
+add('D13-plain', "Do you ever feel like life isn't worth living at all?", 'PPP', passive);
+add('D13-plain', 'Do you ever feel your family would be better off without you?', 'PPP', passive);
+add('D13-plain', 'Have you ever tried to kill yourself?', 'OOO', { must: ALL3(['si_direct']) });
 // declines: ambiguous or ordinary (D7 heuristic)
 add('D13-guard', 'Do you feel safe?', 'MMM');
 add('D13-guard', 'Do you feel safe here on the unit?', 'MMM');

@@ -1,0 +1,55 @@
+{
+  "id": "pa-formulation-follow-through-draft",
+  "status": "faculty-review-draft",
+  "learnerRelease": false,
+  "clinicalFeedbackStatus": "withheld-pending-faculty-review",
+  "gapIds": [
+    "G07",
+    "G09",
+    "G20",
+    "G21",
+    "G27"
+  ],
+  "intendedUse": "Define a source-linked, dose-free synthetic sequence for faculty review before any learner pack exists.",
+  "canonicalResourceRefs": [
+    "case_formulation.md",
+    "psychopharm_primer.md",
+    "med_monitoring.md",
+    "oral.html"
+  ],
+  "policyDependencies": [
+    "role-specific supervision",
+    "result and follow-up ownership",
+    "consultation and handoff responsibility"
+  ],
+  "stageShells": [
+    {
+      "id": "initial-formulation-and-plan",
+      "clinicalDataStatus": "not-authored",
+      "promptStatus": "not-authored"
+    },
+    {
+      "id": "one-detail-changes",
+      "clinicalDataStatus": "not-authored",
+      "promptStatus": "not-authored"
+    },
+    {
+      "id": "follow-through-barrier",
+      "clinicalDataStatus": "not-authored",
+      "promptStatus": "not-authored"
+    }
+  ],
+  "facultyQuestions": [
+    "Which bounded formulation and plan question should the case teach?",
+    "Which one faculty-authored detail should change and what should it cause the learner to reconsider?",
+    "Which follow-through responsibility is generalizable and which part requires local policy?",
+    "Which exact sources support each explanatory statement?"
+  ],
+  "releaseDependencies": [
+    "faculty-authored synthetic data and explanatory feedback",
+    "source and evidence review",
+    "applicable local policy",
+    "governance registration and faculty disposition",
+    "privacy and accessibility verification"
+  ]
+}

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>(function(){try{var t=localStorage.getItem('cw_theme');if(t!=='dark'&&t!=='light'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inpatient Psychiatry — MS3 Clerkship</title>
@@ -11,8 +11,40 @@
 <link rel="stylesheet" href="frontdoor.css">
 <style>
   :root{
+  /* Practice-panel washes. These are SCOPED OVERRIDES: .minitree and .workflow-step are
+   * already correctly tokenised (var(--surface) / var(--bg-alt)), and inside .practice-panel
+   * they were overridden with hardcoded light values — so the panel stayed a light island in
+   * dark mode. tests/smoke/contrast.spec.js measured 42 elements below AA on ?page=suicide.md,
+   * worst 1.23:1, on its first run. Light values below are verbatim what shipped; the dark
+   * halves live in the shared dark-token stylesheet this page links. 2026-09-10.
+   *
+   * Do NOT name that stylesheet's FILENAME anywhere in this file. common.py decides whether
+   * to inject its <link> with a bare substring test, so a mere mention — in a comment, as
+   * here — convinced the build the link was already present and shipped the whole shell with
+   * no dark palette at all. Caught locally within the hour; common.py now looks for the link
+   * ELEMENT instead, so this trap is closed, but the rule costs nothing to keep. */
+  --panel-wash-a:rgba(232,244,242,.92);
+  --panel-wash-b:rgba(255,252,247,.96);
+  --panel-line:#b9d2d0;
+  --panel-step-bg:rgba(247,250,249,.86);
+  --panel-tree-bg:rgba(255,255,255,.72);
+  --panel-sheer:rgba(255,255,255,.55);
+  --panel-solid:rgba(255,255,255,.86);
+  --panel-warm:#fffaf0;
+  /* The three practice-action chips each carry a hairline tinted toward their own accent.
+   * Light values verbatim; the dark halves keep the tint and lift off the ground instead of
+   * sinking into it. C8 found these — they are borders, not text, so nothing measured them. */
+  --chip-line-safety:#bdd5d1;
+  --chip-line-case:#d5c9bc;
+  --chip-line-drill:#d9c597;
+  /* Five more light-only hairlines in the practice family, found by ?theme-audit on its
+   * first real run: borders never fail a contrast probe, so nothing else could see them. */
+  --panel-line-soft:#d9e5e0;
+  --panel-line-open:#cfe1db;
+  --panel-line-warm:#d6c8b6;
+
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --border:#ddd3c6;
-    --primary:#c25a3c; --primary-dark:#a84830; --primary-light:#f3ebe5;
+    --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
     --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2; --accent-border:#bfd8d3;
     --text:#2f2924; --focus:#155eef; --text-mid:#51473d; --text-light:#665a4f; --warning:#7a6234; --warning-light:#f5efe2;
     --success:#357160; --success-light:#e7f1ed; --danger:#a34132; --danger-light:#fbece9; --info:#41618a; --info-light:#eaf0f6;
@@ -20,16 +52,16 @@
     --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
   }
   *,*::before,*::after{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:var(--fd-font-lg);line-height:1.6}
   .layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
   .layout>aside{background:var(--bg-alt);border-right:1px solid var(--border);padding:18px 14px;overflow-y:auto;position:sticky;top:0;height:100vh}
-  .layout>aside h1{font-family:var(--font-head);font-size:1.05rem;color:var(--primary-dark);margin:0 0 2px;padding-right:74px;white-space:nowrap}
-  .layout>aside .by{font-size:.78rem;color:var(--text-light);margin-bottom:14px}
-  .themebtn{position:absolute;top:16px;right:14px;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center}
+  .layout>aside h1{font-family:var(--font-head);font-size:var(--fd-font-lg);color:var(--primary-dark);margin:0 0 2px;padding-right:74px;white-space:nowrap}
+  .layout>aside .by{font-size:var(--fd-font-xs);color:var(--text-light);margin-bottom:14px}
+  .themebtn{position:absolute;top:16px;right:14px;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:var(--fd-glyph-sm);line-height:1;display:flex;align-items:center;justify-content:center}
   .themebtn:hover{border-color:var(--accent);color:var(--accent-dark)}
   /* Collapsible sidebar (desktop only — the ≤820px drawer keeps the full sidebar).
      html[data-side=rail] is set pre-paint from cw_side_collapsed so there is no flash. */
-  .side-collapse{position:absolute;top:16px;right:54px;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:.92rem;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
+  .side-collapse{position:absolute;top:16px;right:54px;width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:var(--fd-font-base);line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
   .side-collapse:hover{border-color:var(--accent);color:var(--accent-dark)}
   .side-rail{display:none}
   @media(min-width:821px){
@@ -39,49 +71,49 @@
     html[data-side=rail] .layout>aside>*:not(.side-rail){display:none}
     html[data-side=rail] .side-rail{display:flex;flex-direction:column;align-items:center;gap:10px}
   }
-  .rail-expand{width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--accent-dark);cursor:pointer;font-size:.92rem;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
-  .railbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
+  .rail-expand{width:36px;height:36px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--accent-dark);cursor:pointer;font-size:var(--fd-font-base);font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
+  .railbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:var(--fd-glyph-sm);line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body)}
   .railbtn.rail-capture{border:1.5px dashed var(--border);background:transparent}
   .rail-expand:hover,.railbtn:hover{border-color:var(--accent);color:var(--accent-dark)}
   .rail-sep{width:24px;border-top:1px solid var(--border);margin:2px 0}
   .modetoggle{position:relative;display:flex;background:var(--primary-light);border:1px solid var(--border);border-radius:999px;padding:3px;margin:2px 0 14px}
   .modetoggle .knob{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);background:var(--accent);border-radius:999px;transition:transform .22s ease;z-index:0}
   .modetoggle.lib .knob{transform:translateX(100%)}
-  .modetoggle button{flex:1;position:relative;z-index:1;border:none;background:transparent;font-family:inherit;font-size:.83rem;font-weight:700;color:var(--text-mid);padding:7px 4px;cursor:pointer;border-radius:999px}
+  .modetoggle button{flex:1;position:relative;z-index:1;border:none;background:transparent;font-family:inherit;font-size:var(--fd-font-sm);font-weight:700;color:var(--text-mid);padding:7px 4px;cursor:pointer;border-radius:999px}
   .modetoggle button.on{color:#fff}
   #content.pathmode{max-width:none;padding:0;margin:0}
   .pathframe{width:100%;height:calc(100vh - 46px);border:0;display:block}
   .search-wrap{position:relative;margin:0 0 12px}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-  input.search{width:100%;padding:8px 28px 8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.9rem;background:#fff;color:var(--text)}
+  input.search{width:100%;padding:8px 28px 8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:var(--fd-font-md);background:var(--surface);color:var(--text)}
   input.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
-  .search-wrap .sx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1rem;display:none}
+  .search-wrap .sx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:var(--fd-font-base);display:none}
   .navsec-wrap{margin-top:4px}
   .navgroup-wrap{margin-top:8px}
-  .navgroupsec{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--text-mid);font-weight:800;padding:8px 6px;border-radius:6px}
+  .navgroupsec{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:var(--fd-font-xs);text-transform:uppercase;letter-spacing:.09em;color:var(--text-mid);font-weight:800;padding:8px 6px;border-radius:6px}
   .navgroupsec:hover{background:var(--primary-light);color:var(--text)}
-  .navgroupsec .chev{display:inline-block;font-size:.62rem;transition:transform .15s;flex:0 0 auto}
+  .navgroupsec .chev{display:inline-block;font-size:var(--fd-font-2xs);transition:transform .15s;flex:0 0 auto}
   .navgroup-wrap.open>.navgroupsec .chev{transform:rotate(90deg)}
   .navgroupbody{display:none;padding-left:8px;border-left:1px solid var(--border);margin-left:6px}
   .navgroup-wrap.open>.navgroupbody{display:block}
-  .navsec{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);font-weight:700;padding:7px 6px;border-radius:6px}
+  .navsec{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:var(--fd-font-2xs);text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);font-weight:700;padding:7px 6px;border-radius:6px}
   .navsec:hover{background:var(--primary-light);color:var(--text-mid)}
-  .navsec .chev{display:inline-block;font-size:.62rem;transition:transform .15s;flex:0 0 auto}
+  .navsec .chev{display:inline-block;font-size:var(--fd-font-2xs);transition:transform .15s;flex:0 0 auto}
   .navsec-wrap.open>.navsec .chev{transform:rotate(90deg)}
   .navsec-t{flex:1;min-width:0}
   .navgroup{display:none;margin:1px 0 4px;padding-left:4px}
   .navsec-wrap.open>.navgroup{display:block}
-  .navitem{display:flex;align-items:center;gap:4px;width:100%;text-align:left;border:none;background:transparent;color:var(--text);padding:6px 9px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.9rem;line-height:1.3}
+  .navitem{display:flex;align-items:center;gap:4px;width:100%;text-align:left;border:none;background:transparent;color:var(--text);padding:6px 9px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:var(--fd-font-md);line-height:1.3}
   .navitem .nt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .navitem-hidden{display:none}
   .navitem:hover{background:var(--primary-light)}
   .navitem.on{background:var(--accent);color:#fff}
-  .navitem .tool-tag{flex:0 0 auto;font-size:.6rem;background:var(--accent-dark);color:#fff;border-radius:999px;padding:1px 6px;vertical-align:middle}
+  .navitem .tool-tag{flex:0 0 auto;font-size:var(--fd-font-2xs);background:var(--accent-dark);color:#fff;border-radius:999px;padding:1px 6px;vertical-align:middle}
   .navitem.on .tool-tag{background:#fff;color:var(--accent-dark)}
   .layout>main{padding:0}
-  .banner{background:var(--warning-light);border-bottom:1px solid var(--border);color:var(--text);font-size:.82rem;padding:8px 34px 8px 28px;position:relative}
+  .banner{background:var(--warning-light);border-bottom:1px solid var(--border);color:var(--text);font-size:var(--fd-font-sm);padding:8px 34px 8px 28px;position:relative}
   .banner.hide{display:none}
-  .bannerx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text);cursor:pointer;font-size:1.05rem;line-height:1;opacity:.55;padding:2px 6px}
+  .bannerx{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text);cursor:pointer;font-size:var(--fd-font-lg);line-height:1;opacity:.55;padding:2px 6px}
   .bannerx:hover{opacity:1}
   .skel{max-width:820px;margin:0 auto;padding:26px 28px 60px}
   .skel .bar{height:14px;border-radius:6px;background:linear-gradient(90deg,var(--border) 25%,var(--bg-alt) 37%,var(--border) 63%);background-size:400% 100%;animation:skelsh 1.3s ease infinite;margin:11px 0}
@@ -92,42 +124,47 @@
   #content.toolmode{max-width:none;padding:0;margin:0;display:flex;flex-direction:column;height:calc(100vh - 46px)}
   .toolframe{width:100%;height:calc(100vh - 46px);border:0;display:block;background:var(--bg)}
   #content.toolmode .toolframe{flex:1 1 auto;height:auto;min-height:0}
+  /* Content-sized frame (fdSizeToolFrame): released from the viewport height before its inline height lands. */
+  .toolframe.is-content-sized{height:auto}
   .pgfb{margin:30px 0 0;padding-top:16px;border-top:1px solid var(--border)}
-  .pgfb-b{background:none;border:1px solid var(--border);border-radius:999px;padding:6px 15px;color:var(--text-light);cursor:pointer;font:inherit;font-size:.83rem}
+  .pgfb-b{background:none;border:1px solid var(--border);border-radius:999px;padding:6px 15px;color:var(--text-light);cursor:pointer;font:inherit;font-size:var(--fd-font-sm)}
   .pgfb-b:hover{border-color:var(--accent);color:var(--accent-dark)}
-  .skip-link{position:absolute;left:12px;top:-52px;background:#fff;color:var(--text);border:2px solid var(--focus);border-radius:6px;padding:8px 12px;z-index:100;transition:top .15s}
+  .skip-link{position:absolute;left:12px;top:-52px;background:var(--surface);color:var(--text);border:2px solid var(--focus);border-radius:6px;padding:8px 12px;z-index:100;transition:top .15s}
   .skip-link:focus{top:12px}
+  /* Reduced motion (#428): the Front Door stylesheet zeroes its own motion under this query; the
+     shell's remaining transitions -- the skip link above, the legacy sidebar chrome and the
+     section chevrons -- live here and were the ones an audit found still animating. */
   .drawer-backdrop{position:fixed;inset:0;z-index:19;background:rgba(47,41,36,.40)}
   :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
   .loading{color:var(--text-mid);padding:28px 4px}
   .error{padding:8px 4px}
-  .governance-notice{border-radius:8px;font-size:.9rem;line-height:1.45;margin:0 0 16px;padding:9px 13px}
+  .governance-notice{border-radius:8px;font-size:var(--fd-font-md);line-height:1.45;margin:0 0 16px;padding:9px 13px}
   .governance-notice .governance-title{display:block;font-weight:800}
-  .governance-notice .governance-risk{display:block;font-size:.76rem;font-weight:750;letter-spacing:.02em;color:var(--text-mid);margin-top:2px}
+  .governance-notice .governance-risk{display:block;font-size:var(--fd-font-xs);font-weight:750;letter-spacing:.02em;color:var(--text-mid);margin-top:2px}
   .governance-notice p{margin:6px 0 0}
   .governance-notice.pending-high{border:3px solid var(--danger);background:var(--danger-light);color:var(--text);padding:14px 18px}
   .governance-notice.pending-high .pgfb-b{margin-top:10px;background:var(--surface);color:var(--danger);border-color:var(--danger)}
   .governance-notice.pending-compact{border:1px solid var(--warning);background:var(--warning-light);color:var(--text)}
-  .governance-notice.reviewed-receipt{display:inline-block;font-size:.76rem;font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:999px;padding:3px 11px}
+  .governance-notice.reviewed-receipt{display:inline-block;font-size:var(--fd-font-xs);font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:999px;padding:3px 11px}
   .governance-notice.reviewed-receipt time{white-space:nowrap}
   .governance-notice.unavailable{border:1px dashed var(--text-light);background:var(--bg-alt);color:var(--text-mid);font-weight:600}
   #content.toolmode .governance-notice{margin:0;border-radius:0}
   /* .58rem computed to 9.28px -- the smallest type anywhere in the product, carrying its most
      safety-relevant signal ("Pending review · High risk"). .68rem (10.9px) is still clearly
      subordinate to the row it annotates without falling under the legibility floor. */
-  .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:.68rem;font-weight:800;line-height:1.35;color:var(--warning);background:var(--warning-light);vertical-align:middle;margin-left:5px}
+  .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:var(--fd-font-2xs);font-weight:800;line-height:1.35;color:var(--warning);background:var(--warning-light);vertical-align:middle;margin-left:5px}
   .governance-badge.high{color:var(--danger);background:var(--danger-light)}
   .navitem.on .governance-badge{color:var(--text);background:var(--surface)}
   .md-body{max-width:820px;margin:0 auto;padding:26px 28px 60px}
-  .md-body h1{font-family:var(--font-head);color:var(--primary);font-size:2rem;margin:.2em 0 .4em}
-  .md-body h2{font-family:var(--font-head);color:var(--text);font-size:1.4rem;margin:1.3em 0 .4em;border-bottom:1px solid var(--border);padding-bottom:4px}
-  .md-body h3{font-size:1.1rem;margin:1.1em 0 .3em}
+  .md-body h1{font-family:var(--font-head);color:var(--primary);font-size:var(--fd-font-3xl);margin:.2em 0 .4em}
+  .md-body h2{font-family:var(--font-head);color:var(--text);font-size:var(--fd-font-xl);margin:1.3em 0 .4em;border-bottom:1px solid var(--border);padding-bottom:4px}
+  .md-body h3{font-size:var(--fd-font-lg);margin:1.1em 0 .3em}
   .md-body a{color:var(--accent-dark)}
-  .md-body table,.fd-article__body table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.92rem}
+  .md-body table,.fd-article__body table{border-collapse:collapse;width:100%;margin:1em 0;font-size:var(--fd-font-base)}
   .md-body .table-scroll,.fd-article__body .table-scroll{position:relative;margin:1em 0}
   .md-body .table-scroll-viewport,.fd-article__body .table-scroll-viewport{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
   .md-body .table-scroll table,.fd-article__body .table-scroll table{width:max-content;min-width:100%;margin:0}
-  .table-scroll-hint{display:none;margin:0 0 5px;color:var(--text-light);font-size:.78rem;font-weight:700;letter-spacing:.02em}
+  .table-scroll-hint{display:none;margin:0 0 5px;color:var(--text-light);font-size:var(--fd-font-xs);font-weight:700;letter-spacing:.02em}
   .md-body .table-scroll.is-scrollable .table-scroll-hint,.fd-article__body .table-scroll.is-scrollable .table-scroll-hint{display:block}
   .md-body .table-scroll.is-scrollable::after,.fd-article__body .table-scroll.is-scrollable::after{content:"";position:absolute;right:1px;bottom:1px;width:28px;height:calc(100% - 24px);pointer-events:none;background:linear-gradient(90deg,transparent,var(--surface))}
   @media(max-width:820px){
@@ -141,76 +178,78 @@
   .md-body ul,.md-body ol{padding-left:1.4em}
   .toolnote{background:var(--accent-light);border:1px solid var(--accent);border-radius:10px;padding:18px;max-width:820px;margin:26px auto;text-align:center}
   .toolnote a.btn{display:inline-block;background:var(--primary-dark);color:#fff;text-decoration:none;border-radius:6px;padding:10px 18px;font-weight:600;margin-top:10px}
-  .srn{color:var(--text-light);font-size:.92rem;margin:.2em 0 0}
+  .srn{color:var(--text-light);font-size:var(--fd-font-base);margin:.2em 0 0}
   .results{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-  .result{display:block;border:1px solid var(--border);background:#fff;border-radius:10px;font-family:inherit}
+  .result{display:block;border:1px solid var(--border);background:var(--surface);border-radius:10px;font-family:inherit}
   .result:hover{border-color:var(--accent);background:var(--accent-light)}
   .result-hit{display:block;width:100%;text-align:left;background:none;border:0;margin:0;padding:12px 14px;font:inherit;color:inherit;cursor:pointer}
   .result-chip{margin:0 14px 12px}
-  .r-title{display:block;font-family:var(--font-head);font-size:1.06rem;color:var(--primary-dark);font-weight:600}
-  .r-sec{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin:2px 0 4px}
-  .r-snip{display:block;font-size:.86rem;color:var(--text-mid);line-height:1.45}
+  .r-title{display:block;font-family:var(--font-head);font-size:var(--fd-font-lg);color:var(--primary-dark);font-weight:600}
+  .r-sec{display:block;font-size:var(--fd-font-2xs);text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin:2px 0 4px}
+  .r-snip{display:block;font-size:var(--fd-font-md);color:var(--text-mid);line-height:1.45}
   mark{background:rgba(217,160,60,.34);color:inherit;padding:0 1px;border-radius:2px}
   /* unified topic template (Slice 4) */
   .topic-tpl{margin:6px 0 18px}
-  .practice-panel{position:relative;border:1px solid #b9d2d0;border-left:7px solid var(--primary);border-radius:14px;background:linear-gradient(135deg,rgba(232,244,242,.92),rgba(255,252,247,.96));box-shadow:0 10px 26px rgba(47,41,36,.09);margin:8px 0 20px;overflow:hidden}
+  .practice-panel{position:relative;border:1px solid var(--panel-line);border-left:7px solid var(--primary);border-radius:14px;background:linear-gradient(135deg,var(--panel-wash-a),var(--panel-wash-b));box-shadow:0 10px 26px rgba(47,41,36,.09);margin:8px 0 20px;overflow:hidden}
   .practice-panel::before{content:"";position:absolute;inset:0 auto 0 0;width:7px;background:linear-gradient(180deg,var(--primary),var(--accent));pointer-events:none}
   .practice-panel>summary{list-style:none}
   .practice-panel>summary::-webkit-details-marker{display:none}
-  .practice-summary{display:flex;align-items:center;gap:12px;padding:14px 16px 14px 18px;cursor:pointer;background:rgba(255,255,255,.55);border-bottom:1px solid transparent}
+  .practice-summary{display:flex;align-items:center;gap:12px;padding:14px 16px 14px 18px;cursor:pointer;background:var(--panel-sheer);border-bottom:1px solid transparent}
   .practice-summary:focus-visible{outline:3px solid rgba(185,79,52,.34);outline-offset:-3px}
-  .practice-panel[open] .practice-summary{border-bottom-color:#cfe1db}
-  .practice-tab{flex:0 0 auto;font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--primary-dark);border-radius:999px;padding:4px 9px}
-  .practice-title{font-family:var(--font-head);font-size:1.08rem;font-weight:700;color:var(--primary-dark);line-height:1.2}
-  .practice-sub{margin-left:auto;font-size:.76rem;color:var(--text-light);white-space:nowrap}
-  .practice-hint{flex:0 0 auto;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-dark);background:rgba(255,255,255,.86);border:1px solid #d6c8b6;border-radius:999px;padding:5px 10px;box-shadow:0 2px 8px rgba(47,41,36,.06)}
+  .practice-panel[open] .practice-summary{border-bottom-color:var(--panel-line-open)}
+  .practice-tab{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--primary-dark);border-radius:999px;padding:4px 9px}
+  .practice-title{font-family:var(--font-head);font-size:var(--fd-font-lg);font-weight:700;color:var(--primary-dark);line-height:1.2}
+  .practice-sub{margin-left:auto;font-size:var(--fd-font-xs);color:var(--text-light);white-space:nowrap}
+  .practice-hint{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-dark);background:var(--panel-solid);border:1px solid var(--panel-line-warm);border-radius:999px;padding:5px 10px;box-shadow:0 2px 8px rgba(47,41,36,.06)}
   .practice-panel:not([open]) .practice-summary:hover .practice-hint{background:var(--accent-light);border-color:var(--accent)}
   .practice-hint-close{display:none}
   .practice-panel[open] .practice-hint-open{display:none}
   .practice-panel[open] .practice-hint-close{display:inline}
-  .practice-chev{font-size:1.05rem;color:var(--accent-dark);transition:transform .16s ease}
+  .practice-chev{font-size:var(--fd-font-lg);color:var(--accent-dark);transition:transform .16s ease}
   .practice-panel[open] .practice-chev{transform:rotate(90deg)}
   .practice-body{padding:14px 16px 16px}
   .practice-sections{display:grid;gap:12px}
-  .practice-section{background:rgba(255,255,255,.72);border:1px solid #d9e5e0;border-radius:12px;padding:13px 14px}
-  .practice-section-title{font-size:.7rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--primary-dark);margin:0 0 8px}
-  .practice-muted{font-size:.9rem;color:var(--text-mid);margin:0}
+  .practice-section{background:var(--panel-tree-bg);border:1px solid var(--panel-line-soft);border-radius:12px;padding:13px 14px}
+  .practice-section-title{font-size:var(--fd-font-2xs);font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--primary-dark);margin:0 0 8px}
+  .practice-muted{font-size:var(--fd-font-md);color:var(--text-mid);margin:0}
   .practice-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-  .practice-action{display:inline-flex;align-items:center;text-decoration:none;font-size:.84rem;font-weight:700;line-height:1.2;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:999px;padding:8px 12px}
+  .practice-action{display:inline-flex;align-items:center;text-decoration:none;font-size:var(--fd-font-sm);font-weight:700;line-height:1.2;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:999px;padding:8px 12px}
   .practice-action:hover{background:var(--surface);border-color:var(--accent)}
-  .practice-action.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:#bdd5d1}
-  .practice-action.is-case{color:var(--primary-dark);background:#fff;border-color:#d5c9bc}
-  .practice-drills{border:1px solid #d9c597;background:#fffaf0;border-radius:12px;padding:11px 12px;margin:0 0 12px}
-  .practice-drill-head{font-size:.68rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--warning);margin:0 0 4px}
-  .practice-drill-note{font-size:.88rem;color:var(--text-mid);margin:0}
+  .practice-action.is-safety{color:var(--primary-dark);background:var(--primary-light);border-color:var(--chip-line-safety)}
+  .practice-action.is-case{color:var(--primary-dark);background:var(--surface);border-color:var(--chip-line-case)}
+  .practice-drills{border:1px solid var(--chip-line-drill);background:var(--panel-warm);border-radius:12px;padding:11px 12px;margin:0 0 12px}
+  .practice-drill-head{font-size:var(--fd-font-2xs);font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--warning);margin:0 0 4px}
+  .practice-drill-note{font-size:var(--fd-font-md);color:var(--text-mid);margin:0}
   .practice-drill-actions{margin-top:9px}
-  .practice-action.is-drill{align-items:flex-start;flex-direction:column;gap:2px;min-width:178px;color:var(--warning);background:#fff;border-color:#d9c597;border-radius:10px;padding:9px 11px}
-  .practice-action.is-drill:hover{background:#fffaf0;border-color:var(--warning)}
-  .practice-action-kicker{font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--warning)}
+  .practice-action.is-drill{align-items:flex-start;flex-direction:column;gap:2px;min-width:178px;color:var(--warning);background:var(--surface);border-color:var(--chip-line-drill);border-radius:10px;padding:9px 11px}
+  .practice-action.is-drill:hover{background:var(--bg-alt);border-color:var(--warning)}
+  .practice-action-kicker{font-size:var(--fd-font-2xs);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--warning)}
   .practice-action-main{font-weight:800;color:var(--text)}
-  .practice-action-arrow{font-size:.76rem;color:var(--warning)}
+  .practice-action-arrow{font-size:var(--fd-font-xs);color:var(--warning)}
   .practice-action.is-review{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-meta{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
-  .tpl-chip{font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;border:1px solid var(--border)}
+  /* Mirrors the Front Door .fd-chip rule: one chip language on a reader page. Semantic colours below stay. */
+.tpl-chip{display:inline-flex;align-items:center;font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.03em;border-radius:999px;padding:2px 9px;border:1px solid var(--border)}
   .tpl-chip.read{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-chip.hy{color:var(--warning);background:var(--warning-light);border-color:var(--warning)}
   .tpl-chip.safety{color:var(--danger);background:var(--danger-light);border-color:var(--danger)}
   .tpl-chip.evidence{color:var(--accent-dark);background:var(--accent-light);border-color:var(--accent)}
-  .tpl-chip.review{color:var(--success);background:var(--success-light);border-color:var(--success)}
-  .tpl-chip.mode{color:var(--text-mid);background:var(--bg-alt)}
+    .tpl-chip.mode{color:var(--text-mid);background:var(--bg-alt)}
   .tpl-chip.mode.on{color:#fff;background:var(--accent);border-color:var(--accent)}
   .practice-panel .tpl-meta{margin:0 0 12px}
-  .practice-mode-note{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.7);border:1px solid #d9e5e0;border-radius:12px;padding:11px 13px;margin:0 0 12px}
-  .practice-mode-note .k{flex:0 0 auto;font-size:.66rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark)}
-  .practice-mode-note .v{font-size:.9rem;line-height:1.4;color:var(--text-mid)}
+  .practice-mode-note{display:flex;gap:10px;align-items:flex-start;background:var(--panel-tree-bg);border:1px solid var(--panel-line-soft);border-radius:12px;padding:11px 13px;margin:0 0 12px}
+  .practice-mode-note .k{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark)}
+  .practice-mode-note .v{font-size:var(--fd-font-md);line-height:1.4;color:var(--text-mid)}
+  /* On a phone the label column squeezed the sentence to ~60% of the width; stack them. */
+  @media(max-width:640px){.practice-mode-note{flex-direction:column;gap:var(--fd-space-2)}}
   .page-title-row{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin:.2em 0 .25em}
   .page-title-row h1{margin:0}
-  .page-title-row .markrev{font-size:.68rem;font-weight:800;letter-spacing:.03em;border-radius:999px;padding:4px 9px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-family:inherit;white-space:nowrap;margin-top:.42rem}
+  .page-title-row .markrev{font-size:var(--fd-font-2xs);font-weight:800;letter-spacing:.03em;border-radius:999px;padding:4px 9px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-family:inherit;white-space:nowrap;margin-top:.42rem}
   .page-title-row .markrev:hover{border-color:var(--accent);color:var(--accent-dark);background:var(--accent-light)}
   .page-title-row .markrev.on{background:var(--success-light);border-color:var(--success);color:var(--success)}
   .review-ledger{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;margin:-2px 0 14px;padding:0;color:var(--text-mid)}
-  .review-ledger .k{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-dark)}
-  .review-ledger .v{font-size:.78rem;color:var(--text-mid);line-height:1.35}
+  .review-ledger .k{font-size:var(--fd-font-2xs);font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-dark)}
+  .review-ledger .v{font-size:var(--fd-font-xs);color:var(--text-mid);line-height:1.35}
   .review-ledger .revcount{font-weight:800;color:var(--text)}
   .review-ledger .review-date{color:var(--text-light)}
   /* .wd-tool was never in this list, so the tool chips shipped at 32px on a phone while the
@@ -223,65 +262,63 @@
   @media(max-width:560px){.page-title-row{display:block}.page-title-row .markrev{margin:.25rem 0 .1rem}.mc-mode,.wd-mode,.wd-tool{min-height:44px;padding-top:10px;padding-bottom:10px}.hm-li{min-height:44px}}
   .in30{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:13px 16px;margin:0 0 14px}
   .practice-panel .in30{background:transparent;border-left:none;border-radius:0;padding:0;margin:0}
-  .in30 .lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px}
-  .in30 .one{font-family:var(--font-head);font-size:1.12rem;line-height:1.4;margin-bottom:8px;color:var(--text)}
-  .practice-panel .in30 .lbl{display:none}
-  .practice-panel .in30 .one{font-size:1.02rem;margin-bottom:8px}
+  .in30 .lbl{font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:6px}
+    .practice-panel .in30 .lbl{display:none}
   .in30 ul{margin:0;padding:0;list-style:none}
-  .in30 li{position:relative;padding-left:24px;margin:5px 0;font-size:.95rem}
+  .in30 li{position:relative;padding-left:24px;margin:5px 0;font-size:var(--fd-font-base)}
   .in30 li::before{content:"\2713";position:absolute;left:0;color:var(--accent);font-weight:700}
   .workflow-card{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:14px 16px;margin:0 0 16px}
   .workflow-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
-  .workflow-title{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-dark)}
+  .workflow-title{font-size:var(--fd-font-xs);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-dark)}
   .workflow-stage{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
-  .workflow-stage span{font-size:.72rem;font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--border);border-radius:999px;padding:4px 8px}
+  .workflow-stage span{font-size:var(--fd-font-xs);font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--border);border-radius:999px;padding:4px 8px}
   .workflow-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
   .workflow-step{border:1px solid var(--border);border-radius:10px;background:var(--bg-alt);padding:10px 12px}
-  .workflow-step .k{font-size:.68rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--text-light);margin-bottom:5px}
-  .workflow-step .v{font-size:.92rem;line-height:1.45;color:var(--text)}
+  .workflow-step .k{font-size:var(--fd-font-2xs);font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--text-light);margin-bottom:5px}
+  .workflow-step .v{font-size:var(--fd-font-base);line-height:1.45;color:var(--text)}
   .workflow-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-  .workflow-actions a{display:inline-flex;align-items:center;text-decoration:none;font-size:.84rem;font-weight:700;color:var(--accent-dark);border:1px solid var(--border);border-radius:999px;padding:7px 11px;background:var(--accent-light)}
+  .workflow-actions a{display:inline-flex;align-items:center;text-decoration:none;font-size:var(--fd-font-sm);font-weight:700;color:var(--accent-dark);border:1px solid var(--border);border-radius:999px;padding:7px 11px;background:var(--accent-light)}
   .workflow-actions a:hover{border-color:var(--accent);background:var(--surface)}
   .practice-panel .workflow-card{border:none;border-radius:0;background:transparent;padding:0;margin:0}
   .practice-panel .workflow-head{margin-bottom:9px}
   .practice-panel .workflow-title{display:none}
-  .practice-panel .workflow-step{background:rgba(247,250,249,.86)}
+  .practice-panel .workflow-step{background:var(--panel-step-bg)}
   .practice-panel .workflow-actions{display:none}
   @media(max-width:680px){.practice-summary{display:grid;grid-template-columns:auto 1fr auto;gap:8px}.practice-sub{grid-column:2/4;margin-left:0;white-space:normal}.practice-hint{grid-column:2/3;justify-self:start}.workflow-head{display:block}.workflow-stage{justify-content:flex-start;margin-top:8px}.workflow-grid{grid-template-columns:1fr}}
   .cantmiss{display:flex;gap:11px;background:var(--danger-light);border-left:3px solid var(--danger);border-radius:0 10px 10px 0;padding:12px 15px;margin:0 0 14px}
-  .cantmiss .ico{color:var(--danger);flex:0 0 auto;font-size:1.05rem;line-height:1.4}
-  .cantmiss .tx{font-size:.95rem} .cantmiss b{color:var(--danger)}
+  .cantmiss .ico{color:var(--danger);flex:0 0 auto;font-size:var(--fd-font-lg);line-height:1.4}
+  .cantmiss .tx{font-size:var(--fd-font-base)} .cantmiss b{color:var(--danger)}
   .practice-panel .cantmiss{margin:10px 0 0}
   .minitree{border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin:0 0 14px;background:var(--surface)}
-  .minitree .lbl{font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-light);margin-bottom:8px}
+  .minitree .lbl{font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-light);margin-bottom:8px}
   .minitree .ro{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-  .minitree .ro .c{font-size:.82rem;background:var(--danger-light);color:var(--danger);border:1px solid var(--danger);border-radius:999px;padding:3px 9px}
-  .minitree .fm{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:8px;padding:8px 11px;font-size:.92rem}
+  .minitree .ro .c{font-size:var(--fd-font-sm);background:var(--danger-light);color:var(--danger);border:1px solid var(--danger);border-radius:999px;padding:3px 9px}
+  .minitree .fm{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:8px;padding:8px 11px;font-size:var(--fd-font-base)}
   .minitree .fm b{color:var(--accent-dark)}
-  .minitree a{display:inline-block;margin-top:8px;font-size:.84rem;color:var(--accent-dark)}
-  .practice-panel .minitree{background:rgba(255,255,255,.72);margin:10px 0 0}
+  .minitree a{display:inline-block;margin-top:8px;font-size:var(--fd-font-sm);color:var(--accent-dark)}
+  .practice-panel .minitree{background:var(--panel-tree-bg);margin:10px 0 0}
   .tyourself{border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin:0 0 16px;background:var(--surface)}
   .practice-panel .tyourself{border:none;background:transparent;border-radius:0;padding:0;margin:0}
-  .tyourself .lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-dark);margin-bottom:8px}
+  .tyourself .lbl{font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-dark);margin-bottom:8px}
   .practice-panel .tyourself .lbl{display:none}
-  .tyourself .q{font-family:var(--font-head);font-size:1.05rem;margin-bottom:10px;color:var(--text)}
+  .tyourself .q{font-family:var(--font-head);font-size:var(--fd-font-lg);margin-bottom:10px;color:var(--text)}
   .tyo{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--bg-alt);border-radius:9px;padding:9px 12px;margin:6px 0;cursor:pointer;font:inherit;color:var(--text)}
   .tyo:hover{border-color:var(--accent)}
   .tyo.correct{border-color:var(--success);background:var(--success-light)}
   .tyo.wrong{border-color:var(--danger);background:var(--danger-light)}
-  .tyfb{font-size:.9rem;color:var(--text-mid);margin-top:8px;padding:10px 12px;border-radius:8px;background:var(--bg-alt);display:none}
+  .tyfb{font-size:var(--fd-font-md);color:var(--text-mid);margin-top:8px;padding:10px 12px;border-radius:8px;background:var(--bg-alt);display:none}
   .tyfb.show{display:block}
   .md-body .toolcta{display:inline-block;background:var(--primary-dark);color:var(--on-brand);text-decoration:none;border-radius:8px;padding:10px 16px;font-weight:600;margin:2px 0 18px}
   .md-body .minitree a,.md-body .in30 a{text-decoration:underline}
   /* collapsible in-page sections (long readings) */
   .md-body .sec-toolbar,.fd-article__body .sec-toolbar{display:flex;gap:8px;margin:10px 0 12px}
-  .md-body .sec-all,.fd-article__body .sec-all{font-size:.8rem;border:1px solid var(--border);background:var(--surface);color:var(--accent-dark);border-radius:999px;padding:5px 13px;cursor:pointer;font-family:inherit}
+  .md-body .sec-all,.fd-article__body .sec-all{font-size:var(--fd-font-sm);border:1px solid var(--border);background:var(--surface);color:var(--accent-dark);border-radius:999px;padding:5px 13px;cursor:pointer;font-family:inherit}
   .md-body .sec-all:hover,.fd-article__body .sec-all:hover{border-color:var(--accent)}
   .md-body .sec-c,.fd-article__body .sec-c{border:1px solid var(--border);border-radius:10px;margin:9px 0;background:var(--surface);overflow:hidden}
-  .md-body .sec-h,.fd-article__body .sec-h{margin:0;border:none;padding:0;font-size:1.05rem}
+  .md-body .sec-h,.fd-article__body .sec-h{margin:0;border:none;padding:0;font-size:var(--fd-font-lg)}
   .md-body .sec-h button,.fd-article__body .sec-h button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:none;cursor:pointer;font:inherit;font-family:var(--font-head);font-weight:600;color:var(--text);padding:12px 15px}
   .md-body .sec-h button:hover,.fd-article__body .sec-h button:hover{background:var(--bg-alt)}
-  .md-body .sec-chev,.fd-article__body .sec-chev{display:inline-block;color:var(--accent-dark);font-size:.78rem;transition:transform .15s;flex:0 0 auto}
+  .md-body .sec-chev,.fd-article__body .sec-chev{display:inline-block;color:var(--accent-dark);font-size:var(--fd-font-xs);transition:transform .15s;flex:0 0 auto}
   .md-body .sec-c.open .sec-chev,.fd-article__body .sec-c.open .sec-chev{transform:rotate(90deg)}
   .md-body .sec-b,.fd-article__body .sec-b{display:none;padding:0 16px 12px}
   .md-body .sec-c.open .sec-b,.fd-article__body .sec-c.open .sec-b{display:block}
@@ -306,7 +343,7 @@
     .mobile-chrome{position:sticky;top:0;z-index:18;display:grid;grid-template-columns:minmax(44px,auto) minmax(0,1fr) minmax(44px,auto);align-items:center;gap:8px;min-height:56px;padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px;background:var(--bg);border-bottom:1px solid var(--border)}
     .menubtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;border:none;border-radius:9px;padding:8px 12px;background:var(--primary-dark);color:#fff;font:inherit;font-weight:700;cursor:pointer}
     .menubtn span{display:none}
-    .mobile-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;color:var(--text);font-family:var(--font-head);font-size:1rem;font-weight:600}
+    .mobile-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;color:var(--text);font-family:var(--font-head);font-size:var(--fd-font-base);font-weight:600}
     /* Replaces the old .mobile-chrome-spacer (an empty 44x44 span that existed only to balance
        #menuBtn in the 3-column grid). Same footprint, so the resolved track stays 44px and the
        320px no-overflow assertion in visual-regression.spec.js is unaffected. font:inherit is
@@ -321,10 +358,13 @@
     .layout>aside.open{transform:translateX(0)}
     body.has-tlbar #content{padding-bottom:var(--mobile-bottom-clearance)}
   }
+  /* Reduced motion must be the LAST word on these transitions: the declarations it zeroes have the
+     same specificity and sit later in this sheet, so an earlier override lost the cascade (#428). */
+  @media(prefers-reduced-motion:reduce){.skip-link,.layout,.layout>aside,.modetoggle .knob,.navgroupsec .chev,.navsec .chev,.practice-chev,.md-body .sec-chev,.fd-article__body .sec-chev{transition:none}}
 </style>
 <style>
   /* ===== Tool launcher badges (from Claude Design handoff, house-tokenized) ===== */
-  .tl-chip{display:inline-flex;align-items:center;gap:7px;vertical-align:middle;text-decoration:none;font-family:var(--font-body);font-size:.9rem;font-weight:600;line-height:1;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--border);border-radius:999px;padding:8px 13px;min-height:38px;cursor:pointer;transition:background .15s,color .15s,border-color .15s,box-shadow .15s}
+  .tl-chip{display:inline-flex;align-items:center;gap:7px;vertical-align:middle;text-decoration:none;font-family:var(--font-body);font-size:var(--fd-font-md);font-weight:600;line-height:1;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--border);border-radius:999px;padding:8px 13px;min-height:38px;cursor:pointer;transition:background .15s,color .15s,border-color .15s,box-shadow .15s}
   .tl-chip svg{width:1.15em;height:1.15em;flex:0 0 auto;stroke:currentColor}
   .tl-chip:hover{background:var(--surface);color:var(--accent);border-color:var(--accent);box-shadow:0 1px 3px rgba(59,51,44,.14)}
   .tl-chip:active{transform:translateY(1px)}
@@ -334,7 +374,7 @@
   .tl-chip.is-safety:focus-visible{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--primary)}
   .tl-dock{position:fixed;right:20px;bottom:20px;z-index:30;font-family:var(--font-body)}
   .tl-dock__stack{display:flex;flex-direction:column;align-items:flex-end;gap:10px;margin-bottom:12px}
-  .tl-dock__item{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-size:.86rem;font-weight:600;color:var(--accent-dark);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:0 16px 0 14px;height:46px;box-shadow:0 8px 28px rgba(59,51,44,.18);opacity:0;transform:translateY(8px) scale(.96);pointer-events:none;transition:opacity .2s,transform .2s,background .15s,color .15s}
+  .tl-dock__item{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-size:var(--fd-font-md);font-weight:600;color:var(--accent-dark);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:0 16px 0 14px;height:46px;box-shadow:0 8px 28px rgba(59,51,44,.18);opacity:0;transform:translateY(8px) scale(.96);pointer-events:none;transition:opacity .2s,transform .2s,background .15s,color .15s}
   .tl-dock__item svg{width:20px;height:20px;flex:0 0 auto;stroke:currentColor}
   .tl-dock__item.is-safety{color:var(--primary-dark)}
   .tl-dock__item:hover{color:#fff;background:var(--accent)}
@@ -347,7 +387,7 @@
   .tl-fab:focus-visible{outline:none;box-shadow:0 8px 28px rgba(59,51,44,.22),0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
   .tl-dock.is-open .tl-fab{background:var(--accent-dark)}
   .tl-dock.is-open .tl-fab svg{transform:rotate(45deg)}
-  .tl-dock__hint{position:absolute;right:66px;bottom:16px;white-space:nowrap;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:9px 13px;font-size:.78rem;font-weight:600;line-height:1;box-shadow:0 8px 28px rgba(59,51,44,.18);opacity:0;transform:translateX(8px);pointer-events:none;transition:opacity .2s,transform .2s}
+  .tl-dock__hint{position:absolute;right:66px;bottom:16px;white-space:nowrap;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:999px;padding:9px 13px;font-size:var(--fd-font-xs);font-weight:600;line-height:1;box-shadow:0 8px 28px rgba(59,51,44,.18);opacity:0;transform:translateX(8px);pointer-events:none;transition:opacity .2s,transform .2s}
   .tl-dock.is-hint .tl-dock__hint{opacity:1;transform:none}
   .tl-dock.is-open .tl-dock__hint{opacity:0}
   .tl-fab__label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -359,8 +399,8 @@
      tokens, calibrated for that pairing) — deliberately not filled buttons, since the
      dark-mode "*-dark" tokens are light colors meant for text-on-dark-surface, not a
      button fill white text could sit on. */
-  .sw-toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:31;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.86rem;box-shadow:0 8px 28px rgba(59,51,44,.18)}
-  .sw-toast button{font-family:inherit;font-size:.84rem;font-weight:700;border-radius:999px;padding:7px 12px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-mid)}
+  .sw-toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:31;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:var(--fd-font-md);box-shadow:0 8px 28px rgba(59,51,44,.18)}
+  .sw-toast button{font-family:inherit;font-size:var(--fd-font-sm);font-weight:700;border-radius:999px;padding:7px 12px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-mid)}
   .sw-toast button:first-of-type{color:var(--primary-dark);border-color:var(--primary-dark)}
   .sw-toast button:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
   @media(max-width:820px){body.has-tlbar .sw-toast{bottom:calc(var(--mobile-bottom-clearance) + 12px)}}
@@ -370,15 +410,15 @@
      occluded by the tool sheet, and below .skip-link (100, the stylesheet maximum). The SW update
      toast sits at 31 and appends two focusable buttons as the last children of <body> with no
      focus management of its own — the trap below must not assume it owns the end of tab order. */
-  .capture-desk{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:38px;margin:0 0 12px;border:1px dashed var(--border);border-radius:9px;background:transparent;color:var(--text-mid);font-family:var(--font-body);font-size:.8rem;font-weight:600;cursor:pointer}
+  .capture-desk{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:38px;margin:0 0 12px;border:1px dashed var(--border);border-radius:9px;background:transparent;color:var(--text-mid);font-family:var(--font-body);font-size:var(--fd-font-sm);font-weight:600;cursor:pointer}
   .capture-desk:hover{border-style:solid;color:var(--primary-dark);border-color:var(--primary-dark)}
   .capture-desk:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
   .cap-backdrop{position:fixed;inset:0;z-index:130;background:rgba(47,41,36,.4)}
   .cap-sheet{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:131;width:min(520px,calc(100vw - 24px));max-height:min(80vh,720px);overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(59,51,44,.26);font-family:var(--font-body)}
-  .cap-sheet h2{font-family:var(--font-head);font-size:1.02rem;color:var(--primary-dark);margin:0 0 4px}
-  .cap-warn{font-size:.82rem;color:var(--text-mid);margin:0 0 10px;line-height:1.45}
+  .cap-sheet h2{font-family:var(--font-head);font-size:var(--fd-font-lg);color:var(--primary-dark);margin:0 0 4px}
+  .cap-warn{font-size:var(--fd-font-sm);color:var(--text-mid);margin:0 0 10px;line-height:1.45}
   .cap-warn strong{color:var(--text)}
-  .cap-sheet textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;border:1px solid var(--border);border-radius:9px;padding:10px;font:inherit;font-size:.9rem;color:var(--text);background:var(--bg)}
+  .cap-sheet textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;border:1px solid var(--border);border-radius:9px;padding:10px;font:inherit;font-size:var(--fd-font-md);color:var(--text);background:var(--bg)}
   .cap-sheet textarea:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
   /* .fd-header is position:sticky, but sticky is scoped to its PARENT's box -- and this mount is
      a flex item of .fd-shell sized exactly to the header it holds, so the header had zero travel
@@ -390,34 +430,57 @@
      stylesheet here would trip fd-shell-boot's single-reference count, which exists to keep this
      document from acquiring a second competing link to it.) */
   #fdChromeMount{display:contents}
-  #fdCaptureMount{width:100%;max-width:1200px;margin:12px auto 0;padding:0 20px;display:flex;justify-content:flex-end}
+  #fdCaptureMount{position:fixed;right:calc(var(--fd-space-8) + var(--fd-target-touch) + var(--fd-space-9));bottom:var(--fd-space-8);z-index:28;display:flex;justify-content:flex-end}
   #fdCaptureMount:empty{display:none}
-  #fdCaptureMount .fd-capture-launch{width:min(230px,100%);margin:0}
-  @media(max-width:999px){#fdCaptureMount .fd-capture-launch{width:min(210px,100%)}}
-  .cap-disclose{font-size:.76rem;color:var(--text-light);margin:8px 0 0}
+  #fdCaptureMount .fd-capture-launch{width:auto;margin:0;box-shadow:var(--fd-shadow-lift);border-style:solid}
+  @media(max-width:1000px){#fdCaptureMount{right:var(--fd-space-6);bottom:calc(env(safe-area-inset-bottom,0px) + var(--fd-target-touch) + var(--fd-space-10) + var(--fd-space-2))}}
+  @media(max-width:640px){#fdCaptureMount{display:none}}
+  .cap-disclose{font-size:var(--fd-font-xs);color:var(--text-light);margin:8px 0 0}
+  .cap-starters{display:flex;align-items:center;gap:var(--fd-space-3);flex-wrap:wrap;margin:var(--fd-space-4) 0 0}
+  .cap-starters span{font-size:var(--fd-font-xs);color:var(--text-light)}
+  .cap-starters button{min-height:var(--fd-target-touch);border:1px solid var(--border);border-radius:var(--fd-radius-pill);background:var(--surface);color:var(--primary-dark);padding:var(--fd-space-3) var(--fd-space-5);font:inherit;font-size:var(--fd-font-xs);cursor:pointer}
+  .cap-starters button:hover{background:var(--primary-light);border-color:var(--primary)}
+  .cap-starters button:focus-visible{outline:var(--fd-space-1) solid var(--fd-focus);outline-offset:var(--fd-space-1)}
   .cap-acts{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 0}
-  .cap-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font:inherit;font-size:.84rem;font-weight:600;cursor:pointer}
+  .cap-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 14px;font:inherit;font-size:var(--fd-font-sm);font-weight:600;cursor:pointer}
   .cap-btn.primary{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff}
   .cap-btn.danger{color:var(--warning);border-color:var(--warning)}
   .cap-btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
   /* Home triage card only — the sheet has its own framing (.cap-warn/.cap-disclose); this is
      the equivalent for the section on Today, which previously opened straight into controls. */
-  .cap-purpose{margin:0 0 10px;font-size:.86rem;line-height:1.45;color:var(--text-mid);max-width:70ch}
-  .cap-phi{margin:12px 0 0;padding:12px;background:var(--warning-light);border:1px solid var(--warning);border-radius:9px;font-size:.84rem;color:var(--warning)}
+  .cap-purpose{margin:0 0 10px;font-size:var(--fd-font-md);line-height:1.45;color:var(--text-mid);max-width:70ch}
+  .cap-phi{margin:12px 0 0;padding:12px;background:var(--warning-light);border:1px solid var(--warning);border-radius:9px;font-size:var(--fd-font-sm);color:var(--warning)}
   .cap-phi b{display:block;margin:0 0 4px}
+  .cap-next{margin:var(--fd-space-7) 0 0;padding:var(--fd-space-7);border:1px solid var(--primary);border-radius:var(--fd-radius-lg);background:var(--primary-light)}
+  .cap-next__saved{margin:0 0 var(--fd-space-1);color:var(--primary-dark);font-size:var(--fd-font-xs);font-weight:700}
+  .cap-next h3{margin:0 0 var(--fd-space-5);color:var(--text);font-family:var(--font-head);font-size:var(--fd-font-md)}
+  .cap-next__match{display:flex;flex-direction:column;gap:var(--fd-space-1);margin-top:var(--fd-space-5);padding:var(--fd-space-5);border-radius:var(--fd-radius-md);background:var(--surface)}
+  .cap-next__match span{font-size:var(--fd-font-xs);color:var(--text-light)}
+  .cap-next__match strong{font-size:var(--fd-font-md);color:var(--text)}
+  .cap-next__actions{display:flex;gap:var(--fd-space-4);flex-wrap:wrap;margin-top:var(--fd-space-5)}
+  .cap-next__empty{margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);line-height:1.5;color:var(--text-mid)}
+  .cap-next__done{margin-top:var(--fd-space-5);min-height:var(--fd-target-touch)}
+  .cap-route{display:flex;flex-wrap:wrap;gap:var(--fd-space-4);margin-top:var(--fd-space-4)}
+  .cap-route .cap-btn{min-height:var(--fd-target-touch)}
+  .cap-route .cap-btn[aria-pressed="true"]{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
   .cap-list{list-style:none;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--border)}
-  .cap-list li{display:flex;align-items:flex-start;gap:8px;margin:0 0 8px;font-size:.84rem;color:var(--text)}
-  .cap-list .x{flex:0 0 auto;border:none;background:transparent;color:var(--text-light);font:inherit;font-size:1rem;line-height:1;cursor:pointer;padding:2px 6px;min-width:28px;min-height:28px}
-  .cap-err{margin:10px 0 0;font-size:.82rem;color:var(--warning)}
+  .cap-list li{margin:0 0 var(--fd-space-6);padding:0 0 var(--fd-space-6);border-bottom:1px solid var(--border);font-size:var(--fd-font-sm);color:var(--text)}
+  .cap-list__row{display:flex;align-items:center;gap:var(--fd-space-4)}
+  .cap-list__text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+  .cap-list__status{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--text-light);border:1px solid var(--border);border-radius:var(--fd-radius-pill);padding:var(--fd-space-1) var(--fd-space-3);line-height:1.4}
+  /* Touch target (#428) without a taller list: the hit area is the button box, the glyph stays small. */
+  .cap-list .x{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--text-light);font:inherit;font-size:var(--fd-font-lg);line-height:1;cursor:pointer;padding:0;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);border-radius:var(--fd-radius-sm)}
+  .cap-list .x:hover,.cap-list .x:focus-visible{background:var(--bg-alt);color:var(--text)}
+  .cap-err{margin:10px 0 0;font-size:var(--fd-font-sm);color:var(--warning)}
   .cap-tri{margin:0 0 14px;padding:0 0 4px;border-bottom:1px solid var(--border)}
   .cap-tri:last-of-type{border-bottom:none}
-  .cap-tri-q{margin:0 0 6px;font-size:.9rem;font-weight:600;color:var(--text)}
+  .cap-tri-q{margin:0 0 6px;font-size:var(--fd-font-md);font-weight:600;color:var(--text)}
   /* ===== Bedside mobile tool bar (Concept C) — phone gets a bar, wider screens keep the dock ===== */
   .tl-bar{display:none}
   @media(max-width:820px){
     .tl-bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:29;gap:6px;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -4px 16px rgba(59,51,44,.14)}
     body.has-tlbar #content{padding-bottom:var(--mobile-bottom-clearance)}
-    .tl-bar__item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border:1px solid var(--border);background:var(--accent-light);color:var(--accent-dark);border-radius:12px;text-decoration:none;cursor:pointer;font-family:var(--font-body);font-size:.64rem;font-weight:700;line-height:1.15;padding:6px 2px}
+    .tl-bar__item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border:1px solid var(--border);background:var(--accent-light);color:var(--accent-dark);border-radius:12px;text-decoration:none;cursor:pointer;font-family:var(--font-body);font-size:var(--fd-font-2xs);font-weight:700;line-height:1.15;padding:6px 2px}
     .tl-bar__item svg{width:20px;height:20px;flex:0 0 auto;stroke:currentColor}
     .tl-bar__item.is-safety{background:var(--primary-light);color:var(--primary-dark)}
     .tl-bar__item.tl-bar__more{background:var(--bg-alt);color:var(--text-light);border:1px solid var(--border)}
@@ -426,11 +489,11 @@
   .tl-sheet-backdrop{position:fixed;inset:0;z-index:39;background:rgba(47,41,36,.4)}
   .tl-sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:70vh;overflow-y:auto;box-shadow:0 -8px 28px rgba(59,51,44,.24)}
   .tl-sheet__head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
-  .tl-sheet h2{font-family:var(--font-head);font-size:1.05rem;margin:0;color:var(--text)}
+  .tl-sheet h2{font-family:var(--font-head);font-size:var(--fd-font-lg);margin:0;color:var(--text)}
   .tl-sheet__close{min-height:44px;border:1px solid var(--border);border-radius:9px;padding:8px 12px;background:var(--surface);color:var(--accent-dark);font:inherit;font-weight:700;cursor:pointer}
   .tl-sheet__close:focus-visible{outline:none;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
   .tl-sheet__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-  .tl-sheet__item{display:flex;align-items:center;gap:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:10px 11px;text-decoration:none;font-size:.86rem;font-weight:600;cursor:pointer;min-height:44px}
+  .tl-sheet__item{display:flex;align-items:center;gap:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:10px 11px;text-decoration:none;font-size:var(--fd-font-md);font-weight:600;cursor:pointer;min-height:44px}
   .tl-sheet__item svg{width:19px;height:19px;flex:0 0 auto;stroke:currentColor;color:var(--accent-dark)}
   .tl-sheet__item.is-safety{border-color:var(--primary);color:var(--primary-dark)}
   .tl-sheet__item.is-safety svg{color:var(--primary-dark)}
@@ -438,19 +501,19 @@
   @media(prefers-reduced-motion:reduce){.tl-bar__item{transition:none}}
   /* ===== Progress home (Concept B) ===== */
   .hm{max-width:900px;margin:0 auto;padding:26px 28px 60px}
-  .hm h1{font-family:var(--font-head);color:var(--primary);font-size:1.9rem;margin:.1em 0}
+  .hm h1{font-family:var(--font-head);color:var(--primary);font-size:var(--fd-font-3xl);margin:.1em 0}
   .hm .sub{color:var(--text-mid);margin:0 0 20px}
   .hm-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 16px}
-  .hm-stamp{font-size:.76rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);white-space:nowrap}
+  .hm-stamp{font-size:var(--fd-font-xs);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);white-space:nowrap}
   .hm-ribbon{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;margin:0 0 14px;flex-wrap:wrap}
   .hm-ribbon .t{flex:1;min-width:220px}
   .hm-ribbon .hm-btn{align-self:auto}
-  .hm-ribbon-x{border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:1.05rem;line-height:1;padding:2px 6px;font-family:var(--font-body)}
+  .hm-ribbon-x{border:none;background:transparent;color:var(--text-light);cursor:pointer;font-size:var(--fd-font-lg);line-height:1;padding:2px 6px;font-family:var(--font-body)}
   .hm-ribbon-x:hover{color:var(--text)}
   .hm-hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:var(--accent-light);border:1px solid var(--accent-border);border-left:4px solid var(--accent);border-radius:14px;padding:18px 20px;margin:0 0 18px}
-  .hm-hero .k{font-size:.66rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-dark);margin:0 0 4px}
-  .hm-hero .t{font-family:var(--font-head);font-size:1.3rem;font-weight:600;color:var(--text);line-height:1.3}
-  .hm-hero .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--accent);border-radius:999px;color:var(--on-brand,#fff);font-size:.88rem;font-weight:800;padding:10px 18px;white-space:nowrap}
+  .hm-hero .k{font-size:var(--fd-font-2xs);font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--accent-dark);margin:0 0 4px}
+  .hm-hero .t{font-family:var(--font-head);font-size:var(--fd-font-xl);font-weight:600;color:var(--text);line-height:1.3}
+  .hm-hero .a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--accent);border-radius:999px;color:var(--on-brand,#fff);font-size:var(--fd-font-md);font-weight:800;padding:10px 18px;white-space:nowrap}
   .hm-hero .a:hover{background:var(--accent-dark)}
   @media(max-width:560px){.hm-hero{grid-template-columns:1fr}.hm-hero .a{justify-self:start}}
   /* Promoted due-strip — see dueStripHtml(). The scheduled-review count used to live only in
@@ -459,10 +522,10 @@
      horizontally so it costs one row rather than a card, and it renders ONLY when something is
      actually due — a caught-up day and a fresh device never see a promoted zero. */
   .hm-due{display:flex;align-items:center;flex-wrap:wrap;gap:10px;width:100%;text-align:left;cursor:pointer;font:inherit;color:var(--text);background:var(--accent-light);border:1px solid var(--accent-border);border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;margin:0 0 14px}
-  .hm-due .ds-k{font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark)}
-  .hm-due .ds-v{font-family:var(--font-head);font-size:1.35rem;font-weight:700;line-height:1}
-  .hm-due .ds-over{font-size:.75rem;font-weight:800;color:var(--primary-dark);background:var(--primary-light);border-radius:999px;padding:3px 9px}
-  .hm-due .ds-a{margin-left:auto;font-size:.85rem;font-weight:800;color:var(--accent-dark)}
+  .hm-due .ds-k{font-size:var(--fd-font-2xs);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-dark)}
+  .hm-due .ds-v{font-family:var(--font-head);font-size:var(--fd-font-xl);font-weight:700;line-height:1}
+  .hm-due .ds-over{font-size:var(--fd-font-xs);font-weight:800;color:var(--primary-dark);background:var(--primary-light);border-radius:999px;padding:3px 9px}
+  .hm-due .ds-a{margin-left:auto;font-size:var(--fd-font-md);font-weight:800;color:var(--accent-dark)}
   .hm-due .hm-substat{flex:0 0 100%;margin-top:0}
   .hm-due:hover{border-color:var(--accent)}
   @media(max-width:560px){.hm-due{min-height:44px}.hm-due .ds-a{margin-left:0}}
@@ -470,14 +533,14 @@
   .hm-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;text-align:left}
   button.hm-tile{cursor:pointer;font:inherit;color:var(--text)}
   button.hm-tile:hover{border-color:var(--accent)}
-  .hm-tile .k{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
-  .hm-tile .v{font-family:var(--font-head);font-size:1.4rem;color:var(--text);line-height:1.1}
-  .hm-tile .v small{font-size:.78rem;color:var(--text-light);font-family:var(--font-body)}
-  .hm-tile .l{font-weight:700;color:var(--accent-dark);font-size:.9rem}
-  .hm-btn{display:inline-block;border:none;background:var(--primary-dark);color:#fff;border-radius:8px;padding:8px 14px;font:inherit;font-weight:600;font-size:.85rem;cursor:pointer;text-decoration:none;align-self:flex-start}
+  .hm-tile .k{font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
+  .hm-tile .v{font-family:var(--font-head);font-size:var(--fd-font-xl);color:var(--text);line-height:1.1}
+  .hm-tile .v small{font-size:var(--fd-font-xs);color:var(--text-light);font-family:var(--font-body)}
+  .hm-tile .l{font-weight:700;color:var(--accent-dark);font-size:var(--fd-font-md)}
+  .hm-btn{display:inline-block;border:none;background:var(--primary-dark);color:#fff;border-radius:8px;padding:8px 14px;font:inherit;font-weight:600;font-size:var(--fd-font-md);cursor:pointer;text-decoration:none;align-self:flex-start}
   .hm-btn.ghost{background:transparent;color:var(--accent-dark);border:1px solid var(--border)}
   .hm-sec{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 14px}
-  .hm-sec h2{font-family:var(--font-head);font-size:1.1rem;margin:0 0 10px;border:none;padding:0;color:var(--text)}
+  .hm-sec h2{font-family:var(--font-head);font-size:var(--fd-font-lg);margin:0 0 10px;border:none;padding:0;color:var(--text)}
   .hm-li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;width:100%;text-align:left;background:none;border-left:none;border-right:none;border-top:none;font:inherit;color:var(--text);text-decoration:none}
   .hm-li:last-child{border-bottom:none}
   .hm-li:hover{color:var(--accent-dark)}
@@ -487,33 +550,33 @@
      (TOOL/SAFETY TOOL), and time cost (4 MIN/BEDSIDE) — so it taught the reader nothing.
      Uppercase now means exactly one thing, "what pressing this does"; every descriptor gets
      .meta and renders as sentence-case metadata. actionRow() picks the class off SEC_ACTIONS. */
-  .hm-li .sec{font-size:.68rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em}
-  .hm-li .sec.meta{text-transform:none;letter-spacing:0;font-size:.72rem;font-weight:600}
-  .hm-empty{color:var(--text-mid);font-size:.94rem}
-  .hm-substat{display:block;font-size:.72rem;color:var(--text-mid);margin-top:6px}
+  .hm-li .sec{font-size:var(--fd-font-2xs);color:var(--text-light);text-transform:uppercase;letter-spacing:.05em}
+  .hm-li .sec.meta{text-transform:none;letter-spacing:0;font-size:var(--fd-font-xs);font-weight:600}
+  .hm-empty{color:var(--text-mid);font-size:var(--fd-font-base)}
+  .hm-substat{display:block;font-size:var(--fd-font-xs);color:var(--text-mid);margin-top:6px}
   .pt-q{margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid var(--border)}
   .pt-stem{font-weight:600;margin:0 0 8px}
   .pt-opt{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--bg-alt);border-radius:8px;padding:8px 10px;margin:4px 0;font:inherit;color:var(--text);cursor:pointer}
   .pt-opt:hover{border-color:var(--accent)}
   .pt-opt.sel{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
   .hm-inl{background:none;border:none;color:var(--accent-dark);cursor:pointer;font:inherit;text-decoration:underline;padding:0}
-  .hm-phase{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:999px;padding:3px 11px;font-size:.76rem;font-weight:700;margin:0 0 14px}
+  .hm-phase{display:inline-block;background:var(--accent-light);color:var(--accent-dark);border-radius:999px;padding:3px 11px;font-size:var(--fd-font-xs);font-weight:700;margin:0 0 14px}
   .wd{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:0 0 18px}
   .wd-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-  .wd-head h2{font-family:var(--font-head);font-size:1.12rem;margin:0;border:none;padding:0;color:var(--text)}
-  .wd-intro{margin:-4px 0 12px;color:var(--text-mid);font-size:.93rem;max-width:70ch}
-  .wd-count{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-left:8px}
+  .wd-head h2{font-family:var(--font-head);font-size:var(--fd-font-lg);margin:0;border:none;padding:0;color:var(--text)}
+  .wd-intro{margin:-4px 0 12px;color:var(--text-mid);font-size:var(--fd-font-base);max-width:70ch}
+  .wd-count{font-size:var(--fd-font-xs);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-left:8px}
   /* Mode chips and tool chips were near-identical pills sitting ~14px apart with OPPOSITE
      semantics: .wd-mode is a stateful toggle that re-renders in place (and changes how md
      pages render everywhere), .wd-tool is a link that navigates away. Two cues separate them
      now — each row carries a visible .wd-rowlab, and the shapes diverge: a pill stays a
      toggle, squared-with-a-trailing-arrow means "this goes somewhere". */
   .wd-modes{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-  .wd-rowlab{flex:0 0 auto;font-size:.62rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
-  .wd-mode{border:1px solid var(--border);background:var(--bg-alt);color:var(--text-mid);border-radius:999px;padding:5px 10px;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer}
+  .wd-rowlab{flex:0 0 auto;font-size:var(--fd-font-2xs);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light)}
+  .wd-mode{border:1px solid var(--border);background:var(--bg-alt);color:var(--text-mid);border-radius:999px;padding:5px 10px;font:inherit;font-size:var(--fd-font-xs);font-weight:800;cursor:pointer}
   .wd-mode.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .wd-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
-  .wd-tool{display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:.8rem;font-weight:800;color:var(--accent-dark);background:var(--surface);border:1px solid var(--accent-border);border-radius:8px;padding:5px 10px}
+  .wd-tool{display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:var(--fd-font-sm);font-weight:800;color:var(--accent-dark);background:var(--surface);border:1px solid var(--accent-border);border-radius:8px;padding:5px 10px}
   .wd-tool::after{content:"\2192";font-weight:700;opacity:.75}
   /* .is-safety was emitted by toolRow() but never styled here, unlike every other chip family
      (.tl-chip, .mc-item, .tl-bar__item). Same --primary convention as those. */
@@ -524,41 +587,41 @@
   @media(max-width:620px){.wd-challenge{grid-template-columns:1fr}.wd-challenge .a{justify-self:start}}
   .wd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
   .wd-card{background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:12px}
-  .wd-card h3{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin:0 0 8px}
+  .wd-card h3{font-size:var(--fd-font-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin:0 0 8px}
   .wd-card .hm-li{padding:7px 0}
   .wd-card .hm-li .t{line-height:1.25}
   .wd-card .hm-li .sec{flex:0 0 auto;text-align:right;max-width:42%;line-height:1.25}
   @media(max-width:760px){.wd-grid{grid-template-columns:1fr}}
-  .hm-bars .brow{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:.84rem}
+  .hm-bars .brow{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:var(--fd-font-sm)}
   .hm-bars .lab{flex:0 0 42%;color:var(--text-mid)}
   .hm-bars .track{flex:1;height:8px;background:var(--bg-alt);border-radius:999px;overflow:hidden}
   .hm-bars .fill{height:100%;background:var(--accent)}
-  .hm-bars .pc{flex:0 0 42px;text-align:right;color:var(--text-light);font-size:.78rem}
+  .hm-bars .pc{flex:0 0 42px;text-align:right;color:var(--text-light);font-size:var(--fd-font-xs)}
   .hm-arc{display:flex;flex-wrap:wrap;gap:6px}
-  .hm-week{font-size:.74rem;border:1px solid var(--border);border-radius:999px;padding:3px 10px;color:var(--text-mid)}
+  .hm-week{font-size:var(--fd-font-xs);border:1px solid var(--border);border-radius:999px;padding:3px 10px;color:var(--text-mid)}
   .hm-week.done{background:var(--success-light);border-color:var(--success);color:var(--success)}
   .hm-week.cur{background:var(--accent);border-color:var(--accent);color:#fff}
   /* ===== Start here (Concept A) ===== */
   .st{max-width:820px;margin:0 auto;padding:26px 28px 60px}
-  .st h1{font-family:var(--font-head);color:var(--primary);font-size:2rem;margin:.1em 0 .15em}
+  .st h1{font-family:var(--font-head);color:var(--primary);font-size:var(--fd-font-3xl);margin:.1em 0 .15em}
   .st .sub{color:var(--text-mid);margin:0 0 20px;max-width:64ch}
   .st-modes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 22px}
   @media(max-width:640px){.st-modes{grid-template-columns:1fr}}
   .st-mode{text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;font:inherit}
   .st-mode:hover{border-color:var(--accent);box-shadow:0 1px 3px rgba(59,51,44,.12)}
-  .st-mode h3{font-family:var(--font-head);margin:0 0 6px;color:var(--primary-dark);font-size:1.1rem}
-  .st-mode p{margin:0;color:var(--text-mid);font-size:.92rem}
-  .st-sec-h{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin:0 0 8px}
+  .st-mode h3{font-family:var(--font-head);margin:0 0 6px;color:var(--primary-dark);font-size:var(--fd-font-lg)}
+  .st-mode p{margin:0;color:var(--text-mid);font-size:var(--fd-font-base)}
+  .st-sec-h{font-size:var(--fd-font-xs);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin:0 0 8px}
   .st-row{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 22px}
   .st-field{flex:1;min-width:170px}
-  .st-field label{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin-bottom:5px}
+  .st-field label{display:block;font-size:var(--fd-font-xs);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin-bottom:5px}
   .st-field select,.st-field input{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font:inherit;background:var(--surface);color:var(--text)}
   .st-check{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px 16px;margin:0 0 22px}
   .st-check .it{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;color:var(--text)}
   .st-check .it:last-child{border-bottom:none}
-  .st-check .bx{width:20px;height:20px;border:2px solid var(--accent);border-radius:5px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem}
+  .st-check .bx{width:20px;height:20px;border:2px solid var(--accent);border-radius:5px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:var(--fd-font-xs)}
   .st-check .it.on .bx{background:var(--accent)}
-  .st-check .it .lk{margin-left:auto;font-size:.78rem;color:var(--accent-dark)}
+  .st-check .it .lk{margin-left:auto;font-size:var(--fd-font-xs);color:var(--accent-dark)}
   .st-tools{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 24px}
   .st-actions{display:flex;gap:10px;flex-wrap:wrap}
 </style>
@@ -568,7 +631,9 @@
 <div id="fdApp" class="fd-shell" aria-busy="true" inert>
   <div id="fdChromeMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
+  <span id="careNavigatorStatus" class="vh-live" role="status" aria-live="polite" aria-atomic="true"></span>
   <div id="fdCaptureMount"></div>
+  <div id="fdDockMount"></div>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
   <div id="governanceMount"></div>
   <div id="fdOverlayMount"></div>
@@ -611,13 +676,14 @@
     var kids=[].slice.call(body.children);
     var nH2=kids.filter(function(el){return el.tagName==='H2';}).length;
     if(nH2<4 || body.querySelector('.sec-c')) return;
-    var groups=[],cur=null,lastWrap=null,lastBtn=null;
+    var groups=[],cur=null;
     kids.forEach(function(el){ if(el.tagName==='H2'){cur={h2:el,body:[]};groups.push(cur);} else if(cur){cur.body.push(el);} });
     var first=null;
     groups.forEach(function(g){
-      var wrap=document.createElement('section'); wrap.className='sec-c';
+      var wrap=document.createElement('section'); wrap.className='sec-c open';
       var hh=document.createElement('h2'); hh.className='sec-h';
-      var btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-expanded','false');
+      if(g.h2.id)hh.id=g.h2.id;
+      var btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-expanded','true');
       btn.innerHTML='<span class="sec-chev" aria-hidden="true">▸</span>';
       var tt=document.createElement('span'); tt.textContent=g.h2.textContent; btn.appendChild(tt);
       hh.appendChild(btn);
@@ -629,14 +695,10 @@
       body.insertBefore(wrap,g.h2); wrap.appendChild(hh); wrap.appendChild(bd); body.removeChild(g.h2);
       btn.onclick=function(){ var o=!wrap.classList.contains('open'); wrap.classList.toggle('open',o); btn.setAttribute('aria-expanded',String(o)); requestAnimationFrame(refreshTableScrollCues); };
       if(!first) first=wrap;
-      lastWrap=wrap; lastBtn=btn;
-      if(bd.querySelector('iframe')){ wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
     });
-    /* The last section stays open. Every page-level trailer -- the "Pair with" cross-link rail
-       and the attribution line -- is authored after the final h2, so it lands in the last
-       section's body; collapsing it hides a page's own outbound links behind a click and makes
-       the reachability rails unreachable. Same force-open precedent as the iframe case above. */
-    if(lastWrap){ lastWrap.classList.add('open'); lastBtn.setAttribute('aria-expanded','true'); }
+    /* Start with the full guide readable: templates, Day 1 instructions, embedded tools and
+       trailing cross-links all belong on first paint. Learners may collapse sections explicitly;
+       opening only the final section made footer placement choose the apparent starting point. */
     if(first){
       var bar=document.createElement('div'); bar.className='sec-toolbar';
       function mk(lbl,op){ var b=document.createElement('button'); b.type='button'; b.className='sec-all'; b.textContent=lbl;
@@ -698,7 +760,7 @@
     [].forEach.call(contentEl.querySelectorAll('.markrev'),function(el){ if(el.getAttribute('data-f')!==file)return; el.classList.toggle('on',done); el.setAttribute('aria-pressed',String(done)); el.textContent=done?'✓ Read':'Mark as read'; });
   }
   function topicHasQuiz(file){ var m=(typeof TOPIC_META!=='undefined'&&TOPIC_META)?TOPIC_META[file]:null; return !!(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length); }
-  function seedSRS(file){ try{ if(!topicHasQuiz(file))return; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } }catch(_){ } }
+  function seedSRS(file){ try{ if(!topicHasQuiz(file))return false; var s=JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); if(!s||s.v!==1){ s={v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}}; } var id='TOPIC#'+file; if(!s.cards[id]){ s.cards[id]={ease:2.5,ivl:0,reps:0,lapses:0,due:Date.now(),last:0}; localStorage.setItem('cw_srs_v1',JSON.stringify(s)); } return true; }catch(_){ return false; } }
   /* One-time self-healing migration: drop never-graded TOPIC# cards whose topic has no
      servable quiz — they were seeded by the unguarded seedSRS, can never be graded in
      Daily Review, and inflate "Due today" forever. Runs whenever topic_meta loads;
@@ -763,17 +825,56 @@
   /* Nav/search rows carry only the compact {status,riskKind,riskLevel} triplet baked into
      nav.json/search-index.json at build time (Task 3) — independent of the GOVERNANCE fetch
      above, so no loading race here. Text conveys the full status; never color alone. */
-  function governanceBadge(triplet){
+  function governanceBadge(triplet,opts){
     if(!triplet||triplet.status!=='pending')return '';
+    if(opts&&opts.compact) return '<span class="fd-kit__pending" role="img" aria-label="Awaiting faculty re-review"></span>';
     var high=triplet.riskLevel==='high';
     var label=high?'Pending review · High risk':'Pending review';
     return '<span class="governance-badge'+(high?' high':'')+'" aria-label="'+label+'">'+label+'</span>';
   }
+  /* Report whether the alert IS focused, not merely whether it is on the page. focus() is
+     silently refused — nothing thrown, nothing moved — while #fdApp still carries the edition
+     startup gate's `inert`, which on a cold route is still set when the resource mounts. */
   function focusPendingHighNotice(){
     var notice=contentEl.querySelector('.governance-notice.pending-high');
     if(!notice)return false;
     try{ notice.focus(); }catch(_){ }
+    return document.activeElement===notice;
+  }
+  /* Run `after` when the startup gate releases. Arms only while the gate is actually closed —
+     that is the one cause of a refusal a retry can fix — so an ordinary route arms nothing. */
+  function afterStartupGate(after){
+    var app=null;
+    try{ app=document.getElementById('fdApp'); }catch(_){ }
+    if(!app||!app.hasAttribute('inert')||typeof MutationObserver!=='function')return false;
+    var obs=new MutationObserver(function(){
+      if(app.hasAttribute('inert'))return;
+      obs.disconnect(); after();
+    });
+    obs.observe(app,{attributes:true,attributeFilter:['inert']});
     return true;
+  }
+  /* Take the focus, or record what the take is still waiting on. TWO things defer it and
+     either can come second: governance.json (until it lands the notice is not rendered at
+     all — refreshGovernanceNotice finishes the take) and the startup gate (the notice is
+     rendered but inert — afterStartupGate finishes it). Only the first case was ever
+     exercised before drift projection, because the one placed pending/high page happened to
+     render before its ledger arrived; with ~25 such pages per site the gate case is the
+     common one, and a take that silently did nothing read as "no warning was announced". */
+  function takePendingHighFocus(){
+    if(focusPendingHighNotice()){ governanceFocusSlug=''; return true; }
+    var slug=(currentItem&&currentItem.f)||'';
+    if(contentEl.querySelector('.governance-notice.pending-high')){
+      governanceFocusSlug=slug;
+      afterStartupGate(function(){
+        if(facultyPreviewRequest||governanceFocusSlug!==slug)return;
+        if(!currentItem||currentItem.f!==slug)return;
+        if(focusPendingHighNotice())governanceFocusSlug='';
+      });
+    }
+    else if(GOVERNANCE.status!=='ready'){ governanceFocusSlug=slug; }
+    else{ governanceFocusSlug=''; }
+    return false;
   }
   /* Focus a high-risk warning after a normal route change only. Never during faculty-preview
      initialization (the console iframe owns focus there) or browser-history restoration —
@@ -782,9 +883,7 @@
   function focusGovernanceNotice(opts){
     if(facultyPreviewRequest)return;
     if(opts&&opts.fromHistory)return;
-    if(focusPendingHighNotice()){ governanceFocusSlug=''; }
-    else if(GOVERNANCE.status!=='ready'){ governanceFocusSlug=currentItem&&currentItem.f; }
-    else{ governanceFocusSlug=''; }
+    takePendingHighFocus();
   }
   /* Runs once, when governance.json settles (see the fetch below) — surgically swaps just the
      existing .governance-notice element for a freshly rendered one. Deliberately NOT a full
@@ -800,8 +899,9 @@
     if(!wrap.firstChild)return;
     el.parentNode.replaceChild(wrap.firstChild,el);
     if(!facultyPreviewRequest&&governanceFocusSlug===currentItem.f){
-      governanceFocusSlug='';
-      focusPendingHighNotice();
+      /* The ledger can also land while the gate is still closed, so this take defers the same
+         way rather than clearing the slug on a focus() that moved nothing. */
+      takePendingHighFocus();
     }
   }
   function rerenderCurrent(){ refreshGovernanceNotice(); }
@@ -1138,14 +1238,17 @@
     if(refs.length)html+='<div class="practice-section-title">Official forms</div><div class="practice-actions">'+refs.join('')+'</div><p class="practice-muted">Official form and training \u2014 the instrument itself is not reproduced here.</p>';
     return html;
   }
-  function buildTpl(m,file){
+  function buildTpl(m,file,opts){
     if(!hasPracticeTpl(m))return '';
     /* D-1: the summary is byte-identical to what it has always rendered -- the visual
-       baselines screenshot a collapsed panel, and everything WP-D changes is inside the body. */
-    var h='<details class="topic-tpl practice-panel">';
+       baselines screenshot a collapsed panel, and everything WP-D changes is inside the body.
+       opts.open===true is the one caller-decided exception: the reader passes it on a handheld
+       viewport (fdHandheld), where this panel IS the point-of-need content and a closed
+       disclosure hid it behind a tap on every topic page. Desktop stays closed and byte-identical. */
+    var h='<details class="topic-tpl practice-panel"'+((opts&&opts.open===true)?' open':'')+'>';
     h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
-    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; if(m.facultyReview&&m.facultyReview.status) h+='<span class="tpl-chip review">'+esc(m.facultyReview.status)+(m.facultyReview.lastReviewed?(' · '+esc(m.facultyReview.lastReviewed)):'')+'</span>'; h+='</div>';
+    h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; /* No review chip: the governance receipt above the panel already states review status and date, and the head's ✓ pill states attestation — a third rendering on one page was the 2026-09-18 critique's consistency finding. */ h+='</div>';
     var reason=practiceReason(m);
     if(reason) h+='<div class="practice-mode-note"><span class="k">Can\u2019t miss</span><span class="v">'+esc(reason)+'</span></div>';
     var primary=practicePrimary(m,file,practicePhaseName(),practiceDrillDone), pseen={}, prow=[];
@@ -1155,7 +1258,7 @@
     }
     h+='<div class="practice-sections">';
     h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
-    if(m.tldr){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><div class="one">'+esc(m.tldr)+'</div>'; if(m.points&&m.points.length){ h+='<ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul>'; } h+='</div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
+    /* Points only. The one-line tldr is ALREADY the page's lead (fd_data.js maps item.summary from it), and on a phone the panel opens by default directly under that lead, so the same sentence printed twice on one screen (2026-09-18 critique). */ if(m.points&&m.points.length){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul></div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">On the unit</div>';
     var wf=buildWorkflow(m,pseen), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
     if(m.cant&&m.cant!==reason){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
@@ -1163,11 +1266,17 @@
     if(!hasUnit)h+='<p class="practice-muted">No bedside workflow scaffold yet.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">Test yourself</div>';
     if(m.quiz){ var q=m.quiz; h+='<div class="tyourself"><div class="lbl">Test yourself</div><div class="q">'+esc(q.q)+'</div>'; for(var k=0;k<q.o.length;k++){ h+='<button type="button" class="tyo" data-c="'+(q.o[k].c?'1':'0')+'">'+esc(q.o[k].t)+'</button>'; } h+='<div class="tyfb">'+(q.why?('<b>Why: </b>'+esc(q.why)):'')+'</div></div>'; }
-    else { h+='<p class="practice-muted">No page-specific question yet. Use the question bank or daily review.</p><div class="practice-actions"><a class="practice-action is-review" href="?tool=question-bank-practice.html">Practice Questions →</a><a class="practice-action is-review" href="?tool=review.html">Daily Review →</a></div>'; }
+    else { h+='<div class="practice-actions"><a class="practice-action is-review" href="?tool=question-bank-practice.html">Practice Questions →</a><a class="practice-action is-review" href="?tool=review.html">Daily Review →</a></div>'; }
     h+='</section><section class="practice-section"><div class="practice-section-title">Tools</div>'+buildPracticeTools(m,file,pseen,!!primary)+'</section>';
     h+='</div></div></details>'; return h;
   }
   /* ---- end practice panel ---- */
+  /* "Handheld" is the shell's own not-desktop threshold: the rails and the desktop action pair
+     appear at >=1000px (the front-door stylesheet's one desktop breakpoint), so anything
+     narrower is where the fixed action bar shows and where the practice panel opens by default.
+     matchMedia rather than innerWidth so the answer can never disagree with the stylesheet;
+     a browser with no matchMedia (or a throwing one) reads as desktop, the closed default. */
+  function fdHandheld(){ try{ return !!(window.matchMedia&&window.matchMedia('(max-width:999px)').matches); }catch(_){ return false; } }
   function pageTitle(it){ return it ? (it.t+' \u2014 MS3 Psychiatry Clerkship') : 'Inpatient Psychiatry \u2014 MS3 Clerkship'; }
   function setLearnerTitle(item){ if(!facultyPreviewRequest)document.title=pageTitle(item); }
   function fdSpecialItemForState(state){
@@ -1177,6 +1286,7 @@
     if(s.openId)return null;
     if(s.tab==='path')return {f:'__path__',t:'Path',k:'special'};
     if(s.tab==='library')return {f:'__library__',t:'Library',k:'special'};
+    if(s.tab==='care')return {f:'__care__',t:'Patient care resources',k:'special'};
     return {f:'__home__',t:'Today',k:'special'};
   }
   function fdAdoptSpecialContext(state){
@@ -1284,7 +1394,7 @@
       var _governance=document.createElement('div'); _governance.innerHTML=renderGovernanceNotice(item); if(_governance.firstChild) _insertAfterTitle(_governance.firstChild);
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
-      if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
+      if(_m){ var _html=buildTpl(_m, item.f,{open:fdHandheld()}); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
       makeCollapsible(contentEl); enhanceTables(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -1306,44 +1416,131 @@
      tests/ward-capture.test.mjs T3b. Scoping it here keeps the shared file untouched. */
   var CAP_WARD_LOC=/\b(?:bed|room|rm)\s*#?\s*\d+/i;
   function capRisky(t){ return looksLikePhi(t) || CAP_WARD_LOC.test(t); }
+  function capRoute(v){ return typeof v==='string'&&/^(?:rounds|supervision|later)$/.test(v)?v:null; }
+  function capState(v){ return v==='done'?'done':'open'; }
+  function capLegacyRoute(item){
+    if(item.status==='supervision')return 'supervision';
+    if(item.status==='scheduled')return 'later';
+    return null;
+  }
+  function capValidId(v){ return typeof v==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(v)
+    &&v!=='__proto__'&&v!=='constructor'&&v!=='prototype'; }
+  function capTime(v){ return typeof v==='number'&&isFinite(v)&&v>=0&&v<=8640000000000000&&Math.floor(v)===v?v:0; }
+  function capContext(v){ return typeof v==='string'&&/^[A-Za-z0-9][A-Za-z0-9_./-]{0,199}$/.test(v)
+    &&v.indexOf('..')<0?v:null; }
+  function capOlder(a,b){ return a.at<b.at||(a.at===b.at&&a.id<b.id); }
   function capRead(){
     var d=null; try{ d=JSON.parse(localStorage.getItem('cw_capture_v1')||'null'); }catch(_){ d=null; }
-    if(!d||typeof d!=='object'||Object.prototype.toString.call(d.items)!=='[object Array]') return {v:1,items:[]};
-    var out=[]; for(var i=0;i<d.items.length;i++){ var it=d.items[i];
-      if(!it||typeof it.text!=='string')continue;
-      /* clamp on read as well as write — a hand-edited store must not widen the cap */
-      out.push({id:String(it.id||''),text:it.text.slice(0,CAP_MAX),at:+it.at||0,ctx:it.ctx||null,triaged:!!it.triaged}); }
-    return {v:1,items:out};
+    if(!d||typeof d!=='object'||(d.v!==1&&d.v!==2)
+       ||Object.prototype.toString.call(d.items)!=='[object Array]')return {v:2,items:[]};
+    var out=[], seen=Object.create(null);
+    for(var i=0;i<d.items.length;i++){ var it=d.items[i];
+      if(!it||typeof it!=='object'||!capValidId(it.id)||seen[it.id]
+         ||typeof it.text!=='string'||!it.text.trim())continue;
+      seen[it.id]=true;
+      var route=d.v===1?capLegacyRoute(it):capRoute(it.route);
+      var state=d.v===1?'open':capState(it.state);
+      out.push({id:it.id,text:it.text.slice(0,CAP_MAX),at:capTime(it.at),ctx:capContext(it.ctx),
+        route:route,state:state});
+      capEvict(out);
+    }
+    return {v:2,items:out};
   }
-  function capWrite(d){ try{ localStorage.setItem('cw_capture_v1',JSON.stringify(d)); return true; }catch(_){ return false; } }
-  function capEraseAll(){ try{ localStorage.removeItem('cw_capture_v1'); }catch(_){ } }
+  function capWrite(d){
+    try{
+      var items=[];
+      for(var i=0;i<d.items.length;i++){
+        var it=d.items[i];
+        items.push({id:it.id,text:it.text.slice(0,CAP_MAX),at:capTime(it.at),ctx:capContext(it.ctx),
+          route:capRoute(it.route),state:capState(it.state)});
+      }
+      localStorage.setItem('cw_capture_v1',JSON.stringify({v:2,items:capEvict(items)}));
+      return true;
+    }catch(_){ return false; }
+  }
+  function capEraseAll(){
+    try{
+      localStorage.removeItem('cw_capture_v1');
+      return localStorage.getItem('cw_capture_v1')===null;
+    }catch(_){ return false; }
+  }
   function capCtx(){
     /* null on every Front Door special route. The learner bookmark intentionally remains the
        previous real page, so capture context must consult currentItem rather than stale cw_last. */
     try{ if(!currentItem||currentItem.k==='special')return null; return currentItem.f||null; }catch(_){ return null; }
   }
-  function capEvict(items){
-    while(items.length>CAP_LIMIT){ var idx=0;
-      for(var i=0;i<items.length;i++){ if(items[i].triaged){ idx=i; break; } }
-      items.splice(idx,1); }
+  function capEvict(items,limit){
+    if(limit===undefined)limit=CAP_LIMIT;
+    while(items.length>limit){ var idx=-1, havePriority=false;
+      for(var i=0;i<items.length;i++){
+        var priority=items[i].route!==null||items[i].state==='done';
+        if(idx<0||(priority&&!havePriority)||(priority===havePriority&&capOlder(items[i],items[idx]))){
+          idx=i; havePriority=priority;
+        }
+      }
+      items.splice(idx,1);
+    }
     return items;
   }
-  function capAdd(text){
-    var d=capRead();
-    d.items.push({id:'c_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3),
-      text:String(text).slice(0,CAP_MAX),at:Date.now(),ctx:capCtx(),triaged:false});
-    capEvict(d.items);
-    return capWrite(d);
+  function capOldestUnrouted(items){
+    if(Object.prototype.toString.call(items)!=='[object Array]')return null;
+    var oldest=null;
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      if(!it||it.route!==null||it.state!=='open')continue;
+      if(!oldest||capOlder(it,oldest))oldest=it;
+    }
+    return oldest;
   }
-  function capRemove(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items.splice(i,1); break; } } capWrite(d); }
-  function capMarkTriaged(id){ var d=capRead(); for(var i=0;i<d.items.length;i++){ if(d.items[i].id===id){ d.items[i].triaged=true; break; } } capWrite(d); }
+  function capNewId(items,at){
+    try{
+      var random=Math.random();
+      if(typeof random!=='number'||!isFinite(random)||random<0||random>=1)return null;
+      var base='c_'+random.toString(36).slice(2,8)+at.toString(36).slice(-3);
+      if(!capValidId(base))return null;
+      /* At most CAP_LIMIT ids are retained, so base plus CAP_LIMIT suffixes has a free slot. */
+      for(var suffix=0;suffix<=CAP_LIMIT;suffix++){
+        var id=suffix?base+'_'+suffix:base, used=false;
+        for(var i=0;i<items.length;i++){ if(items[i].id===id){ used=true; break; } }
+        if(!used)return id;
+      }
+    }catch(_){ }
+    return null;
+  }
+  function capAdd(text){
+    var d=capRead(), at;
+    try{ at=Date.now(); }catch(_){ return false; }
+    if(capTime(at)!==at)return false;
+    var id=capNewId(d.items,at);
+    if(!id)return false;
+    /* Reserve the incoming item before writing; a backward clock must not evict the new save. */
+    capEvict(d.items,CAP_LIMIT-1);
+    d.items.push({id:id,text:String(text).slice(0,CAP_MAX),at:at,ctx:capCtx(),route:null,state:'open'});
+    return capWrite(d)?id:false;
+  }
+  function capRemove(id){
+    var d=capRead(), found=false;
+    for(var i=0;i<d.items.length;i++){
+      if(d.items[i].id===id){ d.items.splice(i,1); found=true; break; }
+    }
+    if(!found)return false;
+    return d.items.length?capWrite(d):capEraseAll();
+  }
+  function capSetRoute(id,route){
+    if(route!==null&&capRoute(route)!==route)return false;
+    var d=capRead();
+    for(var i=0;i<d.items.length;i++){
+      if(d.items[i].id===id){ d.items[i].route=route; return capWrite(d); }
+    }
+    return false;
+  }
   /* The supervised-draft stamp travels with the one sanctioned clipboard egress. */
   var CAP_STAMP='Questions from the unit, brought to supervision. Written by a trainee for teaching discussion — contains no patient information.';
   /* P4 — the one sanctioned egress. The stamp lives inside the payload builder so every copy path
      carries it, matching the supervised-draft pattern in decisional-capacity-module.html. */
   function capClipboardText(){
     var d=capRead(), lines=[CAP_STAMP,''];
-    for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) lines.push('- '+d.items[i].text); }
+    for(var i=0;i<d.items.length;i++){ if(d.items[i].state==='open') lines.push('- '+d.items[i].text); }
     return lines.join('\n');
   }
   /* ---- end ward capture store ---- */
@@ -1362,7 +1559,7 @@
     return out;
   }
   function capKeydown(e){
-    if(!capSheet)return;
+    if(!capSheet||capEmailSheet)return;
     if(e.key==='Escape'){ e.preventDefault(); if(e.stopPropagation)e.stopPropagation(); capClose(); return; }
     if(e.key!=='Tab')return;
     var f=capFocusables(); if(!f.length)return;
@@ -1371,6 +1568,7 @@
     else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
   }
   function capClose(){
+    if(capEmailSheet)capEmailClose();
     if(capBackdrop&&capBackdrop.parentNode)capBackdrop.parentNode.removeChild(capBackdrop);
     if(capSheet&&capSheet.parentNode)capSheet.parentNode.removeChild(capSheet);
     capSheet=null; capBackdrop=null;
@@ -1386,27 +1584,244 @@
     if(inv && inv.isConnected && inv.offsetParent!==null){ try{ inv.focus(); return; }catch(_){ } }
     if(contentEl){ try{ contentEl.focus({preventScroll:true}); }catch(_){ } }
   }
+  /* Attribute-context escape for learner text that lands inside an aria-label. */
+  function capAttr(t){ return String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  /* One name per control (#428): "Delete this question" repeated N times gives a screen-reader
+     user N identical buttons. The label carries the question's own opening words. */
+  function capDeleteLabel(text){
+    var t=String(text||'').replace(/\s+/g,' ').trim();
+    if(t.length>60) t=t.slice(0,57)+'…';
+    return 'Delete question: '+t;
+  }
+  function capRouteLabel(route){
+    if(route==='rounds')return 'Ask on rounds';
+    if(route==='supervision')return 'Discuss in supervision';
+    if(route==='later')return 'Look up later';
+    return 'Unrouted';
+  }
+  function capRouteHtml(id,route){
+    var questionId='cap-question-'+capAttr(id);
+    var options=['rounds','supervision','later'], h='<div class="cap-route" role="group" aria-label="Choose where to take this question" aria-describedby="'+questionId+'">';
+    for(var i=0;i<options.length;i++){
+      var choice=options[i];
+      h+='<button type="button" class="cap-btn" data-cap-route="'+choice+'" data-cap-id="'+capAttr(id)+'" aria-pressed="'+(route===choice?'true':'false')+'" aria-describedby="'+questionId+'">'+capRouteLabel(choice)+'</button>';
+    }
+    return h+'</div>';
+  }
   function capListHtml(){
-    var d=capRead(), open=[];
-    for(var i=0;i<d.items.length;i++){ if(!d.items[i].triaged) open.push(d.items[i]); }
-    if(!open.length)return '';
+    /* Every retained question stays visible here, including questions already routed elsewhere. */
+    var d=capRead(), items=d.items;
+    if(!items.length)return '';
     var h='<ul class="cap-list">';
-    for(var j=0;j<open.length;j++){ h+='<li><span>'+esc(open[j].text)+'</span><button type="button" class="x" data-cap-del="'+esc(open[j].id)+'" aria-label="Delete this question">&times;</button></li>'; }
-    return h+'</ul><div class="cap-acts"><button type="button" class="cap-btn danger" id="capEraseAll">Erase all captures</button></div>';
+    for(var j=0;j<items.length;j++){
+      var it=items[j];
+      h+='<li data-cap-route-state="'+(it.route||'unrouted')+'"><div class="cap-list__row">'
+        +(it.state==='open'?'<input type="checkbox" class="cap-email-select" data-cap-email-id="'+capAttr(it.id)+'" aria-label="Select question for email: '+capAttr(it.text.replace(/\s+/g,' ').slice(0,60))+'">':'')
+        +'<span class="cap-list__text" id="cap-question-'+capAttr(it.id)+'">'+esc(it.text)+'</span>'
+        +'<span class="cap-list__status">'+capRouteLabel(it.route)+'</span>'
+        +'<button type="button" class="x" data-cap-del="'+capAttr(it.id)+'" aria-label="'+capAttr(capDeleteLabel(it.text))+'">&times;</button></div>'
+        +capRouteHtml(it.id,it.route)+'</li>';
+    }
+    /* Erase all is offered whenever the store holds any record. */
+    return h+'</ul><div class="cap-acts"><button type="button" class="cap-btn" id="capEmailSelect" disabled>Email selected questions</button>'+
+      '<button type="button" class="cap-btn" data-cap-copy="1">Copy questions</button>'+
+      '<button type="button" class="cap-btn danger" id="capEraseAll">Erase all captures</button></div>';
   }
   function capRenderBody(){
     if(!capSheet)return;
     var body=capSheet.querySelector('#capListWrap'); if(body)body.innerHTML=capListHtml();
   }
+  /* The Front Door script below installs this after its canonical index is ready. */
+  var fdCaptureEmail=null;
+  /* ---- faculty email dialog ---- */
+  var capEmailSheet=null,capEmailBackdrop=null,capEmailInvoker=null;
+  var capEmailGeneration=0;
+  var capEmailState={selected:[],digest:null,localPart:'',affirmed:false,showFallback:false};
+  function capEmailText(){
+    return capEmailState.digest?'Subject: '+capEmailState.digest.subject+'\n\n'+capEmailState.digest.body:'';
+  }
+  function capEmailReady(){
+    return capEmailState.selected.length>0&&!!fdCaptureEmail.address(capEmailState.localPart)&&capEmailState.affirmed;
+  }
+  function capEmailHandoff(){
+    if(!capEmailReady())return 'blocked';
+    var mail=fdCaptureEmail.mailto(capEmailState.localPart,capEmailState.digest);
+    if(!mail.ok){
+      if(mail.reason==='too-long'||mail.reason==='invalid-digest')capEmailState.showFallback=true;
+      return mail.reason;
+    }
+    var anchor=document.createElement('a');
+    anchor.href=mail.href;
+    try{ anchor.click(); }catch(_){ capEmailState.showFallback=true; return 'unavailable'; }
+    finally{ anchor.remove(); }
+    return 'opened';
+  }
+  function capEmailCopy(){
+    if(!capEmailState.digest)return Promise.resolve(false);
+    var state=capEmailState, sheet=capEmailSheet, generation=capEmailGeneration;
+    function current(){return state===capEmailState&&sheet===capEmailSheet&&generation===capEmailGeneration;}
+    if(!navigator.clipboard||typeof navigator.clipboard.writeText!=='function'){
+      capEmailState.showFallback=true; return Promise.resolve(false);
+    }
+    try{
+      return Promise.resolve(navigator.clipboard.writeText(capEmailText())).then(function(){
+        return current()?true:null;
+      },function(){
+        if(!current())return null;
+        state.showFallback=true;return false;
+      });
+    }catch(_){if(current())state.showFallback=true;return Promise.resolve(current()?false:null);}
+  }
+  function capEmailFocusables(){
+    if(!capEmailSheet)return [];
+    var all=capEmailSheet.querySelectorAll('button,input,textarea,[href]'),out=[];
+    for(var i=0;i<all.length;i++)if(!all[i].disabled&&all[i].offsetParent!==null)out.push(all[i]);
+    return out;
+  }
+  function capEmailKeydown(e){
+    if(!capEmailSheet)return;
+    if(e.key==='Escape'){e.preventDefault();if(e.stopPropagation)e.stopPropagation();capEmailClose();return;}
+    if(e.key!=='Tab')return;
+    var all=capEmailFocusables();if(!all.length)return;
+    if(e.shiftKey&&document.activeElement===all[0]){e.preventDefault();all[all.length-1].focus();}
+    else if(!e.shiftKey&&document.activeElement===all[all.length-1]){e.preventDefault();all[0].focus();}
+  }
+  function capEmailPreview(message){
+    if(!capEmailSheet)return;
+    var field=capEmailSheet.querySelector('#capEmailLocal');
+    var valid=fdCaptureEmail.address(capEmailState.localPart);
+    var hint=capEmailSheet.querySelector('#capEmailHint');
+    hint.textContent=capEmailState.localPart&&!valid
+      ?'Enter one email name before @mainehealth.org. Spaces, a second @, and recipient lists are not allowed.'
+      :'We cannot verify whether this MaineHealth mailbox exists. Check it in your mail app.';
+    field.setAttribute('aria-invalid',capEmailState.localPart&&!valid?'true':'false');
+    capEmailSheet.querySelector('#capEmailOpenDraft').disabled=!capEmailReady();
+    var fallback=capEmailSheet.querySelector('#capEmailFallback');
+    fallback.hidden=!capEmailState.showFallback;
+    if(capEmailState.showFallback)fallback.querySelector('textarea').value=capEmailText();
+    if(message)capEmailSheet.querySelector('#capEmailStatus').textContent=message;
+  }
+  function capEmailClose(){
+    capEmailGeneration++;
+    if(capEmailBackdrop&&capEmailBackdrop.parentNode)capEmailBackdrop.parentNode.removeChild(capEmailBackdrop);
+    if(capEmailSheet&&capEmailSheet.parentNode)capEmailSheet.parentNode.removeChild(capEmailSheet);
+    capEmailSheet=null;capEmailBackdrop=null;
+    document.removeEventListener('keydown',capEmailKeydown,true);
+    var restore=null;
+    if(capSheet){
+      capSheet.inert=false;capSheet.removeAttribute('aria-hidden');
+      var boxes=capSheet.querySelectorAll('[data-cap-email-id]');
+      for(var i=0;i<boxes.length;i++){if(boxes[i].checked&&!restore)restore=boxes[i];boxes[i].checked=false;}
+      var select=capSheet.querySelector('#capEmailSelect');if(select)select.disabled=true;
+    }
+    var inv=capEmailInvoker;capEmailInvoker=null;
+    capEmailState={selected:[],digest:null,localPart:'',affirmed:false,showFallback:false};
+    if(restore&&restore.isConnected&&restore.offsetParent!==null){restore.focus();return;}
+    if(inv&&!inv.disabled&&inv.isConnected&&inv.offsetParent!==null){inv.focus();return;}
+    if(capSheet)capFocusEditor();
+  }
+  function capEmailOpen(invoker){
+    if(facultyPreviewRequest||!capSheet||capEmailSheet)return;
+    var boxes=capSheet.querySelectorAll('[data-cap-email-id]'),ids=[];
+    for(var i=0;i<boxes.length;i++)if(boxes[i].checked)ids.push(boxes[i].getAttribute('data-cap-email-id'));
+    var selected=fdCaptureEmail.selection(capRead().items,ids);
+    if(!selected.length)return;
+    capEmailGeneration++;
+    capEmailState={selected:selected,digest:fdCaptureEmail.digest(selected),localPart:'',affirmed:false,showFallback:false};
+    capEmailInvoker=invoker||null;
+    capEmailBackdrop=document.createElement('div');capEmailBackdrop.className='cap-email-backdrop';
+    capEmailBackdrop.addEventListener('click',capEmailClose);
+    capEmailSheet=document.createElement('div');capEmailSheet.className='cap-email-sheet';
+    capEmailSheet.setAttribute('role','dialog');capEmailSheet.setAttribute('aria-modal','true');
+    capEmailSheet.setAttribute('aria-labelledby','capEmailHead');
+    capEmailSheet.innerHTML='<div class="cap-email-head"><h2 id="capEmailHead">Review email draft</h2>'
+      +'<button type="button" class="cap-btn" id="capEmailClose">Close</button></div>'
+      +'<p id="capEmailCount" class="cap-email-count"></p>'
+      +'<pre id="capEmailDigest" class="cap-email-digest"></pre>'
+      +'<label class="cap-email-label" for="capEmailLocal">Faculty recipient</label>'
+      +'<div class="cap-email-address"><input id="capEmailLocal" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="capEmailSuffix capEmailHint" maxlength="64"><span id="capEmailSuffix">@mainehealth.org</span></div>'
+      +'<p id="capEmailHint" class="cap-email-hint"></p>'
+      +'<label class="cap-email-affirm"><input id="capEmailAffirm" type="checkbox"><span>I reviewed these questions and removed patient names, identifying details, and other PHI.</span></label>'
+      +'<div class="cap-acts"><button type="button" class="cap-btn primary" id="capEmailOpenDraft" disabled>Open email draft</button>'
+      +'<button type="button" class="cap-btn" id="capEmailCopy">Copy email text</button></div>'
+      +'<p id="capEmailStatus" class="cap-email-status" role="status" aria-live="polite"></p>'
+      +'<div id="capEmailFallback" class="cap-email-fallback" hidden><label for="capEmailFallbackText">Select and copy the complete email text</label><textarea id="capEmailFallbackText" readonly rows="8"></textarea></div>';
+    document.body.appendChild(capEmailBackdrop);document.body.appendChild(capEmailSheet);
+    capEmailSheet.querySelector('#capEmailCount').textContent=selected.length+' selected question'+(selected.length===1?'':'s');
+    capEmailSheet.querySelector('#capEmailDigest').textContent=capEmailState.digest.body;
+    capEmailPreview();
+    document.addEventListener('keydown',capEmailKeydown,true);
+    capEmailSheet.querySelector('#capEmailLocal').focus();
+    capSheet.inert=true;capSheet.setAttribute('aria-hidden','true');
+    capEmailSheet.addEventListener('input',function(e){
+      if(e.target.id==='capEmailLocal'){capEmailState.localPart=e.target.value;capEmailPreview();}
+      if(e.target.id==='capEmailAffirm'){capEmailState.affirmed=e.target.checked;capEmailPreview();}
+    });
+    capEmailSheet.addEventListener('change',function(e){
+      if(e.target.id==='capEmailAffirm'){capEmailState.affirmed=e.target.checked;capEmailPreview();}
+    });
+    capEmailSheet.addEventListener('click',function(e){
+      if(e.target.id==='capEmailClose'){capEmailClose();return;}
+      if(e.target.id==='capEmailOpenDraft'){
+        var result=capEmailHandoff();
+        if(result==='opened')capEmailPreview('Your mail app may have opened. Review the recipient and message there, then press Send yourself.');
+        else if(result==='too-long')capEmailPreview('This draft is too long for a mail link. Reduce the selection or copy the complete email text below.');
+        else if(result==='invalid-digest')capEmailPreview('Could not prepare a mail link from this question text. Select and copy the complete email text below.');
+        else if(result==='unavailable')capEmailPreview('Could not open a mail app. Copy the complete email text below.');
+        return;
+      }
+      if(e.target.id==='capEmailCopy'){
+        var copyGeneration=capEmailGeneration,copySheet=capEmailSheet;
+        capEmailCopy().then(function(copied){
+        if(copied===null||copyGeneration!==capEmailGeneration||copySheet!==capEmailSheet)return;
+        capEmailPreview(copied?'Email text copied. Review it in your mail app before sending.':'Clipboard unavailable. Select and copy the complete text below.');
+        });
+      }
+    });
+  }
+  /* ---- end faculty email dialog ---- */
+  function capAnnounce(msg){
+    var el=capSheet&&capSheet.querySelector('#capStatus');
+    if(!el)return;
+    el.textContent='';
+    el.textContent=msg;
+  }
+  function capRemainingText(){
+    var n=capRead().items.length;
+    return n===0?'No saved questions remain.':(n+' saved question'+(n===1?'':'s')+' remain'+(n===1?'s':'')+'.');
+  }
+  function capNextHtml(id,text,route){
+    var match=typeof window.fdCaptureMatchForQuestion==='function'?window.fdCaptureMatchForQuestion(text):null;
+    var h='<section class="cap-next" data-cap-next="'+capAttr(id)+'" aria-labelledby="capNextHead"><p class="cap-next__saved">Saved on this device</p>'+
+      '<h3 id="capNextHead">Where will you take this question?</h3>'+capRouteHtml(id,route);
+    if(match&&match.ref){
+      h+='<div class="cap-next__match"><span>Likely match</span><strong>'+esc(match.title||match.ref)+'</strong></div>'+
+        '<div class="cap-next__actions"><button type="button" class="cap-btn primary" data-cap-open="'+capAttr(id)+'" data-cap-ref="'+capAttr(match.ref)+'">Open now</button>';
+      if(match.hasQuiz)h+='<button type="button" class="cap-btn" data-cap-review="'+capAttr(id)+'" data-cap-ref="'+capAttr(match.ref)+'">Schedule review</button>';
+      h+='</div>';
+    }else h+='<p class="cap-next__empty">No close library match yet. Your question remains in Capture.</p>';
+    return h+'<button type="button" class="cap-btn cap-next__done" data-cap-drop="'+capAttr(id)+'">Done</button></section>';
+  }
+  function capRefreshNext(){
+    var next=capSheet&&capSheet.querySelector('[data-cap-next]');
+    if(!next)return;
+    var id=next.getAttribute('data-cap-next'), items=capRead().items, hold=capSheet.querySelector('#capHold');
+    for(var i=0;i<items.length;i++){
+      if(items[i].id===id){ if(hold)hold.innerHTML=capNextHtml(id,items[i].text,items[i].route); return; }
+    }
+    if(hold)hold.innerHTML='';
+  }
+  function capFocusEditor(){
+    var ta=capSheet&&capSheet.querySelector('#capText');
+    if(ta){ try{ ta.focus({preventScroll:true}); }catch(_){ try{ ta.focus(); }catch(ignoreFocus){ } } }
+  }
   function capRefreshAfterMutation(){
     capRenderBody();
+    capRefreshNext();
     try{ specialRefresh(); }
-    finally{
-      var ta=capSheet&&capSheet.querySelector('#capText');
-      if(ta){ try{ ta.focus(); }catch(_){ } }
-    }
+    finally{ capFocusEditor(); }
   }
-  function capOpen(invoker){
+  function capOpen(invoker,onAction){
     if(capSheet)return;
     capInvoker=invoker||null;
     capBackdrop=document.createElement('div'); capBackdrop.className='cap-backdrop';
@@ -1419,11 +1834,19 @@
       /* P1 — point-of-entry warning, approved copy, verbatim */
       + '<p class="cap-warn"><strong>The question, not the patient.</strong> No names, initials, room or bed numbers, dates, or MRNs — write what you want to understand, not who you saw. Stays on this device.</p>'
       + '<textarea id="capText" maxlength="280" rows="4" aria-label="Your question, no patient identifiers" placeholder="What did you want to look up later?"></textarea>'
+      + '<div class="cap-starters" aria-label="Question starters"><span>Start with</span>'
+      + '<button type="button" data-cap-starter="Why would we ">Why would we…?</button>'
+      + '<button type="button" data-cap-starter="How can I distinguish ">How can I distinguish…?</button>'
+      + '<button type="button" data-cap-starter="What should I ask when ">What should I ask when…?</button>'
+      + '<button type="button" data-cap-starter="What changes disposition for ">What changes disposition?</button></div>'
       /* P3 — always-visible disclosure, not dismissible, because storage is on by default */
-      + '<p class="cap-disclose">Saved on this device only, never sent anywhere. Erase all captures below.</p>'
+      + '<p class="cap-disclose">Saved on this device. Nothing leaves unless you choose Copy or Email. No patient details.</p>'
       + '<div id="capHold"></div>'
       + '<div class="cap-acts"><button type="button" class="cap-btn primary" id="capSave">Save</button>'
       + '<button type="button" class="cap-btn" id="capCancel">Cancel</button></div>'
+      /* Stable live region (#428): mounted with the sheet, never re-rendered, so a deletion or
+         erase is announced from a node that already existed when the change happened. */
+      + '<div id="capStatus" class="vh-live" aria-live="polite" aria-atomic="true"></div>'
       + '<div id="capListWrap"></div>';
     document.body.appendChild(capBackdrop); document.body.appendChild(capSheet);
     capRenderBody();
@@ -1432,13 +1855,35 @@
     var ta=capSheet.querySelector('#capText'); if(ta){ try{ ta.focus(); }catch(_){ } }
     capSheet.addEventListener('click',function(e){
       var t=e.target;
+      if(t.id==='capEmailSelect'){capEmailOpen(t);return;}
+      /* The dialog is mounted under body, outside fdApp's delegated click listener. */
+      var action=t.closest&&t.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
+      if(action&&typeof onAction==='function'){e.preventDefault();onAction(action);return;}
+      var starter=t.closest&&t.closest('[data-cap-starter]');
+      if(starter){ var starterText=capSheet.querySelector('#capText'); if(starterText&&!starterText.value.trim())starterText.value=starter.getAttribute('data-cap-starter')||''; if(starterText)starterText.focus(); return; }
       if(t.id==='capCancel'){ capClose(); return; }
       if(t.id==='capSave'){ capSave(false); return; }
       if(t.id==='capHoldEdit'){ var hold=capSheet.querySelector('#capHold'); if(hold)hold.innerHTML=''; var tx=capSheet.querySelector('#capText'); if(tx)tx.focus(); return; }
       if(t.id==='capHoldSave'){ capSave(true); return; }
-      if(t.id==='capEraseAll'){ if(window.confirm('Erase all saved questions on this device?')){ capEraseAll(); capRefreshAfterMutation(); } return; }
+      if(t.id==='capEraseAll'){
+        if(window.confirm('Erase all saved questions on this device?')){
+          if(capEraseAll()){ capRefreshAfterMutation(); capAnnounce('All saved questions erased.'); }
+          else capAnnounce('Could not erase saved questions on this device. Try again.');
+        }
+        return;
+      }
       var del=t.getAttribute&&t.getAttribute('data-cap-del');
-      if(del){ capRemove(del); capRefreshAfterMutation(); return; }
+      if(del){
+        if(capRemove(del)){ capRefreshAfterMutation(); capAnnounce('Question deleted. '+capRemainingText()); }
+        else capAnnounce('Could not delete this question on this device. Try again.');
+        return;
+      }
+    });
+    capSheet.addEventListener('change',function(e){
+      if(!e.target.hasAttribute||!e.target.hasAttribute('data-cap-email-id'))return;
+      var boxes=capSheet.querySelectorAll('[data-cap-email-id]'),selected=false;
+      for(var i=0;i<boxes.length;i++)if(boxes[i].checked){selected=true;break;}
+      var button=capSheet.querySelector('#capEmailSelect');if(button)button.disabled=!selected;
     });
   }
   function capSave(force){
@@ -1454,9 +1899,10 @@
       return;
     }
     if(hold)hold.innerHTML='';
-    if(capAdd(text)){ ta.value=''; capRefreshAfterMutation(); }
+    var savedId=capAdd(text);
+    if(savedId){ ta.value=''; capRefreshAfterMutation(); if(hold)hold.innerHTML=capNextHtml(savedId,text,null); capAnnounce('Saved on this device. '+capRemainingText()); }
     else { var err=document.createElement('p'); err.className='cap-err';
-      err.textContent="Couldn't save on this device. Use “Ask my attending” on the home screen to copy your questions out before you close this tab.";
+      err.textContent="Couldn't save on this device. Select and copy your question from the text box before you close this tab.";
       if(hold)hold.appendChild(err); }
   }
   /* ---------- Search (mirrors rc-search: tokenize -> synonym expand -> TF-IDF + prefix/substring bonus) ---------- */
@@ -1468,7 +1914,7 @@
   }
   /* SI===null means "failed" OR "not yet resolved". Refresh the guarded Today surface after
      the index settles so captures can gain matches without a reload. */
-  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); })
+  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); capRefreshNext(); })
     .catch(function(){ SI=null; VOCAB=[]; });
 
   function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
@@ -1543,7 +1989,12 @@
   function qbRecordServable(id){ if(isRetiredQb(id))return false; if(!qbDraftsIncluded()&&isDraftQb(id))return false; return true; }
   /* ---- end qb servability ---- */
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
-  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(id.indexOf('deck#')===0||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
+  /* Daily Review's landmark-deck cards are `<deck id>#<question index>` and every deck id in
+     quizzes.json is AR-<n> or SP-<n> (review.html builds the id; tests/srs-home-counters pins
+     the shape against the real file). Until 2026-09-24 this matched a `deck#` prefix nothing
+     writes, so every real deck card fell into `other` and vanished from timed blocks. */
+  var SRS_DECK_CARD=/^(?:AR|SP)-\d+#\d+$/;
+  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(SRS_DECK_CARD.test(id)||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
   function dueBreakdown(){ var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},comm:{due:0,overdue:0},reason:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ var k=srsBucket(id); if(k==='qb'&&!qbRecordServable(id.slice(3)))continue; b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } return b; }
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
   /* ---- end due breakdown ---- */
@@ -1609,6 +2060,10 @@
 
   /*__FD_STATE__*/
 
+  /*__FD_READING_PLACE__*/
+
+  /*__FD_CAPTURE_EMAIL__*/
+
   var FD_CURRICULUM={};
   var FD_TOPIC_META={};
   var FD_TOOL_REGISTRY={};
@@ -1619,6 +2074,8 @@
   var FD_ROTATION_EDITION_CATALOG={};
 
   /*__FD_DATA__*/
+
+  /*__FD_OFFLINE__*/
 
   /*__FD_EDITION_CATALOG__*/
 
@@ -1634,13 +2091,27 @@
 
   /*__FD_BLOCK__*/
 
+  /*__FD_APP_PRACTICE__*/
+
+  /*__FD_APP__*/
+
   /*__FD_SHELL__*/
 
   /*__FD_PATH__*/
 
   /*__FD_LIBRARY__*/
 
+  /*__FD_CARE_NAVIGATOR__*/
+
+  /*__QR_GENERATOR_1_4_4__*/
+
+  /*__FD_CARE_PACK__*/
+
+  /*__FD_CARE__*/
+
   /*__FD_READER__*/
+
+  /*__FD_GUIDE__*/
 
   /*__FD_SEARCH__*/
 
@@ -1699,7 +2170,12 @@
     var pct=tot?Math.round(rev/tot*100):0;
     var h='<div class="hm" id="pgRoot"><div class="hm-top"><h1>Progress</h1></div>';
     h+='<p class="sub">From your activity on this device — pages reviewed, practice answers, and confidence. Nothing leaves the browser unless you export it below.</p>';
-    h+='<div class="hm-sec fd-examdate"><h2>Exam date</h2><div class="sub">Used only on this device to guide pacing.</div><div class="fd-examdate__row"><input id="fdExamDate" type="date" value="'+esc(LS('cw_shelf_date')||'')+'" aria-label="Exam date"><button type="button" class="hm-btn" data-progress-action="save-exam">Save date</button></div></div>';
+    /* The exam date moved to Settings (fd_sheet.js's Pacing section), and this is a signpost,
+       not a second control: one WRITABLE home for cw_shelf_date, or the two desync. It still
+       shows the stored date, because a learner who came here looking for it deserves an answer
+       rather than only a redirect -- reading the key is not a second home, writing it is. */
+    var examSet=LS('cw_shelf_date')||'';
+    h+='<div class="hm-sec"><h2>Exam date</h2><div class="sub">'+(examSet?esc(examSet)+' — change it':'Not set — add it')+' in Settings, the ⚙ in the top bar. It paces what Today suggests.</div></div>';
     var mb=masteryByBlueprint(); var mbStarted=mb.filter(function(x){return x.score!=null;});
     h+='<div class="hm-sec"><h2>Mastery by blueprint <span style="font-weight:400;color:var(--text-light)">· from your practice</span></h2>';
     if(!mbStarted.length){ h+='<div class="sub" style="margin:0 0 8px">Answer practice questions (or topic quizzes) and this fills in — one bar per exam blueprint area.</div>'; }
@@ -1754,6 +2230,12 @@
       editionFingerprint:typeof fdEditionIndexFingerprint==='function'?fdEditionIndexFingerprint(index):'',
       weekCount:weeks.length,
       generatedAt:generatedAt,
+      /* PROVENANCE ONLY -- the exam date this plan was GENERATED against, never the date pacing
+         advice is computed from. fdPlanMatches does not compare it, so fdLoadPlan returns a
+         matching plan verbatim and this field is frozen for the plan's life: anything that
+         displayed it kept asserting a date the learner had since changed or cleared. The one home
+         is cw_shelf_date, and renderPlanCards reads that. Do not reintroduce a reader of this
+         field; if it ever stops being worth recording, retire it rather than reading it. */
       shelfDate:shelfDate||'',
       weeks:weeks.map(function(w){
         var cats=(w.focusCategories||[]).slice();
@@ -1842,8 +2324,10 @@
     try{localStorage.removeItem('cw_plan_v1');}catch(_){ }
     return null;
   }
-  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set an exam date in <button class="hm-inl" data-pt="start">Progress</button> to adjust intensity.</div>'; var days=shelfDaysUntil(shelf); if(days==null)return ''; if(days<0) return '<div class="sub" style="margin:0 0 10px">Exam date passed — use this plan for review.</div>'; var msg=days<=14?('Exam in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Exam in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
-  function renderPlanCards(plan){ var h=shelfIntensityHtml(plan.shelfDate); plan.weeks.forEach(function(wk){ h+='<div class="wd-card" style="margin:0 0 12px"><h3 style="text-transform:none;letter-spacing:0;font-size:.95rem;color:var(--text);margin:0 0 6px">'+esc(wk.title)+'</h3>'; if(wk.focus&&wk.focus.length){ h+='<div class="sub" style="margin:0 0 8px">Focus first: <strong>'+esc(ptLabels(wk.focus))+'</strong></div>'; wk.focus.forEach(function(c){ h+='<button class="hm-li" data-practice="'+c+'" style="border-bottom:none"><span class="t">Practice '+esc(SHELF_LABEL[c]||c)+'</span><span class="sec">→</span></button>'; }); } else { h+='<div class="sub" style="margin:0 0 4px">On track — maintain.</div>'; } h+='<button class="hm-li" data-fd-view-week="'+fdEsc(wk.week)+'" style="border-bottom:none"><span class="t">Open Week '+fdEsc(wk.week)+'</span><span class="sec">path →</span></button></div>'; }); return h; }
+  function shelfIntensityHtml(shelf){ if(!shelf) return '<div class="sub" style="margin:0 0 10px">Set an exam date in <button class="hm-inl" data-fd-settings>Settings</button> to adjust intensity.</div>'; var days=shelfDaysUntil(shelf); if(days==null)return ''; if(days<0) return '<div class="sub" style="margin:0 0 10px">Exam date passed — use this plan for review.</div>'; var msg=days<=14?('Exam in '+days+' day'+(days===1?'':'s')+' — compress: hit each week’s focus areas and practice daily.'):('Exam in '+days+' days — steady pace through the weeks.'); return '<div class="sub" style="margin:0 0 10px">'+msg+'</div>'; }
+  /* The intensity line reads the LIVE key, deliberately not plan.shelfDate -- see the provenance
+     note on that field in fdPlanFromMastery above for why reading it was wrong. */
+  function renderPlanCards(plan){ var h=shelfIntensityHtml(LS('cw_shelf_date')||''); plan.weeks.forEach(function(wk){ h+='<div class="wd-card" style="margin:0 0 12px"><h3 style="text-transform:none;letter-spacing:0;font-size:var(--fd-font-base);color:var(--text);margin:0 0 6px">'+esc(wk.title)+'</h3>'; if(wk.focus&&wk.focus.length){ h+='<div class="sub" style="margin:0 0 8px">Focus first: <strong>'+esc(ptLabels(wk.focus))+'</strong></div>'; wk.focus.forEach(function(c){ h+='<button class="hm-li" data-practice="'+c+'" style="border-bottom:none"><span class="t">Practice '+esc(SHELF_LABEL[c]||c)+'</span><span class="sec">→</span></button>'; }); } else { h+='<div class="sub" style="margin:0 0 4px">On track — maintain.</div>'; } h+='<button class="hm-li" data-fd-view-week="'+fdEsc(wk.week)+'" style="border-bottom:none"><span class="t">Open Week '+fdEsc(wk.week)+'</span><span class="sec">path →</span></button></div>'; }); return h; }
   function startPretest(){ currentItem={f:'__placement__',t:'2-minute placement',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="ptRoot"><h1>2-minute placement</h1><p class="sub">Loading…</p></div></article>'; var go=function(pool){ PRETEST_POOL=pool; ptAnswers={}; renderPretestForm(); }; if(PRETEST_POOL){ go(PRETEST_POOL); return; } fetch('pretest_pool.json').then(function(r){return r.ok?r.json():{items:[]};}).then(function(d){ go((d&&d.items)||[]); }).catch(function(){ go([]); }); }
   function renderPretestForm(){ var root=document.getElementById('ptRoot'); if(!root)return; var items=PRETEST_POOL||[]; if(!items.length){ root.innerHTML='<h1>Placement unavailable</h1><p class="sub">The question pool didn’t load — browse the library or follow the path instead.</p>'; return; } var h='<h1>2-minute placement</h1><p class="sub">One question per topic area — pick the best answer. This points you at weak spots; it’s a starting estimate, not a grade.</p>'; items.forEach(function(it,qi){ h+='<div class="pt-q" data-qi="'+qi+'"><div class="pt-stem">'+(qi+1)+'. '+esc(it.stem)+'</div>'; (it.options||[]).forEach(function(o){ h+='<button class="pt-opt" data-qi="'+qi+'" data-key="'+esc(o.key)+'"><b>'+esc(o.key)+'.</b> '+esc(o.t)+'</button>'; }); h+='</div>'; }); h+='<div style="margin-top:6px"><button class="hm-btn" data-pt="submit">See my results</button> <span id="ptCount" class="hm-empty"></span></div>'; root.innerHTML=h; updatePtCount(); }
   function updatePtCount(){ var el=document.getElementById('ptCount'); if(!el)return; var n=0,t=(PRETEST_POOL||[]).length,k; for(k in ptAnswers){ if(ptAnswers.hasOwnProperty(k))n++; } el.textContent=n+' of '+t+' answered'; }
@@ -1858,6 +2342,14 @@
   /* ===== Governed Front Door live shell ===== */
   var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
   var FD_INDEX=FD_CANONICAL_INDEX;
+  /* Capture lives in the preceding script. This bridge exposes only the pure email operations;
+     its digest callback reads the current canonical/edition index at the moment of review. */
+  fdCaptureEmail={
+    address:fdEmailAddress,
+    selection:fdEmailSelection,
+    digest:function(selected){return fdEmailDigest(FD_INDEX,selected,location.origin);},
+    mailto:fdEmailMailto
+  };
   function fdRotationCatalogContext(value){
     var revision,gate,descriptor;
     try{descriptor=Object.getOwnPropertyDescriptor(value,'revision');revision=descriptor&&descriptor.enumerable&&Object.prototype.hasOwnProperty.call(descriptor,'value')&&typeof descriptor.value==='string'&&/^sha256-[A-Za-z0-9_-]{43}$/.test(descriptor.value)?descriptor.value:'';}catch(ignoreRevision){revision='';}
@@ -1874,6 +2366,7 @@
   var fdChromeMount=fdEditionRuntimeElement(fdDocument,'fdChromeMount');
   var fdEditionMount=fdEditionRuntimeElement(fdDocument,'governanceMount');
   var fdCaptureMount=fdEditionRuntimeElement(fdDocument,'fdCaptureMount');
+  var fdDockMount=fdEditionRuntimeElement(fdDocument,'fdDockMount');
   var fdOverlayMount=fdEditionRuntimeElement(fdDocument,'fdOverlayMount');
   var fdCrisisTemplate=document.getElementById('fdCrisisTemplate');
   var fdCrisisHtml=fdCrisisTemplate?fdCrisisTemplate.innerHTML:'';
@@ -1928,15 +2421,39 @@
     var block=blockLoad(live.nowMs);
     if(!block) return;
     var status=fdBlockStatus(block, live.done);
-    if(status.next) fdOpenBlockStep(status.next);
-    else { blockClear(); specialRefresh(); }
+    if(!status.next){ blockClear(); specialRefresh(); return; }
+    var sess=null;
+    try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ sess=null; }
+    /* An interrupted question set resumes as the block's step; anything else starts fresh. */
+    var resume=fdBlockResumeSearch(status.next, sess);
+    if(resume) fdOpenRef(status.next.ref, resume);
+    else fdOpenBlockStep(status.next);
   }
   function fdLiveState(state){
     var out=fdClone(state||{}), raw=progLoad(), s=srsState();
-    out.done=(state&&state.done&&typeof state.done==='object')?fdClone(state.done):fdProgressDoneMap(raw);
     out.progressRaw=raw;
     out.nowMs=Date.now();
+    out.block=!facultyPreviewRequest&&new URLSearchParams(location.search).get('block')==='1'?blockLoad(out.nowMs):null;
     out.rotationStart=LS('cw_rotation_start')||'';
+    /* The MODE, not the painted attribute: the settings panel marks one of System/Light/Dark
+       active, and fdThemeMode maps an absent or junk value onto System. currentTheme() in
+       fd_wire.js resolves the same key for DISPATCH; this is the render half. */
+    out.themeMode=fdThemeMode(LS('cw_theme'));
+    /* The settings panel's Pacing field renders this and nothing else sets it. Read here rather
+       than mirrored onto controller state so the stored key stays the single home; the panel's
+       change handler writes it and the next render reads it back. */
+    out.examDate=LS('cw_shelf_date')||'';
+    /* The Usage section, and the one key on this state that is legitimately null: null means
+       CLERKSHIP_ANALYTICS left the emitter out of this build entirely, and fdSheetSettingsBody
+       then renders no section at all rather than describing collection that is not happening.
+       Read through the emitter's own enabled() rather than through its key, so the emitter stays
+       the only definition of what a stored opt-out means. enabled() is false for TWO reasons --
+       an opt-out here, or the browser's DNT/GPC -- so optedIn is meaningful only while
+       privacySignal is false, which is the only branch fdSettingsUsage reads it in. */
+    out.analytics=window.cwAnalytics
+      ?{optedIn:window.cwAnalytics.enabled(),
+        privacySignal:(navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)}
+      :null;
     /* Seven-day activity strip: derived, never stored -- see fdActivityDays. Every store is
        read defensively; a missing or malformed one simply contributes no days. */
     out.activityDays=fdActivityDays({
@@ -1964,6 +2481,16 @@
         ?out.week
         :((FD_INDEX.weeks[0]||{}).n);
     }
+    out.done=fdProgressDoneMap(raw,FD_INDEX,fdProgressWeek(out,FD_INDEX));
+    out.appMode=out.appInvite===true||out.role==='app';
+    /* ORDER IS LOAD-BEARING. The next line replaces out.role with the DISPLAY NAME for every
+       renderer downstream, so the settings panel -- which marks its active chip by comparing
+       against the chip's raw data-fd-role id -- has to be handed that id first, under its own
+       key, along with the per-site list the chips are drawn from. Capture roleId after the
+       overwrite and every comparison is name-vs-id, false for all of them, and the You section
+       shows no selection at all: silent, in a control whose only feedback IS the selection. */
+    out.roleId=out.role;
+    out.roles=FD_ROLES;
     out.role=fdRoleName(out.role)||out.role;
     out.currentCoreRevision=typeof FD_CORE_REVISION==='string'?FD_CORE_REVISION:'';
     out.localProgress=FD_INDEX.edition&&FD_INDEX.edition.card
@@ -1971,39 +2498,86 @@
       :{checklist:{},resources:{}};
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
-    var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,out.done);
+    var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,fdProgressDoneMap(raw,FD_INDEX,out.week));
     out.ringPct=progress.pct;
     return out;
   }
+
+  function fdCaptureMatch(text){
+    var results=SI?runSearch(text):[];
+    if(!results.length)return null;
+    /* Prefer a result the learner can also schedule for review; otherwise keep the top hit. */
+    var hit=results[0].d;
+    for(var q=0;q<results.length;q++){ if(topicHasQuiz(results[q].d.f)){ hit=results[q].d; break; } }
+    return {ref:hit.f,title:hit.t,hasQuiz:topicHasQuiz(hit.f)};
+  }
+  /* The capture dialog lives in the legacy shell script above while search-to-resource matching
+     lives in this Front Door closure. Expose only the normalized result, never the index itself. */
+  if(typeof window!=="undefined") window.fdCaptureMatchForQuestion=fdCaptureMatch;
 
   function fdCaptureRows(){
     var data=capRead(), rows=[];
     for(var i=0;i<data.items.length;i++){
       var item=data.items[i];
-      if(item.triaged)continue;
-      var match=null, results=SI?runSearch(item.text):[];
-      if(results.length){
-        var hit=results[0].d;
-        match={ref:hit.f,title:hit.t,hasQuiz:topicHasQuiz(hit.f)};
-      }
-      rows.push({id:item.id,text:item.text,triaged:false,match:match});
+      rows.push({id:item.id,text:item.text,at:item.at,route:item.route,state:item.state});
     }
     return rows;
   }
 
   function fdTodayLive(state){
-    var html=fdToday(FD_INDEX,fdLiveState(state));
-    var sess=null;
+    var live=fdLiveState(state), sess=null;
     try{ sess=(typeof sessLoad==='function')?sessLoad('qbank'):null; }catch(_){ sess=null; }
-    var inserted=fdDueRow(dueBreakdown())+fdResumeCard(sess);
+    var due=dueBreakdown();
+    var weekN=(typeof live.week==='number'&&!isNaN(live.week))?live.week:null;
+    var wItems=weekN===null?[]:fdItemsForWeek(FD_INDEX,weekN);
+    var hasWeek=weekN!==null&&!!fdFindWeek(FD_INDEX,weekN);
+    var weekDone=fdProgressForWeek(FD_INDEX,live,live.week);
+    var progress=fdTodayProgress(wItems,weekDone);
+    var lastRead=fdTodayLastRead(LS('cw_last'),wItems,progress,weekDone);
     /* The timed block sits with the other device-store rows. In a faculty preview there is no
        learner session to plan for, so the card is omitted with the capture launcher. */
+    var liveBlock=null, blockStatus=null, blockHtml='', captureHtml='';
     if(!facultyPreviewRequest){
-      var liveForBlock=fdLiveState(state), liveBlock=blockLoad(liveForBlock.nowMs);
-      inserted+=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done);
+      var liveForBlock=live;
+      liveBlock=blockLoad(liveForBlock.nowMs);
+      blockStatus=liveBlock?fdBlockStatus(liveBlock,liveForBlock.done):null;
     }
-    if(!facultyPreviewRequest)inserted+=fdCaptureTriage(fdCaptureRows());
-    return html.replace('<div class="fd-today__main">','<div class="fd-today__main">'+inserted);
+    /* One Thing First: exactly one primary action, chosen by the pure picker in fd_today.js
+       from inputs this function already had. The pure renderer is told who won so it can demote
+       its own Continue card; the rows that did not win render below the secondary heading in a
+       fixed order, then the week list, daily pick, progress card and quick tools as before. */
+    var primary=fdTodayPrimary({
+      capsuleLeft:fdCapsuleLeft(sess),
+      blockNext:blockStatus?blockStatus.next:null,
+      dueTotal:fdDueCount(due),
+      weekProgress:progress,
+      hasWeek:hasWeek,
+      lastRead:lastRead
+    });
+    live.primaryKind=primary.kind;
+    var offlineHtml=facultyPreviewRequest?'':fdOfflineEntry(
+      fdOfflineDisplayState(state),fdOfflineRouteLabel(state),state.offlineOpen===true);
+    var html=fdToday(FD_INDEX,live);
+    if(!facultyPreviewRequest){
+      var blockResume=(blockStatus&&sess&&fdBlockResumeSearch(blockStatus.next,sess))?{left:fdCapsuleLeft(sess),n:blockStatus.next.n}:null;
+      blockHtml=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done,{primary:primary.kind==='block',resume:blockResume});
+      captureHtml=fdCaptureTriage(fdCaptureRows());
+    }
+    var cards={
+      block:blockHtml,
+      due:fdDueRow(due,primary.kind==='due'),
+      resume:fdResumeCard(sess,primary.kind==='resume',blockStatus),
+      read:fdLastReadRow(lastRead,primary.kind==='read')
+    };
+    var order=['block','due','resume','read'], lead='', also='';
+    for(var i=0;i<order.length;i++){
+      if(order[i]===primary.kind) lead='<div class="fd-primary">'+cards[order[i]]+'</div>';
+      else also+=cards[order[i]];
+    }
+    also+=captureHtml;
+    var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
+    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+offlineHtml+rest);
+    return html.replace(FD_TODAY_LEAD_END,offlineHtml+rest);
   }
 
   function fdRenderCapture(state){
@@ -2015,11 +2589,46 @@
       for(var i=1;i<launchers.length;i++)launchers[i].parentNode.removeChild(launchers[i]);
       return;
     }
-    fdCaptureMount.innerHTML='<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false">+ Capture a question</button>';
+    fdCaptureMount.innerHTML='<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false"><span aria-hidden="true">＋</span> Ask a question</button>';
+  }
+
+  function fdRenderDock(state,preserveFocus){
+    if(!fdDockMount)return;
+    var show=state&&state.screen==='app'&&!facultyPreviewRequest;
+    if(!show){fdDockMount.innerHTML='';return;}
+    var source=fdDockSource(contentEl);
+    var live=fdClone(fdLiveState(state));
+    live.dockAction=source?{sourceId:source.id,label:source.label}:null;
+    /* Only same-route refreshes may retain dock focus. Full navigation and dialogs own their
+       focus transitions. Match the old action, never an arbitrary button or a page control. */
+    var active=document.activeElement, focusSelector=null;
+    if(preserveFocus&&!state.searchOpen&&!state.sheet&&active&&fdDockMount.contains(active)){
+      var attrs=['data-fd-dock-forward','data-fd-tab','data-fd-search','data-capture-open'];
+      for(var i=0;i<attrs.length;i++){
+        var value=active.getAttribute(attrs[i]);
+        if(value!==null&&!/["\\]/.test(value)){focusSelector='['+attrs[i]+'="'+value+'"]';break;}
+      }
+    }
+    /* Dialog owners retain their opener objects across hydration and Capture mutations.
+       Reuse the utility controls, including Capture's live expanded state, without focusing
+       them while an overlay owns focus. The route/context controls still refresh normally. */
+    var utilities=['[data-fd-search]','[data-capture-open]'], retained=[];
+    for(var j=0;j<utilities.length;j++)retained[j]=fdDockMount.querySelector(utilities[j]);
+    fdDockMount.innerHTML=fdDock(live);
+    for(var k=0;k<utilities.length;k++){
+      var replacement=fdDockMount.querySelector(utilities[k]);
+      if(retained[k]&&replacement)replacement.parentNode.replaceChild(retained[k],replacement);
+    }
+    if(!state.openId){
+      var current=fdDockMount.querySelector('[data-fd-tab="'+state.tab+'"]');
+      if(current)current.setAttribute('aria-current','page');
+    }
+    var successor=focusSelector&&fdDockMount.querySelector(focusSelector);
+    if(successor&&!successor.disabled)successor.focus({preventScroll:true});
   }
 
   function fdProgressMarkup(state){
-    var label=fdReaderBackLabel(state&&state.fromTab);
+    var label=fdReaderBackLabel(state&&state.fromTab,state&&state.roleId,fdAppMode(state));
     return '<article class="fd-reader fd-progress-reader">'+
       '<button type="button" class="fd-reader__back" data-fd-back>‹ '+fdEsc(label)+'</button>'+
       fdSurface('progress',function(){ return window.renderProgress?window.renderProgress():'<div class="fd-fallback">Progress is unavailable.</div>'; })+
@@ -2038,12 +2647,23 @@
     if(state.openId){
       return fdSurface('reader',function(){
         var rstate=fdClone(live); rstate.ref=state.openId;
+        rstate.readingPlaceEligible=false; /* Loading is not a mounted reading. */
         return fdReader(FD_INDEX,rstate,'<p class="loading" role="status">Loading…</p>');
       });
     }
     if(state.tab==='path') return fdSurface('path',function(){ return fdPath(FD_INDEX,live); });
-    if(state.tab==='library') return fdSurface('library',function(){ return fdLibrary(FD_INDEX); });
-    return fdSurface('today',function(){ return fdTodayLive(live); });
+    if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,week:live.week}); });
+    if(state.tab==='care') return fdSurface('care',function(){
+      return fdCare(FD_INDEX,state.careIntentId||'',state.carePackIds||[],fdCrisisHtml);
+    });
+    if(fdAppMode(state)) return fdSurface('today',function(){ return fdAppWorkspace(
+      FD_INDEX,FD_CURRICULUM.appPathway,live,
+      facultyPreviewRequest?'':fdCaptureTriage(fdCaptureRows()),
+      facultyPreviewRequest?'':fdOfflineEntry(fdOfflineDisplayState(state),
+        fdOfflineRouteLabel(state),state.offlineOpen===true)); });
+    /* fdTodayLive resolves device-backed state itself. Passing an already-resolved object here
+       turns the APP role id into its display label on the second pass and loses APP mode. */
+    return fdSurface('today',function(){ return fdTodayLive(state); });
   }
 
   function fdRenderOverlays(state){
@@ -2059,6 +2679,64 @@
 
   /* Tool width is a transient shell preference. Patch only classes and aria state so the live
      iframe, its contentWindow, learner inputs, scroll position, and focused toggle all survive. */
+  /* Embedded-tool frame (2026-09-19): content-height by default, so the page is the only scroll
+     surface; a tool that declares <meta name="cw-frame" content="viewport"> keeps the
+     viewport-height frame. fdToolFrameMode / fdToolFrameHeight (fd_wire.js) are the pure halves;
+     this is the DOM half. Idempotent per frame element (__fdSized): fdOpenResourceLive calls it
+     once the resource has mounted and fdPatchToolLayout calls it on every re-render that keeps
+     the live frame, and only the first call wires anything. The inner ResizeObserver watches the
+     tool's own <html> and <body>, so a tab switch, an expanded card or a loaded image re-sizes
+     the frame; the outer one watches the frame's width (the expand toggle, a rotated phone),
+     which reflows the tool and so changes its height. A tool that navigates itself fires load
+     again and is wired against its new document. tests/tool-frame.test.mjs pins the wiring;
+     tool-expand.spec.js measures the live frame. */
+  function fdSizeToolFrame(frame){
+    if(!frame||frame.__fdSized)return;
+    frame.__fdSized=true;
+    var pending=false;
+    function doc(){ try{ return frame.contentDocument||null; }catch(_){ return null; } }
+    function apply(){
+      pending=false;
+      var d=doc();
+      if(!d||!d.documentElement||!frame.isConnected)return;
+      if(fdToolFrameMode(d)!=='content'){ frame.classList.remove('is-content-sized'); frame.style.height=''; return; }
+      /* A React tool's document is EMPTY at its load event (an empty root, body margin 0): the
+         html box measures 0 until the first render, which the observer reports a frame later.
+         Releasing the frame from its viewport height on that measurement collapses it to the
+         150px iframe default for a frame -- and for as long as a hidden tab throttles rAF. So
+         the frame keeps its viewport-height placeholder until the tool has a real height. */
+      var h=fdToolFrameHeight(d), cur=parseInt(frame.style.height,10)||0;
+      if(h<48)return;
+      frame.classList.add('is-content-sized');
+      if(Math.abs(h-cur)>1)frame.style.height=h+'px';
+    }
+    function schedule(){
+      if(pending)return;
+      pending=true;
+      (window.requestAnimationFrame||window.setTimeout)(apply);
+    }
+    function wire(){
+      var d=doc(), win=null;
+      try{ win=frame.contentWindow; }catch(_){ win=null; }
+      if(!d||!win)return;
+      apply();
+      if(fdToolFrameMode(d)!=='content')return;
+      if(typeof win.ResizeObserver==='function'){
+        var inner=new win.ResizeObserver(schedule);
+        if(d.documentElement)inner.observe(d.documentElement);
+        if(d.body)inner.observe(d.body);
+      }else if(typeof win.MutationObserver==='function'&&d.documentElement){
+        new win.MutationObserver(schedule).observe(d.documentElement,{childList:true,subtree:true,attributes:true,characterData:true});
+      }
+      if(typeof window.ResizeObserver==='function')new window.ResizeObserver(schedule).observe(frame);
+      win.addEventListener('load',schedule);
+    }
+    var loaded=false;
+    try{ var d0=frame.contentDocument; loaded=!!d0&&d0.readyState==='complete'&&!!(d0.body&&d0.body.childNodes.length); }catch(_){ loaded=false; }
+    frame.addEventListener('load',wire);
+    if(loaded)wire();
+  }
+
   function fdPatchToolLayout(state){
     if(!contentEl)return;
     var reader=contentEl.querySelector('.fd-reader--tool');
@@ -2070,8 +2748,81 @@
     if(!reader)return;
     if(expanded)reader.classList.add('is-tool-expanded');
     else reader.classList.remove('is-tool-expanded');
+    var liveFrame=reader.querySelector('.toolframe');
+    if(liveFrame&&!facultyPreviewRequest&&typeof fdSizeToolFrame==='function')fdSizeToolFrame(liveFrame);
     var control=reader.querySelector('[data-fd-expand-tool]');
     if(control)control.setAttribute('aria-pressed',expanded?'true':'false');
+  }
+
+  var fdGuideSession=null, fdGuideBookmark=null, fdGuideReturning=false;
+  var fdReadingPlaceSession=null;
+  var fdOfflineVisitStatus=null;
+  var fdOfflineVisitRouteKey='';
+  var fdOfflineVisitRouteLabel='';
+  function fdOfflineRouteLabel(state){
+    var live=fdLiveState(state);
+    if(fdAppMode(state))return live.appBridge==='pmhnp'?'APP PMHNP route':'APP PA route';
+    return typeof live.week==='number'?'Week '+live.week:'current learning route';
+  }
+  function fdOfflineKeyForRoute(state){
+    var route=fdLiveState(state);
+    route.appPathway=FD_CURRICULUM.appPathway;
+    var urls=fdOfflineUrls(FD_INDEX,route);
+    return String(route.roleId||route.role||'')+'|'+
+      (route.appMode===true?'app:'+String(route.appBridge||'pa'):'week:'+String(route.week))+
+      '|'+urls.join('|');
+  }
+  function fdOfflineDisplayState(state){
+    if(fdOfflineVisitStatus&&fdOfflineVisitRouteKey===fdOfflineKeyForRoute(state))return fdOfflineVisitStatus;
+    var live=fdLiveState(state);
+    live.appPathway=FD_CURRICULUM.appPathway;
+    return {checking:true,expected:fdOfflineUrls(FD_INDEX,live)};
+  }
+  var fdOfflineWorker=null;
+  try{fdOfflineWorker=navigator.serviceWorker||null;}catch(ignoreOfflineWorker){ }
+  var fdOfflineVisit=fdOfflineMonitor({
+    serviceWorker:fdOfflineWorker,MessageChannel:window.MessageChannel,
+    facultyPreview:!!facultyPreviewRequest,
+    getWaiting:function(){var reg=clerkshipSWRegistration();return !!(reg&&reg.waiting);},
+    subscribeWaiting:clerkshipSWSubscribe,
+    onChange:function(status){
+      fdOfflineVisitStatus=status;
+      /* Task 4 owns placement. A mounted card can update without rebuilding Today, losing
+         focus, or re-running the route check. */
+      var mount=contentEl&&contentEl.querySelector('[data-fd-offline-card]');
+      if(mount&&status){
+        mount.innerHTML=fdOfflineCard(status,fdOfflineVisitRouteLabel);
+        var entry=contentEl.querySelector('[data-fd-offline-entry]');
+        if(entry)entry.className='fd-offline is-'+fdOfflineStatus(status).kind;
+        var label=contentEl.querySelector('[data-fd-offline-label]');
+        if(label)label.textContent=fdOfflineStatus(status).label;
+      }
+    }
+  });
+  function fdSyncOfflineVisit(state){
+    if(fdEditionBootState!=='started')return;
+    var route=fdLiveState(state);
+    route.appPathway=FD_CURRICULUM.appPathway;
+    fdOfflineVisitRouteKey=fdOfflineKeyForRoute(state);
+    fdOfflineVisitRouteLabel=fdOfflineRouteLabel(state);
+    fdOfflineVisit.sync(FD_INDEX,route);
+  }
+  function fdDisposeReadingPlace(){
+    if(fdReadingPlaceSession)fdReadingPlaceSession.destroy();
+    fdReadingPlaceSession=null;
+  }
+  function fdDisposeGuide(){
+    if(fdGuideSession)fdGuideSession.destroy();
+    fdGuideSession=null;
+  }
+
+  function fdUpdateCareNavigatorStatus(state){
+    var status=document.getElementById('careNavigatorStatus');
+    if(!status)return;
+    var selected=state&&state.screen==='app'&&state.tab==='care'&&!state.openId&&contentEl&&
+      contentEl.querySelector('.fd-care-navigator__result');
+    var next=selected?fdCareNavigatorAnnouncement(FD_INDEX,state.careIntentId):'';
+    if(status.textContent!==next)status.textContent=next;
   }
 
   function fdRender(state,detail){
@@ -2079,11 +2830,14 @@
     fdPrepareRoute(state,detail);
     fdAdoptSpecialContext(state);
     if(!hydrate&&fdChromeMount)fdChromeMount.innerHTML=app?fdHeader(fdLiveState(state)):'';
-    if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
+    if(contentEl){ fdDisposeReadingPlace(); fdDisposeGuide(); contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
     fdPatchToolLayout(state);
     fdRenderCapture(state);
+    fdRenderDock(state);
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
+    fdUpdateCareNavigatorStatus(state);
+    fdSyncOfflineVisit(state);
   }
 
   function fdPatchCompletion(state){
@@ -2106,6 +2860,8 @@
         if(current[i].getAttribute('data-fd-toggle')===fresh[j].getAttribute('data-fd-toggle')&&
             completionScope(current[i])===completionScope(fresh[j])){
           current[i].setAttribute('aria-pressed',fresh[j].getAttribute('aria-pressed'));
+          var dockLabel=fresh[j].getAttribute('data-fd-dock-label');
+          if(dockLabel)current[i].setAttribute('data-fd-dock-label',dockLabel);
           current[i].innerHTML=fresh[j].innerHTML;
           break;
         }
@@ -2118,24 +2874,34 @@
 
   function fdRenderTransient(state,detail){
     var d=detail||{}, surfaces=d.surfaces||{};
-    if(d.effect&&d.effect.theme){
-      document.documentElement.setAttribute('data-theme',d.effect.theme);
+    /* An effect carries a MODE; a frame boundary can only carry a painted attribute. Resolve once
+       here so the paint and what an embedded tool is told agree, and so 'system' never escapes as
+       a value no stylesheet and no tool can act on. */
+    if(d.effect&&d.effect.mode){
+      var themeAttr=fdThemeAttr(d.effect.mode,
+        !!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches));
+      document.documentElement.setAttribute('data-theme',themeAttr);
       var frame=contentEl&&contentEl.querySelector('iframe');
-      if(frame&&frame.contentWindow)try{frame.contentWindow.postMessage({type:'theme',mode:d.effect.theme},'*');}catch(_){}
+      if(frame&&frame.contentWindow)
+        try{frame.contentWindow.postMessage({type:'theme',mode:themeAttr},'*');}catch(_){}
     }
     if(surfaces.chrome&&fdChromeMount&&state.screen==='app')fdChromeMount.innerHTML=fdHeader(fdLiveState(state));
     if(d.preserveResource){
       if(surfaces.completion)fdPatchCompletion(state);
     } else if(surfaces.base||surfaces.completion){
       fdAdoptSpecialContext(state);
-      if(contentEl){contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
+      if(contentEl){fdDisposeReadingPlace();fdDisposeGuide();contentEl.className='fd-main';contentEl.innerHTML=fdBaseMarkup(state);}
     }
     if(surfaces.layout)fdPatchToolLayout(state);
+    if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
+    fdUpdateCareNavigatorStatus(state);
+    fdSyncOfflineVisit(state);
   }
 
   function fdOpenProgress(state,opts){
     var host=(opts&&opts.host)||contentEl;
+    fdDisposeReadingPlace();
     currentItem={f:'__progress__',t:'Progress',k:'special'};
     setLearnerTitle(currentItem);
     if(host){if(host===contentEl)host.className='fd-main';host.innerHTML=fdProgressMarkup(state);}
@@ -2143,8 +2909,18 @@
     return true;
   }
 
+  function fdPracticeLaunchSearch(ref,search,state,index){
+    var params=new URLSearchParams(search||'');
+    params.delete('practiceWeek');
+    var week=fdProgressWeek(state,index);
+    if(fdProgressWeekScoped(index,ref)&&fdStateHasWeek(index.weeks,week)) params.set('practiceWeek',String(week));
+    return params.toString()?'?'+params.toString():'';
+  }
+
   function fdOpenResourceLive(ref,opts){
-    var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||{title:ref,kind:/\.html$/.test(ref)?'tool':'read'};
+    var options=opts||{}, item=(FD_INDEX.byRef||{})[ref]||(typeof fdKnownItem==='function'?fdKnownItem(FD_INDEX,ref):{title:ref,kind:/\.html$/.test(ref)?'tool':'read'});
+    fdDisposeReadingPlace();
+    if(!facultyPreviewRequest)fdDisposeGuide();
     /* The audited preview path delegates to show(), which must see the previous currentItem so its
        same-tool reload guard cannot suppress the initial preflight. It also must not mutate the
        learner's bookmark. Outside preview, preserve the existing immediate route context/write. */
@@ -2152,15 +2928,20 @@
       currentItem=fdLegacyItem(item,ref,item.kind);
       try{localStorage.setItem('cw_last',ref);}catch(_){}
     }
+    var readState=function(){
+      var state=options.getState?options.getState():(fdController?fdController.getState():options.state);
+      return facultyPreviewRequest?state:fdLiveState(state);
+    };
+    var launchSearch=facultyPreviewRequest?options.search:fdPracticeLaunchSearch(ref,options.search===undefined?location.search:options.search,readState(),FD_INDEX);
     return fdOpenResource(ref,{
-      index:FD_INDEX,state:fdController?fdController.getState():options.state,
-      search:options.search,fromHistory:options.fromHistory,host:options.host||contentEl,
-      getState:options.getState||function(){ return fdController.getState(); },
+      index:FD_INDEX,state:readState(),
+      search:launchSearch,fromHistory:options.fromHistory,host:options.host||contentEl,
+      getState:readState,
       isCurrent:options.isCurrent,governanceNotice:renderGovernanceNotice,
       signal:options.signal,
       parseMarkdown:function(markdown){
         var html=marked.parse(markdown), meta=TOPIC_META&&TOPIC_META[ref];
-        return (meta?buildTpl(meta,ref):'')+html;
+        return (meta?buildTpl(meta,ref,{open:fdHandheld()}):'')+html;
       },
       facultyPreviewMatches:facultyPreviewMatchesItem,
       facultyPreviewLock:showFacultyPreviewLockNotice,
@@ -2168,6 +2949,8 @@
     }).then(function(ok){
       if(ok&&(!options.isCurrent||options.isCurrent(ref)!==false)){
         var body=contentEl&&contentEl.querySelector('.fd-article__body');
+        var toolFrame=contentEl&&contentEl.querySelector('.toolframe');
+        if(toolFrame&&!facultyPreviewRequest&&typeof fdSizeToolFrame==='function')fdSizeToolFrame(toolFrame);
         if(body){
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
@@ -2178,18 +2961,92 @@
         }
         if(!facultyPreviewRequest)setLearnerTitle(currentItem);
         announceRoute(currentItem); focusGovernanceNotice({fromHistory:!!options.fromHistory});
+        if(!facultyPreviewRequest&&body&&!fdIsTool(ref)){
+          var installReadingPlace=function(restore){
+            var mountedReader=contentEl.querySelector('.fd-reader');
+            var readingState=options.getState?options.getState():(fdController&&fdController.getState());
+            if(mountedReader&&readingState)fdReadingPlaceSession=fdInstallReadingPlace(mountedReader,ref,readingState,{
+              window:window,restore:restore,
+              allowStorage:readingState.screen==='app'&&!!readingState.role&&!readingState.guest&&!facultyPreviewRequest,
+              focusOnRestore:options.focusOnRestore===true,
+              canFocusOnRestore:function(){
+                return fdReadingFocusAllowed(readState(),{
+                  ref:ref,currentRef:currentItem&&currentItem.f,
+                  facultyPreview:!!facultyPreviewRequest,externalModal:!!capSheet,
+                  pendingHigh:!!contentEl.querySelector('.governance-notice.pending-high'),
+                  readerConnected:document.documentElement.contains(mountedReader)
+                });
+              }
+            });
+          };
+          fdGuideSession=fdGuideMount(body,{
+            ref:ref,
+            isPractice:function(target){return fdIsTool(target)&&!!((FD_INDEX.byRef||{})[target]||(FD_INDEX.known||{})[target]);},
+            onPractice:function(bookmark){fdGuideBookmark=bookmark;fdGuideReturning=false;}
+          });
+          if(fdGuideSession){
+            var guide=fdGuideSession, bookmark=fdGuideBookmark;
+            var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
+            var arrivalSearch=options.search===undefined?location.search:options.search;
+            if(!returning)fdGuideBookmark=null;
+            if(guide.leads){
+              /* A page whose sections come from bold leads read with a saved place before it had
+                 a guide; it keeps one. An explicit passage or a return from practice still decides
+                 where it opens, so the saved place only saves on those arrivals. */
+              var passage=new URLSearchParams(arrivalSearch||'');
+              installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
+            }else{
+              var statusNode=contentEl.querySelector('[data-fd-reading-status]');
+              var topNode=contentEl.querySelector('[data-fd-reading-top]');
+              if(statusNode)statusNode.remove();
+              if(topNode)topNode.remove();
+            }
+            /* Initial resources mount behind the edition startup gate. Their promise must
+               settle before focus/scroll can reach the now-visible DOM. Guard the next frame
+               so an abandoned load cannot steal focus from the next route. */
+            requestAnimationFrame(function(){
+              /* The initial load's isCurrent lease ends when its promise settles; identity
+                 of the live mount is the authority for this post-mount work. */
+              if(fdGuideSession!==guide||!document.documentElement.contains(body)||
+                  !currentItem||currentItem.f!==ref)return;
+              focusGovernanceNotice({fromHistory:!!options.fromHistory});
+              var canFocus=!contentEl.querySelector('.governance-notice.pending-high');
+              if(returning){guide.arrive(bookmark.search,false);guide.restore(bookmark,canFocus);}
+              else guide.arrive(arrivalSearch,canFocus);
+            });
+          }else installReadingPlace(true);
+          fdGuideReturning=false;
+        }else if(!facultyPreviewRequest&&fdGuideBookmark&&fdIsTool(ref)){
+          var toolbar=contentEl.querySelector('.fd-reader__toolbar');
+          if(toolbar){
+            var returnGuide=document.createElement('button');returnGuide.type='button';
+            returnGuide.className='fd-guide-return fd-btn fd-btn--ghost';returnGuide.textContent='Return to guide';
+            returnGuide.onclick=function(){
+              if(!fdGuideBookmark)return;
+              fdGuideReturning=true;fdOpenRef(fdGuideBookmark.ref,fdGuideBookmark.search);
+            };
+            toolbar.insertBefore(returnGuide,toolbar.lastChild);
+          }
+        }
       }
+      /* Resource loading replaces the source controls, including on failure. Refresh only for
+         the still-current route; a late response must never overwrite the next route's dock. */
+      if(!facultyPreviewRequest&&(!options.isCurrent||options.isCurrent(ref)!==false))fdRenderDock(readState(),true);
       return ok;
     });
   }
 
   function fdOpenRef(ref,search){
     if(!fdController||!ref)return;
-    fdController.dispatch({'data-fd-open':ref},{search:search===undefined?location.search:search});
+    fdController.dispatch({'data-fd-open':ref},{
+      search:search===undefined?location.search:search,
+      blockNavigation:search!==undefined&&new URLSearchParams(search).get('block')==='1'
+    });
   }
 
   function fdCaptureAction(el){
-    var id=el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')||el.getAttribute('data-cap-drop');
+    if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}
+    var id=el.getAttribute('data-cap-id')||el.getAttribute('data-cap-open')||el.getAttribute('data-cap-review')||el.getAttribute('data-cap-drop');
     var ref=el.getAttribute('data-cap-ref');
     if(el.hasAttribute('data-cap-copy')){
       var payload=capClipboardText();
@@ -2197,9 +3054,38 @@
       else el.textContent='Copy unavailable';
       return;
     }
-    if(el.hasAttribute('data-cap-review')&&ref){seedSRS(ref);capMarkTriaged(id);specialRefresh();return;}
-    if(el.hasAttribute('data-cap-drop')){capRemove(id);specialRefresh();return;}
-    if(el.hasAttribute('data-cap-open')&&ref){capMarkTriaged(id);fdOpenRef(ref);return;}
+    if(el.hasAttribute('data-cap-route')){
+      var route=el.getAttribute('data-cap-route');
+      var routeHost=el.closest&&el.closest('#capListWrap')?'#capListWrap':'#capHold';
+      var currentRoute=null, routeItems=capRead().items;
+      for(var r=0;r<routeItems.length;r++){ if(routeItems[r].id===id){ currentRoute=routeItems[r].route; break; } }
+      var nextRoute=currentRoute===route?null:route;
+      if(capSetRoute(id,nextRoute)){
+        capRenderBody();capRefreshNext();specialRefresh();capAnnounce(nextRoute===null?'Question route cleared. Unrouted.':'Question routed: '+capRouteLabel(nextRoute)+'.');
+        var buttons=capSheet&&capSheet.querySelectorAll(routeHost+' [data-cap-route][data-cap-id]');
+        for(var i=0;buttons&&i<buttons.length;i++){
+          if(buttons[i].getAttribute('data-cap-id')===id&&buttons[i].getAttribute('data-cap-route')===route){buttons[i].focus();break;}
+        }
+      }else if(capSheet)capAnnounce('Could not save this question route on this device. Try again.');
+      return;
+    }
+    if(el.hasAttribute('data-cap-review')&&ref){
+      if(seedSRS(ref)){
+        if(capSetRoute(id,'later')){
+          specialRefresh();
+          if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Review scheduled.');capFocusEditor();}
+        }else if(capSheet)capAnnounce('Review scheduled, but the question route could not be saved on this device.');
+      }else if(capSheet)capAnnounce('Could not schedule review on this device.');
+      return;
+    }
+    if(el.hasAttribute('data-cap-drop')){
+      if(capRemove(id)){
+        if(capSheet){capRenderBody();capRefreshNext();capAnnounce('Question done. '+capRemainingText());}
+        specialRefresh();capFocusEditor();
+      }else if(capSheet)capAnnounce('Could not finish this question on this device. Try again.');
+      return;
+    }
+    if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose();fdOpenRef(ref);return;}
   }
 
   function fdRefreshLocalCompletion(identity,kind,id){
@@ -2234,21 +3120,21 @@
       return;
     }
     el=target.closest&&target.closest('[data-capture-open]');
-    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el);return;}
-    el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-drop],[data-cap-copy]');
+    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
+    el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
     if(el){event.preventDefault();fdCaptureAction(el);return;}
     el=target.closest&&target.closest('.pt-opt');
     if(el){event.preventDefault();var qi=el.getAttribute('data-qi');ptAnswers[qi]=el.getAttribute('data-key');var siblings=contentEl.querySelectorAll('.pt-opt[data-qi="'+qi+'"]');for(var i=0;i<siblings.length;i++)siblings[i].classList.remove('sel');el.classList.add('sel');updatePtCount();return;}
     el=target.closest&&target.closest('.pgfb-b');
-    if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}try{localStorage.setItem('cw_fb_ctx',currentItem?currentItem.t:'');}catch(_){}fdOpenRef('feedback.html');return;}
+    if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}try{localStorage.setItem('cw_fb_ctx',el.getAttribute('data-fb-context')||(currentItem?currentItem.t:''));}catch(_){}fdOpenRef('feedback.html');return;}
     el=target.closest&&target.closest('.markrev');
     if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}var mf=el.getAttribute('data-f'),pp=progLoad(),nd=!(pp[mf]&&pp[mf].done);if(nd){pp[mf]={done:true,at:new Date().toISOString().slice(0,10)};seedSRS(mf);}else delete pp[mf];progSave(pp);refreshReviewLedger(mf,pp);return;}
     el=target.closest&&target.closest('.tyo');
     if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}var wrap=el.closest('.tyourself');if(wrap&&!wrap.getAttribute('data-done')){wrap.setAttribute('data-done','1');var os=wrap.querySelectorAll('.tyo');for(var z=0;z<os.length;z++){if(os[z].getAttribute('data-c')==='1')os[z].classList.add('correct');}if(el.getAttribute('data-c')!=='1')el.classList.add('wrong');try{var qf=currentItem&&currentItem.f;if(qf){var qs=JSON.parse(localStorage.getItem('cw_quiz_v1')||'{}'),qe=qs[qf]||{seen:0,wrong:0};qe.seen++;if(el.getAttribute('data-c')!=='1')qe.wrong++;qe.last=new Date().toISOString().slice(0,10);qs[qf]=qe;localStorage.setItem('cw_quiz_v1',JSON.stringify(qs));}}catch(_){}var quizfb=wrap.querySelector('.tyfb');if(quizfb)quizfb.classList.add('show');}return;}
     el=target.closest&&target.closest('[data-progress-action]');
-    if(el){event.preventDefault();var pa=el.getAttribute('data-progress-action');if(pa==='progress')fdOpenProgress(fdController.getState(),{host:contentEl});else if(pa==='save-exam'){var date=document.getElementById('fdExamDate'),value=date&&date.value;try{if(value)localStorage.setItem('cw_shelf_date',value);else localStorage.removeItem('cw_shelf_date');}catch(_){}fdOpenProgress(fdController.getState(),{host:contentEl});}return;}
+    if(el){event.preventDefault();var pa=el.getAttribute('data-progress-action');if(pa==='progress')fdOpenProgress(fdController.getState(),{host:contentEl});return;}
     el=target.closest&&target.closest('[data-pt]');
-    if(el){event.preventDefault();var pt=el.getAttribute('data-pt');if(pt==='submit')submitPretest();else if(pt==='pretest')startPretest();else if(pt==='plan')renderStoredPlan();else if(pt==='start'){fdOpenProgress(fdController.getState(),{host:contentEl});var exam=document.getElementById('fdExamDate');if(exam)exam.focus();}return;}
+    if(el){event.preventDefault();var pt=el.getAttribute('data-pt');if(pt==='submit')submitPretest();else if(pt==='pretest')startPretest();else if(pt==='plan')renderStoredPlan();return;}
     el=target.closest&&target.closest('[data-block-minutes]');
     if(el){event.preventDefault();var bm=parseInt(el.getAttribute('data-block-minutes'),10);if(bm===5||bm===10||bm===20){fdBlockMinutes=bm;specialRefresh();}return;}
     el=target.closest&&target.closest('[data-block-start]');
@@ -2386,6 +3272,7 @@
     });
   }
   function fdEditionCleanupWiring(){
+    fdOfflineVisit.destroy();
     for(var i=fdEditionStartupTeardowns.length-1;i>=0;i--)
       try{fdEditionStartupTeardowns[i]();}catch(ignoreTeardown){ }
     fdEditionStartupTeardowns=[];
@@ -2438,10 +3325,11 @@
       var fdPrereleaseRoute=new URLSearchParams(location.search);
       var fdPrereleaseRef=fdPrereleaseRoute.get('page')||fdPrereleaseRoute.get('tool')||'';
       if(fdPrereleaseRef&&!fdIsLegacyRouteAlias(fdPrereleaseRef)&&!fdPrereleaseStored.role){
-        fdPrereleaseStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
         fdPrereleaseStored.browsing=true;
       }
-      var fdPrereleaseInitial=fdResolveState(location.href,fdPrereleaseStored);
+      var fdPrereleaseInitial=fdResolveState(location.href,fdPrereleaseStored,{
+        allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway
+      });
       fdPrereleaseInitial.done=fdProgressDoneMap(progLoad());
       fdPrereleaseInitial.rotationStart=fdPrereleaseRotation;
       fdRender(fdPrereleaseInitial);
@@ -2502,11 +3390,14 @@
     if(fdFindWeek(FD_INDEX,fdWeek))fdStored.week=fdWeek;
     fdRouteParams=new URLSearchParams(location.search);
     fdIncomingRef=fdRouteParams.get('page')||fdRouteParams.get('tool')||'';
+    /* A deep-link visitor with no stored role is a GUEST: fdResolveState renders the resource
+       and assigns no role, so the next plain visit runs the wizard from step 1 (2026-09-16). */
     if(fdIncomingRef&&!fdIsLegacyRouteAlias(fdIncomingRef)&&!fdStored.role){
-      fdStored.role=(FD_ROLES[0]&&FD_ROLES[0].id)||'reader';
       fdStored.browsing=true;
     }
-    fdInitial=fdResolveState(location.href,fdStored);
+    fdInitial=fdResolveState(location.href,fdStored,{
+      allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway
+    });
     fdInitial.done=fdProgressDoneMap(progLoad());
     fdInitial.rotationStart=fdRotation;
     if(FD_RUNTIME_WIRING_OK!==true||!fdEditionRuntimePreflightWiring(window,document,fdApp)){
@@ -2517,10 +3408,22 @@
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
       openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
+      readingPlaceSession:function(){return fdReadingPlaceSession;},
+      disposeReadingPlace:fdDisposeReadingPlace,
       externalModalOpen:function(){return !!capSheet;},
+      loadBlock:blockLoad,
+      offlineStatus:function(){return fdOfflineVisitStatus;},
+      online:function(){return navigator.onLine!==false;},
+      requestSWUpdate:requestClerkshipSWUpdate,
+      reportOfflineRefresh:function(message){
+        var status=contentEl&&contentEl.querySelector('[data-fd-offline-refresh-status]');
+        if(status)status.textContent=message;
+      },
       facultyPreview:function(){return !!facultyPreviewRequest;},
       facultyPreviewLock:showFacultyPreviewLockNotice,
+      allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway,
       synonyms:FD_CURRICULUM.synonyms||{},
+      appPracticePacks:(FD_CURRICULUM.appPathway&&FD_CURRICULUM.appPathway.practicePacks)||[],
       releaseStartupGate:function(){return fdEditionRuntimeReleaseGate(fdApp);}
     });
   }catch(ignoreStartupWiring){fdController=null;}
@@ -2530,6 +3433,8 @@
   }
   fdEditionStartupTeardowns.push(function(){
     if(fdController&&fdController.destroy)fdController.destroy();
+    fdDisposeReadingPlace();
+    fdDisposeGuide();
   });
   if(!fdEditionTrackListener(window,'resize',refreshTableScrollCues,false)||
      !fdEditionTrackListener(document,'click',fdFacultyPreviewDocumentClick,true)||
@@ -2679,6 +3584,7 @@
   fdEditionStartupStorageDirty=false;
   fdEditionStartupHistoryDirty=false;
   fdEditionBootState='started';
+  fdSyncOfflineVisit(fdController.getState());
   return {ok:true,code:'STARTED'};
   }
 

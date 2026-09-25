@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 import {
@@ -42,10 +43,60 @@ const RETIREMENT_RACE_TREE_SHA = '4'.repeat(64);
 const DELETION_RACE_TREE_SHA = '5'.repeat(64);
 const UNRELATED_REVIEWED_SHA = '6'.repeat(64);
 
+const TOPIC_META_SHA = 'ab'.repeat(20);
+
 const REVIEWED_PATH = '13_Faculty_Resources/reviewed.json';
 const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest.json';
 const SHIPPED_PAGES_PATH = '13_Faculty_Resources/_automation/site_build/shipped_pages.json';
+const TOPIC_META_PATH = 'topic_meta.json';
 const QBANK_PATH = 'question_bank.json';
+
+/* The content hash, re-derived here rather than imported from
+   faculty-console/attestation-hash.mjs: a handler test that computed its expectation with
+   the same function the handler uses would pass on any self-consistent rule, including a
+   wrong one. tests/attestation-hash-parity.test.mjs is what pins that rule against the
+   Python implementation and against git itself. */
+function blobShaOf(bytes) {
+  const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes, 'utf8');
+  return createHash('sha1')
+    .update(Buffer.from(`blob ${buffer.length}\0`, 'utf8'))
+    .update(buffer)
+    .digest('hex');
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value !== null && typeof value === 'object') {
+    return `{${Object.keys(value).sort()
+      .map(key => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function expectedDigest(files, sources, slug) {
+  const page = files[SHIPPED_PAGES_PATH].json.pages.find(entry => entry.slug === slug);
+  const lines = [page.source, ...(page.extraSources || [])]
+    .sort()
+    .map(source => `${source} ${blobShaOf(sources[source])}`);
+  const record = files[TOPIC_META_PATH]?.json?.[slug];
+  if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
+    const body = { ...record };
+    delete body.facultyReview;
+    lines.push(`topic_meta ${blobShaOf(canonicalJson(body))}`);
+  }
+  return blobShaOf(`${lines.join('\n')}\n`);
+}
+
+// The working-tree bytes behind the two fixture slugs. The handler never fetches these:
+// it reads one recursive git tree and takes each path's blob sha from it, which is what
+// the mock below builds out of this store.
+function defaultSources() {
+  return {
+    '01_Core/t_mood.md': Buffer.from('# Mood Disorders\n\nSynthetic page source.\n', 'utf8'),
+    '04_Assessment/mse.html': Buffer.from('<!doctype html>\n<title>MSE</title>\n', 'utf8'),
+  };
+}
 
 const confirmed = {
   clinical: true,
@@ -173,6 +224,24 @@ function defaultFiles(bank = makeBank([
       },
       sha: SHIPPED_SHA,
     },
+    // The second half of a content hash: the slug's topic_meta record, canonicalised with
+    // `facultyReview` removed. `_note` is here because topic_meta.json really carries one —
+    // a value that is not a record must count as no record rather than as a hashable one.
+    [TOPIC_META_PATH]: {
+      json: {
+        _note: 'Synthetic topic metadata fixture.',
+        't_mood.md': {
+          title: 'Mood Disorders',
+          shelfBlueprint: ['mood-disorders'],
+          facultyReview: {
+            status: 'reviewed',
+            reviewer: 'Synthetic Reviewer',
+            lastReviewed: '2026-07-01',
+          },
+        },
+      },
+      sha: TOPIC_META_SHA,
+    },
     [QBANK_PATH]: {
       json: bank,
       sha: QBANK_SHA,
@@ -189,7 +258,9 @@ function governedFiles() {
   files[REVIEWED_PATH].json['t_mood.md'] = {
     ...files[REVIEWED_PATH].json['t_mood.md'],
     note: 'Internal reviewer note — never exposed to the browser.',
-    contentHash: 'a'.repeat(64),
+    // A reviewed record is BOUND: its hash is the digest of the text it was reviewed
+    // against, so these fixtures exercise the clean path rather than reading as drifted.
+    contentHash: expectedDigest(files, defaultSources(), 't_mood.md'),
     claimsHash: 'b'.repeat(64),
     evidenceHash: 'c'.repeat(64),
     evidenceThrough: '2026-06-01',
@@ -197,7 +268,7 @@ function governedFiles() {
   files[REVIEWED_PATH].json['mse-tool'] = {
     ...files[REVIEWED_PATH].json['mse-tool'],
     note: 'Internal reviewer note for the pending tool.',
-    contentHash: 'd'.repeat(64),
+    contentHash: 'd'.repeat(40),
     claimsHash: 'e'.repeat(64),
     evidenceHash: 'f'.repeat(64),
     evidenceThrough: '2026-06-02',
@@ -252,6 +323,9 @@ function gitPath(url) {
 
 function createGithubMock({
   files = defaultFiles(),
+  sources = defaultSources(),
+  treeFailure = false,
+  treeTruncated = false,
   beforeRequest,
   onPut,
   onRefUpdate,
@@ -311,6 +385,23 @@ function createGithubMock({
 
     if (method === 'GET' && git === 'ref/heads/main') {
       return jsonResponse(200, { object: { type: 'commit', sha: branchHead } });
+    }
+
+    // ONE recursive tree per load is the whole read path for content hashes: every source
+    // file's blob sha comes from here, so the console fetches no page content at all.
+    if (method === 'GET' && git.startsWith('trees/')) {
+      if (treeFailure) return jsonResponse(500, { message: 'Synthetic tree failure.' });
+      return jsonResponse(200, {
+        sha: git.slice('trees/'.length),
+        truncated: treeTruncated,
+        tree: Object.entries(sources).map(([sourcePath, bytes]) => ({
+          path: sourcePath,
+          mode: '100644',
+          type: 'blob',
+          sha: blobShaOf(bytes),
+          size: bytes.byteLength,
+        })),
+      });
     }
 
     if (method === 'GET' && git.startsWith('commits/')) {
@@ -462,12 +553,18 @@ function createGithubMock({
     refBodies,
     effectiveWrites,
     files,
+    sources,
+    // Editing a tracked file means a new commit, so a fixture that edits one must move the
+    // branch head too — otherwise the per-commit tree memo is asked to believe that the same
+    // commit has two different trees, which git never does.
+    advanceBranch,
   };
 }
 
-function handlerWith(mock, envOverrides = {}) {
+function handlerWith(mock, envOverrides = {}, options = {}) {
   return createHandler({
     fetchImpl: mock.fetchImpl,
+    ...options,
     env: {
       GITHUB_TOKEN: TOKEN,
       FACULTY_ATTEST_PASSWORD: FACULTY_KEY,
@@ -540,6 +637,18 @@ function cotwPages(week = COTW_WEEK) {
   }));
 }
 
+// Every source a Case-of-the-Week week ships from, so its slugs can be bound to page text
+// the same way a manifest page is.
+function cotwSources(weeks = [COTW_WEEK]) {
+  const sources = defaultSources();
+  for (const week of weeks) {
+    for (const page of cotwPages(week)) {
+      sources[page.source] = Buffer.from(`# ${page.title}\n\nSynthetic case source.\n`, 'utf8');
+    }
+  }
+  return sources;
+}
+
 function cotwFiles(weeks = [COTW_WEEK]) {
   const files = defaultFiles();
   files[SHIPPED_PAGES_PATH].json.pages = [
@@ -564,7 +673,7 @@ function cotwFiles(weeks = [COTW_WEEK]) {
 }
 
 test('GET surfaces both Case-of-the-Week twins with the site that serves each', async () => {
-  const mock = createGithubMock({ files: cotwFiles() });
+  const mock = createGithubMock({ files: cotwFiles(), sources: cotwSources() });
   const response = await handlerWith(mock)(apiRequest('GET'));
   assert.equal(response.status, 200);
   const payload = await response.json();
@@ -582,7 +691,13 @@ test('GET surfaces both Case-of-the-Week twins with the site that serves each', 
     slug: 'cotw_20260831_catatonia_ms3.md',
     title: 'Catatonia (Aug 31) — MS3',
     kind: 'page',
+    // Queue order only: which deployments list the page in The Essentials. Empty here
+    // because this fixture carries no curriculum.json (essentialsSource 'unavailable').
+    essentialSites: [],
     site: 'ms3',
+    // Audience, sent separately from the preview site — they disagree for every page
+    // that ships to both deployments (2026-09-14 attestation review).
+    sites: ['ms3'],
     status: 'unreviewed',
     at: '2026-08-31',
     by: 'Pending faculty review',
@@ -591,6 +706,7 @@ test('GET surfaces both Case-of-the-Week twins with the site that serves each', 
   });
   assert.equal(res.title, 'Catatonia (Aug 31) — Resident');
   assert.equal(res.site, 'res');
+  assert.deepEqual(res.sites, ['res']);
   assert.equal(res.status, 'reviewed');
   // Internal ledger fields still never cross the boundary.
   assert.equal(Object.hasOwn(ms3, 'note'), false);
@@ -607,18 +723,18 @@ test('GET surfaces both Case-of-the-Week twins with the site that serves each', 
 });
 
 test('the resident base is defaulted in code and overridable by RESIDENT_SITE_URL', async () => {
-  const mock = createGithubMock({ files: cotwFiles() });
+  const mock = createGithubMock({ files: cotwFiles(), sources: cotwSources() });
   const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
   assert.equal(payload.student, 'https://students.example');
   assert.equal(payload.resident, 'https://mmc-psychiatry-residents-sanford.netlify.app');
 
-  const overridden = createGithubMock({ files: cotwFiles() });
+  const overridden = createGithubMock({ files: cotwFiles(), sources: cotwSources() });
   const custom = await (await handlerWith(overridden, {
     RESIDENT_SITE_URL: 'https://residents.example/',
   })(apiRequest('GET'))).json();
   assert.equal(custom.resident, 'https://residents.example');
 
-  const broken = createGithubMock({ files: cotwFiles() });
+  const broken = createGithubMock({ files: cotwFiles(), sources: cotwSources() });
   await expectError(
     await handlerWith(broken, { RESIDENT_SITE_URL: 'javascript:alert(1)' })(apiRequest('GET')),
     { status: 500, code: 'server_configuration' },
@@ -626,7 +742,7 @@ test('the resident base is defaulted in code and overridable by RESIDENT_SITE_UR
 });
 
 test('a Case-of-the-Week page attests through the ordinary single-slug write path', async () => {
-  const mock = createGithubMock({ files: cotwFiles() });
+  const mock = createGithubMock({ files: cotwFiles(), sources: cotwSources() });
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: { target: 'content', changes: { 'cotw_20260831_catatonia_ms3.md': true } },
   }));
@@ -675,7 +791,191 @@ test('a malformed or missing shipped_pages.json fails closed, never a short queu
   const mock = createGithubMock({ files: missing });
   const response = await handlerWith(mock)(apiRequest('GET'));
   assert.equal(response.ok, false);
-  assert.notEqual(response.status, 200);
+  await expectError(response, { status: 502, code: 'repository_file_missing' });
+});
+
+/* Branch lag (2026-09-04 → 2026-09-07). shipped_pages.json landed on `main` while
+   `attest/pending` sat five attestations ahead, so every console GET 404'd reading the
+   derived listing from the attestation branch, GitHub's 404 became "The repository
+   request failed. Try again later.", and the console was dark for three days. The
+   listing is derived and never written here, so GET reads it from the base branch when
+   the attestation branch does not carry it and says which branch it used. The ledger
+   (reviewed.json) and the bank stay pinned to the attestation branch: reading those
+   from anywhere else is how a merge silently reverts an attestation. */
+
+const ATTEST_BRANCH = 'attest/pending';
+const BASE_BRANCH = 'main';
+const ISOLATED_ENV = Object.freeze({
+  GIT_BRANCH: ATTEST_BRANCH,
+  GIT_BASE_BRANCH: BASE_BRANCH,
+});
+
+// The harness above is hardcoded to `main` — exactly the configuration these tests do
+// not use — so this answers the branch-sync traffic it does not know about and decides
+// which refs carry which file. Everything else falls through to the shared mock.
+function isolatedBranch({ shippedOn = [BASE_BRANCH], reviewedOn = null } = {}) {
+  return async ({ url, method, git, path }) => {
+    if (method === 'GET' && git === `ref/heads/${ATTEST_BRANCH}`) {
+      return jsonResponse(200, { object: { type: 'commit', sha: BRANCH_HEAD_SHA } });
+    }
+    if (method === 'GET' && url.includes('/compare/')) {
+      return jsonResponse(200, { ahead_by: 0, behind_by: 0 });
+    }
+    if (url.includes('/pulls')) {
+      return method === 'GET'
+        ? jsonResponse(200, [])
+        : jsonResponse(201, { html_url: 'https://github.example/pull/1' });
+    }
+    const ref = method === 'GET' && path ? new URL(url).searchParams.get('ref') : null;
+    if (path === SHIPPED_PAGES_PATH && ref && !shippedOn.includes(ref)) {
+      return jsonResponse(404, { message: 'Synthetic file not found.' });
+    }
+    if (path === REVIEWED_PATH && reviewedOn && ref && !reviewedOn.includes(ref)) {
+      return jsonResponse(404, { message: 'Synthetic file not found.' });
+    }
+    return null;
+  };
+}
+
+function refsFor(mock, path) {
+  return [...new Set(mock.calls
+    .filter(call => call.method === 'GET' && call.path === path)
+    .map(call => new URL(call.url).searchParams.get('ref')))];
+}
+
+test('GET derives the queue from the base branch when the attestation branch lacks the listing', async () => {
+  const mock = createGithubMock({ beforeRequest: isolatedBranch({ shippedOn: [BASE_BRANCH] }) });
+  const response = await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET'));
+  assert.equal(response.status, 200, 'a lagging branch costs a notice, not the console');
+  const payload = await response.json();
+  assert.equal(payload.shippedPagesSource, 'base');
+  assert.equal(payload.shippedPagesBranch, BASE_BRANCH);
+  assert.deepEqual(payload.items.map(item => item.slug).sort(), ['mse-tool', 't_mood.md']);
+  assert.equal(payload.counts.pagesTotal, 2, 'the queue is populated, not short');
+  // The ledger must never follow the listing off the attestation branch.
+  assert.deepEqual(refsFor(mock, REVIEWED_PATH), [ATTEST_BRANCH]);
+  assert.deepEqual(refsFor(mock, QBANK_PATH), [ATTEST_BRANCH]);
+  assert.deepEqual(refsFor(mock, SHIPPED_PAGES_PATH), [ATTEST_BRANCH, BASE_BRANCH],
+    'the branch is tried first; the base is the fallback');
+});
+
+/* The Essentials ordering (2026-09-20). curriculum.json's essentials selection is read for
+   queue ORDER only — advisory in every direction. The item field is essentialSites (which
+   deployments list the slug), the payload says where it came from, and nothing about a
+   load or an attestation depends on it. */
+const CURRICULUM_PATH = 'curriculum.json';
+const CURRICULUM_SHA = 'cd'.repeat(20);
+
+function curriculumWith(essentials) {
+  const json = { learningPaths: {}, libraryColumns: [] };
+  if (essentials) json.essentials = essentials;
+  return { json, sha: CURRICULUM_SHA };
+}
+
+function contentsResponse(file) {
+  const bytes = Buffer.from(`${JSON.stringify(file.json, null, 2)}\n`, 'utf8');
+  return jsonResponse(200, {
+    sha: file.sha, size: bytes.byteLength, encoding: 'base64', content: bytes.toString('base64'),
+  });
+}
+
+test('GET flags the items either site lists in The Essentials, and says the branch supplied it', async () => {
+  const files = defaultFiles();
+  files[CURRICULUM_PATH] = curriculumWith({
+    ms3: [{ name: 'Core diagnoses', accent: 'topic', refs: ['t_mood.md'] }],
+    resident: [{ name: 'Tools', accent: 'tool', refs: ['t_mood.md', 'ghost.html'] }],
+  });
+  const mock = createGithubMock({ files });
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+  assert.equal(payload.essentialsSource, 'branch');
+  const bySlug = Object.fromEntries(payload.items.map(item => [item.slug, item.essentialSites]));
+  assert.deepEqual(bySlug['t_mood.md'], ['ms3', 'res']);
+  assert.deepEqual(bySlug['mse-tool'], [], 'an item outside the selection is simply unflagged');
+  assert.equal(payload.items.some(item => item.slug === 'ghost.html'), false,
+    'a selection ref that does not ship never enters the universe');
+});
+
+test('GET with no readable Essentials selection still loads, orders as before, and says so', async () => {
+  const mock = createGithubMock({ files: defaultFiles() });
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  assert.equal(response.status, 200, 'the ordering is advisory; a missing file is not a failed load');
+  const payload = await response.json();
+  assert.equal(payload.essentialsSource, 'unavailable');
+  assert.ok(payload.items.every(item => Array.isArray(item.essentialSites) && !item.essentialSites.length));
+  assert.equal(payload.counts.pagesTotal, 2, 'the queue is populated, not short');
+});
+
+test('a malformed Essentials selection is ignored rather than failing the load', async () => {
+  const files = defaultFiles();
+  files[CURRICULUM_PATH] = curriculumWith({ ms3: 'not-a-list', resident: [{ refs: 'nope' }] });
+  const payload = await (await handlerWith(createGithubMock({ files }))(apiRequest('GET'))).json();
+  assert.equal(payload.essentialsSource, 'unavailable');
+  assert.ok(payload.items.every(item => !item.essentialSites.length));
+});
+
+test('an attestation branch whose curriculum.json predates the key falls through to the base selection', async () => {
+  const baseFile = curriculumWith({
+    ms3: [{ name: 'Tools', accent: 'tool', refs: ['mse-tool'] }],
+    resident: [],
+  });
+  const files = defaultFiles();
+  files[CURRICULUM_PATH] = curriculumWith(null); // the branch copy: present, keyless
+  const mock = createGithubMock({
+    files,
+    beforeRequest: async call => {
+      const routed = await isolatedBranch({ shippedOn: [ATTEST_BRANCH, BASE_BRANCH] })(call);
+      if (routed) return routed;
+      const ref = call.method === 'GET' && call.path ? new URL(call.url).searchParams.get('ref') : null;
+      if (call.path === CURRICULUM_PATH && ref === BASE_BRANCH) return contentsResponse(baseFile);
+      return null;
+    },
+  });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET'))).json();
+  assert.equal(payload.essentialsSource, 'base');
+  const bySlug = Object.fromEntries(payload.items.map(item => [item.slug, item.essentialSites]));
+  assert.deepEqual(bySlug['mse-tool'], ['ms3']);
+  assert.deepEqual(bySlug['t_mood.md'], []);
+  assert.deepEqual(refsFor(mock, CURRICULUM_PATH), [ATTEST_BRANCH, BASE_BRANCH],
+    'the branch is tried first; the base is the fallback');
+  // The ledger never follows the selection off the attestation branch.
+  assert.deepEqual(refsFor(mock, REVIEWED_PATH), [ATTEST_BRANCH]);
+});
+
+test('GET reports the ordinary case as branch-sourced with the branch revision', async () => {
+  const mock = createGithubMock({
+    beforeRequest: isolatedBranch({ shippedOn: [ATTEST_BRANCH, BASE_BRANCH] }),
+  });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET'))).json();
+  assert.equal(payload.shippedPagesSource, 'branch');
+  assert.equal(payload.shippedPagesBranch, ATTEST_BRANCH);
+  assert.equal(payload.shippedPagesRevision, SHIPPED_SHA);
+  assert.deepEqual(refsFor(mock, SHIPPED_PAGES_PATH), [ATTEST_BRANCH], 'no needless fallback read');
+});
+
+test('a listing on neither branch names the file, the branch, and the fix', async () => {
+  const mock = createGithubMock({ beforeRequest: isolatedBranch({ shippedOn: [] }) });
+  const payload = await expectError(await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET')), {
+    status: 502,
+    code: 'repository_file_missing',
+  });
+  assert.match(payload.error.message, /shipped_pages\.json/);
+  assert.match(payload.error.message, new RegExp(ATTEST_BRANCH.replace('/', '\\/')));
+  assert.match(payload.error.message, /merge the rolling review request/i);
+  assert.doesNotMatch(payload.error.message, /try again later/i,
+    'a missing file is not a transport failure faculty should wait out');
+});
+
+test('a missing ledger is actionable too, and never falls back to another branch', async () => {
+  const mock = createGithubMock({
+    beforeRequest: isolatedBranch({ shippedOn: [ATTEST_BRANCH], reviewedOn: [BASE_BRANCH] }),
+  });
+  const payload = await expectError(await handlerWith(mock, ISOLATED_ENV)(apiRequest('GET')), {
+    status: 502,
+    code: 'repository_file_missing',
+  });
+  assert.match(payload.error.message, /reviewed\.json/);
+  assert.deepEqual(refsFor(mock, REVIEWED_PATH), [ATTEST_BRANCH],
+    'the ledger is read from the attestation branch or not at all');
 });
 
 test('exports the Netlify v2 route and per-IP/domain rate limit', () => {
@@ -722,7 +1022,7 @@ test('learner deployment allows framing only by the exact faculty console origin
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(), microphone=(self)
-  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app https://clerkship-metrics.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 /content/*
@@ -768,7 +1068,7 @@ test('learner deployment allows framing only by the exact faculty console origin
   const csp = rootHeaders.match(/^\s*Content-Security-Policy: (.+)$/m)?.[1];
   assert.equal(
     csp,
-    "default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app",
+    "default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app https://clerkship-metrics.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app",
   );
   assert.doesNotMatch(csp, /frame-ancestors[^;]*\*/);
 });
@@ -1981,7 +2281,10 @@ test('qbank and content no-op requests perform no commit', async () => {
   });
   assert.equal(contentMock.calls.length, 0);
 
-  const semanticMock = createGithubMock();
+  // A reviewed row is a semantic no-op only while it is still BOUND to the page text —
+  // hence boundFiles() rather than defaultFiles(), whose t_mood.md carries no hash and is
+  // therefore real work (it rebinds). The drifted and unbound cases are pinned below.
+  const semanticMock = createGithubMock({ files: boundFiles() });
   const semanticResponse = await handlerWith(semanticMock)(apiRequest('POST', {
     body: {
       target: 'content',
@@ -1997,7 +2300,20 @@ test('qbank and content no-op requests perform no commit', async () => {
     commit: null,
   });
   assert.equal(semanticMock.putBodies.length, 0);
-  assert.equal(semanticMock.calls.filter(call => call.method === 'GET').length, 1);
+  // A no-op attest now costs the digest inputs, and cannot not: whether an already-reviewed
+  // row is a no-op is a question about its hash, which the ledger alone cannot answer.
+  assert.deepEqual(
+    semanticMock.calls
+      .filter(call => call.method === 'GET')
+      .map(call => call.path || call.git),
+    [
+      REVIEWED_PATH,
+      SHIPPED_PAGES_PATH,
+      'ref/heads/main',
+      `trees/${BRANCH_HEAD_SHA}`,
+      TOPIC_META_PATH,
+    ],
+  );
 });
 
 test('reopen preserves legacy pending storage and returns canonical unreviewed state', async () => {
@@ -2076,8 +2392,14 @@ test('GET treats a malformed risk value as absent rather than failing the whole 
   assert.equal(payload.items.find(item => item.slug === 'mse-tool')?.risk, null);
 });
 
+/* The preserve contract, narrowed by the content-hash change: attesting still spreads the
+   current record forward, but `contentHash` is the one field the act of attesting OWNS. It
+   is rewritten to the digest of the text being attested, because a preserved hash would
+   record a review of whatever the page said when it was last bound — which is the defect
+   the hash exists to end. Everything else still round-trips untouched. */
 test('attesting a pending item preserves risk, note, and hash fields exactly and removes its reason', async () => {
-  const mock = createGithubMock({ files: governedFiles() });
+  const files = governedFiles();
+  const mock = createGithubMock({ files });
   const response = await handlerWith(mock)(apiRequest('POST', {
     body: { target: 'content', changes: { 'mse-tool': true } },
   }));
@@ -2091,7 +2413,8 @@ test('attesting a pending item preserves risk, note, and hash fields exactly and
   assert.match(record.at, /^\d{4}-\d{2}-\d{2}$/);
   assert.deepEqual(record.risk, { kind: 'general', level: 'low' });
   assert.equal(record.note, 'Internal reviewer note for the pending tool.');
-  assert.equal(record.contentHash, 'd'.repeat(64));
+  assert.equal(record.contentHash, expectedDigest(files, mock.sources, 'mse-tool'));
+  assert.notEqual(record.contentHash, 'd'.repeat(40), 'attesting rebinds the hash');
   assert.equal(record.claimsHash, 'e'.repeat(64));
   assert.equal(record.evidenceHash, 'f'.repeat(64));
   assert.equal(record.evidenceThrough, '2026-06-02');
@@ -2122,7 +2445,7 @@ test('reopening a reviewed item preserves risk, note, and hash fields, sets the 
   assert.match(record.at, /^\d{4}-\d{2}-\d{2}$/);
   assert.deepEqual(record.risk, { kind: 'clinical', level: 'high' });
   assert.equal(record.note, 'Internal reviewer note — never exposed to the browser.');
-  assert.equal(record.contentHash, 'a'.repeat(64));
+  assert.equal(record.contentHash, expectedDigest(governedFiles(), defaultSources(), 't_mood.md'));
   assert.equal(record.claimsHash, 'b'.repeat(64));
   assert.equal(record.evidenceHash, 'c'.repeat(64));
   assert.equal(record.evidenceThrough, '2026-06-01');
@@ -2243,7 +2566,7 @@ test('a conflict retry re-reads the ledger and retains the exact requested reaso
   assert.equal(record.reason, 'Retry must keep this exact reason.');
   assert.deepEqual(record.risk, { kind: 'clinical', level: 'high' });
   assert.equal(record.note, 'Internal reviewer note — never exposed to the browser.');
-  assert.equal(record.contentHash, 'a'.repeat(64));
+  assert.equal(record.contentHash, expectedDigest(governedFiles(), defaultSources(), 't_mood.md'));
 });
 
 test('content mutation rejects a slug whose current ledger record lacks valid risk, without inventing one', async () => {
@@ -2303,7 +2626,19 @@ test('a slug with a __proto__-shaped key is stored as an own property, never as 
     value: { status: 'pending', at: '2026-07-03', by: 'Pending faculty review', risk: { kind: 'general', level: 'low' }, reason: 'Synthetic' },
   });
   files[MANIFEST_PATH].json.md.push(['01_Core/__proto__', '__proto__', 'Synthetic proto-named page']);
-  const mock = createGithubMock({ files });
+  // Shipped as well as listed: attesting binds the row to page text, so a slug no site
+  // ships cannot be attested at all — which is a different refusal than this test is about.
+  files[SHIPPED_PAGES_PATH].json.pages.push({
+    slug: '__proto__',
+    kind: 'page',
+    sites: ['ms3'],
+    title: 'Synthetic proto-named page',
+    source: '01_Core/__proto__',
+    producer: 'site_manifest',
+  });
+  const sources = defaultSources();
+  sources['01_Core/__proto__'] = Buffer.from('# Proto\n', 'utf8');
+  const mock = createGithubMock({ files, sources });
   const response = await handlerWith(mock)(apiRequest('POST', {
     // Computed key, not a `{ __proto__: true }` literal: the literal form is
     // special-cased by the language to set an object's [[Prototype]] instead of
@@ -2436,4 +2771,663 @@ test('both repository writes re-emit 2-space JSON so a one-field change is a one
   const blobCall = bankMock.calls.find(call => call.method === 'POST' && call.git === 'blobs');
   const bankText = Buffer.from(JSON.parse(blobCall.body).content, 'base64').toString('utf8');
   assert.equal(bankText, `${JSON.stringify(JSON.parse(bankText), null, 2)}\n`);
+});
+
+/* Content hashes: writing one on attest, and reading staleness back from one tree call.
+
+   The defect this closes: from July to September 2026 a ledger row said `reviewed`, by a
+   named clinician, on a date — and said nothing about WHAT was reviewed, so two agent PRs
+   could add 85 citations to attested pages and every badge stayed green. A row now carries
+   the git blob sha of a manifest of its sources' blob shas plus its topic_meta record, so
+   the console can tell a reviewed page from a page that was reviewed and then edited, and
+   can do it from ONE recursive-tree read with no page fetches. */
+
+const DRIFTED_MOOD_SOURCE = Buffer.from(
+  '# Mood Disorders\n\nEdited after the faculty review.\n',
+  'utf8',
+);
+
+function boundFiles(slug = 't_mood.md', sources = defaultSources()) {
+  const files = defaultFiles();
+  files[REVIEWED_PATH].json[slug].contentHash = expectedDigest(files, sources, slug);
+  return files;
+}
+
+test('attesting binds the row to the page text it was reviewed against', async () => {
+  const files = defaultFiles();
+  const mock = createGithubMock({ files });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 'mse-tool': true } },
+  }));
+
+  assert.equal(response.status, 200);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  const stored = saved['mse-tool'].contentHash;
+  assert.match(stored, /^[a-f0-9]{40}$/);
+  assert.equal(stored, expectedDigest(files, mock.sources, 'mse-tool'));
+
+  // The whole read path is one tree call; no source file is ever fetched.
+  const treeReads = mock.calls
+    .filter(call => call.method === 'GET' && call.git.startsWith('trees/'));
+  assert.equal(treeReads.length, 1);
+  assert.equal(treeReads[0].url.includes('recursive=1'), true);
+  assert.equal(
+    mock.calls.some(call => call.path === '04_Assessment/mse.html'),
+    false,
+    'the digest is computed from blob shas, never from fetched page content',
+  );
+});
+
+test('a two-source slug hashes both of its sources', async () => {
+  const files = defaultFiles();
+  files[SHIPPED_PAGES_PATH].json.pages.push({
+    slug: 'welcome.md',
+    kind: 'page',
+    sites: ['ms3', 'res'],
+    title: 'Welcome',
+    source: '13_Faculty_Resources/Outreach/one-pager.md',
+    extraSources: ['14_Tracks/Resident/resident_welcome.md'],
+    producer: 'site_extras',
+  });
+  files[REVIEWED_PATH].json['welcome.md'] = {
+    status: 'pending',
+    at: '2026-07-03',
+    by: 'Pending faculty review',
+    risk: { kind: 'general', level: 'low' },
+    reason: 'Synthetic review is pending',
+  };
+  const sources = {
+    ...defaultSources(),
+    '13_Faculty_Resources/Outreach/one-pager.md': Buffer.from('MS3 welcome.\n', 'utf8'),
+    '14_Tracks/Resident/resident_welcome.md': Buffer.from('Resident welcome.\n', 'utf8'),
+  };
+  const mock = createGithubMock({ files, sources });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 'welcome.md': true } },
+  }));
+
+  assert.equal(response.status, 200);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(saved['welcome.md'].contentHash, expectedDigest(files, sources, 'welcome.md'));
+
+  // Teeth: editing EITHER half must move the hash. A digest that covered only `source`
+  // would leave the resident half of a two-source page unattested and look identical.
+  const other = { ...sources };
+  other['14_Tracks/Resident/resident_welcome.md'] = Buffer
+    .from('Resident welcome, revised.\n', 'utf8');
+  assert.notEqual(expectedDigest(files, other, 'welcome.md'), saved['welcome.md'].contentHash);
+});
+
+test('reopening preserves the stored hash rather than rebinding it', async () => {
+  const files = boundFiles();
+  const sources = { ...defaultSources(), '01_Core/t_mood.md': DRIFTED_MOOD_SOURCE };
+  const mock = createGithubMock({ files, sources });
+  const before = files[REVIEWED_PATH].json['t_mood.md'].contentHash;
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: {
+      target: 'content',
+      changes: { 't_mood.md': false },
+      reasons: { 't_mood.md': 'Needs another look.' },
+    },
+  }));
+
+  assert.equal(response.status, 200);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  // Reopening records that a review is owed; it is not a statement about page text, so the
+  // evidence of what the last review covered stays exactly as it was.
+  assert.equal(saved['t_mood.md'].contentHash, before);
+});
+
+test('attesting a slug with no source in the tree is refused rather than bound to nothing', async () => {
+  const files = defaultFiles();
+  const sources = defaultSources();
+  delete sources['04_Assessment/mse.html'];
+  const mock = createGithubMock({ files, sources });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 'mse-tool': true } },
+  }));
+
+  await expectError(response, { status: 400, code: 'content.no_source' });
+  assert.equal(mock.putBodies.length, 0, 'no row is written when its digest cannot be computed');
+});
+
+test('GET reports a reviewed item whose source changed as needing review again', async () => {
+  const files = boundFiles();
+  const mock = createGithubMock({
+    files,
+    sources: { ...defaultSources(), '01_Core/t_mood.md': DRIFTED_MOOD_SOURCE },
+  });
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.freshness, 'verified');
+  const item = payload.items.find(entry => entry.slug === 't_mood.md');
+  assert.equal(item.status, 'unreviewed');
+  assert.equal(item.stale, true);
+  assert.equal(
+    item.reason,
+    'Content changed since faculty review on 2026-07-01; awaiting re-attestation.',
+  );
+  // The ledger is not rewritten by a read: drift is a projection, and only the console's
+  // own write path changes what reviewed.json says.
+  assert.equal(mock.putBodies.length, 0);
+  assert.equal(files[REVIEWED_PATH].json['t_mood.md'].status, 'reviewed');
+});
+
+test('GET reports a reviewed item whose topic_meta record changed as needing review again', async () => {
+  const files = boundFiles();
+  files[TOPIC_META_PATH].json['t_mood.md'].shelfBlueprint = ['mood-disorders', 'psychosis'];
+  const mock = createGithubMock({ files });
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  const payload = await response.json();
+
+  const item = payload.items.find(entry => entry.slug === 't_mood.md');
+  assert.equal(item.status, 'unreviewed');
+  assert.equal(item.stale, true);
+});
+
+test('a facultyReview edit alone never drifts an attestation', async () => {
+  const files = boundFiles();
+  files[TOPIC_META_PATH].json['t_mood.md'].facultyReview = {
+    status: 'pending',
+    reviewer: 'Someone Else',
+    lastReviewed: '2026-09-18',
+  };
+  const mock = createGithubMock({ files });
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+
+  const item = payload.items.find(entry => entry.slug === 't_mood.md');
+  assert.equal(item.status, 'reviewed');
+  assert.equal(Object.hasOwn(item, 'stale'), false,
+    'governance state is not content: attesting must not invalidate its own hash');
+});
+
+test('GET reports a matching reviewed item as reviewed, and sends no hash to the browser', async () => {
+  const files = boundFiles();
+  const mock = createGithubMock({ files });
+  const response = await handlerWith(mock)(apiRequest('GET'));
+  const payload = await response.json();
+  const body = JSON.stringify(payload);
+
+  assert.equal(payload.freshness, 'verified');
+  const item = payload.items.find(entry => entry.slug === 't_mood.md');
+  assert.equal(item.status, 'reviewed');
+  assert.equal(Object.hasOwn(item, 'stale'), false);
+  assert.equal(item.reason, '');
+  assert.equal(Object.hasOwn(item, 'contentHash'), false);
+  assert.equal(
+    body.includes(files[REVIEWED_PATH].json['t_mood.md'].contentHash),
+    false,
+    'hashes are an internal ledger field and never reach the browser',
+  );
+});
+
+test('a reviewed item with no hash at all says so instead of reading as clean', async () => {
+  const mock = createGithubMock();
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+
+  const item = payload.items.find(entry => entry.slug === 't_mood.md');
+  assert.equal(item.stale, true);
+  assert.equal(
+    item.reason,
+    'No content hash recorded; re-attest to bind this review to the page text.',
+  );
+});
+
+test('a pending item is never described as stale: it claims nothing about page text', async () => {
+  const mock = createGithubMock({
+    files: boundFiles(),
+    sources: { ...defaultSources(), '04_Assessment/mse.html': Buffer.from('edited\n', 'utf8') },
+  });
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+
+  const tool = payload.items.find(entry => entry.slug === 'mse-tool');
+  assert.equal(tool.status, 'unreviewed');
+  assert.equal(Object.hasOwn(tool, 'stale'), false);
+  assert.equal(tool.reason, 'Synthetic review is pending');
+});
+
+for (const [label, options] of [
+  ['the tree call fails', { treeFailure: true }],
+  ['the tree comes back truncated', { treeTruncated: true }],
+]) {
+  test(`when ${label}, nothing is reported clean and the load says so`, async () => {
+    const files = boundFiles();
+    const mock = createGithubMock({ files, ...options });
+    const response = await handlerWith(mock)(apiRequest('GET'));
+    const payload = await response.json();
+
+    assert.equal(response.status, 200, 'a freshness failure is advisory, not a dark console');
+    assert.equal(payload.freshness, 'unknown');
+    const clean = payload.items.filter(item => item.status === 'reviewed' && item.stale !== true);
+    assert.deepEqual(clean, [], 'a check that cannot run reports nothing, never "clean"');
+    const item = payload.items.find(entry => entry.slug === 't_mood.md');
+    assert.equal(item.stale, true);
+    assert.equal(typeof item.reason, 'string');
+    assert.notEqual(item.reason, '');
+  });
+}
+
+test('a missing topic_meta.json leaves freshness unknown rather than hashing without it', async () => {
+  const files = boundFiles();
+  delete files[TOPIC_META_PATH];
+  const mock = createGithubMock({ files });
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+
+  assert.equal(payload.freshness, 'unknown');
+  assert.deepEqual(
+    payload.items.filter(item => item.status === 'reviewed' && item.stale !== true),
+    [],
+  );
+});
+
+function treeReads(mock) {
+  return mock.calls.filter(call => call.method === 'GET' && call.git.startsWith('trees/'));
+}
+
+// Four reviewed, bound pages, so "once per load" and "once per item" are different numbers.
+function manyBoundFiles() {
+  const files = defaultFiles();
+  const sources = defaultSources();
+  for (const name of ['anxiety', 'psychosis', 'delirium']) {
+    const source = `01_Core/t_${name}.md`;
+    sources[source] = Buffer.from(`# ${name}\n\nSynthetic page source.\n`, 'utf8');
+    files[SHIPPED_PAGES_PATH].json.pages.push({
+      slug: `t_${name}.md`,
+      kind: 'page',
+      sites: ['ms3'],
+      title: name,
+      source,
+      producer: 'site_manifest',
+    });
+    files[REVIEWED_PATH].json[`t_${name}.md`] = {
+      status: 'reviewed',
+      at: '2026-07-01',
+      by: 'Synthetic Reviewer',
+      risk: { kind: 'general', level: 'low' },
+    };
+  }
+  for (const slug of ['t_mood.md', 't_anxiety.md', 't_psychosis.md', 't_delirium.md']) {
+    files[REVIEWED_PATH].json[slug].contentHash = expectedDigest(files, sources, slug);
+  }
+  return { files, sources };
+}
+
+test('the whole queue is hashed from ONE tree read', async () => {
+  // The memo is OFF here, and that is the point. With it on this assertion cannot fail:
+  // readTree memoizes per commit, so an implementation that read the tree once PER ITEM
+  // would still make exactly one network call. Off, the network count IS the invocation
+  // count, and four reviewed items make "once per load" and "once per item" tell apart.
+  const { files, sources } = manyBoundFiles();
+  const mock = createGithubMock({ files, sources });
+  const handler = handlerWith(mock, {}, { treeCache: null });
+  const payload = await (await handler(apiRequest('GET'))).json();
+
+  assert.equal(payload.items.filter(item => item.status === 'reviewed').length, 4);
+  assert.equal(treeReads(mock).length, 1);
+  // topic_meta.json is never memoized, so this is a second, independent witness that the
+  // digest inputs are assembled once per load rather than once per item.
+  assert.equal(mock.calls.filter(call => call.path === TOPIC_META_PATH).length, 1);
+});
+
+test('the tree memo spares a second load at the same head, and is dropped when it moves', async () => {
+  const mock = createGithubMock({ files: boundFiles() });
+  const handler = handlerWith(mock);
+  await handler(apiRequest('GET'));
+  await handler(apiRequest('GET'));
+  assert.equal(treeReads(mock).length, 1, 'a commit sha names an immutable tree');
+
+  mock.advanceBranch();
+  await handler(apiRequest('GET'));
+  assert.equal(treeReads(mock).length, 2, 'a new head is a new tree and must be re-read');
+});
+
+test('a branch in sync reports no lag', async () => {
+  const mock = createGithubMock({ files: boundFiles() });
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+  assert.equal(payload.branchLag, 0);
+});
+
+/* Re-attestation, the whole point of the hash.
+
+   The remediation loop has to close: a page is reviewed, someone edits it, the console says
+   so, and the reviewer's next press REBINDS the row. It nearly did not — the no-op filter
+   compared the request against the ledger's stored `status`, and a drifted row's stored
+   status is still `reviewed` (a read projects, it never writes). The press would have been
+   dropped as "nothing to do": `updated: 0`, no commit, and the browser reporting "This
+   content review was not saved." over an item it was showing as needing review. */
+
+test('a drifted row re-attests, and the press that repairs it is not dropped as a no-op', async () => {
+  const files = boundFiles();
+  const boundAt = files[REVIEWED_PATH].json['t_mood.md'].contentHash;
+  const mock = createGithubMock({ files });
+  const handler = handlerWith(mock);
+
+  const before = await (await handler(apiRequest('GET'))).json();
+  assert.equal(before.items.find(item => item.slug === 't_mood.md').status, 'reviewed');
+
+  // Editing a page is a new commit, so the head moves with the bytes.
+  mock.sources['01_Core/t_mood.md'] = DRIFTED_MOOD_SOURCE;
+  mock.advanceBranch();
+
+  const drifted = (await (await handler(apiRequest('GET'))).json())
+    .items.find(item => item.slug === 't_mood.md');
+  assert.equal(drifted.status, 'unreviewed');
+  assert.equal(drifted.stale, true);
+
+  const response = await handler(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }));
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.updated, 1, 'the remediation press must reach the ledger');
+  assert.equal(mock.putBodies.length, 1);
+
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  const record = saved['t_mood.md'];
+  assert.equal(record.status, 'reviewed');
+  assert.equal(record.contentHash, expectedDigest(files, mock.sources, 't_mood.md'));
+  assert.notEqual(record.contentHash, boundAt, 'the row is bound to the NEW text');
+  assert.match(record.at, /^\d{4}-\d{2}-\d{2}$/);
+  assert.notEqual(record.at, '2026-07-01', 'the review date is the date of this review');
+
+  const after = (await (await handler(apiRequest('GET'))).json())
+    .items.find(item => item.slug === 't_mood.md');
+  assert.equal(after.status, 'reviewed');
+  assert.equal(Object.hasOwn(after, 'stale'), false, 'the loop closes: clean again');
+  assert.equal(after.reason, '');
+});
+
+test('an unbound reviewed row rebinds on the next attest rather than reading as settled', async () => {
+  // defaultFiles()'s t_mood.md is reviewed with no contentHash at all — the state every row
+  // was in before the backfill, and the one the console reports as "No content hash recorded".
+  const files = defaultFiles();
+  const mock = createGithubMock({ files });
+  const handler = handlerWith(mock);
+
+  const unbound = (await (await handler(apiRequest('GET'))).json())
+    .items.find(item => item.slug === 't_mood.md');
+  assert.equal(unbound.stale, true);
+
+  const payload = await (await handler(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }))).json();
+  assert.equal(payload.updated, 1);
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(saved['t_mood.md'].contentHash, expectedDigest(files, mock.sources, 't_mood.md'));
+
+  const after = (await (await handler(apiRequest('GET'))).json())
+    .items.find(item => item.slug === 't_mood.md');
+  assert.equal(Object.hasOwn(after, 'stale'), false);
+});
+
+test('a bound, clean, reviewed row is still a no-op and writes nothing', async () => {
+  const mock = createGithubMock({ files: boundFiles() });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }));
+  assert.deepEqual(await response.json(), {
+    ok: true, target: 'content', updated: 0, commit: null,
+  });
+  assert.equal(mock.putBodies.length, 0);
+});
+
+test('re-attesting a row whose source left the tree is refused, never reported as settled', async () => {
+  const files = boundFiles();
+  const sources = defaultSources();
+  delete sources['01_Core/t_mood.md'];
+  const mock = createGithubMock({ files, sources });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }));
+
+  // Not `updated: 0`: the digest cannot be computed, so the row's binding cannot be
+  // confirmed either — silently answering "nothing to do" would call that settled.
+  await expectError(response, { status: 400, code: 'content.no_source' });
+  assert.equal(mock.putBodies.length, 0);
+});
+
+/* Re-sign by change (2026-09-25): two read-only GET views. `?view=changes` groups every
+   drifted page by the correction (PR) that changed its source files on or after the day it
+   was signed; `?view=diff` shows what one correction — or everything since signing — did to
+   one page. The rules pinned here: they never write and never freshen a branch, they only
+   ever show what git actually holds, and a hostile parameter is refused before any read. */
+
+const CHANGE_BASE_SHA = 'c1'.repeat(20);
+const CHANGE_PARENT_SHA = 'e3'.repeat(20);
+const CHANGE_773_SHA = 'd2'.repeat(20);
+const CHANGE_700_SHA = 'f4'.repeat(20);
+const ORIGINAL_MOOD_SOURCE = defaultSources()['01_Core/t_mood.md'];
+
+function commitRecord(sha, message, date) {
+  return {
+    sha,
+    html_url: `https://github.com/synthetic/faculty-console/commit/${sha}`,
+    commit: { message, committer: { date } },
+  };
+}
+
+function contentsObject(bytes) {
+  const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes, 'utf8');
+  return { sha: blobShaOf(buffer), size: buffer.byteLength, encoding: 'base64', content: buffer.toString('base64') };
+}
+
+/* t_mood.md was signed on 2026-07-01 against ORIGINAL_MOOD_SOURCE. Two corrections touched
+   its source since: #700 on the signing day itself, and #773 on 2026-09-24, which is what
+   drifted it. `history` overrides what the commit list returns per source path. */
+function changeHistoryMock({ history, files = boundFiles(), attestBranch = false } = {}) {
+  const commitsFor = history || {
+    '01_Core/t_mood.md': [
+      commitRecord(CHANGE_773_SHA, 'fix(content): Major/Moderate peer-review findings (#773)', '2026-09-24T12:00:00Z'),
+      commitRecord(CHANGE_700_SHA, 'fix(content): lithium range wording (#700)', '2026-07-01T15:00:00Z'),
+    ],
+  };
+  const mock = createGithubMock({
+    files,
+    sources: { ...defaultSources(), '01_Core/t_mood.md': DRIFTED_MOOD_SOURCE },
+    beforeRequest: (call) => {
+      const url = new URL(call.url);
+      if (call.method !== 'GET') return undefined;
+      // The attestation branch sits one commit behind main, so an ordinary GET has a
+      // freshness question to ask (see the control half of the never-freshen test).
+      if (attestBranch && call.git === 'ref/heads/attest/pending') {
+        return jsonResponse(200, { object: { type: 'commit', sha: FIRST_COMMIT_SHA } });
+      }
+      if (url.pathname === '/repos/synthetic/faculty-console/commits') {
+        if (url.searchParams.get('until')) return jsonResponse(200, [commitRecord(CHANGE_BASE_SHA, 'older', '2026-06-30T09:00:00Z')]);
+        return jsonResponse(200, commitsFor[url.searchParams.get('path')] || []);
+      }
+      if (call.git === `commits/${CHANGE_773_SHA}`) {
+        return jsonResponse(200, {
+          sha: CHANGE_773_SHA,
+          message: 'fix(content): Major/Moderate peer-review findings (#773)',
+          committer: { date: '2026-09-24T12:00:00Z' },
+          parents: [{ sha: CHANGE_PARENT_SHA }],
+          html_url: `https://github.com/synthetic/faculty-console/commit/${CHANGE_773_SHA}`,
+        });
+      }
+      const ref = url.searchParams.get('ref');
+      if (call.path === '01_Core/t_mood.md') {
+        const old = [CHANGE_PARENT_SHA, CHANGE_BASE_SHA].includes(ref);
+        return jsonResponse(200, contentsObject(old ? ORIGINAL_MOOD_SOURCE : DRIFTED_MOOD_SOURCE));
+      }
+      // The page's record as it stood before the signing day: one shelf entry fewer.
+      if (call.path === TOPIC_META_PATH && ref === CHANGE_BASE_SHA) {
+        const older = clone(files[TOPIC_META_PATH].json);
+        older['t_mood.md'].shelfBlueprint = [];
+        return jsonResponse(200, contentsObject(`${JSON.stringify(older, null, 2)}\n`));
+      }
+      return undefined;
+    },
+  });
+  return mock;
+}
+
+function viewRequest(query, options = {}) {
+  return apiRequest('GET', { url: `${API_URL}?${new URLSearchParams(query)}`, ...options });
+}
+
+function assertReadOnly(mock) {
+  assert.deepEqual(
+    mock.calls.filter(call => call.method !== 'GET').map(call => `${call.method} ${call.url}`),
+    [],
+    'a change view never writes',
+  );
+  assertNoQbankWrite(mock);
+}
+
+test('?view=changes groups each drifted page by the correction that changed it', async () => {
+  const mock = changeHistoryMock();
+  const response = await handlerWith(mock)(viewRequest({ view: 'changes' }));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  const payload = await response.json();
+
+  assert.equal(payload.view, 'changes');
+  assert.equal(payload.branch, 'main');
+  assert.equal(payload.drifted, 1, 'only t_mood.md drifted; the pending tool is not a re-sign');
+  assert.equal(payload.partial, false);
+  assert.deepEqual(payload.unchecked, []);
+  assert.deepEqual(payload.unexplained, []);
+  assert.deepEqual(payload.groups.map(group => [group.id, group.pr, group.slugs]), [
+    ['pr:773', 773, ['t_mood.md']],
+    ['pr:700', 700, ['t_mood.md']],
+  ]);
+  assert.equal(payload.groups[0].title, 'fix(content): Major/Moderate peer-review findings');
+  assert.equal(payload.groups[0].sha, CHANGE_773_SHA);
+  // #700 landed on the day the page was signed, so it may already have been read: the view
+  // says so rather than guessing either way. #773 came later and certainly was not.
+  assert.deepEqual(payload.pages['t_mood.md'], {
+    title: 'Mood Disorders',
+    kind: 'page',
+    at: '2026-07-01',
+    changes: [{ id: 'pr:773', sameDay: false }, { id: 'pr:700', sameDay: true }],
+  });
+
+  // The history asked for is the signed page's own source, from the start of its signing day.
+  const listCalls = mock.calls.filter(call => new URL(call.url).pathname.endsWith('/commits'));
+  assert.equal(listCalls.length, 1);
+  const query = new URL(listCalls[0].url).searchParams;
+  assert.equal(query.get('path'), '01_Core/t_mood.md');
+  assert.equal(query.get('since'), '2026-07-01T00:00:00Z');
+  assert.equal(query.get('sha'), 'main');
+  assertReadOnly(mock);
+});
+
+test('a drifted page no correction touched is reported as unexplained, not dropped', async () => {
+  const mock = changeHistoryMock({ history: {} });
+  const payload = await (await handlerWith(mock)(viewRequest({ view: 'changes' }))).json();
+  assert.deepEqual(payload.groups, []);
+  assert.deepEqual(payload.unexplained, ['t_mood.md']);
+  assert.deepEqual(payload.pages['t_mood.md'].changes, []);
+});
+
+test('the change views never freshen or write the attestation branch', async () => {
+  const env = { GIT_BRANCH: 'attest/pending', GIT_BASE_BRANCH: 'main' };
+  const viewMock = changeHistoryMock({ attestBranch: true });
+  const viewHandler = handlerWith(viewMock, env);
+  assert.equal((await viewHandler(viewRequest({ view: 'changes' }))).status, 200);
+  assert.equal((await viewHandler(viewRequest({ view: 'diff', slug: 't_mood.md', sha: CHANGE_773_SHA }))).status, 200);
+  assertReadOnly(viewMock);
+  assert.equal(viewMock.calls.some(call => call.url.includes('/compare/')), false,
+    'a view does not even ask how far the branch trails');
+
+  // Teeth: the ordinary GET on the same branch DOES run the freshness check, so the
+  // assertion above is about the view, not about a mock that cannot see the check.
+  const plainMock = changeHistoryMock({ attestBranch: true });
+  await handlerWith(plainMock, env)(apiRequest('GET'));
+  assert.equal(plainMock.calls.some(call => call.url.includes('/compare/')), true);
+});
+
+test('?view=diff&sha= shows what one correction changed on one page, word by word', async () => {
+  const mock = changeHistoryMock();
+  const handler = handlerWith(mock);
+  const response = await handler(viewRequest({ view: 'diff', slug: 't_mood.md', sha: CHANGE_773_SHA }));
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+
+  assert.equal(payload.view, 'diff');
+  assert.equal(payload.base, CHANGE_PARENT_SHA);
+  assert.equal(payload.head, CHANGE_773_SHA);
+  assert.equal(payload.since, null);
+  assert.equal(payload.commit.pr, 773);
+  assert.equal(payload.compareUrl,
+    `https://github.com/synthetic/faculty-console/compare/${CHANGE_PARENT_SHA}...${CHANGE_773_SHA}`);
+  assert.equal(payload.files.length, 1);
+  const [file] = payload.files;
+  assert.equal(file.path, '01_Core/t_mood.md');
+  assert.equal(file.status, 'modified');
+  const rows = file.hunks.flatMap(hunk => hunk.rows);
+  const changed = rows.find(row => row.kind === 'change');
+  assert.deepEqual(changed.segments, [
+    { t: 'del', s: 'Synthetic page source' },
+    { t: 'add', s: 'Edited after the faculty review' },
+    { t: 'eq', s: '.' },
+  ]);
+  assert.deepEqual(payload.record, [], 'this correction did not touch the record');
+
+  // A second look at the same change is served from memory: no page is fetched twice.
+  const reads = () => mock.calls.filter(call => call.path === '01_Core/t_mood.md').length;
+  const before = reads();
+  assert.equal((await handler(viewRequest({ view: 'diff', slug: 't_mood.md', sha: CHANGE_773_SHA }))).status, 200);
+  assert.equal(reads(), before);
+  assertReadOnly(mock);
+});
+
+test('?view=diff without sha shows everything since the start of the signing day', async () => {
+  const mock = changeHistoryMock();
+  const payload = await (await handlerWith(mock)(viewRequest({ view: 'diff', slug: 't_mood.md' }))).json();
+
+  assert.equal(payload.since, '2026-07-01');
+  assert.equal(payload.commit, null);
+  assert.equal(payload.base, CHANGE_BASE_SHA, 'the last commit before the signing day');
+  assert.equal(payload.head, BRANCH_HEAD_SHA, 'the base branch as it stands');
+  assert.equal(payload.files[0].status, 'modified');
+  assert.deepEqual(payload.record.map(change => change.key), ['shelfBlueprint']);
+  const recordText = payload.record[0].hunks.flatMap(hunk => hunk.rows)
+    .flatMap(row => row.segments).filter(segment => segment.t === 'add').map(segment => segment.s).join('');
+  assert.match(recordText, /mood-disorders/);
+  // The base is asked for by date, from the branch the pages ship from.
+  const baseLookup = mock.calls.find(call => new URL(call.url).searchParams.get('until'));
+  assert.equal(new URL(baseLookup.url).searchParams.get('until'), '2026-07-01T00:00:00Z');
+  assertReadOnly(mock);
+});
+
+test('the change views refuse hostile or unknown parameters before reading anything', async () => {
+  const cases = [
+    [{ view: 'diff', slug: '../../etc/passwd' }, 400, 'changes.invalid_slug'],
+    [{ view: 'diff', slug: 't_mood.md', sha: 'not-a-sha' }, 400, 'changes.invalid_commit'],
+    [{ view: 'diff', slug: 't_mood.md', sha: 'a'.repeat(39) }, 400, 'changes.invalid_commit'],
+    [{ view: 'everything' }, 400, 'unknown_view'],
+  ];
+  for (const [query, status, code] of cases) {
+    const mock = changeHistoryMock();
+    await expectError(await handlerWith(mock)(viewRequest(query)), { status, code });
+    assert.equal(mock.calls.some(call => call.path === '01_Core/t_mood.md'), false, code);
+    assertReadOnly(mock);
+  }
+});
+
+test('the diff view says plainly when a page, a change, or a signature is missing', async () => {
+  let mock = changeHistoryMock();
+  await expectError(await handlerWith(mock)(viewRequest({ view: 'diff', slug: 'not-shipped.md' })),
+    { status: 404, code: 'changes.not_shipped' });
+
+  mock = changeHistoryMock();
+  await expectError(await handlerWith(mock)(viewRequest({ view: 'diff', slug: 't_mood.md', sha: 'ab'.repeat(20) })),
+    { status: 404, code: 'changes.unknown_commit' });
+
+  const files = boundFiles();
+  delete files[REVIEWED_PATH].json['t_mood.md'];
+  mock = changeHistoryMock({ files });
+  await expectError(await handlerWith(mock)(viewRequest({ view: 'diff', slug: 't_mood.md' })),
+    { status: 404, code: 'changes.no_signature' });
+});
+
+test('the change views need the faculty key like everything else', async () => {
+  const mock = changeHistoryMock();
+  const response = await handlerWith(mock)(viewRequest({ view: 'changes' }, { key: null }));
+  await expectError(response, { status: 401, code: 'unauthorized' });
+  assert.equal(mock.calls.length, 0, 'nothing is read for an unauthenticated view');
 });
