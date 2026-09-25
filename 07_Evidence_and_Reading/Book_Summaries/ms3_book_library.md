@@ -4,7 +4,7 @@
 
 ## Borderline & emotional intensity
 - **[Stop Walking on Eggshells](https://www.amazon.com/dp/1684036895)** — Paul Mason & Randi Kreger. Essential family guide for living with someone with borderline personality disorder—combines validation with limit-setting strategies.  ISBN 9781684036899
-- **[I Hate You](https://www.amazon.com/dp/0593418492)** — Jerold Kreisman & Hal Straus.  ISBN 9780593418499
+- **[I Hate You—Don't Leave Me](https://www.amazon.com/dp/0593418492)** — Jerold Kreisman & Hal Straus.  ISBN 9780593418499
 - **[The Buddha and the Borderline](https://www.amazon.com/dp/157224710X)** — Kiera Van Gelder. Personal recovery story integrating DBT and Buddhist practice.  ISBN 9781572247109
 - **[Borderline Personality Disorder Demystified](https://www.amazon.com/dp/0738220248)** — Robert Friedel. Comprehensive medical guide to understanding and treating BPD.  ISBN 9780738220246
 
@@ -23,7 +23,7 @@
 - **[Wired for Love](https://www.amazon.com/dp/1608820580)** — Stan Tatkin.  ISBN 9781608820580
 
 ## Trauma & PTSD
-- **[The Body Keeps the Score](https://www.amazon.com/dp/0143127748)** — Bessel van der Kolk. Groundbreaking exploration of trauma's impact on the body and brain—integrating neuroscience with body-based healing approaches.  ISBN 9780143127741
+- **[The Body Keeps the Score](https://www.amazon.com/dp/0143127748)** — Bessel van der Kolk. A widely read exploration of trauma's impact on the body and brain; its neuroscience and treatment claims are contested, so pair it with the message that trauma-focused therapy (CPT/PE) is first-line.  ISBN 9780143127741
 - **[The Pain We Carry: Healing from Complex PTSD for People of Color](https://www.amazon.com/dp/1684039312)** — Natalie Y. Gutiérrez. Addresses complex PTSD specifically for people of color, validating the impact of racial trauma, discrimination, and intergenerational trauma. Offers culturally-responsive tools for healing using evidence-based approaches.  ISBN 9781684039319
 - **[8 Keys to Safe Trauma Recovery](https://www.amazon.com/dp/0393706052)** — Babette Rothschild.  ISBN 9780393706055
 - **[What Happened to You?](https://www.amazon.com/dp/1250223180)** — Bruce Perry & Oprah Winfrey. Bruce Perry and Oprah Winfrey explore trauma through neuroscience—asking 'What happened to you?' not 'What's wrong with you?'.  ISBN 9781250223180
@@ -32,7 +32,7 @@
 - **[In the Realm of Hungry Ghosts](https://www.amazon.com/dp/155643880X)** — Gabor Maté. A compassionate exploration of addiction as rooted in trauma and attachment wounds—helps families understand why people struggle and how healing happens.  ISBN 9781556438806
 - **[When the Body Says No](https://www.amazon.com/dp/0470923350)** — Gabor Maté.  ISBN 9780470923351
 - **[Beyond Addiction](https://www.amazon.com/dp/1476709475)** — Jeffrey Foote et al. The CRAFT approach for families—evidence-based strategies to help a loved one with addiction find motivation for change without confrontation or ultimatums.  ISBN 9781476709475
-- **[This Naked Mind](https://www.amazon.com/dp/0525537236)** — Annie Grace. A psychological approach to changing your relationship with alcohol—rewires subconscious beliefs so you no longer want to drink.  ISBN 9780525537236
+- **[This Naked Mind](https://www.amazon.com/dp/0525537236)** — Annie Grace. A psychological approach to changing your relationship with alcohol—aims to change beliefs about alcohol so drinking loses its appeal (a popular self-help read, not an evidence-based treatment; pair with AUD medication and therapy options).  ISBN 9780525537236
 - **[Addict in the Family](https://www.amazon.com/dp/1616499559)** — Beverly Conyers. Helps families understand addiction's impact on the whole family system—practical guidance for supporting recovery while protecting yourself.  ISBN 9781616499556
 
 ## Mood, bipolar & depression

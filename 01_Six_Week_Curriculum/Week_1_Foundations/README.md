@@ -7,7 +7,7 @@
 
 **Objectives:** orient to the unit; recognize immediate safety concerns and escalate; conduct a basic psychiatric interview; structure an MSE; write an admission note; begin assessing capacity.
 
-**Suggested reading:** Engel 1977 (biopsychosocial) · Rosenhan 1973 (labeling) · Appelbaum & Grisso 1988 (capacity). *(See the Landmark reading list + the Download Checklist.)*
+**Suggested reading:** Engel 1977 (biopsychosocial) · Rosenhan 1973 (labeling; read with Scull 2023 on the study's contested data) · Appelbaum & Grisso 1988 (capacity). *(See the Landmark reading list + the Download Checklist.)*
 
 <!-- pairing-block -->
 

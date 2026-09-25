@@ -4,7 +4,7 @@
 
 **In one line** — Dementia (DSM-5-TR: *major neurocognitive disorder*) is an acquired, usually progressive decline in one or more cognitive domains that impairs independence — and your first job on the unit is to separate it from delirium and from depression, rule out the reversible mimics, and identify the subtype, because subtype changes what you prescribe and what you must *not*.
 
-**How it presents on the unit** — Patients with dementia are rarely admitted "for dementia." They arrive with a superimposed delirium, behavioral and psychological symptoms (agitation, psychosis, wandering, sundowning), a failed home situation, medication mismanagement, or a safety event. The recurring inpatient task is the three-way sort — **delirium vs dementia vs depression** — and recognizing that the three coexist: a delirium is layered on a dementia far more often than either occurs alone.
+**How it presents on the unit** — Patients with dementia are rarely admitted "for dementia." They arrive with a superimposed delirium, behavioral and psychological symptoms (agitation, psychosis, wandering, sundowning), a failed home situation, medication mismanagement, or a safety event. The recurring inpatient task is the three-way sort — **delirium vs dementia vs depression** — and recognizing that the three coexist: dementia is the strongest predisposing factor for delirium, and delirium superimposed on dementia is common in hospitalized older adults.
 
 **Differential & can't-miss mimics** — Anchor first on tempo and attention:
 

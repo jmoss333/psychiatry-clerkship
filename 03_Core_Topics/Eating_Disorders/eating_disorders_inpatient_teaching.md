@@ -1,6 +1,6 @@
 # Eating Disorders on the Inpatient Unit
 
-> **Source:** standard inpatient teaching aligned with APA, the Society for Adolescent Health and Medicine (SAHM), and MARSIPAN medical-instability guidance. Educational; fictional composites only, no PHI. Reviewed and attested by Joshua Moss, MD (2026-07-01).
+> **Source:** standard inpatient teaching aligned with APA, the Society for Adolescent Health and Medicine (SAHM), and MEED (RCPsych 2022, which replaced MARSIPAN) medical-instability guidance. Educational; fictional composites only, no PHI. Reviewed and attested by Joshua Moss, MD (2026-07-01).
 
 **Why this page exists** — Anorexia nervosa (AN), bulimia nervosa (BN), and binge-eating disorder (BED) are reliably tested on the shelf/COMAT and are genuinely encountered on adult inpatient units — often *co-morbid* with the mood, anxiety, OCD, substance, or trauma presentation that prompted admission. AN carries one of the **highest mortality rates of any psychiatric illness** (medical complications *and* suicide), so recognition and medical triage are the student-level priorities. Frame the illness as a life-threatening condition the patient is struggling *with*, not a choice — the voice on the unit should be warm and non-shaming.
 
