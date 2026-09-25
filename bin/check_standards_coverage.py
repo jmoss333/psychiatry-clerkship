@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """check_standards_coverage.py — is the external competency spine honest?
 
-standards.json says which ACGME Psychiatry Milestones subcompetencies this program's
-resident rotation claims to address. This asks whether those claims survive contact with
-the rest of the repo.
+standards.json says which units of each external framework this program claims to address:
+the ACGME Psychiatry Milestones for the resident rotation, and (since 2026-09-24) the ADMSEP
+Clinical Learning Objectives Guide and the AAMC/AACOM/ACGME Foundational Competencies for
+the MS3 clerkship. This asks whether those claims survive contact with the rest of the repo.
+The rotation split is reported per framework, because each framework's rotationRequirement
+is relative to its own audience's rotation.
 
 The design follows bin/check_path_coverage.py: REPORT-ONLY by default, because a low
 coverage number is not a defect — an UNDECIDED item is. `--strict` turns the defects into
@@ -55,7 +58,11 @@ INTERNAL_CODES = {
 # SBP1 is institutional safety events, disclosure and RCAs. `safety` in this repo means
 # patient risk — suicide and violence. Mapping one to the other manufactures false
 # coverage on the most safety-critical code in the vocabulary. RQ-1 finding f4.
-COLLISION = {"SBP1": "safety"}
+# FC-SBP (Foundational Competencies, Systems-Based Practice) carries the same construct as
+# its subcompetency 6 — patient-safety concerns, systems issues, QI — so it is refused the
+# same way. Patient Care 4 (urgent/emergent recognition) IS patient risk, which is why
+# FC-PC may map to `safety` and FC-SBP may not.
+COLLISION = {"SBP1": "safety", "FC-SBP": "safety"}
 
 # DECISION: sbp1-required-inpatient — SBP1 is REQUIRED on the adult inpatient rotation
 # (2026-09-14, Joshua Moss, MD). This file is named in that decision's `governs` because
@@ -107,7 +114,7 @@ def check(doc, root=ROOT):
         if r.get("titlesReproducible") is False:
             report.append("%s: unit titles may NOT be reproduced; pages must paraphrase" % key)
 
-    seen = set()
+    seen, seen_codes = set(), {}
     for u in units:
         code = u.get("code", "?")
         if u.get("framework") not in fw:
@@ -115,6 +122,15 @@ def check(doc, root=ROOT):
         if u.get("id") in seen:
             defects.append("%s: duplicate unit id %s" % (code, u.get("id")))
         seen.add(u.get("id"))
+        # Codes, not only ids, must be unique ACROSS frameworks: vocabulary.json's `unblocks`
+        # and COLLISION above both resolve a unit by its code, and bin/check_vocabulary.py
+        # builds a code-keyed dict — so a second unit with the same code would silently
+        # shadow the first and its blocker would stop being checked.
+        if code in seen_codes:
+            defects.append("%s: duplicate unit code (units %s and %s) — vocabulary.json "
+                           "resolves units by code, so one would silently shadow the other"
+                           % (code, seen_codes[code], u.get("id")))
+        seen_codes.setdefault(code, u.get("id"))
 
         bad = [c for c in u.get("internalCodes", []) if c not in INTERNAL_CODES]
         if bad:
@@ -163,10 +179,21 @@ def check(doc, root=ROOT):
     if pend:
         report.append("HUMAN REVIEW GATE: %d of %d unit(s) still pending — nothing here is "
                       "publishable yet" % (len(pend), len(units)))
-    req = [u for u in units if u.get("rotationRequirement") == "required"]
-    els = [u for u in units if u.get("rotationRequirement") == "elsewhere"]
-    report.append("rotation split: %d required on this rotation, %d addressed elsewhere, "
-                  "%d undecided" % (len(req), len(els), len(units) - len(req) - len(els)))
+    # One split PER FRAMEWORK. rotationRequirement is relative to the rotation that
+    # framework's audience does here (the resident rotation for the Milestones, the MS3
+    # clerkship for the student frameworks), so summing across frameworks would add two
+    # different rotations into one number that describes neither.
+    for key in fw:
+        fu = [u for u in units if u.get("framework") == key]
+        if not fu:
+            report.append("%s: framework registered with NO units — nothing can be mapped "
+                          "against it until its units are written" % key)
+            continue
+        req = [u for u in fu if u.get("rotationRequirement") == "required"]
+        els = [u for u in fu if u.get("rotationRequirement") == "elsewhere"]
+        report.append("rotation split — %s: %d required on its rotation, %d addressed "
+                      "elsewhere, %d undecided"
+                      % (key, len(req), len(els), len(fu) - len(req) - len(els)))
     unmapped = [u for u in units if not u.get("internalCodes")]
     by_status = {}
     for u in unmapped:
@@ -288,6 +315,42 @@ def _self_test():
 
     d, _ = check(one(review="approved"), root=root)
     expect("approved without a reviewer is a defect", any("reviewedBy" in x for x in d), True)
+
+    # ---- more than one framework. Added 2026-09-24 with the two student frameworks: until
+    # then every unit belonged to one framework and one rotation, so a single summary line
+    # and a code-keyed lookup were both safe. Neither is any more.
+    fw_b = dict(base["frameworks"][0]); fw_b["key"] = "g"
+    two = dict(base)
+    two["frameworks"] = [base["frameworks"][0], fw_b]
+
+    def unit(uid, fwk, code, rr="required"):
+        return {"id": uid, "framework": fwk, "code": code, "title": "Title", "domain": "D",
+                "rotationRequirement": rr, "rotationRationale": "because it is enacted here",
+                "internalCodes": ["mood"], "review": "pending"}
+
+    two["units"] = [unit("a1", "f", "PC1"), unit("b1", "g", "PC1")]
+    d, _ = check(two, root=root)
+    expect("the same unit code in two frameworks is a defect (vocabulary.json resolves "
+           "units by code, so one would silently shadow the other)",
+           any("duplicate unit code" in x for x in d), True)
+
+    two["units"] = [unit("a1", "f", "PC1"), unit("a2", "f", "PC2", rr="elsewhere"),
+                    unit("b1", "g", "FC-MK")]
+    d, rep = check(two, root=root)
+    expect("distinct codes across two frameworks are clean", d, [])
+    expect("each framework gets its OWN rotation split — two rotations never sum",
+           [x for x in rep if x.startswith("rotation split")],
+           ["rotation split — f: 1 required on its rotation, 1 addressed elsewhere, 0 undecided",
+            "rotation split — g: 1 required on its rotation, 0 addressed elsewhere, 0 undecided"])
+
+    two["units"] = [unit("a1", "f", "PC1")]
+    _, rep = check(two, root=root)
+    expect("a framework registered with no units is reported, not silently skipped",
+           any(x.startswith("g: framework registered with NO units") for x in rep), True)
+
+    d, _ = check(one(code="FC-SBP", internalCodes=["safety"]), root=root)
+    expect("FC-SBP -> safety is REFUSED (Systems-Based Practice 6 is the SBP1 construct)",
+           any("REFUSED" in x for x in d), True)
 
     bad = dict(base)
     bad["frameworks"] = [dict(base["frameworks"][0])]
