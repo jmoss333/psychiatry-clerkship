@@ -288,7 +288,7 @@
    "review": null,
    "page": "t_neurocog.md",
    "sourceId": "fda-drug-safety",
-   "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis — use the lowest dose for the shortest time, document informed consent, and reassess.",
+   "claim": "Antipsychotics carry an FDA black-box warning for increased mortality in elderly patients with dementia-related psychosis (it applies equally to brexpiprazole, FDA-approved in 2023 for agitation associated with Alzheimer dementia) — use the lowest dose for the shortest time, document informed consent, and reassess.",
    "stem": "This claim on t_neurocog.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
