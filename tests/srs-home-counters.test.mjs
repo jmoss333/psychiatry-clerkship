@@ -106,7 +106,7 @@ test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable onl
   const twoDaysAgo = now - 86400000 * 2;
   const future = now + 86400000;
   ls.setItem('cw_srs_v1', JSON.stringify({ v: 1, cards: {
-    'deck#0#1': { due: past },
+    'AR-50#1': { due: past },
     'TOPIC#mse.md': { due: twoDaysAgo },
     'QB#qb_moo_001': { due: past },
     'QB#qb_moo_002': { due: future },
@@ -153,4 +153,29 @@ test('dueBreakdown counts only servable QB# cards: retired never, drafts only wh
   ls.setItem('cw_qb_drafts_v1', 'nonsense');
   srs = makeSrs(ls, QUIZ_META, docStub, ['qb_retired'], ['qb_draft']);
   assert.equal(srs.dueBreakdown().qb.due, 1, 'anything but the exact opt-in value fails closed');
+});
+
+// The landmark decks are where most Daily Review cards come from, and until 2026-09-24 not one
+// of them reached the daily bucket: srsBucket matched a `deck#` prefix that nothing writes, while
+// review.html builds `<deck id>#<question index>` from quizzes.json. They landed in `other`,
+// which fd_block.js deliberately leaves out of a timed block, so a learner with only landmark
+// cards due was told nothing was due in the block. The fixture above used the invented prefix,
+// which is how the test stayed green over the defect. This reads the REAL decks, so a new deck
+// family (a prefix other than AR-/SP-) turns it red instead of silently falling into `other`.
+test('every card id Daily Review builds from quizzes.json buckets as daily', () => {
+  const quizzes = JSON.parse(readFileSync(new URL(
+    '../07_Evidence_and_Reading/Landmark_Trials/quizzes.json', import.meta.url,
+  ), 'utf8'));
+  const srs = makeSrs(memStorage(), QUIZ_META, docStub);
+  const ids = [];
+  for (const deck of quizzes.decks) {
+    (deck.questions || []).forEach((q, i) => { if (q && q.q && q.o) ids.push(`${deck.id}#${i}`); });
+  }
+  assert.ok(ids.length > 400, `expected the full landmark set, found ${ids.length} cards`);
+  const misrouted = ids.filter((id) => srs.srsBucket(id) !== 'daily');
+  assert.deepEqual(misrouted.slice(0, 5), [], `${misrouted.length} deck cards are not in the daily bucket`);
+  // And the shape is exact, not a loose prefix: near-misses stay visible in `other`.
+  for (const id of ['AR-50', 'AR-50#', 'AR-x#1', 'ARX-1#0', 'SP-3#1#2', 'deck#0#1']) {
+    assert.equal(srs.srsBucket(id), 'other', id);
+  }
 });
