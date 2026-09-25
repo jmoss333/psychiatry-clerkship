@@ -1519,6 +1519,52 @@
       ]
     },
     {
+      "sourceId": "rcpsych-meed-2022",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "rcpsych.ac.uk College Report CR233 PDF (May 2022, updated December 2025), chapter 4 'Safe refeeding of malnourished patients with restrictive eating disorders', pp. 81-82 (pdftotext)",
+        "retrievedAt": "2026-09-24",
+        "sourceSpan": "It is rarely necessary to delay daily increases in calories due to refeeding syndrome or pending electrolyte correction. Similarly, it is not necessary to delay starting feeding to correct electrolytes. If electrolytes are significantly deranged on presentation, an HDU may be the most appropriate care area for correction while feeding is established. In summary, adult patients with evidence of active medical comorbidities, particularly if acutely ill, or with a BMI <13 should be refed cautiously, ideally in a unit with experience in refeeding critically ill patients. There is a consensus among eating disorder specialists contributing to this document that for patients admitted to EDSs (SEDUs, SEDBs) and those without features suggesting increased risk, refeeding can proceed more rapidly, as recommended by the BDA. In all cases, patients must be monitored frequently, given vitamins, especially thiamine, and underfeeding avoided."
+      },
+      "claims": [
+        {
+          "claimId": "meed-do-not-delay-feeding-for-electrolytes",
+          "claimText": "MEED states that it is not necessary to delay starting feeding to correct electrolytes; if electrolytes are significantly deranged on presentation, an HDU may be the most appropriate care area for correction while feeding is established.",
+          "claimTerms": [
+            "it is not necessary to delay starting feeding to correct electrolytes",
+            "an HDU may be the most appropriate care area"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_eating"
+          ]
+        },
+        {
+          "claimId": "meed-cautious-refeeding-high-risk-adults",
+          "claimText": "Adult patients with evidence of active medical comorbidities, particularly if acutely ill, or with a BMI <13 should be refed cautiously, while those without features suggesting increased risk can be refed more rapidly.",
+          "claimTerms": [
+            "active medical comorbidities, particularly if acutely ill, or with a BMI <13 should be refed cautiously",
+            "refeeding can proceed more rapidly"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_eating"
+          ]
+        },
+        {
+          "claimId": "meed-thiamine-and-avoid-underfeeding",
+          "claimText": "In all cases, patients must be monitored frequently, given vitamins, especially thiamine, and underfeeding avoided.",
+          "claimTerms": [
+            "given vitamins, especially thiamine, and underfeeding avoided"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_eating"
+          ]
+        }
+      ]
+    },
+    {
       "sourceId": "asam-hpso-bup-2023",
       "verifiedAgainst": {
         "spanType": "fulltext",
