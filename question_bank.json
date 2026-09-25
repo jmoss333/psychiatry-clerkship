@@ -928,7 +928,7 @@
     },
     {
       "id": "qb_per_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -950,7 +950,7 @@
           "t": "Prescribe lorazepam PRN — addressing the anxiety will help her engage with skills",
           "trap": {
             "name": "The reflexive benzodiazepine",
-            "note": "Benzodiazepines in BPD carry the highest risk of attempted or completed suicide of any psychotropic class studied and worsen disinhibition — they are contraindicated in this context."
+            "note": "Benzodiazepines in BPD are associated with the highest risk of suicide attempt or suicide death of any psychotropic class studied and worsen disinhibition — they are contraindicated in this context."
           }
         },
         {
@@ -971,13 +971,13 @@
         },
         {
           "key": "D",
-          "t": "Minimize pharmacotherapy — if needed, a single low-risk agent for ≤1 week, preferring a sedating antihistamine or low-dose quetiapine over a benzodiazepine.",
+          "t": "Minimize pharmacotherapy — if needed, a single low-risk agent for ≤1 week, such as a sedating antihistamine, rather than a benzodiazepine.",
           "c": true
         }
       ],
-      "why": "The reflexive benzodiazepine in two forms (PRN and scheduled) and Polypharmacy first are the traps. No medication treats BPD itself; the evidence base supports skills over pills, and benzodiazepines in BPD carry the highest risk of attempted or completed suicide of any psychotropic class studied (HR 1.61, Lieslehto 2023). The NICE-aligned approach is a single, low-risk agent at the minimum dose for ≤1 week — sedating antihistamine or low-dose quetiapine preferred over benzodiazepines.",
-      "pearl": "Benzodiazepines in BPD carry the highest risk of attempted or completed suicide of any class studied — reach for skills, not pills.",
-      "evidence": "t_personality.md — do not start or escalate benzodiazepines — they carry the highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, Lieslehto 2023) and worsen disinhibition. If a crisis genuinely needs pharmacology, follow the NICE rule: a single agent at the minimum effective dose for ≤1 week (prefer a sedating antihistamine or low-dose quetiapine over benzodiazepines and TCAs)."
+      "why": "The reflexive benzodiazepine in two forms (PRN and scheduled) and Polypharmacy first are the traps. No medication treats BPD itself; the evidence base supports skills over pills, and benzodiazepines in BPD are associated with the highest risk of suicide attempt or suicide death of any psychotropic class studied (HR 1.61, Lieslehto 2023, registry data). The NICE-aligned approach is a single, low-risk agent at the minimum dose for ≤1 week — NICE names a sedative antihistamine (low side-effect burden, low misuse potential, relatively safe in overdose) rather than a benzodiazepine.",
+      "pearl": "Benzodiazepines in BPD are associated with the highest risk of suicide attempt or suicide death of any class studied (registry data) — reach for skills, not pills.",
+      "evidence": "t_personality.md — do not start or escalate benzodiazepines — they carry the highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, Lieslehto 2023) and worsen disinhibition. If a crisis genuinely needs pharmacology, follow the NICE rule: a single agent at the minimum effective dose for ≤1 week (NICE names a sedative antihistamine — low side-effect burden, low misuse potential, relatively safe in overdose — rather than a benzodiazepine)."
     },
     {
       "id": "qb_chd_001",
@@ -2288,7 +2288,7 @@
     },
     {
       "id": "qb_saf_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2319,10 +2319,10 @@
         },
         {
           "key": "C",
-          "t": "Professional status significantly reduces suicide risk — healthcare workers have lower rates of completed suicide than the general population.",
+          "t": "Professional status significantly reduces suicide risk — healthcare workers have lower suicide death rates than the general population.",
           "trap": {
             "name": "Face-value reassurance",
-            "note": "Healthcare workers do not have lower rates of completed suicide — professional identity may create barriers to seeking help rather than functioning as a protective factor."
+            "note": "Healthcare workers do not have lower suicide death rates — female nurses die by suicide at about twice the rate of women in the general population (Davis, JAMA Psychiatry 2021), and professional identity may create barriers to seeking help rather than functioning as a protective factor."
           }
         },
         {
@@ -2340,7 +2340,7 @@
     },
     {
       "id": "qb_saf_006",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2387,7 +2387,7 @@
           }
         }
       ],
-      "why": "Document and continue, Denies SI = low risk, and Quotes = documentation all replace formulation with something easier to write. Strong safety documentation names chronic factors, acute drivers, protective factors with limits, modifiable targets, and the current plan. 'Denies SI/HI. No acute safety concerns.' is the example the page uses for the weakest possible documentation.",
+      "why": "Document and continue, Denies SI = low risk, and Quotes = documentation all replace formulation with something easier to write. Strong safety documentation names chronic factors, acute drivers, protective factors with limits (omitted in the keyed example for brevity — add them), modifiable targets, and the current plan. 'Denies SI/HI. No acute safety concerns.' is the example the page uses for the weakest possible documentation.",
       "pearl": "Strong safety documentation = chronic factors + acute drivers + protective factors with limits + modifiable targets + current plan — not 'denies SI/HI.'",
       "evidence": "pg_suicide.md 'Documentation Sentence' — Strong: [detailed formulation with acute risk factors, chronic risk, means safety status, and plan]. Weak: 'Denies SI/HI. No acute safety concerns.'"
     },
@@ -2552,7 +2552,7 @@
     },
     {
       "id": "qb_saf_010",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2571,10 +2571,10 @@
       "options": [
         {
           "key": "A",
-          "t": "Black patients are restrained at similar rates to White patients after adjusting for clinical acuity — the apparent disparity is explained by severity of presentation.",
+          "t": "Black patients are restrained at similar rates to White patients after adjusting for clinical acuity — the apparent disparity is explained by severity of presentation and does not belong in the post-restraint debrief.",
           "trap": {
             "name": "No disparity exists",
-            "note": "The adjusted disparity persists after controlling for clinical factors — it is a quality-of-care issue, not an acuity artifact."
+            "note": "The disparity persists after adjustment for measured clinical factors — adjustment cannot rule out every residual confounder, but a disparity that survives it is treated as a quality-of-care issue."
           }
         },
         {
@@ -2587,7 +2587,7 @@
         },
         {
           "key": "C",
-          "t": "Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units — this disparity is a quality-of-care issue, not an acuity artifact.",
+          "t": "Black patients faced roughly 1.85× the adjusted odds of a restraint event in a large inpatient psychiatric sample — a disparity that persists after adjustment and should be treated as a quality-of-care issue.",
           "c": true
         },
         {
@@ -2599,8 +2599,8 @@
           }
         }
       ],
-      "why": "No disparity exists in three forms. The page explicitly states: 'Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote.' This is the only data point cited on the page for this topic and is explicitly framed as belonging in a post-restraint debrief.",
-      "pearl": "Black patients face ~1.85× the adjusted odds of a restraint event on inpatient psychiatric units — a quality-of-care disparity that belongs in every post-restraint debrief.",
+      "why": "No disparity exists in three forms. The page explicitly states: 'Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote.' Singal et al. is one health system's retrospective chart review (adolescents and adults), so adjustment cannot exclude residual confounding by acuity: the defensible claim is a disparity that persists after adjustment, and the page frames it as belonging in a post-restraint debrief.",
+      "pearl": "In a large inpatient psychiatric sample, Black patients faced ~1.85× the adjusted odds of a restraint event — a disparity that persists after adjustment and belongs in every post-restraint debrief.",
       "evidence": "agitation.md 'Restraint and seclusion' — Black patients face roughly 1.85× the adjusted odds of a restraint event on inpatient psychiatric units (Singal et al., Psychiatric Services 2024), and higher adjusted odds of physical and chemical restraint during emergency psychiatric evaluation in the ED as well (aOR ~1.35; Smith et al., Psychiatric Services 2022) — that disparity is a quality-of-care issue, not a footnote."
     },
     {
@@ -2950,7 +2950,7 @@
     },
     {
       "id": "qb_sud_007",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2997,7 +2997,7 @@
           }
         }
       ],
-      "why": "It's just withdrawal in two forms. The Wernicke triad — confusion, ataxia, ophthalmoplegia — is classically taught as a complete triad but occurs frequently in incomplete forms. The threshold for treatment is low because thiamine is cheap and Wernicke untreated progresses to Korsakoff syndrome, which is irreversible.",
+      "why": "It's just withdrawal in two forms. The Wernicke triad — confusion, ataxia, ophthalmoplegia — is classically taught as a complete triad but occurs frequently in incomplete forms. The threshold for treatment is low because thiamine is cheap and safe. Untreated Wernicke can be fatal or progress to Korsakoff syndrome, which is often permanent.",
       "pearl": "Wernicke encephalopathy: confusion + ataxia + ophthalmoplegia — often incomplete; treat with IV thiamine immediately without waiting for the complete triad.",
       "evidence": "t_sud.md — Wernicke encephalopathy (confusion, ophthalmoplegia, ataxia — often incomplete, so a low threshold is correct)."
     },
@@ -3289,7 +3289,7 @@
     },
     {
       "id": "qb_sud_013",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3338,7 +3338,7 @@
       ],
       "why": "Contraindication confusion and Long half-life equals smooth coverage are the two active errors. The clinical principle: lorazepam and oxazepam are preferred in hepatic impairment precisely because their glucuronidation pathway is preserved while oxidative metabolism (which processes chlordiazepoxide and diazepam) is impaired in cirrhosis. All drugs equal ignores a clinically important pharmacokinetic distinction.",
       "pearl": "Hepatic impairment + alcohol withdrawal: use lorazepam or oxazepam (glucuronidation preserved); avoid long-acting benzodiazepines that accumulate.",
-      "evidence": "substance_use_inpatient_teaching.md 'Benzodiazepine choice in hepatic impairment' — Lorazepam, oxazepam, and temazepam (the LOT drugs) bypass oxidative CYP450 metabolism; they are conjugated by glucuronidation, a pathway that is relatively preserved in cirrhosis, and produce no clinically significant active metabolites. Chlordiazepoxide and diazepam rely on hepatic oxidative metabolism and produce long-lived active metabolites that accumulate in significant hepatic impairment, risking progressive over-sedation and worsening hepatic encephalopathy (Schuckit, N Engl J Med 2014; Saitz, N Engl J Med 1998)."
+      "evidence": "substance_use_inpatient_teaching.md 'Benzodiazepine choice in hepatic impairment' — Lorazepam, oxazepam, and temazepam (the LOT drugs) bypass oxidative CYP450 metabolism; they are conjugated by glucuronidation, a pathway that is relatively preserved in cirrhosis, and produce no clinically significant active metabolites. Chlordiazepoxide and diazepam rely on hepatic oxidative metabolism and produce long-lived active metabolites that accumulate in significant hepatic impairment, risking progressive over-sedation and worsening hepatic encephalopathy (Schuckit, N Engl J Med 2014; Saitz, Alcohol Health Res World 1998)."
     },
     {
       "id": "qb_sud_014",
@@ -6581,7 +6581,7 @@
     },
     {
       "id": "qb_per_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -6601,7 +6601,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Benzodiazepines should not be started or escalated for BPD symptoms or crisis distress — they are associated with the highest risk of attempted or completed suicide of any psychotropic class studied in this population and worsen disinhibition.",
+          "t": "Benzodiazepines should not be started for BPD symptoms or crisis distress — of the classes studied, they had the highest suicide risk.",
           "c": true
         },
         {
@@ -6617,7 +6617,7 @@
           "t": "Benzodiazepines are acceptable in BPD when prescribed at the lowest effective dose — the risk-benefit ratio favors treatment for acute distress.",
           "trap": {
             "name": "Low dose = safe",
-            "note": "The page gives no dose-based exception — the recommendation is to avoid starting or escalating benzodiazepines in BPD; the risk-benefit calculation in this population does not favor initiation."
+            "note": "The page gives no dose-based exception — the recommendation is to avoid starting or escalating benzodiazepines for BPD symptoms or crisis distress; the risk-benefit calculation in this population does not favor initiation."
           }
         },
         {
@@ -6629,9 +6629,9 @@
           }
         }
       ],
-      "why": "Inpatient benzos safe short-term, Low dose = safe, and Benzo for BPD emotional dysregulation all lead to starting a contraindicated drug class. The page is explicit: 'Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.'",
-      "pearl": "Never start or escalate benzodiazepines for BPD symptoms or crisis distress — they carry the highest suicide risk of any psychotropic class in this population; use skills, not pills.",
-      "evidence": "t_personality.md — Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, 95% CI 1.45–1.78; Lieslehto 2023) and worsen disinhibition."
+      "why": "Inpatient benzos safe short-term, Low dose = safe, and Benzo for BPD emotional dysregulation all lead to starting a drug class to avoid for this indication. The rule, scoped as the key scopes it: never start or escalate benzodiazepines for BPD symptoms or crisis distress — highest risk of suicide attempt or suicide death of any class (Lieslehto 2023); reach for skills, not pills. Withdrawal and catatonia remain benzodiazepine indications. In that Swedish registry cohort benzodiazepine use was associated with suicide attempt or death at HR 1.61 (95% CI 1.45–1.78), the highest of the classes studied — an association, not proof of cause — and benzodiazepines also worsen disinhibition.",
+      "pearl": "Never start or escalate benzodiazepines for BPD symptoms or crisis distress — they are associated with the highest suicide risk of any psychotropic class studied in this population; use skills, not pills.",
+      "evidence": "t_personality.md — Minimize polypharmacy; no medication treats BPD itself, and accumulating agents adds risk without benefit. In particular, do not start or escalate benzodiazepines — they carry the highest risk of attempted or completed suicide of any psychotropic class studied in BPD (HR 1.61, 95% CI 1.45–1.78; Lieslehto 2023) and worsen disinhibition."
     },
     {
       "id": "qb_per_006",
@@ -9388,7 +9388,7 @@
           "t": "Disulfiram as the automatic first choice for everyone",
           "trap": {
             "name": "Adherence trap",
-            "note": "Disulfiram is aversive and adherence-dependent; it is not first-line and requires abstinence and reliability."
+            "note": "Disulfiram is aversive, adherence-dependent and hepatotoxic; it is not first-line, requires abstinence and reliability, and should be avoided in cirrhosis."
           }
         },
         {
@@ -9400,8 +9400,8 @@
           }
         }
       ],
-      "why": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis/opioid use) and acamprosate (supports abstinence; usable in liver disease, adjust in renal impairment) are first-line for AUD. Disulfiram is second-line and adherence-dependent.",
-      "pearl": "AUD maintenance: naltrexone or acamprosate first-line; disulfiram is adherence-dependent second-line.",
+      "why": "Naltrexone (reduces heavy drinking; avoid in acute hepatitis, decompensated cirrhosis/liver failure, or opioid use; monitor LFTs in compensated cirrhosis) and acamprosate (supports abstinence; usable in liver disease, adjust in renal impairment) are first-line for AUD. Disulfiram is second-line and adherence-dependent, and should be avoided in cirrhosis because of hepatotoxicity.",
+      "pearl": "AUD maintenance: naltrexone or acamprosate first-line; disulfiram is adherence-dependent second-line and should be avoided in cirrhosis.",
       "evidence": "t_sud.md — Alcohol use disorder pharmacotherapy.",
       "retired": true,
       "retiredReason": "Redundant: AUD maintenance (naltrexone/acamprosate first-line) duplicates attested qb_sud_009; fold the compensated-cirrhosis nuance into qb_sud_009 if desired."
