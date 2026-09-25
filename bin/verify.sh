@@ -41,15 +41,33 @@ QUICK=0
 [ "${1:-}" = "--quick" ] && QUICK=1
 
 FAILED=()
+# A failed step prints every TAP `not ok` line with its location and error, then the last 15
+# lines, then the path of its full output. `tail -15` alone showed a node:test run's summary
+# counters and never the failing test — see bin/step_failure_excerpt.sh for the 2026-09-24
+# flake that could not be named from the hook's output.
+FAIL_LOG_DIR=''
+save_failed_step_log() {
+  local name="$1" out="$2" slug
+  if [ -z "$FAIL_LOG_DIR" ]; then
+    FAIL_LOG_DIR="$(mktemp -d "${TMPDIR:-/tmp}/verify-failed.XXXXXX")" || return 1
+  fi
+  slug="$(printf '%s' "$name" | LC_ALL=C tr -cs 'A-Za-z0-9._' '-' | cut -c1-60)"
+  slug="$(printf '%02d-%s' "$((${#FAILED[@]} + 1))" "$slug")"
+  printf '%s\n' "$out" > "$FAIL_LOG_DIR/$slug.log" || return 1
+  printf '%s\n' "$FAIL_LOG_DIR/$slug.log"
+}
 step() {
   local name="$1"; shift
-  local out rc
+  local out rc log
   out="$("$@" 2>&1)"; rc=$?
   if [ $rc -eq 0 ]; then
     printf '  PASS  %-42s %s\n' "$name" "$(printf '%s' "$out" | tail -1 | cut -c1-58)"
   else
     printf '  FAIL  %-42s (exit %d)\n' "$name" "$rc"
-    printf '%s\n' "$out" | tail -15 | sed 's/^/        | /'
+    printf '%s\n' "$out" | "$BASH" "$REPO/bin/step_failure_excerpt.sh" 15 | sed 's/^/        | /'
+    if log="$(save_failed_step_log "$name" "$out")"; then
+      printf '        full output: %s\n' "$log"
+    fi
     FAILED+=("$name")
   fi
 }
