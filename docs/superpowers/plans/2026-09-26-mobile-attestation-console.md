@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
-**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
 
 ## Global Constraints
 
@@ -636,6 +636,14 @@ test.describe('phone client', () => {
     // No horizontal scroll at phone width.
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
+    // Search filters the groups without stealing focus from the box.
+    const search = page.getByLabel('Search the queue');
+    await search.click();
+    await search.pressSequentially('cat');
+    await expect(search).toBeFocused();
+    await expect(search).toHaveValue('cat');
+    await expect(page.getByRole('link', { name: /Catatonia/ })).toHaveCount(2);
+    await expect(page.getByRole('link', { name: /Synthetic/ })).toHaveCount(0);
   });
 
   test('a wrong key is refused, cleared, and re-prompted without leaking into storage', async ({ page }) => {
@@ -714,7 +722,7 @@ Create `faculty-console/m/index.html`:
   header.bar h1 { font-size: 1.05rem; margin: 0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   header.bar button, header.bar a { color: inherit; background: transparent; border: 1px solid rgba(255,255,255,.5);
     border-radius: 999px; padding: .35rem .8rem; font-size: .9rem; text-decoration: none; }
-  main.screen { flex: 1; display: flex; flex-direction: column; }
+  .screen { flex: 1; display: flex; flex-direction: column; }
   .gate { margin: auto; width: min(100%, 26rem); padding: 1.5rem; }
   .gate label { display: block; font-weight: 600; margin-bottom: .35rem; }
   .gate input { width: 100%; font-size: 1.1rem; padding: .7rem .8rem; border: 1px solid var(--line); border-radius: .6rem; }
@@ -763,11 +771,11 @@ Create `faculty-console/m/index.html`:
   .draft ol { padding-left: 1.25rem; }
   .draft .key { font-weight: 700; }
   [hidden] { display: none !important; }
-  @media (min-width: 900px) { .gate, main.screen { max-width: 40rem; margin: 0 auto; width: 100%; } }
+  @media (min-width: 900px) { .gate, .screen { max-width: 40rem; margin: 0 auto; width: 100%; } }
 </style>
 </head>
 <body>
-<main id="m-app" aria-live="polite"></main>
+<main id="m-app"></main>
 <script type="module" src="./m.mjs"></script>
 </body>
 </html>
@@ -924,10 +932,10 @@ function renderGate(message = '') {
     message ? h('p', { class: 'field-error', role: 'alert', text: message }) : null,
     h('p', {}, h('button', { class: 'btn', type: 'submit', text: 'Unlock' })),
   ]);
-  replaceApp(h('main', { class: 'screen' }, form));
+  replaceApp(h('div', { class: 'screen' }, form));
   input.focus();
 }
-function renderBusy(text) { replaceApp(bar('Faculty attestation'), h('main', { class: 'screen' }, h('p', { class: 'summary', role: 'status', text }))); }
+function renderBusy(text) { replaceApp(bar('Faculty attestation'), h('div', { class: 'screen' }, h('p', { class: 'summary', role: 'status', text }))); }
 
 function riskPill(item) {
   const level = item.risk?.level || '';
@@ -935,32 +943,45 @@ function riskPill(item) {
 }
 function siteLabel(item) { return item.site === 'res' ? 'Residents' : 'MS3'; }
 
+function queueRows(sections) {
+  return sections.map(section => h('section', { class: 'group' }, [
+    h('h2', { text: section.title }),
+    h('ul', { class: 'rows' }, section.items.map(item => h('li', {}, h('a', { href: `?item=${encodeURIComponent(item.key)}`,
+      onClick: event => { event.preventDefault(); openItem(item.key); } }, [
+      h('div', { class: 'title', text: item.title }),
+      h('div', { class: 'meta' }, [h('span', { class: 'pill', text: item.type }), h('span', { text: siteLabel(item) }), riskPill(item)]),
+      h('div', { class: 'why', text: reviewReason(item) }),
+    ])))),
+  ]));
+}
+function visibleSections() {
+  const term = state.search.trim().toLowerCase();
+  return state.sections
+    .map(section => ({ ...section, items: section.items.filter(i => !term || i.searchText.includes(term)) }))
+    .filter(section => section.items.length);
+}
+/** Re-render only the groups: the search box keeps focus and its caret while the reviewer types. */
+function refreshQueueGroups() {
+  const groups = document.getElementById('queue-groups');
+  if (!groups) return;
+  const sections = visibleSections();
+  groups.replaceChildren(...queueRows(sections), ...(sections.length ? [] : [h('p', { class: 'summary', text: 'Nothing needs review.' })]));
+}
 function renderQueue() {
   const counts = deriveReviewCounts(state.items);
-  const term = state.search.trim().toLowerCase();
-  const visible = section => ({ ...section, items: section.items.filter(i => !term || i.searchText.includes(term)) });
-  const sections = state.sections.map(visible).filter(s => s.items.length);
   const search = h('input', { type: 'search', placeholder: 'Search titles', value: state.search, 'aria-label': 'Search the queue',
-    onInput: event => { state.search = event.target.value; renderQueue(); } });
+    onInput: event => { state.search = event.target.value; refreshQueueGroups(); } });
   replaceApp(
     bar('Faculty attestation'),
-    h('main', { class: 'screen' }, [
-      h('h1', { class: 'summary', text: 'Needs review' }),
+    h('div', { class: 'screen' }, [
+      h('h2', { class: 'summary', text: 'Needs review' }),
       h('p', { class: 'summary', role: 'status', text: `${counts.page} page${counts.page === 1 ? '' : 's'} · ${counts.tool} tool${counts.tool === 1 ? '' : 's'} · ${counts.question} question${counts.question === 1 ? '' : 's'} need review` }),
       state.message ? h('p', { class: 'field-error summary', role: 'alert', text: state.message }) : null,
       h('div', { class: 'search' }, search),
-      ...sections.map(section => h('section', { class: 'group' }, [
-        h('h2', { text: section.title }),
-        h('ul', { class: 'rows' }, section.items.map(item => h('li', {}, h('a', { href: `?item=${encodeURIComponent(item.key)}`,
-          onClick: event => { event.preventDefault(); openItem(item.key); } }, [
-          h('div', { class: 'title', text: item.title }),
-          h('div', { class: 'meta' }, [h('span', { class: 'pill', text: item.type }), h('span', { text: siteLabel(item) }), riskPill(item)]),
-          h('div', { class: 'why', text: reviewReason(item) }),
-        ])))),
-      ])),
-      sections.length ? null : h('p', { class: 'summary', text: 'Nothing needs review.' }),
+      h('div', { id: 'queue-groups' }),
     ]),
   );
+  refreshQueueGroups();
   // The shareable link is rebuilt from the selected item only; on the queue it carries nothing.
   window.history.replaceState(null, '', window.location.pathname);
 }
@@ -1170,8 +1191,7 @@ function mountItem(item) {
   frame.setAttribute('src', preview.request.url);
   replaceApp(
     bar(item.title, { back: true }),
-    h('main', { class: 'screen item' }, [
-      h('h1', { class: 'summary', text: item.title }),
+    h('div', { class: 'screen item' }, [
       h('div', { id: 'item-status', class: 'status', role: 'status' }),
       h('div', { id: 'item-twin' }),
       h('div', { id: 'item-receipt' }),
