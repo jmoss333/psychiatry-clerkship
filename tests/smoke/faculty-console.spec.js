@@ -2762,6 +2762,59 @@ test.describe('phone client', () => {
     expect(api.gets).toHaveLength(1);                // the unlock GET only: no confirming reload after the sign
   });
 
+  test('the last sign of a sitting still shows its receipt, over the emptied queue', async ({ page }) => {
+    // One pending page and no draft questions: after this sign nothing is left to advance to.
+    await installRepositoryApi(page, { version: 1, items: [] }, {
+      contentState: [{ slug: 't_mood.md', title: 'Synthetic mood disorders page', kind: 'page', site: 'ms3', status: 'pending', at: '', by: '' }],
+    });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mood disorders page/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    await expect(page.getByText('Signed: Synthetic mood disorders page')).toBeVisible();
+    await expect(page.getByText('Nothing needs review.')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'commit' })).toHaveAttribute('href', 'https://github.example/commit/faculty-1');
+    expect(new URL(page.url()).searchParams.get('item')).toBeNull();   // back on the queue, not a vanished item
+  });
+
+  test('a sign error shows inside the open sheet and Sign works again', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    let presses = 0;
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST' && ++presses === 1) {
+        await fulfillJson(route, 409, { error: { code: 'github_conflict', message: 'branch moved', retryable: true } });
+        return;
+      }
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mood disorders page/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    const sign = sheet.getByRole('button', { name: 'Sign' });
+    await sign.click();
+    await expect(sheet.getByRole('alert')).toHaveText('The branch moved while signing. Press Sign again.');
+    await expect(sign).toBeEnabled();
+    await sign.click();
+    await expect(page.getByText('Signed: Synthetic mood disorders page')).toBeVisible();
+    expect(presses).toBe(2);
+    expect(api.calls.filter(call => call.method === 'POST').map(call => call.body)).toEqual([
+      { target: 'content', changes: { 't_mood.md': true }, reasons: {} },
+    ]);
+  });
+
   test('a failed preview needs a retry and the separate-tab acknowledgement instead', async ({ page }) => {
     await installRepositoryApi(page, workflowBank(), { contentState: [{ slug: 'nope.md', title: 'Missing page', kind: 'page', site: 'ms3', status: 'pending', at: '', by: '' }] });
     await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));

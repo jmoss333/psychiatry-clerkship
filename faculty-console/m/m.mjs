@@ -191,6 +191,18 @@ function queueRows(sections) {
 }
 
 /** Re-render only the groups, so the search box (and its focus and caret) survives typing. */
+/** The write's receipt: on the item screen after an advance, over the queue after the last sign. */
+function receiptNode() {
+  const receipt = state.receipt;
+  if (!receipt) return null;
+  return h('div', { class: 'receipt', 'aria-live': 'polite' }, [
+    h('strong', { text: `Signed: ${receipt.title}` }), ' ',
+    receipt.commit ? h('a', { href: receipt.commit, target: '_blank', rel: 'noopener noreferrer', text: 'commit' }) : null,
+    receipt.pullRequest ? [' · ', h('a', { href: receipt.pullRequest, target: '_blank', rel: 'noopener noreferrer', text: 'rolling PR' })] : null,
+    receipt.pullRequestError ? ' · the rolling review request needs attention' : null,
+  ]);
+}
+
 function refreshQueueGroups() {
   const groups = document.getElementById('queue-groups');
   if (!groups) return;
@@ -211,6 +223,7 @@ function renderQueue() {
     bar('Faculty attestation'),
     h('div', { class: 'screen' }, [
       h('h2', { class: 'summary', text: 'Needs review' }),
+      receiptNode(),
       h('p', { id: 'queue-counts', class: 'summary', role: 'status', text: queueCountsText() }),
       state.message ? h('p', { class: 'field-error summary', role: 'alert', text: state.message }) : null,
       h('div', { class: 'search' }, search),
@@ -247,6 +260,7 @@ function render() {
 
 // ---- item screen (Task 4), sheets + attest (Tasks 5–6) ------------------------------------
 function openItem(key) { state.selectedKey = key; state.screen = 'item'; state.ui = {}; state.sheet = null; state.diff = null; state.receipt = null; state.message = ''; beginPreview(); render(); }
+// Keeps state.receipt: the last sign of a sitting reports over the queue until the next openItem.
 function closeItem() { cancelPreview(); state.screen = 'queue'; state.selectedKey = null; state.sheet = null; render(); }
 function selectedItem() { return state.items.find(i => i.key === state.selectedKey) || null; }
 // ---- preview ------------------------------------------------------------------------------
@@ -413,12 +427,8 @@ function refreshItem(item) {
     `Twin: ${twin.title} · ${twin.completion === 'needs-review' ? 'needs review' : 'reviewed'} `,
     h('a', { href: `?item=${encodeURIComponent(twin.key)}`, text: 'Go to twin', onClick: event => { event.preventDefault(); openItem(twin.key); } }),
   ])] : []));
-  document.getElementById('item-receipt').replaceChildren(...(state.receipt ? [h('div', { class: 'receipt', 'aria-live': 'polite' }, [
-    h('strong', { text: `Signed: ${state.receipt.title}` }), ' ',
-    state.receipt.commit ? h('a', { href: state.receipt.commit, target: '_blank', rel: 'noopener noreferrer', text: 'commit' }) : null,
-    state.receipt.pullRequest ? [' · ', h('a', { href: state.receipt.pullRequest, target: '_blank', rel: 'noopener noreferrer', text: 'rolling PR' })] : null,
-    state.receipt.pullRequestError ? ' · the rolling review request needs attention' : null,
-  ])] : []));
+  const receipt = receiptNode();
+  document.getElementById('item-receipt').replaceChildren(...(receipt ? [receipt] : []));
   document.getElementById('item-message').replaceChildren(...(state.message ? [h('p', { class: 'field-error summary', role: 'alert', text: state.message })] : []));
   document.getElementById('item-actions').replaceChildren(
     item.type === 'question'
@@ -470,6 +480,8 @@ function sheetConfirm(item) {
       : ack('ack-separate', 'I reviewed it in the learner site tab', state.ui.separateTabReviewed, v => setUi({ separateTabReviewed: v }), { disabled: !state.ui.retryAttempted }),
     ack('ack-accuracy', 'Accurate and appropriate for a third-year student', state.ui.accuracy, v => setUi({ accuracy: v })),
     ack('ack-interactions', 'Links, media and interactions work', state.ui.interactions, v => setUi({ interactions: v })),
+    // A sign error is shown here too: #item-message sits under the sheet's backdrop.
+    state.message ? h('p', { class: 'field-error', role: 'alert', text: state.message }) : null,
     h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign', disabled: !eligibility.eligible || state.pending, onClick: () => { void signContent(item); } })),
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
@@ -497,7 +509,7 @@ async function signContent(item) {
     state.sheet = null; state.pending = false;
     const nextKey = nextAfterSign(item.key, before, sections);
     if (nextKey && state.items.some(i => i.key === nextKey)) { const receipt = state.receipt; openItem(nextKey); state.receipt = receipt; renderItem(); }
-    else { state.screen = 'item'; renderItem(); }
+    else closeItem();   // the signed item has left the queue; its receipt shows over the queue
   } catch (error) {
     state.pending = false;
     if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signContent(item); }; renderGate(error.message); return; }
