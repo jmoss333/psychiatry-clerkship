@@ -8,9 +8,10 @@
  * correction that changed them, with the exact words shown, it is the way a clinician reviews
  * interval changes: one kind of change across many pages, then one signature per page.
  *
- * WHAT IT NEVER DOES. It does not sign, batch-sign, or decide anything. Each page is still
- * signed by one press in the existing review flow (the standing one-attestation-per-press
- * rule). This module only answers "which change touched which page, and what did it say".
+ * WHAT IT NEVER DOES. It does not sign or decide anything. Signing is the console's job —
+ * one page per press, or since 2026-09-26 one correction per press (attest.mjs,
+ * commitContentBatch), which reads these groups. This module only answers "which change
+ * touched which page, and what did it say".
  *
  * Everything here is pure (no I/O) so it can be pinned by unit tests and run in both the
  * Netlify function and the browser.
