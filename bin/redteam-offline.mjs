@@ -14,9 +14,16 @@
 //
 // Usage:  node bin/redteam-offline.mjs [path/to/pack.json] [--coverage]
 //   --coverage   report-only: for every pack gate, list which probe ids assert on it
-//                (via each PROBES entry's `gates` field) and name any gate with none.
-//                Always exits 0 — see the comment above the SHOW_COVERAGE block further
-//                down for why, and for what flips that to exit 1 once it is safe to.
+//                (via each PROBES entry's `gates` field) and name any gate with none;
+//                for every reviewed case, list the probes that drive it. Always exits 0 —
+//                see the comment above the SHOW_COVERAGE block further down for why, and
+//                for what flips that to exit 1 once it is safe to.
+//
+// THE CASE TABLE IS DERIVED FROM THE PACK, and a reviewed case no probe drives FAILS Tier 1.
+// Until 2026-09-26 the cases were a three-name literal, and Morgan
+// (sp_alcohol_ambivalence_001) shipped `reviewed` with no probe on any line of him;
+// `--coverage` could not see it either, because it keys on `gated` and Morgan has no gates.
+// A case learners can select is a case the deterministic red team must drive.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,20 +37,37 @@ const SHOW_COVERAGE = argv.includes('--coverage');
 const packPath = argv.find((a) => !a.startsWith('--'))
   || path.join(ROOT, '_prototypes/sp-interview/sp-interview.pack.json');
 const pack = JSON.parse(fs.readFileSync(packPath, 'utf8'));
-const CASE = {
-  Dana: 'sp_depression_gated_si_001',
-  Marcus: 'sp_mania_redirect_001',
-  Ray: 'sp_psychosis_paranoid_001',
-};
+// Every case whose facultyReview is `reviewed` is selectable by learners (the tools and the
+// proxy both filter on exactly that), so it is a case Tier 1 must drive. Probes name a case by
+// its persona displayName; a name that is in the pack but not reviewed makes its probes SKIP
+// (reported, never silent), a name absent from the pack is a broken probe and FAILS.
+const REVIEWED = pack.cases.filter((c) => c.facultyReview && c.facultyReview.status === 'reviewed');
+const CASE = Object.fromEntries(REVIEWED.map((c) => [c.persona.displayName, c.id]));
+const NOT_REVIEWED = Object.fromEntries(
+  pack.cases.filter((c) => !REVIEWED.includes(c)).map((c) => [c.persona.displayName, c.id]),
+);
+const driven = new Map(); // probe id -> Set(case id) it drove, filled while probes run
+let currentProbe = null;
 
 function probe(who, msgs) {
   const c = pack.cases.find((x) => x.id === CASE[who]);
-  if (!c) throw new Error(`case not found for ${who}`);
+  if (!c) {
+    const err = new Error(NOT_REVIEWED[who]
+      ? `${who} (${NOT_REVIEWED[who]}) is in the pack but not reviewed — learners cannot select it`
+      : `case not found for ${who} — not in the pack`);
+    err.code = NOT_REVIEWED[who] ? 'CASE_NOT_REVIEWED' : 'CASE_MISSING';
+    throw err;
+  }
+  if (currentProbe) {
+    if (!driven.has(currentProbe)) driven.set(currentProbe, new Set());
+    driven.get(currentProbe).add(c.id);
+  }
   const s = deriveState(c, msgs);
   const cov = computeCoverage(c, s);
   return {
     unlocked: Object.keys(s.unlocked || {}),
     covered: Object.keys(s.covered || {}),
+    rapport: s.rapport,
     row: (id) => (cov.find((r) => r.id === id) || {}).status,
   };
 }
@@ -62,6 +86,15 @@ const RAPPORT = [
   "Hi, I'm Alex, one of the medical students. What would be most useful to talk about?",
   'That sounds really hard.',
   'Tell me more about that.',
+];
+// Morgan's rapport rules are his own (open_invite +1 first time, reflection +1, autonomy +1;
+// confront_label / force_abstinence −2), and his patterns are not Dana's: "my name is" and
+// "what would you like" for the agenda, "tell me a little about" for the invitation, "it sounds
+// like" for the reflection. RAPPORT above would leave him at 0.
+const MORGAN_RAPPORT = [
+  'Hi, my name is Alex, one of the medical students — what would you like to get out of this conversation?',
+  "Tell me a little about what's been going on.",
+  'It sounds like drinking helps in the moment, and at the same time the mornings have been costing you.',
 ];
 
 const PROBES = [
@@ -411,14 +444,118 @@ const PROBES = [
       !r.cold.unlocked.includes('g_not_eating') || 'g_not_eating unlocked at rapport 0 — the disclosure gate is open to a cold question',
     ],
   },
+  // M series (2026-09-26): Morgan, the motivational-interviewing case. He has NO gated
+  // disclosures — every fact is ordinary and offered plainly — so there is nothing for a gate
+  // probe to open, and `--coverage` (keyed on `gated`) reads him as fully covered while no probe
+  // drives him. What Tier 1 must prove for a gateless case is the other half of the contract:
+  // the pack-wide suicide screen (D3/D12/D13) grades the same on him as on the three history
+  // cases, his own engine inputs (rapport rules, three flags, the withdrawal-safety intent)
+  // behave, and `state.unlocked` stays EMPTY on every run — on a case with no gates, anything
+  // in `unlocked` is a leak from nowhere.
+  {
+    id: 'M1', name: 'Morgan: the plain screen is credited, and there is no gate to open',
+    gates: [],
+    run: () => probe('Morgan', [...MORGAN_RAPPORT, SCREEN]),
+    expect: (r) => [
+      r.covered.includes('si_direct') || 'si_direct not counted as asked on Morgan',
+      r.row('c_si') === 'observed' || `c_si = ${r.row('c_si')} (want observed)`,
+      r.unlocked.length === 0 || `state.unlocked is [${r.unlocked.join(', ')}] on a case with no gates`,
+    ],
+  },
+  {
+    id: 'M2', name: 'Morgan: D12 — a euphemism scores partial, never observed',
+    gates: [],
+    run: () => probe('Morgan', [...MORGAN_RAPPORT, 'Have you thought about hurting yourself?']),
+    expect: (r) => [
+      r.covered.includes('si_euphemism') || 'si_euphemism not counted as asked',
+      !r.covered.includes('si_direct') || 'si_direct credited for a euphemism — D12 violation',
+      r.row('c_si') === 'partial' || `c_si = ${r.row('c_si')} (want partial)`,
+    ],
+  },
+  {
+    id: 'M3', name: 'Morgan: a passive-wish question scores partial',
+    gates: [],
+    run: () => probe('Morgan', [...MORGAN_RAPPORT, "Do you ever wish you wouldn't wake up?"]),
+    expect: (r) => [
+      r.covered.includes('si_passive') || 'si_passive not counted as asked',
+      !r.covered.includes('si_direct') || 'si_direct credited for a passive-wish question',
+      r.row('c_si') === 'partial' || `c_si = ${r.row('c_si')} (want partial)`,
+    ],
+  },
+  {
+    id: 'M4', name: 'Morgan: a withdrawal-safety question credits its own intent and never the screen',
+    gates: [],
+    run: () => probe('Morgan', [...MORGAN_RAPPORT, 'Is it medically safe for you to stop drinking suddenly — any withdrawal or seizures before?']),
+    expect: (r) => [
+      r.covered.includes('withdrawal_safety') || 'withdrawal_safety not counted as asked',
+      !['si_direct', 'si_euphemism', 'si_passive'].some((i) => r.covered.includes(i)) || 'a withdrawal question credited a suicide-screen intent',
+      r.row('c_si') === 'missed' || `c_si = ${r.row('c_si')} (want missed — nothing was screened)`,
+    ],
+  },
+  {
+    // Design §18 (2026-09-26) records that the pack-wide si_euphemism pattern is over-broad on a
+    // fall case: an injury question reads as an indirect screen and scores partial. That is the
+    // documented state, kept uniform on purpose. What must NEVER happen is `observed` — an injury
+    // question is not a plain suicide screen — so this pin holds today (partial) and would still
+    // hold after a pack-wide narrowing that makes it `missed`.
+    id: 'M5', name: 'Morgan: an injury question about the fall is never credited as a plain screen',
+    gates: [],
+    run: () => probe('Morgan', [...MORGAN_RAPPORT, 'How badly did you hurt yourself when you fell?']),
+    expect: (r) => [
+      !r.covered.includes('si_direct') || 'si_direct credited for an injury question about the fall',
+      r.row('c_si') !== 'observed' || 'an injury question was credited as a real suicide screen',
+    ],
+  },
+  {
+    // Morgan's own D17 analogue: a label costs rapport (confront_label −2) and is flagged on its
+    // own turn, but it cannot shut the safety question that follows.
+    id: 'M6', name: 'Morgan: a label costs rapport but cannot shut the screen',
+    gates: [],
+    run: () => ({
+      warm: probe('Morgan', MORGAN_RAPPORT),
+      flagged: probe('Morgan', [...MORGAN_RAPPORT, "You have to admit you're an alcoholic."]),
+      screened: probe('Morgan', [...MORGAN_RAPPORT, "You have to admit you're an alcoholic.", SCREEN]),
+    }),
+    expect: (r) => [
+      r.flagged.covered.includes('confront_label') || 'the label did not trip confront_label — the probe proves nothing',
+      r.flagged.rapport < r.warm.rapport || `rapport did not drop after a label (${r.warm.rapport} → ${r.flagged.rapport})`,
+      r.screened.row('c_si') === 'observed' || `c_si = ${r.screened.row('c_si')} after a label then the plain screen (want observed)`,
+    ],
+  },
+  {
+    id: 'M7', name: 'Morgan: a complete MI interview unlocks nothing — there is no hidden disclosure to leak',
+    gates: [],
+    run: () => probe('Morgan', [
+      ...MORGAN_RAPPORT,
+      'What do you get from drinking — what does it give you?',
+      "And what's the downside — what does it cost you?",
+      "It's up to you what happens next; I'm not here to tell you what to do.",
+      'What matters most to you right now — what do you want to protect?',
+      'Have you ever cut down before? What worked?',
+      SCREEN,
+      'Where does that leave you — what small change, if any, might you try?',
+    ]),
+    expect: (r) => {
+      const want = ['open_invite', 'reflection', 'autonomy_support', 'explore_benefits', 'explore_costs', 'values', 'prior_change', 'next_step', 'si_direct'];
+      const missing = want.filter((i) => !r.covered.includes(i));
+      return [
+        !missing.length || `a skilled MI run lost coverage: ${missing.join(', ')}`,
+        r.unlocked.length === 0 || `state.unlocked is [${r.unlocked.join(', ')}] on a case with no gates`,
+        r.row('c_si') === 'observed' || `c_si = ${r.row('c_si')} (want observed)`,
+      ];
+    },
+  },
 ];
 
 // --coverage: for every disclosure gate in every pack case, name the probe ids whose
 // `gates` field asserts on it (on `state.unlocked`, per the B9 comment above — never on
 // `covered`, which a gate can win without ever opening). Gate ids are unique across this
-// pack's three cases (si_* only on Dana, g_* only on Marcus/Ray), so a gate id alone tells
-// you which case owns it; this loop still keys off `pack.cases` so a same-named gate added
-// to a fourth case would not silently merge into another case's coverage row.
+// pack's cases (si_* GATES only on Dana, g_* only on Marcus/Ray; Morgan has no gates — his
+// si_* INTENTS are the uniform screen, not gates), so a gate id alone tells you which case
+// owns it; this loop still keys off `pack.cases` so a same-named gate added to another case
+// would not silently merge into another case's coverage row. A gateless case is reported by
+// the probes that DRIVE it (M series), because "every gate has a probe" is vacuously true of
+// a case with no gates — that is exactly how Morgan read as covered while nothing touched him.
 //
 // REPORT-ONLY, ALWAYS EXITS 0. bin/check_qbank_coherence.py and bin/verify_spans.py are the
 // pattern this deliberately does NOT follow: today five gates have no probe (that is the
@@ -429,9 +566,19 @@ const PROBES = [
 if (SHOW_COVERAGE) {
   console.log('SP red-team — gate coverage (report-only; does not fail the build)');
   console.log('pack: %s\n', path.relative(ROOT, packPath));
+  // Run every probe once, silently, so the per-case report can say which probes DRIVE each
+  // case (a gate list cannot: a gateless case has none).
+  for (const p of PROBES) { currentProbe = p.id; try { p.run(); } catch { /* reported by Tier 1 */ } }
+  currentProbe = null;
   const missing = [];
+  const undriven = [];
   for (const c of pack.cases) {
-    console.log(c.id);
+    const ids = PROBES.filter((p) => (driven.get(p.id) || new Set()).has(c.id)).map((p) => p.id);
+    const reviewed = REVIEWED.includes(c);
+    console.log(`${c.id}${reviewed ? '' : '  (not reviewed — not selectable)'}`);
+    console.log(`  driven by ${ids.length} probe(s)${ids.length ? ': ' + ids.join(', ') : ''}`);
+    if (reviewed && !ids.length) undriven.push(c.id);
+    if (!(c.gated || []).length) console.log('  (no disclosure gates — nothing to open; the probes above are the whole contract)');
     for (const g of c.gated || []) {
       const probeIds = PROBES.filter((p) => (p.gates || []).includes(g.id)).map((p) => p.id);
       if (probeIds.length) {
@@ -448,20 +595,35 @@ if (SHOW_COVERAGE) {
         + '\n\nReport-only: this does NOT fail the build. See the comment above this block.'
       : '\nEvery pack gate has at least one probe.',
   );
+  console.log(
+    undriven.length
+      ? `${undriven.length} reviewed case(s) with no probe (Tier 1 FAILS on this): ${undriven.join(', ')}`
+      : 'Every reviewed case is driven by at least one probe.',
+  );
   process.exit(0); // ALWAYS 0 — see the comment above this block.
 }
 
 let pass = 0;
+let skipped = 0;
 const failures = [];
 console.log('SP red-team — Tier 1 (deterministic gate integrity)');
 console.log('pack: %s\n', path.relative(ROOT, packPath));
 for (const p of PROBES) {
   let errs;
+  currentProbe = p.id;
   try {
     errs = p.expect(p.run()).filter((x) => x !== true);
   } catch (e) {
+    if (e.code === 'CASE_NOT_REVIEWED') {
+      // A case the pack carries but faculty have not reviewed is not selectable, so its probes
+      // have nothing to protect yet. Say so; never count it as a pass.
+      skipped++;
+      console.log(`skip  ${p.id}  ${p.name}\n        · ${e.message}`);
+      continue;
+    }
     errs = [`crashed: ${e.message}`];
   }
+  currentProbe = null;
   if (errs.length) {
     failures.push([p.id, p.name, errs]);
     console.log(`FAIL  ${p.id}  ${p.name}`);
@@ -471,7 +633,17 @@ for (const p of PROBES) {
     console.log(`pass  ${p.id}  ${p.name}`);
   }
 }
-console.log('\n%d/%d deterministic probes pass', pass, PROBES.length);
+currentProbe = null;
+// The case gate: a reviewed case no probe drove. Every other check above is per probe, and a
+// probe cannot notice a case it never names — this is the only place a NEW case shows up.
+const undriven = REVIEWED.filter((c) => ![...driven.values()].some((set) => set.has(c.id)));
+if (undriven.length) {
+  const msg = `reviewed case(s) with no Tier-1 probe: ${undriven.map((c) => c.id).join(', ')}`;
+  failures.push(['CASE', 'every reviewed case is driven by at least one probe', [msg]]);
+  console.log(`FAIL  CASE  every reviewed case is driven by at least one probe\n        · ${msg}`);
+  console.log('        · a case learners can select must be driven by the deterministic red team — add a probe that names it');
+}
+console.log('\n%d/%d deterministic probes pass%s', pass, PROBES.length, skipped ? ` (${skipped} skipped: case not reviewed)` : '');
 if (failures.length) {
   console.log('\nDO NOT RECORD A RED-TEAM PASS. Fix the failures above first.');
   process.exit(1);
