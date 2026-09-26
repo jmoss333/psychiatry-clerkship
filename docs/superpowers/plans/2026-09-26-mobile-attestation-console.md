@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
-**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 6 (Task 4 report):** the learner frame is absolutely positioned inside `.frame-wrap` so it fills the remaining viewport; the item test pins the frame height and the action bar's position. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
 
 ## Global Constraints
 
@@ -763,8 +763,8 @@ Create `faculty-console/m/index.html`:
   .pill.ok { border-color: var(--ok); color: var(--ok); }
   .item { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   .status { padding: .4rem 1rem; font-size: .85rem; color: var(--muted); display: flex; gap: .5rem; align-items: center; }
-  .frame-wrap { flex: 1; min-height: 0; background: var(--surface); }
-  .frame-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .frame-wrap { flex: 1; min-height: 0; background: var(--surface); position: relative; }
+  .frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
   .frame-note { padding: 1rem; }
   nav.actions { position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
     padding: .6rem .75rem calc(.6rem + var(--safe-b)); display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: .5rem; }
@@ -1087,6 +1087,10 @@ Add inside `test.describe('phone client', …)`:
     await expect(frame).toHaveAttribute('src', /reviewKey=page%3At_mood\.md/);
     await expect(frame).toHaveAttribute('src', /reviewToken=[0-9a-f]{32}/);
     await expect(frame).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+    const box = await frame.boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(0.6 * PHONE.height);            // the learner page fills the screen
+    const actions = await page.getByRole('navigation', { name: 'Review actions' }).boundingBox();
+    expect(actions.y + actions.height).toBeLessThanOrEqual(PHONE.height + 1);  // the action bar stays on screen
     await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
     expect(new URL(page.url()).searchParams.get('item')).toBe('page:t_mood.md');
     await page.getByRole('button', { name: 'What changed' }).click();
