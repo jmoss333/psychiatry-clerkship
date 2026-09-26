@@ -7,11 +7,13 @@ faculty-console/
   index.html                     password gate and unified workspace styles
   app.mjs                        shared queue, preview/editor, sign-off, and conflict workflow
   review-model.mjs               queue, preview-route, deep-link, twin, and eligibility rules
+  m/                             phone client (/m/): index.html, m.mjs, m-model.mjs, manifest
   content-universe.mjs           the exact set of pages and tools the two sites publish
   qbank-rules.mjs                shared question-bank structural checks
   check_pending_visible.mjs      CI invariant: no pending item is unreachable here
   content-universe.test.mjs      universe, slug parity with the builds, the invariant
   console-navigation.test.mjs    deep links, twins, bookmarklet, site routing
+  m-model.test.mjs               phone grouping, auto-advance order, write rows, diff lines
   netlify.toml                   config for this site (publish + functions)
   netlify/functions/attest.mjs   authenticated state reads and commit-on-save API
   netlify/functions/qbank-actions.mjs
@@ -37,6 +39,41 @@ faculty-console/
 
 **The GitHub token never leaves the server.** The browser only ever holds the faculty key (in `sessionStorage`, cleared when the tab closes).
 
+## The phone client (`/m/`)
+
+`m/index.html` + `m/m.mjs` is a phone-first front-end on this same site, so the learner sites'
+`frame-ancestors` allow-list needs no change. Same faculty key (session only), same `/api/attest`,
+same rules: it imports `review-model.mjs` for the queue, preview requests, deep links, twins and
+eligibility, and `m/m-model.mjs` (unit-tested in `m-model.test.mjs`) for grouping by correction,
+auto-advance order, applying the write's `rows`, and diff lines.
+
+- **Queue.** Pages and tools needing review, grouped by the correction (pull request) that changed
+  them, largest first, then *No text change*, then *Also needing review* (the rest, questions
+  included). Each row gives type, site, risk and why it needs review; a count line and a search box
+  sit above.
+- **Item.** The learner page full-screen with the desktop's review token and readiness states
+  (**Retry** on a failure), and **What changed** / **Open in site** / **Attest**. What changed lists
+  the source-file and page-record changes since it was signed, names the correction's pull
+  request (or commit), and links the comparison on GitHub.
+- **Confirm sheet.** The desktop's acknowledgements; one press signs one slug. The content attest
+  write returns `rows` (the rows it wrote, projected as the `GET` projects them), so the phone
+  updates that item in place and never runs the confirming full reload; ledger mode returns no
+  `rows`, so there the phone marks the item reviewed from the 200. A `GET` refresh runs 30 s after
+  the sitting goes quiet. The receipt (commit, rolling PR) rides to the next item in the desktop's
+  order — the twin, then the next page or tool in the same group, then the first pending page or
+  tool — and stays over the queue after the last sign.
+- **Questions** are read-only: **Saved draft** shows the saved revision, and Attest carries the
+  desktop's live-view and saved-revision receipts and its three confirmations. A question with
+  warnings lists them and offers no Attest; sign it on the desktop, which records each
+  acknowledgement.
+
+Editing, the *Attest together* tray, the *Sign everything as it reads today* and *Sign #N* presses (desktop only — the phone signs one slug per press), remember-me and any change to attribution are out of scope.
+Deep links take the desktop's form under `/m/` (`/m/?item=page:<slug>`, `tool:`, `question:`) and
+open the item once unlocked. **Copy link** and the bookmarklet are unchanged and open the desktop
+console, whose *Use the phone console* link (viewports ≤ 700 px) carries the arriving `?item=` to
+`/m/`, so on a phone they open the same item once unlocked. Add it to the home screen from the
+browser's share sheet; `m/manifest.webmanifest` makes it standalone.
+
 ## Faculty review runbook
 
 ### 1. Choose one item
@@ -49,7 +86,16 @@ Use the shared queue's search, item type, review status, category, gate, and dif
 
 **Case-of-the-Week pairs.** Each weekly case ships as an MS3 page and a resident twin built from one registry week. When one is selected, the rail names the other (`Twin: <title> · Needs review | Reviewed`) with **Go to twin**, and attesting one half advances the selection to the twin when it still needs review. That is navigation only. **One press still attests exactly one slug** — attesting both halves in a single action would be a governance change, and the console does not make it.
 
-**Re-sign by change.** When pages you signed have since been edited (they read *Content changed since faculty review on …*), the queue shows a **Re-sign by change** disclosure. Opened, it lists the corrections (pull requests) that changed those pages, largest first, each with its pages, and a *No text change* group for pages whose record or fingerprint scope moved instead. Every page has **Show what #N changed on this page**: the exact words removed and added, including its quiz, key-point, and evidence record. A correction that landed on the day you signed is flagged *you may already have read it*, because a row records only the date. Opening a page from a correction selects it in the ordinary review, and the rail opens **What changed since you signed** (everything since the start of the signing day). After you sign it, the next page from **that** correction opens rather than the next page alphabetically. This is navigation and reading only. **No control in the list signs anything**. Each page is still signed by its own press after its own preview. The list is fetched only when opened (`GET /api/attest?view=changes`, and `?view=diff&slug=…[&sha=…]` per page). Both are read-only: they never freshen or write a branch.
+**Re-sign by change.** When pages you signed have since been edited (they read *Content changed since faculty review on …*), the queue shows a **Re-sign by change** disclosure. Opened, it lists the corrections (pull requests) that changed those pages, largest first, each with its pages, and a *No text change* group for pages whose record or fingerprint scope moved instead. Every page has **Show what #N changed on this page**: the exact words removed and added, including its quiz, key-point, and evidence record. A correction that landed on the day you signed is flagged *you may already have read it*, because a row records only the date. Opening a page from a correction selects it in the ordinary review, and the rail opens **What changed since you signed** (everything since the start of the signing day). After you sign it, the next page from **that** correction opens rather than the next page alphabetically. The list is fetched only when opened (`GET /api/attest?view=changes`, and `?view=diff&slug=…[&sha=…]` per page). Both are read-only: they never freshen or write a branch. Since 2026-09-26 each correction ends with one signing control, **Sign #N** (see below).
+
+### One press, many pages (since 2026-09-26)
+
+A signature is bound to the exact text it approved, so every correction wave voided signatures on text the reviewer had already read. Two presses now carry many pages at once. Both are signed by the server-configured faculty identity only, both send their statement verbatim (the server refuses a press without it), and both return exactly what was signed and what was left out, with the reason.
+
+- **Sign everything as it reads today** (the baseline). Opened, it lists every page and tool that needs a signature — *never signed*, *changed since you signed*, or *signed before fingerprints* — each with its pending reason, plus every draft question that has no warning. Untick anything you have not read. One press signs the rest at today's text, in one commit (git mode) or one ledger append (ledger mode), and attests the ready questions in a second write. It says: *"I have reviewed this content and attest to it as it reads today: it is clinically accurate, supported by its cited evidence, original, and free of protected health information."* Left out, with the reason, and never signed: a page whose first lines still say it is unreviewed, a tool whose own label disagrees, anything without a risk classification, questions with a warning or blocker (attest those one at a time, acknowledging each warning), and questions whose correct answer is the uniquely longest option — the WP-7 length cue that `bin/check_qbank_length_cue.py` pins in every push's pre-push gate (shorten the keyed option in a content change first). In git mode, each signed page's `topic_meta.json` `facultyReview` line follows its row, as the ledger overlay already does.
+- **Sign #N** (in Re-sign by change, after that correction's pages and diffs). One press re-signs every drifted page whose *every* change since its signature is a correction you have signed in this sitting — source files, and the page's quiz/key-points record when that changed too. A page also changed by another correction says so and waits for that one. It says: *"I have reviewed these corrections and attest to every page they changed, as each page reads today."*
+
+A press the server does not answer in time may still have finished: the console reloads the queue and says so. Pressing again is always safe — a signed, current page is never signed twice. The one-page flow above is unchanged. API: `POST {target:'content', mode:'baseline'|'correction', statement, exclude?:[slug], corrections?:['pr:N'|'sha:<12 hex>'], questions?:false}`; preview with `GET ?view=batch&mode=…` (read-only).
 
 The compact **Review sitting** strip keeps the automation visible: it shows saved-draft receipt and batch counts, any reset notice, the most recent automatic batch choice with **Undo batch selection**, and a collapsible ledger of every confirmed repository action in the current sitting. The ledger is scrollable for a long sitting, links the confirmed commit and rolling pull request when available, and flags a pull-request housekeeping failure without calling the confirmed write a failure. This is browser-session context, not a durable approval record; it clears when the console is locked or the tab closes.
 

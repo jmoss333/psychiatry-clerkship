@@ -35,6 +35,7 @@ const PYTHON = process.env.CLERKSHIP_META_PYTHON || 'python3';
 const EXPECTED_ASSETS = [
   ['_prototypes/sp-interview/sp-interview.pack.json', 'sp-interview.pack.json'],
   ['_prototypes/sp-interview/sp-interview.voice.js', 'sp-interview.voice.js'],
+  ['_prototypes/sp-interview/sp-interview.realtime.js', 'sp-interview.realtime.js'],
 ];
 
 // 2026-08 audit WS4 follow-up: check-static-site.mjs §5c hard-fails a built site

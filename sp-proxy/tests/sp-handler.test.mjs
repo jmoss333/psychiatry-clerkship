@@ -515,7 +515,7 @@ test('GET exposes exact reviewed summaries while opening is canonical and provid
     schemaVersion: 1,
     actorModel: MODEL,
     evaluatorModel: MODEL,
-    packVersion: '0.1.0',
+    packVersion: '0.2.0',
     packStatus: 'reviewed',
     // The pack content hash the loader already computed. Exposed so the health
     // contract can tell two packs apart when packVersion cannot -- which is the

@@ -54,7 +54,9 @@ function fixture() {
 }
 function openingFixture(caseId, slug, extraCase = null) {
   const f = fixture();
-  const casePack = extraCase ? {...pack, cases: [...pack.cases, extraCase]} : pack;
+  // The prototype grounds Morgan on the local registry copy; since 2026-09-26 the canonical pack
+  // carries its own Morgan, so the fixture swaps the pack copy for the registry copy by id.
+  const casePack = extraCase ? {...pack, cases: [...pack.cases.filter(item => item.id !== extraCase.id), extraCase]} : pack;
   const caseDef = casePack.cases.find(item => item.id === caseId);
   assert.ok(caseDef, `missing case fixture ${caseId}`);
   const sourceText = caseDef.persona.opening;

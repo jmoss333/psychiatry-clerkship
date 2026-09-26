@@ -153,5 +153,6 @@ test('the SessionStart hook degrades instead of failing', () => {
   assert.match(hook, /probe_egress\.py/, 'the hook should surface the probe');
   assert.match(hook, /\[ -f bin\/probe_egress\.py \]/, 'guard on the script existing');
   assert.match(hook, /CLERKSHIP_SKIP_EGRESS_PROBE/, 'honour the opt-out');
-  assert.match(hook, /timeout \d+ python3 bin\/probe_egress\.py --vitals[^\n]*\|\|/, 'bounded and non-fatal');
+  // `bounded`, the hook's portable time limit: macOS ships no `timeout` (session-vitals.test.mjs).
+  assert.match(hook, /bounded \d+ python3 bin\/probe_egress\.py --vitals[^\n]*\|\|/, 'bounded and non-fatal');
 });
