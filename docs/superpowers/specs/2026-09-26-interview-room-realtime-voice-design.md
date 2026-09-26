@@ -645,11 +645,15 @@ path under the separation rule, so it cannot ride a content PR. The Sim-to-Ward 
 `13_Faculty_Resources/Assessment/encounter_card.md` has no Morgan column: `tests/assessment-pack.test.mjs`
 places only the cases the table names, so it stays green, but mapping Morgan's
 motivational-interviewing items onto the DO-1 rows is a faculty assessment decision, not an
-agent's. A third is a governance-tool gap the review named: a pack-case `facultyReview` born
+agent's. A third was a governance-tool gap the review named: a pack-case `facultyReview` born
 `reviewed` is invisible to `check_governance_separation.py` (it reads the three registries only)
-and unwritable by the console; the three earlier pack rows were born the same way. Recording
-pack rows as registration data, or teaching the classifier the pack, is an owner decision for a
-governance PR.
+and unwritable by the console; the three earlier pack rows were born the same way. **Recorded**
+as decision `pack-case-review-is-registration` (`decisions.json`, drafted in the governance
+follow-up PR #837 and decided by the owner's merge of it): the pack is an `extraSources` entry of
+the `sp-interview.html` ledger row, so its bytes are inside that row's `contentHash` and any case
+edit drifts the row to pending until the console re-attests it; the per-case block is
+registration, not a promotion, and the classifier is not taught the pack. The same PR made the
+red-team runner derive its cases from the pack and fail on a reviewed case no probe drives.
 
 **Second review pass (same day).** Beyond the four amended lines above, the pass re-anchored two
 screen lines on the inventory (`si_direct` open: losing Sunday breakfast with Maya, not "Maya
