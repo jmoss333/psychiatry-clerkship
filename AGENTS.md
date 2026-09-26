@@ -52,6 +52,28 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   nor any `CW_SITE`/`CW_PAGE` tag; `check-static-site.mjs` §12 treats that as a clean, gated build,
   not a failure.
 
+## Coordinating with other sessions
+Claude Code, Codex and cloud sessions work this repo at once through ~100 linked worktrees, and
+most wasted work here has been one session not seeing another.
+- **Look before you start.** `python3 bin/coordination_report.py --prs` lists who else is
+  active, which of your paths another worktree or open PR also changes, and work sitting
+  uncommitted or unpushed; the SessionStart vitals print its short form. It derives all of it
+  from git (no claims file to keep), is report-only, and says `PARTIAL` rather than clear when a
+  budget cut the sweep. Without `--prs` it cannot tell a squash-merged branch landed once `main`
+  has moved past it, so offline overlaps with an old branch are probably noise.
+- **Claim with a draft PR on your first push**, not a note — the one claim Codex, a cloud
+  session and the owner can all see — and `git worktree lock --reason "<session>" .` so no
+  cleanup pass removes your worktree under you (`remove`/`prune` refuse a locked tree).
+- **No work lives only on one disk past its session.** Commit and push (draft) before stopping;
+  the report's "at risk" list is the alternative (#691 rescued commits that were on no remote).
+  It never deletes anything: triaging that list is the owner's call.
+- **Order content merges around an open attestation sitting.** While an `attest/pending` PR is
+  open, a content PR that edits a page in it lands after it, or says in its body that it forces
+  a re-sign — #813 and its siblings drifted 22 pages the owner had signed that same day.
+- **A handoff records the SHA it was verified at, and the receiver re-verifies against current
+  `main` before acting** — the #626 handoff prescribed committing 35 MB past LFS and writing
+  attestations. `13_Faculty_Resources/Handoffs/STATUS_LATEST.md` is a superseded July snapshot.
+
 ## Validate & test
 ```bash
 # Python contract validators (also run first inside build_and_check.sh and in CI)
