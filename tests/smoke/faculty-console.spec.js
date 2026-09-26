@@ -2578,6 +2578,10 @@ test.describe('phone client', () => {
     await expect(frame).toHaveAttribute('src', /reviewKey=page%3At_mood\.md/);
     await expect(frame).toHaveAttribute('src', /reviewToken=[0-9a-f]{32}/);
     await expect(frame).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+    const box = await frame.boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(0.6 * PHONE.height);
+    const actions = await page.getByRole('navigation', { name: 'Review actions' }).boundingBox();
+    expect(actions.y + actions.height).toBeLessThanOrEqual(PHONE.height + 1);   // the bar stays on screen
     await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
     expect(new URL(page.url()).searchParams.get('item')).toBe('page:t_mood.md');
     await page.getByRole('button', { name: 'What changed' }).click();
