@@ -356,3 +356,55 @@ test('ledger mode without a usable signing key refuses to start', async () => {
     assert.equal(payload.error.code, 'server_configuration');
   }
 });
+
+/* One press, many pages (2026-09-26) in ledger mode: the same baseline, written as one append
+   of one signed line per page, then the ready questions as a second append. topic_meta is not
+   written: the build's overlay already makes each page's facultyReview follow its signed line. */
+
+const BASELINE_STATEMENT = 'I have reviewed this content and attest to it as it reads today: it is '
+  + 'clinically accurate, supported by its cited evidence, original, and free of protected health '
+  + 'information.';
+
+test('a ledger baseline is one append of one signed line per page, and ready questions ride along', async () => {
+  const { secret, signer } = newSigner();
+  const fx = fixture(signer);
+  const mock = githubMock(fx);
+  const { status, payload } = await call(mock, env(secret), 'POST',
+    { target: 'content', mode: 'baseline', statement: BASELINE_STATEMENT });
+  assert.equal(status, 200, JSON.stringify(payload));
+  assert.equal(payload.updated, 2);
+  assert.deepEqual(payload.signed.map(item => [item.slug, item.was]).sort(), [['mse-tool', 'drifted'], ['t_mood.md', 'pending']]);
+  assert.equal(payload.ledger.seq, 2);
+  assert.equal(payload.questions.updated, 1);
+  assert.equal(payload.facultyReview, undefined, 'ledger mode writes nothing but the ledger');
+  assert.equal(mock.state.puts.length, 2, 'the pages in one append, the questions in a second');
+  assert.match(mock.state.puts[0].body.message, /^ledger #1–2: baseline sign-off, 2 content item\(s\) by Joshua Moss, MD$/);
+
+  const { events } = verifyLedger(mock.state.ledger, keysFor(signer));
+  assert.deepEqual(events.map(event => [event.kind, event.id]), [
+    ['content', 't_mood.md'], ['content', 'mse-tool'], ['question', 'qb_moo_900'],
+  ]);
+  for (const event of events.slice(0, 2)) {
+    assert.equal(event.contentHash, expectedDigest(fx.files, fx.sources, event.id));
+    assert.equal(event.by, 'Joshua Moss, MD');
+    assert.equal(event.base, MAIN_HEAD);
+  }
+  // Read back through the overlay: everything is reviewed and current.
+  const read = await call(mock, env(secret), 'GET');
+  assert.deepEqual(read.payload.items.map(item => [item.slug, item.status, item.stale]), [
+    ['t_mood.md', 'reviewed', undefined], ['mse-tool', 'reviewed', undefined],
+  ]);
+});
+
+test('a ledger baseline leaves out a page whose source says it is unreviewed, and signs the rest', async () => {
+  const { secret, signer } = newSigner();
+  const mock = githubMock(fixture(signer, { pageBanner: true }));
+  const { status, payload } = await call(mock, env(secret), 'POST',
+    { target: 'content', mode: 'baseline', statement: BASELINE_STATEMENT, questions: false });
+  assert.equal(status, 200, JSON.stringify(payload));
+  assert.deepEqual(payload.signed.map(item => item.slug), ['mse-tool']);
+  assert.deepEqual(payload.excluded.map(item => item.slug), ['t_mood.md']);
+  assert.match(payload.excluded[0].reason, /first lines still say it is unreviewed/);
+  const { events } = verifyLedger(mock.state.ledger, keysFor(signer));
+  assert.deepEqual(events.map(event => event.id), ['mse-tool']);
+});
