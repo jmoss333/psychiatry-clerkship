@@ -510,6 +510,7 @@ test('view-week previews only; setup-week and set-week return Monday-aligned wri
   const browse = F.fdDispatch({ 'data-fd-week': '0' }, weekContext, roleContext);
   assert.deepEqual(browse.effect, { type: 'browse-without-rotation' });
   assert.equal(browse.patch.tab, 'library');
+  assert.equal(browse.patch.libraryView, 'full', '"just browse" opens the whole Library, not The Essentials');
   assert.equal(browse.patch.week, null);
   assert.equal(browse.patch.viewWeek, 1);
   for (const attr of ['data-fd-week', 'data-fd-view-week', 'data-fd-setweek']) {
@@ -3965,8 +3966,11 @@ test('Library view actions close overlays, reject invalid values, and explicit L
   assert.deepEqual(F.fdDispatch({'data-fd-library-view':'invalid'}, {}, initial), {patch:{},route:null,effect:null});
   const kit = F.fdDispatch({'data-fd-tab':'library'}, {search:'?tab=library&library=full'}, {...initial,libraryView:'full'});
   assert.equal(kit.patch.libraryView, 'essentials'); assert.equal(kit.route, '?tab=library');
-  const browse = F.fdDispatch({'data-fd-week':'0'}, {index:FOUR_INDEX,search:'?library=full'}, initial);
-  assert.equal(browse.patch.libraryView, 'essentials'); assert.equal(browse.route, '?tab=library');
+  const browse = F.fdDispatch({'data-fd-week':'0'}, {index:FOUR_INDEX,search:''}, initial);
+  assert.equal(browse.patch.libraryView, 'full'); assert.equal(browse.route, '?tab=library&library=full');
+  // Idempotent over a route that already carries the full view: one library=full, not two.
+  const again = F.fdDispatch({'data-fd-week':'0'}, {index:FOUR_INDEX,search:'?library=full'}, initial);
+  assert.equal(again.route, '?tab=library&library=full');
 });
 
 test('the Everything tab is an alias for the full Library view, not a new tab state', () => {

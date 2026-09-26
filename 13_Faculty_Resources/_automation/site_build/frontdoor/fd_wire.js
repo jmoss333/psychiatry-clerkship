@@ -392,13 +392,16 @@ function fdDispatch(attrs, context, state){
          undone on the very next render: fdLiveState re-derives the week from cw_rotation_start,
          so a returning learner who chose browse kept seeing the week they had left. The effect
          removes that key and browsing:true is persisted (FD_KEYS) so a reload on any tab still
-         resolves to the app rather than asking for a week again. */
+         resolves to the app rather than asking for a week again.
+         It lands on the full Library ("Everything"), not The Essentials (owner, 2026-09-26):
+         a learner with no rotation week has no week filter to follow, so the curated,
+         week-scoped selection is the wrong first view -- browsing means everything. */
       var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
-      patch={week:null,tab:'library',libraryView:'essentials',kitSection:'all',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
+      patch={week:null,tab:'library',libraryView:'full',kitSection:'all',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
       if(s.setupFrom) patch.setupFrom=null;
       return {
         patch:patch,
-        route:fdRouteForTab('library',c.search),effect:{type:'browse-without-rotation'}
+        route:fdRouteForTab('library',c.search,'full'),effect:{type:'browse-without-rotation'}
       };
     }
     if(n===null||!fdDispatchHasWeek(c,n)) return {patch:{},route:null,effect:null};
