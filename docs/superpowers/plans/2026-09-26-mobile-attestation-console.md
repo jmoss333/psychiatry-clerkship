@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
-**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 7 (Task 4 review):** What changed renders page-record changes and the correction's PR/commit context (links through `safeHttps`); Task 5 reads the preview status from `state.preview` (`uiWithPreview()`), resets acknowledgements on a status change, moves focus into sheets (Escape closes), keeps one `role=status` per screen, refreshes in place, and pins the silent-refresh-offline path. **Revision 6 (Task 4 report):** the learner frame is absolutely positioned inside `.frame-wrap` so it fills the remaining viewport; the item test pins the frame height and the action bar's position. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 8 (Task 5 report):** the last sign of a sitting keeps its receipt on the queue screen; a sign error is shown inside the open confirm sheet. **Revision 7 (Task 4 review):** What changed renders page-record changes and the correction's PR/commit context (links through `safeHttps`); Task 5 reads the preview status from `state.preview` (`uiWithPreview()`), resets acknowledgements on a status change, moves focus into sheets (Escape closes), keeps one `role=status` per screen, refreshes in place, and pins the silent-refresh-offline path. **Revision 6 (Task 4 report):** the learner frame is absolutely positioned inside `.frame-wrap` so it fills the remaining viewport; the item test pins the frame height and the action bar's position. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
 
 ## Global Constraints
 
@@ -1460,6 +1460,7 @@ function sheetConfirm(item) {
       : ack('ack-separate', 'I reviewed it in the learner site tab', state.ui.separateTabReviewed, v => setUi({ separateTabReviewed: v }), { disabled: !state.ui.retryAttempted }),
     ack('ack-accuracy', 'Accurate and appropriate for a third-year student', state.ui.accuracy, v => setUi({ accuracy: v })),
     ack('ack-interactions', 'Links, media and interactions work', state.ui.interactions, v => setUi({ interactions: v })),
+    state.message ? h('p', { class: 'field-error', role: 'alert', text: state.message }) : null,
     h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign', disabled: !eligibility.eligible || state.pending, onClick: () => { void signContent(item); } })),
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
@@ -1486,7 +1487,7 @@ async function signContent(item) {
     state.sheet = null; state.pending = false;
     const nextKey = nextAfterSign(item.key, before, sections);
     if (nextKey && state.items.some(i => i.key === nextKey)) { const receipt = state.receipt; openItem(nextKey); state.receipt = receipt; renderItem(); }
-    else { state.screen = 'item'; renderItem(); }
+    else closeItem();   // the signed item has left the queue; closeItem() keeps state.receipt and the queue shows it
   } catch (error) {
     state.pending = false;
     if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signContent(item); }; renderGate(error.message); return; }
@@ -1502,6 +1503,8 @@ Also in this task (small edits to Task 4's code, same file):
 - In `handlePreviewStatus`, after `preview.status = event.data.status;` add `resetAcks();` — the desktop clears acknowledgements whenever the preview status changes, so a page that turned *Not found* after the reviewer ticked *complete item reviewed* cannot be signed on a stale tick. `retryPreview()` keeps `retryAttempted`.
 - `openSheet(name)`: after `renderItem()`, move focus into the sheet: `const el = document.querySelector('#item-sheet .sheet'); if (el) { el.setAttribute('tabindex', '-1'); el.focus(); }`; add once at boot `window.addEventListener('keydown', event => { if (event.key === 'Escape' && state.sheet) closeSheet(); });`.
 - The receipt `div.receipt` carries `aria-live="polite"` and **no** `role="status"`, so the item screen keeps exactly one `role=status` element (`#item-status`); tests locate the receipt by its text.
+- **The last sign of a sitting keeps its receipt:** `closeItem()` keeps `state.receipt` (only `openItem()` clears it) and `renderQueue()` renders it, when present, as the same `div.receipt[aria-live=polite]` markup above the counts line. Test: a `contentState` with a single pending page, sign it, and assert the queue shows `Needs review`, `Signed: <title>` and `Nothing needs review.`.
+- **A sign error is visible with the sheet open:** the confirm sheets render `state.message` as `p.field-error[role=alert]` directly above **Sign** when non-empty (the `#item-message` copy stays). Test: stub the POST to answer 409 `github_conflict` once, then fall back; after Sign the dialog shows `The branch moved while signing. Press Sign again.` and Sign is enabled; the second press shows the receipt.
 - A silent refresh (`load({ silent: true })`) must update in place: on the queue screen refresh `#queue-groups` and the counts line rather than remounting (search focus survives); on the item screen call `refreshItem()`; when the refresh fails offline, `render()` already reports in place.
 
 - [ ] **Step 4: Run to verify they pass**
@@ -1618,6 +1621,7 @@ function sheetConfirmQuestion(item) {
     ack('ack-clinical', 'Clinically accurate', state.ui.clinical, v => setUi({ clinical: v })),
     ack('ack-evidence', 'Evidence and rationale hold', state.ui.evidence, v => setUi({ evidence: v })),
     ack('ack-phi', 'Original wording, no patient information', state.ui.originalityAndNoPhi, v => setUi({ originalityAndNoPhi: v })),
+    state.message ? h('p', { class: 'field-error', role: 'alert', text: state.message }) : null,
     h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign', disabled: warnings.length > 0 || !eligibility.eligible || state.pending, onClick: () => { void signQuestion(item); } })),
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
@@ -1643,7 +1647,7 @@ async function signQuestion(item) {
     state.sheet = null; state.pending = false;
     const nextKey = nextAfterSign(item.key, before, sections);
     if (nextKey && state.items.some(i => i.key === nextKey)) { const receipt = state.receipt; openItem(nextKey); state.receipt = receipt; renderItem(); }
-    else renderItem();
+    else closeItem();   // keeps state.receipt; the queue shows it
   } catch (error) {
     state.pending = false;
     if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signQuestion(item); }; renderGate(error.message); return; }
