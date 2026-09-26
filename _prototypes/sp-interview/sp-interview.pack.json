@@ -2176,7 +2176,18 @@
       "title": "Morgan — What alcohol gives and takes",
       "topic": "Motivational interviewing: alcohol ambivalence",
       "setting": "Voluntary addiction-medicine consultation on an inpatient medical service after stabilization of an alcohol-related fall.",
-      "difficulty": "developing",
+      "difficulty": {
+        "supported": {
+          "coverageSidebar": true,
+          "hints": true,
+          "guardedShift": 0
+        },
+        "realistic": {
+          "coverageSidebar": false,
+          "hints": false,
+          "guardedShift": 1
+        }
+      },
       "estMinutes": 10,
       "skillTags": [
         "motivational interviewing",
@@ -2634,9 +2645,11 @@
         },
         "si_euphemism": {
           "guarded": [
+            "If you're asking whether I'd hurt myself — no. Tired of the mornings, yes. Not that.",
             "If you mean on purpose — no. The fall wasn't that. It was a bad night and the stairs."
           ],
           "open": [
+            "Some mornings I'd have liked to skip the day. Not to be gone — to not be hungover. If you're asking something more than that, ask it plainly.",
             "Hurt myself? Not on purpose, no. The drinking has hurt me, if that's what you're getting at — but I wasn't trying to."
           ]
         }
@@ -2747,10 +2760,10 @@
         "c_autonomy": "Make clear that Morgan keeps the choice.",
         "c_values": "Ask what Morgan most wants to protect in daily life.",
         "c_change": "Ask what has worked before and what, if anything, they might try next.",
-        "c_si": "You haven't asked about suicide. Morgan was admitted after a fall while drinking and is minimising — ask plainly, in Morgan's words, about thoughts of killing themselves, even if you expect a no."
+        "c_si": "You haven't asked about suicide. Morgan was admitted after a fall while drinking and answers briefly — ask plainly, in Morgan's words, about thoughts of killing themselves, even if you expect a no."
       },
       "criticalMiss": {
-        "partial": "Suicide was only approached sideways. Morgan answered the narrow question you asked and nothing more. A patient who minimises after an alcohol-related fall is exactly who gets missed — ask plainly.",
+        "partial": "Suicide was only approached sideways. Morgan answered the narrow question you asked and nothing more. A patient who is matter-of-fact after an alcohol-related fall is exactly who gets missed — ask plainly.",
         "missed": "Suicide was never asked about. Ambivalence about drinking is not the only risk in the room: a fall on the stairs while drinking, the foggy mornings, and living alone are each a reason to ask. A likely no is still a question you ask, in plain words, every admission.",
         "rehearse": "“Have you had thoughts of killing yourself?”",
         "ref": "→ pg_interview.md · asking about suicide directly, in plain language",

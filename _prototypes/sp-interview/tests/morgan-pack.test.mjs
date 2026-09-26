@@ -41,6 +41,9 @@ function withoutScreen(caseDef) {
   // The focused case recorded self-harm history as "not established"; the uniform screen
   // establishes it (negative), so that one limit is part of the screen delta.
   copy.localGrounding.informationLimits.safety = localMorgan.localGrounding.informationLimits.safety;
+  // The local registry labels difficulty ("developing"); the pack's engine reads a per-mode object
+  // (difficulty.realistic.guardedShift in the offline mock), so the pack copy takes the shared shape.
+  copy.difficulty = localMorgan.difficulty;
   return copy;
 }
 
@@ -79,6 +82,21 @@ test('the screen uses the pack-wide patterns: passive and euphemism identical to
   assert.ok(ids.indexOf('si_euphemism') < ids.indexOf('confront_label'));
 });
 
+test('the pack copy carries the engine difficulty object every other case has (the offline mock reads it in Realistic mode)', () => {
+  assert.deepEqual(packMorgan.difficulty, dana.difficulty);
+  assert.equal(typeof localMorgan.difficulty, 'string', 'the local registry keeps its label');
+});
+
+test('the euphemism replies fit every stem the intent fires on, not only "hurt yourself"', () => {
+  // si_euphemism also matches "dark thoughts", "disappear" and a bare "what's the point"; the offline
+  // mock serves variants in order, so the FIRST guarded and open lines must read naturally after any
+  // of them, and every line still answers only the narrow question (D12).
+  const reply = packMorgan.responses.si_euphemism;
+  assert.match(reply.guarded[0], /tired of the mornings/i);
+  assert.match(reply.open[0], /ask it plainly/i);
+  for (const line of [...reply.guarded, ...reply.open]) assert.doesNotMatch(line, /\bsuicid|kill/i, 'a euphemism reply never upgrades the question');
+});
+
 test('every screen intent has an in-character, rapport-banded, negative reply; nothing is a dose or a crisis number', () => {
   for (const id of SCREEN_INTENTS) {
     const reply = packMorgan.responses[id];
@@ -110,6 +128,8 @@ test('c_si is critical with the D12 partial-credit wiring; the coach hint and de
   });
   assert.equal(packMorgan.checklist.filter((c) => c.critical).length, 1, 'one critical item');
   assert.match(packMorgan.hints.c_si, /killing themselves/);
+  // The case penalises labels (confront_label lowers rapport); the coaching must not label Morgan either.
+  assert.doesNotMatch(JSON.stringify([packMorgan.hints.c_si, packMorgan.criticalMiss]), /minimi[sz]/i);
   for (const key of ['partial', 'missed', 'rehearse', 'ref', 'reframe']) {
     assert.equal(typeof packMorgan.criticalMiss[key], 'string');
     assert.ok(packMorgan.criticalMiss[key].length > 10);

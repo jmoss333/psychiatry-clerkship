@@ -462,8 +462,12 @@ function computeRubric(s,cov){
   var direct=!!s.covered['si_direct'], euph=!!s.covered['si_euphemism'], passive=!!s.covered['si_passive'];
   var badFlags=flagsAll.filter(function(f){return f!=='ooc_attempt';}).length;
   r.technique=(direct&&badFlags===0&&s.covered['open_invite'])?'observed':(direct||euph||passive)?'partial':'missed';
-  var org=(s.covered['greeting_agenda']?1:0)+(s.covered['summary_close']?1:0);
-  r.organization=org===2?'observed':org===1?'partial':'missed';
+  /* Organization is the case's own organization-category core intents (an opening and a close):
+     greeting_agenda + summary_close for Dana, Marcus and Ray; greeting_agenda + next_step for Morgan,
+     whose MI close is a next step rather than a summary. Same grades for the first three as before. */
+  var orgItems=s.caseDef.intents.filter(function(i){return i.category==='organization'&&i.coverage==='core';});
+  var org=orgItems.filter(function(i){return s.covered[i.id];}).length;
+  r.organization=org>=2?'observed':org===1?'partial':'missed';
   return r;
 }
 function buildNarrative(s,cov,rub){

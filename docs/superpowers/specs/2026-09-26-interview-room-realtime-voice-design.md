@@ -601,8 +601,19 @@ a **critical** `c_si` (the owner's choice: screen every inpatient plainly, a lik
 coach hint and the critical-miss debrief text. That is new authored content on an attested case.
 The attestation validator (`validate_attestation_consistency.py`, run before every build) forbids a
 non-reviewed case inside a reviewed pack, so "pending until re-attested" is not a state the repo
-can hold: the owner read the lines and attested them on 2026-09-26, and the pack row carries that
-date. Every fact in the lines is from Morgan's own inventory (the stairs at home after drinking,
+can hold; the alternative was to hold Morgan out of the pack until an owner-authored record
+existed, and the owner chose inclusion. **Provenance.** The attestation was given in the Claude Code
+session that built this PR, on 2026-09-26, as an in-chat decision after the authored lines were
+presented. A pack-case `facultyReview` block has no console path and no `contentHash`, so nothing
+in the repository binds the row to the text — the shape the ledger's hash rule was built for, one
+level down — which is why the lines are frozen from this PR on. The same day's review pass then
+amended text the owner had read: `hints.c_si` and `criticalMiss.partial` no longer call Morgan
+"minimising" (the case authors candour, and its own `confront_label` flag penalises that frame),
+and `si_euphemism` gained one guarded and one open variant that answer the dark-thoughts and
+disappear stems. The row keeps the 2026-09-26 date; the durable record of the owner's re-read of
+the **final** text is PR #821, whose body lists every amended line for his approval. If the lines
+change again, the row is re-attested again — a pack-case row is treated like a ledger row even
+though no tool enforces it. Every fact in the lines is from Morgan's own inventory (the stairs at home after drinking,
 foggy mornings, Maya, living alone); the focused case's "self-harm history not established" limit
 becomes "authored negative". His speech profile takes the pack's draft shape (the pack's speech
 engine is draft, so no case may carry a reviewed profile, and the cadence vocabulary is closed);
@@ -611,4 +622,29 @@ the spoken room resolves his voice from the audition table (Marin) and his deliv
 `_prototypes/sp-interview/tests/morgan-pack.test.mjs` pins the exact delta between the pack copy and
 the local copy the faculty preview still imports; any other divergence is a finding. The pack's
 `EXPECTED_CASE_COUNT` is 4 and the learner-filter snapshot lists four eligible cases.
+
+**A known limit of the uniform patterns on a fall case (2026-09-26 review).** The pack-wide
+`si_euphemism` and `si_passive` patterns were written for Dana, Marcus and Ray, none of whom is
+admitted after an injury. On Morgan two ordinary questions trip them: *"How badly did you hurt
+yourself?"* (a question about the fall) matches `si_euphemism`, and *"You'd rather not wake up
+feeling like that?"* (a reflection about hangovers) matches `si_passive`. Neither produces a wrong
+reply — Morgan's `si_euphemism` lines are written so the first variant answers the fall reading
+(*"If you mean on purpose — no. The fall wasn't that."*) and the passive lines answer the mornings
+reading — and neither awards `c_si`, because only `si_direct` clears the critical item; the cost is
+that a learner who asked about the fall and never asked about suicide sees "asked only indirectly"
+(partial) instead of "never asked" (missed). The review considered forking Morgan's patterns and
+kept the uniform set on purpose: D3/D12/D13 are one rule across the pack, pinned by the phrasing
+test, and a per-case carve-out is the drift that rule exists to prevent. **The fix, if the owner
+wants one, is a pack-wide change** — a negative lookbehind that exempts injury and hangover
+contexts from the two indirect intents — made once and re-run through the phrasing test, not a
+Morgan-only edit. `_prototypes/sp-interview/tests/morgan.test.js` pins the current behaviour (a
+withdrawal question credits nothing under `c_si`; euphemism-only and passive-only interviews are
+partial; a complete MI interview with no screen is a critical miss). Two follow-ups are left for
+their own PRs. `bin/redteam-offline.mjs` still enumerates three cases by hand and is a governance
+path under the separation rule, so it cannot ride a content PR. The Sim-to-Ward crosswalk in
+`13_Faculty_Resources/Assessment/encounter_card.md` has no Morgan column: `tests/assessment-pack.test.mjs`
+places only the cases the table names, so it stays green, but mapping Morgan's
+motivational-interviewing items onto the DO-1 rows is a faculty assessment decision, not an
+agent's.
+
 

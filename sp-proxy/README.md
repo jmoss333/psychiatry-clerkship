@@ -271,8 +271,14 @@ Netlify UI or provider-console change made by the owner, and the route stays dar
    (`GET /api/sp/realtime` with the passcode) must report `enabled:true` and the reviewed cases
    with a voice — Dana, Marcus, Ray and Morgan. Morgan joined the pack on 2026-09-26 with the
    uniform suicide screen (`si_direct` / `si_passive` / `si_euphemism`, a critical `c_si`) the
-   pack's D3/D12 rule requires of every case; the owner attested those lines the same day, which
-   is the only state the attestation validator allows a case in a reviewed pack to have. His voice
+   pack's D3/D12 rule requires of every case. The owner attested those lines on 2026-09-26 in the
+   Claude Code session that built the PR — an in-chat decision, not a console attestation: a
+   pack-case `facultyReview` block has no console path and no `contentHash`, so nothing binds the
+   row to the text and the lines are frozen from that PR on. The validator forbids a non-reviewed
+   case in a reviewed pack, so the alternative was to hold Morgan out of the pack until an
+   owner-authored record existed; the owner chose inclusion. A review pass then amended two coach
+   lines and added two `si_euphemism` variants; the PR body lists every amended line, and the
+   owner's approval there is the durable record of his re-read of the final text. His voice
    is the audition table's Marin and his delivery the faculty preview's portrayal line
    (`REALTIME_DELIVERY`). The Morgan-and-Maya family visit is not a
    realtime case at all yet: the learner tool shows one door card to the faculty preview
