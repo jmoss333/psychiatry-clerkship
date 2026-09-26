@@ -240,6 +240,20 @@
       "revisitTrigger": "faculty ruling on the c_si proposal family",
       "revisitBy": "2027-03-31",
       "governs": []
+    },
+    {
+      "id": "pack-case-review-is-registration",
+      "title": "A pack case's facultyReview block is registration; the attestation of record for pack content is the sp-interview.html ledger row",
+      "status": "active",
+      "decided": "2026-09-26",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "PR #837 (the governance follow-up to #821): drafted by Claude, decided by the owner's merge — an agent may propose a governance decision, never make one. Design §18 of docs/superpowers/specs/2026-09-26-interview-room-realtime-voice-design.md names the gap and defers it to that PR.",
+      "note": "The Interview Room pack (_prototypes/sp-interview/sp-interview.pack.json) is an extraSources entry of the sp-interview.html row in reviewed.json, so its bytes are inside that row's contentHash: a case added or edited drifts the row to pending on every surface until the faculty console re-attests it. The per-case facultyReview blocks inside the pack are therefore registration data — they decide which cases the tools and the proxy offer (validate_attestation_consistency.py forbids a non-reviewed case in a reviewed pack, so a case enters reviewed in the content PR that adds it, with the owner's read recorded on that PR) — and not a promotion under bin/check_governance_separation.py, which reads reviewed.json, topic_meta.json and question_bank.json only. A content PR may write a pack block; the console cannot, and never will. The claim of record for pack content is the ledger row's re-attestation, never the pack block. The classifier is named in governs for the rule it deliberately lacks; attestation_hash.py (the extraSources loop that puts the pack inside the row's contentHash) and validate_attestation_consistency.py (the rule that forces a pack case in a reviewed pack to read reviewed or attested) carry the marker for the mechanics this decision rests on. Revisit if the pack ever stops being an extraSource of the tool's row.",
+      "governs": [
+      "bin/check_governance_separation.py",
+      "13_Faculty_Resources/_automation/attestation_hash.py",
+      "13_Faculty_Resources/_automation/validate_attestation_consistency.py"
+    ]
     }
   ]
 }

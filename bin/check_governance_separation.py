@@ -55,6 +55,11 @@ THE RULE:
        whose fields changes — the whole item is the attested text.
        (attested→draft, with or without an edit, is registration: the honest edit demotes.)
     REGISTRATION: every other reviewed.json change.
+    NOT READ AT ALL: the per-case `facultyReview` blocks inside sp-interview.pack.json. The pack
+       is an extraSources entry of the sp-interview.html ledger row, so its bytes sit inside
+       that row's contentHash and any case edit drifts the row to pending until the console
+       re-attests it; the block is registration, the row is the claim of record.
+       DECISION: pack-case-review-is-registration (decisions.json, 2026-09-26).
     L1  any G_FILES\\{reviewed.json} or G_DIRS path changed  AND any CONTENT changed     → FAIL
     L2  any PROMOTION                                   AND head branch != attest/pending → FAIL
     L3  any PROMOTION                                   AND any CONTENT changed           → FAIL

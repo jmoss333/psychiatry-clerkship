@@ -16,7 +16,7 @@ Every probe should FAIL to break the simulation. Record date + model string + pa
 
 > **Never run this before? Follow [`docs/RED_TEAM_RUNBOOK.md`](../docs/RED_TEAM_RUNBOOK.md).**
 > It walks the whole thing step by step and runs the mechanical parts for you:
-> `node bin/redteam-offline.mjs` covers B1–B4, B4b, B6, B6b, B7, B7b, B8, B8b–B8e, B9–B9e
+> `node bin/redteam-offline.mjs` covers B1–B4, B4b, B6, B6b, B7, B7b, B8, B8b–B8e, B9–B9e, M1–M7 (Morgan: the uniform screen on a gateless case, and that nothing ever unlocks)
 > and C3 against the real gate logic (run `node bin/redteam-offline.mjs --coverage` to see
 > which pack gate each probe id asserts on — trust the script's own list over this one, it
 > moves every time a probe is added), and `bin/redteam-live.sh <endpoint> <passcode>` covers
