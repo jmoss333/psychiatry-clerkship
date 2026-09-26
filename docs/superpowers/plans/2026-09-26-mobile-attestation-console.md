@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children.
+
 ## Global Constraints
 
 - Every file under `faculty-console/` is a **governance path** (`bin/check_governance_separation.py`): this work ships in one PR with **no content files, no `reviewed.json`, no `topic_meta.json`, no `question_bank.json`**. Test files under `tests/` (outside `tests/maintenance/`) are neutral and may ride along.
@@ -101,17 +103,17 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
 
 ```js
 test('rows in the attest response carry only the projected fields, never the hash or note', async () => {
-  const mock = createGithubMock({ files: governedFiles() });
+  const mock = createGithubMock();   // defaultFiles(): mse-tool is pending, t_mood.md already reviewed (a no-op)
   const handler = handlerWith(mock);
   const response = await handler(apiRequest('POST', {
-    body: { target: 'content', changes: { 't_mood.md': true }, reasons: {} },
+    body: { target: 'content', changes: { 'mse-tool': true }, reasons: {} },
   }));
   const payload = await response.json();
   assert.equal(response.status, 200);
   assert.equal(payload.updated, 1);
-  assert.deepEqual(Object.keys(payload.rows), ['t_mood.md']);
-  assert.deepEqual(Object.keys(payload.rows['t_mood.md']).sort(), ['at', 'by', 'reason', 'risk', 'status']);
-  assert.equal(payload.rows['t_mood.md'].status, 'reviewed');
+  assert.deepEqual(Object.keys(payload.rows), ['mse-tool']);
+  assert.deepEqual(Object.keys(payload.rows['mse-tool']).sort(), ['at', 'by', 'reason', 'risk', 'status']);
+  assert.equal(payload.rows['mse-tool'].status, 'reviewed');
   assert.equal(JSON.stringify(payload).includes('contentHash'), false);
   assert.equal(JSON.stringify(payload).includes('claimsHash'), false);
 });
@@ -283,7 +285,7 @@ test('nextAfterSign: twin first, then the same group, then the next pending page
   assert.equal(nextAfterSign('page:cotw_20260831_catatonia_ms3.md', items, sections), 'page:cotw_20260831_catatonia_res.md');
   assert.equal(nextAfterSign('page:t_mood.md', items, sections), 'page:t_sud.md');
   assert.equal(nextAfterSign('page:t_sud.md', items, sections), 'page:t_mood.md');   // wraps within the group
-  assert.equal(nextAfterSign('tool:mse.html', items, sections), 'page:t_mood.md');   // falls through to the first pending page/tool
+  assert.equal(nextAfterSign('tool:mse.html', items, sections), 'page:cotw_20260831_catatonia_ms3.md');   // falls through to the first pending page/tool in sorted order
   const onlyQuestion = items.filter(i => i.type === 'question' || i.key === 'tool:mse.html');
   assert.equal(nextAfterSign('tool:mse.html', onlyQuestion, groupQueue(onlyQuestion, null)), null);
 });
@@ -783,7 +785,7 @@ function h(tag, attrs = {}, children = []) {
     else if (value === true) node.setAttribute(name, '');
     else node.setAttribute(name, String(value));
   }
-  for (const child of Array.isArray(children) ? children : [children]) {
+  for (const child of (Array.isArray(children) ? children : [children]).flat(Infinity)) {
     if (child === null || child === undefined || child === false) continue;
     node.append(child instanceof Node ? child : document.createTextNode(String(child)));
   }
@@ -1086,13 +1088,14 @@ async function loadDiff(item) {
   renderItem();
 }
 function sheetChanged(item) {
-  if (state.diff === null) { void loadDiff(item); }
-  const lines = state.diff && !state.diff.error ? diffLines(state.diff) : [];
+  if (state.diff === null) { state.diff = { loading: true }; void loadDiff(item); }
+  const loading = state.diff?.loading === true;
+  const lines = state.diff && !state.diff.error && !loading ? diffLines(state.diff) : [];
   return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'What changed since you signed' }, [
     h('h2', { text: 'What changed since you signed' }),
-    state.diff === null ? h('p', { role: 'status', text: 'Loading the changes…' }) : null,
+    loading ? h('p', { text: 'Loading the changes…' }) : null,
     state.diff?.error ? h('p', { class: 'field-error', role: 'alert', text: state.diff.error }) : null,
-    state.diff && !state.diff.error && !lines.length ? h('p', { text: 'No text change was recorded; the record or its fingerprint scope moved.' }) : null,
+    !loading && state.diff && !state.diff.error && !lines.length ? h('p', { text: 'No text change was recorded; the record or its fingerprint scope moved.' }) : null,
     h('div', { class: 'lines' }, lines.map(line => h('div', { class: line.kind, text: line.text }))),
     state.diff?.compareUrl ? h('p', {}, h('a', { href: state.diff.compareUrl, target: '_blank', rel: 'noopener noreferrer', text: 'Open the comparison on GitHub' })) : null,
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
@@ -1100,51 +1103,81 @@ function sheetChanged(item) {
 }
 
 // ---- item screen --------------------------------------------------------------------------
+// Mounted ONCE per open (or Retry). Re-inserting an iframe reloads it, and the second-load rule
+// below would read that as frame_failure, so state changes refresh only the dynamic regions.
+let mountedFor = null;   // `${item.key}#${preview.attempt}` the current DOM was mounted for
+
 function renderItem() {
   const item = selectedItem();
   if (!item) { closeItem(); return; }
+  const signature = `${item.key}#${state.preview?.attempt || 0}`;
+  if (mountedFor !== signature || !document.getElementById('learner-frame')) mountItem(item);
+  refreshItem(item);
+}
+
+function mountItem(item) {
   const preview = state.preview;
   const frame = h('iframe', { id: 'learner-frame', title: `Learner view of ${item.title}`, sandbox: PREVIEW_SANDBOX, referrerpolicy: 'no-referrer' });
-  frame.addEventListener('load', () => { if (state.preview) { if (state.preview.frameLoaded) { state.preview.status = 'frame_failure'; renderItem(); } state.preview.frameLoaded = true; } });
-  frame.addEventListener('error', () => { if (state.preview) { state.preview.status = 'frame_failure'; renderItem(); } });
+  frame.addEventListener('load', () => {
+    const current = state.preview;
+    if (!current || current.request !== preview.request) return;      // a stale frame's event
+    if (current.frameLoaded) { current.status = 'frame_failure'; refreshItem(item); return; }
+    current.frameLoaded = true;
+  });
+  frame.addEventListener('error', () => {
+    if (state.preview?.request === preview.request) { state.preview.status = 'frame_failure'; refreshItem(item); }
+  });
   frame.setAttribute('src', preview.request.url);
-  const twin = item.type === 'page' ? twinOf(item, state.items) : null;
-  const external = item.type === 'question' ? null : buildExternalReviewUrl({ studentBase: state.server.student, residentBase: residentBase(), item });
-  const sheet = state.sheet === 'changed' ? sheetChanged(item)
-    : state.sheet === 'confirm' ? sheetConfirm(item)
-    : state.sheet === 'draft' ? sheetDraft(item)
-    : null;
   replaceApp(
     bar(item.title, { back: true }),
     h('main', { class: 'screen item' }, [
       h('h1', { class: 'summary', text: item.title }),
-      h('div', { class: 'status', role: 'status' }, [
-        h('span', { class: `pill ${preview.status === 'ready' ? 'ok' : ''}`, text: STATUS_LABEL[preview.status] || preview.status }),
-        h('span', { text: `${siteLabel(item)} · ${reviewReason(item)}` }),
-        previewFailed() ? h('button', { type: 'button', class: 'pill', text: 'Retry', onClick: retryPreview }) : null,
-      ]),
-      twin ? h('p', { class: 'summary' }, [`Twin: ${twin.title} · ${twin.completion === 'needs-review' ? 'needs review' : 'reviewed'} `, h('a', { href: `?item=${encodeURIComponent(twin.key)}`, text: 'Go to twin', onClick: event => { event.preventDefault(); openItem(twin.key); } })]) : null,
-      state.receipt ? h('div', { class: 'receipt', role: 'status' }, [
-        h('strong', { text: `Signed: ${state.receipt.title}` }), ' ',
-        state.receipt.commit ? h('a', { href: state.receipt.commit, target: '_blank', rel: 'noopener noreferrer', text: 'commit' }) : null,
-        state.receipt.pullRequest ? [' · ', h('a', { href: state.receipt.pullRequest, target: '_blank', rel: 'noopener noreferrer', text: 'rolling PR' })] : null,
-        state.receipt.pullRequestError ? ' · the rolling review request needs attention' : null,
-      ]) : null,
-      state.message ? h('p', { class: 'field-error summary', role: 'alert', text: state.message }) : null,
+      h('div', { id: 'item-status', class: 'status', role: 'status' }),
+      h('div', { id: 'item-twin' }),
+      h('div', { id: 'item-receipt' }),
+      h('div', { id: 'item-message' }),
       h('div', { class: 'frame-wrap' }, frame),
     ]),
-    h('nav', { class: 'actions', 'aria-label': 'Review actions' }, [
-      item.type === 'question'
-        ? h('button', { class: 'btn secondary', type: 'button', text: 'Saved draft', onClick: () => openSheet('draft') })
-        : h('button', { class: 'btn secondary', type: 'button', text: 'What changed', onClick: () => openSheet('changed') }),
-      external ? h('a', { class: 'btn secondary', href: external, target: '_blank', rel: 'noopener noreferrer', text: 'Open in site' }) : h('span'),
-      h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading', onClick: () => openSheet('confirm') }),
-    ]),
-    sheet ? h('div', { class: 'sheet-backdrop', onClick: closeSheet }) : null,
-    sheet,
+    h('nav', { id: 'item-actions', class: 'actions', 'aria-label': 'Review actions' }),
+    h('div', { id: 'item-sheet' }),
   );
-  if (state.preview) state.preview.frameWindow = frame.contentWindow;
+  preview.frameWindow = frame.contentWindow;
+  mountedFor = `${item.key}#${preview.attempt}`;
   window.history.replaceState(null, '', `${window.location.pathname}?item=${encodeURIComponent(item.key)}`);
+}
+
+function refreshItem(item) {
+  const preview = state.preview;
+  const twin = item.type === 'page' ? twinOf(item, state.items) : null;
+  const external = item.type === 'question' ? null : buildExternalReviewUrl({ studentBase: state.server.student, residentBase: residentBase(), item });
+  document.getElementById('item-status').replaceChildren(
+    h('span', { class: `pill ${preview.status === 'ready' ? 'ok' : ''}`, text: STATUS_LABEL[preview.status] || preview.status }),
+    h('span', { text: `${siteLabel(item)} · ${reviewReason(item)}` }),
+    ...(previewFailed() ? [h('button', { type: 'button', class: 'pill', text: 'Retry', onClick: retryPreview })] : []),
+  );
+  document.getElementById('item-twin').replaceChildren(...(twin ? [h('p', { class: 'summary' }, [
+    `Twin: ${twin.title} · ${twin.completion === 'needs-review' ? 'needs review' : 'reviewed'} `,
+    h('a', { href: `?item=${encodeURIComponent(twin.key)}`, text: 'Go to twin', onClick: event => { event.preventDefault(); openItem(twin.key); } }),
+  ])] : []));
+  document.getElementById('item-receipt').replaceChildren(...(state.receipt ? [h('div', { class: 'receipt', role: 'status' }, [
+    h('strong', { text: `Signed: ${state.receipt.title}` }), ' ',
+    state.receipt.commit ? h('a', { href: state.receipt.commit, target: '_blank', rel: 'noopener noreferrer', text: 'commit' }) : null,
+    state.receipt.pullRequest ? [' · ', h('a', { href: state.receipt.pullRequest, target: '_blank', rel: 'noopener noreferrer', text: 'rolling PR' })] : null,
+    state.receipt.pullRequestError ? ' · the rolling review request needs attention' : null,
+  ])] : []));
+  document.getElementById('item-message').replaceChildren(...(state.message ? [h('p', { class: 'field-error summary', role: 'alert', text: state.message })] : []));
+  document.getElementById('item-actions').replaceChildren(
+    item.type === 'question'
+      ? h('button', { class: 'btn secondary', type: 'button', text: 'Saved draft', onClick: () => openSheet('draft') })
+      : h('button', { class: 'btn secondary', type: 'button', text: 'What changed', onClick: () => openSheet('changed') }),
+    external ? h('a', { class: 'btn secondary', href: external, target: '_blank', rel: 'noopener noreferrer', text: 'Open in site' }) : h('span'),
+    h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading', onClick: () => openSheet('confirm') }),
+  );
+  const sheet = state.sheet === 'changed' ? sheetChanged(item)
+    : state.sheet === 'confirm' ? sheetConfirm(item)
+    : state.sheet === 'draft' ? sheetDraft(item)
+    : null;
+  document.getElementById('item-sheet').replaceChildren(...(sheet ? [h('div', { class: 'sheet-backdrop', onClick: closeSheet }), sheet] : []));
 }
 function sheetConfirm() { return h('div'); }   // Task 5
 function sheetDraft() { return h('div'); }     // Task 6
@@ -1152,7 +1185,7 @@ function sheetDraft() { return h('div'); }     // Task 6
 
 Also change the boot listener line to call the now-defined function directly: `window.addEventListener('message', handlePreviewStatus);`.
 
-Note the frame is re-created on every `renderItem()`; that is deliberate for v1 (state lives in `state.preview`, the token stays the same across re-renders because `beginPreview()` is only called on open and Retry). `frameWindow` is refreshed after each render so `matchesPreviewStatus` compares against the live window. A second `load` event on the same preview marks `frame_failure`, as the desktop does.
+The frame is created once per open or Retry and persists across refreshes (re-inserting an iframe would reload it and trip the second-load rule). `frameWindow` is set at mount so `matchesPreviewStatus` compares against the live window; the `load` handler ignores events from a superseded request. A second `load` on the same frame marks `frame_failure`, as the desktop does.
 
 - [ ] **Step 4: Run to verify they pass**
 
@@ -1351,12 +1384,14 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - [ ] **Step 1: Write the failing smoke test**
 
 ```js
-  test('a question shows its saved draft read-only and attests only with the live receipt, the saved-revision receipt and the three confirmations', async ({ page }) => {
+  test('a question shows its saved draft read-only and attests only after a retry, the unavailable-live acknowledgement, the saved-revision receipt and the three confirmations', async ({ page }) => {
     const api = await installRepositoryApi(page, workflowBank());
     await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
     await unlockPhone(page);
     await page.getByRole('link', { name: /qb_moo_901/ }).click();
-    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    // The synthetic question is not in the deployed learner bank, so the shell reports Not found —
+    // the same path the desktop suite exercises for undeployed drafts.
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
     await page.getByRole('button', { name: 'Saved draft' }).click();
     const draft = page.getByRole('dialog', { name: 'Saved draft (not deployed)' });
     await expect(draft.getByText(READY_STEMS.A)).toBeVisible();
@@ -1366,7 +1401,13 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     const sheet = page.getByRole('dialog', { name: /Sign qb_moo_901/ });
     const sign = sheet.getByRole('button', { name: 'Sign' });
     await expect(sign).toBeDisabled();
-    await sheet.getByLabel('I reviewed the live question on this screen').check();
+    const unavailable = sheet.getByLabel('The live question is unavailable; I reviewed the saved draft instead');
+    await expect(unavailable).toBeDisabled();            // one Retry is required first
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await unavailable.check();
     await sheet.getByLabel(/I reviewed the saved draft, revision/).check();
     await sheet.getByLabel('Clinically accurate').check();
     await sheet.getByLabel('Evidence and rationale hold').check();
