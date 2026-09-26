@@ -26,7 +26,7 @@
   header.bar h1 { font-size: 1.05rem; margin: 0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   header.bar button, header.bar a { color: inherit; background: transparent; border: 1px solid rgba(255,255,255,.5);
     border-radius: 999px; padding: .35rem .8rem; font-size: .9rem; text-decoration: none; }
-  main.screen { flex: 1; display: flex; flex-direction: column; }
+  .screen { flex: 1; display: flex; flex-direction: column; }
   .gate { margin: auto; width: min(100%, 26rem); padding: 1.5rem; }
   .gate label { display: block; font-weight: 600; margin-bottom: .35rem; }
   .gate input { width: 100%; font-size: 1.1rem; padding: .7rem .8rem; border: 1px solid var(--line); border-radius: .6rem; }
@@ -75,11 +75,11 @@
   .draft ol { padding-left: 1.25rem; }
   .draft .key { font-weight: 700; }
   [hidden] { display: none !important; }
-  @media (min-width: 900px) { .gate, main.screen { max-width: 40rem; margin: 0 auto; width: 100%; } }
+  @media (min-width: 900px) { .gate, .screen { max-width: 40rem; margin: 0 auto; width: 100%; } }
 </style>
 </head>
 <body>
-<main id="m-app" aria-live="polite"></main>
+<main id="m-app"></main>
 <script type="module" src="./m.mjs"></script>
 </body>
 </html>

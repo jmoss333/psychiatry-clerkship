@@ -2480,6 +2480,14 @@ test.describe('phone client', () => {
     // No horizontal scroll at phone width.
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
+    // Search filters the groups without stealing focus from the box.
+    const search = page.getByLabel('Search the queue');
+    await search.click();
+    await search.pressSequentially('cat');
+    await expect(search).toBeFocused();
+    await expect(search).toHaveValue('cat');
+    await expect(page.getByRole('link', { name: /Catatonia/ })).toHaveCount(2);
+    await expect(page.getByRole('link', { name: /Synthetic/ })).toHaveCount(0);
   });
 
   test('a wrong key is refused, cleared, and re-prompted without leaking into storage', async ({ page }) => {

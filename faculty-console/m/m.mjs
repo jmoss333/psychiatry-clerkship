@@ -146,10 +146,10 @@ function renderGate(message = '') {
     message ? h('p', { class: 'field-error', role: 'alert', text: message }) : null,
     h('p', {}, h('button', { class: 'btn', type: 'submit', text: 'Unlock' })),
   ]);
-  replaceApp(h('main', { class: 'screen' }, form));
+  replaceApp(h('div', { class: 'screen' }, form));
   input.focus();
 }
-function renderBusy(text) { replaceApp(bar('Faculty attestation'), h('main', { class: 'screen' }, h('p', { class: 'summary', role: 'status', text }))); }
+function renderBusy(text) { replaceApp(bar('Faculty attestation'), h('div', { class: 'screen' }, h('p', { class: 'summary', role: 'status', text }))); }
 
 function riskPill(item) {
   const level = item.risk?.level || '';
@@ -157,32 +157,48 @@ function riskPill(item) {
 }
 function siteLabel(item) { return item.site === 'res' ? 'Residents' : 'MS3'; }
 
-function renderQueue() {
-  const counts = deriveReviewCounts(state.items);
+function visibleSections() {
   const term = state.search.trim().toLowerCase();
   const visible = section => ({ ...section, items: section.items.filter(i => !term || i.searchText.includes(term)) });
-  const sections = state.sections.map(visible).filter(s => s.items.length);
+  return state.sections.map(visible).filter(s => s.items.length);
+}
+
+function queueRows(sections) {
+  return sections.map(section => h('section', { class: 'group' }, [
+    h('h2', { text: section.title }),
+    h('ul', { class: 'rows' }, section.items.map(item => h('li', {}, h('a', { href: `?item=${encodeURIComponent(item.key)}`,
+      onClick: event => { event.preventDefault(); openItem(item.key); } }, [
+      h('div', { class: 'title', text: item.title }),
+      h('div', { class: 'meta' }, [h('span', { class: 'pill', text: item.type }), h('span', { text: siteLabel(item) }), riskPill(item)]),
+      h('div', { class: 'why', text: reviewReason(item) }),
+    ])))),
+  ]));
+}
+
+/** Re-render only the groups, so the search box (and its focus and caret) survives typing. */
+function refreshQueueGroups() {
+  const groups = document.getElementById('queue-groups');
+  if (!groups) return;
+  const sections = visibleSections();
+  groups.replaceChildren(...queueRows(sections),
+    ...(sections.length ? [] : [h('p', { class: 'summary', text: 'Nothing needs review.' })]));
+}
+
+function renderQueue() {
+  const counts = deriveReviewCounts(state.items);
   const search = h('input', { type: 'search', placeholder: 'Search titles', value: state.search, 'aria-label': 'Search the queue',
-    onInput: event => { state.search = event.target.value; renderQueue(); } });
+    onInput: event => { state.search = event.target.value; refreshQueueGroups(); } });
   replaceApp(
     bar('Faculty attestation'),
-    h('main', { class: 'screen' }, [
-      h('h1', { class: 'summary', text: 'Needs review' }),
+    h('div', { class: 'screen' }, [
+      h('h2', { class: 'summary', text: 'Needs review' }),
       h('p', { class: 'summary', role: 'status', text: `${counts.page} page${counts.page === 1 ? '' : 's'} · ${counts.tool} tool${counts.tool === 1 ? '' : 's'} · ${counts.question} question${counts.question === 1 ? '' : 's'} need review` }),
       state.message ? h('p', { class: 'field-error summary', role: 'alert', text: state.message }) : null,
       h('div', { class: 'search' }, search),
-      ...sections.map(section => h('section', { class: 'group' }, [
-        h('h2', { text: section.title }),
-        h('ul', { class: 'rows' }, section.items.map(item => h('li', {}, h('a', { href: `?item=${encodeURIComponent(item.key)}`,
-          onClick: event => { event.preventDefault(); openItem(item.key); } }, [
-          h('div', { class: 'title', text: item.title }),
-          h('div', { class: 'meta' }, [h('span', { class: 'pill', text: item.type }), h('span', { text: siteLabel(item) }), riskPill(item)]),
-          h('div', { class: 'why', text: reviewReason(item) }),
-        ])))),
-      ])),
-      sections.length ? null : h('p', { class: 'summary', text: 'Nothing needs review.' }),
+      h('div', { id: 'queue-groups' }),
     ]),
   );
+  refreshQueueGroups();
   // The shareable link is rebuilt from the selected item only; on the queue it carries nothing.
   window.history.replaceState(null, '', window.location.pathname);
 }
