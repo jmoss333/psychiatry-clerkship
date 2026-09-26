@@ -68,6 +68,10 @@ const SURFACES = ['fd-bg', 'fd-surface', 'fd-surface-warm', 'fd-selected', 'fd-c
 const PAIRS = [
   ...['fd-text', 'fd-text-mid', 'fd-text-dim'].flatMap((t) => SURFACES.map((b) => [t, b, 4.5])),
   ['fd-text', 'fd-danger-wash', 4.5],
+  // 2026-09-26: the Safety Kit card's rose tint (frontdoor.css .fd-kitcard) moved from a
+  // hover-only accent to the RESTING background, which makes .fd-kitcard__sub's ink (fd-text-dim)
+  // a steady-state painted pair for the first time, not a transient one.
+  ['fd-text-dim', 'fd-danger-wash', 4.5],
   // 2026-09-10 ROLE SPLIT: --fd-terracotta and --fd-olive are FILL/BORDER tokens and are
   // gated below at the 3:1 non-text bar. Every `color:` call site moved to the -dark / -deep
   // ink token, which is what these 4.5 rows now cover. frontdoor.css's ROLE RULE header and

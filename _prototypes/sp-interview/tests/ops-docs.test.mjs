@@ -41,9 +41,19 @@ test('operations guide names every managed-voice control without embedding value
     'SP_VOICE_SYNTHESIS_PROVIDER',
     'SP_VOICE_SYNTHESIS_MODEL',
     'SP_VOICE_ZERO_RETENTION_ENTITLED',
+    'SP_REALTIME_ENABLED',
+    'SP_REALTIME_MODEL',
+    'SP_REALTIME_TRANSCRIPTION_MODEL',
+    'SP_REALTIME_MAX_SESSION_MINUTES',
+    'SP_REALTIME_ROTATION_CAP_USD',
+    'SP_REALTIME_STARTS_PER_DAY',
+    'SP_REALTIME_STARTS_PER_HALF_HOUR',
   ]) {
     assert.match(readme, new RegExp(`\\b${variable}\\b`), `missing environment name: ${variable}`);
   }
+  assert.match(readme, /^## Real-time spoken room \(disabled by default\)$/m);
+  assert.match(readme, /accounting for cooperating clients,\s*not enforcement/);
+  assert.match(readme, /SP_REALTIME_ENABLED=false/);
   assert.match(readme, /\$16[\s\S]*\$20|\$20[\s\S]*\$16/);
   assert.match(readme, /content-free (?:logs|logging)/i);
   assert.match(readme, /separate operations credential/i);
@@ -94,6 +104,12 @@ test('red-team guide includes all ten voice probes and forbids silent fallback',
     assert.match(checklist, new RegExp(phrase, 'i'), `missing voice probe: ${phrase}`);
   }
   assert.doesNotMatch(checklist, /falls back automatically/i);
+  // The spoken room's section: sixteen probes, and the row that names what actually bounds spend.
+  for (let number = 1; number <= 16; number += 1) {
+    assert.match(checklist, new RegExp(`\\| R${number} \\|`), `missing spoken-room probe R${number}`);
+  }
+  assert.match(checklist, /accounting, not a cost ceiling/);
+  assert.match(checklist, /Traces dashboard/);
 });
 
 test('release passport is content-free and cannot attest missing external gates', () => {
@@ -104,12 +120,16 @@ test('release passport is content-free and cannot attest missing external gates'
   });
   assert.equal(result.status, 0, result.stdout + result.stderr);
   const receipt = JSON.parse(result.stdout);
-  assert.deepEqual(Object.keys(receipt), ['schemaVersion', 'status', 'hashes', 'externalGates']);
+  assert.deepEqual(Object.keys(receipt), ['schemaVersion', 'status', 'realtime', 'hashes', 'externalGates']);
   assert.equal(receipt.schemaVersion, 1);
   assert.equal(receipt.status, 'managed_voice_disabled');
+  assert.equal(receipt.realtime, 'activation_not_attested');
   assert.deepEqual(Object.keys(receipt.hashes), [
     'html',
     'pack',
+    'realtimeController',
+    'realtimeRoute',
+    'realtimeSession',
     'caseReviews',
     'speechEngine',
     'profiles',
@@ -122,6 +142,10 @@ test('release passport is content-free and cannot attest missing external gates'
     privacyApproval: 'missing',
     providerAccountControls: 'missing',
     learnerPilot: 'missing',
+    realtimeSpokenAudition: 'missing',
+    realtimePrivacyApproval: 'missing',
+    realtimeProviderBudget: 'missing',
+    realtimeLearnerPilot: 'missing',
   });
   assert.doesNotMatch(
     JSON.stringify(receipt),

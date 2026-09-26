@@ -28,6 +28,14 @@
  *   - 6 carry a build-injected <details> disclosure and an inline <audio>. ZERO
  *     were baselined.
  *
+ * Since #809 (2026-09-25) t_mood is also the BOLD-LEAD FIELD GUIDE archetype: a page
+ * with no H2 whose sections open with a bold label is promoted to guide sections at
+ * render time (fd_guide.js), gaining the guide header, the "On this page" margin and
+ * section targets, while keeping its reading place. Its screenshot therefore asserts
+ * that machinery first, because the loose tolerance below let the pre-guide baseline
+ * pass against the guide layout — and would equally let a regression back to a plain
+ * reader pass unnoticed.
+ *
  * So the set below baselines one page per STRUCTURAL ARCHETYPE rather than one
  * arbitrary page. Each entry states the machinery it exists to protect, and its
  * settle() ASSERTS that machinery is actually present before the screenshot is
@@ -147,6 +155,12 @@ for (const viewport of VIEWPORTS) {
       await seedResident(page, 'library');
       await page.goto(`${baseURL}/?page=t_mood.md`, { waitUntil: 'domcontentloaded' });
       await waitForStableReader(page);
+      // The bold-lead guide must have run (see the header): a guide reader, sections
+      // opened by promoted leads, and the reading place that lead guides keep.
+      await expect(page.locator('.fd-reader--guide')).toBeVisible();
+      expect(await page.locator('.fd-article__body .fd-guide-section > .fd-guide-lead').count())
+        .toBeGreaterThanOrEqual(4);
+      await expect(page.locator('.fd-reader [data-fd-reading-status]')).toHaveCount(1);
       await expect(page).toHaveScreenshot(`front-door-reader-${viewport.label}.png`);
     });
 

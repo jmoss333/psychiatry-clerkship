@@ -3298,21 +3298,63 @@ test('?view=changes groups each drifted page by the correction that changed it',
   assert.equal(payload.groups[0].sha, CHANGE_773_SHA);
   // #700 landed on the day the page was signed, so it may already have been read: the view
   // says so rather than guessing either way. #773 came later and certainly was not.
+  // The fixture's record gained a shelf entry after the signing day (see changeHistoryMock),
+  // so topic_meta.json's history joins the page's: here it names no further correction.
   assert.deepEqual(payload.pages['t_mood.md'], {
     title: 'Mood Disorders',
     kind: 'page',
     at: '2026-07-01',
+    recordChanged: true,
     changes: [{ id: 'pr:773', sameDay: false }, { id: 'pr:700', sameDay: true }],
   });
+  assert.equal(payload.statement, 'I have reviewed these corrections and attest to every page '
+    + 'they changed, as each page reads today.');
 
-  // The history asked for is the signed page's own source, from the start of its signing day.
-  const listCalls = mock.calls.filter(call => new URL(call.url).pathname.endsWith('/commits'));
-  assert.equal(listCalls.length, 1);
-  const query = new URL(listCalls[0].url).searchParams;
-  assert.equal(query.get('path'), '01_Core/t_mood.md');
-  assert.equal(query.get('since'), '2026-07-01T00:00:00Z');
-  assert.equal(query.get('sha'), 'main');
+  // The history asked for is the signed page's own source, from the start of its signing day,
+  // and — because its record changed — topic_meta.json's, from the same day.
+  const histories = mock.calls
+    .filter(call => new URL(call.url).pathname.endsWith('/commits'))
+    .map(call => new URL(call.url).searchParams)
+    .filter(query => query.get('path'));
+  assert.deepEqual(histories.map(query => query.get('path')).sort(), ['01_Core/t_mood.md', TOPIC_META_PATH]);
+  for (const query of histories) {
+    assert.equal(query.get('since'), '2026-07-01T00:00:00Z');
+    assert.equal(query.get('sha'), 'main');
+  }
   assertReadOnly(mock);
+});
+
+test('a page whose record did not change is traced through its source files alone', async () => {
+  const files = boundFiles();
+  const mock = changeHistoryMock({ files });
+  // The record as it stood before the signing day is today's record: nothing changed there.
+  const before = mock.fetchImpl;
+  mock.fetchImpl = async (input, init) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith(`/contents/${TOPIC_META_PATH}`) && url.searchParams.get('ref') === CHANGE_BASE_SHA) {
+      return jsonResponse(200, contentsObject(`${JSON.stringify(files[TOPIC_META_PATH].json, null, 2)}\n`));
+    }
+    return before(input, init);
+  };
+  const payload = await (await handlerWith(mock)(viewRequest({ view: 'changes' }))).json();
+  assert.equal(payload.pages['t_mood.md'].recordChanged, false);
+  assert.equal(mock.calls.some(call => new URL(call.url).searchParams.get('path') === TOPIC_META_PATH), false);
+});
+
+test('a record that cannot be compared leaves the page unchecked, never clean', async () => {
+  const mock = changeHistoryMock();
+  const before = mock.fetchImpl;
+  mock.fetchImpl = async (input, init) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith(`/contents/${TOPIC_META_PATH}`) && url.searchParams.get('ref') === CHANGE_BASE_SHA) {
+      return jsonResponse(500, { message: 'Synthetic failure.' });
+    }
+    return before(input, init);
+  };
+  const payload = await (await handlerWith(mock)(viewRequest({ view: 'changes' }))).json();
+  assert.deepEqual(payload.unchecked, ['t_mood.md']);
+  assert.equal(payload.partial, true);
+  assert.deepEqual(payload.groups, []);
 });
 
 test('a drifted page no correction touched is reported as unexplained, not dropped', async () => {
@@ -3430,4 +3472,290 @@ test('the change views need the faculty key like everything else', async () => {
   const response = await handlerWith(mock)(viewRequest({ view: 'changes' }, { key: null }));
   await expectError(response, { status: 401, code: 'unauthorized' });
   assert.equal(mock.calls.length, 0, 'nothing is read for an unauthenticated view');
+});
+
+/* One press, many pages (2026-09-26). Two new press kinds: a BASELINE ("I attest this content
+   as it reads today") over everything that needs a signature, and a CORRECTION press over named
+   corrections. The rules pinned here: the statement must arrive verbatim; every row binds to
+   today's text; one commit carries every row; what the learner-site build would refuse is left
+   out WITH its reason, never signed and never silently dropped; a bound, current page is not
+   touched; the question half and the faculty-review lines never undo the signed rows. */
+
+const BASELINE_STATEMENT = 'I have reviewed this content and attest to it as it reads today: it is '
+  + 'clinically accurate, supported by its cited evidence, original, and free of protected health '
+  + 'information.';
+const CORRECTION_STATEMENT = 'I have reviewed these corrections and attest to every page they '
+  + 'changed, as each page reads today.';
+
+// createGithubMock serves only the JSON governance files by path; a batch press also reads each
+// page's source to apply the build's banner and label rules, so this serves those bytes too.
+function batchMock({ files = defaultFiles(), sources = defaultSources(), ...options } = {}) {
+  let mock = null;
+  mock = createGithubMock({
+    files,
+    sources,
+    ...options,
+    beforeRequest: (call, context) => {
+      if (call.method === 'GET' && mock && Object.hasOwn(mock.sources, call.path)) {
+        return jsonResponse(200, contentsObject(mock.sources[call.path]));
+      }
+      return options.beforeRequest?.(call, context);
+    },
+  });
+  return mock;
+}
+
+function batchPress(body) {
+  return apiRequest('POST', { body: { target: 'content', ...body } });
+}
+
+function savedJson(mock, index) {
+  return JSON.parse(Buffer.from(mock.putBodies[index].body.content, 'base64').toString('utf8'));
+}
+
+test('a baseline press signs every item that needs a signature, in one commit, bound to today\'s text', async () => {
+  const files = defaultFiles();
+  const mock = batchMock({ files });
+  const response = await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT, questions: false,
+  }));
+  const payload = await response.json();
+
+  assert.equal(response.status, 200, JSON.stringify(payload));
+  assert.equal(payload.mode, 'baseline');
+  assert.equal(payload.updated, 2);
+  assert.deepEqual(payload.signed.map(item => [item.slug, item.was]).sort(), [
+    ['mse-tool', 'pending'],
+    ['t_mood.md', 'unbound'],
+  ]);
+  assert.deepEqual(payload.excluded, []);
+  assert.equal(mock.putBodies.length, 1, 'one press, one commit');
+  assert.equal(mock.putBodies[0].path, REVIEWED_PATH);
+  assert.match(mock.putBodies[0].body.message,
+    /^attest: baseline sign-off, 2 content item\(s\) by Synthetic Reviewer \(\d{4}-\d{2}-\d{2}\)\n\nStatement: "I have reviewed this content/);
+
+  const saved = savedJson(mock, 0);
+  for (const slug of ['t_mood.md', 'mse-tool']) {
+    assert.equal(saved[slug].status, 'reviewed');
+    assert.equal(saved[slug].by, 'Synthetic Reviewer', 'the server-configured identity, never the browser');
+    assert.equal(saved[slug].contentHash, expectedDigest(files, mock.sources, slug));
+    assert.match(saved[slug].at, /^\d{4}-\d{2}-\d{2}$/);
+    assert.equal(Object.hasOwn(saved[slug], 'reason'), false);
+  }
+  assert.deepEqual(saved['mse-tool'].risk, { kind: 'general', level: 'low' }, 'everything else on the row is kept');
+  assert.equal(Object.hasOwn(payload, 'questions'), false, 'questions: false leaves the bank alone');
+  assertNoQbankWrite({ ...mock, putBodies: [] });
+});
+
+test('a many-page press needs its statement verbatim, and a malformed one reads and writes nothing', async () => {
+  const cases = [
+    [{ mode: 'baseline' }, 'batch.statement_required'],
+    [{ mode: 'baseline', statement: `${BASELINE_STATEMENT} ` }, 'batch.statement_required'],
+    [{ mode: 'baseline', statement: CORRECTION_STATEMENT }, 'batch.statement_required'],
+    [{ mode: 'everything', statement: BASELINE_STATEMENT }, 'batch.invalid_mode'],
+    [{ mode: 'baseline', statement: BASELINE_STATEMENT, changes: { 't_mood.md': true } }, 'batch.ambiguous'],
+    [{ mode: 'baseline', statement: BASELINE_STATEMENT, exclude: ['../x'] }, 'batch.invalid_exclude'],
+    [{ mode: 'baseline', statement: BASELINE_STATEMENT, questions: 'yes' }, 'batch.invalid_questions'],
+    [{ mode: 'correction', statement: CORRECTION_STATEMENT }, 'batch.invalid_corrections'],
+    [{ mode: 'correction', statement: CORRECTION_STATEMENT, corrections: [] }, 'batch.invalid_corrections'],
+    [{ mode: 'correction', statement: CORRECTION_STATEMENT, corrections: ['773'] }, 'batch.invalid_corrections'],
+  ];
+  for (const [body, code] of cases) {
+    const mock = batchMock();
+    await expectError(await handlerWith(mock)(batchPress(body)), { status: 400, code });
+    assert.equal(mock.putBodies.length, 0, code);
+    assertNoQbankWrite(mock);
+  }
+});
+
+test('a baseline leaves out what the build would refuse, and what the reviewer excluded, with the reason', async () => {
+  const files = defaultFiles();
+  files[SHIPPED_PAGES_PATH].json.pages.push({
+    slug: 't_anxiety.md', kind: 'page', sites: ['ms3'], title: 'Anxiety', source: '01_Core/t_anxiety.md', producer: 'site_manifest',
+  }, {
+    slug: 't_sleep.md', kind: 'page', sites: ['ms3'], title: 'Sleep', source: '01_Core/t_sleep.md', producer: 'site_manifest',
+  });
+  files[MANIFEST_PATH].json.md.push(['01_Core/t_anxiety.md', 't_anxiety.md', 'Anxiety'], ['01_Core/t_sleep.md', 't_sleep.md', 'Sleep']);
+  files[REVIEWED_PATH].json['t_anxiety.md'] = {
+    status: 'pending', at: '2026-07-02', by: 'Pending faculty review', risk: { kind: 'clinical', level: 'moderate' }, reason: 'New page.',
+  };
+  files[REVIEWED_PATH].json['t_sleep.md'] = {
+    status: 'pending', at: '2026-07-02', by: 'Pending faculty review', reason: 'No risk yet.',
+  };
+  const sources = {
+    ...defaultSources(),
+    '01_Core/t_mood.md': Buffer.from('> AI-drafted — pending faculty review\n\n# Mood Disorders\n', 'utf8'),
+    '04_Assessment/mse.html': Buffer.from('<!doctype html>\n<!-- [CLERKSHIP-META v1] tool="MSE" status="draft-pending-attestation" -->\n', 'utf8'),
+    '01_Core/t_anxiety.md': Buffer.from('# Anxiety\n', 'utf8'),
+    '01_Core/t_sleep.md': Buffer.from('# Sleep\n', 'utf8'),
+  };
+  const mock = batchMock({ files, sources });
+  const payload = await (await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT, questions: false, exclude: ['t_anxiety.md'],
+  }))).json();
+
+  assert.equal(payload.updated, 0);
+  assert.equal(payload.commit, null);
+  assert.deepEqual(payload.signed, []);
+  const reasons = Object.fromEntries(payload.excluded.map(item => [item.slug, item.reason]));
+  assert.deepEqual(Object.keys(reasons).sort(), ['mse-tool', 't_anxiety.md', 't_mood.md', 't_sleep.md']);
+  assert.match(reasons['t_mood.md'], /first lines still say it is unreviewed/);
+  assert.match(reasons['mse-tool'], /own review label says "draft-pending-attestation"/);
+  assert.match(reasons['t_anxiety.md'], /You left it out/);
+  assert.match(reasons['t_sleep.md'], /no risk classification/);
+  assert.equal(mock.putBodies.length, 0, 'nothing signable, nothing written');
+});
+
+test('a bound, current page is neither signed again nor listed', async () => {
+  const mock = batchMock({ files: boundFiles() });
+  const payload = await (await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT, questions: false,
+  }))).json();
+  assert.deepEqual(payload.signed.map(item => item.slug), ['mse-tool']);
+  assert.deepEqual(payload.excluded, []);
+  const saved = savedJson(mock, 0);
+  assert.equal(saved['t_mood.md'].at, '2026-07-01', 'the bound row is untouched');
+});
+
+test('a signed page\'s topic_meta faculty-review line follows its row, and a later press repairs a missed one', async () => {
+  // The #781 withdrawal demoted t_mood.md's facultyReview block along with its row.
+  const files = defaultFiles();
+  files[TOPIC_META_PATH].json['t_mood.md'].facultyReview.status = 'pending';
+  const digestBefore = expectedDigest(files, defaultSources(), 't_mood.md');
+  const mock = batchMock({ files });
+  const payload = await (await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT, questions: false,
+  }))).json();
+
+  assert.equal(payload.updated, 2);
+  assert.deepEqual(payload.facultyReview.aligned, ['t_mood.md']);
+  assert.deepEqual(mock.putBodies.map(put => put.path), [REVIEWED_PATH, TOPIC_META_PATH]);
+  const meta = savedJson(mock, 1);
+  assert.equal(meta['t_mood.md'].facultyReview.status, 'reviewed');
+  assert.equal(meta['t_mood.md'].facultyReview.reviewer, 'Synthetic Reviewer');
+  assert.equal(meta['t_mood.md'].facultyReview.lastReviewed, savedJson(mock, 0)['t_mood.md'].at);
+  assert.deepEqual(meta['t_mood.md'].shelfBlueprint, ['mood-disorders'], 'nothing but facultyReview moves');
+  assert.equal(meta._note, files[TOPIC_META_PATH].json._note);
+  assert.equal(expectedDigest({ ...files, [TOPIC_META_PATH]: { json: meta } }, defaultSources(), 't_mood.md'), digestBefore,
+    'facultyReview is outside the fingerprint: following the row drifts nothing');
+
+  // A press that stopped after its rows: the next one signs nothing and finishes the line.
+  const stopped = boundFiles();
+  stopped[TOPIC_META_PATH].json['t_mood.md'].facultyReview.status = 'pending';
+  stopped[REVIEWED_PATH].json['mse-tool'] = { ...stopped[REVIEWED_PATH].json['mse-tool'], status: 'reviewed', by: 'Synthetic Reviewer' };
+  stopped[REVIEWED_PATH].json['mse-tool'].contentHash = expectedDigest(stopped, defaultSources(), 'mse-tool');
+  delete stopped[REVIEWED_PATH].json['mse-tool'].reason;
+  const retry = batchMock({ files: stopped });
+  const again = await (await handlerWith(retry)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT, questions: false,
+  }))).json();
+  assert.equal(again.updated, 0);
+  assert.deepEqual(again.facultyReview.aligned, ['t_mood.md']);
+  assert.deepEqual(retry.putBodies.map(put => put.path), [TOPIC_META_PATH]);
+});
+
+test('a baseline attests the structurally ready draft questions in the same press and lists the rest', async () => {
+  const warned = validItem({
+    id: 'qb_moo_903',
+    stem: 'A fictional adolescent reports restricted eating and new bradycardia. Which finding is NOT expected?',
+  });
+  const files = defaultFiles(makeBank([
+    validItem(),
+    validItem({ id: 'qb_moo_901', status: 'attested', correctKey: 'B', stem: stems[1] }),
+    warned,
+  ]));
+  const mock = batchMock({ files });
+  const payload = await (await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT,
+  }))).json();
+
+  assert.equal(payload.updated, 2, 'the pages are signed first');
+  assert.equal(payload.questions.updated, 1);
+  assert.deepEqual(payload.questions.signed, ['qb_moo_900']);
+  assert.deepEqual(payload.questions.excluded.map(item => item.id), ['qb_moo_903']);
+  assert.match(payload.questions.excluded[0].reason, /quality warning: Review the negative wording/);
+  const bank = atomicBank(mock);
+  assert.equal(bank.items.find(item => item.id === 'qb_moo_900').status, 'attested');
+  assert.equal(bank.items.find(item => item.id === 'qb_moo_903').status, 'draft', 'a warned question is never swept in');
+});
+
+test('a question half that fails is reported beside the signed pages, never as a failed press', async () => {
+  const mock = batchMock({
+    onRefUpdate: () => jsonResponse(500, { message: 'Synthetic ref failure.' }),
+  });
+  const response = await handlerWith(mock)(batchPress({ mode: 'baseline', statement: BASELINE_STATEMENT }));
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.updated, 2);
+  assert.equal(mock.putBodies[0].path, REVIEWED_PATH, 'the signed rows stand');
+  assert.equal(payload.questions.updated, 0);
+  assert.equal(typeof payload.questions.error.message, 'string');
+});
+
+test('a correction press re-signs a drifted page only when every change since its signature is named', async () => {
+  // t_mood.md drifted; #773 changed it after signing and #700 on the signing day.
+  let mock = changeHistoryMock();
+  let payload = await (await handlerWith(mock)(batchPress({
+    mode: 'correction', statement: CORRECTION_STATEMENT, corrections: ['pr:773'],
+  }))).json();
+  assert.equal(payload.updated, 0);
+  assert.deepEqual(payload.excluded.map(item => item.slug), ['t_mood.md']);
+  assert.match(payload.excluded[0].reason, /also changed by #700/);
+  assert.equal(mock.putBodies.length, 0);
+
+  mock = changeHistoryMock();
+  payload = await (await handlerWith(mock)(batchPress({
+    mode: 'correction', statement: CORRECTION_STATEMENT, corrections: ['pr:773', 'pr:700'],
+  }))).json();
+  assert.equal(payload.updated, 1);
+  assert.deepEqual(payload.signed.map(item => [item.slug, item.was]), [['t_mood.md', 'drifted']]);
+  assert.deepEqual(payload.excluded, [], 'the pending tool is not this press\'s business');
+  assert.equal(Object.hasOwn(payload, 'questions'), false, 'a correction press never attests questions');
+  const saved = savedJson(mock, 0);
+  assert.equal(saved['t_mood.md'].contentHash, expectedDigest(mock.files, mock.sources, 't_mood.md'));
+  assert.equal(saved['mse-tool'].status, 'pending');
+  assert.match(mock.putBodies[0].body.message, /^attest: correction sign-off \(#773, #700\), 1 content item\(s\)/);
+});
+
+test('a correction press counts a change to the page\'s record, not only to its source files', async () => {
+  // The record changed after signing (see changeHistoryMock), and topic_meta.json's history
+  // since then names #801 — a correction the reviewer has not named.
+  const mock = changeHistoryMock({
+    history: {
+      '01_Core/t_mood.md': [commitRecord(CHANGE_773_SHA, 'fix(content): findings (#773)', '2026-09-24T12:00:00Z')],
+      [TOPIC_META_PATH]: [commitRecord('ab'.repeat(20), 'content: retire the videos (#801)', '2026-09-25T12:00:00Z')],
+    },
+  });
+  const payload = await (await handlerWith(mock)(batchPress({
+    mode: 'correction', statement: CORRECTION_STATEMENT, corrections: ['pr:773'],
+  }))).json();
+  assert.equal(payload.updated, 0);
+  assert.match(payload.excluded[0].reason, /also changed by #801/);
+});
+
+test('?view=batch previews either press without reading a branch forward or writing', async () => {
+  const mock = batchMock();
+  const response = await handlerWith(mock)(viewRequest({ view: 'batch', mode: 'baseline', exclude: 'mse-tool' }));
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.view, 'batch');
+  assert.equal(payload.statement, BASELINE_STATEMENT);
+  assert.deepEqual(payload.sign.map(item => item.slug), ['t_mood.md']);
+  assert.deepEqual(payload.excluded.map(item => [item.slug, item.reason]), [['mse-tool', 'You left it out of this press.']]);
+  assert.deepEqual(payload.questions.sign.map(item => item.id), ['qb_moo_900']);
+  assert.equal(JSON.stringify(payload).includes('contentHash'), false, 'no hash reaches the browser');
+  assert.equal(JSON.stringify(payload).includes(expectedDigest(mock.files, mock.sources, 't_mood.md')), false);
+  assertReadOnly(mock);
+
+  const correction = changeHistoryMock();
+  const preview = await (await handlerWith(correction)(viewRequest({
+    view: 'batch', mode: 'correction', corrections: 'pr:773,pr:700',
+  }))).json();
+  assert.equal(preview.statement, CORRECTION_STATEMENT);
+  assert.deepEqual(preview.sign.map(item => item.slug), ['t_mood.md']);
+  assert.equal(Object.hasOwn(preview, 'questions'), false);
+  assertReadOnly(correction);
+
+  await expectError(await handlerWith(batchMock())(viewRequest({ view: 'batch', mode: 'correction' })),
+    { status: 400, code: 'batch.invalid_corrections' });
 });

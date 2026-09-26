@@ -114,12 +114,20 @@
  ],
  "toolAssets": [
   [
+   "02_Clinical_Skills/Mental_Status_Exam/mse-rounds-case.js",
+   "mse-rounds-case.js"
+  ],
+  [
    "_prototypes/sp-interview/sp-interview.pack.json",
    "sp-interview.pack.json"
   ],
   [
    "_prototypes/sp-interview/sp-interview.voice.js",
    "sp-interview.voice.js"
+  ],
+  [
+   "_prototypes/sp-interview/sp-interview.realtime.js",
+   "sp-interview.realtime.js"
   ]
  ],
  "md": [

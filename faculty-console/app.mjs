@@ -283,6 +283,14 @@ export function startFacultyConsole({
     openDiffs: new Set(),
     resignGroupId: null,
     viewGeneration: 0,
+    // One press, many pages (2026-09-26; see renderBaseline). The server's preview of a
+    // baseline press, what this sitting chose to leave out of it, which corrections this
+    // sitting has signed, and the receipt of the last many-page press.
+    baseline: null,
+    baselineOpen: false,
+    baselineLeftOut: new Set(),
+    correctionsSigned: new Set(),
+    manyPageReceipt: null,
   };
   let renderedIssueRecords = [];
   // Where each diff is on screen (key → element ids), so a diff that arrives later is drawn
@@ -2147,10 +2155,12 @@ export function startFacultyConsole({
      few changed sentences is the slow, error-prone way to re-review. These views answer
      "which correction changed which page, and what exactly did it say", so re-signing is a
      review of the change — the way interval changes are reviewed on a chart.
-     What they never do is sign. No control in them records anything: each page opens in
-     the ordinary review flow and is signed there by its own press, after its own preview
-     (the standing one-attestation-per-press rule). The server views they read
-     (?view=changes, ?view=diff) are GET-only and never move a branch. */
+     The views themselves never sign; the server views they read (?view=changes,
+     ?view=diff) are GET-only and never move a branch. Since 2026-09-26 each correction
+     also carries ONE signing control, "Sign this correction", placed after its pages and
+     their diffs: one press re-signs every page whose every change since signing is a
+     correction the reviewer has signed (see pressManyPages). A page can still be signed
+     on its own in the ordinary review flow. */
 
   const KEY_REJECTED_FOR_VIEW = 'Key not accepted. Lock the console and enter the faculty key again.';
 
@@ -2183,6 +2193,11 @@ export function startFacultyConsole({
     state.resignGroupId = null;
     state.viewGeneration += 1;
     renderedDiffBodies.clear();
+    state.baseline = null;
+    state.baselineOpen = false;
+    state.baselineLeftOut = new Set();
+    state.correctionsSigned = new Set();
+    state.manyPageReceipt = null;
   }
 
   function activeChangeGroup() {
@@ -2535,7 +2550,54 @@ export function startFacultyConsole({
           url ? el('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, ['This correction on GitHub ↗']) : null,
         ]),
         el('ul', { class: 'resign-pages' }, group.slugs.map(slug => renderResignPage(group, slug, data))),
+        renderSignCorrection(group, data, waiting),
       ]),
+    ]);
+  }
+
+  /* Which of this correction's pages one "Sign this correction" press would re-sign: still
+     drifted, and every change since signing is this correction or one this sitting already
+     signed. Only the button's count comes from here; the server decides again from its own
+     reading of the history, and returns what it signed and what it left out. */
+  function correctionCoverage(group, data) {
+    const named = new Set([...state.correctionsSigned, group.id]);
+    const covered = [];
+    const others = new Set();
+    for (const slug of group.slugs) {
+      const page = record(data.pages?.[slug]);
+      if (!isDriftedItem(contentItemBySlug(slug, text(page.kind)))) continue;
+      const missing = list(page.changes).map(change => text(change?.id)).filter(id => id && !named.has(id));
+      if (missing.length) missing.forEach(id => others.add(id));
+      else covered.push(slug);
+    }
+    return { covered, others: [...others], named: [...named] };
+  }
+
+  function renderSignCorrection(group, data, waiting) {
+    const statement = text(data.statement);
+    if (!waiting.length || !statement) return null;
+    const { covered, others, named } = correctionCoverage(group, data);
+    const token = domToken(group.id);
+    const left = waiting.length - covered.length;
+    return el('div', { id: `sign-correction-${token}`, class: 'resign-footer' }, [
+      el('p', { class: 'hint' }, [`Signing says: “${statement}”`]),
+      left ? el('p', { class: 'hint' }, [
+        `${pluralize(left, 'page')} here ${left === 1 ? 'was' : 'were'} also changed by `
+        + `${others.map(changeIdLabel).join(', ')}. Sign ${others.length === 1 ? 'that correction' : 'those corrections'} `
+        + `too and ${left === 1 ? 'it is' : 'they are'} re-signed with it — or sign ${left === 1 ? 'it' : 'them'} on ${left === 1 ? 'its' : 'their'} own.`,
+      ]) : null,
+      el('button', {
+        id: `sign-correction-button-${token}`,
+        type: 'button',
+        class: 'primary',
+        disabled: state.pending,
+        onClick: () => void pressManyPages(
+          { mode: 'correction', statement, corrections: named },
+          { signedCorrection: group.id },
+        ),
+      }, [covered.length
+        ? `Sign ${changeLabel(group)} — re-signs ${pluralize(covered.length, 'page')}`
+        : `Sign ${changeLabel(group)} — its pages re-sign once their other corrections are signed`]),
     ]);
   }
 
@@ -2544,8 +2606,9 @@ export function startFacultyConsole({
     const data = view?.data;
     const children = [el('p', { class: 'hint' }, [
       'Pages you signed whose text changed afterwards, grouped by the correction that changed '
-      + 'them. Read one correction across its pages, then sign each page on its own in the '
-      + 'usual review — one press signs one page. Nothing in this list signs anything.',
+      + 'them. Read one correction across its pages, then press “Sign this correction” once: '
+      + 'it re-signs every page that correction (and any correction you already signed here) '
+      + 'fully explains. You can still sign any page on its own in the usual review.',
     ])];
     if (!view || (view.status === 'loading' && !data)) {
       children.push(el('p', { class: 'hint' }, ['Finding which corrections changed these pages…']));
@@ -2684,6 +2747,316 @@ export function startFacultyConsole({
     if (hadFocus && !body.contains(document.activeElement)) {
       (document.getElementById('resign-refresh') || document.getElementById('resign-retry'))?.focus();
     }
+  }
+
+  /* ── One press, many pages (2026-09-26) ─────────────────────────────────────────────
+     The reviewer had re-read the whole library several times and was still being asked to
+     re-sign it page by page: every correction wave voided signatures on text he had
+     already approved. Two presses now carry many pages at once, both through the server's
+     own checks (attest.mjs, commitContentBatch):
+       · "Sign everything as it reads today" (baseline) — every page and tool that needs a
+         signature, minus anything the reviewer unticks, plus every draft question with no
+         warning. The server's preview is listed first, with what it will leave out and why.
+       · "Sign this correction" — in Re-sign by change, after the correction's diffs.
+     Each press sends the statement it signs verbatim; the server refuses it otherwise. */
+
+  const WAS_LABELS = {
+    pending: 'never signed',
+    drifted: 'changed since you signed',
+    unbound: 'signed before fingerprints',
+  };
+
+  function itemsNeedingSignature() {
+    const open = state.reviewItems.filter(item => item.completion !== 'complete');
+    return {
+      content: open.filter(item => item.type !== 'question').length,
+      questions: open.filter(item => item.type === 'question').length,
+    };
+  }
+
+  function contentNoun(count) {
+    return `${count} ${count === 1 ? 'page or tool' : 'pages and tools'}`;
+  }
+
+  async function loadBaselinePreview() {
+    if (state.baseline?.status === 'loading') return;
+    const generation = state.viewGeneration;
+    state.baseline = { status: 'loading', data: state.baseline?.data || null };
+    refreshBaseline();
+    let next;
+    try {
+      const data = await viewRequest(
+        { view: 'batch', mode: 'baseline' },
+        'The list of items to sign could not be prepared.',
+        'batch',
+      );
+      if (!Array.isArray(data.sign) || !Array.isArray(data.excluded) || !text(data.statement)) {
+        throw new Error('The server returned an incomplete list of items to sign.');
+      }
+      next = { status: 'ready', data };
+    } catch (error) {
+      next = {
+        status: 'error',
+        data: null,
+        message: error instanceof Error ? error.message : 'The list of items to sign could not be prepared.',
+      };
+    }
+    if (generation !== state.viewGeneration || !state.server) return;
+    state.baseline = next;
+    refreshBaseline();
+  }
+
+  function baselineChosen(data) {
+    return list(data?.sign).filter(item => item && !state.baselineLeftOut.has(text(item.slug)));
+  }
+
+  function renderLeftOut(entries, idKey) {
+    return el('ul', { class: 'resign-pages' }, entries.map(entry => el('li', { class: 'resign-page' }, [
+      el('p', {}, text(entry.title)
+        ? [el('strong', {}, [text(entry.title)]), ` · ${text(entry[idKey])}`]
+        : [el('strong', {}, [text(entry[idKey])])]),
+      el('p', { class: 'hint' }, [text(entry.reason)]),
+    ])));
+  }
+
+  function renderBaselineBody() {
+    const children = [el('p', { class: 'hint' }, [
+      'One press signs every page and tool that needs your signature — never signed, or changed '
+      + 'since you signed — exactly as each reads right now, and attests every draft question '
+      + 'that has no warning. Untick anything you have not read. Anything the site build would '
+      + 'refuse is listed under “Left out” with the reason, and is not signed.',
+    ])];
+    const view = state.baseline;
+    if (!view || (view.status === 'loading' && !view.data)) {
+      children.push(el('p', { class: 'hint' }, ['Checking what needs your signature…']));
+      return children;
+    }
+    if (view.status === 'error') {
+      children.push(el('div', { class: 'session-notice individual' }, [
+        el('p', {}, [view.message]),
+        el('button', {
+          id: 'baseline-retry',
+          type: 'button',
+          class: 'quiet',
+          onClick: () => void loadBaselinePreview(),
+        }, ['Try again']),
+      ]));
+      return children;
+    }
+    const data = view.data;
+    const chosen = baselineChosen(data);
+    const questions = list(data.questions?.sign);
+    const leftOutPages = list(data.excluded);
+    const leftOutQuestions = list(data.questions?.excluded);
+    children.push(el('p', { id: 'baseline-statement', class: 'resign-progress' }, [
+      'Signing says: ', el('strong', {}, [`“${text(data.statement)}”`]),
+    ]));
+    children.push(el('details', { id: 'baseline-sign-list', class: 'resign-group', open: true }, [
+      el('summary', {}, [el('strong', {}, ['To sign']), ` · ${chosen.length} of ${contentNoun(list(data.sign).length)}`]),
+      el('div', { class: 'resign-group-body' }, [
+        data.sign.length ? el('ul', { class: 'resign-pages' }, data.sign.map(item => {
+          const slug = text(item.slug);
+          const id = `baseline-include-${domToken(slug)}`;
+          return el('li', { class: 'resign-page' }, [
+            el('label', { class: 'resign-page-line', for: id }, [
+              el('input', {
+                id,
+                type: 'checkbox',
+                checked: !state.baselineLeftOut.has(slug),
+                disabled: state.pending,
+                onChange: event => {
+                  if (event.currentTarget.checked) state.baselineLeftOut.delete(slug);
+                  else state.baselineLeftOut.add(slug);
+                  refreshBaseline(id);
+                },
+              }),
+              el('span', {}, [text(item.title) || slug]),
+              el('span', { class: 'resign-page-status' }, [WAS_LABELS[item.was] || text(item.was)]),
+            ]),
+            text(item.pendingReason) ? el('p', { class: 'hint' }, [text(item.pendingReason)]) : null,
+          ]);
+        })) : el('p', { class: 'hint' }, ['Every page and tool is signed and current.']),
+      ]),
+    ]));
+    if (questions.length) {
+      children.push(el('details', { id: 'baseline-question-list', class: 'resign-group' }, [
+        el('summary', {}, [el('strong', {}, ['Questions to attest']), ` · ${pluralize(questions.length, 'draft question')} with no warnings`]),
+        el('div', { class: 'resign-group-body' }, [el('ul', { class: 'resign-pages' }, questions.map(question => el('li', { class: 'resign-page' }, [
+          el('p', {}, [el('strong', {}, [text(question.id)]), ` · ${text(question.stem)}`]),
+        ])))]),
+      ]));
+    }
+    if (leftOutPages.length || leftOutQuestions.length) {
+      children.push(el('details', { id: 'baseline-left-out', class: 'resign-group' }, [
+        el('summary', {}, [el('strong', {}, ['Left out']), ` · ${leftOutPages.length + leftOutQuestions.length} with the reason`]),
+        el('div', { class: 'resign-group-body' }, [
+          leftOutPages.length ? renderLeftOut(leftOutPages, 'slug') : null,
+          leftOutQuestions.length ? renderLeftOut(leftOutQuestions, 'id') : null,
+        ]),
+      ]));
+    }
+    const total = chosen.length + questions.length;
+    children.push(el('div', { class: 'resign-footer' }, [
+      el('button', {
+        id: 'baseline-sign',
+        type: 'button',
+        class: 'primary',
+        disabled: !total || state.pending || view.status === 'loading',
+        onClick: () => void pressManyPages({
+          mode: 'baseline',
+          statement: text(data.statement),
+          exclude: list(data.sign).map(item => text(item.slug)).filter(slug => state.baselineLeftOut.has(slug)),
+        }),
+      }, [total
+        ? `Sign ${contentNoun(chosen.length)}${questions.length ? ` and attest ${pluralize(questions.length, 'question')}` : ''}`
+        : 'Nothing to sign']),
+      el('button', {
+        id: 'baseline-refresh',
+        type: 'button',
+        class: 'quiet',
+        disabled: view.status === 'loading' || state.pending,
+        onClick: () => void loadBaselinePreview(),
+      }, ['Check again']),
+    ]));
+    return children;
+  }
+
+  function baselineSummaryText() {
+    const { content, questions } = itemsNeedingSignature();
+    return content + questions
+      ? `Sign everything as it reads today · ${contentNoun(content)} and ${pluralize(questions, 'question')} need review`
+      : 'Sign everything as it reads today · nothing needs your signature';
+  }
+
+  function renderBaseline() {
+    const { content, questions } = itemsNeedingSignature();
+    if (!content && !questions && !state.baseline) return null;
+    return el('details', {
+      id: 'baseline',
+      class: 'resign-by-change',
+      open: state.baselineOpen,
+      onToggle: event => {
+        state.baselineOpen = event.currentTarget.open;
+        if (state.baselineOpen && (!state.baseline || state.baseline.status === 'error')) void loadBaselinePreview();
+      },
+    }, [
+      el('summary', {}, [el('span', { id: 'baseline-summary-text' }, [baselineSummaryText()])]),
+      el('div', { id: 'baseline-body', class: 'resign-body' }, renderBaselineBody()),
+    ]);
+  }
+
+  // In place, like refreshResignByChange: a checkbox or a late preview must not move the page.
+  function refreshBaseline(focusId = null) {
+    const summary = document.getElementById('baseline-summary-text');
+    const body = document.getElementById('baseline-body');
+    if (!summary || !body) return;
+    summary.textContent = baselineSummaryText();
+    body.replaceChildren(...renderBaselineBody());
+    if (focusId) document.getElementById(focusId)?.focus();
+  }
+
+  function manyPageSummary(payload) {
+    const parts = [payload.updated
+      ? `Signed ${contentNoun(payload.updated)}.`
+      : 'No page or tool needed signing on this press.'];
+    if (payload.questions) {
+      parts.push(payload.questions.error
+        ? `The questions were not attested (${text(payload.questions.error.message)}).`
+        : `Attested ${pluralize(payload.questions.updated || 0, 'question')}.`);
+    }
+    const leftOut = list(payload.excluded).length + list(payload.questions?.excluded).length;
+    if (leftOut) parts.push(`${leftOut} left out, with the reason below.`);
+    if (payload.facultyReview?.error) parts.push(text(payload.facultyReview.error.message));
+    return parts.join(' ');
+  }
+
+  function renderManyPageReceipt() {
+    const receipt = state.manyPageReceipt;
+    if (!receipt) return null;
+    if (receipt.error) {
+      return el('div', { id: 'many-page-receipt', class: 'session-notice individual', tabindex: '-1' }, [
+        el('p', {}, [receipt.error]),
+      ]);
+    }
+    const payload = receipt.payload;
+    const links = [
+      ['This press on GitHub ↗', safeExternalUrl(payload.commit)],
+      ['The questions on GitHub ↗', safeExternalUrl(payload.questions?.commit)],
+      ['The review request ↗', safeExternalUrl(payload.pullRequest)],
+    ].filter(([, href]) => href);
+    const leftOutPages = list(payload.excluded);
+    const leftOutQuestions = list(payload.questions?.excluded);
+    return el('div', { id: 'many-page-receipt', class: 'session-notice added', tabindex: '-1' }, [
+      el('p', {}, [manyPageSummary(payload)]),
+      links.length ? el('p', {}, links.flatMap(([label, href], index) => [
+        index ? ' · ' : null,
+        el('a', { href, target: '_blank', rel: 'noopener noreferrer' }, [label]),
+      ]).filter(Boolean)) : null,
+      payload.pullRequestError ? el('p', { class: 'hint' }, [
+        'The signatures are saved, but the review request could not be confirmed open. Use “Reopen review request” if it appears.',
+      ]) : null,
+      leftOutPages.length || leftOutQuestions.length ? el('details', { class: 'resign-group' }, [
+        el('summary', {}, [`Left out · ${leftOutPages.length + leftOutQuestions.length}`]),
+        el('div', { class: 'resign-group-body' }, [
+          leftOutPages.length ? renderLeftOut(leftOutPages, 'slug') : null,
+          leftOutQuestions.length ? renderLeftOut(leftOutQuestions, 'id') : null,
+        ]),
+      ]) : null,
+    ]);
+  }
+
+  /* The one press behind both many-page controls. A dropped connection is not reported as
+     "nothing happened": the server may have finished, so the queue is reloaded to show what
+     is signed, and the receipt says a second press is safe (a signed, current page is never
+     signed again). */
+  const DROPPED_PRESS = 'network_error: The server did not answer in time, so this press may '
+    + 'have finished anyway. The queue below was reloaded and shows what is signed; pressing '
+    + 'again is safe — a signed, current page is never signed twice.';
+
+  async function pressManyPages(body, { signedCorrection = null } = {}) {
+    if (state.pending) return false;
+    // The reload after a press resets the question editor; never at the cost of an edit.
+    if (hasAnyUnsavedChanges()) {
+      state.manyPageReceipt = { error: 'Save or discard the question you are editing first; this press reloads the queue.' };
+      renderShell('many-page-receipt');
+      announce(state.manyPageReceipt.error);
+      return false;
+    }
+    state.pending = true;
+    state.manyPageReceipt = null;
+    renderShell();
+    let payload = null;
+    let receipt;
+    try {
+      const response = await fetchImpl(API, {
+        method: 'POST',
+        headers: apiHeaders(true),
+        body: JSON.stringify({ target: 'content', ...body }),
+      });
+      payload = await responseJson(response);
+      if (response.status === 401) {
+        clearKey();
+        state.pending = false;
+        renderLogin('Key not accepted. Enter the faculty key and try again.');
+        return false;
+      }
+      if (response.ok && payload?.ok === true) receipt = { payload };
+      // A 5xx this server did not write (a gateway timeout) says nothing about what happened;
+      // every failure the function itself reports carries an error code, and means nothing
+      // was signed (the rows are one atomic write, and what follows it never throws).
+      else if (response.status >= 500 && !payload?.error) receipt = { error: DROPPED_PRESS };
+      else receipt = { error: stableResponseMessage(payload, 'Nothing was signed.') };
+    } catch {
+      receipt = { error: DROPPED_PRESS };
+    }
+    if (receipt.payload && signedCorrection) state.correctionsSigned.add(signedCorrection);
+    state.manyPageReceipt = receipt;
+    // Whatever happened, the preview described a queue that may no longer exist.
+    state.baseline = null;
+    const reloaded = await load({ silent: true, focusId: 'many-page-receipt' });
+    if (state.baselineOpen) void loadBaselinePreview();
+    announce(receipt.payload ? manyPageSummary(receipt.payload) : receipt.error);
+    return reloaded && Boolean(receipt.payload);
   }
 
   /* Case-of-the-Week twin (2026-09). Names the partner page and offers one hop to it.
@@ -3213,6 +3586,8 @@ export function startFacultyConsole({
           ? el('p', { id: 'deep-link-notice', class: 'deep-link-notice' }, [state.deepLinkNotice])
           : null,
       ]),
+      renderManyPageReceipt(),
+      renderBaseline(),
       renderResignByChange(),
       renderSessionStatus(),
       el('div', { class: 'queue-filters' }, [

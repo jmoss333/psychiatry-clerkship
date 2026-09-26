@@ -35,6 +35,7 @@ const PYTHON = process.env.CLERKSHIP_META_PYTHON || 'python3';
 const EXPECTED_ASSETS = [
   ['_prototypes/sp-interview/sp-interview.pack.json', 'sp-interview.pack.json'],
   ['_prototypes/sp-interview/sp-interview.voice.js', 'sp-interview.voice.js'],
+  ['_prototypes/sp-interview/sp-interview.realtime.js', 'sp-interview.realtime.js'],
 ];
 
 // 2026-08 audit WS4 follow-up: check-static-site.mjs §5c hard-fails a built site
@@ -57,7 +58,9 @@ function run(command, args, options = {}) {
 
 test('manifest drives both Interview Room runtime assets into a real site build', (t) => {
   const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
-  assert.deepEqual(manifest.toolAssets, EXPECTED_ASSETS);
+  const interviewAssets = manifest.toolAssets.filter(([source, destination]) =>
+    source.startsWith('_prototypes/sp-interview/') || destination.startsWith('sp-interview.'));
+  assert.deepEqual(interviewAssets, EXPECTED_ASSETS);
   for (const [source] of EXPECTED_ASSETS) {
     assert.equal(fs.existsSync(path.join(ROOT, source)), true, `missing source asset: ${source}`);
   }

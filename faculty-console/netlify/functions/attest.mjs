@@ -3,6 +3,7 @@
 
 import {
   STALE_REASON,
+  canonicalTopicMetaRecord,
   digestFromManifest,
   manifestForSlug,
   sourceBlobSha,
@@ -1489,8 +1490,8 @@ async function buildState(repository, settings, branchSync) {
 // Re-sign by change (read-only). Which correction changed which signed page, and what it
 // said. These views never write, never sign, and never touch the branch: they answer the
 // reviewer's first question about a drifted page — "what changed?" — so that re-signing is
-// a review of the change rather than a re-read of the whole page. One press still signs one
-// page, in the existing flow.
+// a review of the change rather than a re-read of the whole page. Signing happens elsewhere:
+// one page per press in the existing flow, or one correction per press (commitContentBatch).
 // ───────────────────────────────────────────────────────────────────────────────────────
 
 const DRIFT_PREFIX = STALE_REASON.split('{at}')[0];
@@ -1547,11 +1548,20 @@ async function buildChangeView(repository, settings) {
   const state = await buildState(repository, settings, null);
   const shipped = (await readShippedPages(repository, settings)).file.json;
   const drifted = driftedItems(state);
+  // A fingerprint also covers the page's topic_meta record (quiz, key points…), and an edit
+  // there appears in no source file's history. So each page's record as it stood before its
+  // signing day is compared with the record now; when they differ, topic_meta.json's own
+  // history since that day joins the page's change list. Many corrections edit that one file,
+  // so the list can name a correction that only touched OTHER pages' records: a superset,
+  // never an omission — and the per-page diff shows "no change to this page" for those.
+  const records = await recordChanges(repository, settings, drifted);
   const queries = new Map();
   const perPage = drifted.map((item) => {
+    const recordChanged = records.get(item.slug);
     const sources = sourcesForSlug(shipped, item.slug);
-    for (const path of sources) queries.set(`${path}\u0000${item.at}`, { path, at: item.at });
-    return { item, sources };
+    const paths = recordChanged === true ? [...sources, TOPIC_META_PATH] : sources;
+    for (const path of paths) queries.set(`${path}\u0000${item.at}`, { path, at: item.at });
+    return { item, sources: paths, recordChanged };
   });
   const wanted = [...queries.entries()];
   const asked = wanted.slice(0, MAX_CHANGE_QUERIES);
@@ -1567,8 +1577,13 @@ async function buildChangeView(repository, settings) {
 
   const pages = [];
   const unchecked = [];
-  for (const { item, sources } of perPage) {
+  for (const { item, sources, recordChanged } of perPage) {
     const keys = sources.map(path => `${path}\u0000${item.at}`);
+    // An uncompared record is the same kind of gap as an unread history: unchecked, not clean.
+    if (recordChanged !== true && recordChanged !== false) {
+      unchecked.push(item.slug);
+      continue;
+    }
     if (!keys.every(key => histories.has(key))) {
       unchecked.push(item.slug);
       continue;
@@ -1582,7 +1597,7 @@ async function buildChangeView(repository, settings) {
         commits.push(summary);
       }
     }
-    pages.push({ slug: item.slug, title: item.title, kind: item.kind, at: item.at, commits });
+    pages.push({ slug: item.slug, title: item.title, kind: item.kind, at: item.at, commits, recordChanged });
   }
   const { groups, unexplained } = groupDriftedByChange(pages);
   return {
@@ -1608,10 +1623,61 @@ async function buildChangeView(repository, settings) {
         title: page.title,
         kind: page.kind,
         at: page.at,
+        // True when the page's quiz / key-points record changed too (topic_meta.json's
+        // commits are then part of `changes`).
+        recordChanged: page.recordChanged,
         changes: [...changes].map(([id, sameDay]) => ({ id, sameDay })),
       }];
     })),
+    // The words a "Sign this correction" press must send (see planBatch below).
+    statement: BATCH_STATEMENTS.correction,
   };
+}
+
+/**
+ * slug → true (its topic_meta record changed since the day it was signed), false (it did
+ * not), or null (it could not be compared on this load — reported unchecked, never clean).
+ * One base lookup and one topic_meta read per distinct signing DATE, not per page: the 89
+ * drifted pages of 2026-09-26 carried nine dates between them.
+ */
+async function recordChanges(repository, settings, drifted) {
+  const result = new Map();
+  if (!drifted.length) return result;
+  let current;
+  try {
+    const file = await repository.read(TOPIC_META_PATH, { ref: settings.branch });
+    current = isRecord(file.json) ? file.json : {};
+  } catch {
+    for (const item of drifted) result.set(item.slug, null);
+    return result;
+  }
+  const before = new Map();
+  await mapLimit([...new Set(drifted.map(item => item.at))], 4, async (at) => {
+    try {
+      const commits = await repository.listCommits({
+        sha: settings.baseBranch,
+        until: `${at}T00:00:00Z`,
+        perPage: 1,
+      });
+      const ref = typeof commits[0]?.sha === 'string' ? commits[0].sha : null;
+      if (!ref) {
+        before.set(at, {});
+        return;
+      }
+      const file = await repository.read(TOPIC_META_PATH, { ref });
+      before.set(at, isRecord(file.json) ? file.json : {});
+    } catch (error) {
+      before.set(at, error instanceof GithubError && error.notFound ? {} : null);
+    }
+  });
+  const fingerprint = (doc, slug) => (Object.hasOwn(doc, slug) && isRecord(doc[slug])
+    ? canonicalTopicMetaRecord(doc[slug]).toString('utf8')
+    : null);
+  for (const item of drifted) {
+    const then = before.get(item.at);
+    result.set(item.slug, then ? fingerprint(then, item.slug) !== fingerprint(current, item.slug) : null);
+  }
+  return result;
 }
 
 async function readAt(repository, path, ref) {
@@ -1732,6 +1798,7 @@ async function handleView(repository, settings, url) {
     if (sha && !/^[a-f0-9]{40}$/i.test(sha)) throw new HttpError('changes.invalid_commit', 400, 'That change id is not valid.');
     return buildDiffView(repository, settings, url.searchParams.get('slug') || '', sha);
   }
+  if (view === 'batch') return buildBatchPreview(repository, settings, url);
   throw new HttpError('unknown_view', 400, 'Choose a supported view.');
 }
 
@@ -2326,6 +2393,498 @@ async function publishNow(repository, settings) {
   });
 }
 
+// ───────────────────────────────────────────────────────────────────────────────────────
+// One press, many pages (2026-09-26). The attestation model's two new press kinds.
+//
+// WHY. A signature binds to a byte-exact fingerprint of a page's inputs, so any edit voids
+// it. The 2026-09-24/25 correction waves (374 peer-review findings in 48 hours) voided 89 of
+// the 127 signatures on main, and every one came back to the reviewer as a whole page to
+// re-sign, one press per page, for text he had already read. These rules change how many
+// pages one press may carry. They do not change who signs, what a signature binds to, or
+// what the learner-site build refuses.
+//
+//   baseline    One statement over everything that needs a signature today, minus the
+//               reviewer's own exclusions. Draft questions that are structurally ready (no
+//               blocker, no warning) are attested in the same press; the statement names
+//               the three question confirmations, so it carries them.
+//   correction  One statement over named corrections. A drifted page is re-signed at its
+//               current text when EVERY change since its signature is one of them — its
+//               source files, and its topic_meta record when that changed too. A page that
+//               also carries some other change is reported, not signed.
+//
+// Unchanged: only the server-configured faculty identity signs; the statement must arrive
+// verbatim; every row binds to today's text; nothing writes main. What the learner-site build
+// would refuse is left out rather than signed: a page whose first lines still say it is
+// unreviewed, or a tool whose own label disagrees (validate_attestation_consistency.py). A
+// page's topic_meta `facultyReview` block follows its signed row, as the ledger already makes
+// it do. Everything signed and everything left out comes back with its reason; GET
+// ?view=batch previews both without writing.
+// ───────────────────────────────────────────────────────────────────────────────────────
+
+const BATCH_STATEMENTS = Object.freeze({
+  baseline: 'I have reviewed this content and attest to it as it reads today: it is clinically '
+    + 'accurate, supported by its cited evidence, original, and free of protected health information.',
+  correction: 'I have reviewed these corrections and attest to every page they changed, as each '
+    + 'page reads today.',
+});
+const MAX_BATCH_LIST = 500;
+const BATCH_SLUG = /^[A-Za-z0-9_.-]{1,200}$/;
+const CORRECTION_ID = /^(?:pr:[1-9]\d{0,6}|sha:[a-f0-9]{12})$/;
+const SOURCE_CHECK_CONCURRENCY = 8;
+const PENDING_REVIEWER = 'Pending faculty review';
+const QUESTION_CONFIRMATIONS = Object.freeze({ clinical: true, evidence: true, originalityAndNoPhi: true });
+
+function batchIdList(value, field, pattern, required) {
+  if (value === undefined && !required) return new Set();
+  if (!Array.isArray(value) || value.length > MAX_BATCH_LIST || (required && !value.length)
+      || value.some(id => typeof id !== 'string' || !pattern.test(id))) {
+    throw new HttpError(`batch.invalid_${field}`, 400, required
+      ? 'Name at least one correction (pr:<number> or sha:<12 hex>) to sign.'
+      : `\`${field}\` must be a list of page names.`);
+  }
+  return new Set(value);
+}
+
+/** The batch request, validated; `preview` skips the statement (a preview signs nothing). */
+function requireBatchRequest(body, { preview = false } = {}) {
+  const { mode } = body;
+  if (!Object.hasOwn(BATCH_STATEMENTS, mode)) {
+    throw new HttpError('batch.invalid_mode', 400, 'Choose a "baseline" or a "correction" press.');
+  }
+  if (body.changes !== undefined) {
+    throw new HttpError('batch.ambiguous', 400,
+      'Send either `changes` (one page) or a `mode` (many pages), not both.');
+  }
+  if (!preview && body.statement !== BATCH_STATEMENTS[mode]) {
+    throw new HttpError('batch.statement_required', 400,
+      `This press signs many pages at once, so it must carry the ${mode} statement exactly as `
+        + 'the console shows it.');
+  }
+  if (body.questions !== undefined && typeof body.questions !== 'boolean') {
+    throw new HttpError('batch.invalid_questions', 400, '`questions` must be true or false.');
+  }
+  return {
+    mode,
+    exclude: batchIdList(body.exclude, 'exclude', BATCH_SLUG, false),
+    corrections: mode === 'correction'
+      ? batchIdList(body.corrections, 'corrections', CORRECTION_ID, true)
+      : new Set(),
+    questions: mode === 'baseline' && body.questions !== false,
+  };
+}
+
+function correctionLabel(id) {
+  return id.startsWith('pr:') ? `#${id.slice(3)}` : `commit ${id.slice(4)}`;
+}
+
+/**
+ * For a correction press: true (sign it), null (none of these corrections touched it — not
+ * this press's business), or the reason it is left out.
+ */
+function correctionVerdict(slug, was, view, corrections) {
+  // Only a signature that exists can be carried across a correction.
+  if (was !== 'drifted') return null;
+  if (view.unchecked.includes(slug)) {
+    return 'Its change history could not be traced on this press, so which corrections touched '
+      + 'it is unknown. Sign it on its own or in the baseline.';
+  }
+  const page = view.pages[slug];
+  if (!page) return null;
+  const ids = page.changes.map(change => change.id);
+  if (!ids.some(id => corrections.has(id))) return null;
+  const others = ids.filter(id => !corrections.has(id));
+  if (!others.length) return true;
+  return `It was also changed by ${others.map(correctionLabel).join(', ')}. Review `
+    + `${others.length === 1 ? 'that change' : 'those changes'} too, or sign it on its own.`;
+}
+
+/**
+ * Which items one press would sign, and which it leaves out and why. Pure apart from the
+ * source reads in batchSourceConflicts; `reviewed` is the effective ledger (git rows, with
+ * the signed ledger applied in ledger mode), `digestInputs` the attestation branch's head.
+ */
+async function planBatch({ repository, settings, request, reviewed, digestInputs, changeView }) {
+  let universe;
+  try {
+    universe = deriveContentUniverse({ shipped: digestInputs.shipped });
+  } catch {
+    invalidRepositoryFile();
+  }
+  const sign = [];
+  const excluded = [];
+  for (const { slug, title, kind } of universe) {
+    const row = Object.hasOwn(reviewed, slug) && isRecord(reviewed[slug]) ? reviewed[slug] : null;
+    let digest;
+    try {
+      digest = digestForSlug(slug, digestInputs);
+    } catch {
+      digest = null;
+    }
+    // Bound and current: nothing to sign, nothing to say.
+    if (row?.status === 'reviewed' && digest && row.contentHash === digest) continue;
+    const was = !row || (row.status !== 'pending' && row.status !== 'reviewed') ? 'unrecorded'
+      : row.status === 'pending' ? 'pending'
+        : typeof row.contentHash === 'string' && row.contentHash ? 'drifted' : 'unbound';
+    const leave = reason => excluded.push({ slug, title, kind, was, reason });
+    if (request.mode === 'correction') {
+      const verdict = correctionVerdict(slug, was, changeView, request.corrections);
+      if (verdict === null) continue;
+      if (verdict !== true) {
+        leave(verdict);
+        continue;
+      }
+    }
+    if (was === 'unrecorded') {
+      leave('It has no usable row in reviewed.json, so there is nothing here to sign.');
+      continue;
+    }
+    if (request.exclude.has(slug)) {
+      leave('You left it out of this press.');
+      continue;
+    }
+    if (!validRisk(row.risk)) {
+      leave('It has no risk classification yet; classify it first.');
+      continue;
+    }
+    if (!digest) {
+      leave('A file it is built from is missing, so a signature could not be bound to its text.');
+      continue;
+    }
+    sign.push({
+      slug,
+      title,
+      kind,
+      was,
+      digest,
+      pendingReason: was === 'pending' && typeof row.reason === 'string' ? row.reason : '',
+    });
+  }
+  const conflicts = await batchSourceConflicts(repository, settings, sign, digestInputs);
+  for (const item of sign) {
+    if (conflicts.has(item.slug)) {
+      excluded.push({ slug: item.slug, title: item.title, kind: item.kind, was: item.was, reason: conflicts.get(item.slug) });
+    }
+  }
+  return { sign: sign.filter(item => !conflicts.has(item.slug)), excluded };
+}
+
+/**
+ * The source-level rules validate_attestation_consistency.py applies to a SIGNED item, as
+ * reasons rather than refusals: one page that cannot be signed must not stop the other
+ * sixty-four. Mirrors that file's rules exactly (statuses compared case-sensitively, as it does).
+ */
+async function batchSourceConflicts(repository, settings, items, digestInputs) {
+  const conflicts = new Map();
+  if (!items.length) return conflicts;
+  const manifestFile = await readRequired(repository, MANIFEST_PATH, settings.branch);
+  const pages = new Map();
+  const tools = new Map();
+  for (const entry of Array.isArray(manifestFile.json?.md) ? manifestFile.json.md : []) {
+    if (Array.isArray(entry) && typeof entry[0] === 'string') pages.set(entry[1], entry[0]);
+  }
+  for (const entry of Array.isArray(manifestFile.json?.tools) ? manifestFile.json.tools : []) {
+    if (Array.isArray(entry) && typeof entry[0] === 'string') tools.set(entry[1], entry[0]);
+  }
+  // The topic_meta `facultyReview` rule is not here: that block FOLLOWS the row it mirrors
+  // (applyLedger in ledger mode, alignFacultyReview in git-row mode), so it is never a reason
+  // to leave a page out.
+  await mapLimit(items, SOURCE_CHECK_CONCURRENCY, async ({ slug }) => {
+    const source = pages.get(slug) || tools.get(slug);
+    if (!source) return;
+    let text;
+    try {
+      text = Buffer.from((await repository.readRaw(source, { ref: digestInputs.head })).bytes).toString('utf8');
+    } catch (error) {
+      if (!(error instanceof GithubError && error.notFound)) throw error;
+      conflicts.set(slug, `Its source file (${source}) is not on the branch, so it cannot be signed.`);
+      return;
+    }
+    if (pages.has(slug) && PENDING_BANNER.test(text.split('\n').slice(0, 8).join('\n'))) {
+      conflicts.set(slug, 'Its first lines still say it is unreviewed. Remove that banner in a content '
+        + 'change first; a signed page whose source says it is unreviewed fails the site build.');
+      return;
+    }
+    if (tools.has(slug)) {
+      const status = markerStatus(text);
+      if (status && !MARKER_REVIEWED.has(status)) {
+        conflicts.set(slug, `Its own review label says "${status}". Changing that label is a content `
+          + 'change (ADR-003 §6), so it is not signed here.');
+      }
+    }
+  });
+  return conflicts;
+}
+
+function batchCommitWhat(request, count) {
+  if (request.mode === 'baseline') return `baseline sign-off, ${count} content item(s)`;
+  const labels = [...request.corrections].map(correctionLabel);
+  const named = labels.length > 8 ? `${labels.slice(0, 8).join(', ')} and ${labels.length - 8} more` : labels.join(', ');
+  return `correction sign-off (${named}), ${count} content item(s)`;
+}
+
+/** One attempt, git rows (legacy mode): read, plan, write reviewed.json once. */
+async function writeBatchRows({ repository, settings, request, changeView, attester, at }) {
+  const file = await repository.read(REVIEWED_PATH);
+  if (!isRecord(file.json)) invalidRepositoryFile();
+  const reviewed = structuredClone(file.json);
+  const digestInputs = await readMutationDigestInputs(repository, settings.branch);
+  const plan = await planBatch({ repository, settings, request, reviewed, digestInputs, changeView });
+  if (!plan.sign.length) return { updated: 0, commit: null, plan, reviewed, digestInputs };
+  for (const item of plan.sign) {
+    const next = { ...reviewed[item.slug], status: 'reviewed', at, by: attester, contentHash: item.digest };
+    delete next.reason;
+    // defineProperty, not assignment, for the same "__proto__" reason as the one-page path.
+    Object.defineProperty(reviewed, item.slug, { configurable: true, enumerable: true, writable: true, value: next });
+  }
+  const saved = await repository.write(
+    REVIEWED_PATH,
+    reviewed,
+    file.sha,
+    `attest: ${batchCommitWhat(request, plan.sign.length)} by ${attester} (${at})\n\n`
+      + `Statement: "${BATCH_STATEMENTS[request.mode]}"`,
+    JSON_INDENT,
+  );
+  return { updated: plan.sign.length, commit: saved.commit, plan, reviewed, digestInputs };
+}
+
+/**
+ * Git-row mode's half of what applyLedger does in ledger mode: a manifest page's topic_meta
+ * `facultyReview` block follows its row. The #781 withdrawal (714f733) demoted two such blocks
+ * together with their rows; re-signing a row without re-promoting its block is what
+ * validate_attestation_consistency.py reports as reviewed-ledger-topic-meta-status-mismatch.
+ * Every row that is reviewed AND bound to today's text is followed, not only this press's,
+ * so a press that stopped between its two writes is repaired by the next one.
+ * `facultyReview` is outside every content hash, so this can never drift a page.
+ */
+async function alignFacultyReview({ repository, settings, reviewed, digestInputs, attester, at }) {
+  const manifestFile = await readRequired(repository, MANIFEST_PATH, settings.branch);
+  const pageSlugs = (Array.isArray(manifestFile.json?.md) ? manifestFile.json.md : [])
+    .filter(entry => Array.isArray(entry) && typeof entry[1] === 'string')
+    .map(entry => entry[1]);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const file = await repository.read(TOPIC_META_PATH);
+    if (!isRecord(file.json)) invalidRepositoryFile();
+    const doc = structuredClone(file.json);
+    const aligned = [];
+    for (const slug of pageSlugs) {
+      const row = Object.hasOwn(reviewed, slug) && isRecord(reviewed[slug]) ? reviewed[slug] : null;
+      if (row?.status !== 'reviewed' || typeof row.contentHash !== 'string') continue;
+      let digest = null;
+      try {
+        digest = digestForSlug(slug, digestInputs);
+      } catch {
+        digest = null;
+      }
+      if (!digest || row.contentHash !== digest) continue;
+      const record = Object.hasOwn(doc, slug) && isRecord(doc[slug]) ? doc[slug] : null;
+      const review = record && isRecord(record.facultyReview) ? record.facultyReview : null;
+      if (!review) continue;
+      if (MARKER_REVIEWED.has(review.status) && review.lastReviewed && review.reviewer
+          && review.reviewer !== PENDING_REVIEWER) continue;
+      record.facultyReview = { ...review, status: 'reviewed', reviewer: row.by, lastReviewed: row.at };
+      aligned.push(slug);
+    }
+    if (!aligned.length) return { aligned, commit: null };
+    try {
+      const saved = await repository.write(
+        TOPIC_META_PATH,
+        doc,
+        file.sha,
+        `attest: faculty-review line follows its signed row (${aligned.join(', ')}) by ${attester} (${at})`,
+        JSON_INDENT,
+      );
+      return { aligned, commit: saved.commit };
+    } catch (error) {
+      if (!(error instanceof GithubError && error.conflict) || attempt === 1) throw error;
+    }
+  }
+  throw new GithubError('github_conflict', 409, { retryable: true });
+}
+
+/** One attempt, ledger mode: read, plan, append one signed event per item, write once. */
+async function writeBatchLedger({ repository, settings, request, changeView, attester }) {
+  const reviewedFile = await readRequired(repository, REVIEWED_PATH, settings.branch);
+  if (!isRecord(reviewedFile.json)) invalidRepositoryFile();
+  const ledger = await readLedger(repository, settings);
+  const reviewed = applyLedger({ reviewed: reviewedFile.json, events: ledger.events }).reviewed;
+  const digestInputs = await readMutationDigestInputs(repository, settings.branch);
+  const plan = await planBatch({ repository, settings, request, reviewed, digestInputs, changeView });
+  if (!plan.sign.length) return { updated: 0, commit: null, plan };
+  const drafts = plan.sign.map(item => ({ type: 'attest', kind: 'content', id: item.slug, contentHash: item.digest }));
+  const appended = signLedger({ ledger, drafts, attester, base: digestInputs.head, settings });
+  const saved = await repository.writeText({
+    path: LEDGER_FILE,
+    text: appended.text,
+    sha: ledger.sha,
+    message: ledgerCommitMessage(appended, batchCommitWhat(request, drafts.length), attester),
+    branch: settings.ledger.branch,
+  });
+  return { updated: drafts.length, commit: saved.commit, plan, ledger: { seq: appended.head.seq } };
+}
+
+function questionExclusion(item, assessment) {
+  const issues = [...(assessment?.blockers || []), ...(assessment?.warnings || [])];
+  const what = assessment?.gate === 'blocked' ? 'It has a structural problem' : 'It has a quality warning';
+  return {
+    id: item.id,
+    reason: `${what}: ${issues.map(issue => issue.message).join(' ') || 'unassessed'} Attest it on its own `
+      + 'in the Questions tab, where each warning is acknowledged.',
+  };
+}
+
+/** Draft questions a baseline would attest (gate "ready") and the ones it leaves out. */
+async function readyQuestionPlan(repository, settings) {
+  const head = await repository.head();
+  const bankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES, ref: head });
+  const manifestFile = await repository.read(MANIFEST_PATH, { ref: head });
+  const { manifestPages } = requireManifest(manifestFile.json);
+  requireQbank(bankFile.json);
+  let bank = bankFile.json;
+  if (settings.ledger) {
+    const ledger = await readLedger(repository, settings);
+    bank = applyLedger({ reviewed: {}, qbank: bank, events: ledger.events }).qbank;
+  }
+  const active = bank.items.filter(item => isRecord(item) && item.retired !== true);
+  const { byId } = assessBank(active, { manifestPages, activeItems: active });
+  const drafts = active.filter(item => item.status === 'draft');
+  return {
+    manifestRevision: manifestFile.sha,
+    ready: drafts.filter(item => byId[item.id]?.gate === 'ready'),
+    excluded: drafts.filter(item => byId[item.id]?.gate !== 'ready')
+      .map(item => questionExclusion(item, byId[item.id])),
+  };
+}
+
+/**
+ * The baseline's question half. Runs AFTER the pages are signed and never undoes them: any
+ * failure here is reported beside the signed pages, not as a failed press.
+ */
+async function attestReadyQuestions({ repository, settings, attester }) {
+  let plan = null;
+  try {
+    plan = await readyQuestionPlan(repository, settings);
+    if (!plan.ready.length) return { updated: 0, commit: null, signed: [], excluded: plan.excluded };
+    const body = {
+      manifestRevision: plan.manifestRevision,
+      items: plan.ready.map(item => ({ id: item.id, revision: itemRevision(item), reviewedRevision: itemRevision(item) })),
+      confirmations: { ...QUESTION_CONFIRMATIONS },
+    };
+    const result = settings.ledger
+      ? await commitQbankLedger({ repository, settings, body, attester })
+      : await commitQbankMutation({ repository, action: 'qbank.attest', body, attester });
+    return {
+      updated: result.updated,
+      commit: result.commit,
+      signed: plan.ready.map(item => item.id),
+      excluded: plan.excluded,
+      ...(result.ledger ? { ledger: result.ledger } : {}),
+    };
+  } catch (error) {
+    const known = error instanceof HttpError || error instanceof QbankActionError;
+    return {
+      updated: 0,
+      commit: null,
+      signed: [],
+      excluded: plan ? plan.excluded : [],
+      error: {
+        code: known && typeof error.code === 'string' ? error.code : 'questions_failed',
+        message: known ? error.message
+          : 'The questions could not be attested on this press. The pages above were signed; try the questions again.',
+      },
+    };
+  }
+}
+
+function publicSign(item) {
+  return { slug: item.slug, title: item.title, kind: item.kind, was: item.was, pendingReason: item.pendingReason };
+}
+
+async function commitContentBatch({ repository, settings, body, attester }) {
+  const request = requireBatchRequest(body);
+  const at = today();
+  // Change history is read once per press: which corrections touched which page does not
+  // move between the two attempts; whether each page still needs a signature is re-read.
+  const changeView = request.mode === 'correction' ? await buildChangeView(repository, settings) : null;
+  const write = settings.ledger ? writeBatchLedger : writeBatchRows;
+  let content = null;
+  for (let attempt = 0; attempt < 2 && !content; attempt += 1) {
+    try {
+      content = await write({ repository, settings, request, changeView, attester, at });
+    } catch (error) {
+      if (!(error instanceof GithubError && error.conflict) || attempt === 1) throw error;
+    }
+  }
+  // After the rows, never instead of them: a failure here is reported beside the signed pages.
+  let facultyReview = null;
+  if (!settings.ledger) {
+    try {
+      facultyReview = await alignFacultyReview({
+        repository, settings, reviewed: content.reviewed, digestInputs: content.digestInputs, attester, at,
+      });
+    } catch (error) {
+      facultyReview = {
+        aligned: [],
+        commit: null,
+        error: {
+          code: error instanceof HttpError ? error.code : 'faculty_review_failed',
+          message: 'Every signed row stands, but the matching topic_meta faculty-review lines could '
+            + 'not be updated on this press. Press again to finish; nothing is signed twice.',
+        },
+      };
+    }
+  }
+  const questions = request.questions ? await attestReadyQuestions({ repository, settings, attester }) : null;
+  return {
+    ok: true,
+    target: 'content',
+    mode: request.mode,
+    updated: content.updated,
+    commit: content.commit,
+    signed: content.updated ? content.plan.sign.map(publicSign) : [],
+    excluded: content.plan.excluded,
+    ...(content.ledger ? { ledger: content.ledger } : {}),
+    ...(facultyReview ? { facultyReview } : {}),
+    ...(questions ? { questions } : {}),
+  };
+}
+
+/** GET ?view=batch&mode=baseline|correction[&corrections=pr:1,pr:2][&exclude=a,b] — reads only. */
+async function buildBatchPreview(repository, settings, url) {
+  const list = name => (url.searchParams.get(name) || '').split(',').map(value => value.trim()).filter(Boolean);
+  const request = requireBatchRequest({
+    mode: url.searchParams.get('mode') || '',
+    exclude: list('exclude'),
+    ...(url.searchParams.get('mode') === 'correction' ? { corrections: list('corrections') } : {}),
+  }, { preview: true });
+  const reviewedFile = await readRequired(repository, REVIEWED_PATH, settings.branch);
+  if (!isRecord(reviewedFile.json)) invalidRepositoryFile();
+  let reviewed = reviewedFile.json;
+  if (settings.ledger) {
+    const ledger = await readLedger(repository, settings);
+    reviewed = applyLedger({ reviewed, events: ledger.events }).reviewed;
+  }
+  const digestInputs = await readMutationDigestInputs(repository, settings.branch);
+  const changeView = request.mode === 'correction' ? await buildChangeView(repository, settings) : null;
+  const plan = await planBatch({ repository, settings, request, reviewed, digestInputs, changeView });
+  let questions = null;
+  if (request.mode === 'baseline') {
+    const planned = await readyQuestionPlan(repository, settings);
+    questions = {
+      sign: planned.ready.map(item => ({ id: item.id, category: item.category, stem: String(item.stem || '').slice(0, 160) })),
+      excluded: planned.excluded,
+    };
+  }
+  return {
+    view: 'batch',
+    mode: request.mode,
+    statement: BATCH_STATEMENTS[request.mode],
+    branch: settings.ledger ? settings.ledger.branch : settings.branch,
+    sign: plan.sign.map(publicSign),
+    excluded: plan.excluded,
+    ...(questions ? { questions } : {}),
+  };
+}
+
 async function handleLedgerPost({ repository, settings, body, attester }) {
   if (body.action === 'branch.ensure-pr') {
     // There is no rolling PR in ledger mode; say so rather than fail an old console tab.
@@ -2333,6 +2892,9 @@ async function handleLedgerPost({ repository, settings, body, attester }) {
   }
   if (body.action === 'ledger.publish') {
     return { ok: true, publish: await publishNow(repository, settings) };
+  }
+  if (body.target === 'content' && body.mode !== undefined) {
+    return commitContentBatch({ repository, settings, body, attester });
   }
   if (body.target === 'content') {
     return commitContentLedger({ repository, settings, body, attester });
@@ -2401,7 +2963,9 @@ async function handlePost({ repository, settings, body, attester }) {
   }
 
   let mutate;
-  if (body.target === 'content') {
+  if (body.target === 'content' && body.mode !== undefined) {
+    mutate = () => commitContentBatch({ repository, settings, body, attester });
+  } else if (body.target === 'content') {
     mutate = () => commitContentMutation({ repository, settings, body, attester });
   } else if (body.action === 'qbank.save-draft' || body.action === 'qbank.attest') {
     mutate = () => commitQbankMutation({ repository, action: body.action, body, attester });
@@ -2417,8 +2981,9 @@ async function handlePost({ repository, settings, body, attester }) {
   const result = await mutate();
 
   // Housekeeping AFTER the write, and never fatal: the attestation is already
-  // committed, so a PR hiccup must not report it as failed.
-  if (result?.ok && result.commit) {
+  // committed, so a PR hiccup must not report it as failed. A many-page press whose rows
+  // were all current can still have committed questions or faculty-review lines.
+  if (result?.ok && (result.commit || result.questions?.commit || result.facultyReview?.commit)) {
     try {
       const pullRequest = await repository.ensureRollingPullRequest();
       if (pullRequest) return { ...result, pullRequest };

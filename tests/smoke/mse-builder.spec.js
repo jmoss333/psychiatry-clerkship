@@ -2,6 +2,126 @@ import { test, expect } from '@playwright/test';
 
 const TOOL = '/tools/mse.html';
 
+test('fictional comparison carries selected observations and uncertainty into rounds and back', async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await page.goto(TOOL);
+  await expect(page.getByRole('button', { name: 'What changed today?', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'What changed today?', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'One patient, two mornings' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Rehearse this update' })).toBeDisabled();
+  await page.getByRole('checkbox', { name: 'Include speech', exact: true }).check();
+  await page.getByRole('checkbox', { name: 'Include attention', exact: true }).check();
+  await page.getByRole('link', { name: 'Rehearse this update' }).click();
+  await expect(page.locator('[aria-current="step"]')).toHaveText('3');
+  const handoff = page.getByRole('region', { name: 'Your selected case details' });
+  await expect(handoff).toContainText('Speech is slower');
+  await expect(handoff).toContainText('Attention was not assessed');
+  await expect(handoff.locator('li')).toHaveCount(2);
+  await expect(handoff).toContainText('Fictional practice case');
+  await page.getByRole('button', { name: 'Pause & leave' }).click();
+  await page.reload();
+  await page.getByRole('button', { name: 'Resume practice →' }).click();
+  await expect(handoff.locator('li')).toHaveCount(2);
+  await page.getByRole('link', { name: 'Edit selected details' }).click();
+  await expect(page.getByRole('checkbox', { name: 'Include speech', exact: true })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Include attention', exact: true })).toBeChecked();
+  expect(errors).toEqual([]);
+});
+
+test('case handoff survives the learner shell and preserves selection when editing', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('cw_rotation_start', new Date().toISOString().slice(0, 10));
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify({ role: 'staff', tab: 'today', viewWeek: 1, autoAdvance: false }));
+  });
+  await page.goto('/?tool=mse.html');
+  let tool = page.frameLocator('.toolframe');
+  await tool.getByRole('checkbox', { name: 'Include mood', exact: true }).check();
+  await tool.getByRole('link', { name: 'Rehearse this update' }).click();
+  await expect(page).toHaveURL(/tool=oral.html/);
+  tool = page.frameLocator('.toolframe');
+  await expect(tool.getByRole('region', { name: 'Your selected case details' })).toContainText('less wound up');
+  await page.reload();
+  await expect(tool.getByRole('region', { name: 'Your selected case details' })).toContainText('less wound up');
+  await tool.getByRole('link', { name: 'Edit selected details' }).click();
+  await expect(page).toHaveURL(/tool=mse.html/);
+  await expect(tool.getByRole('checkbox', { name: 'Include mood', exact: true })).toBeChecked();
+});
+
+test('recovery from a broken case link updates the outer shell route and survives reload', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('cw_rotation_start', new Date().toISOString().slice(0, 10));
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify({ role: 'staff', tab: 'today', viewWeek: 1, autoAdvance: false }));
+  });
+  await page.goto('/?tool=oral.html&msecase=stale&msepicks=speech');
+  await page.frameLocator('.toolframe').getByRole('link', { name: 'Open the MSE comparison' }).click();
+  await expect(page).toHaveURL(/tool=mse.html/);
+  await page.reload();
+  await expect(page.frameLocator('.toolframe').getByRole('heading', { name: 'One patient, two mornings' })).toBeVisible();
+});
+
+test('case rehearsal separates prior timers, unrelated examples, and ordinary practice history', async ({ page }) => {
+  await page.clock.install();
+  await page.goto('/tools/oral.html');
+  await page.getByRole('button', { name: 'Start 60-sec practice' }).click();
+  await page.clock.fastForward(18_000);
+  await page.getByRole('button', { name: 'Pause & leave' }).click();
+  await page.goto('/tools/oral.html?format=rounds&view=guided&msecase=mse-change-v1&msepicks=speech');
+  await expect(page.locator('[data-oral-clock]')).toHaveText('1:00');
+  await expect(page.getByRole('button', { name: 'Show an example' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Summarize a collateral call/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Start 60-sec practice' }).click();
+  await page.clock.fastForward(60_000);
+  await expect(page.locator('[data-oral-clock]')).toHaveText('0:00');
+  expect(await page.evaluate(() => localStorage.getItem('cw_orals_v1'))).toBeNull();
+  await page.getByRole('link', { name: 'Edit selected details' }).click();
+  await page.getByRole('checkbox', { name: 'Include attention', exact: true }).check();
+  await page.getByRole('link', { name: 'Rehearse this update' }).click();
+  await expect(page.locator('[data-oral-clock]')).toHaveText('1:00');
+  await page.getByRole('link', { name: 'Open other practice' }).click();
+  await page.getByRole('button', { name: 'Resume practice →' }).click();
+  await expect(page.locator('[data-oral-clock]')).toHaveText('0:42');
+});
+
+test('invalid case links never display supplied text or load a partial case', async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('cw_oral_session_v1', JSON.stringify({v:1,format:'rounds',items:{rounds:{seconds:22}}})));
+  await page.goto('/tools/oral.html?msecase=mse-change-v1&msepicks=speech,UNTRUSTED_DETAIL');
+  await expect(page.getByRole('heading', { name: 'Case details unavailable' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Your selected case details' })).toHaveCount(0);
+  await expect(page.locator('body')).not.toContainText('UNTRUSTED_DETAIL');
+  await expect(page.locator('[data-oral-timer]')).toHaveCount(0);
+  expect(await page.evaluate(() => JSON.parse(sessionStorage.getItem('cw_oral_session_v1')).items.rounds.seconds)).toBe(22);
+  await page.getByRole('link', { name: 'Open the MSE comparison' }).click();
+  await expect(page.getByRole('checkbox', { name: 'Include speech', exact: true })).not.toBeChecked();
+});
+
+test('comparison supports phone keyboards, clearing selections, and blocked storage', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.addInitScript(() => { Object.defineProperty(window, 'sessionStorage', { get() { throw new DOMException('Blocked', 'SecurityError'); } }); });
+  await page.goto(TOOL);
+  const speech = page.getByRole('checkbox', { name: 'Include speech', exact: true });
+  await speech.focus(); await page.keyboard.press('Space');
+  await expect(speech).toBeChecked();
+  await page.getByRole('button', { name: 'Clear selections' }).click();
+  await expect(speech).not.toBeChecked();
+  await expect(page.getByRole('button', { name: 'Rehearse this update' })).toBeDisabled();
+  const size = await page.evaluate(() => ({ view: document.documentElement.clientWidth, content: document.documentElement.scrollWidth }));
+  expect(size.content).toBeLessThanOrEqual(size.view);
+  await speech.check();
+  await page.getByRole('link', { name: 'Rehearse this update' }).click();
+  await expect(page.getByRole('region', { name: 'Your selected case details' })).toContainText('Speech is slower');
+  await expect(page.getByText('Tab storage is unavailable.', { exact: false })).toBeVisible();
+});
+
+test('a missing case asset leaves existing MSE teaching and the builder accessible', async ({ page }) => {
+  await page.route('**/mse-rounds-case.js', route => route.abort());
+  await page.goto(TOOL);
+  await expect(page.getByRole('heading', { name: 'Comparison unavailable' })).toBeVisible();
+  await page.getByRole('button', { name: /2 · Build an MSE/ }).click();
+  await expect(page.getByRole('heading', { name: 'Comparison unavailable' })).toBeHidden();
+  await page.getByRole('checkbox', { name: 'no SI/HI', exact: true }).click();
+  await expect(page.locator('.note')).toContainText('no SI/HI');
+});
+
 function collectRuntimeErrors(page) {
   const errors = [];
   page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
