@@ -3003,6 +3003,8 @@ test.describe('phone client', () => {
     const link = page.getByRole('link', { name: 'Use the phone console' });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', './m/');
+    const box = await link.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(12);
   });
 });
 
