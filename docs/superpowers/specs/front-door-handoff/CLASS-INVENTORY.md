@@ -331,6 +331,11 @@ the markup owns rather than the palette.
 a rounded pill (`.fd-quicktools--pills .fd-quicktool`); inside `.fd-rail` it stays a full-width row.
 Emit the identical inner markup for both; only the container class differs.
 
+⚠ **At 640px and narrower `.fd-pilot` is ONE row** (2026-09-26): `.fd-pilot__title` beside a 44px
+`.fd-pilot__button`, with `.fd-pilot__eyebrow` hidden because it repeats the title's words. Stacked, the
+badge, title and full-width button took 138px above the primary card. At 390px and narrower the
+explanatory sentence stays hidden as before; the feedback form repeats it.
+
 ⚠ **At 640px and narrower the pill row is ONE sideways-scrolling row** (2026-09-26), still placed
 above the primary by `order:-1`. Do not let it wrap again: wrapped, five long tool names took
 164–207px and pushed the student Today's primary card under the fixed dock. The row's padding keeps a
@@ -426,7 +431,7 @@ Omitting it collapses the rail underneath.
 | `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible on a ready handout. Missing governed HTML renders `.fd-care-pack__crisis-failure` in the ordinary Care header and disables Print; the renderer never invents contacts. |
 | `.fd-care-pack__actions` | States that choices stay on screen only. Print is enabled only when at least one valid resource and the governed crisis block are both present. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
-| `.fd-care-entry` | In-flow Care route button near the top of APP On shift at ≤640px. Today still emits it, but `.fd-today > .fd-care-entry{display:none}` retires it on phones (2026-09-26): the header `.fd-carebtn` (2026-09-24) is Today's phone route to Care, and the duplicate row pushed the primary toward the dock. Hidden on wider screens where the Care tab is visible; the fixed phone dock remains five items. |
+| `.fd-care-entry` | In-flow Care route button near the top of APP On shift at ≤640px, hidden on wider screens where the Care tab is visible. **Today no longer emits it** (2026-09-26): the header `.fd-carebtn` (2026-09-24) is Today's phone route to Care and the Care tab its wide route, so the row was a duplicate that pushed the primary toward the dock. `fd-today.test.mjs` asserts Today's markup carries none; APP's must stay (`app-pathway`). The fixed phone dock remains five items. |
 | `.fd-carelink` | Static external anchor with an explicit new-tab mark and visible title/description. |
 
 ---

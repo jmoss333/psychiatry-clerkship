@@ -300,10 +300,20 @@ function fdProgressAccess(){
    contractual here, not the selection order past "this week's tools first". */
 /* Rights references are excluded: Quick Tools is the reach-for-it-mid-shift rail, and a page
    whose purpose is to say the instrument is not reproduced here is the opposite of that. */
+var FD_QUICKTOOLS_PREFERRED=['mse.html','capacity.html','withdrawal.html','violence.html','interaction-cards.html'];
+
 function fdQuickTools(index, weekItems){
   var out=[], seen={}, i, ref;
   for(i=0;i<weekItems.length;i++){
     if(weekItems[i].kind==='tool'&&!weekItems[i].rights&&!seen[weekItems[i].ref]){ out.push(weekItems[i]); seen[weekItems[i].ref]=true; }
+  }
+  /* Fill to five from a short, fixed list of on-shift tools first (2026-09-26), then the rest by
+     ref as before, so the fallback leads with bedside tools rather than with the alphabet. A ref a
+     site does not ship is skipped, so one list serves both sites. */
+  for(i=0;i<FD_QUICKTOOLS_PREFERRED.length&&out.length<5;i++){
+    ref=FD_QUICKTOOLS_PREFERRED[i];
+    var pick=index.byRef[ref];
+    if(pick&&pick.kind==='tool'&&!pick.rights&&!pick.searchOnly&&!seen[ref]){ out.push(pick); seen[ref]=true; }
   }
   if(out.length<5){
     var all=[];
@@ -369,14 +379,16 @@ function fdToday(index, state){
   var nowMs=st.nowMs;
   var hour=new Date(nowMs).getHours();
   var dayName=FD_TODAY_DAYNAMES[new Date(nowMs).getDay()];
-  var roleShort=st.role||'there';
-  var period=hour<12?'Morning':(hour<18?'Afternoon':'Evening');
+  var period=hour<12?'Good morning':(hour<18?'Good afternoon':'Good evening');
   /* No trailing em dash. The prototype's "Evening, Alex —" led into the line below with a dash
      after a NAME; with a role label the same dash read as a truncated sentence ("Evening, Core
      rotation —"), and at 375px it wrapped onto a line of its own (2026-09-18 critique). It had
      already been made aria-hidden so a screen reader stopped announcing "dash"; now it is gone
      for sighted readers too. The subhead below carries the week and the day. */
-  var greeting=period+', '+fdEsc(roleShort);
+  /* 2026-09-26: no role label either. "Afternoon, Core rotation" addressed the learner by the
+     name of a rotation and wrapped to two lines on a phone; "Good afternoon" reads as a greeting on
+     both sites, and the subhead still names the week and the day. */
+  var greeting=period;
 
   var wk=(typeof st.week==='number'&&!isNaN(st.week))?fdFindWeek(idx, st.week):null;
   var hasWeek=!!wk;
@@ -408,7 +420,8 @@ function fdToday(index, state){
   out+='<p class="fd-today__sub">'+sub+'</p>';
   out+=fdPilotFeedback();
   out+=fdConsistency(st.activityDays, nowMs);
-  out+='<button type="button" class="fd-care-entry" data-fd-tab="care">Patient care resources<span aria-hidden="true">→</span></button>';
+  /* No in-flow Care row here any more (2026-09-26): the header .fd-carebtn reaches Care on phones
+     and the Care tab on wider screens, so this row was a duplicate. APP's On shift keeps its own. */
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 
   /* One Thing First: state.primaryKind arrives from the shell's picker. The lead card is

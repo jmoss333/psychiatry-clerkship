@@ -24,7 +24,8 @@ const make = new Function(`
            fdFindWeek: fdFindWeek, fdContinue: fdContinue, fdTodayPrimary: fdTodayPrimary,
            fdTodayLastRead: fdTodayLastRead, fdTodayWhy: fdTodayWhy,
            FD_TODAY_PRIMARY_ORDER: FD_TODAY_PRIMARY_ORDER, FD_TODAY_LEAD_END: FD_TODAY_LEAD_END,
-           FD_TODAY_WHY: FD_TODAY_WHY };
+           FD_TODAY_WHY: FD_TODAY_WHY, fdQuickTools: fdQuickTools,
+           FD_QUICKTOOLS_PREFERRED: FD_QUICKTOOLS_PREFERRED };
 `);
 const F = make();
 
@@ -130,12 +131,13 @@ test('Today marks only the winning Continue or setup control as a dock source', 
   assert.equal((F.fdToday(IDX, s({ week: null, primaryKind: 'resume' })).match(/data-fd-dock-source=/g) || []).length, 0);
 });
 
-test('Today keeps the Shift-ready entry below its primary action and beside in-flow Care', () => {
+test('Today keeps the Shift-ready entry below its primary action and emits no in-flow Care row', () => {
   const html = F.fdToday(IDX, s({ offlineHtml: '<aside class="fd-offline" data-test-offline></aside>' }));
   const primary = html.indexOf('data-fd-dock-source="primary-week"');
   const readiness = html.indexOf('data-test-offline');
   assert.ok(primary >= 0 && readiness > primary);
-  assert.match(html, /class="fd-care-entry"[^>]*data-fd-tab="care"/);
+  // Retired 2026-09-26: the header .fd-carebtn (phones) and the Care tab (wider) already reach it.
+  assert.doesNotMatch(html, /fd-care-entry/);
   assert.equal((html.match(/data-test-offline/g) || []).length, 1);
 });
 
@@ -156,9 +158,9 @@ test('the greeting varies by time of day, derived from state.nowMs', () => {
   const morning = new Date(2026, 7, 10, 9, 0, 0).getTime();
   const afternoon = new Date(2026, 7, 10, 14, 0, 0).getTime();
   const evening = new Date(2026, 7, 10, 20, 0, 0).getTime();
-  assert.match(F.fdToday(IDX, s({ nowMs: morning })), /Morning, there<\/h1>/);
-  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), /Afternoon, there<\/h1>/);
-  assert.match(F.fdToday(IDX, s({ nowMs: evening })), /Evening, there<\/h1>/);
+  assert.match(F.fdToday(IDX, s({ nowMs: morning })), />Good morning<\/h1>/);
+  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), />Good afternoon<\/h1>/);
+  assert.match(F.fdToday(IDX, s({ nowMs: evening })), />Good evening<\/h1>/);
 });
 
 test('Today visibly invites feedback while the shared site is in active testing', () => {
@@ -195,7 +197,13 @@ test('the greeting ends with the role, not a dangling dash', () => {
   const h1 = html.match(/<h1 class="fd-today__h1">([\s\S]*?)<\/h1>/);
   assert.ok(h1, 'the greeting h1 renders');
   assert.doesNotMatch(h1[1], /—|aria-hidden/, `no dash, decorative or otherwise: ${h1[1]}`);
-  assert.match(h1[1], /^(Morning|Afternoon|Evening), [^<]+$/);
+  // 2026-09-26: no role label either. "Afternoon, Core rotation" named a rotation, not a person,
+  // and wrapped to two lines on a phone.
+  assert.match(h1[1], /^Good (morning|afternoon|evening)$/);
+  for (const role of ['Core rotation', 'PGY-1', 'APP / PA / NP']) {
+    const withRole = F.fdToday(IDX, s({ role })).match(/<h1 class="fd-today__h1">([\s\S]*?)<\/h1>/)[1];
+    assert.doesNotMatch(withRole, new RegExp(role.replace(/[/]/g, '\\/')), `the greeting does not name the role "${role}"`);
+  }
 });
 
 test('each done-toggle carries its item title in the accessible name', () => {
@@ -725,9 +733,32 @@ test('phone quick tools remain CSS-first while patient-care duplicates stay reti
   // 2026-09-26 fold probe: first but ONE row. Wrapped, the pills took 164-207px above the primary.
   assert.match(phone[1], /\.fd-quicktools--pills\{flex-wrap:nowrap;overflow-x:auto;/);
   assert.match(phone[1], /\.fd-quicktools--pills \.fd-quicktool\{flex:0 0 auto;/);
-  // Today's in-flow Care row is retired on phones (the header .fd-carebtn replaces it); APP's stays.
-  assert.match(phone[1], /\.fd-today > \.fd-care-entry\{display:none\}/);
-  assert.doesNotMatch(phone[1], /\.fd-app[^{]*\.fd-care-entry\{display:none\}/);
+  // Today no longer emits an in-flow Care row (see the Shift-ready test); APP's must stay visible.
+  assert.doesNotMatch(css, /\.fd-app[^{]*\.fd-care-entry\{display:none\}/);
+  // The pilot banner is one row on phones: title beside a 44px button, eyebrow badge off.
+  const phoneBlocks = [...css.matchAll(/@media\s*\(max-width:640px\)\s*\{([\s\S]*?)\n\}/g)].map(m => m[1]).join('\n');
+  assert.match(phoneBlocks, /\.fd-pilot\{grid-template-columns:minmax\(0,1fr\) auto;/);
+  assert.match(phoneBlocks, /\.fd-pilot__eyebrow\{display:none\}/);
+  assert.match(phoneBlocks, /\.fd-pilot__button\{width:auto;min-height:44px\}/);
   assert.match(css, /@media \(min-width:1000px\)\{[\s\S]*?\.fd-quicktools--pills\{display:none\}/);
   assert.doesNotMatch(css, /fd-carelinks--mobile|fd-carelinks--rail|fd-kit__care/);
+});
+
+test('the quick-tool fallback leads with the on-shift list, skips what a site lacks, then goes by ref', () => {
+  const tool = (ref, extra) => ({ ref, kind: 'tool', title: 'T ' + ref, ...extra });
+  const byRef = {};
+  for (const ref of ['aaa.html', 'capacity.html', 'mse.html', 'violence.html', 'zzz.html', 'rights.html', 'hidden.html'])
+    byRef[ref] = tool(ref);
+  byRef['rights.html'].rights = { kind: 'reference' };
+  byRef['hidden.html'].searchOnly = true;
+  byRef['notes.md'] = { ref: 'notes.md', kind: 'read' };
+  // withdrawal.html and interaction-cards.html are absent here: a site without them just skips them.
+  const week = [tool('violence.html')];
+  const refs = F.fdQuickTools({ byRef }, week).map((t) => t.ref);
+  assert.deepEqual(refs, ['violence.html', 'mse.html', 'capacity.html', 'aaa.html', 'zzz.html'],
+    'week tool first, then the preferred list in its order without duplicates, then the rest by ref');
+  assert.ok(F.FD_QUICKTOOLS_PREFERRED.every((ref) => /\.html$/.test(ref)), 'the preferred list names tools only');
+  const five = ['a1.html', 'a2.html', 'a3.html', 'a4.html', 'a5.html'].map((ref) => tool(ref));
+  assert.deepEqual(F.fdQuickTools({ byRef }, five).map((t) => t.ref), five.map((t) => t.ref),
+    'five week tools leave no room for the fallback');
 });

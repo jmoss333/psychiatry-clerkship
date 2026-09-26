@@ -3064,7 +3064,7 @@ test('Patient care resources stays reachable through the phone header shortcut a
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
-  await expect(page.locator('.fd-today .fd-care-entry')).toBeHidden();
+  await expect(page.locator('.fd-today .fd-care-entry')).toHaveCount(0);
   const entry = page.locator('.fd-header .fd-carebtn[data-fd-tab="care"]');
   await expect(entry).toBeVisible();
   await expect(entry).toHaveAccessibleName('Patient care resources');
