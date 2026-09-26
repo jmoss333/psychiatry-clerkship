@@ -793,14 +793,14 @@
     "contentHash": "c473e33b5c207b0c2c4085f9adaf49dcecd0e103"
   },
   "brief_psychotherapy.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "Withdrawn 2026-09-25 before #781 merged: page text changed on main after signing (#813 WP-9a), so the stored hash no longer matched head. Prior review: 2026-09-21.",
-    "at": "2026-09-25",
-    "by": "Pending faculty review"
+    "at": "2026-09-26",
+    "by": "Joshua Moss, MD",
+    "contentHash": "ea3a12210d962ecfdbe3b2aae34407fd0d51d724"
   },
   "evidence_inpatient.md": {
     "status": "reviewed",
