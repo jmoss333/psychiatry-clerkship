@@ -2502,6 +2502,20 @@ test.describe('phone client', () => {
     expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
   });
 
+  test('going offline at the key prompt says so in place and keeps a half-typed key', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.goto('/m/');
+    const key = page.getByLabel('Faculty key');
+    await key.fill('half-a-k');
+    await page.context().setOffline(true);
+    await expect(page.getByRole('alert')).toHaveText('You are offline.');
+    await expect(key).toHaveValue('half-a-k');
+    await expect(key).toBeFocused();
+    await page.context().setOffline(false);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(key).toHaveValue('half-a-k');
+  });
+
   test('a failed first load says so and offers Retry instead of a bare key prompt', async ({ page }) => {
     await installRepositoryApi(page, workflowBank());
     // Registered after installRepositoryApi so it is matched first: the first GET is a 5xx,
@@ -2792,11 +2806,16 @@ test.describe('phone client', () => {
     const api = await installRepositoryApi(page, workflowBank());
     await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
     let presses = 0;
+    // The refresh after the conflict is held until the test releases it, so the in-flight state
+    // (message and disabled Sign) can be observed without a sleep.
+    let releaseRefresh;
+    const refreshHeld = new Promise(resolve => { releaseRefresh = resolve; });
     await page.route('**/api/attest', async (route, request) => {
       if (request.method() === 'POST' && ++presses === 1) {
         await fulfillJson(route, 409, { error: { code: 'github_conflict', message: 'branch moved', retryable: true } });
         return;
       }
+      if (request.method() === 'GET' && presses === 1 && !new URL(request.url()).search) await refreshHeld;
       await route.fallback();
     });
     await unlockPhone(page);
@@ -2810,8 +2829,12 @@ test.describe('phone client', () => {
     const sign = sheet.getByRole('button', { name: 'Sign' });
     const getsBefore = api.gets.length;
     await sign.click();
-    // A conflict means the loaded state is out of date: say so and refresh it in place.
-    await expect(sheet.getByRole('alert')).toHaveText(/^The queue was out of date; refresh(ing…|ed\.)$/);
+    // A conflict means the loaded state is out of date: say so and refresh it in place. Until the
+    // refresh lands, Sign (and Attest under the sheet) cannot re-send against the stale state.
+    await expect(sheet.getByRole('alert')).toHaveText('The queue was out of date; refreshing…');
+    await expect(sign).toBeDisabled();
+    await expect(page.getByRole('navigation', { name: 'Review actions' }).getByRole('button', { name: 'Attest' })).toBeDisabled();
+    releaseRefresh();
     await expect.poll(() => api.gets.length).toBe(getsBefore + 1);
     await expect(sheet.getByRole('alert')).toHaveText('The queue was out of date; refreshed.');
     await expect(sign).toBeEnabled();
@@ -2856,7 +2879,11 @@ test.describe('phone client', () => {
     expect(learnerTab.url()).toBe(`${MS3_URL}/?page=nope.md`);
     await learnerTab.close();
     await page.getByRole('button', { name: 'Attest' }).click();
+    // Opening the page cleared the tick forced before it (the desktop's openFullPage): only a
+    // tick made after the page was opened counts, so this one is a real tick.
     await expect(separate).toBeEnabled();
+    await expect(separate).not.toBeChecked();
+    await expect(sheet.getByRole('button', { name: 'Sign' })).toBeDisabled();
     await separate.check();
     await expect(sheet.getByRole('button', { name: 'Sign' })).toBeEnabled();
     await sheet.getByRole('button', { name: 'Sign' }).click();
@@ -3141,6 +3168,8 @@ test.describe('phone client', () => {
     changed.items[0].difficulty = 2;
     let posts = 0;
     let refreshes = 0;
+    let releaseRefresh;
+    const refreshHeld = new Promise(resolve => { releaseRefresh = resolve; });
     await page.route('**/api/attest', async (route, request) => {
       if (request.method() === 'POST') {
         posts += 1;
@@ -3148,6 +3177,7 @@ test.describe('phone client', () => {
         return;
       }
       if (posts && !new URL(request.url()).search) {
+        await refreshHeld;   // held until the test has seen the in-flight state
         refreshes += 1;
         await fulfillJson(route, 200, buildGetPayload(changed));
         return;
@@ -3168,6 +3198,12 @@ test.describe('phone client', () => {
     await sheet.getByLabel('Original wording, no patient information').check();
     const sign = sheet.getByRole('button', { name: 'Sign' });
     await sign.click();
+    // While the refresh is in flight the old receipt still matches the loaded (stale) revision,
+    // so only the refresh lock keeps Sign from re-sending it.
+    await expect(sheet.getByRole('alert')).toHaveText('The queue was out of date; refreshing…');
+    await expect(receipt).toBeChecked();
+    await expect(sign).toBeDisabled();
+    releaseRefresh();
     await expect(sheet.getByRole('alert')).toHaveText('The queue was out of date; refreshed.');
     expect(refreshes).toBe(1);
     await expect(page.getByText(/Pull to refresh/)).toHaveCount(0);
@@ -3178,6 +3214,9 @@ test.describe('phone client', () => {
     await expect(sign).toBeDisabled();
     await sign.click({ timeout: 1_000 }).catch(() => {});
     expect(posts).toBe(1);
+    // The lock is released with the refresh: acknowledging the NEW revision is enough to sign.
+    await receipt.check();
+    await expect(sign).toBeEnabled();
   });
 
   test('a write that changed nothing says it was already signed elsewhere and refreshes the queue', async ({ page }) => {
@@ -3315,9 +3354,13 @@ test.describe('phone client', () => {
     await expect(link).toHaveAttribute('href', './m/');
     const box = await link.boundingBox();
     expect(box.x).toBeGreaterThanOrEqual(12);
-    // A Copy link / bookmarklet landing on a phone: the hand-off carries the item to /m/.
+    // A Copy link / bookmarklet landing on a phone: the hand-off carries the item to /m/, encoded
+    // as Copy link encodes it (buildDeepLink), and nothing else from the arriving query.
     await page.goto('/?item=page:t_mood.md');
-    await expect(link).toHaveAttribute('href', /\/m\/\?item=page:t_mood\.md$/);
+    await expect(link).toHaveAttribute('href', './m/?item=page%3At_mood.md');
+    await page.goto('/?item=page:t_mood.md&foo=bar');
+    await expect(link).toHaveAttribute('href', './m/?item=page%3At_mood.md');
+    expect(await link.getAttribute('href')).not.toContain('foo');
     await link.click();
     await expect(page).toHaveTitle('Faculty attestation — phone');
     expect(new URL(page.url()).searchParams.get('item')).toBe('page:t_mood.md');

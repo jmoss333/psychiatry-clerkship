@@ -29,6 +29,7 @@ const state = {
   sheet: null,         // null | 'changed' | 'confirm' | 'draft'
   diff: null,          // last ?view=diff payload for the selected item
   pending: false,      // a POST is in flight
+  refreshing: false,   // refreshStale's reload is in flight: Attest and Sign wait for it
   receipt: null,       // { commit, pullRequest, pullRequestError, title }
   message: '',         // one-line error shown above the actions
   deepLink: null,      // ?item= held in memory across the key prompt
@@ -148,9 +149,15 @@ function refreshStale(prefix) {
   if (!getKey()) return;
   const refreshing = `${prefix}; refreshing…`;
   state.message = refreshing;
+  // Attest and Sign stay disabled until the reload lands: a press now would re-send what the
+  // server just refused, against the state it said was out of date.
+  state.refreshing = true;
   render();
   void load({ silent: true }).then(ok => {
-    if (ok && getKey() && state.message === refreshing) { state.message = `${prefix}; refreshed.`; render(); }
+    if (ok && getKey() && state.message === refreshing) state.message = `${prefix}; refreshed.`;
+  }).finally(() => {
+    state.refreshing = false;
+    if (getKey()) render();                         // never repaint a key prompt: it may hold a typed key
   });
 }
 
@@ -175,11 +182,19 @@ function renderGate(message = '') {
     h('p', { text: 'Enter the shared faculty key. It stays in this tab and is cleared when the tab closes.' }),
     h('label', { for: 'faculty-key', text: 'Faculty key' }),
     input,
-    message ? h('p', { class: 'field-error', role: 'alert', text: message }) : null,
+    message ? h('p', { id: 'gate-message', class: 'field-error', role: 'alert', text: message }) : null,
     h('p', {}, h('button', { class: 'btn', type: 'submit', text: 'Unlock' })),
   ]);
   replaceApp(h('div', { class: 'screen' }, form));
   input.focus();
+}
+/** Puts a message on the mounted key prompt in place: a half-typed key, its focus and caret survive. */
+function showGateMessage(message) {
+  const form = document.querySelector('#m-app form.gate');
+  if (!form) return;
+  const note = document.getElementById('gate-message');
+  if (note) note.textContent = message;
+  else form.lastElementChild.before(h('p', { id: 'gate-message', class: 'field-error', role: 'alert', text: message }));
 }
 function renderLoadError(message) {
   replaceApp(bar('Faculty attestation'), h('div', { class: 'screen' }, [
@@ -469,15 +484,18 @@ function refreshItem(item) {
       ? h('button', { class: 'btn secondary', type: 'button', text: 'Saved draft', onClick: () => openSheet('draft') })
       : h('button', { class: 'btn secondary', type: 'button', text: 'What changed', onClick: () => openSheet('changed') }),
     // Opening the page here is what unlocks the separate-tab acknowledgement after a failed
-    // preview (the desktop's externalReviewOpenedKey); the link still opens its own tab.
+    // preview (the desktop's externalReviewOpenedKey); the link still opens its own tab. It also
+    // clears any earlier separate-tab tick, as the desktop's openFullPage does, so only a tick
+    // made after the page was opened ever counts.
     external ? h('a', { class: 'btn secondary', href: external, target: '_blank', rel: 'noopener noreferrer', text: 'Open in site',
-      onClick: () => { state.ui = { ...state.ui, externalOpened: true }; } }) : h('span'),
+      onClick: () => { state.ui = { ...state.ui, externalOpened: true, separateTabReviewed: false }; } }) : h('span'),
     // Spec §4: a question with a warning gate shows its warnings and no Attest — the phone cannot
     // record the per-warning acknowledgements, so the confirm sheet never opens for it.
     questionWarnings(item).length
       ? h('button', { class: 'btn', type: 'button', text: 'Attest on desktop', disabled: true, 'aria-disabled': 'true',
         title: 'This question has warnings; attest it on the desktop console.' })
-      : h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading' || navigator.onLine === false,
+      : h('button', { class: 'btn', type: 'button', text: 'Attest',
+        disabled: state.pending || state.refreshing || preview.status === 'loading' || navigator.onLine === false,
         onClick: () => openSheet('confirm') }),
   );
   const sheet = state.sheet === 'changed' ? sheetChanged(item)
@@ -547,7 +565,8 @@ function sheetConfirm(item) {
     // A sign error is shown here too: #item-message sits under the sheet's backdrop.
     state.message ? h('p', { class: 'field-error', role: 'alert', text: state.message }) : null,
     h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign',
-      disabled: !eligibility.eligible || state.pending || navigator.onLine === false, onClick: () => { void signContent(item); } })),
+      disabled: !eligibility.eligible || state.pending || state.refreshing || navigator.onLine === false,
+      onClick: () => { void signContent(item); } })),
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
 }
@@ -573,7 +592,7 @@ function sheetConfirmQuestion(item) {
     // A sign error is shown here too: #item-message sits under the sheet's backdrop.
     state.message ? h('p', { class: 'field-error', role: 'alert', text: state.message }) : null,
     h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign',
-      disabled: warnings.length > 0 || !eligibility.eligible || state.pending || navigator.onLine === false,
+      disabled: warnings.length > 0 || !eligibility.eligible || state.pending || state.refreshing || navigator.onLine === false,
       onClick: () => { void signQuestion(item); } })),
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
@@ -682,10 +701,19 @@ async function signQuestion(item) {
 state.deepLink = window.location.search.includes('item=') ? window.location.search : null;
 window.addEventListener('message', handlePreviewStatus);
 window.addEventListener('keydown', event => { if (event.key === 'Escape' && state.sheet) closeSheet(); });
-window.addEventListener('offline', () => { state.message = 'You are offline.'; render(); });
+window.addEventListener('offline', () => {
+  state.message = 'You are offline.';
+  // The key prompt is up: say so on it in place; a render() would redraw it and wipe a typed key.
+  if (!getKey()) { showGateMessage(state.message); return; }
+  render();
+});
 window.addEventListener('online', () => {
   state.message = '';
-  if (!getKey()) return;                          // the key prompt is up: leave it exactly as typed
+  if (!getKey()) {                                // the key prompt is up: leave it exactly as typed,
+    const note = document.getElementById('gate-message');
+    if (note?.textContent === 'You are offline.') note.remove();   // dropping only the offline note
+    return;
+  }
   if (!state.server) { void load(); return; }     // nothing loaded yet: try again now
   render();
 });
