@@ -294,7 +294,7 @@ function handlePreviewStatus(event) {
   if (preview.timerId) window.clearTimeout(preview.timerId);
   preview.timerId = null;
   preview.status = event.data.status;
-  resetAcks();
+  resetAcks(event.data.status);
   renderItem();
 }
 
@@ -455,9 +455,17 @@ function refreshItem(item) {
 // ---- confirm + sign (pages and tools) -----------------------------------------------------
 /** Eligibility reads the live preview status; state.ui holds only the reviewer's acknowledgements. */
 function uiWithPreview() { return { ...state.ui, previewStatus: state.preview?.status || 'loading' }; }
-function resetAcks() {   // the desktop clears acknowledgements whenever the preview status changes
-  const { retryAttempted } = state.ui;
+/**
+ * The desktop clears acknowledgements whenever the preview status changes. Kept: the Retry, and
+ * the saved-draft receipt when the live question (re)reports ready — the desktop's
+ * clearReviewAcknowledgements({ preserveQuestionReceipts }). Every other flag resets.
+ */
+function resetAcks(nextStatus) {
+  const { retryAttempted, reviewedRevision } = state.ui;
   state.ui = { retryAttempted: retryAttempted === true };
+  if (nextStatus === 'ready' && typeof reviewedRevision === 'string' && reviewedRevision) {
+    state.ui.reviewedRevision = reviewedRevision;
+  }
 }
 function ack(id, label, checked, onChange, { disabled = false } = {}) {
   const input = h('input', { id, type: 'checkbox', checked: checked ? true : undefined, disabled: disabled ? true : undefined,
@@ -486,7 +494,48 @@ function sheetConfirm(item) {
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
 }
-function sheetConfirmQuestion() { return h('div'); }   // Task 6
+function sheetConfirmQuestion(item) {
+  const warnings = item.record?.assessment?.warnings || [];
+  const eligibility = questionEligibility(item, uiWithPreview());
+  const failed = previewFailed();
+  return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': `Sign ${item.identity}` }, [
+    h('h2', { text: `Sign ${item.identity}` }),
+    h('p', { text: `As ${state.server.attester}. Attested questions are what learners see in the bank.` }),
+    warnings.length ? h('p', { class: 'field-error', text: 'This question has warnings and cannot be attested from the phone.' }) : null,
+    state.preview?.status === 'ready'
+      ? ack('ack-live', 'I reviewed the live question on this screen', state.ui.liveReviewed, v => setUi({ liveReviewed: v }))
+      : ack('ack-live-unavailable', 'The live question is unavailable; I reviewed the saved draft instead', state.ui.liveUnavailableAcknowledged,
+        v => setUi({ liveUnavailableAcknowledged: v }), { disabled: !failed || !state.ui.retryAttempted }),
+    ack('ack-revision', `I reviewed the saved draft, revision ${String(item.revision).slice(0, 12)}`, state.ui.reviewedRevision === item.revision,
+      v => setUi({ reviewedRevision: v ? item.revision : '' })),
+    ack('ack-clinical', 'Clinically accurate', state.ui.clinical, v => setUi({ clinical: v })),
+    ack('ack-evidence', 'Evidence and rationale hold', state.ui.evidence, v => setUi({ evidence: v })),
+    ack('ack-phi', 'Original wording, no patient information', state.ui.originalityAndNoPhi, v => setUi({ originalityAndNoPhi: v })),
+    // A sign error is shown here too: #item-message sits under the sheet's backdrop.
+    state.message ? h('p', { class: 'field-error', role: 'alert', text: state.message }) : null,
+    h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign',
+      disabled: warnings.length > 0 || !eligibility.eligible || state.pending, onClick: () => { void signQuestion(item); } })),
+    h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
+  ]);
+}
+
+/**
+ * After a successful write: apply it to the loaded state, schedule a refresh, and advance only
+ * when the reviewer is still on the signed item. A sign that completes after they pressed Queue,
+ * opened another item or locked the console refreshes what is on screen in place and keeps the
+ * receipt; it never pulls them into the next item or repaints the key prompt.
+ */
+function finishSign(item, update) {
+  state.pending = false;
+  const before = state.items; const sections = state.sections;
+  if (state.server) { state.server = update(state.server); recompute(); scheduleRefresh(); }
+  if (!getKey() || !state.server) return;          // the key prompt is up: leave it exactly as typed
+  if (state.screen !== 'item' || state.selectedKey !== item.key) { render(); return; }
+  state.sheet = null;
+  const nextKey = nextAfterSign(item.key, before, sections);
+  if (nextKey && state.items.some(i => i.key === nextKey)) { const receipt = state.receipt; openItem(nextKey); state.receipt = receipt; renderItem(); }
+  else closeItem();   // the signed item has left the queue; its receipt shows over the queue
+}
 
 async function signContent(item) {
   if (state.pending) return;                       // idempotent while a POST is in flight
@@ -497,19 +546,10 @@ async function signContent(item) {
     const payload = await api(API, { method: 'POST', body: JSON.stringify(body) });
     if (!payload?.ok || payload.updated !== 1) throw new Error(errorText(payload, 'This attestation was not saved.'));
     state.receipt = { title: item.title, commit: safeHttps(payload.commit), pullRequest: safeHttps(payload.pullRequest), pullRequestError: payload.pullRequestError === true };
-    if (payload.rows && typeof payload.rows === 'object') {
-      state.server = applyRows(state.server, payload.rows);
-    } else {
+    finishSign(item, server => (payload.rows && typeof payload.rows === 'object'
+      ? applyRows(server, payload.rows)
       // Ledger mode or an older function: trust the 200 for this item and refresh soon.
-      state.server = applyRows(state.server, { [item.identity]: { status: 'reviewed', at: new Date().toISOString().slice(0, 10), by: state.server.attester, risk: item.risk, reason: '' } });
-    }
-    const before = state.items; const sections = state.sections;
-    recompute();
-    scheduleRefresh();
-    state.sheet = null; state.pending = false;
-    const nextKey = nextAfterSign(item.key, before, sections);
-    if (nextKey && state.items.some(i => i.key === nextKey)) { const receipt = state.receipt; openItem(nextKey); state.receipt = receipt; renderItem(); }
-    else closeItem();   // the signed item has left the queue; its receipt shows over the queue
+      : applyRows(server, { [item.identity]: { status: 'reviewed', at: new Date().toISOString().slice(0, 10), by: server.attester, risk: item.risk, reason: '' } })));
   } catch (error) {
     state.pending = false;
     if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signContent(item); }; renderGate(error.message); return; }
@@ -517,7 +557,54 @@ async function signContent(item) {
     renderItem();
   }
 }
-function sheetDraft(item) { return h('div'); }     // Task 6
+
+// ---- questions: saved draft (read-only) + sign ------------------------------------------------
+function sheetDraft(item) {
+  const q = item.record || {};
+  const options = Array.isArray(q.options) ? q.options : [];
+  return h('div', { class: 'sheet draft', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Saved draft (not deployed)' }, [
+    h('h2', { text: 'Saved draft (not deployed)' }),
+    h('p', { class: 'summary', text: `${q.category || ''} · difficulty ${q.difficulty ?? '–'} · revision ${String(item.revision).slice(0, 12)}` }),
+    h('h3', { text: 'Stem' }), h('p', { text: q.stem || '' }),
+    h('h3', { text: 'Options' }),
+    h('ol', {}, options.map(option => h('li', { class: option.c ? 'key' : '' }, [
+      `${option.key}. ${option.t}`, option.c ? ' (key)' : '',
+      option.trap?.note ? h('div', { class: 'summary', text: option.trap.note }) : null,
+    ]))),
+    q.tier2 ? [
+      h('h3', { text: 'Second tier' }), h('p', { text: q.tier2.q || '' }),
+      h('ol', {}, (q.tier2.options || []).map(o => h('li', { class: o.c ? 'key' : '', text: `${o.key}. ${o.t}${o.c ? ' (key)' : ''}` }))),
+    ] : null,
+    h('h3', { text: 'Why' }), h('p', { text: q.why || '' }),
+    q.pearl ? [h('h3', { text: 'Pearl' }), h('p', { text: q.pearl })] : null,
+    h('h3', { text: 'Evidence' }), h('p', { text: q.evidence || '' }),
+    (q.assessment?.warnings || []).length ? h('p', { class: 'field-error', text: 'This question carries warnings; attest it on the desktop console, which records each acknowledgement.' }) : null,
+    h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
+  ]);
+}
+
+async function signQuestion(item) {
+  if (state.pending) return;                       // idempotent while a POST is in flight
+  if (!questionEligibility(item, uiWithPreview()).eligible) { state.message = 'Complete the acknowledgements before signing.'; renderItem(); return; }
+  state.pending = true; state.message = ''; renderItem();
+  const body = {
+    action: 'qbank.attest',
+    manifestRevision: state.server.manifestRevision,
+    items: [questionEntry(item, state.ui.reviewedRevision)],
+    confirmations: { clinical: state.ui.clinical === true, evidence: state.ui.evidence === true, originalityAndNoPhi: state.ui.originalityAndNoPhi === true },
+  };
+  try {
+    const payload = await api(API, { method: 'POST', body: JSON.stringify(body) });
+    if (!payload?.ok || payload.updated !== 1) throw new Error(errorText(payload, 'This attestation was not saved.'));
+    state.receipt = { title: item.identity, commit: safeHttps(payload.commit), pullRequest: safeHttps(payload.pullRequest), pullRequestError: payload.pullRequestError === true };
+    finishSign(item, server => ({ ...server, qbank: server.qbank.map(q => (q.id === item.identity ? { ...q, status: 'attested' } : q)) }));
+  } catch (error) {
+    state.pending = false;
+    if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signQuestion(item); }; renderGate(error.message); return; }
+    state.message = /qbank\.conflict/.test(error.message) ? 'This question changed since you loaded it. Pull to refresh and review again.' : error.message;
+    renderItem();
+  }
+}
 
 // ---- boot ---------------------------------------------------------------------------------
 state.deepLink = window.location.search.includes('item=') ? window.location.search : null;

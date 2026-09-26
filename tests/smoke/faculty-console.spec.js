@@ -2834,4 +2834,167 @@ test.describe('phone client', () => {
     await sheet.getByLabel('Links, media and interactions work').check();
     await expect(sheet.getByRole('button', { name: 'Sign' })).toBeEnabled();
   });
+
+  test('a question shows its saved draft read-only and attests only after a retry, the unavailable-live acknowledgement, the saved-revision receipt and the three confirmations', async ({ page }) => {
+    // Left out of the learner bank the stub serves (missingDeployedIds), so the shell reports
+    // Not found — the same path the desktop suite exercises for undeployed drafts (qb_moo_906).
+    const api = await installRepositoryApi(page, workflowBank(), { missingDeployedIds: ['qb_moo_901'] });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_901/ }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Saved draft' }).click();
+    const draft = page.getByRole('dialog', { name: 'Saved draft (not deployed)' });
+    await expect(draft.getByText(READY_STEMS.A)).toBeVisible();
+    await expect(draft.getByRole('textbox')).toHaveCount(0);   // read-only: no inputs
+    await draft.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_901/ });
+    const sign = sheet.getByRole('button', { name: 'Sign' });
+    await expect(sign).toBeDisabled();
+    const unavailable = sheet.getByLabel('The live question is unavailable; I reviewed the saved draft instead');
+    await expect(unavailable).toBeDisabled();            // one Retry is required first
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await unavailable.check();
+    await sheet.getByLabel(/I reviewed the saved draft, revision/).check();
+    await sheet.getByLabel('Clinically accurate').check();
+    await sheet.getByLabel('Evidence and rationale hold').check();
+    await expect(sign).toBeDisabled();
+    await sheet.getByLabel('Original wording, no patient information').check();
+    await expect(sign).toBeEnabled();
+    await sign.click();
+    await expect(page.getByText('Signed: qb_moo_901')).toBeVisible();
+    const post = api.calls.filter(call => call.method === 'POST').at(-1);
+    expect(post.body.action).toBe('qbank.attest');
+    expect(post.body.manifestRevision).toBe(MANIFEST_REVISION);
+    expect(post.body.items).toHaveLength(1);
+    expect(post.body.items[0].id).toBe('qb_moo_901');
+    expect(post.body.items[0].reviewedRevision).toBe(post.body.items[0].revision);
+    expect(post.body.items[0].acknowledgedWarnings).toEqual([]);
+    expect(post.body.confirmations).toEqual({ clinical: true, evidence: true, originalityAndNoPhi: true });
+  });
+
+  test('the saved-draft receipt survives the live question reporting Ready again after a Retry; no other tick does', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());   // qb_moo_901 is in the served learner bank: Ready
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_901/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_901/ });
+    const live = sheet.getByLabel('I reviewed the live question on this screen');
+    const receipt = sheet.getByLabel(/I reviewed the saved draft, revision/);
+    const clinical = sheet.getByLabel('Clinically accurate');
+    await live.check();
+    await receipt.check();
+    await clinical.check();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    // A second load of the learner frame reads as a frame failure; Retry mounts a fresh frame whose
+    // shell reports Ready again — a status change, so the acknowledgements reset.
+    const learner = await (await page.locator('iframe#learner-frame').elementHandle()).contentFrame();
+    await learner.waitForLoadState('load');
+    await page.locator('iframe#learner-frame').evaluate(frame => { frame.src = frame.src; });
+    await expect(page.getByRole('status')).toContainText('did not load');
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await expect(receipt).toBeChecked();
+    await expect(live).not.toBeChecked();
+    await expect(clinical).not.toBeChecked();
+  });
+
+  test('a question sign that completes after the reviewer went back to the queue leaves them there, with the receipt', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    let releaseWrite;
+    const writeHeld = new Promise(resolve => { releaseWrite = resolve; });
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST') await writeHeld;
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_901/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_901/ });
+    await sheet.getByLabel('I reviewed the live question on this screen').check();
+    await sheet.getByLabel(/I reviewed the saved draft, revision/).check();
+    await sheet.getByLabel('Clinically accurate').check();
+    await sheet.getByLabel('Evidence and rationale hold').check();
+    await sheet.getByLabel('Original wording, no patient information').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(sheet.getByRole('button', { name: 'Signing…' })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Queue' }).click();
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    releaseWrite();
+    await expect(page.getByText('Signed: qb_moo_901')).toBeVisible();
+    // Still on the queue: not pulled into the next pending page, no key prompt.
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    await expect(page.locator('iframe#learner-frame')).toHaveCount(0);
+    await expect(page.getByLabel('Faculty key')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /qb_moo_901/ })).toHaveCount(0);   // the queue reflects the sign
+    expect(new URL(page.url()).searchParams.get('item')).toBeNull();
+    const posts = api.calls.filter(call => call.method === 'POST');
+    expect(posts).toHaveLength(1);
+    expect(posts[0].body.items.map(entry => entry.id)).toEqual(['qb_moo_901']);
+  });
+
+  test('a sign that completes after Lock leaves the key prompt exactly as typed', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    let releaseWrite;
+    const writeHeld = new Promise(resolve => { releaseWrite = resolve; });
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST') await writeHeld;
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mood disorders page/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(sheet.getByRole('button', { name: 'Signing…' })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Lock the console' }).click();
+    const key = page.getByLabel('Faculty key');
+    await key.fill('half-typed');
+    const written = page.waitForResponse(response => response.request().method() === 'POST');
+    releaseWrite();
+    await written;
+    await page.evaluate(() => new Promise(resolve => { setTimeout(resolve, 100); }));   // let the page handle it
+    await expect(key).toHaveValue('half-typed');
+    await expect(key).toBeFocused();
+    await key.fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByText('Signed: Synthetic mood disorders page')).toBeVisible();
+  });
+
+  test('a question with warnings says so and can never be signed from the phone', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_905/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Saved draft' }).click();
+    const draft = page.getByRole('dialog', { name: 'Saved draft (not deployed)' });
+    await expect(draft.getByText('This question carries warnings; attest it on the desktop console')).toBeVisible();
+    await draft.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_905/ });
+    await expect(sheet.getByText('This question has warnings and cannot be attested from the phone.')).toBeVisible();
+    await sheet.getByLabel('I reviewed the live question on this screen').check();
+    await sheet.getByLabel(/I reviewed the saved draft, revision/).check();
+    await sheet.getByLabel('Clinically accurate').check();
+    await sheet.getByLabel('Evidence and rationale hold').check();
+    await sheet.getByLabel('Original wording, no patient information').check();
+    await expect(sheet.getByRole('button', { name: 'Sign' })).toBeDisabled();
+  });
 });
