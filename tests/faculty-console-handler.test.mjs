@@ -2386,13 +2386,16 @@ test('rows in the attest response carry only the projected fields, never the has
 });
 
 test('a no-op attest response carries no rows field', async () => {
-  const mock = createGithubMock();
+  // The FILTERED semantic no-op, not the earlier unconditional empty-changes guard (that one
+  // is already pinned by "qbank and content no-op requests perform no commit" above, via
+  // `changes: {}`). t_mood.md here is already `reviewed` AND bound — boundFiles() sets its
+  // contentHash to match today's sources — so re-attesting it must fall out of the
+  // effectiveChanges filter (attest.mjs ~1871-1882, the `current.contentHash !== digestOf(slug)`
+  // branch) as a no-op, the same case the semanticMock assertions above exercise.
+  const mock = createGithubMock({ files: boundFiles() });
   const handler = handlerWith(mock);
-  // Empty changes is the unambiguous no-op path (mirrors the "qbank and content no-op
-  // requests perform no commit" test above): effectiveChanges stays empty and the early
-  // return at the top of commitContentMutation fires before the rows projection exists.
   const response = await handler(apiRequest('POST', {
-    body: { target: 'content', changes: {}, reasons: {} },
+    body: { target: 'content', changes: { 't_mood.md': true }, reasons: {} },
   }));
   const payload = await response.json();
   assert.equal(payload.updated, 0);
