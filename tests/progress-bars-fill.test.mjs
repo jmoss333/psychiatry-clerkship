@@ -69,6 +69,25 @@ test('.hm-bars .pc reserves one line for its widest label', () => {
   assert.ok(px >= 68, `.hm-bars .pc basis must clear "not started" (62px at 12px) with headroom; got ${px}px`);
 });
 
+// Below 620px the 42% label column cannot hold the longest category name (188px at the 13px sm
+// font; the column is 169px at a 480px viewport, 136px at 390px), so three names wrapped and the
+// track beside them shrank to 96px, 55px at 320px. The row stacks instead: label on its own line,
+// then the bar and its score. 620px is the breakpoint this page's other rows already switch at,
+// and the column still has 40px of headroom there. Single-line rendering is measured in
+// front-door.spec.js; this pins the structure that makes it possible.
+test('.hm-bars rows stack the label above the bar below 620px', () => {
+  const css = shellStylesheets();
+  const blocks = [...css.matchAll(/@media\(max-width:620px\)\{((?:[^{}]*\{[^{}]*\})*)\}/g)].map(m => m[1]);
+  assert.ok(blocks.length >= 1, 'the shell declares at least one @media(max-width:620px) block');
+  const narrow = blocks.join('\n');
+  assert.match(rule(narrow, '.hm-bars .brow'), /(?:^|;)flex-wrap:wrap(?:;|$)/,
+    'the row must be allowed to wrap below 620px');
+  assert.match(rule(narrow, '.hm-bars .lab'), /(?:^|;)flex:0 0 100%(?:;|$)/,
+    'the label must take the whole first line below 620px');
+  assert.doesNotMatch(rule(css, '.hm-bars .brow'), /flex-wrap:wrap/,
+    'above the breakpoint the row stays single-line so the columns align');
+});
+
 test('.hm-bars .track declares a block display rather than relying on flex blockification', () => {
   const body = rule(shellStylesheets(), '.hm-bars .track');
   assert.match(body, /(?:^|;)display:block(?:;|$)/,

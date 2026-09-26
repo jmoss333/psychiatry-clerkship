@@ -3689,6 +3689,9 @@ for (const theme of ['light', 'dark']) {
 // low-n mastery row, not-started rows, a coverage row and two calibration rows -- and asserts each
 // label renders as ONE line box with nothing overflowing, and that the tracks in a section still
 // share one left edge (a fixed basis, not auto, is what keeps them aligned). Desktop and phone.
+// The category NAME column is measured the same way: below 620px the 42% column could not hold
+// "Somatic / Sleep / Eating (other)" (188px), three names wrapped and the bar beside them shrank
+// to 96px at 390px, so the row stacks there and the bar must keep most of the row's width.
 for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: 'phone', ...PHONE }]) {
   test(`Progress bar labels stay on one line and the tracks stay aligned (${viewport.name})`, async ({ page }, testInfo) => {
     const meta = await (await requestGetWithRetry(page.request, '/topic_meta.json')).json();
@@ -3718,11 +3721,13 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: '
         heading: ((bars.closest('.hm-sec') || bars).querySelector('h2') || {}).textContent || '(no heading)',
         rows: rows.map(row => {
           const pc = row.querySelector('.pc');
-          const range = document.createRange();
-          range.selectNodeContents(pc);
+          const lab = row.querySelector('.lab');
+          const lineBoxes = (el) => { const range = document.createRange(); range.selectNodeContents(el); return range.getClientRects().length; };
           return {
-            label: pc.textContent, lines: range.getClientRects().length,
+            label: pc.textContent, lines: lineBoxes(pc),
+            name: lab.textContent, nameLines: lineBoxes(lab),
             overflow: pc.scrollWidth - pc.clientWidth,
+            rowWidth: row.getBoundingClientRect().width,
             trackLeft: row.querySelector('.track').getBoundingClientRect().left,
             trackWidth: row.querySelector('.track').getBoundingClientRect().width,
           };
@@ -3732,11 +3737,15 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: '
     expect(report.length).toBeGreaterThanOrEqual(3);
     const labels = report.flatMap(s => s.rows.map(r => r.label));
     expect(labels).toEqual(expect.arrayContaining([expect.stringMatching(/· few$/), 'not started', expect.stringMatching(/^\d+% · \d+$/), expect.stringMatching(/^\d+\/\d+$/)]));
+    // On a phone the row stacks (name above, bar beside its score), so the bar keeps most of the
+    // row; on desktop the three columns sit side by side and the bar keeps a large minority.
+    const minTrackShare = viewport.name === 'phone' ? 0.6 : 0.4;
     for (const section of report) {
       for (const row of section.rows) {
         expect(row.lines, `${section.heading}: "${row.label}" wraps`).toBe(1);
+        expect(row.nameLines, `${section.heading}: "${row.name}" wraps`).toBe(1);
         expect(row.overflow, `${section.heading}: "${row.label}" overflows its column`).toBeLessThanOrEqual(0.5);
-        expect(row.trackWidth, `${section.heading}: track collapsed`).toBeGreaterThan(40);
+        expect(row.trackWidth / row.rowWidth, `${section.heading}: "${row.name}" bar squeezed to ${Math.round(row.trackWidth)}px of ${Math.round(row.rowWidth)}px`).toBeGreaterThanOrEqual(minTrackShare);
       }
       const lefts = section.rows.map(r => r.trackLeft);
       expect(Math.max(...lefts) - Math.min(...lefts), `${section.heading}: tracks misaligned`).toBeLessThanOrEqual(0.5);
