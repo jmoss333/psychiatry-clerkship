@@ -213,6 +213,18 @@ test('the Care page composes the selected navigator before its five-link shelf',
   assert.equal((html.match(/data-care-recommendation=/g) || []).length, 2);
 });
 
+test('every repeated shelf action has a resource-specific accessible name and limit description', () => {
+  const index = { careResources: curriculum.careResources,
+    careNavigator: curriculum.careNavigator };
+  const html = F.fdCare(index, '', [], '<section class="crisis-block">Crisis</section>');
+  for (const item of curriculum.careResources) {
+    const title = item.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.match(html, new RegExp(`aria-label="Show QR for ${title}"`), item.id);
+    assert.match(html, new RegExp(
+      `aria-label="Add ${title} to handout"[^>]*aria-describedby="fd-care-pack-limit"`), item.id);
+  }
+});
+
 test('the curriculum carries the approved six-intent navigator map', () => {
   assert.deepEqual(curriculum.careNavigator.map((intent) => [
     intent.id, intent.primaryResourceId, intent.alternativeResourceIds,
@@ -237,6 +249,10 @@ test('the care page renders five static external links without forwarding contex
   assert.equal((html.match(/class="fd-carelink"/g) || []).length, 5);
   assert.equal((html.match(/target="_blank" rel="noopener noreferrer"/g) || []).length, 5);
   assert.equal((html.match(/data-care-resource=/g) || []).length, 5);
+  assert.equal((html.match(/data-fd-care-share=/g) || []).length, 5);
+  assert.equal((html.match(/data-fd-care-pack=/g) || []).length, 10);
+  assert.equal((html.match(/data-fd-care-pack-origin="group"/g) || []).length, 5);
+  assert.equal((html.match(/>Show QR</g) || []).length, 5);
   for (const resource of curriculum.careResources) {
     assert.match(html, new RegExp(`href="${resource.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
     assert.ok(!/[?#]/.test(resource.url), `${resource.id} must remain a fixed URL with no patient context`);

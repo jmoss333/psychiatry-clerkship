@@ -3118,6 +3118,93 @@ test('Patient care resources stays reachable through the phone header shortcut a
   await expectHealthy(page);
 });
 
+test('Care Quick Share keeps exact links transient, keyboard-safe, and usable at 320 px', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: text => {
+        window.__careCopied = text;
+        return window.__careCopyReject ? Promise.reject(new Error('blocked')) : Promise.resolve();
+      } },
+    });
+  });
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=care');
+  const storageBeforeShare = await page.evaluate(() => localStorage.getItem('cw_frontdoor_v1'));
+
+  const finder = page.locator('.fd-careitem').filter({ has: page.locator('[data-care-resource="resource-finder"]') });
+  const showQr = finder.locator('[data-fd-care-share="resource-finder"]');
+  const shelfPack = finder.locator('[data-fd-care-pack="resource-finder"]');
+  await expect(showQr).toHaveAccessibleName('Show QR for Find services and community supports');
+  await showQr.click();
+
+  const drawer = page.locator('.fd-care-share[role="dialog"]');
+  await expect(drawer).toBeVisible();
+  await expect(drawer).toHaveAttribute('aria-modal', 'true');
+  await expect(drawer.locator('h2')).toHaveText('Find services and community supports');
+  await expect(drawer.locator('.fd-care-share__url')).toHaveAttribute('href',
+    'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html');
+  await expect(drawer.locator('svg')).toHaveAttribute('aria-label',
+    'QR code for Find services and community supports');
+  const closeShare = drawer.locator('[data-fd-care-share-close]');
+  const drawerPack = drawer.locator('[data-fd-care-pack="resource-finder"]');
+  await expect(closeShare).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(drawerPack).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(closeShare).toBeFocused();
+
+  await drawer.locator('[data-fd-care-copy="resource-finder"]').click();
+  await expect(drawer.locator('[data-fd-care-copy-status]')).toHaveText('Link copied.');
+  await expect(page.locator('.fd-care-pack__copy-status')).toHaveText('');
+  expect(await page.evaluate(() => window.__careCopied)).toBe(
+    'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html');
+
+  await drawerPack.click();
+  await expect(drawerPack).toBeFocused();
+  await expect(drawerPack).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(drawer).toHaveCount(0);
+  await expect(showQr).toBeFocused();
+
+  await shelfPack.click();
+  await expect(shelfPack).toBeFocused();
+  await expect(shelfPack).toHaveAttribute('aria-pressed', 'false');
+  await shelfPack.click();
+  await page.locator('.fd-careitem [data-fd-care-pack="meeting-calendar"]').click();
+  await page.locator('[data-fd-care-copy-selected]').click();
+  await expect(page.locator('.fd-care-pack__copy-status')).toHaveText('Selected links copied.');
+  expect(await page.evaluate(() => window.__careCopied)).toBe(
+    'Find services and community supports\nhttps://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html\n\n'
+    + 'Find a recovery meeting\nhttps://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html');
+
+  await page.evaluate(() => { window.__careCopyReject = true; });
+  await page.locator('[data-fd-care-copy-selected]').click();
+  await expect(page.locator('.fd-care-pack__copy-status')).toHaveText(
+    'Copy failed. Select and copy the links in the handout.');
+
+  expect(await page.evaluate(() => localStorage.getItem('cw_frontdoor_v1'))).toBe(storageBeforeShare);
+  await page.locator('.fd-tabs [data-fd-tab="library"]:visible').click();
+  await page.locator('.fd-tabs [data-fd-tab="care"]:visible').click();
+  await expect(page.locator('.fd-care-pack__choice[aria-pressed="true"]')).toHaveCount(0);
+  expect(await page.evaluate(() => {
+    const stored = JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}');
+    return { carePackIds: stored.carePackIds, careShareId: stored.careShareId };
+  })).toEqual({ carePackIds: undefined, careShareId: undefined });
+
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.locator('[data-fd-care-share="education-library"]').click();
+  await expect(drawer).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await drawer.evaluate(element => Promise.all(
+    element.getAnimations().map(animation => animation.finished)));
+  const drawerBox = await drawer.boundingBox();
+  expect(drawerBox.x).toBeGreaterThanOrEqual(0);
+  expect(drawerBox.x + drawerBox.width).toBeLessThanOrEqual(321);
+  await expectHealthy(page);
+});
+
 test('Care status clears on Home, browser history, and resource opening', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/?tab=care');

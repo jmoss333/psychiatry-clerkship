@@ -1835,6 +1835,7 @@
   }
   function capOpen(invoker,onAction){
     if(capSheet)return;
+    if(fdController&&fdController.externalModalOpened)fdController.externalModalOpened();
     capInvoker=invoker||null;
     capBackdrop=document.createElement('div'); capBackdrop.className='cap-backdrop';
     capBackdrop.addEventListener('click',function(){ capClose(); });
@@ -2687,6 +2688,9 @@
     var live=fdLiveState(state), overlays='';
     if(state.searchOpen)overlays+=fdSurface('search',function(){ return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live); });
     if(state.sheet)overlays+=fdSurface('sheet',function(){ return fdSheet(FD_INDEX,FD_TOPIC_META,live); });
+    if(state.careShareId)overlays+=fdSurface('care-share',function(){
+      return fdCareShare(FD_INDEX,state.careShareId||'',state.carePackIds||[]);
+    });
     if(fdOverlayMount)fdOverlayMount.innerHTML=overlays;
     if(fdNudgeMount){
       var nudge=state.nudge&&(FD_INDEX.byRef||{})[state.nudge];

@@ -14,7 +14,7 @@ const make = new Function(`${wire}\nreturn {
   semantic: fdActionSemantic,
 };`);
 const F = make();
-const NON_ACTION_ATTRS = new Set(['data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status']);
+const NON_ACTION_ATTRS = new Set(['data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-care-copy-status', 'data-fd-care-pack-origin', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status']);
 const AUX_ACTION_ATTRS = new Set(['data-fd-local-toggle']);
 
 function emittedAttributes() {
@@ -42,8 +42,9 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-app-practice-close', 'data-fd-app-practice-open', 'data-fd-app-practice-question', 'data-fd-app-practice-reset',
     'data-fd-app-practice-reveal', 'data-fd-app-reflect', 'data-fd-app-reset',
     'data-fd-app-shift', 'data-fd-app-start', 'data-fd-back', 'data-fd-care-clear',
-    'data-fd-care-intent', 'data-fd-care-pack', 'data-fd-care-pack-clear',
-    'data-fd-care-pack-print', 'data-fd-change-week',
+    'data-fd-care-copy', 'data-fd-care-copy-selected', 'data-fd-care-intent',
+    'data-fd-care-pack', 'data-fd-care-pack-clear', 'data-fd-care-pack-print',
+    'data-fd-care-share', 'data-fd-care-share-close', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-dock-browse-go', 'data-fd-dock-forward', 'data-fd-exam-date', 'data-fd-expand-tool',
     'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
@@ -91,11 +92,19 @@ test('Care pack actions have distinct transient controller semantics', () => {
   assert.equal(F.semantic('data-fd-care-pack'), 'toggle a transient patient resource pack item');
   assert.equal(F.semantic('data-fd-care-pack-clear'), 'clear the transient patient resource pack');
   assert.equal(F.semantic('data-fd-care-pack-print'), 'print the transient patient resource pack');
+  assert.equal(F.semantic('data-fd-care-share'), 'open a transient patient resource QR drawer');
+  assert.equal(F.semantic('data-fd-care-share-close'), 'close the transient patient resource QR drawer');
+  assert.equal(F.semantic('data-fd-care-copy'), 'copy one canonical patient resource link');
+  assert.equal(F.semantic('data-fd-care-copy-selected'), 'copy selected canonical patient resource links');
   assert.equal(new Set([
     F.semantic('data-fd-care-pack'),
     F.semantic('data-fd-care-pack-clear'),
     F.semantic('data-fd-care-pack-print'),
-  ]).size, 3);
+    F.semantic('data-fd-care-share'),
+    F.semantic('data-fd-care-share-close'),
+    F.semantic('data-fd-care-copy'),
+    F.semantic('data-fd-care-copy-selected'),
+  ]).size, 7);
 });
 
 test('setup week and browse-only week preview are distinct semantics', () => {

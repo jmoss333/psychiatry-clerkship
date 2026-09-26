@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(488 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(509 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -411,16 +411,32 @@ Omitting it collapses the rail underneath.
           summary / .crisis-block
         .fd-care-pack__provenance
     .fd-care-pack__actions
-      p / .fd-care-pack__print <button>
+      p / .fd-care-pack__copy <button> / .fd-care-pack__print <button>
+      .fd-care-pack__copy-status [role="status"]
   .fd-care-page__groups
     .fd-care-group ×2                 support / education
       .fd-care-group__head
         h2 / p
       .fd-care-group__list
-        .fd-carelink <a> ×2 or ×3     fixed external URL; new tab
-          .fd-carelink__mark
-          .fd-carelink__copy
-            .fd-carelink__title / .fd-carelink__description
+        .fd-careitem ×2 or ×3
+          .fd-carelink <a>            fixed external URL; new tab
+            .fd-carelink__mark
+            .fd-carelink__copy
+              .fd-carelink__title / .fd-carelink__description
+          .fd-careitem__actions
+            .fd-careitem__qr / .fd-careitem__pack <button>
+
+.fd-care-sharebackdrop
+.fd-care-share [role="dialog"]
+  .fd-care-share__head
+    p / h2 / .fd-care-share__close <button>
+  .fd-care-share__body
+    p / .fd-care-share__scan
+      .fd-care-share__qr or .fd-care-share__qr-fallback
+    .fd-care-share__url <a> / .fd-care-share__limit
+    .fd-care-share__actions
+      .fd-care-share__copy / .fd-care-share__pack <button>
+    .fd-care-share__status [role="status"] / .fd-care-share__privacy
 ```
 
 | Class | Notes |
@@ -437,13 +453,18 @@ Omitting it collapses the rail underneath.
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
 | `.fd-care-pack__workbench` | Transient two-column builder: a flat choice list beside a paper-like preview, stacking to one column at ≤640px. It accepts only canonical `careResources` records and has no patient fields, route state, storage, analytics, or network request. |
 | `.fd-care-pack__choice.is-selected` | The active choice pairs `.is-selected` with `aria-pressed="true"`; its visible check and inset rule keep selection non-color-only. A fourth unselected choice disables until one of the three is removed. |
+| `.fd-care-share__qr` / `.fd-care-share__qr-fallback` | The drawer renders the local SVG in the QR wrapper; the fallback replaces it with text when local QR generation is unavailable. Neither branch makes a network request. |
+| `.fd-care-share__limit` | Visible explanation tied to a disabled drawer toggle when all three handout slots are already used. |
 | `.fd-care-pack.is-print-ready` | Added only when one to three canonical resources and the governed crisis block are both present. Every handout-only print selector, including shell hiding, requires this class. Native Print on an invalid pack retains the ordinary Care page and hides the empty or crisis-free preview sheet. |
 | `.fd-care-pack__sheet` | The paper preview. It becomes the isolated printable handout only in `.is-print-ready` state; invalid native Print hides the sheet. A ready handout contains one to three exact canonical links with locally generated QR SVGs. |
 | `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible on a ready handout. Missing governed HTML renders `.fd-care-pack__crisis-failure` in the ordinary Care header and disables Print; the renderer never invents contacts. |
-| `.fd-care-pack__actions` | States that choices stay on screen only. Print is enabled only when at least one valid resource and the governed crisis block are both present. |
+| `.fd-care-pack__actions` | States that choices stay on screen only. “Copy selected links” is enabled with one to three valid resources and copies only curated titles plus exact canonical URLs. Print additionally requires the governed crisis block. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
 | `.fd-care-entry` | In-flow Care route button near the top of APP On shift at ≤640px, hidden on wider screens where the Care tab is visible. **Today no longer emits it** (2026-09-26): the header `.fd-carebtn` (2026-09-24) is Today's phone route to Care and the Care tab its wide route, so the row was a duplicate that pushed the primary toward the dock. `fd-today.test.mjs` asserts Today's markup carries none; APP's must stay (`app-pathway`). The fixed phone dock remains five items. |
-| `.fd-carelink` | Static external anchor with an explicit new-tab mark and visible title/description. |
+| `.fd-carelink` | Static external anchor with an explicit new-tab mark and visible title/description. Its sibling actions never wrap patient context into the destination. |
+| `.fd-careitem__actions` | Touch-sized “Show QR” and handout-toggle buttons for each canonical resource. The handout control shares the transient `carePackIds` state and disables an unselected fourth item at the limit. |
+| `.fd-care-share` | Transient accessible QR dialog, rendered in the overlay mount and bottom-docked at ≤640px. It shows one locally generated QR, description, exact canonical URL, Copy link, and the shared handout toggle; it adds no patient fields, storage, analytics, or network request. |
+| `.fd-care-sharebackdrop` | Separate fixed backdrop. Click closes the Quick Share dialog; Escape and the close button use the same controller action. |
 
 ---
 

@@ -19,7 +19,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-kit-section','data-fd-kit-tool',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
-  'data-fd-care-pack-print',
+  'data-fd-care-pack-print','data-fd-care-share','data-fd-care-share-close',
+  'data-fd-care-copy','data-fd-care-copy-selected',
   'data-fd-offline-open','data-fd-offline-close','data-fd-offline-refresh'
 ];
 
@@ -38,6 +39,10 @@ var FD_ACTION_SEMANTICS={
   'data-fd-care-pack':'toggle a transient patient resource pack item',
   'data-fd-care-pack-clear':'clear the transient patient resource pack',
   'data-fd-care-pack-print':'print the transient patient resource pack',
+  'data-fd-care-share':'open a transient patient resource QR drawer',
+  'data-fd-care-share-close':'close the transient patient resource QR drawer',
+  'data-fd-care-copy':'copy one canonical patient resource link',
+  'data-fd-care-copy-selected':'copy selected canonical patient resource links',
   'data-fd-offline-open':'show verified shift readiness details',
   'data-fd-offline-close':'close verified shift readiness details',
   'data-fd-offline-refresh':'check for a newer offline copy',
@@ -293,6 +298,7 @@ function fdDispatch(attrs, context, state){
   var a=attrs||{}, c=context||{}, s=state||{}, ref, n, patch, done, raw, next, tab, picked;
 
   if(fdOwn(a,'close')){
+    if(s.careShareId) return {patch:{careShareId:''},route:null,effect:null};
     if(s.searchOpen) return {patch:{searchOpen:false,query:''},route:null,effect:null};
     if(s.sheet) return fdCloseSheet(s);
     if(s.nudge) return {patch:{nudge:null},route:null,effect:null};
@@ -305,6 +311,9 @@ function fdDispatch(attrs, context, state){
      panel grows a destructive confirmation, its armed flag has to be reset in fdCloseSheet, or an
      armed "erase everything" survives the close and the panel reopens still armed. */
   if(fdOwn(a,'data-fd-close-sheet')) return fdCloseSheet(s);
+  if(fdOwn(a,'data-fd-care-share-close')){
+    return {patch:{careShareId:''},route:null,effect:null};
+  }
   if(fdOwn(a,'data-fd-close-nudge')){
     return {patch:{nudge:null},route:null,effect:null};
   }
@@ -543,6 +552,29 @@ function fdDispatch(attrs, context, state){
     var printablePackIds=fdCarePackIds(c.index||{},s.carePackIds||[]);
     return {patch:{},route:null,effect:s.tab==='care'&&!s.openId&&printablePackIds.length
       ?{type:'print-care-pack'}:null};
+  }
+  if(fdOwn(a,'data-fd-care-share')){
+    var shareItem=fdCarePackResourceById(c.index||{},a['data-fd-care-share']);
+    return s.tab==='care'&&!s.openId&&shareItem
+      ?{patch:{careShareId:shareItem.id,searchOpen:false,sheet:null},route:null,effect:null}
+      :{patch:{},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-copy')){
+    var copyItem=fdCarePackResourceById(c.index||{},a['data-fd-care-copy']);
+    return s.tab==='care'&&!s.openId&&copyItem
+      ?{patch:{},route:null,effect:{type:'copy-care-links',text:copyItem.url,
+        status:'share-'+copyItem.id,
+        success:'Link copied.',failure:'Copy failed. Select and copy the link shown.'}}
+      :{patch:{},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-care-copy-selected')){
+    var careShareText=s.tab==='care'&&!s.openId
+      ?fdCarePackShareText(c.index||{},s.carePackIds||[]):'';
+    return careShareText
+      ?{patch:{},route:null,effect:{type:'copy-care-links',text:careShareText,
+        status:'pack',
+        success:'Selected links copied.',failure:'Copy failed. Select and copy the links in the handout.'}}
+      :{patch:{},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-library-view')){
     var view=String(a['data-fd-library-view']||'');
@@ -970,6 +1002,7 @@ function fdTrapFocus(event, dialog){
    committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-dock-browse-go],[data-fd-kit-section],[data-fd-kit-tool],'+
   '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
+  '[data-fd-care-share],[data-fd-care-share-close],[data-fd-care-copy],[data-fd-care-copy-selected],'+
   '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
   '[data-fd-app-bridge],[data-fd-app-shift],[data-fd-app-start],[data-fd-app-reflect],[data-fd-app-reset],'+
   '[data-fd-app-practice-open],[data-fd-app-practice-reveal],[data-fd-app-practice-classify],'+
@@ -1180,6 +1213,7 @@ function fdWire(root, initialState, opts){
   var state=fdClone(initialState||{}), invokers=[], nudgeTimer=null, navGeneration=0;
   var destroyed=false, registrations=[], startupPrepared=false, startupCommitted=false;
   var offlineRefreshPending=false,offlineRefreshTimer=null,offlineRefreshGeneration=0;
+  var careCopyGeneration=0;
   var baseStale=false;
   var render=o.render||function(){};
   var renderTransient=o.renderTransient||function(next,detail){
@@ -1202,17 +1236,20 @@ function fdWire(root, initialState, opts){
     if(offlineRefreshTimer!==null&&clearTimer)try{clearTimer(offlineRefreshTimer);}catch(_){}
     offlineRefreshTimer=null;
   }
+  function cancelCareCopy(){ careCopyGeneration++; }
 
   function overlayIdentity(value){
     var s=value||{};
     if(s.searchOpen) return 'search';
     if(s.sheet) return 'sheet:'+s.sheet;
+    if(s.careShareId) return 'care-share:'+s.careShareId;
     return '';
   }
   function dialog(){
     if(!root||!root.querySelector) return null;
     if(state.searchOpen) return root.querySelector('.fd-search[role="dialog"]');
     if(state.sheet) return root.querySelector('.fd-sheet[role="dialog"]');
+    if(state.careShareId) return root.querySelector('.fd-care-share[role="dialog"]');
     return null;
   }
   function focusDialog(){
@@ -1384,7 +1421,7 @@ function fdWire(root, initialState, opts){
     /* settingsConfirmClear belongs here because arming the erase changes the PANEL and nothing
        under it. Left out, it falls to the else branch and is classed as a base change, so every
        arm and every cancel rebuilds contentEl.innerHTML beneath an open sheet. */
-    var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,
+    var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,careShareId:true,
       nudge:true,settingsConfirmClear:true};
     var actionKeys={done:true,justDone:true,progressRaw:true};
     for(var key in patch){
@@ -1503,6 +1540,37 @@ function fdWire(root, initialState, opts){
       fdStoreExamDate(effect.date);
     } else if(effect.type==='print-care-pack'){
       if(win&&typeof win.print==='function') try{win.print();}catch(_){}
+    } else if(effect.type==='copy-care-links'){
+      var copyStatus=String(effect.status||'');
+      if(!/^(?:pack|share-[a-z0-9]+(?:-[a-z0-9]+)*)$/.test(copyStatus)) return;
+      var copyToken=++careCopyGeneration;
+      var copySelector='[data-fd-care-copy-status="'+copyStatus+'"]';
+      var copyNode=root&&root.querySelector?root.querySelector(copySelector):null;
+      function copyStillCurrent(){
+        if(destroyed||copyToken!==careCopyGeneration) return false;
+        if(copyStatus==='pack'){
+          if(state.tab!=='care'||state.openId||state.searchOpen||state.sheet||state.careShareId)
+            return false;
+        }else if(state.searchOpen||state.sheet||state.careShareId!==copyStatus.slice(6)) return false;
+        if(typeof o.reportCareCopy==='function') return true;
+        return !!(copyNode&&copyNode.isConnected!==false&&root&&root.querySelector&&
+          root.querySelector(copySelector)===copyNode);
+      }
+      function reportCopy(message){
+        if(!copyStillCurrent()) return;
+        if(typeof o.reportCareCopy==='function') o.reportCareCopy(message,copyStatus);
+        else copyNode.textContent=message;
+      }
+      var clipboard=win&&win.navigator&&win.navigator.clipboard;
+      if(!clipboard||typeof clipboard.writeText!=='function'){
+        reportCopy(effect.failure);
+      }else{
+        try{
+          Promise.resolve(clipboard.writeText(effect.text)).then(function(){
+            reportCopy(effect.success);
+          },function(){ reportCopy(effect.failure); });
+        }catch(_){ reportCopy(effect.failure); }
+      }
     } else if(effect.type==='refresh-offline'){
       if(offlineRefreshPending)return;
       var report=typeof o.reportOfflineRefresh==='function'?o.reportOfflineRefresh:function(){};
@@ -1698,6 +1766,9 @@ function fdWire(root, initialState, opts){
       lockPreview();
       return state;
     }
+    /* Clipboard completion is asynchronous. Any later action ends the scope that owned its live
+       status, even if the learner immediately returns to an identical-looking Care screen. */
+    if(!result.effect||result.effect.type!=='copy-care-links') cancelCareCopy();
     var before=fdClone(state), beforeOverlay=overlayIdentity(state);
     var beforeRefreshScope=offlineRefreshScope(state);
     var beforeHistory=historyValue();
@@ -1710,6 +1781,10 @@ function fdWire(root, initialState, opts){
     if(state.tab!=='care'||state.openId){
       state.careIntentId='';
       if(state.carePackIds&&state.carePackIds.length) state.carePackIds=[];
+      if(state.careShareId){state.careShareId='';patch.careShareId='';}
+    }
+    if(state.careShareId&&(state.searchOpen||state.sheet)){
+      state.careShareId='';patch.careShareId='';
     }
     /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
        by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
@@ -1776,11 +1851,15 @@ function fdWire(root, initialState, opts){
     /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
        reset kitSection to All; those still carry durable route state and must be saved normally. */
     var visitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||
-      fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds')||fdOwn(patch,'offlineOpen')||
-      !!(result.effect&&result.effect.type==='refresh-offline');
+      fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds')||fdOwn(patch,'careShareId')||
+      fdOwn(patch,'offlineOpen')||!!(result.effect&&(result.effect.type==='refresh-offline'||
+        result.effect.type==='copy-care-links'));
+    var careShareTransition=fdOwn(patch,'careShareId');
     for(var saveKey in patch){
       if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&
-         saveKey!=='careIntentId'&&saveKey!=='carePackIds'&&saveKey!=='offlineOpen') visitOnly=false;
+         saveKey!=='careIntentId'&&saveKey!=='carePackIds'&&saveKey!=='careShareId'&&
+         saveKey!=='offlineOpen'&&!(careShareTransition&&(saveKey==='searchOpen'||saveKey==='sheet')))
+        visitOnly=false;
     }
     if(!visitOnly) fdSave(state);
     if(!fromHistory){
@@ -1808,8 +1887,12 @@ function fdWire(root, initialState, opts){
       if(careFocus&&careFocus.focus) try{careFocus.focus();}catch(_){}
     }
     if(fdOwn(patch,'carePackIds')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector){
-      var packFocus=invoker&&invoker.hasAttribute&&invoker.hasAttribute('data-fd-care-pack-clear')
-        ?root.querySelector('[data-fd-care-pack]'):equivalentControl(invoker,root);
+      var packOrigin=invoker&&invoker.getAttribute?invoker.getAttribute('data-fd-care-pack-origin'):'';
+      var packId=invoker&&invoker.getAttribute?invoker.getAttribute('data-fd-care-pack'):'';
+      var packFocus=packOrigin==='group'&&fdCarePackSafeId(packId)
+        ?root.querySelector('.fd-careitem [data-fd-care-pack="'+packId+'"][data-fd-care-pack-origin="group"]')
+        :(invoker&&invoker.hasAttribute&&invoker.hasAttribute('data-fd-care-pack-clear')
+          ?root.querySelector('[data-fd-care-pack]'):equivalentControl(invoker,root));
       if(packFocus&&packFocus.focus) try{packFocus.focus();}catch(_){}
     }
     if(fdOwn(patch,'offlineOpen')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector){
@@ -2016,7 +2099,7 @@ function fdWire(root, initialState, opts){
       }
       return;
     }
-    if(event.key==='Escape'&&(state.searchOpen||state.sheet)){
+    if(event.key==='Escape'&&(state.searchOpen||state.sheet||state.careShareId)){
       if(event.preventDefault) event.preventDefault();
       apply(fdDispatch({close:true},context(),state),event.target,false);
       return;
@@ -2045,7 +2128,7 @@ function fdWire(root, initialState, opts){
     }
     var action=fdKeyAction(event.key,{
       typing:fdIsTypingTarget(event.target),screen:state.screen||'app',
-      searchOpen:!!state.searchOpen,sheetOpen:!!state.sheet,reading:!!state.openId,
+      searchOpen:!!state.searchOpen,sheetOpen:!!(state.sheet||state.careShareId),reading:!!state.openId,
       meta:!!(event.metaKey||event.ctrlKey),appMode:fdAppMode(state)
     });
     if(!action) return;
@@ -2073,12 +2156,14 @@ function fdWire(root, initialState, opts){
       return;
     }
     cancelOfflineRefresh();
+    cancelCareCopy();
     /* Flush the outgoing reader while its state is still current. The next save clones this map. */
     if(o.disposeReadingPlace)o.disposeReadingPlace();
     var before=fdClone(state);
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
     merged.careIntentId='';
     merged.carePackIds=[];
+    merged.careShareId='';
     merged.offlineOpen=false;
     merged.searchOpen=false;
     merged.query='';
@@ -2225,10 +2310,15 @@ function fdWire(root, initialState, opts){
       prepareStartup:prepareStartup,
       commitStartup:commitStartup,
       startupCommitted:function(){ return startupCommitted; },
+      externalModalOpened:function(){
+        if(destroyed||!startupCommitted) return;
+        cancelCareCopy();
+      },
       destroy:function(){
         if(destroyed&&registrations.length===0) return;
         destroyed=true;
         cancelOfflineRefresh();
+        cancelCareCopy();
         navGeneration++;
         removeRegistrations();
         if(nudgeTimer&&clearTimer) try{clearTimer(nudgeTimer);}catch(ignoreTimer){ }
@@ -2242,6 +2332,7 @@ function fdWire(root, initialState, opts){
      !listen(win,'keydown',keyHandler,false)||!listen(win,'popstate',popstateHandler,false)){
       removeRegistrations();
       destroyed=true;
+      cancelCareCopy();
       navGeneration++;
       return controller(false);
   }
