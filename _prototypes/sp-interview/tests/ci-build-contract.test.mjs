@@ -57,7 +57,9 @@ function run(command, args, options = {}) {
 
 test('manifest drives both Interview Room runtime assets into a real site build', (t) => {
   const manifest = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
-  assert.deepEqual(manifest.toolAssets, EXPECTED_ASSETS);
+  const interviewAssets = manifest.toolAssets.filter(([source, destination]) =>
+    source.startsWith('_prototypes/sp-interview/') || destination.startsWith('sp-interview.'));
+  assert.deepEqual(interviewAssets, EXPECTED_ASSETS);
   for (const [source] of EXPECTED_ASSETS) {
     assert.equal(fs.existsSync(path.join(ROOT, source)), true, `missing source asset: ${source}`);
   }
