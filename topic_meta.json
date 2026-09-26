@@ -609,9 +609,9 @@
       "nolen-2019-lithium-levels"
     ],
     "facultyReview": {
-      "status": "pending",
+      "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
-      "lastReviewed": "2026-08-08"
+      "lastReviewed": "2026-09-26"
     },
     "ruleOut": [
       "Thyroid dysfunction",
@@ -1155,9 +1155,9 @@
       "rcpsych-meed-2022"
     ],
     "facultyReview": {
-      "status": "pending",
+      "status": "reviewed",
       "reviewer": "Joshua Moss, MD",
-      "lastReviewed": "2026-08-08"
+      "lastReviewed": "2026-09-26"
     }
   },
   "t_adjustment.md": {
