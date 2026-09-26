@@ -3620,3 +3620,65 @@ test.describe('Essentials Phase 2', () => {
     } finally { await scratch.close(); }
   });
 });
+
+// 2026-09-26 — on production the Progress page's bars ("Mastery by blueprint", "Coverage by
+// section", the calibration rows and the placement result) were empty tracks: the label beside
+// each read "Mood 77%" while its `.hm-bars .fill` computed display:inline with a 0x0 box, because
+// the fill is a <span> nested one level below the flex item and an inline element ignores
+// width/height. tests/progress-bars-fill.test.mjs pins the rule in the file; this measures the
+// resolved box, which only exists in a browser, under both themes (dark redefines --accent and
+// --bg-alt). The learner record is a controlled cw_qb_v1 fixture, never live governance state.
+for (const theme of ['light', 'dark']) {
+  test(`Progress bars paint a fill whose width tracks the score (${theme} theme)`, async ({ page }, testInfo) => {
+    const meta = await (await requestGetWithRetry(page.request, '/topic_meta.json')).json();
+    const ref = Object.keys(meta).find(f => Array.isArray(meta[f] && meta[f].shelfBlueprint)
+      && meta[f].shelfBlueprint.includes('mood'));
+    if (!ref) throw new Error('topic_meta.json serves no page in the mood blueprint area; the fixture needs one');
+    await seedApp(page, testInfo, { storage: {
+      cw_theme: theme,
+      cw_qb_v1: { 'fixture-mood-item': { correct: true, pages: [ref] } },
+    } });
+    await page.goto('/?page=__progress__');
+    await expect(page.locator('#pgRoot')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+
+    const section = page.locator('.hm-sec', { hasText: 'Mastery by blueprint' });
+    const row = section.locator('.hm-bars .brow').filter({ has: page.locator('.lab', { hasText: /^Mood$/ }) });
+    await expect(row).toHaveCount(1);
+    // TOPIC_META arrives after boot and specialRefresh() repaints the page; wait for the score.
+    await expect(row.locator('.pc')).toHaveText(/^\d+%/);
+    const pct = parseInt((await row.locator('.pc').textContent()).trim(), 10);
+    expect(pct).toBeGreaterThan(0);
+    await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => null))));
+
+    const track = await row.locator('.track').boundingBox();
+    expect(track, 'the track has a box').not.toBeNull();
+    expect(track.width).toBeGreaterThan(0);
+    const fill = await row.locator('.fill').boundingBox();
+    expect(fill, `the fill has no box at all (declared width ${pct}%)`).not.toBeNull();
+    expect(fill.height).toBeGreaterThan(0);
+    expect(fill.width).toBeGreaterThan(0);
+    expect(Math.abs(fill.width / track.width - pct / 100)).toBeLessThanOrEqual(0.02);
+
+    // Every bar on the page, whichever section emitted it: a declared width must render as a
+    // painted box, and a 0% bar must stay empty.
+    const bars = await page.locator('.hm-bars .fill').evaluateAll(els => els.map(el => {
+      const box = el.getBoundingClientRect();
+      const css = getComputedStyle(el);
+      return { declared: parseFloat(el.style.width) || 0, width: box.width, height: box.height,
+        display: css.display, background: css.backgroundColor };
+    }));
+    expect(bars.length).toBeGreaterThan(1);
+    for (const bar of bars) {
+      expect(bar.display).not.toBe('inline');
+      expect(bar.background).not.toBe('rgba(0, 0, 0, 0)');
+      if (bar.declared > 0) {
+        expect(bar.width).toBeGreaterThan(0);
+        expect(bar.height).toBeGreaterThan(0);
+      } else {
+        expect(bar.width).toBe(0);
+      }
+    }
+    await expectHealthy(page);
+  });
+}

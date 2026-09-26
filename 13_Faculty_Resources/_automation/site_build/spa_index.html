@@ -594,8 +594,12 @@
   @media(max-width:760px){.wd-grid{grid-template-columns:1fr}}
   .hm-bars .brow{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:var(--fd-font-sm)}
   .hm-bars .lab{flex:0 0 42%;color:var(--text-mid)}
-  .hm-bars .track{flex:1;height:8px;background:var(--bg-alt);border-radius:999px;overflow:hidden}
-  .hm-bars .fill{height:100%;background:var(--accent)}
+  /* Both are <span>s. .track is a flex item, so the row blockifies it; .fill is nested one level
+     deeper and stays inline unless told otherwise -- and an inline span ignores width/height, which
+     is why every bar shipped as an empty track until 2026-09-26. Pinned by
+     tests/progress-bars-fill.test.mjs and measured in tests/smoke/front-door.spec.js. */
+  .hm-bars .track{display:block;flex:1;height:8px;background:var(--bg-alt);border-radius:999px;overflow:hidden}
+  .hm-bars .fill{display:block;height:100%;background:var(--accent)}
   .hm-bars .pc{flex:0 0 42px;text-align:right;color:var(--text-light);font-size:var(--fd-font-xs)}
   .hm-arc{display:flex;flex-wrap:wrap;gap:6px}
   .hm-week{font-size:var(--fd-font-xs);border:1px solid var(--border);border-radius:999px;padding:3px 10px;color:var(--text-mid)}
