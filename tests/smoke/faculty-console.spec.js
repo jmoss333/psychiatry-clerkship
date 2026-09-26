@@ -2977,24 +2977,23 @@ test.describe('phone client', () => {
     await expect(page.getByText('Signed: Synthetic mood disorders page')).toBeVisible();
   });
 
-  test('a question with warnings says so and can never be signed from the phone', async ({ page }) => {
+  test('a question with warnings shows them and offers no Attest on the phone', async ({ page }) => {
+    // qb_moo_905 (WARNING_STEM) ends on a negative lead-in: a warning gate the phone cannot acknowledge.
     await installRepositoryApi(page, workflowBank());
     await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
     await unlockPhone(page);
     await page.getByRole('link', { name: /qb_moo_905/ }).click();
     await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    const actions = page.getByRole('navigation', { name: 'Review actions' });
+    const desktopOnly = actions.getByRole('button', { name: 'Attest on desktop' });
+    await expect(desktopOnly).toBeDisabled();
+    await expect(desktopOnly).toHaveAttribute('aria-disabled', 'true');
+    await expect(desktopOnly).toHaveAttribute('title', 'This question has warnings; attest it on the desktop console.');
+    await expect(actions.getByRole('button', { name: 'Attest', exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: 'Saved draft' }).click();
     const draft = page.getByRole('dialog', { name: 'Saved draft (not deployed)' });
-    await expect(draft.getByText('This question carries warnings; attest it on the desktop console')).toBeVisible();
-    await draft.getByRole('button', { name: 'Close' }).click();
-    await page.getByRole('button', { name: 'Attest' }).click();
-    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_905/ });
-    await expect(sheet.getByText('This question has warnings and cannot be attested from the phone.')).toBeVisible();
-    await sheet.getByLabel('I reviewed the live question on this screen').check();
-    await sheet.getByLabel(/I reviewed the saved draft, revision/).check();
-    await sheet.getByLabel('Clinically accurate').check();
-    await sheet.getByLabel('Evidence and rationale hold').check();
-    await sheet.getByLabel('Original wording, no patient information').check();
-    await expect(sheet.getByRole('button', { name: 'Sign' })).toBeDisabled();
+    await expect(draft.getByRole('heading', { name: 'Warnings' })).toBeVisible();
+    await expect(draft.getByRole('listitem').filter({ hasText: 'Review the negative wording in the final lead-in.' })).toBeVisible();
+    await expect(draft.getByText('Attest this question on the desktop console, which records each acknowledgement.')).toBeVisible();
   });
 });

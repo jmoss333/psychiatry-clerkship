@@ -414,6 +414,11 @@ function mountItem(item) {
   window.history.replaceState(null, '', `${window.location.pathname}?item=${encodeURIComponent(item.key)}`);
 }
 
+function questionWarnings(item) {
+  const warnings = item?.type === 'question' ? item.record?.assessment?.warnings : null;
+  return Array.isArray(warnings) ? warnings : [];
+}
+
 function refreshItem(item) {
   const preview = state.preview;
   const twin = item.type === 'page' ? twinOf(item, state.items) : null;
@@ -435,7 +440,12 @@ function refreshItem(item) {
       ? h('button', { class: 'btn secondary', type: 'button', text: 'Saved draft', onClick: () => openSheet('draft') })
       : h('button', { class: 'btn secondary', type: 'button', text: 'What changed', onClick: () => openSheet('changed') }),
     external ? h('a', { class: 'btn secondary', href: external, target: '_blank', rel: 'noopener noreferrer', text: 'Open in site' }) : h('span'),
-    h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading', onClick: () => openSheet('confirm') }),
+    // Spec §4: a question with a warning gate shows its warnings and no Attest — the phone cannot
+    // record the per-warning acknowledgements, so the confirm sheet never opens for it.
+    questionWarnings(item).length
+      ? h('button', { class: 'btn', type: 'button', text: 'Attest on desktop', disabled: true, 'aria-disabled': 'true',
+        title: 'This question has warnings; attest it on the desktop console.' })
+      : h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading', onClick: () => openSheet('confirm') }),
   );
   const sheet = state.sheet === 'changed' ? sheetChanged(item)
     : state.sheet === 'confirm' ? sheetConfirm(item)
@@ -495,7 +505,9 @@ function sheetConfirm(item) {
   ]);
 }
 function sheetConfirmQuestion(item) {
-  const warnings = item.record?.assessment?.warnings || [];
+  // Still reachable although the action bar offers no Attest: a silent refresh rebuilds an open
+  // sheet from the refreshed record, so a question can gain warnings under it.
+  const warnings = questionWarnings(item);
   const eligibility = questionEligibility(item, uiWithPreview());
   const failed = previewFailed();
   return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': `Sign ${item.identity}` }, [
@@ -562,6 +574,7 @@ async function signContent(item) {
 function sheetDraft(item) {
   const q = item.record || {};
   const options = Array.isArray(q.options) ? q.options : [];
+  const warnings = questionWarnings(item);
   return h('div', { class: 'sheet draft', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Saved draft (not deployed)' }, [
     h('h2', { text: 'Saved draft (not deployed)' }),
     h('p', { class: 'summary', text: `${q.category || ''} · difficulty ${q.difficulty ?? '–'} · revision ${String(item.revision).slice(0, 12)}` }),
@@ -578,7 +591,11 @@ function sheetDraft(item) {
     h('h3', { text: 'Why' }), h('p', { text: q.why || '' }),
     q.pearl ? [h('h3', { text: 'Pearl' }), h('p', { text: q.pearl })] : null,
     h('h3', { text: 'Evidence' }), h('p', { text: q.evidence || '' }),
-    (q.assessment?.warnings || []).length ? h('p', { class: 'field-error', text: 'This question carries warnings; attest it on the desktop console, which records each acknowledgement.' }) : null,
+    warnings.length ? [
+      h('h3', { text: 'Warnings' }),
+      h('ul', {}, warnings.map(warning => h('li', { text: String(warning?.message || warning?.code || '') }))),
+      h('p', { class: 'field-error', text: 'Attest this question on the desktop console, which records each acknowledgement.' }),
+    ] : null,
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
 }
