@@ -1979,15 +1979,20 @@ function prepareQbankMutation(action, body, bank, manifestPages) {
   });
 }
 
+// `written` (spec §5, 2026-09-26 phone client): each written item's id, the status it was
+// written with and its new revision, one entry per item. Added beside the existing keys, which
+// are unchanged, so a client that does not read it is unaffected.
 function qbankSuccess(action, result, saved, manifestPages) {
   if (action === 'qbank.save-draft') {
+    const revision = itemRevision(result.item);
     return {
       ok: true,
       action,
       updated: 1,
       commit: saved.commit,
-      revision: itemRevision(result.item),
+      revision,
       assessment: result.assessment,
+      written: [{ id: result.item.id, status: 'draft', revision }],
     };
   }
 
@@ -2007,6 +2012,7 @@ function qbankSuccess(action, result, saved, manifestPages) {
     commit: saved.commit,
     revision,
     assessment,
+    written: result.ids.map(id => ({ id, status: 'attested', revision: revision[id] })),
   };
 }
 

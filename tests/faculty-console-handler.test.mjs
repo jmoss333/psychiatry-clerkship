@@ -1624,6 +1624,8 @@ test('qbank.save-draft performs one atomic Git commit and returns the saved item
   assert.equal(saved.items[0].stem, edited.stem);
   assert.equal(saved.items[0].status, 'draft');
   assert.equal(payload.revision, itemRevision(saved.items[0]));
+  // The written item as it now stands (spec §5): id, status and new revision.
+  assert.deepEqual(payload.written, [{ id: item.id, status: 'draft', revision: itemRevision(saved.items[0]) }]);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 1);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 1);
   assert.equal(new URL(mock.calls.find(call => call.path === QBANK_PATH).url).searchParams.get('ref'), BRANCH_HEAD_SHA);
@@ -1678,6 +1680,11 @@ test('qbank.attest performs one atomic Git commit and returns stable target revi
   assert.deepEqual(Object.keys(payload.revision), [first.id, second.id]);
   assert.equal(payload.assessment[first.id].gate, 'ready');
   assert.equal(payload.assessment[second.id].gate, 'ready');
+  // One entry per written item (spec §5), beside the unchanged revision/assessment maps.
+  assert.deepEqual(payload.written, [
+    { id: first.id, status: 'attested', revision: itemRevision(saved.items[0]) },
+    { id: second.id, status: 'attested', revision: itemRevision(saved.items[1]) },
+  ]);
 });
 
 test('qbank.attest rejects a legacy green request without reviewed-revision evidence', async () => {
