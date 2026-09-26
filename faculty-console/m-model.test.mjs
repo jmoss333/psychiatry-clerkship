@@ -118,6 +118,30 @@ test('diffLines flattens hunks into file / context / del / add lines, splitting 
   assert.deepEqual(diffLines(null), []);
 });
 
+test('diffLines never lets a changed file vanish: too large, binary and truncated files each carry a note', () => {
+  // The server sends hunks: [] with tooLarge: true past 6,000 lines or 2,000 edits.
+  assert.deepEqual(diffLines({ files: [{ path: 'big.md', status: 'modified', hunks: [], tooLarge: true }] }), [
+    { kind: 'file', text: 'big.md' },
+    { kind: 'note', text: 'Too much changed to show here; open the comparison on GitHub.' },
+  ]);
+  assert.deepEqual(diffLines({ files: [{ path: 'img.png', status: 'binary', hunks: [] }] }), [
+    { kind: 'file', text: 'img.png' },
+    { kind: 'note', text: 'Binary file changed.' },
+  ]);
+  assert.deepEqual(diffLines({ files: [{ path: 'long.md', status: 'modified', truncated: true, hunks: [{ oldStart: 1, newStart: 1, rows: [
+    { kind: 'add', segments: [{ t: 'add', s: 'New line' }] },
+  ] }] }] }), [
+    { kind: 'file', text: 'long.md' },
+    { kind: 'add', text: 'New line' },
+    { kind: 'note', text: 'Only the first 60 hunks are shown.' },
+  ]);
+  // Only unchanged and missing files are skipped.
+  assert.deepEqual(diffLines({ files: [
+    { path: 'same.md', status: 'unchanged', hunks: [] },
+    { path: 'gone.md', status: 'missing', hunks: [] },
+  ] }), []);
+});
+
 test('timeoutStatus mirrors the desktop: protocol_unavailable once the frame loaded, else frame_failure', () => {
   assert.equal(timeoutStatus(true), 'protocol_unavailable');
   assert.equal(timeoutStatus(false), 'frame_failure');
@@ -139,5 +163,11 @@ test('questionEligibility needs the live receipt, the saved-revision receipt and
   assert.equal(questionEligibility(q, ok).eligible, true);
   assert.equal(questionEligibility(q, { ...ok, reviewedRevision: '' }).eligible, false);
   assert.equal(questionEligibility(q, { ...ok, clinical: false }).eligible, false);
-  assert.deepEqual(questionEntry(q), { id: 'qb_mood_001', revision: REV, reviewedRevision: REV, acknowledgedWarnings: [] });
+  assert.deepEqual(questionEntry(q, REV), { id: 'qb_mood_001', revision: REV, reviewedRevision: REV, acknowledgedWarnings: [] });
+});
+
+test('questionEntry carries the recorded receipt as given, so a stale or missing one reaches the server and fails there', () => {
+  const q = phoneQueue(server()).find(i => i.type === 'question');
+  assert.deepEqual(questionEntry(q, 'stale'), { id: 'qb_mood_001', revision: REV, reviewedRevision: 'stale', acknowledgedWarnings: [] });
+  assert.deepEqual(questionEntry(q, undefined), { id: 'qb_mood_001', revision: REV, reviewedRevision: '', acknowledgedWarnings: [] });
 });

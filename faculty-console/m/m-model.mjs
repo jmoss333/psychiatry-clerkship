@@ -94,13 +94,26 @@ export function applyRows(server, rows) {
   return { ...server, items };
 }
 
-/** Flatten a ?view=diff payload for a phone screen. Change rows split into a del line and an add line. */
+const DIFF_NOTE_TOO_LARGE = 'Too much changed to show here; open the comparison on GitHub.';
+const DIFF_NOTE_BINARY = 'Binary file changed.';
+const DIFF_NOTE_TRUNCATED = 'Only the first 60 hunks are shown.';
+
+/**
+ * Flatten a ?view=diff payload for a phone screen into { kind, text } lines, where kind is
+ * 'file' | 'context' | 'del' | 'add' | 'note'. Change rows split into a del line and an add line.
+ * A file is skipped only when its status is 'unchanged' or 'missing'. Every other file always
+ * gets its 'file' line, even with no hunks, plus a 'note' when the server sent no rows it could
+ * show (tooLarge, binary) or cut the rows short (truncated) — mirroring the desktop's hints, so
+ * a page whose text did change can never read as "no text change" on the phone.
+ */
 export function diffLines(diff) {
   const out = [];
   for (const file of Array.isArray(diff?.files) ? diff.files : []) {
-    if (!Array.isArray(file.hunks) || !file.hunks.length) continue;
+    if (file.status === 'unchanged' || file.status === 'missing') continue;
     out.push({ kind: 'file', text: String(file.path || '') });
-    for (const hunk of file.hunks) {
+    if (file.tooLarge === true) out.push({ kind: 'note', text: DIFF_NOTE_TOO_LARGE });
+    if (file.status === 'binary') out.push({ kind: 'note', text: DIFF_NOTE_BINARY });
+    for (const hunk of Array.isArray(file.hunks) ? file.hunks : []) {
       for (const row of Array.isArray(hunk.rows) ? hunk.rows : []) {
         const segs = Array.isArray(row.segments) ? row.segments : [];
         const before = segs.filter(s => s.t !== 'add').map(s => s.s).join('');
@@ -110,6 +123,7 @@ export function diffLines(diff) {
         if (row.kind !== 'del' && after) out.push({ kind: 'add', text: after });
       }
     }
+    if (file.truncated === true) out.push({ kind: 'note', text: DIFF_NOTE_TRUNCATED });
   }
   return out;
 }
@@ -152,7 +166,18 @@ export function questionEligibility(item, ui = {}) {
   });
 }
 
-/** The entry the server validates for qbank.attest; the phone never acknowledges warnings (no Attest for warned items). */
-export function questionEntry(item) {
-  return { id: item.identity, revision: item.revision, reviewedRevision: item.revision, acknowledgedWarnings: [] };
+/**
+ * The entry the server validates for qbank.attest. `reviewedRevision` is the receipt the phone
+ * recorded when the reviewer saw the question, carried exactly as given and never filled in
+ * from item.revision: a stale or missing receipt must reach the server and be rejected there
+ * (its receipt check is reviewedRevision === revision). A non-string receipt is sent as ''.
+ * The phone never acknowledges warnings (no Attest for warned items).
+ */
+export function questionEntry(item, reviewedRevision) {
+  return {
+    id: item.identity,
+    revision: item.revision,
+    reviewedRevision: typeof reviewedRevision === 'string' ? reviewedRevision : '',
+    acknowledgedWarnings: [],
+  };
 }
