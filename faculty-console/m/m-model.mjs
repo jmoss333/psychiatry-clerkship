@@ -81,7 +81,9 @@ export function applyRows(server, rows) {
   const items = (Array.isArray(server.items) ? server.items : []).map(item => {
     const row = rows[item.slug];
     if (!row || typeof row !== 'object') return item;
-    const { stale, ...rest } = item;
+    // A fresh signature binds today's text: neither a drift flag nor a citations-changed flag
+    // (fingerprint v2) from the previous load describes it any more.
+    const { stale, citationsChanged, ...rest } = item;
     return {
       ...rest,
       status: row.status,

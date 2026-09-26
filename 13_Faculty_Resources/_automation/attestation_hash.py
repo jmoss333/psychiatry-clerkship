@@ -218,6 +218,218 @@ def digest(slug: str, sources: dict[str, bytes], record: dict | None) -> str:
     return blob_sha(manifest_for_slug(slug, sources, record).encode("utf-8"))
 
 
+# --------------------------------------------------------------------------------------
+# FINGERPRINT v2 — the clinical text (`clinicalHash`)
+# --------------------------------------------------------------------------------------
+#
+# THE RULING (Joshua Moss, MD, 2026-09-26): a change to a page's CITATIONS that leaves its
+# clinical claims unchanged keeps the signature. A reviewed row may therefore carry a second
+# hash beside `contentHash`: `clinicalHash`, the digest of the same inputs with citation
+# apparatus and pure formatting removed. The row is BOUND when either hash matches today's
+# text. `contentHash` is unchanged and still checked first, so a row without `clinicalHash`
+# behaves exactly as before; only the faculty console writes the new field, at a press.
+#
+# MEASURED BEFORE IT WAS BUILT (2026-09-26): of the 205 signatures voided on main since
+# 2026-09-16, this fingerprint would have kept 3 — three "Key paper" swaps in #813. Every
+# correction wave (WP-1..WP-11) changed clinical text and still voids. The value is future
+# citation maintenance, not the past.
+#
+# WHAT COUNTS AS A CITATION — only what can be identified with confidence, so every error is
+# "voided when it need not have been", never "kept when it should not have been":
+#
+#   · a `**Key paper:**` / `**Key papers:**` line (the page's own label for citation apparatus);
+#   · a `References` / `Reference` / `Sources` / `Bibliography` / `Works cited` /
+#     `Citations` heading, and inside that section a LIST ITEM that carries a year. Everything
+#     else in that section
+#     stays — the 2026-09-26 survey found crisis-block markers, disclaimers and signature
+#     lines trailing reference lists, and an unlabelled line there is not a citation;
+#   · a DOI, a PMID/PMCID, a link TARGET or bare URL on doi.org / PubMed / PMC / Europe PMC;
+#     every other link target stays (a changed referral, video or `tel:` link is content);
+#   · a numeric anchor `[1]`, `[2,3]`, `[4–6 ✓]` and a footnote marker `[^key]`. Footnote
+#     DEFINITIONS stay: their text can carry a claim;
+#   · a parenthetical author–year citation, `(Smith 2020; Jones et al., 2019)` — piece by
+#     piece, and only pieces that are nothing but a citation;
+#   · emphasis and heading markers, runs of whitespace, and a space left before punctuation
+#     where an inline citation was removed ("risk (Smith 2020)." reads as "risk.");
+#   · in the topic_meta record, `evidenceIds` (registry keys — which paper, not what it says)
+#     besides `facultyReview`.
+#
+# Non-Markdown sources (tool HTML/JS, JSON packs, the question bank) hash exactly as in v1:
+# their clinical text cannot be separated from their code with the same confidence.
+#
+# THE RISK THIS ACCEPTS, stated so nobody over-reads a clinical binding: the fingerprint
+# exists because of #672, which put fabricated citations on attested pages. A citation-only
+# change no longer voids a signature, and the machine citation gate (#694, ruled 2026-09-22)
+# is not built yet. So a row bound ONLY by `clinicalHash` is reported separately
+# (`bound_clinical`: "citations changed since signing") by check_attestation_hashes.py and the
+# console, until that gate can check the citations themselves.
+#
+# PARITY: faculty-console/attestation-hash.mjs reproduces every rule below byte for byte
+# (tests/attestation-hash-parity.test.mjs). Hence the deliberately plain regex dialect:
+# explicit ASCII classes instead of \w \d \s, `[^\n]` instead of `.`, no case-insensitive
+# flag, and every anchored rule applied to one line at a time — each of those differs
+# between Python's `re` and JavaScript's RegExp in some corner, and a corner is enough.
+
+CLINICAL_FINGERPRINT = "fingerprint clinical/1"
+CLINICAL_RECORD_EXCLUDED_KEYS = frozenset({"facultyReview", "evidenceIds"})
+
+_REFERENCE_SECTION_NAMES = frozenset(
+    {"references", "reference", "sources", "bibliography", "works cited", "citations"}
+)
+_HEADING = re.compile(r"^(#{1,6})[ \t]+([^\n]*)$")
+_HEADING_MARKER = re.compile(r"^[ \t]*#{1,6}[ \t]+")
+_LIST_ITEM = re.compile(r"^[ \t]*(?:[-*+]|[0-9]+[.)])[ \t]+")
+_YEAR = re.compile(r"(?:^|[^0-9])(?:19|20)[0-9][0-9](?![0-9])")
+_KEY_PAPER_LINE = re.compile(r"^[ \t]*(?:[-*+][ \t]+)?\*\*[Kk]ey [Pp]apers?:\*\*")
+_FOOTNOTE_REF = re.compile(r"\[\^[^\]\n]+\]")
+_CITATION_HOST = (
+    r"https?://(?:(?:dx\.)?doi\.org/|(?:pubmed|pmc)\.ncbi\.nlm\.nih\.gov/"
+    r"|www\.ncbi\.nlm\.nih\.gov/(?:pmc|pubmed)/|europepmc\.org/)"
+)
+_CITATION_LINK_TARGET = re.compile(r"\]\(" + _CITATION_HOST + r"[^) \t\n]*(?:[ \t]+\"[^\"\n]*\")?\)")
+_CITATION_URL = re.compile(r"<?" + _CITATION_HOST + r"[^ \t\n<>)\]]*>?")
+_DOI = re.compile(r"(?<![A-Za-z0-9_])[Dd][Oo][Ii]:[ \t]*10\.[0-9]{4,9}/[^ \t\n;,)\]]+")
+_PMID = re.compile(
+    r"(?<![A-Za-z0-9_])(?:PMID:?[ \t]*[0-9]+|PMCID:?[ \t]*PMC[0-9]+|PMC[0-9]{4,})(?![A-Za-z0-9_])"
+)
+_NUMERIC_ANCHOR = re.compile(r"\[[0-9]+(?:[ \t]*[,–-][ \t]*[0-9]+)*(?:[ \t]*✓)?\](?!\()")
+_PAREN = re.compile(r"\(([^()\n]*)\)")
+_NAME_LETTERS = "A-Za-zÀ-ÖØ-öø-ÿ"
+_NAME = "[A-Z][" + _NAME_LETTERS + "'’-]+"
+_CITE_PIECE = re.compile(
+    r"^(?:see(?: also)?|e\.g\.,?|cf\.)?[ \t]*" + _NAME
+    + r"(?:[ \t]+(?:et al\.?|(?:and|&)[ \t]+" + _NAME + r"))?,?"
+    + r"(?:[ \t]+[*_]?[A-Z][" + _NAME_LETTERS + r"0-9 .&:-]*[*_]?,?)?"
+    + r"[ \t]+(?:19|20)[0-9][0-9][a-z]?$"
+)
+_STRONG = re.compile(r"\*\*|__")
+_EM_OPEN = re.compile(r"(?<![A-Za-z0-9_*])[*_](?=[^ \t\n*_])")
+_EM_CLOSE = re.compile(r"(?<=[^ \t\n*_])[*_](?![A-Za-z0-9_*])")
+_EMPTY_PARENS = re.compile(r"\([ \t]*[;,]?[ \t]*\)")
+_WHITESPACE = re.compile(r"[ \t\n\r\f\v]+")
+_SPACE_BEFORE_PUNCTUATION = re.compile(r" +(?=[.,;:!?)])")
+_EDGE_BLANKS = re.compile(r"^[ \t]+|[ \t]+$")
+
+
+def _strip_blanks(text: str) -> str:
+    """Trim spaces and tabs only — str.strip() and String.trim() disagree on the rest."""
+    return _EDGE_BLANKS.sub("", text)
+
+
+def _section_name(heading_text: str) -> str:
+    """A heading's text as a section name: markers off, ASCII-lowercased, numbering off."""
+    name = _strip_blanks(re.sub(r"[*_`]", "", heading_text))
+    name = _strip_blanks(re.sub(r"[ \t#]*$", "", name))
+    name = _strip_blanks(re.sub(r":+$", "", name))
+    name = re.sub(r"[A-Z]", lambda m: m.group(0).lower(), name)
+    return re.sub(r"^[0-9]+[.)]?[ \t]+", "", name)
+
+
+def _clinical_lines(text: str) -> str:
+    """The line-anchored rules: reference-list entries, Key-paper lines, heading markers."""
+    kept, section_level = [], 0
+    for line in text.split("\n"):
+        heading = _HEADING.match(line)
+        if heading:
+            level = len(heading.group(1))
+            if section_level and level <= section_level:
+                section_level = 0
+            if not section_level and _section_name(heading.group(2)) in _REFERENCE_SECTION_NAMES:
+                section_level = level
+                continue
+        elif section_level and _LIST_ITEM.match(line) and _YEAR.search(line):
+            continue
+        if _KEY_PAPER_LINE.match(line):
+            continue
+        kept.append(_HEADING_MARKER.sub("", line))
+    return "\n".join(kept)
+
+
+def _strip_parenthetical_citations(text: str) -> str:
+    def replace(match):
+        pieces = [_strip_blanks(piece) for piece in match.group(1).split(";")]
+        pieces = [piece for piece in pieces if piece]
+        kept = [piece for piece in pieces if not _CITE_PIECE.match(piece)]
+        if len(kept) == len(pieces):
+            return match.group(0)
+        return "(" + "; ".join(kept) + ")" if kept else ""
+
+    return _PAREN.sub(replace, text)
+
+
+def clinical_markdown(text: str) -> str:
+    """The clinical text of a Markdown page: its words with citation apparatus removed.
+
+    Total over any str. Every rule is listed, with its reason, above CLINICAL_FINGERPRINT.
+    """
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = _clinical_lines(text)
+    text = _FOOTNOTE_REF.sub("", text)
+    text = _CITATION_LINK_TARGET.sub("]", text)
+    text = _CITATION_URL.sub("", text)
+    text = _DOI.sub("", text)
+    text = _PMID.sub("", text)
+    text = _NUMERIC_ANCHOR.sub("", text)
+    text = _strip_parenthetical_citations(text)
+    text = _STRONG.sub("", text)
+    text = _EM_OPEN.sub("", text)
+    text = _EM_CLOSE.sub("", text)
+    text = _EMPTY_PARENS.sub("", text)
+    text = _WHITESPACE.sub(" ", text)
+    return _strip_blanks(_SPACE_BEFORE_PUNCTUATION.sub("", text))
+
+
+def is_clinical_markdown_source(path: str) -> bool:
+    """Whether a source is hashed over its clinical text (Markdown) rather than its bytes."""
+    return path.endswith(".md")
+
+
+def clinical_source_sha(path: str, data: bytes) -> str:
+    """A clinical manifest line's value for one source.
+
+    Markdown: the blob sha of its clinical text. Anything else — and Markdown that is not
+    valid UTF-8, which has no text to normalise — exactly the v1 value (`source_blob_sha`).
+    """
+    if is_clinical_markdown_source(path):
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            return source_blob_sha(path, data)
+        return blob_sha(clinical_markdown(text).encode("utf-8"))
+    return source_blob_sha(path, data)
+
+
+def canonical_clinical_record(record: dict) -> bytes:
+    """A topic_meta record's canonical bytes without `facultyReview` or `evidenceIds`."""
+    body = {key: value for key, value in record.items()
+            if key not in CLINICAL_RECORD_EXCLUDED_KEYS}
+    return json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
+        "utf-8"
+    )
+
+
+def clinical_manifest_for_slug(slug: str, sources: dict[str, bytes], record: dict | None) -> str:
+    """The clinical manifest: a version line, then v1's shape over the clinical values.
+
+    The first line keeps a clinical digest from ever equalling a v1 digest. The same
+    refusals and the same "not a mapping is no record" decision as `manifest_for_slug`.
+    """
+    if not sources:
+        raise AttestationHashError(
+            f"{slug}: no attested sources — its digest would cover nothing"
+        )
+    lines = [CLINICAL_FINGERPRINT]
+    lines += [f"{path} {clinical_source_sha(path, sources[path])}" for path in sorted(sources)]
+    if isinstance(record, dict):
+        lines.append(f"topic_meta {blob_sha(canonical_clinical_record(record))}")
+    return "\n".join(lines) + "\n"
+
+
+def clinical_digest(slug: str, sources: dict[str, bytes], record: dict | None) -> str:
+    """The slug's `clinicalHash`: the blob SHA of its clinical manifest."""
+    return blob_sha(clinical_manifest_for_slug(slug, sources, record).encode("utf-8"))
+
+
 def _read_sources(root: Path, paths: list[str]) -> dict[str, bytes]:
     """Working-tree bytes for each path; raises FileNotFoundError on the first absentee."""
     return {path: (Path(root) / path).read_bytes() for path in paths}
@@ -241,12 +453,21 @@ def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) 
     Pending entries are ignored: they claim nothing about content. Returns
 
         {"bound": {slug: hash}, "stale": {slug: {"stored","actual","at","manifest"}},
+         "bound_clinical": {slug: {"stored","actual","clinical","at"}},
          "unbound": [...], "malformed": [...], "unresolvable": {slug: [missing paths]},
          "legacy": [...], "unshipped_unlisted": [...]}
+
+    A row is bound when its `contentHash` matches today's inputs, OR when it carries a
+    `clinicalHash` that matches today's clinical text (fingerprint v2, above). A row bound
+    only the second way is in `bound` AND in `bound_clinical`, so every consumer that asks
+    "is it bound?" is unchanged while the ones that must say "its citations changed since it
+    was signed" can. A `clinicalHash` that is present but not 40-hex is `malformed`, like a
+    bad `contentHash`: only the console writes either, so a bad one is a hand edit.
     """
     root = Path(root)
     report: dict = {
         "bound": {},
+        "bound_clinical": {},
         "stale": {},
         "unbound": [],
         "malformed": [],
@@ -280,16 +501,35 @@ def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) 
         if not isinstance(stored, str) or not HEX40.fullmatch(stored):
             report["malformed"].append(slug)
             continue
+        clinical_stored = entry.get("clinicalHash")
+        if clinical_stored is not None and (
+            not isinstance(clinical_stored, str) or not HEX40.fullmatch(clinical_stored)
+        ):
+            report["malformed"].append(slug)
+            continue
 
         missing = [path for path in paths if not (root / path).is_file()]
         if missing:
             report["unresolvable"][slug] = missing
             continue
 
-        manifest = manifest_for_slug(slug, _read_sources(root, paths), topic_meta.get(slug))
+        sources = _read_sources(root, paths)
+        manifest = manifest_for_slug(slug, sources, topic_meta.get(slug))
         actual = blob_sha(manifest.encode("utf-8"))
+        clinical_actual = (
+            clinical_digest(slug, sources, topic_meta.get(slug))
+            if clinical_stored is not None and actual != stored else None
+        )
         if actual == stored:
             report["bound"][slug] = stored
+        elif clinical_stored is not None and clinical_actual == clinical_stored:
+            report["bound"][slug] = stored
+            report["bound_clinical"][slug] = {
+                "stored": stored,
+                "actual": actual,
+                "clinical": clinical_stored,
+                "at": entry.get("at"),
+            }
         else:
             report["stale"][slug] = {
                 "stored": stored,

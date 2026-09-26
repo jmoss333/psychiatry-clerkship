@@ -27,6 +27,9 @@ from attestation_hash import (  # noqa: E402
     AttestationHashError,
     blob_sha,
     canonical_topic_meta_record,
+    clinical_digest,
+    clinical_manifest_for_slug,
+    clinical_source_sha,
     digest,
     digest_from_tree,
     ledger_hash_report,
@@ -416,6 +419,103 @@ class ProjectEffectiveLedgerTest(FixtureTreeTestCase):
 
     def test_an_unlisted_unshipped_slug_is_refused(self):
         self.assert_refuses({"ghost.md": reviewed_entry(X_DIGEST)}, "ghost.md", "unshipped")
+
+
+# Fingerprint v2 (`clinicalHash`, ruling 2026-09-26: a citation-only change keeps the
+# signature). Pinned against git exactly like v1:
+#   printf 'alpha' | git hash-object --stdin          (a.md's clinical text is "alpha")
+ALPHA_CLINICAL_SHA = "7e74e68b2a782a3aead46d987a63ca1c91091c13"
+X_CLINICAL_MANIFEST = (
+    f"fingerprint clinical/1\na.md {ALPHA_CLINICAL_SHA}\ntopic_meta {TOPIC_RECORD_SHA}\n"
+)
+#   printf '%s' "$X_CLINICAL_MANIFEST" | git hash-object --stdin
+X_CLINICAL_DIGEST = "28098ad95296866d5bef810ef01457c25b5aee56"
+
+
+def clinical_entry(content_hash=X_DIGEST, clinical_hash=X_CLINICAL_DIGEST):
+    entry = reviewed_entry(content_hash)
+    entry["clinicalHash"] = clinical_hash
+    return entry
+
+
+class ClinicalFingerprintTest(FixtureTreeTestCase):
+    def report(self, ledger):
+        return ledger_hash_report(self.root, ledger, self.shipped, self.topic_meta)
+
+    def test_the_clinical_manifest_and_digest_reproduce_with_git(self):
+        sources = {"a.md": b"alpha\n"}
+        self.assertEqual(
+            clinical_manifest_for_slug("x.md", sources, self.topic_meta["x.md"]),
+            X_CLINICAL_MANIFEST,
+        )
+        self.assertEqual(
+            clinical_digest("x.md", sources, self.topic_meta["x.md"]), X_CLINICAL_DIGEST
+        )
+        self.assertEqual(clinical_source_sha("a.md", b"alpha\n"), ALPHA_CLINICAL_SHA)
+
+    def test_a_citation_only_edit_keeps_the_row_bound_and_says_so(self):
+        (self.root / "a.md").write_bytes(b"alpha [1] (Smith et al., 2020)\n\n**Key paper:** X 2001\n")
+        report = self.report({"x.md": clinical_entry()})
+        self.assertEqual(report["bound"], {"x.md": X_DIGEST})
+        self.assertEqual(report["stale"], {})
+        kept = report["bound_clinical"]["x.md"]
+        self.assertEqual(kept["stored"], X_DIGEST)
+        self.assertEqual(kept["clinical"], X_CLINICAL_DIGEST)
+        self.assertNotEqual(kept["actual"], X_DIGEST)
+        self.assertEqual(kept["at"], "2026-07-01")
+
+    def test_an_evidence_ids_swap_keeps_the_row_bound(self):
+        self.topic_meta["x.md"]["evidenceIds"] = ["new-paper-2026"]
+        report = self.report({"x.md": clinical_entry()})
+        self.assertIn("x.md", report["bound_clinical"])
+
+    def test_a_clinical_edit_is_stale_even_with_a_clinical_hash(self):
+        (self.root / "a.md").write_bytes(b"alpha, revised\n")
+        report = self.report({"x.md": clinical_entry()})
+        self.assertEqual(report["bound"], {})
+        self.assertEqual(report["bound_clinical"], {})
+        self.assertIn("x.md", report["stale"])
+
+    def test_a_topic_meta_edit_outside_evidence_ids_is_stale(self):
+        self.topic_meta["x.md"]["tldr"] = "t — é, revised"
+        report = self.report({"x.md": clinical_entry()})
+        self.assertIn("x.md", report["stale"])
+
+    def test_without_a_clinical_hash_a_citation_edit_is_stale_as_before(self):
+        # The regression the None-guard exists for: no clinicalHash must never read as a
+        # clinical match of nothing against nothing.
+        (self.root / "a.md").write_bytes(b"alpha [1]\n")
+        report = self.report({"x.md": reviewed_entry(X_DIGEST)})
+        self.assertIn("x.md", report["stale"])
+        self.assertEqual(report["bound_clinical"], {})
+
+    def test_an_unchanged_row_is_bound_by_content_not_listed_as_citations_changed(self):
+        report = self.report({"x.md": clinical_entry()})
+        self.assertEqual(report["bound"], {"x.md": X_DIGEST})
+        self.assertEqual(report["bound_clinical"], {})
+
+    def test_a_malformed_clinical_hash_is_malformed_even_when_content_is_bound(self):
+        for bad in ("", "D" * 40, "d" * 64, 7, ["d" * 40]):
+            with self.subTest(bad=bad):
+                report = self.report({"x.md": clinical_entry(clinical_hash=bad)})
+                self.assertEqual(report["malformed"], ["x.md"])
+                self.assertEqual(report["bound"], {})
+
+    def test_a_v1_digest_in_the_clinical_field_does_not_bind_after_an_edit(self):
+        # The version line keeps the namespaces apart: copying contentHash into clinicalHash
+        # binds nothing once the text moves.
+        (self.root / "a.md").write_bytes(b"alpha [1]\n")
+        report = self.report({"x.md": clinical_entry(clinical_hash=X_DIGEST)})
+        self.assertIn("x.md", report["stale"])
+
+    def test_the_effective_ledger_renders_a_clinically_bound_row_reviewed(self):
+        (self.root / "a.md").write_bytes(b"alpha [2]\n")
+        ledger = {"x.md": clinical_entry()}
+        effective, report = project_effective_ledger(
+            self.root, ledger, self.shipped, self.topic_meta
+        )
+        self.assertEqual(effective["x.md"]["status"], "reviewed")
+        self.assertIn("x.md", report["bound_clinical"])
 
 
 class ProjectTopicMetaFacultyReviewTest(unittest.TestCase):

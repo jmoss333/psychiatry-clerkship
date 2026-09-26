@@ -2169,6 +2169,18 @@ export function startFacultyConsole({
     return el('p', { id: 'attestation-stale-notice', class: 'hint' }, [reason]);
   }
 
+  /* Fingerprint v2 (2026-09-26): the page changed since it was signed, but only in its
+     citations — the clinical text is what was signed, so the signature stands. Said out loud
+     rather than hidden: until the citation gate checks citations itself, the reviewer is the
+     one who can notice a citation that does not support its sentence. */
+  function renderCitationsChangedNotice(item) {
+    if (!item || item.type === 'question' || item.record?.citationsChanged !== true) return null;
+    return el('p', { id: 'attestation-citations-notice', class: 'hint' }, [
+      'Citations changed since you signed this page. The clinical text is unchanged, so your '
+        + 'signature stands; glance at the new citations when you next open it.',
+    ]);
+  }
+
   /* ── Re-sign by change (2026-09-25) ─────────────────────────────────────────────────
      A signed page drifts when a correction changes text it was signed against. When one
      correction set drifts dozens of pages at once, re-reading each whole page to find a
@@ -3015,6 +3027,11 @@ export function startFacultyConsole({
       payload.pullRequestError ? el('p', { class: 'hint' }, [
         'The signatures are saved, but the review request could not be confirmed open. Use “Reopen review request” if it appears.',
       ]) : null,
+      Number.isInteger(payload.fingerprinted) && payload.fingerprinted > 0 ? el('p', { class: 'hint' }, [
+        `Also recorded the clinical fingerprint of ${contentNoun(payload.fingerprinted)} you had already `
+          + 'signed and that are unchanged, so a later change to their citations alone will not void '
+          + 'those signatures. Their signature dates are unchanged.',
+      ]) : null,
       leftOutPages.length || leftOutQuestions.length ? el('details', { class: 'resign-group' }, [
         el('summary', {}, [`Left out · ${leftOutPages.length + leftOutQuestions.length}`]),
         el('div', { class: 'resign-group-body' }, [
@@ -3146,6 +3163,7 @@ export function startFacultyConsole({
       renderTwinContext(item),
       renderRiskContext(item),
       renderStaleNotice(item),
+      renderCitationsChangedNotice(item),
       renderResignGroupProgress(item),
       renderChangesSinceSigned(item),
       renderPendingReason(item),

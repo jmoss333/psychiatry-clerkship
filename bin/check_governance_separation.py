@@ -45,7 +45,8 @@ THE RULE:
                     governance state, not the text a learner reads (see qbank_text()).
     PROMOTION, reviewed.json (JSON diff per key; a missing key is a value):
        status becomes reviewed; or an entry reviewed on BOTH sides changes any of
-       at, by, risk, note, contentHash, claimsHash, evidenceHash, evidenceThrough;
+       at, by, risk, note, contentHash, clinicalHash, claimsHash, evidenceHash,
+       evidenceThrough;
        or a new entry born reviewed.
     PROMOTION, topic_meta.json: a facultyReview block whose status becomes reviewed/attested,
        or a block reviewed on BOTH sides whose lastReviewed or reviewer changes.
@@ -215,7 +216,8 @@ CONTENT_EXCLUDE = "13_Faculty_Resources/"
 # A reviewed row's promotable fields. `reason` is deliberately absent: it explains a pending
 # row, and editing it claims nothing about a review.
 LEDGER_PROMOTION_KEYS = (
-    "at", "by", "risk", "note", "contentHash", "claimsHash", "evidenceHash", "evidenceThrough",
+    "at", "by", "risk", "note", "contentHash", "clinicalHash", "claimsHash", "evidenceHash",
+    "evidenceThrough",
 )
 TOPIC_META_PROMOTION_KEYS = ("lastReviewed", "reviewer")
 # question_bank.json's `status` enum is draft/attested; only faculty attest tooling writes
@@ -1707,6 +1709,14 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
               [c for _, c in ledger_promotions({"a.md": _reviewed()},
                                                {"a.md": _reviewed(contentHash="a" * 40)})],
               ["contentHash added"])
+        # Fingerprint v2 (2026-09-26): a clinicalHash is a second binding of the same
+        # signature, so writing or changing one is a promotion, exactly like contentHash —
+        # only the console, on attest/pending, may do it.
+        check("clinicalHash stamping is a promotion",
+              [c for _, c in ledger_promotions({"a.md": _reviewed(contentHash="a" * 40)},
+                                               {"a.md": _reviewed(contentHash="a" * 40,
+                                                                  clinicalHash="b" * 40)})],
+              ["clinicalHash added"])
         check("a topic_meta block that vanishes is registration",
               topic_meta_promotions({"a.md": {"facultyReview": {"status": "reviewed"}}},
                                     {"a.md": {}}), [])

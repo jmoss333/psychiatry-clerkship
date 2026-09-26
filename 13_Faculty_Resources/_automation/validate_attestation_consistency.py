@@ -15,7 +15,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-from attestation_hash import ledger_hash_report
+from attestation_hash import HEX40, ledger_hash_report
 from surface_governance import SurfaceGovernanceError, load_validated_ledger
 from validate_tool_governance import GovernanceError, parse_metadata_marker
 
@@ -829,8 +829,14 @@ def _content_hash_errors(root, reviewed, document, topic_meta):
             "faculty console" % slug
         )
     for slug in sorted(report["malformed"]):
+        entry = reviewed.get(slug)
+        stored = entry.get("contentHash") if isinstance(entry, dict) else None
+        # ledger_hash_report classes a bad clinicalHash (fingerprint v2) as malformed too;
+        # name the field that is actually wrong.
+        field = ("clinicalHash" if isinstance(stored, str) and HEX40.fullmatch(stored)
+                 else "contentHash")
         errors.append(
-            "%s: contentHash is malformed (expected a 40-hex git blob SHA)" % slug
+            "%s: %s is malformed (expected a 40-hex git blob SHA)" % (slug, field)
         )
     for slug in sorted(report["unresolvable"]):
         for path in report["unresolvable"][slug]:

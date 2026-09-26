@@ -4,7 +4,10 @@
 import {
   STALE_REASON,
   canonicalTopicMetaRecord,
+  clinicalManifestForSlug,
+  clinicalSourceSha,
   digestFromManifest,
+  isClinicalMarkdownSource,
   manifestForSlug,
   sourceBlobSha,
   sourcesForSlug,
@@ -1266,6 +1269,124 @@ function digestForSlug(slug, { shipped, tree, topicMeta }) {
   return digestFromManifest(manifestForSlug(slug, sources, record));
 }
 
+// ── Fingerprint v2: `clinicalHash` ──────────────────────────────────────────────────────
+// Ruling (Joshua Moss, MD, 2026-09-26): a change to a page's citations that leaves its
+// clinical claims unchanged keeps the signature. A reviewed row may carry `clinicalHash`
+// beside `contentHash`; it is bound when EITHER matches today's text. The rule and its
+// accepted risk are written out in attestation_hash.py above CLINICAL_FINGERPRINT.
+//
+// The v1 read needs no page content (one tree call). The clinical read does: a Markdown
+// source's clinical text must be computed from its bytes. So it is read only where it can
+// change an answer — rows whose v1 hash no longer matches and that carry a clinicalHash on
+// the read path, and the pages being signed on the write path — and each result is cached by
+// the source's git blob sha, which is content-addressed and therefore never stale.
+//
+// Best-effort by construction: a source that cannot be read leaves its row v1-only — on a
+// write, `clinicalHash` is omitted (never carried over from an older signature); on a read,
+// the row reports "could not check" rather than either verdict. v1-only is strictly more
+// conservative, so a failure can void a signature that could have stood, never the reverse.
+// Ledger mode (ADR-003, dark) stays v1-only: its signed events carry `contentHash` alone.
+
+const CLINICAL_HASH = /^[a-f0-9]{40}$/;
+const CLINICAL_SHA_CACHE = new Map();
+const CLINICAL_SHA_CACHE_LIMIT = 4000;
+const CLINICAL_READ_CONCURRENCY = 8;
+const MAX_CLINICAL_SOURCE_BYTES = 4 * 1024 * 1024;
+
+function hasClinicalHash(entry) {
+  return isRecord(entry) && typeof entry.clinicalHash === 'string' && CLINICAL_HASH.test(entry.clinicalHash);
+}
+
+function safeDigestForSlug(slug, inputs) {
+  try {
+    return digestForSlug(slug, inputs);
+  } catch {
+    return null;
+  }
+}
+
+/** Compute (or take from cache) the clinical sha of every Markdown source these slugs ship. */
+async function loadClinicalShas(repository, inputs, slugs) {
+  if (!inputs.clinical) inputs.clinical = new Map();
+  if (!inputs.clinicalUnread) inputs.clinicalUnread = new Set();
+  const paths = new Set();
+  for (const slug of slugs) {
+    for (const path of sourcesForSlug(inputs.shipped, slug)) {
+      if (isClinicalMarkdownSource(path) && inputs.tree.has(path) && !inputs.clinical.has(path)) {
+        paths.add(path);
+      }
+    }
+  }
+  await mapLimit([...paths], CLINICAL_READ_CONCURRENCY, async (path) => {
+    const blob = inputs.tree.get(path);
+    const cached = CLINICAL_SHA_CACHE.get(blob);
+    if (cached) {
+      inputs.clinical.set(path, cached);
+      return;
+    }
+    try {
+      const raw = await repository.readRaw(path, { ref: inputs.head, maxBytes: MAX_CLINICAL_SOURCE_BYTES });
+      // The bytes must be the blob the tree named, or the clinical sha would describe text
+      // other than the text the v1 hash of this same read describes.
+      if (raw.sha !== blob) throw new GithubError('github_response_invalid', 502);
+      const sha = clinicalSourceSha(path, Buffer.from(raw.bytes));
+      if (CLINICAL_SHA_CACHE.size >= CLINICAL_SHA_CACHE_LIMIT) CLINICAL_SHA_CACHE.clear();
+      CLINICAL_SHA_CACHE.set(blob, sha);
+      inputs.clinical.set(path, sha);
+    } catch {
+      inputs.clinicalUnread.add(path);
+    }
+  });
+  return inputs;
+}
+
+/** The slug's clinical digest from loaded inputs, or null when it cannot be computed. */
+function clinicalDigestForSlug(slug, inputs) {
+  if (!inputs?.clinical) return null;
+  const paths = sourcesForSlug(inputs.shipped, slug);
+  if (!paths.length) return null;
+  const values = {};
+  for (const path of paths) {
+    // A non-Markdown source's clinical value IS its v1 value, already in the tree listing
+    // (the question bank's canonical sha included — readDigestInputs put it there).
+    const value = isClinicalMarkdownSource(path) ? inputs.clinical.get(path) : inputs.tree.get(path);
+    if (!value) return null;
+    values[path] = value;
+  }
+  const { topicMeta } = inputs;
+  const record = isRecord(topicMeta) && Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : null;
+  return digestFromManifest(clinicalManifestForSlug(slug, values, record));
+}
+
+/** Reviewed rows whose v1 hash no longer matches but which carry a clinicalHash to try. */
+function clinicalCandidates(reviewed, inputs) {
+  if (!isRecord(reviewed)) return [];
+  return Object.keys(reviewed).filter((slug) => {
+    const row = reviewed[slug];
+    return isRecord(row) && row.status === 'reviewed' && hasClinicalHash(row)
+      && row.contentHash !== safeDigestForSlug(slug, inputs);
+  });
+}
+
+/** 'content' (v1 matches), 'clinical' (only the clinical fingerprint matches), or null. */
+function boundBy(row, slug, inputs, digest = safeDigestForSlug(slug, inputs)) {
+  if (!isRecord(row) || row.status !== 'reviewed') return null;
+  if (digest && row.contentHash === digest) return 'content';
+  if (hasClinicalHash(row)) {
+    const clinical = clinicalDigestForSlug(slug, inputs);
+    if (clinical && clinical === row.clinicalHash) return 'clinical';
+  }
+  return null;
+}
+
+/** Set a freshly signed row's clinicalHash, or remove a stale one when it cannot be computed. */
+function bindClinical(next, slug, inputs) {
+  const clinical = clinicalDigestForSlug(slug, inputs);
+  if (clinical) next.clinicalHash = clinical;
+  else delete next.clinicalHash;
+  return next;
+}
+
 /**
  * Everything a content hash is computed from, all read at the SAME ref.
  *
@@ -1324,6 +1445,15 @@ function contentFreshness(entry, slug, verification) {
   }
   if (actual === null) return { reason: MISSING_SOURCE_REASON };
   if (actual === stored) return null;
+  // Fingerprint v2: the text moved, but perhaps only its citations. Bound — the signature
+  // stands — and flagged, so the change is shown rather than hidden (ruling 2026-09-26).
+  if (hasClinicalHash(entry)) {
+    const unread = sourcesForSlug(verification.shipped, slug)
+      .some(path => verification.clinicalUnread?.has(path));
+    if (unread) return { reason: UNVERIFIED_REASON };
+    const clinical = clinicalDigestForSlug(slug, verification);
+    if (clinical && clinical === entry.clinicalHash) return { citationsChanged: true };
+  }
   // Drift, and only drift, changes what the item IS: the page was reviewed and then edited,
   // so it needs review again. The ledger keeps saying `reviewed` — a read never writes it —
   // `attestation_hash.py`'s `project_effective_ledger` WILL apply the same projection to the
@@ -1375,7 +1505,10 @@ function buildContentItems(reviewed, shipped, verification, essentials = null) {
       risk: validRisk(entry.risk),
       // Absent, not `false`, when the item is clean: a reader that forgets to check cannot
       // mistake a missing flag for a positive "verified fresh" the server never claimed.
-      ...(freshness ? { stale: true } : {}),
+      ...(freshness && !freshness.citationsChanged ? { stale: true } : {}),
+      // Signed, still bound, but its citations changed since (fingerprint v2). Shown, never
+      // hidden, until the citation gate can check the citations themselves.
+      ...(freshness?.citationsChanged ? { citationsChanged: true } : {}),
       // "Pending reason" only: note/contentHash/claimsHash/evidenceHash/evidenceThrough
       // are internal ledger fields and must never reach the browser. A freshness finding
       // is not a ledger field — it is computed for this load — so it may be said here.
@@ -1440,6 +1573,11 @@ async function buildState(repository, settings, branchSync) {
       questionDrift: applied.report.questionDrift,
       published: await readPublishState(settings),
     };
+  }
+  // Fingerprint v2, read side: only rows the v1 hash no longer binds AND that carry a
+  // clinicalHash cost a page read. Legacy mode only — ledger mode stays v1 (see boundBy).
+  if (!settings.ledger && verification.freshness === 'verified') {
+    await loadClinicalShas(repository, verification, clinicalCandidates(reviewedDoc, verification));
   }
   const items = buildContentItems(reviewedDoc, shippedFile.json, verification, essentials.slugs);
   // The qbank half still needs the manifest itself: requireManifest both validates it and
@@ -1950,6 +2088,10 @@ async function commitContentMutation({ repository, settings, body, attester }) {
     if (!effectiveChanges.length) {
       return { ok: true, target: 'content', updated: 0, commit: null };
     }
+    // Fingerprint v2: every page being signed gets its clinical text read, so the signature
+    // can also bind to it. Best-effort; a page that cannot be read is signed v1-only.
+    const signing = effectiveChanges.filter(([, selected]) => selected).map(([slug]) => slug);
+    if (signing.length) await loadClinicalShas(repository, digestInputs, signing);
 
     // Per-record preserve pattern (Task 1 ledger contract), applied per batch entry:
     // spread the CURRENT record forward rather than replacing it, so risk/note/hashes
@@ -1969,6 +2111,8 @@ async function commitContentMutation({ repository, settings, body, attester }) {
         const digest = digestOf(slug);
         if (!digest) throw noSourceError(slug);
         next.contentHash = digest;
+        // Never carried over from an older signature: set from today's text, or removed.
+        bindClinical(next, slug, digestInputs);
       } else {
         next.by = 'Pending faculty review';
         next.reason = requireReopenReason(body.reasons?.[slug]);
@@ -2542,8 +2686,9 @@ async function planBatch({ repository, settings, request, reviewed, digestInputs
     } catch {
       digest = null;
     }
-    // Bound and current: nothing to sign, nothing to say.
-    if (row?.status === 'reviewed' && digest && row.contentHash === digest) continue;
+    // Bound and current — by its content hash, or (fingerprint v2) by its clinical text when
+    // only citations moved: nothing to sign, nothing to say.
+    if (boundBy(row, slug, digestInputs, digest)) continue;
     const was = !row || (row.status !== 'pending' && row.status !== 'reviewed') ? 'unrecorded'
       : row.status === 'pending' ? 'pending'
         : typeof row.contentHash === 'string' && row.contentHash ? 'drifted' : 'unbound';
@@ -2650,23 +2795,49 @@ async function writeBatchRows({ repository, settings, request, changeView, attes
   if (!isRecord(file.json)) invalidRepositoryFile();
   const reviewed = structuredClone(file.json);
   const digestInputs = await readMutationDigestInputs(repository, settings.branch);
+  // Fingerprint v2: rows a citation-only change left clinically bound must not be offered
+  // for signing again, so their clinical text is read before planning.
+  await loadClinicalShas(repository, digestInputs, clinicalCandidates(reviewed, digestInputs));
   const plan = await planBatch({ repository, settings, request, reviewed, digestInputs, changeView });
   if (!plan.sign.length) return { updated: 0, commit: null, plan, reviewed, digestInputs };
+  // A baseline also records the clinical fingerprint of every signed page whose text has not
+  // moved since it was signed (v1 still binds it, so these are the very bytes that were
+  // reviewed): without it, a later citation-only change would still void that signature.
+  // at/by are untouched — nothing is re-signed, the existing signature gains a second hash.
+  const stamp = request.mode === 'baseline'
+    ? Object.keys(reviewed).filter(slug => !plan.sign.some(item => item.slug === slug)
+      && isRecord(reviewed[slug]) && !hasClinicalHash(reviewed[slug])
+      && boundBy(reviewed[slug], slug, digestInputs) === 'content')
+    : [];
+  await loadClinicalShas(repository, digestInputs, [...plan.sign.map(item => item.slug), ...stamp]);
   for (const item of plan.sign) {
     const next = { ...reviewed[item.slug], status: 'reviewed', at, by: attester, contentHash: item.digest };
     delete next.reason;
+    bindClinical(next, item.slug, digestInputs);
     // defineProperty, not assignment, for the same "__proto__" reason as the one-page path.
     Object.defineProperty(reviewed, item.slug, { configurable: true, enumerable: true, writable: true, value: next });
+  }
+  let stamped = 0;
+  for (const slug of stamp) {
+    const clinical = clinicalDigestForSlug(slug, digestInputs);
+    if (!clinical) continue;
+    const next = { ...reviewed[slug], clinicalHash: clinical };
+    Object.defineProperty(reviewed, slug, { configurable: true, enumerable: true, writable: true, value: next });
+    stamped += 1;
   }
   const saved = await repository.write(
     REVIEWED_PATH,
     reviewed,
     file.sha,
     `attest: ${batchCommitWhat(request, plan.sign.length)} by ${attester} (${at})\n\n`
-      + `Statement: "${BATCH_STATEMENTS[request.mode]}"`,
+      + `Statement: "${BATCH_STATEMENTS[request.mode]}"`
+      + (stamped
+        ? `\n\nClinical fingerprint recorded for ${stamped} already-signed page(s) whose text is `
+          + 'unchanged since signing (clinicalHash; ruling 2026-09-26).'
+        : ''),
     JSON_INDENT,
   );
-  return { updated: plan.sign.length, commit: saved.commit, plan, reviewed, digestInputs };
+  return { updated: plan.sign.length, commit: saved.commit, plan, reviewed, digestInputs, fingerprinted: stamped };
 }
 
 /**
@@ -2691,13 +2862,7 @@ async function alignFacultyReview({ repository, settings, reviewed, digestInputs
     for (const slug of pageSlugs) {
       const row = Object.hasOwn(reviewed, slug) && isRecord(reviewed[slug]) ? reviewed[slug] : null;
       if (row?.status !== 'reviewed' || typeof row.contentHash !== 'string') continue;
-      let digest = null;
-      try {
-        digest = digestForSlug(slug, digestInputs);
-      } catch {
-        digest = null;
-      }
-      if (!digest || row.contentHash !== digest) continue;
+      if (!boundBy(row, slug, digestInputs)) continue;
       const record = Object.hasOwn(doc, slug) && isRecord(doc[slug]) ? doc[slug] : null;
       const review = record && isRecord(record.facultyReview) ? record.facultyReview : null;
       if (!review) continue;
@@ -2888,6 +3053,8 @@ async function commitContentBatch({ repository, settings, body, attester }) {
     commit: content.commit,
     signed: content.updated ? content.plan.sign.map(publicSign) : [],
     excluded: content.plan.excluded,
+    // Fingerprint v2: already-signed, unchanged pages this baseline gave a clinicalHash.
+    ...(content.fingerprinted ? { fingerprinted: content.fingerprinted } : {}),
     ...(content.ledger ? { ledger: content.ledger } : {}),
     ...(facultyReview ? { facultyReview } : {}),
     ...(questions ? { questions } : {}),
@@ -2910,6 +3077,10 @@ async function buildBatchPreview(repository, settings, url) {
     reviewed = applyLedger({ reviewed, events: ledger.events }).reviewed;
   }
   const digestInputs = await readMutationDigestInputs(repository, settings.branch);
+  // Same read as the press (writeBatchRows): a clinically bound row is not offered again.
+  if (!settings.ledger) {
+    await loadClinicalShas(repository, digestInputs, clinicalCandidates(reviewed, digestInputs));
+  }
   const changeView = request.mode === 'correction' ? await buildChangeView(repository, settings) : null;
   const plan = await planBatch({ repository, settings, request, reviewed, digestInputs, changeView });
   let questions = null;
