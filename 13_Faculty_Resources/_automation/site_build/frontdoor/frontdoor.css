@@ -1302,9 +1302,13 @@
 /* A narrow header cannot safely compress the full brand, search field, and three utility controls
  * into one row. Keep the useful labels visible and reflow utilities below them instead. */
 @media (max-width:640px){
-  .fd-pilot{grid-template-columns:1fr;gap:var(--fd-space-4);padding:calc(var(--fd-space-6) + var(--fd-space-1))}
-  .fd-pilot__eyebrow{justify-self:start}
-  .fd-pilot__button{width:100%;min-height:44px}
+  /* One row on phones (2026-09-26): title beside a 44px Share feedback button. The eyebrow badge
+     repeats the title's own words, so it stays on wider screens only. Stacked, badge + title +
+     full-width button took 138px above the primary card. */
+  .fd-pilot{grid-template-columns:minmax(0,1fr) auto;gap:var(--fd-space-4);padding:var(--fd-space-5) var(--fd-space-6)}
+  .fd-pilot__eyebrow{display:none}
+  .fd-pilot__title{font-size:var(--fd-font-md);margin:0}
+  .fd-pilot__button{width:auto;min-height:44px}
   .fd-header__bar{
     padding:10px 12px 0;display:grid;grid-template-columns:minmax(0,1fr) 96px;
     column-gap:8px;row-gap:6px;
@@ -1759,10 +1763,6 @@
   .fd-care-entry{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4);width:100%;min-height:var(--fd-target-touch);margin:var(--fd-space-5) 0;padding:var(--fd-space-3) var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm);font-weight:700;text-align:left;cursor:pointer}
   .fd-care-entry:hover{border-color:var(--fd-olive);background:var(--fd-olive-wash)}
   .fd-care-entry:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
-  /* Today's copy is retired on phones (2026-09-26): the header .fd-carebtn (added 2026-09-24)
-     reaches Care from every phone route, so this row only pushed the primary card toward the
-     dock. APP's On shift keeps its in-flow entry. */
-  .fd-today > .fd-care-entry{display:none}
 }
 
 /* Essentials uses the reading typography and existing Clinical Warm tokens. */
