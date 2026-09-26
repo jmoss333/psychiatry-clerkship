@@ -594,9 +594,21 @@
   @media(max-width:760px){.wd-grid{grid-template-columns:1fr}}
   .hm-bars .brow{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:var(--fd-font-sm)}
   .hm-bars .lab{flex:0 0 42%;color:var(--text-mid)}
-  .hm-bars .track{flex:1;height:8px;background:var(--bg-alt);border-radius:999px;overflow:hidden}
-  .hm-bars .fill{height:100%;background:var(--accent)}
-  .hm-bars .pc{flex:0 0 42px;text-align:right;color:var(--text-light);font-size:var(--fd-font-xs)}
+  /* Both are <span>s. .track is a flex item, so the row blockifies it; .fill is nested one level
+     deeper and stays inline unless told otherwise -- and an inline span ignores width/height, which
+     is why every bar shipped as an empty track until 2026-09-26. Pinned by
+     tests/progress-bars-fill.test.mjs and measured in tests/smoke/front-door.spec.js. */
+  .hm-bars .track{display:block;flex:1;height:8px;background:var(--bg-alt);border-radius:999px;overflow:hidden}
+  .hm-bars .fill{display:block;height:100%;background:var(--accent)}
+  /* Score column: a FIXED basis (not auto) keeps every row's track starting at the same x; 6em at
+     the 12px xs token is 72px, clearing the widest label ("not started", 62px) with room for CI's
+     Linux fallback font. 42px fit "72%" and wrapped "50% · few", "not started" and "100% · 12". */
+  .hm-bars .pc{flex:0 0 6em;white-space:nowrap;text-align:right;color:var(--text-light);font-size:var(--fd-font-xs)}
+  /* Below 620px the 42% name column cannot hold the longest category ("Somatic / Sleep / Eating
+     (other)", 188px at the sm font): names wrapped and the bar beside them shrank to 96px at 390px.
+     The row stacks instead -- name on its own line, then the bar and its score -- at the breakpoint
+     this page's other rows already switch at, where the column still has 40px of headroom. */
+  @media(max-width:620px){.hm-bars .brow{flex-wrap:wrap;row-gap:2px}.hm-bars .lab{flex:0 0 100%}}
   .hm-arc{display:flex;flex-wrap:wrap;gap:6px}
   .hm-week{font-size:var(--fd-font-xs);border:1px solid var(--border);border-radius:999px;padding:3px 10px;color:var(--text-mid)}
   .hm-week.done{background:var(--success-light);border-color:var(--success);color:var(--success)}
