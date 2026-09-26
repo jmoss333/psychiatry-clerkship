@@ -181,8 +181,9 @@ its second item to Library. Capture carries `aria-haspopup="dialog"` and an `ari
 that the existing Capture open/close handler updates. The shell refreshes the dock's route and
 context controls after each base render, completion change, and settled resource load (including
 failure, only for the current route). It reuses the same Capture button object, preserving its
-open-dialog invoker and expanded state without taking focus from the dialog -- Search dropped out
-of this reuse list along with the button itself. `fdDockSource(contentEl)` supplies the marked
+open-dialog invoker and expanded state without taking focus from the dialog, and while search is
+open it also reuses the open `.fd-dock__browse` disclosure, whose Search item is the search
+dialog's invoker. `fdDockSource(contentEl)` supplies the marked
 action and the delegated controller forwards it. The dock is cleared on setup, faculty preview,
 and non-app screens. Enhanced guides retain this single dock for completion and Capture while
 their inline Find, Print, Practice, and contents controls keep their existing behavior. Capture
