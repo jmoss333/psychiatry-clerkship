@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
-**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
 
 ## Global Constraints
 
@@ -646,6 +646,21 @@ test.describe('phone client', () => {
     await expect(page.getByRole('link', { name: /Synthetic/ })).toHaveCount(0);
   });
 
+  test('a failed first load shows the message and a Retry, never a bare key gate', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    let gets = 0;
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() !== 'GET' || gets++ > 0) return route.fallback();
+      await fulfillJson(route, 503, { error: { code: 'github_unavailable', message: 'upstream down' } });
+    });
+    await page.goto('/m/');
+    await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('alert')).toContainText('Could not reach the repository');
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+  });
+
   test('a wrong key is refused, cleared, and re-prompted without leaking into storage', async ({ page }) => {
     await installRepositoryApi(page, workflowBank());
     await page.goto('/m/');
@@ -865,6 +880,7 @@ async function api(path, init = {}) {
   const response = await fetch(path, { ...init, headers: { ...headers(Boolean(init.body)), ...(init.headers || {}) } });
   if (response.status === 401) { clearKey(); throw new Unauthorized('Key not accepted. Check the shared faculty key and try again.'); }
   const payload = await json(response);
+  if (response.status >= 500) throw new Error('Could not reach the repository.');   // spec §8 wording
   if (!response.ok) throw new Error(errorText(payload, `The server answered ${response.status}.`));
   return payload;
 }
@@ -880,6 +896,7 @@ function recompute() {
 }
 async function load({ silent = false } = {}) {
   if (!getKey()) { renderGate(); return false; }
+  if (navigator.onLine === false) { renderLoadError('You are offline.'); return false; }
   if (!silent) renderBusy('Loading the review queue…');
   try {
     const server = await api(API);
@@ -898,6 +915,7 @@ async function load({ silent = false } = {}) {
     return true;
   } catch (error) {
     if (error instanceof Unauthorized) { state.reauth = () => load(); renderGate(error.message); return false; }
+    if (!state.server) { renderLoadError(error.message); return false; }   // spec §8: message + Retry, never a bare key gate
     state.message = error.message;
     render();
     return false;
@@ -936,6 +954,13 @@ function renderGate(message = '') {
   input.focus();
 }
 function renderBusy(text) { replaceApp(bar('Faculty attestation'), h('div', { class: 'screen' }, h('p', { class: 'summary', role: 'status', text }))); }
+/** A first load that fails must say why and offer Retry (spec §8); the bar's Lock remains the way out. */
+function renderLoadError(message) {
+  replaceApp(bar('Faculty attestation'), h('div', { class: 'screen' }, [
+    h('p', { class: 'field-error summary', role: 'alert', text: message }),
+    h('p', { class: 'summary' }, h('button', { class: 'btn', type: 'button', text: 'Retry', onClick: () => { void load(); } })),
+  ]));
+}
 
 function riskPill(item) {
   const level = item.risk?.level || '';
