@@ -359,11 +359,11 @@ step "hosted Dana preview public build"     npm --prefix sp-preview run build
 # It is NOT a red-team pass — sections A, C1/C4/C5, D and E are human/live checks.
 # See docs/RED_TEAM_RUNBOOK.md.
 step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
-# Report-only, same idiom as "path coverage (report-only)" above: the script itself always
-# exits 0 (see the SHOW_COVERAGE comment in bin/redteam-offline.mjs), so this cannot fail the
-# gate. It exists so a gate added to the pack with no probe is visible in every verify.sh run
-# rather than only when someone remembers to run --coverage by hand.
-step "red-team gate coverage (report-only)" node bin/redteam-offline.mjs --coverage
+# A gate since 2026-09-26 (it was report-only while five gates had no probe; the B9 series
+# closed them and the script's own comment promised the flip once they were closed): exits 1
+# on a pack gate no probe asserts on, or a reviewed case no PASSING probe drives — so a gate
+# or a case added to the pack with no probe blocks a push here instead of shipping unseen.
+step "red-team gate coverage"               node bin/redteam-offline.mjs --coverage
 
 # --- build + static QA gate, both sites ---
 if [ $QUICK -eq 0 ]; then

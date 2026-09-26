@@ -756,6 +756,9 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
             review = {}
         case_status = norm_status(review.get("status"))
         if is_reviewed(pack_status) and not is_reviewed(case_status):
+            # DECISION: pack-case-review-is-registration — this rule is why a case ENTERS the pack
+            # already reading reviewed (or attested) in the content PR that adds it: the block is
+            # registration; the ledger row for the tool, which hashes the pack, is the claim of record.
             errors.append(
                 "%s: attested pack contains non-reviewed case %s" % (slug, case_id)
             )

@@ -168,6 +168,9 @@ def sources_for_slug(shipped_doc: dict, slug: str) -> list[str]:
         source = page.get("source")
         if source and source not in paths:
             paths.append(source)
+        # DECISION: pack-case-review-is-registration — an extraSource (the Interview Room pack among
+        # them) is hashed INTO its slug's row, so a pack-case edit drifts the row; the pack's own
+        # per-case facultyReview blocks are registration, never the claim of record.
         for extra in page.get("extraSources") or []:
             if extra not in paths:
                 paths.append(extra)
