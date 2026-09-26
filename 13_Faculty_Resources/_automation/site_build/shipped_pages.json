@@ -3,7 +3,7 @@
   "generated_from": {
     "cotw_registry.json": "4a2e8b78489e9a11261fa18d39de62c23f64ae11ee6c91e2540b691dba356d23",
     "site_extras.py": "428536e42ebe205d3f42969dd232087c0bd173636bfc3849e3a91ed25755d23f",
-    "site_manifest.json": "5351c65be34e48762288af00dc04826f76bf3e6e3c9293f8def35432e9967ac8"
+    "site_manifest.json": "a3733c6beb01ed936308dc41156c004af531a3eb6f546d0ba5ed56f4ba5d16d0"
   },
   "pages": [
     {
@@ -1067,6 +1067,7 @@
     {
       "extraSources": [
         "_prototypes/sp-interview/sp-interview.pack.json",
+        "_prototypes/sp-interview/sp-interview.realtime.js",
         "_prototypes/sp-interview/sp-interview.voice.js"
       ],
       "kind": "tool",

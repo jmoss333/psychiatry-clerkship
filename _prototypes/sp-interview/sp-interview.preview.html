@@ -3,7 +3,7 @@
 <head>
 <script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <link rel="icon" href="/favicon.svg">
-<!-- [CLERKSHIP-META v1] tool="The Interview Room — AI Standardized Patient" version="0.2.0" built="2026-07-14" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="reviewed" summary="Redesigned interface: coverage as an on-demand step-out (field notes + adaptive coach) instead of a live checklist; formative attending-voice debrief; paced voice mirror per persona; persistent-but-quiet fiction framing. Engine unchanged: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief. Mock provider runs fully offline; live LLM provider behind the same interface. NOT clinical decision support. Fictional composites; no PHI; transcripts stay in this browser." -->
+<!-- [CLERKSHIP-META v1] tool="The Interview Room — AI Standardized Patient" version="0.3.0" built="2026-09-26" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="reviewed" summary="Spoken-first Interview Room: the learner talks with a real-time speech-to-speech patient (server-side session, no browser credential, server-derived disclosure state before every reply); a typed room with optional device read-aloud remains equal and adjacent. Engine unchanged: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief. Mock provider runs fully offline; live LLM provider behind the same interface. NOT clinical decision support. Fictional composites; no PHI; nothing stored by the tool; transcripts stay in this browser." -->
 <meta charset="UTF-8">
 <meta name="cw-frame" content="viewport">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +12,7 @@
 <script src="./vendor/react.min.js"></script>
 <script src="./vendor/react-dom.min.js"></script>
 <script src="./sp-interview.voice.js"></script>
+<script src="./sp-interview.realtime.js"></script>
 <style>
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
@@ -54,9 +55,21 @@
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .microlabel{margin:0 0 6px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light)}
   /* case select */
-  .spoken-entry{background:var(--accent-light);border-color:var(--accent)}
-  .spoken-entry h2{font-size:1.5rem;color:var(--accent-dark)}
-  .spoken-entry .btn{text-decoration:none}
+  /* spoken room */
+  .audiorail.spoken-listening .dot{animation:listenpulse 1.6s ease-out infinite;background:var(--primary)}
+  .audiorail.spoken-speaking .dot{background:var(--accent)}
+  .audiorail.spoken-thinking .dot{background:var(--warning)}
+  .audiorail.spoken-paused .dot,.audiorail.spoken-ended .dot{background:var(--text-light)}
+  .audiorail.spoken-error .dot{background:var(--danger)}
+  .msg.interim{opacity:.6;font-style:italic;border-style:dashed}
+  .msg .tag{display:inline-block;margin-top:6px;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--radius-pill);padding:2px 8px;border:1px solid var(--border);color:var(--text-light);background:var(--bg-alt)}
+  .msg .tag.warn{border-color:var(--warning);color:var(--warning);background:var(--warning-light)}
+  .talkrow{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .talkrow .btn{min-height:44px}
+  .talkrow .btn.live{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
+  .chk{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text-mid);min-height:44px;cursor:pointer}
+  .chk input{width:18px;height:18px;margin:0}
+  .roomnote{margin:0 0 8px;font-size:.78rem;color:var(--text-mid);line-height:1.5}
   .casegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:var(--sp3);margin-top:var(--sp3);align-items:stretch}
   .case{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;margin:0}
   .case h2{font-size:1.5rem;color:var(--primary-dark);margin:0;line-height:1.2}
@@ -238,7 +251,7 @@
 (function(){
 "use strict";
 var previewConfig=window.__SP_PREVIEW__||{providerMode:'live',endpoint:null,autoOpenSettings:true};
-var MANAGED_AUDIO_BITS_PER_SECOND=32000,MANAGED_RECORDER_TIMESLICE_MS=1000;
+var SPOKEN_CONSENT_VERSION='2026-09-26-realtime-v1';
 var e=React.createElement, useState=React.useState, useEffect=React.useEffect, useRef=React.useRef;
 function announce(m){try{document.getElementById('live').textContent=m;}catch(x){}}
 
@@ -633,44 +646,28 @@ function App(){
   var busy=useState(false); var isBusy=busy[0],setBusy=busy[1];
   var shs=useState(false); var showSettings=shs[0],setShowSettings=shs[1];
   var cfs=useState(null); var cfg=cfs[0],setCfg=cfs[1];
-  var vm=useState(function(){try{var saved=localStorage.getItem('cw_sp_voice_mode_v2');if(saved==='off'||saved==='device')return saved;if(saved==='managed')return'off';var legacy=localStorage.getItem('cw_sp_voice');localStorage.removeItem('cw_sp_voice');return legacy==='1'?'device':'off';}catch(x){return'off';}}); var voiceMode=vm[0],setVoiceMode=vm[1];
-  var vh=useState({status:'idle',data:null,mimeType:null}); var voiceHealth=vh[0],setVoiceHealth=vh[1];
-  var vc=useState(false); var showVoiceConsent=vc[0],setShowVoiceConsent=vc[1];
+  /* Room mode: the spoken room (real-time voice) is the default; the typed room stays equal and
+     adjacent, with optional device read-aloud. Legacy voice-mode keys are migrated once, then removed. */
+  var rm=useState(function(){try{var saved=localStorage.getItem('cw_sp_room_mode_v1');if(saved==='spoken'||saved==='typed'||saved==='typed-device')return saved;var legacyMode=localStorage.getItem('cw_sp_voice_mode_v2');localStorage.removeItem('cw_sp_voice_mode_v2');localStorage.removeItem('cw_sp_voice_consent_v1');var legacyFlag=localStorage.getItem('cw_sp_voice');localStorage.removeItem('cw_sp_voice');return (legacyMode==='device'||legacyFlag==='1')?'typed-device':'spoken';}catch(x){return'spoken';}}); var roomMode=rm[0],setRoomMode=rm[1];
+  var voiceMode=roomMode==='typed-device'?'device':'off';
+  var asu=useState(function(){try{return localStorage.getItem('cw_sp_audio_setup_v1')==='speakers'?'speakers':'headphones';}catch(x){return'headphones';}}); var audioSetup=asu[0],setAudioSetup=asu[1];
+  var qr=useState(false); var quickReplies=qr[0],setQuickReplies=qr[1];
+  var rh=useState({status:'idle',data:null}); var realtimeHealth=rh[0],setRealtimeHealth=rh[1];
+  var sc=useState(false); var showSpokenConsent=sc[0],setShowSpokenConsent=sc[1];
+  var rts=useState(null); var rt=rts[0],setRt=rts[1];
   var ai=useState(null); var actorIssue=ai[0],setActorIssue=ai[1];
-  var pt=useState(null); var pendingTranscript=pt[0],setPendingTranscript=pt[1];
   var os=useState(false); var offlineSession=os[0],setOfflineSession=os[1];
   var soS=useState(false); var stepOut=soS[0],setStepOut=soS[1];
   // D16(2)b "I did ask — show me": a display-only, per-encounter self-report. Never persisted,
   // never sent anywhere, never touches s.covered/unlocked/rapport. {id, turnIndex} or null.
   var srp=useState(null); var selfReport=srp[0],setSelfReport=srp[1];
-  var chatRef=useRef(null), returnRef=useRef(null), doorRef=useRef(null), consentRef=useRef(null), voiceModeRef=useRef(null), passcodeRef=useRef(null), composerRef=useRef(null), limitEndRef=useRef(null), selfAssessRef=useRef(null), dictationRef=useRef({active:false,edited:false}), evaluationAbortRef=useRef(null), providerCheckRef=useRef({generation:0,abort:null}), healthRequestRef=useRef({generation:0,abort:null}), providerModeRef=useRef(provMode), voiceRuntimeRef=useRef({mimeType:null,transport:null,caseId:null,caseDef:null,consentIdentity:''});
+  var chatRef=useRef(null), returnRef=useRef(null), doorRef=useRef(null), spokenConsentRef=useRef(null), roomModeRef=useRef(null), passcodeRef=useRef(null), composerRef=useRef(null), limitEndRef=useRef(null), selfAssessRef=useRef(null), evaluationAbortRef=useRef(null), providerCheckRef=useRef({generation:0,abort:null}), healthRequestRef=useRef({generation:0,abort:null}), providerModeRef=useRef(provMode), voiceRuntimeRef=useRef({caseDef:null}), rtRef=useRef(null), rtBookRef=useRef({stateByTurn:{},applied:{},recorded:{},repeated:{},lastTurn:0}), audioSinkRef=useRef(null), pendingBeginRef=useRef(null), rtPhaseRef=useRef('');
   providerModeRef.current=provMode;
   var voiceControllerRef=useRef(null);
   if(!voiceControllerRef.current){
+    /* The typed room's controller. Managed dictation (recorder → transcription → editable draft)
+       retired with the spoken room; only device read-aloud and playback adapters remain. */
     voiceControllerRef.current=window.SPInterviewVoice.createController({
-      getMimeType:function(){return voiceRuntimeRef.current.mimeType;},
-      createRecorder:function(options){
-        var media=null,stream=null,stopped=false,released=false,pendingStop=false,tracksReleased=false;
-        function releaseTracks(){if(!stream||tracksReleased)return;tracksReleased=true;stream.getTracks().forEach(function(track){try{track.stop();}catch(x){}});}
-        return {
-          start:function(){
-            if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=='function'){options.onError(new Error('Microphone access is unavailable.'));return;}
-            navigator.mediaDevices.getUserMedia({audio:true}).then(function(nextStream){
-              stream=nextStream;if(released||stopped){releaseTracks();return;}
-              try{media=new MediaRecorder(stream,{mimeType:options.mimeType,audioBitsPerSecond:MANAGED_AUDIO_BITS_PER_SECOND});}catch(error){releaseTracks();options.onError(error);return;}
-              media.ondataavailable=function(ev){if(ev.data&&ev.data.size)options.onChunk(ev.data);};
-              media.onerror=function(ev){options.onError(ev.error||new Error('Recording failed.'));};
-              media.onstop=function(){options.onStop();};
-              media.start(MANAGED_RECORDER_TIMESLICE_MS);if(pendingStop&&media.state!=='inactive')media.stop();
-            }).catch(options.onError);
-          },
-          stop:function(){pendingStop=true;if(media&&media.state!=='inactive')media.stop();},
-          cancel:function(){stopped=true;if(media){media.onstop=null;try{if(media.state!=='inactive')media.stop();}catch(x){}}releaseTracks();},
-          release:function(){released=true;releaseTracks();media=null;stream=null;}
-        };
-      },
-      transcribe:function(args){var rt=voiceRuntimeRef.current;if(!rt.transport)return Promise.reject(new Error('Managed transcription is unavailable.'));return rt.transport.transcribe(Object.assign({},args,{caseId:rt.caseId}));},
-      synthesize:function(args){var rt=voiceRuntimeRef.current;if(!rt.transport)return Promise.reject(new Error('Managed speech is unavailable.'));return rt.transport.synthesize(args);},
       createObjectURL:function(audio,mimeType){return URL.createObjectURL(audio instanceof Blob?audio:new Blob([audio],{type:mimeType||'audio/mpeg'}));},
       revokeObjectURL:function(url){URL.revokeObjectURL(url);},
       createPlayer:function(options){var audio=new Audio(options.url);audio.onended=options.onEnded;audio.onerror=function(){options.onError(new Error('Audio playback was blocked or failed.'));};return{play:function(){return audio.play();},stop:function(){audio.pause();audio.currentTime=0;},destroy:function(){audio.onended=null;audio.onerror=null;audio.removeAttribute('src');audio.load();}};},
@@ -688,66 +685,160 @@ function App(){
   var vs=useState(voiceControllerRef.current.getSnapshot()); var voiceState=vs[0],setVoiceState=vs[1];
   var listening=voiceState.phase==='listening';
 
-  function voiceEndpointFor(endpoint){return String(endpoint||'').replace(/\/+$/,'')+'/voice';}
-  function selectedMediaType(health){
-    if(!health||!Array.isArray(health.acceptedMediaTypes)||typeof MediaRecorder==='undefined'||typeof MediaRecorder.isTypeSupported!=='function')return null;
-    var preferred=['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/webm','audio/ogg','audio/wav'];
-    for(var i=0;i<preferred.length;i++){if(health.acceptedMediaTypes.indexOf(preferred[i])>=0&&MediaRecorder.isTypeSupported(preferred[i]))return preferred[i];}
-    return null;
-  }
-  function managedEligible(caseDef){
-    var health=voiceHealth.data,profile=caseDef&&caseDef.speechProfile;
-    var listed=!!(health&&Array.isArray(health.eligibleProfiles)&&profile&&health.eligibleProfiles.some(function(item){return !!(item&&item.caseId===caseDef.id&&item.profileId===profile.id&&item.profileVersion===profile.profileVersion); }));
-    return !!(isManagedVoiceEligible(S.pack,caseDef)&&health&&health.enabled===true&&health.acceptingVoice===true&&voiceHealth.mimeType&&listed);
-  }
-  function managedAvailable(){return !!(S.pack&&eligibleCases(S.pack).some(managedEligible));}
   function normalizedEndpoint(endpoint){return String(endpoint||'').trim().replace(/\/+$/,'');}
-  function reviewedConsentIdentity(endpoint,health){var stack=health&&health.activeStack,t=stack&&stack.transcription,s=stack&&stack.synthesis;if(!stack||!t||!s)return'';return JSON.stringify([normalizedEndpoint(endpoint),stack.id,t.provider,t.model,s.provider,s.model]);}
-  function consentKey(){var se=S.pack&&S.pack.speechEngine,privacy=se&&se.privacyReview,controls=privacy&&privacy.accountControls;return privacy&&voiceRuntimeRef.current.consentIdentity&&controls?privacy.consentVersion+'|'+voiceRuntimeRef.current.consentIdentity+'|'+JSON.stringify([controls.provider,controls.zeroRetentionEntitled]):'';}
-  function managedConsentValid(){var accepted='';try{accepted=localStorage.getItem('cw_sp_voice_consent_v1')||'';}catch(x){}return !!(readPasscode()&&managedAvailable()&&consentKey()&&accepted===consentKey());}
-  function persistVoiceMode(next){
-    var interrupted=isBusy&&E?E.msgs.filter(function(message){return message.who==='me';}).slice(-1)[0]:null;
-    setVoiceMode(next);try{localStorage.setItem('cw_sp_voice_mode_v2',next);}catch(x){}
-    if(voiceControllerRef.current.getSnapshot().phase!=='ended')voiceControllerRef.current.setMode(next);
-    if(isBusy&&E){setBusy(false);setActorIssue({kind:interrupted?'converse':'open',text:interrupted?interrupted.text:'',error:{code:'actor_cancelled',message:'The in-progress patient reply was cancelled when room audio changed.',retryDisposition:'offline-only'}});}
-    announce(next==='off'?'Room audio off.':next==='device'?'Device voice selected. Patient text remains complete.':'Managed voice selected. Review every dictated draft before sending.');
+  function realtimeEndpointFor(endpoint){return normalizedEndpoint(endpoint)+'/realtime';}
+  function spokenAvailable(){var h=realtimeHealth.data;return !!(providerModeRef.current==='live'&&readPasscode()&&h&&h.enabled===true&&h.acceptingSessions===true);}
+  function spokenCaseAvailable(caseDef){var h=realtimeHealth.data;return !!(spokenAvailable()&&caseDef&&Array.isArray(h.cases)&&h.cases.some(function(c){return !!(c&&c.id===caseDef.id);}));}
+  function spokenUnavailableReason(caseDef){
+    if(providerModeRef.current!=='live')return 'The spoken room needs the live patient. Switch to Live and enter the passcode, or choose the typed room.';
+    if(!readPasscode())return 'Enter the passcode in setup to open the spoken room, or choose the typed room.';
+    if(realtimeHealth.status==='idle'||realtimeHealth.status==='checking')return 'Checking whether the spoken room is open…';
+    var h=realtimeHealth.data;
+    if(!h||h.enabled!==true)return 'The spoken room is not switched on for this rotation yet. The typed room is ready.';
+    if(h.acceptingSessions!==true)return 'The spoken room has reached its shared allowance for now. The typed room is ready.';
+    if(caseDef&&!spokenCaseAvailable(caseDef))return 'This patient is not in the spoken room yet. The typed room is ready.';
+    return '';
   }
-  function chooseVoiceMode(next){
-    if(next==='managed'){
-      if(S.screen!=='select'){setShowVoiceConsent(false);announce('Choose managed voice before entering the room. Your current audio setting is unchanged.');return;}
-      if(!managedAvailable())return;
-      if(!managedConsentValid()){setShowSettings(false);setShowVoiceConsent(true);return;}
+  function persistRoomMode(next){
+    setRoomMode(next);try{localStorage.setItem('cw_sp_room_mode_v1',next);}catch(x){}
+    var vm=next==='typed-device'?'device':'off';
+    if(voiceControllerRef.current.getSnapshot().phase!=='ended')voiceControllerRef.current.setMode(vm);
+    announce(next==='spoken'?'Spoken room selected. You will talk with the patient; typing stays available.':next==='typed-device'?'Typed room selected, with replies read aloud by your device.':'Typed room selected.');
+  }
+  function chooseRoomMode(next){
+    if(next!=='spoken'&&next!=='typed'&&next!=='typed-device')return;
+    if(S.screen!=='select'){announce('Choose the room before entering it. Your current room is unchanged.');return;}
+    persistRoomMode(next);
+  }
+  function persistAudioSetup(next){setAudioSetup(next);try{localStorage.setItem('cw_sp_audio_setup_v1',next);}catch(x){}}
+  /* Consent is bound to the consent copy version AND the patient model the proxy reports, so a model
+     or terms change asks again. The key is content-free (a version and model names). */
+  function spokenConsentKey(){var h=realtimeHealth.data;return h&&typeof h.model==='string'&&h.model?SPOKEN_CONSENT_VERSION+'|'+h.model+'|'+String(h.transcriptionModel||''):'';}
+  function spokenConsentAccepted(){var key=spokenConsentKey();if(!key)return false;try{return localStorage.getItem('cw_sp_spoken_consent_v1')===key;}catch(x){return false;}}
+  function restoreRoomModeFocus(){setTimeout(function(){if(roomModeRef.current)try{roomModeRef.current.focus();}catch(x){}},0);}
+  function acceptSpokenConsent(){
+    if(S.screen!=='select'||providerModeRef.current!=='live'||!readPasscode()){setShowSpokenConsent(false);pendingBeginRef.current=null;restoreRoomModeFocus();announce('The spoken room is not available right now. The typed room is ready.');return;}
+    var key=spokenConsentKey();
+    if(!key){setShowSpokenConsent(false);pendingBeginRef.current=null;restoreRoomModeFocus();announce('The spoken room is not available right now. The typed room is ready.');return;}
+    try{localStorage.setItem('cw_sp_spoken_consent_v1',key);}catch(x){}
+    setShowSpokenConsent(false);
+    var pending=pendingBeginRef.current;pendingBeginRef.current=null;
+    if(pending)begin(pending.caseDef,pending.difficulty);else restoreRoomModeFocus();
+  }
+  function declineSpokenConsent(){setShowSpokenConsent(false);pendingBeginRef.current=null;persistRoomMode('typed');restoreRoomModeFocus();}
+  /* Browser capabilities the real-time controller needs, injected so the controller itself stays
+     testable in Node. Nothing here reads storage or holds a credential. */
+  function browserRealtimeAdapters(){
+    return {
+      fetch:function(){return window.fetch.apply(window,arguments);},
+      getUserMedia:function(constraints){if(!navigator.mediaDevices||typeof navigator.mediaDevices.getUserMedia!=='function'){var unavailable=new Error('Microphone access is unavailable in this browser.');unavailable.code='microphone_unavailable';return Promise.reject(unavailable);}return navigator.mediaDevices.getUserMedia(constraints);},
+      createPeerConnection:function(){if(typeof RTCPeerConnection!=='function'){var missing=new Error('This browser cannot open a real-time voice connection.');missing.code='webrtc_unavailable';throw missing;}return new RTCPeerConnection();},
+      /* The patient's audio track. The sink tells the controller what the learner can actually hear —
+         'playing' is the only state that marks a reply delivered — and an autoplay block is surfaced as
+         'blocked' so the room can offer a one-tap "Turn on sound" instead of a silent patient. */
+      attachRemoteAudio:function(stream){
+        var audio=new Audio(),listener=null,stopped=false;audio.autoplay=true;try{audio.srcObject=stream;}catch(x){}
+        function report(name){if(stopped)return;try{if(listener)listener(name);}catch(x){}}
+        function tryPlay(){var playing=null;try{playing=audio.play();}catch(x){report('blocked');return;}if(playing&&typeof playing.then==='function')playing.then(null,function(error){report(error&&error.name==='NotAllowedError'?'blocked':'error');});}
+        ['playing','pause','waiting','stalled','ended'].forEach(function(name){try{audio.addEventListener(name,function(){report(name==='pause'?'paused':name);});}catch(x){}});
+        tryPlay();
+        var sink={stop:function(){stopped=true;if(audioSinkRef.current===sink)audioSinkRef.current=null;try{audio.pause();audio.srcObject=null;}catch(x){}},onState:function(fn){listener=typeof fn==='function'?fn:null;},resume:function(){tryPlay();}};
+        audioSinkRef.current=sink;return sink;},
+      now:function(){return Date.now();},
+      setTimeout:function(fn,ms){return window.setTimeout(fn,ms);},
+      clearTimeout:function(id){window.clearTimeout(id);},
+      randomId:function(){try{if(window.crypto&&typeof window.crypto.randomUUID==='function')return window.crypto.randomUUID();}catch(x){}return 'evt_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);}
+    };
+  }
+  function disposeSpokenSession(){var session=rtRef.current;rtRef.current=null;if(session){try{session.end();}catch(x){}}}
+  function startSpokenSession(caseDef,encounterId){
+    disposeSpokenSession();
+    var ep=null;try{ep=localStorage.getItem('cw_sp_endpoint');}catch(x){}
+    rtBookRef.current={stateByTurn:{},applied:{},recorded:{},repeated:{},lastTurn:0};rtPhaseRef.current='';audioSinkRef.current=null;
+    var session=null;
+    try{
+      session=window.SPInterviewRealtime.createSession({endpoint:realtimeEndpointFor(ep),getStudentKey:readPasscode,caseId:caseDef.id,encounterId:encounterId,eagerness:quickReplies?'medium':'low',audioSetup:audioSetup,adapters:browserRealtimeAdapters(),
+        onChange:function(snapshot){if(rtRef.current!==session)return;var book=rtBookRef.current;if(snapshot&&snapshot.turn>book.lastTurn&&snapshot.state){book.stateByTurn[snapshot.turn]=snapshot.state;book.lastTurn=snapshot.turn;}setRt(snapshot);}});
+    }catch(error){
+      setRt(null);setActorIssue({kind:'spoken',text:'',error:{code:(error&&error.code)||'spoken_unavailable',message:(error&&error.message)||'The spoken room could not start.',retryDisposition:'offline-only'}});return;
     }
-    persistVoiceMode(next);
+    rtRef.current=session;setRt(session.getSnapshot());
+    try{var started=session.start();if(started&&typeof started.catch==='function')started.catch(function(){});}catch(x){}
   }
-  function restoreVoiceModeFocus(){setTimeout(function(){if(voiceModeRef.current)try{voiceModeRef.current.focus();}catch(x){}},0);}
-  function closeManagedConsent(){setShowVoiceConsent(false);persistVoiceMode('off');restoreVoiceModeFocus();}
-  function acceptManagedConsent(){
-    var key=consentKey();
-    if(S.screen!=='select'||providerModeRef.current!=='live'||!readPasscode()||!key||!managedAvailable()){
-      setShowVoiceConsent(false);persistVoiceMode('off');restoreVoiceModeFocus();announce('Managed voice is no longer available. Voice remains off; typing is ready.');return;
-    }
-    try{localStorage.setItem('cw_sp_voice_consent_v1',key);}catch(x){}
-    setShowVoiceConsent(false);persistVoiceMode('managed');restoreVoiceModeFocus();
+  /* Every patient reply that reaches a terminal state becomes one recorded turn in the same session
+     shape the typed room and the debrief already use, with the server-derived state for that turn.
+     What is recorded is what the learner heard: a reply whose audio never started is a marker, an
+     interrupted reply is a neutral marker (never text the learner may not have heard), a cut-short
+     reply is what played plus a marker, and a repeat that lands in full replaces its marker. */
+  function recordSpokenTurns(snapshot){
+    if(!snapshot||!E||!E.spoken||!Array.isArray(snapshot.transcript))return;
+    var book=rtBookRef.current,sess=E.session,learners=[],prevTurnId=0;
+    snapshot.transcript.forEach(function(m){if(m&&m.who==='me')learners.push(m);});
+    snapshot.transcript.forEach(function(m){
+      if(!m||m.who!=='pt'||!m.turnId)return;
+      if(m.repeatOf){
+        if(m.status==='complete'&&m.delivered===true&&m.text&&m.text.trim()&&book.recorded[m.repeatOf]!==undefined&&!book.repeated[m.repeatOf]){var recorded=sess.turns[book.recorded[m.repeatOf]];if(recorded){recorded.pt=m.text.slice(0,1200);book.repeated[m.repeatOf]=true;}}
+        return;
+      }
+      var from=prevTurnId;prevTurnId=m.turnId;
+      if(book.applied[m.turnId]||['complete','interrupted','incomplete','failed'].indexOf(m.status)<0)return;
+      var said=learners.filter(function(l){return l.turnId>from&&l.turnId<=m.turnId;}).map(function(l){return l.text;}).join('\n'),state=book.stateByTurn[m.turnId];
+      if(!said.trim()||!state)return;
+      var pt=m.status==='complete'?(m.delivered===false?'[not heard — playback did not start]':m.text):m.status==='interrupted'?'[interrupted — delivery uncertain]':m.status==='incomplete'?(String(m.text||'')+' [cut short]').replace(/^\s+/,''):'[no reply]';
+      if(!pt||!pt.trim())pt='[no reply]';
+      try{E.provider._applyState(sess,{reply:pt.slice(0,1200),state:state,ticket:null},said);book.applied[m.turnId]=true;book.recorded[m.turnId]=sess.turns.length-1;}catch(x){}
+    });
   }
-  function startListening(){if(!managedConsentValid()){dictationRef.current={active:false,edited:false};setShowVoiceConsent(false);persistVoiceMode('off');announce('Managed voice is no longer available. Voice is off, and typing remains ready.');return;}dictationRef.current={active:true,edited:false};setPendingTranscript(null);try{var controller=voiceControllerRef.current;if(controller.getSnapshot().phase==='speaking')controller.stopPlayback();controller.setDraft(input);controller.startListening();}catch(error){dictationRef.current={active:false,edited:false};announce(error.message||'Microphone unavailable.');}}
-  function stopListening(){var result=voiceControllerRef.current.stopListening();if(result&&typeof result.then==='function')result.then(function(){announce('Mic off. Review your words, then press Say it.');}).catch(function(error){dictationRef.current={active:false,edited:false};announce(error.message||'Transcription failed.');});}
+  function spokenStatusText(snapshot,name){
+    var phase=snapshot?snapshot.phase:'connecting';
+    if(phase==='connecting')return 'Connecting to the room…';
+    if(phase==='listening')return 'Listening — take your time';
+    if(phase==='thinking')return name+' is thinking…';
+    if(phase==='speaking')return name+' is speaking';
+    if(phase==='paused')return 'Paused — microphone off';
+    if(phase==='ended')return 'The room is closed';
+    if(phase==='error')return 'The spoken room needs your choice';
+    return 'Getting ready…';
+  }
+  function sendSpokenText(force){
+    var session=rtRef.current,text=input.trim();if(!session||!text)return;
+    if(text.length>1200){announce('Draft is over the 1200-character limit. Shorten it before sending.');return;}
+    if(!force&&looksLikePhi(text)){setE(Object.assign({},E,{phiHold:text}));return;}
+    var accepted=false;try{accepted=session.sendText(text)!==false;}catch(x){accepted=false;}
+    if(!accepted){announce('That message could not be sent right now. Try again in a moment.');return;}
+    setInput('');setE(Object.assign({},E,{phiHold:null}));
+  }
+  /* Leaving the spoken room for the typed room keeps the encounter: the same encounterId, the
+     recorded turns, and the server-side turn count. Nothing is resent and no mode changes silently. */
+  function continueTyping(){
+    if(!E||!E.spoken)return;
+    var last=rt;disposeSpokenSession();
+    if(last)recordSpokenTurns(last);
+    var spokenOpening=null;
+    if(last&&Array.isArray(last.transcript)){last.transcript.some(function(m){if(m&&m.who==='pt'&&m.turnId===0&&!m.repeatOf&&m.status==='complete'&&m.delivered===true&&m.text&&m.text.trim()){spokenOpening=m.text.slice(0,1200);return true;}return false;});}
+    var sess=E.session,msgs=[{who:'pt',text:spokenOpening||E.caseDef.persona.opening,turnId:0}];
+    sess.turns.forEach(function(t,i){msgs.push({who:'me',text:t.me});msgs.push({who:'pt',text:t.pt,turnId:i+1});});
+    try{voiceControllerRef.current.cancelAll('Continuing in the typed room.');voiceControllerRef.current.beginEncounter(E.encounterId,{resumeAtTurn:sess.turns.length});if(voiceControllerRef.current.getSnapshot().mode!==voiceMode)voiceControllerRef.current.setMode(voiceMode);}catch(x){}
+    setRt(null);setActorIssue(null);setBusy(false);
+    setE(Object.assign({},E,{spoken:false,msgs:msgs,phiHold:null}));
+    announce('Continuing in the typed room. The conversation so far is kept.');
+  }
+  function reconnectSpoken(){var session=rtRef.current;if(!session)return;try{var again=session.reconnect();if(again&&typeof again.catch==='function')again.catch(function(){});}catch(x){}}
 
   function clearLegacyPasscode(){ try{localStorage.removeItem('cw_sp_passcode');}catch(x){} }
   function readPasscode(){ try{return sessionStorage.getItem('cw_sp_passcode')||'';}catch(x){return '';} }
   function writePasscode(v){ try{ if(v){sessionStorage.setItem('cw_sp_passcode',v);} else{sessionStorage.removeItem('cw_sp_passcode');} }catch(x){} }
-  function refreshVoiceHealth(endpoint,key){
+  function refreshRealtimeHealth(endpoint,key){
     var generation=healthRequestRef.current.generation+1;
     if(healthRequestRef.current.abort)try{healthRequestRef.current.abort.abort();}catch(x){}
     var abortController=typeof AbortController!=='undefined'?new AbortController():null;
     healthRequestRef.current={generation:generation,abort:abortController};
-    voiceRuntimeRef.current.mimeType=null;voiceRuntimeRef.current.transport=null;voiceRuntimeRef.current.consentIdentity='';
-    if(!endpoint||!key||providerModeRef.current!=='live'){setVoiceHealth({status:'unavailable',data:null,mimeType:null});return Promise.resolve(null);}
-    setVoiceHealth({status:'checking',data:null,mimeType:null});
-    return fetch(voiceEndpointFor(endpoint),{headers:{'x-student-key':key||''},cache:'no-store',signal:abortController?abortController.signal:undefined})
-      .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error('voice '+r.status);return j;});})
-      .then(function(health){if(healthRequestRef.current.generation!==generation||(abortController&&abortController.signal.aborted))return null;var mime=selectedMediaType(health);voiceRuntimeRef.current.mimeType=mime;voiceRuntimeRef.current.transport=window.SPInterviewVoice.createManagedTransport({voiceEndpoint:voiceEndpointFor(endpoint),getStudentKey:readPasscode});voiceRuntimeRef.current.consentIdentity=reviewedConsentIdentity(endpoint,health);setVoiceHealth({status:'ready',data:health,mimeType:mime});healthRequestRef.current.abort=null;return health;})
-      .catch(function(){if(healthRequestRef.current.generation===generation){voiceRuntimeRef.current.mimeType=null;voiceRuntimeRef.current.transport=null;voiceRuntimeRef.current.consentIdentity='';setVoiceHealth({status:'unavailable',data:null,mimeType:null});healthRequestRef.current.abort=null;}return null;});
+    if(!endpoint||!key||providerModeRef.current!=='live'){setRealtimeHealth({status:'unavailable',data:null});return Promise.resolve(null);}
+    setRealtimeHealth({status:'checking',data:null});
+    return fetch(realtimeEndpointFor(endpoint),{headers:{'x-student-key':key||''},cache:'no-store',signal:abortController?abortController.signal:undefined})
+      .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error('realtime '+r.status);return j;});})
+      .then(function(health){if(healthRequestRef.current.generation!==generation||(abortController&&abortController.signal.aborted))return null;var valid=!!(health&&typeof health==='object'&&typeof health.enabled==='boolean'&&typeof health.acceptingSessions==='boolean'&&Array.isArray(health.cases));setRealtimeHealth(valid?{status:'ready',data:health}:{status:'unavailable',data:null});healthRequestRef.current.abort=null;return valid?health:null;})
+      .catch(function(){if(healthRequestRef.current.generation===generation){setRealtimeHealth({status:'unavailable',data:null});healthRequestRef.current.abort=null;}return null;});
   }
   function loadCfg(){ var ep=previewConfig.endpoint===null?'https://sp-interview-proxy.netlify.app/api/sp':previewConfig.endpoint; clearLegacyPasscode();
     try{ep=localStorage.getItem('cw_sp_endpoint')||ep;}catch(x){}
@@ -764,8 +855,8 @@ function App(){
     var abortController=typeof AbortController!=='undefined'?new AbortController():null;
     providerCheckRef.current={generation:generation,abort:abortController};
     try{localStorage.setItem('cw_sp_endpoint',ep);}catch(x){}
-    writePasscode(pc);setShowVoiceConsent(false);if(voiceMode==='managed')persistVoiceMode('off');
-    refreshVoiceHealth('', '');
+    writePasscode(pc);setShowSpokenConsent(false);pendingBeginRef.current=null;
+    refreshRealtimeHealth('', '');
     setCfg(Object.assign({},cfg,{msg:'Testing…'}));
     fetch(ep,{headers:{'x-student-key':pc},cache:'no-store',signal:abortController?abortController.signal:undefined})
       .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j,status:r.status};});})
@@ -774,13 +865,13 @@ function App(){
         providerCheckRef.current.abort=null;
         var detail=res.j&&res.j.error,setupError=typeof detail==='string'?detail:detail&&typeof detail.message==='string'?detail.message:'HTTP '+res.status;
         setCfg(function(c){return Object.assign({},c,{msg:res.ok?('✓ Connected — pack v'+res.j.packVersion+' ('+res.j.packStatus+'), actor '+res.j.actorModel):('✗ '+setupError)});});
-        if(res.ok){if(E&&E.provider&&('passcode' in E.provider)){E.provider.endpoint=ep;E.provider.passcode=pc;}setActorIssue(function(issue){var auth=issue&&issue.error&&(issue.error.status===401||issue.error.code==='unauthorized');return auth?Object.assign({},issue,{authRecovered:true,error:Object.assign({},issue.error,{message:'Connection restored. Restart this room before sending another live turn.'})}):issue;});return refreshVoiceHealth(ep,pc);}return null;
+        if(res.ok){if(E&&E.provider&&('passcode' in E.provider)){E.provider.endpoint=ep;E.provider.passcode=pc;}setActorIssue(function(issue){var auth=issue&&issue.error&&(issue.error.status===401||issue.error.code==='unauthorized');return auth?Object.assign({},issue,{authRecovered:true,error:Object.assign({},issue.error,{message:'Connection restored. Restart this room before sending another live turn.'})}):issue;});return refreshRealtimeHealth(ep,pc);}return null;
       })
       .catch(function(err){if(providerCheckRef.current.generation!==generation||(abortController&&abortController.signal.aborted))return;providerCheckRef.current.abort=null;setCfg(function(c){return Object.assign({},c,{msg:'✗ Could not reach endpoint ('+err.message+')'});});});
   }
-  function clearPasscode(){ cancelProviderCheck();writePasscode(''); clearLegacyPasscode();setShowVoiceConsent(false);if(voiceMode==='managed')persistVoiceMode('off');
+  function clearPasscode(){ cancelProviderCheck();writePasscode(''); clearLegacyPasscode();setShowSpokenConsent(false);pendingBeginRef.current=null;
     if(E&&E.provider&&('passcode' in E.provider)){E.provider.passcode='';}
-    refreshVoiceHealth('', '');
+    refreshRealtimeHealth('', '');
     setCfg(function(c){return Object.assign({},c,{pc:'',msg:'Passcode cleared for this browser tab.'});});
     announce('Passcode cleared for this browser tab.'); }
   function trapDialogKey(ev,onEscape){
@@ -804,36 +895,36 @@ function App(){
     var controller=voiceControllerRef.current;
     var unsubscribe=controller.subscribe(setVoiceState);
     if(voiceMode==='off'||voiceMode==='device')controller.setMode(voiceMode);
-    return function(){cancelProviderCheck();if(evaluationAbortRef.current)try{evaluationAbortRef.current.abort();}catch(x){}if(healthRequestRef.current.abort)try{healthRequestRef.current.abort.abort();}catch(x){}unsubscribe();controller.destroy();};
+    return function(){cancelProviderCheck();if(evaluationAbortRef.current)try{evaluationAbortRef.current.abort();}catch(x){}if(healthRequestRef.current.abort)try{healthRequestRef.current.abort.abort();}catch(x){}unsubscribe();controller.destroy();disposeSpokenSession();};
   },[]);
   useEffect(function(){
-    if(voiceState.phase==='ready'&&dictationRef.current.active){
-      if(dictationRef.current.edited)setPendingTranscript(voiceState.draft);else setInput(voiceState.draft);
-      dictationRef.current={active:false,edited:false};return;
-    }
-    if(voiceState.phase==='error'||voiceState.phase==='ended')dictationRef.current={active:false,edited:false};
-  },[voiceState.phase,voiceState.draft]);
-  useEffect(function(){
-    if(S.screen!=='encounter'||!E)return;
-    var message=voiceState.notice?voiceState.notice.message:voiceState.phase==='listening'?'Listening. Your words will appear as an editable draft and will not send automatically.':
-      voiceState.phase==='transcribing'?'Turning speech into an editable draft.':
-      voiceState.phase==='awaiting_patient'?E.caseDef.persona.displayName+' is thinking.':null;
+    if(S.screen!=='encounter'||!E||E.spoken)return;
+    var message=voiceState.notice?voiceState.notice.message:voiceState.phase==='awaiting_patient'?E.caseDef.persona.displayName+' is thinking.':null;
     if(message)announce(message);
   },[voiceState.phase,voiceState.notice&&voiceState.notice.code]);
   useEffect(function(){
+    if(!E||!E.spoken)return;
+    recordSpokenTurns(rt);
+    if(!rt||S.screen!=='encounter')return;
+    var key=rt.phase+'|'+(rt.notice?rt.notice.code:'')+'|'+(rt.error?rt.error.code:'');
+    if(key===rtPhaseRef.current)return;rtPhaseRef.current=key;
+    var message=rt.notice?rt.notice.message:rt.error?rt.error.message:spokenStatusText(rt,E.caseDef.persona.displayName);
+    if(message)announce(message);
+  },[rt]);
+  useEffect(function(){
     if(!S.pack)return;
-    if(provMode!=='live'){refreshVoiceHealth('', '');return;}
-    var loaded=loadCfg();refreshVoiceHealth(loaded.ep,loaded.pc);
+    if(provMode!=='live'){refreshRealtimeHealth('', '');return;}
+    var loaded=loadCfg();refreshRealtimeHealth(loaded.ep,loaded.pc);
   },[S.pack,provMode]);
   useEffect(function(){ clearLegacyPasscode(); if(previewConfig.autoOpenSettings&&provMode==='live'&&!readPasscode()){openSettings();} },[]);
   useEffect(function(){ if(chatRef.current){chatRef.current.scrollTop=chatRef.current.scrollHeight;} });
   useEffect(function(){ if(stepOut&&returnRef.current){try{returnRef.current.focus();}catch(x){}} },[stepOut]);
-  useEffect(function(){ if(showVoiceConsent&&consentRef.current){try{consentRef.current.focus();}catch(x){}} },[showVoiceConsent]);
+  useEffect(function(){ if(showSpokenConsent&&spokenConsentRef.current){try{spokenConsentRef.current.focus();}catch(x){}} },[showSpokenConsent]);
   useEffect(function(){if(showSettings&&passcodeRef.current){try{passcodeRef.current.focus();}catch(x){}}},[showSettings]);
-  useEffect(function(){if(S.screen==='encounter'&&composerRef.current){try{composerRef.current.focus();}catch(x){}}else if(S.screen==='selfassess'&&selfAssessRef.current){try{selfAssessRef.current.focus();}catch(x){}}},[S.screen,E&&E.encounterId]);
+  useEffect(function(){if(S.screen==='encounter'&&composerRef.current&&!(E&&E.spoken)){try{composerRef.current.focus();}catch(x){}}else if(S.screen==='selfassess'&&selfAssessRef.current){try{selfAssessRef.current.focus();}catch(x){}}},[S.screen,E&&E.encounterId]);
   useEffect(function(){
     var last=E&&E.msgs&&E.msgs[E.msgs.length-1],limit=S.pack&&S.pack.engine&&(S.pack.engine.maxTurns||40);
-    if(S.screen==='encounter'&&last&&last.who==='pt'&&E.session.turns.length>=limit&&limitEndRef.current){try{limitEndRef.current.focus();}catch(x){}}
+    if(S.screen==='encounter'&&E&&!E.spoken&&last&&last.who==='pt'&&E.session.turns.length>=limit&&limitEndRef.current){try{limitEndRef.current.focus();}catch(x){}}
   },[S.screen,E&&E.msgs&&E.msgs.length]);
   useEffect(function(){
     var b=document.getElementById('themebtn');
@@ -875,30 +966,38 @@ function App(){
     });
   }
   function begin(caseDef,difficulty){
-    if(voiceMode==='managed'&&!managedEligible(caseDef)){setShowVoiceConsent(false);announce('Managed voice is not approved for this case. Choose Voice off or Device voice to begin.');return;}
-    if(voiceMode==='managed'&&!managedConsentValid()){setShowVoiceConsent(true);announce('Review managed voice consent before entering the room.');return;}
-    cancelEvaluation();setShowSettings(false);setShowVoiceConsent(false);
+    var spoken=roomMode==='spoken';
+    if(spoken){
+      var why=spokenUnavailableReason(caseDef);
+      if(why){announce(why);return;}
+      if(!spokenConsentAccepted()){pendingBeginRef.current={caseDef:caseDef,difficulty:difficulty};setShowSpokenConsent(true);announce('Review how the spoken room works before entering.');return;}
+      if(!window.SPInterviewRealtime||typeof window.SPInterviewRealtime.createSession!=='function'){announce('The spoken room could not load in this browser. Choose the typed room to begin.');return;}
+    }
+    cancelEvaluation();setShowSettings(false);setShowSpokenConsent(false);pendingBeginRef.current=null;disposeSpokenSession();setRt(null);
     var p=makeProvider();if(!p)return;
+    if(spoken&&!(p instanceof ProxyProvider)){announce('The spoken room needs the live patient. Choose the typed room for the offline simulation.');return;}
     var encounterId;
     try{encounterId=window.SPInterviewVoice.createEncounterId();}catch(error){announce('This browser cannot create a private room identifier.');return;}
     voiceControllerRef.current.cancelAll('A new room was selected.');voiceControllerRef.current.beginEncounter(encounterId);
-    if(voiceControllerRef.current.getSnapshot().mode!==voiceMode)voiceControllerRef.current.setMode(voiceMode==='managed'&&managedEligible(caseDef)?'managed':voiceMode==='device'?'device':'off');
-    voiceRuntimeRef.current.caseId=caseDef.id;voiceRuntimeRef.current.caseDef=caseDef;
+    if(voiceControllerRef.current.getSnapshot().mode!==voiceMode)voiceControllerRef.current.setMode(voiceMode);
+    voiceRuntimeRef.current.caseDef=caseDef;
     var sess=p.start(caseDef,{difficulty:difficulty,encounterId:encounterId});
     setE({provider:p,session:sess,caseDef:caseDef,difficulty:difficulty,
-          encounterId:encounterId,msgs:[],phiHold:null,feedback:null});
-    setSA({a:'',b:'',c:''});setActorIssue(null);setPendingTranscript(null);dictationRef.current={active:false,edited:false};setOfflineSession(p instanceof MockProvider);setStepOut(false);setInput('');setSelfReport(null);
+          encounterId:encounterId,msgs:[],phiHold:null,feedback:null,spoken:spoken});
+    setSA({a:'',b:'',c:''});setActorIssue(null);setOfflineSession(p instanceof MockProvider);setStepOut(false);setInput('');setSelfReport(null);
     setS(Object.assign({},S,{screen:'encounter'}));
-    announce('Encounter started with '+caseDef.persona.displayName+', '+difficulty+' mode.');
+    announce('Encounter started with '+caseDef.persona.displayName+', '+difficulty+' mode'+(spoken?', spoken room.':'.'));
+    if(spoken){startSpokenSession(caseDef,encounterId);return;}
     runOpening(p,sess,p instanceof MockProvider);
   }
   function send(force){
+    if(E&&E.spoken){sendSpokenText(force);return;}
     var text=input.trim(); if(!text||isBusy)return;
     if(text.length>1200){announce('Draft is over the 1200-character limit. Shorten it before sending.');return;}
     if(!force&&looksLikePhi(text)){ setE(Object.assign({},E,{phiHold:text})); return; }
     voiceControllerRef.current.stopPlayback();
     try{voiceControllerRef.current.setDraft(text);}catch(x){return;}
-    setBusy(true);setActorIssue(null);setPendingTranscript(null);setInput('');
+    setBusy(true);setActorIssue(null);setInput('');
     var msgs=E.msgs.concat([{who:'me',text:text}]);
     setE(Object.assign({},E,{msgs:msgs,phiHold:null}));
     voiceControllerRef.current.submitTurn({runActor:function(ctx){return E.provider.respond(E.session,text,ctx);}}).then(function(r){
@@ -930,7 +1029,7 @@ function App(){
         .then(function(result){publishPatientReply(result,true);});
     }).catch(function(error){setBusy(false);setActorIssue({kind:issue.kind,text:issue.text,error:error});});
   }
-  function resolveVoiceFallback(choice){try{voiceControllerRef.current.resolveFallback(choice);if(choice==='text'){setVoiceMode('off');try{localStorage.setItem('cw_sp_voice_mode_v2','off');}catch(x){}}else{setVoiceMode('device');try{localStorage.setItem('cw_sp_voice_mode_v2','device');}catch(x){}}}catch(x){}}
+  function resolveVoiceFallback(choice){try{voiceControllerRef.current.resolveFallback(choice);persistRoomMode(choice==='text'?'typed':'typed-device');}catch(x){}}
   function openDoor(){ E.session.stepOuts=(E.session.stepOuts||0)+1; E.session.hintUses=(E.session.hintUses||0)+1;
     var interrupted=isBusy?E.msgs.filter(function(message){return message.who==='me';}).slice(-1)[0]:null;
     voiceControllerRef.current.cancelAll('The learner stepped out.');setBusy(false);
@@ -938,7 +1037,9 @@ function App(){
     setStepOut(true); announce('Stepped out. '+E.caseDef.persona.displayName+' waits.'); }
   function closeDoor(){ setStepOut(false); announce('Back in the room.');
     setTimeout(function(){ if(doorRef.current)try{doorRef.current.focus();}catch(x){} },30); }
-  function endEncounter(){ setShowVoiceConsent(false);setPendingTranscript(null);dictationRef.current={active:false,edited:false};voiceControllerRef.current.endEncounter();setBusy(false); setStepOut(false);
+  function endEncounter(){ setShowSpokenConsent(false);
+    if(E&&E.spoken){var last=rt;disposeSpokenSession();if(last)recordSpokenTurns(last);setRt(null);}
+    voiceControllerRef.current.endEncounter();setBusy(false); setStepOut(false);
     setS(Object.assign({},S,{screen:'selfassess'})); announce('Encounter ended. Your read comes before any feedback.'); }
   function toDebrief(){
     cancelEvaluation();
@@ -949,7 +1050,7 @@ function App(){
       if(fb&&(!abortController||!abortController.signal.aborted)){setE(function(p){return p&&p.encounterId===evaluationEncounterId?Object.assign({},p,{feedback:fb}):p;});}
     }).catch(function(){return null;}).then(function(){if(evaluationAbortRef.current===abortController)evaluationAbortRef.current=null;});
   }
-  function backToCases(){cancelEvaluation();setShowVoiceConsent(false);setS(Object.assign({},S,{screen:'select'}));}
+  function backToCases(){cancelEvaluation();setShowSpokenConsent(false);disposeSpokenSession();setRt(null);setS(Object.assign({},S,{screen:'select'}));}
   function downloadTranscript(){
     var s=E.session,cd=E.caseDef;
     var lines=['The Interview Room — practice transcript (FICTIONAL SIMULATION — not a clinical record)',
@@ -985,26 +1086,20 @@ function App(){
     e('div',{className:'titlerow'},
       e('h1',null,'The Interview Room'),
       e('button',{className:'badge mode',
-        disabled:S.screen!=='select'||showVoiceConsent,
-        onClick:function(){var nx=provMode==='mock'?'live':'mock';cancelProviderCheck();providerModeRef.current=nx;setProvMode(nx);setShowVoiceConsent(false);
-          if(nx!=='live'){setShowSettings(false);refreshVoiceHealth('', '');if(voiceMode==='managed')persistVoiceMode('off');}
+        disabled:S.screen!=='select'||showSpokenConsent,
+        onClick:function(){var nx=provMode==='mock'?'live':'mock';cancelProviderCheck();providerModeRef.current=nx;setProvMode(nx);setShowSpokenConsent(false);pendingBeginRef.current=null;
+          if(nx!=='live'){setShowSettings(false);refreshRealtimeHealth('', '');}
           if(nx==='live'){var ep='';try{ep=localStorage.getItem('cw_sp_endpoint')||'';}catch(x){} if(!ep)openSettings();}},
         title:'Mock runs offline. Live uses the sp-proxy endpoint (key stays on the server).'},
         provMode==='mock'?'● Mock patient (offline)':'● Live patient (LLM proxy)'),
-      provMode==='live'?e('button',{className:'badge mode',disabled:S.screen!=='select'||showVoiceConsent,onClick:openSettings,title:'Configure live endpoint + passcode'},'⚙ setup'):null,
-      e('label',{className:'visually-hidden',htmlFor:'voice_mode'},'Voice mode'),
-      e('select',{id:'voice_mode',ref:voiceModeRef,className:'audiosel','aria-label':'Voice mode',value:voiceMode,disabled:S.screen==='selfassess'||S.screen==='debrief'||showVoiceConsent,onChange:function(ev){chooseVoiceMode(ev.target.value);},onKeyDown:function(ev){var modes=managedAvailable()?['off','device','managed']:['off','device'];var at=modes.indexOf(voiceMode),next=null;if(ev.key==='Home')next=modes[0];else if(ev.key==='End')next=modes[modes.length-1];else if(ev.key==='ArrowDown')next=modes[Math.min(modes.length-1,at+1)];else if(ev.key==='ArrowUp')next=modes[Math.max(0,at-1)];if(next!==null){ev.preventDefault();chooseVoiceMode(next);}}},
-        e('option',{value:'off'},'Voice off'),
-        e('option',{value:'device'},'Device voice'),
-        managedAvailable()?e('option',{value:'managed'},'Managed voice'):null)),
-    e('p',{className:'lede'},'Interview a fictional standardized patient. Free text — say what you would actually say.'),
+      provMode==='live'?e('button',{className:'badge mode',disabled:S.screen!=='select'||showSpokenConsent,onClick:openSettings,title:'Configure live endpoint + passcode'},'⚙ setup'):null,
+      e('label',{className:'visually-hidden',htmlFor:'room_mode'},'Room'),
+      e('select',{id:'room_mode',ref:roomModeRef,className:'audiosel','aria-label':'Room',value:roomMode,disabled:S.screen==='selfassess'||S.screen==='debrief'||showSpokenConsent,onChange:function(ev){chooseRoomMode(ev.target.value);}},
+        e('option',{value:'spoken'},'Spoken room — talk with the patient'),
+        e('option',{value:'typed'},'Typed room'),
+        e('option',{value:'typed-device'},'Typed room · replies read aloud'))),
+    e('p',{className:'lede'},'Interview a fictional standardized patient. Speak or type — say what you would actually say.'),
     e(Ribbon,{line:ribbonLine}),
-    S.screen==='select'?e('section',{className:'card spoken-entry','aria-labelledby':'spoken-entry-title'},
-        e('p',{className:'microlabel'},'Protected fictional practice'),
-        e('h2',{id:'spoken-entry-title'},'Spoken interviews'),
-        e('p',{className:'lede'},'Practice a natural conversation with Dana, Marcus, or Ray. Your words send automatically after you finish speaking, and typing is always available.'),
-        e('p',{className:'lede'},'Use the passcode from Dr. Moss to enter.'),
-        e('div',{className:'actions'},e('a',{className:'btn primary',href:'https://interview-room-faculty-preview.netlify.app',target:'_top',referrerPolicy:'no-referrer'},'Start a spoken interview'))):null,
     (showSettings&&cfg)?e('div',{className:'card'},
       e('h2',null,'Live mode setup'),
       e('p',{style:{fontSize:'.82rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. The endpoint is saved in this browser. The passcode is kept only for this browser tab. The API key never leaves the server.'),
@@ -1019,22 +1114,22 @@ function App(){
         e('button',{className:'btn primary',onClick:saveAndTest,disabled:!(cfg.ep||'').trim()},'Save & test connection'),
         e('button',{className:'btn',type:'button',onClick:clearPasscode},'Clear passcode'),
         e('button',{className:'btn',onClick:function(){setShowSettings(false);}},'Close'))):null,
-    (showVoiceConsent&&S.screen==='select')?e('div',{className:'card',role:'dialog','aria-modal':true,'aria-labelledby':'voice_consent_title',tabIndex:-1,ref:consentRef,onKeyDown:function(ev){trapDialogKey(ev,closeManagedConsent);}},
-      e('h2',{id:'voice_consent_title'},'Before using managed voice'),
+    (showSpokenConsent&&S.screen==='select')?e('div',{className:'card',role:'dialog','aria-modal':true,'aria-labelledby':'spoken_consent_title',tabIndex:-1,ref:spokenConsentRef,onKeyDown:function(ev){trapDialogKey(ev,declineSpokenConsent);}},
+      e('h2',{id:'spoken_consent_title'},'Before entering the spoken room'),
       e('div',{className:'consentcopy'},
-        e('p',null,'This is a fictional AI patient. Typing remains fully available, and managed voice never changes the patient text shown in the room.'),
+        e('p',null,'This is a fictional AI patient who listens and answers in real time. Typing stays available inside the spoken room, and the typed room offers the same exercise.'),
         e('ul',null,
-          e('li',null,'Microphone audio is sent to ',e('b',null,(voiceHealth.data&&voiceHealth.data.activeStack?voiceHealth.data.activeStack.transcription.provider:'the reviewed transcription provider')),' for transcription.'),
-          e('li',null,'The clerkship tool does not intentionally store the microphone recording. The editable draft and patient text stay in this browser session.'),
-          e('li',null,e('b',null,(voiceHealth.data&&voiceHealth.data.activeStack?voiceHealth.data.activeStack.transcription.provider:'The reviewed speech provider')),' processes it under the linked provider data notice and approved account settings. Provider retention and account controls are separate from the clerkship tool’s non-retention.'),
-          e('li',null,(function(){var controls=S.pack.speechEngine.privacyReview.accountControls,provider=controls&&controls.provider?controls.provider:'The reviewed provider';return controls&&controls.zeroRetentionEntitled===true?'The reviewed '+provider+' account is marked as zero-retention entitled.':'The reviewed '+provider+' account is not marked as zero-retention entitled; vendor retention follows the linked notice and approved account settings.';})()),
-          e('li',null,'The fictional patient is read by a stock synthetic voice. No real person’s voice is cloned.'),
-          e('li',null,'Do not speak real-patient names, dates, record numbers, or other identifying information.'),
-          e('li',null,'You can use typing instead at any time with equal access to the exercise.')),
-        (S.pack.speechEngine.privacyReview.policyUrls||[])[0]?e('p',null,e('a',{href:S.pack.speechEngine.privacyReview.policyUrls[0],target:'_blank',rel:'noreferrer'},'Read the provider data-use notice')):null),
+          e('li',null,'While the room is open, your microphone audio streams to ',e('b',null,'OpenAI'),' as you speak. Nothing is checked before it leaves your browser, so ',e('b',null,'do not say real-patient names, dates, record numbers, or other identifying details'),'.'),
+          e('li',null,'This tool stores no audio and no transcript. The conversation lives in this browser tab until you leave; only a transcript you choose to download is kept.'),
+          e('li',null,'OpenAI processes the audio under its data terms and the account settings the clerkship approved. Provider retention is separate from this tool’s non-retention and is not claimed to be zero.'),
+          e('li',null,'The patient speaks with a stock synthetic voice. No real person’s voice is cloned.'),
+          e('li',null,'Headphones are recommended. On speakers the patient may hear itself; you can pause or end at any time.'),
+          e('li',null,'Interrupting is allowed — speaking over the patient stops them, and the transcript marks what was cut off as uncertain.'),
+          e('li',null,'Your agreement applies to the patient model the clerkship currently uses. If that model or its terms change, you will be asked again.'))),
       e('div',{className:'acts'},
-        e('button',{className:'btn primary',onClick:acceptManagedConsent},'Use managed voice'),
-        e('button',{className:'btn',onClick:closeManagedConsent},'Keep voice off'))):null);
+        e('label',{className:'chk'},e('input',{type:'checkbox',checked:audioSetup==='speakers',onChange:function(ev){persistAudioSetup(ev.target.checked?'speakers':'headphones');}}),'I am using speakers, not headphones'),
+        e('button',{className:'btn primary',onClick:acceptSpokenConsent},'Enter the spoken room'),
+        e('button',{className:'btn',onClick:declineSpokenConsent},'Use the typed room instead'))):null);
 
   /* ---------- select ---------- */
   if(S.screen==='select'){
@@ -1042,7 +1137,7 @@ function App(){
       danaConversationPreviewEntry(window.location,previewConfig),
       e('div',{className:'casegrid'},
         eligibleCases(S.pack).map(function(cd){
-          var P=paceFor(cd), tp=cd.title.split(' — '), managedCaseUnavailable=voiceMode==='managed'&&!managedEligible(cd);
+          var P=paceFor(cd), tp=cd.title.split(' — '), spokenWhy=roomMode==='spoken'?spokenUnavailableReason(cd):'', roomUnavailable=!!spokenWhy;
           return e('div',{className:'case',key:cd.id},
             e('div',null,
               e('p',{className:'microlabel',style:{marginBottom:'4px'}},'Practice encounter · ~'+cd.estMinutes+' min'),
@@ -1055,15 +1150,131 @@ function App(){
               e('p',{style:{margin:0}},e('b',null,P.label.charAt(0).toUpperCase()+P.label.slice(1)+'. '),e('span',{style:{fontStyle:'italic'}},cd.persona.voice))),
             e('div',{className:'chips'},cd.skillTags.map(function(t,i){return e('span',{className:'chip',key:i},t);})),
             e('div',{className:'begincol'},
-              e('p',{className:'microlabel'},'Choose your room'),
-              managedCaseUnavailable?e('p',{className:'setting',role:'note'},'Managed voice is not approved for this case. Choose Voice off or Device voice to begin.'):null,
+              e('p',{className:'microlabel'},roomMode==='spoken'?'Choose your room · spoken':'Choose your room · typed'),
+              roomUnavailable?e('p',{className:'setting',role:'note'},spokenWhy,' ',e('button',{type:'button',className:'btn',style:{marginTop:'6px'},onClick:function(){chooseRoomMode('typed');}},'Use the typed room')):null,
               e('div',{className:'begin'},
-                e('button',{className:'btn primary',disabled:showVoiceConsent||managedCaseUnavailable,onClick:function(){begin(cd,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
-                e('button',{className:'btn',disabled:showVoiceConsent||managedCaseUnavailable,onClick:function(){begin(cd,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing')))));
+                e('button',{className:'btn primary',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(cd,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
+                e('button',{className:'btn',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(cd,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing')))));
         })));
   }
 
-  /* ---------- encounter ---------- */
+  /* ---------- encounter: shared step-out overlay ---------- */
+  function stepOutOverlay(cd,sess){
+    return e('div',{className:'overlay',onKeyDown:function(ev){trapDialogKey(ev,closeDoor);}},
+      e('div',{className:'panel',role:'dialog','aria-modal':true,'aria-label':'Stepped out of the room'},
+        e('div',{className:'panelhead'},
+          e('h2',null,'Stepping out — '+cd.persona.displayName+' waits.'),
+          e('span',{className:'notascore'},'a pause, not a score')),
+        e('p',{className:'waitline'},'Through the door: '+cd.persona.displayName+' waits.'),
+        e('div',{className:'notes'},
+          e('p',{className:'microlabel'},'Language recognized so far'),
+          e('p',null,'This map recognizes words, not whether the patient answered. Review the exchange for what remains unclear.'),
+          (function(){ var cov=computeCoverage(sess);
+            var got=cov.filter(function(c){return c.status==='observed'||c.status==='partial';});
+            if(!got.length)return e('p',{style:{margin:0,fontSize:'.85rem',color:'var(--text-mid)',fontStyle:'italic'}},'Nothing on the page yet — the interview is young. That is not a problem to fix; it is a room to sit in.');
+            return got.map(function(c){return e('div',{className:'n',key:c.id},
+              e('span',{className:'mk '+STATUS_CLS[c.status],'aria-hidden':true},STATUS_MK[c.status]),
+              e('span',null,e('b',null,coverageDisplay(c).label),' — '+coverageDisplay(c).word));});})()),
+        e('div',{className:'notyet'},
+          e('p',{className:'microlabel'},'Language the map has not fully recognized'),
+          e('p',null,coverageProse(computeCoverage(sess)))),
+        e('div',{className:'coach'},
+          e('p',{className:'microlabel'},(sess.stepOuts||0)>1?'From the hallway — your coach · again, so: more specific':'From the hallway — your coach'),
+          e('p',{className:'line'},getCoach(sess))),
+        e('div',{className:'panelfoot'},
+          e('button',{className:'btn primary',ref:returnRef,style:{background:'var(--accent-dark)',borderColor:'var(--accent-dark)'},onClick:closeDoor},'Return to the room'),
+          e('span',{className:'esc'},'Esc also returns · stepping out is noted in your debrief, never against you'))));
+  }
+  function stepOutSpoken(){var session=rtRef.current;if(session){try{session.pause();}catch(x){}}openDoor();}
+  function closeDoorSpoken(){var session=rtRef.current;closeDoor();if(session&&rt&&rt.phase==='paused'){try{session.resume();}catch(x){}}}
+
+  /* ---------- encounter: the spoken room ---------- */
+  if(S.screen==='encounter'&&E.spoken){
+    var scd=E.caseDef, ssess=E.session, SP=paceFor(scd), sName=scd.persona.displayName;
+    var sSupported=E.difficulty==='supported', sMax=S.pack.engine.maxTurns||40;
+    var snap=rt||{phase:'connecting',transcript:[],learnerInterim:'',patientInterim:'',turn:0,notice:null,error:null,canDoneSpeaking:false,canStopPatient:false,canRepeat:false,connection:null};
+    var soundBlocked=!!(snap.connection&&snap.connection.playback==='blocked'&&sPhase!=='ended'&&sPhase!=='error');
+    var sPhase=snap.phase, sTurn=snap.turn||ssess.turns.length;
+    var atLimit=sPhase==='ended'&&!!(snap.notice&&snap.notice.code==='turn_cap_reached');
+    var spokenTrouble=!!(actorIssue||sPhase==='error');
+    var troubleMessage=actorIssue&&actorIssue.error&&actorIssue.error.message?actorIssue.error.message:(snap.error&&snap.error.message)||'The spoken room lost its connection.';
+    var canReconnect=!actorIssue&&sPhase==='error';
+    return e('div',null,header,
+      e('div',{className:'room'},
+        e('div',{className:'roomhead'},
+          e('div',{style:{minWidth:0}},
+            e('h2',null,sName),
+            e('p',{className:'setting'},scd.setting),
+            e('p',{className:'modeline'},'Spoken room · '+(sSupported?'Supported — you can step out for your notes and a coach':'Realistic — a blank room, like the real thing'))),
+          e('div',{className:'roomtools'},
+            sPhase==='speaking'?e('span',{className:'spkchip'},e(SpeakBars,{anim:SP.anim,dur:SP.dur,dim:false}),e('span',null,sName+' is speaking · '+SP.label)):null)),
+        e('div',{className:'audiorail spoken-'+sPhase,role:'group','aria-label':'Room audio status'},
+          e('span',{className:'dot','aria-hidden':true}),
+          e('span',{className:'audiostatus'},spokenStatusText(snap,sName)),
+          e('span',{className:'audiohint'},'Speak naturally; interrupting is allowed. Patient text is complete and authoritative.')),
+        e('div',{className:'chat',ref:chatRef,role:'log','aria-live':'off','aria-label':'Conversation transcript'},
+          (snap.transcript||[]).map(function(m,i){
+            var pt=m.who==='pt', speaking=pt&&sPhase==='speaking'&&m.status==='pending';
+            var tag=null;
+            if(pt&&m.status==='interrupted')tag=e('span',{className:'tag warn'},'interrupted — delivery uncertain');
+            else if(pt&&m.status==='incomplete')tag=e('span',{className:'tag warn'},'cut short');
+            else if(pt&&m.status==='failed')tag=e('span',{className:'tag warn'},'no reply');
+            else if(pt&&m.status==='complete'&&m.delivered===false)tag=e('span',{className:'tag warn'},'not heard — playback did not start');
+            else if(!pt&&m.status==='unanswered')tag=e('span',{className:'tag warn'},'not answered — say it again or type it');
+            else if(!pt&&m.status==='typed')tag=e('span',{className:'tag'},'typed');
+            return e('div',{className:'msg '+(pt?'pt':'me')+(speaking?' speaking':''),key:m.itemId||(m.who+'-'+m.turnId+'-'+i)},
+              e('span',{className:'who'},pt?sName:'You'),
+              pt&&m.repeatOf?e('span',{className:'tag'},'again'):null,
+              m.text||(pt&&m.status==='pending'?'…':''),
+              tag);}),
+          snap.learnerInterim?e('div',{className:'msg me interim','aria-hidden':true},e('span',{className:'who'},'You'),snap.learnerInterim+'…'):null,
+          sPhase==='thinking'?e('div',{className:'msg pt'},e('span',{className:'who'},sName),
+            e('span',{className:'typing','aria-hidden':true},e('span'),e('span'),e('span'))):null),
+        E.phiHold?e('div',{className:'phi',role:'alertdialog','aria-label':'Possible real-patient information'},
+          e('b',null,'This looks like it may contain real-patient information'),' — a number, date, or reference to your patient. This room is for fictional practice only.',
+          e('div',{className:'acts'},
+            e('button',{className:'btn',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));}},'Edit message'),
+            e('button',{className:'btn ghost',onClick:function(){setInput(E.phiHold);setE(Object.assign({},E,{phiHold:null}));setTimeout(function(){sendSpokenText(true);},0);}},'It’s fictional — send'))):null,
+        soundBlocked?e('div',{className:'recovery',role:'note'},
+          e('p',null,e('b',null,'Sound is off. '),'Your browser blocked the patient’s audio from starting on its own. Nothing the patient says counts as heard until you turn it on.'),
+          e('div',{className:'acts'},e('button',{className:'btn primary',type:'button',onClick:function(){var sink=audioSinkRef.current;if(sink&&typeof sink.resume==='function')try{sink.resume();}catch(x){}}},'Turn on sound'))):null,
+        (!spokenTrouble&&snap.notice&&sPhase!=='ended')?e('p',{className:'recovery',role:'note'},snap.notice.message):null,
+        spokenTrouble?e('div',{className:'recovery',role:'alert'},
+          e('p',null,e('b',null,'The spoken room could not continue. '),troubleMessage),
+          e('div',{className:'acts'},
+            canReconnect?e('button',{className:'btn primary',type:'button',onClick:reconnectSpoken},'Reconnect'):null,
+            e('button',{className:'btn'+(canReconnect?'':' primary'),type:'button',onClick:continueTyping},'Continue typing'),
+            e('button',{className:'btn',type:'button',onClick:endEncounter},'End encounter'))):null,
+        (atLimit||(sPhase==='ended'&&!spokenTrouble))?e('div',{className:'composer'},
+          e('p',{className:'recovery',role:'note'},atLimit?'Turn limit reached. The final patient reply remains above for review.':(snap.notice&&snap.notice.message)||'The room has closed. The conversation remains above for review.'),
+          e('div',{className:'doorrow'},e('button',{ref:limitEndRef,className:'btn primary',type:'button',onClick:endEncounter},'End encounter and reflect'))):e('div',{className:'composer'},
+          e('div',{className:'talkrow'},
+            sPhase==='paused'?e('button',{className:'btn primary',type:'button',onClick:function(){var session=rtRef.current;if(session)try{session.resume();}catch(x){}}},'Resume'):
+              e('button',{className:'btn',type:'button',disabled:sPhase==='connecting'||spokenTrouble,onClick:function(){var session=rtRef.current;if(session)try{session.pause();}catch(x){}}},'Pause'),
+            e('button',{className:'btn'+(snap.canDoneSpeaking?' live':''),type:'button',disabled:!snap.canDoneSpeaking,onClick:function(){var session=rtRef.current;if(session)try{session.doneSpeaking();}catch(x){}}},'Done speaking'),
+            e('button',{className:'btn',type:'button',disabled:!snap.canStopPatient,onClick:function(){var session=rtRef.current;if(session)try{session.stopPatient();}catch(x){}}},'Stop '+sName),
+            e('button',{className:'btn',type:'button',disabled:!snap.canRepeat,title:'Asks the patient to repeat a reply that was interrupted or cut short',onClick:function(){var session=rtRef.current;if(session)try{session.repeatPatient();}catch(x){}}},'Say that again'),
+            e('label',{className:'chk',title:'Applies the next time a spoken room opens'},e('input',{type:'checkbox',checked:quickReplies,onChange:function(ev){setQuickReplies(ev.target.checked);var session=rtRef.current;if(session)try{session.setEagerness(ev.target.checked?'medium':'low');}catch(x){}}}),'Quicker replies (next room)')),
+          e('div',{className:'inrow'},
+            e('textarea',{ref:composerRef,value:input,maxLength:1200,'aria-label':'Or type to the patient',
+              placeholder:'Or type to the patient…',rows:2,
+              onChange:function(ev){setInput(ev.target.value);},
+              onKeyDown:function(ev){if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();sendSpokenText(false);}}}),
+            e('button',{className:'btn primary sayit',disabled:spokenTrouble||sPhase==='connecting'||sPhase==='paused'||!input.trim()||input.length>1200,onClick:function(){sendSpokenText(false);}},'Send')),
+          input.length>1200?e('div',{className:'recovery',role:'note'},'Draft is '+input.length+' characters. Shorten it to 1200 before sending. Nothing was truncated or sent.'):null,
+          e('div',{className:'metaline'},
+            e('span',null,'Turn '+sTurn+' / '+sMax),
+            e('span',null,'Spoken room · '+(audioSetup==='speakers'?'speakers':'headphones')),
+            e('span',null,'Enter to send typed words · Shift+Enter for a new line'),
+            e('span',{className:'fict'},'Fictional practice — no real-patient details')),
+          e('div',{className:'doorrow'},
+            sSupported?e('button',{className:'btn door',ref:doorRef,onClick:stepOutSpoken},(ssess.stepOuts||0)>0?'Step out again':'Step out a moment'):null,
+            e('button',{className:'btn',onClick:endEncounter},'End encounter'),
+            !sSupported?e('span',{className:'quiet'},'Realistic — no map, no coach. Your debrief will have both.'):null)),
+        stepOut?e('div',{onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeDoorSpoken();}}},stepOutOverlay(scd,ssess)):null));
+  }
+
+  /* ---------- encounter: the typed room ---------- */
   if(S.screen==='encounter'){
     var cd=E.caseDef, sess=E.session, P=paceFor(cd);
     var supported=E.difficulty==='supported';
@@ -1075,7 +1286,7 @@ function App(){
           e('div',{style:{minWidth:0}},
             e('h2',null,cd.persona.displayName),
             e('p',{className:'setting'},cd.setting),
-            e('p',{className:'modeline'},supported?'Supported — you can step out for your notes and a coach':'Realistic — a blank room, like the real thing')),
+            e('p',{className:'modeline'},'Typed room · '+(supported?'Supported — you can step out for your notes and a coach':'Realistic — a blank room, like the real thing'))),
           e('div',{className:'roomtools'},
             offlineSession?e('span',{className:'offline-label'},'Offline simulation'):null,
             voiceState.phase==='speaking'?e('span',{className:'spkchip'},e(SpeakBars,{anim:P.anim,dur:P.dur,dim:false}),e('span',null,cd.persona.displayName+' is speaking · '+P.label)):null)),
@@ -1083,14 +1294,12 @@ function App(){
           e('span',{className:'dot','aria-hidden':true}),
           e('span',{className:'audiostatus'},
             voiceState.notice?voiceState.notice.message:
-            voiceState.phase==='listening'?'Listening — draft first':
-            voiceState.phase==='transcribing'?'Turning speech into an editable draft…':
             voiceState.phase==='awaiting_patient'?cd.persona.displayName+' is thinking…':
             voiceState.phase==='buffering_audio'?'Patient text is ready · preparing optional audio…':
             voiceState.phase==='speaking'?cd.persona.displayName+' is speaking':
             actorIssue?'Live patient needs your choice':voiceState.phase==='error'?'Room audio needs your choice':
-            voiceMode==='off'?'Room audio off':voiceMode==='device'?'Device voice · typing stays available':'Managed synthetic voice · review before sending'),
-          e('span',{className:'audiohint'},voiceMode==='managed'?'Stock synthetic voice; no real person’s voice is cloned. Patient text is authoritative.':'Patient text is always complete and authoritative.')),
+            voiceMode==='off'?'Room audio off':'Device voice · typing stays available'),
+          e('span',{className:'audiohint'},'Patient text is always complete and authoritative.')),
         e('div',{className:'chat',ref:chatRef,role:'log','aria-live':'off','aria-label':'Conversation transcript'},
           E.msgs.map(function(m,i){
             var speaking=m.who==='pt'&&voiceState.phase==='speaking'&&voiceState.activePatientTurn===m.turnId;
@@ -1122,25 +1331,12 @@ function App(){
           e('p',{className:'recovery',role:'note'},'Turn limit reached. The final patient reply remains above for review.'),
           e('div',{className:'doorrow'},e('button',{ref:limitEndRef,className:'btn primary',type:'button',onClick:endEncounter},'End encounter and reflect'))):e('div',{className:'composer'},
           e('div',{className:'inrow'},
-            e('textarea',{ref:composerRef,value:input,maxLength:1200,className:listening?'listening':'','aria-label':'Your next words to the patient',
-              placeholder:voiceMode==='managed'?'Record or type — review the draft before sending…':'Say what you would actually say…',rows:2,
-              onChange:function(ev){setInput(ev.target.value);if(voiceState.phase==='listening'||voiceState.phase==='transcribing')dictationRef.current.edited=true;if(voiceState.phase==='ready')try{voiceControllerRef.current.setDraft(ev.target.value);}catch(x){}},
+            e('textarea',{ref:composerRef,value:input,maxLength:1200,'aria-label':'Your next words to the patient',
+              placeholder:'Say what you would actually say…',rows:2,
+              onChange:function(ev){setInput(ev.target.value);if(voiceState.phase==='ready')try{voiceControllerRef.current.setDraft(ev.target.value);}catch(x){}},
               onKeyDown:function(ev){if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();send(false);}}}),
-            (voiceMode==='managed'&&managedEligible(cd))?e('button',{className:'mic'+(listening?' live':''),'aria-pressed':listening,'aria-label':listening?'Stop recording':'Record your question',
-              onClick:function(){listening?stopListening():startListening();}},
-              listening?e('span',{className:'stopglyph','aria-hidden':true}):e('svg',{width:16,height:16,viewBox:'0 0 16 16',fill:'none','aria-hidden':true},
-                e('rect',{x:5.5,y:1.5,width:5,height:8,rx:2.5,stroke:'currentColor',strokeWidth:1.5}),
-                e('path',{d:'M3 7.5V8a5 5 0 0 0 10 0v-.5M8 13v2',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round'})),
-              e('span',null,listening?'Stop':'Speak')):null,
             e('button',{className:'btn primary sayit',disabled:isBusy||voiceState.phase!=='ready'||!input.trim()||input.length>1200,onClick:function(){send(false);}},'Say it')),
           input.length>1200?e('div',{className:'recovery',role:'note'},'Draft is '+input.length+' characters. Shorten it to 1200 before sending. Nothing was truncated or sent.'):null,
-          pendingTranscript!==null?e('div',{className:'recovery',role:'note'},
-            e('p',null,'Your newer typing was kept. Review the separate transcription before choosing whether to replace it.'),
-            e('textarea',{readOnly:true,value:pendingTranscript,'aria-label':'Transcribed words available for review',rows:2}),
-            e('div',{className:'acts'},e('button',{className:'btn',type:'button',onClick:function(){var text=pendingTranscript;setPendingTranscript(null);setInput(text);if(voiceControllerRef.current.getSnapshot().phase==='ready')try{voiceControllerRef.current.setDraft(text);}catch(x){}}},'Use transcript instead'))):null,
-          listening?e('div',{className:'listenrow'},
-            e('span',{className:'bars2','aria-hidden':true},e('span'),e('span'),e('span')),
-            e('p',null,'Listening — take your time. Your words land in the box first; nothing sends until you press “Say it.”')):null,
           e('div',{className:'metaline'},
             e('span',null,'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)),
             e('span',null,'Provider: '+E.provider.name+(offlineSession?' · Offline simulation':'')),
@@ -1150,30 +1346,7 @@ function App(){
             supported?e('button',{className:'btn door',ref:doorRef,onClick:openDoor},(sess.stepOuts||0)>0?'Step out again':'Step out a moment'):null,
             e('button',{className:'btn',onClick:endEncounter},'End encounter'),
             !supported?e('span',{className:'quiet'},'Realistic — no map, no coach. Your debrief will have both.'):null)),
-        stepOut?e('div',{className:'overlay',onKeyDown:function(ev){trapDialogKey(ev,closeDoor);}},
-          e('div',{className:'panel',role:'dialog','aria-modal':true,'aria-label':'Stepped out of the room'},
-            e('div',{className:'panelhead'},
-              e('h2',null,'Stepping out — '+cd.persona.displayName+' waits.'),
-              e('span',{className:'notascore'},'a pause, not a score')),
-            e('p',{className:'waitline'},'Through the door: '+cd.persona.displayName+' waits.'),
-            e('div',{className:'notes'},
-              e('p',{className:'microlabel'},'Language recognized so far'),
-              e('p',null,'This map recognizes words, not whether the patient answered. Review the exchange for what remains unclear.'),
-              (function(){ var cov=computeCoverage(sess);
-                var got=cov.filter(function(c){return c.status==='observed'||c.status==='partial';});
-                if(!got.length)return e('p',{style:{margin:0,fontSize:'.85rem',color:'var(--text-mid)',fontStyle:'italic'}},'Nothing on the page yet — the interview is young. That is not a problem to fix; it is a room to sit in.');
-                return got.map(function(c){return e('div',{className:'n',key:c.id},
-                  e('span',{className:'mk '+STATUS_CLS[c.status],'aria-hidden':true},STATUS_MK[c.status]),
-                  e('span',null,e('b',null,coverageDisplay(c).label),' — '+coverageDisplay(c).word));});})()),
-            e('div',{className:'notyet'},
-              e('p',{className:'microlabel'},'Language the map has not fully recognized'),
-              e('p',null,coverageProse(computeCoverage(sess)))),
-            e('div',{className:'coach'},
-              e('p',{className:'microlabel'},(sess.stepOuts||0)>1?'From the hallway — your coach · again, so: more specific':'From the hallway — your coach'),
-              e('p',{className:'line'},getCoach(sess))),
-            e('div',{className:'panelfoot'},
-              e('button',{className:'btn primary',ref:returnRef,style:{background:'var(--accent-dark)',borderColor:'var(--accent-dark)'},onClick:closeDoor},'Return to the room'),
-              e('span',{className:'esc'},'Esc also returns · stepping out is noted in your debrief, never against you')))):null));
+        stepOut?stepOutOverlay(cd,sess):null));
   }
 
   /* ---------- self-assessment ---------- */

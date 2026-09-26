@@ -120,6 +120,10 @@
   [
    "_prototypes/sp-interview/sp-interview.voice.js",
    "sp-interview.voice.js"
+  ],
+  [
+   "_prototypes/sp-interview/sp-interview.realtime.js",
+   "sp-interview.realtime.js"
   ]
  ],
  "md": [

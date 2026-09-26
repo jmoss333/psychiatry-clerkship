@@ -13,6 +13,10 @@ sp-proxy/
                               scheduled authenticated health receipt
   netlify/functions/sp-health-status.mjs
                               public content-free receipt status
+  netlify/functions/sp-realtime.mjs
+                              real-time spoken room: server-side SDP exchange, per-turn director briefs
+  netlify/functions/sp-realtime-reaper.mjs
+                              scheduled hangup of spoken sessions past their deadline
   package.json                @netlify/blobs (durable daily quota counter)
   REDTEAM_CHECKLIST.md        run after every deploy and every model/pack change
 ```
@@ -190,6 +194,60 @@ Do not turn managed voice on merely because automated tests pass. The release pa
 missing gates; it does not approve them. The current OpenAI server credential is associated
 operationally with the project named **Voice Over**, but only the server receives that credential.
 
+## Real-time spoken room (disabled by default)
+
+`/api/sp/realtime` (`sp-realtime.mjs`) gives the learner tool a **speech-to-speech** patient: the
+browser opens a WebRTC session to OpenAI's Realtime API, but the SDP exchange is performed by this
+function with the server key (`POST /v1/realtime/calls`), so **the browser never holds an OpenAI
+credential of any kind** — only the rotation passcode, as everywhere else. Design and review record:
+`docs/superpowers/specs/2026-09-26-interview-room-realtime-voice-design.md`.
+
+What stays server-side and pack-driven, exactly as the text room:
+
+- **Disclosure state.** The session runs with `create_response: false`. After each learner
+  utterance the browser posts the learner transcript (`op=turn`); the function re-derives rapport,
+  intents and gates from the whole transcript with the same `deriveState` the text room uses and
+  returns a **director brief** carrying only the disclosures the learner has earned. The browser
+  appends the brief and only then asks for a reply. Locked reveal text is never in the session's
+  context; the static instructions name each gate as locked-until-the-Director-says and carry its
+  deflection line only.
+- **Receipts, not state.** The browser holds an AES-GCM receipt sealed by this function and bound to
+  the case, the pack bytes, the origin, the rotation and the learner credential; a passcode
+  replacement fails every outstanding receipt closed. The turn count is derived from the transcript
+  the browser sends, as `/api/sp` derives it, never from the receipt alone.
+- **Hard stops are wall-clock.** Every session has a deadline (`SP_REALTIME_MAX_SESSION_MINUTES`,
+  default 15). `op=end` hangs the call up server-side; any `op=turn`/`op=end` presenting an expired
+  receipt hangs it up before answering; `sp-realtime-reaper` (every five minutes) hangs up anything
+  past its deadline; `op=start` reaps opportunistically. None of these depends on the browser.
+
+What the ledger is and is not. Each start reserves a **planning ceiling** (deadline × pinned rate
+card, `REALTIME_RATE_CARD` in `_shared/sp-realtime-session.mjs`) in the `realtime` ledger namespace
+and caps starts per UTC day (`SP_REALTIME_STARTS_PER_DAY`, 40), per rolling half hour
+(`SP_REALTIME_STARTS_PER_HALF_HOUR`, 8) and reserved-plus-spent micro-dollars per rotation
+(`SP_REALTIME_ROTATION_CAP_USD`, 20, **separate from** the $20 actor/voice cap — the owner decides
+whether the two envelopes should share). **That reservation is accounting for cooperating clients,
+not enforcement**: over the open data channel a modified client can raise `max_output_tokens`,
+supply its own context, run out-of-band responses in parallel or enable tracing, and the function
+cannot see any of it. The enforceable ceilings are the wall-clock stops above and a **provider-side
+hard budget**: run this route on a dedicated OpenAI project and key with a monthly hard limit sized
+to the rotation cap, and treat that as an activation gate, not an afterthought. A scripted passcode
+holder can otherwise burn far more than the reservation before the deadline; the passcode's
+emergency replacement is the containment, as for every other route.
+
+Rate card. The realtime rate card is **planning data** (secondary sources; the provider's pricing
+page was not reachable from the build sandbox when it was written) and lives in code, not in the
+attested pack, precisely because it is unreviewed. Refresh it from the live pricing page before
+enabling; a pinned model without rows fails closed.
+
+Activation. `SP_REALTIME_ENABLED=true` is honoured only in a `production` Netlify context and only
+with `SP_REALTIME_MODEL` and `SP_REALTIME_TRANSCRIPTION_MODEL` set (no defaults — fail closed).
+Voices are the audition pairing the faculty preview already runs (Dana → marin, Marcus and Ray →
+cedar) until a reviewed pack speech profile names a stock voice; they are not attested by this
+route. Rollback is `SP_REALTIME_ENABLED=false` + redeploy: health reports `enabled:false`, the tool
+offers the typed room, and sessions in flight end at their deadline. The reaper keys on
+`SP_ROTATION_ID`: end open spoken sessions (or run the reaper once) before turning a rotation over,
+or the previous rotation's open calls are stranded until the provider closes them.
+
 ## Environment variables (names only)
 
 Enter secrets and deployment-specific values only in the hosting dashboard. Never place them in
@@ -214,6 +272,13 @@ source, screenshots, tickets, browser settings, test fixtures, logs, or the rele
 | `SP_VOICE_SYNTHESIS_PROVIDER` | Reviewed synthesis-provider pin |
 | `SP_VOICE_SYNTHESIS_MODEL` | Reviewed synthesis-model pin |
 | `SP_VOICE_ZERO_RETENTION_ENTITLED` | Explicit reviewed account-entitlement pin; never inferred |
+| `SP_REALTIME_ENABLED` | Explicit production kill switch for the real-time spoken room (`false` by default) |
+| `SP_REALTIME_MODEL` | Reviewed Realtime model pin; required when enabled, no default |
+| `SP_REALTIME_TRANSCRIPTION_MODEL` | Reviewed input-transcription model pin; required when enabled, no default |
+| `SP_REALTIME_MAX_SESSION_MINUTES` | Spoken-session deadline enforced by receipt, hangup and reaper (default 15) |
+| `SP_REALTIME_ROTATION_CAP_USD` | Planning ceiling reserved-plus-spent per rotation for spoken sessions (default 20; accounting, not enforcement) |
+| `SP_REALTIME_STARTS_PER_DAY` | Spoken-session starts per UTC day (default 40) |
+| `SP_REALTIME_STARTS_PER_HALF_HOUR` | Spoken-session starts per rolling half hour (default 8) |
 
 ## Retention and deletion
 
@@ -267,7 +332,9 @@ privacy and faculty review, and rerun the red-team checklist before considering 
 ## Rollback
 
 Set `SP_MANAGED_VOICE_ENABLED=false`, redeploy, and verify authenticated voice health reports
-`enabled:false` and `acceptingVoice:false`. Confirm typing and device voice still work. Do not delete
+`enabled:false` and `acceptingVoice:false`. For the spoken room, set `SP_REALTIME_ENABLED=false`,
+redeploy, and verify `GET /api/sp/realtime` reports `enabled:false` and `acceptingSessions:false`;
+sessions already open end at their deadline (the reaper still runs while disabled). Confirm typing and device voice still work. Do not delete
 or rewrite an active rotation ledger during rollback; its tombstones prevent duplicate paid calls.
 If the actor path is affected, leave the explicit learner choice to continue offline rather than
 silently changing modes.
@@ -295,6 +362,22 @@ All of these must be recorded outside the automated receipt before learner activ
   reviewed pack and speech stack deployed by the proxy; recheck after either site deploys;
 - pronunciation checks for suicide, violence, medication, and emergency-safety language;
 - a small supervised learner pilot with explicit fallback and accessibility review.
+
+For the real-time spoken room, additionally:
+
+- faculty audition of each case/voice pairing **in speech-to-speech** (the TTS audition does not
+  carry over — a different model speaks) and a spoken red-team pass (`REDTEAM_CHECKLIST.md` §R);
+- privacy approval of the Realtime data terms for the deployed account, **including the Traces
+  dashboard and data-retention controls at project level** — a connected client can enable tracing
+  for its own session over the data channel, which the function cannot forbid;
+- a dedicated OpenAI project/key with a monthly hard limit sized to the rotation cap (the ledger
+  reservation is accounting, not enforcement);
+- the realtime rate card refreshed from the live pricing page and the provider's maximum session
+  length recorded from live documentation (it is not stated in the API contract);
+- a scheduled probe of `GET /api/sp/realtime` and content-free reaper outcomes, since the existing
+  health canary never exercises this route;
+- a supervised pilot on headphones and on speakers separately, measuring turn latency, fragment
+  rate, backchannel and echo drops from the controller's diagnostics, without recording audio.
 
 `node _prototypes/sp-interview/release-passport.mjs` prints only status and SHA-256 hashes. Missing
 external gates permit merge with managed voice disabled; they do not permit learner activation.

@@ -14,6 +14,7 @@ echo "── Dana harness failure propagation ──"; node harness-exit.test.mj
 echo "── deterministic voice state ──"; node --test voice-state.test.mjs
 echo "── managed voice contracts ──"; node --test voice-contract.test.mjs
 echo "── managed voice browser transport ──"; node --test managed-transport.test.mjs
+echo "── real-time spoken session controller ──"; node --test realtime-session.test.mjs
 echo "── governed provider failures + source contract ──"; node --test provider-errors.test.mjs
 echo "── CI and site-build contracts ──"; node --test ci-build-contract.test.mjs
 echo "── managed voice operations docs + release passport ──"; node --test ops-docs.test.mjs
