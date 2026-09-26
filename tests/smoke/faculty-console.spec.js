@@ -2615,4 +2615,170 @@ test.describe('phone client', () => {
     await expect(page.getByRole('status')).toContainText('Ready');
     await expect(page.getByRole('button', { name: 'Attest' })).toBeEnabled();  // eligibility itself is checked in the confirm sheet (Task 5)
   });
+
+  test('What changed with no correction commit says since when you signed, takes focus, and closes on Escape', async ({ page }) => {
+    // The production path: the phone never sends a sha, so the server answers with `since` and `commit: null`.
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await page.route('**/api/attest?view=diff&slug=t_mood.md', route => fulfillJson(route, 200, {
+      view: 'diff', slug: 't_mood.md', since: '2026-09-21', base: 'a'.repeat(40), head: 'b'.repeat(40), compareUrl: null,
+      commit: null, files: [], record: [],
+    }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await page.getByRole('button', { name: 'What changed' }).click();
+    const changed = page.getByRole('dialog', { name: 'What changed since you signed' });
+    await expect(changed).toBeFocused();
+    await expect(changed.getByText('Since you signed on 2026-09-21')).toBeVisible();
+    await expect(changed.getByText("Neither this page's source files nor its record changed since you signed; its fingerprint moved for another reason.")).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(changed).toHaveCount(0);
+  });
+
+  test('Sign is disabled until acknowledged and idempotent while pending; a press sends exactly one slug and the receipt comes from the response', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    // Hold the write open until released, so the second tap below lands while it is pending.
+    let releaseWrite;
+    const writeHeld = new Promise(resolve => { releaseWrite = resolve; });
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST') await writeHeld;
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Catatonia \(Aug 31\) — MS3/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    const getsBefore = api.gets.length;
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Catatonia/ });
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByText(SERVER_ATTESTER)).toBeVisible();
+    const sign = sheet.getByRole('button', { name: 'Sign' });
+    await expect(sign).toBeDisabled();
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await expect(sign).toBeDisabled();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await expect(sheet.getByLabel('Links, media and interactions work')).toBeFocused();   // a tick rebuilds the sheet; focus stays put
+    await expect(sign).toBeEnabled();
+    await sign.click();
+    await expect(sheet.getByRole('button', { name: 'Signing…' })).toBeDisabled();
+    // Second tap while pending must not send a second POST. Bounded: the button is disabled and
+    // then gone, so an unbounded click would wait out the whole test.
+    await sign.click({ timeout: 1_000 }).catch(() => {});
+    releaseWrite();
+    await expect(page.getByText('Signed: Catatonia (Aug 31) — MS3')).toBeVisible();
+    const posts = api.calls.filter(call => call.method === 'POST');
+    expect(posts).toHaveLength(1);
+    expect(posts[0].body).toEqual({ target: 'content', changes: { [COTW_MS3_SLUG]: true }, reasons: {} });
+    expect(api.gets.length).toBe(getsBefore);   // no confirming reload
+    // Auto-advance: the twin needs review, so it is selected next.
+    await expect(page.getByRole('heading', { name: 'Catatonia (Aug 31) — Resident' })).toBeVisible();
+  });
+
+  test('a receipt without rows still completes and schedules a refresh', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() !== 'POST') return route.fallback();
+      await fulfillJson(route, 200, { ok: true, updated: 1, commit: 'https://github.example/commit/no-rows', ledger: { seq: 7 } });
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mental status exam tool/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mental status exam tool/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByText('Signed: Synthetic mental status exam tool')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Attest' })).toBeEnabled();  // not stuck in "Signing…"
+  });
+
+  test('a silent refresh while offline leaves the loaded screen in place (no error screen, no fetch)', async ({ page }) => {
+    await page.clock.install();
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Catatonia \(Aug 31\) — MS3/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Catatonia/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByText('Signed: Catatonia (Aug 31) — MS3')).toBeVisible();
+    // Let the advanced item's preview settle first, so the only Retry that could appear is the
+    // load-error screen's (a preview still loading would time out inside runFor and offer its own).
+    await expect(page.getByRole('heading', { name: 'Catatonia (Aug 31) — Resident' })).toBeVisible();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    const getsBefore = api.gets.length;
+    await page.context().setOffline(true);
+    await page.clock.runFor(31_000);                 // past REFRESH_QUIET_MS: the scheduled refresh fires offline
+    await expect(page.getByRole('heading', { name: 'Catatonia (Aug 31) — Resident' })).toBeVisible();   // still on the advanced item
+    await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(0);
+    await expect(page.getByRole('alert')).toContainText('You are offline');
+    expect(api.gets.length).toBe(getsBefore);
+    await page.context().setOffline(false);
+  });
+
+  test('a silent refresh over the queue updates it in place: the search box keeps focus and text', async ({ page }) => {
+    await page.clock.install();
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mental status exam tool/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mental status exam tool/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByText('Signed: Synthetic mental status exam tool')).toBeVisible();
+    await page.getByRole('button', { name: 'Queue' }).click();
+    const search = page.getByLabel('Search the queue');
+    await search.click();
+    await search.pressSequentially('cat');
+    await expect(page.getByRole('status')).toContainText('3 pages · 0 tools');
+    await expect(page.getByRole('link', { name: /Catatonia/ })).toHaveCount(2);
+    // The refresh finds the MS3 twin signed elsewhere (on the desktop) in the meantime.
+    const signedElsewhere = cotwContentState().map(item => ([COTW_MS3_SLUG, 'mse.html'].includes(item.slug)
+      ? { ...item, status: 'reviewed', at: '2026-09-26', by: SERVER_ATTESTER } : item));
+    let refreshes = 0;
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() !== 'GET' || new URL(request.url()).search) return route.fallback();
+      refreshes += 1;
+      await fulfillJson(route, 200, buildGetPayload(workflowBank(), signedElsewhere));
+    });
+    await page.clock.runFor(31_000);                 // past REFRESH_QUIET_MS: the scheduled refresh fires
+    await expect.poll(() => refreshes).toBe(1);
+    await expect(page.getByRole('status')).toContainText('2 pages · 0 tools');
+    await expect(page.getByRole('link', { name: /Catatonia/ })).toHaveCount(1);
+    await expect(search).toBeFocused();              // updated in place, not remounted
+    await expect(search).toHaveValue('cat');
+    expect(api.gets).toHaveLength(1);                // the unlock GET only: no confirming reload after the sign
+  });
+
+  test('a failed preview needs a retry and the separate-tab acknowledgement instead', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank(), { contentState: [{ slug: 'nope.md', title: 'Missing page', kind: 'page', site: 'ms3', status: 'pending', at: '', by: '' }] });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Missing page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Missing page/ });
+    await expect(sheet.getByText('The learner page did not report ready. Press Retry once')).toBeVisible();
+    await expect(sheet.getByLabel('I reviewed it in the learner site tab')).toBeDisabled();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await sheet.getByLabel('I reviewed it in the learner site tab').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await expect(sheet.getByRole('button', { name: 'Sign' })).toBeEnabled();
+  });
 });

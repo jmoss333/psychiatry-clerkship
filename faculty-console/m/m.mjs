@@ -94,7 +94,9 @@ function recompute() {
   state.sections = groupQueue(state.items, state.changes);
 }
 async function load({ silent = false } = {}) {
-  if (!getKey()) { renderGate(); return false; }
+  // A silent refresh never repaints the key prompt: it is already up (Lock or a 401), and
+  // redrawing it would wipe a half-typed key.
+  if (!getKey()) { if (!silent) renderGate(); return false; }
   // Offline: report through render(), which shows the error screen when nothing has loaded and
   // reports in place over a loaded queue or item (a silent refresh must never replace them).
   if (navigator.onLine === false) { state.message = 'You are offline.'; render(); return false; }
@@ -112,7 +114,7 @@ async function load({ silent = false } = {}) {
       if (target) { openItem(target.key); return true; }
       state.message = 'That item is not in the current queue.';
     }
-    render();
+    if (silent) refreshInPlace(); else render();
     return true;
   } catch (error) {
     if (error instanceof Unauthorized) { state.reauth = () => load(); renderGate(error.message); return false; }
@@ -197,15 +199,19 @@ function refreshQueueGroups() {
     ...(sections.length ? [] : [h('p', { class: 'summary', text: 'Nothing needs review.' })]));
 }
 
-function renderQueue() {
+function queueCountsText() {
   const counts = deriveReviewCounts(state.items);
+  return `${counts.page} page${counts.page === 1 ? '' : 's'} · ${counts.tool} tool${counts.tool === 1 ? '' : 's'} · ${counts.question} question${counts.question === 1 ? '' : 's'} need review`;
+}
+
+function renderQueue() {
   const search = h('input', { type: 'search', placeholder: 'Search titles', value: state.search, 'aria-label': 'Search the queue',
     onInput: event => { state.search = event.target.value; refreshQueueGroups(); } });
   replaceApp(
     bar('Faculty attestation'),
     h('div', { class: 'screen' }, [
       h('h2', { class: 'summary', text: 'Needs review' }),
-      h('p', { class: 'summary', role: 'status', text: `${counts.page} page${counts.page === 1 ? '' : 's'} · ${counts.tool} tool${counts.tool === 1 ? '' : 's'} · ${counts.question} question${counts.question === 1 ? '' : 's'} need review` }),
+      h('p', { id: 'queue-counts', class: 'summary', role: 'status', text: queueCountsText() }),
       state.message ? h('p', { class: 'field-error summary', role: 'alert', text: state.message }) : null,
       h('div', { class: 'search' }, search),
       h('div', { id: 'queue-groups' }),
@@ -214,6 +220,20 @@ function renderQueue() {
   refreshQueueGroups();
   // The shareable link is rebuilt from the selected item only; on the queue it carries nothing.
   window.history.replaceState(null, '', window.location.pathname);
+}
+
+/**
+ * A silent refresh repaints in place: on the queue only the counts line and the groups (the
+ * search box keeps its focus and caret); on the item screen refreshItem() over the mounted
+ * frame (renderItem() remounts only when no frame is mounted, and leaves for the queue when the
+ * item has left it).
+ */
+function refreshInPlace() {
+  if (state.screen === 'item' && state.selectedKey) { renderItem(); return; }
+  const counts = document.getElementById('queue-counts');
+  if (!counts || !document.getElementById('queue-groups')) { render(); return; }
+  counts.textContent = queueCountsText();
+  refreshQueueGroups();
 }
 
 function render() {
@@ -260,6 +280,7 @@ function handlePreviewStatus(event) {
   if (preview.timerId) window.clearTimeout(preview.timerId);
   preview.timerId = null;
   preview.status = event.data.status;
+  resetAcks();
   renderItem();
 }
 
@@ -270,7 +291,11 @@ const STATUS_LABEL = {
 function previewFailed() { return ['not_found', 'error', 'protocol_unavailable', 'frame_failure'].includes(state.preview?.status); }
 
 // ---- sheets -------------------------------------------------------------------------------
-function openSheet(name) { state.sheet = name; renderItem(); }
+function focusSheet() {
+  const el = document.querySelector('#item-sheet .sheet');
+  if (el) { el.setAttribute('tabindex', '-1'); el.focus(); }
+}
+function openSheet(name) { state.sheet = name; renderItem(); focusSheet(); }
 function closeSheet() { state.sheet = null; renderItem(); }
 
 async function loadDiff(item) {
@@ -318,7 +343,7 @@ function sheetChanged(item) {
     ready ? diffContext(state.diff) : null,
     loading ? h('p', { text: 'Loading the changes…' }) : null,
     state.diff?.error ? h('p', { class: 'field-error', role: 'alert', text: state.diff.error }) : null,
-    ready && !lines.length ? h('p', { text: 'No text change was recorded; the record or its fingerprint scope moved.' }) : null,
+    ready && !lines.length ? h('p', { text: "Neither this page's source files nor its record changed since you signed; its fingerprint moved for another reason." }) : null,
     // `lines` carries file / context / del / add / note kinds; a note marks a too-large, binary or truncated file.
     h('div', { class: 'lines' }, lines.map(line => h('div', { class: line.kind, text: line.text }))),
     compareUrl ? h('p', {}, h('a', { href: compareUrl, target: '_blank', rel: 'noopener noreferrer', text: 'Open the comparison on GitHub' })) : null,
@@ -388,7 +413,7 @@ function refreshItem(item) {
     `Twin: ${twin.title} · ${twin.completion === 'needs-review' ? 'needs review' : 'reviewed'} `,
     h('a', { href: `?item=${encodeURIComponent(twin.key)}`, text: 'Go to twin', onClick: event => { event.preventDefault(); openItem(twin.key); } }),
   ])] : []));
-  document.getElementById('item-receipt').replaceChildren(...(state.receipt ? [h('div', { class: 'receipt', role: 'status' }, [
+  document.getElementById('item-receipt').replaceChildren(...(state.receipt ? [h('div', { class: 'receipt', 'aria-live': 'polite' }, [
     h('strong', { text: `Signed: ${state.receipt.title}` }), ' ',
     state.receipt.commit ? h('a', { href: state.receipt.commit, target: '_blank', rel: 'noopener noreferrer', text: 'commit' }) : null,
     state.receipt.pullRequest ? [' · ', h('a', { href: state.receipt.pullRequest, target: '_blank', rel: 'noopener noreferrer', text: 'rolling PR' })] : null,
@@ -406,14 +431,86 @@ function refreshItem(item) {
     : state.sheet === 'confirm' ? sheetConfirm(item)
     : state.sheet === 'draft' ? sheetDraft(item)
     : null;
-  document.getElementById('item-sheet').replaceChildren(...(sheet ? [h('div', { class: 'sheet-backdrop', onClick: closeSheet }), sheet] : []));
+  // Rebuilding an open sheet (a tick, a refresh) must not drop keyboard focus to the page:
+  // refocus the same control by id, else the sheet itself.
+  const host = document.getElementById('item-sheet');
+  const focusedId = host.contains(document.activeElement) ? document.activeElement.id : null;
+  host.replaceChildren(...(sheet ? [h('div', { class: 'sheet-backdrop', onClick: closeSheet }), sheet] : []));
+  if (sheet && focusedId !== null) {
+    const again = focusedId ? document.getElementById(focusedId) : null;
+    if (again && host.contains(again)) again.focus(); else focusSheet();
+  }
 }
-function sheetConfirm(item) { return h('div'); }   // Task 5
+
+// ---- confirm + sign (pages and tools) -----------------------------------------------------
+/** Eligibility reads the live preview status; state.ui holds only the reviewer's acknowledgements. */
+function uiWithPreview() { return { ...state.ui, previewStatus: state.preview?.status || 'loading' }; }
+function resetAcks() {   // the desktop clears acknowledgements whenever the preview status changes
+  const { retryAttempted } = state.ui;
+  state.ui = { retryAttempted: retryAttempted === true };
+}
+function ack(id, label, checked, onChange, { disabled = false } = {}) {
+  const input = h('input', { id, type: 'checkbox', checked: checked ? true : undefined, disabled: disabled ? true : undefined,
+    onChange: event => onChange(event.target.checked) });
+  return h('label', { class: 'ack', for: id }, [input, h('span', { text: label })]);
+}
+function setUi(patch) { state.ui = { ...state.ui, ...patch }; renderItem(); }
+
+function sheetConfirm(item) {
+  if (item.type === 'question') return sheetConfirmQuestion(item);
+  const failed = previewFailed();
+  const ready = state.preview?.status === 'ready';
+  const eligibility = contentEligibility(item, uiWithPreview());
+  return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': `Sign ${item.title}` }, [
+    h('h2', { text: `Sign ${item.title}` }),
+    h('p', { text: `As ${state.server.attester}. This signs the text as it is on main right now; if the page changes later it shows as pending again until re-signed.` }),
+    failed && !state.ui.retryAttempted ? h('p', { class: 'field-error', text: 'The learner page did not report ready. Press Retry once; if it still fails, review it with Open in site and acknowledge that below.' }) : null,
+    ready
+      ? ack('ack-complete', 'I reviewed the complete item on this screen', state.ui.completeItemReviewed, v => setUi({ completeItemReviewed: v }))
+      : ack('ack-separate', 'I reviewed it in the learner site tab', state.ui.separateTabReviewed, v => setUi({ separateTabReviewed: v }), { disabled: !state.ui.retryAttempted }),
+    ack('ack-accuracy', 'Accurate and appropriate for a third-year student', state.ui.accuracy, v => setUi({ accuracy: v })),
+    ack('ack-interactions', 'Links, media and interactions work', state.ui.interactions, v => setUi({ interactions: v })),
+    h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign', disabled: !eligibility.eligible || state.pending, onClick: () => { void signContent(item); } })),
+    h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
+  ]);
+}
+function sheetConfirmQuestion() { return h('div'); }   // Task 6
+
+async function signContent(item) {
+  if (state.pending) return;                       // idempotent while a POST is in flight
+  if (!contentEligibility(item, uiWithPreview()).eligible) { state.message = 'Complete the acknowledgements before signing.'; renderItem(); return; }
+  state.pending = true; state.message = ''; renderItem();
+  const body = { target: 'content', changes: { [item.identity]: true }, reasons: {} };
+  try {
+    const payload = await api(API, { method: 'POST', body: JSON.stringify(body) });
+    if (!payload?.ok || payload.updated !== 1) throw new Error(errorText(payload, 'This attestation was not saved.'));
+    state.receipt = { title: item.title, commit: safeHttps(payload.commit), pullRequest: safeHttps(payload.pullRequest), pullRequestError: payload.pullRequestError === true };
+    if (payload.rows && typeof payload.rows === 'object') {
+      state.server = applyRows(state.server, payload.rows);
+    } else {
+      // Ledger mode or an older function: trust the 200 for this item and refresh soon.
+      state.server = applyRows(state.server, { [item.identity]: { status: 'reviewed', at: new Date().toISOString().slice(0, 10), by: state.server.attester, risk: item.risk, reason: '' } });
+    }
+    const before = state.items; const sections = state.sections;
+    recompute();
+    scheduleRefresh();
+    state.sheet = null; state.pending = false;
+    const nextKey = nextAfterSign(item.key, before, sections);
+    if (nextKey && state.items.some(i => i.key === nextKey)) { const receipt = state.receipt; openItem(nextKey); state.receipt = receipt; renderItem(); }
+    else { state.screen = 'item'; renderItem(); }
+  } catch (error) {
+    state.pending = false;
+    if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signContent(item); }; renderGate(error.message); return; }
+    state.message = /github_conflict/.test(error.message) ? 'The branch moved while signing. Press Sign again.' : error.message;
+    renderItem();
+  }
+}
 function sheetDraft(item) { return h('div'); }     // Task 6
 
 // ---- boot ---------------------------------------------------------------------------------
 state.deepLink = window.location.search.includes('item=') ? window.location.search : null;
 window.addEventListener('message', handlePreviewStatus);
+window.addEventListener('keydown', event => { if (event.key === 'Escape' && state.sheet) closeSheet(); });
 window.addEventListener('offline', () => { state.message = 'You are offline.'; render(); });
 window.addEventListener('online', () => { state.message = ''; render(); });
 void load();
