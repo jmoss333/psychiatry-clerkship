@@ -5125,8 +5125,12 @@ function driftedItem(slug, title, at = '2026-07-01') {
   return { slug, title, kind: 'page', status: 'unreviewed', stale: true, at, reason: DRIFT(at), sites: ['ms3'] };
 }
 
+const CORRECTION_STATEMENT = 'I have reviewed these corrections and attest to every page they '
+  + 'changed, as each page reads today.';
+
 const CHANGES_VIEW = {
   view: 'changes',
+  statement: CORRECTION_STATEMENT,
   branch: 'main',
   generatedAt: '2026-09-25T14:05:00.000Z',
   drifted: 3,
@@ -5189,6 +5193,19 @@ function resignHarnessFetch({ diffStatus = 200 } = {}) {
     calls.push({ method: options.method || 'GET', view: parsed.searchParams.get('view'), params: parsed.searchParams, body: options.body });
     if (options.method === 'POST') {
       const posted = JSON.parse(options.body);
+      if (posted.mode === 'correction') {
+        // The server's rule, restated: a drifted page is re-signed when every change since
+        // its signature is one of the named corrections.
+        const named = new Set(posted.corrections);
+        const signed = items.filter(item => item.stale && (CHANGES_VIEW.pages[item.slug]?.changes || [])
+          .every(change => named.has(change.id))).map(item => item.slug);
+        items = items.map(item => (signed.includes(item.slug)
+          ? { slug: item.slug, title: item.title, kind: item.kind, sites: item.sites, status: 'reviewed' }
+          : item));
+        return jsonResponse({ ok: true, target: 'content', mode: 'correction', updated: signed.length,
+          commit: signed.length ? 'https://github.example/commit/correction' : null,
+          signed: signed.map(slug => ({ slug, was: 'drifted' })), excluded: [] });
+      }
       const [[slug, reviewed]] = Object.entries(posted.changes);
       items = items.map(item => (item.slug === slug
         ? { slug: item.slug, title: item.title, kind: item.kind, sites: item.sites, status: reviewed ? 'reviewed' : 'unreviewed' }
@@ -5214,7 +5231,7 @@ async function openDetails(element) {
   await flushAsyncWork();
 }
 
-test('Re-sign by change is lazy, lists each correction, and holds no signing control', async () => {
+test('Re-sign by change is lazy, lists each correction, and offers one signing control per correction', async () => {
   const { fetchImpl, calls } = resignHarnessFetch();
   const { document } = await startHarness({ fetchImpl });
 
@@ -5235,14 +5252,145 @@ test('Re-sign by change is lazy, lists each correction, and holds no signing con
     /landed on 2026-07-01, the day you signed, so you may already have read it/);
   assert.match(document.getElementById('resign-group-pr-767').textContent, /Also changed by #773/);
 
-  // Nothing in the section signs: no attest control, no batch wording, and opening every
-  // group and page issues no POST.
+  // Since 2026-09-26 each correction carries exactly one signing control, AFTER its pages and
+  // their diffs; nothing else in the section signs, and opening everything posts nothing.
   const buttons = document.elements().filter(element => element.tagName === 'BUTTON' && section.contains(element));
   assert.ok(buttons.length >= 4);
-  for (const button of buttons) {
+  const signing = buttons.filter(button => /^Sign #/.test(button.textContent));
+  assert.deepEqual(signing.map(button => button.getAttribute('id')).sort(),
+    ['sign-correction-button-pr-767', 'sign-correction-button-pr-773']);
+  for (const button of buttons.filter(candidate => !signing.includes(candidate))) {
     assert.doesNotMatch(button.textContent, /attest|sign all|sign every|approve/i, button.textContent);
   }
+  const body = group.children.find(child => child.className === 'resign-group-body');
+  assert.equal(body.children.at(-1).getAttribute('id'), 'sign-correction-pr-773', 'the control comes after the pages');
+  assert.match(body.children.at(-1).textContent, /Signing says: “I have reviewed these corrections/);
   assert.equal(calls.some(call => call.method === 'POST'), false);
+});
+
+test('Sign this correction re-signs the pages it fully explains, and counts toward the next correction', async () => {
+  const { fetchImpl, calls } = resignHarnessFetch();
+  const { document } = await startHarness({ fetchImpl });
+  await openDetails(document.getElementById('resign-by-change'));
+  await openDetails(document.getElementById('resign-group-pr-773'));
+  await openDetails(document.getElementById('resign-group-pr-767'));
+
+  // t_mood.md was also changed by #767, so #773 alone explains one of its two pages.
+  const first = document.getElementById('sign-correction-button-pr-773');
+  assert.equal(first.textContent, 'Sign #773 — re-signs 1 page');
+  assert.match(document.getElementById('sign-correction-pr-773').textContent, /1 page here was also changed by #767/);
+  await first.dispatch('click');
+  await flushAsyncWork();
+  let posts = calls.filter(call => call.method === 'POST');
+  assert.deepEqual(JSON.parse(posts[0].body), {
+    target: 'content', mode: 'correction', statement: CORRECTION_STATEMENT, corrections: ['pr:773'],
+  });
+  assert.match(document.getElementById('many-page-receipt').textContent, /Signed 1 page or tool\./);
+
+  // #773 is now signed in this sitting, so #767 explains both of its pages.
+  const second = document.getElementById('sign-correction-button-pr-767');
+  assert.equal(second.textContent, 'Sign #767 — re-signs 2 pages');
+  await second.dispatch('click');
+  await flushAsyncWork();
+  posts = calls.filter(call => call.method === 'POST');
+  assert.equal(posts.length, 2);
+  assert.deepEqual(JSON.parse(posts[1].body).corrections, ['pr:773', 'pr:767']);
+  assert.match(document.getElementById('resign-summary-text').textContent, /every changed page is re-signed/);
+});
+
+/* The baseline (2026-09-26): one press over everything that needs a signature. */
+
+const BASELINE_STATEMENT = 'I have reviewed this content and attest to it as it reads today: it is '
+  + 'clinically accurate, supported by its cited evidence, original, and free of protected health '
+  + 'information.';
+
+function baselineHarnessFetch({ pressFails = false } = {}) {
+  let items = [
+    { slug: 'anx.md', title: 'Anxiety disorders', kind: 'page', status: 'unreviewed', reason: 'New page awaiting review.', sites: ['ms3'] },
+    driftedItem('t_mood.md', 'Mood disorders'),
+    { slug: 'mse-tool', title: 'MSE', kind: 'tool', status: 'unreviewed', sites: ['ms3'] },
+  ];
+  const preview = {
+    view: 'batch',
+    mode: 'baseline',
+    statement: BASELINE_STATEMENT,
+    branch: 'attest/pending',
+    sign: [
+      { slug: 'anx.md', title: 'Anxiety disorders', kind: 'page', was: 'pending', pendingReason: 'New page awaiting review.' },
+      { slug: 't_mood.md', title: 'Mood disorders', kind: 'page', was: 'drifted', pendingReason: '' },
+    ],
+    excluded: [{ slug: 'mse-tool', title: 'MSE', kind: 'tool', was: 'pending',
+      reason: 'Its own review label says "draft". Changing that label is a content change (ADR-003 §6), so it is not signed here.' }],
+    questions: { sign: [{ id: 'qb_moo_900', category: 'mood', stem: 'A fictional inpatient reports sadness.' }], excluded: [] },
+  };
+  const calls = [];
+  const fetchImpl = async (url, options = {}) => {
+    const parsed = new URL(url, 'https://faculty.example');
+    calls.push({ method: options.method || 'GET', view: parsed.searchParams.get('view'), params: parsed.searchParams, body: options.body });
+    if (options.method === 'POST') {
+      if (pressFails) return { ok: false, status: 504, json: async () => { throw new SyntaxError('Unexpected token <'); } };
+      const posted = JSON.parse(options.body);
+      const signed = preview.sign.filter(item => !(posted.exclude || []).includes(item.slug));
+      items = items.map(item => (signed.some(entry => entry.slug === item.slug)
+        ? { slug: item.slug, title: item.title, kind: item.kind, sites: item.sites, status: 'reviewed' }
+        : item));
+      return jsonResponse({ ok: true, target: 'content', mode: 'baseline', updated: signed.length,
+        commit: 'https://github.example/commit/baseline', signed, excluded: preview.excluded,
+        questions: { updated: 1, commit: 'https://github.example/commit/questions', signed: ['qb_moo_900'], excluded: [] } });
+    }
+    if (parsed.searchParams.get('view') === 'batch') return jsonResponse(preview);
+    return jsonResponse(serverState({ items, questions: [] }));
+  };
+  return { fetchImpl, calls };
+}
+
+test('the baseline is lazy, lists what one press signs and leaves out, and sends the statement with the exclusions', async () => {
+  const { fetchImpl, calls } = baselineHarnessFetch();
+  const { document } = await startHarness({ fetchImpl });
+  const section = document.getElementById('baseline');
+  assert.ok(section);
+  assert.equal(section.open, false);
+  assert.equal(document.getElementById('baseline-summary-text').textContent,
+    'Sign everything as it reads today · 3 pages and tools and 0 questions need review');
+  assert.equal(calls.some(call => call.view === 'batch'), false, 'nothing is asked until it is opened');
+
+  await openDetails(section);
+  const previews = calls.filter(call => call.view === 'batch');
+  assert.equal(previews.length, 1);
+  assert.equal(previews[0].params.get('mode'), 'baseline');
+  assert.match(document.getElementById('baseline-statement').textContent, /as it reads today: it is clinically accurate/);
+  assert.match(document.getElementById('baseline-sign-list').textContent, /Anxiety disorders.*never signed/);
+  assert.match(document.getElementById('baseline-sign-list').textContent, /New page awaiting review\./);
+  assert.match(document.getElementById('baseline-left-out').textContent, /Its own review label says "draft"/);
+  assert.equal(document.getElementById('baseline-sign').textContent, 'Sign 2 pages and tools and attest 1 question');
+
+  document.getElementById('baseline-include-anx-md').click();
+  await flushAsyncWork();
+  assert.equal(document.getElementById('baseline-sign').textContent, 'Sign 1 page or tool and attest 1 question');
+  assert.equal(calls.some(call => call.method === 'POST'), false, 'unticking is not a press');
+
+  await document.getElementById('baseline-sign').dispatch('click');
+  await flushAsyncWork();
+  const posts = calls.filter(call => call.method === 'POST');
+  assert.equal(posts.length, 1, 'one press');
+  assert.deepEqual(JSON.parse(posts[0].body), {
+    target: 'content', mode: 'baseline', statement: BASELINE_STATEMENT, exclude: ['anx.md'],
+  });
+  const receipt = document.getElementById('many-page-receipt');
+  assert.match(receipt.textContent, /Signed 1 page or tool\. Attested 1 question\. 1 left out, with the reason below\./);
+  assert.ok(document.findAll('a').some(link => link.getAttribute('href') === 'https://github.example/commit/baseline'));
+});
+
+test('a baseline press the server did not answer says it may have finished, and reloads the queue', async () => {
+  const { fetchImpl, calls } = baselineHarnessFetch({ pressFails: true });
+  const { document } = await startHarness({ fetchImpl });
+  await openDetails(document.getElementById('baseline'));
+  const before = calls.filter(call => call.method !== 'POST' && !call.view).length;
+  await document.getElementById('baseline-sign').dispatch('click');
+  await flushAsyncWork();
+  assert.match(document.getElementById('many-page-receipt').textContent,
+    /may have finished anyway.*pressing again is safe/);
+  assert.equal(calls.filter(call => call.method !== 'POST' && !call.view).length, before + 1, 'the queue is re-read');
 });
 
 test('a page opened from a correction lands on its own change, and signing it opens the next one', async () => {

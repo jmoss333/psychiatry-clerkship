@@ -2508,8 +2508,10 @@ test('theme, Week, and capture focus obey one ordinary modal lifecycle', async (
   // steps: the gear opens an ordinary sheet, and choosing a mode leaves focus on the mode chosen
   // (a bare [data-fd-theme] would match all three buttons under strict mode). The sheet has to be
   // closed again before the Week block -- its backdrop covers the header, and the dialog count
-  // asserted further down is 1.
-  const settings = page.locator('[data-fd-settings]');
+  // asserted further down is 1. Scoped to .fd-settingsbtn: this seed leaves the exam date unset,
+  // so Today's own nudge also carries data-fd-settings and a bare attribute selector would match
+  // both under strict mode.
+  const settings = page.locator('.fd-settingsbtn[data-fd-settings]');
   await settings.focus();
   await settings.click();
   const dark = page.locator('[data-fd-theme="dark"]');

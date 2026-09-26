@@ -19,7 +19,10 @@ test('a local draft is selectable only from its exact live registry entry withou
   assert.throws(()=>selectCase(pack,core,morganId,true,null),/not supported/);
   const collision={cases:[{...localRegistry.cases[0],id:'sp_mania_redirect_001'}],profiles:{sp_mania_redirect_001:localRegistry.profiles[morganId]}};
   assert.throws(()=>selectCase(pack,{isCaseReviewed:()=>false},'sp_mania_redirect_001',true,collision),/unavailable/);
-  assert.equal(JSON.stringify(pack),before);assert.equal(pack.cases.some(item=>item.id===morganId),false);
+  assert.equal(JSON.stringify(pack),before);
+  // Since 2026-09-26 the canonical pack carries its own attested Morgan (with the uniform suicide
+  // screen); the prototype's draft path still selects the registry entry, never the pack copy.
+  assert.equal(pack.cases.some(item=>item.id===morganId),true);
 });
 
 test('browser conversation module works without a local registry and never invents a draft case',()=>{
@@ -36,7 +39,7 @@ test('Node selection uses the separately authored Morgan draft while the embedde
   assert.equal(selected.patient.persona.pronouns,'they/them');
   assert.equal(selected.voice,'Marin');assert.equal(selected.localDraft,true);
   assert.equal(selected.patient.facultyReview.status,'reviewed');
-  assert.equal(pack.cases.length,3);assert.equal(JSON.stringify(pack),before);
+  assert.equal(pack.cases.length,4);assert.equal(JSON.stringify(pack),before);
 });
 
 test('live selection maps only the three canonical cases to their own person, goal, context, and voice',()=>{

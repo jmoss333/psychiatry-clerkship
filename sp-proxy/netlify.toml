@@ -56,6 +56,12 @@
   force = true
 
 [[redirects]]
+  from = "/api/sp/realtime"
+  to = "/.netlify/functions/sp-realtime"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/sp/health-status"
   to = "/.netlify/functions/sp-health-status"
   status = 200

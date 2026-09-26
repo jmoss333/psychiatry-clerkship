@@ -12,7 +12,11 @@ import {
 } from '../family-visit-state.mjs';
 
 const pack = JSON.parse(fs.readFileSync(new URL('../sp-interview.pack.json',import.meta.url),'utf8'));
-const cases = [...pack.cases,...localCases.cases];
+// Morgan is in the pack since 2026-09-26 (with the uniform suicide screen) AND in the local
+// prototype (the attested grounding this disabled live-context binds to by hash). The prototype
+// must be handed the local copy, so the pack copy of any case the prototype grounds locally is
+// skipped here — the pack copy is covered by the learner-tool suites.
+const cases = [...pack.cases.filter((c) => !localCases.cases.some((l) => l.id === c.id)),...localCases.cases];
 function oneTurn(room,roleId,text,reply,{interrupted=false}={}) {
   const turnId=room.turnCount+1,groupId='g'+turnId,segmentId='s'+turnId;
   beginTurn(room,{turnId,groupId,text,targetRoleId:roleId,channel:room.channel});
