@@ -1925,11 +1925,27 @@ async function commitContentMutation({ repository, settings, body, attester }) {
         `attest: ${effectiveChanges.length} content item(s) by ${attester} (${at})`,
         JSON_INDENT,
       );
+      // The rows this write produced, projected exactly as buildContentItems() projects a row
+      // for the GET: status (pending → unreviewed), at, by, risk, reason. Never the stored
+      // contentHash / note / claimsHash / evidenceHash / evidenceThrough — the GET contract
+      // forbids those reaching the browser, and a client uses these rows to update one item
+      // in place instead of re-downloading the whole state (ADR: mobile console, 2026-09-26).
+      const rows = Object.fromEntries(effectiveChanges.map(([slug]) => {
+        const entry = reviewed[slug];
+        return [slug, {
+          status: contentApiStatus(entry),
+          at: typeof entry.at === 'string' ? entry.at : '',
+          by: typeof entry.by === 'string' ? entry.by : '',
+          risk: validRisk(entry.risk),
+          reason: entry.status === 'pending' && typeof entry.reason === 'string' ? entry.reason : '',
+        }];
+      }));
       return {
         ok: true,
         target: 'content',
         updated: effectiveChanges.length,
         commit: saved.commit,
+        rows,
       };
     } catch (error) {
       if (!(error instanceof GithubError && error.conflict) || attempt === 1) throw error;

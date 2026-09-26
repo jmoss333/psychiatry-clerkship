@@ -2330,11 +2330,22 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
   const payload = await response.json();
 
   assert.equal(response.status, 200);
+  const today = new Date().toISOString().slice(0, 10);
   assert.deepEqual(payload, {
     ok: true,
     target: 'content',
     updated: 2,
     commit: 'https://github.example/commit/1',
+    rows: {
+      't_mood.md': {
+        status: 'unreviewed', at: today, by: 'Pending faculty review',
+        risk: { kind: 'clinical', level: 'high' }, reason: 'Routine periodic re-review.',
+      },
+      'mse-tool': {
+        status: 'reviewed', at: today, by: 'Synthetic Reviewer',
+        risk: { kind: 'general', level: 'low' }, reason: '',
+      },
+    },
   });
   assert.equal(mock.putBodies.length, 1);
   assert.equal(mock.putBodies[0].path, REVIEWED_PATH);
@@ -2356,6 +2367,36 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
     'unreviewed',
   );
   assert.equal(mock.files[REVIEWED_PATH].json['t_mood.md'].status, 'pending');
+});
+
+test('rows in the attest response carry only the projected fields, never the hash or note', async () => {
+  const mock = createGithubMock();   // defaultFiles(): mse-tool is pending, t_mood.md already reviewed (a no-op)
+  const handler = handlerWith(mock);
+  const response = await handler(apiRequest('POST', {
+    body: { target: 'content', changes: { 'mse-tool': true }, reasons: {} },
+  }));
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.updated, 1);
+  assert.deepEqual(Object.keys(payload.rows), ['mse-tool']);
+  assert.deepEqual(Object.keys(payload.rows['mse-tool']).sort(), ['at', 'by', 'reason', 'risk', 'status']);
+  assert.equal(payload.rows['mse-tool'].status, 'reviewed');
+  assert.equal(JSON.stringify(payload).includes('contentHash'), false);
+  assert.equal(JSON.stringify(payload).includes('claimsHash'), false);
+});
+
+test('a no-op attest response carries no rows field', async () => {
+  const mock = createGithubMock();
+  const handler = handlerWith(mock);
+  // Empty changes is the unambiguous no-op path (mirrors the "qbank and content no-op
+  // requests perform no commit" test above): effectiveChanges stays empty and the early
+  // return at the top of commitContentMutation fires before the rows projection exists.
+  const response = await handler(apiRequest('POST', {
+    body: { target: 'content', changes: {}, reasons: {} },
+  }));
+  const payload = await response.json();
+  assert.equal(payload.updated, 0);
+  assert.equal('rows' in payload, false);
 });
 
 test('GET returns risk and pending reason but never internal note or hash fields', async () => {
