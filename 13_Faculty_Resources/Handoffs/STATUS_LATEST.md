@@ -1,6 +1,14 @@
 # STATUS — Clerkship Library (handoff for the next chat)
 
-**Updated:** 2026-07-01 · **Owner:** Joshua Moss, MD · **Point a fresh chat here first.**
+> **SUPERSEDED — historical snapshot of 2026-07-01. Do not act on anything below.** Nearly every
+> "gated", "next" and "not yet live" item here was resolved months ago, and the paths, deploy
+> model and site folders it describes no longer exist. Current state is derived, never
+> hand-kept: `python3 bin/coordination_report.py --prs` (who is working, overlap, unpushed work),
+> `python3 bin/what_can_i_do_today.py` (the work queue), `python3 bin/what_needs_josh.py`
+> (owner decisions), `python3 bin/sync_status.py --refresh`, and `CLAUDE.md`. Kept rather than
+> emptied because the citation surveillance index tracks this file.
+
+**Updated:** 2026-07-01 · **Owner:** Joshua Moss, MD
 
 ## TL;DR
 Two workstreams this session: **(1) clinical attestation** of the 2026-07-01 independent review — done and staged; **(2) put the project under git + plan Netlify-from-git** — repo is live and pushed, but the deploy cutover is gated on audio→LFS and a page reconciliation. Nothing new is live on the sites yet beyond what a parallel chat published.
