@@ -95,7 +95,9 @@ function recompute() {
 }
 async function load({ silent = false } = {}) {
   if (!getKey()) { renderGate(); return false; }
-  if (navigator.onLine === false) { renderLoadError('You are offline.'); return false; }
+  // Offline: report through render(), which shows the error screen when nothing has loaded and
+  // reports in place over a loaded queue or item (a silent refresh must never replace them).
+  if (navigator.onLine === false) { state.message = 'You are offline.'; render(); return false; }
   if (!silent) renderBusy('Loading the review queue…');
   try {
     const server = await api(API);

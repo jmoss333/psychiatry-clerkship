@@ -2548,5 +2548,15 @@ test.describe('phone client', () => {
     await expect(page.getByLabel('Faculty key')).toHaveCount(0);
     await page.getByRole('button', { name: 'Retry' }).click();
     await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    // Once a queue IS loaded, going offline reports in place: the queue as last loaded stays
+    // readable. (The silent-refresh path, scheduleRefresh, arrives with Task 5 and its test.)
+    await page.context().setOffline(true);
+    await expect(page.getByRole('alert')).toContainText('You are offline');
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Synthetic/ })).toHaveCount(2);
+    await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(0);
+    await page.context().setOffline(false);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
   });
 });
