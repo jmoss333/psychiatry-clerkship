@@ -609,7 +609,7 @@
       "nolen-2019-lithium-levels"
     ],
     "facultyReview": {
-      "status": "reviewed",
+      "status": "pending",
       "reviewer": "Joshua Moss, MD",
       "lastReviewed": "2026-08-08"
     },
@@ -1155,7 +1155,7 @@
       "rcpsych-meed-2022"
     ],
     "facultyReview": {
-      "status": "reviewed",
+      "status": "pending",
       "reviewer": "Joshua Moss, MD",
       "lastReviewed": "2026-08-08"
     }
