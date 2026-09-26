@@ -55,6 +55,20 @@ test('.hm-bars .fill declares a block display so its width and height apply', ()
   assert.match(body, /height:100%/, 'the fill still takes the full track height');
 });
 
+// The score column was `flex:0 0 42px`: wide enough for "72%", not for "50% · few", "not started"
+// or a calibration row's "100% · 12", all of which wrapped onto two lines (62px is the widest at
+// the 12px xs font). The basis stays FIXED rather than auto so every row's track starts at the
+// same x; it is em-based so it follows the font token, with headroom for CI's Linux fallback font.
+test('.hm-bars .pc reserves one line for its widest label', () => {
+  const body = rule(shellStylesheets(), '.hm-bars .pc');
+  assert.match(body, /(?:^|;)white-space:nowrap(?:;|$)/,
+    `.hm-bars .pc must not wrap its label; got {${body}}`);
+  const basis = body.match(/(?:^|;)flex:0 0 (\d+(?:\.\d+)?)(em|px)(?:;|$)/);
+  assert.ok(basis, `.hm-bars .pc keeps a fixed flex basis so the tracks stay aligned; got {${body}}`);
+  const px = basis[2] === 'em' ? Number(basis[1]) * 12 : Number(basis[1]);
+  assert.ok(px >= 68, `.hm-bars .pc basis must clear "not started" (62px at 12px) with headroom; got ${px}px`);
+});
+
 test('.hm-bars .track declares a block display rather than relying on flex blockification', () => {
   const body = rule(shellStylesheets(), '.hm-bars .track');
   assert.match(body, /(?:^|;)display:block(?:;|$)/,

@@ -600,7 +600,10 @@
      tests/progress-bars-fill.test.mjs and measured in tests/smoke/front-door.spec.js. */
   .hm-bars .track{display:block;flex:1;height:8px;background:var(--bg-alt);border-radius:999px;overflow:hidden}
   .hm-bars .fill{display:block;height:100%;background:var(--accent)}
-  .hm-bars .pc{flex:0 0 42px;text-align:right;color:var(--text-light);font-size:var(--fd-font-xs)}
+  /* Score column: a FIXED basis (not auto) keeps every row's track starting at the same x; 6em at
+     the 12px xs token is 72px, clearing the widest label ("not started", 62px) with room for CI's
+     Linux fallback font. 42px fit "72%" and wrapped "50% · few", "not started" and "100% · 12". */
+  .hm-bars .pc{flex:0 0 6em;white-space:nowrap;text-align:right;color:var(--text-light);font-size:var(--fd-font-xs)}
   .hm-arc{display:flex;flex-wrap:wrap;gap:6px}
   .hm-week{font-size:var(--fd-font-xs);border:1px solid var(--border);border-radius:999px;padding:3px 10px;color:var(--text-mid)}
   .hm-week.done{background:var(--success-light);border-color:var(--success);color:var(--success)}

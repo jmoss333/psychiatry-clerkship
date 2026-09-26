@@ -3682,3 +3682,65 @@ for (const theme of ['light', 'dark']) {
     await expectHealthy(page);
   });
 }
+
+// The score column beside each bar was 42px wide: enough for "72%", not for "50% · few",
+// "not started" or a calibration row's "100% · 12", which wrapped onto two lines at every viewport
+// (visible in the #825 screenshots). Seeds every label shape the three emitters produce -- a
+// low-n mastery row, not-started rows, a coverage row and two calibration rows -- and asserts each
+// label renders as ONE line box with nothing overflowing, and that the tracks in a section still
+// share one left edge (a fixed basis, not auto, is what keeps them aligned). Desktop and phone.
+for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: 'phone', ...PHONE }]) {
+  test(`Progress bar labels stay on one line and the tracks stay aligned (${viewport.name})`, async ({ page }, testInfo) => {
+    const meta = await (await requestGetWithRetry(page.request, '/topic_meta.json')).json();
+    const pick = (cat) => Object.keys(meta).find(f => Array.isArray(meta[f] && meta[f].shelfBlueprint)
+      && meta[f].shelfBlueprint.includes(cat));
+    const mood = pick('mood'), psychosis = pick('psychosis');
+    if (!mood || !psychosis) throw new Error('topic_meta.json serves no mood or psychosis blueprint page; the fixture needs both');
+    const qb = {};
+    for (let i = 0; i < 12; i++) qb[`fixture-mood-${i}`] = { correct: true, pages: [mood], confidence: 'certain' };
+    for (let i = 0; i < 3; i++) qb[`fixture-psych-${i}`] = { correct: i < 1, pages: [psychosis], confidence: 'guess' };
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await seedApp(page, testInfo, { storage: {
+      cw_qb_v1: qb,
+      cw_progress_v1: { [mood]: { done: true, at: '2026-08-17' } },
+    } });
+    await page.goto('/?page=__progress__');
+    await expect(page.locator('#pgRoot')).toBeVisible();
+    const mastery = page.locator('.hm-sec', { hasText: 'Mastery by blueprint' });
+    await expect(mastery.locator('.pc', { hasText: /· few$/ })).toHaveCount(1);
+    await expect(mastery.locator('.pc', { hasText: /^not started$/ }).first()).toBeVisible();
+    await expect(page.locator('.hm-sec', { hasText: 'Confidence calibration' }).locator('.pc', { hasText: /^\d+% · \d+$/ }).first()).toBeVisible();
+    await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => null))));
+
+    const report = await page.locator('.hm-bars').evaluateAll(sections => sections.map(bars => {
+      const rows = [...bars.querySelectorAll('.brow')];
+      return {
+        heading: ((bars.closest('.hm-sec') || bars).querySelector('h2') || {}).textContent || '(no heading)',
+        rows: rows.map(row => {
+          const pc = row.querySelector('.pc');
+          const range = document.createRange();
+          range.selectNodeContents(pc);
+          return {
+            label: pc.textContent, lines: range.getClientRects().length,
+            overflow: pc.scrollWidth - pc.clientWidth,
+            trackLeft: row.querySelector('.track').getBoundingClientRect().left,
+            trackWidth: row.querySelector('.track').getBoundingClientRect().width,
+          };
+        }),
+      };
+    }));
+    expect(report.length).toBeGreaterThanOrEqual(3);
+    const labels = report.flatMap(s => s.rows.map(r => r.label));
+    expect(labels).toEqual(expect.arrayContaining([expect.stringMatching(/· few$/), 'not started', expect.stringMatching(/^\d+% · \d+$/), expect.stringMatching(/^\d+\/\d+$/)]));
+    for (const section of report) {
+      for (const row of section.rows) {
+        expect(row.lines, `${section.heading}: "${row.label}" wraps`).toBe(1);
+        expect(row.overflow, `${section.heading}: "${row.label}" overflows its column`).toBeLessThanOrEqual(0.5);
+        expect(row.trackWidth, `${section.heading}: track collapsed`).toBeGreaterThan(40);
+      }
+      const lefts = section.rows.map(r => r.trackLeft);
+      expect(Math.max(...lefts) - Math.min(...lefts), `${section.heading}: tracks misaligned`).toBeLessThanOrEqual(0.5);
+    }
+    await expectHealthy(page);
+  });
+}
