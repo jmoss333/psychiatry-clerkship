@@ -118,6 +118,13 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     if(typeof cw[w].landingRef==='string'&&cw[w].landingRef){
       week.landingRef=cw[w].landingRef;
     }
+    // The week's observable practice (curriculum.schema.json week.practice: {skill, feedback}).
+    // Copied only when both strings are present, so a half-written row renders nothing.
+    var practice=cw[w].practice;
+    if(practice&&typeof practice.skill==='string'&&practice.skill&&
+       typeof practice.feedback==='string'&&practice.feedback){
+      week.practice={skill:practice.skill,feedback:practice.feedback};
+    }
     weeks.push(week);
   }
 
