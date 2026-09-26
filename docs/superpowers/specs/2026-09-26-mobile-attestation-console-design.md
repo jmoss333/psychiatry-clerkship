@@ -102,7 +102,7 @@ Per press on the phone: one `POST` (about 10–13 sequential GitHub calls inside
 | Case | Behaviour |
 |---|---|
 | 401 on any call | Clear the key, re-prompt, keep the pending action, retry once unlocked |
-| 409 from the write (branch moved) | The server already retries once; the client shows *The branch moved, press Sign again* and keeps the item |
+| 409 from the write (branch moved), or a write that reports nothing changed | The server already retries once; the client says *The queue was out of date; refreshing…* (or *Already signed elsewhere; refreshing…* when the write changed nothing), refreshes the queue silently in place and keeps the item on screen. A foregrounded tab older than the refresh quiet window refreshes the same way |
 | `pullRequestError: true` | Receipt says *Signed (commit …); the rolling review request needs attention*, never *failed* |
 | Frame `not_found` / `error` / no answer in 10 s | Status pill + **Retry**; after one retry the reviewer may acknowledge and continue, as on the desktop |
 | Offline | Actions disabled with *You are offline*; the queue as last loaded stays readable |
