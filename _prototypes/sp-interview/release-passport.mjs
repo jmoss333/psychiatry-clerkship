@@ -20,9 +20,14 @@ function sha256(value, { raw = false } = {}) {
   return createHash('sha256').update(raw ? value : canonical(value)).digest('hex');
 }
 
+const PROXY = path.resolve(HERE, '..', '..', 'sp-proxy', 'netlify', 'functions');
+
 export function createReleasePassport({
   htmlBytes = fs.readFileSync(path.join(HERE, 'sp-interview.html')),
   packBytes = fs.readFileSync(path.join(HERE, 'sp-interview.pack.json')),
+  realtimeControllerBytes = fs.readFileSync(path.join(HERE, 'sp-interview.realtime.js')),
+  realtimeRouteBytes = fs.readFileSync(path.join(PROXY, 'sp-realtime.mjs')),
+  realtimeSessionBytes = fs.readFileSync(path.join(PROXY, '_shared', 'sp-realtime-session.mjs')),
 } = {}) {
   const pack = JSON.parse(Buffer.from(packBytes).toString('utf8'));
   const speechEngine = pack.speechEngine ?? null;
@@ -32,9 +37,16 @@ export function createReleasePassport({
     status: speechEngine?.enabled === false
       ? 'managed_voice_disabled'
       : 'activation_not_attested',
+    // The real-time spoken room ships dark and is never attested by this file: the
+    // hashes below name the exact controller, route and session-assembly bytes a
+    // faculty audition would be listening to, nothing more.
+    realtime: 'activation_not_attested',
     hashes: {
       html: sha256(htmlBytes, { raw: true }),
       pack: sha256(packBytes, { raw: true }),
+      realtimeController: sha256(realtimeControllerBytes, { raw: true }),
+      realtimeRoute: sha256(realtimeRouteBytes, { raw: true }),
+      realtimeSession: sha256(realtimeSessionBytes, { raw: true }),
       caseReviews: sha256(cases.map((caseDef) => ({
         caseId: caseDef.id,
         facultyReview: caseDef.facultyReview ?? null,
@@ -52,6 +64,10 @@ export function createReleasePassport({
       privacyApproval: 'missing',
       providerAccountControls: 'missing',
       learnerPilot: 'missing',
+      realtimeSpokenAudition: 'missing',
+      realtimePrivacyApproval: 'missing',
+      realtimeProviderBudget: 'missing',
+      realtimeLearnerPilot: 'missing',
     },
   };
 }

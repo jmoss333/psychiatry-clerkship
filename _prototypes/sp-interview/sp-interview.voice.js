@@ -900,19 +900,28 @@
       rejectWork(operation.work, normalized);
     }
 
-    function beginEncounter(encounterId) {
+    // `options.resumeAtTurn` re-enters an encounter whose opening and first N turns
+    // happened elsewhere -- the spoken room handing a conversation to the typed
+    // room keeps the same encounterId and the server-side turn count (the
+    // converse route requires turnId === turns.length + 1). The opening counts
+    // as accepted because it was already delivered; nothing here re-plays it.
+    function beginEncounter(encounterId, options) {
       assertAlive();
       if (encounterId == null || String(encounterId).trim() === '') {
         throw voiceError('invalid_argument', 'encounterId is required.');
       }
+      var resumeAt = options && options.resumeAtTurn;
+      if (resumeAt !== undefined && (typeof resumeAt !== 'number' || !isFinite(resumeAt) || resumeAt < 0 || Math.floor(resumeAt) !== resumeAt)) {
+        throw voiceError('invalid_argument', 'resumeAtTurn must be a non-negative integer.');
+      }
       cancelOwned('stale_operation', 'The encounter was replaced.');
       clearCache();
-      openingAccepted = false;
+      openingAccepted = resumeAt !== undefined;
       pendingReply = null;
       publish({
         phase: 'ready',
         encounterId: encounterId,
-        turnId: 0,
+        turnId: resumeAt === undefined ? 0 : resumeAt,
         draft: '',
         error: null,
         notice: null,

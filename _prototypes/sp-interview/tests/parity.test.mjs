@@ -1,4 +1,5 @@
-// Server/client gate-parity — multi-case. The server (sp.mjs deriveState) must agree with the
+// Server/client gate-parity — every pack case (a scenario per case is a load-bearing invariant: Morgan
+// entered the pack on 2026-09-26 and a pack that grows without a scenario here silently shrinks the pin). The server (sp.mjs deriveState) must agree with the
 // client MockProvider on rapport, coverage, and unlocked gates for every scenario, or a modified
 // client could out-derive the server (security invariant #1).
 import fs from 'fs';
@@ -55,8 +56,16 @@ const scenarios = [
   { c: 2, name: 'ray honest recording answer (not a challenge)', msgs: ["No one is recording this. I'm Alex, one of the medical students.","When the voice talks, does it ever tell you to do anything?"] },
   { c: 2, name: 'ray exposure history', msgs: ["Hi, I'm Alex — you're in control of what we talk about.","Does anyone else in the building have headaches, and is there a working carbon monoxide detector?"] },
   { c: 2, name: 'ray passive-wish', msgs: ["Do you ever wish you could go to sleep and not wake up?"] },
+  // ---- Morgan (2026-09-26): an MI case with no gates; rapport rules and three flags are engine inputs on both sides ----
+  { c: 3, name: 'morgan skilled MI', msgs: ["Hi, my name is Alex, I'm the medical student on the team — what would you most want to get out of this conversation?","Tell me a little about what's been going on, in your own words.","It sounds like drinking helps in the moment, and at the same time the mornings have been costing you.","What do you get from drinking — what does it give you?","And what's the downside — what does it cost you?","It's up to you what happens next; I'm not here to tell you what to do.","What matters most to you right now — what do you want to protect?","Have you ever cut down before? What worked?","Have you had thoughts of killing yourself?","Where does that leave you — what small change, if any, might you try?"] },
+  { c: 3, name: 'morgan label then plain screen', msgs: ["You have to admit you're an alcoholic.","Have you had thoughts of killing yourself?"] },
+  { c: 3, name: 'morgan force-abstinence flag', msgs: ["You must quit forever — it's the only choice."] },
+  { c: 3, name: 'morgan euphemism only', msgs: ["Tell me a bit about what's been going on.","Have you had any dark thoughts?"] },
+  { c: 3, name: 'morgan coach phrasings', msgs: ["Where would you like to begin?","What does alcohol give you?","What do you most want to protect in your daily life?"] },
+  { c: 3, name: 'morgan withdrawal question', msgs: ["Is it medically safe for you to stop drinking suddenly — any withdrawal or seizures before?"] },
 ];
 
+if (pack.cases.some((c, i) => !scenarios.some((sc) => sc.c === i))) { console.log('FAIL parity — a pack case has no scenario'); process.exit(1); }
 let fails = 0;
 for (const sc of scenarios) {
   const cd = pack.cases[sc.c];

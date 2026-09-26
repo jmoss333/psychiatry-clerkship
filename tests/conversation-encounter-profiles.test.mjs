@@ -7,7 +7,8 @@ import {createRequire} from 'node:module';
 const require = createRequire(import.meta.url);
 const profiles = require('../_prototypes/sp-interview/sp-encounter-profiles.js');
 const pack = require('../_prototypes/sp-interview/sp-interview.pack.json');
-const expectedIds = [...pack.cases.map(c => c.id), 'sp_alcohol_ambivalence_001', 'family_morgan_maya_001'];
+// Morgan is in the pack since 2026-09-26; the family meeting is not, so the set is spelled out.
+const expectedIds = [...new Set([...pack.cases.map(c => c.id), 'sp_alcohol_ambivalence_001', 'family_morgan_maya_001'])];
 
 test('all five current encounters have a complete MD/DO student encounter brief', () => {
   for (const id of expectedIds) {
