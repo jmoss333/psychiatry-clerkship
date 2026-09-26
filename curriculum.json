@@ -116,6 +116,10 @@
           "title": "Foundations and safety",
           "theme": "Interview · MSE · acute risk · bedside syndromes",
           "focusCategories": ["safety", "neurocog", "substance"],
+          "practice": {
+            "skill": "Independently assess and manage an acute psychiatric emergency (suicide, agitation, catatonia, delirium) with appropriate escalation.",
+            "feedback": "Can you review my risk formulation and tell me whether my escalation plan matches it?"
+          },
           "items": [
             { "ref": "pg_interview.md", "kind": "read" },
             { "ref": "mse.html", "kind": "tool" },
@@ -132,6 +136,10 @@
           "title": "Diagnosis and psychopharmacology",
           "theme": "Diagnostic reasoning · major syndromes · medication decisions",
           "focusCategories": ["mood", "psychosis", "pharm", "substance"],
+          "practice": {
+            "skill": "Build and defend a psychopharmacologic plan, including for a treatment-resistant patient.",
+            "feedback": "Can you challenge my medication plan the way a consultant would, including what I do if it fails?"
+          },
           "items": [
             { "ref": "diagnostic-reasoning.html", "kind": "tool" },
             { "ref": "t_mood.md", "kind": "read" },
@@ -148,6 +156,10 @@
           "title": "Systems, med-legal, and disposition",
           "theme": "Consultation · collateral · family systems · defensible transitions",
           "focusCategories": ["ethics", "relational"],
+          "practice": {
+            "skill": "Determine and document decisional capacity, and navigate an involuntary hold appropriately.",
+            "feedback": "Can you review how I documented capacity and legal status for this patient?"
+          },
           "items": [
             { "ref": "systems_medlegal.md", "kind": "read" },
             { "ref": "cl_reference.md", "kind": "read" },
@@ -164,6 +176,10 @@
           "title": "Integration, supervision, and scholarship",
           "theme": "Formulation · rounds · EPAs · evidence retrieval",
           "focusCategories": ["otherdx", "ethics", "relational"],
+          "practice": {
+            "skill": "Lead a treatment-team round and a family meeting. Give structured feedback to, and entrust appropriate tasks to, a medical student.",
+            "feedback": "Can you watch me give the student feedback today and name one thing to change?"
+          },
           "items": [
             { "ref": "case_formulation.md", "kind": "read" },
             { "ref": "oral.html", "kind": "tool" },
