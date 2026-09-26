@@ -483,6 +483,15 @@ async function installRepositoryApi(page, initialBank, {
           ok: true,
           updated: 1,
           commit: `https://github.example/commit/faculty-${++commitNumber}`,
+          rows: {
+            [slug]: {
+              status: reviewed ? 'reviewed' : 'unreviewed',
+              at: reviewed ? '2026-07-17' : '',
+              by: reviewed ? SERVER_ATTESTER : 'Pending faculty review',
+              risk: item.risk ?? null,
+              reason: reviewed ? '' : (body.reasons?.[slug] || ''),
+            },
+          },
         };
         receipts.push(structuredClone(receipt));
         await fulfillJson(route, 200, receipt);
@@ -2426,4 +2435,940 @@ test.describe.serial('faculty console: registry pages, deep links, and twins', (
     expect(api.calls[start].body.changes).toEqual({ [COTW_MS3_SLUG]: true });
     await expectNoSecretsInUrl(page);
   });
+});
+
+// ---- Phone client (/m/) ----------------------------------------------------------------
+// A second front-end on the same origin (spec: docs/superpowers/specs/2026-09-26-mobile-
+// attestation-console-design.md). Same key, same API, same one-slug-per-press rule.
+const PHONE = { width: 390, height: 844 };
+
+// `heading` is what the first screen after unlock must show: the queue by default, or the
+// item's title when `path` deep-links straight into an item.
+async function unlockPhone(page, { path = '/m/', heading = 'Needs review' } = {}) {
+  await page.addInitScript(() => {
+    window.__facultyConsolePreviewMessages = [];
+    window.addEventListener('message', event => {
+      if (event.data?.type === 'faculty-preview-status') {
+        window.__facultyConsolePreviewMessages.push(structuredClone(event.data));
+      }
+    });
+  });
+  await page.goto(path);
+  await expect(page).toHaveTitle('Faculty attestation — phone');
+  await expect(page.getByLabel('Faculty key')).toBeFocused();
+  await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+  await page.getByRole('button', { name: 'Unlock' }).click();
+  await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+}
+
+test.describe('phone client', () => {
+  test.use({ viewport: PHONE, hasTouch: true, isMobile: true });
+
+  test('unlocks with the shared key, sends it only as a header, and lists the queue grouped', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, {
+      view: 'changes', branch: 'main', generatedAt: '2026-09-26T00:00:00.000Z', drifted: 1, partial: false,
+      groups: [{ id: 'pr:813', pr: 813, sha: 'a'.repeat(40), title: 'WP-9 citations', date: '2026-09-25', url: 'https://github.example/pull/813', slugs: ['t_mood.md'] }],
+      unexplained: [], unchecked: [], pages: { 't_mood.md': { title: 'Synthetic mood disorders page', kind: 'page', at: '', changes: [{ id: 'pr:813', sameDay: false }] } },
+    }));
+    await unlockPhone(page);
+    expect(api.calls.every(call => call.key === FACULTY_KEY)).toBe(true);
+    expect(page.url().includes(FACULTY_KEY)).toBe(false);
+    await expect(page.getByRole('heading', { name: '#813 WP-9 citations' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Also needing review' })).toBeVisible();
+    const rows = page.getByRole('link', { name: /Synthetic|Catatonia/ });
+    await expect(rows).toHaveCount(4);
+    await expect(page.getByText(/needs? review/)).toBeVisible();
+    // No horizontal scroll at phone width.
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    // Search filters the groups without stealing focus from the box.
+    const search = page.getByLabel('Search the queue');
+    await search.click();
+    await search.pressSequentially('cat');
+    await expect(search).toBeFocused();
+    await expect(search).toHaveValue('cat');
+    await expect(page.getByRole('link', { name: /Catatonia/ })).toHaveCount(2);
+    await expect(page.getByRole('link', { name: /Synthetic/ })).toHaveCount(0);
+  });
+
+  test('a wrong key is refused, cleared, and re-prompted without leaking into storage', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.goto('/m/');
+    await page.getByLabel('Faculty key').fill('not-the-key');
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('alert')).toContainText('Key not accepted');
+    expect(await page.evaluate(() => window.sessionStorage.getItem('fac_key'))).toBeNull();
+    expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+  });
+
+  test('going offline at the key prompt says so in place and keeps a half-typed key', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.goto('/m/');
+    const key = page.getByLabel('Faculty key');
+    await key.fill('half-a-k');
+    await page.context().setOffline(true);
+    await expect(page.getByRole('alert')).toHaveText('You are offline.');
+    await expect(key).toHaveValue('half-a-k');
+    await expect(key).toBeFocused();
+    await page.context().setOffline(false);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(key).toHaveValue('half-a-k');
+  });
+
+  test('a failed first load says so and offers Retry instead of a bare key prompt', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    // Registered after installRepositoryApi so it is matched first: the first GET is a 5xx,
+    // everything after falls through to the synthetic repository.
+    let gets = 0;
+    await page.route('**/api/attest', async route => {
+      if (route.request().method() === 'GET' && ++gets === 1) {
+        await fulfillJson(route, 503, { error: { code: 'github_unavailable', message: 'upstream down' } });
+        return;
+      }
+      await route.fallback();
+    });
+    await page.goto('/m/');
+    await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('alert')).toContainText('Could not reach the repository');
+    await expect(page.getByLabel('Faculty key')).toHaveCount(0);
+    const retry = page.getByRole('button', { name: 'Retry' });
+    await expect(retry).toBeVisible();
+    await retry.click();
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    expect(gets).toBe(2);
+  });
+
+  test('losing the network before the queue loads keeps the error and Retry, never a bare key prompt', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    let gets = 0;
+    await page.route('**/api/attest', async route => {
+      if (route.request().method() === 'GET' && ++gets === 1) {
+        await fulfillJson(route, 503, { error: { code: 'github_unavailable', message: 'upstream down' } });
+        return;
+      }
+      await route.fallback();
+    });
+    await page.goto('/m/');
+    await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('alert')).toContainText('Could not reach the repository');
+    await page.context().setOffline(true);
+    await expect(page.getByRole('alert')).toContainText('You are offline');
+    await expect(page.getByLabel('Faculty key')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('alert')).toContainText('You are offline');
+    expect(gets).toBe(1);
+    // Coming back online retries the load by itself while nothing has loaded yet (no Retry press).
+    await page.context().setOffline(false);
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    await expect(page.getByLabel('Faculty key')).toHaveCount(0);
+    expect(gets).toBe(2);
+    // Once a queue IS loaded, going offline reports in place: the queue as last loaded stays
+    // readable. (The silent-refresh path, scheduleRefresh, arrives with Task 5 and its test.)
+    await page.context().setOffline(true);
+    await expect(page.getByRole('alert')).toContainText('You are offline');
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Synthetic/ })).toHaveCount(2);
+    await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(0);
+    await page.context().setOffline(false);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    expect(gets).toBe(2);   // online over a loaded queue repaints; it does not reload
+  });
+
+  test('opening an item shows the learner page in a frame, reports Ready from the real learner shell, and What changed renders the diff', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await page.route('**/api/attest?view=diff&slug=t_mood.md', route => fulfillJson(route, 200, {
+      view: 'diff', slug: 't_mood.md', since: '2026-09-21', base: 'a'.repeat(40), head: 'b'.repeat(40), compareUrl: null,
+      commit: { sha: 'c'.repeat(40), pr: 813, title: 'WP-9 citations', date: '2026-09-25', url: 'https://github.example/pull/813' },
+      files: [{ path: '03_Core_Topics/Mood/mood.md', status: 'modified', changed: true, truncated: false, tooLarge: false, hunks: [{ oldStart: 1, newStart: 1, rows: [
+        { kind: 'context', segments: [{ t: 'eq', s: 'Unchanged sentence.' }] },
+        { kind: 'change', segments: [{ t: 'eq', s: 'Lithium ' }, { t: 'del', s: 'always' }, { t: 'add', s: 'usually' }, { t: 'eq', s: ' needs levels.' }] },
+      ] }] }],
+      record: [{ key: 'quiz', status: 'modified', changed: true, truncated: false, tooLarge: false, hunks: [{ oldStart: 1, newStart: 1, rows: [
+        { kind: 'change', segments: [{ t: 'eq', s: 'Key: ' }, { t: 'del', s: 'B' }, { t: 'add', s: 'C' }] },
+      ] }] }],
+    }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('heading', { name: 'Synthetic mood disorders page' })).toBeVisible();
+    const frame = page.locator('iframe#learner-frame');
+    await expect(frame).toHaveAttribute('src', /reviewKey=page%3At_mood\.md/);
+    await expect(frame).toHaveAttribute('src', /reviewToken=[0-9a-f]{32}/);
+    await expect(frame).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+    const box = await frame.boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(0.6 * PHONE.height);
+    const actions = await page.getByRole('navigation', { name: 'Review actions' }).boundingBox();
+    expect(actions.y + actions.height).toBeLessThanOrEqual(PHONE.height + 1);   // the bar stays on screen
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    expect(new URL(page.url()).searchParams.get('item')).toBe('page:t_mood.md');
+    await page.getByRole('button', { name: 'What changed' }).click();
+    const changed = page.getByRole('dialog', { name: 'What changed since you signed' });
+    await expect(changed).toBeVisible();
+    await expect(changed.getByText('#813 · WP-9 citations · 2026-09-25')).toBeVisible();
+    await expect(changed.getByRole('link', { name: '#813' })).toHaveAttribute('href', 'https://github.example/pull/813');
+    await expect(page.getByText('Lithium always needs levels.')).toBeVisible();
+    await expect(page.getByText('Lithium usually needs levels.')).toBeVisible();
+    // The page record (quiz, key points, evidence) is part of what was signed: it must show too.
+    await expect(changed.getByText('Page record field quiz')).toBeVisible();
+    await expect(changed.getByText('Key: B')).toBeVisible();
+    await expect(changed.getByText('Key: C')).toBeVisible();
+    await page.getByRole('button', { name: 'Close' }).click();
+    const openInSite = page.getByRole('link', { name: 'Open in site' });
+    await expect(openInSite).toHaveAttribute('href', `${MS3_URL}/?page=t_mood.md`);
+    await expect(openInSite).toHaveAttribute('target', '_blank');
+  });
+
+  test('a stale readiness message does not unlock Attest', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    // Forge a message with the right shape but the wrong token: the guard must ignore it.
+    await page.evaluate(() => window.postMessage({ type: 'faculty-preview-status', status: 'not_found', surface: 'page', reviewKey: 'page:t_mood.md', reviewToken: 'f'.repeat(32) }, '*'));
+    await expect(page.getByRole('status')).toContainText('Ready');
+    await expect(page.getByRole('button', { name: 'Attest' })).toBeEnabled();  // eligibility itself is checked in the confirm sheet (Task 5)
+  });
+
+  test('What changed with no correction commit says since when you signed, takes focus, and closes on Escape', async ({ page }) => {
+    // The production path: the phone never sends a sha, so the server answers with `since` and `commit: null`.
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await page.route('**/api/attest?view=diff&slug=t_mood.md', route => fulfillJson(route, 200, {
+      view: 'diff', slug: 't_mood.md', since: '2026-09-21', base: 'a'.repeat(40), head: 'b'.repeat(40), compareUrl: null,
+      commit: null, files: [], record: [],
+    }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await page.getByRole('button', { name: 'What changed' }).click();
+    const changed = page.getByRole('dialog', { name: 'What changed since you signed' });
+    await expect(changed).toBeFocused();
+    await expect(changed.getByText('Since you signed on 2026-09-21')).toBeVisible();
+    await expect(changed.getByText("Neither this page's source files nor its record changed since you signed; its fingerprint moved for another reason.")).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(changed).toHaveCount(0);
+  });
+
+  test('Sign is disabled until acknowledged and idempotent while pending; a press sends exactly one slug and the receipt comes from the response', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    // Hold the write open until released, so the second tap below lands while it is pending.
+    let releaseWrite;
+    const writeHeld = new Promise(resolve => { releaseWrite = resolve; });
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST') await writeHeld;
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Catatonia \(Aug 31\) — MS3/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    const getsBefore = api.gets.length;
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Catatonia/ });
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByText(SERVER_ATTESTER)).toBeVisible();
+    const sign = sheet.getByRole('button', { name: 'Sign' });
+    await expect(sign).toBeDisabled();
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await expect(sign).toBeDisabled();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await expect(sheet.getByLabel('Links, media and interactions work')).toBeFocused();   // a tick rebuilds the sheet; focus stays put
+    await expect(sign).toBeEnabled();
+    await sign.click();
+    await expect(sheet.getByRole('button', { name: 'Signing…' })).toBeDisabled();
+    // Second tap while pending must not send a second POST. Bounded: the button is disabled and
+    // then gone, so an unbounded click would wait out the whole test.
+    await sign.click({ timeout: 1_000 }).catch(() => {});
+    releaseWrite();
+    await expect(page.getByText('Signed: Catatonia (Aug 31) — MS3')).toBeVisible();
+    const posts = api.calls.filter(call => call.method === 'POST');
+    expect(posts).toHaveLength(1);
+    expect(posts[0].body).toEqual({ target: 'content', changes: { [COTW_MS3_SLUG]: true }, reasons: {} });
+    expect(api.gets.length).toBe(getsBefore);   // no confirming reload
+    // Auto-advance: the twin needs review, so it is selected next.
+    await expect(page.getByRole('heading', { name: 'Catatonia (Aug 31) — Resident' })).toBeVisible();
+  });
+
+  test('a receipt without rows still completes and schedules a refresh', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() !== 'POST') return route.fallback();
+      await fulfillJson(route, 200, { ok: true, updated: 1, commit: 'https://github.example/commit/no-rows', ledger: { seq: 7 } });
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mental status exam tool/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mental status exam tool/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByText('Signed: Synthetic mental status exam tool')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Attest' })).toBeEnabled();  // not stuck in "Signing…"
+  });
+
+  test('a silent refresh while offline leaves the loaded screen in place (no error screen, no fetch)', async ({ page }) => {
+    await page.clock.install();
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Catatonia \(Aug 31\) — MS3/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Catatonia/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByText('Signed: Catatonia (Aug 31) — MS3')).toBeVisible();
+    // Let the advanced item's preview settle first, so the only Retry that could appear is the
+    // load-error screen's (a preview still loading would time out inside runFor and offer its own).
+    await expect(page.getByRole('heading', { name: 'Catatonia (Aug 31) — Resident' })).toBeVisible();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    const getsBefore = api.gets.length;
+    await page.context().setOffline(true);
+    await page.clock.runFor(31_000);                 // past REFRESH_QUIET_MS: the scheduled refresh fires offline
+    await expect(page.getByRole('heading', { name: 'Catatonia (Aug 31) — Resident' })).toBeVisible();   // still on the advanced item
+    await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(0);
+    await expect(page.getByRole('alert')).toContainText('You are offline');
+    expect(api.gets.length).toBe(getsBefore);
+    await page.context().setOffline(false);
+  });
+
+  test('a silent refresh over the queue updates it in place: the search box keeps focus and text', async ({ page }) => {
+    await page.clock.install();
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mental status exam tool/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mental status exam tool/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByText('Signed: Synthetic mental status exam tool')).toBeVisible();
+    await page.getByRole('button', { name: 'Queue' }).click();
+    const search = page.getByLabel('Search the queue');
+    await search.click();
+    await search.pressSequentially('cat');
+    await expect(page.getByRole('status')).toContainText('3 pages · 0 tools');
+    await expect(page.getByRole('link', { name: /Catatonia/ })).toHaveCount(2);
+    // The refresh finds the MS3 twin signed elsewhere (on the desktop) in the meantime.
+    const signedElsewhere = cotwContentState().map(item => ([COTW_MS3_SLUG, 'mse.html'].includes(item.slug)
+      ? { ...item, status: 'reviewed', at: '2026-09-26', by: SERVER_ATTESTER } : item));
+    let refreshes = 0;
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() !== 'GET' || new URL(request.url()).search) return route.fallback();
+      refreshes += 1;
+      await fulfillJson(route, 200, buildGetPayload(workflowBank(), signedElsewhere));
+    });
+    await page.clock.runFor(31_000);                 // past REFRESH_QUIET_MS: the scheduled refresh fires
+    await expect.poll(() => refreshes).toBe(1);
+    await expect(page.getByRole('status')).toContainText('2 pages · 0 tools');
+    await expect(page.getByRole('link', { name: /Catatonia/ })).toHaveCount(1);
+    await expect(search).toBeFocused();              // updated in place, not remounted
+    await expect(search).toHaveValue('cat');
+    expect(api.gets).toHaveLength(1);                // the unlock GET only: no confirming reload after the sign
+  });
+
+  test('the last sign of a sitting still shows its receipt, over the emptied queue', async ({ page }) => {
+    // One pending page and no draft questions: after this sign nothing is left to advance to.
+    await installRepositoryApi(page, { version: 1, items: [] }, {
+      contentState: [{ slug: 't_mood.md', title: 'Synthetic mood disorders page', kind: 'page', site: 'ms3', status: 'pending', at: '', by: '' }],
+    });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mood disorders page/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    await expect(page.getByText('Signed: Synthetic mood disorders page')).toBeVisible();
+    await expect(page.getByText('Nothing needs review.')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'commit' })).toHaveAttribute('href', 'https://github.example/commit/faculty-1');
+    expect(new URL(page.url()).searchParams.get('item')).toBeNull();   // back on the queue, not a vanished item
+  });
+
+  test('a sign error shows inside the open sheet and Sign works again', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    let presses = 0;
+    // The refresh after the conflict is held until the test releases it, so the in-flight state
+    // (message and disabled Sign) can be observed without a sleep.
+    let releaseRefresh;
+    const refreshHeld = new Promise(resolve => { releaseRefresh = resolve; });
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST' && ++presses === 1) {
+        await fulfillJson(route, 409, { error: { code: 'github_conflict', message: 'branch moved', retryable: true } });
+        return;
+      }
+      if (request.method() === 'GET' && presses === 1 && !new URL(request.url()).search) await refreshHeld;
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mood disorders page/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    const sign = sheet.getByRole('button', { name: 'Sign' });
+    const getsBefore = api.gets.length;
+    await sign.click();
+    // A conflict means the loaded state is out of date: say so and refresh it in place. Until the
+    // refresh lands, Sign (and Attest under the sheet) cannot re-send against the stale state.
+    await expect(sheet.getByRole('alert')).toHaveText('The queue was out of date; refreshing…');
+    await expect(sign).toBeDisabled();
+    await expect(page.getByRole('navigation', { name: 'Review actions' }).getByRole('button', { name: 'Attest' })).toBeDisabled();
+    releaseRefresh();
+    await expect.poll(() => api.gets.length).toBe(getsBefore + 1);
+    await expect(sheet.getByRole('alert')).toHaveText('The queue was out of date; refreshed.');
+    await expect(sign).toBeEnabled();
+    await sign.click();
+    await expect(page.getByText('Signed: Synthetic mood disorders page')).toBeVisible();
+    expect(presses).toBe(2);
+    expect(api.calls.filter(call => call.method === 'POST').map(call => call.body)).toEqual([
+      { target: 'content', changes: { 't_mood.md': true }, reasons: {} },
+    ]);
+  });
+
+  test('a failed preview needs a retry, the page opened in the learner site, and the separate-tab acknowledgement instead', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: [{ slug: 'nope.md', title: 'Missing page', kind: 'page', site: 'ms3', status: 'pending', at: '', by: '' }] });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Missing page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Missing page/ });
+    await expect(sheet.getByText('The learner page did not report ready. Press Retry once')).toBeVisible();
+    await expect(sheet.getByLabel('I reviewed it in the learner site tab')).toBeDisabled();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    // The Retry alone does not unlock the separate-tab acknowledgement: the page must actually
+    // have been opened in the learner site first (the desktop's externalReviewOpenedKey rule).
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const separate = sheet.getByLabel('I reviewed it in the learner site tab');
+    await expect(separate).toBeDisabled();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await expect(sheet.getByRole('button', { name: 'Sign' })).toBeDisabled();
+    // Eligibility holds the same line on its own: a tick forced past the disabled control still
+    // does not count until Open in site has been used.
+    await page.evaluate(() => { const box = document.getElementById('ack-separate'); box.disabled = false; box.click(); });
+    await expect(separate).toBeChecked();
+    await expect(sheet.getByRole('button', { name: 'Sign' })).toBeDisabled();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    const popup = page.context().waitForEvent('page');
+    await page.getByRole('link', { name: 'Open in site' }).click();
+    const learnerTab = await popup;
+    expect(learnerTab.url()).toBe(`${MS3_URL}/?page=nope.md`);
+    await learnerTab.close();
+    await page.getByRole('button', { name: 'Attest' }).click();
+    // Opening the page cleared the tick forced before it (the desktop's openFullPage): only a
+    // tick made after the page was opened counts, so this one is a real tick.
+    await expect(separate).toBeEnabled();
+    await expect(separate).not.toBeChecked();
+    await expect(sheet.getByRole('button', { name: 'Sign' })).toBeDisabled();
+    await separate.check();
+    await expect(sheet.getByRole('button', { name: 'Sign' })).toBeEnabled();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByText('Signed: Missing page')).toBeVisible();
+    const posts = api.calls.filter(call => call.method === 'POST');
+    expect(posts.map(call => call.body)).toEqual([{ target: 'content', changes: { 'nope.md': true }, reasons: {} }]);
+  });
+
+  test('a question shows its saved draft read-only and attests only after a retry, the unavailable-live acknowledgement, the saved-revision receipt and the three confirmations', async ({ page }) => {
+    // Left out of the learner bank the stub serves (missingDeployedIds), so the shell reports
+    // Not found — the same path the desktop suite exercises for undeployed drafts (qb_moo_906).
+    const api = await installRepositoryApi(page, workflowBank(), { missingDeployedIds: ['qb_moo_901'] });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_901/ }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Saved draft' }).click();
+    const draft = page.getByRole('dialog', { name: 'Saved draft (not deployed)' });
+    await expect(draft.getByText(READY_STEMS.A)).toBeVisible();
+    await expect(draft.getByRole('textbox')).toHaveCount(0);   // read-only: no inputs
+    await draft.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_901/ });
+    const sign = sheet.getByRole('button', { name: 'Sign' });
+    await expect(sign).toBeDisabled();
+    const unavailable = sheet.getByLabel('The live question is unavailable; I reviewed the saved draft instead');
+    await expect(unavailable).toBeDisabled();            // one Retry is required first
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await unavailable.check();
+    await sheet.getByLabel(/I reviewed the saved draft, revision/).check();
+    await sheet.getByLabel('Clinically accurate').check();
+    await sheet.getByLabel('Evidence and rationale hold').check();
+    await expect(sign).toBeDisabled();
+    await sheet.getByLabel('Original wording, no patient information').check();
+    await expect(sign).toBeEnabled();
+    await sign.click();
+    await expect(page.getByText('Signed: qb_moo_901')).toBeVisible();
+    const post = api.calls.filter(call => call.method === 'POST').at(-1);
+    expect(post.body.action).toBe('qbank.attest');
+    expect(post.body.manifestRevision).toBe(MANIFEST_REVISION);
+    expect(post.body.items).toHaveLength(1);
+    expect(post.body.items[0].id).toBe('qb_moo_901');
+    expect(post.body.items[0].reviewedRevision).toBe(post.body.items[0].revision);
+    expect(post.body.items[0].acknowledgedWarnings).toEqual([]);
+    expect(post.body.confirmations).toEqual({ clinical: true, evidence: true, originalityAndNoPhi: true });
+  });
+
+  test('a frame failure clears every tick, the saved-draft receipt included, as on the desktop; a Retry that reports Ready restores none', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());   // qb_moo_901 is in the served learner bank: Ready
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_901/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_901/ });
+    const live = sheet.getByLabel('I reviewed the live question on this screen');
+    const receipt = sheet.getByLabel(/I reviewed the saved draft, revision/);
+    const clinical = sheet.getByLabel('Clinically accurate');
+    await live.check();
+    await receipt.check();
+    await clinical.check();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    // A second load of the learner frame reads as a frame failure: a status change outside the
+    // readiness message, which resets the acknowledgements exactly as the desktop's
+    // recordPreviewFrameFailure → clearReviewAcknowledgements() does (receipt included).
+    const learner = await (await page.locator('iframe#learner-frame').elementHandle()).contentFrame();
+    await learner.waitForLoadState('load');
+    await page.locator('iframe#learner-frame').evaluate(frame => { frame.src = frame.src; });
+    await expect(page.getByRole('status')).toContainText('did not load');
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await expect(sheet.getByLabel(/I reviewed the saved draft, revision/)).not.toBeChecked();
+    await expect(clinical).not.toBeChecked();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    // Retry mounts a fresh frame whose shell reports Ready again: nothing comes back.
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await expect(receipt).not.toBeChecked();
+    await expect(live).not.toBeChecked();
+    await expect(clinical).not.toBeChecked();
+  });
+
+  test('the saved-draft receipt survives the live question reporting Ready again after the key is re-entered; no other tick does', async ({ page }) => {
+    // The one remaining path on which a readiness report finds a receipt to keep: a 401 on a
+    // silent refresh, the key re-entered, the frame remounted, and its shell reporting Ready.
+    await page.clock.install();
+    await installRepositoryApi(page, workflowBank());   // qb_moo_901 is in the served learner bank: Ready
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_901/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_901/ });
+    const live = sheet.getByLabel('I reviewed the live question on this screen');
+    const receipt = sheet.getByLabel(/I reviewed the saved draft, revision/);
+    const clinical = sheet.getByLabel('Clinically accurate');
+    await live.check();
+    await receipt.check();
+    await clinical.check();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    let refused = false;
+    await page.route('**/api/attest', async (route, request) => {
+      if (!refused && request.method() === 'GET' && !new URL(request.url()).search) {
+        refused = true;
+        await fulfillJson(route, 401, { error: { code: 'unauthorized', message: 'Faculty key not accepted.' } });
+        return;
+      }
+      await route.fallback();
+    });
+    await page.clock.fastForward(31_000);
+    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+    await expect(page.getByRole('alert')).toContainText('Key not accepted');
+    await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('heading', { name: 'qb_moo_901' })).toBeVisible();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await expect(receipt).toBeChecked();
+    await expect(live).not.toBeChecked();
+    await expect(clinical).not.toBeChecked();
+  });
+
+  test('a readiness window that times out clears the ticks made before it', async ({ page }) => {
+    // The 10 s timeout is a status change outside the readiness message: it resets like one. The
+    // only ticks it can find were made on an earlier frame, so remount one after a 401.
+    await page.clock.install();
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mood disorders page/ });
+    const accuracy = sheet.getByLabel('Accurate and appropriate for a third-year student');
+    const interactions = sheet.getByLabel('Links, media and interactions work');
+    await accuracy.check();
+    await interactions.check();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    let refused = false;
+    await page.route('**/api/attest', async (route, request) => {
+      if (!refused && request.method() === 'GET' && !new URL(request.url()).search) {
+        refused = true;
+        await fulfillJson(route, 401, { error: { code: 'unauthorized', message: 'Faculty key not accepted.' } });
+        return;
+      }
+      await route.fallback();
+    });
+    await page.clock.fastForward(31_000);
+    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+    await expect(page.getByRole('alert')).toContainText('Key not accepted');
+    await page.route(`${MS3_URL}/**`, () => {});      // the remounted frame never answers
+    await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('heading', { name: 'Synthetic mood disorders page' })).toBeVisible();
+    await expect(page.getByRole('status')).toContainText('Loading the learner page');
+    await page.clock.runFor(10_500);
+    await expect(page.getByRole('status')).toContainText('did not load');
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await expect(accuracy).not.toBeChecked();
+    await expect(interactions).not.toBeChecked();
+  });
+
+  test('a question sign that completes after the reviewer went back to the queue leaves them there, with the receipt', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    let releaseWrite;
+    const writeHeld = new Promise(resolve => { releaseWrite = resolve; });
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST') await writeHeld;
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_901/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_901/ });
+    await sheet.getByLabel('I reviewed the live question on this screen').check();
+    await sheet.getByLabel(/I reviewed the saved draft, revision/).check();
+    await sheet.getByLabel('Clinically accurate').check();
+    await sheet.getByLabel('Evidence and rationale hold').check();
+    await sheet.getByLabel('Original wording, no patient information').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(sheet.getByRole('button', { name: 'Signing…' })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Queue' }).click();
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    releaseWrite();
+    await expect(page.getByText('Signed: qb_moo_901')).toBeVisible();
+    // Still on the queue: not pulled into the next pending page, no key prompt.
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    await expect(page.locator('iframe#learner-frame')).toHaveCount(0);
+    await expect(page.getByLabel('Faculty key')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /qb_moo_901/ })).toHaveCount(0);   // the queue reflects the sign
+    expect(new URL(page.url()).searchParams.get('item')).toBeNull();
+    const posts = api.calls.filter(call => call.method === 'POST');
+    expect(posts).toHaveLength(1);
+    expect(posts[0].body.items.map(entry => entry.id)).toEqual(['qb_moo_901']);
+  });
+
+  test('a sign that completes after Lock leaves the key prompt exactly as typed', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    let releaseWrite;
+    const writeHeld = new Promise(resolve => { releaseWrite = resolve; });
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST') await writeHeld;
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mood disorders page/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(sheet.getByRole('button', { name: 'Signing…' })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Lock the console' }).click();
+    const key = page.getByLabel('Faculty key');
+    await key.fill('half-typed');
+    const written = page.waitForResponse(response => response.request().method() === 'POST');
+    releaseWrite();
+    await written;
+    await page.evaluate(() => new Promise(resolve => { setTimeout(resolve, 100); }));   // let the page handle it
+    await expect(key).toHaveValue('half-typed');
+    await expect(key).toBeFocused();
+    await key.fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByText('Signed: Synthetic mood disorders page')).toBeVisible();
+  });
+
+  test('a question with warnings shows them and offers no Attest on the phone', async ({ page }) => {
+    // qb_moo_905 (WARNING_STEM) ends on a negative lead-in: a warning gate the phone cannot acknowledge.
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_905/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    const actions = page.getByRole('navigation', { name: 'Review actions' });
+    const desktopOnly = actions.getByRole('button', { name: 'Attest on desktop' });
+    await expect(desktopOnly).toBeDisabled();
+    await expect(desktopOnly).toHaveAttribute('aria-disabled', 'true');
+    await expect(desktopOnly).toHaveAttribute('title', 'This question has warnings; attest it on the desktop console.');
+    await expect(actions.getByRole('button', { name: 'Attest', exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Saved draft' }).click();
+    const draft = page.getByRole('dialog', { name: 'Saved draft (not deployed)' });
+    await expect(draft.getByRole('heading', { name: 'Warnings' })).toBeVisible();
+    await expect(draft.getByRole('listitem').filter({ hasText: 'Review the negative wording in the final lead-in.' })).toBeVisible();
+    await expect(draft.getByText('Attest this question on the desktop console, which records each acknowledgement.')).toBeVisible();
+  });
+
+  test('a deep link opens its item once unlocked and keeps ?item= in the address bar', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page, { path: '/m/?item=page:t_mood.md', heading: 'Synthetic mood disorders page' });
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toHaveCount(0);
+    await expect(page.locator('iframe#learner-frame')).toHaveAttribute('src', /reviewKey=page%3At_mood\.md/);
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    expect(new URL(page.url()).searchParams.get('item')).toBe('page:t_mood.md');
+  });
+
+  test('a deep link to an item not in the queue opens the queue and says so', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page, { path: '/m/?item=page:nope.md' });
+    await expect(page.getByRole('alert')).toHaveText('That item is not in the current queue.');
+    await expect(page.locator('iframe#learner-frame')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /Synthetic mood disorders page/ })).toBeVisible();
+    expect(new URL(page.url()).searchParams.get('item')).toBeNull();
+  });
+
+  test('a question conflict says the queue was out of date, refreshes it, and never re-sends the stale revision', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());   // qb_moo_901 is in the served learner bank: Ready
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    // Someone saved qb_moo_901 elsewhere: the write is refused, and the refresh brings the new revision.
+    const changed = workflowBank();
+    changed.items[0].difficulty = 2;
+    let posts = 0;
+    let refreshes = 0;
+    let releaseRefresh;
+    const refreshHeld = new Promise(resolve => { releaseRefresh = resolve; });
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST') {
+        posts += 1;
+        await fulfillJson(route, 409, { error: { code: 'qbank.conflict', message: 'A selected question changed after you loaded it.' } });
+        return;
+      }
+      if (posts && !new URL(request.url()).search) {
+        await refreshHeld;   // held until the test has seen the in-flight state
+        refreshes += 1;
+        await fulfillJson(route, 200, buildGetPayload(changed));
+        return;
+      }
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /qb_moo_901/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign qb_moo_901/ });
+    await sheet.getByLabel('I reviewed the live question on this screen').check();
+    const receipt = sheet.getByLabel(/I reviewed the saved draft, revision/);
+    const staleLabel = await receipt.evaluate(input => input.closest('label').textContent);
+    await receipt.check();
+    await sheet.getByLabel('Clinically accurate').check();
+    await sheet.getByLabel('Evidence and rationale hold').check();
+    await sheet.getByLabel('Original wording, no patient information').check();
+    const sign = sheet.getByRole('button', { name: 'Sign' });
+    await sign.click();
+    // While the refresh is in flight the old receipt still matches the loaded (stale) revision,
+    // so only the refresh lock keeps Sign from re-sending it.
+    await expect(sheet.getByRole('alert')).toHaveText('The queue was out of date; refreshing…');
+    await expect(receipt).toBeChecked();
+    await expect(sign).toBeDisabled();
+    releaseRefresh();
+    await expect(sheet.getByRole('alert')).toHaveText('The queue was out of date; refreshed.');
+    expect(refreshes).toBe(1);
+    await expect(page.getByText(/Pull to refresh/)).toHaveCount(0);
+    // The refreshed question carries a new revision: the old receipt no longer matches it, so Sign
+    // cannot re-send the revision the server just refused.
+    await expect(receipt).not.toBeChecked();
+    expect(await receipt.evaluate(input => input.closest('label').textContent)).not.toBe(staleLabel);
+    await expect(sign).toBeDisabled();
+    await sign.click({ timeout: 1_000 }).catch(() => {});
+    expect(posts).toBe(1);
+    // The lock is released with the refresh: acknowledging the NEW revision is enough to sign.
+    await receipt.check();
+    await expect(sign).toBeEnabled();
+  });
+
+  test('a write that changed nothing says it was already signed elsewhere and refreshes the queue', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    const signedElsewhere = initialContentState().map(item => (item.slug === 't_mood.md'
+      ? { ...item, status: 'reviewed', at: '2026-09-26', by: SERVER_ATTESTER } : item));
+    let posted = false;
+    let refreshes = 0;
+    await page.route('**/api/attest', async (route, request) => {
+      if (request.method() === 'POST') {
+        posted = true;
+        await fulfillJson(route, 200, { ok: true, target: 'content', updated: 0, commit: null });
+        return;
+      }
+      if (posted && !new URL(request.url()).search) {
+        refreshes += 1;
+        await fulfillJson(route, 200, buildGetPayload(workflowBank(), signedElsewhere));
+        return;
+      }
+      await route.fallback();
+    });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mood disorders page/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    // The item left the queue in the refresh: back on the queue, which says why.
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    await expect(page.getByRole('alert')).toHaveText('Already signed elsewhere; refreshed.');
+    expect(refreshes).toBe(1);
+    await expect(page.getByRole('link', { name: /Synthetic mood disorders page/ })).toHaveCount(0);
+    await expect(page.getByText('This attestation was not saved.')).toHaveCount(0);
+    await expect(page.getByText(/^Signed:/)).toHaveCount(0);
+  });
+
+  test('coming back to the page refreshes a queue older than the quiet period, and only then', async ({ page }) => {
+    await page.clock.install();
+    const api = await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    const search = page.getByLabel('Search the queue');
+    await search.click();
+    await search.pressSequentially('syn');
+    const before = api.gets.length;
+    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+    await page.waitForTimeout(300);
+    expect(api.gets.length).toBe(before);             // fresh: nothing to do
+    await page.clock.fastForward(31_000);            // past REFRESH_QUIET_MS since the last load
+    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+    await expect.poll(() => api.gets.length).toBe(before + 1);
+    await expect(search).toBeFocused();              // a silent refresh, in place
+    await expect(search).toHaveValue('syn');
+  });
+
+  test('offline disables Attest and Sign and says so; an unreachable server says so instead of a raw fetch error', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    const attest = page.getByRole('navigation', { name: 'Review actions' }).getByRole('button', { name: 'Attest' });
+    await attest.click();
+    const sheet = page.getByRole('dialog', { name: /Sign Synthetic mood disorders page/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    const sign = sheet.getByRole('button', { name: 'Sign' });
+    await expect(sign).toBeEnabled();
+    await page.context().setOffline(true);
+    await expect(sheet.getByRole('alert')).toHaveText('You are offline.');
+    await expect(sign).toBeDisabled();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await expect(attest).toBeDisabled();
+    await page.context().setOffline(false);
+    await expect(attest).toBeEnabled();
+    // Online, but the connection itself fails: a plain sentence, not "TypeError: Failed to fetch".
+    await page.route('**/api/attest', route => (route.request().method() === 'POST' ? route.abort('failed') : route.fallback()));
+    await attest.click();
+    await sign.click();
+    await expect(sheet.getByRole('alert')).toHaveText('Could not reach the repository.');
+    await expect(sign).toBeEnabled();
+    expect(api.calls.filter(call => call.method === 'POST')).toHaveLength(0);
+  });
+
+  test('What changed recovers from a server error: Retry inside the sheet, and Close clears the error', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    let diffs = 0;
+    await page.route('**/api/attest?view=diff&slug=t_mood.md', route => (++diffs < 3
+      ? fulfillJson(route, 503, { error: { code: 'github_unavailable', message: 'upstream down' } })
+      : fulfillJson(route, 200, { view: 'diff', slug: 't_mood.md', since: '2026-09-21', base: 'a'.repeat(40), head: 'b'.repeat(40), compareUrl: null, commit: null, files: [], record: [] })));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await page.getByRole('button', { name: 'What changed' }).click();
+    const changed = page.getByRole('dialog', { name: 'What changed since you signed' });
+    await expect(changed.getByRole('alert')).toHaveText('Could not reach the repository.');
+    // Closing drops the error, so opening the sheet again asks the server again.
+    await changed.getByRole('button', { name: 'Close' }).click();
+    await page.getByRole('button', { name: 'What changed' }).click();
+    await expect(changed.getByRole('alert')).toHaveText('Could not reach the repository.');
+    expect(diffs).toBe(2);
+    await changed.getByRole('button', { name: 'Retry' }).click();
+    await expect(changed.getByText('Since you signed on 2026-09-21')).toBeVisible();
+    await expect(changed.getByRole('alert')).toHaveCount(0);
+    expect(diffs).toBe(3);
+  });
+
+  test('a long reopen reason (a URL) wraps inside its row: no sideways scroll at phone width', async ({ page }) => {
+    const longUrl = `https://github.example/jmoss333/psychiatry-clerkship/pull/813/files#diff-${'0123456789abcdef'.repeat(6)}`;
+    await installRepositoryApi(page, workflowBank(), { contentState: [
+      { slug: 't_mood.md', title: 'Synthetic mood disorders page', kind: 'page', site: 'ms3', status: 'pending', at: '', by: '', reason: `Reopened: ${longUrl}` },
+    ] });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, {
+      view: 'changes', branch: 'main', generatedAt: '2026-09-26T00:00:00.000Z', drifted: 1, partial: false,
+      groups: [{ id: 'pr:813', pr: 813, sha: 'a'.repeat(40), title: longUrl, date: '2026-09-25', url: 'https://github.example/pull/813', slugs: ['t_mood.md'] }],
+      unexplained: [], unchecked: [], pages: {},
+    }));
+    await unlockPhone(page);
+    await expect(page.getByText(`Reopened: ${longUrl}`)).toBeVisible();
+    await expect(page.getByRole('heading', { name: `#813 ${longUrl}` })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('the desktop console offers the phone console on a narrow viewport', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.goto('/');
+    const link = page.getByRole('link', { name: 'Use the phone console' });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute('href', './m/');
+    const box = await link.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(12);
+    // A Copy link / bookmarklet landing on a phone: the hand-off carries the item to /m/, encoded
+    // as Copy link encodes it (buildDeepLink), and nothing else from the arriving query.
+    await page.goto('/?item=page:t_mood.md');
+    await expect(link).toHaveAttribute('href', './m/?item=page%3At_mood.md');
+    await page.goto('/?item=page:t_mood.md&foo=bar');
+    await expect(link).toHaveAttribute('href', './m/?item=page%3At_mood.md');
+    expect(await link.getAttribute('href')).not.toContain('foo');
+    await link.click();
+    await expect(page).toHaveTitle('Faculty attestation — phone');
+    expect(new URL(page.url()).searchParams.get('item')).toBe('page:t_mood.md');
+  });
+});
+
+test('the phone console link is hidden on a desktop viewport', async ({ page }) => {
+  await installRepositoryApi(page, workflowBank());
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Use the phone console' })).toBeHidden();
 });

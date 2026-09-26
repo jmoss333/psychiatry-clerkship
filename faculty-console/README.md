@@ -7,11 +7,13 @@ faculty-console/
   index.html                     password gate and unified workspace styles
   app.mjs                        shared queue, preview/editor, sign-off, and conflict workflow
   review-model.mjs               queue, preview-route, deep-link, twin, and eligibility rules
+  m/                             phone client (/m/): index.html, m.mjs, m-model.mjs, manifest
   content-universe.mjs           the exact set of pages and tools the two sites publish
   qbank-rules.mjs                shared question-bank structural checks
   check_pending_visible.mjs      CI invariant: no pending item is unreachable here
   content-universe.test.mjs      universe, slug parity with the builds, the invariant
   console-navigation.test.mjs    deep links, twins, bookmarklet, site routing
+  m-model.test.mjs               phone grouping, auto-advance order, write rows, diff lines
   netlify.toml                   config for this site (publish + functions)
   netlify/functions/attest.mjs   authenticated state reads and commit-on-save API
   netlify/functions/qbank-actions.mjs
@@ -36,6 +38,41 @@ faculty-console/
 7. The confirmed commit appears in the current-session ledger. When GitHub returns the rolling pull request, the ledger links it too. Pull-request maintenance happens after the commit and is non-fatal: if it fails, the ledger explicitly says the commit is confirmed but the rolling review request needs attention. After that pull request reaches `main`, Netlify rebuilds the student sites and badges update on the next deploy.
 
 **The GitHub token never leaves the server.** The browser only ever holds the faculty key (in `sessionStorage`, cleared when the tab closes).
+
+## The phone client (`/m/`)
+
+`m/index.html` + `m/m.mjs` is a phone-first front-end on this same site, so the learner sites'
+`frame-ancestors` allow-list needs no change. Same faculty key (session only), same `/api/attest`,
+same rules: it imports `review-model.mjs` for the queue, preview requests, deep links, twins and
+eligibility, and `m/m-model.mjs` (unit-tested in `m-model.test.mjs`) for grouping by correction,
+auto-advance order, applying the write's `rows`, and diff lines.
+
+- **Queue.** Pages and tools needing review, grouped by the correction (pull request) that changed
+  them, largest first, then *No text change*, then *Also needing review* (the rest, questions
+  included). Each row gives type, site, risk and why it needs review; a count line and a search box
+  sit above.
+- **Item.** The learner page full-screen with the desktop's review token and readiness states
+  (**Retry** on a failure), and **What changed** / **Open in site** / **Attest**. What changed lists
+  the source-file and page-record changes since it was signed, names the correction's pull
+  request (or commit), and links the comparison on GitHub.
+- **Confirm sheet.** The desktop's acknowledgements; one press signs one slug. The content attest
+  write returns `rows` (the rows it wrote, projected as the `GET` projects them), so the phone
+  updates that item in place and never runs the confirming full reload; ledger mode returns no
+  `rows`, so there the phone marks the item reviewed from the 200. A `GET` refresh runs 30 s after
+  the sitting goes quiet. The receipt (commit, rolling PR) rides to the next item in the desktop's
+  order — the twin, then the next page or tool in the same group, then the first pending page or
+  tool — and stays over the queue after the last sign.
+- **Questions** are read-only: **Saved draft** shows the saved revision, and Attest carries the
+  desktop's live-view and saved-revision receipts and its three confirmations. A question with
+  warnings lists them and offers no Attest; sign it on the desktop, which records each
+  acknowledgement.
+
+Editing, the *Attest together* tray, the *Sign everything as it reads today* and *Sign #N* presses (desktop only — the phone signs one slug per press), remember-me and any change to attribution are out of scope.
+Deep links take the desktop's form under `/m/` (`/m/?item=page:<slug>`, `tool:`, `question:`) and
+open the item once unlocked. **Copy link** and the bookmarklet are unchanged and open the desktop
+console, whose *Use the phone console* link (viewports ≤ 700 px) carries the arriving `?item=` to
+`/m/`, so on a phone they open the same item once unlocked. Add it to the home screen from the
+browser's share sheet; `m/manifest.webmanifest` makes it standalone.
 
 ## Faculty review runbook
 

@@ -1992,11 +1992,27 @@ async function commitContentMutation({ repository, settings, body, attester }) {
         `attest: ${effectiveChanges.length} content item(s) by ${attester} (${at})`,
         JSON_INDENT,
       );
+      // The rows this write produced, projected exactly as buildContentItems() projects a row
+      // for the GET: status (pending → unreviewed), at, by, risk, reason. Never the stored
+      // contentHash / note / claimsHash / evidenceHash / evidenceThrough — the GET contract
+      // forbids those reaching the browser, and a client uses these rows to update one item
+      // in place instead of re-downloading the whole state (ADR: mobile console, 2026-09-26).
+      const rows = Object.fromEntries(effectiveChanges.map(([slug]) => {
+        const entry = reviewed[slug];
+        return [slug, {
+          status: contentApiStatus(entry),
+          at: typeof entry.at === 'string' ? entry.at : '',
+          by: typeof entry.by === 'string' ? entry.by : '',
+          risk: validRisk(entry.risk),
+          reason: entry.status === 'pending' && typeof entry.reason === 'string' ? entry.reason : '',
+        }];
+      }));
       return {
         ok: true,
         target: 'content',
         updated: effectiveChanges.length,
         commit: saved.commit,
+        rows,
       };
     } catch (error) {
       if (!(error instanceof GithubError && error.conflict) || attempt === 1) throw error;
@@ -2030,15 +2046,20 @@ function prepareQbankMutation(action, body, bank, manifestPages) {
   });
 }
 
+// `written` (spec §5, 2026-09-26 phone client): each written item's id, the status it was
+// written with and its new revision, one entry per item. Added beside the existing keys, which
+// are unchanged, so a client that does not read it is unaffected.
 function qbankSuccess(action, result, saved, manifestPages) {
   if (action === 'qbank.save-draft') {
+    const revision = itemRevision(result.item);
     return {
       ok: true,
       action,
       updated: 1,
       commit: saved.commit,
-      revision: itemRevision(result.item),
+      revision,
       assessment: result.assessment,
+      written: [{ id: result.item.id, status: 'draft', revision }],
     };
   }
 
@@ -2058,6 +2079,7 @@ function qbankSuccess(action, result, saved, manifestPages) {
     commit: saved.commit,
     revision,
     assessment,
+    written: result.ids.map(id => ({ id, status: 'attested', revision: revision[id] })),
   };
 }
 
