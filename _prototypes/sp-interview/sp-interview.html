@@ -30,7 +30,7 @@
     --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
     --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
   }
-  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#8a7c6e;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--ink:#e8e2da;--ink-on:#211d1a;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#a09488;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--ink:#e8e2da;--ink-on:#211d1a;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
   *,*::before,*::after{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
   a{color:var(--accent-dark)} a:hover{color:var(--primary-dark)}
@@ -47,6 +47,8 @@
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-top:var(--sp3)}
   .themebtn{position:fixed;top:12px;right:12px;width:44px;height:44px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:40;box-shadow:var(--shadow-sm)}
   .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;font-size:.9rem;background:var(--surface);color:var(--accent-dark);min-height:44px}
+  a.btn{display:inline-flex;flex-direction:column;justify-content:center;text-decoration:none;box-sizing:border-box}
+  .familydoor{border-style:dashed}
   .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
   .btn.primary:hover{background:var(--primary)}
   .btn.ghost{border-style:dashed}
@@ -86,7 +88,7 @@
   .begin{display:flex;flex-direction:column;gap:8px}
   .begin .btn{text-align:left;width:100%}
   .begin .sub{display:block;font-weight:400;font-size:.74rem}
-  .begin .primary .sub{opacity:.85}
+  .begin .primary .sub{opacity:.96}
   .begin .btn:not(.primary) .sub{color:var(--text-light)}
   /* encounter */
   .room{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;margin-top:var(--sp3);position:relative}
@@ -250,6 +252,10 @@
 "use strict";
 var previewConfig=window.__SP_PREVIEW__||{providerMode:'live',endpoint:null,autoOpenSettings:true};
 var SPOKEN_CONSENT_VERSION='2026-09-26-realtime-v1';
+/* The shared family meeting (Morgan and Maya) needs two voices in one room. A real-time session is
+   pinned to one voice, so until the two-session family room exists that encounter runs in the
+   faculty preview on the chained voice pipeline. One card, one door, same tab, no credentials. */
+var FAMILY_VISIT_URL='https://interview-room-faculty-preview.netlify.app/?preset=trainee';
 var e=React.createElement, useState=React.useState, useEffect=React.useEffect, useRef=React.useRef;
 function announce(m){try{document.getElementById('live').textContent=m;}catch(x){}}
 
@@ -1153,7 +1159,20 @@ function App(){
               e('div',{className:'begin'},
                 e('button',{className:'btn primary',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(cd,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
                 e('button',{className:'btn',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(cd,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing')))));
-        })));
+        })),
+      e('section',{className:'case familydoor','aria-labelledby':'family_door_title'},
+        e('div',null,
+          e('p',{className:'setting',style:{marginBottom:'4px'}},'Shared family meeting · two voices · ~10 turns'),
+          e('h2',{id:'family_door_title'},'Morgan and Maya'),
+          e('p',{className:'occasion'},'A family visit'),
+          e('p',{className:'setting'},'Morgan, admitted after a fall while drinking, and Maya, their adult daughter, in one meeting. One person answers each turn; you choose who, or address them by name.')),
+        e('p',{className:'goal'},'Keep both people in the room: hold Morgan’s autonomy while hearing what Maya has seen, without letting either decide for the other.'),
+        e('div',{className:'begincol'},
+          e('p',{className:'setting'},e('b',null,'Runs in the faculty preview')),
+          e('p',{className:'setting',role:'note'},'Two voices need two patients in the room, which the spoken room cannot hold yet. The family visit opens in this tab on the preview’s own door; your passcode stays here.'),
+          e('div',{className:'begin'},
+            e('a',{className:'btn primary',href:FAMILY_VISIT_URL,rel:'noopener noreferrer'},'Open the family visit')),
+          e('p',{className:'setting'},'Opens in this tab — use the browser back button to return.'))));
   }
 
   /* ---------- encounter: shared step-out overlay ---------- */

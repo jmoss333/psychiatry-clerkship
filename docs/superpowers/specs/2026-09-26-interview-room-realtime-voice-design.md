@@ -487,6 +487,8 @@ never spoken; R15 41st utterance → 429; R16 pronunciation of safety language.
 4. Consent version and the provider data-terms review for the deployed account, including Traces.
 5. The provider-side hard budget on a dedicated project, and who holds its key.
 
+Decided 2026-09-26 — see §18.
+
 ## 15. Deliberate changes from July
 
 The July design's locked decisions that this design reverses, each on purpose:
@@ -577,3 +579,36 @@ the tool and a browser suite moved these lines, each pinned by a test:
 - **The browser suite** (`tests/smoke/interview-room.spec.js`, 24 tests) fakes `RTCPeerConnection`,
   the `oai-events` channel, `getUserMedia`, `Audio` and `speechSynthesis` so the tool's production
   adapters run unmodified against a scripted provider; there is no test seam in the tool.
+
+## 18. Activation decisions (owner, 2026-09-26)
+
+| # | Decision | Chosen | Consequence recorded |
+|---|---|---|---|
+| 1 | Model tier | **Mini first, audition the full tier** | `SP_REALTIME_MODEL` = the current `gpt-realtime-mini`; the full tier is an audition item, not a deployment. Disclosure logic is the proxy's, so fidelity risk on mini is bounded to voice quality. |
+| 2 | Envelope | **Separate $20 realtime envelope** | `SP_REALTIME_ROTATION_CAP_USD=20` in the `realtime` namespace; the typed room's actor/voice cap is untouched. Accounting only (§9). |
+| 3 | Pilot cases | **All single-voice cases, Morgan included; the family room designed next** | Dana, Marcus, Ray and Morgan. Morgan entered the pack with the uniform suicide screen (below), **attested by the owner on 2026-09-26** after reading the authored lines. The Morgan-and-Maya meeting needs two voices and is a separate design (`2026-09-26-family-room-two-voice-design.md`); the tool shows one door card to the faculty preview meanwhile. |
+| 4 | Consent | **As shipped** | Model-bound; re-asked on a model change. A retention or Traces change bumps `SPOKEN_CONSENT_VERSION`. |
+| 5 | Provider budget and key | **Reuse the existing sp-proxy project and key** (against the design's recommendation) | One hard limit covers typed-room speech and the spoken room. The runbook (README) sizes it above the typed room's use and names the cost: a spoken-room burn spends the typed room's allowance. The dedicated-project option stays open and is a one-variable change. |
+
+**Morgan and the uniform screen.** The pack carries a faculty rule from the 2026-08-24 peer review
+(D3, D12, D13; pinned by `sp-proxy/tests/sp-safety-screen-phrasing.test.mjs`, which asserts the
+exact case count): every case credits the approved suicide-screen phrasings as a safety intent,
+routes euphemisms to partial credit, and wires `c_si.partialIfOnly`. Morgan's attested local case has
+no suicide screen — it has a withdrawal-safety intent and six ambivalence and autonomy items. He
+therefore enters the pack as the attested case **plus** `si_direct` (pronoun-adjusted), `si_passive`
+and `si_euphemism` with the pack-wide patterns, three rapport-banded negative replies in his register,
+a **critical** `c_si` (the owner's choice: screen every inpatient plainly, a likely no included), a
+coach hint and the critical-miss debrief text. That is new authored content on an attested case.
+The attestation validator (`validate_attestation_consistency.py`, run before every build) forbids a
+non-reviewed case inside a reviewed pack, so "pending until re-attested" is not a state the repo
+can hold: the owner read the lines and attested them on 2026-09-26, and the pack row carries that
+date. Every fact in the lines is from Morgan's own inventory (the stairs at home after drinking,
+foggy mornings, Maya, living alone); the focused case's "self-harm history not established" limit
+becomes "authored negative". His speech profile takes the pack's draft shape (the pack's speech
+engine is draft, so no case may carry a reviewed profile, and the cadence vocabulary is closed);
+the spoken room resolves his voice from the audition table (Marin) and his delivery from
+`REALTIME_DELIVERY`, the faculty preview's portrayal line, pinned byte for byte.
+`_prototypes/sp-interview/tests/morgan-pack.test.mjs` pins the exact delta between the pack copy and
+the local copy the faculty preview still imports; any other divergence is a finding. The pack's
+`EXPECTED_CASE_COUNT` is 4 and the learner-filter snapshot lists four eligible cases.
+

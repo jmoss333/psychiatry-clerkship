@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import {
   EAGERNESS_VALUES,
   MAX_OUTPUT_TOKENS,
+  REALTIME_DELIVERY,
   REALTIME_RATE_CARD,
   REALTIME_VOICES,
   STOCK_VOICES,
@@ -177,6 +178,21 @@ test('voices: a reviewed stock profile wins, the audition table is the fallback,
   assert.equal(resolveVoice(reviewed), 'marin', 'a non-stock id never reaches the provider');
   const unknown = { ...JSON.parse(JSON.stringify(pack.cases[0])), id: 'sp_unknown_999' };
   assert.throws(() => resolveVoice(unknown), { status: 403, code: 'realtime_voice_unavailable' });
+});
+
+test("delivery: Morgan's realtime delivery is the faculty preview's portrayal, byte for byte, and it reaches his instructions", () => {
+  const portrayal = fs.readFileSync(path.join(ROOT, 'sp-preview/lib/portrayal.mjs'), 'utf8');
+  const match = portrayal.match(/sp_alcohol_ambivalence_001:'(Delivery: [^']*)'/);
+  assert.ok(match, 'the preview still carries a Morgan portrayal line');
+  assert.equal(REALTIME_DELIVERY.sp_alcohol_ambivalence_001, match[1]);
+  const morgan = pack.cases.find((caseDef) => caseDef.id === 'sp_alcohol_ambivalence_001');
+  assert.ok(morgan, 'Morgan is in the pack');
+  assert.ok(realtimeInstructions(morgan).includes(match[1]), 'the per-case line wins over the cadence family');
+  assert.ok(!realtimeInstructions(morgan).includes('tired and reserved'), 'the measured-flat family text is not used for Morgan');
+  // Every other case still takes its cadence family.
+  for (const caseDef of pack.cases.filter((c) => c.id !== 'sp_alcohol_ambivalence_001')) {
+    assert.equal(REALTIME_DELIVERY[caseDef.id], undefined);
+  }
 });
 
 test('the ceiling is computed from the pinned models and fails closed without their rows', () => {

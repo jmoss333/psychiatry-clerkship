@@ -1037,6 +1037,36 @@ test('a legacy managed-voice preference is retired into the typed room with devi
   expect(captured.fetches.some(({ url }) => url.includes('/sp/voice'))).toBe(false);
 });
 
+test('the family visit is one card that opens the faculty preview in the same tab without carrying access credentials', async ({ page }) => {
+  await openRoom(page);
+  // The retired generic link-out never comes back; the family meeting is a per-case door.
+  await expect(page.getByRole('region', { name: 'Spoken interviews' })).toHaveCount(0);
+  const card = page.getByRole('region', { name: 'Morgan and Maya' });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText(/two voices/i);
+  await expect(card).toContainText(/passcode stays here/i);
+  expect(await card.evaluate((element) => !!(element.compareDocumentPosition(document.querySelector('.case')) & Node.DOCUMENT_POSITION_PRECEDING))).toBe(true);
+  const link = card.getByRole('link', { name: /Open the family visit/ });
+  expect(await link.evaluate((element) => element.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  await expect(link).toHaveAttribute('rel', /noopener/);
+  await expect(link).not.toHaveAttribute('target', '_blank');
+  const destination = 'https://interview-room-faculty-preview.netlify.app/?preset=trainee';
+  let navigation;
+  await page.route(destination, async (route) => {
+    navigation = route.request();
+    await route.fulfill({ contentType: 'text/html', body: '<h1>Family visit door</h1>' });
+  });
+  await link.click();
+  await expect(page).toHaveURL(destination);
+  await expect(page.getByRole('heading', { name: 'Family visit door' })).toBeVisible();
+  expect(page.context().pages()).toHaveLength(1);
+  expect(navigation.method()).toBe('GET');
+  expect(navigation.postData()).toBeNull();
+  expect(navigation.headers()['x-preview-key']).toBeUndefined();
+  expect(navigation.headers()['x-student-key']).toBeUndefined();
+  expect(navigation.headers().cookie).toBeUndefined();
+});
+
 /* ------------------------------------------------------------------ the typed room */
 
 test('the typed room is one keyboard step away and reads replies aloud only on request', async ({ page }) => {

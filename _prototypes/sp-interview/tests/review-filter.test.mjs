@@ -65,19 +65,22 @@ assert.deepEqual(
     'sp_depression_gated_si_001',
     'sp_mania_redirect_001',
     'sp_psychosis_paranoid_001',
+    'sp_alcohol_ambivalence_001',
   ],
   'all deterministic regression cases must remain in the canonical pack',
 );
 // Snapshot of who the shipped pack currently exposes to learners. Marcus and Ray were
-// attested 2026-07-22 (Joshua Moss, MD), so all three personas are now eligible. This
-// assertion tracks pack state; the behavioural proof that the filter still fails closed
-// for an unattested case lives in the synthetic eligibleWith() block below.
+// attested 2026-07-22 and Morgan 2026-09-26 (Joshua Moss, MD; his uniform suicide screen is
+// pinned by tests/morgan-pack.test.mjs), so all four personas are eligible. This assertion
+// tracks pack state; the behavioural proof that the filter still fails closed for an
+// unattested case lives in the synthetic eligibleWith() block below.
 assert.deepEqual(
   testApi.eligibleCases(pack).map((caseDef) => caseDef.id),
   [
     'sp_depression_gated_si_001',
     'sp_mania_redirect_001',
     'sp_psychosis_paranoid_001',
+    'sp_alcohol_ambivalence_001',
   ],
 );
 // Discriminating coverage for the learner-facing attestation gate. Every case in the

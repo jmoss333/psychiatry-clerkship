@@ -63,7 +63,8 @@ function matchingSafetyIntentIds(caseDef, text) {
 // WP-B3 finding 8: assert the exact case count. `> 0` would pass silently if a
 // case were dropped from the pack, which would also silently drop every
 // per-case safety assertion below (the loops would simply iterate less).
-const EXPECTED_CASE_COUNT = 3;
+// 2026-09-26: Morgan (sp_alcohol_ambivalence_001) joined the pack with the uniform screen.
+const EXPECTED_CASE_COUNT = 4;
 
 test('every case recognizes all three approved suicide-screen phrasing families as a safety intent', () => {
   assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');

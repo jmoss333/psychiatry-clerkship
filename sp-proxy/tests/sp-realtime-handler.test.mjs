@@ -493,7 +493,7 @@ test('an unapproved pack, an unknown case and an unreviewed case are refused bef
   assert.deepEqual(harness.fake.calls, []);
   // The demoted case disappears from health; the others keep their voices.
   const health = await (await harness.handler(learnerRequest())).json();
-  assert.deepEqual(health.cases.map((entry) => entry.id), ['sp_mania_redirect_001', 'sp_psychosis_paranoid_001']);
+  assert.deepEqual(health.cases.map((entry) => entry.id), ['sp_mania_redirect_001', 'sp_psychosis_paranoid_001', 'sp_alcohol_ambivalence_001']);
 });
 
 test('start: the exact provider exchange, an exact response, a receipt that opens under its binding, and one active ledger session', async () => {
@@ -987,6 +987,7 @@ test('health when enabled: pins, band, deadline, eagerness and every reviewed ca
       { id: 'sp_depression_gated_si_001', title: 'Dana — Day 1 Admission Interview', voice: 'marin' },
       { id: 'sp_mania_redirect_001', title: 'Marcus — Day 1 After a Sleepless Week', voice: 'cedar' },
       { id: 'sp_psychosis_paranoid_001', title: 'Ray — First Days, Guarded and Afraid', voice: 'cedar' },
+      { id: 'sp_alcohol_ambivalence_001', title: 'Morgan — What alcohol gives and takes', voice: 'marin' },
     ],
   });
   assert.deepEqual(harness.fetch.calls, [], 'health never contacts the provider');

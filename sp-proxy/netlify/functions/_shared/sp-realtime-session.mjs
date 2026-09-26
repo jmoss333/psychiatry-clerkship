@@ -28,6 +28,7 @@ export const REALTIME_VOICES = Object.freeze({
   sp_depression_gated_si_001: 'marin',
   sp_mania_redirect_001: 'cedar',
   sp_psychosis_paranoid_001: 'cedar',
+  sp_alcohol_ambivalence_001: 'marin',
 });
 
 const DELIVERY = Object.freeze({
@@ -108,7 +109,17 @@ export function resolveSpeakingRate(caseDef) {
   return 1;
 }
 
+// A per-case delivery line wins over the cadence family. Morgan's is the faculty preview's own
+// portrayal text (sp-preview/lib/portrayal.mjs, listened to in the 2026-09 auditions): the pack's
+// closed cadence vocabulary has no "conversational, reflective" family, and "measured-flat" would
+// play him tired and reserved. Pinned byte-for-byte against the preview by the session tests.
+export const REALTIME_DELIVERY = Object.freeze({
+  sp_alcohol_ambivalence_001: "Delivery: Morgan sounds like a thoughtful adult weighing something personally important. Let mixed feelings be audible through subtle changes of emphasis and brief reflective pauses. Concern about a lost morning or family connection can carry a little weight; a statement of choice can sound quietly firm. Follow the actual dialogue rather than making every reply defensive or grateful. Keep ordinary warmth and occasional dry humor only when the words support it. Do not slur, sound intoxicated, scold, perform distress, or imply that uncertainty has resolved into agreement.",
+});
+
 function deliveryFor(caseDef) {
+  const perCase = REALTIME_DELIVERY[caseDef?.id];
+  if (perCase) return perCase;
   const cadence = caseDef?.speechProfile?.cadence;
   return DELIVERY[cadence] ?? DEFAULT_DELIVERY;
 }

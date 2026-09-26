@@ -9,6 +9,7 @@ echo "── server/client gate parity (both cases) ──"; node parity.test.mj
 echo "── tab-scoped credential storage ──"; node storage.test.mjs
 echo "── locked-content leak check (both cases) ──"; node leak.test.mjs
 echo "── learner review filter + managed-voice gate ──"; node review-filter.test.mjs
+echo "── Morgan in the pack: attested local case + uniform screen, pending ──"; node --test morgan-pack.test.mjs
 echo "── generated preview reproducibility ──"; node preview.test.mjs
 echo "── Dana harness failure propagation ──"; node harness-exit.test.mjs
 echo "── deterministic voice state ──"; node --test voice-state.test.mjs

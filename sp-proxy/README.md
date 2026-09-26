@@ -248,6 +248,43 @@ offers the typed room, and sessions in flight end at their deadline. The reaper 
 `SP_ROTATION_ID`: end open spoken sessions (or run the reaper once) before turning a rotation over,
 or the previous rotation's open calls are stranded until the provider closes them.
 
+### Activation runbook (owner decisions of 2026-09-26)
+
+The five decisions in design §14 were made on 2026-09-26; §18 of the design records them with their
+reasoning. This is the order of operations they imply. Nothing here is automated: every step is a
+Netlify UI or provider-console change made by the owner, and the route stays dark until step 4.
+
+1. **Provider budget first.** The spoken room runs on the **existing** sp-proxy OpenAI project and
+   key (decision 5: no dedicated project). That means one hard limit covers the typed room's
+   speech calls and the spoken room together, so set the project's monthly hard limit
+   deliberately: about two blocks of planned spend (≈ $40 on the mini tier, per design §9) **above**
+   what the typed room already uses, and note that a spoken-room burn spends the typed room's
+   allowance too. Refresh `REALTIME_RATE_CARD` from the live pricing page before step 4.
+2. **Rate card and models.** `SP_REALTIME_MODEL` = the current `gpt-realtime-mini` release
+   (decision 1: mini first; the full tier is auditioned, not deployed). `SP_REALTIME_TRANSCRIPTION_MODEL`
+   = `gpt-4o-mini-transcribe`. Both are required; there are no defaults.
+3. **Envelope.** `SP_REALTIME_ROTATION_CAP_USD=20` in its own ledger namespace (decision 2:
+   separate from the actor/voice cap). Leave `SP_REALTIME_STARTS_PER_DAY` (40) and
+   `SP_REALTIME_STARTS_PER_HALF_HOUR` (8) at their defaults for the pilot;
+   `SP_REALTIME_MAX_SESSION_MINUTES` stays 15.
+4. **Turn it on.** `SP_REALTIME_ENABLED=true` on the production context only, then redeploy. Health
+   (`GET /api/sp/realtime` with the passcode) must report `enabled:true` and the reviewed cases
+   with a voice — Dana, Marcus, Ray and Morgan. Morgan joined the pack on 2026-09-26 with the
+   uniform suicide screen (`si_direct` / `si_passive` / `si_euphemism`, a critical `c_si`) the
+   pack's D3/D12 rule requires of every case; the owner attested those lines the same day, which
+   is the only state the attestation validator allows a case in a reviewed pack to have. His voice
+   is the audition table's Marin and his delivery the faculty preview's portrayal line
+   (`REALTIME_DELIVERY`). The Morgan-and-Maya family visit is not a
+   realtime case at all yet: the learner tool shows one door card to the faculty preview
+   (chained pipeline, two voices) until the two-session family room in
+   `docs/superpowers/specs/2026-09-26-family-room-two-voice-design.md` is built.
+5. **Consent stays as shipped** (decision 4): the copy names OpenAI, states this tool stores no
+   audio or transcript, does not claim zero provider retention, and is bound to the model name, so a
+   model change re-asks every learner. Bump `SPOKEN_CONSENT_VERSION` in the tool if the deployed
+   project's retention or Traces setting changes.
+6. **Red-team section R** (`REDTEAM_CHECKLIST.md`) after the first production deploy and after every
+   model or pack change, with a headset and with speakers.
+
 ## Environment variables (names only)
 
 Enter secrets and deployment-specific values only in the hosting dashboard. Never place them in
