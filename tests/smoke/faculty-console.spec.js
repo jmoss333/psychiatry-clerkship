@@ -2564,12 +2564,15 @@ test.describe('phone client', () => {
     await installRepositoryApi(page, workflowBank());
     await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
     await page.route('**/api/attest?view=diff&slug=t_mood.md', route => fulfillJson(route, 200, {
-      view: 'diff', slug: 't_mood.md', since: '2026-09-21', base: 'a'.repeat(40), head: 'b'.repeat(40), commit: null, compareUrl: null,
+      view: 'diff', slug: 't_mood.md', since: '2026-09-21', base: 'a'.repeat(40), head: 'b'.repeat(40), compareUrl: null,
+      commit: { sha: 'c'.repeat(40), pr: 813, title: 'WP-9 citations', date: '2026-09-25', url: 'https://github.example/pull/813' },
       files: [{ path: '03_Core_Topics/Mood/mood.md', status: 'modified', changed: true, truncated: false, tooLarge: false, hunks: [{ oldStart: 1, newStart: 1, rows: [
         { kind: 'context', segments: [{ t: 'eq', s: 'Unchanged sentence.' }] },
         { kind: 'change', segments: [{ t: 'eq', s: 'Lithium ' }, { t: 'del', s: 'always' }, { t: 'add', s: 'usually' }, { t: 'eq', s: ' needs levels.' }] },
       ] }] }],
-      record: [],
+      record: [{ key: 'quiz', status: 'modified', changed: true, truncated: false, tooLarge: false, hunks: [{ oldStart: 1, newStart: 1, rows: [
+        { kind: 'change', segments: [{ t: 'eq', s: 'Key: ' }, { t: 'del', s: 'B' }, { t: 'add', s: 'C' }] },
+      ] }] }],
     }));
     await unlockPhone(page);
     await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
@@ -2585,9 +2588,16 @@ test.describe('phone client', () => {
     await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
     expect(new URL(page.url()).searchParams.get('item')).toBe('page:t_mood.md');
     await page.getByRole('button', { name: 'What changed' }).click();
-    await expect(page.getByRole('dialog', { name: 'What changed since you signed' })).toBeVisible();
+    const changed = page.getByRole('dialog', { name: 'What changed since you signed' });
+    await expect(changed).toBeVisible();
+    await expect(changed.getByText('#813 · WP-9 citations · 2026-09-25')).toBeVisible();
+    await expect(changed.getByRole('link', { name: '#813' })).toHaveAttribute('href', 'https://github.example/pull/813');
     await expect(page.getByText('Lithium always needs levels.')).toBeVisible();
     await expect(page.getByText('Lithium usually needs levels.')).toBeVisible();
+    // The page record (quiz, key points, evidence) is part of what was signed: it must show too.
+    await expect(changed.getByText('Page record field quiz')).toBeVisible();
+    await expect(changed.getByText('Key: B')).toBeVisible();
+    await expect(changed.getByText('Key: C')).toBeVisible();
     await page.getByRole('button', { name: 'Close' }).click();
     const openInSite = page.getByRole('link', { name: 'Open in site' });
     await expect(openInSite).toHaveAttribute('href', `${MS3_URL}/?page=t_mood.md`);

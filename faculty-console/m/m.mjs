@@ -287,18 +287,41 @@ async function loadDiff(item) {
   state.diff = diff;
   renderItem();
 }
+function safeHttps(value) { try { const u = new URL(String(value)); return u.protocol === 'https:' ? u.href : null; } catch { return null; } }
+
+/** The desktop's context line: the correction's PR (or short sha), title and day; else the signing date. */
+function diffContext(diff) {
+  const commit = diff.commit && typeof diff.commit === 'object' ? diff.commit : null;
+  if (!commit) return typeof diff.since === 'string' && diff.since ? h('p', { text: `Since you signed on ${diff.since}` }) : null;
+  const label = Number.isSafeInteger(commit.pr) ? `#${commit.pr}` : String(commit.sha || '').slice(0, 7) || 'a change';
+  const url = safeHttps(commit.url);
+  const day = String(commit.date || '').slice(0, 10);   // the server sends the committer timestamp
+  return h('p', {}, [
+    url ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', text: label }) : label,
+    ` · ${String(commit.title || '')}${/^\d{4}-\d{2}-\d{2}$/.test(day) ? ` · ${day}` : ''}`,
+  ]);
+}
+
 function sheetChanged(item) {
   if (state.diff === null) { state.diff = { loading: true }; void loadDiff(item); }
   const loading = state.diff?.loading === true;
-  const lines = state.diff && !state.diff.error && !loading ? diffLines(state.diff) : [];
+  const ready = Boolean(state.diff) && !state.diff.error && !loading;
+  // The page record (quiz, key points, evidence) is signed with the text, so its changes are
+  // listed beside the files'; record entries carry the same hunk shape as a file.
+  const lines = ready ? diffLines({ files: [
+    ...(Array.isArray(state.diff.files) ? state.diff.files : []),
+    ...(Array.isArray(state.diff.record) ? state.diff.record : []).map(c => ({ ...c, path: `Page record field ${c.key}` })),
+  ] }) : [];
+  const compareUrl = ready ? safeHttps(state.diff.compareUrl) : null;
   return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'What changed since you signed' }, [
     h('h2', { text: 'What changed since you signed' }),
+    ready ? diffContext(state.diff) : null,
     loading ? h('p', { text: 'Loading the changes…' }) : null,
     state.diff?.error ? h('p', { class: 'field-error', role: 'alert', text: state.diff.error }) : null,
-    !loading && state.diff && !state.diff.error && !lines.length ? h('p', { text: 'No text change was recorded; the record or its fingerprint scope moved.' }) : null,
+    ready && !lines.length ? h('p', { text: 'No text change was recorded; the record or its fingerprint scope moved.' }) : null,
     // `lines` carries file / context / del / add / note kinds; a note marks a too-large, binary or truncated file.
     h('div', { class: 'lines' }, lines.map(line => h('div', { class: line.kind, text: line.text }))),
-    state.diff?.compareUrl ? h('p', {}, h('a', { href: state.diff.compareUrl, target: '_blank', rel: 'noopener noreferrer', text: 'Open the comparison on GitHub' })) : null,
+    compareUrl ? h('p', {}, h('a', { href: compareUrl, target: '_blank', rel: 'noopener noreferrer', text: 'Open the comparison on GitHub' })) : null,
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
 }
