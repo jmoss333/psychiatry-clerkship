@@ -3620,3 +3620,136 @@ test.describe('Essentials Phase 2', () => {
     } finally { await scratch.close(); }
   });
 });
+
+// 2026-09-26 — on production the Progress page's bars ("Mastery by blueprint", "Coverage by
+// section", the calibration rows and the placement result) were empty tracks: the label beside
+// each read "Mood 77%" while its `.hm-bars .fill` computed display:inline with a 0x0 box, because
+// the fill is a <span> nested one level below the flex item and an inline element ignores
+// width/height. tests/progress-bars-fill.test.mjs pins the rule in the file; this measures the
+// resolved box, which only exists in a browser, under both themes (dark redefines --accent and
+// --bg-alt). The learner record is a controlled cw_qb_v1 fixture, never live governance state.
+for (const theme of ['light', 'dark']) {
+  test(`Progress bars paint a fill whose width tracks the score (${theme} theme)`, async ({ page }, testInfo) => {
+    const meta = await (await requestGetWithRetry(page.request, '/topic_meta.json')).json();
+    const ref = Object.keys(meta).find(f => Array.isArray(meta[f] && meta[f].shelfBlueprint)
+      && meta[f].shelfBlueprint.includes('mood'));
+    if (!ref) throw new Error('topic_meta.json serves no page in the mood blueprint area; the fixture needs one');
+    await seedApp(page, testInfo, { storage: {
+      cw_theme: theme,
+      cw_qb_v1: { 'fixture-mood-item': { correct: true, pages: [ref] } },
+    } });
+    await page.goto('/?page=__progress__');
+    await expect(page.locator('#pgRoot')).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+
+    const section = page.locator('.hm-sec', { hasText: 'Mastery by blueprint' });
+    const row = section.locator('.hm-bars .brow').filter({ has: page.locator('.lab', { hasText: /^Mood$/ }) });
+    await expect(row).toHaveCount(1);
+    // TOPIC_META arrives after boot and specialRefresh() repaints the page; wait for the score.
+    await expect(row.locator('.pc')).toHaveText(/^\d+%/);
+    const pct = parseInt((await row.locator('.pc').textContent()).trim(), 10);
+    expect(pct).toBeGreaterThan(0);
+    await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => null))));
+
+    const track = await row.locator('.track').boundingBox();
+    expect(track, 'the track has a box').not.toBeNull();
+    expect(track.width).toBeGreaterThan(0);
+    const fill = await row.locator('.fill').boundingBox();
+    expect(fill, `the fill has no box at all (declared width ${pct}%)`).not.toBeNull();
+    expect(fill.height).toBeGreaterThan(0);
+    expect(fill.width).toBeGreaterThan(0);
+    expect(Math.abs(fill.width / track.width - pct / 100)).toBeLessThanOrEqual(0.02);
+
+    // Every bar on the page, whichever section emitted it: a declared width must render as a
+    // painted box, and a 0% bar must stay empty.
+    const bars = await page.locator('.hm-bars .fill').evaluateAll(els => els.map(el => {
+      const box = el.getBoundingClientRect();
+      const css = getComputedStyle(el);
+      return { declared: parseFloat(el.style.width) || 0, width: box.width, height: box.height,
+        display: css.display, background: css.backgroundColor };
+    }));
+    expect(bars.length).toBeGreaterThan(1);
+    for (const bar of bars) {
+      expect(bar.display).not.toBe('inline');
+      expect(bar.background).not.toBe('rgba(0, 0, 0, 0)');
+      if (bar.declared > 0) {
+        expect(bar.width).toBeGreaterThan(0);
+        expect(bar.height).toBeGreaterThan(0);
+      } else {
+        expect(bar.width).toBe(0);
+      }
+    }
+    await expectHealthy(page);
+  });
+}
+
+// The score column beside each bar was 42px wide: enough for "72%", not for "50% · few",
+// "not started" or a calibration row's "100% · 12", which wrapped onto two lines at every viewport
+// (visible in the #825 screenshots). Seeds every label shape the three emitters produce -- a
+// low-n mastery row, not-started rows, a coverage row and two calibration rows -- and asserts each
+// label renders as ONE line box with nothing overflowing, and that the tracks in a section still
+// share one left edge (a fixed basis, not auto, is what keeps them aligned). Desktop and phone.
+// The category NAME column is measured the same way: below 620px the 42% column could not hold
+// "Somatic / Sleep / Eating (other)" (188px), three names wrapped and the bar beside them shrank
+// to 96px at 390px, so the row stacks there and the bar must keep most of the row's width.
+for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: 'phone', ...PHONE }]) {
+  test(`Progress bar labels stay on one line and the tracks stay aligned (${viewport.name})`, async ({ page }, testInfo) => {
+    const meta = await (await requestGetWithRetry(page.request, '/topic_meta.json')).json();
+    const pick = (cat) => Object.keys(meta).find(f => Array.isArray(meta[f] && meta[f].shelfBlueprint)
+      && meta[f].shelfBlueprint.includes(cat));
+    const mood = pick('mood'), psychosis = pick('psychosis');
+    if (!mood || !psychosis) throw new Error('topic_meta.json serves no mood or psychosis blueprint page; the fixture needs both');
+    const qb = {};
+    for (let i = 0; i < 12; i++) qb[`fixture-mood-${i}`] = { correct: true, pages: [mood], confidence: 'certain' };
+    for (let i = 0; i < 3; i++) qb[`fixture-psych-${i}`] = { correct: i < 1, pages: [psychosis], confidence: 'guess' };
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await seedApp(page, testInfo, { storage: {
+      cw_qb_v1: qb,
+      cw_progress_v1: { [mood]: { done: true, at: '2026-08-17' } },
+    } });
+    await page.goto('/?page=__progress__');
+    await expect(page.locator('#pgRoot')).toBeVisible();
+    const mastery = page.locator('.hm-sec', { hasText: 'Mastery by blueprint' });
+    await expect(mastery.locator('.pc', { hasText: /· few$/ })).toHaveCount(1);
+    await expect(mastery.locator('.pc', { hasText: /^not started$/ }).first()).toBeVisible();
+    await expect(page.locator('.hm-sec', { hasText: 'Confidence calibration' }).locator('.pc', { hasText: /^\d+% · \d+$/ }).first()).toBeVisible();
+    await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => null))));
+
+    const report = await page.locator('.hm-bars').evaluateAll(sections => sections.map(bars => {
+      const rows = [...bars.querySelectorAll('.brow')];
+      return {
+        heading: ((bars.closest('.hm-sec') || bars).querySelector('h2') || {}).textContent || '(no heading)',
+        rows: rows.map(row => {
+          const pc = row.querySelector('.pc');
+          const lab = row.querySelector('.lab');
+          const lineBoxes = (el) => { const range = document.createRange(); range.selectNodeContents(el); return range.getClientRects().length; };
+          return {
+            label: pc.textContent, lines: lineBoxes(pc),
+            name: lab.textContent, nameLines: lineBoxes(lab),
+            overflow: pc.scrollWidth - pc.clientWidth,
+            rowWidth: row.getBoundingClientRect().width,
+            trackLeft: row.querySelector('.track').getBoundingClientRect().left,
+            trackWidth: row.querySelector('.track').getBoundingClientRect().width,
+          };
+        }),
+      };
+    }));
+    expect(report.length).toBeGreaterThanOrEqual(3);
+    const labels = report.flatMap(s => s.rows.map(r => r.label));
+    expect(labels).toEqual(expect.arrayContaining([expect.stringMatching(/· few$/), 'not started', expect.stringMatching(/^\d+% · \d+$/), expect.stringMatching(/^\d+\/\d+$/)]));
+    // On a phone the row stacks (name above, bar beside its score), so the bar keeps most of the
+    // row; on desktop the three columns sit side by side and the bar keeps a large minority.
+    const minTrackShare = viewport.name === 'phone' ? 0.6 : 0.4;
+    for (const section of report) {
+      for (const row of section.rows) {
+        expect(row.lines, `${section.heading}: "${row.label}" wraps`).toBe(1);
+        expect(row.nameLines, `${section.heading}: "${row.name}" wraps`).toBe(1);
+        expect(row.overflow, `${section.heading}: "${row.label}" overflows its column`).toBeLessThanOrEqual(0.5);
+        expect(row.trackWidth / row.rowWidth, `${section.heading}: "${row.name}" bar squeezed to ${Math.round(row.trackWidth)}px of ${Math.round(row.rowWidth)}px`).toBeGreaterThanOrEqual(minTrackShare);
+      }
+      const lefts = section.rows.map(r => r.trackLeft);
+      expect(Math.max(...lefts) - Math.min(...lefts), `${section.heading}: tracks misaligned`).toBeLessThanOrEqual(0.5);
+    }
+    await expectHealthy(page);
+  });
+}
