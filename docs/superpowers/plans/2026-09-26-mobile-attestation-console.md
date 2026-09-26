@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
-**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
 
 ## Global Constraints
 
@@ -896,7 +896,9 @@ function recompute() {
 }
 async function load({ silent = false } = {}) {
   if (!getKey()) { renderGate(); return false; }
-  if (navigator.onLine === false) { renderLoadError('You are offline.'); return false; }
+  // Offline: report in place — a loaded queue or item stays readable (spec §8); render() shows the
+  // error screen only when nothing has loaded yet.
+  if (navigator.onLine === false) { state.message = 'You are offline.'; render(); return false; }
   if (!silent) renderBusy('Loading the review queue…');
   try {
     const server = await api(API);
@@ -1012,7 +1014,8 @@ function renderQueue() {
 }
 
 function render() {
-  if (!getKey() || !state.server) { renderGate(); return; }
+  if (!getKey()) { renderGate(); return; }
+  if (!state.server) { renderLoadError(state.message || 'The review queue has not loaded yet.'); return; }
   if (state.screen === 'item' && state.selectedKey) { renderItem(); return; }
   renderQueue();
 }
