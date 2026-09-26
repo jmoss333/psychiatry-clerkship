@@ -6,9 +6,9 @@ echo "── client mock provider (Dana) ──"; node smoke.test.js
 echo "── client mock provider (Marcus) ──"; node marcus.test.js
 echo "── client mock provider (Ray) ──"; node ray.test.js
 echo "── client mock provider (Morgan) ──"; node morgan.test.js
-echo "── server/client gate parity (both cases) ──"; node parity.test.mjs
+echo "── server/client gate parity (every pack case) ──"; node parity.test.mjs
 echo "── tab-scoped credential storage ──"; node storage.test.mjs
-echo "── locked-content leak check (both cases) ──"; node leak.test.mjs
+echo "── locked-content leak check (every pack case) ──"; node leak.test.mjs
 echo "── learner review filter + managed-voice gate ──"; node review-filter.test.mjs
 echo "── Morgan in the pack: attested local case + uniform screen ──"; node --test morgan-pack.test.mjs
 echo "── generated preview reproducibility ──"; node preview.test.mjs

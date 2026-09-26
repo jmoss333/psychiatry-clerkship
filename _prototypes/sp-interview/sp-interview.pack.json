@@ -1,15 +1,15 @@
 {
   "schemaVersion": "1.0",
   "tool": "sp-interview",
-  "version": "0.1.0",
-  "built": "2026-07-12",
+  "version": "0.2.0",
+  "built": "2026-09-26",
   "evidenceThrough": "2026-06-30",
   "reviewCadenceDays": 180,
   "status": "reviewed",
   "_incorporationChecklist": {
     "source": "Original fictional composite authored for this tool. Interview-skills framing per pg_interview.md; SI-inquiry language per house communication cases and C-SSRS module.",
     "claimExtraction": "No dose literals anywhere in this pack (regex \\d+\\s?(mg|mcg|mL) must return nothing). No management content; this is an interviewing tool.",
-    "facultyReview": "PENDING — do not add to reviewed.json until Joshua Moss, MD attests. Ships watermarked 'Draft — pending faculty review'.",
+    "facultyReview": "Attested — reviewed.json row for sp-interview.html (2026-09-21, faculty console). A content change drifts that row to pending on every surface until the console re-attests it; the pack-case facultyReview blocks are registration, not the attestation of record.",
     "noPhi": "All personas are fictional composites. No patient-identifiable data. Students are warned not to enter real-patient information.",
     "modelPolicy": "Live mode requires a pinned model recorded in engine.modelPinned. Any model change re-triggers faculty review of actor behavior against the golden transcript.",
     "publishTarget": "08_Cases_and_Simulation/sp-interview.html + sp-interview.pack.json (after attestation)"
@@ -2267,7 +2267,7 @@
           "patterns": [
             "tell me (?:a little |a bit )?(?:more )?about",
             "what(?: has|\\’s|'s) been (?:going on|happening)",
-            "where would you like to start",
+            "where would you like to (?:start|begin)",
             "how do you see"
           ]
         },
@@ -2309,7 +2309,8 @@
             "how does (?:drinking|alcohol) help",
             "good things about",
             "benefits?",
-            "what does it do for you"
+            "what does it do for you",
+            "what does (?:it|drinking|alcohol) give you"
           ]
         },
         {
@@ -2340,7 +2341,8 @@
             "independence",
             "reliable",
             "maya",
-            "workday mornings"
+            "workday mornings",
+            "wants? to protect"
           ]
         },
         {
@@ -2632,7 +2634,7 @@
           ],
           "open": [
             "No. And I appreciate you asking it straight instead of tiptoeing. I've been tired, and I've canceled on my daughter more than I'd like. I haven't wanted to be dead.",
-            "No. If I'm honest, the thing I've been most afraid of is Maya seeing how bad the mornings got — not of dying."
+            "No. If I'm honest, what I've been most afraid of is losing Sunday breakfast with Maya — not dying."
           ]
         },
         "si_passive": {
@@ -2640,7 +2642,7 @@
             "Tired, sure. Not that kind of tired. I still want the mornings — I just want them without the fog."
           ],
           "open": [
-            "There were a couple of mornings I didn't want to get up. Not because I wanted to be gone. Because I knew what the day was going to be like. That's different, and I know it's different."
+            "There were foggy mornings I didn't want to face. Not because I wanted to be gone — because I knew what the day was going to be like. That's different, and I know it's different."
           ]
         },
         "si_euphemism": {
@@ -2764,7 +2766,7 @@
       },
       "criticalMiss": {
         "partial": "Suicide was only approached sideways. Morgan answered the narrow question you asked and nothing more. A patient who is matter-of-fact after an alcohol-related fall is exactly who gets missed — ask plainly.",
-        "missed": "Suicide was never asked about. Ambivalence about drinking is not the only risk in the room: a fall on the stairs while drinking, the foggy mornings, and living alone are each a reason to ask. A likely no is still a question you ask, in plain words, every admission.",
+        "missed": "Suicide was never asked about. Ambivalence about drinking is not the only risk in the room: a fall on the stairs while drinking, two years of heavier drinking, and living alone are each a reason to ask. A likely no is still a question you ask, in plain words, every admission.",
         "rehearse": "“Have you had thoughts of killing yourself?”",
         "ref": "→ pg_interview.md · asking about suicide directly, in plain language",
         "reframe": "Asking doesn't plant the thought, and it doesn't accuse. Not asking leaves Morgan alone with whatever the mornings have been."
@@ -2772,7 +2774,8 @@
       "debriefTeachingPoints": [
         "Ambivalence is a normal part of change and can be explored without confrontation.",
         "Reflective listening and autonomy support help the learner understand both sustain talk and change talk.",
-        "Withdrawal risk is an individual clinical question; this simulation does not teach abrupt stopping or withdrawal management."
+        "Withdrawal risk is an individual clinical question; this simulation does not teach abrupt stopping or withdrawal management.",
+        "Suicide is asked about plainly on every admission, including one where ambivalence about drinking is the presenting problem; a matter-of-fact no after an alcohol-related fall is an answer, not a reason to have skipped the question."
       ],
       "linkedPages": [
         "pg_interview.md",

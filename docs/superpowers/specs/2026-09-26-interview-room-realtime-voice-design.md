@@ -586,7 +586,7 @@ the tool and a browser suite moved these lines, each pinned by a test:
 |---|---|---|---|
 | 1 | Model tier | **Mini first, audition the full tier** | `SP_REALTIME_MODEL` = the current `gpt-realtime-mini`; the full tier is an audition item, not a deployment. Disclosure logic is the proxy's, so fidelity risk on mini is bounded to voice quality. |
 | 2 | Envelope | **Separate $20 realtime envelope** | `SP_REALTIME_ROTATION_CAP_USD=20` in the `realtime` namespace; the typed room's actor/voice cap is untouched. Accounting only (§9). |
-| 3 | Pilot cases | **All single-voice cases, Morgan included; the family room designed next** | Dana, Marcus, Ray and Morgan. Morgan entered the pack with the uniform suicide screen (below), **attested by the owner on 2026-09-26** after reading the authored lines. The Morgan-and-Maya meeting needs two voices and is a separate design (`2026-09-26-family-room-two-voice-design.md`); the tool shows one door card to the faculty preview meanwhile. |
+| 3 | Pilot cases | **All single-voice cases, Morgan included; the family room designed next** | Dana, Marcus, Ray and Morgan. Morgan entered the pack with the uniform suicide screen (below), **attested by the owner on 2026-09-26** after reading the authored lines. Morgan is a **typed-room** case the moment the learner sites publish this pack — nothing gates a reviewed pack case but its row, the proxy accepts him on merge, and the offline mock offers him too — and a spoken case only after activation; the full red-team checklist is re-run and re-signed against the new pack sha after that deploy. The Morgan-and-Maya meeting needs two voices and is a separate design (`2026-09-26-family-room-two-voice-design.md`); the tool shows one door card to the faculty preview meanwhile — an anchor that targets the **top window**, because the tool runs inside the learner shell's iframe and the preview refuses to be framed. |
 | 4 | Consent | **As shipped** | Model-bound; re-asked on a model change. A retention or Traces change bumps `SPOKEN_CONSENT_VERSION`. |
 | 5 | Provider budget and key | **Reuse the existing sp-proxy project and key** (against the design's recommendation) | One hard limit covers typed-room speech and the spoken room. The runbook (README) sizes it above the typed room's use and names the cost: a spoken-room burn spends the typed room's allowance. The dedicated-project option stays open and is a one-variable change. |
 
@@ -645,6 +645,22 @@ path under the separation rule, so it cannot ride a content PR. The Sim-to-Ward 
 `13_Faculty_Resources/Assessment/encounter_card.md` has no Morgan column: `tests/assessment-pack.test.mjs`
 places only the cases the table names, so it stays green, but mapping Morgan's
 motivational-interviewing items onto the DO-1 rows is a faculty assessment decision, not an
-agent's.
+agent's. A third is a governance-tool gap the review named: a pack-case `facultyReview` born
+`reviewed` is invisible to `check_governance_separation.py` (it reads the three registries only)
+and unwritable by the console; the three earlier pack rows were born the same way. Recording
+pack rows as registration data, or teaching the classifier the pack, is an owner decision for a
+governance PR.
+
+**Second review pass (same day).** Beyond the four amended lines above, the pass re-anchored two
+screen lines on the inventory (`si_direct` open: losing Sunday breakfast with Maya, not "Maya
+seeing how bad the mornings got"; `si_passive` open: foggy mornings, not "a couple of mornings I
+didn't want to get up"), replaced "the foggy mornings" in the missed-screen debrief with "two
+years of heavier drinking" (a risk reason, not a mood motif), added a fourth teaching point for
+the case's only critical item, and widened three recognition patterns in both copies (begin /
+give you / want to protect) so the coach's own suggested phrasings are credited. The tool now
+grades Morgan's technique domain on his technique items plus the plain screen (a complete MI
+interview without the screen is "partly there"), gives a conversational voice its own pace
+label, and keeps the family door inert while the consent is open. Every changed spoken line is
+listed on PR #821 for the owner's re-read.
 
 

@@ -58,6 +58,30 @@ await run('skilled MI interview — every checklist item incl. the plain suicide
   if(rub.organization!=='observed')errs.push('organization should be observed with an opening and a next step (got '+rub.organization+')');
   if(rub.alliance==='missed')errs.push('alliance should credit reflections and autonomy support');
   if(s.rapport<1)errs.push('rapport should rise with reflections and autonomy support (got '+s.rapport+')');
+  if(rub.technique!=='observed')errs.push('technique should be observed: every MI technique item plus the plain screen (got '+rub.technique+')');
+  return errs;
+});
+
+await run('complete MI interview without the screen — technique is partly there, never observed or missed',SKILLED.filter(m=>!/killing yourself/.test(m)),(s,cov,rub)=>{
+  const errs=[];
+  if(status(cov,'c_si')!=='missed')errs.push('c_si should be missed');
+  if(rub.technique!=='partial')errs.push('technique should be partial when the MI items are covered but the screen is not (got '+rub.technique+')');
+  if(rub.alliance==='missed')errs.push('alliance should credit the reflection and autonomy support (got '+rub.alliance+')');
+  return errs;
+});
+
+await run('the coach\'s suggested phrasings are recognised — a hint never steers the learner into unscored wording',[
+ "Hi, my name is Alex, I'm the medical student on the team.",
+ "Where would you like to begin?",
+ "What does alcohol give you?",
+ "And what does it cost you?",
+ "What do you most want to protect in your daily life?",
+],(s,cov)=>{
+  const errs=[];
+  [['c_open','open_invite'],['c_ambivalence','explore_benefits'],['c_values','values']].forEach(([item,intent])=>{
+    if(!s.covered[intent])errs.push(intent+' not recognised from the hint phrasing');
+    if(status(cov,item)!=='observed')errs.push(item+' is '+status(cov,item)+' after saying what the hint suggests');
+  });
   return errs;
 });
 
@@ -125,6 +149,28 @@ await run('a withdrawal-safety question credits its own intent and never the sui
   return errs;
 });
 
+// Every pack case must survive one Realistic-mode turn: the offline mock reads difficulty.realistic
+// on every reply, and a case copied in with a string difficulty (Morgan, 2026-09-26) threw here.
+{
+  const errs=[];
+  for(const c of pack.cases){
+    try{const s=P.start(c,{difficulty:'realistic'});const r=await P.respond(s,"Tell me a little about what's been going on.");if(!r||typeof r.reply!=='string'||!r.reply)errs.push(c.id+': no reply');}
+    catch(e){errs.push(c.id+': '+e.message);}
+  }
+  console.log((errs.length?'FAIL':'PASS')+' — every pack case answers a first turn in Realistic mode');
+  errs.forEach(e=>console.log('   · '+e)); if(errs.length)failures++;
+}
+// The select card reads the persona voice for a pace label; a conversational voice is its own pace.
+{
+  const errs=[];
+  const dana=pack.cases.find(c=>c.id==='sp_depression_gated_si_001');
+  const pm=T.paceFor(cd), pd=T.paceFor(dana);
+  if(pm.label!=='conversational, even')errs.push('Morgan pace label: '+pm.label);
+  if(pm.label===pd.label)errs.push('Morgan must not inherit the depression cadence label');
+  if(pm.rate!==0.98)errs.push('Morgan rate should follow the audition profile (0.98), got '+pm.rate);
+  console.log((errs.length?'FAIL':'PASS')+' — Morgan carries a conversational pace, not the measured-flat default');
+  errs.forEach(e=>console.log('   · '+e)); if(errs.length)failures++;
+}
 console.log(failures?('\n'+failures+' suite(s) failed'):'\nALL PASS');
 process.exit(failures?1:0);
 })();

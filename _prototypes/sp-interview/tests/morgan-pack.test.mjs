@@ -3,9 +3,11 @@
 // (sp-interview.local-cases.js, attested 2026-09-09), which the faculty preview and the Dana
 // live-context prototype import. This test pins the exact relationship between the two copies:
 // the pack's Morgan is the local Morgan plus the uniform suicide screen the pack's D3/D12 rule
-// requires of every case — and nothing else — and that screen is authored content, so the pack
-// row is pending until it is re-attested. A drift between the two copies anywhere else is a
-// finding, not a merge.
+// requires of every case — and nothing else. That screen is authored content on an attested
+// case; the attestation validator forbids a non-reviewed case in a reviewed pack, so the pack
+// row is reviewed (owner, 2026-09-26) and every later change to those lines re-attests it (the
+// PR that carries the change lists the lines). A drift between the two copies anywhere else is
+// a finding, not a merge.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -44,6 +46,8 @@ function withoutScreen(caseDef) {
   // The local registry labels difficulty ("developing"); the pack's engine reads a per-mode object
   // (difficulty.realistic.guardedShift in the offline mock), so the pack copy takes the shared shape.
   copy.difficulty = localMorgan.difficulty;
+  // The screen brings one teaching point for the case's only critical item; the local three stay.
+  copy.debriefTeachingPoints = copy.debriefTeachingPoints.filter((point) => !/^Suicide/.test(point));
   return copy;
 }
 
@@ -109,10 +113,23 @@ test('every screen intent has an in-character, rapport-banded, negative reply; n
     }
   }
   assert.doesNotMatch(JSON.stringify(packMorgan), /\d+\s?(mg|mcg|mL)\b/);
-  // Every fact the screen lines lean on is in Morgan's own inventory: the stairs at home after
-  // drinking, foggy mornings, Maya (adult daughter), living alone. Nothing new is asserted.
-  const inventory = JSON.stringify(localMorgan).toLowerCase();
-  for (const fact of ['stairs', 'foggy mornings', 'maya', 'daughter', 'lives alone']) assert.ok(inventory.includes(fact), fact);
+  // Every screen line leans on a fact from Morgan's own inventory — the stairs at home after
+  // drinking, foggy mornings, Maya and Sunday breakfast, living alone, the drinking itself — and
+  // asserts nothing new. Each anchor is checked against the inventory AND each line must carry
+  // one; a line that names none is rejected (the negative control keeps this check falsifiable).
+  const inventory = JSON.stringify(localMorgan.localGrounding.ordinaryFacts).toLowerCase();
+  const anchors = ['stairs', 'fall', 'fell', 'mornings', 'maya', 'daughter', 'breakfast', 'alone', 'drinking', 'drink', 'beer'];
+  for (const anchor of anchors) assert.ok(inventory.includes(anchor), `inventory carries "${anchor}"`);
+  const anchored = (line) => anchors.some((anchor) => line.toLowerCase().includes(anchor)) || /hungover/i.test(line);
+  for (const id of SCREEN_INTENTS) {
+    for (const line of [...packMorgan.responses[id].guarded, ...packMorgan.responses[id].open]) assert.ok(anchored(line), `${id}: "${line}" names an inventory fact`);
+  }
+  assert.equal(anchored('No. Nothing like that, ever.'), false, 'the anchor check can fail');
+  assert.doesNotMatch(JSON.stringify(packMorgan.responses.si_direct), /seeing how bad|Maya seeing/i, 'no fact outside the inventory');
+  assert.match(packMorgan.criticalMiss.missed, /two years of heavier drinking/, 'the missed-screen debrief names risk reasons, not a mood motif');
+  assert.doesNotMatch(packMorgan.criticalMiss.missed, /foggy mornings/);
+  assert.equal(packMorgan.debriefTeachingPoints.length, 4);
+  assert.match(packMorgan.debriefTeachingPoints[3], /^Suicide is asked about plainly/);
   assert.match(packMorgan.localGrounding.informationLimits.safety, /authored negative/);
   assert.match(packMorgan.localGrounding.informationLimits.safety, /violence and broader substance-use histories are not established/);
 });

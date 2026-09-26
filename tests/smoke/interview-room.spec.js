@@ -635,6 +635,13 @@ test('the spoken room is the default, chosen before a case, and its consent name
   await expect(consent).toContainText(/patient model the clerkship currently uses/i);
   await expect(page.locator('.msg.pt')).toHaveCount(0);
   expect((await log(page)).events).not.toContain('media:request');
+  // Every control under the consent is inert while it is open; the family door — the one control
+  // that navigates away — included.
+  await expect(supportedButton(page)).toBeDisabled();
+  const door = page.getByRole('link', { name: /Open the family visit/ });
+  await expect(door).toHaveAttribute('aria-disabled', 'true');
+  await expect(door).toHaveAttribute('tabindex', '-1');
+  expect(await door.evaluate((element) => getComputedStyle(element).pointerEvents)).toBe('none');
 
   await consent.getByRole('button', { name: 'Enter the spoken room' }).click();
   await expect(page.locator('.msg.pt').filter({ hasText: OPENING })).toBeVisible();
@@ -1037,7 +1044,7 @@ test('a legacy managed-voice preference is retired into the typed room with devi
   expect(captured.fetches.some(({ url }) => url.includes('/sp/voice'))).toBe(false);
 });
 
-test('the family visit is one card that opens the faculty preview in the same tab without carrying access credentials', async ({ page }) => {
+test('the family visit is one card that opens the faculty preview in this tab, by the top window, without carrying access credentials', async ({ page }) => {
   await openRoom(page);
   // The retired generic link-out never comes back; the family meeting is a per-case door.
   await expect(page.getByRole('region', { name: 'Spoken interviews' })).toHaveCount(0);
@@ -1045,11 +1052,22 @@ test('the family visit is one card that opens the faculty preview in the same ta
   await expect(card).toBeVisible();
   await expect(card).toContainText(/two voices/i);
   await expect(card).toContainText(/passcode stays here/i);
-  expect(await card.evaluate((element) => !!(element.compareDocumentPosition(document.querySelector('.case')) & Node.DOCUMENT_POSITION_PRECEDING))).toBe(true);
+  // The door follows the whole case grid and is not inside it (a door inside the grid, or after
+  // the first card only, would both satisfy a weaker "after a .case" check).
+  expect(await card.evaluate((element) => {
+    const grid = document.querySelector('.casegrid');
+    return !element.closest('.casegrid') && !!(grid.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING);
+  })).toBe(true);
+  expect(await card.evaluate((element) => parseFloat(getComputedStyle(element).marginTop))).toBeGreaterThanOrEqual(12);
   const link = card.getByRole('link', { name: /Open the family visit/ });
   expect(await link.evaluate((element) => element.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
-  await expect(link).toHaveAttribute('rel', /noopener/);
-  await expect(link).not.toHaveAttribute('target', '_blank');
+  // Both rel tokens: noopener (no window handle) and noreferrer (no learner-site origin leaks as Referer).
+  await expect(link).toHaveAttribute('rel', /\bnoopener\b/);
+  await expect(link).toHaveAttribute('rel', /\bnoreferrer\b/);
+  // The tool runs inside the learner shell's iframe and the preview refuses to be framed
+  // (X-Frame-Options: DENY), so the anchor must navigate the top window. tool-contracts.spec.js
+  // proves the framed click on the real shell; this proves the attribute the shell path relies on.
+  await expect(link).toHaveAttribute('target', '_top');
   const destination = 'https://interview-room-faculty-preview.netlify.app/?preset=trainee';
   let navigation;
   await page.route(destination, async (route) => {
@@ -1062,8 +1080,9 @@ test('the family visit is one card that opens the faculty preview in the same ta
   expect(page.context().pages()).toHaveLength(1);
   expect(navigation.method()).toBe('GET');
   expect(navigation.postData()).toBeNull();
-  expect(navigation.headers()['x-preview-key']).toBeUndefined();
-  expect(navigation.headers()['x-student-key']).toBeUndefined();
+  // A plain anchor can never add a custom header, so asserting x-preview-key is absent proves
+  // nothing. What the door CAN leak is the Referer (rel=noreferrer) and a cookie; assert those.
+  expect((await navigation.allHeaders()).referer).toBeUndefined();
   expect(navigation.headers().cookie).toBeUndefined();
 });
 

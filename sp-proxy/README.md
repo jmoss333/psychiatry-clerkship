@@ -280,7 +280,13 @@ Netlify UI or provider-console change made by the owner, and the route stays dar
    lines and added two `si_euphemism` variants; the PR body lists every amended line, and the
    owner's approval there is the durable record of his re-read of the final text. His voice
    is the audition table's Marin and his delivery the faculty preview's portrayal line
-   (`REALTIME_DELIVERY`). The Morgan-and-Maya family visit is not a
+   (`REALTIME_DELIVERY`). **He is a typed-room case first.** Nothing gates a reviewed pack case
+   but its row: the proxy accepts him as soon as the PR merges to `main` (`SP_PACK_URL` reads
+   `?ref=main`, 5-minute TTL), and learners see him in the typed room — offline mock included —
+   at the release train's next fast-forward, before any step on this list is taken; the spoken
+   room only adds his voice. The pack sha changed with him, so after that deploy the **full**
+   `REDTEAM_CHECKLIST.md` is re-run and re-signed with `record_red_team.py` against the new
+   sha, not only section R. The Morgan-and-Maya family visit is not a
    realtime case at all yet: the learner tool shows one door card to the faculty preview
    (chained pipeline, two voices) until the two-session family room in
    `docs/superpowers/specs/2026-09-26-family-room-two-voice-design.md` is built.

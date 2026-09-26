@@ -38,7 +38,9 @@ test('exports one local attested Morgan case and a matching speech profile',()=>
   // canonical pack (owner decision 3 of the real-time voice design) as this attested case plus
   // the pack's uniform suicide screen; the exact delta between the two copies is pinned by
   // morgan-pack.test.mjs. This registry keeps grounding the faculty preview and the disabled
-  // live-context prototype, so the local copy must stay, unchanged, beside the pack copy.
+  // live-context prototype, so the local copy stays beside the pack copy and the two move
+  // together: on 2026-09-26 three recognition patterns (begin / give you / want to protect) were
+  // widened in both so the coach's suggested phrasings are credited.
   const packCopy=canonical.cases.find(item=>item.id===id);
   assert.ok(packCopy,'the canonical pack carries Morgan since 2026-09-26');
   assert.equal(packCopy.facultyReview.status,'reviewed');
