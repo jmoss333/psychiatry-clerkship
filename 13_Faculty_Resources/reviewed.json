@@ -422,14 +422,14 @@
     "contentHash": "5e8f561af3029301ed87dfee8a99afed162b555f"
   },
   "ddx.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "Withdrawn 2026-09-25 before #781 merged: page text changed on main after signing (#813 WP-9a), so the stored hash no longer matched head. Prior review: 2026-09-21.",
-    "at": "2026-09-25",
-    "by": "Pending faculty review"
+    "at": "2026-09-26",
+    "by": "Joshua Moss, MD",
+    "contentHash": "a41e04b9ad8e258df5c36959d751ec9c3a6930aa"
   },
   "t_mood.md": {
     "status": "pending",
