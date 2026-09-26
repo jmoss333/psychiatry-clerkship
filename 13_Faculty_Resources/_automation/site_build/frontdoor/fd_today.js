@@ -420,22 +420,20 @@ function fdToday(index, state){
   out+=FD_TODAY_LEAD_END;
   if(st.offlineHtml)out+=st.offlineHtml;
 
-  /* The exam-date prompt, BELOW the lead card: One Thing First keeps its single primary action,
-     and nothing here can push that card past the phone fold. It is the settings panel's own field
-     type (data-fd-exam-date), not a second way to open the panel -- a second settings opener would
-     become restoreInvoker's equivalent of the gear, so closing the panel after a theme change
-     could land focus here instead. fd_wire.js commits this input on change exactly as it commits
-     the panel's: it stores the date, renders nothing and moves no focus, so the field is never
-     rebuilt under the learner, and the next navigation's render drops the prompt. The id differs
-     from the panel's (fdSetExam) because both can be in the document while the panel is open.
+  /* The exam-date nudge, BELOW the lead card: One Thing First keeps its single primary action, and
+     nothing here can push that card past the phone fold. It used to duplicate the settings panel's
+     own <input type=date> field inline; the date now has exactly one home, the panel's Pacing
+     section (fd_sheet.js), and this is only a nudge toward it. Its one control reopens Settings via
+     the SAME data-fd-settings action the gear already exposes -- a second TRIGGER for one action,
+     not a second action. fd_wire.js's equivalentControl already restores focus to the gear once an
+     invoker is gone (any live control sharing the same action attribute and value stands in for it),
+     so this element disappearing the instant the date is saved needs no new fallback code.
      fdExamDatePrompt (fd_state.js) decides whether to ask and names the field. */
   var examLabel=hasWeek?fdExamDatePrompt(idx.path&&idx.path.id,nowMs):'';
   if(examLabel){
     out+='<div class="fd-today__exam">'+
-      '<label class="fd-today__examlabel" for="fdTodayExam">'+fdEsc(examLabel)+'</label>'+
-      '<input id="fdTodayExam" class="fd-today__examdate" type="date" data-fd-exam-date value="">'+
-      '<p class="fd-today__examnote">Set it once on this device and Today paces your reviews toward it. '+
-      'You can change it later in settings.</p></div>';
+      '<p class="fd-today__examtext"><strong>'+fdEsc(examLabel)+'</strong> — set it once and Today paces your reviews toward it.</p>'+
+      '<button type="button" class="fd-today__examcta" data-fd-settings>Set exam date</button></div>';
   }
 
 
@@ -462,12 +460,15 @@ function fdToday(index, state){
 
   out+='</div>'; /* .fd-today__main */
 
+  /* Safety kit first, Quick tools second: the rail order lines up with the header, where the red
+     Safety button outranks the gear/search/tab controls -- so the rail reads as an extension of
+     that button rather than a tools list with safety tacked on the end (2026-09-26). */
   out+='<aside class="fd-rail">';
-  out+='<div><h2 class="fd-sectionhead">Quick tools</h2>';
-  for(var q2=0;q2<quickTools.length;q2++){ out+=fdQuickToolBtn(quickTools[q2]); }
-  out+='</div>';
   out+='<div><h2 class="fd-sectionhead">Safety kit</h2>';
   for(var k=0;k<idx.kit.length;k++){ out+=fdKitCard(idx.kit[k]); }
+  out+='</div>';
+  out+='<div><h2 class="fd-sectionhead">Quick tools</h2>';
+  for(var q2=0;q2<quickTools.length;q2++){ out+=fdQuickToolBtn(quickTools[q2]); }
   out+='</div>';
   out+='</aside>';
 

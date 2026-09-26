@@ -1,6 +1,6 @@
 {
   "_note": "Pinned by bin/check_editorial_leaks.py. Counts may fall, never rise. Regenerate with --update-baseline as part of a reviewed reduction, never to absorb a rise -- the diff is in the PR. See docs/RATCHETS.md.",
   "counts": {
-    "leaks": 16
+    "leaks": 0
   }
 }

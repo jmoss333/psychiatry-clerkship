@@ -307,6 +307,17 @@ test('the rail and the pill row are both always present, for CSS to choose betwe
   assert.match(html, /fd-quicktools--pills/);
 });
 
+// Safety Kit sits above Quick Tools in the desktop rail so it reads as an extension of the
+// header's red Safety button, not an afterthought below the tools list (2026-09-26).
+test('Safety kit precedes Quick tools in the desktop rail', () => {
+  const html = F.fdToday(IDX, s({}));
+  const rail = html.slice(html.indexOf('class="fd-rail"'));
+  const kit = rail.indexOf('Safety kit');
+  const tools = rail.indexOf('Quick tools');
+  assert.ok(kit > -1 && tools > -1, 'both section headings render inside the rail');
+  assert.ok(kit < tools, 'Safety kit must come first, next to the red Safety button in the header');
+});
+
 test('Today leaves patient-care links to the dedicated top-level destination', () => {
   const html = F.fdToday(IDX, s({}));
   assert.doesNotMatch(html, /aria-label="Patient care resources"|fd-carelinks|data-care-resource/);
@@ -440,44 +451,50 @@ test('no exam countdown on a path that does not end in an exam', () => {
   }
 });
 
-// ---- the exam-date prompt (2026-09-25) -----------------------------------------------
+// ---- the exam-date nudge (2026-09-26) -----------------------------------------------
 //
-// With no stored date the taper never engages, and the date's only home was the settings panel.
-// On the exam path Today asks once -- storage is absent in this harness, so fdExamDatePrompt
+// With no stored date the taper never engages, and the date's only home is the settings panel's
+// Pacing field (fd_sheet.js). Today used to duplicate that field inline; it now only nudges toward
+// it. On the exam path Today asks once -- storage is absent in this harness, so fdExamDatePrompt
 // (fd_state.js, pinned in fd-state.test.mjs with storage injected) always answers "ask" here.
-test('the exam path asks for the date below the primary action and above the week list', () => {
+test('the exam path nudges below the primary action and above the week list', () => {
   const html = F.fdToday(MS3_IDX, s({ week: 1 }));
   const prompt = html.indexOf('class="fd-today__exam"');
   const primary = html.indexOf('data-fd-dock-source="primary-week"');
   const list = html.indexOf('class="fd-listhead"');
-  assert.ok(prompt > -1, 'the prompt renders on the exam path');
+  assert.ok(prompt > -1, 'the nudge renders on the exam path');
   assert.ok(primary > -1 && primary < prompt, 'it never sits above One Thing First\'s primary action');
   assert.ok(list > prompt, 'and it comes before the week list');
   assert.equal((html.match(/class="fd-today__exam"/g) || []).length, 1);
 });
 
-test('the prompt is the panel\'s own field type with its own id, never a second settings opener', () => {
+// The date field has exactly one home (the settings panel's Pacing section); this nudge only
+// reopens the same settings action the gear already exposes. That is a second TRIGGER for one
+// action, not a second action -- fd_wire.js's equivalentControl already restores focus to the gear
+// once this element is gone (a disconnected invoker falls back to any live control sharing the same
+// action attribute and value), so no new fallback code is needed for the nudge to disappear safely
+// mid-panel-use. tests/smoke/front-door.spec.js exercises that restore end to end.
+test('the nudge has no field of its own and reopens Settings via the gear\'s own action', () => {
   const html = F.fdToday(MS3_IDX, s({ week: 1 }));
   const block = html.slice(html.indexOf('class="fd-today__exam"'), html.indexOf('class="fd-listhead"'));
-  assert.match(block, /<label class="fd-today__examlabel" for="fdTodayExam">Exam date<\/label>/);
-  assert.match(block, /<input id="fdTodayExam" class="fd-today__examdate" type="date" data-fd-exam-date value="">/);
-  assert.doesNotMatch(block, /fdSetExam/, 'both inputs are in the document while the panel is open');
-  assert.doesNotMatch(html, /data-fd-settings/,
-    'a second opener would become restoreInvoker\'s equivalent of the gear');
+  assert.doesNotMatch(block, /type="date"|fdTodayExam|fdSetExam/,
+    'the date field has exactly one home: the settings panel');
+  assert.match(block, /<p class="fd-today__examtext"><strong>Exam date<\/strong>/);
+  assert.match(block, /<button type="button" class="fd-today__examcta" data-fd-settings>Set exam date<\/button>/);
   assert.doesNotMatch(block, AUDIENCE_TOKEN_RE);
 });
 
-test('no exam-date prompt on a path without an exam, or before a week is set', () => {
+test('no exam-date nudge on a path without an exam, or before a week is set', () => {
   for (const idx of [RES_IDX, IDX]) {
-    assert.doesNotMatch(F.fdToday(idx, s({ week: 1 })), /fd-today__exam|fdTodayExam/,
+    assert.doesNotMatch(F.fdToday(idx, s({ week: 1 })), /fd-today__exam/,
       `path ${JSON.stringify(idx.path && idx.path.id)}`);
   }
-  assert.doesNotMatch(F.fdToday(MS3_IDX, s({ week: null })), /fd-today__exam|fdTodayExam/,
+  assert.doesNotMatch(F.fdToday(MS3_IDX, s({ week: null })), /fd-today__exam/,
     'browsing without a week has no rotation to pace');
 });
 
-test('every prompt class Today emits has a rule in frontdoor.css', () => {
-  for (const cls of ['fd-today__exam', 'fd-today__examlabel', 'fd-today__examdate', 'fd-today__examnote']) {
+test('every nudge class Today emits has a rule in frontdoor.css', () => {
+  for (const cls of ['fd-today__exam', 'fd-today__examtext', 'fd-today__examcta']) {
     assert.match(frontdoorCss, new RegExp(`\\.${cls}\\{`), cls);
   }
 });

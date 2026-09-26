@@ -9,18 +9,41 @@ name: Refresh visual baselines
 #   - If baselines become stale for any other reason
 #
 # How to run:
-#   GitHub → Actions tab → "Refresh visual baselines" → Run workflow → pick branch
+#   GitHub → Actions tab → "Refresh visual baselines" → Run workflow → pick the PR's branch
+#   (never main, release, attest/pending or attestations: the first step refuses them)
 #
-# The job builds the sites, forces Playwright to rewrite EVERY snapshot the visual
-# project produces (not a fixed count — the archetype set in visual-regression.spec.js
-# decides how many), and
-# commits the updated PNGs back to the same branch. CI is skipped on that commit.
+# What one dispatch does, and why each part is there:
+#   1. Builds the sites and forces Playwright to rewrite EVERY snapshot the visual
+#      project produces (not a fixed count: the archetype set in
+#      visual-regression.spec.js decides how many).
+#   2. Commits tests/smoke/baseline/ and nothing else. The message carries no CI-skip
+#      token, so Netlify builds the PR's deploy previews on it as on any push.
+#   3. Runs the governance/content guard (bin/check_governance_separation.py) over each
+#      open PR's range (from its merge-base with the PR's base branch, as the PR's own diff
+#      is), with the new commit as the head, BEFORE pushing. ci.yml runs that
+#      guard only on pull_request events, and step 5's run is a workflow_dispatch, so this
+#      is where the head gets judged. The guard's output is in this run's log.
+#   4. Pushes. A push made with this workflow's GITHUB_TOKEN starts no workflow at all,
+#      which is why step 5 exists.
+#   5. Starts ci.yml on the branch (workflow_dispatch is the one event that token can
+#      start). Its build-test-validate and smoke-tests runs attach to the new head, and
+#      those are the checks main's ruleset requires, so the PR can merge when they are
+#      green, with no hand-made follow-up commit. With no open PR from the branch, it
+#      pushes and stops. Opening the PR then runs the ordinary pull_request CI, guard
+#      included.
+#
+# Until 2026-09-25 this committed with a CI-skip token. The PR head then carried no
+# required checks, and #669 needed two extra commits (both empty; the first quoted the
+# token in its own body, so it skipped again). tests/maintenance/test_refresh_baselines_pins.py
+# pins every part of the flow above.
 
 on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write       # push the refreshed baselines back to the dispatching branch
+  actions: write        # start ci.yml on the new commit (step 5)
+  pull-requests: read   # find the open PRs whose ranges the guard judges (step 3)
 
 jobs:
   refresh-baselines:
@@ -28,9 +51,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Fail fast, before a ten-minute build. This workflow may only ever write
+      # baselines onto a feature branch: main and release are protected and only
+      # fast-forward, attest/pending carries console-authored attestations (and is the
+      # one branch whose CI also needs check_attestation_hashes, which this flow does
+      # not run), and attestations is the ledger's orphan branch.
+      - name: Refuse branches a refresh must never write to
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          if [ "$REF_TYPE" != "branch" ]; then
+            echo "::error::dispatch this on a PR branch, not a $REF_TYPE"; exit 1
+          fi
+          case "$BRANCH" in
+            main|release|attest/pending|attestations)
+              echo "::error::refresh baselines on the PR's feature branch, never on $BRANCH"; exit 1 ;;
+          esac
+          echo "Refreshing baselines on $BRANCH"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           lfs: false
+          # The guard in step 3 reads the whole PR range, back to its base.
+          fetch-depth: 0
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
@@ -80,15 +124,53 @@ jobs:
           # the normal comparison threshold. A refresh must replace every baseline.
           npx playwright test visual-regression.spec.js --project=visual --update-snapshots=all
 
-      - name: Commit updated baselines
+      - name: Commit, guard, push, and start CI on the new commit
+        env:
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add tests/smoke/baseline/
           if git diff --staged --quiet; then
-            echo "No baseline changes — images already match this environment."
-          else
-            git commit -m "chore(smoke): refresh visual baselines (Ubuntu/Chromium) [skip ci]"
-            git push
-            echo "Baselines updated and pushed."
+            echo "No baseline changes — images already match this environment. Nothing pushed, no CI started."
+            exit 0
           fi
+          git commit --quiet -m "chore(smoke): refresh visual baselines (Ubuntu/Chromium)" -m "Regenerated by $RUN_URL"
+
+          # The commit may carry baseline images and nothing else.
+          outside=$(git diff --name-only HEAD~1 HEAD | grep -v '^tests/smoke/baseline/' || true)
+          if [ -n "$outside" ]; then
+            echo "::error::the refresh commit touches paths outside tests/smoke/baseline/:"
+            echo "$outside"
+            exit 1
+          fi
+
+          # Step 3: judge each open PR's range with this commit as its head, before
+          # pushing. A red guard (exit 1) or a could-not-check (exit 2) stops here.
+          # The range starts at the merge-base, as the PR's own diff does. baseRefOid is
+          # the base branch's CURRENT tip, and once that moves past the branch's fork
+          # point, a diff from the tip counts every newer main commit, reversed, as this
+          # branch's change: a false L1 the first time main takes content and governance.
+          # (ci.yml can diff from the tip because it checks out the PR's merge commit.)
+          tips=$(gh pr list --head "$BRANCH" --state open --json baseRefOid --jq '.[].baseRefOid')
+          for tip in $tips; do
+            git fetch --no-tags --quiet origin "$tip"
+            base=$(git merge-base "$tip" HEAD)
+            python3 bin/check_governance_separation.py --base "$base" --head HEAD --head-branch "$BRANCH"
+          done
+
+          # Step 4.
+          git push origin "HEAD:$BRANCH"
+
+          # Step 5.
+          if [ -z "$tips" ]; then
+            echo "No open PR from $BRANCH: pushed $(git rev-parse --short HEAD) without starting CI."
+            echo "Opening the PR runs the ordinary pull_request CI, governance guard included."
+            exit 0
+          fi
+          gh workflow run ci.yml --ref "$BRANCH"
+          echo "Pushed $(git rev-parse --short HEAD) and started ci.yml on $BRANCH:"
+          echo "its build-test-validate and smoke-tests runs are this head's required checks."
