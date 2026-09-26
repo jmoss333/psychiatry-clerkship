@@ -89,7 +89,9 @@ test('opting in widens the pool to drafts (labelled per question); the choice pe
 
   let sawDraft = 0;
   let sawAttested = 0;
+  let visited = 0;
   for (let i = 0; i < stats.total; i += 1) {
+    visited += 1;
     const chips = await page.locator('.qcard .chip-draft').count();
     const notices = await page.locator('.qcard .draft-notice').count();
     // The two label surfaces must always agree — neither may appear alone.
@@ -105,14 +107,23 @@ test('opting in widens the pool to drafts (labelled per question); the choice pe
     }
     // Answer (confidence is gated first), then advance.
     await page.locator('.qcard .conf-btn').first().click();
-    await page.locator('.qcard .opt').first().click();
+    await page.locator('#optsList .opt').first().click();
+    // A two-tier item holds its feedback, and so Next, behind a rationale choice, as
+    // front-door.spec.js's otfAnswerOne already handles. Without this the loop stopped at the
+    // first two-tier card: it saw ONE question, so which assertion below failed depended on the
+    // shuffle (3 of 8 runs red locally, 2026-09-26, after #830 rewrote cued items as two-tier).
+    const rationale = page.locator('#tier2Opts .opt').first();
+    if (await rationale.count()) await rationale.click();
     const next = page.locator('#nextBtn');
-    if (!(await next.count())) break;
+    await expect(next, 'feedback offers Next on every question').toBeVisible();
     await next.click();
     if (!(await page.locator('.qcard').count())) break;
     await page.waitForSelector('.qcard');
   }
 
+  // The loop must have walked the whole category, or the two counts below describe a sample.
+  expect(visited, 'every question in the category was visited').toBe(stats.total);
+  expect(sawDraft + sawAttested).toBe(stats.total);
   expect(sawDraft, 'expected labelled drafts in the opted-in pool').toBeGreaterThan(0);
   // Proves the label is item-specific rather than painted on every card.
   expect(sawAttested, 'expected some attested items to carry no label').toBeGreaterThan(0);
