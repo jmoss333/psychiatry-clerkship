@@ -1493,7 +1493,8 @@ async function signContent(item) {
   } catch (error) {
     state.pending = false;
     if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signContent(item); }; renderGate(error.message); return; }
-    state.message = /github_conflict/.test(error.message) ? 'The branch moved while signing. Press Sign again.' : error.message;
+    state.message = /github_conflict/.test(error.message) ? 'The queue was out of date; refreshing…' : error.message;
+    if (/github_conflict/.test(error.message)) void load({ silent: true });
     renderItem();
   }
 }
@@ -1506,7 +1507,7 @@ Also in this task (small edits to Task 4's code, same file):
 - `openSheet(name)`: after `renderItem()`, move focus into the sheet: `const el = document.querySelector('#item-sheet .sheet'); if (el) { el.setAttribute('tabindex', '-1'); el.focus(); }`; add once at boot `window.addEventListener('keydown', event => { if (event.key === 'Escape' && state.sheet) closeSheet(); });`.
 - The receipt `div.receipt` carries `aria-live="polite"` and **no** `role="status"`, so the item screen keeps exactly one `role=status` element (`#item-status`); tests locate the receipt by its text.
 - **The last sign of a sitting keeps its receipt:** `closeItem()` keeps `state.receipt` (only `openItem()` clears it) and `renderQueue()` renders it, when present, as the same `div.receipt[aria-live=polite]` markup above the counts line. Test: a `contentState` with a single pending page, sign it, and assert the queue shows `Needs review`, `Signed: <title>` and `Nothing needs review.`.
-- **A sign error is visible with the sheet open:** the confirm sheets render `state.message` as `p.field-error[role=alert]` directly above **Sign** when non-empty (the `#item-message` copy stays). Test: stub the POST to answer 409 `github_conflict` once, then fall back; after Sign the dialog shows `The branch moved while signing. Press Sign again.` and Sign is enabled; the second press shows the receipt.
+- **A sign error is visible with the sheet open:** the confirm sheets render `state.message` as `p.field-error[role=alert]` directly above **Sign** when non-empty (the `#item-message` copy stays). Test: stub the POST to answer 409 `github_conflict` once, then fall back; after Sign the dialog shows `The queue was out of date; refreshing…`, the queue reloads silently and Sign is enabled; the second press shows the receipt. (Final-review I1 superseded the earlier "press Sign again" copy: a 409 or an `updated: 0` write means the phone's queue is stale, so the client refreshes instead of asking the faculty to guess.)
 - A silent refresh (`load({ silent: true })`) must update in place: on the queue screen refresh `#queue-groups` and the counts line rather than remounting (search focus survives); on the item screen call `refreshItem()`; when the refresh fails offline, `render()` already reports in place.
 
 - [ ] **Step 4: Run to verify they pass**
@@ -1661,7 +1662,8 @@ async function signQuestion(item) {
   } catch (error) {
     state.pending = false;
     if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signQuestion(item); }; renderGate(error.message); return; }
-    state.message = /qbank\.conflict/.test(error.message) ? 'This question changed since you loaded it. Pull to refresh and review again.' : error.message;
+    state.message = /qbank\.conflict/.test(error.message) ? 'This question changed since you loaded it; refreshing…' : error.message;
+    if (/qbank\.conflict/.test(error.message)) void load({ silent: true });
     renderItem();
   }
 }
