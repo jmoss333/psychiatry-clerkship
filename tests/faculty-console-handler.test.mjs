@@ -3654,15 +3654,36 @@ test('a signed page\'s topic_meta faculty-review line follows its row, and a lat
   assert.deepEqual(retry.putBodies.map(put => put.path), [TOPIC_META_PATH]);
 });
 
+// validItem() keys option A, "Major depressive disorder" — the longest of its four options, so
+// it carries the WP-7 length cue. Keying D ("Adjustment disorder") gives a ready draft without it.
+function uncuedDraft(overrides = {}) {
+  return validItem({ correctKey: 'D', ...overrides });
+}
+
+function uncuedBank() {
+  return makeBank([
+    uncuedDraft(),
+    validItem({ id: 'qb_moo_901', status: 'attested', correctKey: 'B', stem: stems[1] }),
+  ]);
+}
+
 test('a baseline attests the structurally ready draft questions in the same press and lists the rest', async () => {
   const warned = validItem({
     id: 'qb_moo_903',
+    correctKey: 'D',
     stem: 'A fictional adolescent reports restricted eating and new bradycardia. Which finding is NOT expected?',
   });
+  // Ready by every structural rule, but its keyed option is the uniquely longest (WP-7): the
+  // ratchet in every push's pre-push gate counts it, so a baseline must never sweep it in.
+  const cued = validItem({
+    id: 'qb_moo_904',
+    stem: 'A fictional outpatient describes two weeks of low mood, early waking, and poor appetite. Which diagnosis fits best?',
+  });
   const files = defaultFiles(makeBank([
-    validItem(),
+    uncuedDraft(),
     validItem({ id: 'qb_moo_901', status: 'attested', correctKey: 'B', stem: stems[1] }),
     warned,
+    cued,
   ]));
   const mock = batchMock({ files });
   const payload = await (await handlerWith(mock)(batchPress({
@@ -3672,15 +3693,28 @@ test('a baseline attests the structurally ready draft questions in the same pres
   assert.equal(payload.updated, 2, 'the pages are signed first');
   assert.equal(payload.questions.updated, 1);
   assert.deepEqual(payload.questions.signed, ['qb_moo_900']);
-  assert.deepEqual(payload.questions.excluded.map(item => item.id), ['qb_moo_903']);
+  assert.deepEqual(payload.questions.excluded.map(item => item.id), ['qb_moo_903', 'qb_moo_904']);
   assert.match(payload.questions.excluded[0].reason, /quality warning: Review the negative wording/);
+  assert.match(payload.questions.excluded[1].reason, /correct answer is the longest option/);
   const bank = atomicBank(mock);
   assert.equal(bank.items.find(item => item.id === 'qb_moo_900').status, 'attested');
   assert.equal(bank.items.find(item => item.id === 'qb_moo_903').status, 'draft', 'a warned question is never swept in');
+  assert.equal(bank.items.find(item => item.id === 'qb_moo_904').status, 'draft', 'a length-cued question is never swept in');
+});
+
+test('a tie for longest is not a length cue (the ratchet counts only a UNIQUELY longest key)', async () => {
+  const tied = uncuedDraft();
+  // Keyed D padded to exactly the length of the longest distractor, A.
+  const longest = tied.options.find(option => option.key === 'A').t.length;
+  tied.options.find(option => option.key === 'D').t = 'Adjustment disorder'.padEnd(longest, '!');
+  const mock = batchMock({ files: defaultFiles(makeBank([tied])) });
+  const payload = await (await handlerWith(mock)(viewRequest({ view: 'batch', mode: 'baseline' }))).json();
+  assert.deepEqual(payload.questions.sign.map(item => item.id), ['qb_moo_900']);
 });
 
 test('a question half that fails is reported beside the signed pages, never as a failed press', async () => {
   const mock = batchMock({
+    files: defaultFiles(uncuedBank()),
     onRefUpdate: () => jsonResponse(500, { message: 'Synthetic ref failure.' }),
   });
   const response = await handlerWith(mock)(batchPress({ mode: 'baseline', statement: BASELINE_STATEMENT }));
@@ -3734,7 +3768,7 @@ test('a correction press counts a change to the page\'s record, not only to its 
 });
 
 test('?view=batch previews either press without reading a branch forward or writing', async () => {
-  const mock = batchMock();
+  const mock = batchMock({ files: defaultFiles(uncuedBank()) });
   const response = await handlerWith(mock)(viewRequest({ view: 'batch', mode: 'baseline', exclude: 'mse-tool' }));
   assert.equal(response.status, 200);
   const payload = await response.json();

@@ -368,6 +368,9 @@ const BASELINE_STATEMENT = 'I have reviewed this content and attest to it as it 
 test('a ledger baseline is one append of one signed line per page, and ready questions ride along', async () => {
   const { secret, signer } = newSigner();
   const fx = fixture(signer);
+  // The fixture's keyed option is its longest (the WP-7 length cue a baseline leaves out);
+  // one longer distractor makes it an ordinary ready draft.
+  fx.files['question_bank.json'].items[0].options[3].t = 'Adjustment disorder with depressed mood';
   const mock = githubMock(fx);
   const { status, payload } = await call(mock, env(secret), 'POST',
     { target: 'content', mode: 'baseline', statement: BASELINE_STATEMENT });
