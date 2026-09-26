@@ -33,6 +33,7 @@ const state = {
   message: '',         // one-line error shown above the actions
   deepLink: null,      // ?item= held in memory across the key prompt
   refreshTimer: null,
+  loadedAt: 0,         // Date.now() of the last successful GET (visibilitychange refresh)
   reauth: null,        // () => Promise, retried after re-entering the key
 };
 
@@ -76,7 +77,13 @@ class Unauthorized extends Error {}
 
 /** GET/POST against /api/attest. A 401 throws Unauthorized after clearing the key. */
 async function api(path, init = {}) {
-  const response = await fetch(path, { ...init, headers: { ...headers(Boolean(init.body)), ...(init.headers || {}) } });
+  let response;
+  try {
+    response = await fetch(path, { ...init, headers: { ...headers(Boolean(init.body)), ...(init.headers || {}) } });
+  } catch {
+    // The connection itself failed: a plain sentence, never the browser's "TypeError: Failed to fetch".
+    throw new Error(navigator.onLine === false ? 'You are offline.' : 'Could not reach the repository.');
+  }
   if (response.status === 401) { clearKey(); throw new Unauthorized('Key not accepted. Check the shared faculty key and try again.'); }
   if (response.status >= 500) throw new Error('Could not reach the repository.');
   const payload = await json(response);
@@ -105,6 +112,7 @@ async function load({ silent = false } = {}) {
     const server = await api(API);
     if (!validServerState(server)) throw new Error('The server returned an incomplete state.');
     state.server = server;
+    state.loadedAt = Date.now();
     try { state.changes = await api(`${API}?${new URLSearchParams({ view: 'changes' })}`); }
     catch (error) { if (error instanceof Unauthorized) throw error; state.changes = null; }
     recompute();
@@ -129,6 +137,21 @@ async function load({ silent = false } = {}) {
 function scheduleRefresh() {
   if (state.refreshTimer) window.clearTimeout(state.refreshTimer);
   state.refreshTimer = window.setTimeout(() => { state.refreshTimer = null; void load({ silent: true }); }, REFRESH_QUIET_MS);
+}
+/**
+ * The loaded state is out of date (a write conflict, or a write that found the item already
+ * signed and bound): say so, refresh in place, and say when the refresh has landed. A refresh
+ * that fails reports its own error through load(). With the key prompt up (Lock while the write
+ * was in flight) it does nothing: the prompt stays exactly as typed, and unlocking loads afresh.
+ */
+function refreshStale(prefix) {
+  if (!getKey()) return;
+  const refreshing = `${prefix}; refreshing…`;
+  state.message = refreshing;
+  render();
+  void load({ silent: true }).then(ok => {
+    if (ok && getKey() && state.message === refreshing) { state.message = `${prefix}; refreshed.`; render(); }
+  });
 }
 
 // ---- screens ------------------------------------------------------------------------------
@@ -277,6 +300,7 @@ function beginPreview() {
     const preview = state.preview;
     if (!preview || preview.status !== 'loading') return;
     preview.status = timeoutStatus(preview.frameLoaded);
+    resetAcks(preview.status);
     renderItem();
   }, PREVIEW_TIMEOUT_MS);
 }
@@ -284,7 +308,7 @@ function cancelPreview() {
   if (state.preview?.timerId) window.clearTimeout(state.preview.timerId);
   state.preview = state.preview ? { ...state.preview, timerId: null } : null;
 }
-function retryPreview() { state.ui = { ...state.ui, retryAttempted: true }; beginPreview(); renderItem(); }
+function retryPreview() { resetAcks('loading'); state.ui.retryAttempted = true; beginPreview(); renderItem(); }
 
 function handlePreviewStatus(event) {
   const preview = state.preview;
@@ -310,7 +334,9 @@ function focusSheet() {
   if (el) { el.setAttribute('tabindex', '-1'); el.focus(); }
 }
 function openSheet(name) { state.sheet = name; renderItem(); focusSheet(); }
-function closeSheet() { state.sheet = null; renderItem(); }
+// A failed diff is dropped on close, so opening What changed again asks the server again.
+function closeSheet() { state.sheet = null; if (state.diff?.error) state.diff = null; renderItem(); }
+function retryDiff() { state.diff = null; openSheet('changed'); }
 
 async function loadDiff(item) {
   let diff;
@@ -356,7 +382,10 @@ function sheetChanged(item) {
     h('h2', { text: 'What changed since you signed' }),
     ready ? diffContext(state.diff) : null,
     loading ? h('p', { text: 'Loading the changes…' }) : null,
-    state.diff?.error ? h('p', { class: 'field-error', role: 'alert', text: state.diff.error }) : null,
+    state.diff?.error ? [
+      h('p', { class: 'field-error', role: 'alert', text: state.diff.error }),
+      h('p', {}, h('button', { class: 'btn', type: 'button', text: 'Retry', onClick: retryDiff })),
+    ] : null,
     ready && !lines.length ? h('p', { text: "Neither this page's source files nor its record changed since you signed; its fingerprint moved for another reason." }) : null,
     // `lines` carries file / context / del / add / note kinds; a note marks a too-large, binary or truncated file.
     h('div', { class: 'lines' }, lines.map(line => h('div', { class: line.kind, text: line.text }))),
@@ -390,11 +419,11 @@ function mountItem(item) {
   frame.addEventListener('load', () => {
     const current = state.preview;
     if (!current || current.request !== preview.request) return;      // a stale frame's event
-    if (current.frameLoaded) { current.status = 'frame_failure'; refreshItem(item); return; }
+    if (current.frameLoaded) { current.status = 'frame_failure'; resetAcks(current.status); refreshItem(item); return; }
     current.frameLoaded = true;
   });
   frame.addEventListener('error', () => {
-    if (state.preview?.request === preview.request) { state.preview.status = 'frame_failure'; refreshItem(item); }
+    if (state.preview?.request === preview.request) { state.preview.status = 'frame_failure'; resetAcks(state.preview.status); refreshItem(item); }
   });
   frame.setAttribute('src', preview.request.url);
   replaceApp(
@@ -439,13 +468,17 @@ function refreshItem(item) {
     item.type === 'question'
       ? h('button', { class: 'btn secondary', type: 'button', text: 'Saved draft', onClick: () => openSheet('draft') })
       : h('button', { class: 'btn secondary', type: 'button', text: 'What changed', onClick: () => openSheet('changed') }),
-    external ? h('a', { class: 'btn secondary', href: external, target: '_blank', rel: 'noopener noreferrer', text: 'Open in site' }) : h('span'),
+    // Opening the page here is what unlocks the separate-tab acknowledgement after a failed
+    // preview (the desktop's externalReviewOpenedKey); the link still opens its own tab.
+    external ? h('a', { class: 'btn secondary', href: external, target: '_blank', rel: 'noopener noreferrer', text: 'Open in site',
+      onClick: () => { state.ui = { ...state.ui, externalOpened: true }; } }) : h('span'),
     // Spec §4: a question with a warning gate shows its warnings and no Attest — the phone cannot
     // record the per-warning acknowledgements, so the confirm sheet never opens for it.
     questionWarnings(item).length
       ? h('button', { class: 'btn', type: 'button', text: 'Attest on desktop', disabled: true, 'aria-disabled': 'true',
         title: 'This question has warnings; attest it on the desktop console.' })
-      : h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading', onClick: () => openSheet('confirm') }),
+      : h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading' || navigator.onLine === false,
+        onClick: () => openSheet('confirm') }),
   );
   const sheet = state.sheet === 'changed' ? sheetChanged(item)
     : state.sheet === 'confirm' ? sheetConfirm(item)
@@ -463,12 +496,24 @@ function refreshItem(item) {
 }
 
 // ---- confirm + sign (pages and tools) -----------------------------------------------------
-/** Eligibility reads the live preview status; state.ui holds only the reviewer's acknowledgements. */
-function uiWithPreview() { return { ...state.ui, previewStatus: state.preview?.status || 'loading' }; }
 /**
- * The desktop clears acknowledgements whenever the preview status changes. Kept: the Retry, and
- * the saved-draft receipt when the live question (re)reports ready — the desktop's
- * clearReviewAcknowledgements({ preserveQuestionReceipts }). Every other flag resets.
+ * Eligibility reads the live preview status; state.ui holds only the reviewer's acknowledgements.
+ * The separate-tab acknowledgement counts only once Open in site was used for this item since the
+ * last reset, as the desktop's separateTabReviewed: externalReviewOpenedKey === item.key && ….
+ */
+function uiWithPreview() {
+  return {
+    ...state.ui,
+    previewStatus: state.preview?.status || 'loading',
+    separateTabReviewed: state.ui.separateTabReviewed === true && state.ui.externalOpened === true,
+  };
+}
+/**
+ * The desktop clears acknowledgements whenever the preview status changes: the readiness message,
+ * the 10 s timeout, a second frame load or a frame error, and Retry. Kept: the Retry, and the
+ * saved-draft receipt when the live question (re)reports ready — the desktop's
+ * clearReviewAcknowledgements({ preserveQuestionReceipts }). Every other flag resets, Open in
+ * site's externalOpened included.
  */
 function resetAcks(nextStatus) {
   const { retryAttempted, reviewedRevision } = state.ui;
@@ -492,15 +537,17 @@ function sheetConfirm(item) {
   return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': `Sign ${item.title}` }, [
     h('h2', { text: `Sign ${item.title}` }),
     h('p', { text: `As ${state.server.attester}. This signs the text as it is on main right now; if the page changes later it shows as pending again until re-signed.` }),
-    failed && !state.ui.retryAttempted ? h('p', { class: 'field-error', text: 'The learner page did not report ready. Press Retry once; if it still fails, review it with Open in site and acknowledge that below.' }) : null,
+    failed && !(state.ui.retryAttempted && state.ui.externalOpened) ? h('p', { class: 'field-error', text: 'The learner page did not report ready. Press Retry once; if it still fails, review it with Open in site and acknowledge that below.' }) : null,
     ready
       ? ack('ack-complete', 'I reviewed the complete item on this screen', state.ui.completeItemReviewed, v => setUi({ completeItemReviewed: v }))
-      : ack('ack-separate', 'I reviewed it in the learner site tab', state.ui.separateTabReviewed, v => setUi({ separateTabReviewed: v }), { disabled: !state.ui.retryAttempted }),
+      : ack('ack-separate', 'I reviewed it in the learner site tab', state.ui.separateTabReviewed, v => setUi({ separateTabReviewed: v }),
+        { disabled: !state.ui.retryAttempted || !state.ui.externalOpened }),
     ack('ack-accuracy', 'Accurate and appropriate for a third-year student', state.ui.accuracy, v => setUi({ accuracy: v })),
     ack('ack-interactions', 'Links, media and interactions work', state.ui.interactions, v => setUi({ interactions: v })),
     // A sign error is shown here too: #item-message sits under the sheet's backdrop.
     state.message ? h('p', { class: 'field-error', role: 'alert', text: state.message }) : null,
-    h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign', disabled: !eligibility.eligible || state.pending, onClick: () => { void signContent(item); } })),
+    h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign',
+      disabled: !eligibility.eligible || state.pending || navigator.onLine === false, onClick: () => { void signContent(item); } })),
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
 }
@@ -526,7 +573,8 @@ function sheetConfirmQuestion(item) {
     // A sign error is shown here too: #item-message sits under the sheet's backdrop.
     state.message ? h('p', { class: 'field-error', role: 'alert', text: state.message }) : null,
     h('p', {}, h('button', { class: 'btn', type: 'button', text: state.pending ? 'Signing…' : 'Sign',
-      disabled: warnings.length > 0 || !eligibility.eligible || state.pending, onClick: () => { void signQuestion(item); } })),
+      disabled: warnings.length > 0 || !eligibility.eligible || state.pending || navigator.onLine === false,
+      onClick: () => { void signQuestion(item); } })),
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
 }
@@ -556,6 +604,8 @@ async function signContent(item) {
   const body = { target: 'content', changes: { [item.identity]: true }, reasons: {} };
   try {
     const payload = await api(API, { method: 'POST', body: JSON.stringify(body) });
+    // ok with nothing written: the row was already signed and bound — this queue is out of date.
+    if (payload?.ok === true && payload.updated === 0) { state.pending = false; refreshStale('Already signed elsewhere'); return; }
     if (!payload?.ok || payload.updated !== 1) throw new Error(errorText(payload, 'This attestation was not saved.'));
     state.receipt = { title: item.title, commit: safeHttps(payload.commit), pullRequest: safeHttps(payload.pullRequest), pullRequestError: payload.pullRequestError === true };
     finishSign(item, server => (payload.rows && typeof payload.rows === 'object'
@@ -565,7 +615,8 @@ async function signContent(item) {
   } catch (error) {
     state.pending = false;
     if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signContent(item); }; renderGate(error.message); return; }
-    state.message = /github_conflict/.test(error.message) ? 'The branch moved while signing. Press Sign again.' : error.message;
+    if (/github_conflict/.test(error.message)) { refreshStale('The queue was out of date'); return; }
+    state.message = error.message;
     renderItem();
   }
 }
@@ -612,13 +663,17 @@ async function signQuestion(item) {
   };
   try {
     const payload = await api(API, { method: 'POST', body: JSON.stringify(body) });
+    if (payload?.ok === true && payload.updated === 0) { state.pending = false; refreshStale('Already signed elsewhere'); return; }
     if (!payload?.ok || payload.updated !== 1) throw new Error(errorText(payload, 'This attestation was not saved.'));
     state.receipt = { title: item.identity, commit: safeHttps(payload.commit), pullRequest: safeHttps(payload.pullRequest), pullRequestError: payload.pullRequestError === true };
     finishSign(item, server => ({ ...server, qbank: server.qbank.map(q => (q.id === item.identity ? { ...q, status: 'attested' } : q)) }));
   } catch (error) {
     state.pending = false;
     if (error instanceof Unauthorized) { state.reauth = () => { state.sheet = 'confirm'; return signQuestion(item); }; renderGate(error.message); return; }
-    state.message = /qbank\.conflict/.test(error.message) ? 'This question changed since you loaded it. Pull to refresh and review again.' : error.message;
+    // A stale revision or manifest (qbank.conflict), or the branch moving twice: refresh, so the
+    // receipt no longer matches the new revision and Sign cannot re-send the refused one.
+    if (/qbank\.conflict|github_conflict/.test(error.message)) { refreshStale('The queue was out of date'); return; }
+    state.message = error.message;
     renderItem();
   }
 }
@@ -628,5 +683,16 @@ state.deepLink = window.location.search.includes('item=') ? window.location.sear
 window.addEventListener('message', handlePreviewStatus);
 window.addEventListener('keydown', event => { if (event.key === 'Escape' && state.sheet) closeSheet(); });
 window.addEventListener('offline', () => { state.message = 'You are offline.'; render(); });
-window.addEventListener('online', () => { state.message = ''; render(); });
+window.addEventListener('online', () => {
+  state.message = '';
+  if (!getKey()) return;                          // the key prompt is up: leave it exactly as typed
+  if (!state.server) { void load(); return; }     // nothing loaded yet: try again now
+  render();
+});
+// Back to a tab or home-screen app left in the background: refresh quietly when the queue is older
+// than the quiet period, never while a write is in flight (its rows must not be overwritten).
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !getKey() || !state.server || state.pending) return;
+  if (Date.now() - state.loadedAt > REFRESH_QUIET_MS) void load({ silent: true });
+});
 void load();
