@@ -341,6 +341,12 @@ the markup owns rather than the palette.
 a rounded pill (`.fd-quicktools--pills .fd-quicktool`); inside `.fd-rail` it stays a full-width row.
 Emit the identical inner markup for both; only the container class differs.
 
+⚠ **At 640px and narrower the pill row is ONE sideways-scrolling row** (2026-09-26), still placed
+above the primary by `order:-1`. Do not let it wrap again: wrapped, five long tool names took
+164–207px and pushed the student Today's primary card under the fixed dock. The row's padding keeps a
+focused pill's outline inside the scroller, which clips on both axes. `tests/fd-today.test.mjs` pins
+the rule and `front-door.spec.js` "One Thing First E/E2" measures the primary against the dock top.
+
 ⚠ `.fd-today__cols` is the flex wrapper that puts `.fd-today__main` and `.fd-rail` side by side.
 Omitting it collapses the rail underneath.
 
@@ -430,7 +436,7 @@ Omitting it collapses the rail underneath.
 | `.fd-care-pack__crisis` | Owns the exact build-injected crisis block derived from `crisis_resources.json`. It is collapsed on screen and forced fully visible on a ready handout. Missing governed HTML renders `.fd-care-pack__crisis-failure` in the ordinary Care header and disables Print; the renderer never invents contacts. |
 | `.fd-care-pack__actions` | States that choices stay on screen only. Print is enabled only when at least one valid resource and the governed crisis block are both present. |
 | `.fd-care-page__groups` | Two-column shelf at larger widths and one column at ≤640px. The support shelf holds Resource Finder and Recovery Meeting Calendar; education holds the patient library, Podcast Navigator, and Relational Bibliotherapy book shelf. |
-| `.fd-care-entry` | In-flow Care route button near the top of Today and APP On shift at ≤640px. It is hidden on wider screens where the Care tab is visible; the fixed phone dock remains five items. |
+| `.fd-care-entry` | In-flow Care route button near the top of APP On shift at ≤640px. Today still emits it, but `.fd-today > .fd-care-entry{display:none}` retires it on phones (2026-09-26): the header `.fd-carebtn` (2026-09-24) is Today's phone route to Care, and the duplicate row pushed the primary toward the dock. Hidden on wider screens where the Care tab is visible; the fixed phone dock remains five items. |
 | `.fd-carelink` | Static external anchor with an explicit new-tab mark and visible title/description. |
 
 ---
@@ -548,9 +554,13 @@ this subtree:
         .fd-teachinglink__note
 ```
 
-At 1000px and wider, `.fd-kit__layout` is a 3:1 readings/tool-rail grid. From 641–999px the
-readings and tools stack in document order. At 640px and narrower, the tool rail moves above the
-readings and `.fd-kit__tool-tabs` becomes a horizontally scrolling row above its shared preview pane. Arrow
+At 1000px and wider, `.fd-kit__layout` is a 3:1 readings/tool-rail grid. Below 1000px the
+readings and tools stack in document order: **readings first, at every width** (2026-09-26). The tool
+rail used to move above the readings at 640px and narrower; once the aside carried the shared preview
+pane and the teaching companion it stood about 496px tall, and at 390x844 the first reading began below
+the dock. Do not reintroduce `order:-1` on `.fd-kit__tools`; `front-door.spec.js` asserts the first
+reading is whole above the dock at 390px. At 640px and narrower `.fd-kit__tool-tabs` is still a
+horizontally scrolling row above its shared preview pane. Arrow
 keys move the selected tool tab; only the preview pane's button opens a tool. The section picker and
 both group types remain native `select`/`details` controls at every width.
 

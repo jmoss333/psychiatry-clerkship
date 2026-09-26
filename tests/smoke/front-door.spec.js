@@ -623,8 +623,9 @@ test('adaptive mobile dock: standard audience routes, dialogs, reader forwarding
   await expect(browse).toBeVisible();
   await browse.click();
   await expect(page.locator('.fd-library')).toBeVisible();
-  // The helper also includes tool tabs, which CSS places above the readings on phones. Check
-  // the actual last reading rather than the last element in the shared inventory selector.
+  // The helper also includes tool tabs, which follow the readings on every width since
+  // 2026-09-26. Check the actual last reading rather than the last element in the shared
+  // inventory selector.
   const finalReading = page.locator('.fd-kit__reading[data-fd-open]').last();
   await expect(finalReading).toBeVisible();
   await finalReading.scrollIntoViewIfNeeded();
@@ -2589,13 +2590,18 @@ test('One Thing First E: 390x844, reduced motion — the primary is above the fo
     const measure = (q) => [...document.querySelectorAll(q)].map(el => ({ q, h: Math.round(el.getBoundingClientRect().height), text: el.textContent.trim().slice(0, 30) }));
     return {
       bottom: lead.bottom,
+      dockTop: document.querySelector('.fd-dock').getBoundingClientRect().top,
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       newControls: measure('.fd-primary button, .fd-primary a, .fd-due, .fd-resume__link, .fd-lastread, .fd-block button, .fd-freshset'),
       captureControls: measure('.fd-capture button'),
     };
   }, OTF_PRIMARY);
-  expect(geometry.bottom).toBeLessThanOrEqual(844);
+  // The fold is the top of the fixed phone dock, not the viewport edge. Measured against 844 this
+  // passed on the student site with the card ending at 841px while its button sat under the dock
+  // (2026-09-26 fold probe); see the per-state test below for the other primaries.
+  expect(geometry.dockTop).toBeLessThan(844);
+  expect(geometry.bottom, 'the whole primary card clears the dock').toBeLessThanOrEqual(geometry.dockTop);
   expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth);
   for (const c of geometry.newControls) expect(c.h, `${c.q} "${c.text}"`).toBeGreaterThanOrEqual(44);
   // The capture triage predates this work. It is measured here for the first time; a miss is a
@@ -2603,6 +2609,42 @@ test('One Thing First E: 390x844, reduced motion — the primary is above the fo
   for (const c of geometry.captureControls) expect.soft(c.h, `capture control "${c.text}" (pre-existing surface)`).toBeGreaterThanOrEqual(44);
   await expectHealthy(page);
 });
+
+// Every other primary Today can lead with, measured the same way. Each case first proves it is
+// the state it claims (the right primary, the 7-day strip present or absent), so a seed that
+// silently stopped producing a state fails here instead of measuring something else.
+const OTF_SRS_NOT_DUE = { ...OTF.srs, cards: Object.fromEntries(Object.entries(OTF.srs.cards)
+  .map(([id, card]) => [id, { ...card, due: OTF_NOW + 48 * OTF_HOUR }])) };
+for (const [name, storage, check] of [
+  ['reviews due', { cw_srs_v1: OTF.srs }, async (page) => {
+    await expect(page.locator('.fd-primary .fd-due.is-primary')).toHaveCount(1);
+    await expect(page.locator('.fd-consistency')).toHaveCount(1);
+  }],
+  ['this week, first visit', {}, async (page) => {
+    await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
+    await expect(page.locator('.fd-consistency')).toHaveCount(0);
+  }],
+  ['this week, returning learner with the 7-day strip', { cw_srs_v1: OTF_SRS_NOT_DUE }, async (page) => {
+    await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
+    await expect(page.locator('.fd-consistency')).toHaveCount(1);
+  }],
+]) {
+  test(`One Thing First E2: 390x844 — ${name}: the whole primary clears the phone dock`, async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await seedApp(page, testInfo, { storage });
+    await page.goto('/');
+    await otfExpectOnePrimary(page);
+    await check(page);
+    const g = await page.evaluate((sel) => ({
+      bottom: document.querySelector(sel).getBoundingClientRect().bottom,
+      dockTop: document.querySelector('.fd-dock').getBoundingClientRect().top,
+    }), OTF_PRIMARY);
+    expect(g.dockTop).toBeLessThan(844);
+    expect(g.bottom, `${name}: primary card bottom vs dock top`).toBeLessThanOrEqual(g.dockTop);
+    await expectHealthy(page);
+  });
+}
 
 // ---- One Thing First Phase 2: an interrupted block resumes as the block's own step -----------
 //
@@ -3039,11 +3081,17 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await expectHealthy(page);
 });
 
-test('Patient care resources stays reachable through an in-flow phone entry and the wide tab', async ({ page }, testInfo) => {
+// The in-flow Today row (#748) was the only phone route to Care until the header shortcut
+// .fd-carebtn arrived on 2026-09-24. From then on it duplicated a control on the same screen and
+// pushed the primary card toward the dock, so it is retired on phones (2026-09-26). The header
+// shortcut is now the phone route under test; APP's On shift keeps its own in-flow entry
+// (app-pathway.spec.js).
+test('Patient care resources stays reachable through the phone header shortcut and the wide tab', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
-  const entry = page.locator('.fd-today .fd-care-entry[data-fd-tab="care"]');
+  await expect(page.locator('.fd-today .fd-care-entry')).toBeHidden();
+  const entry = page.locator('.fd-header .fd-carebtn[data-fd-tab="care"]');
   await expect(entry).toBeVisible();
   await expect(entry).toHaveAccessibleName('Patient care resources');
   expect(await entry.evaluate(el => getComputedStyle(el).position)).not.toBe('fixed');
@@ -3052,7 +3100,7 @@ test('Patient care resources stays reachable through an in-flow phone entry and 
   // 44.00003 at 90 ms and CI measured 43.999969 on both attempts of one run (#788). Measure where
   // it settles, on the fade's own `finished` promises rather than a clock; an infinite animation
   // never settles, so it is not waited on.
-  await entry.evaluate(el => Promise.all(el.closest('.fd-today').getAnimations({ subtree: true })
+  await entry.evaluate(() => Promise.all(document.querySelector('.fd-today').getAnimations({ subtree: true })
     .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
     .map(animation => animation.finished)));
   expect((await entry.boundingBox()).height).toBeGreaterThanOrEqual(44);
@@ -3455,7 +3503,15 @@ test.describe('Essentials Phase 2', () => {
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       const tools = await page.locator('.fd-kit__tools').boundingBox();
       const readings = await page.locator('.fd-kit__readings').boundingBox();
-      if (width <= 640) expect(tools.y + tools.height).toBeLessThanOrEqual(readings.y);
+      // Readings first on every width (2026-09-26). On phones the tools aside used to lead; with
+      // its preview card and teaching companion it was 496px tall and no reading was on screen.
+      if (width <= 640) expect(readings.y + readings.height).toBeLessThanOrEqual(tools.y);
+      if (width === 390) {
+        const first = await page.locator('.fd-kit__reading').first().boundingBox();
+        const dock = await page.locator('.fd-dock:visible').boundingBox();
+        expect(first.y + first.height, 'the first reading is whole on the first phone screen, above the dock')
+          .toBeLessThanOrEqual(dock.y);
+      }
       if (width >= 1000) expect(tools.x).toBeGreaterThanOrEqual(readings.x + readings.width);
       for (const control of await page.locator('.fd-kit__reading, .fd-kit__tool-tab, .fd-kit__tool-preview [data-fd-open], .fd-kit__group > summary, [data-fd-kit-section]').all()) {
         await control.focus(); await expect(control).toBeFocused();

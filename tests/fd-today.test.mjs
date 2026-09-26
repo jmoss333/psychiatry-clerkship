@@ -722,6 +722,12 @@ test('phone quick tools remain CSS-first while patient-care duplicates stay reti
   assert.ok(phone,'phone-only breakpoint exists');
   assert.match(phone[1], /\.fd-today__main\{display:flex;flex-direction:column\}/);
   assert.match(phone[1], /\.fd-today__main > \.fd-quicktools--pills\{order:-1;margin-bottom:var\(--fd-space-\d+\)\}/);
+  // 2026-09-26 fold probe: first but ONE row. Wrapped, the pills took 164-207px above the primary.
+  assert.match(phone[1], /\.fd-quicktools--pills\{flex-wrap:nowrap;overflow-x:auto;/);
+  assert.match(phone[1], /\.fd-quicktools--pills \.fd-quicktool\{flex:0 0 auto;/);
+  // Today's in-flow Care row is retired on phones (the header .fd-carebtn replaces it); APP's stays.
+  assert.match(phone[1], /\.fd-today > \.fd-care-entry\{display:none\}/);
+  assert.doesNotMatch(phone[1], /\.fd-app[^{]*\.fd-care-entry\{display:none\}/);
   assert.match(css, /@media \(min-width:1000px\)\{[\s\S]*?\.fd-quicktools--pills\{display:none\}/);
   assert.doesNotMatch(css, /fd-carelinks--mobile|fd-carelinks--rail|fd-kit__care/);
 });
