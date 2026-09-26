@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
-**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children.
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
 
 ## Global Constraints
 
@@ -196,10 +196,10 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
   - `reviewReason(item) → string`.
   - `nextAfterSign(signedKey, items, sections) → string|null` — next item key.
   - `applyRows(server, rows) → server` — new payload with updated `items[]`.
-  - `diffLines(diff) → { kind:'file'|'context'|'del'|'add', text }[]`.
+  - `diffLines(diff) → { kind:'file'|'context'|'del'|'add'|'note', text }[]` — a changed file always emits its `file` line; `note` lines carry too-large / binary / truncated.
   - `timeoutStatus(frameLoaded) → 'protocol_unavailable'|'frame_failure'`.
   - `contentEligibility(item, ui) → { eligible, blockers }` and `questionEligibility(item, ui) → { eligible, blockers }`.
-  - `questionEntry(item) → { id, revision, reviewedRevision, acknowledgedWarnings: [] }`.
+  - `questionEntry(item, reviewedRevision) → { id, revision, reviewedRevision, acknowledgedWarnings: [] }` — `reviewedRevision` is the reviewer's recorded receipt (`''` when absent), never echoed from the item.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -326,6 +326,23 @@ test('diffLines flattens hunks into file / context / del / add lines, splitting 
   assert.deepEqual(diffLines(null), []);
 });
 
+test('diffLines never erases a changed file: too-large, binary and truncated files emit their file line and a note', () => {
+  const big = { view: 'diff', files: [{ path: 'huge.md', status: 'modified', hunks: [], tooLarge: true }] };
+  assert.deepEqual(diffLines(big), [
+    { kind: 'file', text: 'huge.md' },
+    { kind: 'note', text: 'Too much changed to show here; open the comparison on GitHub.' },
+  ]);
+  const bin = { view: 'diff', files: [{ path: 'img.png', status: 'binary', hunks: [] }] };
+  assert.deepEqual(diffLines(bin), [{ kind: 'file', text: 'img.png' }, { kind: 'note', text: 'Binary file changed.' }]);
+  const cut = { view: 'diff', files: [{ path: 'a.md', status: 'modified', truncated: true, hunks: [{ oldStart: 1, newStart: 1, rows: [
+    { kind: 'add', segments: [{ t: 'add', s: 'New' }] },
+  ] }] }] };
+  assert.deepEqual(diffLines(cut), [
+    { kind: 'file', text: 'a.md' }, { kind: 'add', text: 'New' }, { kind: 'note', text: 'Only the first 60 hunks are shown.' },
+  ]);
+  assert.deepEqual(diffLines({ files: [{ path: 'same.md', status: 'unchanged', hunks: [] }] }), []);
+});
+
 test('timeoutStatus mirrors the desktop: protocol_unavailable once the frame loaded, else frame_failure', () => {
   assert.equal(timeoutStatus(true), 'protocol_unavailable');
   assert.equal(timeoutStatus(false), 'frame_failure');
@@ -347,7 +364,10 @@ test('questionEligibility needs the live receipt, the saved-revision receipt and
   assert.equal(questionEligibility(q, ok).eligible, true);
   assert.equal(questionEligibility(q, { ...ok, reviewedRevision: '' }).eligible, false);
   assert.equal(questionEligibility(q, { ...ok, clinical: false }).eligible, false);
-  assert.deepEqual(questionEntry(q), { id: 'qb_mood_001', revision: REV, reviewedRevision: REV, acknowledgedWarnings: [] });
+  assert.deepEqual(questionEntry(q, REV), { id: 'qb_mood_001', revision: REV, reviewedRevision: REV, acknowledgedWarnings: [] });
+  // The receipt is carried, never echoed: a stale or missing receipt reaches the server and is rejected there.
+  assert.equal(questionEntry(q, 'stale').reviewedRevision, 'stale');
+  assert.equal(questionEntry(q, undefined).reviewedRevision, '');
 });
 ```
 
@@ -457,13 +477,20 @@ export function applyRows(server, rows) {
   return { ...server, items };
 }
 
-/** Flatten a ?view=diff payload for a phone screen. Change rows split into a del line and an add line. */
+/**
+ * Flatten a ?view=diff payload for a phone screen. Change rows split into a del line and an add
+ * line. A changed file ALWAYS emits its file line: the server sends `hunks: []` with `tooLarge`
+ * for files over 6,000 lines or an edit distance over 2,000, and `binary` for images, and a
+ * reviewer about to sign must never be told "no text change" for such a page.
+ */
 export function diffLines(diff) {
   const out = [];
   for (const file of Array.isArray(diff?.files) ? diff.files : []) {
-    if (!Array.isArray(file.hunks) || !file.hunks.length) continue;
+    if (file.status === 'unchanged' || file.status === 'missing') continue;
     out.push({ kind: 'file', text: String(file.path || '') });
-    for (const hunk of file.hunks) {
+    if (file.tooLarge === true) out.push({ kind: 'note', text: 'Too much changed to show here; open the comparison on GitHub.' });
+    if (file.status === 'binary') out.push({ kind: 'note', text: 'Binary file changed.' });
+    for (const hunk of Array.isArray(file.hunks) ? file.hunks : []) {
       for (const row of Array.isArray(hunk.rows) ? hunk.rows : []) {
         const segs = Array.isArray(row.segments) ? row.segments : [];
         const before = segs.filter(s => s.t !== 'add').map(s => s.s).join('');
@@ -473,6 +500,7 @@ export function diffLines(diff) {
         if (row.kind !== 'del' && after) out.push({ kind: 'add', text: after });
       }
     }
+    if (file.truncated === true) out.push({ kind: 'note', text: 'Only the first 60 hunks are shown.' });
   }
   return out;
 }
@@ -515,9 +543,19 @@ export function questionEligibility(item, ui = {}) {
   });
 }
 
-/** The entry the server validates for qbank.attest; the phone never acknowledges warnings (no Attest for warned items). */
-export function questionEntry(item) {
-  return { id: item.identity, revision: item.revision, reviewedRevision: item.revision, acknowledgedWarnings: [] };
+/**
+ * The entry the server validates for qbank.attest. `reviewedRevision` is the receipt the reviewer
+ * recorded when they read the saved draft (state.ui.reviewedRevision) — carried, never echoed from
+ * the item, so the server's reviewedRevision === revision check can fail for the phone exactly as
+ * it can for the desktop. The phone never acknowledges warnings (no Attest for warned items).
+ */
+export function questionEntry(item, reviewedRevision) {
+  return {
+    id: item.identity,
+    revision: item.revision,
+    reviewedRevision: typeof reviewedRevision === 'string' ? reviewedRevision : '',
+    acknowledgedWarnings: [],
+  };
 }
 ```
 
@@ -717,6 +755,7 @@ Create `faculty-console/m/index.html`:
   .sheet .lines .del { background: var(--del); text-decoration: line-through; padding: .1rem .2rem; }
   .sheet .lines .add { background: var(--add); padding: .1rem .2rem; }
   .sheet .lines .context { color: var(--muted); }
+  .sheet .lines .note { font-style: italic; color: var(--muted); margin: .25rem 0; }
   .ack { display: flex; gap: .6rem; align-items: flex-start; padding: .55rem 0; border-top: 1px solid var(--line); }
   .ack input { width: 22px; height: 22px; margin: .1rem 0 0; flex: none; }
   .receipt { background: var(--add); border-radius: .8rem; padding: .75rem 1rem; margin: .75rem; }
@@ -1096,6 +1135,7 @@ function sheetChanged(item) {
     loading ? h('p', { text: 'Loading the changes…' }) : null,
     state.diff?.error ? h('p', { class: 'field-error', role: 'alert', text: state.diff.error }) : null,
     !loading && state.diff && !state.diff.error && !lines.length ? h('p', { text: 'No text change was recorded; the record or its fingerprint scope moved.' }) : null,
+    // `lines` carries file / context / del / add / note kinds; a note marks a too-large, binary or truncated file.
     h('div', { class: 'lines' }, lines.map(line => h('div', { class: line.kind, text: line.text }))),
     state.diff?.compareUrl ? h('p', {}, h('a', { href: state.diff.compareUrl, target: '_blank', rel: 'noopener noreferrer', text: 'Open the comparison on GitHub' })) : null,
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
@@ -1325,6 +1365,7 @@ function safeHttps(value) { try { const u = new URL(String(value)); return u.pro
 
 async function signContent(item) {
   if (state.pending) return;                       // idempotent while a POST is in flight
+  if (!contentEligibility(item, state.ui).eligible) { state.message = 'Complete the acknowledgements before signing.'; renderItem(); return; }
   state.pending = true; state.message = ''; renderItem();
   const body = { target: 'content', changes: { [item.identity]: true }, reasons: {} };
   try {
@@ -1378,7 +1419,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Modify: `tests/smoke/faculty-console.spec.js` (one test)
 
 **Interfaces:**
-- Consumes: `questionEligibility(item, state.ui)`, `questionEntry(item)` (m-model); `POST /api/attest` with `{ action:'qbank.attest', manifestRevision, items:[entry], confirmations:{clinical, evidence, originalityAndNoPhi} }` → `{ ok, action, updated, commit, revision:{[id]}, assessment:{[id]} }`.
+- Consumes: `questionEligibility(item, state.ui)`, `questionEntry(item, state.ui.reviewedRevision)` (m-model); `POST /api/attest` with `{ action:'qbank.attest', manifestRevision, items:[entry], confirmations:{clinical, evidence, originalityAndNoPhi} }` → `{ ok, action, updated, commit, revision:{[id]}, assessment:{[id]} }`.
 - Produces: read-only draft sheet; question confirm sheet; `signQuestion(item)`.
 
 - [ ] **Step 1: Write the failing smoke test**
@@ -1476,11 +1517,12 @@ function sheetConfirmQuestion(item) {
 
 async function signQuestion(item) {
   if (state.pending) return;
+  if (!questionEligibility(item, state.ui).eligible) { state.message = 'Complete the acknowledgements before signing.'; renderItem(); return; }
   state.pending = true; state.message = ''; renderItem();
   const body = {
     action: 'qbank.attest',
     manifestRevision: state.server.manifestRevision,
-    items: [questionEntry(item)],
+    items: [questionEntry(item, state.ui.reviewedRevision)],
     confirmations: { clinical: state.ui.clinical === true, evidence: state.ui.evidence === true, originalityAndNoPhi: state.ui.originalityAndNoPhi === true },
   };
   try {
