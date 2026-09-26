@@ -2732,7 +2732,27 @@ function questionExclusion(item, assessment) {
   };
 }
 
-/** Draft questions a baseline would attest (gate "ready") and the ones it leaves out. */
+/**
+ * The WP-7 length cue, exactly as bin/check_qbank_length_cue.py measures it: the keyed option
+ * is STRICTLY longer (trimmed, in code points) than every other option. That script pins the
+ * attested count and runs in every push's pre-push gate, so a baseline that attested such an
+ * item would block every later push (2026-09-26: 34 of them rode #781 and had to be demoted).
+ * An unmeasurable item is not called a cue here; assessBank has already refused it.
+ */
+function keyedIsUniquelyLongest(item) {
+  const options = Array.isArray(item?.options) ? item.options : [];
+  const keyed = options.filter(option => option?.c === true);
+  if (keyed.length !== 1 || options.some(option => typeof option?.t !== 'string')) return false;
+  const length = option => [...option.t.trim()].length;
+  const key = length(keyed[0]);
+  return options.every(option => option === keyed[0] || length(option) < key);
+}
+
+const LENGTH_CUE_REASON = 'Its correct answer is the longest option, which rewards picking the longest '
+  + 'answer rather than knowing it (WP-7). Shorten the keyed option — rationale belongs in "why" — in a '
+  + 'content change first; attesting it as it stands would raise the pinned count and block every push.';
+
+/** Draft questions a baseline would attest (gate "ready", no length cue) and the ones it leaves out. */
 async function readyQuestionPlan(repository, settings) {
   const head = await repository.head();
   const bankFile = await repository.read(QBANK_PATH, { maxBytes: MAX_BANK_BYTES, ref: head });
@@ -2747,11 +2767,15 @@ async function readyQuestionPlan(repository, settings) {
   const active = bank.items.filter(item => isRecord(item) && item.retired !== true);
   const { byId } = assessBank(active, { manifestPages, activeItems: active });
   const drafts = active.filter(item => item.status === 'draft');
+  const gated = drafts.filter(item => byId[item.id]?.gate === 'ready');
   return {
     manifestRevision: manifestFile.sha,
-    ready: drafts.filter(item => byId[item.id]?.gate === 'ready'),
-    excluded: drafts.filter(item => byId[item.id]?.gate !== 'ready')
-      .map(item => questionExclusion(item, byId[item.id])),
+    ready: gated.filter(item => !keyedIsUniquelyLongest(item)),
+    excluded: [
+      ...drafts.filter(item => byId[item.id]?.gate !== 'ready')
+        .map(item => questionExclusion(item, byId[item.id])),
+      ...gated.filter(keyedIsUniquelyLongest).map(item => ({ id: item.id, reason: LENGTH_CUE_REASON })),
+    ],
   };
 }
 
