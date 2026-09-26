@@ -345,3 +345,56 @@ test('no rendered output carries an audience-specific token', () => {
     + F.fdPath(IDX, s({ week: 2, viewWeek: 5 }));
   assert.doesNotMatch(html, AUDIENCE_TOKEN_RE);
 });
+
+// ---- data-driven weekly practice (every path but the six-week one, 2026-09-26) ------------------
+// The six-week path keeps its Orientation constant (tested above). Any other path renders the
+// viewed week's curriculum.json `practice` ({skill, feedback}), carried through fdBuildIndex.
+
+test('a four-week week with practice renders it escaped, labelled, and only on that week', () => {
+  const cur = buildCurriculum(WEEK_DEFS.slice(0, 4));
+  cur.path = { id: 'resident-four-week', weekCount: 4 };
+  cur.weeks[1].practice = { skill: 'Build <b>a</b> plan & defend it.', feedback: 'Can you <i>check</i> it?' };
+  cur.weeks[2].practice = { skill: 'Half-written row', feedback: '' };
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, buildManifest(WEEK_DEFS.slice(0, 4)));
+  const w2 = F.fdPath(idx, s({ week: 2, viewWeek: 2 }));
+  assert.match(w2, /class="fd-detail__practice"/);
+  assert.match(w2, /<strong>Demonstrate this week<\/strong><br>Build &lt;b&gt;a&lt;\/b&gt; plan &amp; defend it\.<\/p>/);
+  assert.match(w2, /<strong>Ask your supervisor<\/strong><br>“Can you &lt;i&gt;check&lt;\/i&gt; it\?”/);
+  assert.doesNotMatch(w2, /it\.\.<\/p>/, 'no second period is appended to a sentence that has one');
+  assert.doesNotMatch(w2, /Open Orientation/, 'the Orientation link belongs to the six-week path');
+  for (const n of [1, 3, 4]) {
+    assert.doesNotMatch(F.fdPath(idx, s({ week: 2, viewWeek: n })), /class="fd-detail__practice"/,
+      'week ' + n + ' has no complete practice row, so no callout');
+  }
+  assert.doesNotMatch(w2.replace(/Build[^<]*|Can you[^”]*/g, ''), AUDIENCE_TOKEN_RE, 'the labels are audience-neutral');
+});
+
+test('the four-week practice is the rotation plan\'s EPA list, verbatim, each EPA exactly once', () => {
+  const read2 = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
+  const REAL_CUR = JSON.parse(read2('../curriculum.json'));
+  const plan = read2('../14_Tracks/Resident/resident_curriculum.md');
+  const block = plan.split('**Demonstrate across the block (EPAs)**')[1];
+  assert.ok(block, 'the rotation plan still carries its "Demonstrate across the block" list');
+  const epas = [...block.matchAll(/^- (.+)$/gm)].map((m) => m[1].trim());
+  assert.equal(epas.length, 5, 'five EPAs in the rotation plan');
+  const residentPath = REAL_CUR.learningPaths.resident;
+  const idx = F.fdBuildIndex(
+    { ...REAL_CUR, path: { id: residentPath.id, weekCount: residentPath.weeks.length }, weeks: residentPath.weeks },
+    JSON.parse(read2('../topic_meta.json')), JSON.parse(read2('../tool_registry.json')),
+    JSON.parse(read2('../13_Faculty_Resources/_automation/site_build/site_manifest.json')));
+  const used = [];
+  for (const wk of idx.weeks) {
+    assert.ok(wk.practice, 'week ' + wk.n + ' carries practice into the index');
+    const sentences = wk.practice.skill.split(/(?<=\.)\s+/);
+    for (const sentence of sentences) {
+      assert.ok(epas.includes(sentence), 'week ' + wk.n + ': "' + sentence + '" is an EPA from the rotation plan, verbatim');
+      used.push(sentence);
+    }
+    assert.match(wk.practice.feedback, /^Can you .+\?$/, 'week ' + wk.n + ' asks the supervisor one question');
+    const html = F.fdPath(idx, s({ week: wk.n, viewWeek: wk.n }));
+    assert.ok(html.includes(wk.practice.skill.replace(/&/g, '&amp;')), 'week ' + wk.n + ' renders its skill');
+  }
+  assert.deepEqual([...used].sort(), [...epas].sort(), 'every EPA is used once and only once across the four weeks');
+  assert.ok(REAL_CUR.learningPaths.ms3.weeks.every((wk) => !('practice' in wk)),
+    'the six-week path still takes its practice from the Orientation constant, not from data');
+});

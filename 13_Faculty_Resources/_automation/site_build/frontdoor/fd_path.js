@@ -81,14 +81,27 @@ var FD_PATH_PRACTICE=[
     feedback:'Can you help me make my presentation more concise?'}
 ];
 
+/* The six-week path keeps its Orientation-sourced constant above. Every other path reads the
+   viewed week's practice from curriculum.json (week.practice, schema since #774), carried into
+   the index by fdBuildIndex: since 2026-09-26 the four-week path maps each week to the rotation
+   plan's "Demonstrate across the block" list. Same callout, same class; a suggestion to bring to
+   supervision, never an assignment, a tracked item or a competence assessment. */
 function fdPathPractice(index, week){
-  if(!index.path||index.path.id!=='ms3-six-week') return '';
-  var practice=FD_PATH_PRACTICE[week];
-  if(!practice) return '';
+  if(!index.path) return '';
+  if(index.path.id==='ms3-six-week'){
+    var practice=FD_PATH_PRACTICE[week];
+    if(!practice) return '';
+    return '<div class="fd-detail__practice">'+
+      '<p><strong>Practice one skill</strong><br>'+fdEsc(practice.skill)+'.</p>'+
+      '<p><strong>Ask for feedback</strong><br>“'+fdEsc(practice.feedback)+'”</p>'+
+      '<a href="?page=orientation.md">Open Orientation →</a>'+
+    '</div>';
+  }
+  var wk=fdFindWeek(index,week), row=wk&&wk.practice;
+  if(!row||!row.skill||!row.feedback) return '';
   return '<div class="fd-detail__practice">'+
-    '<p><strong>Practice one skill</strong><br>'+fdEsc(practice.skill)+'.</p>'+
-    '<p><strong>Ask for feedback</strong><br>“'+fdEsc(practice.feedback)+'”</p>'+
-    '<a href="?page=orientation.md">Open Orientation →</a>'+
+    '<p><strong>Demonstrate this week</strong><br>'+fdEsc(row.skill)+'</p>'+
+    '<p><strong>Ask your supervisor</strong><br>“'+fdEsc(row.feedback)+'”</p>'+
   '</div>';
 }
 
