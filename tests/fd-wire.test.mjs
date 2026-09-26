@@ -3969,6 +3969,24 @@ test('Library view actions close overlays, reject invalid values, and explicit L
   assert.equal(browse.patch.libraryView, 'essentials'); assert.equal(browse.route, '?tab=library');
 });
 
+test('the Everything tab is an alias for the full Library view, not a new tab state', () => {
+  const initial = {...roleContext, tab:'today', libraryView:'essentials', openId:'a.md', sheet:'kit', searchOpen:true};
+  const viaTab = F.fdDispatch({'data-fd-tab':'everything'}, {}, initial);
+  const viaLibraryView = F.fdDispatch({'data-fd-library-view':'full'}, {}, initial);
+  assert.deepEqual(viaTab, viaLibraryView);
+  assert.equal(viaTab.patch.tab, 'library');
+  assert.equal(viaTab.patch.libraryView, 'full');
+});
+
+test('the dock Browse menu is an alias for data-fd-library-view, not a duplicate of its attribute', () => {
+  const initial = {...roleContext, tab:'today', libraryView:'essentials', openId:'a.md', sheet:'kit', searchOpen:true};
+  for (const view of ['essentials', 'full']) {
+    const viaDock = F.fdDispatch({'data-fd-dock-browse-go':view}, {}, initial);
+    const viaLibraryView = F.fdDispatch({'data-fd-library-view':view}, {}, initial);
+    assert.deepEqual(viaDock, viaLibraryView);
+  }
+});
+
 test('full Library resource route survives reload and Back while tool frame strips shell context', () => {
   const initial = {...roleContext,tab:'library',libraryView:'full'};
   const opened = F.fdDispatch({'data-fd-open':'extra.html'}, {search:'?tab=library&library=full&case=c1'}, initial);

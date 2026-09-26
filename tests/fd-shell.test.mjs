@@ -115,6 +115,28 @@ test('responsive tab labels render once even before navigation CSS loads', () =>
   assert.ok(html.indexOf('data-fd-tab="care"') > html.indexOf('data-fd-tab="library"'));
 });
 
+test('Everything sits between The Essentials and Care and opens the full Library, not a fifth app tab', () => {
+  const html = F.fdTabs('today');
+  assert.match(html, /class="fd-tab" data-fd-tab="everything">Everything<\/button>/);
+  const iLibrary = html.indexOf('data-fd-tab="library"');
+  const iEverything = html.indexOf('data-fd-tab="everything"');
+  const iCare = html.indexOf('data-fd-tab="care"');
+  assert.ok(iLibrary < iEverything && iEverything < iCare,
+    'Everything must render after The Essentials and before Care');
+});
+
+test('Everything and The Essentials are mutually exclusive is-active states of the same tab', () => {
+  const essentials = F.fdTabs('library', false, 'essentials');
+  assert.match(essentials, /class="fd-tab is-active" data-fd-tab="library"[^>]*aria-current="page"/);
+  assert.doesNotMatch(essentials, /data-fd-tab="everything"[^>]*is-active|is-active[^>]*data-fd-tab="everything"/);
+  assert.equal((essentials.match(/is-active/g) || []).length, 1);
+
+  const everything = F.fdTabs('library', false, 'full');
+  assert.match(everything, /class="fd-tab is-active" data-fd-tab="everything"[^>]*aria-current="page"/);
+  assert.doesNotMatch(everything, /data-fd-tab="library"[^>]*is-active|is-active[^>]*data-fd-tab="library"/);
+  assert.equal((everything.match(/is-active/g) || []).length, 1);
+});
+
 test('the header renders the safety button and the week pill', () => {
   const html = F.fdHeader({ week: 4 });
   assert.match(html, /data-fd-safety/);
@@ -168,26 +190,40 @@ test('the header offers settings, not a bare theme toggle', () => {
 test('phone dock adapts slot two for APP without exposing Path', () => {
   const standard = F.fdDockModel({ tab: 'today', appMode: false, dockAction: null });
   const app = F.fdDockModel({ tab: 'today', appMode: true, dockAction: null });
-  assert.deepEqual(standard.items.map((x) => x.label), ['Today', 'Path', 'Search', 'Capture']);
-  assert.deepEqual(app.items.map((x) => x.label), ['On shift', 'The Essentials', 'Search', 'Capture']);
+  assert.deepEqual(standard.items.map((x) => x.label), ['Today', 'Path', 'Browse', 'Capture']);
+  assert.deepEqual(app.items.map((x) => x.label), ['On shift', 'The Essentials', 'Browse', 'Capture']);
   assert.equal(app.items.some((x) => x.value === 'path'), false);
 });
 
-test('dock context uses a source id or the audience browse fallback', () => {
+test('dock context uses a source id or the audience Essentials fallback', () => {
   assert.match(F.fdDock({ appMode: false, dockAction: { label: 'Continue', sourceId: 'primary-1' } }),
     /data-fd-dock-forward="primary-1"[^>]*>.*Continue/s);
   assert.match(F.fdDock({ appMode: true, dockAction: null }),
-    /data-fd-tab="library"[^>]*>.*Browse/s);
+    /data-fd-tab="library"[^>]*>.*Essentials/s);
 });
 
-test('dock renders five labelled buttons with an escaped center action', () => {
+test('dock renders four buttons, one disclosure, and an escaped center action', () => {
   const html = F.fdDock({ dockAction: { label: '<Continue>', sourceId: 'action&one' } });
   assert.match(html, /^<nav class="fd-dock" aria-label="Learning actions">/);
-  assert.equal((html.match(/<button\b/g) || []).length, 5);
+  // Today, Path, the context button, Capture, plus the two actions nested inside Browse's popover.
+  assert.equal((html.match(/<button\b/g) || []).length, 6);
+  assert.equal((html.match(/<details\b/g) || []).length, 1);
   assert.match(html, /data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Capture<\/button>/);
   assert.match(html, /class="fd-dock__item fd-dock__item--context" data-fd-dock-forward="action&amp;one">&lt;Continue&gt;<\/button>/);
   assert.equal(html.indexOf('fd-dock__item--context') > html.indexOf('Path'), true,
     'the contextual action follows the two leading destinations');
+});
+
+test('the Browse disclosure offers both Library destinations via a thin alias of the tab-row action', () => {
+  const html = F.fdDock({ appMode: false, dockAction: null });
+  assert.match(html, /<details class="fd-dock__item fd-dock__browse"><summary>Browse<\/summary>/);
+  assert.match(html, /<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">/);
+  assert.match(html, /data-fd-dock-browse-go="essentials">The Essentials<\/button>/);
+  assert.match(html, /data-fd-dock-browse-go="full">Everything<\/button>/);
+  // data-fd-dock-browse-go, not data-fd-library-view directly: the in-Library "Everything (N
+  // pages) -->" footer button already carries data-fd-library-view="full" and stays in the DOM
+  // (just not :visible) while this menu is closed, so the dock needs its own attribute or a
+  // plain, unscoped [data-fd-library-view="full"] locator resolves to two elements.
 });
 
 test('the header carries three standing controls plus one phone-only Care shortcut', () => {

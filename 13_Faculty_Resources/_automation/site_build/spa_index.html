@@ -2603,7 +2603,7 @@
        focus transitions. Match the old action, never an arbitrary button or a page control. */
     var active=document.activeElement, focusSelector=null;
     if(preserveFocus&&!state.searchOpen&&!state.sheet&&active&&fdDockMount.contains(active)){
-      var attrs=['data-fd-dock-forward','data-fd-tab','data-fd-search','data-capture-open'];
+      var attrs=['data-fd-dock-forward','data-fd-tab','data-capture-open'];
       for(var i=0;i<attrs.length;i++){
         var value=active.getAttribute(attrs[i]);
         if(value!==null&&!/["\\]/.test(value)){focusSelector='['+attrs[i]+'="'+value+'"]';break;}
@@ -2612,7 +2612,7 @@
     /* Dialog owners retain their opener objects across hydration and Capture mutations.
        Reuse the utility controls, including Capture's live expanded state, without focusing
        them while an overlay owns focus. The route/context controls still refresh normally. */
-    var utilities=['[data-fd-search]','[data-capture-open]'], retained=[];
+    var utilities=['[data-capture-open]'], retained=[];
     for(var j=0;j<utilities.length;j++)retained[j]=fdDockMount.querySelector(utilities[j]);
     fdDockMount.innerHTML=fdDock(live);
     for(var k=0;k<utilities.length;k++){

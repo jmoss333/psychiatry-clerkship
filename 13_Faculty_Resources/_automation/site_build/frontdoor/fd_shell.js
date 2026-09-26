@@ -25,18 +25,26 @@ function fdAppMode(state){
   return s.appMode===true||s.appInvite===true||s.roleId==='app'||s.role==='app';
 }
 
-function fdTabs(tab, appMode){
+function fdTabs(tab, appMode, libraryView){
   var cur=(tab==='path'||tab==='library'||tab==='care')?tab:'today';
+  /* 'everything' is not a distinct app-level tab -- clicking it dispatches
+     data-fd-library-view="full" (see fd_wire.js), which keeps state.tab at 'library'. Its active
+     state is therefore derived from libraryView rather than from cur, and 'library' (The
+     Essentials) must stand down exactly when 'everything' lights up so the two are never both
+     is-active at once. */
+  var fullView=(cur==='library'&&libraryView==='full');
   var defs=appMode
     ?[{id:'today',label:'On shift'},{id:'library',label:'The Essentials',short:'Essentials'},
+      {id:'everything',label:'Everything'},
       {id:'care',label:'Patient care resources',short:'Care'}]
     :[{id:'today',label:'Today'},{id:'path',label:'Path'},
       {id:'library',label:'The Essentials',short:'Essentials'},
+      {id:'everything',label:'Everything'},
       {id:'care',label:'Patient care resources',short:'Care'}];
   var out='<nav class="fd-tabs">';
   for(var i=0;i<defs.length;i++){
     var t=defs[i];
-    var active=(t.id===cur);
+    var active=t.id==='everything'?fullView:t.id==='library'?(cur==='library'&&!fullView):(t.id===cur);
     var cls='fd-tab'+(t.id==='care'?' fd-tab--care':'')+(active?' is-active':'');
     out+='<button type="button" class="'+cls+'" data-fd-tab="'+t.id+'"'+
       (active?' aria-current="page"':'')+(t.short?' aria-label="'+fdEsc(t.label)+'"':'')+'>'+
@@ -48,27 +56,50 @@ function fdTabs(tab, appMode){
 
 /* The five-slot phone dock is a pure projection of the current audience and primary action.
    The center item can forward to an action owned by another surface; without one, it is the
-   stable Library browse route. Rendering stays here so every dynamic value is escaped once. */
+   stable Library browse route. Rendering stays here so every dynamic value is escaped once.
+   'browse' replaces the old Search slot -- the header's own [data-fd-search] search bar already
+   covers phones, so the dock's copy of it was pure redundancy. Browse has no attr/value of its
+   own: it is a native <details> disclosure (see fdDock), not a dispatched action, so opening and
+   closing it costs no new state and nothing to reset on unrelated navigation -- fdRenderDock
+   replaces the whole dock innerHTML on every refresh, which closes it for free. */
 function fdDockModel(state){
   var s=state||{}, app=fdAppMode(s);
   return {
     items:[
       {id:'today',label:app?'On shift':'Today',attr:'data-fd-tab',value:'today'},
       {id:'structure',label:app?'The Essentials':'Path',attr:'data-fd-tab',value:app?'library':'path'},
-      {id:'search',label:'Search',attr:'data-fd-search',value:''},
+      {id:'browse',label:'Browse'},
       {id:'capture',label:'Capture',attr:'data-capture-open',value:''}
     ],
     context:s.dockAction&&s.dockAction.sourceId
       ?{label:s.dockAction.label,attr:'data-fd-dock-forward',value:s.dockAction.sourceId}
-      :{label:'Browse',attr:'data-fd-tab',value:'library'}
+      :{label:'Essentials',attr:'data-fd-tab',value:'library'}
   };
+}
+
+/* The Browse item renders as <details>/<summary> rather than a button: its two destinations
+   need a disclosure, and the browser owns open/closed state for free rather than this app
+   tracking yet another overlay flag. Its menu items dispatch data-fd-dock-browse-go (a thin
+   alias fd_wire.js resolves onto the existing data-fd-library-view action) rather than that
+   attribute directly: the in-Library "Everything (N pages) -->" footer button (fd_library.js)
+   already carries data-fd-library-view="full", present in the DOM even while this menu is
+   closed, and reusing the same attribute value made every plain (non-:visible-scoped)
+   [data-fd-library-view="full"] locator across the smoke suite resolve to two elements. */
+function fdDockBrowseItem(){
+  return '<details class="fd-dock__item fd-dock__browse">'+
+    '<summary>Browse</summary>'+
+    '<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">'+
+    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="essentials">The Essentials</button>'+
+    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="full">Everything</button>'+
+    '</div></details>';
 }
 
 function fdDock(state){
   var model=fdDockModel(state), out='<nav class="fd-dock" aria-label="Learning actions">';
   for(var i=0;i<model.items.length;i++){
     var item=model.items[i];
-    out+='<button type="button" class="fd-dock__item" '+item.attr+'="'+
+    out+=item.id==='browse'?fdDockBrowseItem():
+      '<button type="button" class="fd-dock__item" '+item.attr+'="'+
       fdEsc(item.value)+'"'+(item.id==='capture'?' aria-haspopup="dialog" aria-expanded="false"':'')+
       '>'+fdEsc(item.label)+'</button>';
     if(i===1){
@@ -109,7 +140,7 @@ function fdHeader(state){
     'aria-label="Settings">⚙</button>'+
     '</div>';
   out+='</div>';
-  out+=fdTabs(s.tab,appMode);
+  out+=fdTabs(s.tab,appMode,s.libraryView);
   out+='</header>';
   return out;
 }
