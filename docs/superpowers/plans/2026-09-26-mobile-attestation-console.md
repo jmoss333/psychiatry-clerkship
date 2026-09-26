@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
-**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 9 (Task 5 review):** `resetAcks(nextStatus)` keeps the saved-draft receipt on a Ready re-report; a sign that completes off-screen refreshes in place instead of advancing. **Revision 8 (Task 5 report):** the last sign of a sitting keeps its receipt on the queue screen; a sign error is shown inside the open confirm sheet. **Revision 7 (Task 4 review):** What changed renders page-record changes and the correction's PR/commit context (links through `safeHttps`); Task 5 reads the preview status from `state.preview` (`uiWithPreview()`), resets acknowledgements on a status change, moves focus into sheets (Escape closes), keeps one `role=status` per screen, refreshes in place, and pins the silent-refresh-offline path. **Revision 6 (Task 4 report):** the learner frame is absolutely positioned inside `.frame-wrap` so it fills the remaining viewport; the item test pins the frame height and the action bar's position. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 10 (Task 6 report):** the question test forces the undeployed path with `missingDeployedIds`; a warned question lists its warnings and shows no Attest (disabled *Attest on desktop*). **Revision 9 (Task 5 review):** `resetAcks(nextStatus)` keeps the saved-draft receipt on a Ready re-report; a sign that completes off-screen refreshes in place instead of advancing. **Revision 8 (Task 5 report):** the last sign of a sitting keeps its receipt on the queue screen; a sign error is shown inside the open confirm sheet. **Revision 7 (Task 4 review):** What changed renders page-record changes and the correction's PR/commit context (links through `safeHttps`); Task 5 reads the preview status from `state.preview` (`uiWithPreview()`), resets acknowledgements on a status change, moves focus into sheets (Escape closes), keeps one `role=status` per screen, refreshes in place, and pins the silent-refresh-offline path. **Revision 6 (Task 4 report):** the learner frame is absolutely positioned inside `.frame-wrap` so it fills the remaining viewport; the item test pins the frame height and the action bar's position. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
 
 ## Global Constraints
 
@@ -1285,7 +1285,9 @@ function refreshItem(item) {
       ? h('button', { class: 'btn secondary', type: 'button', text: 'Saved draft', onClick: () => openSheet('draft') })
       : h('button', { class: 'btn secondary', type: 'button', text: 'What changed', onClick: () => openSheet('changed') }),
     external ? h('a', { class: 'btn secondary', href: external, target: '_blank', rel: 'noopener noreferrer', text: 'Open in site' }) : h('span'),
-    h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading', onClick: () => openSheet('confirm') }),
+    item.type === 'question' && (item.record?.assessment?.warnings || []).length
+      ? h('button', { class: 'btn', type: 'button', text: 'Attest on desktop', disabled: true, 'aria-disabled': 'true', title: 'This question has warnings; attest it on the desktop console.' })
+      : h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading', onClick: () => openSheet('confirm') }),
   );
   const sheet = state.sheet === 'changed' ? sheetChanged(item)
     : state.sheet === 'confirm' ? sheetConfirm(item)
@@ -1537,12 +1539,12 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 
 ```js
   test('a question shows its saved draft read-only and attests only after a retry, the unavailable-live acknowledgement, the saved-revision receipt and the three confirmations', async ({ page }) => {
-    const api = await installRepositoryApi(page, workflowBank());
+    // The smoke stub serves the learner site the synthetic bank, so the question WOULD be found; the
+    // desktop suite's `missingDeployedIds` option forces the undeployed-draft path (Not found).
+    const api = await installRepositoryApi(page, workflowBank(), { missingDeployedIds: ['qb_moo_901'] });
     await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
     await unlockPhone(page);
     await page.getByRole('link', { name: /qb_moo_901/ }).click();
-    // The synthetic question is not in the deployed learner bank, so the shell reports Not found —
-    // the same path the desktop suite exercises for undeployed drafts.
     await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
     await page.getByRole('button', { name: 'Saved draft' }).click();
     const draft = page.getByRole('dialog', { name: 'Saved draft (not deployed)' });
@@ -1605,7 +1607,11 @@ function sheetDraft(item) {
     h('h3', { text: 'Why' }), h('p', { text: q.why || '' }),
     q.pearl ? [h('h3', { text: 'Pearl' }), h('p', { text: q.pearl })] : null,
     h('h3', { text: 'Evidence' }), h('p', { text: q.evidence || '' }),
-    (q.assessment?.warnings || []).length ? h('p', { class: 'field-error', text: 'This question carries warnings; attest it on the desktop console, which records each acknowledgement.' }) : null,
+    (q.assessment?.warnings || []).length ? [
+      h('h3', { text: 'Warnings' }),
+      h('ul', {}, q.assessment.warnings.map(w => h('li', { text: w.message || w.code || String(w) }))),
+      h('p', { class: 'field-error', text: 'Attest this question on the desktop console, which records each acknowledgement.' }),
+    ] : null,
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
 }
