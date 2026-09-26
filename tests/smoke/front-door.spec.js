@@ -54,6 +54,14 @@ async function scrollReadingTo(page, index, offset = 85) {
   }, offset);
 }
 
+// The phone dock's in-reach Search lives in its Browse disclosure. The header's search bar is
+// not pinned on phones -- it scrolls away with the page -- so reaching it mid-page scrolls the
+// reader to the top and re-saves the reading place there; this path must never do that.
+async function openDockSearch(page) {
+  await page.locator('.fd-dock__browse summary:visible').click();
+  await page.locator('.fd-dock [data-fd-dock-browse-go="search"]:visible').click();
+}
+
 async function expectReadingAnchor(page, index, ref = READING_REF) {
   const id = await page.locator('.fd-article__body h3').nth(index).getAttribute('id');
   await expect.poll(async () => (await readingPlaces(page))[ref]?.heading).toBe(id);
@@ -222,7 +230,7 @@ test('reading place: Today Continue focuses once; Library and Search restore scr
   await expect(page.locator('.fd-article__body h3').nth(1)).toBeFocused();
   expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
   await page.locator('.fd-reader__back:visible').evaluate(button => button.click());
-  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+  await openDockSearch(page);
   await page.getByRole('dialog', { name: 'Search' }).getByRole('button', { name: 'Browse the Library' }).click();
   const full = page.locator('[data-fd-library-view="full"]:visible');
   if (await full.count()) await full.click();
@@ -233,7 +241,7 @@ test('reading place: Today Continue focuses once; Library and Search restore scr
   await expectReadingAnchor(page, 1, ref);
   await expect(page.locator('.fd-reader:visible .fd-article__h1')).toBeFocused();
   expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
-  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+  await openDockSearch(page);
   const dialog = page.getByRole('dialog', { name: 'Search' });
   await expect(dialog.getByRole('textbox', { name: 'Search resources' })).toBeFocused();
   await expect(page.locator('.fd-article__body h3').nth(1)).not.toBeFocused();
@@ -698,12 +706,43 @@ for (const mutation of ['save', 'delete']) {
   });
 }
 
-// The dock no longer has its own Search opener (2026-09-25 -- replaced by Browse; the header's
-// .fd-searchbtn[data-fd-search] is the one search entry point now), so the exact-invoker-survives
-// -delayed-hydration coverage that used to live here no longer has a mechanism to test: Browse is
-// a stateless native <details> disclosure with no text input to preserve, and the header search
-// button's own hydration-focus-retention is already covered by frontdoor-runtime.spec.js's
-// 'same-route data hydration preserves focused header and Today controls'.
+test('adaptive mobile dock: delayed Search hydration preserves input focus and exact invoker', async ({ page }, testInfo) => {
+  let releaseIndex;
+  const delayed = new Promise(resolve => { releaseIndex = resolve; });
+  await page.route('**/search-index.json', async route => {
+    await delayed;
+    await route.continue();
+  });
+  await page.setViewportSize(DOCK_PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await page.locator('.fd-dock__browse summary:visible').click();
+  const search = page.locator('.fd-dock [data-fd-dock-browse-go="search"]:visible');
+  await search.evaluate(el => { window.__dockSearchInvoker = el; });
+  await search.click();
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  const input = dialog.getByRole('textbox', { name: 'Search resources' });
+  await input.fill('sleep');
+  await expect(input).toBeFocused();
+  releaseIndex();
+  await expect.poll(() => page.evaluate(() => Boolean(window.SI && Object.keys(window.SI.postings).length))).toBe(true);
+  await expect(input).toBeFocused();
+  await expect(input).toHaveValue('sleep');
+  // The Browse disclosure is retained, open, across hydration while search is open: its Search
+  // item opened the dialog and is where focus must return.
+  expect(await page.evaluate(() => window.__dockSearchInvoker.isConnected)).toBe(true);
+  await expect(search).toHaveCount(1);
+  await input.press('Shift+Tab');
+  await expect(dialog.locator('button:visible').last()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(input).toBeFocused();
+  await input.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(search).toBeFocused();
+  expect(await page.evaluate(() => document.activeElement === window.__dockSearchInvoker)).toBe(true);
+  await expectHealthy(page);
+});
 
 test('adaptive mobile dock: resident APP invitation substitutes slots without changing saved identity', async ({ page }, testInfo) => {
   test.skip(!isResidentProject(testInfo.project.name), 'APP invitation exists only on the resident build');

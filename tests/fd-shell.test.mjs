@@ -205,8 +205,8 @@ test('dock context uses a source id or the audience Essentials fallback', () => 
 test('dock renders four buttons, one disclosure, and an escaped center action', () => {
   const html = F.fdDock({ dockAction: { label: '<Continue>', sourceId: 'action&one' } });
   assert.match(html, /^<nav class="fd-dock" aria-label="Learning actions">/);
-  // Today, Path, the context button, Capture, plus the two actions nested inside Browse's popover.
-  assert.equal((html.match(/<button\b/g) || []).length, 6);
+  // Today, Path, the context button, Capture, plus the three actions nested inside Browse's popover.
+  assert.equal((html.match(/<button\b/g) || []).length, 7);
   assert.equal((html.match(/<details\b/g) || []).length, 1);
   assert.match(html, /data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Capture<\/button>/);
   assert.match(html, /class="fd-dock__item fd-dock__item--context" data-fd-dock-forward="action&amp;one">&lt;Continue&gt;<\/button>/);
@@ -214,12 +214,16 @@ test('dock renders four buttons, one disclosure, and an escaped center action', 
     'the contextual action follows the two leading destinations');
 });
 
-test('the Browse disclosure offers both Library destinations via a thin alias of the tab-row action', () => {
+test('the Browse disclosure offers both Library destinations and Search via a thin alias of the tab-row action', () => {
   const html = F.fdDock({ appMode: false, dockAction: null });
   assert.match(html, /<details class="fd-dock__item fd-dock__browse"><summary>Browse<\/summary>/);
   assert.match(html, /<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">/);
   assert.match(html, /data-fd-dock-browse-go="essentials">The Essentials<\/button>/);
   assert.match(html, /data-fd-dock-browse-go="full">Everything<\/button>/);
+  // The phone header scrolls away with the page, so Search must stay reachable from the dock.
+  assert.match(html, /data-fd-dock-browse-go="search" aria-haspopup="dialog">Search<\/button>/);
+  // Never a bare data-fd-search: focus restore would resolve it to the off-screen header button.
+  assert.doesNotMatch(html, /data-fd-search/);
   // data-fd-dock-browse-go, not data-fd-library-view directly: the in-Library "Everything (N
   // pages) -->" footer button already carries data-fd-library-view="full" and stays in the DOM
   // (just not :visible) while this menu is closed, so the dock needs its own attribute or a

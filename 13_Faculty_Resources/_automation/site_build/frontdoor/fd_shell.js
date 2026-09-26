@@ -57,8 +57,9 @@ function fdTabs(tab, appMode, libraryView){
 /* The five-slot phone dock is a pure projection of the current audience and primary action.
    The center item can forward to an action owned by another surface; without one, it is the
    stable Library browse route. Rendering stays here so every dynamic value is escaped once.
-   'browse' replaces the old Search slot -- the header's own [data-fd-search] search bar already
-   covers phones, so the dock's copy of it was pure redundancy. Browse has no attr/value of its
+   'browse' replaces the old Search slot and carries Search inside it: the phone header scrolls
+   away with the page, so the header's own [data-fd-search] bar is out of reach mid-page and
+   Search must stay one tap from the dock (2026-09-26). Browse has no attr/value of its
    own: it is a native <details> disclosure (see fdDock), not a dispatched action, so opening and
    closing it costs no new state and nothing to reset on unrelated navigation -- fdRenderDock
    replaces the whole dock innerHTML on every refresh, which closes it for free. */
@@ -77,20 +78,27 @@ function fdDockModel(state){
   };
 }
 
-/* The Browse item renders as <details>/<summary> rather than a button: its two destinations
+/* The Browse item renders as <details>/<summary> rather than a button: its three choices
    need a disclosure, and the browser owns open/closed state for free rather than this app
    tracking yet another overlay flag. Its menu items dispatch data-fd-dock-browse-go (a thin
    alias fd_wire.js resolves onto the existing data-fd-library-view action) rather than that
    attribute directly: the in-Library "Everything (N pages) -->" footer button (fd_library.js)
    already carries data-fd-library-view="full", present in the DOM even while this menu is
    closed, and reusing the same attribute value made every plain (non-:visible-scoped)
-   [data-fd-library-view="full"] locator across the smoke suite resolve to two elements. */
+   [data-fd-library-view="full"] locator across the smoke suite resolve to two elements.
+   Search goes through the same alias ("search") rather than a bare data-fd-search for the
+   matching reason one layer down: when the search dialog closes and its opener has been
+   re-rendered, fd_wire.js's restoreInvoker looks up the first control carrying the opener's
+   attribute, and a bare data-fd-search would resolve to the header's .fd-searchbtn -- scrolled
+   off the top on a phone, so returning focus there would jump the page (and the saved reading
+   place) back to the top. */
 function fdDockBrowseItem(){
   return '<details class="fd-dock__item fd-dock__browse">'+
     '<summary>Browse</summary>'+
     '<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">'+
     '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="essentials">The Essentials</button>'+
     '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="full">Everything</button>'+
+    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="search" aria-haspopup="dialog">Search</button>'+
     '</div></details>';
 }
 

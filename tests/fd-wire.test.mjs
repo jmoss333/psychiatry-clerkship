@@ -3987,6 +3987,14 @@ test('the dock Browse menu is an alias for data-fd-library-view, not a duplicate
   }
 });
 
+test('the dock Browse menu Search item is an alias for data-fd-search', () => {
+  const initial = {...roleContext, tab:'library', libraryView:'essentials', openId:'a.md', searchOpen:false};
+  const viaDock = F.fdDispatch({'data-fd-dock-browse-go':'search'}, {}, initial);
+  assert.deepEqual(viaDock, F.fdDispatch({'data-fd-search':''}, {}, initial));
+  assert.equal(viaDock.patch.searchOpen, true);
+  assert.equal(viaDock.route, null, 'opening search from the dock must not navigate');
+});
+
 test('full Library resource route survives reload and Back while tool frame strips shell context', () => {
   const initial = {...roleContext,tab:'library',libraryView:'full'};
   const opened = F.fdDispatch({'data-fd-open':'extra.html'}, {search:'?tab=library&library=full&case=c1'}, initial);

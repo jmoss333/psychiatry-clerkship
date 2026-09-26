@@ -30,7 +30,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-toggle':'toggle governed progress',
   'data-fd-tab':'open top-level tab',
   'data-fd-library-view':'choose Library view',
-  'data-fd-dock-browse-go':'choose Library view from the phone dock',
+  'data-fd-dock-browse-go':'choose Library view or open search from the phone dock',
   'data-fd-kit-section':'filter Essentials sections',
   'data-fd-kit-tool':'preview an Essentials tool',
   'data-fd-care-intent':'choose a transient Care navigator task',
@@ -557,7 +557,10 @@ function fdDispatch(attrs, context, state){
      present in the DOM (though not visible) even while this menu is closed, so reusing it here
      would leave two elements answering to the same selector. */
   if(fdOwn(a,'data-fd-dock-browse-go')){
-    return fdDispatch({'data-fd-library-view':String(a['data-fd-dock-browse-go']||'')},c,s);
+    var dockGo=String(a['data-fd-dock-browse-go']||'');
+    /* "search" is the dock's in-reach Search: the phone header scrolls away mid-page. */
+    if(dockGo==='search') return fdDispatch({'data-fd-search':''},c,s);
+    return fdDispatch({'data-fd-library-view':dockGo},c,s);
   }
   if(fdOwn(a,'data-fd-tab')){
     tab=String(a['data-fd-tab']||'');
