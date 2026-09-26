@@ -483,6 +483,15 @@ async function installRepositoryApi(page, initialBank, {
           ok: true,
           updated: 1,
           commit: `https://github.example/commit/faculty-${++commitNumber}`,
+          rows: {
+            [slug]: {
+              status: reviewed ? 'reviewed' : 'unreviewed',
+              at: reviewed ? '2026-07-17' : '',
+              by: reviewed ? SERVER_ATTESTER : 'Pending faculty review',
+              risk: item.risk ?? null,
+              reason: reviewed ? '' : (body.reasons?.[slug] || ''),
+            },
+          },
         };
         receipts.push(structuredClone(receipt));
         await fulfillJson(route, 200, receipt);
@@ -2425,5 +2434,61 @@ test.describe.serial('faculty console: registry pages, deep links, and twins', (
     await expect(page.locator('#selected-item-title')).toHaveText('Synthetic mood disorders page');
     expect(api.calls[start].body.changes).toEqual({ [COTW_MS3_SLUG]: true });
     await expectNoSecretsInUrl(page);
+  });
+});
+
+// ---- Phone client (/m/) ----------------------------------------------------------------
+// A second front-end on the same origin (spec: docs/superpowers/specs/2026-09-26-mobile-
+// attestation-console-design.md). Same key, same API, same one-slug-per-press rule.
+const PHONE = { width: 390, height: 844 };
+
+async function unlockPhone(page, { path = '/m/' } = {}) {
+  await page.addInitScript(() => {
+    window.__facultyConsolePreviewMessages = [];
+    window.addEventListener('message', event => {
+      if (event.data?.type === 'faculty-preview-status') {
+        window.__facultyConsolePreviewMessages.push(structuredClone(event.data));
+      }
+    });
+  });
+  await page.goto(path);
+  await expect(page).toHaveTitle('Faculty attestation — phone');
+  await expect(page.getByLabel('Faculty key')).toBeFocused();
+  await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+  await page.getByRole('button', { name: 'Unlock' }).click();
+  await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+}
+
+test.describe('phone client', () => {
+  test.use({ viewport: PHONE, hasTouch: true, isMobile: true });
+
+  test('unlocks with the shared key, sends it only as a header, and lists the queue grouped', async ({ page }) => {
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, {
+      view: 'changes', branch: 'main', generatedAt: '2026-09-26T00:00:00.000Z', drifted: 1, partial: false,
+      groups: [{ id: 'pr:813', pr: 813, sha: 'a'.repeat(40), title: 'WP-9 citations', date: '2026-09-25', url: 'https://github.example/pull/813', slugs: ['t_mood.md'] }],
+      unexplained: [], unchecked: [], pages: { 't_mood.md': { title: 'Synthetic mood disorders page', kind: 'page', at: '', changes: [{ id: 'pr:813', sameDay: false }] } },
+    }));
+    await unlockPhone(page);
+    expect(api.calls.every(call => call.key === FACULTY_KEY)).toBe(true);
+    expect(page.url().includes(FACULTY_KEY)).toBe(false);
+    await expect(page.getByRole('heading', { name: '#813 WP-9 citations' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Also needing review' })).toBeVisible();
+    const rows = page.getByRole('link', { name: /Synthetic|Catatonia/ });
+    await expect(rows).toHaveCount(4);
+    await expect(page.getByText(/needs? review/)).toBeVisible();
+    // No horizontal scroll at phone width.
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('a wrong key is refused, cleared, and re-prompted without leaking into storage', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.goto('/m/');
+    await page.getByLabel('Faculty key').fill('not-the-key');
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('alert')).toContainText('Key not accepted');
+    expect(await page.evaluate(() => window.sessionStorage.getItem('fac_key'))).toBeNull();
+    expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
   });
 });
