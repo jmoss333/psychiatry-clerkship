@@ -1880,12 +1880,15 @@ function fdWire(root, initialState, opts){
   }
   /* Chromium can focus a partly visible button in either horizontal Essentials strip without
      scrolling it fully into view. Move only that strip, preserving the page and route. */
+  /* Keeps a focused control whole inside its sideways-scrolling strip. Chrome's focus() leaves a
+     PARTLY visible element where it is, so without this a keyboard user can land on a half-clipped
+     item. The phone quick-tool pills joined the strips on 2026-09-26 when they became one row. */
   function focusHandler(event){
     if(destroyed||!startupCommitted||previewActive()) return;
     var target=event&&event.target;
-    var control=target&&target.closest?target.closest('.fd-kit__tool-tabs [data-fd-kit-tool],.fd-kit__index-track [data-fd-kit-section]'):null;
+    var control=target&&target.closest?target.closest('.fd-kit__tool-tabs [data-fd-kit-tool],.fd-kit__index-track [data-fd-kit-section],.fd-quicktools--pills [data-fd-open]'):null;
     if(!control) return;
-    var strip=control.closest('.fd-kit__tool-tabs,.fd-kit__index-track');
+    var strip=control.closest('.fd-kit__tool-tabs,.fd-kit__index-track,.fd-quicktools--pills');
     if(!strip||!strip.getBoundingClientRect||!control.getBoundingClientRect) return;
     var frame=strip.getBoundingClientRect(), box=control.getBoundingClientRect();
     var style=win&&win.getComputedStyle?win.getComputedStyle(strip):null;
