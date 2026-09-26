@@ -32,8 +32,14 @@ _FETCH = re.compile(r"(?<![\w$])fetch\s*\(\s*")
 _SERVICE_FETCHES = {
     "_prototypes/sp-interview/sp-interview.html": {
         "this.endpoint": "live standardized-patient POST endpoint",
-        "voiceEndpointFor(endpoint)": "managed voice catalog service",
-        "ep": "managed voice synthesis service",
+        "realtimeEndpointFor(endpoint)": "real-time spoken room health service",
+        "ep": "live standardized-patient connection test",
+    },
+    # The spoken room's controller talks to one service through an injected
+    # fetch adapter: /api/sp/realtime (op=start, op=turn, op=end). The URL is
+    # built from the tool's stored endpoint, so it cannot be a literal here.
+    "_prototypes/sp-interview/sp-interview.realtime.js": {
+        "url": "real-time spoken room proxy (op=start / op=turn / op=end)",
     },
 }
 

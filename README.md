@@ -42,6 +42,34 @@ references it. Internal RSS/RSSM naming is retained here; a public mirror would 
 Content never forks. `14_Tracks/<audience>/` holds only a short ordered list of links into the shared body.
 MS3 is the default build; later tracks are overlays.
 
+## Licensing and third-party material
+
+Two licences cover what the author owns. The line between them is drawn by the kind of material, not by folder: does it teach, or does it build?
+
+| What | Licence | File |
+|---|---|---|
+| **Curriculum content.** Teaching material (text, cases, questions and rationales, feedback, scripts) wherever it appears. It lives mainly in the numbered trees `00_START_HERE/` to `14_Tracks/` and `99_Archive/`, the curriculum registries (`topic_meta.json`, `question_bank.json`, `curriculum.json`, the case files and the rest), the learner-facing text in `_prototypes/`, and the built learner pages. Copies stay content: the review transcripts, test snapshots such as `tests/__panels__/`, benchmark corpora, case-pack text in tests, and pages quoted in documentation. | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) | [`LICENSE-content`](LICENSE-content) |
+| **Code.** Source files (`.py`, `.js`, `.mjs`, `.jsx`, `.sh` and the like), every `*.schema.json`, build, test and CI configuration, the program logic of the HTML tools, and the developer documentation, wherever they live (inside the numbered trees too). That includes the build pipeline and validators, `bin/`, `tools/`, `tests/`, the faculty console and the Interview Room proxy, except copies of curriculum content in any of them. | MIT | [`LICENSE`](LICENSE) |
+
+`LICENSE-content` gives the exact boundary, how to handle files that mix code and teaching text, and the attribution line to use. In short, CC BY-NC-SA 4.0 means you may share and adapt the content for non-commercial use if you credit the source, say what you changed, and release your adaptation under the same licence.
+
+### Not covered by either licence
+
+The author can only license what the author owns. None of the following is licensed by `LICENSE` or `LICENSE-content`:
+
+- **Third-party assessment instruments.** The library teaches how to give an instrument and links to the custodian's official form. It does not reproduce copyrighted instruments; that rule is decision `instrument-scope-option-a` in `decisions.json`. [`instrument_rights.json`](instrument_rights.json) records each instrument's status and official source: C-SSRS, COWS and CIWA-Ar are retired, BFCRS and the Stanley-Brown Safety Plan are restricted, and PHQ-9 and GAD-7 are provisional. Where instrument wording does appear, it still belongs to its custodian. The PHQ-9 and GAD-7 text in `screeners.html` is reproduced under Pfizer's permission. That permission covers reproducing, translating, displaying and distributing the screeners, but not modifying them, so do not adapt that wording under the share-alike terms. The permission record is [`docs/permissions/phqscreeners-2026-09-10.md`](docs/permissions/phqscreeners-2026-09-10.md).
+- **Cited papers and quotations.** Papers are cited and linked, not copied. Short verbatim quotations belong to their authors and publishers. These include the `sourceSpan` excerpts in `evidence_annotations.json` and the cached abstracts in `13_Faculty_Resources/_automation/span_audit/`.
+- **AI-generated media.** The 100 audio files were generated with Google NotebookLM; the author did not record them. They are the 50 landmark-paper audio overviews in `07_Evidence_and_Reading/Landmark_Trials/audio/` and the 50 brief summaries in `12_Media/audio_oe/`, which were made from a source list assembled with OpenEvidence. The orientation video overview in `_prototypes/orientation-video/` is also a NotebookLM generation, and so are its captions and transcript. Some generated titles are promotional and are not faculty-attested, and `media_manifest.json` records their accessibility status. Until each file has a recorded rights and provenance field (WP-16 step 2), treat **every** audio and video file in the repository as outside both licences. That includes the silent motion clips in `_prototypes/video-library/`, which were rendered from the design prototypes in `13_Faculty_Resources/Handoffs/Clerkship_video_handoff/`.
+- **Vendored libraries and fonts.** Third-party code copied into the repository keeps its own licence:
+  - React and ReactDOM 18.2.0 (`_prototypes/*/vendor/`) are MIT-licensed, © Facebook, Inc. and its affiliates.
+  - marked 9.1.6 (`13_Faculty_Resources/_automation/site_build/marked.min.js`) is MIT-licensed, © Christopher Jeffrey.
+  - qrcode-generator 1.4.4 (`13_Faculty_Resources/_automation/site_build/vendor/`, with its licence file) is MIT-licensed, © Kazuhiko Arase. "QR Code" is a registered trademark of DENSO WAVE.
+
+  npm dependencies are installed at build time, not committed, and carry their own licences. No font files are bundled, and the learner sites use system font stacks. Some design references (the `.dc.html` files under `13_Faculty_Resources/Handoffs/` and `docs/superpowers/specs/`) load Source Serif 4, Source Sans 3 and Inter from Google Fonts; those fonts use the SIL Open Font License 1.1.
+- **Trademarks and institution names.** Some names appear in the content as local context, not as endorsements. They include Tufts University School of Medicine, the University of New England, Maine Medical Center and MaineHealth, Sanford and the BHU2 unit, and products and services such as NotebookLM, OpenEvidence and Netlify. Neither licence grants any right to use these names.
+
+To run this library at another clerkship, see [`docs/ADOPTING.md`](docs/ADOPTING.md).
+
 ## Development
 
 For a reproducible local environment, follow the [Dev Container onboarding guide](.devcontainer/README.md).

@@ -321,14 +321,14 @@
     "by": "Pending faculty review"
   },
   "mse.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
-    "by": "Joshua Moss, MD",
-    "contentHash": "4bab5fbcf59387ea81014790347c197f0ee37bc9"
+    "reason": "New fictional yesterday/today comparison and selected-finding handoff to rounds require faculty review. Prior review: 2026-09-21.",
+    "at": "2026-09-25",
+    "by": "Pending faculty review"
   },
   "capacity.html": {
     "status": "reviewed",
@@ -341,14 +341,14 @@
     "contentHash": "e57d4b9f872ced7a61309983c37451b9f0dd20da"
   },
   "oral.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
-    "by": "Joshua Moss, MD",
-    "contentHash": "e9f01751f7fdd2073d30a057bf98ac8b77942818"
+    "reason": "New MSE-linked fictional rehearsal displays selected observations and uncertainties; case material requires faculty review. Prior review: 2026-09-21.",
+    "at": "2026-09-25",
+    "by": "Pending faculty review"
   },
   "violence.html": {
     "status": "reviewed",

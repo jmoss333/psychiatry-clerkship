@@ -617,14 +617,14 @@
 
 /* One compact device-cache receipt beneath the route's primary action. The detailed panel
  * stays in document flow, so Tab can leave it naturally and the fixed phone dock stays five items. */
-/* Today's exam-date prompt (fd_today.js): the settings panel's Pacing field, asked once on the exam path.
-   Mirrors .fd-set__label/.fd-set__date/.fd-set__note so the two read as one control family; the input keeps
-   its intrinsic width here (a full-width date field would read as the page's primary control). */
-.fd-today__exam{margin:0 0 var(--fd-space-6);padding:var(--fd-space-5);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
-.fd-today__examlabel{display:block;margin:0 0 var(--fd-space-4);font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text)}
-.fd-today__examdate{max-width:100%;padding:var(--fd-space-5) var(--fd-space-4);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm)}
-@media (pointer:coarse){.fd-today__examdate{min-height:var(--fd-target-touch)}}
-.fd-today__examnote{margin:var(--fd-space-4) 0 0;font-size:var(--fd-font-xs);color:var(--fd-text-mid)}
+/* Today's exam-date nudge (fd_today.js): asked once on the exam path, pointing at the settings
+   panel's Pacing field -- the date's one home. The CTA reopens Settings via the gear's own action
+   (data-fd-settings), so it is styled as a plain secondary button, never a date field. */
+.fd-today__exam{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--fd-space-5);margin:0 0 var(--fd-space-6);padding:var(--fd-space-5);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+.fd-today__examtext{flex:1 1 220px;min-width:0;margin:0;font-size:var(--fd-font-sm);color:var(--fd-text)}
+.fd-today__examcta{flex:0 0 auto;padding:var(--fd-space-4) var(--fd-space-5);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm);font-weight:700;cursor:pointer;white-space:nowrap}
+.fd-today__examcta:hover{border-color:var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+@media (pointer:coarse){.fd-today__examcta{min-height:var(--fd-target-touch)}}
 .fd-offline{margin:0 0 var(--fd-space-6);border:1px solid var(--fd-line-strong);border-left:var(--fd-space-2) solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text)}
 .fd-offline.is-checking{border-left-style:dashed;background:var(--fd-callout)}
 .fd-offline.is-ready{border-left-color:var(--fd-olive);background:var(--fd-olive-wash)}
@@ -696,13 +696,16 @@
 .fd-care-pack__print{min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-6);border:var(--fd-space-1) solid var(--fd-olive);border-radius:var(--fd-radius-sm);background:var(--fd-olive);color:var(--fd-on-accent);font:inherit;font-size:var(--fd-font-sm);font-weight:750;cursor:pointer}
 .fd-care-pack__print:hover:not(:disabled){border-color:var(--fd-olive-deep);background:var(--fd-olive-deep)}
 
+/* A subtle rose tint at rest, not only on hover, so the card reads as an extension of the header's
+   red Safety button (--fd-danger/-dark/-wash, the same trio that button already uses) rather than
+   a neutral card that happens to redden on touch (2026-09-26). */
 .fd-kitcard{
   display:flex;align-items:center;gap:var(--fd-space-5);width:100%;text-align:left;
-  padding:11px 13px;background:var(--fd-surface);
-  border:1.5px solid var(--fd-line);border-radius:var(--fd-radius-md);cursor:pointer;
+  padding:11px 13px;background:var(--fd-danger-wash);
+  border:1.5px solid var(--fd-danger);border-radius:var(--fd-radius-md);cursor:pointer;
 }
 .fd-kitcard + .fd-kitcard{margin-top:8px}
-.fd-kitcard:hover{border-color:var(--fd-danger);background:var(--fd-danger-wash)}
+.fd-kitcard:hover{border-color:var(--fd-danger-dark)}
 .fd-kitcard__dot{width:8px;height:8px;border-radius:var(--fd-radius-circle);background:var(--fd-danger);flex:0 0 auto}
 .fd-kitcard__title{display:block;font-size:var(--fd-font-sm);font-weight:600;color:var(--fd-text)}
 .fd-kitcard__sub{display:block;font-size:var(--fd-font-xs);color:var(--fd-text-dim);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}

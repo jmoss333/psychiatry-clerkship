@@ -1,0 +1,91 @@
+Psychiatry Clerkship Library — curriculum content licence
+
+Copyright (c) 2026 Joshua Moss, MD
+
+The curriculum content of this repository is licensed under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International licence (CC BY-NC-SA 4.0).
+
+  Deed (summary):  https://creativecommons.org/licenses/by-nc-sa/4.0/
+  Legal code:      https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+The legal code at that address is the licence. This file is the notice that applies it;
+it does not change or add to the licence terms.
+
+
+WHAT IS CONTENT AND WHAT IS CODE
+
+The line is drawn by the kind of material, not by the folder it sits in.
+
+Curriculum content (CC BY-NC-SA 4.0, this file) is teaching material: the text, cases,
+questions, answers and rationales, feedback, scripts and other educational material
+written to teach. It lives mainly in:
+
+1. The numbered content trees, 00_START_HERE/ through 14_Tracks/ and 99_Archive/.
+2. The root registries that carry curriculum material, for example topic_meta.json,
+   question_bank.json, curriculum.json, communication_cases.json, reasoning_cases.json,
+   reasoning_cases_resident.json, longitudinal_case.json, family_systems_scenarios.json,
+   pairings.json, evidence_registry.json and evidence_annotations.json.
+3. The learner-facing text in _prototypes/, such as the scenario and standardized-patient
+   case packs (*.pack.json) and the text of the tools that ship to learners.
+4. The built learner pages of both sites (the output of
+   13_Faculty_Resources/_automation/site_build/build_and_check.sh).
+
+Curriculum content stays content wherever it is copied. That includes the
+curriculum-review transcripts in docs/curriculum-review/, test snapshots and fixtures (for
+example tests/__panels__/), benchmark corpora (benchmarks/), case-pack text quoted in
+tests, and documentation that quotes a page.
+
+Code (the MIT License, in LICENSE) is software and its configuration: source files (for
+example .py, .js, .mjs, .jsx and .sh), every *.schema.json, build, test and CI
+configuration, and the documentation of how the software works. Code is code wherever it
+lives, including inside the numbered trees (for example the build scripts under
+13_Faculty_Resources/_automation/ and the question-bank engine under
+09_Exam_Prep/shelf_comat_bank/engine/). It never includes the curriculum content copied
+into it.
+
+When one file holds both, each part keeps its own licence. In the single-file HTML
+clinical tools, for example, the program logic is code and the teaching text, cases,
+questions and feedback are content.
+
+
+NOT COVERED BY THIS LICENCE (OR BY THE MIT LICENSE)
+
+The licensor can only license what the licensor owns. The following are not licensed by
+either file. The README section "Licensing and third-party material" explains each one.
+
+- Third-party assessment instruments and their text, forms, items and anchors. The library
+  links to each custodian's official form; see instrument_rights.json.
+- Cited papers, abstracts and quotations, including the verbatim source spans in
+  evidence_annotations.json and the cached abstracts under
+  13_Faculty_Resources/_automation/span_audit/.
+- Generated media: the NotebookLM audio overviews and the orientation video overview, with
+  its captions and transcript. Until the media provenance review is recorded, treat every
+  audio and video file in the repository as outside both licences.
+- Vendored third-party code (React, marked, qrcode-generator), which keeps its own licence.
+- Trademarks and the names of institutions, hospitals, units, products and services.
+
+
+HOW TO ATTRIBUTE
+
+Unmodified:
+
+  "<Title of the page or tool>" from the Psychiatry Clerkship Library by Joshua Moss, MD
+  (https://github.com/jmoss333/psychiatry-clerkship), licensed under CC BY-NC-SA 4.0
+  (https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+Adapted:
+
+  Adapted from "<Title>" in the Psychiatry Clerkship Library by Joshua Moss, MD
+  (https://github.com/jmoss333/psychiatry-clerkship), licensed under CC BY-NC-SA 4.0
+  (https://creativecommons.org/licenses/by-nc-sa/4.0/). Changes: <what you changed>.
+  This adaptation is licensed under CC BY-NC-SA 4.0.
+
+Attribution must not suggest that the author, or any institution or site named in the
+content, endorses you or your use.
+
+
+A NOTE ON USE
+
+The content is educational material written for supervised trainees. It is not clinical
+guidance for any particular patient and does not replace local policy or protocol. It is
+provided as-is, as Section 5 of the legal code describes.

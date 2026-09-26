@@ -101,6 +101,26 @@ test.describe('crisis contacts reach the learner even if the app never runs', ()
   }
 });
 
+// ----------------------------------------------- the Interview Room's family door, framed
+
+test('the family-visit door leaves the learner shell by the top window, not inside the tool frame', async ({ page }) => {
+  // The Interview Room runs inside the shell's <iframe class="toolframe">, and the faculty
+  // preview answers every framed request with X-Frame-Options: DENY. A same-frame anchor
+  // therefore dies silently — the address bar never changes and the frame shows a refused
+  // connection — which the direct-open interview-room project cannot see (it opens the tool
+  // top-level). Only a framed click on the real shell proves the door.
+  const destination = 'https://interview-room-faculty-preview.netlify.app/?preset=trainee';
+  await page.route(destination, (route) => route.fulfill({ contentType: 'text/html', body: '<h1>Family visit door</h1>' }));
+  await page.goto('/?tool=sp-interview.html');
+  const link = page.frameLocator('.toolframe').getByRole('link', { name: /Open the family visit/ });
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute('target', '_top');
+  await link.click();
+  await expect(page).toHaveURL(destination);
+  await expect(page.getByRole('heading', { name: 'Family visit door' })).toBeVisible();
+  expect(page.context().pages(), 'same tab, no popup').toHaveLength(1);
+});
+
 // ------------------------------------------------------------------- "no PHI is stored"
 
 test('screeners.html stores nothing when used — its own no-PHI promise', async ({ page }) => {

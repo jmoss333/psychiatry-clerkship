@@ -10,7 +10,7 @@ import { zipFunctions } from '@netlify/zip-it-and-ship-it';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FUNCTIONS_DIR = path.join(ROOT, 'netlify', 'functions');
 
-test('Netlify 14.5.4 manifest schedules only the private canary and leaves status routing to TOML', {
+test('Netlify 14.5.4 manifest schedules the private canary and the realtime reaper, and leaves public routing to TOML', {
   timeout: 30_000,
 }, async (t) => {
   const temp = await mkdtemp(path.join(os.tmpdir(), 'sp-health-manifest-'));
@@ -30,8 +30,12 @@ test('Netlify 14.5.4 manifest schedules only the private canary and leaves statu
   });
 
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-  const canary = manifest.functions.find(({ name }) => name === 'sp-health-canary');
-  const status = manifest.functions.find(({ name }) => name === 'sp-health-status');
+  const byName = (name) => manifest.functions.find((entry) => entry.name === name);
+  const canary = byName('sp-health-canary');
+  const status = byName('sp-health-status');
+  const reaper = byName('sp-realtime-reaper');
+  const realtime = byName('sp-realtime');
+  const voice = byName('sp-voice');
 
   assert.equal(canary?.runtimeVersion, 'nodejs20.x');
   assert.equal(canary?.schedule, '0 */6 * * *');
@@ -39,4 +43,20 @@ test('Netlify 14.5.4 manifest schedules only the private canary and leaves statu
   assert.equal(status?.runtimeVersion, 'nodejs20.x');
   assert.equal(status?.schedule, undefined);
   assert.deepEqual(status?.routes ?? [], []);
+
+  // The reaper is the only other scheduled function: every five minutes, so a
+  // call past its deadline is hung up within one cycle.
+  assert.equal(reaper?.runtimeVersion, 'nodejs20.x');
+  assert.equal(reaper?.schedule, '*/5 * * * *');
+  assert.deepEqual(reaper?.routes ?? [], []);
+  // The route itself is reached through the TOML rewrite, exactly like sp-voice.
+  assert.equal(realtime?.runtimeVersion, 'nodejs20.x');
+  assert.equal(realtime?.schedule, undefined);
+  assert.deepEqual(realtime?.routes ?? [], []);
+  assert.equal(voice?.schedule, undefined);
+  assert.deepEqual(voice?.routes ?? [], []);
+  assert.deepEqual(
+    manifest.functions.filter((entry) => entry.schedule !== undefined).map((entry) => entry.name).sort(),
+    ['sp-health-canary', 'sp-realtime-reaper'],
+  );
 });

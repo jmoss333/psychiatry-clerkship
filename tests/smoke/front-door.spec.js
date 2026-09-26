@@ -926,7 +926,7 @@ test('tab focus order is stable and Path preview does not change rotation until 
   await page.keyboard.press('Tab');
   await expect(page.locator('.fd-safetybtn[data-fd-safety]')).toBeFocused();
   await page.keyboard.press('Tab');
-  await expect(page.locator('[data-fd-settings]')).toBeFocused();
+  await expect(page.locator('.fd-settingsbtn[data-fd-settings]')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('[data-fd-tab="today"]:visible')).toBeFocused();
 
@@ -1109,7 +1109,7 @@ test('Safety Kit, theme, and Progress remain usable and restore their invokers',
   await seedApp(page, testInfo);
   await page.goto('/');
 
-  const settings = page.locator('[data-fd-settings]');
+  const settings = page.locator('.fd-settingsbtn[data-fd-settings]');
   await settings.click();
   await page.locator('[data-fd-theme="dark"]').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -1132,39 +1132,48 @@ test('Safety Kit, theme, and Progress remain usable and restore their invokers',
   await expectHealthy(page);
 });
 
-// Today's exam-date prompt (fd_today.js / fdExamDatePrompt). Without a stored date the taper in
-// phase_policy.js never engages, and the only home for the date was the settings panel. The field
-// is the panel's own type, so it must commit IN PLACE -- no render, no focus move -- and it must
-// not become a second settings opener (the gear's focus return after a theme change depends on it).
-test('Today asks once for the exam date on the exam path, stores it in place, and settings reads it back', async ({ page }, testInfo) => {
+// Today's exam-date nudge (fd_today.js / fdExamDatePrompt). Without a stored date the taper in
+// phase_policy.js never engages, and the date's one home is the settings panel's Pacing field
+// (fd_sheet.js) -- the nudge carries no field of its own and only reopens Settings via the SAME
+// data-fd-settings action the gear exposes: a second trigger for one action, not a second action.
+// The field itself must still commit IN PLACE while the panel is open -- no render, no focus move.
+// Closing the panel is what settles the debt: the commit marks the base surface stale (fd_wire.js,
+// changeHandler), and closing always changes `sheet`, which is a settlement site for that flag --
+// so Today rebuilds without the nudge the instant the panel closes, destroying the CTA that
+// reopened it, and restoreInvoker's equivalentControl fallback lands focus on the gear instead.
+test('Today nudges once for the exam date on the exam path, and Settings owns the field', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
   await expect(page.locator('.fd-today')).toBeVisible();
-  const field = page.locator('#fdTodayExam');
+  const nudge = page.locator('.fd-today__exam');
   if (isResidentProject(testInfo.project.name)) {
-    await expect(field).toHaveCount(0);
-    await expect(page.locator('.fd-today__exam')).toHaveCount(0);
+    await expect(nudge).toHaveCount(0);
     await expectHealthy(page);
     return;
   }
-  await expect(page.locator('label[for="fdTodayExam"]')).toHaveText('Exam date');
-  await expect(page.locator('[data-fd-settings]')).toHaveCount(1);
-  const typedInto = await field.elementHandle();
-  await field.fill('2026-10-30');
+  await expect(nudge.locator('.fd-today__examtext')).toContainText('Exam date');
+  const cta = nudge.locator('.fd-today__examcta');
+  await expect(cta).toHaveAttribute('data-fd-settings', '');
+  await expect(page.locator('[data-fd-settings]'), 'the gear and the nudge both trigger the one settings action')
+    .toHaveCount(2);
+
+  await cta.click();
+  await expect(page.locator('#fdSetExam')).toHaveValue('');
+  await page.locator('#fdSetExam').fill('2026-10-30');
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_shelf_date'))).toBe('2026-10-30');
-  expect(await typedInto.evaluate((el) => el.isConnected), 'the field was rebuilt under the learner').toBe(true);
-  await expect(field).toHaveValue('2026-10-30');
+  await expect(nudge, 'Today underneath the open panel stays untouched mid-entry').toHaveCount(1);
 
-  await page.locator('[data-fd-tab="library"]:visible').first().click();
-  await page.locator('[data-fd-tab="today"]:visible').first().click();
-  await expect(page.locator('.fd-today')).toBeVisible();
-  await expect(page.locator('.fd-today__exam'), 'answered once, asked no more').toHaveCount(0);
+  await page.locator('.fd-sheet__close').click();
+  await expect(page.locator('.fd-today__exam'), 'answered once, asked no more, the instant the panel closes')
+    .toHaveCount(0);
+  const gear = page.locator('[data-fd-settings]');
+  await expect(gear, 'the CTA that opened the panel is gone; only the gear remains').toHaveCount(1);
+  await expect(gear).toBeFocused();
 
-  const settings = page.locator('[data-fd-settings]');
-  await settings.click();
+  await gear.click();
   await expect(page.locator('#fdSetExam')).toHaveValue('2026-10-30');
   await page.locator('.fd-sheet__close').click();
-  await expect(settings).toBeFocused();
+  await expect(gear).toBeFocused();
   await expectHealthy(page);
 });
 

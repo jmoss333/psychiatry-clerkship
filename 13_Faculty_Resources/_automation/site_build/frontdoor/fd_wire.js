@@ -1919,10 +1919,11 @@ function fdWire(root, initialState, opts){
       }
     }
   }
-  /* The settings panel's one non-button control -- and Today's exam-date prompt, which renders the
-     same field type -- and the only action in the file that does not go
-     through apply(). Three deliberate differences from the click path, each of which is a defect
-     if it is "made consistent":
+  /* The settings panel's one non-button control, and the only action in the file that does not go
+     through apply(). Today's exam-date nudge used to render this same field type inline; it now
+     only reopens the panel (data-fd-settings) and has no field of its own, so this handler and its
+     three differences below belong to the panel's field alone. Three deliberate differences from
+     the click path, each of which is a defect if it is "made consistent":
 
      1. A change event, not a click. FD_ACTION_SELECTOR deliberately omits this attribute, so
         clickHandler never sees the field. If it did it would preventDefault() the gesture that
@@ -1938,11 +1939,15 @@ function fdWire(root, initialState, opts){
         and costs the interaction. That is also why refocusInvoker (the panel's generic focus
         restore) must not run: there is no rebuilt equivalent to restore focus TO, and pulling
         focus back into a field the learner is still using is worse than the bug it prevents.
-        THREE SURFACES OUTSIDE THE PANEL DO DERIVE FROM IT -- Progress's signpost, the plan's
-        intensity line, and Today's countdown through fdExamCountdown -- and closing the sheet
-        does not cover any of them on its own: fdCloseSheet patches only overlay keys. So the
-        commit marks the base surface stale and a later render pays that debt -- at one of the
-        three settlement sites absorbStaleBase enumerates, not at just any render.
+        SURFACES OUTSIDE THE PANEL DO DERIVE FROM IT -- Progress's signpost, the plan's intensity
+        line, and Today's own base render (fdExamCountdown AND fdExamDatePrompt, the nudge's gate,
+        both recomputed by the same fdToday() call) -- and closing the sheet does not cover any of
+        them on its own: fdCloseSheet patches only overlay keys. So the commit marks the base
+        surface stale and a later render pays that debt -- at one of the settlement sites
+        absorbStaleBase enumerates, not at just any render. Closing the panel is itself such a
+        render (its patch changes sheet, a non-empty patch, so apply() runs and absorbStaleBase
+        forces surfaces.base=true on it) -- which is also how the nudge disappears once the panel
+        that reopened it is closed, with no render logic of its own to do that.
         Deferring is what keeps the panel untouched; skipping it altogether is how a learner could
         set a date, close the panel, and still read "Not set" on the page underneath.
      3. No history entry and no fdSave. The result carries no route and no controller-state key;
