@@ -928,7 +928,7 @@
     },
     {
       "id": "qb_per_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -2288,7 +2288,7 @@
     },
     {
       "id": "qb_saf_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2552,7 +2552,7 @@
     },
     {
       "id": "qb_saf_010",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2950,7 +2950,7 @@
     },
     {
       "id": "qb_sud_007",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3523,7 +3523,7 @@
     },
     {
       "id": "qb_pha_005",
-      "status": "draft",
+      "status": "attested",
       "type": "two-tier",
       "category": "pharm",
       "competency": [
@@ -3600,7 +3600,7 @@
     },
     {
       "id": "qb_pha_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3996,7 +3996,7 @@
     },
     {
       "id": "qb_pha_013",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -4048,7 +4048,7 @@
     },
     {
       "id": "qb_pha_014",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -6581,7 +6581,7 @@
     },
     {
       "id": "qb_per_005",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "personality",
       "competency": [
@@ -6846,7 +6846,7 @@
     },
     {
       "id": "qb_cdev_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -8073,7 +8073,7 @@
     },
     {
       "id": "qb_otherdx_008",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "otherdx",
       "competency": [
