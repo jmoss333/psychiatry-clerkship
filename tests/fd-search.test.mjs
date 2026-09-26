@@ -12,6 +12,7 @@
 // outranking a real item.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import test from 'node:test';
 
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
@@ -706,4 +707,44 @@ test('the safety-kit pass keeps the substring test: "cut her wrist" still reache
 test('on the real index, "haldol im" no longer drags in pages through "im" inside other words', () => {
   const items = F.fdSearchResults(REAL_INDEX, 'im', SYN, {}).filter((r) => r.kind === 'item');
   assert.deepEqual(refsOf(items), [], `"im" alone matched: ${refsOf(items).join(', ')}`);
+});
+
+// ---- The Care navigator's "Prepare for a family conversation" points to search ------------------
+// Its result panel recommends family-facing education (the approved 2026-09-23 navigator design
+// keeps Care nonclinical), so the explanation tells a clinician preparing the meeting what to
+// search for instead. That sentence is a promise about ranking on BOTH learner sites: if the
+// playbook is renamed or re-ranked, the explanation would quietly send people to the wrong page.
+// Each site's index is built from the real audience projector (build_frontdoor_payload), not from
+// the shared curriculum with `path`/`weeks` swapped: the resident site also applies
+// siteLibrary.resident additions and exclusions, and a resident-only page that outranked the
+// playbook would otherwise break the shipped promise while this test stayed green.
+const SITE_PROJECTIONS = JSON.parse(execFileSync('python3', ['-B', '-c', `
+import json,sys
+sys.path.insert(0,'13_Faculty_Resources/_automation/site_build')
+from frontdoor_catalog import build_frontdoor_payload
+from shipped_pages import load_shipped_pages
+cur=json.load(open('curriculum.json')); shipped=load_shipped_pages('.')
+out={}
+for site,key in [('ms3','ms3'),('resident','resident')]:
+    nav=[{'section':'Resources','items':[{'f':p['slug'],'t':p['title'],
+        'k':'tool' if p['kind']=='tool' else 'md',
+        'governance':{'status':'pending','riskKind':'general','riskLevel':'low'}}
+        for p in shipped['pages'] if ('ms3' if site=='ms3' else 'res') in p['sites']]}]
+    out[site]=build_frontdoor_payload(key,cur,nav,'0'*40,shipped=shipped)
+print(json.dumps(out))
+`], { cwd: new URL('../', import.meta.url), encoding: 'utf8' }));
+
+test('the Care family-conversation explanation names a search that finds the Family Meeting Playbook first', () => {
+  const intent = REAL_CUR.careNavigator.find((c) => c.id === 'family-conversation');
+  const quoted = /“([^”]+)”/.exec(intent.explanation);
+  assert.ok(quoted, 'the explanation must quote the search term it recommends');
+  assert.match(intent.explanation, /Family Meeting Playbook/);
+  for (const site of ['ms3', 'resident']) {
+    const projection = SITE_PROJECTIONS[site];
+    const index = F.fdBuildIndex(projection.curriculum, REAL_META, REAL_TOOLS, projection.manifest);
+    assert.ok(index.byRef['family_playbook.md'], `${site}: the Family Meeting Playbook must ship on this site`);
+    const top = F.fdSearchResults(index, quoted[1], projection.curriculum.synonyms, {})[0];
+    assert.equal(top && top.item && top.item.ref, 'family_playbook.md',
+      `${site}: searching "${quoted[1]}" must put the Family Meeting Playbook first`);
+  }
 });
