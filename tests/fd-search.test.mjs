@@ -707,3 +707,26 @@ test('on the real index, "haldol im" no longer drags in pages through "im" insid
   const items = F.fdSearchResults(REAL_INDEX, 'im', SYN, {}).filter((r) => r.kind === 'item');
   assert.deepEqual(refsOf(items), [], `"im" alone matched: ${refsOf(items).join(', ')}`);
 });
+
+// ---- The Care navigator's "Prepare for a family conversation" points to search ------------------
+// Its result panel recommends family-facing education (the approved 2026-09-23 navigator design
+// keeps Care nonclinical), so the explanation tells a clinician preparing the meeting what to
+// search for instead. That sentence is a promise about ranking on BOTH learner sites: if the
+// playbook is renamed or re-ranked, the explanation would quietly send people to the wrong page.
+test('the Care family-conversation explanation names a search that finds the Family Meeting Playbook first', () => {
+  const intent = REAL_CUR.careNavigator.find((c) => c.id === 'family-conversation');
+  const quoted = /“([^”]+)”/.exec(intent.explanation);
+  assert.ok(quoted, 'the explanation must quote the search term it recommends');
+  assert.match(intent.explanation, /Family Meeting Playbook/);
+  const resident = REAL_CUR.learningPaths.resident;
+  const residentIndex = F.fdBuildIndex({
+    ...REAL_CUR,
+    path: { id: resident.id, weekCount: resident.weeks.length },
+    weeks: resident.weeks,
+  }, REAL_META, REAL_TOOLS, REAL_MAN);
+  for (const [site, index] of [['ms3', REAL_INDEX], ['resident', residentIndex]]) {
+    const top = F.fdSearchResults(index, quoted[1], SYN, {})[0];
+    assert.equal(top && top.item && top.item.ref, 'family_playbook.md',
+      `${site}: searching "${quoted[1]}" must put the Family Meeting Playbook first`);
+  }
+});

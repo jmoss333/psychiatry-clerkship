@@ -378,7 +378,7 @@
     {
       "id": "family-conversation",
       "label": "Prepare for a family conversation",
-      "explanation": "Start with the education library for material that can support a clear, shared family conversation.",
+      "explanation": "Plain-language material to share with the family. Preparing yourself? Search “family meeting” for the Family Meeting Playbook.",
       "primaryResourceId": "education-library",
       "alternativeResourceIds": ["book-shelf", "podcast-navigator"]
     }
@@ -606,8 +606,8 @@
       { "id": "staff", "name": "Nursing · SW · family", "desc": "Unit staff and families", "hint": "" }
     ],
     "resident": [
-      { "id": "pgy1", "name": "PGY-1", "desc": "First year on inpatient psychiatry", "hint": "most common" },
-      { "id": "pgy2", "name": "PGY-2 and above", "desc": "Senior on the unit", "hint": "" },
+      { "id": "pgy1", "name": "PGY-1", "desc": "First year on inpatient psychiatry", "hint": "" },
+      { "id": "pgy2", "name": "PGY-2 and above", "desc": "Second year or later on inpatient psychiatry", "hint": "" },
       { "id": "app", "name": "APP / PA / NP", "desc": "Clinical practice on the inpatient unit", "hint": "" },
       { "id": "staff", "name": "Nursing · SW · family", "desc": "Unit staff and families", "hint": "" }
     ]
