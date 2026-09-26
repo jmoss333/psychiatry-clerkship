@@ -41,9 +41,14 @@ import {
   PENDING_SENTINEL,
   STALE_REASON,
   QUESTION_BANK_PATH,
+  CLINICAL_FINGERPRINT,
   blobSha,
+  canonicalClinicalRecord,
   canonicalQuestionBank,
   canonicalTopicMetaRecord,
+  clinicalManifestForSlug,
+  clinicalMarkdown,
+  clinicalSourceSha,
   digestFromManifest,
   manifestForSlug,
   sourceBlobSha,
@@ -81,10 +86,30 @@ for slug in payload["slugs"]:
     except ah.AttestationHashError:
         out["slugs"][slug] = {"error": "AttestationHashError"}
         continue
+    clinical = ah.clinical_manifest_for_slug(slug, sources, meta.get(slug))
     out["slugs"][slug] = {
         "manifest": manifest,
         "digest": ah.blob_sha(manifest.encode("utf-8")),
+        "clinicalManifest": clinical,
+        "clinicalDigest": ah.blob_sha(clinical.encode("utf-8")),
     }
+out["clinicalText"] = {}
+for path in payload.get("clinicalPaths", []):
+    data = (root / path).read_bytes()
+    out["clinicalText"][path] = {
+        "text": base64.b64encode(ah.clinical_markdown(data.decode("utf-8")).encode("utf-8")).decode("ascii")
+        if path.endswith(".md") else None,
+        "sha": ah.clinical_source_sha(path, data),
+    }
+out["clinicalStrings"] = [
+    base64.b64encode(ah.clinical_markdown(text).encode("utf-8")).decode("ascii")
+    for text in payload.get("clinicalStrings", [])
+]
+out["clinicalRecords"] = {
+    slug: base64.b64encode(ah.canonical_clinical_record(record)).decode("ascii")
+    for slug, record in meta.items() if isinstance(record, dict)
+}
+out["clinicalFingerprint"] = ah.CLINICAL_FINGERPRINT
 for slug, record in meta.items():
     if isinstance(record, dict):
         out["records"][slug] = base64.b64encode(
@@ -145,11 +170,41 @@ const reviewedShipped = Object.keys(ledger)
   .filter(slug => sourcesForSlug(shippedDoc, slug).length > 0)
   .sort();
 
+// Every shipped source path, Markdown or not: the clinical fingerprint must agree on the
+// ones it normalises AND on the ones it passes through unchanged.
+const shippedSources = [...new Set(shippedDoc.pages.flatMap(
+  page => [page.source, ...(page.extraSources ?? [])].filter(Boolean)))].sort();
+
+// Hand-made inputs aimed at the corners where Python's `re` and JavaScript's RegExp differ, or
+// where a rule could strip clinical text. Compared as bytes against Python below, and a few
+// are ALSO asserted for meaning in the "keeps / voids" test.
+const CLINICAL_STRINGS = [
+  '',
+  '   \t  ',
+  'Lithium lowers suicide risk (Cipriani 2013; Smith et al., 2020) [1] and **must** be monitored[^cip].',
+  'See [the trial](https://doi.org/10.1/abc) and [crisis line](tel:988) and doi:10.1016/x.y. PMID 12345.',
+  '- **Key paper:** Foo et al., NEJM 2021 — bar.\n- **Key papers:** Baz 2019',
+  '# Mood\n\n## References\n1. Cipriani A. Lithium. BMJ. 2013;346:f3646.\n- Crisis line 988\n<!-- crisis-block -->\n*Joshua Moss, MD*\n## Next\n1. Give 2 mg in 2019 style',
+  '### 3. Sources:\n- Kast KA. BMJ. 2025. [DOI](https://doi.org/10.1136/bmj-2024-080461) (PMID 39778965)\n#### Sub\n- Still 2024 in sources\n## Back\n- 2024 list item stays',
+  'Ratio 2*3 and pg_suicide and snake_case_name and *emph* and _emph_ and __strong__ and ***both***.',
+  '(Uphoff, Cochrane 2020 — outpatient trials only; inpatient RCTs were excluded)',
+  '(see Linehan 2015; e.g., Xia, *Cochrane* 2011; cf. Hatcher and Smith 2011a; dose 5 mg)',
+  '(Müller & Østergård 2018) (O’Brien 2001) (Ørsted, 2019) (2020) (NNT 7) ( ; )',
+  'Anchors [1,2] [3–5] [6 ✓] [7](http://x.y) [a] [12, 14-16]',
+  'CRLF\r\nline\rbreak sep nbsp﻿bom \u{1F600} emoji *x\u{1F600}* 2019\u{1F600}',
+  'https://pubmed.ncbi.nlm.nih.gov/123/ <https://pmc.ncbi.nlm.nih.gov/articles/PMC1/> https://www.youtube.com/watch?v=abc PMC12345 PMCID: PMC99 xPMID 5',
+  'DOI:10.1001/jama.2025.26348, doi: 10.1016/j.x) dOi:10.12345/zz;',
+  '#NoSpace heading\n####### seven\n# Works Cited #\n- Ref 1999\n# After',
+  '## REFERENCES\n  - indented 2001 entry\n    2. numbered 2002 entry\nplain 2003 line\n+ plus 2004',
+];
+
 const live = python({
   root: repo,
   shipped: SHIPPED_PAGES,
   topicMeta: TOPIC_META,
   slugs: shippedSlugs,
+  clinicalPaths: shippedSources,
+  clinicalStrings: CLINICAL_STRINGS,
 });
 
 test('every shipped slug hashes identically in both implementations, reviewed or not', (t) => {
@@ -367,4 +422,125 @@ test('the question bank line ignores item status and nothing else', () => {
   // A malformed bank drifts rather than throws.
   assert.equal(sourceBlobSha(QUESTION_BANK_PATH, Buffer.from('{not json')),
     blobSha(Buffer.from('{not json')));
+});
+
+// ---------------------------------------------------------------------------------------
+// Fingerprint v2 — `clinicalHash` (ruling 2026-09-26: a citation-only change keeps the
+// signature). Same discipline as v1: text before digest, every shipped input, both twins.
+// ---------------------------------------------------------------------------------------
+
+// The JS half, computed the way the console computes it: a Markdown source's clinical sha
+// from its bytes, and every other source's v1 value passed straight through.
+function jsClinicalManifest(root, shipped, topicMeta, slug) {
+  const sources = {};
+  for (const source of sourcesForSlug(shipped, slug)) {
+    sources[source] = clinicalSourceSha(source, fs.readFileSync(path.join(root, source)));
+  }
+  const record = Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : undefined;
+  return clinicalManifestForSlug(slug, sources, record);
+}
+
+test('every shipped Markdown source normalises to identical clinical text in both twins', (t) => {
+  const markdown = shippedSources.filter(source => source.endsWith('.md'));
+  assert.ok(markdown.length > 80, `expected the shipped Markdown sources, got ${markdown.length}`);
+  for (const source of shippedSources) {
+    const bytes = fs.readFileSync(path.join(repo, source));
+    const expected = live.clinicalText[source];
+    if (source.endsWith('.md')) {
+      // Text first: a divergence names the source and shows where the two texts part.
+      assert.equal(Buffer.from(clinicalMarkdown(bytes.toString('utf8')), 'utf8').toString('base64'),
+        expected.text, `clinical text differs for ${source}`);
+    }
+    assert.equal(clinicalSourceSha(source, bytes), expected.sha, `clinical sha differs for ${source}`);
+  }
+  t.diagnostic(`${markdown.length} Markdown sources normalised identically; `
+    + `${shippedSources.length - markdown.length} other sources passed through identically`);
+});
+
+test('every shipped slug has the same clinical manifest and digest in both twins', () => {
+  assert.equal(CLINICAL_FINGERPRINT, live.clinicalFingerprint);
+  for (const slug of shippedSlugs) {
+    const manifest = jsClinicalManifest(repo, shippedDoc, topicMetaDoc, slug);
+    assert.equal(manifest, live.slugs[slug].clinicalManifest, `clinical manifest differs for ${slug}`);
+    assert.equal(digestFromManifest(manifest), live.slugs[slug].clinicalDigest,
+      `clinical digest differs for ${slug}`);
+    // Never equal to the v1 digest: the version line keeps the two namespaces apart, so a
+    // clinicalHash can never be mistaken for (or accidentally satisfy) a contentHash.
+    assert.notEqual(live.slugs[slug].clinicalDigest, live.slugs[slug].digest);
+  }
+});
+
+test('every topic_meta record canonicalises to identical clinical bytes', () => {
+  for (const [slug, record] of Object.entries(topicMetaDoc)) {
+    if (record === null || typeof record !== 'object' || Array.isArray(record)) continue;
+    assert.equal(canonicalClinicalRecord(record).toString('base64'), live.clinicalRecords[slug],
+      `clinical record bytes differ for ${slug}`);
+  }
+});
+
+test('the hand-made corner cases normalise identically in both twins', () => {
+  assert.equal(live.clinicalStrings.length, CLINICAL_STRINGS.length);
+  CLINICAL_STRINGS.forEach((text, index) => {
+    assert.equal(Buffer.from(clinicalMarkdown(text), 'utf8').toString('base64'),
+      live.clinicalStrings[index], `clinical text differs for corner case #${index}: ${JSON.stringify(text)}`);
+  });
+});
+
+test('a citation-only change keeps the clinical text; a clinical change does not', () => {
+  const same = (a, b, why) => assert.equal(clinicalMarkdown(a), clinicalMarkdown(b), why);
+  const differ = (a, b, why) => assert.notEqual(clinicalMarkdown(a), clinicalMarkdown(b), why);
+
+  // KEPT — citation apparatus only.
+  same('- **Key paper:** Boyer & Shannon, NEJM 2005.', '- **Key paper:** Cipriani et al., Lancet 2018.',
+    'a Key paper swap (#813) keeps the signature');
+  same('Lithium lowers risk (Cipriani 2013).', 'Lithium lowers risk (Smith et al., 2020).',
+    'a parenthetical author-year swap');
+  same('Lithium lowers risk [1].', 'Lithium lowers risk [2,3].', 'a numeric anchor');
+  same('Risk falls.[^a-2019]', 'Risk falls.[^b-2021]', 'a footnote marker (an evidence key)');
+  same('[DOI](https://doi.org/10.1/a) · PMID 1', '[DOI](https://doi.org/10.2/b) · PMID 2', 'identifiers');
+  same('## References\n1. Old A. Paper. 2013.\n', '## References\n1. New B. Other paper. 2021;3:4.\n',
+    'a reference-list entry');
+  same('Give **lithium**.', 'Give *lithium*.', 'emphasis');
+  same('A  sentence\n\nhere.', 'A sentence here.', 'whitespace');
+  same('Risk falls.', 'Risk falls (Smith 2020) [4].\n\n## References\n4. Smith J. Risk. 2020.\n',
+    'adding an inline citation and a reference list to an uncited page');
+
+  // VOIDED — clinical text, or something that is not safely a citation.
+  differ('increased linkage (OR 2.74).', 'increased linkage (OR 3.04).', 'a number (#813, evidence_inpatient)');
+  differ('about 50% attend', 'about 45% attend', 'a percentage');
+  differ('[crisis line](tel:988)', '[crisis line](tel:911)', 'a non-citation link target');
+  differ('[video](https://www.youtube.com/watch?v=a)', '[video](https://www.youtube.com/watch?v=b)',
+    'a teaching video is content, not a citation');
+  differ('(Uphoff, Cochrane 2020)', '(Uphoff, Cochrane 2020 — outpatient trials only)',
+    'a qualifier inside a citation parenthesis');
+  differ('## References\n<!-- crisis-block -->\n', '## References\n', 'a marker trailing a reference list');
+  differ('## References\n- Call 988 any time\n', '## References\n- Call 911 any time\n',
+    'a reference-section line with no year is not treated as a citation');
+  differ('## References\n1. A 2013.\n## Dosing\n1. Start 300 mg in 2013\n',
+    '## References\n1. A 2013.\n## Dosing\n1. Start 600 mg in 2013\n',
+    'the reference section ends at the next heading of the same level');
+  differ('[^1]: only in adults', '[^1]: in all ages', 'a footnote DEFINITION can carry a claim');
+});
+
+test('clinicalSourceSha passes non-Markdown and non-UTF-8 sources through as v1', () => {
+  const html = Buffer.from('<p>Dose (Smith 2020)</p>');
+  assert.equal(clinicalSourceSha('tool.html', html), sourceBlobSha('tool.html', html));
+  const bank = Buffer.from(JSON.stringify({ items: [{ id: 'q', status: 'draft' }] }));
+  assert.equal(clinicalSourceSha(QUESTION_BANK_PATH, bank), sourceBlobSha(QUESTION_BANK_PATH, bank));
+  const invalid = Buffer.from([0x66, 0xff, 0x66]);
+  assert.equal(clinicalSourceSha('broken.md', invalid), blobSha(invalid));
+  // A leading BOM is text on both sides (Python's utf-8 codec keeps it; TextDecoder would drop
+  // it without ignoreBOM), so it survives into the clinical text and the hash.
+  assert.notEqual(clinicalSourceSha('bom.md', Buffer.from('﻿Text')),
+    clinicalSourceSha('bom.md', Buffer.from('Text')));
+});
+
+test('evidenceIds and facultyReview are outside the clinical record; every other key is inside', () => {
+  const record = { title: 'T', evidenceIds: ['a'], facultyReview: { status: 'reviewed' }, points: ['p'] };
+  const swapped = { ...record, evidenceIds: ['b', 'c'], facultyReview: { status: 'pending' } };
+  assert.equal(canonicalClinicalRecord(record).toString(), canonicalClinicalRecord(swapped).toString());
+  assert.notEqual(canonicalClinicalRecord(record).toString(),
+    canonicalClinicalRecord({ ...record, points: ['q'] }).toString());
+  // v1 still sees an evidenceIds change: only the clinical fingerprint forgives it.
+  assert.notEqual(canonicalTopicMetaRecord(record).toString(), canonicalTopicMetaRecord(swapped).toString());
 });

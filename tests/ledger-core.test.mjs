@@ -274,6 +274,19 @@ test('a content attest sets status/at/by/contentHash, drops reason, and keeps ev
   assert.deepEqual(input, baseline(), 'the inputs are never mutated');
 });
 
+test('a signed content attest drops a git row\'s clinicalHash: it described an older signature', () => {
+  // Fingerprint v2 (2026-09-26) lives in git rows only; a ledger event binds contentHash
+  // alone, so a clinicalHash from the row's previous signature must not outlive this one.
+  const signer = newSigner();
+  const { events } = verifyLedger(ledgerWith(signer, [attest('t_mood.md')]).text, keysFor(signer));
+  const input = baseline();
+  input.reviewed['t_mood.md'].clinicalHash = 'e'.repeat(40);
+  const { reviewed } = applyLedger({ ...input, events });
+  assert.equal(reviewed['t_mood.md'].contentHash, HASH_A);
+  assert.equal(Object.hasOwn(reviewed['t_mood.md'], 'clinicalHash'), false);
+  assert.equal(input.reviewed['t_mood.md'].clinicalHash, 'e'.repeat(40), 'the input is not mutated');
+});
+
 test('a reopen sets pending with the reason, and demotes facultyReview', () => {
   const signer = newSigner();
   const { events } = verifyLedger(ledgerWith(signer,

@@ -486,6 +486,18 @@ the container when the Bash 5 environment is part of the evidence.
   **Only the faculty console may write a hash** (`faculty-console/netlify/functions/attest.mjs`,
   on attest): it shows a drifted row as needs-review — status `unreviewed`, reason "Content
   changed since faculty review on <at>; awaiting re-attestation." — and re-attesting rebinds it.
+  **Fingerprint v2 — a citation-only change keeps the signature** (Joshua Moss, MD,
+  2026-09-26): a row may also carry `clinicalHash`, the same manifest over the page's *clinical
+  text* (a `fingerprint clinical/1` line first; Markdown sources with Key-paper lines,
+  reference-list entries, DOIs/PMIDs/PubMed links, numeric and footnote anchors, author–year
+  parentheticals, emphasis and whitespace removed; `evidenceIds` dropped from the topic_meta
+  record; every other source hashed exactly as v1). A row is bound when EITHER hash matches.
+  Only the console writes it (on every signature, and a baseline stamps already-bound rows);
+  a row without it is v1-only. A row kept only by `clinicalHash` is **reported, never
+  silent** — `CITATIONS CHANGED` in `bin/check_attestation_hashes.py`, `citationsChanged` in the
+  console — because the machine citation gate (#694) is not built and #672 was a citation
+  change. Measured before building: of 205 signatures voided since 2026-09-16 it would have
+  kept 3. Rules and risk: `attestation_hash.py` above `CLINICAL_FINGERPRINT`.
   The 2026-09-18 truthful backfill was the one-time exception, binding each existing row to the
   text as of its own `at` date (the day ends 23:59:59 **UTC**, always); its provenance is
   `13_Faculty_Resources/Handoffs/CONTENTHASH_BACKFILL_2026-09-18.md`. **That exception is spent**
@@ -584,7 +596,7 @@ the container when the Bash 5 environment is part of the evidence.
   the bank, `retired` included, is still content. A **promotion** is a claim that a
   review happened: in `reviewed.json`, a row whose `status` becomes `reviewed`, a row born
   `reviewed`, or a row reviewed on BOTH sides whose `at`, `by`, `risk`, `note`, `contentHash`,
-  `claimsHash`, `evidenceHash` or `evidenceThrough` changes — **a missing key is a value**,
+  `clinicalHash`, `claimsHash`, `evidenceHash` or `evidenceThrough` changes — **a missing key is a value**,
   because #640 promoted a row by *adding* a note to it; in `topic_meta.json`, a `facultyReview`
   block that becomes `reviewed`/`attested`, or one reviewed on both sides whose `lastReviewed` or
   `reviewer` changes; in **`question_bank.json`** (items identified by their `id`; 144 of 192

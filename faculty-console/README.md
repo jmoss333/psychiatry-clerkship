@@ -315,6 +315,19 @@ reports that, never "clean". Finally, `branchLag` counts how far `GIT_BRANCH` tr
 branch can be perfectly self-consistent and still be showing text the base moved past, which is why
 that banner (*"attest/pending is N commits behind main — sync before re-attesting"*) is separate.
 
+**Fingerprint v2 — citations do not void a signature** (ruling 2026-09-26). Every signature
+also records `clinicalHash`: the same manifest over the page's clinical text, with citation
+apparatus removed (the exact list is in `attestation_hash.py` above `CLINICAL_FINGERPRINT`). A
+row is bound when either hash matches, so a change that only swaps or reformats citations leaves
+the page **reviewed** — and the item carries `citationsChanged: true`, which the review rail shows
+as *"Citations changed since you signed this page…"*, because the machine citation gate is not
+built yet and a fabricated citation is exactly the change #672 made. Computing it needs the page
+bytes, so the console reads them only where they can change an answer: pages being signed, and
+rows whose v1 hash no longer matches but which carry a `clinicalHash` (cached by blob sha). A
+page that cannot be read is signed v1-only (never with an older `clinicalHash`), and on a load
+reads as "could not check". A **baseline** press also stamps `clinicalHash` on every signed page
+whose text is unchanged since signing, without touching its `at`/`by`. Ledger mode stays v1-only.
+
 **The new error.** A required file that is simply not on the branch now returns `502`
 `repository_file_missing` — *"`<path>` is not on branch `<branch>`. Update or merge the rolling
 review request, then retry."* — instead of `github_request_failed` / *"try again later"*, which
