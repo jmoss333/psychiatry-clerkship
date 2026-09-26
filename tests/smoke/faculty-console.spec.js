@@ -2996,4 +2996,18 @@ test.describe('phone client', () => {
     await expect(draft.getByRole('listitem').filter({ hasText: 'Review the negative wording in the final lead-in.' })).toBeVisible();
     await expect(draft.getByText('Attest this question on the desktop console, which records each acknowledgement.')).toBeVisible();
   });
+
+  test('the desktop console offers the phone console on a narrow viewport', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.goto('/');
+    const link = page.getByRole('link', { name: 'Use the phone console' });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute('href', './m/');
+  });
+});
+
+test('the phone console link is hidden on a desktop viewport', async ({ page }) => {
+  await installRepositoryApi(page, workflowBank());
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Use the phone console' })).toBeHidden();
 });

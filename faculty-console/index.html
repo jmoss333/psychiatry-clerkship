@@ -1203,10 +1203,14 @@
       animation-iteration-count: 1 !important;
     }
   }
+
+  .phone-link { display: none; margin: 0 0 .75rem; }
+  @media (max-width: 700px) { .phone-link { display: block; } }
 </style>
 </head>
 <body>
 <a class="skip-link" href="#app">Skip to faculty console</a>
+<p class="phone-link"><a href="./m/">Use the phone console</a></p>
 <main class="wrap" id="app"></main>
 <div id="app-status" class="sr-only" role="status" aria-live="polite"></div>
 <script type="module" src="./app.mjs"></script>

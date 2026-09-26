@@ -1,6 +1,7 @@
 /* Phone client model: grouping, advance, applying write rows, diff flattening. Pure functions,
    fixtures inline — never the live ledger (a test may not depend on live governance state). */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -170,4 +171,14 @@ test('questionEntry carries the recorded receipt as given, so a stale or missing
   const q = phoneQueue(server()).find(i => i.type === 'question');
   assert.deepEqual(questionEntry(q, 'stale'), { id: 'qb_mood_001', revision: REV, reviewedRevision: 'stale', acknowledgedWarnings: [] });
   assert.deepEqual(questionEntry(q, undefined), { id: 'qb_mood_001', revision: REV, reviewedRevision: '', acknowledgedWarnings: [] });
+});
+
+test('the web manifest starts the phone client standalone at /m/ and names both icons', () => {
+  const manifest = JSON.parse(readFileSync(new URL('./m/manifest.webmanifest', import.meta.url), 'utf8'));
+  assert.equal(manifest.start_url, '/m/');
+  assert.equal(manifest.scope, '/m/');
+  assert.equal(manifest.display, 'standalone');
+  assert.deepEqual(manifest.icons.map(i => i.src).sort(), ['./apple-touch-icon.png', './icon.svg']);
+  const png = readFileSync(new URL('./m/apple-touch-icon.png', import.meta.url));
+  assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);   // PNG signature
 });
