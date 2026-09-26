@@ -7,11 +7,13 @@ faculty-console/
   index.html                     password gate and unified workspace styles
   app.mjs                        shared queue, preview/editor, sign-off, and conflict workflow
   review-model.mjs               queue, preview-route, deep-link, twin, and eligibility rules
+  m/                             phone client (/m/): index.html, m.mjs, m-model.mjs, manifest
   content-universe.mjs           the exact set of pages and tools the two sites publish
   qbank-rules.mjs                shared question-bank structural checks
   check_pending_visible.mjs      CI invariant: no pending item is unreachable here
   content-universe.test.mjs      universe, slug parity with the builds, the invariant
   console-navigation.test.mjs    deep links, twins, bookmarklet, site routing
+  m-model.test.mjs               phone grouping, auto-advance order, write rows, diff lines
   netlify.toml                   config for this site (publish + functions)
   netlify/functions/attest.mjs   authenticated state reads and commit-on-save API
   netlify/functions/qbank-actions.mjs
@@ -68,9 +70,9 @@ auto-advance order, applying the write's `rows`, and diff lines.
 Editing, the *Attest together* tray, remember-me and any change to attribution are out of scope.
 Deep links take the desktop's form under `/m/` (`/m/?item=page:<slug>`, `tool:`, `question:`) and
 open the item once unlocked. **Copy link** and the bookmarklet are unchanged and open the desktop
-console, whose *Use the phone console* link (viewports ≤ 700 px) opens the phone queue, not the
-item. Add it to the home screen from the browser's share sheet; `m/manifest.webmanifest` makes it
-standalone.
+console, whose *Use the phone console* link (viewports ≤ 700 px) carries the arriving `?item=` to
+`/m/`, so on a phone they open the same item once unlocked. Add it to the home screen from the
+browser's share sheet; `m/manifest.webmanifest` makes it standalone.
 
 ## Faculty review runbook
 

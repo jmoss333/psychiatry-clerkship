@@ -3005,6 +3005,12 @@ test.describe('phone client', () => {
     await expect(link).toHaveAttribute('href', './m/');
     const box = await link.boundingBox();
     expect(box.x).toBeGreaterThanOrEqual(12);
+    // A Copy link / bookmarklet landing on a phone: the hand-off carries the item to /m/.
+    await page.goto('/?item=page:t_mood.md');
+    await expect(link).toHaveAttribute('href', /\/m\/\?item=page:t_mood\.md$/);
+    await link.click();
+    await expect(page).toHaveTitle('Faculty attestation — phone');
+    expect(new URL(page.url()).searchParams.get('item')).toBe('page:t_mood.md');
   });
 });
 

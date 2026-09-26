@@ -298,6 +298,7 @@ export function startFacultyConsole({
      keys (parseDeepLink) — it is never written into the DOM. */
   let pendingDeepLinkSearch = typeof window.location?.search === 'string'
     ? window.location.search : '';
+  document.querySelector?.('.phone-link a')?.setAttribute('href', `./m/${pendingDeepLinkSearch}`);
 
   function requestedDeepLinkKey(search) {
     try {
