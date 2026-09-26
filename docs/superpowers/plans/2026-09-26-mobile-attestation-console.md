@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
-**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 10 (Task 6 report):** the question test forces the undeployed path with `missingDeployedIds`; a warned question lists its warnings and shows no Attest (disabled *Attest on desktop*). **Revision 9 (Task 5 review):** `resetAcks(nextStatus)` keeps the saved-draft receipt on a Ready re-report; a sign that completes off-screen refreshes in place instead of advancing. **Revision 8 (Task 5 report):** the last sign of a sitting keeps its receipt on the queue screen; a sign error is shown inside the open confirm sheet. **Revision 7 (Task 4 review):** What changed renders page-record changes and the correction's PR/commit context (links through `safeHttps`); Task 5 reads the preview status from `state.preview` (`uiWithPreview()`), resets acknowledgements on a status change, moves focus into sheets (Escape closes), keeps one `role=status` per screen, refreshes in place, and pins the silent-refresh-offline path. **Revision 6 (Task 4 report):** the learner frame is absolutely positioned inside `.frame-wrap` so it fills the remaining viewport; the item test pins the frame height and the action bar's position. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 11 (Task 7 report):** the desktop hand-off link keeps `.wrap`'s side padding and sits after the skip link. **Revision 10 (Task 6 report):** the question test forces the undeployed path with `missingDeployedIds`; a warned question lists its warnings and shows no Attest (disabled *Attest on desktop*). **Revision 9 (Task 5 review):** `resetAcks(nextStatus)` keeps the saved-draft receipt on a Ready re-report; a sign that completes off-screen refreshes in place instead of advancing. **Revision 8 (Task 5 report):** the last sign of a sitting keeps its receipt on the queue screen; a sign error is shown inside the open confirm sheet. **Revision 7 (Task 4 review):** What changed renders page-record changes and the correction's PR/commit context (links through `safeHttps`); Task 5 reads the preview status from `state.preview` (`uiWithPreview()`), resets acknowledgements on a status change, moves focus into sheets (Escape closes), keeps one `role=status` per screen, refreshes in place, and pins the silent-refresh-offline path. **Revision 6 (Task 4 report):** the learner frame is absolutely positioned inside `.frame-wrap` so it fills the remaining viewport; the item test pins the frame height and the action bar's position. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
 
 ## Global Constraints
 
@@ -1716,6 +1716,8 @@ Add to the `phone client` describe in the smoke spec:
     const link = page.getByRole('link', { name: 'Use the phone console' });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', './m/');
+    const box = await link.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(12);   // inside the page gutter, never flush to the edge
   });
 ```
 
@@ -1781,11 +1783,11 @@ PY
 In `faculty-console/index.html`, inside `<style>` add:
 
 ```css
-  .phone-link { display: none; margin: 0 0 .75rem; }
+  .phone-link { display: none; margin: 0 0 .75rem; padding: 0 var(--wrap-pad, 1rem); }  /* mirror .wrap's side padding */
   @media (max-width: 700px) { .phone-link { display: block; } }
 ```
 
-and as the first child of `<body>` (before `<main class="wrap" id="app">`):
+and directly after the existing skip link (so the skip link keeps first tab order), before `<main class="wrap" id="app">`:
 
 ```html
 <p class="phone-link"><a href="./m/">Use the phone console</a></p>
