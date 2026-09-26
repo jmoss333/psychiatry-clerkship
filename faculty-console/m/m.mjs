@@ -78,6 +78,7 @@ class Unauthorized extends Error {}
 async function api(path, init = {}) {
   const response = await fetch(path, { ...init, headers: { ...headers(Boolean(init.body)), ...(init.headers || {}) } });
   if (response.status === 401) { clearKey(); throw new Unauthorized('Key not accepted. Check the shared faculty key and try again.'); }
+  if (response.status >= 500) throw new Error('Could not reach the repository.');
   const payload = await json(response);
   if (!response.ok) throw new Error(errorText(payload, `The server answered ${response.status}.`));
   return payload;
@@ -94,6 +95,7 @@ function recompute() {
 }
 async function load({ silent = false } = {}) {
   if (!getKey()) { renderGate(); return false; }
+  if (navigator.onLine === false) { renderLoadError('You are offline.'); return false; }
   if (!silent) renderBusy('Loading the review queue…');
   try {
     const server = await api(API);
@@ -112,6 +114,9 @@ async function load({ silent = false } = {}) {
     return true;
   } catch (error) {
     if (error instanceof Unauthorized) { state.reauth = () => load(); renderGate(error.message); return false; }
+    // Nothing loaded yet: say what failed and offer Retry; never fall back to a bare key prompt
+    // while the key is still held. A refresh that fails over a shown queue reports in place.
+    if (!state.server) { renderLoadError(error.message); return false; }
     state.message = error.message;
     render();
     return false;
@@ -148,6 +153,12 @@ function renderGate(message = '') {
   ]);
   replaceApp(h('div', { class: 'screen' }, form));
   input.focus();
+}
+function renderLoadError(message) {
+  replaceApp(bar('Faculty attestation'), h('div', { class: 'screen' }, [
+    h('p', { class: 'field-error summary', role: 'alert', text: message }),
+    h('p', { class: 'summary' }, h('button', { class: 'btn', type: 'button', text: 'Retry', onClick: () => { void load(); } })),
+  ]));
 }
 function renderBusy(text) { replaceApp(bar('Faculty attestation'), h('div', { class: 'screen' }, h('p', { class: 'summary', role: 'status', text }))); }
 
@@ -204,7 +215,10 @@ function renderQueue() {
 }
 
 function render() {
-  if (!getKey() || !state.server) { renderGate(); return; }
+  if (!getKey()) { renderGate(); return; }
+  // Key held but nothing loaded (e.g. the offline/online listeners on the load-error screen):
+  // keep the error and Retry rather than a bare key prompt.
+  if (!state.server) { renderLoadError(state.message || 'The review queue has not loaded yet.'); return; }
   if (state.screen === 'item' && state.selectedKey) { renderItem(); return; }
   renderQueue();
 }

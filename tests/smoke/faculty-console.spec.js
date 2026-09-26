@@ -2499,4 +2499,54 @@ test.describe('phone client', () => {
     expect(await page.evaluate(() => window.sessionStorage.getItem('fac_key'))).toBeNull();
     expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
   });
+
+  test('a failed first load says so and offers Retry instead of a bare key prompt', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    // Registered after installRepositoryApi so it is matched first: the first GET is a 5xx,
+    // everything after falls through to the synthetic repository.
+    let gets = 0;
+    await page.route('**/api/attest', async route => {
+      if (route.request().method() === 'GET' && ++gets === 1) {
+        await fulfillJson(route, 503, { error: { code: 'github_unavailable', message: 'upstream down' } });
+        return;
+      }
+      await route.fallback();
+    });
+    await page.goto('/m/');
+    await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('alert')).toContainText('Could not reach the repository');
+    await expect(page.getByLabel('Faculty key')).toHaveCount(0);
+    const retry = page.getByRole('button', { name: 'Retry' });
+    await expect(retry).toBeVisible();
+    await retry.click();
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+    expect(gets).toBe(2);
+  });
+
+  test('losing the network before the queue loads keeps the error and Retry, never a bare key prompt', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    let gets = 0;
+    await page.route('**/api/attest', async route => {
+      if (route.request().method() === 'GET' && ++gets === 1) {
+        await fulfillJson(route, 503, { error: { code: 'github_unavailable', message: 'upstream down' } });
+        return;
+      }
+      await route.fallback();
+    });
+    await page.goto('/m/');
+    await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('alert')).toContainText('Could not reach the repository');
+    await page.context().setOffline(true);
+    await expect(page.getByRole('alert')).toContainText('You are offline');
+    await expect(page.getByLabel('Faculty key')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('alert')).toContainText('You are offline');
+    expect(gets).toBe(1);
+    await page.context().setOffline(false);
+    await expect(page.getByLabel('Faculty key')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
+  });
 });
