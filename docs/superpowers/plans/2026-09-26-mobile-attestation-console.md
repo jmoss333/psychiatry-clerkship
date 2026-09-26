@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-mobile-attestation-console-design.md`
 
-**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 6 (Task 4 report):** the learner frame is absolutely positioned inside `.frame-wrap` so it fills the remaining viewport; the item test pins the frame height and the action bar's position. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
+**Revision 2026-09-26 (preflight):** four corrections before Task 1 was briefed — Task 1's projection test attests the pending `mse-tool`; Task 2's fall-through advance follows the sorted queue; Task 4 mounts the item screen once so the learner iframe is never re-created; Task 6's question test follows the undeployed-draft path (Not found → Retry → acknowledge). The DOM helper flattens nested children. **Revision 7 (Task 4 review):** What changed renders page-record changes and the correction's PR/commit context (links through `safeHttps`); Task 5 reads the preview status from `state.preview` (`uiWithPreview()`), resets acknowledgements on a status change, moves focus into sheets (Escape closes), keeps one `role=status` per screen, refreshes in place, and pins the silent-refresh-offline path. **Revision 6 (Task 4 report):** the learner frame is absolutely positioned inside `.frame-wrap` so it fills the remaining viewport; the item test pins the frame height and the action bar's position. **Revision 5 (Task 3 re-review):** the offline check reports in place and `render()` shows the error screen only when a key is held but nothing has loaded. **Revision 4 (Task 3 review):** a failed first load renders a message and Retry (`renderLoadError`), a 5xx maps to the spec's wording, offline at boot is stated. **Revision 3 (Task 3 report):** the queue mounts once and re-renders only `#queue-groups` on input so the search box keeps focus; screens are `div.screen` inside the single `<main id="m-app">` (no `aria-live` on the root), one `<h1>` per screen (the header bar), the item screen drops its duplicate title heading. **Revision 2 (Task 2 review):** `diffLines` never erases a changed file (too-large / binary / truncated files emit their file line and a `note`), `questionEntry(item, reviewedRevision)` carries the reviewer's receipt instead of echoing the item's revision, and both sign functions re-check eligibility at press time.
 
 ## Global Constraints
 
@@ -1073,12 +1073,15 @@ Add inside `test.describe('phone client', …)`:
     await installRepositoryApi(page, workflowBank());
     await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
     await page.route('**/api/attest?view=diff&slug=t_mood.md', route => fulfillJson(route, 200, {
-      view: 'diff', slug: 't_mood.md', since: '2026-09-21', base: 'a'.repeat(40), head: 'b'.repeat(40), commit: null, compareUrl: null,
+      view: 'diff', slug: 't_mood.md', since: '2026-09-21', base: 'a'.repeat(40), head: 'b'.repeat(40), compareUrl: null,
+      commit: { sha: 'c'.repeat(40), pr: 813, title: 'WP-9 citations', date: '2026-09-25', url: 'https://github.example/pull/813' },
       files: [{ path: '03_Core_Topics/Mood/mood.md', status: 'modified', changed: true, truncated: false, tooLarge: false, hunks: [{ oldStart: 1, newStart: 1, rows: [
         { kind: 'context', segments: [{ t: 'eq', s: 'Unchanged sentence.' }] },
         { kind: 'change', segments: [{ t: 'eq', s: 'Lithium ' }, { t: 'del', s: 'always' }, { t: 'add', s: 'usually' }, { t: 'eq', s: ' needs levels.' }] },
       ] }] }],
-      record: [],
+      record: [{ key: 'quiz', status: 'modified', changed: true, truncated: false, tooLarge: false, hunks: [{ oldStart: 1, newStart: 1, rows: [
+        { kind: 'change', segments: [{ t: 'eq', s: 'Key: ' }, { t: 'del', s: 'B' }, { t: 'add', s: 'C' }] },
+      ] }] }],
     }));
     await unlockPhone(page);
     await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
@@ -1097,6 +1100,10 @@ Add inside `test.describe('phone client', …)`:
     await expect(page.getByRole('dialog', { name: 'What changed since you signed' })).toBeVisible();
     await expect(page.getByText('Lithium always needs levels.')).toBeVisible();
     await expect(page.getByText('Lithium usually needs levels.')).toBeVisible();
+    await expect(page.getByText('#813 · WP-9 citations · 2026-09-25')).toBeVisible();   // the correction's PR number
+    await expect(page.getByText('Page record field quiz')).toBeVisible();
+    await expect(page.getByText('Key: B')).toBeVisible();
+    await expect(page.getByText('Key: C')).toBeVisible();
     await page.getByRole('button', { name: 'Close' }).click();
     const openInSite = page.getByRole('link', { name: 'Open in site' });
     await expect(openInSite).toHaveAttribute('href', `${MS3_URL}/?page=t_mood.md`);
@@ -1179,18 +1186,33 @@ async function loadDiff(item) {
   }
   renderItem();
 }
+function safeHttps(value) { try { const u = new URL(String(value)); return u.protocol === 'https:' ? u.href : null; } catch { return null; } }
+function diffContext(diff) {
+  const c = diff?.commit;
+  if (c && typeof c === 'object') {
+    const label = Number.isInteger(c.pr) ? `#${c.pr}` : String(c.sha || '').slice(0, 7);
+    const text = [label, c.title, c.date].filter(Boolean).join(' · ');
+    const url = safeHttps(c.url);
+    return url ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', text }) : h('span', { text });
+  }
+  return h('span', { text: diff?.since ? `Since you signed on ${diff.since}` : 'Since you signed' });
+}
 function sheetChanged(item) {
   if (state.diff === null) { state.diff = { loading: true }; void loadDiff(item); }
   const loading = state.diff?.loading === true;
-  const lines = state.diff && !state.diff.error && !loading ? diffLines(state.diff) : [];
+  // Files AND the page record (quiz, key points, evidence) — the attestation hash covers both.
+  const lines = state.diff && !state.diff.error && !loading
+    ? diffLines({ files: [...(state.diff.files || []), ...(state.diff.record || []).map(c => ({ ...c, path: `Page record field ${c.key}` }))] })
+    : [];
   return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'What changed since you signed' }, [
     h('h2', { text: 'What changed since you signed' }),
+    !loading && state.diff && !state.diff.error ? h('p', { class: 'summary' }, diffContext(state.diff)) : null,
     loading ? h('p', { text: 'Loading the changes…' }) : null,
     state.diff?.error ? h('p', { class: 'field-error', role: 'alert', text: state.diff.error }) : null,
     !loading && state.diff && !state.diff.error && !lines.length ? h('p', { text: 'No text change was recorded; the record or its fingerprint scope moved.' }) : null,
     // `lines` carries file / context / del / add / note kinds; a note marks a too-large, binary or truncated file.
     h('div', { class: 'lines' }, lines.map(line => h('div', { class: line.kind, text: line.text }))),
-    state.diff?.compareUrl ? h('p', {}, h('a', { href: state.diff.compareUrl, target: '_blank', rel: 'noopener noreferrer', text: 'Open the comparison on GitHub' })) : null,
+    safeHttps(state.diff?.compareUrl) ? h('p', {}, h('a', { href: safeHttps(state.diff.compareUrl), target: '_blank', rel: 'noopener noreferrer', text: 'Open the comparison on GitHub' })) : null,
     h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
   ]);
 }
@@ -1251,7 +1273,7 @@ function refreshItem(item) {
     `Twin: ${twin.title} · ${twin.completion === 'needs-review' ? 'needs review' : 'reviewed'} `,
     h('a', { href: `?item=${encodeURIComponent(twin.key)}`, text: 'Go to twin', onClick: event => { event.preventDefault(); openItem(twin.key); } }),
   ])] : []));
-  document.getElementById('item-receipt').replaceChildren(...(state.receipt ? [h('div', { class: 'receipt', role: 'status' }, [
+  document.getElementById('item-receipt').replaceChildren(...(state.receipt ? [h('div', { class: 'receipt', 'aria-live': 'polite' }, [
     h('strong', { text: `Signed: ${state.receipt.title}` }), ' ',
     state.receipt.commit ? h('a', { href: state.receipt.commit, target: '_blank', rel: 'noopener noreferrer', text: 'commit' }) : null,
     state.receipt.pullRequest ? [' · ', h('a', { href: state.receipt.pullRequest, target: '_blank', rel: 'noopener noreferrer', text: 'rolling PR' })] : null,
@@ -1302,7 +1324,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Modify: `tests/smoke/faculty-console.spec.js` (three tests)
 
 **Interfaces:**
-- Consumes: `contentEligibility(item, state.ui)`, `applyRows`, `nextAfterSign` (m-model); `POST /api/attest` with `{ target:'content', changes:{ [slug]: true }, reasons:{} }` → `{ ok, updated, commit, rows?, pullRequest?, pullRequestError? }`.
+- Consumes: `contentEligibility(item, uiWithPreview())` where `uiWithPreview()` = `{ ...state.ui, previewStatus: state.preview?.status }` (the preview status lives on `state.preview`, never on `state.ui`); `applyRows`, `nextAfterSign` (m-model); `safeHttps` (defined in Task 4); `POST /api/attest` with `{ target:'content', changes:{ [slug]: true }, reasons:{} }` → `{ ok, updated, commit, rows?, pullRequest?, pullRequestError? }`.
 - Produces: `signContent(item)`; `state.receipt`; auto-advance via `openItem(nextKey)`; background `scheduleRefresh()`.
 
 - [ ] **Step 1: Write the failing smoke tests**
@@ -1328,7 +1350,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     await expect(sign).toBeEnabled();
     await sign.click();
     await sign.click().catch(() => {});   // second tap while pending must not send a second POST
-    await expect(page.getByRole('status').filter({ hasText: 'Signed: Catatonia (Aug 31) — MS3' })).toBeVisible();
+    await expect(page.getByText('Signed: Catatonia (Aug 31) — MS3')).toBeVisible();
     const posts = api.calls.filter(call => call.method === 'POST');
     expect(posts).toHaveLength(1);
     expect(posts[0].body).toEqual({ target: 'content', changes: { [COTW_MS3_SLUG]: true }, reasons: {} });
@@ -1353,8 +1375,32 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
     await sheet.getByLabel('Links, media and interactions work').check();
     await sheet.getByRole('button', { name: 'Sign' }).click();
-    await expect(page.getByRole('status').filter({ hasText: 'Signed: Synthetic mental status exam tool' })).toBeVisible();
+    await expect(page.getByText('Signed: Synthetic mental status exam tool')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Attest' })).toBeEnabled();  // not stuck in "Signing…"
+  });
+
+  test('a silent refresh while offline leaves the loaded screen in place (no error screen, no fetch)', async ({ page }) => {
+    await page.clock.install();
+    const api = await installRepositoryApi(page, workflowBank(), { contentState: cotwContentState() });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Catatonia \(Aug 31\) — MS3/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    await page.getByRole('button', { name: 'Attest' }).click();
+    const sheet = page.getByRole('dialog', { name: /Sign Catatonia/ });
+    await sheet.getByLabel('I reviewed the complete item on this screen').check();
+    await sheet.getByLabel('Accurate and appropriate for a third-year student').check();
+    await sheet.getByLabel('Links, media and interactions work').check();
+    await sheet.getByRole('button', { name: 'Sign' }).click();
+    await expect(page.getByText('Signed: Catatonia (Aug 31) — MS3')).toBeVisible();
+    const getsBefore = api.gets.length;
+    await page.context().setOffline(true);
+    await page.clock.runFor(31_000);                 // past REFRESH_QUIET_MS: the scheduled refresh fires offline
+    await expect(page.getByRole('heading', { name: 'Catatonia (Aug 31) — Resident' })).toBeVisible();   // still on the advanced item
+    await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(0);
+    await expect(page.getByRole('alert')).toContainText('You are offline');
+    expect(api.gets.length).toBe(getsBefore);
+    await page.context().setOffline(false);
   });
 
   test('a failed preview needs a retry and the separate-tab acknowledgement instead', async ({ page }) => {
@@ -1387,6 +1433,12 @@ Run: `cd tests/smoke && npx playwright test --project=faculty-console -g "phone 
 Replace `function sheetConfirm() { return h('div'); }` in `m.mjs` with:
 
 ```js
+/** Eligibility reads the live preview status; state.ui holds only the reviewer's acknowledgements. */
+function uiWithPreview() { return { ...state.ui, previewStatus: state.preview?.status || 'loading' }; }
+function resetAcks() {   // the desktop clears acknowledgements whenever the preview status changes
+  const { retryAttempted } = state.ui;
+  state.ui = { retryAttempted: retryAttempted === true };
+}
 function ack(id, label, checked, onChange, { disabled = false } = {}) {
   const input = h('input', { id, type: 'checkbox', checked: checked ? true : undefined, disabled: disabled ? true : undefined,
     onChange: event => onChange(event.target.checked) });
@@ -1398,7 +1450,7 @@ function sheetConfirm(item) {
   if (item.type === 'question') return sheetConfirmQuestion(item);
   const failed = previewFailed();
   const ready = state.preview?.status === 'ready';
-  const eligibility = contentEligibility(item, state.ui);
+  const eligibility = contentEligibility(item, uiWithPreview());
   return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': `Sign ${item.title}` }, [
     h('h2', { text: `Sign ${item.title}` }),
     h('p', { text: `As ${state.server.attester}. This signs the text as it is on main right now; if the page changes later it shows as pending again until re-signed.` }),
@@ -1413,11 +1465,9 @@ function sheetConfirm(item) {
   ]);
 }
 
-function safeHttps(value) { try { const u = new URL(String(value)); return u.protocol === 'https:' ? u.href : null; } catch { return null; } }
-
 async function signContent(item) {
   if (state.pending) return;                       // idempotent while a POST is in flight
-  if (!contentEligibility(item, state.ui).eligible) { state.message = 'Complete the acknowledgements before signing.'; renderItem(); return; }
+  if (!contentEligibility(item, uiWithPreview()).eligible) { state.message = 'Complete the acknowledgements before signing.'; renderItem(); return; }
   state.pending = true; state.message = ''; renderItem();
   const body = { target: 'content', changes: { [item.identity]: true }, reasons: {} };
   try {
@@ -1448,6 +1498,12 @@ async function signContent(item) {
 
 Note `nextAfterSign` is computed against the **pre-recompute** items/sections so the just-signed item still anchors its section; after `recompute()` the signed item has left the queue, and the guard `state.items.some(...)` keeps the advance honest.
 
+Also in this task (small edits to Task 4's code, same file):
+- In `handlePreviewStatus`, after `preview.status = event.data.status;` add `resetAcks();` — the desktop clears acknowledgements whenever the preview status changes, so a page that turned *Not found* after the reviewer ticked *complete item reviewed* cannot be signed on a stale tick. `retryPreview()` keeps `retryAttempted`.
+- `openSheet(name)`: after `renderItem()`, move focus into the sheet: `const el = document.querySelector('#item-sheet .sheet'); if (el) { el.setAttribute('tabindex', '-1'); el.focus(); }`; add once at boot `window.addEventListener('keydown', event => { if (event.key === 'Escape' && state.sheet) closeSheet(); });`.
+- The receipt `div.receipt` carries `aria-live="polite"` and **no** `role="status"`, so the item screen keeps exactly one `role=status` element (`#item-status`); tests locate the receipt by its text.
+- A silent refresh (`load({ silent: true })`) must update in place: on the queue screen refresh `#queue-groups` and the counts line rather than remounting (search focus survives); on the item screen call `refreshItem()`; when the refresh fails offline, `render()` already reports in place.
+
 - [ ] **Step 4: Run to verify they pass**
 
 Run: `cd tests/smoke && npx playwright test --project=faculty-console -g "phone client" 2>&1 | tail -12` → all seven phone tests pass.
@@ -1471,7 +1527,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Modify: `tests/smoke/faculty-console.spec.js` (one test)
 
 **Interfaces:**
-- Consumes: `questionEligibility(item, state.ui)`, `questionEntry(item, state.ui.reviewedRevision)` (m-model); `POST /api/attest` with `{ action:'qbank.attest', manifestRevision, items:[entry], confirmations:{clinical, evidence, originalityAndNoPhi} }` → `{ ok, action, updated, commit, revision:{[id]}, assessment:{[id]} }`.
+- Consumes: `questionEligibility(item, uiWithPreview())` (Task 5's helper), `questionEntry(item, state.ui.reviewedRevision)` (m-model); `POST /api/attest` with `{ action:'qbank.attest', manifestRevision, items:[entry], confirmations:{clinical, evidence, originalityAndNoPhi} }` → `{ ok, action, updated, commit, revision:{[id]}, assessment:{[id]} }`.
 - Produces: read-only draft sheet; question confirm sheet; `signQuestion(item)`.
 
 - [ ] **Step 1: Write the failing smoke test**
@@ -1508,7 +1564,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     await sheet.getByLabel('Original wording, no patient information').check();
     await expect(sign).toBeEnabled();
     await sign.click();
-    await expect(page.getByRole('status').filter({ hasText: 'Signed: qb_moo_901' })).toBeVisible();
+    await expect(page.getByText('Signed: qb_moo_901')).toBeVisible();
     const post = api.calls.filter(call => call.method === 'POST').at(-1);
     expect(post.body.action).toBe('qbank.attest');
     expect(post.body.manifestRevision).toBe(MANIFEST_REVISION);
@@ -1549,7 +1605,7 @@ function sheetDraft(item) {
 
 function sheetConfirmQuestion(item) {
   const warnings = item.record?.assessment?.warnings || [];
-  const eligibility = questionEligibility(item, state.ui);
+  const eligibility = questionEligibility(item, uiWithPreview());
   const failed = previewFailed();
   return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': `Sign ${item.identity}` }, [
     h('h2', { text: `Sign ${item.identity}` }),
@@ -1569,7 +1625,7 @@ function sheetConfirmQuestion(item) {
 
 async function signQuestion(item) {
   if (state.pending) return;
-  if (!questionEligibility(item, state.ui).eligible) { state.message = 'Complete the acknowledgements before signing.'; renderItem(); return; }
+  if (!questionEligibility(item, uiWithPreview()).eligible) { state.message = 'Complete the acknowledgements before signing.'; renderItem(); return; }
   state.pending = true; state.message = ''; renderItem();
   const body = {
     action: 'qbank.attest',
