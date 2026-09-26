@@ -302,10 +302,30 @@ export function startFacultyConsole({
      after load. That is what lets a link survive the key prompt: the console can be
      locked when the link arrives, and the request is still waiting when the queue
      finally loads. It is consumed on first use, so a later reload never re-hijacks the
-     reviewer's selection. The value itself is only ever compared against loaded item
-     keys (parseDeepLink) — it is never written into the DOM. */
+     reviewer's selection. The value is compared against loaded item keys (parseDeepLink)
+     and written into the DOM in exactly one place: the narrow-viewport phone hand-off's
+     href (phoneHandOffHref), rebuilt from the key alone, never from the raw search. */
   let pendingDeepLinkSearch = typeof window.location?.search === 'string'
     ? window.location.search : '';
+  document.querySelector?.('.phone-link a')
+    ?.setAttribute('href', phoneHandOffHref(requestedDeepLinkKey(pendingDeepLinkSearch)));
+
+  /* The phone console's address of the requested item: ./m/ with nothing but ?item=<key>,
+     built by buildDeepLink — Copy link's own construction — so the two agree on encoding
+     and no other parameter on the arriving URL is carried across. buildDeepLink names an
+     item as `type:identity`; a key without that shape matches no item on either console,
+     so it hands off to the bare phone queue. */
+  function phoneHandOffHref(key) {
+    const colon = key.indexOf(':');
+    if (colon < 1) return './m/';
+    try {
+      const item = { key, type: key.slice(0, colon), identity: key.slice(colon + 1) };
+      const link = new URL(buildDeepLink(new URL('./m/', window.location.href).href, item));
+      return `./m/${link.search}`;
+    } catch {
+      return './m/';   // an exotic document URL: hand off to the queue, not a guessed link
+    }
+  }
 
   function requestedDeepLinkKey(search) {
     try {

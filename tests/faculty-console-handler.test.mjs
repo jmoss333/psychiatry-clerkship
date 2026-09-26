@@ -1624,6 +1624,8 @@ test('qbank.save-draft performs one atomic Git commit and returns the saved item
   assert.equal(saved.items[0].stem, edited.stem);
   assert.equal(saved.items[0].status, 'draft');
   assert.equal(payload.revision, itemRevision(saved.items[0]));
+  // The written item as it now stands (spec §5): id, status and new revision.
+  assert.deepEqual(payload.written, [{ id: item.id, status: 'draft', revision: itemRevision(saved.items[0]) }]);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === QBANK_PATH).length, 1);
   assert.equal(mock.calls.filter(call => call.method === 'GET' && call.path === MANIFEST_PATH).length, 1);
   assert.equal(new URL(mock.calls.find(call => call.path === QBANK_PATH).url).searchParams.get('ref'), BRANCH_HEAD_SHA);
@@ -1678,6 +1680,11 @@ test('qbank.attest performs one atomic Git commit and returns stable target revi
   assert.deepEqual(Object.keys(payload.revision), [first.id, second.id]);
   assert.equal(payload.assessment[first.id].gate, 'ready');
   assert.equal(payload.assessment[second.id].gate, 'ready');
+  // One entry per written item (spec §5), beside the unchanged revision/assessment maps.
+  assert.deepEqual(payload.written, [
+    { id: first.id, status: 'attested', revision: itemRevision(saved.items[0]) },
+    { id: second.id, status: 'attested', revision: itemRevision(saved.items[1]) },
+  ]);
 });
 
 test('qbank.attest rejects a legacy green request without reviewed-revision evidence', async () => {
@@ -2330,11 +2337,22 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
   const payload = await response.json();
 
   assert.equal(response.status, 200);
+  const today = new Date().toISOString().slice(0, 10);
   assert.deepEqual(payload, {
     ok: true,
     target: 'content',
     updated: 2,
     commit: 'https://github.example/commit/1',
+    rows: {
+      't_mood.md': {
+        status: 'unreviewed', at: today, by: 'Pending faculty review',
+        risk: { kind: 'clinical', level: 'high' }, reason: 'Routine periodic re-review.',
+      },
+      'mse-tool': {
+        status: 'reviewed', at: today, by: 'Synthetic Reviewer',
+        risk: { kind: 'general', level: 'low' }, reason: '',
+      },
+    },
   });
   assert.equal(mock.putBodies.length, 1);
   assert.equal(mock.putBodies[0].path, REVIEWED_PATH);
@@ -2356,6 +2374,39 @@ test('reopen preserves legacy pending storage and returns canonical unreviewed s
     'unreviewed',
   );
   assert.equal(mock.files[REVIEWED_PATH].json['t_mood.md'].status, 'pending');
+});
+
+test('rows in the attest response carry only the projected fields, never the hash or note', async () => {
+  const mock = createGithubMock();   // defaultFiles(): mse-tool is pending, t_mood.md already reviewed (a no-op)
+  const handler = handlerWith(mock);
+  const response = await handler(apiRequest('POST', {
+    body: { target: 'content', changes: { 'mse-tool': true }, reasons: {} },
+  }));
+  const payload = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(payload.updated, 1);
+  assert.deepEqual(Object.keys(payload.rows), ['mse-tool']);
+  assert.deepEqual(Object.keys(payload.rows['mse-tool']).sort(), ['at', 'by', 'reason', 'risk', 'status']);
+  assert.equal(payload.rows['mse-tool'].status, 'reviewed');
+  assert.equal(JSON.stringify(payload).includes('contentHash'), false);
+  assert.equal(JSON.stringify(payload).includes('claimsHash'), false);
+});
+
+test('a no-op attest response carries no rows field', async () => {
+  // The FILTERED semantic no-op, not the earlier unconditional empty-changes guard (that one
+  // is already pinned by "qbank and content no-op requests perform no commit" above, via
+  // `changes: {}`). t_mood.md here is already `reviewed` AND bound — boundFiles() sets its
+  // contentHash to match today's sources — so re-attesting it must fall out of the
+  // effectiveChanges filter (attest.mjs ~1871-1882, the `current.contentHash !== digestOf(slug)`
+  // branch) as a no-op, the same case the semanticMock assertions above exercise.
+  const mock = createGithubMock({ files: boundFiles() });
+  const handler = handlerWith(mock);
+  const response = await handler(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true }, reasons: {} },
+  }));
+  const payload = await response.json();
+  assert.equal(payload.updated, 0);
+  assert.equal('rows' in payload, false);
 });
 
 test('GET returns risk and pending reason but never internal note or hash fields', async () => {
