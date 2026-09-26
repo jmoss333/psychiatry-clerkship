@@ -67,7 +67,7 @@ auto-advance order, applying the write's `rows`, and diff lines.
   warnings lists them and offers no Attest; sign it on the desktop, which records each
   acknowledgement.
 
-Editing, the *Attest together* tray, remember-me and any change to attribution are out of scope.
+Editing, the *Attest together* tray, the *Sign everything as it reads today* and *Sign #N* presses (desktop only — the phone signs one slug per press), remember-me and any change to attribution are out of scope.
 Deep links take the desktop's form under `/m/` (`/m/?item=page:<slug>`, `tool:`, `question:`) and
 open the item once unlocked. **Copy link** and the bookmarklet are unchanged and open the desktop
 console, whose *Use the phone console* link (viewports ≤ 700 px) carries the arriving `?item=` to
