@@ -4205,7 +4205,7 @@ test('Essentials horizontal controls reveal both clipped edges without route, st
   h.fakeWindow.getComputedStyle=node=>node===strip ? {paddingLeft:'6px',paddingRight:'6px'} : {outlineWidth:'2px',outlineOffset:'2px'};
   const strip={scrollLeft:0,clientLeft:0,clientWidth:362,getBoundingClientRect:()=>({left:14,right:376})};
   let bounds={left:308,right:588};
-  const target={closest:selector=>selector==='.fd-kit__tool-tabs [data-fd-kit-tool],.fd-kit__index-track [data-fd-kit-section]'?target:strip,getBoundingClientRect:()=>bounds};
+  const target={closest:selector=>selector==='.fd-kit__tool-tabs [data-fd-kit-tool],.fd-kit__index-track [data-fd-kit-section],.fd-quicktools--pills [data-fd-open]'?target:strip,getBoundingClientRect:()=>bounds};
   const state=JSON.stringify(h.controller.getState()), saved=storage.dump(); routes.length=0;
   assert.equal(typeof h.rootHandlers.focusin,'function');
   h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,218);
@@ -4216,6 +4216,30 @@ test('Essentials horizontal controls reveal both clipped edges without route, st
   assert.deepEqual(routes,[]); assert.deepEqual(scrolls,[]);
   h.controller.destroy(); bounds={left:400,right:680}; h.rootHandlers.focusin({target});
   assert.equal(strip.scrollLeft,208);
+});
+
+// 2026-09-26: the phone quick-tool pills became one sideways-scrolling row. A focused pill that is
+// only partly visible must be scrolled whole into the row, exactly as the Essentials strips are.
+test('Today phone quick-tool pills reveal a partly clipped pill on focus, and nothing else moves', () => {
+  const storage=memStorage(), routes=[], scrolls=[];
+  const h=fakeHarness({...roleContext,screen:'app',tab:'today'}, {
+    F:make(storage),route:(...args)=>routes.push(args),scrollTo:(...args)=>scrolls.push(args)
+  });
+  const strip={scrollLeft:0,clientLeft:0,clientWidth:362,getBoundingClientRect:()=>({left:14,right:376})};
+  h.fakeWindow.getComputedStyle=node=>node===strip ? {paddingLeft:'2px',paddingRight:'2px'} : {outlineWidth:'3px',outlineOffset:'2px'};
+  const asked=[];
+  // Measured in Chromium on the built site: pill 2 of 5 at 248..437 in a strip ending at 376.
+  let bounds={left:248,right:437};
+  const target={closest:selector=>{ asked.push(selector); return selector.indexOf('[data-fd-open]')>=0?target:strip; },getBoundingClientRect:()=>bounds};
+  const state=JSON.stringify(h.controller.getState()), saved=storage.dump(); routes.length=0;
+  h.rootHandlers.focusin({target});
+  assert.ok(asked[0].split(',').includes('.fd-quicktools--pills [data-fd-open]'), 'the pills are one of the revealed strips');
+  assert.ok(asked[1].split(',').includes('.fd-quicktools--pills'), 'and the pill row is the strip that scrolls');
+  assert.equal(strip.scrollLeft,66, 'right edge 437 brought inside 376 minus the 5px focus ring');
+  bounds={left:182,right:371}; h.rootHandlers.focusin({target}); assert.equal(strip.scrollLeft,66, 'a whole pill does not move the strip');
+  assert.equal(JSON.stringify(h.controller.getState()),state); assert.deepEqual(storage.dump(),saved);
+  assert.deepEqual(routes,[]); assert.deepEqual(scrolls,[]);
+  h.controller.destroy();
 });
 
 test('Essentials tool focus is inert before startup and during faculty preview', () => {

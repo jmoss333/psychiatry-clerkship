@@ -1733,7 +1733,11 @@
   /* Phone quick tools precede the primary card without changing document order. */
   .fd-today__main{display:flex;flex-direction:column}
   .fd-today__main > .fd-quicktools--pills{order:-1;margin-bottom:var(--fd-space-8)}
-  .fd-quicktools--pills .fd-quicktool{max-width:100%;min-width:0}
+  /* One sideways-scrolling row, not a wrapped block (fold probe, 2026-09-26): wrapped, five
+     long tool names took 164-207px and pushed Today's primary card under the dock.
+     The padding keeps a focused pill's outline inside the scroller, which clips on both axes. */
+  .fd-quicktools--pills{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;padding:var(--fd-space-2) var(--fd-space-1)}
+  .fd-quicktools--pills .fd-quicktool{flex:0 0 auto;max-width:calc(var(--fd-space-10) * 8);min-width:0}
   .fd-tab--care{margin-left:0}
   .fd-tab--care::before{display:none}
   .fd-tab__label[data-compact]{font-size:0}
@@ -1755,6 +1759,10 @@
   .fd-care-entry{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4);width:100%;min-height:var(--fd-target-touch);margin:var(--fd-space-5) 0;padding:var(--fd-space-3) var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm);font-weight:700;text-align:left;cursor:pointer}
   .fd-care-entry:hover{border-color:var(--fd-olive);background:var(--fd-olive-wash)}
   .fd-care-entry:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+  /* Today's copy is retired on phones (2026-09-26): the header .fd-carebtn (added 2026-09-24)
+     reaches Care from every phone route, so this row only pushed the primary card toward the
+     dock. APP's On shift keeps its in-flow entry. */
+  .fd-today > .fd-care-entry{display:none}
 }
 
 /* Essentials uses the reading typography and existing Clinical Warm tokens. */
@@ -1809,7 +1817,9 @@
   .fd-kit__layout--tools .fd-kit__tool-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:640px){
-  .fd-kit__tools{order:-1}
+  /* Readings first on phones as on every width (2026-09-26). The tools aside used to take
+     order:-1 here; once it carried the preview card and the teaching companion it stood 496px
+     tall, and the first reading began below the dock at 390x844. */
   .fd-kit__tool-tabs{display:flex;gap:var(--fd-space-3);overflow-x:auto;overscroll-behavior-inline:contain;padding:var(--fd-space-3);scrollbar-width:thin}
   .fd-kit__tool-tab{flex:0 0 calc(var(--fd-space-10) * 8);border:1px solid var(--fd-line-strong);border-left:var(--fd-space-1) solid transparent;border-radius:var(--fd-radius-sm)}
   .fd-kit__tool-tab.is-active{border-left-color:var(--fd-teal)}
