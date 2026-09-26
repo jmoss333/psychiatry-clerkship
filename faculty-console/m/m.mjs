@@ -229,13 +229,168 @@ function render() {
 function openItem(key) { state.selectedKey = key; state.screen = 'item'; state.ui = {}; state.sheet = null; state.diff = null; state.receipt = null; state.message = ''; beginPreview(); render(); }
 function closeItem() { cancelPreview(); state.screen = 'queue'; state.selectedKey = null; state.sheet = null; render(); }
 function selectedItem() { return state.items.find(i => i.key === state.selectedKey) || null; }
-function beginPreview() { /* Task 4 */ }
-function cancelPreview() { /* Task 4 */ }
-function renderItem() { /* Task 4 */ }
+// ---- preview ------------------------------------------------------------------------------
+function residentBase() { return typeof state.server?.resident === 'string' && state.server.resident ? state.server.resident : state.server?.student; }
+
+function beginPreview() {
+  cancelPreview();
+  const item = selectedItem();
+  if (!item) return;
+  const attempt = (state.preview?.attempt || 0) + 1;
+  const request = buildPreviewRequest({ studentBase: state.server.student, residentBase: residentBase(), item, reviewToken: createReviewToken(window.crypto) });
+  state.preview = { request, status: 'loading', frameLoaded: false, frameWindow: null, timerId: null, attempt };
+  state.preview.timerId = window.setTimeout(() => {
+    const preview = state.preview;
+    if (!preview || preview.status !== 'loading') return;
+    preview.status = timeoutStatus(preview.frameLoaded);
+    renderItem();
+  }, PREVIEW_TIMEOUT_MS);
+}
+function cancelPreview() {
+  if (state.preview?.timerId) window.clearTimeout(state.preview.timerId);
+  state.preview = state.preview ? { ...state.preview, timerId: null } : null;
+}
+function retryPreview() { state.ui = { ...state.ui, retryAttempted: true }; beginPreview(); renderItem(); }
+
+function handlePreviewStatus(event) {
+  const preview = state.preview;
+  if (!preview || !['loading', 'ready'].includes(preview.status)) return;
+  if (!matchesPreviewStatus(event, preview.request, preview.frameWindow)) return;
+  if (preview.status === 'ready' && event.data.status === 'ready') return;
+  if (preview.timerId) window.clearTimeout(preview.timerId);
+  preview.timerId = null;
+  preview.status = event.data.status;
+  renderItem();
+}
+
+const STATUS_LABEL = {
+  loading: 'Loading the learner page…', ready: 'Ready', not_found: 'Not found on the learner site', error: 'The learner page reported an error',
+  protocol_unavailable: 'Page loaded, but it never reported ready', frame_failure: 'The learner page did not load',
+};
+function previewFailed() { return ['not_found', 'error', 'protocol_unavailable', 'frame_failure'].includes(state.preview?.status); }
+
+// ---- sheets -------------------------------------------------------------------------------
+function openSheet(name) { state.sheet = name; renderItem(); }
+function closeSheet() { state.sheet = null; renderItem(); }
+
+async function loadDiff(item) {
+  let diff;
+  try {
+    diff = await api(`${API}?${new URLSearchParams({ view: 'diff', slug: item.identity })}`);
+  } catch (error) {
+    if (error instanceof Unauthorized) { state.reauth = () => { openSheet('changed'); return loadDiff(item); }; renderGate(error.message); return; }
+    diff = { error: error.message };
+  }
+  // The reviewer may have moved to another item while this was in flight: never show one
+  // item's changes on another item's sheet.
+  if (state.selectedKey !== item.key) return;
+  state.diff = diff;
+  renderItem();
+}
+function sheetChanged(item) {
+  if (state.diff === null) { state.diff = { loading: true }; void loadDiff(item); }
+  const loading = state.diff?.loading === true;
+  const lines = state.diff && !state.diff.error && !loading ? diffLines(state.diff) : [];
+  return h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'What changed since you signed' }, [
+    h('h2', { text: 'What changed since you signed' }),
+    loading ? h('p', { text: 'Loading the changes…' }) : null,
+    state.diff?.error ? h('p', { class: 'field-error', role: 'alert', text: state.diff.error }) : null,
+    !loading && state.diff && !state.diff.error && !lines.length ? h('p', { text: 'No text change was recorded; the record or its fingerprint scope moved.' }) : null,
+    // `lines` carries file / context / del / add / note kinds; a note marks a too-large, binary or truncated file.
+    h('div', { class: 'lines' }, lines.map(line => h('div', { class: line.kind, text: line.text }))),
+    state.diff?.compareUrl ? h('p', {}, h('a', { href: state.diff.compareUrl, target: '_blank', rel: 'noopener noreferrer', text: 'Open the comparison on GitHub' })) : null,
+    h('p', {}, h('button', { class: 'btn secondary', type: 'button', text: 'Close', onClick: closeSheet })),
+  ]);
+}
+
+// ---- item screen --------------------------------------------------------------------------
+// Mounted ONCE per open (or Retry). Re-inserting an iframe reloads it, and the second-load rule
+// below would read that as frame_failure, so state changes refresh only the dynamic regions.
+let mountedFor = null;   // `${item.key}#${preview.attempt}` the current DOM was mounted for
+
+function renderItem() {
+  // The key prompt is up (a 401 cleared the key, or Lock): a late timer, message or diff
+  // response must never paint the item screen over it.
+  if (!getKey() || !state.server) return;
+  const item = selectedItem();
+  if (!item) { closeItem(); return; }
+  // The mounted screen was replaced (the key prompt after a 401, then the key again): the new
+  // frame gets a new attempt and token, or its first load would read as a second load.
+  if (mountedFor === `${item.key}#${state.preview?.attempt || 0}` && !document.getElementById('learner-frame')) beginPreview();
+  const signature = `${item.key}#${state.preview?.attempt || 0}`;
+  if (mountedFor !== signature || !document.getElementById('learner-frame')) mountItem(item);
+  refreshItem(item);
+}
+
+function mountItem(item) {
+  const preview = state.preview;
+  const frame = h('iframe', { id: 'learner-frame', title: `Learner view of ${item.title}`, sandbox: PREVIEW_SANDBOX, referrerpolicy: 'no-referrer' });
+  frame.addEventListener('load', () => {
+    const current = state.preview;
+    if (!current || current.request !== preview.request) return;      // a stale frame's event
+    if (current.frameLoaded) { current.status = 'frame_failure'; refreshItem(item); return; }
+    current.frameLoaded = true;
+  });
+  frame.addEventListener('error', () => {
+    if (state.preview?.request === preview.request) { state.preview.status = 'frame_failure'; refreshItem(item); }
+  });
+  frame.setAttribute('src', preview.request.url);
+  replaceApp(
+    bar(item.title, { back: true }),
+    h('div', { class: 'screen item' }, [
+      h('div', { id: 'item-status', class: 'status', role: 'status' }),
+      h('div', { id: 'item-twin' }),
+      h('div', { id: 'item-receipt' }),
+      h('div', { id: 'item-message' }),
+      h('div', { class: 'frame-wrap' }, frame),
+    ]),
+    h('nav', { id: 'item-actions', class: 'actions', 'aria-label': 'Review actions' }),
+    h('div', { id: 'item-sheet' }),
+  );
+  preview.frameWindow = frame.contentWindow;
+  mountedFor = `${item.key}#${preview.attempt}`;
+  window.history.replaceState(null, '', `${window.location.pathname}?item=${encodeURIComponent(item.key)}`);
+}
+
+function refreshItem(item) {
+  const preview = state.preview;
+  const twin = item.type === 'page' ? twinOf(item, state.items) : null;
+  const external = item.type === 'question' ? null : buildExternalReviewUrl({ studentBase: state.server.student, residentBase: residentBase(), item });
+  document.getElementById('item-status').replaceChildren(
+    h('span', { class: `pill ${preview.status === 'ready' ? 'ok' : ''}`, text: STATUS_LABEL[preview.status] || preview.status }),
+    h('span', { text: `${siteLabel(item)} · ${reviewReason(item)}` }),
+    ...(previewFailed() ? [h('button', { type: 'button', class: 'pill', text: 'Retry', onClick: retryPreview })] : []),
+  );
+  document.getElementById('item-twin').replaceChildren(...(twin ? [h('p', { class: 'summary' }, [
+    `Twin: ${twin.title} · ${twin.completion === 'needs-review' ? 'needs review' : 'reviewed'} `,
+    h('a', { href: `?item=${encodeURIComponent(twin.key)}`, text: 'Go to twin', onClick: event => { event.preventDefault(); openItem(twin.key); } }),
+  ])] : []));
+  document.getElementById('item-receipt').replaceChildren(...(state.receipt ? [h('div', { class: 'receipt', role: 'status' }, [
+    h('strong', { text: `Signed: ${state.receipt.title}` }), ' ',
+    state.receipt.commit ? h('a', { href: state.receipt.commit, target: '_blank', rel: 'noopener noreferrer', text: 'commit' }) : null,
+    state.receipt.pullRequest ? [' · ', h('a', { href: state.receipt.pullRequest, target: '_blank', rel: 'noopener noreferrer', text: 'rolling PR' })] : null,
+    state.receipt.pullRequestError ? ' · the rolling review request needs attention' : null,
+  ])] : []));
+  document.getElementById('item-message').replaceChildren(...(state.message ? [h('p', { class: 'field-error summary', role: 'alert', text: state.message })] : []));
+  document.getElementById('item-actions').replaceChildren(
+    item.type === 'question'
+      ? h('button', { class: 'btn secondary', type: 'button', text: 'Saved draft', onClick: () => openSheet('draft') })
+      : h('button', { class: 'btn secondary', type: 'button', text: 'What changed', onClick: () => openSheet('changed') }),
+    external ? h('a', { class: 'btn secondary', href: external, target: '_blank', rel: 'noopener noreferrer', text: 'Open in site' }) : h('span'),
+    h('button', { class: 'btn', type: 'button', text: 'Attest', disabled: state.pending || preview.status === 'loading', onClick: () => openSheet('confirm') }),
+  );
+  const sheet = state.sheet === 'changed' ? sheetChanged(item)
+    : state.sheet === 'confirm' ? sheetConfirm(item)
+    : state.sheet === 'draft' ? sheetDraft(item)
+    : null;
+  document.getElementById('item-sheet').replaceChildren(...(sheet ? [h('div', { class: 'sheet-backdrop', onClick: closeSheet }), sheet] : []));
+}
+function sheetConfirm(item) { return h('div'); }   // Task 5
+function sheetDraft(item) { return h('div'); }     // Task 6
 
 // ---- boot ---------------------------------------------------------------------------------
 state.deepLink = window.location.search.includes('item=') ? window.location.search : null;
-window.addEventListener('message', event => { /* Task 4 wires handlePreviewStatus here */ if (typeof handlePreviewStatus === 'function') handlePreviewStatus(event); });
+window.addEventListener('message', handlePreviewStatus);
 window.addEventListener('offline', () => { state.message = 'You are offline.'; render(); });
 window.addEventListener('online', () => { state.message = ''; render(); });
 void load();

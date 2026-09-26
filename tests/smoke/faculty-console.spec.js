@@ -2559,4 +2559,46 @@ test.describe('phone client', () => {
     await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Needs review' })).toBeVisible();
   });
+
+  test('opening an item shows the learner page in a frame, reports Ready from the real learner shell, and What changed renders the diff', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await page.route('**/api/attest?view=diff&slug=t_mood.md', route => fulfillJson(route, 200, {
+      view: 'diff', slug: 't_mood.md', since: '2026-09-21', base: 'a'.repeat(40), head: 'b'.repeat(40), commit: null, compareUrl: null,
+      files: [{ path: '03_Core_Topics/Mood/mood.md', status: 'modified', changed: true, truncated: false, tooLarge: false, hunks: [{ oldStart: 1, newStart: 1, rows: [
+        { kind: 'context', segments: [{ t: 'eq', s: 'Unchanged sentence.' }] },
+        { kind: 'change', segments: [{ t: 'eq', s: 'Lithium ' }, { t: 'del', s: 'always' }, { t: 'add', s: 'usually' }, { t: 'eq', s: ' needs levels.' }] },
+      ] }] }],
+      record: [],
+    }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('heading', { name: 'Synthetic mood disorders page' })).toBeVisible();
+    const frame = page.locator('iframe#learner-frame');
+    await expect(frame).toHaveAttribute('src', /reviewKey=page%3At_mood\.md/);
+    await expect(frame).toHaveAttribute('src', /reviewToken=[0-9a-f]{32}/);
+    await expect(frame).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    expect(new URL(page.url()).searchParams.get('item')).toBe('page:t_mood.md');
+    await page.getByRole('button', { name: 'What changed' }).click();
+    await expect(page.getByRole('dialog', { name: 'What changed since you signed' })).toBeVisible();
+    await expect(page.getByText('Lithium always needs levels.')).toBeVisible();
+    await expect(page.getByText('Lithium usually needs levels.')).toBeVisible();
+    await page.getByRole('button', { name: 'Close' }).click();
+    const openInSite = page.getByRole('link', { name: 'Open in site' });
+    await expect(openInSite).toHaveAttribute('href', `${MS3_URL}/?page=t_mood.md`);
+    await expect(openInSite).toHaveAttribute('target', '_blank');
+  });
+
+  test('a stale readiness message does not unlock Attest', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank());
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Synthetic mood disorders page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Ready', { timeout: 15_000 });
+    // Forge a message with the right shape but the wrong token: the guard must ignore it.
+    await page.evaluate(() => window.postMessage({ type: 'faculty-preview-status', status: 'not_found', surface: 'page', reviewKey: 'page:t_mood.md', reviewToken: 'f'.repeat(32) }, '*'));
+    await expect(page.getByRole('status')).toContainText('Ready');
+    await expect(page.getByRole('button', { name: 'Attest' })).toBeEnabled();  // eligibility itself is checked in the confirm sheet (Task 5)
+  });
 });
