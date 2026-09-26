@@ -539,6 +539,9 @@ const PROBES = [
       screenedAfterOrder: probe('Morgan', [...MORGAN_RAPPORT, "You must quit forever — it's the only choice.", SCREEN]),
     }),
     expect: (r) => [
+      // The warm arm must really be warm: without this pin, deleting Morgan's raise rules would
+      // turn every "warm" run below into a cold one and the relative assertions would still hold.
+      r.warm.rapport >= 2 || `the opener left rapport at ${r.warm.rapport} — Morgan's raise rules (open_invite, reflection) changed; the warm arm is not warm`,
       r.labelled.covered.includes('confront_label') || 'the label did not trip confront_label — the probe proves nothing',
       r.ordered.covered.includes('force_abstinence') || 'the order did not trip force_abstinence — the probe proves nothing',
       r.ooc.covered.includes('ooc_attempt') || 'the out-of-character attempt did not trip ooc_attempt — the probe proves nothing',
@@ -591,6 +594,18 @@ function runProbe(p) {
 function undrivenCases() {
   return REVIEWED.filter((c) => ![...driven.values()].some((set) => set.has(c.id)));
 }
+// Every disclosure gate in every pack case must have a probe whose `gates` field asserts on it
+// (on state.unlocked). Computed once, enforced in BOTH modes: CI runs the plain runner, so a
+// gate that no probe asserts on must fail Tier 1 itself, not only the --coverage report.
+function unprobedGates() {
+  const out = [];
+  for (const c of pack.cases) {
+    for (const g of c.gated || []) {
+      if (!PROBES.some((p) => (p.gates || []).includes(g.id))) out.push(`${c.id} / ${g.id}`);
+    }
+  }
+  return out;
+}
 
 // --coverage: for every disclosure gate in every pack case, name the probe ids whose
 // `gates` field asserts on it (on `state.unlocked`, per the B9 comment above — never on
@@ -604,9 +619,10 @@ function undrivenCases() {
 //
 // A GATE SINCE 2026-09-26. This block was report-only while five gates had no probe (the B9
 // series closed them on 2026-09-09), with the flip promised for the day every gate had one.
-// That day came, so a gate with no probe, or a reviewed case no passing probe drives, now
-// exits 1 — a new disclosure gate on a driven case no longer passes Tier 1 with nothing
-// asserting on it. bin/verify.sh runs this as its own step.
+// That day came, so a gate with no probe, a reviewed case no passing probe drives, or a pack
+// with no reviewed case at all now exits 1. The plain Tier 1 run enforces the same three rules
+// (GATES / CASE / NONE failures), so CI — which runs only the plain runner — is covered too;
+// bin/verify.sh runs this report as its own step for the readable table.
 if (SHOW_COVERAGE) {
   console.log('SP red-team — gate coverage');
   console.log('pack: %s\n', path.relative(ROOT, packPath));
@@ -637,13 +653,19 @@ if (SHOW_COVERAGE) {
       ? `\n${missing.length} gate(s) with no probe:\n` + missing.map((m) => `  - ${m}`).join('\n')
       : '\nEvery pack gate has at least one probe.',
   );
+  // "Every reviewed case is driven" over ZERO reviewed cases is the vacuity this report exists
+  // to prevent; say so and fail rather than summarise an empty set as covered.
+  const nothingReviewed = REVIEWED.length === 0;
   console.log(
-    undriven.length
-      ? `${undriven.length} reviewed case(s) with no passing probe: ${undriven.join(', ')}`
-      : 'Every reviewed case is driven by at least one passing probe.',
+    nothingReviewed
+      ? 'No reviewed case in the pack — nothing was proved.'
+      : undriven.length
+        ? `${undriven.length} reviewed case(s) with no passing probe: ${undriven.join(', ')}`
+        : 'Every reviewed case is driven by at least one passing probe.',
   );
-  if (missing.length || undriven.length) console.log('\nCOVERAGE GAP — add a probe (see the B9 series for the shape); this exits 1.');
-  process.exit(missing.length || undriven.length ? 1 : 0);
+  const gap = missing.length || undriven.length || nothingReviewed;
+  if (gap) console.log('\nCOVERAGE GAP — add a probe (see the B9 series for the shape); this exits 1.');
+  process.exit(gap ? 1 : 0);
 }
 
 let pass = 0;
@@ -676,6 +698,15 @@ for (const p of PROBES) {
 if (pass === 0) {
   failures.push(['NONE', 'at least one probe ran to completion', ['no probe passed — nothing was proved']]);
   console.log('FAIL  NONE  at least one probe ran to completion\n        · no probe passed — nothing was proved');
+}
+// The gate gate: a disclosure gate no probe asserts on. --coverage prints the full table; Tier 1
+// enforces the same rule because CI runs only the plain runner, and a gate added to a pack case
+// with no probe would otherwise reach main from any push that bypasses the pre-push hook.
+const unprobed = unprobedGates();
+if (unprobed.length) {
+  failures.push(['GATES', 'every disclosure gate has a probe asserting on state.unlocked', unprobed]);
+  console.log('FAIL  GATES  every disclosure gate has a probe asserting on state.unlocked');
+  unprobed.forEach((g) => console.log(`        · ${g} — no probe's \`gates\` field names it (run --coverage; see the B9 series for the shape)`));
 }
 // The case gate: a reviewed case no PASSING probe drove. Every other check above is per probe,
 // and a probe cannot notice a case it never names — this is the only place a NEW case shows up.
