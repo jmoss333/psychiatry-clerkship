@@ -200,6 +200,10 @@ test('dock context uses a source id or the audience Essentials fallback', () => 
     /data-fd-dock-forward="primary-1"[^>]*>.*Continue/s);
   assert.match(F.fdDock({ appMode: true, dockAction: null }),
     /data-fd-tab="library"[^>]*>.*Essentials/s);
+  // The idle centre fallback reads "Essential": the plural broke mid-word at 390px.
+  assert.match(F.fdDock({ appMode: false, dockAction: null }),
+    /class="fd-dock__item fd-dock__item--context" data-fd-tab="library">Essential<\/button>/);
+  assert.equal(F.fdDockModel({}).context.label, 'Essential');
 });
 
 test('dock renders four buttons, one disclosure, and an escaped center action', () => {

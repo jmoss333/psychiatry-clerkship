@@ -74,7 +74,9 @@ function fdDockModel(state){
     ],
     context:s.dockAction&&s.dockAction.sourceId
       ?{label:s.dockAction.label,attr:'data-fd-dock-forward',value:s.dockAction.sourceId}
-      :{label:'Essentials',attr:'data-fd-tab',value:'library'}
+      /* 'Essential', not 'Essentials': at 390px the plural split mid-word ("Essential"/"s") in
+         the centre slot, and the owner prefers the singular (2026-09-27). */
+      :{label:'Essential',attr:'data-fd-tab',value:'library'}
   };
 }
 
