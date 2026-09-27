@@ -3922,9 +3922,10 @@ test('Concepts Today released count, phone keyboard recall and trusted Path cont
   await page.goto('/');
   await expect(page.locator('[data-fd-concept-status]')).toHaveCount(0);
   await expect(page.locator('.fd-due__label')).toHaveText('1 review due');
-  await page.locator('[data-fd-open="review.html"]:visible').first().click();
+  await page.locator('.fd-due:visible').first().click();
+  await expect(page).toHaveURL(/tool=review\.html.*lane=all/);
   const tool=page.locator('#content iframe.toolframe').contentFrame();
-  await expect(tool.getByRole('button',{name:'This week',exact:true})).toBeVisible();
+  await expect(tool.locator('.allrow .chip')).toHaveAttribute('aria-pressed','true');
   await tool.getByRole('button',{name:/Start review/}).click();
   await expect(tool.locator('body')).not.toContainText(card.reveal);
   await tool.getByRole('button',{name:'Reveal one way to do it'}).focus();
@@ -3934,13 +3935,146 @@ test('Concepts Today released count, phone keyboard recall and trusted Path cont
   await page.screenshot({path:join(tmpdir(),'task5-concepts-'+info.project.name+'.png'),fullPage:true});
   await tool.getByRole('button',{name:/^Good/}).focus();
   await page.keyboard.press('Enter');
-  await expect(tool.locator('body')).not.toContainText('Next due:');
-  await expect(tool.locator('.qtext')).toBeFocused();
-  await tool.getByRole('button',{name:'End session',exact:true}).click();
+  await expect(tool.locator('.cw-receipt')).toBeVisible();
+  await expect(tool.locator('#cwReviewDashBtn')).toBeFocused();
   await expect(tool.locator('body')).toContainText('Next due:');
   await tool.locator('a[href*="page='+card.page+'"]').first().click();
   await expect(page.locator('.fd-reader .fd-src')).toHaveText(card.page);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('Review companion stays hidden until reveal and opens the exact article card',async({page},info)=>{
+  const companion=await (await page.request.get('/tools/review_companions.json')).json();
+  const pair=companion.pairs[0];
+  const concepts=await (await page.request.get('/tools/concepts.json')).json();
+  const clinical=concepts.cards.find(card=>card.id===pair.clinicalCardId);
+  const quizzes=await (await page.request.get('/tools/quizzes.json')).json();
+  const article=quizzes.decks.find(deck=>pair.articleCardId.startsWith(deck.id+'#'));
+  const question=article.questions[Number(pair.articleCardId.split('#')[1])];
+  expect(clinical).toBeTruthy();
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[clinical.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/?tool=review.html&lane=clerkship&focus='+encodeURIComponent(clinical.id));
+  const tool=page.locator('#content iframe.toolframe').contentFrame();
+  await expect(tool.locator('.qtext')).toHaveText(clinical.q);
+  await expect(tool.locator('.bridge')).toHaveCount(0);
+  await expect(tool.locator('body')).not.toContainText(pair.result);
+  await tool.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await expect(tool.locator('.bridge')).toContainText(pair.result);
+  await expect(tool.locator('.bridge')).toContainText(pair.limitation);
+  await tool.getByRole('link',{name:/Study companion article card/}).click();
+  await expect(tool.locator('.qtext')).toHaveText(question.q);
+});
+
+test('a fresh companion card waits when the shared daily new-card limit is reached',async({page},info)=>{
+  const companion=await (await page.request.get('/tools/review_companions.json')).json();
+  const pair=companion.pairs[0];
+  await seedApp(page,info);
+  await page.addInitScript(()=>{
+    const now=new Date();
+    const day=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+    localStorage.setItem('cw_srs_v1',JSON.stringify({v:1,cards:{},day:{lastDay:day,newToday:30},
+      settings:{newPerDay:5,userSet:true},stats:{seen:0,correct:0}}));
+  });
+  await page.goto('/tools/review.html?lane=landmark&focus='+encodeURIComponent(pair.articleCardId));
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  await expect(page.getByRole('status').filter({hasText:'new-card limit is reached for today'})).toBeVisible();
+  await expect(page.getByRole('button',{name:/Landmark Evidence/})).toHaveAttribute('aria-pressed','true');
+});
+
+test('malformed successful Review feeds show unavailable instead of false zero counts',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/quizzes.json*',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
+  await page.route('**/tools/review_companions.json',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Landmark Evidence unavailable');
+  await expect(page.locator('body')).toContainText('Study companion unavailable');
+  await expect(page.getByRole('button',{name:/Landmark Evidence/})).toContainText('Counts unavailable');
+});
+
+test('timed Review block does not start from a malformed landmark feed',async({page},info)=>{
+  const concepts=await (await page.request.get('/tools/concepts.json')).json();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    [concepts.cards[0].id]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  await page.route('**/tools/quizzes.json*',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  await expect(page.locator('.cw-receipt')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+});
+
+test('timed Review block does not record completion when a practice-card feed fails',async({page},info)=>{
+  const topics=await (await page.request.get('/topic_meta.json')).json();
+  const topic=Object.keys(topics).find(key=>topics[key]?.quiz?.q);
+  expect(topic).toBeTruthy();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    ['TOPIC#'+topic]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  await page.route('**/topic_meta.json',route=>route.fulfill({status:503,body:'temporarily unavailable'}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+});
+
+test('timed Review block rejects a practice feed whose rows make no cards',async({page},info)=>{
+  const communication=await (await page.request.get('/communication_cases.json')).json();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    ['COMM#'+communication.cases[0].id]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  await page.route('**/communication_cases.json',route=>route.fulfill({status:200,contentType:'application/json',body:'{"cases":[{}]}'}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+});
+
+test('timed Review block rejects a nonempty feed missing a scheduled due card',async({page},info)=>{
+  const topics=await (await page.request.get('/topic_meta.json')).json();
+  const topic=Object.keys(topics).find(key=>topics[key]?.quiz?.q);
+  expect(topic).toBeTruthy();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    ['TOPIC#'+topic]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  delete topics[topic];
+  await page.route('**/topic_meta.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(topics)}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Practice card sources unavailable');
+  await expect(page.getByRole('button',{name:/Clerkship Review/})).toContainText('Counts incomplete');
+});
+
+test('ordinary Clerkship Review labels practice counts incomplete when its feed fails',async({page},info)=>{
+  const topics=await (await page.request.get('/topic_meta.json')).json();
+  const topic=Object.keys(topics).find(key=>topics[key]?.quiz?.q);
+  expect(topic).toBeTruthy();
+  const srs={...OTF.srs,cards:{['TOPIC#'+topic]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR}}};
+  await seedApp(page,info,{storage:{cw_srs_v1:srs}});
+  await page.route('**/topic_meta.json',route=>route.fulfill({status:503,body:'temporarily unavailable'}));
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Practice card sources unavailable');
+  await expect(page.getByRole('button',{name:/Clerkship Review/})).toContainText('Counts incomplete');
+  await expect(page.getByRole('button',{name:/All due/})).toContainText('at least');
 });
 
 test('Concepts altered feed visibly leaves Today count incomplete',async({page},info)=>{

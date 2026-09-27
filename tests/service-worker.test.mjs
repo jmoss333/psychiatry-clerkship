@@ -75,6 +75,18 @@ test('complete current cache replies ready with no missing URLs', async () => {
     present: ['/', '/search-index.json', '/content/lesson.md'], missing: [] }]);
 });
 
+test('worker verifies every Review teaching feed and fails closed when one is absent', async () => {
+  const feeds=['/tools/concepts.json','/tools/quizzes.json','/tools/review_companions.json'];
+  const urls=['/','/search-index.json','/tools/review.html',...feeds];
+  const complete=await worker({hits:urls}).send(urls);
+  assert.deepEqual(complete.messages,[{version:'test-v1',ready:true,present:urls,missing:[]}]);
+  for(const missing of feeds){
+    const result=await worker({hits:urls.filter(url=>url!==missing)}).send(urls);
+    assert.deepEqual(result.messages,[{version:'test-v1',ready:false,
+      present:urls.filter(url=>url!==missing),missing:[missing]}]);
+  }
+});
+
 test('shell and search alone are not a verifiable learning route', async () => {
   const w = worker();
   const result = await w.send(['/', '/search-index.json']);

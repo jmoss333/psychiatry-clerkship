@@ -567,7 +567,7 @@ for (const bridge of ['pa', 'pmhnp']) {
   });
 }
 
-test('Concepts precache and controlled Daily Review pack fail closed on missing feed', async ({page},info)=>{
+test('Daily Review precaches all card feeds and fails closed on any missing feed', async ({page},info)=>{
   await install(page,info);
   const result=await page.evaluate(async source=>{
     const model=new Function(source+';return {fdOfflineUrls};')();
@@ -575,19 +575,25 @@ test('Concepts precache and controlled Daily Review pack fail closed on missing 
     const urls=model.fdOfflineUrls({weeks:[{n:1,items:[item]}],byRef:{'review.html':item}},{week:1});
     const key=(await caches.keys()).find(k=>k.startsWith('cw-precache-'));
     const cache=await caches.open(key);
-    const hit=await cache.match('/tools/concepts.json');
+    const feeds=['/tools/concepts.json','/tools/quizzes.json','/tools/review_companions.json'];
+    const hits=await Promise.all(feeds.map(async url=>!!(await cache.match(url))));
     const verify=()=>new Promise(resolve=>{const channel=new MessageChannel();channel.port1.onmessage=e=>resolve(e.data);navigator.serviceWorker.controller.postMessage({type:'CW_OFFLINE_VERIFY',urls},[channel.port2]);});
     const before=await verify();
-    const removed=await cache.delete('/tools/concepts.json');
-    const after=await verify();
-    return {urls,hit:!!hit,before,removed,after};
+    const missing=[];
+    for(const url of feeds){
+      const response=await cache.match(url);
+      const removed=await cache.delete(url);
+      const after=await verify();
+      missing.push({url,removed,ready:after.ready,missing:after.missing});
+      if(response)await cache.put(url,response);
+    }
+    return {urls,hits,before,missing};
   },offlineModelSource);
-  expect(result.urls).toEqual(['/','/search-index.json','/tools/review.html','/tools/concepts.json']);
-  expect(result.hit).toBe(true);
+  const feeds=['/tools/concepts.json','/tools/quizzes.json','/tools/review_companions.json'];
+  expect(result.urls).toEqual(['/','/search-index.json','/tools/review.html',...feeds]);
+  expect(result.hits).toEqual([true,true,true]);
   expect(result.before.ready).toBe(true);
-  expect(result.removed).toBe(true);
-  expect(result.after.ready).toBe(false);
-  expect(result.after.missing).toEqual(['/tools/concepts.json']);
+  expect(result.missing).toEqual(feeds.map(url=>({url,removed:true,ready:false,missing:[url]})));
   await page.evaluate(async()=>{
     const key=(await caches.keys()).find(k=>k.startsWith('cw-precache-'));
     await (await caches.open(key)).put('/tools/concepts.json',new Response('{}',{headers:{'Content-Type':'application/json'}}));

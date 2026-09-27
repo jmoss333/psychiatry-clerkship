@@ -6,6 +6,7 @@ from datetime import date
 # tokenizer, synonym table, tool keywords, index builder, and skip-link injection.
 import common
 import concept_cards
+import review_companions
 import hashlib
 import crisis_block as _crisis
 import frontdoor_catalog
@@ -577,6 +578,9 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 _concept_raw = concept_cards.feed_bytes(Path(LIB), "res")
 (Path(OUT) / "tools" / "concepts.json").write_bytes(_concept_raw)
 common.inject_concept_digest(Path(OUT), hashlib.sha256(_concept_raw).hexdigest())
+(Path(OUT) / "tools" / "review_companions.json").write_bytes(
+    review_companions.feed_bytes(Path(LIB), "res")
+)
 
 # ---------- SERVICE WORKER ----------
 # Very end of the artifact steps: the resident build starts as a copytree of

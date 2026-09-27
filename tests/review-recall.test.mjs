@@ -139,7 +139,7 @@ function renderReview(stateValues) {
 }
 const conceptFixture={id:'CONCEPT#test@1',deck:'CONCEPT',deckTitle:'SECRET topic',kind:'recall',q:'Test […]',reveal:'SECRET <img onerror=bad>',page:'ethics_legal.md'};
 const storeFixture={cards:{},stats:{seen:100,correct:99},day:{},settings:{newPerDay:12}};
-function reviewStates(session,last=null){return [[conceptFixture],'ready','all',null,last,false,storeFixture,session];}
+function reviewStates(session,last=null){return [[conceptFixture],'ready','all',null,last,false,storeFixture,session,'light',0,'clerkship','ready','ready',null,'ready','',false];}
 test('answer absent before reveal; reveal is text and links to the shipped page',()=>{
  const session={queue:[conceptFixture],pos:0,total:1,card:conceptFixture,revealed:false,reviewed:0,correct:0};
  assert.doesNotMatch(JSON.stringify(renderReview(reviewStates(session))),/SECRET/);
@@ -156,12 +156,13 @@ test('old mixed history is never represented as Retention',()=>{assert.doesNotMa
 
 test('real queue and dashboard agree: week excludes new only, All includes no-week sources',()=>{
  const source=repo('13_Faculty_Resources/_automation/site_build/concept_recall.js');
- const real=slice(review,'  function metrics(){','  function choose(i)');
+ const real=slice(review,'  function metrics(which){','  function choose(i)');
+ const lanes=slice(review,'/* ---------- review lanes ---------- */','/* ---------- end review lanes ---------- */');
  const cards=[conceptFixture,{...conceptFixture,id:'CONCEPT#due@1'},{...conceptFixture,id:'CONCEPT#week@1',page:'mse.md'}];
  for(const filter of ['all','week']){
   let session;
   const state={cards:{'CONCEPT#due@1':{due:0,ivl:1,reps:1}},stats:{},day:{newToday:0}};
-  const run=new Function('cards','store','loadS','rollDay','effectiveNewPerDay','queueable','maturity','shuffle','setSess','saveS','setStore','weekRefs','conceptFilter',source+';var DAY=86400000,blockLimit={current:null},gradedThisSession={};'+real+';return {metrics:metrics(),start:start};');
+  const run=new Function('cards','store','loadS','rollDay','effectiveNewPerDay','queueable','maturity','shuffle','setSess','saveS','setStore','weekRefs','conceptFilter',source+lanes+';var DAY=86400000,blockLimit={current:null},gradedThisSession={},lane="clerkship";'+real+';return {metrics:metrics(),start:start};');
   const app=run(cards,state,()=>state,x=>x,()=>12,()=>true,()=> 'young',x=>x,x=>session=x,()=>{},()=>{},['mse.md'],filter);
   app.start(false);assert.equal(app.metrics.due,1);assert.equal(app.metrics.newRemain,filter==='all'?2:1);
   assert.equal(session.queue.length,app.metrics.due+app.metrics.newRemain);assert.ok(session.queue.some(c=>c.id==='CONCEPT#due@1'));
@@ -213,6 +214,27 @@ test('evidence is absent from the actual render tree before reveal and linked af
  const session={queue:[card],pos:0,total:1,card,revealed:false,reviewed:0,correct:0};
  assert.doesNotMatch(JSON.stringify(renderReview(reviewStates(session))),/secret-citation/);
  assert.match(JSON.stringify(renderReview(reviewStates({...session,revealed:true}))),/https:\/\/doi.org\/secret-citation/);
+});
+
+test('source-backed clinical-to-article bridge appears only after reveal and opens the exact companion',()=>{
+ const card={...conceptFixture,id:'CONCEPT#t_psychosis-pearl3:1@2',reveal:'Use the side-effect fit'};
+ const pair={clinicalCardId:card.id,articleCardId:'AR-24#5',sourceId:'lieberman-2005-catie',title:'Secret CATIE title',result:'Secret outcome',limitation:'Secret limitation',url:'https://doi.org/10.1056/nejmoa051688'};
+ const session={queue:[card],pos:0,total:1,card,revealed:false,reviewed:0,correct:0};
+ const state=(s)=>{const values=reviewStates(s);values[0]=[card];values[13]={schemaVersion:1,pairs:[pair]};return values;};
+ const hidden=JSON.stringify(renderReview(state(session)));
+ assert.doesNotMatch(hidden,/Secret CATIE title|Secret outcome|Secret limitation|lieberman-2005-catie/);
+ const shown=JSON.stringify(renderReview(state({...session,revealed:true})));
+ assert.match(shown,/Clinical decision/);assert.match(shown,/Study result/);assert.match(shown,/Important limitation/);
+ assert.match(shown,/Secret outcome/);assert.match(shown,/Secret limitation/);
+ assert.match(shown,/lane=landmark/);assert.match(shown,/focus=AR-24%235/);
+});
+
+test('missing article feed shows unknown Landmark counts rather than false zero',()=>{
+ const values=reviewStates(null);values[10]='landmark';values[11]='unavailable';
+ const shown=JSON.stringify(renderReview(values));
+ assert.match(shown,/Landmark Evidence unavailable/);
+ assert.match(shown,/Counts unavailable/);
+ assert.doesNotMatch(shown,/All caught up ✓/);
 });
 
 test('all real generated candidate faces keep citation IDs and evidence out of unrevealed DOM',()=>{

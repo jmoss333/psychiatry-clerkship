@@ -57,7 +57,7 @@ test("literal 'cw_shelf_date' is absent from review.html's source (present only 
 // ---- (d) THE LOAD-BEARING CHECK: both newRemain call sites use effectiveNewPerDay --
 
 test("metrics()'s newRemain uses effectiveNewPerDay, not a raw settings.newPerDay read", () => {
-  const fnMatch = reviewSrc.match(/function metrics\(\)\{[\s\S]*?\n  \}/);
+  const fnMatch = reviewSrc.match(/function metrics\(which\)\{[\s\S]*?\n  \}/);
   assert.ok(fnMatch, 'metrics() function body not found');
   const body = fnMatch[0];
 

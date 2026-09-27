@@ -251,6 +251,28 @@ def discover(root, page, manifest, site, out_dir=None):
                     if built.read_bytes() != expected:
                         raise DependencyError("concepts.json differs from current effective release")
                 continue
+            if url == "tools/review_companions.json":
+                pair_source = "13_Faculty_Resources/_automation/site_build/review_companion_pairs.json"
+                registry_source = "evidence_registry.json"
+                for source in (pair_source, registry_source):
+                    if not (Path(root) / source).is_file():
+                        raise DependencyError("missing teaching source " + source)
+                    # The pair map pins the exact registry fields projected below.
+                    # Keep unrelated registry notes out of this page's attestation hash.
+                    if source != registry_source:
+                        found.add(source)
+                if out_dir is not None:
+                    import review_companions
+                    built = Path(out_dir) / url
+                    if not built.is_file():
+                        raise DependencyError("review_companions.json teaching asset not built")
+                    try:
+                        expected = review_companions.feed_bytes(Path(root), site)
+                    except ValueError as error:
+                        raise DependencyError("review_companions.json projection failed: " + str(error)) from error
+                    if built.read_bytes() != expected:
+                        raise DependencyError("review_companions.json differs from current reviewed source")
+                continue
             source = assets.get(url)
             if source is None:
                 raise DependencyError(
