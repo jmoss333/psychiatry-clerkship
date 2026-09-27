@@ -768,8 +768,17 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
         if is_reviewed(pack_status) and not is_reviewed(case_status) and not pending:
             # DECISION: pack-case-review-is-registration — the per-case block controls
             # selection; the ledger row hashing the whole pack is the attestation of record.
+            # Amended 2026-09-27 (#844, design 2026-09-27-red-team-governance-simplification
+            # §2.1): exactly `pending` is the one non-reviewed spelling a reviewed pack may carry —
+            # with no reviewer or review date (above), and never as the pack's only case (below).
+            # A pending case is unselectable in the tool and the proxy and its red-team probes
+            # skip, so it can land in a content PR ahead of the probes a governance PR must add.
+            # Every other spelling — draft, unreviewed, a typo, a missing block — stays an error,
+            # and the message names what is accepted.
             errors.append(
-                "%s: attested pack contains non-reviewed case %s" % (slug, case_id)
+                "%s: attested pack contains non-reviewed case %s (status %s; a case in a "
+                "reviewed pack must be reviewed, attested or pending)"
+                % (slug, case_id, case_status)
             )
         if is_reviewed(case_status):
             reviewer = review.get("reviewer")

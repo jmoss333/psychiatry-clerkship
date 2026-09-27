@@ -241,11 +241,10 @@ test('a same-named gate on a second case is not covered by the first case\'s pro
 // on `reviewed`) and every probe naming it skips by construction, so no probe could cover its
 // gates: evaluating them would be a guaranteed, uncoverable failure that says nothing about the
 // served pack. The moment it is reviewed, every one of its gates is evaluated against probes
-// that drove IT, so the gates it cloned from Dana are not credited by Dana's probes. (How a new
-// case with gates lands at all — the attestation validator forbids a non-reviewed case inside a
-// reviewed pack, the CASE gate fails a reviewed case with no probe, a probe naming an absent case
-// crashes, and L1 forbids bin/ and the pack in one diff — is an open owner question this fixture
-// does not settle.)
+// that drove IT, so the gates it cloned from Dana are not credited by Dana's probes. This is the
+// landing order the 2026-09-27 amendment of decision pack-case-review-is-registration (#844) makes real: the attestation
+// validator accepts a pending case inside a reviewed pack, so a new case lands pending, gains
+// its probes in a governance PR, and is judged here the moment a content PR flips it to reviewed.
 test('a pending case\'s gates are not evaluated until it is reviewed; once reviewed, cloned gates are its own to prove', (t) => {
   const clone = (pack) => {
     const quinn = JSON.parse(JSON.stringify(pack.cases.find((c) => c.id === 'sp_depression_gated_si_001')));

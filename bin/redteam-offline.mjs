@@ -69,6 +69,9 @@ const NOT_REVIEWED = Object.fromEntries(
   // with a green exit — every probe naming it skipping and, since gates are evaluated per
   // reviewed case, its gates unevaluated. Refuse a spelling this runner does not know before
   // anything runs, as the duplicate case id is refused above.
+  // DECISION: pack-case-review-is-registration (amended 2026-09-27, #844) — `pending` is the one
+  // non-reviewed spelling the validator lets into a reviewed pack, and the one this runner skips
+  // rather than refuses.
   const KNOWN_STATUSES = new Set(['reviewed', 'pending']);
   const odd = pack.cases
     .filter((c) => !KNOWN_STATUSES.has(c.facultyReview && c.facultyReview.status))
@@ -654,11 +657,14 @@ function gateProbes(c, g) {
 // filter on `reviewed`) and every probe naming it SKIPS by construction, so no probe could ever
 // cover its gates: evaluating them would be a guaranteed, uncoverable failure that says nothing
 // about the served pack. Its gates are judged the moment its probes can run — and the CASE gate
-// requires a passing probe on it at that same moment. NB how a NEW case with gates lands at all
-// is an open owner question this exemption does not settle: the attestation validator forbids a
-// non-reviewed case inside a reviewed pack (decision pack-case-review-is-registration), the CASE
-// gate fails a reviewed case with no probe, a probe naming a case absent from the pack crashes,
-// and L1 forbids bin/ and the pack in one diff. Recorded in the PR that added this rule (2026-09-26).
+// requires a passing probe on it at that same moment. This is what lets a NEW case with gates
+// land at all (decision pack-case-review-is-registration as amended 2026-09-27 by #844, design
+// 2026-09-27-red-team-governance-simplification §2.1): the attestation validator accepts a
+// `pending` case inside a reviewed pack, so the order is a content PR that adds the
+// case pending, a governance PR that adds its probes (they skip while it is pending; L1 forbids
+// bin/ and the pack in one diff), and a content PR that flips it to reviewed — at which point
+// CASE and GATES both demand passing probes that drove it. Until 2026-09-27 the validator refused
+// every non-reviewed spelling and no order of PRs was green (the table is on PR #841).
 function unprobedGates() {
   const out = [];
   for (const c of REVIEWED) {
