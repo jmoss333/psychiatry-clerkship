@@ -79,6 +79,8 @@ LEARNER_SITES = len(LEARNER_SLUGS)  # one promotion = one production deploy on e
 # with 14 green merges waiting. 24 x 15 credits = 360 credits/day at the ceiling.
 LEARNER_BUDGET_24H = 10
 ACCOUNT_BUDGET_24H = 24
+SCHEDULE_HOURS_UTC = (9, 15, 21)
+SCHEDULE_MINUTE_UTC = 5
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEPLOY_HEALTH = REPO_ROOT / "bin" / "check_netlify_deploy_health.py"
 
@@ -109,8 +111,8 @@ def is_billable(deploy) -> bool:
             and deploy.get("state") != "error")
 
 
-def billable_deploys_24h(token: str, now=None, fetch=None, sites=None) -> dict:
-    """Return {site slug: billable production deploys created in the last 24 h}."""
+def billable_deploy_snapshot_24h(token: str, now=None, fetch=None, sites=None) -> dict:
+    """Return bounded counts and timestamps for billable deploys in 24 hours."""
     if not token:
         raise CouldNotCheck("NETLIFY_AUTH_TOKEN is not set")
     health = None
@@ -128,14 +130,31 @@ def billable_deploys_24h(token: str, now=None, fetch=None, sites=None) -> dict:
     if not sites:
         raise CouldNotCheck("no Netlify sites declared")
     counts = {}
+    created_at = {}
     for site in sites:
-        total = 0
+        times = []
         for deploy in fetch(site["siteId"], token, horizon):
             created = _parse_time(deploy.get("created_at")) if isinstance(deploy, dict) else None
-            if created is not None and created >= horizon and is_billable(deploy):
-                total += 1
-        counts[site["slug"]] = total
-    return counts
+            if (
+                created is not None
+                and horizon <= created <= now
+                and is_billable(deploy)
+            ):
+                times.append(created)
+        times.sort()
+        counts[site["slug"]] = len(times)
+        created_at[site["slug"]] = times
+    return {"counts": counts, "createdAt": created_at}
+
+
+def billable_deploys_24h(token: str, now=None, fetch=None, sites=None) -> dict:
+    """Return {site slug: billable production deploys created in the last 24 h}."""
+    return billable_deploy_snapshot_24h(
+        token,
+        now=now,
+        fetch=fetch,
+        sites=sites,
+    )["counts"]
 
 
 def _parse_time(value):
@@ -158,6 +177,112 @@ def _read_full_counts(read_counts) -> dict:
         # would wave through the storm the learner budget exists to catch.
         raise CouldNotCheck(f"deploy count has no entry for {', '.join(missing)}")
     return counts
+
+
+def _next_train_slots(now):
+    """Yield future configured release-train slots in UTC."""
+    now = _as_utc_datetime(now)
+    for day_offset in range(0, 8):
+        day = now + timedelta(days=day_offset)
+        for hour in SCHEDULE_HOURS_UTC:
+            candidate = day.replace(
+                hour=hour,
+                minute=SCHEDULE_MINUTE_UTC,
+                second=0,
+                microsecond=0,
+            )
+            if candidate > now:
+                yield candidate
+
+
+def _as_utc_datetime(value):
+    if not isinstance(value, datetime):
+        raise CouldNotCheck("deploy time is malformed")
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def _snapshot_counts_at(snapshot, candidate):
+    if not isinstance(snapshot, dict) or not isinstance(snapshot.get("createdAt"), dict):
+        raise CouldNotCheck("deploy history is malformed")
+    candidate = _as_utc_datetime(candidate)
+    horizon = candidate - timedelta(hours=24)
+    counts = {}
+    for slug, values in snapshot["createdAt"].items():
+        if not isinstance(slug, str) or not isinstance(values, list):
+            raise CouldNotCheck("deploy history is malformed")
+        parsed = [_as_utc_datetime(value) for value in values]
+        counts[slug] = sum(horizon <= value <= candidate for value in parsed)
+    _read_full_counts(lambda: counts)
+    return counts
+
+
+def next_eligible_publish_at(
+    snapshot,
+    *,
+    now,
+    learner_budget=LEARNER_BUDGET_24H,
+    account_budget=ACCOUNT_BUDGET_24H,
+):
+    """First future train slot that fits, assuming no additional deploys."""
+    for candidate in _next_train_slots(now):
+        counts = _snapshot_counts_at(snapshot, candidate)
+        learner = sum(counts[slug] for slug in LEARNER_SLUGS)
+        total = sum(counts.values())
+        if (
+            learner + LEARNER_SITES <= learner_budget
+            and total + LEARNER_SITES <= account_budget
+        ):
+            return candidate
+    raise CouldNotCheck("no eligible release-train slot found in the projection window")
+
+
+def protective_hold_receipt(
+    snapshot,
+    *,
+    now,
+    learner_budget=LEARNER_BUDGET_24H,
+    account_budget=ACCOUNT_BUDGET_24H,
+):
+    """Bounded explanation of a spend hold for the heartbeat receipt."""
+    if not isinstance(snapshot, dict) or not isinstance(snapshot.get("counts"), dict):
+        raise CouldNotCheck("deploy snapshot is malformed")
+    counts = _read_full_counts(lambda: snapshot["counts"])
+    observed = _as_utc_datetime(now)
+    projected_counts = _snapshot_counts_at(snapshot, observed)
+    if counts != projected_counts:
+        raise CouldNotCheck("deploy counts do not match deploy history")
+    learner = sum(counts[slug] for slug in LEARNER_SLUGS)
+    total = sum(counts.values())
+    triggered = []
+    if learner + LEARNER_SITES > learner_budget:
+        triggered.append("learnerSites")
+    if total + LEARNER_SITES > account_budget:
+        triggered.append("allSites")
+    if not triggered:
+        raise CouldNotCheck("spend snapshot does not describe a protective hold")
+    eligible = next_eligible_publish_at(
+        snapshot,
+        now=observed,
+        learner_budget=learner_budget,
+        account_budget=account_budget,
+    )
+    return {
+        "reason": "spend_tripwire",
+        "observedAt": observed.isoformat(timespec="seconds"),
+        "nextEligiblePublishAt": eligible.isoformat(timespec="seconds"),
+        "observedDeploys": {"learnerSites": learner, "allSites": total},
+        "projectedDeploys": {
+            "learnerSites": learner + LEARNER_SITES,
+            "allSites": total + LEARNER_SITES,
+        },
+        "budgets": {
+            "learnerSites": learner_budget,
+            "allSites": account_budget,
+        },
+        "triggeredBudgets": triggered,
+    }
 
 
 def spend_gate(event_name: str, read_counts,
@@ -289,7 +414,10 @@ def _summary(lines) -> None:
 
 
 def run(repository: str, token: str, *, dry_run: bool, reason: str,
-        event_name: str = "", netlify_token: str = "", read_counts=None) -> int:
+        event_name: str = "", netlify_token: str = "", read_counts=None,
+        read_snapshot=None, receipt=None, now=None) -> int:
+    receipt = receipt if isinstance(receipt, dict) else {}
+    observed_at = _as_utc_datetime(now or datetime.now(timezone.utc))
     if not REPO_RE.fullmatch(repository or ""):
         raise CouldNotCheck("repository must be owner/name")
     if not token:
@@ -298,6 +426,7 @@ def run(repository: str, token: str, *, dry_run: bool, reason: str,
         f"+refs/heads/{MAIN_BRANCH}:refs/remotes/origin/{MAIN_BRANCH}",
         f"+refs/heads/{RELEASE_BRANCH}:refs/remotes/origin/{RELEASE_BRANCH}")
     release_sha = git("rev-parse", f"origin/{RELEASE_BRANCH}")
+    receipt["releaseSha"] = release_sha
     candidates = git("rev-list", "--first-parent", f"--max-count={WINDOW}",
                      f"origin/{MAIN_BRANCH}").split()
     if not candidates or not all(SHA_RE.fullmatch(sha) for sha in candidates):
@@ -316,29 +445,61 @@ def run(repository: str, token: str, *, dry_run: bool, reason: str,
         lines.append(f"- REFUSED: no fully green commit among main's last {WINDOW}")
         _summary(lines)
         _emit("promoted", "false")
+        receipt["outcome"] = "refused"
         return 1
+    receipt["targetSha"] = target
     if target == release_sha or subprocess.run(
             ["git", "merge-base", "--is-ancestor", target, release_sha]).returncode == 0:
         lines.append(f"- nothing new to publish (newest green `{target[:7]}` is already live)")
         _summary(lines)
         _emit("promoted", "false")
+        receipt["outcome"] = "nothing_to_publish"
         return 0
     if subprocess.run(["git", "merge-base", "--is-ancestor", release_sha, target]).returncode != 0:
         lines.append(f"- REFUSED: `{target[:7]}` does not fast-forward `{release_sha[:7]}`")
         _summary(lines)
         _emit("promoted", "false")
+        receipt["outcome"] = "refused"
         return 1
-    read_counts = read_counts or (lambda: billable_deploys_24h(netlify_token))
+    snapshot = None
     try:
-        proceed, spend_lines = spend_gate(event_name, read_counts)
+        if read_snapshot is not None:
+            snapshot = read_snapshot()
+            if not isinstance(snapshot, dict) or not isinstance(snapshot.get("counts"), dict):
+                raise CouldNotCheck("deploy snapshot is malformed")
+            current_counts = snapshot["counts"]
+        elif read_counts is not None:
+            current_counts = _read_full_counts(read_counts)
+        else:
+            snapshot = billable_deploy_snapshot_24h(
+                netlify_token,
+                now=observed_at,
+            )
+            current_counts = snapshot["counts"]
+        proceed, spend_lines = spend_gate(event_name, lambda: current_counts)
     except CouldNotCheck as exc:
         lines.append(f"- NOT PUBLISHED: the spend tripwire could not read Netlify ({exc}); "
                      "a scheduled publish never goes ahead blind. Run workflow publishes now.")
         _summary(lines)
         _emit("promoted", "false")
+        receipt["outcome"] = "could_not_check"
         return 2
     lines.extend(spend_lines)
     if not proceed:
+        try:
+            if snapshot is None:
+                raise CouldNotCheck("deploy history is unavailable")
+            receipt["protectiveHold"] = protective_hold_receipt(
+                snapshot,
+                now=observed_at,
+            )
+        except CouldNotCheck as exc:
+            lines.append(f"- Hold receipt unavailable: {exc}")
+            receipt["outcome"] = "could_not_check"
+            _summary(lines)
+            _emit("promoted", "false")
+            return 2
+        receipt["outcome"] = "held"
         _summary(lines)
         _emit("promoted", "false")
         return 1
@@ -350,6 +511,7 @@ def run(repository: str, token: str, *, dry_run: bool, reason: str,
     _summary(lines)
     _emit("promoted", "false" if dry_run else "true")
     _emit("sha", target)
+    receipt["outcome"] = "dry_run" if dry_run else "promoted"
     return 0
 
 
@@ -358,16 +520,38 @@ def main(argv=None) -> int:
     parser.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY"))
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--reason", default=os.environ.get("RELEASE_REASON", ""))
+    parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
+    observed_at = datetime.now(timezone.utc)
+    raw_run_id = os.environ.get("GITHUB_RUN_ID", "")
+    run_id = int(raw_run_id) if raw_run_id.isdigit() and int(raw_run_id) > 0 else None
+    receipt = {
+        "schemaVersion": 1,
+        "workflowFile": "production-release-train.yml",
+        "runId": run_id,
+        "generatedAt": observed_at.isoformat(timespec="seconds"),
+        "outcome": "could_not_check",
+    }
     try:
-        return run(args.repository, os.environ.get("GITHUB_TOKEN", ""),
+        code = run(args.repository, os.environ.get("GITHUB_TOKEN", ""),
                    dry_run=args.dry_run, reason=args.reason.strip()[:200],
                    event_name=os.environ.get("GITHUB_EVENT_NAME", ""),
-                   netlify_token=os.environ.get("NETLIFY_AUTH_TOKEN", ""))
+                   netlify_token=os.environ.get("NETLIFY_AUTH_TOKEN", ""),
+                   receipt=receipt, now=observed_at)
     except CouldNotCheck as exc:
         print(f"release train: could not check -- {exc}", file=sys.stderr)
         _emit("promoted", "false")
+        code = 2
+    try:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    except OSError as exc:
+        print(f"release train: receipt write failed -- {exc}", file=sys.stderr)
         return 2
+    return code
 
 
 if __name__ == "__main__":
