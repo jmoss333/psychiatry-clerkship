@@ -681,6 +681,50 @@ async function recordReceiptScopedToOneQuestionByKeyboard(page, id) {
   await page.locator('#review-search').fill('');
 }
 
+test('red-team revisions show exact deploys and fail closed without remounting the learner preview', async ({ page }) => {
+  await installRepositoryApi(page, workflowBank());
+  let available = true;
+  let seenKey = '';
+  const sha = 'a'.repeat(40);
+  const deployment = (id, host) => ({
+    deployId: id,
+    commitRef: sha,
+    deployUrl: `https://${id}--${host}.netlify.app`,
+    publishedAt: '2026-09-27T03:18:29.119Z',
+  });
+  await page.route('**/api/red-team-revisions', async route => {
+    seenKey = (await route.request().allHeaders())['x-faculty-key'];
+    await fulfillJson(route, available ? 200 : 503, available ? {
+      state: 'metadata-verified',
+      fetchedAt: '2026-09-27T03:50:00.000Z',
+      pack: { sourceCommit: sha, sha256: 'b'.repeat(64), version: '0.1.0', model: 'synthetic-model' },
+      deployments: {
+        proxy: deployment('1'.repeat(24), 'sp-interview-proxy'),
+        ms3: deployment('2'.repeat(24), 'une-ms3-psychiatry'),
+        res: deployment('3'.repeat(24), 'mmc-psychiatry-residents-sanford'),
+      },
+    } : { state: 'unverified' });
+  });
+  await unlock(page);
+  await page.evaluate(() => { window.__redTeamOriginalFrame = document.querySelector('#learner-preview-frame'); });
+
+  await page.getByRole('button', { name: 'Show current revisions' }).click();
+  await expect(page.locator('#red-team-revisions')).toContainText('Pack source on main');
+  await expect(page.locator('#red-team-revisions')).toContainText('Resident learner site');
+  await expect(page.locator('#red-team-revisions')).toContainText('not a red-team pass');
+  await expect(page.locator('#red-team-revisions a', { hasText: 'Open this exact deploy' })).toHaveCount(3);
+  expect(seenKey).toBe(FACULTY_KEY);
+  expect(await page.evaluate(() => document.querySelector('#learner-preview-frame') === window.__redTeamOriginalFrame)).toBe(true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.locator('#red-team-revisions').evaluate(panel => panel.scrollWidth - panel.clientWidth)).toBeLessThanOrEqual(1);
+
+  available = false;
+  await page.getByRole('button', { name: 'Refresh revisions' }).click();
+  await expect(page.locator('#red-team-revisions')).toContainText('Unverified: exact revision evidence is unavailable');
+  await expect(page.locator('#red-team-revisions a', { hasText: 'Open this exact deploy' })).toHaveCount(0);
+  expect(await page.evaluate(() => document.querySelector('#learner-preview-frame') === window.__redTeamOriginalFrame)).toBe(true);
+});
+
 test.describe('learner exact-question review route', () => {
   test('renders and answers only the requested question without changing learner progress', async ({ page }) => {
     await installExactReviewHarness(page);
