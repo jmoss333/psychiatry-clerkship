@@ -40,6 +40,7 @@ const dueCode = slice(source, 'function srsState(', '/* ---- end due breakdown -
 const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RETIRED_IDS', 'DRAFT_IDS', 'Clock', `
   var Date = Clock || globalThis.Date;
   var window = {};
+  var conceptDueState={status:"ready",releasedIds:new Set()};
   ${readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/concept_recall.js',import.meta.url),'utf8')}
   ${seedCode}
   ${servCode}
@@ -192,6 +193,7 @@ test('Concepts count only released IDs and retain withdrawn history; null means 
   assert.equal(ready.daily.due, 1);
   assert.equal(ready.fam.due, 1);
   assert.equal(ready.conceptStatus, 'ready');
-  assert.equal(srs.dueBreakdown(null).conceptStatus, 'checking');
+  assert.equal(srs.dueBreakdown(null).conceptStatus, 'checking', 'explicit null stays unknown even when global feed state is ready');
+  assert.equal(srs.dueBreakdown().conceptStatus, 'ready', 'omitted argument uses verified production state');
   assert.deepEqual(JSON.parse(ls.getItem('cw_srs_v1')).cards, cards);
 });
