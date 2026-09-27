@@ -2,7 +2,7 @@
 
 **Owner:** Joshua Moss, MD (faculty reviewer) · **Frequency:** after **every** deploy, model change, or pack change — and before any rotation's passcode is handed out
 **Checklist:** `sp-proxy/REDTEAM_CHECKLIST.md` (the authority; this runbook is how to execute it)
-**Last updated:** 2026-08-31
+**Last updated:** 2026-09-27
 
 ---
 
@@ -38,6 +38,37 @@ reachability evidence, not release evidence.
 ---
 
 ## Procedure
+
+### Guided route
+
+With `NETLIFY_AUTH_TOKEN` available locally for read-only deploy queries, run:
+
+```bash
+python3 13_Faculty_Resources/_automation/maintenance/red_team_preflight.py prepare
+python3 13_Faculty_Resources/_automation/maintenance/red_team_preflight.py record /path/printed/by/prepare.json
+```
+
+`prepare` reads the **latest published production deploy** for the proxy, MS3, and resident sites,
+each with its own deploy ID and commit. It hashes the pack from the proxy deploy's Git commit, runs
+Tier 1 with those pack bytes, then opens Tier 2 at that deploy's immutable URL. Tier 2 asks for the
+current passcode at a hidden terminal prompt. Do not place the passcode in an argument, environment
+assignment, work file, or chat. The read-only Netlify token is used only for deploy metadata; it
+cannot reveal the secret passcode. If the token, deploy, Git object, or a runtime manifest cannot be
+checked, preparation ends **unverified**. Its private temporary work file contains only version,
+deploy, and check facts; it is **not** a red-team pass.
+
+`record` shows those facts, prompts for each human row below, and requires an explicit owner
+declaration before it writes a receipt. Keep the checklist open while answering. A failed or
+blocked row produces an incomplete receipt only if you explicitly choose to preserve it. Real-time
+spoken rows R1–R16 appear when that route is verified enabled; managed voice rows V1–V10 appear
+when that route is verified enabled. An unknown activation state cannot become a pass. Review and
+commit the resulting `receipts/sp-red-team.json` separately. Monthly maintenance calls a receipt
+`current` only when its exact deploy IDs, commits, pack hash, and pinned model still match
+production. `current` means the recorded review remains tied to what is serving; it does not
+rerun your clinical judgment or grant learner readiness.
+
+The detailed steps below explain the probes and let you diagnose a failure. The guided route runs
+the same mechanical tiers and leaves A, C1/C2/C4/C5, D2/D3/D4/D6/D7, and E to the owner.
 
 ### Step 1 — Tier 1: the deterministic probes
 
@@ -220,6 +251,8 @@ debrief with the transcript open beside it.
   `/api/sp/health-status` response, and the canary logs after both a success and a forced failure.
   Expected: no credentials, headers, URLs, model or pack identifiers, case or learner content,
   prompts, replies, or exception text — only the bounded receipt fields and a failure code.
+- **D7 — release boundary.** Reject a green health receipt as sole release evidence. It does not
+  cover evaluator behavior, safety screens, voice, or the human judgment in this checklist.
 
 ---
 
@@ -236,26 +269,9 @@ re-attestation before students touch it.
 
 ### Step 8 — record the receipt
 
-Only after **every** tier above has actually been run. A partial run is recorded in the History
-table at the bottom of this file instead — that is an honest record of what was done, and it is
-what today's entry is. Do not reach for `--state passed` to close out a partial run; the receipt
-is the one artifact the monthly steward trusts, and a receipt that overstates its coverage is
-worse than no receipt, because it silently retires the question.
-
-Only after **every** tier has run:
-
-```
-python3 13_Faculty_Resources/_automation/maintenance/record_red_team.py \
-    --state passed --signed-by "Joshua Moss, MD"
-```
-
-**Expected result:** `wrote 13_Faculty_Resources/_automation/maintenance/receipts/sp-red-team.json state=passed packSha256=…`
-
-The script **records** an attestation; it does not perform one. It stamps the current pack hash
-and a UTC timestamp, which is how `monthly_review.py` decides whether the receipt is `current` or
-`stale`. Running it without having done Tier 3 produces a receipt that is precisely a lie.
-
-If anything failed: `--state failed`, then fix, then re-run the whole checklist.
+Use the guided `record` command above after walking every applicable human row. It never accepts
+`--state passed`. If anything failed, name that row and preserve the incomplete result if useful;
+fix the issue, re-run preparation against the serving revision, and repeat the whole checklist.
 
 ---
 
@@ -264,8 +280,8 @@ If anything failed: `--state failed`, then fix, then re-run the whole checklist.
 - [ ] `node bin/redteam-offline.mjs` → `N/N` (N = `PROBES.length` in the script; do not hardcode a number here)
 - [ ] `./bin/redteam-live.sh …` → 5 passed, 0 failed
 - [ ] Sections A, C, D2–D6 and E walked in Live mode, with the model string and pack version written down
-- [ ] `receipts/sp-red-team.json` exists, `state: passed`, `packSha256` matches the deployed pack
-- [ ] `python3 13_Faculty_Resources/_automation/maintenance/monthly_review.py` reports the red-team receipt as `current`, not `missing` or `stale`
+- [ ] `receipts/sp-red-team.json` exists with `schemaVersion: 2`, explicit owner rows, and exact deploys
+- [ ] The next monthly review reports `current` against the same production deploys; `unverified` means Netlify evidence was unavailable
 
 ---
 
@@ -274,11 +290,13 @@ If anything failed: `--state failed`, then fix, then re-run the whole checklist.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Tier 1 probe fails right after a pack edit | The pack changed a gate or a pattern | Read the probe's message — it names the gate. Compare against the matrix: `node --test sp-proxy/tests/sp-safety-scoring-uniformity.test.mjs` |
-| D0 returns 401 with the right passcode | Usually **not** a rotation: `SP_STUDENT_PASSCODE` is a secret variable, and `netlify env:get` returns a placeholder for every context except `dev` | Export the real value from the Netlify UI (*Show value*, production) into `$SP_STUDENT_PASSCODE` and re-run. Re-running alone will not help — the placeholder is what the API returns by design, not a propagation lag. |
+| D0 returns 401 with the right passcode | A secret-variable readback is a placeholder, or the entered value is wrong | For the guided route, read the production value in the Netlify UI and paste it only at the hidden prompt. Re-running a placeholder will not help. |
 | "couldn't read it. Most likely sp-proxy is not linked yet" | The CLI resolves env vars against a linked project folder; `--site` alone is not enough | Run the `netlify link` command in Step 1b |
 | "Test connection" fails in the tool but curl works | Origin not in `SP_ALLOWED_ORIGINS` | Add the origin you are serving from (include `http://localhost:8888` while testing) |
 | A judgmental probe seems not to flag | **Your phrasing is not in that case's flag vocabulary** | Dana flags on `you should`, `at least`, `snap out`, `look on the bright side`. "Calm down" is *Marcus's*. Use a phrase the pack actually recognises, or you are testing nothing. |
-| Receipt reads `stale` in monthly_review | The pack changed after you signed | Re-run the checklist against the current pack, then re-record |
+| Receipt reads `stale` in monthly_review | A production deploy or pack source changed after the signed review | Re-run `prepare` and the full owner checklist against the current serving revisions |
+| Receipt reads `mismatch` | Recorded deploy, pack, or model facts disagree | Inspect the exact deploy IDs and pack hash; do not relabel the old receipt |
+| Receipt reads `unverified` | Netlify, Git, timing, or activation evidence could not be read | Restore read-only evidence access, then repeat the comparison; unverified is not a pass |
 | Receipt reads `missing` | `receipts/` has never been created | Expected until the first run — Step 8 creates it |
 
 ---
@@ -290,9 +308,10 @@ If a Tier 3 failure appears **after** students have the passcode:
 1. Netlify → `sp-interview-proxy` → Environment variables → rotate `SP_STUDENT_PASSCODE`. This
    revokes every learner session immediately and is the fastest containment.
 2. Netlify → Deploys → last known-good → **Publish deploy**.
-3. Record the failure: `record_red_team.py --state failed --signed-by "Joshua Moss, MD"`.
-4. Only then diagnose. The pack re-fetches within 5 minutes of a `main` change, so a pack-level
-   fix does not need a redeploy — but it does need a fresh red-team run.
+3. Record the incident in the local operations history. If a prepared work file exists, use the
+   guided `record` command to preserve the failed human row as `incomplete`.
+4. Only then diagnose. After a fix is published, rerun `prepare` and the full owner checklist
+   against the new production revisions.
 
 ---
 

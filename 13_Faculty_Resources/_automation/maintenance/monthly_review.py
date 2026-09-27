@@ -12,11 +12,19 @@ import argparse
 import calendar
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from datetime import date, datetime, timezone
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
+
+try:
+    from .red_team_deploys import EvidenceUnavailable, fetch_snapshot
+    from .record_red_team import MANUAL_ROWS, required_sections, IncompleteReview
+except ImportError:  # direct script execution
+    from red_team_deploys import EvidenceUnavailable, fetch_snapshot
+    from record_red_team import MANUAL_ROWS, required_sections, IncompleteReview
 
 
 SP_PACK_PATH = "_prototypes/sp-interview/sp-interview.pack.json"
@@ -407,12 +415,89 @@ def _sp_expectations(root):
     }
 
 
+def classify_red_team_receipt(receipt, snapshot, today, pack_changed_at):
+    """Judge a human receipt against the production revisions serving now."""
+    if receipt is None:
+        return "missing", "no red-team receipt is recorded"
+    if not isinstance(receipt, dict) or receipt.get("schemaVersion") != 2:
+        return "incomplete", "legacy receipt lacks exact-deploy and manual-row evidence"
+    if receipt.get("state") != "passed":
+        return "incomplete", "red-team review is not marked passed"
+    try:
+        runtime = receipt["runtime"]
+        sections = required_sections(runtime)
+        if receipt.get("requiredSections") != sections or receipt.get("completedSections") != sections:
+            return "incomplete", "required checklist sections are not complete"
+        rows = receipt["manualRows"]
+        required_ids = {row for section in sections for row in MANUAL_ROWS.get(section, ())}
+        if not isinstance(rows, dict) or set(rows) != required_ids:
+            return "incomplete", "required manual rows are missing"
+        if any(not isinstance(row, dict) or row.get("status") != "pass" for row in rows.values()):
+            return "incomplete", "a required manual row did not pass"
+        mechanical = receipt["mechanical"]
+        tier1, tier2 = mechanical["tier1"], mechanical["tier2"]
+        checks = tier2.get("checks")
+        if (tier1.get("state") != "passed" or type(tier1.get("passes")) is not int
+                or tier1["passes"] < 1 or tier1.get("total") != tier1["passes"]
+                or tier2.get("state") != "passed" or not isinstance(checks, list)
+                or len(checks) != 5 or
+                {check.get("id") for check in checks if isinstance(check, dict)} !=
+                {"D0", "D1", "D1b", "D5", "B5"}
+                or any(not isinstance(check, dict) or check.get("status") != "pass" for check in checks)):
+            return "incomplete", "mechanical tier evidence is incomplete"
+        if not isinstance(receipt.get("signedBy"), str) or not receipt["signedBy"].strip():
+            return "incomplete", "owner declaration is missing"
+        if (runtime.get("actorModel") != receipt.get("model") or
+                runtime.get("evaluatorModel") != receipt.get("model")):
+            return "mismatch", "recorded runtime model differs from pinned model"
+        recorded = receipt["deployments"]
+        if set(recorded) != {"proxy", "ms3", "res"}:
+            return "incomplete", "three exact deploy records are required"
+        checked_at = _utc_datetime(receipt.get("checkedAt"))
+        if checked_at is None or checked_at.date() > today:
+            return "unverified", "receipt time is unavailable or in the future"
+    except (KeyError, TypeError, AttributeError, IncompleteReview):
+        return "incomplete", "receipt schema or activation evidence is incomplete"
+    if snapshot is None:
+        return "unverified", "current production deploys could not be read"
+    try:
+        deployed = snapshot["deployments"]
+        if set(deployed) != {"proxy", "ms3", "res"}:
+            return "unverified", "current production site set is incomplete"
+        for key in ("proxy", "ms3", "res"):
+            if recorded[key]["deployId"] != deployed[key]["deployId"]:
+                return "stale", f"{key} production deploy changed after the red-team run"
+            if any(recorded[key][field] != deployed[key][field] for field in
+                   ("siteId", "commitRef", "deployUrl", "publishedAt")):
+                return "mismatch", f"{key} deploy identity disagrees with Netlify"
+            published = _utc_datetime(deployed[key]["publishedAt"])
+            if published is None:
+                return "unverified", f"{key} deploy publication time unavailable"
+            if checked_at <= published:
+                return "stale", f"red-team run predates {key} production publication"
+        if receipt["packSha256"] != snapshot["packSha256"]:
+            return "mismatch", "deployed pack hash differs from red-team receipt"
+        if receipt["packVersion"] != snapshot["packVersion"]:
+            return "mismatch", "deployed pack version differs from red-team receipt"
+        if receipt["model"] != snapshot["model"]:
+            return "mismatch", "deployed pinned model differs from red-team receipt"
+    except (KeyError, TypeError, AttributeError):
+        return "unverified", "current production snapshot is malformed"
+    if not isinstance(pack_changed_at, datetime) or pack_changed_at.tzinfo is None:
+        return "unverified", "pack source change time could not be read"
+    if pack_changed_at.date() > today:
+        return "unverified", "pack source change time is in the future"
+    if checked_at <= pack_changed_at:
+        return "stale", "pack source changed after the red-team run"
+    return "current", "receipt matches the three current production deploys and pinned pack/model"
+
+
 def _red_team_state(
     root,
     receipt_config,
-    expected_pack_hash,
     today,
     git_last_changed,
+    deploy_snapshot,
 ):
     if not isinstance(receipt_config, dict) or set(receipt_config) != {"path"}:
         raise MonthlyReviewError("red-team receipt config has an invalid shape")
@@ -424,24 +509,15 @@ def _red_team_state(
     )
     path = _repository_path(root, relative_path, "receipts.redTeam.path")
     if not path.exists():
-        return "missing"
+        return classify_red_team_receipt(None, deploy_snapshot, today, changed_at)
     try:
         receipt = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return "invalid"
-    if not isinstance(receipt, dict) or receipt.get("state") != "passed":
-        return "failed"
-    checked_at = _utc_datetime(receipt.get("checkedAt"))
-    if checked_at is None or checked_at.date() > today:
-        return "invalid"
-    if receipt.get("packSha256") != expected_pack_hash:
-        return "pack_mismatch"
-    if changed_at is None or changed_at.date() > today:
-        return "unknown_pack_change"
-    return "current" if checked_at > changed_at else "stale"
+        return "incomplete", "red-team receipt cannot be parsed"
+    return classify_red_team_receipt(receipt, deploy_snapshot, today, changed_at)
 
 
-def build_monthly_review(root, config, today, git_last_changed):
+def build_monthly_review(root, config, today, git_last_changed, deploy_snapshot=None):
     """Build the content-free monthly report from canonical local inputs."""
     root = Path(root)
     if not isinstance(config, dict):
@@ -512,6 +588,8 @@ def build_monthly_review(root, config, today, git_last_changed):
         raise MonthlyReviewError("receipts config has an invalid shape")
     expected_sp = _sp_expectations(root)
     apa_path = _repository_path(root, config.get("apaCrosswalk"), "apaCrosswalk")
+    red_team_state, red_team_reason = _red_team_state(
+        root, receipts["redTeam"], today, git_last_changed, deploy_snapshot)
     operations = {
         "runbooks": _runbook_counts(
             root,
@@ -526,13 +604,8 @@ def build_monthly_review(root, config, today, git_last_changed):
             receipts["openEvidence"],
             today,
         ),
-        "redTeamReceipt": _red_team_state(
-            root,
-            receipts["redTeam"],
-            expected_sp["packSha256"],
-            today,
-            git_last_changed,
-        ),
+        "redTeamReceipt": red_team_state,
+        "redTeamReason": red_team_reason,
         "rulesetBypassReceipt": _receipt_state(
             root,
             receipts["rulesetBypass"],
@@ -624,6 +697,7 @@ def render_monthly_markdown(report):
         f"- APA crosswalk present: {str(operations['apaCrosswalkPresent']).lower()}",
         f"- OpenEvidence receipt: `{operations['openEvidenceReceipt']}`",
         f"- Red-team receipt: `{operations['redTeamReceipt']}`",
+        f"- Red-team reason: {operations['redTeamReason']}",
         f"- Ruleset bypass receipt: `{operations['rulesetBypassReceipt']}`"
         " (local-only: needs ruleset write access)",
         f"- Stale-claims receipt: `{operations['staleClaimsReceipt']}`"
@@ -634,7 +708,7 @@ def render_monthly_markdown(report):
         "Cadence counts credit a green guideline-surveillance examination as the review,",
         "on the same rule `bin/check_review_cadence.py` applies; that tool names the rows.",
         "",
-        "This GitHub-side report does not assess authenticated Netlify deploy recency.",
+        "Red-team currency compares exact production deploys when Netlify read-only access is available.",
         "Provider-policy and local Zotero checks remain attended-only review items.",
         "",
     ]
@@ -685,11 +759,19 @@ def main(argv=None):
             check=False,
         )
         config["evidenceGeneratedViewsValid"] = generated_check.returncode == 0
+        deploy_snapshot = None
+        token = os.environ.get("NETLIFY_AUTH_TOKEN", "")
+        if token:
+            try:
+                deploy_snapshot = fetch_snapshot(config, token)
+            except EvidenceUnavailable:
+                pass  # Report unverified, never current, without printing API data.
         report = build_monthly_review(
             root,
             config,
             _utc_today(),
             _default_git_runner(root),
+            deploy_snapshot,
         )
         args.out_json.parent.mkdir(parents=True, exist_ok=True)
         args.out_md.parent.mkdir(parents=True, exist_ok=True)
