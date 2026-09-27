@@ -9,7 +9,7 @@ function laneHelpers() {
   const a = review.indexOf('/* ---------- review lanes ---------- */');
   const b = review.indexOf('/* ---------- end review lanes ---------- */', a);
   assert.ok(a >= 0 && b > a, 'lane helpers must be present in review.html');
-  return new Function(review.slice(a, b) + ';return {reviewLane,reviewLaneAllows,reviewInitialLane,reviewFocusedCard,reviewFocusAllowed,reviewVerifiedArticles,reviewVerifiedCompanions};')();
+  return new Function(review.slice(a, b) + ';return {reviewLane,reviewLaneAllows,reviewInitialLane,reviewFocusedCard,reviewFocusAllowed,reviewVerifiedArticles,reviewVerifiedCompanions,reviewMissingDueIds};')();
 }
 
 test('every real article question belongs to Landmark Evidence without changing its ID', () => {
@@ -108,4 +108,13 @@ test('malformed successful feed responses cannot become ready with false zero ca
   assert.throws(()=>reviewVerifiedCompanions({schemaVersion:1,pairs:[{}]}),/incomplete/);
   assert.match(review,/\.then\(reviewVerifiedArticles\)\.then\(function\(out\)\{setArticleStatus\('ready'\)/);
   assert.match(review,/\.then\(reviewVerifiedCompanions\)\.then\(function\(out\)\{setCompanions\(out\);setCompanionStatus\('ready'\)/);
+});
+
+test('timed-block integrity checks served due IDs without treating retired Concepts or QB cards as missing', () => {
+  const {reviewMissingDueIds}=laneHelpers();
+  const state={cards:{
+    'TOPIC#missing':{due:0},'AR-24#5':{due:0},'COMM#future':{due:2000},
+    'CONCEPT#withdrawn':{due:0},'QB#separate':{due:0},
+  }};
+  assert.deepEqual(reviewMissingDueIds([{id:'AR-24#5'}],state,1000),['TOPIC#missing']);
 });

@@ -252,6 +252,46 @@ function reviewVerifiedCompanions(out){
   });
   return out;
 }
+function reviewVerifiedTopics(out){
+  if(!out||typeof out!=='object'||Array.isArray(out))throw Error('topic feed incomplete');
+  var count=0;
+  Object.keys(out).forEach(function(key){
+    if(key.charAt(0)==='_')return;
+    var quiz=out[key]&&out[key].quiz;
+    if(quiz==null)return;
+    if(!quiz.q||!Array.isArray(quiz.o)||!quiz.o.length||!quiz.o.some(function(option){return option&&option.c;}))
+      throw Error('topic question incomplete');
+    count++;
+  });
+  if(!count)throw Error('topic feed has no questions');
+  return out;
+}
+function reviewVerifiedCases(out,kind){
+  var key=kind==='family'?'scenarios':'cases';
+  if(!out||!Array.isArray(out[key])||!out[key].length)throw Error('practice feed incomplete');
+  if(kind==='family'&&out.scenarios.some(function(item){
+    var prompts=item&&famRetrievalFor(item);
+    return !item||!item.id||!prompts.length||famRecallCards({scenarios:[item]}).length!==prompts.length;
+  }))throw Error('family cards incomplete');
+  if(kind==='communication'&&commChoiceCards(out).length!==out.cases.length)throw Error('communication cards incomplete');
+  if(kind==='reasoning'&&out.cases.some(function(item){
+    return !item||!Array.isArray(item.steps)||!item.steps.length||reasonChoiceCards({cases:[item]}).length!==item.steps.length;
+  }))throw Error('reasoning cards incomplete');
+  return out;
+}
+function reviewMissingDueIds(cards,stored,now){
+  var loaded={},missing=[];
+  (cards||[]).forEach(function(card){loaded[card.id]=true;});
+  Object.keys(stored&&stored.cards||{}).forEach(function(id){
+    var state=stored.cards[id];
+    if(!state||!Number.isFinite(state.due)||state.due>now)return;
+    /* These are the due namespaces Today promises this tool can serve. Concepts are
+       checked against the released feed by the shell, so withdrawn IDs are excluded. */
+    if(!/^(?:TOPIC#|FAM#|COMM#|REASON#)/.test(id)&&!/^(?:AR|SP)-\d+#\d+$/.test(id))return;
+    if(!loaded[id])missing.push(id);
+  });
+  return missing;
+}
 /* ---------- end review lanes ---------- */
 
 /* Map a tool's authored choices onto the queue's option shape. Both tools grade an option by
@@ -366,15 +406,23 @@ function App(){
   var tick=useState(0),setTick=tick[1];
   var ln=useState(reviewInitialLane(window.location&&window.location.search)),lane=ln[0],setLane=ln[1];
   var as=useState('loading'),articleStatus=as[0],setArticleStatus=as[1];
+  var vs=useState('loading'),practiceStatus=vs[0],setPracticeStatus=vs[1];
   var cp=useState(null),companions=cp[0],setCompanions=cp[1];
   var ps=useState('loading'),companionStatus=ps[0],setCompanionStatus=ps[1];
   var fn=useState(''),focusNotice=fn[0],setFocusNotice=fn[1];
+  var bu=useState(false),blockUnavailable=bu[0],setBlockUnavailable=bu[1];
   var sessRef=useRef(null); sessRef.current=sess;
   useEffect(function(){if(!sess)return;var selector=sess.finished?'#cwReviewDashBtn':sess.card?(sess.revealed?'.grades button':'.qtext'):null;var el=selector&&document.querySelector(selector);if(el)el.focus();},[sess&&sess.pos,sess&&sess.revealed,sess&&sess.finished]);
   var blockAutoStart=useRef(null), blockLimit=useRef(null);
   useEffect(function(){
-    if(!cards||sess)return;
-    if(blockAutoStart.current){ blockLimit.current=blockAutoStart.current; blockAutoStart.current=null; start(false); return; }
+    if(!cards||sess||blockUnavailable)return;
+    if(blockAutoStart.current){
+      if(conceptStatus==='loading'||conceptStatus==='recovering'||articleStatus==='loading')return;
+      if(conceptStatus!=='ready'||articleStatus!=='ready'){
+        blockAutoStart.current=null; blockLimit.current=null; setBlockUnavailable(true); return;
+      }
+      blockLimit.current=blockAutoStart.current; blockAutoStart.current=null; start(false); return;
+    }
     if(companionStatus==='loading')return;
     var focused=reviewFocusedCard(cards,window.location&&window.location.search,companions);
     var current=rollDay(loadS());
@@ -382,24 +430,27 @@ function App(){
     if(focused&&reviewFocusAllowed(focused,current.cards[focused.id],remaining)){
       gradedThisSession={};setSess({queue:[focused],pos:0,card:focused,chosen:-1,revealed:false,reviewed:0,correct:0,total:1,misses:[],fromBlock:false});
     } else if(focused) setFocusNotice('Your new-card limit is reached for today. The linked card will be available tomorrow; scheduled cards remain available now.');
-  },[cards,companions,companionStatus]);
+  },[cards,companions,companionStatus,conceptStatus,articleStatus,blockUnavailable]);
 
   useEffect(function(){
+    var blockSourceFailed=false,practiceSourceFailed=false;
+    function missingSource(fallback){blockSourceFailed=true;return fallback;}
+    function missingPracticeSource(fallback){practiceSourceFailed=true;return missingSource(fallback);}
     Promise.all([
-      conceptFetchBytes().then(function(bytes){return conceptVerifyBytes(bytes,conceptDigestFromDocument(document));}).then(function(out){setConceptStatus('ready');return out;}).catch(function(){setConceptStatus('unavailable');return [];}),
-      fetch("quizzes.json").then(function(r){if(!r.ok)throw Error('article feed unavailable');return r.json();}).then(reviewVerifiedArticles).then(function(out){setArticleStatus('ready');return out;}).catch(function(){setArticleStatus('unavailable');return {decks:[]};}),
-      fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}),
-      fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}),
-      fetch("../communication_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}),
+      conceptFetchBytes().then(function(bytes){return conceptVerifyBytes(bytes,conceptDigestFromDocument(document));}).then(function(out){setConceptStatus('ready');return out;}).catch(function(){setConceptStatus('unavailable');return missingSource([]);}),
+      fetch("quizzes.json").then(function(r){if(!r.ok)throw Error('article feed unavailable');return r.json();}).then(reviewVerifiedArticles).then(function(out){setArticleStatus('ready');return out;}).catch(function(){setArticleStatus('unavailable');return missingSource({decks:[]});}),
+      fetch("../topic_meta.json").then(function(r){if(!r.ok)throw Error('topic feed unavailable');return r.json();}).then(reviewVerifiedTopics).catch(function(){return missingPracticeSource({});}),
+      fetch("../family_systems_scenarios.json").then(function(r){if(!r.ok)throw Error('family feed unavailable');return r.json();}).then(function(out){return reviewVerifiedCases(out,'family');}).catch(function(){return missingPracticeSource({scenarios:[]});}),
+      fetch("../communication_cases.json").then(function(r){if(!r.ok)throw Error('communication feed unavailable');return r.json();}).then(function(out){return reviewVerifiedCases(out,'communication');}).catch(function(){return missingPracticeSource({cases:[]});}),
       /* the res build overwrites this file with reasoning_cases_resident.json, so one path
          serves the right audience without the page knowing which site it is on */
-      fetch("../reasoning_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}),
+      fetch("../reasoning_cases.json").then(function(r){if(!r.ok)throw Error('reasoning feed unavailable');return r.json();}).then(function(out){return reviewVerifiedCases(out,'reasoning');}).catch(function(){return missingPracticeSource({cases:[]});}),
       fetch("review_companions.json").then(function(r){if(!r.ok)throw Error('companion feed unavailable');return r.json();}).then(reviewVerifiedCompanions).then(function(out){setCompanions(out);setCompanionStatus('ready');return out;}).catch(function(){setCompanionStatus('unavailable');return null;})
     ]).then(function(res){
       /* One builder per source, concatenated into the single queue. A source that fails to load
-         contributes nothing and the rest still runs; another source later is a builder plus a
-         fetch. Order matters only for which cards a same-due-time tie serves first — the queue
-         is sorted by due date below. */
+         contributes nothing to ordinary review; a timed block cannot start from partial data.
+         Order matters only for which cards a same-due-time tie serves first — the queue is
+         sorted by due date below. */
       var j=res[1]||{}, tm=res[2]||{}, fam=res[3]||{}, comm=res[4]||{}, reason=res[5]||{}, out=res[0]||[];
       (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,kind:"choice",q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); });
       Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+prettyRef(k),kind:"choice",q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } });
@@ -407,9 +458,19 @@ function App(){
       out=out.concat(commChoiceCards(comm));
       out=out.concat(reasonChoiceCards(reason));
       if(!out.length){ setErr(true); return; }
-      setCards(out);
+      var missingDue=reviewMissingDueIds(out,loadS(),Date.now());
+      if(missingDue.length){
+        blockSourceFailed=true;
+        if(missingDue.some(function(id){return /^(?:AR|SP)-/.test(id);}))setArticleStatus('unavailable');
+        if(missingDue.some(function(id){return /^(?:TOPIC#|FAM#|COMM#|REASON#)/.test(id);}))practiceSourceFailed=true;
+      }
+      setPracticeStatus(practiceSourceFailed?'unavailable':'ready');
       /* ?block=1&limit=N — a timed block step from Today starts straight into a bounded session. */
-      try{ var bp=new URLSearchParams(location.search); if(bp.get("block")==="1"){ var lim=parseInt(bp.get("limit")||"",10); blockAutoStart.current=(lim>=1&&lim<=50)?lim:5; } }catch(_){ }
+      try{ var bp=new URLSearchParams(location.search); if(bp.get("block")==="1"){
+        if(blockSourceFailed)setBlockUnavailable(true);
+        else {var lim=parseInt(bp.get("limit")||"",10); blockAutoStart.current=(lim>=1&&lim<=50)?lim:5;}
+      } }catch(_){ }
+      setCards(out);
     }).catch(function(){setErr(true);});
   },[]);
   useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]);
@@ -502,7 +563,11 @@ function App(){
   }
   var conceptNotice=e("div",{className:"panel",role:"status"},conceptStatus==='ready'?null:"Concepts "+(conceptStatus==='loading'?"loading…":conceptStatus==='recovering'?"retrying verified card data…":conceptStatus==='unavailable'?"unavailable — review is incomplete. Other card sources remain available.":conceptStatus+" Review remains incomplete."),conceptStatus!=='ready'&&conceptStatus!=='loading'&&conceptStatus!=='recovering'?e("button",{className:"btn ghost",onClick:retryConcepts},"Retry Concepts"):null);
   var articleNotice=articleStatus==='unavailable'?e("div",{className:"panel",role:"status"},"Landmark Evidence unavailable — article counts and all-due review are incomplete. Reload when the article questions are available."):null;
+  var practiceNotice=practiceStatus==='unavailable'?e("div",{className:"panel",role:"status"},"Practice card sources unavailable — Clerkship Review and All due counts are incomplete. Reload when card data is available."):null;
   var companionNotice=companionStatus==='unavailable'?e("div",{className:"panel",role:"status"},"Study companion unavailable — source-backed links are temporarily hidden."):null;
+  var selectedIncomplete=(lane==='clerkship'&&(conceptStatus!=='ready'||practiceStatus!=='ready'))||
+    (lane==='landmark'&&articleStatus!=='ready')||
+    (lane==='all'&&(conceptStatus!=='ready'||articleStatus!=='ready'||practiceStatus!=='ready'));
   var nextDue=lastConcept&&!(sess&&sess.queue&&!sess.revealed)?e("div",{className:"panel",role:"status"},"Concept: "+lastConcept.q+" → ",e("a",{href:"../index.html?page="+encodeURIComponent(lastConcept.page)},prettyRef(lastConcept.page))," → Next due: "+new Date(lastConcept.due).toLocaleString()):null;
   // Keep one live region mounted across cards and the receipt so completion
   // updates its text instead of introducing a new, possibly silent region.
@@ -539,8 +604,12 @@ function App(){
         e("a",{href:pair.url,target:"_blank",rel:"noopener noreferrer"},"Source: "+pair.title)));
   }
 
-  if(err) return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,companionNotice,nextDue,e("div",{className:"err"},"Could not load review cards. Open this tool from the hub so it can find its data, then try again."));
-  if(!cards) return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,companionNotice,nextDue,e("div",{className:"panel muted"},"Loading review cards…"));
+  if(err) return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,e("div",{className:"err"},"Could not load review cards. Open this tool from the hub so it can find its data, then try again."));
+  if(!cards) return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,e("div",{className:"panel muted"},"Loading review cards…"));
+  if(blockUnavailable) return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,
+    e("div",{className:"panel",role:"status"},"Timed review cannot start because card data is incomplete or unavailable. No block step was recorded. Reload after the card data is available.",
+      e("button",{className:"btn ghost",onClick:function(){location.reload();}},"Retry timed review")));
+  if(blockAutoStart.current) return e("div",{className:"wrap"},head,announcement,e("div",{className:"panel muted"},"Checking timed review card sources…"));
 
   /* ---- active session ---- */
   if(sess && sess.queue){
@@ -552,7 +621,7 @@ function App(){
     var sug=isRecall?'':(gotIt?'Good':'Again');
     var fbOpt=(!isRecall&&c.o[sess.chosen])||{}; var corrOpt=(!isRecall&&c.o[ci])||{};
     var isNew=!loadS().cards[c.id];
-    return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,companionNotice,nextDue,
+    return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,
       e("div",{className:"sess"},
         e("div",{className:"sbar"},e("i",{style:{width:pctp+"%"}})),
         e("div",{className:"sinner"},
@@ -617,14 +686,14 @@ function App(){
         actions:[{id:"cwReviewDashBtn",label:"Back to dashboard",primary:true}]
       });
     }
-    return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,companionNotice,nextDue,
+    return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,
       e("div",{className:"sess"},e("div",{className:"sinner",onClick:function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest("#cwReviewDashBtn"):null; if(t){ ev.preventDefault(); endSession(); } },
         dangerouslySetInnerHTML:{__html:sess.receipt.html}})));
   }
   if(sess && sess.empty){
-    return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,companionNotice,nextDue,
-      e("div",{className:"panel"},e("h2",null,"All caught up ✓"),
-        e("div",{className:"muted"},lane==='all'?"No scheduled cards are due in either lane right now.":"Nothing is due in this lane right now and you’ve hit today’s new-card limit."),
+    return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,
+      e("div",{className:"panel"},e("h2",null,selectedIncomplete?"Review incomplete":"All caught up ✓"),
+        e("div",{className:"muted"},selectedIncomplete?"Some card sources are unavailable. Reload to check the full review queue.":lane==='all'?"No scheduled cards are due in either lane right now.":"Nothing is due in this lane right now and you’ve hit today’s new-card limit."),
         e("div",{style:{marginTop:"12px"}},lane==='all'?null:e("button",{className:"btn ghost",onClick:function(){start(true);}},"Study ahead"),
           e("button",{className:"btn ghost",style:{marginLeft:"8px"},onClick:endSession},"Back"))));
   }
@@ -633,19 +702,19 @@ function App(){
   var m=metrics(),clerk=metrics('clerkship'),landmark=metrics('landmark'),allDue=metrics('all');
   var pp=phasePolicy();
   var canStart=(m.due+m.newRemain)>0;
-  var incomplete=(lane==='clerkship'&&conceptStatus!=='ready')||(lane==='landmark'&&articleStatus!=='ready')||(lane==='all'&&(conceptStatus!=='ready'||articleStatus!=='ready'));
-  return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,companionNotice,focusNotice?e("div",{className:"panel",role:"status"},focusNotice):null,nextDue,
+  var incomplete=selectedIncomplete;
+  return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,focusNotice?e("div",{className:"panel",role:"status"},focusNotice):null,nextDue,
     e("div",{className:"lead"},"Choose what to practice. Both lanes share one spaced-repetition schedule; answer before revealing, then rate your recall honestly."),
     e("div",{className:"lanes",role:"group","aria-label":"Review lane"},
       e("button",{type:"button",className:"lane","aria-pressed":lane==='clerkship',onClick:function(){setLane('clerkship');}},
         e("span",{className:"lane__name"},"Clerkship Review"),
-        e("span",{className:"lane__count"},conceptStatus==='ready'?clerk.due+" due · "+clerk.newRemain+" new":"Counts incomplete"),
+        e("span",{className:"lane__count"},conceptStatus==='ready'&&practiceStatus==='ready'?clerk.due+" due · "+clerk.newRemain+" new":"Counts incomplete"),
         e("span",{className:"lane__note"},"Clinical decisions, Concepts, and practice you have started")),
       e("button",{type:"button",className:"lane","aria-pressed":lane==='landmark',onClick:function(){setLane('landmark');}},
         e("span",{className:"lane__name"},"Landmark Evidence"),
         e("span",{className:"lane__count"},articleStatus==='ready'?landmark.due+" due · "+landmark.newRemain+" new":"Counts unavailable"),
         e("span",{className:"lane__note"},"Article questions and study interpretation"))),
-    e("div",{className:"allrow"},e("button",{className:"chip","aria-pressed":lane==='all',onClick:function(){setLane('all');}},"All due · "+(conceptStatus==='ready'&&articleStatus==='ready'?allDue.due:"at least "+allDue.due))),
+    e("div",{className:"allrow"},e("button",{className:"chip","aria-pressed":lane==='all',onClick:function(){setLane('all');}},"All due · "+(conceptStatus==='ready'&&articleStatus==='ready'&&practiceStatus==='ready'?allDue.due:"at least "+allDue.due))),
     e("div",{className:"statgrid"},
       e("div",{className:"stat due"},e("div",{className:"num"},incomplete?"?":m.due+m.newRemain),e("div",{className:"lab"},lane==='all'?"Due now":"Due + new")),
       e("div",{className:"stat streak"},e("div",{className:"num"},store.stats.streak||0),e("div",{className:"lab"},"Day streak")),
@@ -666,7 +735,7 @@ function App(){
     e("div",{className:"panel"},
       e("h2",null,"How it works"),
       e("div",{className:"muted"},"Each question carries its own schedule. Answer, then grade: ",
-        e("b",null,"Again")," (missed — comes back this session), ",e("b",null,"Hard"),", ",e("b",null,"Good"),", or ",e("b",null,"Easy"),". Correct, confident cards stretch further out; missed ones come back soon. Clerkship Review and Landmark Evidence are two views of one schedule ("+cards.length+" available across both). All due contains only scheduled cards due now. Recall grades describe your own confidence; choice answers are scored separately."),
+        e("b",null,"Again")," (missed — comes back this session), ",e("b",null,"Hard"),", ",e("b",null,"Good"),", or ",e("b",null,"Easy"),". Correct, confident cards stretch further out; missed ones come back soon. Clerkship Review and Landmark Evidence are two views of one schedule ("+(selectedIncomplete?"at least ":"")+cards.length+" available across both). All due contains only scheduled cards due now. Recall grades describe your own confidence; choice answers are scored separately."),
       e("div",{className:"setrow"},
         e("span",null,"New cards / day"),
         e("input",{type:"range",min:5,max:30,step:1,value:store.settings.newPerDay||12,onChange:function(ev){setNewPerDay(+ev.target.value);}}),

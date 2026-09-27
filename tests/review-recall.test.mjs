@@ -139,7 +139,7 @@ function renderReview(stateValues) {
 }
 const conceptFixture={id:'CONCEPT#test@1',deck:'CONCEPT',deckTitle:'SECRET topic',kind:'recall',q:'Test […]',reveal:'SECRET <img onerror=bad>',page:'ethics_legal.md'};
 const storeFixture={cards:{},stats:{seen:100,correct:99},day:{},settings:{newPerDay:12}};
-function reviewStates(session,last=null){return [[conceptFixture],'ready','all',null,last,false,storeFixture,session];}
+function reviewStates(session,last=null){return [[conceptFixture],'ready','all',null,last,false,storeFixture,session,'light',0,'clerkship','ready','ready',null,'ready','',false];}
 test('answer absent before reveal; reveal is text and links to the shipped page',()=>{
  const session={queue:[conceptFixture],pos:0,total:1,card:conceptFixture,revealed:false,reviewed:0,correct:0};
  assert.doesNotMatch(JSON.stringify(renderReview(reviewStates(session))),/SECRET/);
@@ -220,7 +220,7 @@ test('source-backed clinical-to-article bridge appears only after reveal and ope
  const card={...conceptFixture,id:'CONCEPT#t_psychosis-pearl3:1@2',reveal:'Use the side-effect fit'};
  const pair={clinicalCardId:card.id,articleCardId:'AR-24#5',sourceId:'lieberman-2005-catie',title:'Secret CATIE title',result:'Secret outcome',limitation:'Secret limitation',url:'https://doi.org/10.1056/nejmoa051688'};
  const session={queue:[card],pos:0,total:1,card,revealed:false,reviewed:0,correct:0};
- const state=(s)=>[[card],'ready','all',null,null,false,storeFixture,s,'light',0,'clerkship','ready',{schemaVersion:1,pairs:[pair]}];
+ const state=(s)=>{const values=reviewStates(s);values[0]=[card];values[13]={schemaVersion:1,pairs:[pair]};return values;};
  const hidden=JSON.stringify(renderReview(state(session)));
  assert.doesNotMatch(hidden,/Secret CATIE title|Secret outcome|Secret limitation|lieberman-2005-catie/);
  const shown=JSON.stringify(renderReview(state({...session,revealed:true})));

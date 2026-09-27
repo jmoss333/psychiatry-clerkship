@@ -3991,6 +3991,92 @@ test('malformed successful Review feeds show unavailable instead of false zero c
   await expect(page.getByRole('button',{name:/Landmark Evidence/})).toContainText('Counts unavailable');
 });
 
+test('timed Review block does not start from a malformed landmark feed',async({page},info)=>{
+  const concepts=await (await page.request.get('/tools/concepts.json')).json();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    [concepts.cards[0].id]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  await page.route('**/tools/quizzes.json*',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  await expect(page.locator('.cw-receipt')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+});
+
+test('timed Review block does not record completion when a practice-card feed fails',async({page},info)=>{
+  const topics=await (await page.request.get('/topic_meta.json')).json();
+  const topic=Object.keys(topics).find(key=>topics[key]?.quiz?.q);
+  expect(topic).toBeTruthy();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    ['TOPIC#'+topic]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  await page.route('**/topic_meta.json',route=>route.fulfill({status:503,body:'temporarily unavailable'}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+});
+
+test('timed Review block rejects a practice feed whose rows make no cards',async({page},info)=>{
+  const communication=await (await page.request.get('/communication_cases.json')).json();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    ['COMM#'+communication.cases[0].id]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  await page.route('**/communication_cases.json',route=>route.fulfill({status:200,contentType:'application/json',body:'{"cases":[{}]}'}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+});
+
+test('timed Review block rejects a nonempty feed missing a scheduled due card',async({page},info)=>{
+  const topics=await (await page.request.get('/topic_meta.json')).json();
+  const topic=Object.keys(topics).find(key=>topics[key]?.quiz?.q);
+  expect(topic).toBeTruthy();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    ['TOPIC#'+topic]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  delete topics[topic];
+  await page.route('**/topic_meta.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(topics)}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Practice card sources unavailable');
+  await expect(page.getByRole('button',{name:/Clerkship Review/})).toContainText('Counts incomplete');
+});
+
+test('ordinary Clerkship Review labels practice counts incomplete when its feed fails',async({page},info)=>{
+  const topics=await (await page.request.get('/topic_meta.json')).json();
+  const topic=Object.keys(topics).find(key=>topics[key]?.quiz?.q);
+  expect(topic).toBeTruthy();
+  const srs={...OTF.srs,cards:{['TOPIC#'+topic]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR}}};
+  await seedApp(page,info,{storage:{cw_srs_v1:srs}});
+  await page.route('**/topic_meta.json',route=>route.fulfill({status:503,body:'temporarily unavailable'}));
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Practice card sources unavailable');
+  await expect(page.getByRole('button',{name:/Clerkship Review/})).toContainText('Counts incomplete');
+  await expect(page.getByRole('button',{name:/All due/})).toContainText('at least');
+});
+
 test('Concepts altered feed visibly leaves Today count incomplete',async({page},info)=>{
   await seedApp(page,info);
   await page.route('**/tools/concepts.json',route=>route.fulfill({contentType:'application/json',body:'{}'}));
