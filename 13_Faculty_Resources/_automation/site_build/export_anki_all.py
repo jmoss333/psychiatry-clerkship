@@ -34,7 +34,8 @@ def main():
     ap = argparse.ArgumentParser()
     here = os.path.dirname(os.path.abspath(__file__))
     repo = os.path.abspath(os.path.join(here, "..", "..", ".."))
-    ap.add_argument("--out", default=os.path.join(repo, "09_Exam_Prep", "anki_export"))
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--feed", required=True)
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
 
@@ -45,7 +46,7 @@ def main():
         items, include_drafts=False,
         deck_id=COMBINED_QB_DECK_ID, deck_name=f"{PARENT}::Question Bank")
     concept_deck, cstats = concepts.build_deck(
-        repo, deck_id=COMBINED_CONCEPTS_DECK_ID, deck_name=f"{PARENT}::Concepts")
+        args.feed, deck_id=COMBINED_CONCEPTS_DECK_ID, deck_name=f"{PARENT}::Concepts")
 
     apkg = os.path.join(args.out, "psychiatry_clerkship_library_ALL.apkg")
     genanki.Package([qb_deck, concept_deck]).write_to_file(apkg)
@@ -53,7 +54,7 @@ def main():
     print("Combined deck (one import → two subdecks):")
     print(f"  ::Question Bank  {qb_notes} cards")
     print(f"  ::Concepts       {cstats['total']} cards "
-          f"({cstats['summary']} summary / {cstats['cloze']} cloze / {cstats['basic']} pearl)")
+          f"({cstats['notes']} notes)")
     print(f"  .apkg: {apkg}")
 
 

@@ -1,1 +1,2 @@
 jsonschema==4.26.0
+genanki==0.13.1
