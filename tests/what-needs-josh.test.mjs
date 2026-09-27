@@ -202,6 +202,77 @@ with tempfile.TemporaryDirectory() as d:
   assert.equal(retired, '(0, 2)', 'the row retires itself once the case is reviewed');
 });
 
+test('pack-cases counts every case that is not literally reviewed: attested is not selectable', () => {
+  // Codex P2 on #855: the predicate read `attested` as done. The attestation validator lets
+  // `attested` into a reviewed pack, but the tool, the proxy and bin/redteam-offline.mjs select
+  // on exactly `reviewed` (the runner refuses `attested` with FAIL PACK), so an `attested` case
+  // is a case learners cannot select that no surface names -- exactly what this row is for.
+  // A missing block, a null block, an empty or whitespace-padded status, a typo and a case with
+  // no id count the same way (the id-less one is named "?"); only the literal flip retires.
+  const out = py(`
+import json, tempfile, pathlib
+pack = {"cases": [
+  {"id": "sp_fixture_reviewed_001", "facultyReview": {"status": "reviewed", "reviewer": "R", "lastReviewed": "2026-01-01"}},
+  {"id": "sp_fixture_attested_001", "facultyReview": {"status": "attested", "reviewer": "R", "lastReviewed": "2026-01-01"}},
+  {"id": "sp_fixture_typo_001", "facultyReview": {"status": "Reviewed", "reviewer": "R", "lastReviewed": "2026-01-01"}},
+  {"id": "sp_fixture_blockless_001"},
+  {"id": "sp_fixture_padded_001", "facultyReview": {"status": " reviewed", "reviewer": "R", "lastReviewed": "2026-01-01"}},
+  {"id": "sp_fixture_nullblock_001", "facultyReview": None},
+  {"id": "sp_fixture_empty_001", "facultyReview": {"status": "", "reviewer": None, "lastReviewed": None}},
+  {"facultyReview": {"status": "pending", "reviewer": None, "lastReviewed": None}},
+]}
+with tempfile.TemporaryDirectory() as d:
+    p = pathlib.Path(d) / "pack.json"; p.write_text(json.dumps(pack), encoding="utf-8")
+    J.PACK = p
+    print(J.measure_pack_cases(), "|", J.describe_pack_cases())
+    for c in pack["cases"]:
+        c["facultyReview"] = {"status": "reviewed", "reviewer": "R", "lastReviewed": "2026-01-01"}
+    p.write_text(json.dumps(pack), encoding="utf-8")
+    print(J.measure_pack_cases())`);
+  const [waiting, retired] = out.split('\n');
+  assert.equal(
+    waiting,
+    '(7, 8) | Read and flip to reviewed: sp_fixture_attested_001, sp_fixture_typo_001, '
+      + 'sp_fixture_blockless_001, sp_fixture_padded_001, sp_fixture_nullblock_001, sp_fixture_empty_001, ?',
+  );
+  assert.equal(retired, '(0, 8)', 'only the literal reviewed spelling retires the row');
+});
+
+test('the pack-cases row is wired to its own measure and detail', () => {
+  // Both tests above call the functions directly; without this pin a row that counted with a
+  // different measure, or dropped its detail (describe() renders "" for a missing detail), would
+  // keep every test green while the queue stopped naming the cases -- the naming is the point.
+  const out = py(`
+row = next(r for r in J.ROWS if r["key"] == "pack-cases")
+print(row["measure"] is J.measure_pack_cases, row.get("detail") is J.describe_pack_cases)`);
+  assert.equal(out, 'True True', 'the row must count with measure_pack_cases and name with describe_pack_cases');
+});
+
+test('a pack whose cases are missing or not a list reports unknown for pack-cases, never zero', () => {
+  // The invariant at the top of this file, on this row's own failure path: a pack this cannot
+  // read must degrade to unknown, because (0, 0) would render as done and retire the row.
+  const out = py(`
+import json, tempfile, pathlib
+row = next(r for r in J.ROWS if r["key"] == "pack-cases")
+with tempfile.TemporaryDirectory() as d:
+    p = pathlib.Path(d) / "pack.json"
+    J.PACK = p
+    p.write_text(json.dumps({"version": "2", "engine": {}}), encoding="utf-8")
+    print(J.evaluate(row)[0])
+    p.write_text(json.dumps({"cases": {"sp_x": {"facultyReview": {"status": "pending"}}}}), encoding="utf-8")
+    print(J.evaluate(row)[0])`);
+  assert.equal(out, 'unknown\nunknown', 'a pack this cannot read must not retire the row');
+});
+
+test('a long pack-case list names the first few and says how many more', () => {
+  const out = py(`
+J._pack_cases_not_reviewed = lambda: (["sp_c%02d" % i for i in range(12)], 12)
+print(J.describe_pack_cases())`);
+  assert.match(out, /^Read and flip to reviewed: sp_c00, sp_c01/);
+  assert.match(out, / and 4 more$/);
+  assert.ok(!out.includes('sp_c08'), 'the capped tail must not be named');
+});
+
 test('every row carries a measurement, a unit, a rationale and a way to act', () => {
   const out = py(`
 bad = [r["key"] for r in J.ROWS

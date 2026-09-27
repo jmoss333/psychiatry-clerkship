@@ -630,8 +630,9 @@ the container when the Bash 5 environment is part of the evidence.
   first PR and the leak and no-PHI bar applies there, only selection is withheld; and stand in
   for its review — a console re-attestation of the drifted `sp-interview.html` row while the
   case is pending binds the row's bytes and is the claim of record for the cases the tool
-  offers, not that case's review, which is the flip. `bin/what_needs_josh.py` lists pending
-  pack cases as owner work until the flip lands. The classifier never reads the block. Everything else a content PR does to the ledger — a new pending row, a
+  offers, not that case's review, which is the flip. `bin/what_needs_josh.py` lists every pack case whose
+  status is not the literal `reviewed` (`pending`, `attested` or otherwise) as owner work until the
+  flip lands. The classifier never reads the block. Everything else a content PR does to the ledger — a new pending row, a
   pending row edited, `reviewed`→`pending`, a row deleted, a demotion that drops
   `lastReviewed`/`reviewer` — is **registration**, and is exactly what a content PR is supposed
   to do. The rule forbids the claim, not the bookkeeping. Four laws: **L1** a governance path
