@@ -3,6 +3,7 @@
 // only reads. Every read that fails becomes a named gap in the payload, never a zero.
 import {
   checksVerdict,
+  failedTrainRuns,
   firstParentChain,
   nextTrainSlot,
   releaseHeadline,
@@ -18,6 +19,8 @@ const GITHUB_API = `https://api.github.com/repos/${REPO}`;
 const SHA = /^[0-9a-f]{40}$/;
 const COMPARE_PAGE = 100;
 const COMPARE_MAX_PAGES = 5;
+// Three scheduled slots a day plus any publish-now presses: 20 covers the lookback window.
+const TRAIN_RUNS_PAGE = 20;
 const SERVED_REVISION_PATH = '/tool-governance.json';
 const SERVED_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -145,7 +148,7 @@ export async function loadReleaseStatus(fetchImpl, token, {
     }))),
     github('/git/ref/heads/release'),
     github(`/commits/${mainSha}/check-runs?per_page=100`),
-    github(`/actions/workflows/${TRAIN_WORKFLOW}/runs?per_page=1`),
+    github(`/actions/workflows/${TRAIN_WORKFLOW}/runs?per_page=${TRAIN_RUNS_PAGE}`),
   ]);
 
   const sites = Object.fromEntries(SITE_KEYS.map(key => [key, null]));
@@ -162,16 +165,22 @@ export async function loadReleaseStatus(fetchImpl, token, {
   } else note("main's required checks", checksResult.reason || 'unreadable');
 
   let lastRun = null;
+  let failedRuns = null;
   if (runsResult.status === 'fulfilled' && Array.isArray(runsResult.value?.workflow_runs)) {
-    const run = runsResult.value.workflow_runs[0];
-    if (run) {
-      lastRun = {
-        at: run.run_started_at || run.created_at,
-        event: run.event,
-        status: run.status,
-        conclusion: run.conclusion,
-        url: /^https:\/\/github\.com\//.test(run.html_url || '') ? run.html_url : null,
-      };
+    const runs = runsResult.value.workflow_runs.map(run => ({
+      at: run.run_started_at || run.created_at,
+      event: run.event,
+      status: run.status,
+      conclusion: run.conclusion,
+      url: /^https:\/\/github\.com\//.test(run.html_url || '') ? run.html_url : null,
+    }));
+    lastRun = runs[0] || null;
+    // Every run in the lookback, not only the newest: a held 15:05 run that a green 21:05
+    // run follows would otherwise be overwritten before the daily watch ever saw it.
+    const window = failedTrainRuns(runs, nowMs);
+    failedRuns = window.failed;
+    if (runs.length >= TRAIN_RUNS_PAGE && !window.coveredWindow) {
+      note('release-train runs', `more than ${TRAIN_RUNS_PAGE} in the lookback; older runs unread`);
     }
   } else note('release-train runs', runsResult.reason || 'unreadable');
 
@@ -232,6 +241,7 @@ export async function loadReleaseStatus(fetchImpl, token, {
       workflowUrl: `https://github.com/${REPO}/actions/workflows/${TRAIN_WORKFLOW}`,
       nextSlot: new Date(nextTrainSlot(nowMs)).toISOString(),
       lastRun,
+      failedRuns,
     },
     // Ledger mode (ADR-003): sign-offs never merge to main; ledger-publish rebuilds the sites
     // for them on its own, so a sign-off is not a "waiting change" here.

@@ -37,6 +37,28 @@ export const SITE_KEYS = Object.freeze(['ms3', 'res']);
  * repeated, a head that stayed red, or a train that stopped running.
  */
 export const STALE_WAIT_HOURS = 24;
+/**
+ * How far back the release-train runs are read. The watch runs once a day; 26 h covers the
+ * day's three slots plus the watch's own start-time jitter, so a run is seen at least once
+ * (twice at worst, which is the right way round).
+ */
+export const TRAIN_LOOKBACK_HOURS = 26;
+const RUN_OK = new Set(['success', 'skipped', 'neutral']);
+
+/**
+ * The completed release-train runs in the lookback that did not succeed, newest first, and
+ * whether the listing reached back past the window (runs are newest first, so an entry
+ * older than the window proves nothing inside it was cut off).
+ */
+export function failedTrainRuns(runs, nowMs, hours = TRAIN_LOOKBACK_HOURS) {
+  const since = nowMs - hours * 3_600_000;
+  const list = Array.isArray(runs) ? runs : [];
+  const inWindow = list.filter(run => Date.parse(run?.at) >= since);
+  return {
+    failed: inWindow.filter(run => run.status === 'completed' && run.conclusion && !RUN_OK.has(run.conclusion)),
+    coveredWindow: inWindow.length < list.length,
+  };
+}
 
 const SHA = /^[0-9a-f]{40}$/;
 
@@ -199,14 +221,22 @@ export function releaseHeadline(status) {
       lines.push(`${when}, but main's newest merge failed its checks — that run publishes only an older, fully green merge.`);
     } else lines.push(`${when}.`);
   }
+  // A red run is not proof that nothing was published: the workflow pushes `release` before
+  // it requests the release receipt, and that later step can fail on its own. Whether a
+  // publish happened is what the served commits above show; these lines report only runs.
+  const kindOf = run => (run.event === 'workflow_dispatch' ? 'publish-now run' : 'scheduled run');
   const last = train?.lastRun;
-  if (last && last.conclusion && last.conclusion !== 'success' && last.status === 'completed') {
+  const lastFailed = Boolean(last && last.conclusion && !RUN_OK.has(last.conclusion) && last.status === 'completed');
+  if (lastFailed) {
     raise('attention');
-    // A red run is not proof that nothing was published: the workflow pushes `release` before
-    // it requests the release receipt, and that later step can fail on its own. Whether a
-    // publish happened is what the served commits above show; this line reports only the run.
-    const kind = last.event === 'workflow_dispatch' ? 'publish-now run' : 'scheduled run';
-    lines.push(`The last release-train ${kind} (${hhmmUtc(Date.parse(last.at))}) ended in ${last.conclusion} — held by the spend tripwire, refused, or a step after publishing failed; its run log says which.`);
+    lines.push(`The last release-train ${kindOf(last)} (${hhmmUtc(Date.parse(last.at))}) ended in ${last.conclusion} — held by the spend tripwire, refused, or a step after publishing failed; its run log says which.`);
+  }
+  const earlier = (Array.isArray(train?.failedRuns) ? train.failedRuns : [])
+    .filter(run => !(lastFailed && run.at === last.at && run.url === last.url));
+  if (earlier.length) {
+    raise('attention');
+    const list = earlier.map(run => `${hhmmUtc(Date.parse(run.at))} ${kindOf(run)}, ${run.conclusion}`).join('; ');
+    lines.push(`${earlier.length === 1 ? 'An earlier release-train run' : `${earlier.length} earlier release-train runs`} in the last ${TRAIN_LOOKBACK_HOURS} h did not succeed (${list}), even if a later run published; the run logs say whether each was held, refused, or failed after publishing.`);
   }
   return { tone, text: lines.join(' ') };
 }

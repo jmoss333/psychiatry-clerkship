@@ -10,6 +10,8 @@ import {
   parseMergeSubject,
   releaseHeadline,
   STALE_WAIT_HOURS,
+  failedTrainRuns,
+  TRAIN_LOOKBACK_HOURS,
   watchVerdict,
   REQUIRED_CHECKS,
   TRAIN_SLOTS_UTC,
@@ -164,7 +166,7 @@ const CONFIG = {
 
 function fixtureFetch({
   netlifyDown = false, compareDown = false, checksDown = false, served = {},
-  sitesDown = false, trainConclusion = 'failure', manifest = null,
+  sitesDown = false, trainConclusion = 'failure', manifest = null, trainRuns = null,
 } = {}) {
   const calls = [];
   const fetchImpl = async (url) => {
@@ -179,6 +181,7 @@ function fixtureFetch({
       return Response.json({ check_runs: REQUIRED_CHECKS.map(name => ({ name, conclusion: 'success', started_at: '2026-09-27T12:00:00Z' })) });
     }
     if (url.includes('/actions/workflows/production-release-train.yml/runs')) {
+      if (trainRuns) return Response.json({ workflow_runs: trainRuns });
       return Response.json({ workflow_runs: [{ run_started_at: '2026-09-27T09:21:01Z', event: 'schedule', status: 'completed', conclusion: trainConclusion, html_url: 'https://github.com/jmoss333/psychiatry-clerkship/actions/runs/1' }] });
     }
     if (url.includes('/compare/')) {
@@ -396,4 +399,66 @@ test('the watch workflow runs the watch after the morning publish and is on the 
   assert.match(workflow, /run: node bin\/release_watch\.mjs --out "\$RUNNER_TEMP\/release-watch\.json"/);
   assert.match(workflow, /^name: Maintenance — Release Watch$/m);
   assert.match(read('.github/workflows/automation-failure-escalation.yml'), /- "Maintenance — Release Watch"/);
+});
+
+// ── Every train run in the lookback (Codex P1 on #864) ─────────────────────────────────
+
+const run = (at, conclusion, extra = {}) => ({
+  run_started_at: at, event: 'schedule', status: 'completed', conclusion,
+  html_url: `https://github.com/jmoss333/psychiatry-clerkship/actions/runs/${Date.parse(at)}`, ...extra,
+});
+
+test('failed train runs are every non-success in the lookback, and the listing proves it reached back', () => {
+  const now = Date.parse('2026-09-28T10:05:00Z');
+  const mapped = runs => runs.map(r => ({ at: r.run_started_at, status: r.status, conclusion: r.conclusion }));
+  const { failed, coveredWindow } = failedTrainRuns(mapped([
+    run('2026-09-28T09:21:00Z', 'success'),
+    run('2026-09-27T21:17:00Z', 'success'),
+    run('2026-09-27T15:18:00Z', 'failure'),
+    run('2026-09-27T09:21:00Z', 'cancelled'),
+    run('2026-09-26T21:17:00Z', 'failure'), // outside 26 h
+  ]), now);
+  assert.deepEqual(failed.map(r => r.at), ['2026-09-27T15:18:00Z', '2026-09-27T09:21:00Z']);
+  assert.equal(coveredWindow, true);
+  assert.equal(TRAIN_LOOKBACK_HOURS >= 24, true, 'the daily watch must see a full day of slots');
+  const inProgress = failedTrainRuns([{ at: '2026-09-28T09:21:00Z', status: 'in_progress', conclusion: null }], now);
+  assert.deepEqual(inProgress.failed, []);
+  assert.equal(inProgress.coveredWindow, false);
+});
+
+test('a held 15:05 run followed by a green 21:05 run still turns the next morning red', async t => {
+  const logged = [];
+  t.mock.method(console, 'log', line => logged.push(String(line)));
+  const trainRuns = [
+    run('2026-09-28T09:21:00Z', 'success'),
+    run('2026-09-27T21:17:00Z', 'success'),
+    run('2026-09-27T15:18:00Z', 'failure'),
+  ];
+  const code = await releaseWatch({
+    argv: [], env: { GITHUB_TOKEN: 'synthetic' },
+    fetchImpl: fixtureFetch({ trainRuns }).fetchImpl, now: () => Date.parse('2026-09-28T10:05:00Z'),
+  });
+  assert.equal(code, 1);
+  const error = logged.find(line => line.startsWith('::error'));
+  assert.match(error, /An earlier release-train run in the last 26 h did not succeed \(15:18 UTC scheduled run, failure\)/);
+  assert.doesNotMatch(error, /The last release-train/);
+});
+
+test('a green day stays green, and a full page inside the window is a gap, not a pass', async t => {
+  t.mock.method(console, 'log', () => {});
+  // 06:00: the fixture's waiting changes (27th, 10:00 and 12:47) are under a day old, so the
+  // stale-wait rule stays quiet and only the run lookback is under test.
+  const now = () => Date.parse('2026-09-28T06:00:00Z');
+  const calm = [
+    run('2026-09-27T21:17:00Z', 'success'),
+    run('2026-09-27T15:18:00Z', 'success'),
+    run('2026-09-26T21:17:00Z', 'failure'), // before the 26 h window opens (27th 04:00)
+  ];
+  const green = await releaseWatch({ argv: [], env: { GITHUB_TOKEN: 's' }, fetchImpl: fixtureFetch({ trainRuns: calm }).fetchImpl, now });
+  assert.equal(green, 0);
+  const busy = Array.from({ length: 20 }, (_, i) => run(new Date(Date.parse('2026-09-28T05:30:00Z') - i * 3_600_000).toISOString(), 'success'));
+  const fetchImpl = fixtureFetch({ trainRuns: busy }).fetchImpl;
+  const full = await loadReleaseStatus(fetchImpl, 's', { now, readSite: servedRevisionReader(fetchImpl) });
+  assert.ok(full.gaps.some(gap => gap.startsWith('release-train runs: more than 20')));
+  assert.equal(watchVerdict(full), 2);
 });

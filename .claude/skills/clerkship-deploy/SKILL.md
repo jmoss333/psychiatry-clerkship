@@ -125,8 +125,8 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
   commit it published. That run, not the train's, says whether the publish landed.
 - **Daily release watch:** `maintenance-release-watch.yml` (10:05 UTC, after the morning
   slot has built) runs `node bin/release_watch.mjs` — the faculty console's "What learners
-  see" reading, against what each site serves — and goes red when a train run was held or
-  failed, the sites serve different commits, `release` is unserved, `main`'s newest merge
+  see" reading, against what each site serves — and goes red when any train run in the last
+  26 h was held or failed (not only the newest), the sites serve different commits, `release` is unserved, `main`'s newest merge
   failed its checks, or merged work has waited over 24 h (exit 1), or when it could not read
   both sites (exit 2). A red run lands in the rolling escalation issue; its step summary
   lists every merged change not yet live. `GITHUB_TOKEN=… node bin/release_watch.mjs` gives
