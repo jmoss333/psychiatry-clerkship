@@ -41,6 +41,12 @@ reachability evidence, not release evidence.
 
 ### Guided route
 
+In the unlocked faculty console, open **Red-team revisions → Show current revisions** for a
+read-only view of the `main` pack source and the proxy, MS3, and resident production deploy IDs.
+Refresh it immediately before review. The display helps you identify the three different serving
+revisions; it does not check the live pack hash, run probes, or record a pass. If it says
+**Unverified**, use the commands below to diagnose the missing evidence.
+
 With `NETLIFY_AUTH_TOKEN` available locally for read-only deploy queries, run:
 
 ```bash
