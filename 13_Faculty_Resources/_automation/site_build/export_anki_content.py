@@ -1,47 +1,16 @@
 #!/usr/bin/env python3
-"""Export attested website *content* (topic pages) to an Anki deck.
-
-Companion to export_anki.py (which handles question_bank.json). This deck is the
-concept/fact layer; the qbank deck is the vignette layer.
-
-SAFETY / ATTESTATION MODEL — this is the whole point of doing it this way:
-- Cards are EXTRACTED from already-attested structured content, never
-  LLM-generated from prose. A page contributes cards only if it carries the
-  "attested by …" review line. This keeps the deck inside the same attestation
-  chain the SPA enforces; nothing a learner sees was synthesized here.
-- Two structured elements are harvested:
-    * "In one line — …"      → one summary (Basic) card per topic.
-    * "High-yield pearls" bullets → one card per pearl.
-        - pearl containing **bold** spans → CLOZE card, hiding exactly the spans
-          the author chose to emphasize (the author's bold IS the deletion —
-          no model judgment about what to test).
-        - pearl with no bold → Basic recall/consolidation card.
-- Stable GUIDs are derived from the source slug + a hash of the normalized card
-  text, so re-running after unrelated edits does not churn a learner's history;
-  editing a pearl's wording intentionally mints a fresh card.
-
-Usage:  python3 export_anki_content.py [--out DIR]
-"""
-
+"""Export Concepts exclusively from the built, governance-filtered native feed."""
 import argparse
-import glob
-import hashlib
+from collections import defaultdict
 import html
 import json
-import os
-import re
-
+from pathlib import Path
 import genanki
 
 MODEL_BASIC_ID = 1740111001
 MODEL_CLOZE_ID = 1740111002
 DECK_ID = 2059400192
 DECK_NAME = "Psychiatry Clerkship Library — Concepts (Moss)"
-
-CONTENT_ROOTS = [
-    "03_Core_Topics", "04_Acute_and_Safety", "05_Psychopharmacology",
-    "02_Clinical_Skills", "06_Family_and_Relational", "07_Evidence_and_Reading",
-]
 
 CSS = """
 .card { font-family:-apple-system,Segoe UI,Roboto,sans-serif; font-size:18px;
@@ -74,7 +43,7 @@ CLOZE_MODEL = genanki.Model(
             {"name": "Source"}],
     templates=[{
         "name": "Cloze",
-        "qfmt": '<div class="topic">{{Topic}}</div>{{cloze:Text}}',
+        "qfmt": '<div class="topic">Concepts</div>{{cloze:Text}}',
         "afmt": '<div class="topic">{{Topic}}</div>{{cloze:Text}}'
                 '{{#Source}}<div class="src">{{Source}}</div>{{/Source}}',
     }],
@@ -82,188 +51,83 @@ CLOZE_MODEL = genanki.Model(
 )
 
 
-def guid(*parts):
-    h = hashlib.sha1("||".join(parts).encode("utf-8")).hexdigest()
-    return genanki.guid_for(h)
+def load_crosswalk():
+    return json.loads(Path(__file__).with_name('concept_guid_crosswalk.json').read_text())
 
 
-def slug_of(path):
-    return os.path.splitext(os.path.basename(path))[0]
-
-
-def clean_md_inline(s):
-    """Strip markdown links/anchors but keep readable text; escape HTML."""
-    s = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", s)      # [text](url) -> text
-    s = re.sub(r"<a [^>]*>(.*?)</a>", r"\1", s, flags=re.S)
-    s = re.sub(r"</?[^>]+>", "", s)                      # stray html tags
-    return s.strip()
-
-
-def bold_to_cloze(text):
-    """Turn **bold** spans into sequential {{c1::…}} cloze deletions.
-    Returns (cloze_text_html, n_clozes)."""
-    n = [0]
-
-    def repl(m):
-        n[0] += 1
-        inner = html.escape(m.group(1))
-        return "{{c%d::%s}}" % (n[0], inner)
-
-    # temporarily protect bold, escape the rest, then place clozes
-    parts = re.split(r"\*\*(.+?)\*\*", text)
-    out = []
-    ci = 0
-    for i, p in enumerate(parts):
-        if i % 2 == 1:  # captured bold group
-            ci += 1
-            out.append("{{c%d::%s}}" % (ci, html.escape(p)))
+def note_groups(feed, crosswalk=None):
+    crosswalk = crosswalk if crosswalk is not None else load_crosswalk()
+    identities = {c['editorialId']: c for c in crosswalk['cards'] if c['identityAction'] != 'withdrawn'}
+    groups = defaultdict(list)
+    for card in feed['cards']:
+        row = identities.get(card['editorialId'])
+        if row is None or row['noteId'] != card['noteId'] or row['newFront'] != card['q'] or row['newBack'] != card['reveal']:
+            raise ValueError('crosswalk face/identity mismatch: ' + card['editorialId'])
+        groups[card['noteId']].append(card)
+    for note_id, cards in sorted(groups.items()):
+        cards.sort(key=lambda c: c['ordinal'])
+        rows = [identities[c['editorialId']] for c in cards]
+        actions = {r['identityAction'] for r in rows}
+        old_guids = {r['oldGuid'] for r in rows}
+        if len(actions) != 1 or len(old_guids) != 1 or [c['ordinal'] for c in cards] != list(range(1,len(cards)+1)):
+            raise ValueError('inconsistent grouped note: ' + note_id)
+        if actions == {'preserve-guid'}:
+            if any(r.get('oldFront') != c['q'] or r.get('oldBack') != c['reveal'] for r,c in zip(rows,cards)):
+                raise ValueError('preserved face changed: ' + note_id)
+            if any(r['oldOrdinal'] != c['ordinal']-1 for r,c in zip(rows,cards)):
+                raise ValueError('preserved ordinal changed: ' + note_id)
+            guid = rows[0]['oldGuid']
         else:
-            out.append(html.escape(p))
-    return "".join(out), ci
+            identity = [(c['editorialId'],c['revision'],c['ordinal'],c['q'],c['reveal']) for c in cards]
+            guid = genanki.guid_for('native-concepts-v1', note_id, json.dumps(identity,ensure_ascii=False))
+            if guid in old_guids: raise ValueError('changed note reused old GUID')
+        yield note_id, cards, guid
 
 
-def extract(path):
-    t = open(path, encoding="utf-8", errors="ignore").read()
-    if not re.search(r"attested by", t, re.I):
-        return None
-    m = re.search(r"^#\s+(.+)$", t, re.M)
-    topic = clean_md_inline(m.group(1)) if m else slug_of(path)
-    one = re.search(r"\*\*In one line\*\*\s*[—-]\s*(.+)", t)
-    oneliner = clean_md_inline(one.group(1)) if one else None
-    pearls = []
-    hp = re.search(r"\*\*High-yield pearls\*\*.*?(?=\n\n\*\*|\n\n[A-Z]|\Z)", t, re.S)
-    if hp:
-        for b in re.findall(r"^\s*[-*]\s+(.+)$", hp.group(0), re.M):
-            pearls.append(b.strip())
-    return {"path": path, "slug": slug_of(path), "topic": topic,
-            "oneliner": oneliner, "pearls": pearls}
+def source_field(card):
+    source = html.escape(card['page'] + ' | ' + card['source'])
+    for index, evidence in enumerate(card.get('evidence', []), 1):
+        from urllib.parse import urlsplit
+        url = evidence['url']
+        parsed = urlsplit(url)
+        if parsed.scheme != 'https' or not parsed.netloc or parsed.username or parsed.password or any(c.isspace() for c in url):
+            raise ValueError('unsafe concept evidence URL')
+        source += '<br><a href="' + html.escape(url, quote=True) + '">Evidence ' + str(index) + '</a>'
+    return source
 
 
-_PEARL_CARDS = None
-
-
-def pearl_cards():
-    """Curated cloze occlusion targets (pearl_cards.json, co-located)."""
-    global _PEARL_CARDS
-    if _PEARL_CARDS is None:
-        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pearl_cards.json")
-        try:
-            _PEARL_CARDS = json.load(open(p, encoding="utf-8"))
-        except Exception:
-            _PEARL_CARDS = {}
-    return _PEARL_CARDS
-
-
-def _strip_links(s):
-    s = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", s)   # [text](url) -> text
-    s = re.sub(r"</?[^>]+>", "", s)                   # stray html
-    return s
-
-
-def occlude(text, targets):
-    """text = de-bolded pearl. Wrap each found target (first occurrence, left-to-right,
-    non-overlapping) as a sequential cloze deletion. Targets that don't appear verbatim
-    are skipped (drift guard). Returns (cloze_html, n_clozes)."""
-    marks = []
-    for t in targets:
-        idx = text.find(t)
-        if idx >= 0:
-            marks.append((idx, idx + len(t), t))
-    if not marks:
-        return None, 0
-    marks.sort()
-    out, cur, ci = [], 0, 0
-    for (s, e, t) in marks:
-        if s < cur:
-            continue  # overlaps a prior target — skip
-        out.append(html.escape(_strip_links(text[cur:s])))
-        ci += 1
-        out.append("{{c%d::%s}}" % (ci, html.escape(t)))
-        cur = e
-    out.append(html.escape(_strip_links(text[cur:])))
-    return "".join(out), ci
-
-
-def build_deck(repo, deck_id=DECK_ID, deck_name=DECK_NAME):
-    """Build (and return) the concepts genanki.Deck plus a stats dict.
-    Importable by export_anki_all.py so the combined package reuses this logic."""
-    files = []
-    for root in CONTENT_ROOTS:
-        files += glob.glob(os.path.join(repo, root, "**", "*.md"), recursive=True)
-
+def build_deck(feed, deck_id=DECK_ID, deck_name=DECK_NAME, crosswalk=None):
+    if not isinstance(feed, dict):
+        feed = json.loads(Path(feed).read_text())
     deck = genanki.Deck(deck_id, deck_name)
-    n_one = n_cloze = n_basic = n_files = 0
-    for path in sorted(files):
-        rec = extract(path)
-        if not rec or (not rec["oneliner"] and not rec["pearls"]):
-            continue
-        n_files += 1
-        base_tags = ["PsychClerkship", "Deck::Concepts",
-                     f"Source::{rec['slug']}", "Status::attested"]
-        src = f"Source: {rec['slug']}.md · attested (Moss)"
-
-        if rec["oneliner"]:
-            deck.add_note(genanki.Note(
-                model=BASIC_MODEL,
-                fields=[rec["slug"] + "::oneline",
-                        html.escape(rec["topic"]),
-                        "In one line?",
-                        html.escape(rec["oneliner"]), src],
-                tags=base_tags + ["Type::summary"],
-                guid=guid(rec["slug"], "oneline", rec["oneliner"]),
-            ))
-            n_one += 1
-
-        cur_targets = pearl_cards().get(rec["slug"]) or []
-        for idx, pearl in enumerate(rec["pearls"]):
-            debolded = pearl.replace("**", "")
-            gk = guid(rec["slug"], "pearl", debolded)
-            uid = f"{rec['slug']}::pearl{idx + 1}"
-            tlist = cur_targets[idx] if idx < len(cur_targets) else []
-            text, nfound = (occlude(debolded, tlist) if tlist else (None, 0))
-            if not nfound and re.search(r"\*\*.+?\*\*", pearl):
-                text, nfound = bold_to_cloze(pearl)   # fallback: author-bolded terms
-            if nfound:
-                deck.add_note(genanki.Note(
-                    model=CLOZE_MODEL,
-                    fields=[uid, html.escape(rec["topic"]), text, src],
-                    tags=base_tags + ["Type::pearl", "Format::cloze"],
-                    guid=gk))
-                n_cloze += 1
-            else:
-                # fallback (should be rare — curated map covers all attested pearls)
-                deck.add_note(genanki.Note(
-                    model=BASIC_MODEL,
-                    fields=[uid, html.escape(rec["topic"]),
-                            "Recall the key point:",
-                            html.escape(_strip_links(debolded)), src],
-                    tags=base_tags + ["Type::pearl", "Format::basic"],
-                    guid=gk))
-                n_basic += 1
-
-    stats = {"pages": n_files, "summary": n_one, "cloze": n_cloze,
-             "basic": n_basic, "total": n_one + n_cloze + n_basic}
-    return deck, stats
+    churn = []
+    for note_id, cards, guid in note_groups(feed, crosswalk):
+        first = cards[0]
+        text = first['reveal']
+        output, cursor = [], 0
+        for c in sorted(cards, key=lambda c:c['targetStart']):
+            start,end = c['targetStart'],c['targetEnd']
+            if c['reveal'] != text or start < cursor or text[start:end] != c['target']:
+                raise ValueError('invalid target span: ' + c['editorialId'])
+            output.extend([html.escape(text[cursor:start]), '{{c%d::%s}}' % (c['ordinal'], html.escape(c['target']))])
+            cursor=end
+        output.append(html.escape(text[cursor:]))
+        deck.add_note(genanki.Note(model=CLOZE_MODEL, fields=[note_id,html.escape(first['topic']),''.join(output),source_field(first)], guid=guid,
+            tags=['PsychClerkship','Deck::Concepts','Status::attested',
+                  'Source::'+Path(first['page']).stem, 'Type::'+first['kind'], 'Format::cloze']))
+        if len(cards)>1 and guid not in {r['oldGuid'] for r in (crosswalk or load_crosswalk())['cards']}: churn.append(note_id)
+    stats={'total':len(feed['cards']), 'notes':len(deck.notes), 'siblingChurn':churn}
+    return deck,stats
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    here = os.path.dirname(os.path.abspath(__file__))
-    repo = os.path.abspath(os.path.join(here, "..", "..", ".."))
-    ap.add_argument("--out", default=os.path.join(repo, "09_Exam_Prep", "anki_export"))
-    args = ap.parse_args()
-    os.makedirs(args.out, exist_ok=True)
+    ap=argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--feed',required=True)
+    ap.add_argument('--out',required=True)
+    args=ap.parse_args()
+    Path(args.out).mkdir(parents=True,exist_ok=True)
+    deck,stats=build_deck(args.feed)
+    genanki.Package(deck).write_to_file(str(Path(args.out)/'psychiatry_clerkship_concepts.apkg'))
+    print('Concepts:',json.dumps(stats))
 
-    deck, s = build_deck(repo)
-    apkg = os.path.join(args.out, "psychiatry_clerkship_concepts.apkg")
-    genanki.Package(deck).write_to_file(apkg)
-    print(f"Attested content pages used: {s['pages']}")
-    print(f"  summary cards:      {s['summary']}")
-    print(f"  pearl cloze cards:  {s['cloze']}  (curated occlusions + author-bolded fallback)")
-    print(f"  pearl basic cards:  {s['basic']}  (fallback — should be 0)")
-    print(f"  TOTAL concept cards:{s['total']}")
-    print(f"  .apkg: {apkg}")
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__': main()

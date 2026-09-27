@@ -40,6 +40,8 @@ const dueCode = slice(source, 'function srsState(', '/* ---- end due breakdown -
 const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RETIRED_IDS', 'DRAFT_IDS', 'Clock', `
   var Date = Clock || globalThis.Date;
   var window = {};
+  var conceptDueState={status:"ready",releasedIds:new Set()};
+  ${readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/concept_recall.js',import.meta.url),'utf8')}
   ${seedCode}
   ${servCode}
   ${dueCode}
@@ -178,4 +180,20 @@ test('every card id Daily Review builds from quizzes.json buckets as daily', () 
   for (const id of ['AR-50', 'AR-50#', 'AR-x#1', 'ARX-1#0', 'SP-3#1#2', 'deck#0#1']) {
     assert.equal(srs.srsBucket(id), 'other', id);
   }
+});
+
+
+test('Concepts count only released IDs and retain withdrawn history; null means unknown', () => {
+  const ls = memStorage();
+  const cards = {'CONCEPT#ethics-capacity:1@2':{due:1},'CONCEPT#ethics-capacity:1@1':{due:1},'CONCEPT#withdrawn:1@1':{due:1},'FAM#case#step':{due:1}};
+  ls.setItem('cw_srs_v1', JSON.stringify({cards}));
+  const srs = makeSrs(ls, QUIZ_META, docStub);
+  assert.equal(srs.srsBucket('CONCEPT#ethics-capacity:1@2'), 'daily');
+  const ready = srs.dueBreakdown(new Set(['CONCEPT#ethics-capacity:1@2']));
+  assert.equal(ready.daily.due, 1);
+  assert.equal(ready.fam.due, 1);
+  assert.equal(ready.conceptStatus, 'ready');
+  assert.equal(srs.dueBreakdown(null).conceptStatus, 'checking', 'explicit null stays unknown even when global feed state is ready');
+  assert.equal(srs.dueBreakdown().conceptStatus, 'ready', 'omitted argument uses verified production state');
+  assert.deepEqual(JSON.parse(ls.getItem('cw_srs_v1')).cards, cards);
 });

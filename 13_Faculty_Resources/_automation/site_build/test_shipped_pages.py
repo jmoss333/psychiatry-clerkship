@@ -167,6 +167,12 @@ class DeriveTests(unittest.TestCase):
                          ["reasoning_cases.json", "reasoning_cases_resident.json"])
         self.assertNotIn("topic_meta.json", pages["review.html"]["extraSources"])
 
+    def test_concept_candidate_is_explicit_but_ledger_is_not_a_tool_input(self):
+        pages = {p["slug"]: p for p in shipped_pages.derive(ROOT)["pages"]}
+        sources = pages["review.html"]["extraSources"]
+        self.assertIn("13_Faculty_Resources/_automation/site_build/concept_candidates.json", sources)
+        self.assertFalse(any(source.endswith("reviewed.json") for source in sources))
+
     def test_new_teaching_asset_is_discovered_without_a_page_allowlist(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = synthetic_root(tmp)

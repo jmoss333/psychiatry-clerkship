@@ -2357,3 +2357,18 @@ function fdWire(root, initialState, opts){
   }
   return controller(true);
 }
+
+/* A request is authorized only by the currently mounted learner Review window. */
+function fdConceptWeekContext(event,origin,frame,state,index,preview){
+  var data=event&&event.data;
+  if(preview||!event||event.origin!==origin||!frame||event.source!==frame.contentWindow||
+     !state||state.openId!=='review.html'||!Number.isInteger(state.week)||state.week<1||state.week>6||
+     !data||data.type!=='cw:concept-week-request'||Object.keys(data).sort().join(',')!=='nonce,type'||
+     typeof data.nonce!=='string'||!/^[a-f0-9]{32}$/.test(data.nonce))return null;
+  var weeks=index&&index.weeks;
+  var week=Array.isArray(weeks)?weeks.find(function(w){return w&&w.n===state.week;}):null;
+  if(!week||!Array.isArray(week.items))return null;
+  var refs=week.items.map(function(item){return item&&item.ref;});
+  if(refs.length>500||!refs.every(function(ref){return typeof ref==='string'&&/^[A-Za-z0-9_-]+\.(md|html)$/.test(ref);}))return null;
+  return {type:'cw:concept-week-context',nonce:data.nonce,week:state.week,refs:refs};
+}
