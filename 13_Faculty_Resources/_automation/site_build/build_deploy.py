@@ -7,6 +7,7 @@ from pathlib import Path
 # so these no longer exist as two drifting copies.
 import common
 import concept_cards
+import review_companions
 import hashlib
 import frontdoor_catalog
 import shipped_pages
@@ -734,6 +735,12 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 _concept_raw = concept_cards.feed_bytes(Path(LIB), "ms3")
 (Path(OUT) / "tools" / "concepts.json").write_bytes(_concept_raw)
 common.inject_concept_digest(Path(OUT), hashlib.sha256(_concept_raw).hexdigest())
+
+# One explicitly paired, source-backed evidence bridge. The output is small,
+# plain JSON; review.html never derives study claims from quiz feedback.
+(Path(OUT) / "tools" / "review_companions.json").write_bytes(
+    review_companions.feed_bytes(Path(LIB), "ms3")
+)
 
 # ---------- SERVICE WORKER ----------
 # Last artifact step: the precache manifest must reflect the completed,

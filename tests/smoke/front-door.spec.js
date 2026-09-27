@@ -3922,9 +3922,10 @@ test('Concepts Today released count, phone keyboard recall and trusted Path cont
   await page.goto('/');
   await expect(page.locator('[data-fd-concept-status]')).toHaveCount(0);
   await expect(page.locator('.fd-due__label')).toHaveText('1 review due');
-  await page.locator('[data-fd-open="review.html"]:visible').first().click();
+  await page.locator('.fd-due:visible').first().click();
+  await expect(page).toHaveURL(/tool=review\.html.*lane=all/);
   const tool=page.locator('#content iframe.toolframe').contentFrame();
-  await expect(tool.getByRole('button',{name:'This week',exact:true})).toBeVisible();
+  await expect(tool.locator('.allrow .chip')).toHaveAttribute('aria-pressed','true');
   await tool.getByRole('button',{name:/Start review/}).click();
   await expect(tool.locator('body')).not.toContainText(card.reveal);
   await tool.getByRole('button',{name:'Reveal one way to do it'}).focus();
@@ -3934,13 +3935,60 @@ test('Concepts Today released count, phone keyboard recall and trusted Path cont
   await page.screenshot({path:join(tmpdir(),'task5-concepts-'+info.project.name+'.png'),fullPage:true});
   await tool.getByRole('button',{name:/^Good/}).focus();
   await page.keyboard.press('Enter');
-  await expect(tool.locator('body')).not.toContainText('Next due:');
-  await expect(tool.locator('.qtext')).toBeFocused();
-  await tool.getByRole('button',{name:'End session',exact:true}).click();
+  await expect(tool.locator('.cw-receipt')).toBeVisible();
+  await expect(tool.locator('#cwReviewDashBtn')).toBeFocused();
   await expect(tool.locator('body')).toContainText('Next due:');
   await tool.locator('a[href*="page='+card.page+'"]').first().click();
   await expect(page.locator('.fd-reader .fd-src')).toHaveText(card.page);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('Review companion stays hidden until reveal and opens the exact article card',async({page},info)=>{
+  const companion=await (await page.request.get('/tools/review_companions.json')).json();
+  const pair=companion.pairs[0];
+  const concepts=await (await page.request.get('/tools/concepts.json')).json();
+  const clinical=concepts.cards.find(card=>card.id===pair.clinicalCardId);
+  const quizzes=await (await page.request.get('/tools/quizzes.json')).json();
+  const article=quizzes.decks.find(deck=>pair.articleCardId.startsWith(deck.id+'#'));
+  const question=article.questions[Number(pair.articleCardId.split('#')[1])];
+  expect(clinical).toBeTruthy();
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[clinical.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/?tool=review.html&lane=clerkship&focus='+encodeURIComponent(clinical.id));
+  const tool=page.locator('#content iframe.toolframe').contentFrame();
+  await expect(tool.locator('.qtext')).toHaveText(clinical.q);
+  await expect(tool.locator('.bridge')).toHaveCount(0);
+  await expect(tool.locator('body')).not.toContainText(pair.result);
+  await tool.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await expect(tool.locator('.bridge')).toContainText(pair.result);
+  await expect(tool.locator('.bridge')).toContainText(pair.limitation);
+  await tool.getByRole('link',{name:/Study companion article card/}).click();
+  await expect(tool.locator('.qtext')).toHaveText(question.q);
+});
+
+test('a fresh companion card waits when the shared daily new-card limit is reached',async({page},info)=>{
+  const companion=await (await page.request.get('/tools/review_companions.json')).json();
+  const pair=companion.pairs[0];
+  await seedApp(page,info);
+  await page.addInitScript(()=>{
+    const now=new Date();
+    const day=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+    localStorage.setItem('cw_srs_v1',JSON.stringify({v:1,cards:{},day:{lastDay:day,newToday:30},
+      settings:{newPerDay:5,userSet:true},stats:{seen:0,correct:0}}));
+  });
+  await page.goto('/tools/review.html?lane=landmark&focus='+encodeURIComponent(pair.articleCardId));
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  await expect(page.getByRole('status').filter({hasText:'new-card limit is reached for today'})).toBeVisible();
+  await expect(page.getByRole('button',{name:/Landmark Evidence/})).toHaveAttribute('aria-pressed','true');
+});
+
+test('malformed successful Review feeds show unavailable instead of false zero counts',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/quizzes.json*',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
+  await page.route('**/tools/review_companions.json',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Landmark Evidence unavailable');
+  await expect(page.locator('body')).toContainText('Study companion unavailable');
+  await expect(page.getByRole('button',{name:/Landmark Evidence/})).toContainText('Counts unavailable');
 });
 
 test('Concepts altered feed visibly leaves Today count incomplete',async({page},info)=>{

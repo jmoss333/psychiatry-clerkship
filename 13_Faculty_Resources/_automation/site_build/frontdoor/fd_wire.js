@@ -236,6 +236,10 @@ function fdExtraSearch(search){
 
 function fdSearchOutsideBlock(search){
   var params=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  /* Review lane and one-card focus are route-local. Ordinary Back/tab/resource
+     navigation must not carry either into a later direct Review visit. */
+  params.delete('lane');
+  params.delete('focus');
   if(params.has('block')){
     params.delete('block'); params.delete('n'); params.delete('limit'); params.delete('cat');
   }
@@ -250,10 +254,17 @@ function fdRouteForTab(tab, search, libraryView){
   return '?tab='+encodeURIComponent(tab)+(extra?'&'+extra:'');
 }
 
-function fdRouteForRef(ref, search, blockNavigation, origin){
+function fdRouteForRef(ref, search, blockNavigation, origin, reviewNavigation){
   var key=/\.html$/.test(String(ref||''))?'tool':'page';
   var params=fdParamsWithoutRoute(blockNavigation===true?search:fdSearchOutsideBlock(search));
   var previous=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  /* A deliberate Review deep link carries its lane and companion focus. Other Front Door
+     navigation clears them, so a later ordinary visit starts in the default Review lane. */
+  if(ref==='review.html'&&reviewNavigation===true){
+    var lane=previous.get('lane');
+    if(lane) params.set('lane',lane);
+    if(lane&&lane!=='all'&&previous.has('focus')) params.set('focus',previous.get('focus'));
+  }
   var tab=origin&&fdValidTab(origin.tab)?origin.tab:previous.get('tab');
   var view=origin?origin.libraryView:previous.get('library');
   if(tab==='library'&&view==='full'){
@@ -505,7 +516,7 @@ function fdDispatch(attrs, context, state){
       };
     }
     tab=fdValidTab(s.tab)?s.tab:'today';
-    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation,s);
+    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation,s,c.reviewNavigation);
     if(s.searchOpen&&s.query&&!fdIsTool(ref)){
       resourceRoute+='&guideFind='+encodeURIComponent(String(s.query).trim().slice(0,160));
     }

@@ -320,6 +320,10 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
     '13_Faculty_Resources/_automation/site_build/site_manifest.json',
     '13_Faculty_Resources/_automation/site_build/shipped_pages.json',
     '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json',
+    // The companion projection validates the canonical registry at build time.
+    // Its selected fields are pinned by the pair map, so the entire registry is
+    // deliberately not an attestation input in shipped_pages.json.
+    'evidence_registry.json',
     ...toolInputs,
   ])) {
     const target = path.join(fixture, rel);
