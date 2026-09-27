@@ -3321,6 +3321,9 @@
     fdController=null;
   }
   function fdEditionRuntimeFallback(receipt,state){
+    /* Verification starts only after successful wiring. Early fallback must not promise
+       an in-flight check that was never started. */
+    if(conceptDueState.status==='checking')conceptDueState={status:'unavailable',releasedIds:null};
     fdEditionStartupGeneration++;
     fdEditionCleanupWiring();
     if(fdEditionStartupHistoryDirty)fdEditionRestoreHistory(fdEditionStartupHistory);

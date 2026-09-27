@@ -1232,6 +1232,8 @@ async function coreRenderSignature(page) {
       app.querySelector('#routeStatus')?.replaceChildren();
       // Offline readiness updates independently; offline.spec.js owns that surface's behavior.
       app.querySelector('[data-fd-offline-entry]')?.remove();
+      // Feed readiness is independent of edition rollback; Concepts specs own its states.
+      app.querySelector('[data-fd-concept-status]')?.remove();
       return app.outerHTML;
     })(),
   }));
@@ -1914,6 +1916,7 @@ test('hostile dialog on a real switch preserves the active edition and leaves no
     await expect(error).toContainText('EDITION_RUNTIME');
     await expect(error).toHaveAttribute('tabindex', '-1');
     await expect(error).toBeFocused();
+    await expect(learner.page.locator('[data-fd-concept-status]')).toContainText('unavailable');
     await expect(learner.page.locator('dialog.fd-edition-switch,.fd-edition-card,.fd-edition-local')).toHaveCount(0);
     expect(await storageSnapshot(learner.page, audience)).toEqual(before);
     expect(await coreRenderSignature(learner.page)).toEqual(canonicalCore);
