@@ -67,6 +67,13 @@ ledger_receipt_into() {
 
 python3 "$LIB/13_Faculty_Resources/_automation/test_validate_curriculum.py"
 python3 "$HERE/test_welcome_compass.py"
+# Native Concepts contracts run for both audiences in CI, local verify and Netlify.
+(
+  cd "$LIB"
+  python3 13_Faculty_Resources/_automation/site_build/test_concept_cards.py
+  python3 13_Faculty_Resources/_automation/site_build/test_concept_build.py
+  python3 13_Faculty_Resources/_automation/site_build/test_concept_package.py
+)
 python3 "$LIB/13_Faculty_Resources/_automation/validate_topic_meta.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_curriculum.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_rotation_edition_schema.py"

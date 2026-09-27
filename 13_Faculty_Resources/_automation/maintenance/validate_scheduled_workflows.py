@@ -201,7 +201,6 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Unit — faculty export tools (adobe packet, faculty polish, pdf library)"),
             ("uses", "actions/setup-node"),
             ("name", "Unit — root node regression tests (tests/*.test.mjs)"),
-            ("name", "Unit — native Concepts source, build and package contracts"),
             ("name", "Validate — WCAG AA contrast tokens"),
             ("name", "Validate — shipped_pages.json is derived from current producers"),
             ("name", "Validate — analytics allowlist freshness"),
@@ -397,7 +396,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "674b60ea33bcf8545c60ce5094fc0aa64fc27c241db417e74ed26c5842670677"
     ),
-    "ci.yml": "d54e12c3c04f7261fe6b37482d7ffff4b114ff61776ee58ddbbf8e35faaaf80a",
+    "ci.yml": "babeede50264b1de455e816e3ac38c353152f69a823356024b64e278187c207b",
     "maintenance-governance-digest.yml": (
         "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),
