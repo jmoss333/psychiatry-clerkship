@@ -3010,6 +3010,130 @@ test('neither queue banner appears on an ordinary, verified load', async () => {
   assert.equal(document.getElementById('freshness-notice'), null);
 });
 
+test('a stranded branch automatically opens one rolling review request for its exact head', async () => {
+  const head = 'f'.repeat(40);
+  let getCount = 0;
+  const posts = [];
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      posts.push(JSON.parse(options.body));
+      return jsonResponse({ ok: true, pullRequest: 'https://github.example/pull/42' });
+    }
+    getCount += 1;
+    return jsonResponse({
+      ...serverState({ questions: [] }),
+      branchSync: getCount === 1 ? {
+        isolated: true, aheadBy: 2, behindBy: 0, rollingPr: null,
+        rollingPrChecked: true, threshold: 3, reasons: ['stranded-no-pr'], alarmed: true,
+        branch: 'attest/pending', baseBranch: 'main', head,
+      } : {
+        isolated: true, aheadBy: 2, behindBy: 0,
+        rollingPr: 'https://github.example/pull/42', rollingPrChecked: true,
+        threshold: 3, reasons: [], alarmed: false,
+        branch: 'attest/pending', baseBranch: 'main', head,
+      },
+    });
+  };
+
+  const { document } = await startHarness({ fetchImpl });
+  await flushAsyncWork();
+
+  assert.deepEqual(posts, [{ action: 'branch.ensure-pr' }]);
+  assert.equal(getCount, 2, 'success reloads the probe and confirms the review request');
+  assert.equal(document.getElementById('branch-sync-notice'), null);
+  assert.equal(document.getElementById('review-request-repair-alert'), null);
+});
+
+test('automatic review-request failure stays visible, does not loop, and can be retried manually', async () => {
+  const head = 'e'.repeat(40);
+  let getCount = 0;
+  let postCount = 0;
+  let fail = true;
+  const fetchImpl = async (url, options = {}) => {
+    if (options.method === 'POST') {
+      postCount += 1;
+      return fail
+        ? jsonResponse({
+          error: {
+            code: 'github_unavailable',
+            message: 'The repository is temporarily unavailable. Try again later.',
+            retryable: true,
+          },
+        }, { ok: false, status: 502 })
+        : jsonResponse({ ok: true, pullRequest: 'https://github.example/pull/43' });
+    }
+    getCount += 1;
+    const repaired = !fail && postCount > 1;
+    return jsonResponse({
+      ...serverState({
+        questions: [],
+        items: [{
+          slug: 't_mood.md', title: 'Mood disorders', kind: 'page',
+          status: 'unreviewed', sites: ['ms3'],
+        }],
+      }),
+      branchSync: {
+        isolated: true, aheadBy: 2, behindBy: 0,
+        rollingPr: repaired ? 'https://github.example/pull/43' : null,
+        rollingPrChecked: true, threshold: 3,
+        reasons: repaired ? [] : ['stranded-no-pr'], alarmed: !repaired,
+        branch: 'attest/pending', baseBranch: 'main', head,
+      },
+    });
+  };
+
+  const harness = await startHarness({ fetchImpl });
+  await flushAsyncWork();
+  const { controller, document } = harness;
+
+  assert.equal(postCount, 1, 'the exact branch head is attempted automatically once');
+  const alert = document.getElementById('review-request-repair-alert');
+  assert.ok(alert);
+  assert.equal(alert.getAttribute('role'), 'alert');
+  assert.match(alert.textContent, /github_unavailable/);
+  assert.match(alert.textContent, /temporarily unavailable/i);
+  assert.equal(document.getElementById('retry-open-review-request')?.textContent,
+    'Retry opening PR');
+
+  await makeCurrentContentPreviewReady(harness);
+  assert.match(document.getElementById('review-request-repair-alert')?.textContent,
+    /github_unavailable/, 'preview announcements cannot erase the repository failure');
+
+  await controller.load({ silent: true });
+  await flushAsyncWork();
+  assert.equal(postCount, 1, 're-rendering the same stranded head cannot start a repair loop');
+  assert.equal(getCount, 2);
+
+  fail = false;
+  await document.getElementById('retry-open-review-request').dispatch('click');
+  await flushAsyncWork();
+  assert.equal(postCount, 2, 'the explicit Retry button may repeat the request');
+  assert.equal(document.getElementById('review-request-repair-alert'), null);
+  assert.equal(document.getElementById('branch-sync-notice'), null);
+});
+
+test('a stranded response without an exact branch head retains the manual repair only', async () => {
+  let postCount = 0;
+  const { document } = await startHarness({
+    fetchImpl: async (url, options = {}) => {
+      if (options.method === 'POST') postCount += 1;
+      return jsonResponse({
+        ...serverState({ questions: [] }),
+        branchSync: {
+          isolated: true, aheadBy: 1, behindBy: 0, rollingPr: null,
+          rollingPrChecked: true, threshold: 3, reasons: ['stranded-no-pr'], alarmed: true,
+          branch: 'attest/pending', baseBranch: 'main',
+        },
+      });
+    },
+  });
+  await flushAsyncWork();
+
+  assert.equal(postCount, 0, 'an unversioned response cannot authorize automatic repair');
+  assert.equal(document.getElementById('reopen-review-request')?.textContent,
+    'Reopen review request');
+});
+
 test('page and tool use the same Live Review Resolve Confirm rail and clear content checks on selection', async () => {
   const harness = await startHarness({
     fetchImpl: async () => jsonResponse(serverState({
@@ -4684,7 +4808,15 @@ test('the confirmed-action ledger links the rolling pull request returned by the
 
 test('a pull-request housekeeping failure stays distinct from the confirmed commit', async () => {
   const harness = await startHarnessWithTwoPendingContentItems({
-    postReceipt: { pullRequest: null, pullRequestError: true },
+    postReceipt: {
+      pullRequest: null,
+      pullRequestError: true,
+      pullRequestFailure: {
+        code: 'github_request_failed',
+        message: 'The repository request failed. Try again later.',
+        retryable: true,
+      },
+    },
   });
   const { controller, document } = harness;
 
@@ -4700,6 +4832,10 @@ test('a pull-request housekeeping failure stays distinct from the confirmed comm
     'the link and warning remain separate phrases for assistive technology');
   assert.match(lastAnnouncement(harness), /Attested t_mood\.md\./);
   assert.match(lastAnnouncement(harness), /rolling review request needs attention/i);
+  const alert = document.getElementById('review-request-repair-alert');
+  assert.equal(alert?.getAttribute('role'), 'alert');
+  assert.match(alert?.textContent, /github_request_failed/);
+  assert.match(alert?.textContent, /repository request failed/i);
 });
 
 test('Lock clears the temporary review sitting, reset notice, and action ledger', async () => {

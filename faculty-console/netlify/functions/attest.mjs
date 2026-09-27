@@ -226,6 +226,15 @@ function errorDescriptor(error) {
   };
 }
 
+function pullRequestFailure(error) {
+  const normalized = errorDescriptor(error);
+  return {
+    code: normalized.code,
+    message: normalized.message,
+    retryable: normalized.retryable === true,
+  };
+}
+
 function errorResponse(context, error) {
   const normalized = errorDescriptor(error);
   const details = {
@@ -882,7 +891,7 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
     return {
       isolated: true, aheadBy, behindBy, rollingPr, rollingPrChecked, threshold,
       reasons, alarmed: reasons.length > 0,
-      branch: settings.branch, baseBranch: settings.baseBranch,
+      branch: settings.branch, baseBranch: settings.baseBranch, head: branchHead,
     };
   }
 
@@ -891,24 +900,36 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
     const existing = await findRollingPullRequest();
     if (existing) return existing;
 
-    const createResponse = await githubRequest(
-      fetchImpl,
-      `${GITHUB_API}/repos/${settings.repo}/pulls`,
-      {
-        method: 'POST',
-        headers: githubHeaders(settings.token),
-        body: JSON.stringify({
-          title: 'attest: faculty review from the attestation console',
-          head: settings.branch,
-          base: settings.baseBranch,
-          body: 'Rolling pull request for faculty attestations.\n\n'
-            + 'Each sign-off in the console appends a commit here. Merge when the '
-            + 'review session is done; the console fast-forwards this branch from '
-            + `\`${settings.baseBranch}\` once it has been merged.`,
-          maintainer_can_modify: true,
-        }),
-      },
-    );
+    let createResponse;
+    try {
+      createResponse = await githubRequest(
+        fetchImpl,
+        `${GITHUB_API}/repos/${settings.repo}/pulls`,
+        {
+          method: 'POST',
+          headers: githubHeaders(settings.token),
+          body: JSON.stringify({
+            title: 'attest: faculty review from the attestation console',
+            head: settings.branch,
+            base: settings.baseBranch,
+            body: 'Rolling pull request for faculty attestations.\n\n'
+              + 'Each sign-off in the console appends a commit here. Merge when the '
+              + 'review session is done; the console fast-forwards this branch from '
+              + `\`${settings.baseBranch}\` once it has been merged.`,
+            maintainer_can_modify: true,
+          }),
+        },
+      );
+    } catch (error) {
+      // GitHub answers 422 when two console loads both observe no PR and the other
+      // request creates it first. Re-read once: if that PR now exists, the desired
+      // state was reached and this request can safely reuse it.
+      if (error instanceof GithubError && error.code === 'github_validation_failed') {
+        const raced = await findRollingPullRequest();
+        if (raced) return raced;
+      }
+      throw error;
+    }
     const created = await githubJson(createResponse);
     return githubHttpsUrl(created.html_url);
   }
@@ -3204,8 +3225,13 @@ async function handlePost({ repository, settings, body, attester }) {
     try {
       const pullRequest = await repository.ensureRollingPullRequest();
       if (pullRequest) return { ...result, pullRequest };
-    } catch {
-      return { ...result, pullRequest: null, pullRequestError: true };
+    } catch (error) {
+      return {
+        ...result,
+        pullRequest: null,
+        pullRequestError: true,
+        pullRequestFailure: pullRequestFailure(error),
+      };
     }
   }
   return result;

@@ -257,6 +257,8 @@ export function startFacultyConsole({
     reviewResetAnnouncement: '',
     deepLinkNotice: '',
     sessionActions: [],
+    reviewRequestAttempts: new Set(),
+    reviewRequestFailure: null,
     redTeamOpen: false,
     redTeamLoading: false,
     redTeamSnapshot: null,
@@ -444,6 +446,32 @@ export function startFacultyConsole({
     const message = responseMessage(payload, fallback);
     const code = text(payload?.error?.code);
     return code ? `${code}: ${message}` : message;
+  }
+
+  function normalizeReviewRequestFailure(value, {
+    code: fallbackCode = 'review_request_failed',
+    message: fallbackMessage = 'The rolling review request was not opened.',
+    retryable: fallbackRetryable = true,
+  } = {}) {
+    const candidate = record(value);
+    const candidateCode = text(candidate.code);
+    const code = /^[a-z0-9_.-]{1,80}$/i.test(candidateCode)
+      ? candidateCode : fallbackCode;
+    return {
+      code,
+      message: text(candidate.message) || fallbackMessage,
+      retryable: typeof candidate.retryable === 'boolean'
+        ? candidate.retryable : fallbackRetryable,
+    };
+  }
+
+  function strandedBranchHead(branchSync = state.server?.branchSync) {
+    const sync = record(branchSync);
+    const head = text(sync.head);
+    return Array.isArray(sync.reasons)
+      && sync.reasons.includes('stranded-no-pr')
+      && /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i.test(head)
+      ? head : '';
   }
 
   async function responseJson(response) {
@@ -861,10 +889,18 @@ export function startFacultyConsole({
   function repositoryDelivery(payload) {
     const rawPullRequestUrl = text(payload?.pullRequest);
     const pullRequestUrl = safeExternalUrl(rawPullRequestUrl);
+    const pullRequestError = payload?.pullRequestError === true
+      || Boolean(rawPullRequestUrl && !pullRequestUrl);
     return {
       pullRequestUrl,
-      pullRequestError: payload?.pullRequestError === true
-        || Boolean(rawPullRequestUrl && !pullRequestUrl),
+      pullRequestError,
+      pullRequestFailure: pullRequestError
+        ? normalizeReviewRequestFailure(payload?.pullRequestFailure, rawPullRequestUrl ? {
+          code: 'invalid_response',
+          message: 'The rolling review request receipt was not a safe HTTPS URL.',
+          retryable: false,
+        } : {})
+        : null,
     };
   }
 
@@ -874,6 +910,7 @@ export function startFacultyConsole({
     commitUrl = null,
     pullRequestUrl = null,
     pullRequestError = false,
+    pullRequestFailure = null,
   }) {
     const actionKey = text(key);
     const actionMessage = text(message);
@@ -884,7 +921,15 @@ export function startFacultyConsole({
       commitUrl: safeExternalUrl(commitUrl),
       pullRequestUrl: safeExternalUrl(pullRequestUrl),
       pullRequestError: pullRequestError === true,
+      pullRequestFailure: pullRequestFailure
+        ? normalizeReviewRequestFailure(pullRequestFailure) : null,
     });
+    if (pullRequestError) {
+      state.reviewRequestFailure = {
+        ...normalizeReviewRequestFailure(pullRequestFailure),
+        head: strandedBranchHead(),
+      };
+    }
   }
 
   function clearSessionSitting() {
@@ -892,6 +937,8 @@ export function startFacultyConsole({
     state.reviewResetNotice = '';
     state.reviewResetAnnouncement = '';
     state.sessionActions = [];
+    state.reviewRequestAttempts = new Set();
+    state.reviewRequestFailure = null;
     state.contentMessage = '';
     state.contentCommitUrl = null;
     state.contentFeedbackKey = null;
@@ -1401,6 +1448,15 @@ export function startFacultyConsole({
       }
       state.server = { ...payload, student: studentBase.href, resident: residentSite.href };
       state.reviewItems = reviewItems;
+      const repairHead = strandedBranchHead(payload.branchSync);
+      const stillStranded = Array.isArray(payload.branchSync?.reasons)
+        && payload.branchSync.reasons.includes('stranded-no-pr');
+      if (!stillStranded) {
+        state.reviewRequestFailure = null;
+      } else if (repairHead && state.reviewRequestFailure?.head
+          && state.reviewRequestFailure.head !== repairHead) {
+        state.reviewRequestFailure = null;
+      }
       // Attribution is server-derived (ATTESTER_NAME); the console only displays it.
       state.reviewerLabel = text(payload.attester) || DEFAULT_REVIEWER;
       const contentHoldKey = expectedContentStatus?.status === 'reviewed'
@@ -1444,6 +1500,7 @@ export function startFacultyConsole({
       // leaving the selection wherever it happened to be.
       if (!advanceKey || !setSelectedReviewKey(advanceKey, { force: true })) chooseSelection();
       renderShell(focusId);
+      if (repairHead) void reopenReviewRequest({ automatic: true, expectedHead: repairHead });
       return true;
     } catch (error) {
       if (generation !== state.loadGeneration) return false;
@@ -1473,9 +1530,17 @@ export function startFacultyConsole({
   // alarm from the refreshed probe rather than from local optimism. No file is written
   // here, so there is no draft to protect and no conflict to resolve — a failure is
   // announced and the notice stays exactly as it was.
-  async function reopenReviewRequest() {
+  async function reopenReviewRequest({ automatic = false, expectedHead = '' } = {}) {
+    const head = text(expectedHead) || strandedBranchHead();
+    if (automatic) {
+      if (!head || state.reviewRequestAttempts.has(head)) return false;
+      state.reviewRequestAttempts.add(head);
+    }
     if (state.pending) return false;
     state.pending = true;
+    if (automatic && state.reviewRequestFailure?.head !== head) {
+      state.reviewRequestFailure = null;
+    }
     renderShell();
     try {
       const response = await fetchImpl(API, {
@@ -1492,10 +1557,15 @@ export function startFacultyConsole({
       }
       if (!response.ok) {
         state.pending = false;
-        announce(stableResponseMessage(payload, 'The review request was not reopened.'));
+        const failure = normalizeReviewRequestFailure(payload?.error, {
+          message: 'The review request was not reopened.',
+        });
+        state.reviewRequestFailure = { ...failure, head };
+        announce(`${failure.code}: ${failure.message}`);
         renderShell();
         return false;
       }
+      state.reviewRequestFailure = null;
       const reloaded = await load({ silent: true });
       if (reloaded) {
         announce(text(payload.pullRequest)
@@ -1505,9 +1575,15 @@ export function startFacultyConsole({
       return reloaded;
     } catch (error) {
       state.pending = false;
-      announce(error instanceof Error
-        ? `network_error: ${error.message}`
-        : 'network_error: The review request was not reopened.');
+      const failure = {
+        code: 'network_error',
+        message: error instanceof Error
+          ? error.message : 'The review request was not reopened.',
+        retryable: true,
+        head,
+      };
+      state.reviewRequestFailure = failure;
+      announce(`${failure.code}: ${failure.message}`);
       renderShell();
       return false;
     }
@@ -3674,7 +3750,7 @@ export function startFacultyConsole({
             target: '_blank',
             rel: 'noopener noreferrer',
           }, ['Open the rolling pull request']) : null,
-          syncNotice.action === 'ensure-pr' ? el('button', {
+          syncNotice.action === 'ensure-pr' && !state.reviewRequestFailure ? el('button', {
             id: 'reopen-review-request',
             class: 'quiet',
             type: 'button',
@@ -3784,6 +3860,24 @@ export function startFacultyConsole({
         ` · ${state.reviewedRevisions.size} saved-draft receipt${state.reviewedRevisions.size === 1 ? '' : 's'}`,
         ` · ${state.batchSelection.size} selected for batch`,
       ]),
+      state.reviewRequestFailure ? el('div', {
+        id: 'review-request-repair-alert',
+        class: 'session-notice branch-sync alert',
+        role: 'alert',
+      }, [
+        el('p', {}, [
+          'The attestation commit is safe, but its rolling pull request was not opened. ',
+          el('code', {}, [state.reviewRequestFailure.code]),
+          `: ${state.reviewRequestFailure.message}`,
+        ]),
+        el('button', {
+          id: 'retry-open-review-request',
+          class: 'quiet',
+          type: 'button',
+          disabled: state.pending === true,
+          onClick: () => void reopenReviewRequest(),
+        }, ['Retry opening PR']),
+      ]) : null,
       enrollmentCopy ? el('div', {
         id: 'batch-enrollment-feedback',
         class: `session-notice ${enrollment.status}`,
