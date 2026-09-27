@@ -77,6 +77,7 @@ function jsonResponse(status, body) {
  *  - pullListResponse: an exact override for the open-PR list response
  *  - createdPull: the GitHub response after opening a rolling PR
  *  - failPullRequest: the PR housekeeping call throws
+ *  - pullCreateRace: another request opens the PR between our list and create calls
  */
 function makeMock({
   branchMissing = false,
@@ -86,9 +87,11 @@ function makeMock({
   pullListResponse = undefined,
   createdPull = { html_url: 'https://github.example/pull/1' },
   failPullRequest = false,
+  pullCreateRace = false,
 } = {}) {
   const calls = [];
   let created = false;
+  let pullCreatedByRace = false;
   const fetchImpl = async (input, init = {}) => {
     const url = String(input);
     const method = (init.method || 'GET').toUpperCase();
@@ -146,9 +149,16 @@ function makeMock({
     if (url.includes('/pulls')) {
       if (failPullRequest) return jsonResponse(500, { message: 'boom' });
       if (method === 'GET') {
+        if (pullCreateRace && pullCreatedByRace) {
+          return jsonResponse(200, [{ html_url: 'https://github.example/pull/77' }]);
+        }
         return jsonResponse(200, pullListResponse === undefined
           ? (openPull ? [openPull] : [])
           : pullListResponse);
+      }
+      if (pullCreateRace) {
+        pullCreatedByRace = true;
+        return jsonResponse(422, { message: 'A pull request already exists.' });
       }
       return jsonResponse(201, createdPull);
     }
@@ -258,6 +268,11 @@ test('a pull-request failure does not fail an attestation that already committed
   const payload = JSON.parse(await response.text());
   assert.equal(payload.ok, true);
   assert.equal(payload.pullRequestError, true);
+  assert.deepEqual(payload.pullRequestFailure, {
+    code: 'github_request_failed',
+    message: 'The repository request failed. Try again later.',
+    retryable: true,
+  }, 'the successful attestation carries a safe, actionable PR failure receipt');
 });
 
 test('a malformed pull-request receipt warns without reclassifying the confirmed commit', async () => {
@@ -487,6 +502,8 @@ test('GET flags attestations stranded with no open review request', async () => 
     '"looked, found none" must be distinguishable from "never looked"');
   assert.equal(payload.branchSync.branch, ATTEST);
   assert.equal(payload.branchSync.baseBranch, BASE);
+  assert.equal(payload.branchSync.head, BRANCH_HEAD,
+    'automatic repair must be scoped to the exact stranded branch revision');
   assert.deepEqual(payload.branchSync.reasons, ['stranded-no-pr']);
   assert.equal(called(mock.calls, 'GET', '/pulls').length, 1, 'one list call for the probe');
   assert.equal(called(mock.calls, 'POST', '/pulls').length, 0, 'a GET never opens one');
@@ -509,6 +526,17 @@ test('branch.ensure-pr reuses an open review request rather than opening a secon
   const payload = await (await handlerWith(mock)(ensurePrRequest())).json();
   assert.equal(payload.pullRequest, 'https://github.example/pull/7');
   assert.equal(called(mock.calls, 'POST', '/pulls').length, 0);
+});
+
+test('branch.ensure-pr recovers when another request wins the pull-request creation race', async () => {
+  const mock = makeMock({ ahead: 4, pullCreateRace: true });
+  const response = await handlerWith(mock)(ensurePrRequest());
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.pullRequest, 'https://github.example/pull/77');
+  assert.equal(called(mock.calls, 'POST', '/pulls').length, 1);
+  assert.equal(called(mock.calls, 'GET', '/pulls').length, 2,
+    'a 422 create race is resolved by re-reading the now-open rolling PR once');
 });
 
 test('ATTEST_BASE_LAG_ALARM overrides the lag threshold', async () => {

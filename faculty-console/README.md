@@ -267,9 +267,12 @@ Attestations therefore commit to `GIT_BRANCH` and reach `GIT_BASE_BRANCH` throug
 request**, which the server attempts to open on the first write and reuse thereafter. This is
 best-effort housekeeping performed only after the attestation commit succeeds. If GitHub cannot
 open or find the pull request, the console keeps the confirmed commit receipt and shows a
-**rolling review request needs attention** warning in the session ledger. A repository maintainer
-should then open or reuse a pull request from `GIT_BRANCH` to `GIT_BASE_BRANCH`; the attestation
-must not be repeated. CI still gates every attestation, and protection on `main` is untouched.
+**rolling review request needs attention** warning in the session ledger. On the next load, a
+`stranded-no-pr` probe carrying the exact branch-head SHA makes one automatic attempt to open or
+reuse that rolling request. A failed attempt stays in a persistent `role="alert"` notice with its
+stable error code and a **Retry opening PR** button; ordinary preview status cannot erase it. The
+attestation must not be repeated. CI still gates every attestation, and protection on `main` is
+untouched.
 
 Before each write the console **fast-forwards the attestation branch from the base branch, but only
 when the branch carries nothing of its own** (`compare(base...branch).ahead_by === 0`). This is the
@@ -363,7 +366,8 @@ open review request:
 gh pr list --repo jmoss333/psychiatry-clerkship --head attest/pending --state open
 gh pr update-branch <number> --repo jmoss333/psychiatry-clerkship
 
-# If no rolling PR exists, press "Reopen review request" in the console banner, or:
+# If no rolling PR exists, the console tries once automatically. Use "Retry opening PR"
+# after a reported failure (or "Reopen review request" on an older/unversioned response), or:
 gh pr create --repo jmoss333/psychiatry-clerkship --base main --head attest/pending \
   --title 'attest: faculty review from the attestation console'
 
