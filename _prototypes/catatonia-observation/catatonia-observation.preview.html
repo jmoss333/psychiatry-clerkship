@@ -35,6 +35,15 @@
     h1 { font-size: clamp(2.35rem, 5vw, 4.5rem); margin: 0 0 12px; max-width: 14ch; }
     .intro { max-width: 61ch; margin: 0; color: var(--muted); font-size: clamp(.96rem, 1.3vw, 1.08rem); }
     .badge { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; background: var(--coral-wash); border: 1px solid #e4b7a9; border-radius: 100px; color: #7f3929; padding: 9px 14px; font-weight: 750; font-size: .79rem; }
+    .scene-picker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 24px; }
+    .scene-option { display: flex; align-items: center; gap: 13px; min-width: 0; text-align: left; background: rgba(255,253,248,.7); color: var(--ink); border: 1px solid var(--line); border-radius: 13px; padding: 13px 14px; }
+    .scene-option:hover { border-color: var(--teal); }
+    .scene-option[aria-pressed="true"] { background: var(--teal-wash); border-color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal); }
+    .scene-option svg { width: 34px; height: 34px; flex: 0 0 34px; color: var(--teal); }
+    .scene-option strong, .scene-option small { display: block; }
+    .scene-option strong { font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-size: 1.03rem; line-height: 1.2; }
+    .scene-option small { color: var(--muted); font-size: .72rem; line-height: 1.25; margin-top: 4px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
     .grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 24px; align-items: start; }
     .scene-card, .practice-card { min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); }
     .scene-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding: 24px 28px 14px; }
@@ -43,6 +52,8 @@
     .scene-wrap { padding: 0 16px; }
     .scene { position: relative; overflow: hidden; aspect-ratio: 16 / 10; min-height: 300px; background: #dcebe6; border: 1px solid #c7d9d0; border-radius: 16px; }
     .scene svg { width: 100%; height: 100%; display: block; }
+    .scene [data-art] { display: none; }
+    .scene[data-scene="greeting"] [data-art="greeting"], .scene[data-scene="across-time"] [data-art="across-time"], .scene[data-scene="more-than-speech"] [data-art="more-than-speech"], .scene[data-scene="two-witnesses"] [data-art="two-witnesses"] { display: inline; }
     .scene .clinician { transition: transform .65s ease; }
     .scene[data-frame="0"] .clinician { transform: translateX(-70px); }
     .scene[data-frame="1"] .clinician, .scene[data-frame="2"] .clinician, .scene[data-frame="3"] .clinician { transform: translateX(0); }
@@ -50,6 +61,11 @@
     .scene[data-frame="1"] .greeting, .scene[data-frame="2"] .greeting { opacity: 1; }
     .scene[data-frame="2"] .pause-cue { opacity: 1; }
     .scene[data-frame="3"] .note-cue { opacity: 1; }
+    .scene .time-pause, .scene .time-later, .scene .time-summary, .scene .speech-question, .scene .speech-pause, .scene .speech-point, .scene .speech-write, .scene .witness-report, .scene .witness-bedside, .scene .witness-summary { opacity: 0; transition: opacity .35s ease; }
+    .scene[data-scene="across-time"][data-frame="1"] .time-pause { opacity: 1; }
+    .scene[data-scene="across-time"][data-frame="2"] .time-later, .scene[data-scene="across-time"][data-frame="3"] .time-later, .scene[data-scene="across-time"][data-frame="3"] .time-summary { opacity: 1; }
+    .scene[data-scene="more-than-speech"][data-frame="0"] .speech-question, .scene[data-scene="more-than-speech"][data-frame="1"] .speech-question, .scene[data-scene="more-than-speech"][data-frame="1"] .speech-pause, .scene[data-scene="more-than-speech"][data-frame="2"] .speech-point, .scene[data-scene="more-than-speech"][data-frame="3"] .speech-write { opacity: 1; }
+    .scene[data-scene="two-witnesses"][data-frame="1"] .witness-report, .scene[data-scene="two-witnesses"][data-frame="3"] .witness-report, .scene[data-scene="two-witnesses"][data-frame="2"] .witness-bedside, .scene[data-scene="two-witnesses"][data-frame="3"] .witness-bedside, .scene[data-scene="two-witnesses"][data-frame="3"] .witness-summary { opacity: 1; }
     .scene .gentle-ring { animation: ring 2.3s ease-in-out infinite; transform-origin: center; }
     @keyframes ring { 50% { opacity: .38; transform: scale(1.08); } }
     .scene-label { position: absolute; left: 16px; top: 16px; background: rgba(255, 253, 248, .95); border: 1px solid #c7d9d0; color: var(--teal); border-radius: 100px; padding: 6px 11px; font-size: .72rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
@@ -98,14 +114,15 @@
     .links a { display: inline-block; border: 1px solid var(--teal); border-radius: 9px; padding: 9px 12px; font-weight: 700; font-size: .83rem; text-decoration: none; }
     .links a:hover { background: var(--teal-wash); }
     footer { color: var(--muted); font-size: .75rem; margin: 24px 0 8px; }
-    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .hero { align-items: start; flex-direction: column; } .badge { order: -1; } }
-    @media (max-width: 600px) { .scene-head, .caption, .controls { padding-left: 17px; padding-right: 17px; } .scene-wrap { padding: 0 9px; } .scene { min-height: 240px; aspect-ratio: 1.22; } .timeline { padding-left: 17px; padding-right: 17px; grid-template-columns: repeat(2, 1fr); } .below { grid-template-columns: 1fr; } .controls small { margin-left: 0; } .practice-head, .practice-body { padding-left: 18px; padding-right: 18px; } }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .hero { align-items: start; flex-direction: column; } .badge { order: -1; } .scene-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .scene-picker { gap: 7px; } .scene-option { gap: 8px; padding: 10px; } .scene-option svg { width: 27px; height: 27px; flex-basis: 27px; } .scene-option strong { font-size: .91rem; } .scene-option small { font-size: .65rem; } .scene-head, .caption, .controls { padding-left: 17px; padding-right: 17px; } .scene-wrap { padding: 0 9px; } .scene { min-height: 0; aspect-ratio: 16 / 10; } .timeline { padding-left: 17px; padding-right: 17px; grid-template-columns: repeat(2, 1fr); } .below { grid-template-columns: 1fr; } .controls small { margin-left: 0; } .practice-head, .practice-body { padding-left: 18px; padding-right: 18px; } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
     @media (prefers-color-scheme: dark) {
       :root { --ink: #eef3ed; --muted: #b9c9bf; --paper: #172a27; --card: #213631; --line: #49625a; --teal: #a0dfc7; --teal-wash: #294f43; --coral: #f2ab91; --coral-wash: #513a32; --shadow: 0 20px 55px rgba(0, 0, 0, .23); }
       body { background: radial-gradient(circle at 5% 4%, #294a3f, transparent 38%), var(--paper); }
       .scene { background: #25463e; border-color: #4e6b61; }
       .scene-label, .info { background: #263d36; }
+      .scene-option { background: #253d36; }
       .step { background: #284039; }
       .choice span { background: #253d36; }
       .choice span::before { background: #2b493f; }
@@ -128,17 +145,38 @@
     <span class="badge">PREVIEW · Unattested · Not published</span>
   </div>
 
+  <nav class="scene-picker" aria-label="Choose an observation scene">
+    <button class="scene-option" type="button" data-scene-select="greeting" aria-pressed="true">
+      <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M5 7h26v17H17l-8 6v-6H5Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M11 14h14M11 19h9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <span><strong>A brief greeting</strong><small>One short encounter</small></span>
+    </button>
+    <button class="scene-option" type="button" data-scene-select="across-time" aria-pressed="false">
+      <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><circle cx="18" cy="18" r="13" stroke="currentColor" stroke-width="2.5"/><path d="M18 9v10l7 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><strong>Across time</strong><small>Two separate check-ins</small></span>
+    </button>
+    <button class="scene-option" type="button" data-scene-select="more-than-speech" aria-pressed="false">
+      <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M6 7h24v16H17l-8 6v-6H6Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M12 15h12M12 19h6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <span><strong>More than speech</strong><small>Gesture and writing</small></span>
+    </button>
+    <button class="scene-option" type="button" data-scene-select="two-witnesses" aria-pressed="false">
+      <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2.5"/><circle cx="25" cy="12" r="5" stroke="currentColor" stroke-width="2.5"/><path d="M3 29c0-6 4-10 9-10s9 4 9 10M17 22c2-2 5-3 8-3 5 0 8 4 8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <span><strong>Two witnesses</strong><small>Who saw what, when</small></span>
+    </button>
+  </nav>
+  <span class="sr-only" id="sceneStatus" role="status" aria-live="polite" aria-atomic="true"></span>
+
   <div class="grid">
     <section class="scene-card" aria-labelledby="sceneTitle">
       <div class="scene-head"><h2 id="sceneTitle">A brief greeting</h2><p>Illustration · narrated in text</p></div>
       <div class="scene-wrap">
-        <div class="scene" id="scene" data-frame="0" role="img" aria-label="Schematic inpatient room: a person sits in a chair, looking toward their lap, while a clinician approaches. The illustrated person's position stays unchanged throughout the short scene.">
+        <div class="scene" id="scene" data-scene="greeting" data-frame="0" role="img" aria-label="Schematic inpatient room: a person sits in a chair, looking toward their lap, while a clinician approaches.">
           <span class="scene-label">Fictional scene</span>
-          <svg viewBox="0 0 720 450" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice">
+          <svg viewBox="0 0 720 450" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid meet">
             <defs>
               <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#ebf3e9"/><stop offset="1" stop-color="#cadcd4"/></linearGradient>
               <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#b8ccc0"/><stop offset="1" stop-color="#96b5a7"/></linearGradient>
             </defs>
+            <g data-art="greeting">
             <rect width="720" height="450" fill="url(#wall)"/>
             <path d="M0 331H720V450H0Z" fill="url(#floor)"/>
             <path d="M0 331H720" stroke="#87a99a" stroke-width="4"/>
@@ -192,6 +230,133 @@
               <path d="M484 262h82M484 278h69M484 294h77" stroke="#a2bdb0" stroke-width="5" stroke-linecap="round"/>
               <path d="m544 315 28-28" stroke="#a96e4c" stroke-width="6" stroke-linecap="round"/>
             </g>
+            </g>
+            <g data-art="across-time">
+              <rect width="720" height="450" fill="#d9e9df"/>
+              <path d="M0 365h720v85H0Z" fill="#a9c4b3"/>
+              <rect x="38" y="57" width="300" height="331" rx="18" fill="#f8f8ed" stroke="#8fae9b" stroke-width="4"/>
+              <rect x="382" y="57" width="300" height="331" rx="18" fill="#f8f8ed" stroke="#8fae9b" stroke-width="4"/>
+              <path d="M360 78v291" stroke="#6e9989" stroke-width="4" stroke-dasharray="8 11"/>
+              <text x="62" y="96" fill="#2c6256" font-family="system-ui,sans-serif" font-size="19" font-weight="700">First check-in</text>
+              <text x="405" y="96" fill="#2c6256" font-family="system-ui,sans-serif" font-size="19" font-weight="700">Later check-in</text>
+              <path d="M86 319h193" stroke="#759688" stroke-width="8" stroke-linecap="round"/>
+              <path d="M156 235v100m88-100v100" stroke="#678878" stroke-width="12" stroke-linecap="round"/>
+              <rect x="146" y="222" width="107" height="85" rx="13" fill="#8da99a"/>
+              <path d="M179 306l-10 44m52-44 9 44" stroke="#43554e" stroke-width="20" stroke-linecap="round"/>
+              <path d="M168 348h-20m79 0h22" stroke="#34483e" stroke-width="11" stroke-linecap="round"/>
+              <path d="M199 181c-30 0-43 16-44 46l-1 45h94l-2-45c-1-29-14-46-47-46Z" fill="#b76850"/>
+              <path d="M168 214c-8 23-6 44 2 63m60-63c8 23 6 44-1 63" fill="none" stroke="#9c5542" stroke-width="14" stroke-linecap="round"/>
+              <path d="M171 277l18 13m40-13-19 13" stroke="#b98266" stroke-width="11" stroke-linecap="round"/>
+              <circle cx="199" cy="153" r="34" fill="#bc8b70"/>
+              <path d="M166 151c-3-27 13-43 35-43 26 0 38 20 34 42-18-8-41-7-69 1Z" fill="#46524a"/>
+              <path d="M187 167h23" stroke="#785c4d" stroke-width="3" stroke-linecap="round"/>
+              <g class="time-pause">
+                <circle cx="285" cy="166" r="25" fill="#fff5df" stroke="#bf8754" stroke-width="3"/>
+                <path d="M277 156v20m15-20v20" stroke="#a56843" stroke-width="5" stroke-linecap="round"/>
+              </g>
+              <path d="M440 317h191" stroke="#759688" stroke-width="8" stroke-linecap="round"/>
+              <path d="M491 234v101m88-101v101" stroke="#678878" stroke-width="12" stroke-linecap="round"/>
+              <rect x="481" y="221" width="107" height="85" rx="13" fill="#8da99a"/>
+              <rect x="613" y="245" width="44" height="9" rx="4" fill="#829c8e"/>
+              <path d="M631 251v74" stroke="#829c8e" stroke-width="9"/>
+              <rect x="614" y="217" width="28" height="30" rx="4" fill="#e2ac76" stroke="#a77551" stroke-width="3"/>
+              <path d="M618 223h20" stroke="#f3d0a7" stroke-width="3"/>
+              <g class="time-later">
+                <path d="M512 303l-9 47m51-45 9 45" stroke="#43554e" stroke-width="20" stroke-linecap="round"/>
+                <path d="M500 348h-20m80 0h21" stroke="#34483e" stroke-width="11" stroke-linecap="round"/>
+                <path d="M532 180c-28 0-42 17-44 47l-2 44h93l-3-44c-2-30-16-47-44-47Z" fill="#b76850"/>
+                <path d="M497 213c-5 22-5 38 4 59" stroke="#9c5542" stroke-width="14" stroke-linecap="round"/>
+                <path d="M564 214c18 12 31 16 54 15" stroke="#9c5542" stroke-width="15" stroke-linecap="round"/>
+                <circle cx="532" cy="153" r="34" fill="#bc8b70"/>
+                <path d="M499 151c-3-27 13-43 35-43 26 0 38 20 34 42-18-8-41-7-69 1Z" fill="#46524a"/>
+                <path d="M520 167h23" stroke="#785c4d" stroke-width="3" stroke-linecap="round"/>
+              </g>
+              <g class="time-summary">
+                <rect x="232" y="376" width="256" height="47" rx="23" fill="#fffdf8" stroke="#81a895" stroke-width="3"/>
+                <text x="256" y="406" fill="#315f55" font-family="system-ui,sans-serif" font-size="16" font-weight="700">The interval is not shown</text>
+              </g>
+            </g>
+            <g data-art="more-than-speech">
+              <rect width="720" height="450" fill="#e2eee2"/>
+              <path d="M0 343h720v107H0Z" fill="#a5c1ae"/>
+              <rect x="474" y="73" width="154" height="135" rx="9" fill="#f6f9eb" stroke="#88ac99" stroke-width="8"/>
+              <path d="M550 76v129M478 135h145" stroke="#88ac99" stroke-width="7"/>
+              <path d="M487 183c39-15 68-10 132-27v48H487Z" fill="#b5d3bb"/>
+              <ellipse cx="365" cy="361" rx="188" ry="24" fill="#6b9a82" opacity=".25"/>
+              <path d="M326 245l-18 91h118l-18-91" fill="#7c9b87"/>
+              <path d="M337 328v37m83-37v37" stroke="#517362" stroke-width="12" stroke-linecap="round"/>
+              <path d="M342 320l-23 49m74-49 22 49" stroke="#3f5149" stroke-width="19" stroke-linecap="round"/>
+              <path d="M316 366h-19m116 0h20" stroke="#34463d" stroke-width="11" stroke-linecap="round"/>
+              <path d="M367 207c-28 0-42 17-43 49l-4 55h95l-4-55c-1-32-15-49-44-49Z" fill="#b56850"/>
+              <path d="M334 251l-11 57m79-56 10 53" stroke="#9b513d" stroke-width="15" stroke-linecap="round"/>
+              <circle cx="367" cy="174" r="35" fill="#bd8b70"/>
+              <path d="M333 172c-3-29 15-45 37-45 24 0 38 19 34 44-16-9-37-8-71 1Z" fill="#444e47"/>
+              <path d="M355 188h23" stroke="#7c5b4d" stroke-width="3" stroke-linecap="round"/>
+              <path d="M550 261h115v12H550Z" fill="#78978a"/>
+              <path d="M576 270v88m65-88v88" stroke="#78978a" stroke-width="9"/>
+              <rect x="602" y="232" width="24" height="29" rx="4" fill="#d6a977" stroke="#a57855" stroke-width="3"/>
+              <path d="M606 238h16" stroke="#f5d6aa" stroke-width="3"/>
+              <circle cx="143" cy="159" r="33" fill="#b98b70"/>
+              <path d="M110 155c-2-26 14-42 35-42 26 0 40 19 35 42-17-8-39-10-70 0Z" fill="#525950"/>
+              <path d="M116 195c-27 8-38 27-39 55l2 79h128l1-79c-1-29-13-47-40-55Z" fill="#f8f6ec" stroke="#a3bbac" stroke-width="4"/>
+              <path d="M113 227l-13 68m86-68 13 68" stroke="#e8eee5" stroke-width="18" stroke-linecap="round"/>
+              <g class="speech-question" transform="translate(0 -52)">
+                <path d="M197 77h244q12 0 12 12v64q0 12-12 12H259l-29 22 3-22h-36q-12 0-12-12V89q0-12 12-12Z" fill="#fffdf8" stroke="#7aa591" stroke-width="3"/>
+                <text x="210" y="128" fill="#285c50" font-family="system-ui,sans-serif" font-size="21" font-weight="650">Would you like water?</text>
+              </g>
+              <g class="speech-pause">
+                <circle cx="504" cy="186" r="26" fill="#fff8ed" stroke="#c78f66" stroke-width="3"/>
+                <path d="M496 175v22m15-22v22" stroke="#a36543" stroke-width="5" stroke-linecap="round"/>
+              </g>
+              <g class="speech-point">
+                <path d="M403 254c45-12 100-11 174-14" stroke="#9b513d" stroke-width="18" stroke-linecap="round"/>
+                <path d="M570 240l28-7" stroke="#bd8b70" stroke-width="12" stroke-linecap="round"/>
+                <circle cx="614" cy="246" r="37" fill="none" stroke="#b7764b" stroke-width="3"/>
+              </g>
+              <g class="speech-write">
+                <rect x="459" y="238" width="126" height="78" rx="8" fill="#fffdf8" stroke="#75a18d" stroke-width="3" transform="rotate(-7 522 277)"/>
+                <text x="478" y="282" fill="#315e52" font-family="Georgia,serif" font-size="29" font-style="italic" transform="rotate(-7 522 277)">water</text>
+                <path d="m403 280 63-20" stroke="#a66e52" stroke-width="16" stroke-linecap="round"/>
+                <path d="m464 260 24 19" stroke="#3d554d" stroke-width="5" stroke-linecap="round"/>
+              </g>
+            </g>
+            <g data-art="two-witnesses">
+              <rect width="720" height="450" fill="#dce9df"/>
+              <path d="M0 349h720v101H0Z" fill="#a4c1af"/>
+              <rect x="37" y="59" width="299" height="326" rx="18" fill="#f8f8ef" stroke="#8eac9b" stroke-width="4"/>
+              <rect x="384" y="59" width="299" height="326" rx="18" fill="#f8f8ef" stroke="#8eac9b" stroke-width="4"/>
+              <path d="M361 72v308" stroke="#739b8a" stroke-width="4" stroke-dasharray="8 10"/>
+              <text x="60" y="96" fill="#2c6256" font-family="system-ui,sans-serif" font-size="19" font-weight="700">Nurse report</text>
+              <text x="406" y="96" fill="#2c6256" font-family="system-ui,sans-serif" font-size="19" font-weight="700">Bedside now</text>
+              <g transform="translate(52 125) scale(.7)">
+                <circle cx="174" cy="182" r="36" fill="#b98a6f"/>
+                <path d="M140 179c-1-28 11-44 36-44 24 0 39 18 36 42-20-7-45-7-72 2Z" fill="#50564f"/>
+                <path d="M146 218c-29 8-43 27-43 57v81h143v-81c0-31-12-49-43-57Z" fill="#f4f5ec" stroke="#9fb9a9" stroke-width="4"/>
+                <path d="M136 247l-14 71m104-71 12 71" stroke="#e3e9e0" stroke-width="18" stroke-linecap="round"/>
+                <path d="M148 263h52" stroke="#a9bdaf" stroke-width="4"/>
+              </g>
+              <g class="witness-report">
+                <path d="M72 111h247q11 0 11 11v65q0 11-11 11H167l-19 18 2-18H72q-11 0-11-11v-65q0-11 11-11Z" fill="#fffdf8" stroke="#7ba590" stroke-width="3"/>
+                <text x="83" y="148" fill="#2c6256" font-family="system-ui,sans-serif" font-size="17">“I saw them walk</text>
+                <text x="83" y="175" fill="#2c6256" font-family="system-ui,sans-serif" font-size="17">to the doorway earlier.”</text>
+              </g>
+              <g class="witness-bedside">
+                <path d="M438 318h191" stroke="#759688" stroke-width="8" stroke-linecap="round"/>
+                <path d="M486 230v108m90-108v108" stroke="#678878" stroke-width="12" stroke-linecap="round"/>
+                <rect x="475" y="218" width="113" height="91" rx="13" fill="#91aa9a"/>
+                <path d="M506 307l-10 44m51-44 11 44" stroke="#43554e" stroke-width="20" stroke-linecap="round"/>
+                <path d="M494 349h-18m79 0h20" stroke="#34483e" stroke-width="11" stroke-linecap="round"/>
+                <path d="M530 183c-28 0-43 16-44 47l-3 47h96l-4-47c-1-31-16-47-45-47Z" fill="#b76850"/>
+                <path d="M497 219l-9 57m83-57 8 57" stroke="#9c5542" stroke-width="14" stroke-linecap="round"/>
+                <circle cx="530" cy="154" r="34" fill="#bc8b70"/>
+                <path d="M497 151c-3-27 12-43 35-43 25 0 38 20 34 42-18-8-40-8-69 1Z" fill="#46524a"/>
+                <path d="M519 168h22" stroke="#785c4d" stroke-width="3" stroke-linecap="round"/>
+              </g>
+              <g class="witness-summary">
+                <rect x="241" y="379" width="239" height="46" rx="23" fill="#fffdf8" stroke="#81a895" stroke-width="3"/>
+                <text x="260" y="408" fill="#315f55" font-family="system-ui,sans-serif" font-size="16" font-weight="700">Two sources · two times</text>
+              </g>
+            </g>
           </svg>
         </div>
       </div>
@@ -213,17 +378,12 @@
       <div class="practice-head">
         <p class="overline">Pause &amp; describe</p>
         <h2 id="practiceTitle">What does the scene support?</h2>
-        <p>Select what is drawn or stated in this fictional scene. You can replay before checking.</p>
+        <p>Select what is shown, narrated, or reported in this fictional scene. You can replay before checking.</p>
       </div>
       <div class="practice-body">
-        <fieldset>
+          <fieldset>
           <legend>Choose observations, not conclusions</legend>
-          <label class="choice"><input type="checkbox" value="reply"><span>The scripted scene states that no spoken reply occurs during the brief greeting.</span></label>
-          <label class="choice"><input type="checkbox" value="seated"><span>The person remains seated during the greeting and pause.</span></label>
-          <label class="choice"><input type="checkbox" value="gaze"><span>The person’s gaze appears directed downward in this illustration.</span></label>
-          <label class="choice"><input type="checkbox" value="refusal"><span>The person is refusing to take part in care.</span></label>
-          <label class="choice"><input type="checkbox" value="diagnosis"><span>This scene confirms catatonia.</span></label>
-          <label class="choice"><input type="checkbox" value="baseline"><span>The person has behaved this way all day.</span></label>
+          <div id="choices"></div>
         </fieldset>
         <div class="practice-actions">
           <button class="control" type="button" id="check">Check my description</button>
@@ -240,7 +400,7 @@
 
   <div class="below">
     <section class="info" aria-labelledby="boundaryTitle">
-      <h2 id="boundaryTitle">What this scene can teach</h2>
+      <h2 id="boundaryTitle">What these scenes can teach</h2>
       <p>This is an original schematic, with compressed timing and text narration instead of sound. It is not a patient recording, a standardized examination, a diagnostic demonstration, or a substitute for supervised assessment.</p>
       <p>No responses are saved or sent. The exercise gives no BFCRS items, anchors, or score.</p>
     </section>
@@ -257,27 +417,87 @@
 </main>
 <script>
   (() => {
-    const moments = [
-      ['01 / Arrival', 'A clinician approaches a seated person. We do not know the person’s usual behavior or why they are here.'],
-      ['02 / Greeting', 'The clinician says, “Good morning. I’m checking in.” The person remains seated and looks toward their lap.'],
-      ['03 / Pause', 'In this fictional scene, the person does not speak during the short pause. The scene does not establish intent, cause, or how long this has lasted.'],
-      ['04 / Describe', 'Record only what the brief scene shows. A real assessment needs more observation, context, and supervision.']
+    const scenes = [
+      {
+        id: 'greeting', title: 'A brief greeting',
+        moments: [
+          { name: 'Arrival', text: 'A clinician approaches a seated person. We do not know the person’s usual behavior or why they are here.', image: 'Schematic inpatient room: a person sits in a chair looking toward their lap while a clinician approaches.' },
+          { name: 'Greeting', text: 'The clinician says, “Good morning. I’m checking in.” The person remains seated and looks toward their lap.', image: 'The clinician speaks to the seated person, whose gaze is directed toward their lap.' },
+          { name: 'Pause', text: 'In this fictional scene, the person does not speak during the short pause. The scene does not establish intent, cause, or how long this has lasted.', image: 'The person remains seated during a brief pause; a pause symbol appears beside the illustration.' },
+          { name: 'Describe', text: 'Record only what the brief scene shows. A real assessment needs more observation, context, and supervision.', image: 'The same seated scene remains, with a note symbol prompting a limited description.' }
+        ],
+        choices: [
+          { id: 'reply', kind: 'stated', text: 'The scripted scene states that no spoken reply occurs during the brief greeting.', explanation: 'The text narration explicitly says there is no reply during this brief scene; it does not explain why.' },
+          { id: 'seated', kind: 'seen', text: 'The person remains seated during the greeting and pause.', explanation: 'The person remains seated in every illustrated moment. Sitting briefly is nonspecific.' },
+          { id: 'gaze', kind: 'seen', text: 'The person’s gaze appears directed downward in this illustration.', explanation: 'The downcast eyes and text narration show a gaze toward the lap; do not infer its cause.' },
+          { id: 'refusal', kind: 'unknown', text: 'The person is refusing to take part in care.', explanation: 'A lack of reply does not establish refusal or intent.' },
+          { id: 'diagnosis', kind: 'unknown', text: 'This scene confirms catatonia.', explanation: 'A brief schematic scene cannot establish a diagnosis.' },
+          { id: 'baseline', kind: 'unknown', text: 'The person has behaved this way all day.', explanation: 'We have no information about the rest of the day or the person’s baseline.' }
+        ]
+      },
+      {
+        id: 'across-time', title: 'Across time',
+        moments: [
+          { name: 'First check-in', text: 'During a brief check-in, the person sits with both hands resting in their lap. We do not know what happened beforehand.', image: 'Two separate check-in panels. In the first, a person sits with hands in their lap; the later panel has no person yet.' },
+          { name: 'Short pause', text: 'The clinician waits. The narration states there is no change in posture during this short interval.', image: 'The first check-in panel remains, with a pause symbol. The later panel has no person yet.' },
+          { name: 'Later check-in', text: 'Later, the same person reaches toward a cup on the table. The time between check-ins is not shown.', image: 'Two check-in panels show the person seated first and reaching toward a cup later, with a dashed gap between them.' },
+          { name: 'Compare moments', text: 'Describe each window separately. A change later cannot tell us what happened throughout the gap or settle a diagnosis.', image: 'The two separate check-in panels remain visible, with a note that the interval between them is not shown.' }
+        ],
+        choices: [
+          { id: 'first', kind: 'seen', text: 'During the first check-in, the person is seated with hands in their lap.', explanation: 'This posture is illustrated only in the first check-in.' },
+          { id: 'pause', kind: 'stated', text: 'The narration states there is no change in posture during the short pause.', explanation: 'The short pause is stated in narration; the illustration does not show the whole interval continuously.' },
+          { id: 'later', kind: 'seen', text: 'In a later check-in, the person reaches toward a cup.', explanation: 'A reach is depicted in the later window. It does not tell us what happened between check-ins.' },
+          { id: 'gap', kind: 'unknown', text: 'The person did not move at any point between check-ins.', explanation: 'The interval between check-ins is not shown.' },
+          { id: 'ruleout', kind: 'unknown', text: 'Reaching for a cup later rules out catatonia.', explanation: 'One later movement cannot settle a diagnosis.' },
+          { id: 'proof', kind: 'unknown', text: 'The earlier pause proves the person had catatonia.', explanation: 'Brief stillness is nonspecific and cannot establish a diagnosis.' }
+        ]
+      },
+      {
+        id: 'more-than-speech', title: 'More than speech',
+        moments: [
+          { name: 'Question', text: 'The clinician asks, “Would you like water?” A cup sits on the nearby table.', image: 'A clinician speaks to a seated person beside a table with a cup of water.' },
+          { name: 'Silent pause', text: 'No spoken reply occurs during the brief pause. The scene does not show why.', image: 'The seated person remains by the table during a brief pause without a spoken reply.' },
+          { name: 'Point', text: 'The person points toward the water cup. Describe the gesture without deciding what it means.', image: 'The seated person points toward a cup on the table.' },
+          { name: 'Write', text: 'The person writes “water” on a card. Record the spoken pause, gesture, and writing as separate observations.', image: 'A card bearing the word water appears beside the seated person and the cup.' }
+        ],
+        choices: [
+          { id: 'silence', kind: 'stated', text: 'There is no spoken reply during the brief pause.', explanation: 'The narration states no spoken reply during this pause; it provides no cause.' },
+          { id: 'point', kind: 'seen', text: 'The person points toward the cup.', explanation: 'A pointing gesture is shown; its meaning should not be assumed.' },
+          { id: 'write', kind: 'seen', text: 'The person writes “water” on a card.', explanation: 'The later illustrated moment shows writing on a card.' },
+          { id: 'refusal', kind: 'unknown', text: 'The person is refusing all communication.', explanation: 'No spoken reply does not establish refusal; this scene also shows gesture and writing.' },
+          { id: 'capacity', kind: 'unknown', text: 'The person is unable to speak.', explanation: 'A brief silent pause cannot establish the person’s capacity to speak.' },
+          { id: 'understanding', kind: 'unknown', text: 'The person understood every word of the question.', explanation: 'Gesture and writing do not establish full comprehension of the question.' }
+        ]
+      },
+      {
+        id: 'two-witnesses', title: 'Two witnesses',
+        moments: [
+          { name: 'Earlier report', text: 'Two sources will be compared: a nurse’s earlier account and a bedside look now. The account is reported history, not something we witnessed.', image: 'Two separate source panels appear, with the nurse in one; the earlier account has not yet been narrated.' },
+          { name: 'Nurse speaks', text: 'The nurse reports seeing the person walk to the doorway earlier. Keep the source attached to that account.', image: 'A speech bubble in the nurse-report panel says the nurse saw a walk to the doorway earlier.' },
+          { name: 'Bedside look', text: 'At the bedside now, the clinician sees the person seated.', image: 'The nurse-report panel remains separate from a bedside panel showing the person seated now.' },
+          { name: 'Keep sources clear', text: 'The report and bedside observation describe different times. Write down who saw what and when; ask about the intervening period.', image: 'Both panels remain visible, labeled nurse report and bedside now, with a note that they are two sources at two times.' }
+        ],
+        choices: [
+          { id: 'report', kind: 'reported', text: 'A nurse reports seeing the person walk to the doorway earlier.', explanation: 'The earlier walk is the nurse’s report, not a movement witnessed by the learner.' },
+          { id: 'bedside', kind: 'seen', text: 'At the bedside now, the clinician sees the person seated.', explanation: 'The current seated posture is directly illustrated at the bedside.' },
+          { id: 'times', kind: 'stated', text: 'The nurse’s report and bedside observation refer to different times.', explanation: 'The narration explicitly distinguishes earlier from now.' },
+          { id: 'witnessed', kind: 'unknown', text: 'The clinician personally witnessed the earlier walk.', explanation: 'Only the nurse reports the earlier walk; the clinician did not witness it in this scene.' },
+          { id: 'interval', kind: 'unknown', text: 'The person remained seated throughout the interval.', explanation: 'The interval between the report and bedside observation is not shown.' },
+          { id: 'typical', kind: 'unknown', text: 'The earlier walking proves that the current bedside behavior is typical for this person.', explanation: 'Neither source gives a usual baseline or explains the current behavior.' }
+        ]
+      }
     ];
-    const descriptions = {
-      reply: ['Stated', 'The text narration explicitly says there is no reply during this brief scene; it does not explain why.'],
-      seated: ['Seen', 'The person remains seated in every illustrated moment. Sitting briefly is nonspecific.'],
-      gaze: ['Seen', 'The downcast eyes and text narration show a gaze toward the lap; do not infer its cause.'],
-      refusal: ['Unknown', 'A lack of reply does not establish refusal or intent.'],
-      diagnosis: ['Unknown', 'A brief schematic scene cannot establish a diagnosis.'],
-      baseline: ['Unknown', 'We have no information about the rest of the day or the person’s baseline.']
-    };
-    const seen = new Set(['reply', 'seated', 'gaze']);
+    const kindLabels = { seen: 'Seen', stated: 'Stated', reported: 'Reported', unknown: 'Unknown' };
     const scene = document.getElementById('scene');
+    const sceneTitle = document.getElementById('sceneTitle');
+    const sceneStatus = document.getElementById('sceneStatus');
     const caption = document.getElementById('caption');
     const steps = [...document.querySelectorAll('[data-step]')];
+    const sceneButtons = [...document.querySelectorAll('[data-scene-select]')];
     const play = document.getElementById('play');
     const feedback = document.getElementById('feedback');
-    const boxes = [...document.querySelectorAll('.choice input')];
+    const choices = document.getElementById('choices');
+    let active = scenes[0];
     let frame = 0;
     let timer = null;
 
@@ -289,18 +509,57 @@
     function show(next) {
       frame = next;
       scene.dataset.frame = String(frame);
-      caption.querySelector('strong').textContent = moments[frame][0];
-      caption.querySelector('span').textContent = moments[frame][1];
-      steps.forEach((step, index) => step.setAttribute('aria-pressed', String(index === frame)));
-      if (frame === moments.length - 1) stop();
+      const moment = active.moments[frame];
+      scene.setAttribute('aria-label', moment.image);
+      caption.querySelector('strong').textContent = `${String(frame + 1).padStart(2, '0')} / ${moment.name}`;
+      caption.querySelector('span').textContent = moment.text;
+      steps.forEach((step, index) => {
+        step.setAttribute('aria-pressed', String(index === frame));
+        step.lastChild.textContent = momentName(index);
+      });
+      if (frame === active.moments.length - 1) stop();
     }
+    function momentName(index) {
+      return active.moments[index].name;
+    }
+    function clearChoices() {
+      choices.querySelectorAll('input').forEach((box) => { box.checked = false; });
+      feedback.hidden = true;
+    }
+    function renderChoices() {
+      choices.replaceChildren();
+      for (const item of active.choices) {
+        const label = document.createElement('label');
+        label.className = 'choice';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.value = item.id;
+        input.dataset.kind = item.kind;
+        const visibleText = document.createElement('span');
+        visibleText.textContent = item.text;
+        label.append(input, visibleText);
+        choices.append(label);
+      }
+    }
+    function selectScene(id, announce = true) {
+      stop();
+      active = scenes.find((item) => item.id === id);
+      scene.dataset.scene = active.id;
+      sceneTitle.textContent = active.title;
+      sceneStatus.textContent = announce ? `${active.title} selected.` : '';
+      sceneButtons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.sceneSelect === id)));
+      renderChoices();
+      feedback.hidden = true;
+      show(0);
+    }
+    sceneButtons.forEach((button) => button.addEventListener('click', () => selectScene(button.dataset.sceneSelect)));
     steps.forEach((step) => step.addEventListener('click', () => {
       stop();
       show(Number(step.dataset.step));
     }));
     play.addEventListener('click', () => {
       if (timer !== null) { stop(); return; }
-      if (frame === moments.length - 1) show(0);
+      if (frame === active.moments.length - 1) show(0);
       play.textContent = 'Pause scene';
       timer = setInterval(() => show(frame + 1), 2300);
     });
@@ -308,32 +567,31 @@
       stop();
       show(0);
     });
-    document.getElementById('reset').addEventListener('click', () => {
-      boxes.forEach((box) => { box.checked = false; });
-      feedback.hidden = true;
-    });
+    document.getElementById('reset').addEventListener('click', clearChoices);
     document.getElementById('check').addEventListener('click', () => {
-      const selected = new Set(boxes.filter((box) => box.checked).map((box) => box.value));
-      const supported = [...seen].filter((key) => selected.has(key)).length;
-      const assumptions = [...selected].filter((key) => !seen.has(key)).length;
+      const selected = new Set([...choices.querySelectorAll('input:checked')].map((box) => box.value));
+      const supported = active.choices.filter((item) => item.kind !== 'unknown');
+      const complete = supported.every((item) => selected.has(item.id)) &&
+        active.choices.every((item) => item.kind !== 'unknown' || !selected.has(item.id));
       document.getElementById('feedbackTitle').textContent =
-        supported === seen.size && assumptions === 0 ? 'A grounded description' : 'Look again at what is known';
+        complete ? 'A grounded description' : 'Look again at what is known';
       document.getElementById('feedbackSummary').textContent =
-        supported === seen.size && assumptions === 0
-          ? 'Your choices stay with what is shown or stated. These observations alone neither establish nor rule out catatonia.'
-          : 'The scene supports three limited observations. They neither establish nor rule out catatonia, and cannot establish motive or baseline. Review the distinctions below, then revise your choices.';
+        complete
+          ? 'Your choices stay with what is shown, narrated, or reported. These observations alone neither establish nor rule out catatonia.'
+          : 'Review which details are shown, stated, or reported and what remains unknown. These details neither establish nor rule out catatonia. Revise your choices after reading the distinctions below.';
       const list = document.getElementById('feedbackList');
       list.replaceChildren();
-      for (const box of boxes) {
+      for (const choice of active.choices) {
         const item = document.createElement('li');
         const label = document.createElement('b');
-        label.textContent = descriptions[box.value][0];
-        item.append(label, document.createTextNode(descriptions[box.value][1]));
+        label.textContent = kindLabels[choice.kind];
+        item.append(label, document.createTextNode(choice.explanation));
         list.append(item);
       }
       feedback.hidden = false;
       document.getElementById('feedbackTitle').focus();
     });
+    selectScene('greeting', false);
   })();
 </script>
 </body>

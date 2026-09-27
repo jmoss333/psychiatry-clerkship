@@ -1,10 +1,16 @@
 # Catatonia observation studio — local prototype
 
 `catatonia-observation.preview.html` is an original fictional illustration and an
-observation-versus-inference exercise. It is not a BFCRS implementation, examination
-video, diagnostic aid, or clinical guidance. It stores no answers and runs without a
-network connection; its optional outbound links point to URMC's official training
-and calculator.
+observation-versus-inference exercise. Four scenes explore a brief greeting, two
+separate check-ins, gesture and writing after a spoken pause, and the difference
+between a nurse's earlier report and a current bedside observation. Each scene
+has four user-controlled moments and a description exercise. Selecting another
+scene stops playback and clears the prior answers.
+
+This is not a BFCRS implementation, examination video, diagnostic aid, or clinical
+guidance. It stores no answers and runs without a network connection; its optional
+outbound links point to URMC's official training and calculator. No scene supplies
+BFCRS item text, anchors, or a score.
 
 This prototype is **unattested and unshipped**. Do not add it to `site_manifest.json`,
 `site_extras.py`, learner navigation, or either build without faculty review of the

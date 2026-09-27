@@ -259,6 +259,124 @@ test.describe('catatonia observation · fictional, non-scoring preview', () => {
     await expect(page.getByRole('button', { name: 'Play scene' })).toBeVisible();
   });
 
+  test('four scenes have distinct text narration and four inspectable moments', async ({ page }) => {
+    const scenes = [
+      { id: 'greeting', title: 'A brief greeting' },
+      { id: 'across-time', title: 'Across time' },
+      { id: 'more-than-speech', title: 'More than speech' },
+      { id: 'two-witnesses', title: 'Two witnesses' },
+    ];
+    await expect(page.locator('[data-scene-select]')).toHaveCount(scenes.length);
+
+    const imageDescriptions = [];
+    for (const { id, title } of scenes) {
+      const selector = page.locator(`[data-scene-select="${id}"]`);
+      await selector.click();
+      await expect(page.locator('#sceneTitle')).toHaveText(title);
+      await expect(selector).toBeFocused();
+      await expect(page.locator('#sceneStatus')).toHaveText(`${title} selected.`);
+      await expect(selector).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('[data-scene-select][aria-pressed="true"]')).toHaveCount(1);
+      await expect(page.locator('#scene')).toHaveAttribute('data-scene', id);
+      await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+      const description = await page.locator('#scene').getAttribute('aria-label');
+      expect(description?.length, `${id} needs a text equivalent for its illustration`).toBeGreaterThan(30);
+      imageDescriptions.push(description);
+
+      const moments = page.locator('[data-step]');
+      await expect(moments).toHaveCount(4);
+      const captions = [await page.locator('#caption').innerText()];
+      for (let moment = 1; moment < 4; moment += 1) {
+        await moments.nth(moment).click();
+        await expect(page.locator('#scene')).toHaveAttribute('data-frame', String(moment));
+        await expect(moments.nth(moment)).toHaveAttribute('aria-pressed', 'true');
+        captions.push(await page.locator('#caption').innerText());
+      }
+      expect(new Set(captions).size, `${id} needs a distinct narration for each moment`).toBe(4);
+    }
+    expect(new Set(imageDescriptions).size).toBe(scenes.length);
+  });
+
+  test('each added scene separates evidence from assumptions', async ({ page }) => {
+    const cases = [
+      { id: 'across-time', evidence: ['seen', 'unknown'],
+        observation: /later check-in.*reaches toward a cup/i,
+        overclaim: /did not move at any point between check-ins/i },
+      { id: 'more-than-speech', evidence: ['seen', 'stated', 'unknown'],
+        observation: /points toward the cup/i,
+        overclaim: /understood every word/i },
+      { id: 'two-witnesses', evidence: ['seen', 'reported', 'unknown'],
+        observation: /nurse reports seeing.*walk to the doorway earlier/i,
+        overclaim: /clinician personally witnessed the earlier walk/i },
+    ];
+    for (const { id, evidence, observation, overclaim } of cases) {
+      await page.locator(`[data-scene-select="${id}"]`).click();
+      const kinds = await page.locator('.choice input').evaluateAll((inputs) =>
+        inputs.map((input) => input.getAttribute('data-kind')));
+      for (const kind of evidence) expect(kinds, `${id} needs a ${kind} choice`).toContain(kind);
+      await expect(page.getByLabel(observation)).toBeVisible();
+      await expect(page.getByLabel(overclaim)).toBeVisible();
+      await page.locator('.choice input[data-kind="unknown"]').first().check();
+      await page.getByRole('button', { name: 'Check my description' }).click();
+      await expect(page.locator('#feedbackTitle')).toHaveText('Look again at what is known');
+      await expect(page.locator('#feedbackTitle')).toBeFocused();
+      await expect(page.locator('#feedback')).toContainText('Unknown');
+      await expect(page.locator('#feedback')).toContainText(/neither establish nor rule out catatonia/i);
+      await page.getByRole('button', { name: 'Clear choices' }).click();
+      const supported = page.locator('.choice input:not([data-kind="unknown"])');
+      for (const input of await supported.all()) await input.check();
+      await page.getByRole('button', { name: 'Check my description' }).click();
+      await expect(page.locator('#feedbackTitle')).toHaveText('A grounded description');
+    }
+  });
+
+  test('switching scenes cancels playback and clears prior answers', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-09-27T12:00:00Z') });
+    await page.getByLabel('The scripted scene states that no spoken reply occurs during the brief greeting.').check();
+    await page.getByRole('button', { name: 'Check my description' }).click();
+    await expect(page.locator('#feedback')).toBeVisible();
+    await page.getByRole('button', { name: 'Play scene' }).click();
+    await expect(page.getByRole('button', { name: 'Pause scene' })).toBeVisible();
+
+    await page.locator('[data-scene-select="two-witnesses"]').click();
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+    await expect(page.getByRole('button', { name: 'Play scene' })).toBeVisible();
+    await expect(page.locator('.choice input:checked')).toHaveCount(0);
+    await expect(page.locator('#feedback')).toBeHidden();
+    await page.clock.fastForward(5_000);
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+  });
+
+  test('keyboard selection announces the scene while keeping the selector reachable', async ({ page }) => {
+    const selector = page.locator('[data-scene-select="more-than-speech"]');
+    await selector.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#sceneTitle')).toHaveText('More than speech');
+    await expect(selector).toBeFocused();
+    await expect(page.locator('#sceneStatus')).toHaveAttribute('aria-live', 'polite');
+    await expect(page.locator('#sceneStatus')).toHaveText('More than speech selected.');
+    await expect(page.locator('#caption')).toHaveAttribute('aria-live', 'polite');
+    await expect(page.locator('#scene')).toHaveAttribute('role', 'img');
+  });
+
+  test('all scene controls remain usable on a narrow screen', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    for (const id of ['greeting', 'across-time', 'more-than-speech', 'two-witnesses']) {
+      const selector = page.locator(`[data-scene-select="${id}"]`);
+      await expect(selector).toBeVisible();
+      await selector.click();
+      await expect(page.locator('#scene')).toHaveAttribute('data-scene', id);
+    }
+    await page.locator('[data-step="3"]').click();
+    const illustration = await page.locator('#scene').boundingBox();
+    for (const label of ['Nurse report', 'Bedside now', 'I saw them walk']) {
+      const bounds = await page.locator('[data-art="two-witnesses"] text').filter({ hasText: label }).boundingBox();
+      expect(bounds.x, `${label} must not be cropped on mobile`).toBeGreaterThanOrEqual(illustration.x);
+      expect(bounds.x + bounds.width, `${label} must not be cropped on mobile`).toBeLessThanOrEqual(illustration.x + illustration.width);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  });
+
   test('the exercise separates visible facts from unsupported conclusions without scoring', async ({ page }) => {
     await page.getByLabel('The scripted scene states that no spoken reply occurs during the brief greeting.').check();
     await page.getByLabel('The person remains seated during the greeting and pause.').check();
