@@ -28,7 +28,8 @@ def load_candidates(root: Path) -> dict:
 def normalize(text):
     """Remove inline presentation only; retain punctuation and clinical wording."""
     text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
-    text = re.sub(r'<[^>]+>', '', text)
+    # A tag must start with a name, not whitespace or a numeric comparison.
+    text = re.sub(r'</?[A-Za-z][A-Za-z0-9:-]*(?:\s+[^<>]*?)?\s*/?>', '', text)
     text = re.sub(r'(\*\*|__|`)', '', text)
     text = re.sub(r'(?<!\w)\*([^*]+)\*(?!\w)', r'\1', text)
     return ' '.join(html.unescape(text).split())

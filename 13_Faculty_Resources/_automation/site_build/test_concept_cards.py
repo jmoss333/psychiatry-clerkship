@@ -107,6 +107,12 @@ class ConceptCardsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'audience'):
             cards.release_cards(self.root, 'ms3')
 
+    def test_comparison_operators_survive_inline_html_normalization(self):
+        text = 'Use < 5 when <em>low</em> and > 10 when <strong class="high">high</strong>.'
+        self.assertEqual(cards.normalize(text), 'Use < 5 when low and > 10 when high.')
+        self.assertEqual(cards.normalize('Use <5 when low and >10 when high.'),
+                         'Use <5 when low and >10 when high.')
+
     def test_heading_variant_and_inline_formatting(self):
         text = '# Topic\n\n## In one line\nA **specific** answer.\n\n## High-yield pearls\n- First *answer*.\n\n## Next section\n- Not a pearl\n'
         self.assertEqual(cards.extract_sections(text), {'summary': ['A specific answer.'], 'pearl': ['First answer.']})
