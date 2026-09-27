@@ -845,7 +845,9 @@ test('first run reaches Today; browse mode exposes the exact audience Library', 
   await page.locator('[data-fd-week="0"]').click();
   await expect(page.locator('.fd-library')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBeNull();
-  await page.locator('[data-fd-library-view="full"]').click();
+  // "Just browse" lands on the whole Library (Everything), not The Essentials.
+  await expect(page).toHaveURL(/[?&]library=full(?:&|$)/);
+  await expect(page.locator('[data-fd-library-view="essentials"]:visible')).toHaveCount(1);
 
   const refs = await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open'))
