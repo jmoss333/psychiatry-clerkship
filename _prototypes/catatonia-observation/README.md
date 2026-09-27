@@ -15,14 +15,17 @@ guidance. It stores no answers and runs without a network connection; its option
 outbound links point to URMC's official training and calculator. No scene supplies
 BFCRS item text, anchors, or a score.
 
-This prototype is **unattested and unshipped**. Do not add it to `site_manifest.json`,
-`site_extras.py`, learner navigation, or either build without faculty review of the
-scene, feedback, audience, accessibility, and rights boundary. The published BFCRS
-reference remains a static outbound route to the custodian's materials.
+This prototype is **unattested and unshipped**. The faculty owner accepted the four
+scene visuals and exact wording, and named medical students, PGY-1 residents, and
+APPs as intended learners. The current student site is MS3; PGY-1 and APP are
+separate roles within the resident site. Do not add it to `site_manifest.json`,
+`site_extras.py`, learner navigation, or either build before gallery behavior,
+accessibility, role-specific delivery, and rights review and an explicit
+release decision. The published BFCRS reference remains a static outbound
+route to the custodian's materials.
 
-`FACULTY_REVIEW.md` contains the current exact-revision faculty review packet and
-the private preview link. Its decisions remain pending until a faculty reviewer
-records them.
+`FACULTY_REVIEW.md` contains the exact-revision review packet, recorded faculty
+decisions, remaining review items, and private preview link.
 
 For an interactive local preview, reveal the HTML file in Finder and open it with a
 regular browser. The file is self-contained and needs no server. Codex's in-app

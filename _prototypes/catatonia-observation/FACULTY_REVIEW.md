@@ -8,7 +8,7 @@
 - HTML SHA-256: `ba593a0049aa4d54c15a05bc6a61e4ab5c42f0faa3ca4ccd616669af9198ca03`
 - Source commit: `b7202c2ede84b950c5f6642b7d04c83ed37d7be2`
 - Private deploy permalink: [Open the exact four-scene gallery](https://6ab9487cc41bca4d076e25a8--catatonia-faculty-preview.netlify.app/) (Netlify team sign-in required; deploy `6ab9487cc41bca4d076e25a8`, ready 2026-09-27).
-- Intended audience: **PENDING faculty decision** (MS3, resident, both, or neither).
+- Intended learners (faculty owner, 2026-09-27): **medical students, PGY-1 residents, and APPs**. The current student site is MS3; PGY-1 and APP are separate roles within the resident site. Each proposed route and its role-specific framing remain to be checked before learner release.
 
 If the HTML changes, compare this packet with the changed source and review the new exact revision. The private preview is separate from the MS3 and resident learner sites. The gallery at the top shows four previews cloned from the existing fictional artwork; it adds no new clinical scene wording.
 
@@ -18,7 +18,7 @@ The faculty owner approved the visual presentation of **A brief greeting** after
 
 ## Wording feedback recorded 2026-09-27
 
-After receiving this exact-wording review packet and the request to review its captions and feedback, the faculty owner replied **“approved”** in chat. This is recorded for the HTML SHA-256 above as acceptance of the 16 moment captions, 24 choice statements and explanations, and two shared feedback messages listed below. It does not resolve the gallery layout, intended audience, native VoiceOver review, overall release disposition, or learner publication.
+After receiving this exact-wording review packet and the request to review its captions and feedback, the faculty owner replied **“approved”** in chat. This is recorded for the HTML SHA-256 above as acceptance of the 16 moment captions, 24 choice statements and explanations, and two shared feedback messages listed below. It does not resolve the gallery layout, native VoiceOver review, overall release disposition, or learner publication. The intended learners were named in a separate reply, recorded above.
 
 ## What the faculty is reviewing
 
@@ -136,12 +136,13 @@ The same summary appears after checking choices in any scene:
 
 **Faculty wording decision — shared feedback:** [x] Accept  [ ] Revise  [ ] Hold
 
-**Overall faculty disposition:** [ ] Accept for further release preparation  [ ] Revise and review again  [ ] Hold  
-Audience decision and required wording changes: ______________________________
+**Overall faculty disposition:** [ ] Accept for further release preparation  [ ] Revise and review again  [ ] Hold
+**Audience decision:** medical students, PGY-1 residents, and APPs (faculty owner, 2026-09-27).
+Role-specific framing and delivery-route review: ______________________________
 
 **Feedback reveal decision:** [ ] Keep immediate reveal  [ ] Require a choice first  [ ] Revise differently  
 Notes: ______________________________
 
 **Accessibility review:** automated keyboard and narrow-screen checks passed; native VoiceOver review and a faculty check of small labels inside the artwork are still pending. The full text captions remain available below the artwork.
 
-This packet does not itself authorize publication. Before any learner release, the faculty reviewer needs to review the exact HTML revision and private deploy; resolve each scene and shared feedback disposition; decide the learner audience; confirm the BFCRS rights boundary; review accessibility and the built output for both audiences; and make an explicit release decision. Only then should the normal shipped-page registration and appropriate faculty governance record be updated. `reviewed.json` is not changed for this unshipped prototype.
+This packet does not itself authorize publication. Before any learner release, confirm the BFCRS rights boundary; review gallery behavior, accessibility, role-specific framing, and the exact built output for each learner route; then make an explicit release decision. Only then should the normal shipped-page registration and appropriate faculty governance record be updated. `reviewed.json` is not changed for this unshipped prototype.
