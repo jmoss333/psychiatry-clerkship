@@ -63,6 +63,36 @@ test('allowlisted case links and old week links retain a bounded initial selecti
   assert.equal(api.moveChapter(3, 'End'), 6);
 });
 
+test('published renderer composes the approved patient-folio journey from real case data', () => {
+  const selected = api.selection('?case=eli&chapter=1');
+  const html = api.pageMarkup(cases, selected);
+  const eli = cases[1];
+  const chapter = eli.weeks[0];
+
+  assert.match(html, /<header class="opf-hero"/);
+  assert.match(html, /<nav[^>]+aria-label="Choose a case journey"/);
+  assert.match(html, /<section class="[^"]*opf-case-context/);
+  assert.match(html, /<section class="[^"]*opf-workbench/);
+  assert.match(html, /<ol class="opf-route" role="tablist"/);
+  assert.match(html, /<article class="opf-sheet"[^>]+role="tabpanel"/);
+  assert.match(html, /class="opf-note opf-note--story"/);
+  assert.match(html, /class="opf-note opf-note--task"/);
+  assert.match(html, /class="opf-note opf-note--language"/);
+  assert.match(html, /class="opf-note opf-note--rounds"/);
+  assert.match(html, /<details class="opf-reflection"/);
+  assert.ok(html.includes(api.escape(eli.title)));
+
+  for (const text of [
+    eli.patient.description,
+    chapter.patientState,
+    chapter.learnerTask,
+    chapter.handoff,
+    chapter.reflectionPrompt,
+    ...chapter.checklist.flatMap(item => [item.prompt, item.example]),
+    ...chapter.links.map(link => link.label),
+  ]) assert.equal(html.split(api.escape(text)).length - 1, 1, text);
+});
+
 test('all linked resources are shipped and the renderer has no learner persistence', () => {
   const manifest = read('13_Faculty_Resources/_automation/site_build/site_manifest.json');
   for (const data of cases) for (const chapter of data.weeks) for (const link of chapter.links) {

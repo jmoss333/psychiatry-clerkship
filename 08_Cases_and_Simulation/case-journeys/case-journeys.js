@@ -5,13 +5,19 @@
   else api.start(root);
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
+
   var slugs = ['jordan', 'eli', 'leah', 'marisol'];
+  var accents = {jordan:'clay', eli:'teal', leah:'plum', marisol:'olive'};
+  var allowedAccents = ['clay', 'teal', 'plum', 'olive'];
+
   function escape(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
       return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c];
     });
   }
+
   function text(value) { return typeof value === 'string' && value.trim().length > 0; }
+
   function validate(data) {
     if (!data || !data.patient || !text(data.patient.displayName) || !text(data.title) || !Array.isArray(data.weeks) || data.weeks.length !== 6) throw new Error('A complete six-chapter case is required.');
     if ('learnerRelease' in data && data.learnerRelease !== true) throw new Error('Case is not released to learners.');
@@ -29,6 +35,7 @@
     });
     return true;
   }
+
   function selection(search) {
     var params = new URLSearchParams(search), requested = params.get('case') || 'jordan';
     var invalid = slugs.indexOf(requested) < 0;
@@ -36,6 +43,7 @@
     if (invalid || !Number.isInteger(chapter) || chapter < 1 || chapter > 6) chapter = 1;
     return {slug:invalid ? 'jordan' : requested, chapter:chapter, invalid:invalid};
   }
+
   function moveChapter(current, key) {
     if (key === 'Home') return 1;
     if (key === 'End') return 6;
@@ -43,22 +51,74 @@
     if (key === 'ArrowRight' || key === 'ArrowDown') return current === 6 ? 1 : current + 1;
     return current;
   }
-  function chapterMarkup(data, w) {
-    return '<p class="eyebrow">' + escape(w.label) + '</p><h3>' + escape(w.title) + '</h3>' +
-      '<ul class="focus">' + w.focus.map(function (f) { return '<li>' + escape(f) + '</li>'; }).join('') + '</ul>' +
-      '<div class="chapter-grid"><section class="note story"><h4>What changed in ' + escape(data.patient.displayName) + '’s story</h4><p>' + escape(w.patientState) + '</p></section>' +
-      '<section class="note"><h4>Learner’s supervised task</h4><p>' + escape(w.learnerTask) + '</p></section>' +
-      '<section class="note language"><h4>One way to say it</h4>' + w.checklist.map(function (item) { return '<p class="model-prompt">' + escape(item.prompt) + '</p><blockquote>' + escape(item.example) + '</blockquote>'; }).join('') + '</section>' +
-      '<section class="note"><h4>Carry it to rounds</h4><p>' + escape(w.handoff) + '</p></section></div>' +
-      '<details class="reflection"><summary>Reflect and explore</summary><p>' + escape(w.reflectionPrompt) + '</p><ul>' + w.links.map(function (link) {
-        return '<li><a target="_parent" href="../index.html?' + link.kind + '=' + encodeURIComponent(link.target) + '">' + escape(link.label) + '</a></li>';
-      }).join('') + '</ul></details>';
+
+  function accentFor(data, slug) {
+    var suggested = data && data.suggestedAccent;
+    return allowedAccents.indexOf(suggested) >= 0 ? suggested : accents[slug] || 'clay';
   }
+
+  function catalogMarkup(cases, selectedSlug) {
+    return '<nav aria-label="Choose a case journey"><ul class="opf-case-catalog">' + cases.map(function (item, i) {
+      var slug = slugs[i], current = slug === selectedSlug, accent = accentFor(item, slug);
+      return '<li><a class="opf-case-card opf-case-card--' + accent + '" href="?case=' + slug + '"' + (current ? ' aria-current="page"' : '') + '>' +
+        '<span class="opf-case-card__name">' + escape(item.patient.displayName) + '</span>' +
+        '<span class="opf-case-card__title">' + escape(item.title) + '</span>' +
+        '<span class="opf-case-card__count">6 chapters</span>' +
+        (current ? '<span class="opf-case-card__selected">Selected</span>' : '') + '</a></li>';
+    }).join('') + '</ul></nav>';
+  }
+
+  function routeMarkup(data, selected) {
+    return '<ol class="opf-route" role="tablist" aria-label="' + escape(data.patient.displayName) + ' chapters">' + data.weeks.map(function (w, i) {
+      var number = i + 1, active = number === selected;
+      return '<li class="opf-route__item"><button type="button" id="chapter-tab-' + number + '" class="opf-route__tab" role="tab" aria-controls="chapter-panel" aria-selected="' + (active ? 'true' : 'false') + '" tabindex="' + (active ? '0' : '-1') + '" data-chapter="' + number + '">' +
+        '<span class="opf-route__node" aria-hidden="true">' + number + '</span><span class="opf-route__copy"><span class="opf-route__week">' + escape(w.label) + '</span><span class="opf-route__title">' + escape(w.title) + '</span></span></button></li>';
+    }).join('') + '</ol>';
+  }
+
+  function resourceHref(link) {
+    return '../index.html?' + link.kind + '=' + encodeURIComponent(link.target);
+  }
+
+  function chapterMarkup(data, w) {
+    var number = data.weeks.indexOf(w) + 1;
+    var language = w.checklist.map(function (item) {
+      return '<div class="opf-language"><p class="opf-note__prompt">' + escape(item.prompt) + '</p><blockquote>' + escape(item.example) + '</blockquote></div>';
+    }).join('');
+    var resources = w.links.map(function (link) {
+      return '<li><a target="_parent" href="' + resourceHref(link) + '">' + escape(link.label) + '</a></li>';
+    }).join('');
+    return '<div class="opf-sheet__topline"><p class="opf-sheet__chapter">Case chapter ' + number + ' of 6</p><span class="opf-sheet__stamp">Fictional composite</span></div>' +
+      '<h2 id="case-panel-title">' + escape(w.title) + '</h2>' +
+      '<ul class="opf-focus" aria-label="Chapter focus">' + w.focus.map(function (f) { return '<li>' + escape(f) + '</li>'; }).join('') + '</ul>' +
+      '<div class="opf-grid"><section class="opf-note opf-note--story"><p class="opf-note__label">What changed in ' + escape(data.patient.displayName) + '’s story</p><p>' + escape(w.patientState) + '</p></section>' +
+      '<section class="opf-note opf-note--task"><p class="opf-note__label">Learner’s supervised task</p><p>' + escape(w.learnerTask) + '</p></section>' +
+      '<section class="opf-note opf-note--language"><p class="opf-note__label">One way to say it</p>' + language + '</section>' +
+      '<section class="opf-note opf-note--rounds"><p class="opf-note__label">Carry it to rounds</p><p>' + escape(w.handoff) + '</p></section></div>' +
+      '<details class="opf-reflection"><summary>Reflect and explore</summary><p>' + escape(w.reflectionPrompt) + '</p><nav aria-label="Resources for this chapter"><ul>' + resources + '</ul></nav></details>';
+  }
+
+  function pageMarkup(cases, selected) {
+    var index = slugs.indexOf(selected.slug), data = cases[index], w = data.weeks[selected.chapter - 1];
+    var timeFrame = data.timeFrame || '6 ordered chapters';
+    var audience = data.audience || 'Shared MS3 and resident practice with the learner’s supervising team.';
+    return '<header class="opf-hero"><div class="opf-shell opf-hero__grid"><div><p class="opf-eyebrow">Case Journeys · supervised practice</p><h1>' + escape(data.title) + '</h1><p class="opf-dek">' + escape(data.patient.description) + '</p></div>' +
+      '<aside class="opf-boundary" aria-label="Selected case frame"><span class="opf-boundary__mark" aria-hidden="true">01—06</span><p>' + escape(data.patient.frame) + '</p></aside></div></header>' +
+      '<main><section class="opf-shell opf-library" aria-labelledby="case-library-heading"><div class="opf-library__heading"><div><p class="opf-eyebrow">Four fictional journeys · 24 chapters</p><h2 id="case-library-heading">Case Journey Library</h2></div><p>Choose a case. The case link is shareable; chapter selection stays on this page and is never saved.</p></div>' +
+      catalogMarkup(cases, selected.slug) + (selected.invalid ? '<p class="opf-selection-note" role="status">That case link is unavailable. Jordan is shown instead.</p>' : '') + '</section>' +
+      '<section class="opf-shell opf-case-context" aria-label="Selected case context"><div class="opf-case-context__frame"><p class="opf-context-label">Case setting</p><p>' + escape(data.setting) + '</p></div>' +
+      '<dl class="opf-case-facts"><div><dt>Clinical time</dt><dd>' + escape(timeFrame) + '</dd></div><div><dt>Learner audience</dt><dd>' + escape(audience) + '</dd></div></dl>' +
+      '<aside class="opf-source-boundary"><p class="opf-context-label">Simulation boundary</p><p>' + escape(data.disclaimer) + '</p><p class="opf-source-boundary__note">Navigation is unscored and is not saved.</p></aside></section>' +
+      '<section class="opf-shell opf-workbench" aria-label="' + escape(data.patient.displayName) + '’s interactive case folio"><div class="opf-spine"><div class="opf-spine__heading"><span>' + escape(data.patient.displayName) + '’s case file</span><strong id="counter" aria-live="polite">' + String(selected.chapter).padStart(2, '0') + ' / 06</strong></div><div id="case-route">' + routeMarkup(data, selected.chapter) + '</div></div>' +
+      '<div class="opf-folio"><div class="opf-folio__back" aria-hidden="true"></div><article class="opf-sheet" id="chapter-panel" role="tabpanel" tabindex="-1" aria-labelledby="chapter-tab-' + selected.chapter + '">' + chapterMarkup(data, w) + '</article>' +
+      '<div class="opf-controls" aria-label="Case chapter controls"><button type="button" id="previous"' + (selected.chapter === 1 ? ' disabled' : '') + '>Previous chapter</button><p>Selection is not saved.</p><button type="button" id="next"' + (selected.chapter === 6 ? ' disabled' : '') + '>Next chapter</button></div></div></section></main>' +
+      '<footer class="opf-shell opf-footer"><span>Fictional educational case</span><span>No patient entry · no saved case progress</span></footer>';
+  }
+
   async function start(browser) {
     var doc = browser.document, app = doc.getElementById('app');
     async function json(response) { if (!response.ok) throw new Error('Case data unavailable.'); return response.json(); }
     try {
-      // Literal asset routes are also discovered by the teaching attestation graph.
       var cases = await Promise.all([
         fetch('../longitudinal_case.json').then(json),
         fetch('eli-psychosis.json').then(json),
@@ -67,41 +127,40 @@
       ]);
       cases.forEach(validate);
       var selected = selection(browser.location.search), index = slugs.indexOf(selected.slug), data = cases[index];
-      doc.documentElement.setAttribute('data-case-accent', selected.slug);
+      doc.documentElement.setAttribute('data-case-accent', accentFor(data, selected.slug));
       doc.title = data.patient.displayName + ' — Case Journeys';
-      app.innerHTML = '<nav aria-label="Choose a case"><ul class="catalog">' + cases.map(function (item, i) {
-        return '<li><a href="?case=' + slugs[i] + '"' + (i === index ? ' aria-current="page"' : '') + '><strong>' + escape(item.patient.displayName) + '</strong><span>' + escape(item.title) + '</span><small>6 chapters</small></a></li>';
-      }).join('') + '</ul></nav>' + (selected.invalid ? '<p role="status">That case link is unavailable. Jordan is shown instead.</p>' : '') +
-      '<header class="case-header"><p class="eyebrow">Fictional case · Six chapters</p><h2>' + escape(data.title) + '</h2><p>' + escape(data.patient.description) + '</p><p>' + escape(data.patient.frame) + '</p><p class="timeframe">' + escape(data.timeFrame || data.setting) + '</p><p class="case-boundary">' + escape(data.disclaimer) + '</p></header>' +
-      '<div class="journey"><div class="route" role="tablist" aria-label="' + escape(data.patient.displayName) + ' chapters">' + data.weeks.map(function (w,i) {
-        return '<button type="button" role="tab" id="chapter-tab-' + (i+1) + '" aria-controls="chapter-panel" data-chapter="' + (i+1) + '"><span class="number" aria-hidden="true">' + (i+1) + '</span><span><small>' + escape(w.label) + '</small>' + escape(w.title) + '</span></button>';
-      }).join('') + '</div><div><article id="chapter-panel" role="tabpanel" tabindex="0"></article><div class="chapter-nav"><button type="button" id="previous">Previous chapter</button><span id="counter" aria-live="polite"></span><button type="button" id="next">Next chapter</button></div></div></div>';
-      var panel = doc.getElementById('chapter-panel'), tabs = app.querySelectorAll('[role="tab"]');
+      app.innerHTML = pageMarkup(cases, selected);
+      var panel = doc.getElementById('chapter-panel'), route = doc.getElementById('case-route');
       var previous = doc.getElementById('previous'), next = doc.getElementById('next');
+
       function render(focus) {
-        tabs.forEach(function (tab,i) { tab.setAttribute('aria-selected', String(i+1 === selected.chapter)); tab.tabIndex = i+1 === selected.chapter ? 0 : -1; });
-        panel.innerHTML = chapterMarkup(data, data.weeks[selected.chapter-1]);
+        route.innerHTML = routeMarkup(data, selected.chapter);
+        panel.innerHTML = chapterMarkup(data, data.weeks[selected.chapter - 1]);
         panel.setAttribute('aria-labelledby', 'chapter-tab-' + selected.chapter);
-        previous.disabled = selected.chapter === 1; next.disabled = selected.chapter === 6;
-        doc.getElementById('counter').textContent = 'Chapter ' + selected.chapter + ' of 6';
-        if (focus === 'tab') tabs[selected.chapter-1].focus();
+        previous.disabled = selected.chapter === 1;
+        next.disabled = selected.chapter === 6;
+        doc.getElementById('counter').textContent = String(selected.chapter).padStart(2, '0') + ' / 06';
+        var tabs = route.querySelectorAll('[role="tab"]');
+        tabs.forEach(function (tab) {
+          tab.addEventListener('click', function () { selected.chapter = Number(tab.dataset.chapter); render('tab'); });
+          tab.addEventListener('keydown', function (event) {
+            if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)) return;
+            event.preventDefault(); selected.chapter = moveChapter(selected.chapter, event.key); render('tab');
+          });
+        });
+        if (focus === 'tab') route.querySelector('[data-chapter="' + selected.chapter + '"]').focus();
         if (focus === 'panel') panel.focus();
       }
-      tabs.forEach(function (tab) {
-        tab.addEventListener('click', function () { selected.chapter = Number(tab.dataset.chapter); render('tab'); });
-        tab.addEventListener('keydown', function (event) {
-          if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)) return;
-          event.preventDefault(); selected.chapter = moveChapter(selected.chapter,event.key); render('tab');
-        });
-      });
+
       previous.addEventListener('click', function () { if (selected.chapter > 1) { selected.chapter--; render('panel'); } });
       next.addEventListener('click', function () { if (selected.chapter < 6) { selected.chapter++; render('panel'); } });
       render();
     } catch (problem) {
-      app.innerHTML = '<p role="alert">The case journeys could not load. Please reload this page or return to the library and try again.</p>';
+      app.innerHTML = '<main class="opf-shell"><p class="opf-error" role="alert">The case journeys could not load. Please reload this page or return to the library and try again.</p></main>';
     } finally {
       app.setAttribute('aria-busy', 'false');
     }
   }
-  return {escape:escape, validate:validate, selection:selection, moveChapter:moveChapter, chapterMarkup:chapterMarkup, start:start};
+
+  return {escape:escape, validate:validate, selection:selection, moveChapter:moveChapter, accentFor:accentFor, catalogMarkup:catalogMarkup, routeMarkup:routeMarkup, chapterMarkup:chapterMarkup, pageMarkup:pageMarkup, start:start};
 }));

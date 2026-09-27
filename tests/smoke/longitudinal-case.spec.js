@@ -10,14 +10,17 @@ for (const [index, slug] of names.entries()) {
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => localStorage.setItem('cw_longitudinal_v1', 'existing-learner-value'));
     await page.goto(`/tools/one-patient-six-weeks.html?case=${slug}`);
-    await expect(page.getByRole('heading',{name:'Case Journeys',exact:true})).toBeVisible();
-    await expect(page.locator('.catalog a[aria-current="page"]')).toContainText(data.patient.displayName);
+    await expect(page.getByRole('heading',{name:'Case Journey Library',exact:true})).toBeVisible();
+    await expect(page.locator('.opf-case-card[aria-current="page"]')).toContainText(data.patient.displayName);
+    await expect(page.locator('html')).toHaveAttribute('data-case-accent', index === 0 ? 'clay' : data.suggestedAccent);
+    await expect(page.locator('.opf-folio')).toBeVisible();
     const tabs = page.getByRole('tab');
     await expect(tabs).toHaveCount(6);
     for (const [i, chapter] of data.weeks.entries()) {
       await tabs.nth(i).click();
       const panel = page.getByRole('tabpanel');
-      for (const text of [chapter.patientState,chapter.learnerTask,chapter.handoff,...chapter.checklist.flatMap(item=>[item.prompt,item.example])]) {
+      for (const text of [chapter.patientState,chapter.learnerTask,chapter.handoff,chapter.reflectionPrompt,
+        ...chapter.checklist.flatMap(item=>[item.prompt,item.example]),...chapter.links.map(link=>link.label)]) {
         await expect(panel.getByText(text,{exact:true})).toHaveCount(1);
       }
       await expect(page.getByRole('tab',{selected:true})).toHaveCount(1);
@@ -46,7 +49,7 @@ test('old Jordan week links, unknown cases, mobile reflow, and resource navigati
   await page.goto('/tools/one-patient-six-weeks.html?week=4');
   await expect(page.getByRole('tab').nth(3)).toHaveAttribute('aria-selected','true');
   await page.goto('/tools/one-patient-six-weeks.html?case=unknown&chapter=99');
-  await expect(page.locator('.catalog a[aria-current="page"]')).toContainText('Jordan');
+  await expect(page.locator('.opf-case-card[aria-current="page"]')).toContainText('Jordan');
   await expect(page.getByRole('status').filter({hasText:'Jordan is shown'})).toBeVisible();
   await page.goto('/tools/one-patient-six-weeks.html?case=eli');
   await expect(page.getByRole('tab')).toHaveCount(6);
@@ -58,7 +61,7 @@ test('old Jordan week links, unknown cases, mobile reflow, and resource navigati
   }
   await page.screenshot({path:testInfo.outputPath('eli-mobile.png'),fullPage:true});
   await page.getByText('Reflect and explore',{exact:true}).click();
-  await page.locator('.reflection a').first().click();
+  await page.locator('.opf-reflection a').first().click();
   await expect(page).toHaveURL(/index\.html\?(page|tool)=/);
 });
 
