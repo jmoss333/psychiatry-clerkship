@@ -177,6 +177,9 @@ export async function loadReleaseStatus(fetchImpl, token, { now = Date.now, ledg
     liveBasis,
     sites,
     sitesDisagree,
+    // Every learner site's published deploy was read. Without it, "up to date" is not claimed
+    // and a waiting count is a minimum (an unread site may be further behind).
+    liveComplete: served.length === SITE_KEYS.length,
     // release has moved but no site serves it yet: a publish is building, or its build failed.
     releaseUnserved: Boolean(release && served.length && !served.includes(release)),
     mainChecks,

@@ -151,11 +151,18 @@ export function releaseHeadline(status) {
   } else if (waiting.status === 'diverged') {
     raise('attention');
     lines.push('The learner sites serve a commit that is not on main. The release branch needs repair before the train can publish.');
-  } else if (!waiting.changes.length) {
+  } else if (!waiting.changes.length && status?.liveComplete === true) {
     lines.push('Learners see everything merged to main.');
+  } else if (!waiting.changes.length) {
+    // Judged from one site, or from the release branch: an unread site may still serve an
+    // older commit after a failed build, so "up to date" is not something this can claim.
+    raise('unknown');
+    lines.push('Main matches what could be read, but not every learner site\u2019s published deploy could be read, so this does not show that all learners are up to date.');
   } else {
     raise('waiting');
-    const count = waiting.complete ? plural(waiting.changes.length, 'merged change')
+    // An unread site may be further behind than the one compared, so a partial read is a minimum.
+    const exact = waiting.complete && status?.liveComplete === true;
+    const count = exact ? plural(waiting.changes.length, 'merged change')
       : `At least ${plural(waiting.changes.length, 'merged change')}`;
     const signoffs = waiting.changes.filter(change => change.signoff).length;
     lines.push(`${count}${signoffs ? ` (${plural(signoffs, 'faculty sign-off')})` : ''} ${waiting.changes.length === 1 ? 'is' : 'are'} not live for learners yet.`);
@@ -182,8 +189,11 @@ export function releaseHeadline(status) {
   const last = train?.lastRun;
   if (last && last.conclusion && last.conclusion !== 'success' && last.status === 'completed') {
     raise('attention');
-    const kind = last.event === 'workflow_dispatch' ? 'publish-now run' : 'scheduled publish';
-    lines.push(`The last ${kind} (${hhmmUtc(Date.parse(last.at))}) did not go out (${last.conclusion}) — held by the spend tripwire or refused; its run log says which.`);
+    // A red run is not proof that nothing was published: the workflow pushes `release` before
+    // it requests the release receipt, and that later step can fail on its own. Whether a
+    // publish happened is what the served commits above show; this line reports only the run.
+    const kind = last.event === 'workflow_dispatch' ? 'publish-now run' : 'scheduled run';
+    lines.push(`The last release-train ${kind} (${hhmmUtc(Date.parse(last.at))}) ended in ${last.conclusion} — held by the spend tripwire, refused, or a step after publishing failed; its run log says which.`);
   }
   return { tone, text: lines.join(' ') };
 }

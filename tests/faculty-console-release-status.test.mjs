@@ -98,12 +98,26 @@ test('an unread comparison never reads as up to date', () => {
   assert.doesNotMatch(headline.text, /Learners see everything/);
 });
 
+test('up to date is claimed only when every learner site was read; a partial read is a minimum', () => {
+  const current = { status: 'current', changes: [], complete: true };
+  for (const liveComplete of [false, undefined]) {
+    const headline = releaseHeadline({ waiting: current, liveComplete, train });
+    assert.equal(headline.tone, 'unknown');
+    assert.doesNotMatch(headline.text, /Learners see everything/);
+  }
+  const partial = releaseHeadline({
+    waiting: { status: 'waiting', complete: true, changes: [{}, {}] }, liveComplete: false, train,
+  });
+  assert.match(partial.text, /^At least 2 merged changes are not live/);
+});
+
 test('headlines: current, waiting with sign-offs, and the states that need the owner', () => {
-  assert.deepEqual(releaseHeadline({ waiting: { status: 'current', changes: [], complete: true }, train }),
+  assert.deepEqual(releaseHeadline({ waiting: { status: 'current', changes: [], complete: true }, liveComplete: true, train }),
     { tone: 'current', text: 'Learners see everything merged to main.' });
 
   const waiting = releaseHeadline({
     waiting: { status: 'waiting', complete: true, changes: [{ signoff: true }, { signoff: false }] },
+    liveComplete: true,
     mainChecks: { verdict: 'running' },
     train,
   });
@@ -118,7 +132,9 @@ test('headlines: current, waiting with sign-offs, and the states that need the o
   });
   assert.equal(held.tone, 'attention');
   assert.match(held.text, /^At least 1 merged change is not live/);
-  assert.match(held.text, /last scheduled publish \(09:21 UTC\) did not go out \(failure\)/);
+  assert.match(held.text, /last release-train scheduled run \(09:21 UTC\) ended in failure/);
+  // A red run is not proof of no publish (the receipt step runs after the push).
+  assert.doesNotMatch(held.text, /did not go out|not published/);
 
   for (const status of [
     { waiting: { status: 'diverged', changes: [], complete: true }, train },
@@ -209,6 +225,7 @@ test('the endpoint reports the served commit, the waiting changes and the held t
   assert.deepEqual(body.gaps, []);
   assert.equal(body.live, LIVE);
   assert.equal(body.liveBasis, 'published deploys');
+  assert.equal(body.liveComplete, true);
   assert.equal(body.sites.ms3.commitRef, LIVE);
   assert.equal(body.sites.res.deployUrl, `https://${SITES.res.deployId}--${SITES.res.host}`);
   assert.deepEqual(body.waiting.changes.map(change => [change.pr, change.signoff]), [[846, false], [781, true]]);
@@ -224,6 +241,8 @@ test('an unreadable Netlify falls back to the release branch and says so', async
   const body = await (await handler(fetchImpl)(request())).json();
   assert.equal(body.state, 'partial');
   assert.equal(body.liveBasis, 'release branch');
+  assert.equal(body.liveComplete, false);
+  assert.match(body.headline.text, /^At least 2 merged changes/);
   assert.equal(body.live, LIVE);
   assert.equal(body.mainChecks, null);
   assert.ok(body.gaps.some(gap => gap.startsWith('ms3 published deploy')));
