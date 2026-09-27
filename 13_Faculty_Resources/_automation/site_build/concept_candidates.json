@@ -1,0 +1,2049 @@
+{
+  "schemaVersion": 1,
+  "notes": [
+    {
+      "id": "brief_psychotherapy-summary",
+      "source": "02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md",
+      "kind": "summary",
+      "excerpt": "You will not complete a course of therapy on an inpatient unit, but almost every encounter is a micro-intervention. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.",
+      "targets": [
+        {
+          "id": "brief_psychotherapy-summary:1",
+          "text": "micro-intervention",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_adjustment-summary",
+      "source": "03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "An adjustment disorder is clinically significant distress or impairment that begins within 3 months of an identifiable stressor and resolves within 6 months after the stressor (or its consequences) ends — it is the diagnosis for someone struggling more than expected with a real-life event who does not meet criteria for another disorder, and it still carries meaningful, sometimes acute, suicide risk.",
+      "targets": [
+        {
+          "id": "t_adjustment-summary:1",
+          "text": "within 3 months of an identifiable stressor",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_adjustment-pearl1",
+      "source": "03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Onset within 3 months of a stressor; resolves within 6 months once the stressor (or its consequences) ends.",
+      "targets": [
+        {
+          "id": "t_adjustment-pearl1:1",
+          "text": "3 months",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_adjustment-pearl1:2",
+          "text": "6 months",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_adjustment-pearl2",
+      "source": "03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "If full criteria for MDD, an anxiety disorder, or PTSD are met — it's not adjustment disorder.",
+      "targets": [
+        {
+          "id": "t_adjustment-pearl2:1",
+          "text": "adjustment disorder",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_adjustment-pearl3",
+      "source": "03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor.",
+      "targets": [
+        {
+          "id": "t_adjustment-pearl3:1",
+          "text": "traumatic",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_adjustment-pearl3:2",
+          "text": "any stressor",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_adjustment-pearl4",
+      "source": "03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Suicide risk is real even at \"subthreshold\" severity — assess it directly.",
+      "targets": [
+        {
+          "id": "t_adjustment-pearl4:1",
+          "text": "assess it directly",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_adjustment-pearl5",
+      "source": "03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is adjunctive.",
+      "targets": [
+        {
+          "id": "t_adjustment-pearl5:1",
+          "text": "psychotherapy",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_adjustment-pearl5:2",
+          "text": "adjunctive",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_adjustment-pearl6",
+      "source": "03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Prolonged grief disorder is the diagnosis for persistent, impairing grief beyond expected norms.",
+      "targets": [
+        {
+          "id": "t_adjustment-pearl6:1",
+          "text": "Prolonged grief disorder",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_anxiety-summary",
+      "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, treat the disorder with antidepressants plus structured behavioral work, and resist the reflex to standing benzodiazepines.",
+      "targets": [
+        {
+          "id": "t_anxiety-summary:1",
+          "text": "antidepressants plus structured behavioral work",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_anxiety-pearl1",
+      "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Anxiety is a symptom before it is a diagnosis — clear the medical and withdrawal mimics first.",
+      "targets": [
+        {
+          "id": "t_anxiety-pearl1:1",
+          "text": "medical and withdrawal mimics",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_anxiety-pearl2",
+      "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Akathisia is the great inpatient impostor; treat the cause, not with more dopamine blockade.",
+      "targets": [
+        {
+          "id": "t_anxiety-pearl2:1",
+          "text": "Akathisia",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_anxiety-pearl3",
+      "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → propranolol (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct.",
+      "targets": [
+        {
+          "id": "t_anxiety-pearl3:1",
+          "text": "propranolol",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_anxiety-pearl5",
+      "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
+      "targets": [
+        {
+          "id": "t_anxiety-pearl5:1",
+          "text": "ERP for OCD",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_anxiety-pearl5:2",
+          "text": "PE/CPT for PTSD",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_anxiety-pearl5:3",
+          "text": "interoceptive exposure for panic",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_anxiety-pearl6",
+      "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "The scale to know for OCD is the Y-BOCS (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response (a symptom checklist plus 10 severity items, obsessions and compulsions scored separately).",
+      "targets": [
+        {
+          "id": "t_anxiety-pearl6:1",
+          "text": "Y-BOCS",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_anxiety-pearl7",
+      "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Trauma-informed care is clinical, not optional: predictability and choice prevent escalation.",
+      "targets": [
+        {
+          "id": "t_anxiety-pearl7:1",
+          "text": "predictability and choice",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "cultural_psychiatry-summary",
+      "source": "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Culture shapes how distress is experienced, expressed, and treated — and ignoring it produces misdiagnosis and inequity — so the core clerkship skills are eliciting the patient's own explanatory model, using the Cultural Formulation Interview, working correctly with interpreters, and recognizing the disparities and biases that distort psychiatric care.",
+      "targets": [
+        {
+          "id": "cultural_psychiatry-summary:1",
+          "text": "Cultural Formulation Interview",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "cultural_psychiatry-pearl1",
+      "source": "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Kleinman's explanatory-model questions surface what the illness means to the patient.",
+      "targets": [
+        {
+          "id": "cultural_psychiatry-pearl1:1",
+          "text": "explanatory-model",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "cultural_psychiatry-pearl2",
+      "source": "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "The DSM-5-TR Cultural Formulation Interview is the standardized tool — know it exists and what it covers.",
+      "targets": [
+        {
+          "id": "cultural_psychiatry-pearl2:1",
+          "text": "Cultural Formulation Interview",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "cultural_psychiatry-pearl3",
+      "source": "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.",
+      "targets": [
+        {
+          "id": "cultural_psychiatry-pearl3:1",
+          "text": "ataque de nervios",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "cultural_psychiatry-pearl4",
+      "source": "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Use trained interpreters, not family/children; speak directly to the patient.",
+      "targets": [
+        {
+          "id": "cultural_psychiatry-pearl4:1",
+          "text": "trained interpreters",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "cultural_psychiatry-pearl5",
+      "source": "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Black (and some other minority) patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.",
+      "targets": [
+        {
+          "id": "cultural_psychiatry-pearl5:1",
+          "text": "over-diagnosed with schizophrenia",
+          "contentRevision": 2
+        },
+        {
+          "id": "cultural_psychiatry-pearl5:2",
+          "text": "under-diagnosed with mood disorders",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "cultural_psychiatry-pearl6",
+      "source": "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Social determinants of mental health are clinical data; address them in the formulation and plan.",
+      "targets": [
+        {
+          "id": "cultural_psychiatry-pearl6:1",
+          "text": "Social determinants of mental health",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_dissociative-summary",
+      "source": "03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Dissociation is a disruption in the normal integration of memory, identity, perception, and awareness — usually trauma-linked — and on the unit your tasks are to rule out the medical and substance causes that mimic it, keep it separate from psychosis and malingering, and stabilize safety before doing any trauma work.",
+      "targets": [
+        {
+          "id": "t_dissociative-summary:1",
+          "text": "memory, identity, perception, and awareness",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_dissociative-pearl1",
+      "source": "03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Rule out delirium, seizure, TBI, and substances before diagnosing a dissociative disorder.",
+      "targets": [
+        {
+          "id": "t_dissociative-pearl1:1",
+          "text": "delirium, seizure, TBI, and substances",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_dissociative-pearl2",
+      "source": "03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Depersonalization/derealization disorder = detachment with intact reality testing.",
+      "targets": [
+        {
+          "id": "t_dissociative-pearl2:1",
+          "text": "intact reality testing",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_dissociative-pearl3",
+      "source": "03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Dissociative disorders are trauma-linked and carry high suicide/self-harm risk — assess it.",
+      "targets": [
+        {
+          "id": "t_dissociative-pearl3:1",
+          "text": "trauma-linked",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_dissociative-pearl4",
+      "source": "03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Stabilize and ground first; trauma processing comes later.",
+      "targets": [
+        {
+          "id": "t_dissociative-pearl4:1",
+          "text": "Stabilize and ground first",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_dissociative-pearl5",
+      "source": "03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Psychotherapy is the mainstay; no drug treats dissociation itself — treat comorbidities.",
+      "targets": [
+        {
+          "id": "t_dissociative-pearl5:1",
+          "text": "Psychotherapy",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_dissociative-pearl6",
+      "source": "03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Non-epileptic (dissociative) seizures are a consult-liaison classic — diagnose positively, avoid antiseizure escalation.",
+      "targets": [
+        {
+          "id": "t_dissociative-pearl6:1",
+          "text": "Non-epileptic (dissociative) seizures",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_eating-pearl1",
+      "source": "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Refeeding syndrome = watch the phosphate — risk tracks the degree of malnutrition, not the starting calories; most patients can start higher with daily phosphate/K/Mg checks, and the most malnourished or medically unstable start cautiously; give thiamine.",
+      "targets": [
+        {
+          "id": "t_eating-pearl1:1",
+          "text": "Refeeding syndrome",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_eating-pearl2",
+      "source": "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Bradycardia is a leading reason for medical admission in AN; orthostatic changes, hypothermia, and QTc prolongation also drive the medical-bed decision.",
+      "targets": [
+        {
+          "id": "t_eating-pearl2:1",
+          "text": "Bradycardia",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_eating-pearl3",
+      "source": "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Hypokalemic, hypochloremic metabolic alkalosis = self-induced vomiting until proven otherwise.",
+      "targets": [
+        {
+          "id": "t_eating-pearl3:1",
+          "text": "Hypokalemic, hypochloremic metabolic alkalosis",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_eating-pearl4",
+      "source": "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "A normal weight does not rule out bulimia — look for Russell's sign, parotid swelling, and dental erosion.",
+      "targets": [
+        {
+          "id": "t_eating-pearl4:1",
+          "text": "bulimia",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_eating-pearl5",
+      "source": "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Fluoxetine 60 mg is the go-to for BN; avoid bupropion when purging or underweight (seizures); lisdexamfetamine for BED.",
+      "targets": [
+        {
+          "id": "t_eating-pearl5:1",
+          "text": "Fluoxetine 60 mg",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_eating-pearl5:2",
+          "text": "avoid bupropion",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_eating-pearl5:3",
+          "text": "lisdexamfetamine",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_eating-pearl6",
+      "source": "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "AN has among the highest mortality of any psychiatric illness (medical + suicide) — take medical instability seriously and screen suicide risk.",
+      "targets": [
+        {
+          "id": "t_eating-pearl6:1",
+          "text": "AN",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_eating-pearl7",
+      "source": "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Watch for water-loading: a weight that jumps too fast can be dilutional, not recovery.",
+      "targets": [
+        {
+          "id": "t_eating-pearl7:1",
+          "text": "water-loading",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "ethics_legal-summary",
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its limits — when you must break it to protect a third party, when you must report abuse, and when you can treat or hold a patient against their will — always choosing the least restrictive option that keeps people safe.",
+      "targets": [
+        {
+          "id": "ethics_legal-summary:1",
+          "text": "least restrictive",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "ethics_legal-pearl1",
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "A serious threat to an identifiable victim can trigger a duty to protect (Tarasoff) — mandatory, permissive or absent depending on the state; where it applies, confidentiality yields.",
+      "targets": [
+        {
+          "id": "ethics_legal-pearl1:1",
+          "text": "Tarasoff",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "ethics_legal-pearl2",
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Child abuse is a mandated report on reasonable suspicion; elder/dependent-adult abuse is mandated in most states (check yours); good-faith reporters are protected.",
+      "targets": [
+        {
+          "id": "ethics_legal-pearl2:1",
+          "text": "reasonable suspicion",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "ethics_legal-pearl3",
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Commitment criteria: danger to self, danger to others, or grave disability — and use the least restrictive option.",
+      "targets": [
+        {
+          "id": "ethics_legal-pearl3:1",
+          "text": "danger to self, danger to others, or grave disability",
+          "contentRevision": 1
+        },
+        {
+          "id": "ethics_legal-pearl3:2",
+          "text": "least restrictive",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "ethics_legal-pearl4",
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "The constitutional minimum standard of proof for commitment is clear and convincing evidence (Addington v. Texas; some states require more); a non-dangerous patient who can survive safely in the community cannot be confined (O'Connor v. Donaldson).",
+      "targets": [
+        {
+          "id": "ethics_legal-pearl4:1",
+          "text": "clear and convincing evidence",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "ethics_legal-pearl5",
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Involuntary hospitalization ≠ involuntary medication; refusal stands absent an emergency or legal process.",
+      "targets": [
+        {
+          "id": "ethics_legal-pearl5:1",
+          "text": "Involuntary hospitalization ≠ involuntary medication",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "ethics_legal-pearl6",
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Capacity is clinical and decision-specific; competence is a legal (court) determination.",
+      "targets": [
+        {
+          "id": "ethics_legal-pearl6:1",
+          "text": "decision-specific",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "ethics_legal-pearl7",
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Informed consent = capacity + disclosure + voluntariness; the emergency exception covers necessary urgent care.",
+      "targets": [
+        {
+          "id": "ethics_legal-pearl7:1",
+          "text": "capacity + disclosure + voluntariness",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "ethics_legal-pearl8",
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Sexual contact with a patient is always an ethics violation.",
+      "targets": [
+        {
+          "id": "ethics_legal-pearl8:1",
+          "text": "always an ethics violation",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_geri-summary",
+      "source": "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "On the geriatric inpatient unit, your central job is to separate reversible from irreversible causes of cognitive and behavioral change, treat the treatable, and avoid iatrogenic harm from the very drugs meant to help.",
+      "targets": [
+        {
+          "id": "t_geri-summary:1",
+          "text": "reversible from irreversible",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_geri-pearl1",
+      "source": "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "New psychosis in an older adult is delirium or a medical cause until proven otherwise.",
+      "targets": [
+        {
+          "id": "t_geri-pearl1:1",
+          "text": "delirium or a medical cause",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_geri-pearl2",
+      "source": "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Inattention is the fingerprint of delirium — test it, don't infer it.",
+      "targets": [
+        {
+          "id": "t_geri-pearl2:1",
+          "text": "Inattention",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_geri-pearl3",
+      "source": "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "\"I don't know\" answers and effortful disengagement suggest pseudodementia; treat the depression.",
+      "targets": [
+        {
+          "id": "t_geri-pearl3:1",
+          "text": "pseudodementia",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_geri-pearl4",
+      "source": "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "The drug list is often the diagnosis — deprescribing is active treatment.",
+      "targets": [
+        {
+          "id": "t_geri-pearl4:1",
+          "text": "deprescribing",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_geri-pearl5",
+      "source": "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Non-pharmacologic management is first-line for dementia-related agitation; antipsychotics are time-limited exceptions.",
+      "targets": [
+        {
+          "id": "t_geri-pearl5:1",
+          "text": "Non-pharmacologic management",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_impulse-summary",
+      "source": "03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "This group is defined by problems with self-control of emotions and behavior that violate others' rights or bring the person into conflict with social norms — and the exam rewards you for the developmental thread: oppositional defiant disorder → conduct disorder → antisocial personality disorder, and for separating these from mania, substance use, and a treatable mood disorder underneath the behavior.",
+      "targets": [
+        {
+          "id": "t_impulse-summary:1",
+          "text": "oppositional defiant disorder → conduct disorder → antisocial personality disorder",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_impulse-pearl1",
+      "source": "03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD requires conduct disorder onset before age 15 (and the patient must be ≥18).",
+      "targets": [
+        {
+          "id": "t_impulse-pearl1:1",
+          "text": "before age 15",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_impulse-pearl1:2",
+          "text": "must be ≥18",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_impulse-pearl2",
+      "source": "03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Childhood-onset conduct disorder and callous-unemotional traits predict worse outcomes.",
+      "targets": [
+        {
+          "id": "t_impulse-pearl2:1",
+          "text": "callous-unemotional traits",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_impulse-pearl3",
+      "source": "03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "IED = impulsive, out-of-proportion outbursts; kleptomania/pyromania are about tension-release, not gain.",
+      "targets": [
+        {
+          "id": "t_impulse-pearl3:1",
+          "text": "tension-release",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_impulse-pearl4",
+      "source": "03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Episodic irritability with low sleep and grandiosity is mania, not a conduct disorder.",
+      "targets": [
+        {
+          "id": "t_impulse-pearl4:1",
+          "text": "mania",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_impulse-pearl5",
+      "source": "03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "DMDD lives with the depressive disorders — it is not pediatric bipolar disorder.",
+      "targets": [
+        {
+          "id": "t_impulse-pearl5:1",
+          "text": "DMDD",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_impulse-pearl6",
+      "source": "03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Psychosocial/family interventions are first-line; medication treats the comorbidity, not the \"behavior.\"",
+      "targets": [
+        {
+          "id": "t_impulse-pearl6:1",
+          "text": "Psychosocial/family interventions",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_mood-summary",
+      "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Inpatient mood work is about safety, getting the diagnosis right (especially separating unipolar from bipolar), and starting an effective, measured treatment while the milieu and sleep do half the work.",
+      "targets": [
+        {
+          "id": "t_mood-summary:1",
+          "text": "unipolar from bipolar",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_mood-pearl1",
+      "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Screen every depressed patient for past mania before writing for an antidepressant.",
+      "targets": [
+        {
+          "id": "t_mood-pearl1:1",
+          "text": "past mania",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_mood-pearl2",
+      "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "New \"depression\" or \"mania\" in an older or medically complex patient is delirium until proven otherwise.",
+      "targets": [
+        {
+          "id": "t_mood-pearl2:1",
+          "text": "delirium",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_mood-pearl3",
+      "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Lithium is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
+      "targets": [
+        {
+          "id": "t_mood-pearl3:1",
+          "text": "Lithium",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_mood-pearl4",
+      "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Sleep is treatment: protect it to pull patients out of depression and to prevent mania.",
+      "targets": [
+        {
+          "id": "t_mood-pearl4:1",
+          "text": "Sleep",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_mood-pearl5",
+      "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is.",
+      "targets": [
+        {
+          "id": "t_mood-pearl5:1",
+          "text": "ECT",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_mood-pearl7",
+      "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but avoid valproate in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
+      "targets": [
+        {
+          "id": "t_mood-pearl7:1",
+          "text": "avoid valproate",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurocog-summary",
+      "source": "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Dementia (DSM-5-TR: major neurocognitive disorder) is an acquired, usually progressive decline in one or more cognitive domains that impairs independence — and your first job on the unit is to separate it from delirium and from depression, rule out the reversible mimics, and identify the subtype, because subtype changes what you prescribe and what you must not.",
+      "targets": [
+        {
+          "id": "t_neurocog-summary:1",
+          "text": "impairs independence",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_neurocog-pearl1",
+      "source": "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "New, fluctuating confusion with inattention = delirium, not \"worse dementia\" — work it up.",
+      "targets": [
+        {
+          "id": "t_neurocog-pearl1:1",
+          "text": "delirium",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurocog-pearl2",
+      "source": "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and avoid neuroleptics in Lewy body disease.",
+      "targets": [
+        {
+          "id": "t_neurocog-pearl2:1",
+          "text": "Lewy body disease",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurocog-pearl3",
+      "source": "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Lewy body core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]",
+      "targets": [
+        {
+          "id": "t_neurocog-pearl3:1",
+          "text": "Lewy body",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurocog-pearl4",
+      "source": "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Frontotemporal dementia: young(er), behavior/personality or language first, memory later.",
+      "targets": [
+        {
+          "id": "t_neurocog-pearl4:1",
+          "text": "Frontotemporal dementia",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurocog-pearl5",
+      "source": "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "NPH triad = wet, wacky, wobbly (incontinence, cognition, gait) — potentially reversible with shunting.",
+      "targets": [
+        {
+          "id": "t_neurocog-pearl5:1",
+          "text": "wet, wacky, wobbly",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurocog-pearl6",
+      "source": "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "MoCA beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]",
+      "targets": [
+        {
+          "id": "t_neurocog-pearl6:1",
+          "text": "MoCA",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurocog-pearl7",
+      "source": "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Cholinesterase inhibitors from mild disease onward (donepezil is approved through severe AD); add memantine for moderate–severe.",
+      "targets": [
+        {
+          "id": "t_neurocog-pearl7:1",
+          "text": "Cholinesterase inhibitors",
+          "contentRevision": 2
+        },
+        {
+          "id": "t_neurocog-pearl7:2",
+          "text": "memantine",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_neurodev-summary",
+      "source": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "On the unit, neurodevelopmental disorders — ADHD, autism spectrum disorder (ASD), and intellectual developmental disorder (intellectual disability, ID) — are usually the context a patient arrives with, not the reason for admission; your job is to adapt how you communicate, treat the comorbidity that actually brought them in, and never write new symptoms off as \"just their baseline.\"",
+      "targets": [
+        {
+          "id": "t_neurodev-summary:1",
+          "text": "adapt how you communicate",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_neurodev-pearl1",
+      "source": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Diagnostic overshadowing is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug.",
+      "targets": [
+        {
+          "id": "t_neurodev-pearl1:1",
+          "text": "Diagnostic overshadowing",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurodev-pearl2",
+      "source": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Behavior is communication; look for pain and medical drivers before sedation.",
+      "targets": [
+        {
+          "id": "t_neurodev-pearl2:1",
+          "text": "pain and medical drivers",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurodev-pearl3",
+      "source": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Antipsychotics (risperidone, aripiprazole) treat autism-associated irritability, not the core social-communication features.",
+      "targets": [
+        {
+          "id": "t_neurodev-pearl3:1",
+          "text": "irritability",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurodev-pearl4",
+      "source": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Catatonia is under-recognized in autistic patients — look for it.",
+      "targets": [
+        {
+          "id": "t_neurodev-pearl4:1",
+          "text": "Catatonia",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurodev-pearl5",
+      "source": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "ADHD is chronic and cross-situational; episodic presentations flag a mood or substance cause, and stimulants aren't started during acute mania/psychosis.",
+      "targets": [
+        {
+          "id": "t_neurodev-pearl5:1",
+          "text": "a mood or substance cause",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurodev-pearl6",
+      "source": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Know the ADHD rating scales: the ASRS-v1.1 is the adult self-report screen; the NICHQ Vanderbilt (parent and teacher forms) is its pediatric counterpart — both support, but never replace, the clinical diagnosis.",
+      "targets": [
+        {
+          "id": "t_neurodev-pearl6:1",
+          "text": "ASRS-v1.1",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_neurodev-pearl6:2",
+          "text": "NICHQ Vanderbilt",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_neurodev-pearl7",
+      "source": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Capacity is decision-specific — use supported decision-making and the least restrictive option.",
+      "targets": [
+        {
+          "id": "t_neurodev-pearl7:1",
+          "text": "decision-specific",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_perinatal-summary",
+      "source": "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Inpatient perinatal work means treating two patients at once: rapidly distinguishing a postpartum mood or anxiety disorder from postpartum psychosis (an emergency), making every medication decision an explicit risk-benefit conversation, and protecting sleep while you do it.",
+      "targets": [
+        {
+          "id": "t_perinatal-summary:1",
+          "text": "postpartum psychosis",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_perinatal-pearl1",
+      "source": "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
+      "targets": [
+        {
+          "id": "t_perinatal-pearl1:1",
+          "text": "Postpartum psychosis",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_perinatal-pearl1:2",
+          "text": "bipolar-spectrum",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_perinatal-pearl2",
+      "source": "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "A clear hour does not rule out psychosis; the waxing/waning course is the illness.",
+      "targets": [
+        {
+          "id": "t_perinatal-pearl2:1",
+          "text": "waxing/waning course",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_perinatal-pearl3",
+      "source": "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.",
+      "targets": [
+        {
+          "id": "t_perinatal-pearl3:1",
+          "text": "EPDS",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_perinatal-pearl4",
+      "source": "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.",
+      "targets": [
+        {
+          "id": "t_perinatal-pearl4:1",
+          "text": "ego-dystonic",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_perinatal-pearl5",
+      "source": "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too — but that argument does not extend to valproate, which is the agent to be off before conception rather than continued through it.",
+      "targets": [
+        {
+          "id": "t_perinatal-pearl5:1",
+          "text": "Stopping all medication",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_personality-summary",
+      "source": "03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Personality pathology (most often borderline personality disorder, BPD) drives a large share of inpatient distress and crisis, and your job is to treat the acute problem while avoiding the iatrogenic harms of overlong, overmedicalized, or poorly coordinated care.",
+      "targets": [
+        {
+          "id": "t_personality-summary:1",
+          "text": "overlong, overmedicalized, or poorly coordinated care",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_personality-pearl1",
+      "source": "03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Hospitalization treats the acute crisis, not the personality disorder—define the goal and the exit early.",
+      "targets": [
+        {
+          "id": "t_personality-pearl1:1",
+          "text": "acute crisis",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_personality-pearl2",
+      "source": "03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Splitting is a symptom; the antidote is team consistency and communication, not confrontation.",
+      "targets": [
+        {
+          "id": "t_personality-pearl2:1",
+          "text": "Splitting",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_personality-pearl3",
+      "source": "03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Always exclude a treatable acute mood, psychotic, or substance disorder before invoking personality.",
+      "targets": [
+        {
+          "id": "t_personality-pearl3:1",
+          "text": "mood, psychotic, or substance disorder",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_personality-pearl4",
+      "source": "03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Chronic suicidality is managed primarily in the outpatient/safety-planning frame, not by serial admissions.",
+      "targets": [
+        {
+          "id": "t_personality-pearl4:1",
+          "text": "outpatient/safety-planning frame",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_personality-pearl5",
+      "source": "03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.",
+      "targets": [
+        {
+          "id": "t_personality-pearl5:1",
+          "text": "benzodiazepines",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_personality-pearl6",
+      "source": "03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Your countertransference is clinical data—track it and use supervision.",
+      "targets": [
+        {
+          "id": "t_personality-pearl6:1",
+          "text": "countertransference",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_psychosis-summary",
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Psychosis is a syndrome, not a diagnosis; your job on the unit is to rule out a medical or substance cause, stabilize safety, start an antipsychotic chosen to fit the patient, and — especially in first-episode illness — build the engagement and family scaffolding that determines long-term trajectory.",
+      "targets": [
+        {
+          "id": "t_psychosis-summary:1",
+          "text": "medical or substance cause",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_psychosis-pearl1",
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Psychosis is a syndrome — exclude delirium, substances, and autoimmune/seizure causes before calling it primary.",
+      "targets": [
+        {
+          "id": "t_psychosis-pearl1:1",
+          "text": "delirium, substances, and autoimmune/seizure causes",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_psychosis-pearl2",
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "First-episode psychosis earns a medical workup ± neuroimaging; the organic yield is highest here.",
+      "targets": [
+        {
+          "id": "t_psychosis-pearl2:1",
+          "text": "medical workup ± neuroimaging",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_psychosis-pearl3",
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Per CATIE, pick the antipsychotic by side-effect fit; \"newer\" is not automatically better.[^lieberman-2005-catie]",
+      "targets": [
+        {
+          "id": "t_psychosis-pearl3:1",
+          "text": "side-effect fit",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_psychosis-pearl4",
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Anosognosia is not denial — use LEAP, not debate, to build the alliance.",
+      "targets": [
+        {
+          "id": "t_psychosis-pearl4:1",
+          "text": "Anosognosia",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_psychosis-pearl4:2",
+          "text": "LEAP",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_psychosis-pearl5",
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]",
+      "targets": [
+        {
+          "id": "t_psychosis-pearl5:1",
+          "text": "consider clozapine",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_psychosis-pearl6",
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Beyond the ANC: clozapine can cause myocarditis (especially in the first weeks), severe constipation/ileus, seizures, and orthostasis — monitor for these, not just the count.",
+      "targets": [
+        {
+          "id": "t_psychosis-pearl6:1",
+          "text": "myocarditis",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_psychosis-pearl7",
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Neuroleptic malignant syndrome (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]",
+      "targets": [
+        {
+          "id": "t_psychosis-pearl7:1",
+          "text": "Neuroleptic malignant syndrome",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_psychosis-pearl8",
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
+      "targets": [
+        {
+          "id": "t_psychosis-pearl8:1",
+          "text": "lead-pipe rigidity + hyporeflexia",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_psychosis-pearl8:2",
+          "text": "clonus + hyperreflexia",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sud-summary",
+      "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "On the inpatient unit, substance use disorders show up as intoxication, withdrawal, or a confounder of every other psychiatric presentation, and your job is to keep the patient physiologically safe while engaging them, without judgment, in treatment that continues after discharge.",
+      "targets": [
+        {
+          "id": "t_sud-summary:1",
+          "text": "physiologically safe",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_sud-pearl1",
+      "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
+      "targets": [
+        {
+          "id": "t_sud-pearl1:1",
+          "text": "Alcohol and benzodiazepine",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sud-pearl2",
+      "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.",
+      "targets": [
+        {
+          "id": "t_sud-pearl2:1",
+          "text": "Lorazepam, Oxazepam, Temazepam",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sud-pearl3",
+      "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Thiamine before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand.",
+      "targets": [
+        {
+          "id": "t_sud-pearl3:1",
+          "text": "Thiamine",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sud-pearl4",
+      "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.",
+      "targets": [
+        {
+          "id": "t_sud-pearl4:1",
+          "text": "objective withdrawal",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_sud-pearl5",
+      "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "A patient who uses substances with new confusion gets a real differential — Wernicke, trauma, infection, hepatic encephalopathy — not a reflex withdrawal label.",
+      "targets": [
+        {
+          "id": "t_sud-pearl5:1",
+          "text": "Wernicke, trauma, infection, hepatic encephalopathy",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sud-pearl6",
+      "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Naloxone plus MOUD linkage at discharge is a concrete, evidence-based way to save a life.",
+      "targets": [
+        {
+          "id": "t_sud-pearl6:1",
+          "text": "Naloxone plus MOUD linkage",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sexual-summary",
+      "source": "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Three distinct topics grouped by the blueprint: sexual dysfunctions (where your first move is to check medications and medical causes), paraphilic disorders (where the diagnosis turns on distress/impairment or non-consent, not on the interest itself), and gender dysphoria (distress from gender incongruence — where being transgender is not a disorder and affirming, respectful care is the standard).",
+      "targets": [
+        {
+          "id": "t_sexual-summary:1",
+          "text": "distress/impairment or non-consent",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_sexual-pearl1",
+      "source": "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "SSRIs are a top cause of sexual dysfunction; switch to bupropion/mirtazapine or add a PDE5 inhibitor.",
+      "targets": [
+        {
+          "id": "t_sexual-pearl1:1",
+          "text": "bupropion/mirtazapine",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sexual-pearl2",
+      "source": "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Paraphilia ≠ paraphilic disorder — the disorder requires distress/impairment or harm to others.",
+      "targets": [
+        {
+          "id": "t_sexual-pearl2:1",
+          "text": "distress/impairment or harm to others",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sexual-pearl4",
+      "source": "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Gender dysphoria names distress from incongruence; transgender identity is not a disorder.",
+      "targets": [
+        {
+          "id": "t_sexual-pearl4:1",
+          "text": "distress from incongruence",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sexual-pearl5",
+      "source": "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Elevated suicidality in gender-diverse patients reflects minority stress — screen and support.",
+      "targets": [
+        {
+          "id": "t_sexual-pearl5:1",
+          "text": "minority stress",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sexual-pearl6",
+      "source": "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Depression lowers libido — treat the mood disorder, and mind the medication's sexual side effects.",
+      "targets": [
+        {
+          "id": "t_sexual-pearl6:1",
+          "text": "Depression",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sleep-summary",
+      "source": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Sleep is both a driver and a mirror of psychiatric illness — restoring the sleep-wake cycle is one of the highest-leverage things you do on the unit, and the exam rewards you for choosing CBT-I over hypnotics, screening OSA in treatment-resistant depression, and not reaching for benzodiazepines or antihistamines in older inpatients.",
+      "targets": [
+        {
+          "id": "t_sleep-summary:1",
+          "text": "CBT-I over hypnotics",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_sleep-pearl1",
+      "source": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "CBT-I, not hypnotics, is first-line for chronic insomnia.",
+      "targets": [
+        {
+          "id": "t_sleep-pearl1:1",
+          "text": "CBT-I",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sleep-pearl2",
+      "source": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Untreated OSA is a classic reversible cause of \"treatment-resistant\" depression — screen and treat with CPAP.",
+      "targets": [
+        {
+          "id": "t_sleep-pearl2:1",
+          "text": "OSA",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sleep-pearl3",
+      "source": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis and hypnagogic hallucinations are not psychosis.",
+      "targets": [
+        {
+          "id": "t_sleep-pearl3:1",
+          "text": "narcolepsy type 1",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sleep-pearl4",
+      "source": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Check ferritin in restless legs syndrome.",
+      "targets": [
+        {
+          "id": "t_sleep-pearl4:1",
+          "text": "ferritin",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sleep-pearl5",
+      "source": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "REM sleep behavior disorder predicts future Lewy body dementia/Parkinson disease.",
+      "targets": [
+        {
+          "id": "t_sleep-pearl5:1",
+          "text": "REM sleep behavior disorder",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_sleep-pearl6",
+      "source": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.",
+      "targets": [
+        {
+          "id": "t_sleep-pearl6:1",
+          "text": "benzodiazepines and diphenhydramine",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_somatic-summary",
+      "source": "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "This family is about distress and disability driven by bodily symptoms and health worry — the diagnosis rests on the excessive thoughts, feelings, and behaviors around the symptoms, not on whether the symptoms are \"medically explained,\" and your job is to treat the suffering without chasing endless workups or telling the patient \"it's all in your head.\"",
+      "targets": [
+        {
+          "id": "t_somatic-summary:1",
+          "text": "excessive thoughts, feelings, and behaviors",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_somatic-pearl1",
+      "source": "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "SSD is defined by the excessive response to symptoms, not by whether they're medically explained (a key DSM-5 shift, retained in DSM-5-TR, from \"medically unexplained\").",
+      "targets": [
+        {
+          "id": "t_somatic-pearl1:1",
+          "text": "excessive response",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "t_somatic-pearl2",
+      "source": "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Conversion/functional neurological disorder is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.",
+      "targets": [
+        {
+          "id": "t_somatic-pearl2:1",
+          "text": "rule-in",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_somatic-pearl3",
+      "source": "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder).",
+      "targets": [
+        {
+          "id": "t_somatic-pearl3:1",
+          "text": "internal motive (sick role)",
+          "contentRevision": 1
+        },
+        {
+          "id": "t_somatic-pearl3:2",
+          "text": "external incentive",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_somatic-pearl4",
+      "source": "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Factitious disorder imposed on another is child (or vulnerable-adult) abuse — a reporting duty.",
+      "targets": [
+        {
+          "id": "t_somatic-pearl4:1",
+          "text": "child (or vulnerable-adult) abuse",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_somatic-pearl5",
+      "source": "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Management = one clinician, scheduled visits, fewer tests, validate + CBT, treat comorbidities.",
+      "targets": [
+        {
+          "id": "t_somatic-pearl5:1",
+          "text": "one clinician, scheduled visits, fewer tests",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "t_somatic-pearl6",
+      "source": "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Real disease and a somatic disorder can coexist — don't anchor either way.",
+      "targets": [
+        {
+          "id": "t_somatic-pearl6:1",
+          "text": "can coexist",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "ect_neuromodulation-summary",
+      "source": "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "kind": "summary",
+      "excerpt": "Brain-based treatments are core clerkship content and a common blind spot: ECT is the most effective treatment for severe, psychotic, or catatonic depression and is safe in pregnancy and the medically fragile when indicated — and you should be able to name its indications, workup, and side effects, and place TMS, VNS, esketamine/ketamine, and bright light therapy alongside it.",
+      "targets": [
+        {
+          "id": "ect_neuromodulation-summary:1",
+          "text": "ECT",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "ect_neuromodulation-pearl1",
+      "source": "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "ECT is the single most effective treatment for severe/psychotic/catatonic depression and works in catatonia and NMS.",
+      "targets": [
+        {
+          "id": "ect_neuromodulation-pearl1:1",
+          "text": "catatonia and NMS",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "ect_neuromodulation-pearl2",
+      "source": "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones.",
+      "targets": [
+        {
+          "id": "ect_neuromodulation-pearl2:1",
+          "text": "raised ICP and unstable cardiac disease",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "ect_neuromodulation-pearl4",
+      "source": "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.",
+      "targets": [
+        {
+          "id": "ect_neuromodulation-pearl4:1",
+          "text": "rTMS",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "ect_neuromodulation-pearl5",
+      "source": "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Ketamine/esketamine act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.",
+      "targets": [
+        {
+          "id": "ect_neuromodulation-pearl5:1",
+          "text": "Ketamine/esketamine",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "ect_neuromodulation-pearl6",
+      "source": "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Bright light therapy now has evidence as an adjunct in nonseasonal depression, not just SAD.",
+      "targets": [
+        {
+          "id": "ect_neuromodulation-pearl6:1",
+          "text": "nonseasonal",
+          "contentRevision": 1
+        }
+      ]
+    },
+    {
+      "id": "collateral_workflow-summary",
+      "source": "06_Family_and_Relational/collateral_micro_workflow.md",
+      "kind": "summary",
+      "excerpt": "Collateral is clinical data, not gossip: get permission when possible, ask only what changes diagnosis/risk/treatment/discharge, share the minimum necessary, and bring one clear update back to the team.",
+      "targets": [
+        {
+          "id": "collateral_workflow-summary:1",
+          "text": "share the minimum necessary",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    },
+    {
+      "id": "family_playbook-summary",
+      "source": "06_Family_and_Relational/family_meeting_playbook_90min.md",
+      "kind": "summary",
+      "excerpt": "A structured 90-minute inpatient family meeting: prepare deliberately, join the family, share the picture in plain language, surface and de-shame expressed emotion, then build a concrete plan together. Use it as a scaffold, not a script — the family's needs set the pace.",
+      "targets": [
+        {
+          "id": "family_playbook-summary:1",
+          "text": "expressed emotion",
+          "contentRevision": 2
+        }
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+    }
+  ],
+  "exclusions": [
+    {
+      "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "SSRIs are first-line (SNRIs also for anxiety disorders, venlafaxine for PTSD, not OCD); benzodiazepines are a liability on the unit, not a maintenance plan.",
+      "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED."
+    },
+    {
+      "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults)[^nolen-2019-lithium-levels]: check baseline and periodic renal, thyroid and calcium (parathyroid) function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+      "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED."
+    },
+    {
+      "source": "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "A child (or, in most states, an elder or dependent adult) at risk triggers protective-services reporting; other non-consenting paraphilic behavior triggers a safety assessment and, only for a credible threat to an identifiable person, your state's duty-to-protect rules.",
+      "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED."
+    },
+    {
+      "source": "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "kind": "pearl",
+      "excerpt": "Minimise or time benzodiazepines and mood-stabilising anticonvulsants before ECT (they blunt the seizure) — but continue antiepileptics given for epilepsy.",
+      "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED."
+    },
+    {
+      "source": "02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md",
+      "kind": "pearl",
+      "excerpt": "Match the skill to the mechanism; the modality matters less than the fit (no clear winner across schools).",
+      "reason": "Newly discovered heading-form pearl omitted by the legacy exporter; deferred until a source-exact target is reviewed. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md",
+      "kind": "pearl",
+      "excerpt": "Behavioral activation is the highest-yield, lowest-effort inpatient move for the shut-down, depressed patient.",
+      "reason": "Newly discovered heading-form pearl omitted by the legacy exporter; deferred until a source-exact target is reviewed. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md",
+      "kind": "pearl",
+      "excerpt": "Psychoeducation is among the best-supported inpatient psychological interventions, and it's free — but the readmission NNT of 5 rests on 206 participants in what the Cochrane reviewers (Xia et al., 2011) called \"hospital-based studies of limited quality.\" Do it anyway; don't quote the number as though it were precise. (Therapy on the Unit carries the full figures and the caveat.)",
+      "reason": "Newly discovered heading-form pearl omitted by the legacy exporter; deferred until a source-exact target is reviewed. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md",
+      "kind": "pearl",
+      "excerpt": "Chain analysis replaces a punitive response to self-harm — understand the behavior, don't just document it.",
+      "reason": "Newly discovered heading-form pearl omitted by the legacy exporter; deferred until a source-exact target is reviewed. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md",
+      "kind": "pearl",
+      "excerpt": "Safety planning with follow-up beats a \"contract for safety,\" which has no evidence and can create false reassurance.",
+      "reason": "Newly discovered heading-form pearl omitted by the legacy exporter; deferred until a source-exact target is reviewed. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "02_Clinical_Skills/Case_Formulation/case_formulation_inpatient_teaching.md",
+      "title": "Case Formulation",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md",
+      "title": "Psychotherapies at a Glance",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "03_Core_Topics/Medical_Workup/medical_workup_inpatient_teaching.md",
+      "title": "Medical Workup & Mimics",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md",
+      "title": "Agitation & Restraint",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md",
+      "title": "Catatonia",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "04_Acute_and_Safety/Delirium/delirium_inpatient_teaching.md",
+      "title": "Delirium",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md",
+      "title": "Suicide Risk & Safety Planning",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md",
+      "title": "Hyperthermia & Toxidromes",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md",
+      "title": "Violence Risk",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+      "title": "Medication Monitoring & Labs",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+      "title": "Psychopharmacology Primer",
+      "reason": "No published legacy Concepts note; first release migrates the existing deck before expanding coverage. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "09_Exam_Prep/anki_export/anki.md",
+      "title": "Anki Flashcard Decks",
+      "reason": "Download instructions are operational guidance; excluded from the initial clinical Concepts deck. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "14_Tracks/Resident/adv_psychopharmacology.md",
+      "title": "Advanced Psychopharmacology",
+      "reason": "Outside the initial shared legacy Concepts scope; audience-specific teaching requires a separately reviewed card map. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "14_Tracks/Resident/resident_curriculum.md",
+      "title": "4-Week Rotation Plan",
+      "reason": "Outside the initial shared legacy Concepts scope; audience-specific teaching requires a separately reviewed card map. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "14_Tracks/Resident/supervision_teaching.md",
+      "title": "Supervision, EPAs & Teaching",
+      "reason": "Outside the initial shared legacy Concepts scope; audience-specific teaching requires a separately reviewed card map. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "14_Tracks/Resident/systems_medlegal.md",
+      "title": "Inpatient Systems & Med-Legal",
+      "reason": "Outside the initial shared legacy Concepts scope; audience-specific teaching requires a separately reviewed card map. FACULTY REVIEW REQUIRED for this exclusion."
+    }
+  ]
+}

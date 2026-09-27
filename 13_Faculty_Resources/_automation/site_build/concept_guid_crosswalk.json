@@ -1,0 +1,2249 @@
+{
+  "schemaVersion": 1,
+  "package": "09_Exam_Prep/anki_export/psychiatry_clerkship_concepts.apkg",
+  "packageSha256": "c8f919209ec8cbaa2b6875e90906f53594abc4ff39be8a0d80eb280045a0c85c",
+  "legacyNoteCount": 142,
+  "legacyCardCount": 158,
+  "cards": [
+    {
+      "oldGuid": "Ns[e<#Yc7]",
+      "oldOrdinal": 0,
+      "editorialId": "brief_psychotherapy-summary:1",
+      "noteId": "brief_psychotherapy-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "You will not complete a course of therapy on an inpatient unit, but almost every encounter is a micro-intervention. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.",
+      "newFront": "You will not complete a course of therapy on an inpatient unit, but almost every encounter is a […]. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care.",
+      "newBack": "You will not complete a course of therapy on an inpatient unit, but almost every encounter is a micro-intervention. The skill is to read the mechanism driving this patient's crisis right now and match one brief technique to it — then hand the work off to outpatient care."
+    },
+    {
+      "oldGuid": "f%/3YNlKJ?",
+      "oldOrdinal": 0,
+      "editorialId": "t_adjustment-summary:1",
+      "noteId": "t_adjustment-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "An adjustment disorder is clinically significant distress or impairment that begins within 3 months of an identifiable stressor and resolves within 6 months after the stressor (or its consequences) ends — it is the diagnosis for someone struggling more than expected with a real-life event who does not meet criteria for another disorder, and it still carries meaningful, sometimes acute, suicide risk.",
+      "newFront": "An adjustment disorder is clinically significant distress or impairment that begins […] and resolves within 6 months after the stressor (or its consequences) ends — it is the diagnosis for someone struggling more than expected with a real-life event who does not meet criteria for another disorder, and it still carries meaningful, sometimes acute, suicide risk.",
+      "newBack": "An adjustment disorder is clinically significant distress or impairment that begins within 3 months of an identifiable stressor and resolves within 6 months after the stressor (or its consequences) ends — it is the diagnosis for someone struggling more than expected with a real-life event who does not meet criteria for another disorder, and it still carries meaningful, sometimes acute, suicide risk."
+    },
+    {
+      "oldGuid": "g+Y/L%0))7",
+      "oldOrdinal": 0,
+      "editorialId": "t_adjustment-pearl1:1",
+      "noteId": "t_adjustment-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Onset within […] of a stressor; resolves within 6 months once the stressor (or its consequences) ends.",
+      "oldBack": "Onset within 3 months of a stressor; resolves within 6 months once the stressor (or its consequences) ends.",
+      "newFront": "Onset within […] of a stressor; resolves within 6 months once the stressor (or its consequences) ends.",
+      "newBack": "Onset within 3 months of a stressor; resolves within 6 months once the stressor (or its consequences) ends."
+    },
+    {
+      "oldGuid": "g+Y/L%0))7",
+      "oldOrdinal": 1,
+      "editorialId": "t_adjustment-pearl1:2",
+      "noteId": "t_adjustment-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Onset within 3 months of a stressor; resolves within […] once the stressor (or its consequences) ends.",
+      "oldBack": "Onset within 3 months of a stressor; resolves within 6 months once the stressor (or its consequences) ends.",
+      "newFront": "Onset within 3 months of a stressor; resolves within […] once the stressor (or its consequences) ends.",
+      "newBack": "Onset within 3 months of a stressor; resolves within 6 months once the stressor (or its consequences) ends."
+    },
+    {
+      "oldGuid": "FguuM8DVnc",
+      "oldOrdinal": 0,
+      "editorialId": "t_adjustment-pearl2:1",
+      "noteId": "t_adjustment-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "If full criteria for MDD, an anxiety disorder, or PTSD are met — it's not […].",
+      "oldBack": "If full criteria for MDD, an anxiety disorder, or PTSD are met — it's not adjustment disorder.",
+      "newFront": "If full criteria for MDD, an anxiety disorder, or PTSD are met — it's not […].",
+      "newBack": "If full criteria for MDD, an anxiety disorder, or PTSD are met — it's not adjustment disorder."
+    },
+    {
+      "oldGuid": "d)^e!IR!ir",
+      "oldOrdinal": 0,
+      "editorialId": "t_adjustment-pearl3:1",
+      "noteId": "t_adjustment-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "PTSD/acute stress disorder require a […] event; adjustment disorder follows any stressor.",
+      "oldBack": "PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor.",
+      "newFront": "PTSD/acute stress disorder require a […] event; adjustment disorder follows any stressor.",
+      "newBack": "PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor."
+    },
+    {
+      "oldGuid": "d)^e!IR!ir",
+      "oldOrdinal": 1,
+      "editorialId": "t_adjustment-pearl3:2",
+      "noteId": "t_adjustment-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "PTSD/acute stress disorder require a traumatic event; adjustment disorder follows […].",
+      "oldBack": "PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor.",
+      "newFront": "PTSD/acute stress disorder require a traumatic event; adjustment disorder follows […].",
+      "newBack": "PTSD/acute stress disorder require a traumatic event; adjustment disorder follows any stressor."
+    },
+    {
+      "oldGuid": "y$nm|W@FxX",
+      "oldOrdinal": 0,
+      "editorialId": "t_adjustment-pearl4:1",
+      "noteId": "t_adjustment-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Suicide risk is real even at \"subthreshold\" severity — […].",
+      "oldBack": "Suicide risk is real even at \"subthreshold\" severity — assess it directly.",
+      "newFront": "Suicide risk is real even at \"subthreshold\" severity — […].",
+      "newBack": "Suicide risk is real even at \"subthreshold\" severity — assess it directly."
+    },
+    {
+      "oldGuid": "hp,c]rqf!A",
+      "oldOrdinal": 0,
+      "editorialId": "t_adjustment-pearl5:1",
+      "noteId": "t_adjustment-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "First-line treatment is […] (supportive, problem-solving), time-limited; medication is adjunctive.",
+      "oldBack": "First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is adjunctive.",
+      "newFront": "First-line treatment is […] (supportive, problem-solving), time-limited; medication is adjunctive.",
+      "newBack": "First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is adjunctive."
+    },
+    {
+      "oldGuid": "hp,c]rqf!A",
+      "oldOrdinal": 1,
+      "editorialId": "t_adjustment-pearl5:2",
+      "noteId": "t_adjustment-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is […].",
+      "oldBack": "First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is adjunctive.",
+      "newFront": "First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is […].",
+      "newBack": "First-line treatment is psychotherapy (supportive, problem-solving), time-limited; medication is adjunctive."
+    },
+    {
+      "oldGuid": "N;o$+%}C`E",
+      "oldOrdinal": 0,
+      "editorialId": "t_adjustment-pearl6:1",
+      "noteId": "t_adjustment-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is the diagnosis for persistent, impairing grief beyond expected norms.",
+      "oldBack": "Prolonged grief disorder is the diagnosis for persistent, impairing grief beyond expected norms.",
+      "newFront": "[…] is the diagnosis for persistent, impairing grief beyond expected norms.",
+      "newBack": "Prolonged grief disorder is the diagnosis for persistent, impairing grief beyond expected norms."
+    },
+    {
+      "oldGuid": "zUJY)F){4<",
+      "oldOrdinal": 0,
+      "editorialId": "t_anxiety-summary:1",
+      "noteId": "t_anxiety-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, treat the disorder with antidepressants plus structured behavioral work, and resist the reflex to standing benzodiazepines.",
+      "newFront": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, treat the disorder with […], and resist the reflex to standing benzodiazepines.",
+      "newBack": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, treat the disorder with antidepressants plus structured behavioral work, and resist the reflex to standing benzodiazepines."
+    },
+    {
+      "oldGuid": "Aixvea>vN]",
+      "oldOrdinal": 0,
+      "editorialId": "t_anxiety-pearl1:1",
+      "noteId": "t_anxiety-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Anxiety is a symptom before it is a diagnosis — clear the […] first.",
+      "oldBack": "Anxiety is a symptom before it is a diagnosis — clear the medical and withdrawal mimics first.",
+      "newFront": "Anxiety is a symptom before it is a diagnosis — clear the […] first.",
+      "newBack": "Anxiety is a symptom before it is a diagnosis — clear the medical and withdrawal mimics first."
+    },
+    {
+      "oldGuid": "i}@1ZyXCSX",
+      "oldOrdinal": 0,
+      "editorialId": "t_anxiety-pearl2:1",
+      "noteId": "t_anxiety-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is the great inpatient impostor; treat the cause, not with more dopamine blockade.",
+      "oldBack": "Akathisia is the great inpatient impostor; treat the cause, not with more dopamine blockade.",
+      "newFront": "[…] is the great inpatient impostor; treat the cause, not with more dopamine blockade.",
+      "newBack": "Akathisia is the great inpatient impostor; treat the cause, not with more dopamine blockade."
+    },
+    {
+      "oldGuid": "K$k1]|V8N4",
+      "oldOrdinal": 0,
+      "editorialId": "t_anxiety-pearl3:1",
+      "noteId": "t_anxiety-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → […] (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct.",
+      "oldBack": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → propranolol (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct.",
+      "newFront": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → […] (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct.",
+      "newBack": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → propranolol (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+    },
+    {
+      "oldGuid": "g*W7SZUGQc",
+      "oldOrdinal": 0,
+      "editorialId": "t_anxiety-pearl4:1",
+      "noteId": "t_anxiety-pearl4",
+      "identityAction": "withdrawn",
+      "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED.",
+      "oldFront": "{{c1::SSRIs/SNRIs}} are first-line; benzodiazepines are a liability on the unit, not a maintenance plan.",
+      "oldBack": "SSRIs/SNRIs are first-line; benzodiazepines are a liability on the unit, not a maintenance plan.",
+      "newFront": null,
+      "newBack": null
+    },
+    {
+      "oldGuid": "CX_F7rPGOI",
+      "oldOrdinal": 0,
+      "editorialId": "t_anxiety-pearl5:1",
+      "noteId": "t_anxiety-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Definitive treatment is behavioral — […], PE/CPT for PTSD, interoceptive exposure for panic.",
+      "oldBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
+      "newFront": "Definitive treatment is behavioral — […], PE/CPT for PTSD, interoceptive exposure for panic.",
+      "newBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic."
+    },
+    {
+      "oldGuid": "CX_F7rPGOI",
+      "oldOrdinal": 1,
+      "editorialId": "t_anxiety-pearl5:2",
+      "noteId": "t_anxiety-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Definitive treatment is behavioral — ERP for OCD, […], interoceptive exposure for panic.",
+      "oldBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
+      "newFront": "Definitive treatment is behavioral — ERP for OCD, […], interoceptive exposure for panic.",
+      "newBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic."
+    },
+    {
+      "oldGuid": "CX_F7rPGOI",
+      "oldOrdinal": 2,
+      "editorialId": "t_anxiety-pearl5:3",
+      "noteId": "t_anxiety-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, […].",
+      "oldBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
+      "newFront": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, […].",
+      "newBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic."
+    },
+    {
+      "oldGuid": "DTayR:LXYe",
+      "oldOrdinal": 0,
+      "editorialId": "t_anxiety-pearl6:1",
+      "noteId": "t_anxiety-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "The scale to know for OCD is the […] (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response (a symptom checklist plus 10 severity items, obsessions and compulsions scored separately).",
+      "oldBack": "The scale to know for OCD is the Y-BOCS (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response (a symptom checklist plus 10 severity items, obsessions and compulsions scored separately).",
+      "newFront": "The scale to know for OCD is the […] (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response (a symptom checklist plus 10 severity items, obsessions and compulsions scored separately).",
+      "newBack": "The scale to know for OCD is the Y-BOCS (Yale-Brown Obsessive-Compulsive Scale) — the gold-standard clinician-rated measure of OCD severity and treatment response (a symptom checklist plus 10 severity items, obsessions and compulsions scored separately)."
+    },
+    {
+      "oldGuid": "BgpkZMAUdd",
+      "oldOrdinal": 0,
+      "editorialId": "t_anxiety-pearl7:1",
+      "noteId": "t_anxiety-pearl7",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Trauma-informed care is clinical, not optional: […] prevent escalation.",
+      "oldBack": "Trauma-informed care is clinical, not optional: predictability and choice prevent escalation.",
+      "newFront": "Trauma-informed care is clinical, not optional: […] prevent escalation.",
+      "newBack": "Trauma-informed care is clinical, not optional: predictability and choice prevent escalation."
+    },
+    {
+      "oldGuid": "kQ2u}SV>UN",
+      "oldOrdinal": 0,
+      "editorialId": "cultural_psychiatry-summary:1",
+      "noteId": "cultural_psychiatry-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Culture shapes how distress is experienced, expressed, and treated — and ignoring it produces misdiagnosis and inequity — so the core clerkship skills are eliciting the patient's own explanatory model, using the Cultural Formulation Interview, working correctly with interpreters, and recognizing the disparities and biases that distort psychiatric care.",
+      "newFront": "Culture shapes how distress is experienced, expressed, and treated — and ignoring it produces misdiagnosis and inequity — so the core clerkship skills are eliciting the patient's own explanatory model, using the […], working correctly with interpreters, and recognizing the disparities and biases that distort psychiatric care.",
+      "newBack": "Culture shapes how distress is experienced, expressed, and treated — and ignoring it produces misdiagnosis and inequity — so the core clerkship skills are eliciting the patient's own explanatory model, using the Cultural Formulation Interview, working correctly with interpreters, and recognizing the disparities and biases that distort psychiatric care."
+    },
+    {
+      "oldGuid": "s}GFXOO8e7",
+      "oldOrdinal": 0,
+      "editorialId": "cultural_psychiatry-pearl1:1",
+      "noteId": "cultural_psychiatry-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Kleinman's […] questions surface what the illness means to the patient.",
+      "oldBack": "Kleinman's explanatory-model questions surface what the illness means to the patient.",
+      "newFront": "Kleinman's […] questions surface what the illness means to the patient.",
+      "newBack": "Kleinman's explanatory-model questions surface what the illness means to the patient."
+    },
+    {
+      "oldGuid": "y5d~E:r;Y:",
+      "oldOrdinal": 0,
+      "editorialId": "cultural_psychiatry-pearl2:1",
+      "noteId": "cultural_psychiatry-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "The DSM-5-TR […] is the standardized tool — know it exists and what it covers.",
+      "oldBack": "The DSM-5-TR Cultural Formulation Interview is the standardized tool — know it exists and what it covers.",
+      "newFront": "The DSM-5-TR […] is the standardized tool — know it exists and what it covers.",
+      "newBack": "The DSM-5-TR Cultural Formulation Interview is the standardized tool — know it exists and what it covers."
+    },
+    {
+      "oldGuid": "GWYUidK<~/",
+      "oldOrdinal": 0,
+      "editorialId": "cultural_psychiatry-pearl3:1",
+      "noteId": "cultural_psychiatry-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Cultural concepts of distress (e.g., […]) can mimic panic or psychosis — ask before you label.",
+      "oldBack": "Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label.",
+      "newFront": "Cultural concepts of distress (e.g., […]) can mimic panic or psychosis — ask before you label.",
+      "newBack": "Cultural concepts of distress (e.g., ataque de nervios) can mimic panic or psychosis — ask before you label."
+    },
+    {
+      "oldGuid": "f;J@>(_*)B",
+      "oldOrdinal": 0,
+      "editorialId": "cultural_psychiatry-pearl4:1",
+      "noteId": "cultural_psychiatry-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Use […], not family/children; speak directly to the patient.",
+      "oldBack": "Use trained interpreters, not family/children; speak directly to the patient.",
+      "newFront": "Use […], not family/children; speak directly to the patient.",
+      "newBack": "Use trained interpreters, not family/children; speak directly to the patient."
+    },
+    {
+      "oldGuid": "J#~_WC[*wd",
+      "oldOrdinal": 0,
+      "editorialId": "cultural_psychiatry-pearl5:1",
+      "noteId": "cultural_psychiatry-pearl5",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Minority patients are […] and under-diagnosed with mood disorders — a documented bias to guard against.",
+      "oldBack": "Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.",
+      "newFront": "Black (and some other minority) patients are […] and under-diagnosed with mood disorders — a documented bias to guard against.",
+      "newBack": "Black (and some other minority) patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against."
+    },
+    {
+      "oldGuid": "J#~_WC[*wd",
+      "oldOrdinal": 1,
+      "editorialId": "cultural_psychiatry-pearl5:2",
+      "noteId": "cultural_psychiatry-pearl5",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Minority patients are over-diagnosed with schizophrenia and […] — a documented bias to guard against.",
+      "oldBack": "Minority patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against.",
+      "newFront": "Black (and some other minority) patients are over-diagnosed with schizophrenia and […] — a documented bias to guard against.",
+      "newBack": "Black (and some other minority) patients are over-diagnosed with schizophrenia and under-diagnosed with mood disorders — a documented bias to guard against."
+    },
+    {
+      "oldGuid": "O:9%e7()cA",
+      "oldOrdinal": 0,
+      "editorialId": "cultural_psychiatry-pearl6:1",
+      "noteId": "cultural_psychiatry-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] are clinical data; address them in the formulation and plan.",
+      "oldBack": "Social determinants of mental health are clinical data; address them in the formulation and plan.",
+      "newFront": "[…] are clinical data; address them in the formulation and plan.",
+      "newBack": "Social determinants of mental health are clinical data; address them in the formulation and plan."
+    },
+    {
+      "oldGuid": "xWODOF#>o)",
+      "oldOrdinal": 0,
+      "editorialId": "t_dissociative-summary:1",
+      "noteId": "t_dissociative-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Dissociation is a disruption in the normal integration of memory, identity, perception, and awareness — usually trauma-linked — and on the unit your tasks are to rule out the medical and substance causes that mimic it, keep it separate from psychosis and malingering, and stabilize safety before doing any trauma work.",
+      "newFront": "Dissociation is a disruption in the normal integration of […] — usually trauma-linked — and on the unit your tasks are to rule out the medical and substance causes that mimic it, keep it separate from psychosis and malingering, and stabilize safety before doing any trauma work.",
+      "newBack": "Dissociation is a disruption in the normal integration of memory, identity, perception, and awareness — usually trauma-linked — and on the unit your tasks are to rule out the medical and substance causes that mimic it, keep it separate from psychosis and malingering, and stabilize safety before doing any trauma work."
+    },
+    {
+      "oldGuid": "de;[m}tR8B",
+      "oldOrdinal": 0,
+      "editorialId": "t_dissociative-pearl1:1",
+      "noteId": "t_dissociative-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Rule out […] before diagnosing a dissociative disorder.",
+      "oldBack": "Rule out delirium, seizure, TBI, and substances before diagnosing a dissociative disorder.",
+      "newFront": "Rule out […] before diagnosing a dissociative disorder.",
+      "newBack": "Rule out delirium, seizure, TBI, and substances before diagnosing a dissociative disorder."
+    },
+    {
+      "oldGuid": "v8UVEQv5vP",
+      "oldOrdinal": 0,
+      "editorialId": "t_dissociative-pearl2:1",
+      "noteId": "t_dissociative-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Depersonalization/derealization disorder = detachment with […].",
+      "oldBack": "Depersonalization/derealization disorder = detachment with intact reality testing.",
+      "newFront": "Depersonalization/derealization disorder = detachment with […].",
+      "newBack": "Depersonalization/derealization disorder = detachment with intact reality testing."
+    },
+    {
+      "oldGuid": "e`x9.p3Oz}",
+      "oldOrdinal": 0,
+      "editorialId": "t_dissociative-pearl3:1",
+      "noteId": "t_dissociative-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Dissociative disorders are […] and carry high suicide/self-harm risk — assess it.",
+      "oldBack": "Dissociative disorders are trauma-linked and carry high suicide/self-harm risk — assess it.",
+      "newFront": "Dissociative disorders are […] and carry high suicide/self-harm risk — assess it.",
+      "newBack": "Dissociative disorders are trauma-linked and carry high suicide/self-harm risk — assess it."
+    },
+    {
+      "oldGuid": "Cya(+WDLeC",
+      "oldOrdinal": 0,
+      "editorialId": "t_dissociative-pearl4:1",
+      "noteId": "t_dissociative-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…]; trauma processing comes later.",
+      "oldBack": "Stabilize and ground first; trauma processing comes later.",
+      "newFront": "[…]; trauma processing comes later.",
+      "newBack": "Stabilize and ground first; trauma processing comes later."
+    },
+    {
+      "oldGuid": "c:h@T,V`8[",
+      "oldOrdinal": 0,
+      "editorialId": "t_dissociative-pearl5:1",
+      "noteId": "t_dissociative-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is the mainstay; no drug treats dissociation itself — treat comorbidities.",
+      "oldBack": "Psychotherapy is the mainstay; no drug treats dissociation itself — treat comorbidities.",
+      "newFront": "[…] is the mainstay; no drug treats dissociation itself — treat comorbidities.",
+      "newBack": "Psychotherapy is the mainstay; no drug treats dissociation itself — treat comorbidities."
+    },
+    {
+      "oldGuid": "cr_HB0FE^Z",
+      "oldOrdinal": 0,
+      "editorialId": "t_dissociative-pearl6:1",
+      "noteId": "t_dissociative-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] are a consult-liaison classic — diagnose positively, avoid antiseizure escalation.",
+      "oldBack": "Non-epileptic (dissociative) seizures are a consult-liaison classic — diagnose positively, avoid antiseizure escalation.",
+      "newFront": "[…] are a consult-liaison classic — diagnose positively, avoid antiseizure escalation.",
+      "newBack": "Non-epileptic (dissociative) seizures are a consult-liaison classic — diagnose positively, avoid antiseizure escalation."
+    },
+    {
+      "oldGuid": "rp_Gak/)!?",
+      "oldOrdinal": 0,
+      "editorialId": "t_eating-pearl1:1",
+      "noteId": "t_eating-pearl1",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "[…] = watch the phosphate — start low, go slow, replete phosphate, give thiamine; the most malnourished are the highest risk.",
+      "oldBack": "Refeeding syndrome = watch the phosphate — start low, go slow, replete phosphate, give thiamine; the most malnourished are the highest risk.",
+      "newFront": "[…] = watch the phosphate — risk tracks the degree of malnutrition, not the starting calories; most patients can start higher with daily phosphate/K/Mg checks, and the most malnourished or medically unstable start cautiously; give thiamine.",
+      "newBack": "Refeeding syndrome = watch the phosphate — risk tracks the degree of malnutrition, not the starting calories; most patients can start higher with daily phosphate/K/Mg checks, and the most malnourished or medically unstable start cautiously; give thiamine."
+    },
+    {
+      "oldGuid": "q{<&Fac@W+",
+      "oldOrdinal": 0,
+      "editorialId": "t_eating-pearl2:1",
+      "noteId": "t_eating-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is a leading reason for medical admission in AN; orthostatic changes, hypothermia, and QTc prolongation also drive the medical-bed decision.",
+      "oldBack": "Bradycardia is a leading reason for medical admission in AN; orthostatic changes, hypothermia, and QTc prolongation also drive the medical-bed decision.",
+      "newFront": "[…] is a leading reason for medical admission in AN; orthostatic changes, hypothermia, and QTc prolongation also drive the medical-bed decision.",
+      "newBack": "Bradycardia is a leading reason for medical admission in AN; orthostatic changes, hypothermia, and QTc prolongation also drive the medical-bed decision."
+    },
+    {
+      "oldGuid": "h2BAmt5[id",
+      "oldOrdinal": 0,
+      "editorialId": "t_eating-pearl3:1",
+      "noteId": "t_eating-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] = self-induced vomiting until proven otherwise.",
+      "oldBack": "Hypokalemic, hypochloremic metabolic alkalosis = self-induced vomiting until proven otherwise.",
+      "newFront": "[…] = self-induced vomiting until proven otherwise.",
+      "newBack": "Hypokalemic, hypochloremic metabolic alkalosis = self-induced vomiting until proven otherwise."
+    },
+    {
+      "oldGuid": "M{*K]v4?M4",
+      "oldOrdinal": 0,
+      "editorialId": "t_eating-pearl4:1",
+      "noteId": "t_eating-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "A normal weight does not rule out […] — look for Russell's sign, parotid swelling, and dental erosion.",
+      "oldBack": "A normal weight does not rule out bulimia — look for Russell's sign, parotid swelling, and dental erosion.",
+      "newFront": "A normal weight does not rule out […] — look for Russell's sign, parotid swelling, and dental erosion.",
+      "newBack": "A normal weight does not rule out bulimia — look for Russell's sign, parotid swelling, and dental erosion."
+    },
+    {
+      "oldGuid": "M/`ne3_-$q",
+      "oldOrdinal": 0,
+      "editorialId": "t_eating-pearl5:1",
+      "noteId": "t_eating-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is the go-to for BN; avoid bupropion when purging or underweight (seizures); lisdexamfetamine for BED.",
+      "oldBack": "Fluoxetine 60 mg is the go-to for BN; avoid bupropion when purging or underweight (seizures); lisdexamfetamine for BED.",
+      "newFront": "[…] is the go-to for BN; avoid bupropion when purging or underweight (seizures); lisdexamfetamine for BED.",
+      "newBack": "Fluoxetine 60 mg is the go-to for BN; avoid bupropion when purging or underweight (seizures); lisdexamfetamine for BED."
+    },
+    {
+      "oldGuid": "M/`ne3_-$q",
+      "oldOrdinal": 1,
+      "editorialId": "t_eating-pearl5:2",
+      "noteId": "t_eating-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Fluoxetine 60 mg is the go-to for BN; […] when purging or underweight (seizures); lisdexamfetamine for BED.",
+      "oldBack": "Fluoxetine 60 mg is the go-to for BN; avoid bupropion when purging or underweight (seizures); lisdexamfetamine for BED.",
+      "newFront": "Fluoxetine 60 mg is the go-to for BN; […] when purging or underweight (seizures); lisdexamfetamine for BED.",
+      "newBack": "Fluoxetine 60 mg is the go-to for BN; avoid bupropion when purging or underweight (seizures); lisdexamfetamine for BED."
+    },
+    {
+      "oldGuid": "M/`ne3_-$q",
+      "oldOrdinal": 2,
+      "editorialId": "t_eating-pearl5:3",
+      "noteId": "t_eating-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Fluoxetine 60 mg is the go-to for BN; avoid bupropion when purging or underweight (seizures); […] for BED.",
+      "oldBack": "Fluoxetine 60 mg is the go-to for BN; avoid bupropion when purging or underweight (seizures); lisdexamfetamine for BED.",
+      "newFront": "Fluoxetine 60 mg is the go-to for BN; avoid bupropion when purging or underweight (seizures); […] for BED.",
+      "newBack": "Fluoxetine 60 mg is the go-to for BN; avoid bupropion when purging or underweight (seizures); lisdexamfetamine for BED."
+    },
+    {
+      "oldGuid": "m#Jvyu.[:,",
+      "oldOrdinal": 0,
+      "editorialId": "t_eating-pearl6:1",
+      "noteId": "t_eating-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] has among the highest mortality of any psychiatric illness (medical + suicide) — take medical instability seriously and screen suicide risk.",
+      "oldBack": "AN has among the highest mortality of any psychiatric illness (medical + suicide) — take medical instability seriously and screen suicide risk.",
+      "newFront": "[…] has among the highest mortality of any psychiatric illness (medical + suicide) — take medical instability seriously and screen suicide risk.",
+      "newBack": "AN has among the highest mortality of any psychiatric illness (medical + suicide) — take medical instability seriously and screen suicide risk."
+    },
+    {
+      "oldGuid": "QRH|j189H3",
+      "oldOrdinal": 0,
+      "editorialId": "t_eating-pearl7:1",
+      "noteId": "t_eating-pearl7",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Watch for […]: a weight that jumps too fast can be dilutional, not recovery.",
+      "oldBack": "Watch for water-loading: a weight that jumps too fast can be dilutional, not recovery.",
+      "newFront": "Watch for […]: a weight that jumps too fast can be dilutional, not recovery.",
+      "newBack": "Watch for water-loading: a weight that jumps too fast can be dilutional, not recovery."
+    },
+    {
+      "oldGuid": "F@O%|irbE",
+      "oldOrdinal": 0,
+      "editorialId": "ethics_legal-summary:1",
+      "noteId": "ethics_legal-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its limits — when you must break it to protect a third party, when you must report abuse, and when you can treat or hold a patient against their will — always choosing the least restrictive option that keeps people safe.",
+      "newFront": "Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its limits — when you must break it to protect a third party, when you must report abuse, and when you can treat or hold a patient against their will — always choosing the […] option that keeps people safe.",
+      "newBack": "Psychiatry runs on confidentiality, but the exam and the ward turn on knowing its limits — when you must break it to protect a third party, when you must report abuse, and when you can treat or hold a patient against their will — always choosing the least restrictive option that keeps people safe."
+    },
+    {
+      "oldGuid": "GC$HiX]ZQk",
+      "oldOrdinal": 0,
+      "editorialId": "ethics_legal-pearl1:1",
+      "noteId": "ethics_legal-pearl1",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "A serious threat to an identifiable victim triggers a duty to protect ([…]) — confidentiality yields.",
+      "oldBack": "A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields.",
+      "newFront": "A serious threat to an identifiable victim can trigger a duty to protect ([…]) — mandatory, permissive or absent depending on the state; where it applies, confidentiality yields.",
+      "newBack": "A serious threat to an identifiable victim can trigger a duty to protect (Tarasoff) — mandatory, permissive or absent depending on the state; where it applies, confidentiality yields."
+    },
+    {
+      "oldGuid": "ggiGk38}LU",
+      "oldOrdinal": 0,
+      "editorialId": "ethics_legal-pearl2:1",
+      "noteId": "ethics_legal-pearl2",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Child and elder abuse are mandated reports on […]; good-faith reporters are protected.",
+      "oldBack": "Child and elder abuse are mandated reports on reasonable suspicion; good-faith reporters are protected.",
+      "newFront": "Child abuse is a mandated report on […]; elder/dependent-adult abuse is mandated in most states (check yours); good-faith reporters are protected.",
+      "newBack": "Child abuse is a mandated report on reasonable suspicion; elder/dependent-adult abuse is mandated in most states (check yours); good-faith reporters are protected."
+    },
+    {
+      "oldGuid": "JcPnt,U&db",
+      "oldOrdinal": 0,
+      "editorialId": "ethics_legal-pearl3:1",
+      "noteId": "ethics_legal-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Commitment criteria: […] — and use the least restrictive option.",
+      "oldBack": "Commitment criteria: danger to self, danger to others, or grave disability — and use the least restrictive option.",
+      "newFront": "Commitment criteria: […] — and use the least restrictive option.",
+      "newBack": "Commitment criteria: danger to self, danger to others, or grave disability — and use the least restrictive option."
+    },
+    {
+      "oldGuid": "JcPnt,U&db",
+      "oldOrdinal": 1,
+      "editorialId": "ethics_legal-pearl3:2",
+      "noteId": "ethics_legal-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Commitment criteria: danger to self, danger to others, or grave disability — and use the […] option.",
+      "oldBack": "Commitment criteria: danger to self, danger to others, or grave disability — and use the least restrictive option.",
+      "newFront": "Commitment criteria: danger to self, danger to others, or grave disability — and use the […] option.",
+      "newBack": "Commitment criteria: danger to self, danger to others, or grave disability — and use the least restrictive option."
+    },
+    {
+      "oldGuid": "nTKHz?9-s1",
+      "oldOrdinal": 0,
+      "editorialId": "ethics_legal-pearl4:1",
+      "noteId": "ethics_legal-pearl4",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Recall the key point:",
+      "oldBack": "The commitment standard of proof is clear and convincing evidence (Addington v. Texas); a non-dangerous patient who can survive safely in the community cannot be confined (O'Connor v. Donaldson).",
+      "newFront": "The constitutional minimum standard of proof for commitment is […] (Addington v. Texas; some states require more); a non-dangerous patient who can survive safely in the community cannot be confined (O'Connor v. Donaldson).",
+      "newBack": "The constitutional minimum standard of proof for commitment is clear and convincing evidence (Addington v. Texas; some states require more); a non-dangerous patient who can survive safely in the community cannot be confined (O'Connor v. Donaldson)."
+    },
+    {
+      "oldGuid": "FVX=M.q]+n",
+      "oldOrdinal": 0,
+      "editorialId": "ethics_legal-pearl5:1",
+      "noteId": "ethics_legal-pearl5",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Recall the key point:",
+      "oldBack": "Involuntary hospitalization ≠ involuntary medication; refusal stands absent an emergency or legal process.",
+      "newFront": "[…]; refusal stands absent an emergency or legal process.",
+      "newBack": "Involuntary hospitalization ≠ involuntary medication; refusal stands absent an emergency or legal process."
+    },
+    {
+      "oldGuid": "Du!#H#C%uA",
+      "oldOrdinal": 0,
+      "editorialId": "ethics_legal-pearl6:1",
+      "noteId": "ethics_legal-pearl6",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Recall the key point:",
+      "oldBack": "Capacity is clinical and decision-specific; competence is a legal (court) determination.",
+      "newFront": "Capacity is clinical and […]; competence is a legal (court) determination.",
+      "newBack": "Capacity is clinical and decision-specific; competence is a legal (court) determination."
+    },
+    {
+      "oldGuid": "OfaRquV?Z>",
+      "oldOrdinal": 0,
+      "editorialId": "ethics_legal-pearl7:1",
+      "noteId": "ethics_legal-pearl7",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Recall the key point:",
+      "oldBack": "Informed consent = capacity + disclosure + voluntariness; the emergency exception covers necessary urgent care.",
+      "newFront": "Informed consent = […]; the emergency exception covers necessary urgent care.",
+      "newBack": "Informed consent = capacity + disclosure + voluntariness; the emergency exception covers necessary urgent care."
+    },
+    {
+      "oldGuid": "d81G*k0:)D",
+      "oldOrdinal": 0,
+      "editorialId": "ethics_legal-pearl8:1",
+      "noteId": "ethics_legal-pearl8",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Recall the key point:",
+      "oldBack": "Sexual contact with a patient is always an ethics violation.",
+      "newFront": "Sexual contact with a patient is […].",
+      "newBack": "Sexual contact with a patient is always an ethics violation."
+    },
+    {
+      "oldGuid": "Gth(,X2%x|",
+      "oldOrdinal": 0,
+      "editorialId": "t_geri-summary:1",
+      "noteId": "t_geri-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "On the geriatric inpatient unit, your central job is to separate reversible from irreversible causes of cognitive and behavioral change, treat the treatable, and avoid iatrogenic harm from the very drugs meant to help.",
+      "newFront": "On the geriatric inpatient unit, your central job is to separate […] causes of cognitive and behavioral change, treat the treatable, and avoid iatrogenic harm from the very drugs meant to help.",
+      "newBack": "On the geriatric inpatient unit, your central job is to separate reversible from irreversible causes of cognitive and behavioral change, treat the treatable, and avoid iatrogenic harm from the very drugs meant to help."
+    },
+    {
+      "oldGuid": "xLMEh5Cu@w",
+      "oldOrdinal": 0,
+      "editorialId": "t_geri-pearl1:1",
+      "noteId": "t_geri-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "New psychosis in an older adult is […] until proven otherwise.",
+      "oldBack": "New psychosis in an older adult is delirium or a medical cause until proven otherwise.",
+      "newFront": "New psychosis in an older adult is […] until proven otherwise.",
+      "newBack": "New psychosis in an older adult is delirium or a medical cause until proven otherwise."
+    },
+    {
+      "oldGuid": "LDj^gJq|6d",
+      "oldOrdinal": 0,
+      "editorialId": "t_geri-pearl2:1",
+      "noteId": "t_geri-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is the fingerprint of delirium — test it, don't infer it.",
+      "oldBack": "Inattention is the fingerprint of delirium — test it, don't infer it.",
+      "newFront": "[…] is the fingerprint of delirium — test it, don't infer it.",
+      "newBack": "Inattention is the fingerprint of delirium — test it, don't infer it."
+    },
+    {
+      "oldGuid": "Q7^;8L7y:c",
+      "oldOrdinal": 0,
+      "editorialId": "t_geri-pearl3:1",
+      "noteId": "t_geri-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "\"I don't know\" answers and effortful disengagement suggest […]; treat the depression.",
+      "oldBack": "\"I don't know\" answers and effortful disengagement suggest pseudodementia; treat the depression.",
+      "newFront": "\"I don't know\" answers and effortful disengagement suggest […]; treat the depression.",
+      "newBack": "\"I don't know\" answers and effortful disengagement suggest pseudodementia; treat the depression."
+    },
+    {
+      "oldGuid": "LZ,m.$K|w3",
+      "oldOrdinal": 0,
+      "editorialId": "t_geri-pearl4:1",
+      "noteId": "t_geri-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "The drug list is often the diagnosis — […] is active treatment.",
+      "oldBack": "The drug list is often the diagnosis — deprescribing is active treatment.",
+      "newFront": "The drug list is often the diagnosis — […] is active treatment.",
+      "newBack": "The drug list is often the diagnosis — deprescribing is active treatment."
+    },
+    {
+      "oldGuid": "w6FCq%Q_B_",
+      "oldOrdinal": 0,
+      "editorialId": "t_geri-pearl5:1",
+      "noteId": "t_geri-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is first-line for dementia-related agitation; antipsychotics are time-limited exceptions.",
+      "oldBack": "Non-pharmacologic management is first-line for dementia-related agitation; antipsychotics are time-limited exceptions.",
+      "newFront": "[…] is first-line for dementia-related agitation; antipsychotics are time-limited exceptions.",
+      "newBack": "Non-pharmacologic management is first-line for dementia-related agitation; antipsychotics are time-limited exceptions."
+    },
+    {
+      "oldGuid": "i=DAW=r%!E",
+      "oldOrdinal": 0,
+      "editorialId": "t_impulse-summary:1",
+      "noteId": "t_impulse-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "This group is defined by problems with self-control of emotions and behavior that violate others' rights or bring the person into conflict with social norms — and the exam rewards you for the developmental thread: oppositional defiant disorder → conduct disorder → antisocial personality disorder, and for separating these from mania, substance use, and a treatable mood disorder underneath the behavior.",
+      "newFront": "This group is defined by problems with self-control of emotions and behavior that violate others' rights or bring the person into conflict with social norms — and the exam rewards you for the developmental thread: […], and for separating these from mania, substance use, and a treatable mood disorder underneath the behavior.",
+      "newBack": "This group is defined by problems with self-control of emotions and behavior that violate others' rights or bring the person into conflict with social norms — and the exam rewards you for the developmental thread: oppositional defiant disorder → conduct disorder → antisocial personality disorder, and for separating these from mania, substance use, and a treatable mood disorder underneath the behavior."
+    },
+    {
+      "oldGuid": "Gd[x*t&GiS",
+      "oldOrdinal": 0,
+      "editorialId": "t_impulse-pearl1:1",
+      "noteId": "t_impulse-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD requires conduct disorder onset […] (and the patient must be ≥18).",
+      "oldBack": "ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD requires conduct disorder onset before age 15 (and the patient must be ≥18).",
+      "newFront": "ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD requires conduct disorder onset […] (and the patient must be ≥18).",
+      "newBack": "ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD requires conduct disorder onset before age 15 (and the patient must be ≥18)."
+    },
+    {
+      "oldGuid": "Gd[x*t&GiS",
+      "oldOrdinal": 1,
+      "editorialId": "t_impulse-pearl1:2",
+      "noteId": "t_impulse-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD requires conduct disorder onset before age 15 (and the patient […]).",
+      "oldBack": "ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD requires conduct disorder onset before age 15 (and the patient must be ≥18).",
+      "newFront": "ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD requires conduct disorder onset before age 15 (and the patient […]).",
+      "newBack": "ODD → conduct disorder → antisocial personality disorder is the developmental spine; antisocial PD requires conduct disorder onset before age 15 (and the patient must be ≥18)."
+    },
+    {
+      "oldGuid": "qk3x$%mav5",
+      "oldOrdinal": 0,
+      "editorialId": "t_impulse-pearl2:1",
+      "noteId": "t_impulse-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Childhood-onset conduct disorder and […] predict worse outcomes.",
+      "oldBack": "Childhood-onset conduct disorder and callous-unemotional traits predict worse outcomes.",
+      "newFront": "Childhood-onset conduct disorder and […] predict worse outcomes.",
+      "newBack": "Childhood-onset conduct disorder and callous-unemotional traits predict worse outcomes."
+    },
+    {
+      "oldGuid": "Dkai&LXG00",
+      "oldOrdinal": 0,
+      "editorialId": "t_impulse-pearl3:1",
+      "noteId": "t_impulse-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "IED = impulsive, out-of-proportion outbursts; kleptomania/pyromania are about […], not gain.",
+      "oldBack": "IED = impulsive, out-of-proportion outbursts; kleptomania/pyromania are about tension-release, not gain.",
+      "newFront": "IED = impulsive, out-of-proportion outbursts; kleptomania/pyromania are about […], not gain.",
+      "newBack": "IED = impulsive, out-of-proportion outbursts; kleptomania/pyromania are about tension-release, not gain."
+    },
+    {
+      "oldGuid": "C3U3sDo^Dz",
+      "oldOrdinal": 0,
+      "editorialId": "t_impulse-pearl4:1",
+      "noteId": "t_impulse-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Episodic irritability with low sleep and grandiosity is […], not a conduct disorder.",
+      "oldBack": "Episodic irritability with low sleep and grandiosity is mania, not a conduct disorder.",
+      "newFront": "Episodic irritability with low sleep and grandiosity is […], not a conduct disorder.",
+      "newBack": "Episodic irritability with low sleep and grandiosity is mania, not a conduct disorder."
+    },
+    {
+      "oldGuid": "zdtlLqf!9d",
+      "oldOrdinal": 0,
+      "editorialId": "t_impulse-pearl5:1",
+      "noteId": "t_impulse-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] lives with the depressive disorders — it is not pediatric bipolar disorder.",
+      "oldBack": "DMDD lives with the depressive disorders — it is not pediatric bipolar disorder.",
+      "newFront": "[…] lives with the depressive disorders — it is not pediatric bipolar disorder.",
+      "newBack": "DMDD lives with the depressive disorders — it is not pediatric bipolar disorder."
+    },
+    {
+      "oldGuid": "C.n7h)Cmy_",
+      "oldOrdinal": 0,
+      "editorialId": "t_impulse-pearl6:1",
+      "noteId": "t_impulse-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] are first-line; medication treats the comorbidity, not the \"behavior.\"",
+      "oldBack": "Psychosocial/family interventions are first-line; medication treats the comorbidity, not the \"behavior.\"",
+      "newFront": "[…] are first-line; medication treats the comorbidity, not the \"behavior.\"",
+      "newBack": "Psychosocial/family interventions are first-line; medication treats the comorbidity, not the \"behavior.\""
+    },
+    {
+      "oldGuid": "M!L:A>&O^~",
+      "oldOrdinal": 0,
+      "editorialId": "t_mood-summary:1",
+      "noteId": "t_mood-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Inpatient mood work is about safety, getting the diagnosis right (especially separating unipolar from bipolar), and starting an effective, measured treatment while the milieu and sleep do half the work.",
+      "newFront": "Inpatient mood work is about safety, getting the diagnosis right (especially separating […]), and starting an effective, measured treatment while the milieu and sleep do half the work.",
+      "newBack": "Inpatient mood work is about safety, getting the diagnosis right (especially separating unipolar from bipolar), and starting an effective, measured treatment while the milieu and sleep do half the work."
+    },
+    {
+      "oldGuid": "toUO@+9i0@",
+      "oldOrdinal": 0,
+      "editorialId": "t_mood-pearl1:1",
+      "noteId": "t_mood-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Screen every depressed patient for […] before writing for an antidepressant.",
+      "oldBack": "Screen every depressed patient for past mania before writing for an antidepressant.",
+      "newFront": "Screen every depressed patient for […] before writing for an antidepressant.",
+      "newBack": "Screen every depressed patient for past mania before writing for an antidepressant."
+    },
+    {
+      "oldGuid": "l6u6moK(XU",
+      "oldOrdinal": 0,
+      "editorialId": "t_mood-pearl2:1",
+      "noteId": "t_mood-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "New \"depression\" or \"mania\" in an older or medically complex patient is […] until proven otherwise.",
+      "oldBack": "New \"depression\" or \"mania\" in an older or medically complex patient is delirium until proven otherwise.",
+      "newFront": "New \"depression\" or \"mania\" in an older or medically complex patient is […] until proven otherwise.",
+      "newBack": "New \"depression\" or \"mania\" in an older or medically complex patient is delirium until proven otherwise."
+    },
+    {
+      "oldGuid": "f9v7OJXFv[",
+      "oldOrdinal": 0,
+      "editorialId": "t_mood-pearl3:1",
+      "noteId": "t_mood-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
+      "oldBack": "Lithium is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
+      "newFront": "[…] is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
+      "newBack": "Lithium is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it."
+    },
+    {
+      "oldGuid": "e3~Pw!MgSZ",
+      "oldOrdinal": 0,
+      "editorialId": "t_mood-pearl4:1",
+      "noteId": "t_mood-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is treatment: protect it to pull patients out of depression and to prevent mania.",
+      "oldBack": "Sleep is treatment: protect it to pull patients out of depression and to prevent mania.",
+      "newFront": "[…] is treatment: protect it to pull patients out of depression and to prevent mania.",
+      "newBack": "Sleep is treatment: protect it to pull patients out of depression and to prevent mania."
+    },
+    {
+      "oldGuid": "isZ35H^tYL",
+      "oldOrdinal": 0,
+      "editorialId": "t_mood-pearl5:1",
+      "noteId": "t_mood-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is.",
+      "oldBack": "ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is.",
+      "newFront": "[…] is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is.",
+      "newBack": "ECT is not a last resort — it is first-line for psychotic, catatonic, or life-threatening mood states, and in pregnancy it is a preferred option when illness of that severity demands rapid, definitive treatment. Pregnancy alone is not the indication; the severity is."
+    },
+    {
+      "oldGuid": "rLF.XB0WK7",
+      "oldOrdinal": 0,
+      "editorialId": "t_mood-pearl6:1",
+      "noteId": "t_mood-pearl6",
+      "identityAction": "withdrawn",
+      "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED.",
+      "oldFront": "Lithium runs a narrow therapeutic window (~{{c1::0.6–1.2 mEq/L}}): check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+      "oldBack": "Lithium runs a narrow therapeutic window (~0.6–1.2 mEq/L): check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+      "newFront": null,
+      "newBack": null
+    },
+    {
+      "oldGuid": "p9zE,=9@?%",
+      "oldOrdinal": 0,
+      "editorialId": "t_mood-pearl7:1",
+      "noteId": "t_mood-pearl7",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but […] in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
+      "oldBack": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but avoid valproate in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
+      "newFront": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but […] in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
+      "newBack": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but avoid valproate in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered."
+    },
+    {
+      "oldGuid": "M!SJ/NrAgs",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurocog-summary:1",
+      "noteId": "t_neurocog-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Dementia (DSM-5-TR: major neurocognitive disorder) is an acquired, usually progressive decline in one or more cognitive domains that impairs independence — and your first job on the unit is to separate it from delirium and from depression, rule out the reversible mimics, and identify the subtype, because subtype changes what you prescribe and what you must not.",
+      "newFront": "Dementia (DSM-5-TR: major neurocognitive disorder) is an acquired, usually progressive decline in one or more cognitive domains that […] — and your first job on the unit is to separate it from delirium and from depression, rule out the reversible mimics, and identify the subtype, because subtype changes what you prescribe and what you must not.",
+      "newBack": "Dementia (DSM-5-TR: major neurocognitive disorder) is an acquired, usually progressive decline in one or more cognitive domains that impairs independence — and your first job on the unit is to separate it from delirium and from depression, rule out the reversible mimics, and identify the subtype, because subtype changes what you prescribe and what you must not."
+    },
+    {
+      "oldGuid": "q(T2S&LCu",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurocog-pearl1:1",
+      "noteId": "t_neurocog-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "New, fluctuating confusion with inattention = […], not \"worse dementia\" — work it up.",
+      "oldBack": "New, fluctuating confusion with inattention = delirium, not \"worse dementia\" — work it up.",
+      "newFront": "New, fluctuating confusion with inattention = […], not \"worse dementia\" — work it up.",
+      "newBack": "New, fluctuating confusion with inattention = delirium, not \"worse dementia\" — work it up."
+    },
+    {
+      "oldGuid": "nKu5Di0?t.",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurocog-pearl2:1",
+      "noteId": "t_neurocog-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and avoid neuroleptics in […].",
+      "oldBack": "Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and avoid neuroleptics in Lewy body disease.",
+      "newFront": "Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and avoid neuroleptics in […].",
+      "newBack": "Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and avoid neuroleptics in Lewy body disease."
+    },
+    {
+      "oldGuid": "be%Lasq;W,",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurocog-pearl3:1",
+      "noteId": "t_neurocog-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]",
+      "oldBack": "Lewy body core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]",
+      "newFront": "[…] core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]",
+      "newBack": "Lewy body core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]"
+    },
+    {
+      "oldGuid": "d<q;u]>/t{",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurocog-pearl4:1",
+      "noteId": "t_neurocog-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…]: young(er), behavior/personality or language first, memory later.",
+      "oldBack": "Frontotemporal dementia: young(er), behavior/personality or language first, memory later.",
+      "newFront": "[…]: young(er), behavior/personality or language first, memory later.",
+      "newBack": "Frontotemporal dementia: young(er), behavior/personality or language first, memory later."
+    },
+    {
+      "oldGuid": "dS;o]T-17~",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurocog-pearl5:1",
+      "noteId": "t_neurocog-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "NPH triad = […] (incontinence, cognition, gait) — potentially reversible with shunting.",
+      "oldBack": "NPH triad = wet, wacky, wobbly (incontinence, cognition, gait) — potentially reversible with shunting.",
+      "newFront": "NPH triad = […] (incontinence, cognition, gait) — potentially reversible with shunting.",
+      "newBack": "NPH triad = wet, wacky, wobbly (incontinence, cognition, gait) — potentially reversible with shunting."
+    },
+    {
+      "oldGuid": "mTc=A79}9w",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurocog-pearl6:1",
+      "noteId": "t_neurocog-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]",
+      "oldBack": "MoCA beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]",
+      "newFront": "[…] beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]",
+      "newBack": "MoCA beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]"
+    },
+    {
+      "oldGuid": "O&3bn5*^ZA",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurocog-pearl7:1",
+      "noteId": "t_neurocog-pearl7",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "[…] for mild–moderate; add memantine for moderate–severe.",
+      "oldBack": "Cholinesterase inhibitors for mild–moderate; add memantine for moderate–severe.",
+      "newFront": "[…] from mild disease onward (donepezil is approved through severe AD); add memantine for moderate–severe.",
+      "newBack": "Cholinesterase inhibitors from mild disease onward (donepezil is approved through severe AD); add memantine for moderate–severe."
+    },
+    {
+      "oldGuid": "O&3bn5*^ZA",
+      "oldOrdinal": 1,
+      "editorialId": "t_neurocog-pearl7:2",
+      "noteId": "t_neurocog-pearl7",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Cholinesterase inhibitors for mild–moderate; add […] for moderate–severe.",
+      "oldBack": "Cholinesterase inhibitors for mild–moderate; add memantine for moderate–severe.",
+      "newFront": "Cholinesterase inhibitors from mild disease onward (donepezil is approved through severe AD); add […] for moderate–severe.",
+      "newBack": "Cholinesterase inhibitors from mild disease onward (donepezil is approved through severe AD); add memantine for moderate–severe."
+    },
+    {
+      "oldGuid": "v:}3:.C!Vi",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurodev-summary:1",
+      "noteId": "t_neurodev-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "On the unit, neurodevelopmental disorders — ADHD, autism spectrum disorder (ASD), and intellectual disability (ID) — are usually the context a patient arrives with, not the reason for admission; your job is to adapt how you communicate, treat the comorbidity that actually brought them in, and never write new symptoms off as \"just their baseline.\"",
+      "newFront": "On the unit, neurodevelopmental disorders — ADHD, autism spectrum disorder (ASD), and intellectual developmental disorder (intellectual disability, ID) — are usually the context a patient arrives with, not the reason for admission; your job is to […], treat the comorbidity that actually brought them in, and never write new symptoms off as \"just their baseline.\"",
+      "newBack": "On the unit, neurodevelopmental disorders — ADHD, autism spectrum disorder (ASD), and intellectual developmental disorder (intellectual disability, ID) — are usually the context a patient arrives with, not the reason for admission; your job is to adapt how you communicate, treat the comorbidity that actually brought them in, and never write new symptoms off as \"just their baseline.\""
+    },
+    {
+      "oldGuid": "hk,TXldL,>",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurodev-pearl1:1",
+      "noteId": "t_neurodev-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug.",
+      "oldBack": "Diagnostic overshadowing is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug.",
+      "newFront": "[…] is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug.",
+      "newBack": "Diagnostic overshadowing is the cardinal error — new symptoms in ASD/ID earn a workup, not a shrug."
+    },
+    {
+      "oldGuid": "c!,QHyR`q|",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurodev-pearl2:1",
+      "noteId": "t_neurodev-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Behavior is communication; look for […] before sedation.",
+      "oldBack": "Behavior is communication; look for pain and medical drivers before sedation.",
+      "newFront": "Behavior is communication; look for […] before sedation.",
+      "newBack": "Behavior is communication; look for pain and medical drivers before sedation."
+    },
+    {
+      "oldGuid": "uk4Ui(:Ti)",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurodev-pearl3:1",
+      "noteId": "t_neurodev-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Antipsychotics (risperidone, aripiprazole) treat autism-associated […], not the core social-communication features.",
+      "oldBack": "Antipsychotics (risperidone, aripiprazole) treat autism-associated irritability, not the core social-communication features.",
+      "newFront": "Antipsychotics (risperidone, aripiprazole) treat autism-associated […], not the core social-communication features.",
+      "newBack": "Antipsychotics (risperidone, aripiprazole) treat autism-associated irritability, not the core social-communication features."
+    },
+    {
+      "oldGuid": "d^EfP~7*EH",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurodev-pearl4:1",
+      "noteId": "t_neurodev-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is under-recognized in autistic patients — look for it.",
+      "oldBack": "Catatonia is under-recognized in autistic patients — look for it.",
+      "newFront": "[…] is under-recognized in autistic patients — look for it.",
+      "newBack": "Catatonia is under-recognized in autistic patients — look for it."
+    },
+    {
+      "oldGuid": "MS@Lg:yrY8",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurodev-pearl5:1",
+      "noteId": "t_neurodev-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "ADHD is chronic and cross-situational; episodic presentations flag […], and stimulants aren't started during acute mania/psychosis.",
+      "oldBack": "ADHD is chronic and cross-situational; episodic presentations flag a mood or substance cause, and stimulants aren't started during acute mania/psychosis.",
+      "newFront": "ADHD is chronic and cross-situational; episodic presentations flag […], and stimulants aren't started during acute mania/psychosis.",
+      "newBack": "ADHD is chronic and cross-situational; episodic presentations flag a mood or substance cause, and stimulants aren't started during acute mania/psychosis."
+    },
+    {
+      "oldGuid": "urWVWO3GOu",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurodev-pearl6:1",
+      "noteId": "t_neurodev-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Know the ADHD rating scales: the […] is the adult self-report screen; the NICHQ Vanderbilt (parent and teacher forms) is its pediatric counterpart — both support, but never replace, the clinical diagnosis.",
+      "oldBack": "Know the ADHD rating scales: the ASRS-v1.1 is the adult self-report screen; the NICHQ Vanderbilt (parent and teacher forms) is its pediatric counterpart — both support, but never replace, the clinical diagnosis.",
+      "newFront": "Know the ADHD rating scales: the […] is the adult self-report screen; the NICHQ Vanderbilt (parent and teacher forms) is its pediatric counterpart — both support, but never replace, the clinical diagnosis.",
+      "newBack": "Know the ADHD rating scales: the ASRS-v1.1 is the adult self-report screen; the NICHQ Vanderbilt (parent and teacher forms) is its pediatric counterpart — both support, but never replace, the clinical diagnosis."
+    },
+    {
+      "oldGuid": "urWVWO3GOu",
+      "oldOrdinal": 1,
+      "editorialId": "t_neurodev-pearl6:2",
+      "noteId": "t_neurodev-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Know the ADHD rating scales: the ASRS-v1.1 is the adult self-report screen; the […] (parent and teacher forms) is its pediatric counterpart — both support, but never replace, the clinical diagnosis.",
+      "oldBack": "Know the ADHD rating scales: the ASRS-v1.1 is the adult self-report screen; the NICHQ Vanderbilt (parent and teacher forms) is its pediatric counterpart — both support, but never replace, the clinical diagnosis.",
+      "newFront": "Know the ADHD rating scales: the ASRS-v1.1 is the adult self-report screen; the […] (parent and teacher forms) is its pediatric counterpart — both support, but never replace, the clinical diagnosis.",
+      "newBack": "Know the ADHD rating scales: the ASRS-v1.1 is the adult self-report screen; the NICHQ Vanderbilt (parent and teacher forms) is its pediatric counterpart — both support, but never replace, the clinical diagnosis."
+    },
+    {
+      "oldGuid": "c`-PN:u,[(",
+      "oldOrdinal": 0,
+      "editorialId": "t_neurodev-pearl7:1",
+      "noteId": "t_neurodev-pearl7",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Capacity is […] — use supported decision-making and the least restrictive option.",
+      "oldBack": "Capacity is decision-specific — use supported decision-making and the least restrictive option.",
+      "newFront": "Capacity is […] — use supported decision-making and the least restrictive option.",
+      "newBack": "Capacity is decision-specific — use supported decision-making and the least restrictive option."
+    },
+    {
+      "oldGuid": "p9gswOQ6|l",
+      "oldOrdinal": 0,
+      "editorialId": "t_perinatal-summary:1",
+      "noteId": "t_perinatal-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Inpatient perinatal work means treating two patients at once: rapidly distinguishing a postpartum mood or anxiety disorder from postpartum psychosis (an emergency), making every medication decision an explicit risk-benefit conversation, and protecting sleep while you do it.",
+      "newFront": "Inpatient perinatal work means treating two patients at once: rapidly distinguishing a postpartum mood or anxiety disorder from […] (an emergency), making every medication decision an explicit risk-benefit conversation, and protecting sleep while you do it.",
+      "newBack": "Inpatient perinatal work means treating two patients at once: rapidly distinguishing a postpartum mood or anxiety disorder from postpartum psychosis (an emergency), making every medication decision an explicit risk-benefit conversation, and protecting sleep while you do it."
+    },
+    {
+      "oldGuid": "M9nv-sR5_T",
+      "oldOrdinal": 0,
+      "editorialId": "t_perinatal-pearl1:1",
+      "noteId": "t_perinatal-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
+      "oldBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
+      "newFront": "[…] is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
+      "newBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way."
+    },
+    {
+      "oldGuid": "M9nv-sR5_T",
+      "oldOrdinal": 1,
+      "editorialId": "t_perinatal-pearl1:2",
+      "noteId": "t_perinatal-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Postpartum psychosis is an emergency and is […] until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
+      "oldBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
+      "newFront": "Postpartum psychosis is an emergency and is […] until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
+      "newBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way."
+    },
+    {
+      "oldGuid": "xuRE&G-ez/",
+      "oldOrdinal": 0,
+      "editorialId": "t_perinatal-pearl2:1",
+      "noteId": "t_perinatal-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "A clear hour does not rule out psychosis; the […] is the illness.",
+      "oldBack": "A clear hour does not rule out psychosis; the waxing/waning course is the illness.",
+      "newFront": "A clear hour does not rule out psychosis; the […] is the illness.",
+      "newBack": "A clear hour does not rule out psychosis; the waxing/waning course is the illness."
+    },
+    {
+      "oldGuid": "s>Zm7)6X*M",
+      "oldOrdinal": 0,
+      "editorialId": "t_perinatal-pearl3:1",
+      "noteId": "t_perinatal-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "The […] screens depression, not psychosis — ask about delusions and perceptual disturbance directly.",
+      "oldBack": "The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly.",
+      "newFront": "The […] screens depression, not psychosis — ask about delusions and perceptual disturbance directly.",
+      "newBack": "The EPDS screens depression, not psychosis — ask about delusions and perceptual disturbance directly."
+    },
+    {
+      "oldGuid": "GA0=q=IdM`",
+      "oldOrdinal": 0,
+      "editorialId": "t_perinatal-pearl4:1",
+      "noteId": "t_perinatal-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Postpartum OCD intrusive thoughts are […] and not command hallucinations — distinguish them to avoid both over- and under-reaction.",
+      "oldBack": "Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction.",
+      "newFront": "Postpartum OCD intrusive thoughts are […] and not command hallucinations — distinguish them to avoid both over- and under-reaction.",
+      "newBack": "Postpartum OCD intrusive thoughts are ego-dystonic and not command hallucinations — distinguish them to avoid both over- and under-reaction."
+    },
+    {
+      "oldGuid": "hafQ+4|/Z+",
+      "oldOrdinal": 0,
+      "editorialId": "t_perinatal-pearl5:1",
+      "noteId": "t_perinatal-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is itself a risk decision; untreated perinatal illness endangers mother and infant too — but that argument does not extend to valproate, which is the agent to be off before conception rather than continued through it.",
+      "oldBack": "Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too — but that argument does not extend to valproate, which is the agent to be off before conception rather than continued through it.",
+      "newFront": "[…] is itself a risk decision; untreated perinatal illness endangers mother and infant too — but that argument does not extend to valproate, which is the agent to be off before conception rather than continued through it.",
+      "newBack": "Stopping all medication is itself a risk decision; untreated perinatal illness endangers mother and infant too — but that argument does not extend to valproate, which is the agent to be off before conception rather than continued through it."
+    },
+    {
+      "oldGuid": "F~E7}GLXk?",
+      "oldOrdinal": 0,
+      "editorialId": "t_personality-summary:1",
+      "noteId": "t_personality-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Personality pathology (most often borderline personality disorder, BPD) drives a large share of inpatient distress and crisis, and your job is to treat the acute problem while avoiding the iatrogenic harms of overlong, overmedicalized, or poorly coordinated care.",
+      "newFront": "Personality pathology (most often borderline personality disorder, BPD) drives a large share of inpatient distress and crisis, and your job is to treat the acute problem while avoiding the iatrogenic harms of […].",
+      "newBack": "Personality pathology (most often borderline personality disorder, BPD) drives a large share of inpatient distress and crisis, and your job is to treat the acute problem while avoiding the iatrogenic harms of overlong, overmedicalized, or poorly coordinated care."
+    },
+    {
+      "oldGuid": "w{]%Z@xb};",
+      "oldOrdinal": 0,
+      "editorialId": "t_personality-pearl1:1",
+      "noteId": "t_personality-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Hospitalization treats the […], not the personality disorder—define the goal and the exit early.",
+      "oldBack": "Hospitalization treats the acute crisis, not the personality disorder—define the goal and the exit early.",
+      "newFront": "Hospitalization treats the […], not the personality disorder—define the goal and the exit early.",
+      "newBack": "Hospitalization treats the acute crisis, not the personality disorder—define the goal and the exit early."
+    },
+    {
+      "oldGuid": "sdXvJk}y~E",
+      "oldOrdinal": 0,
+      "editorialId": "t_personality-pearl2:1",
+      "noteId": "t_personality-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is a symptom; the antidote is team consistency and communication, not confrontation.",
+      "oldBack": "Splitting is a symptom; the antidote is team consistency and communication, not confrontation.",
+      "newFront": "[…] is a symptom; the antidote is team consistency and communication, not confrontation.",
+      "newBack": "Splitting is a symptom; the antidote is team consistency and communication, not confrontation."
+    },
+    {
+      "oldGuid": "O4w#rkeNN?",
+      "oldOrdinal": 0,
+      "editorialId": "t_personality-pearl3:1",
+      "noteId": "t_personality-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Always exclude a treatable acute […] before invoking personality.",
+      "oldBack": "Always exclude a treatable acute mood, psychotic, or substance disorder before invoking personality.",
+      "newFront": "Always exclude a treatable acute […] before invoking personality.",
+      "newBack": "Always exclude a treatable acute mood, psychotic, or substance disorder before invoking personality."
+    },
+    {
+      "oldGuid": "Of!A0<9cuP",
+      "oldOrdinal": 0,
+      "editorialId": "t_personality-pearl4:1",
+      "noteId": "t_personality-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Chronic suicidality is managed primarily in the […], not by serial admissions.",
+      "oldBack": "Chronic suicidality is managed primarily in the outpatient/safety-planning frame, not by serial admissions.",
+      "newFront": "Chronic suicidality is managed primarily in the […], not by serial admissions.",
+      "newBack": "Chronic suicidality is managed primarily in the outpatient/safety-planning frame, not by serial admissions."
+    },
+    {
+      "oldGuid": "B>huK3ZM,X",
+      "oldOrdinal": 0,
+      "editorialId": "t_personality-pearl5:1",
+      "noteId": "t_personality-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Never start or escalate […] in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.",
+      "oldBack": "Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.",
+      "newFront": "Never start or escalate […] in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills.",
+      "newBack": "Never start or escalate benzodiazepines in BPD — highest risk of attempted or completed suicide of any class (Lieslehto 2023); reach for skills, not pills."
+    },
+    {
+      "oldGuid": "L~`W2V!+Q>",
+      "oldOrdinal": 0,
+      "editorialId": "t_personality-pearl6:1",
+      "noteId": "t_personality-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Your […] is clinical data—track it and use supervision.",
+      "oldBack": "Your countertransference is clinical data—track it and use supervision.",
+      "newFront": "Your […] is clinical data—track it and use supervision.",
+      "newBack": "Your countertransference is clinical data—track it and use supervision."
+    },
+    {
+      "oldGuid": "v<,N9CiKCX",
+      "oldOrdinal": 0,
+      "editorialId": "t_psychosis-summary:1",
+      "noteId": "t_psychosis-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Psychosis is a syndrome, not a diagnosis; your job on the unit is to rule out a medical or substance cause, stabilize safety, start an antipsychotic chosen to fit the patient, and — especially in first-episode illness — build the engagement and family scaffolding that determines long-term trajectory.",
+      "newFront": "Psychosis is a syndrome, not a diagnosis; your job on the unit is to rule out a […], stabilize safety, start an antipsychotic chosen to fit the patient, and — especially in first-episode illness — build the engagement and family scaffolding that determines long-term trajectory.",
+      "newBack": "Psychosis is a syndrome, not a diagnosis; your job on the unit is to rule out a medical or substance cause, stabilize safety, start an antipsychotic chosen to fit the patient, and — especially in first-episode illness — build the engagement and family scaffolding that determines long-term trajectory."
+    },
+    {
+      "oldGuid": "CGUXK>2x1>",
+      "oldOrdinal": 0,
+      "editorialId": "t_psychosis-pearl1:1",
+      "noteId": "t_psychosis-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Psychosis is a syndrome — exclude […] before calling it primary.",
+      "oldBack": "Psychosis is a syndrome — exclude delirium, substances, and autoimmune/seizure causes before calling it primary.",
+      "newFront": "Psychosis is a syndrome — exclude […] before calling it primary.",
+      "newBack": "Psychosis is a syndrome — exclude delirium, substances, and autoimmune/seizure causes before calling it primary."
+    },
+    {
+      "oldGuid": "K8E.>OT=$a",
+      "oldOrdinal": 0,
+      "editorialId": "t_psychosis-pearl2:1",
+      "noteId": "t_psychosis-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "First-episode psychosis earns a […]; the organic yield is highest here.",
+      "oldBack": "First-episode psychosis earns a medical workup ± neuroimaging; the organic yield is highest here.",
+      "newFront": "First-episode psychosis earns a […]; the organic yield is highest here.",
+      "newBack": "First-episode psychosis earns a medical workup ± neuroimaging; the organic yield is highest here."
+    },
+    {
+      "oldGuid": "iTxRHKXKhv",
+      "oldOrdinal": 0,
+      "editorialId": "t_psychosis-pearl3:1",
+      "noteId": "t_psychosis-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Per CATIE, pick the antipsychotic by […]; \"newer\" is not automatically better.[^lieberman-2005-catie]",
+      "oldBack": "Per CATIE, pick the antipsychotic by side-effect fit; \"newer\" is not automatically better.[^lieberman-2005-catie]",
+      "newFront": "Per CATIE, pick the antipsychotic by […]; \"newer\" is not automatically better.[^lieberman-2005-catie]",
+      "newBack": "Per CATIE, pick the antipsychotic by side-effect fit; \"newer\" is not automatically better.[^lieberman-2005-catie]"
+    },
+    {
+      "oldGuid": "j*r>{7UpsB",
+      "oldOrdinal": 0,
+      "editorialId": "t_psychosis-pearl4:1",
+      "noteId": "t_psychosis-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] is not denial — use LEAP, not debate, to build the alliance.",
+      "oldBack": "Anosognosia is not denial — use LEAP, not debate, to build the alliance.",
+      "newFront": "[…] is not denial — use LEAP, not debate, to build the alliance.",
+      "newBack": "Anosognosia is not denial — use LEAP, not debate, to build the alliance."
+    },
+    {
+      "oldGuid": "j*r>{7UpsB",
+      "oldOrdinal": 1,
+      "editorialId": "t_psychosis-pearl4:2",
+      "noteId": "t_psychosis-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Anosognosia is not denial — use […], not debate, to build the alliance.",
+      "oldBack": "Anosognosia is not denial — use LEAP, not debate, to build the alliance.",
+      "newFront": "Anosognosia is not denial — use […], not debate, to build the alliance.",
+      "newBack": "Anosognosia is not denial — use LEAP, not debate, to build the alliance."
+    },
+    {
+      "oldGuid": "o{4|Y5x!i&",
+      "oldOrdinal": 0,
+      "editorialId": "t_psychosis-pearl5:1",
+      "noteId": "t_psychosis-pearl5",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Two failed adequate antipsychotic trials means consider […], with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]",
+      "oldBack": "Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]",
+      "newFront": "Two failed adequate antipsychotic trials means […], with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]",
+      "newBack": "Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]"
+    },
+    {
+      "oldGuid": "s9t6*h-c&Z",
+      "oldOrdinal": 0,
+      "editorialId": "t_psychosis-pearl6:1",
+      "noteId": "t_psychosis-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Beyond the ANC: clozapine can cause […] (especially in the first weeks), severe constipation/ileus, seizures, and orthostasis — monitor for these, not just the count.",
+      "oldBack": "Beyond the ANC: clozapine can cause myocarditis (especially in the first weeks), severe constipation/ileus, seizures, and orthostasis — monitor for these, not just the count.",
+      "newFront": "Beyond the ANC: clozapine can cause […] (especially in the first weeks), severe constipation/ileus, seizures, and orthostasis — monitor for these, not just the count.",
+      "newBack": "Beyond the ANC: clozapine can cause myocarditis (especially in the first weeks), severe constipation/ileus, seizures, and orthostasis — monitor for these, not just the count."
+    },
+    {
+      "oldGuid": "euk(=^V/|6",
+      "oldOrdinal": 0,
+      "editorialId": "t_psychosis-pearl7:1",
+      "noteId": "t_psychosis-pearl7",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]",
+      "oldBack": "Neuroleptic malignant syndrome (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]",
+      "newFront": "[…] (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]",
+      "newBack": "Neuroleptic malignant syndrome (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]"
+    },
+    {
+      "oldGuid": "DKkUSBhBW1",
+      "oldOrdinal": 0,
+      "editorialId": "t_psychosis-pearl8:1",
+      "noteId": "t_psychosis-pearl8",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — […] → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
+      "oldBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
+      "newFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — […] → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
+      "newBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis."
+    },
+    {
+      "oldGuid": "DKkUSBhBW1",
+      "oldOrdinal": 1,
+      "editorialId": "t_psychosis-pearl8:2",
+      "noteId": "t_psychosis-pearl8",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; […] (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
+      "oldBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
+      "newFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; […] (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
+      "newBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis."
+    },
+    {
+      "oldGuid": "FG*y]?XDUX",
+      "oldOrdinal": 0,
+      "editorialId": "t_sud-summary:1",
+      "noteId": "t_sud-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "On the inpatient unit, substance use disorders show up as intoxication, withdrawal, or a confounder of every other psychiatric presentation, and your job is to keep the patient physiologically safe while engaging them, without judgment, in treatment that continues after discharge.",
+      "newFront": "On the inpatient unit, substance use disorders show up as intoxication, withdrawal, or a confounder of every other psychiatric presentation, and your job is to keep the patient […] while engaging them, without judgment, in treatment that continues after discharge.",
+      "newBack": "On the inpatient unit, substance use disorders show up as intoxication, withdrawal, or a confounder of every other psychiatric presentation, and your job is to keep the patient physiologically safe while engaging them, without judgment, in treatment that continues after discharge."
+    },
+    {
+      "oldGuid": "IQ8Blfg)Fw",
+      "oldOrdinal": 0,
+      "editorialId": "t_sud-pearl1:1",
+      "noteId": "t_sud-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
+      "oldBack": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
+      "newFront": "[…] withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
+      "newBack": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly."
+    },
+    {
+      "oldGuid": "P>J6nXjZQH",
+      "oldOrdinal": 0,
+      "editorialId": "t_sud-pearl2:1",
+      "noteId": "t_sud-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "In hepatic impairment, reach for a LOT drug ([…]) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.",
+      "oldBack": "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.",
+      "newFront": "In hepatic impairment, reach for a LOT drug ([…]) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.",
+      "newBack": "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+    },
+    {
+      "oldGuid": "Bfq0wh`3Wq",
+      "oldOrdinal": 0,
+      "editorialId": "t_sud-pearl3:1",
+      "noteId": "t_sud-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand.",
+      "oldBack": "Thiamine before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand.",
+      "newFront": "[…] before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand.",
+      "newBack": "Thiamine before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand."
+    },
+    {
+      "oldGuid": "PKwx[r75rI",
+      "oldOrdinal": 0,
+      "editorialId": "t_sud-pearl4:1",
+      "noteId": "t_sud-pearl4",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "Do not start buprenorphine until […] is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal.",
+      "oldBack": "Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal.",
+      "newFront": "Do not start buprenorphine until […] is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.",
+      "newBack": "Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use."
+    },
+    {
+      "oldGuid": "vYDB:_zG?C",
+      "oldOrdinal": 0,
+      "editorialId": "t_sud-pearl5:1",
+      "noteId": "t_sud-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "A patient who uses substances with new confusion gets a real differential — […] — not a reflex withdrawal label.",
+      "oldBack": "A patient who uses substances with new confusion gets a real differential — Wernicke, trauma, infection, hepatic encephalopathy — not a reflex withdrawal label.",
+      "newFront": "A patient who uses substances with new confusion gets a real differential — […] — not a reflex withdrawal label.",
+      "newBack": "A patient who uses substances with new confusion gets a real differential — Wernicke, trauma, infection, hepatic encephalopathy — not a reflex withdrawal label."
+    },
+    {
+      "oldGuid": "sK_Rm!V~68",
+      "oldOrdinal": 0,
+      "editorialId": "t_sud-pearl6:1",
+      "noteId": "t_sud-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] at discharge is a concrete, evidence-based way to save a life.",
+      "oldBack": "Naloxone plus MOUD linkage at discharge is a concrete, evidence-based way to save a life.",
+      "newFront": "[…] at discharge is a concrete, evidence-based way to save a life.",
+      "newBack": "Naloxone plus MOUD linkage at discharge is a concrete, evidence-based way to save a life."
+    },
+    {
+      "oldGuid": "v@LT223~l#",
+      "oldOrdinal": 0,
+      "editorialId": "t_sexual-summary:1",
+      "noteId": "t_sexual-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Three distinct topics grouped by the blueprint: sexual dysfunctions (where your first move is to check medications and medical causes), paraphilic disorders (where the diagnosis turns on distress/impairment or non-consent, not on the interest itself), and gender dysphoria (distress from gender incongruence — where being transgender is not a disorder and affirming, respectful care is the standard).",
+      "newFront": "Three distinct topics grouped by the blueprint: sexual dysfunctions (where your first move is to check medications and medical causes), paraphilic disorders (where the diagnosis turns on […], not on the interest itself), and gender dysphoria (distress from gender incongruence — where being transgender is not a disorder and affirming, respectful care is the standard).",
+      "newBack": "Three distinct topics grouped by the blueprint: sexual dysfunctions (where your first move is to check medications and medical causes), paraphilic disorders (where the diagnosis turns on distress/impairment or non-consent, not on the interest itself), and gender dysphoria (distress from gender incongruence — where being transgender is not a disorder and affirming, respectful care is the standard)."
+    },
+    {
+      "oldGuid": "zQy5Pc#oJW",
+      "oldOrdinal": 0,
+      "editorialId": "t_sexual-pearl1:1",
+      "noteId": "t_sexual-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "SSRIs are a top cause of sexual dysfunction; switch to […] or add a PDE5 inhibitor.",
+      "oldBack": "SSRIs are a top cause of sexual dysfunction; switch to bupropion/mirtazapine or add a PDE5 inhibitor.",
+      "newFront": "SSRIs are a top cause of sexual dysfunction; switch to […] or add a PDE5 inhibitor.",
+      "newBack": "SSRIs are a top cause of sexual dysfunction; switch to bupropion/mirtazapine or add a PDE5 inhibitor."
+    },
+    {
+      "oldGuid": "r|^VR)6wap",
+      "oldOrdinal": 0,
+      "editorialId": "t_sexual-pearl2:1",
+      "noteId": "t_sexual-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Paraphilia ≠ paraphilic disorder — the disorder requires […].",
+      "oldBack": "Paraphilia ≠ paraphilic disorder — the disorder requires distress/impairment or harm to others.",
+      "newFront": "Paraphilia ≠ paraphilic disorder — the disorder requires […].",
+      "newBack": "Paraphilia ≠ paraphilic disorder — the disorder requires distress/impairment or harm to others."
+    },
+    {
+      "oldGuid": "c;+/#kk_,D",
+      "oldOrdinal": 0,
+      "editorialId": "t_sexual-pearl3:1",
+      "noteId": "t_sexual-pearl3",
+      "identityAction": "withdrawn",
+      "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED.",
+      "oldFront": "Non-consenting paraphilic behavior triggers {{c1::safety and reporting duties}}.",
+      "oldBack": "Non-consenting paraphilic behavior triggers safety and reporting duties.",
+      "newFront": null,
+      "newBack": null
+    },
+    {
+      "oldGuid": "xb2d?Bx:M&",
+      "oldOrdinal": 0,
+      "editorialId": "t_sexual-pearl4:1",
+      "noteId": "t_sexual-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Gender dysphoria names […]; transgender identity is not a disorder.",
+      "oldBack": "Gender dysphoria names distress from incongruence; transgender identity is not a disorder.",
+      "newFront": "Gender dysphoria names […]; transgender identity is not a disorder.",
+      "newBack": "Gender dysphoria names distress from incongruence; transgender identity is not a disorder."
+    },
+    {
+      "oldGuid": "QuG=x31eTu",
+      "oldOrdinal": 0,
+      "editorialId": "t_sexual-pearl5:1",
+      "noteId": "t_sexual-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Elevated suicidality in gender-diverse patients reflects […] — screen and support.",
+      "oldBack": "Elevated suicidality in gender-diverse patients reflects minority stress — screen and support.",
+      "newFront": "Elevated suicidality in gender-diverse patients reflects […] — screen and support.",
+      "newBack": "Elevated suicidality in gender-diverse patients reflects minority stress — screen and support."
+    },
+    {
+      "oldGuid": "q[{$[R?>&k",
+      "oldOrdinal": 0,
+      "editorialId": "t_sexual-pearl6:1",
+      "noteId": "t_sexual-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] lowers libido — treat the mood disorder, and mind the medication's sexual side effects.",
+      "oldBack": "Depression lowers libido — treat the mood disorder, and mind the medication's sexual side effects.",
+      "newFront": "[…] lowers libido — treat the mood disorder, and mind the medication's sexual side effects.",
+      "newBack": "Depression lowers libido — treat the mood disorder, and mind the medication's sexual side effects."
+    },
+    {
+      "oldGuid": "t$?hnx%{Xl",
+      "oldOrdinal": 0,
+      "editorialId": "t_sleep-summary:1",
+      "noteId": "t_sleep-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Sleep is both a driver and a mirror of psychiatric illness — restoring the sleep-wake cycle is one of the highest-leverage things you do on the unit, and the exam rewards you for choosing CBT-I over hypnotics, screening OSA in treatment-resistant depression, and not reaching for benzodiazepines or antihistamines in older inpatients.",
+      "newFront": "Sleep is both a driver and a mirror of psychiatric illness — restoring the sleep-wake cycle is one of the highest-leverage things you do on the unit, and the exam rewards you for choosing […], screening OSA in treatment-resistant depression, and not reaching for benzodiazepines or antihistamines in older inpatients.",
+      "newBack": "Sleep is both a driver and a mirror of psychiatric illness — restoring the sleep-wake cycle is one of the highest-leverage things you do on the unit, and the exam rewards you for choosing CBT-I over hypnotics, screening OSA in treatment-resistant depression, and not reaching for benzodiazepines or antihistamines in older inpatients."
+    },
+    {
+      "oldGuid": "H}h$odYqm|",
+      "oldOrdinal": 0,
+      "editorialId": "t_sleep-pearl1:1",
+      "noteId": "t_sleep-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…], not hypnotics, is first-line for chronic insomnia.",
+      "oldBack": "CBT-I, not hypnotics, is first-line for chronic insomnia.",
+      "newFront": "[…], not hypnotics, is first-line for chronic insomnia.",
+      "newBack": "CBT-I, not hypnotics, is first-line for chronic insomnia."
+    },
+    {
+      "oldGuid": "j.9nXUMs[O",
+      "oldOrdinal": 0,
+      "editorialId": "t_sleep-pearl2:1",
+      "noteId": "t_sleep-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Untreated […] is a classic reversible cause of \"treatment-resistant\" depression — screen and treat with CPAP.",
+      "oldBack": "Untreated OSA is a classic reversible cause of \"treatment-resistant\" depression — screen and treat with CPAP.",
+      "newFront": "Untreated […] is a classic reversible cause of \"treatment-resistant\" depression — screen and treat with CPAP.",
+      "newBack": "Untreated OSA is a classic reversible cause of \"treatment-resistant\" depression — screen and treat with CPAP."
+    },
+    {
+      "oldGuid": "I794ZA-@gT",
+      "oldOrdinal": 0,
+      "editorialId": "t_sleep-pearl3:1",
+      "noteId": "t_sleep-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Cataplexy = […] (low orexin); sleep paralysis and hypnagogic hallucinations are not psychosis.",
+      "oldBack": "Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis and hypnagogic hallucinations are not psychosis.",
+      "newFront": "Cataplexy = […] (low orexin); sleep paralysis and hypnagogic hallucinations are not psychosis.",
+      "newBack": "Cataplexy = narcolepsy type 1 (low orexin); sleep paralysis and hypnagogic hallucinations are not psychosis."
+    },
+    {
+      "oldGuid": "qX_bz~.Hfm",
+      "oldOrdinal": 0,
+      "editorialId": "t_sleep-pearl4:1",
+      "noteId": "t_sleep-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Check […] in restless legs syndrome.",
+      "oldBack": "Check ferritin in restless legs syndrome.",
+      "newFront": "Check […] in restless legs syndrome.",
+      "newBack": "Check ferritin in restless legs syndrome."
+    },
+    {
+      "oldGuid": "x8~:WL,Zua",
+      "oldOrdinal": 0,
+      "editorialId": "t_sleep-pearl5:1",
+      "noteId": "t_sleep-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] predicts future Lewy body dementia/Parkinson disease.",
+      "oldBack": "REM sleep behavior disorder predicts future Lewy body dementia/Parkinson disease.",
+      "newFront": "[…] predicts future Lewy body dementia/Parkinson disease.",
+      "newBack": "REM sleep behavior disorder predicts future Lewy body dementia/Parkinson disease."
+    },
+    {
+      "oldGuid": "vDruot-W$e",
+      "oldOrdinal": 0,
+      "editorialId": "t_sleep-pearl6:1",
+      "noteId": "t_sleep-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "In older inpatients, […] cause falls and delirium — avoid them.",
+      "oldBack": "In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.",
+      "newFront": "In older inpatients, […] cause falls and delirium — avoid them.",
+      "newBack": "In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them."
+    },
+    {
+      "oldGuid": "uN^]?swIyZ",
+      "oldOrdinal": 0,
+      "editorialId": "t_somatic-summary:1",
+      "noteId": "t_somatic-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "This family is about distress and disability driven by bodily symptoms and health worry — the diagnosis rests on the excessive thoughts, feelings, and behaviors around the symptoms, not on whether the symptoms are \"medically explained,\" and your job is to treat the suffering without chasing endless workups or telling the patient \"it's all in your head.\"",
+      "newFront": "This family is about distress and disability driven by bodily symptoms and health worry — the diagnosis rests on the […] around the symptoms, not on whether the symptoms are \"medically explained,\" and your job is to treat the suffering without chasing endless workups or telling the patient \"it's all in your head.\"",
+      "newBack": "This family is about distress and disability driven by bodily symptoms and health worry — the diagnosis rests on the excessive thoughts, feelings, and behaviors around the symptoms, not on whether the symptoms are \"medically explained,\" and your job is to treat the suffering without chasing endless workups or telling the patient \"it's all in your head.\""
+    },
+    {
+      "oldGuid": "KHiPsh3)H&",
+      "oldOrdinal": 0,
+      "editorialId": "t_somatic-pearl1:1",
+      "noteId": "t_somatic-pearl1",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "SSD is defined by the […] to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from \"medically unexplained\").",
+      "oldBack": "SSD is defined by the excessive response to symptoms, not by whether they're medically explained (a key DSM-5-TR shift from \"medically unexplained\").",
+      "newFront": "SSD is defined by the […] to symptoms, not by whether they're medically explained (a key DSM-5 shift, retained in DSM-5-TR, from \"medically unexplained\").",
+      "newBack": "SSD is defined by the excessive response to symptoms, not by whether they're medically explained (a key DSM-5 shift, retained in DSM-5-TR, from \"medically unexplained\")."
+    },
+    {
+      "oldGuid": "z;/$fMR:rg",
+      "oldOrdinal": 0,
+      "editorialId": "t_somatic-pearl2:1",
+      "noteId": "t_somatic-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Conversion/functional neurological disorder is a […] diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.",
+      "oldBack": "Conversion/functional neurological disorder is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.",
+      "newFront": "Conversion/functional neurological disorder is a […] diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures.",
+      "newBack": "Conversion/functional neurological disorder is a rule-in diagnosis — Hoover sign, tremor entrainment, non-epileptic seizures."
+    },
+    {
+      "oldGuid": "mX]KZpz4Tk",
+      "oldOrdinal": 0,
+      "editorialId": "t_somatic-pearl3:1",
+      "noteId": "t_somatic-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Factitious = […]; malingering = external incentive (and is not a disorder).",
+      "oldBack": "Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder).",
+      "newFront": "Factitious = […]; malingering = external incentive (and is not a disorder).",
+      "newBack": "Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder)."
+    },
+    {
+      "oldGuid": "mX]KZpz4Tk",
+      "oldOrdinal": 1,
+      "editorialId": "t_somatic-pearl3:2",
+      "noteId": "t_somatic-pearl3",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Factitious = internal motive (sick role); malingering = […] (and is not a disorder).",
+      "oldBack": "Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder).",
+      "newFront": "Factitious = internal motive (sick role); malingering = […] (and is not a disorder).",
+      "newBack": "Factitious = internal motive (sick role); malingering = external incentive (and is not a disorder)."
+    },
+    {
+      "oldGuid": "CQ_`c$Cv]t",
+      "oldOrdinal": 0,
+      "editorialId": "t_somatic-pearl4:1",
+      "noteId": "t_somatic-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Factitious disorder imposed on another is […] — a reporting duty.",
+      "oldBack": "Factitious disorder imposed on another is child (or vulnerable-adult) abuse — a reporting duty.",
+      "newFront": "Factitious disorder imposed on another is […] — a reporting duty.",
+      "newBack": "Factitious disorder imposed on another is child (or vulnerable-adult) abuse — a reporting duty."
+    },
+    {
+      "oldGuid": "Q%WAS}T=[Y",
+      "oldOrdinal": 0,
+      "editorialId": "t_somatic-pearl5:1",
+      "noteId": "t_somatic-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Management = […], validate + CBT, treat comorbidities.",
+      "oldBack": "Management = one clinician, scheduled visits, fewer tests, validate + CBT, treat comorbidities.",
+      "newFront": "Management = […], validate + CBT, treat comorbidities.",
+      "newBack": "Management = one clinician, scheduled visits, fewer tests, validate + CBT, treat comorbidities."
+    },
+    {
+      "oldGuid": "QP(>7zEKI.",
+      "oldOrdinal": 0,
+      "editorialId": "t_somatic-pearl6:1",
+      "noteId": "t_somatic-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Real disease and a somatic disorder […] — don't anchor either way.",
+      "oldBack": "Real disease and a somatic disorder can coexist — don't anchor either way.",
+      "newFront": "Real disease and a somatic disorder […] — don't anchor either way.",
+      "newBack": "Real disease and a somatic disorder can coexist — don't anchor either way."
+    },
+    {
+      "oldGuid": "t:I1};h!k[",
+      "oldOrdinal": 0,
+      "editorialId": "ect_neuromodulation-summary:1",
+      "noteId": "ect_neuromodulation-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Brain-based treatments are core clerkship content and a common blind spot: ECT is the most effective treatment for severe, psychotic, or catatonic depression and is safe in pregnancy and the medically fragile when indicated — and you should be able to name its indications, workup, and side effects, and place TMS, VNS, esketamine/ketamine, and bright light therapy alongside it.",
+      "newFront": "Brain-based treatments are core clerkship content and a common blind spot: […] is the most effective treatment for severe, psychotic, or catatonic depression and is safe in pregnancy and the medically fragile when indicated — and you should be able to name its indications, workup, and side effects, and place TMS, VNS, esketamine/ketamine, and bright light therapy alongside it.",
+      "newBack": "Brain-based treatments are core clerkship content and a common blind spot: ECT is the most effective treatment for severe, psychotic, or catatonic depression and is safe in pregnancy and the medically fragile when indicated — and you should be able to name its indications, workup, and side effects, and place TMS, VNS, esketamine/ketamine, and bright light therapy alongside it."
+    },
+    {
+      "oldGuid": "g2_2>:wsZe",
+      "oldOrdinal": 0,
+      "editorialId": "ect_neuromodulation-pearl1:1",
+      "noteId": "ect_neuromodulation-pearl1",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "ECT is the single most effective treatment for severe/psychotic/catatonic depression and works in […].",
+      "oldBack": "ECT is the single most effective treatment for severe/psychotic/catatonic depression and works in catatonia and NMS.",
+      "newFront": "ECT is the single most effective treatment for severe/psychotic/catatonic depression and works in […].",
+      "newBack": "ECT is the single most effective treatment for severe/psychotic/catatonic depression and works in catatonia and NMS."
+    },
+    {
+      "oldGuid": "P&P]f8,6IE",
+      "oldOrdinal": 0,
+      "editorialId": "ect_neuromodulation-pearl2:1",
+      "noteId": "ect_neuromodulation-pearl2",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "No absolute contraindications to ECT; […] are the key relative ones.",
+      "oldBack": "No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones.",
+      "newFront": "No absolute contraindications to ECT; […] are the key relative ones.",
+      "newBack": "No absolute contraindications to ECT; raised ICP and unstable cardiac disease are the key relative ones."
+    },
+    {
+      "oldGuid": "s8DV}`A/NI",
+      "oldOrdinal": 0,
+      "editorialId": "ect_neuromodulation-pearl3:1",
+      "noteId": "ect_neuromodulation-pearl3",
+      "identityAction": "withdrawn",
+      "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED.",
+      "oldFront": "Hold {{c1::benzodiazepines/anticonvulsants}} before ECT (they blunt the seizure).",
+      "oldBack": "Hold benzodiazepines/anticonvulsants before ECT (they blunt the seizure).",
+      "newFront": null,
+      "newBack": null
+    },
+    {
+      "oldGuid": "E}%NRBBBzs",
+      "oldOrdinal": 0,
+      "editorialId": "ect_neuromodulation-pearl4:1",
+      "noteId": "ect_neuromodulation-pearl4",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…]: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.",
+      "oldBack": "rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.",
+      "newFront": "[…]: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD.",
+      "newBack": "rTMS: outpatient, no anesthesia, small seizure risk, for treatment-resistant depression and OCD."
+    },
+    {
+      "oldGuid": "g36_Qg_Rc}",
+      "oldOrdinal": 0,
+      "editorialId": "ect_neuromodulation-pearl5:1",
+      "noteId": "ect_neuromodulation-pearl5",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "[…] act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.",
+      "oldBack": "Ketamine/esketamine act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.",
+      "newFront": "[…] act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.",
+      "newBack": "Ketamine/esketamine act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring."
+    },
+    {
+      "oldGuid": "PonhvP,m@,",
+      "oldOrdinal": 0,
+      "editorialId": "ect_neuromodulation-pearl6:1",
+      "noteId": "ect_neuromodulation-pearl6",
+      "identityAction": "preserve-guid",
+      "reason": "Same tested target and normalized source excerpt",
+      "oldFront": "Bright light therapy now has evidence as an adjunct in […] depression, not just SAD.",
+      "oldBack": "Bright light therapy now has evidence as an adjunct in nonseasonal depression, not just SAD.",
+      "newFront": "Bright light therapy now has evidence as an adjunct in […] depression, not just SAD.",
+      "newBack": "Bright light therapy now has evidence as an adjunct in nonseasonal depression, not just SAD."
+    },
+    {
+      "oldGuid": "bc:y?BMV.u",
+      "oldOrdinal": 0,
+      "editorialId": "collateral_workflow-summary:1",
+      "noteId": "collateral_workflow-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "Collateral is clinical data, not gossip: get permission when possible, ask only what changes diagnosis/risk/treatment/discharge, share the minimum necessary, and bring one clear update back to the team.",
+      "newFront": "Collateral is clinical data, not gossip: get permission when possible, ask only what changes diagnosis/risk/treatment/discharge, […], and bring one clear update back to the team.",
+      "newBack": "Collateral is clinical data, not gossip: get permission when possible, ask only what changes diagnosis/risk/treatment/discharge, share the minimum necessary, and bring one clear update back to the team."
+    },
+    {
+      "oldGuid": "N_$e.~eOo{",
+      "oldOrdinal": 0,
+      "editorialId": "family_playbook-summary:1",
+      "noteId": "family_playbook-summary",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "oldFront": "In one line?",
+      "oldBack": "A structured 90-minute inpatient family meeting: prepare deliberately, join the family, share the picture in plain language, surface and de-shame expressed emotion, then build a concrete plan together. Use it as a scaffold, not a script — the family's needs set the pace.",
+      "newFront": "A structured 90-minute inpatient family meeting: prepare deliberately, join the family, share the picture in plain language, surface and de-shame […], then build a concrete plan together. Use it as a scaffold, not a script — the family's needs set the pace.",
+      "newBack": "A structured 90-minute inpatient family meeting: prepare deliberately, join the family, share the picture in plain language, surface and de-shame expressed emotion, then build a concrete plan together. Use it as a scaffold, not a script — the family's needs set the pace."
+    }
+  ],
+  "coverageInventory": [
+    {
+      "source": "02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md",
+      "page": "brief_psychotherapy.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 1
+    },
+    {
+      "source": "02_Clinical_Skills/Case_Formulation/case_formulation_inpatient_teaching.md",
+      "page": "case_formulation.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 4
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "02_Clinical_Skills/Psychotherapy/psychotherapy_inpatient_teaching.md",
+      "page": "psychotherapy.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md",
+      "page": "t_adjustment.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "page": "t_anxiety.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 7
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",
+      "page": "cultural_psychiatry.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Dissociative/dissociative_disorders_inpatient_teaching.md",
+      "page": "t_dissociative.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
+      "page": "t_eating.md",
+      "sections": {
+        "summary": 0,
+        "pearl": 7
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
+      "page": "ethics_legal.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 8
+      },
+      "mappedNotes": 9
+    },
+    {
+      "source": "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md",
+      "page": "t_geri.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 6
+    },
+    {
+      "source": "03_Core_Topics/Impulse_Control/impulse_control_conduct_inpatient_teaching.md",
+      "page": "t_impulse.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Medical_Workup/medical_workup_inpatient_teaching.md",
+      "page": "medical_workup.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "page": "t_mood.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 7
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "page": "t_neurocog.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 7
+      },
+      "mappedNotes": 8
+    },
+    {
+      "source": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+      "page": "t_neurodev.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 7
+      },
+      "mappedNotes": 8
+    },
+    {
+      "source": "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md",
+      "page": "t_perinatal.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 6
+    },
+    {
+      "source": "03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md",
+      "page": "t_personality.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+      "page": "t_psychosis.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 8
+      },
+      "mappedNotes": 9
+    },
+    {
+      "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+      "page": "t_sud.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+      "page": "t_sexual.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 6
+    },
+    {
+      "source": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
+      "page": "t_sleep.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md",
+      "page": "t_somatic.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 7
+    },
+    {
+      "source": "04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md",
+      "page": "agitation.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md",
+      "page": "catatonia.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "04_Acute_and_Safety/Delirium/delirium_inpatient_teaching.md",
+      "page": "delirium.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md",
+      "page": "suicide.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md",
+      "page": "toxidromes.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "04_Acute_and_Safety/Violence_Risk/violence_risk_inpatient_teaching.md",
+      "page": "violence.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
+      "page": "ect_neuromodulation.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 6
+    },
+    {
+      "source": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+      "page": "med_monitoring.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+      "page": "psychopharm_primer.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 5
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "06_Family_and_Relational/collateral_micro_workflow.md",
+      "page": "collateral_workflow.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 0
+      },
+      "mappedNotes": 1
+    },
+    {
+      "source": "06_Family_and_Relational/family_meeting_playbook_90min.md",
+      "page": "family_playbook.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 0
+      },
+      "mappedNotes": 1
+    },
+    {
+      "source": "09_Exam_Prep/anki_export/anki.md",
+      "page": "anki.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 0
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "14_Tracks/Resident/adv_psychopharmacology.md",
+      "page": "adv_psychopharm.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "14_Tracks/Resident/resident_curriculum.md",
+      "page": "rotation.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 0
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "14_Tracks/Resident/supervision_teaching.md",
+      "page": "supervision_teaching.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 6
+      },
+      "mappedNotes": 0
+    },
+    {
+      "source": "14_Tracks/Resident/systems_medlegal.md",
+      "page": "systems_medlegal.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 7
+      },
+      "mappedNotes": 0
+    }
+  ]
+}
