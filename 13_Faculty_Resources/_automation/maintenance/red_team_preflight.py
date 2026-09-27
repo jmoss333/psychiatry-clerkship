@@ -4,11 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import os
 import re
 import subprocess
 import sys
+import tarfile
 import tempfile
 from datetime import datetime, timezone
 from hashlib import sha256
@@ -27,13 +29,50 @@ TIER2 = ROOT / "bin" / "redteam-live.sh"
 LIVE_IDS = {"D0", "D1", "D1b", "D5", "B5"}
 
 
-def run_tier1(pack_bytes: bytes) -> dict:
-    with tempfile.TemporaryDirectory(prefix="sp-redteam-pack-") as directory:
-        pack_path = Path(directory) / "deployed-pack.json"
+def run_tier1(pack_bytes: bytes, source_commit: str) -> dict:
+    """Run the proxy commit's probes and gate implementation with its pack."""
+    try:
+        archive = subprocess.run(
+            ["git", "archive", "--format=tar", source_commit,
+             "bin/redteam-offline.mjs", "sp-proxy/netlify/functions/sp.mjs",
+             "sp-proxy/netlify/functions/_shared/"],
+            cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            check=True, timeout=30,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        raise EvidenceUnavailable("Tier 1 proxy-commit code unavailable") from exc
+    modules = ROOT / "sp-proxy" / "node_modules"
+    if not modules.is_dir():
+        raise EvidenceUnavailable("Tier 1 dependencies unavailable; install sp-proxy packages")
+    with tempfile.TemporaryDirectory(prefix="sp-redteam-commit-") as directory:
+        mini = Path(directory)
+        with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as package:
+            names = set()
+            for member in package:
+                name = member.name.rstrip("/")
+                if member.isdir():
+                    continue
+                if (not member.isfile() or name.startswith("/") or ".." in Path(name).parts
+                        or not (name in ("bin/redteam-offline.mjs",
+                                             "sp-proxy/netlify/functions/sp.mjs")
+                                or name.startswith("sp-proxy/netlify/functions/_shared/"))):
+                    raise EvidenceUnavailable("Tier 1 source archive malformed")
+                names.add(name)
+                target = mini / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                source = package.extractfile(member)
+                if source is None:
+                    raise EvidenceUnavailable("Tier 1 source archive malformed")
+                target.write_bytes(source.read())
+        if not {"bin/redteam-offline.mjs", "sp-proxy/netlify/functions/sp.mjs"} <= names:
+            raise EvidenceUnavailable("Tier 1 source archive incomplete")
+        (mini / "sp-proxy" / "node_modules").symlink_to(modules, target_is_directory=True)
+        pack_path = mini / "deployed-pack.json"
         pack_path.write_bytes(pack_bytes)
         try:
             result = subprocess.run(
-                ["node", str(TIER1), str(pack_path)], cwd=ROOT, text=True,
+                ["node", str(mini / "bin" / "redteam-offline.mjs"), str(pack_path)],
+                cwd=mini, text=True,
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=120,
             )
         except (OSError, subprocess.TimeoutExpired) as exc:
@@ -42,7 +81,8 @@ def run_tier1(pack_bytes: bytes) -> dict:
     if result.returncode or len(counts) != 1:
         raise EvidenceUnavailable("Tier 1 failed or empty")
     passes, total = map(int, counts[0])
-    return {"state": "passed", "passes": passes, "total": total}
+    return {"state": "passed", "passes": passes, "total": total,
+            "sourceCommit": source_commit}
 
 
 def run_tier2(endpoint: str) -> dict:
@@ -80,10 +120,11 @@ def prepare(snapshot: dict, tier1_runner=run_tier1, tier2_runner=run_tier2,
         data = pack_loader(proxy["commitRef"])
         if sha256(data).hexdigest() != snapshot["packSha256"]:
             raise EvidenceUnavailable("proxy commit pack hash mismatch")
-        tier1 = tier1_runner(data)
+        tier1 = tier1_runner(data, proxy["commitRef"])
         if (tier1.get("state") != "passed" or not isinstance(tier1.get("passes"), int)
                 or not isinstance(tier1.get("total"), int) or tier1["passes"] < 1
-                or tier1["passes"] != tier1["total"]):
+                or tier1["passes"] != tier1["total"]
+                or tier1.get("sourceCommit") != proxy["commitRef"]):
             raise EvidenceUnavailable("Tier 1 failed or empty")
         endpoint = proxy["deployUrl"].rstrip("/") + "/api/sp"
         live = tier2_runner(endpoint)
@@ -130,7 +171,8 @@ def prepare(snapshot: dict, tier1_runner=run_tier1, tier2_runner=run_tier2,
             "model": snapshot["model"], "runtime": runtime,
             "mechanical": {
                 "tier1": {"state": "passed", "passes": tier1["passes"],
-                          "total": tier1["total"], "checkedAt": checked_at},
+                          "total": tier1["total"], "sourceCommit": proxy["commitRef"],
+                          "checkedAt": checked_at},
                 "tier2": {"state": "passed", "checks": [
                     {"id": check["id"], "status": "pass"} for check in checks],
                           "checkedAt": checked_at},

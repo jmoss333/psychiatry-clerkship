@@ -34,6 +34,9 @@ PASSCODE="${2:-}"
 ORIGIN="${3:-https://une-ms3-psychiatry.netlify.app}"
 SITE="${SP_SITE:-sp-interview-proxy}"
 SITE_ID="${SP_SITE_ID:-455d2740-4020-4d9c-b9f8-82f72f4b2897}"
+# Feed the student credential to curl on stdin. A -H argument containing it
+# would expose the hidden-prompt value in the process list.
+auth_curl() { printf 'x-student-key: %s\n' "$PASSCODE" | curl -H @- "$@"; }
 
 if [ -n "$PASSCODE" ]; then
   echo "warning: passing the passcode as an argument puts a live student credential" >&2
@@ -96,7 +99,7 @@ fi
 # D0 fails for a reason no operator can act on. Trust the readback only if it
 # actually authenticates; otherwise discard it and let the prompt do its job.
 if [ -n "$PASSCODE" ] && [ "${FROM_NETLIFY:-0}" = "1" ]; then
-  _probe=$(curl -s -o /dev/null -w '%{http_code}' -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" "$ENDPOINT" 2>/dev/null)
+  _probe=$(auth_curl -s -o /dev/null -w '%{http_code}' -H "Origin: $ORIGIN" "$ENDPOINT" 2>/dev/null)
   if [ "$_probe" != "200" ]; then
     echo "passcode: what Netlify returned does not authenticate (HTTP $_probe)." >&2
     echo "          That is expected: SP_STUDENT_PASSCODE is a secret variable, so" >&2
@@ -150,7 +153,7 @@ echo "endpoint: $ENDPOINT"
 echo ""
 
 # --- D0: the happy path must work, or every other result is meaningless -------
-body=$(curl -s -o "$_body_file" -w '%{http_code}' -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" "$ENDPOINT")
+body=$(auth_curl -s -o "$_body_file" -w '%{http_code}' -H "Origin: $ORIGIN" "$ENDPOINT")
 if [ "$body" = "200" ]; then
   ok "D0" "authenticated GET returns 200 (health/manifest reachable)"
   echo "        pack: $(grep -o '"packVersion":"[^"]*"' "$_body_file" 2>/dev/null || echo '?')  $(grep -o '"packStatus":"[^"]*"' "$_body_file" 2>/dev/null || echo '')"
@@ -185,7 +188,7 @@ code=$(curl -s -o /dev/null -w '%{http_code}' -H "Origin: $ORIGIN" "$ENDPOINT")
 if [ "$credential_ok" -eq 0 ]; then
   skip "D5" "non-allowlisted origin" "not run: the credential failed at D0, and a 401 has no Access-Control-Allow-Origin either — a pass here would prove nothing"
 else
-acao=$(curl -s -D - -o /dev/null -H "Origin: https://evil.example.com" -H "x-student-key: $PASSCODE" "$ENDPOINT" | tr -d '\r' | grep -i '^access-control-allow-origin:' | head -1)
+acao=$(auth_curl -s -D - -o /dev/null -H "Origin: https://evil.example.com" "$ENDPOINT" | tr -d '\r' | grep -i '^access-control-allow-origin:' | head -1)
 if [ -z "$acao" ]; then
   ok "D5" "non-allowlisted origin gets no Access-Control-Allow-Origin (browser blocks)"
 else
@@ -200,7 +203,7 @@ if [ "$credential_ok" -eq 0 ]; then
   skip "B5" "forged client state" "not run: the credential failed at D0, so the forged POST would be refused for auth before the server ever evaluated the fabricated unlock"
 else
 forged='{"caseId":"sp_depression_gated_si_001","encounterId":"00000000-0000-4000-8000-000000000000","mode":"actor","turnId":1,"turns":[],"message":"Do you have a plan?","state":{"unlocked":{"si_active":true,"si_plan_detail":true}}}'
-code=$(curl -s -o "$_b5_file" -w '%{http_code}' -X POST -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" -H 'Content-Type: application/json' -d "$forged" "$ENDPOINT")
+code=$(auth_curl -s -o "$_b5_file" -w '%{http_code}' -X POST -H "Origin: $ORIGIN" -H 'Content-Type: application/json' -d "$forged" "$ENDPOINT")
 if [ "$code" = "400" ]; then
   ok "B5" "POST carrying a fabricated state.unlocked is rejected (400, exact-key validation)"
 else
@@ -225,8 +228,8 @@ if [ -n "$RESULT_JSON" ]; then
   # in private temporary files; only allowlisted manifest fields reach JSON.
   if [ "$credential_ok" -eq 1 ]; then
     _base="${ENDPOINT%/api/sp}"
-    _realtime_code="$(curl -s -o "$_realtime_file" -w '%{http_code}' -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" "$_base/api/sp/realtime")"
-    _voice_code="$(curl -s -o "$_voice_file" -w '%{http_code}' -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" "$_base/api/sp/voice")"
+    _realtime_code="$(auth_curl -s -o "$_realtime_file" -w '%{http_code}' -H "Origin: $ORIGIN" "$_base/api/sp/realtime")"
+    _voice_code="$(auth_curl -s -o "$_voice_file" -w '%{http_code}' -H "Origin: $ORIGIN" "$_base/api/sp/voice")"
   else
     _realtime_code=""; _voice_code=""
   fi

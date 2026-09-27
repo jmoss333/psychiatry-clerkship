@@ -50,7 +50,8 @@ python3 13_Faculty_Resources/_automation/maintenance/red_team_preflight.py recor
 
 `prepare` reads the **latest published production deploy** for the proxy, MS3, and resident sites,
 each with its own deploy ID and commit. It hashes the pack from the proxy deploy's Git commit, runs
-Tier 1 with those pack bytes, then opens Tier 2 at that deploy's immutable URL. Tier 2 asks for the
+Tier 1 with the pack, probes, and gate code from that same commit, then opens Tier 2 at that
+deploy's immutable URL. Tier 2 asks for the
 current passcode at a hidden terminal prompt. Do not place the passcode in an argument, environment
 assignment, work file, or chat. The read-only Netlify token is used only for deploy metadata; it
 cannot reveal the secret passcode. If the token, deploy, Git object, or a runtime manifest cannot be
@@ -58,14 +59,21 @@ checked, preparation ends **unverified**. Its private temporary work file contai
 deploy, and check facts; it is **not** a red-team pass.
 
 `record` shows those facts, prompts for each human row below, and requires an explicit owner
-declaration before it writes a receipt. Keep the checklist open while answering. A failed or
-blocked row produces an incomplete receipt only if you explicitly choose to preserve it. Real-time
+declaration and a fresh three-site deploy check before it writes a passed receipt. Keep the
+checklist open while answering. Failed or blocked rows store only a reason code; keep detailed
+clinical observations outside the receipt. A failed or blocked row produces an incomplete receipt
+only if you explicitly choose to preserve it. Real-time
 spoken rows R1–R16 appear when that route is verified enabled; managed voice rows V1–V10 appear
 when that route is verified enabled. An unknown activation state cannot become a pass. Review and
 commit the resulting `receipts/sp-red-team.json` separately. Monthly maintenance calls a receipt
 `current` only when its exact deploy IDs, commits, pack hash, and pinned model still match
 production. `current` means the recorded review remains tied to what is serving; it does not
 rerun your clinical judgment or grant learner readiness.
+
+Netlify [requires a new build and deploy for environment-variable changes to take effect](https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/#manage-environment-variables).
+That includes effective voice activation or model-pin changes. A new production deploy ID makes
+the previous receipt `stale`; changing a dashboard value without redeploying has not changed the
+serving Function. Monthly review never reads secret variable values or a student passcode.
 
 The detailed steps below explain the probes and let you diagnose a failure. The guided route runs
 the same mechanical tiers and leaves A, C1/C2/C4/C5, D2/D3/D4/D6/D7, and E to the owner.

@@ -10,9 +10,16 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from .red_team_deploys import EvidenceUnavailable, fetch_snapshot
+except ImportError:  # direct script execution
+    from red_team_deploys import EvidenceUnavailable, fetch_snapshot
+
 ROOT = Path(__file__).resolve().parents[3]
 RECEIPT = Path(__file__).resolve().parent / "receipts" / "sp-red-team.json"
 CHECKLIST = "sp-proxy/REDTEAM_CHECKLIST.md"
+REASON_CODES = ("not_tested", "unexpected_behavior", "clinical_review_needed",
+                "environment_blocked", "other")
 MANUAL_ROWS = {
     "A": tuple(f"A{i}" for i in range(1, 6)),
     "C": ("C1", "C2", "C4", "C5"),
@@ -79,6 +86,7 @@ def build_receipt(work: dict, manual_rows: dict, signed_by: str, now: datetime,
                 mechanical[key].get("checkedAt") for key in ("tier1", "tier2"))
             and isinstance(tier1.get("passes"), int) and tier1["passes"] > 0
             and tier1.get("total") == tier1["passes"]
+            and tier1.get("sourceCommit") == deployments["proxy"]["commitRef"]
             and isinstance(checks, list) and len(checks) == 5
             and {check.get("id") for check in checks if isinstance(check, dict)} ==
                 {"D0", "D1", "D1b", "D5", "B5"}
@@ -105,11 +113,8 @@ def build_receipt(work: dict, manual_rows: dict, signed_by: str, now: datetime,
         status, reason = row["status"], row["reason"]
         if status not in ("pass", "fail", "blocked"):
             raise IncompleteReview(f"{row_id} status invalid")
-        if (not isinstance(reason, str) or len(reason) > 240 or
-                any(ord(char) < 32 or ord(char) == 127 for char in reason)):
-            raise IncompleteReview(f"{row_id} reason invalid or too long")
-        if status != "pass" and not reason.strip():
-            raise IncompleteReview(f"{row_id} reason required")
+        if (status == "pass" and reason != "") or (status != "pass" and reason not in REASON_CODES):
+            raise IncompleteReview(f"{row_id} reason must be a content-free code")
         sanitized[row_id] = {"status": status, "reason": reason}
         if status != "pass":
             incomplete.append(row_id)
@@ -130,7 +135,7 @@ def build_receipt(work: dict, manual_rows: dict, signed_by: str, now: datetime,
         if isinstance(voice_stack, dict) else None)
     safe_mechanical = {
         "tier1": {key: tier1.get(key) for key in
-                  ("state", "checkedAt", "passes", "total")},
+                  ("state", "checkedAt", "passes", "total", "sourceCommit")},
         "tier2": {"state": tier2.get("state"), "checkedAt": tier2.get("checkedAt"),
                   "checks": [{"id": check.get("id"), "status": check.get("status")}
                              for check in (checks if isinstance(checks, list) else [])
@@ -150,7 +155,31 @@ def build_receipt(work: dict, manual_rows: dict, signed_by: str, now: datetime,
     }
 
 
-def record_interactive(work_path: Path, receipt_path: Path = RECEIPT) -> int:
+def _current_snapshot() -> dict:
+    token = os.environ.get("NETLIFY_AUTH_TOKEN", "")
+    if not token:
+        raise EvidenceUnavailable("Netlify token unavailable for final deploy check")
+    config_path = Path(__file__).resolve().parent / "maintenance_config.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    return fetch_snapshot(config, token)
+
+
+def _same_deployed_evidence(work: dict, snapshot: dict) -> bool:
+    try:
+        if any(work[field] != snapshot[field] for field in
+               ("packSha256", "packVersion", "model")):
+            return False
+        for key in ("proxy", "ms3", "res"):
+            if any(work["deployments"][key][field] != snapshot["deployments"][key][field]
+                   for field in ("siteId", "deployId", "commitRef", "deployUrl", "publishedAt")):
+                return False
+        return True
+    except (KeyError, TypeError):
+        return False
+
+
+def record_interactive(work_path: Path, receipt_path: Path = RECEIPT,
+                       current_snapshot=None) -> int:
     try:
         work = json.loads(work_path.read_text(encoding="utf-8"))
         sections = required_sections(work["runtime"])
@@ -170,7 +199,7 @@ def record_interactive(work_path: Path, receipt_path: Path = RECEIPT) -> int:
         if answer not in ("pass", "fail", "blocked"):
             print(f"Invalid result for {row_id}; nothing written.", file=sys.stderr)
             return 2
-        reason = input(f"{row_id} short reason (no clinical content): ").strip() if answer != "pass" else ""
+        reason = input(f"{row_id} reason code ({'/'.join(REASON_CODES)}): ").strip() if answer != "pass" else ""
         rows[row_id] = {"status": answer, "reason": reason}
     signed_by = input("Your name and role: ").strip()
     try:
@@ -186,6 +215,17 @@ def record_interactive(work_path: Path, receipt_path: Path = RECEIPT) -> int:
     if input(f"Type '{phrase}' to write the receipt: ").strip() != phrase:
         print("No receipt written.")
         return 2
+    if receipt["state"] == "passed":
+        try:
+            fresh = (current_snapshot or _current_snapshot)()
+        except (EvidenceUnavailable, OSError, ValueError) as exc:
+            print(f"Final production deploy check unavailable: {exc}", file=sys.stderr)
+            return 2
+        if not _same_deployed_evidence(work, fresh):
+            print("Production deploy, pack, or model changed since preparation; no passed receipt written.",
+                  file=sys.stderr)
+            return 2
+        receipt["checkedAt"] = datetime.now(timezone.utc).isoformat()
     receipt_path.parent.mkdir(parents=True, exist_ok=True)
     fd = os.open(receipt_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as output:

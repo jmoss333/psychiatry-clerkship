@@ -47,7 +47,8 @@ def red_team_receipt(snapshot=None):
         "managedVoiceEnabled": False, "managedVoiceStack": None},
         "mechanical": {
             "tier1": {"state": "passed", "checkedAt": "2026-07-01T13:10:00Z",
-                      "passes": 30, "total": 30},
+                      "passes": 30, "total": 30,
+                      "sourceCommit": snapshot["deployments"]["proxy"]["commitRef"]},
             "tier2": {"state": "passed", "checkedAt": "2026-07-01T13:10:00Z",
                       "checks": [{"id": key, "status": "pass"} for key in
                                  ("D0", "D1", "D1b", "D5", "B5")]},
@@ -81,6 +82,9 @@ class RedTeamClassificationTests(unittest.TestCase):
         self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
         receipt = red_team_receipt(snapshot)
         receipt["manualRows"]["C4"]["status"] = "blocked"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
+        receipt["mechanical"]["tier1"]["sourceCommit"] = "2" * 40
         self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
 
     def test_later_deploy_pack_model_and_clock_are_not_current(self):

@@ -3,8 +3,9 @@
 ## What this is, and what it is not
 
 This is a **change gate, not a usage gate.** It does not stand between the tool and the students
-using it. The Interview Room is live at `/tools/sp-interview.html` on each learner site and serves
-the pack on `main`, which was re-attested on 2026-09-09. Nothing here needs to pass for that to keep working.
+using it. The Interview Room is live at `/tools/sp-interview.html` on each learner site; the SP
+proxy publishes from `main`, while the learner sites publish their own `release` revisions.
+An earlier pack attestation does not sign a later deployed revision.
 
 What it gates is **change**: run it before a new pack, a new model pin, or a new deploy reaches
 learners. The reason is narrow and specific — this tool simulates a suicide-risk interview, so the

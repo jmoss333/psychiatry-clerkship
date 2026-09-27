@@ -439,6 +439,7 @@ def classify_red_team_receipt(receipt, snapshot, today, pack_changed_at):
         checks = tier2.get("checks")
         if (tier1.get("state") != "passed" or type(tier1.get("passes")) is not int
                 or tier1["passes"] < 1 or tier1.get("total") != tier1["passes"]
+                or tier1.get("sourceCommit") != receipt["deployments"]["proxy"]["commitRef"]
                 or tier2.get("state") != "passed" or not isinstance(checks, list)
                 or len(checks) != 5 or
                 {check.get("id") for check in checks if isinstance(check, dict)} !=
@@ -464,6 +465,10 @@ def classify_red_team_receipt(receipt, snapshot, today, pack_changed_at):
         deployed = snapshot["deployments"]
         if set(deployed) != {"proxy", "ms3", "res"}:
             return "unverified", "current production site set is incomplete"
+        # Netlify Functions take environment-variable updates on a new build/deploy.
+        # Voice activation and model pins are therefore bound to the proxy deploy ID;
+        # the live manifests were verified when this receipt was prepared. Do not
+        # query or print secret variable values in the monthly job.
         for key in ("proxy", "ms3", "res"):
             if recorded[key]["deployId"] != deployed[key]["deployId"]:
                 return "stale", f"{key} production deploy changed after the red-team run"

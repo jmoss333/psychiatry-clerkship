@@ -32,7 +32,7 @@ def work():
                     "managedVoiceStack": None},
         "mechanical": {
             "tier1": {"state": "passed", "checkedAt": "2026-09-27T01:30:00Z",
-                      "passes": 30, "total": 30},
+                      "passes": 30, "total": 30, "sourceCommit": "1" * 40},
             "tier2": {"state": "passed", "checkedAt": "2026-09-27T01:30:00Z",
                       "checks": [{"id": key, "status": "pass"} for key in
                                  ("D0", "D1", "D1b", "D5", "B5")]},
@@ -96,10 +96,14 @@ class ReceiptTests(unittest.TestCase):
         source["mechanical"]["tier2"]["checks"][-1]["status"] = "skipped"
         with self.assertRaisesRegex(IncompleteReview, "mechanical tier incomplete"):
             build_receipt(source, passing_rows("A", "C", "D", "E"), "Owner", NOW)
+        source = work()
+        source["mechanical"]["tier1"]["sourceCommit"] = "2" * 40
+        with self.assertRaisesRegex(IncompleteReview, "mechanical tier incomplete"):
+            build_receipt(source, passing_rows("A", "C", "D", "E"), "Owner", NOW)
 
     def test_blocked_row_is_incomplete_even_when_owner_preserves_record(self):
         rows = passing_rows("A", "C", "D", "E")
-        rows["C4"] = {"status": "blocked", "reason": "Needs faculty replay"}
+        rows["C4"] = {"status": "blocked", "reason": "clinical_review_needed"}
         with self.assertRaisesRegex(IncompleteReview, "C4"):
             build_receipt(work(), rows, "Owner", NOW)
         receipt = build_receipt(work(), rows, "Owner", NOW, preserve_incomplete=True)
@@ -112,6 +116,9 @@ class ReceiptTests(unittest.TestCase):
         rows = passing_rows("A", "C", "D", "E")
         rows["C4"] = {"status": "fail", "reason": "x" * 241}
         with self.assertRaisesRegex(IncompleteReview, "reason"):
+            build_receipt(work(), rows, "Owner", NOW, preserve_incomplete=True)
+        rows["C4"] = {"status": "fail", "reason": "Patient said identifiable details"}
+        with self.assertRaisesRegex(IncompleteReview, "content-free code"):
             build_receipt(work(), rows, "Owner", NOW, preserve_incomplete=True)
         with self.assertRaisesRegex(IncompleteReview, "timezone"):
             build_receipt(work(), passing_rows("A", "C", "D", "E"),
@@ -128,7 +135,7 @@ class ReceiptTests(unittest.TestCase):
             receipt_file = Path(directory) / "receipt.json"
             work_file.write_text(json.dumps(source), encoding="utf-8")
             answers = ["blocked" if row == "R1" else "pass" for row in manual_ids]
-            answers.insert(manual_ids.index("R1") + 1, "Needs faculty replay")
+            answers.insert(manual_ids.index("R1") + 1, "clinical_review_needed")
             with patch("builtins.input", side_effect=answers + ["Owner", "no"]):
                 self.assertEqual(record_interactive(work_file, receipt_file), 2)
             self.assertFalse(receipt_file.exists())
@@ -139,6 +146,30 @@ class ReceiptTests(unittest.TestCase):
             self.assertEqual(receipt["state"], "incomplete")
             self.assertIn("R1", receipt["incompleteRows"])
             self.assertNotIn("fixture-passcode", receipt_file.read_text(encoding="utf-8"))
+
+    def test_interactive_pass_refreshes_exact_production_before_writing(self):
+        source = work()
+        manual_ids = [row for section in ("A", "C", "D", "E")
+                      for row in MANUAL_ROWS[section]]
+        answers = ["pass"] * len(manual_ids) + ["Owner", "I attest this complete review"]
+        with tempfile.TemporaryDirectory() as directory:
+            work_file = Path(directory) / "work.json"
+            receipt_file = Path(directory) / "receipt.json"
+            work_file.write_text(json.dumps(source), encoding="utf-8")
+            changed = {key: source[key] for key in
+                       ("deployments", "packSha256", "packVersion", "model")}
+            changed = json.loads(json.dumps(changed))
+            changed["deployments"]["proxy"]["deployId"] = "later"
+            with patch("builtins.input", side_effect=answers):
+                self.assertEqual(record_interactive(work_file, receipt_file,
+                                                     current_snapshot=lambda: changed), 2)
+            self.assertFalse(receipt_file.exists())
+            exact = {key: source[key] for key in
+                     ("deployments", "packSha256", "packVersion", "model")}
+            with patch("builtins.input", side_effect=answers):
+                self.assertEqual(record_interactive(work_file, receipt_file,
+                                                     current_snapshot=lambda: exact), 0)
+            self.assertEqual(json.loads(receipt_file.read_text())["state"], "passed")
 
 
 if __name__ == "__main__":

@@ -89,14 +89,22 @@ def _normalize(record: dict, site: dict, listed_id: str) -> dict:
             raise ValueError("missing offset")
     except (AttributeError, TypeError, ValueError) as exc:
         raise EvidenceUnavailable("deploy published time unavailable") from exc
-    url = record.get("deploy_ssl_url") or record.get("deploy_url")
-    base = urlsplit(site["baseUrl"])
-    parsed = urlsplit(url or "")
-    expected_host = f"{listed_id}--{base.hostname}"
+    # Netlify's deploy_ssl_url can be the moving branch alias (main--/release--).
+    # Its links.permalink is the immutable, deploy-ID-qualified URL.
+    links = record.get("links")
+    url = (links.get("permalink") if isinstance(links, dict) and "permalink" in links
+           else record.get("deploy_ssl_url") or record.get("deploy_url"))
+    try:
+        base = urlsplit(site["baseUrl"])
+        parsed = urlsplit(url or "")
+        expected_host = f"{listed_id}--{base.hostname}"
+        unexpected_port = parsed.port is not None
+    except ValueError as exc:
+        raise EvidenceUnavailable("immutable deploy permalink unavailable") from exc
     if (not _DEPLOY_ID.fullmatch(listed_id)
             or base.scheme != "https" or not base.hostname
             or parsed.scheme != "https" or parsed.hostname != expected_host
-            or parsed.username or parsed.password or parsed.port
+            or parsed.username or parsed.password or unexpected_port
             or parsed.path not in ("", "/") or parsed.query or parsed.fragment):
         raise EvidenceUnavailable("immutable deploy permalink unavailable")
     return {

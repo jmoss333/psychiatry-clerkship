@@ -100,6 +100,19 @@ class DeploySnapshotTests(unittest.TestCase):
         self.assertNotEqual(snapshot["deployments"]["proxy"]["commitRef"],
                             snapshot["deployments"]["ms3"]["commitRef"])
 
+    def test_netlify_branch_alias_is_ignored_when_immutable_permalink_is_present(self):
+        records = fixture_records()
+        for key in records:
+            immutable = records[key]["deploy_ssl_url"]
+            records[key]["deploy_ssl_url"] = f"https://{records[key]['branch']}--{SITE_NAMES[key]}.netlify.app"
+            records[key]["links"] = {"permalink": immutable}
+        snapshot = fetch_snapshot(fixture_config(), "fixture-token", api_fake(records), git_fake)
+        self.assertEqual(snapshot["deployments"]["proxy"]["deployUrl"],
+                         f"https://{DEPLOY_IDS['proxy']}--sp-interview-proxy.netlify.app")
+        records["proxy"]["links"]["permalink"] = "https://main--sp-interview-proxy.netlify.app"
+        with self.assertRaisesRegex(EvidenceUnavailable, "immutable deploy permalink"):
+            fetch_snapshot(fixture_config(), "fixture-token", api_fake(records), git_fake)
+
     def test_missing_latest_published_deploy_is_unverified(self):
         with self.assertRaisesRegex(EvidenceUnavailable, "no published production deploy"):
             fetch_snapshot(

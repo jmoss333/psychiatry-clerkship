@@ -1,15 +1,23 @@
 """Prepared evidence must never turn a skipped probe into an attestation."""
 
 import sys
+import subprocess
+import tempfile
 import unittest
 from hashlib import sha256
 from pathlib import Path
+from unittest import mock
 
 AUTOMATION = Path(__file__).resolve().parents[2] / "13_Faculty_Resources" / "_automation"
 sys.path.insert(0, str(AUTOMATION))
+sys.path.insert(0, str(AUTOMATION.parents[1] / "bin"))
+from _git_env import scrub_inherited_git_env  # noqa: E402
+
+scrub_inherited_git_env()
 
 from maintenance.red_team_deploys import EvidenceUnavailable  # noqa: E402
-from maintenance.red_team_preflight import prepare  # noqa: E402
+import maintenance.red_team_preflight as preflight  # noqa: E402
+from maintenance.red_team_preflight import prepare, run_tier1  # noqa: E402
 
 PACK = b'{"version":"fixture","engine":{"modelPinned":"model-a"}}'
 
@@ -39,7 +47,8 @@ class PreflightTests(unittest.TestCase):
     def run_prepare(self, live_result=None, snap=None, pack=PACK, tier1=None):
         return prepare(
             snap or snapshot(),
-            lambda data: tier1 or {"state": "passed", "passes": 30, "total": 30},
+            lambda data, commit: tier1 or {"state": "passed", "passes": 30, "total": 30,
+                                           "sourceCommit": commit},
             lambda endpoint: live_result or live(),
             pack_loader=lambda commit: pack,
         )
@@ -50,6 +59,34 @@ class PreflightTests(unittest.TestCase):
         self.assertEqual(work["deployments"], snapshot()["deployments"])
         self.assertEqual(work["runtime"]["actorModel"], "model-a")
         self.assertEqual(work["mechanical"]["tier1"]["passes"], 30)
+        self.assertEqual(work["mechanical"]["tier1"]["sourceCommit"], "1" * 40)
+
+    def test_tier1_runs_gate_code_and_probes_from_the_proxy_commit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runner = root / "bin" / "redteam-offline.mjs"
+            engine = root / "sp-proxy" / "netlify" / "functions" / "sp.mjs"
+            shared = engine.parent / "_shared" / "helper.mjs"
+            for path in (runner, engine, shared):
+                path.parent.mkdir(parents=True, exist_ok=True)
+            (root / "sp-proxy" / "node_modules").mkdir()
+            runner.write_text("import {value} from '../sp-proxy/netlify/functions/sp.mjs';\n"
+                              "console.log(`${value}/${value} deterministic probes pass`);\n")
+            engine.write_text("export const value = 1;\n")
+            shared.write_text("export const helper = true;\n")
+            for command in (["git", "init", "-q"],
+                            ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.test",
+                             "add", "."],
+                            ["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.test",
+                             "commit", "-qm", "fixture"]):
+                subprocess.run(command, cwd=root, check=True, capture_output=True)
+            commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root,
+                                             text=True).strip()
+            engine.write_text("throw new Error('working tree code must not run');\n")
+            with mock.patch.object(preflight, "ROOT", root):
+                result = run_tier1(PACK, commit)
+            self.assertEqual(result, {"state": "passed", "passes": 1,
+                                      "total": 1, "sourceCommit": commit})
 
     def test_skip_fail_or_zero_probe_is_blocked(self):
         result = live()

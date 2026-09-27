@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
-import {execFile} from 'node:child_process';
+import {execFile, execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 
@@ -155,4 +155,28 @@ test('a forged-state POST returning 200 cannot become a mechanical pass', async 
   const result = JSON.parse(readFileSync(output, 'utf8'));
   assert.equal(result.state, 'failed');
   assert.equal(result.checks.find(check => check.id === 'B5').status, 'fail');
+});
+
+test('hidden passcode never appears in a curl subprocess argument', async (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'redteam-curl-'));
+  t.after(() => rmSync(dir, {recursive: true, force: true}));
+  const realCurl = execFileSync('which', ['curl'], {encoding: 'utf8'}).trim();
+  const guard = path.join(dir, 'curl');
+  writeFileSync(guard, `#!/bin/sh\nfor arg do\n  case "$arg" in *fixture-passcode*) exit 95 ;; esac\ndone\nexec '${realCurl}' "$@"\n`);
+  chmodSync(guard, 0o755);
+  const output = path.join(dir, 'result.json');
+  await withEndpoint((req, res) => {
+    if (req.method === 'POST') { res.writeHead(400); res.end('{}'); return; }
+    if ((req.headers['x-student-key'] || '') !== 'fixture-passcode') {
+      res.writeHead(401); res.end('{}'); return;
+    }
+    const body = req.url.endsWith('/realtime') || req.url.endsWith('/voice') ?
+      {enabled: false} : {actorModel: 'model-a', evaluatorModel: 'model-a',
+        packVersion: 'fixture', packSha256: 'f'.repeat(64)};
+    res.writeHead(200); res.end(JSON.stringify(body));
+  }, url => new Promise(resolve => execFile('bash', [script, '--result-json', output, url],
+    {timeout: 60000, env: {...process.env, SP_STUDENT_PASSCODE: 'fixture-passcode',
+      PATH: `${dir}:${process.env.PATH}`}},
+    (error, stdout, stderr) => resolve({code: error?.code ?? 0, stdout, stderr}))));
+  assert.equal(JSON.parse(readFileSync(output, 'utf8')).state, 'passed');
 });
