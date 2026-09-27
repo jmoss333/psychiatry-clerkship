@@ -3,7 +3,7 @@
 <head>
 <script>(function(){var q=null;try{q=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)'))||null;}catch(e){}function p(){var s=null;try{s=localStorage.getItem('cw_theme');}catch(e){}var m=(s==='light'||s==='dark'||s==='system')?s:'system';var a=(m==='system')?((q&&q.matches)?'dark':'light'):m;try{document.documentElement.setAttribute('data-theme',a);}catch(e){}}p();if(q){try{if(q.addEventListener){q.addEventListener('change',p);}else if(q.addListener){q.addListener(p);}}catch(e){}}})();</script>
 <link rel="icon" href="/favicon.svg">
-<!-- [CLERKSHIP-META v1] tool="The Interview Room — AI Standardized Patient" version="0.3.0" built="2026-09-26" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="reviewed" summary="Spoken-first Interview Room: the learner talks with a real-time speech-to-speech patient (server-side session, no browser credential, server-derived disclosure state before every reply); a typed room with optional device read-aloud remains equal and adjacent. Engine unchanged: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief. Mock provider runs fully offline; live LLM provider behind the same interface. NOT clinical decision support. Fictional composites; no PHI; nothing stored by the tool; transcripts stay in this browser." -->
+<!-- [CLERKSHIP-META v1] tool="The Interview Room — AI Standardized Patient" version="0.4.0" built="2026-09-27" category="clinical-skills" audience="ms3,resident" settings="inpatient" time="12min" reviewCadenceDays="180" evidenceThrough="2026-06-30" status="reviewed" summary="Spoken-first Interview Room: the learner talks with a real-time speech-to-speech patient (server-side session, no browser credential, server-derived disclosure state before every reply); a typed room with optional device read-aloud remains equal and adjacent. Engine unchanged: gated disclosures, rapport model, deterministic coverage map, self-assessment-first debrief. Mock provider runs fully offline; live LLM provider behind the same interface. NOT clinical decision support. Fictional composites; no PHI; nothing stored by the tool; transcripts stay in this browser." -->
 <meta charset="UTF-8">
 <meta name="cw-frame" content="viewport">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +14,13 @@
 <script src="./sp-interview.voice.js"></script>
 <script src="./sp-interview.realtime.js"></script>
 <style>
+  /* The Interview Room wears the protected spoken pilot's design language (sp-preview/dist/styles.css,
+     2026-09-27): a masthead with the door mark, a two-column entrance (the door and the access panel),
+     one encounter panel with the room view above the transcript, a status row with a dot, and quiet
+     green controls. Colour comes from the Clinical Warm tokens every tool shares, so dark mode and
+     the design-drift gate hold: the pilot's paper, ink, green and pale are ALIASES of --bg, --text,
+     --accent and --accent-light below. To wear the pilot's exact tint instead, set --paper to #edf2ef
+     and --green to #245e60 in :root and nothing else changes. */
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
     --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
@@ -24,224 +31,345 @@
     --danger:#a34132; --danger-light:#fbece9;
     --info:#41618a; --info-light:#eaf0f6;
     --focus:#41618a; --ink:#3b332c; --ink-on:#f6f3ee;
-    --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
+    --radius-sm:7px; --radius-md:10px; --radius-lg:14px; --radius-pill:999px;
     --shadow-sm:0 1px 3px rgba(59,51,44,.06);
     --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
-    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    --font-head:"Source Serif 4","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
     --sp1:6px; --sp2:10px; --sp3:16px; --sp4:24px; --sp5:36px;
+    /* the pilot's names, as aliases */
+    --paper:var(--bg); --card:var(--surface); --line:var(--border); --muted:var(--text-mid);
+    --green:var(--accent); --green-dark:var(--accent-dark); --pale:var(--accent-light); --deep:var(--accent-dark);
+    --amber:var(--warning); --amber-light:var(--warning-light); --serif:var(--font-head); --deep-on:#ffffff;
+    --line-green:#a9c2bc; --btn-border:#78958b; --bubble:#f4f7f6; --bubble-line:#e1e8e5; --controls:#fafcfb; --you-line:#c8dbd3;
+    /* the room scene: warm neutrals, an illustration rather than interface colour */
+    --room-wall:#f6f1e9; --room-wainscot:#ece4d8; --room-floor:#e3d9cb; --room-near:#d8cdbc; --room-arm:#b9a98f; --room-arm-top:#cbbca6; --room-front:#ad9c82;
+    --room-window:#fdfbf7; --room-trim:#d9cdbc; --room-door:#dcd0bf; --room-door-edge:#c8baa7; --room-knob:#a99a8a; --room-leaf:#7f9a8a; --room-leaf-light:#8aa596; --room-pot:#c08f7c;
+    --room-chair:#cbbfae; --room-chair-seat:#bfb19d; --room-figure:#9a8c7d; --room-table:#c3b39c; --room-table-top:#d2c4b0; --room-light:#fffdf8;
   }
-  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#a09488;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--ink:#e8e2da;--ink-on:#211d1a;--shadow-sm:0 1px 3px rgba(0,0,0,.35);}
+  [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#a09488;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--ink:#e8e2da;--ink-on:#211d1a;--shadow-sm:0 1px 3px rgba(0,0,0,.35);
+    --paper:var(--bg);--card:var(--surface);--line:var(--border);--muted:var(--text-mid);--green:var(--accent);--green-dark:var(--accent-dark);--pale:var(--accent-light);--deep:#1e4a42;--deep-on:#e8f2ef;--amber:var(--warning);--amber-light:var(--warning-light);
+    --line-green:#3f6b60;--btn-border:#4f7a6d;--bubble:#241f1b;--bubble-line:#3d3630;--controls:#221e1a;--you-line:#3f6b60;
+    --room-wall:#2f2a25;--room-wainscot:#3a332c;--room-floor:#3f372f;--room-near:#463e35;--room-arm:#5b5044;--room-arm-top:#675b4d;--room-front:#544a3f;
+    --room-window:#3b362f;--room-trim:#5a4e41;--room-door:#4b4238;--room-door-edge:#5f5348;--room-knob:#8a7b6a;--room-leaf:#4f6b5c;--room-leaf-light:#5d7a69;--room-pot:#7d5a4c;
+    --room-chair:#5c5147;--room-chair-seat:#665a4e;--room-figure:#a99b8b;--room-table:#5d5044;--room-table-top:#6a5c4f;--room-light:#4a443c;
+  }
   *,*::before,*::after{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
-  a{color:var(--accent-dark)} a:hover{color:var(--primary-dark)}
-  .shell{width:min(1020px,100%);margin:0 auto;padding:var(--sp4) var(--sp3) 60px}
-  h1{font-family:var(--font-head);font-size:1.85rem;color:var(--primary);margin:0;line-height:1.2}
-  h2{font-family:var(--font-head);font-size:1.2rem;margin:0 0 var(--sp1)}
-  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark)}
-  .titlerow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:2px}
-  .lede{color:var(--text-mid);margin:4px 0 0;max-width:62ch}
-  .badge{display:inline-block;font-size:.7rem;font-weight:700;border-radius:var(--radius-pill);padding:4px 12px;vertical-align:middle;min-height:0}
-  .badge.mode{background:var(--info-light);color:var(--info);border:1px solid var(--info);cursor:pointer;font:inherit;font-size:.7rem;font-weight:700;min-height:44px;padding:8px 12px}
-  .ribbon{display:flex;align-items:flex-start;gap:10px;margin:var(--sp3) 0 0;padding:var(--sp2) 14px;background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.83rem;color:var(--accent-dark);line-height:1.5}
-  .ribbon .mark{font-family:var(--font-head);font-style:italic;padding-top:1px}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);margin-top:var(--sp3)}
-  .themebtn{position:fixed;top:12px;right:12px;width:44px;height:44px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);cursor:pointer;font-size:1rem;z-index:40;box-shadow:var(--shadow-sm)}
-  .btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;font-weight:600;cursor:pointer;font:inherit;font-size:.9rem;background:var(--surface);color:var(--accent-dark);min-height:44px}
+  body{margin:0;background:var(--paper);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.55}
+  a{color:var(--green-dark);text-underline-offset:3px} a:hover{color:var(--green)}
+  p{margin:0 0 14px}
+  h1,h2,h3{line-height:1.2;margin:0 0 16px}
+  h1,h2{font-family:var(--serif);font-weight:500;color:var(--text)}
+  h1{font-size:1.5rem;letter-spacing:-.03em;margin:0}
+  h2{font-size:1.65rem}
+  h3{font-size:1rem}
+  .shell{width:min(1060px,100%);margin:0 auto;padding:0 var(--sp4) 28px}
+  .kicker{display:block;text-transform:uppercase;letter-spacing:.12em;font-size:.68rem;font-weight:700;color:var(--green-dark);margin-bottom:2px}
+  .section-label{font-size:.79rem;font-weight:650;color:var(--green-dark);margin:0 0 12px}
+  .fine{font-size:.81rem;color:var(--muted);line-height:1.55}
+  .microlabel{margin:0 0 6px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-dark)}
+  /* masthead */
+  .masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .brand-text{display:flex;flex-direction:column;gap:0}
+  .brand-mark{display:block;flex:none;width:20px;height:26px;border:2px solid var(--green);border-right-width:6px;border-radius:8px 8px 0 0;transform:skewY(-7deg)}
+  .masthead-tools{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
+  .titlerow{display:contents}
+  .lede{color:var(--muted);margin:0 0 14px;max-width:62ch;font-size:1.02rem}
+  .badge{display:inline-block;font-size:.72rem;font-weight:600;border-radius:6px;padding:4px 10px;vertical-align:middle;min-height:0;white-space:nowrap}
+  .badge.mode{background:var(--card);color:var(--green-dark);border:1px solid var(--line-green);cursor:pointer;font:inherit;font-size:.74rem;font-weight:600;min-height:44px;padding:8px 12px}
+  .badge.mode:hover:enabled{background:var(--pale)}
+  .badge.mode:disabled{opacity:.55;cursor:default}
+  .ribbon{display:flex;align-items:flex-start;gap:10px;margin:0 0 18px;padding:9px 12px;background:var(--pale);border-left:3px solid var(--green);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.82rem;color:var(--green-dark);line-height:1.5}
+  .ribbon .mark{font-family:var(--serif);font-style:italic;padding-top:1px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);padding:var(--sp4);margin:0 0 var(--sp3)}
+  .card>h2{font-size:1.45rem;margin-bottom:10px}
+  .themebtn{position:fixed;top:12px;right:12px;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;font-size:1rem;z-index:40;box-shadow:var(--shadow-sm)}
+  /* controls: the pilot's quiet green buttons */
+  button,input,textarea,select{font:inherit}
+  .btn{border:1px solid var(--btn-border);border-radius:var(--radius-sm);padding:10px 14px;font-weight:600;cursor:pointer;font:inherit;font-size:.86rem;background:var(--card);color:var(--green-dark);min-height:44px}
+  .btn:hover:enabled{background:var(--pale)}
   a.btn{display:inline-flex;flex-direction:column;justify-content:center;text-decoration:none;box-sizing:border-box}
-  .case.familydoor{border-style:dashed;margin-top:var(--sp3)}
-  .btn.primary{background:var(--primary-dark);color:var(--on-brand);border-color:var(--primary-dark)}
-  .btn.primary:hover{background:var(--primary)}
+  .btn.primary{background:var(--green);color:var(--on-brand);border-color:var(--green)}
+  .btn.primary:hover:enabled{background:var(--green-dark)}
   .btn.ghost{border-style:dashed}
-  .btn.door{border:1px dashed var(--accent);color:var(--accent-dark)}
-  .btn.door:hover{background:var(--accent-light)}
-  .btn:disabled,.btn.is-disabled{opacity:.45;cursor:not-allowed}
+  .btn.door{border-style:solid}
+  .btn.quiet,.btn.door{background:transparent}
+  .btn:disabled,.btn.is-disabled{opacity:.48;cursor:not-allowed}
   .btn.is-disabled{pointer-events:none}
-  .microlabel{margin:0 0 6px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-light)}
-  /* case select */
-  /* spoken room */
-  .audiorail.spoken-listening .dot{animation:listenpulse 1.6s ease-out infinite;background:var(--primary)}
-  .audiorail.spoken-speaking .dot{background:var(--accent)}
-  .audiorail.spoken-thinking .dot{background:var(--warning)}
-  .audiorail.spoken-paused .dot,.audiorail.spoken-ended .dot{background:var(--text-light)}
-  .audiorail.spoken-error .dot{background:var(--danger)}
-  .msg.interim{opacity:.6;font-style:italic;border-style:dashed}
-  .msg .tag{display:inline-block;margin-top:6px;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--radius-pill);padding:2px 8px;border:1px solid var(--border);color:var(--text-light);background:var(--bg-alt)}
-  .msg .tag.warn{border-color:var(--warning);color:var(--warning);background:var(--warning-light)}
-  .talkrow{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
-  .talkrow .btn{min-height:44px}
-  .talkrow .btn.live{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
-  .chk{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text-mid);min-height:44px;cursor:pointer}
-  .chk input{width:18px;height:18px;margin:0}
-  .roomnote{margin:0 0 8px;font-size:.78rem;color:var(--text-mid);line-height:1.5}
-  .casegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:var(--sp3);margin-top:var(--sp3);align-items:stretch}
-  .case{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;margin:0}
-  .case h2{font-size:1.5rem;color:var(--primary-dark);margin:0;line-height:1.2}
-  .case .occasion{margin:3px 0 0;font-family:var(--font-head);font-size:.9rem;font-style:italic;color:var(--text-mid)}
-  .case .setting{margin:8px 0 0;font-size:.8rem;color:var(--text-mid)}
-  .case .goal{margin:0;font-size:.88rem;line-height:1.5}
-  .voicerow{display:flex;gap:10px;align-items:flex-start;border-top:1px dashed var(--border);padding-top:12px;font-size:.8rem;color:var(--text-mid);line-height:1.45}
-  .voicerow b{font-weight:600;color:var(--accent-dark)}
+  kbd{font:500 .72rem/1.2 system-ui,sans-serif;border:1px solid currentColor;border-radius:4px;padding:3px 5px;white-space:nowrap;color:var(--green-dark)}
+  select.audiosel,select.access-select,.cfgin{min-height:44px;padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--btn-border);background:var(--card);color:var(--text);font:inherit;font-size:.88rem}
+  select.audiosel{padding-right:30px;font-weight:600;font-size:.8rem;max-width:100%}
+  .cfgin{width:100%;margin:4px 0 12px}
+  .chk{display:inline-flex;align-items:center;gap:8px;font-size:.84rem;color:var(--text);min-height:44px;cursor:pointer}
+  .chk input{width:18px;height:18px;margin:0;accent-color:var(--green);flex-shrink:0}
+  summary{cursor:pointer;color:var(--green-dark);font-weight:600;min-height:44px;align-content:center}
+  /* the entrance: the door and the access panel */
+  .entrance{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(28px,5vw,72px);align-items:start;padding:8px 0 28px}
+  .door{padding-top:10px;min-width:0}
+  .door h2{font-size:clamp(2.2rem,4vw,3.4rem);letter-spacing:-.04em;margin:0 0 6px;max-width:12em}
+  .door .occasion{font-family:var(--serif);font-size:1.15rem;color:var(--green-dark);margin:0 0 18px}
+  .door .setting{font-size:.92rem;color:var(--muted);margin:0 0 10px;max-width:48ch}
+  .door .goal{font-size:1rem;line-height:1.55;max-width:45ch;margin:0 0 4px}
+  .entry-brief{border-top:1px solid var(--line);margin-top:22px;padding-top:6px}
+  .entry-brief summary{margin-bottom:6px}
+  .voicerow{display:flex;gap:10px;align-items:flex-start;padding:6px 0 10px;font-size:.84rem;color:var(--muted);line-height:1.45}
+  .voicerow b{font-weight:600;color:var(--green-dark)}
   .bars{display:inline-flex;align-items:flex-end;gap:2px;height:20px;flex:none;padding-top:2px}
-  .bars span{width:3px;background:var(--accent);border-radius:2px;opacity:.75}
-  .chips{display:flex;flex-wrap:wrap;gap:6px}
-  .chip{font-size:.7rem;font-weight:600;color:var(--text-mid);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px 10px;background:var(--bg-alt)}
-  .begincol{margin-top:auto;padding-top:6px}
-  .begin{display:flex;flex-direction:column;gap:8px}
-  .begin .btn{text-align:left;width:100%}
-  .begin .sub{display:block;font-weight:400;font-size:.74rem}
-  .begin .primary .sub{opacity:.96}
-  .begin .btn:not(.primary) .sub{color:var(--text-light)}
-  /* encounter */
-  .room{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;margin-top:var(--sp3);position:relative}
-  .roomhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:var(--sp3) var(--sp4);border-bottom:1px solid var(--border)}
-  .roomhead h2{font-size:1.3rem;margin:0;line-height:1.2}
-  .roomhead .setting{margin:2px 0 0;font-size:.8rem;color:var(--text-light)}
-  .roomhead .modeline{margin:2px 0 0;font-size:.76rem;color:var(--text-mid)}
-  .roomtools{margin-left:auto;display:flex;align-items:center;gap:10px}
-  .spkchip{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:var(--accent-dark);font-weight:600}
-  .spkbars{display:inline-flex;align-items:flex-end;gap:2px;height:18px;transition:opacity .3s}
-  .spkbars span{width:3px;height:16px;background:var(--accent);border-radius:2px;transform-origin:bottom}
-  .audiosel{min-height:44px;padding:8px 34px 8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;font-weight:600;font-size:.82rem}
-  .audiorail{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:9px var(--sp4);border-bottom:1px solid var(--border);background:var(--accent-light);font-size:.76rem;color:var(--accent-dark)}
-  .audiorail .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
-  .audiorail .audiohint{color:var(--text-mid)}
-  .audiostatus{font-weight:700}
-  .message-actions{display:flex;gap:8px;margin-top:7px}
-  .message-actions button{min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--accent-dark);font:inherit;font-size:.72rem;font-weight:700;cursor:pointer}
-  .recovery{margin:12px var(--sp3) 0;padding:12px 14px;border:1px solid var(--warning);border-radius:var(--radius-md);background:var(--warning-light);color:var(--warning);font-size:.83rem}
-  .recovery p{margin:0}
-  .recovery .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
-  .offline-label{display:inline-flex;align-items:center;border:1px solid var(--warning);border-radius:var(--radius-pill);padding:2px 8px;color:var(--warning);background:var(--warning-light);font-size:.66rem;font-weight:700;margin-left:7px}
-  .consentcopy{font-size:.86rem;color:var(--text-mid);line-height:1.55}
+  .bars span{width:3px;background:var(--green);border-radius:2px;opacity:.75}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+  .chip{font-size:.72rem;font-weight:600;color:var(--green-dark);border:1px solid var(--line-green);border-radius:var(--radius-pill);padding:3px 10px;background:var(--card)}
+  .practice-note{margin:10px 0 0;max-width:46ch}
+  .access{border-top:4px solid var(--green);box-shadow:0 12px 28px rgba(33,56,62,.05);padding:28px;margin:0}
+  .access h2{margin-bottom:6px}
+  .access .access-lede{color:var(--muted);font-size:.91rem;margin-bottom:6px}
+  .access label{display:block;font-size:.86rem;font-weight:650;margin:18px 0 7px}
+  .access .access-select{width:100%}
+  .access .microlabel{margin:20px 0 6px}
+  .access .setting{font-size:.85rem;color:var(--muted);margin:0 0 10px}
+  .begin{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .begin .btn{text-align:left;width:100%;padding:11px 14px}
+  .begin .sub{display:block;font-weight:400;font-size:.76rem}
+  .begin .primary .sub{opacity:.94}
+  .begin .btn:not(.primary) .sub{color:var(--muted)}
+  .access>.fine{margin:12px 0 0}
+  .entry-tip{display:flex;gap:12px;align-items:flex-start;border-top:1px solid var(--line);margin-top:20px;padding-top:16px;font-size:.8rem;color:var(--muted)}
+  .entry-tip kbd{margin-top:2px}
+  .case.familydoor{border-style:dashed;padding:22px 24px;margin-top:16px}
+  .case.familydoor h2{font-size:1.5rem;margin:2px 0 0}
+  .case.familydoor .occasion{font-family:var(--serif);font-style:italic;color:var(--muted);margin:2px 0 8px}
+  .case.familydoor .setting{font-size:.85rem;color:var(--muted);margin:0 0 8px}
+  .case.familydoor .goal{margin:0 0 12px;font-size:.92rem;line-height:1.5}
+  .case.familydoor .begin{max-width:420px}
+  .consentcopy{font-size:.88rem;color:var(--text);line-height:1.55}
   .consentcopy ul{padding-left:20px}
   .consentcopy li{margin:5px 0}
-  .chat{display:flex;flex-direction:column;gap:var(--sp2);max-height:52vh;min-height:260px;overflow-y:auto;padding:var(--sp3);background:var(--bg-alt)}
-  .msg{max-width:78%;padding:10px 14px;border-radius:var(--radius-md);font-size:.92rem;line-height:1.55;white-space:pre-wrap}
-  .msg.pt{align-self:flex-start;background:var(--surface);border:1px solid var(--border)}
-  .msg.me{align-self:flex-end;background:var(--accent-light);border:1px solid var(--accent)}
-  .msg.speaking{box-shadow:0 0 0 2px var(--accent-light),0 0 0 3px var(--accent)}
-  .msg .who{display:block;font-size:.64rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);margin-bottom:2px}
+  .acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  /* the encounter panel */
+  .room{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;margin:0 0 var(--sp3);position:relative}
+  .roomhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:20px 26px 16px;border-bottom:1px solid var(--line)}
+  .roomhead .section-label{margin:0 0 4px}
+  .roomhead h2{display:inline;font-size:2rem;margin:0;line-height:1.15}
+  .voice-tag{font-size:.75rem;color:var(--muted);margin-left:12px;white-space:nowrap}
+  .roomhead .setting{margin:4px 0 0;font-size:.82rem;color:var(--muted)}
+  .roomhead .modeline{margin:2px 0 0;font-size:.78rem;color:var(--muted)}
+  .roomtools{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .turn-count{font-size:.77rem;color:var(--muted);white-space:nowrap;padding:5px 9px;background:var(--paper);border-radius:6px}
+  .spkchip{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:var(--green-dark);font-weight:600}
+  .spkbars{display:inline-flex;align-items:flex-end;gap:2px;height:18px;transition:opacity .3s}
+  .spkbars span{width:3px;height:16px;background:var(--green);border-radius:2px;transform-origin:bottom}
+  /* the room view: a projection of the session, never a case fact */
+  .room-view{background:var(--room-wall);border-bottom:1px solid var(--line);padding:16px 26px 14px}
+  .room-frame{position:relative;max-width:720px;margin:0 auto}
+  .room-scene{display:block;width:100%;height:auto;border-radius:10px;overflow:hidden}
+  .room-wall{fill:var(--room-wall)} .room-wainscot{fill:var(--room-wainscot)} .room-floor{fill:var(--room-floor)} .room-near{fill:var(--room-near)}
+  .room-your-arm{fill:var(--room-arm)} .room-your-arm-top{fill:var(--room-arm-top)} .room-your-front{fill:var(--room-front)}
+  .room-window rect{fill:var(--room-window);stroke:var(--room-trim);stroke-width:3} .room-window line{stroke:var(--room-trim);stroke-width:3}
+  .room-door rect{fill:var(--room-door);stroke:var(--room-door-edge);stroke-width:3} .room-door circle{fill:var(--room-knob)}
+  .room-plant ellipse{fill:var(--room-leaf)} .room-plant .room-leaf-light{fill:var(--room-leaf-light)} .room-pot{fill:var(--room-pot)}
+  .room-chair-back{fill:var(--room-chair)} .room-chair-seat{fill:var(--room-chair-seat)} .room-figure{fill:var(--room-figure)}
+  .room-table rect,.room-table ellipse{fill:var(--room-table)} .room-table-top{fill:var(--room-table-top)} .room-cup{fill:var(--room-window);stroke:var(--room-trim);stroke-width:1.5}
+  .room-seat{transition:opacity .25s ease}
+  .room-next,.room-halo,.room-cut{display:none;fill:none}
+  .room-next{stroke:var(--green);stroke-width:2;stroke-dasharray:6 5;opacity:.85}
+  .room-halo{stroke:var(--green);stroke-width:2.5;transform-box:fill-box;transform-origin:center;animation:room-halo 2.4s ease-in-out infinite}
+  .room-cut{stroke:var(--amber);stroke-width:2.5;stroke-dasharray:11 7;opacity:.8}
+  .room-next[data-turn="next"],.room-next[data-turn="interrupted"]{display:block}
+  .room-seat[data-turn="speaking"] .room-halo{display:block}
+  .room-seat[data-turn="interrupted"] .room-cut{display:block}
+  .room-view[data-room-state="paused"] .room-seat,.room-view[data-room-state="ended"] .room-seat{opacity:.68}
+  .room-people{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;margin-top:10px}
+  .room-person{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0}
+  .room-name{display:inline-flex;gap:6px;align-items:baseline;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:.84rem;font-weight:650;color:var(--text);max-width:100%}
+  .room-tag{display:inline-flex;gap:5px;align-items:center;font-size:.74rem;font-weight:650;color:var(--muted);min-height:1.2em}
+  .room-tag-dot{display:none;width:7px;height:7px;border-radius:50%;background:currentColor}
+  .room-tag[data-kind="speaking"],.room-tag[data-kind="next"]{color:var(--green-dark)}
+  .room-tag[data-kind="preparing"],.room-tag[data-kind="interrupted"]{color:var(--amber)}
+  .room-tag[data-kind="speaking"] .room-tag-dot,.room-tag[data-kind="preparing"] .room-tag-dot{display:inline-block;animation:room-breathe 1.6s ease-in-out infinite}
+  .room-mic{display:inline-flex;gap:7px;align-items:center;justify-self:center;font-size:.74rem;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 10px;white-space:nowrap;margin-top:2px}
+  .room-mic-dot{width:8px;height:8px;border-radius:50%;border:2px solid var(--muted);box-sizing:border-box}
+  .room-mic[data-mic="on"]{color:var(--green-dark);background:var(--pale);border-color:var(--line-green)}
+  .room-mic[data-mic="on"] .room-mic-dot{border:0;background:var(--green);animation:room-breathe 1.8s ease-in-out infinite}
+  .room-mic[data-mic="typed"] .room-mic-dot{border-style:dashed}
+  .room-caption{margin-top:10px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:8px;padding:9px 12px;min-height:58px}
+  .room-caption p{margin:0;font-size:.9rem;line-height:1.45;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .room-caption strong{color:var(--green-dark);font-size:.78rem;margin-right:6px}
+  .room-caption[data-kind="quiet"]{border-left-color:var(--muted)} .room-caption[data-kind="quiet"] strong{color:var(--muted)}
+  .room-caption[data-kind="quiet"] span,.room-caption[data-kind="you"] span,.room-caption[data-kind="preparing"] span,.room-caption[data-kind="interrupted"] span{font-style:italic;color:var(--muted)}
+  .room-caption[data-kind="interrupted"],.room-caption[data-kind="preparing"]{border-left-color:var(--amber)}
+  .room-caption[data-kind="interrupted"] strong,.room-caption[data-kind="preparing"] strong{color:var(--amber)}
+  .room-foot{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;align-items:baseline;margin-top:8px}
+  .room-legend{font-size:.76rem;color:var(--muted)}
+  .room-legend summary{font-size:.76rem;min-height:28px;display:inline-flex;align-items:center}
+  .room-legend p{margin:6px 0 0;max-width:52ch;line-height:1.5}
+  /* status row */
+  .audiorail{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;padding:12px 26px;border-bottom:1px solid var(--line);background:var(--controls);font-size:.83rem;color:var(--muted)}
+  .audiorail .dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex:none}
+  .audiostatus{font-weight:700;color:var(--green-dark);font-size:.95rem}
+  .audiorail .audiohint{color:var(--muted)}
+  .audiorail.spoken-listening .dot{animation:listenpulse 1.6s ease-out infinite;background:var(--green)}
+  .audiorail.spoken-speaking .dot{background:var(--green)}
+  .audiorail.spoken-thinking .dot,.audiorail.spoken-connecting .dot{background:var(--amber)}
+  .audiorail.spoken-paused .dot,.audiorail.spoken-ended .dot{background:transparent;border:2px solid var(--muted)}
+  .audiorail.spoken-error .dot{background:var(--danger)}
+  .offline-label{display:inline-flex;align-items:center;border:1px solid var(--amber);border-radius:var(--radius-pill);padding:2px 8px;color:var(--amber);background:var(--amber-light);font-size:.66rem;font-weight:700;margin-left:7px}
+  /* transcript */
+  .chat{display:flex;flex-direction:column;gap:14px;min-height:180px;max-height:clamp(230px,42dvh,520px);overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable;padding:20px 26px;background:var(--card)}
+  .msg{max-width:93%;padding:14px 18px;border-radius:4px 14px 14px 14px;font-size:.96rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bubble);border:1px solid var(--bubble-line)}
+  .msg.pt{align-self:flex-start}
+  .msg.me{align-self:flex-end;background:var(--pale);border-color:var(--you-line);border-radius:14px 4px 14px 14px}
+  .msg.speaking{box-shadow:0 0 0 2px var(--pale),0 0 0 3px var(--green)}
+  .msg.interim{opacity:.6;font-style:italic;border-style:dashed}
+  .msg .who{display:block;font-size:.74rem;font-weight:700;color:var(--green-dark);margin-bottom:6px}
+  .msg .tag{display:inline-block;margin-top:8px;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--radius-pill);padding:2px 8px;border:1px solid var(--line);color:var(--muted);background:var(--card)}
+  .msg .tag.warn{border-color:var(--amber);color:var(--amber);background:var(--amber-light)}
+  .message-actions{display:flex;gap:8px;margin-top:8px}
+  .message-actions button{min-height:44px;padding:8px 12px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);background:var(--card);color:var(--green-dark);font:inherit;font-size:.74rem;font-weight:700;cursor:pointer}
   .typing{display:inline-flex;gap:3px;padding-top:4px}
-  .typing span{width:6px;height:6px;border-radius:99px;background:var(--text-light);animation:blinkdots 1.2s infinite}
+  .typing span{width:6px;height:6px;border-radius:99px;background:var(--muted);animation:blinkdots 1.2s infinite}
   .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
-  .composer{padding:12px var(--sp3) var(--sp3)}
+  .recovery{margin:12px 26px 0;padding:12px 14px;border:1px solid var(--amber);border-radius:var(--radius-md);background:var(--amber-light);color:var(--amber);font-size:.85rem}
+  .recovery p{margin:0}
+  .recovery .acts{margin-top:9px}
+  .phi{margin:12px 26px 0;padding:12px 16px;background:var(--amber-light);border:1px solid var(--amber);border-radius:var(--radius-md);font-size:.86rem;color:var(--amber)}
+  .phi .acts{margin-top:10px}
+  /* controls */
+  .composer{padding:18px 26px 16px;border-top:1px solid var(--line);background:var(--controls)}
+  .talkrow{display:flex;gap:8px 10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .talkrow .btn{min-height:44px;font-size:.83rem}
+  .talkrow .btn.live{border-color:var(--green);background:var(--pale);color:var(--green-dark)}
+  .talkrow .chk{font-size:.8rem;margin-left:auto}
   .inrow{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
-  .inrow textarea{flex:1 1 240px;font:inherit;font-size:.92rem;padding:11px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);resize:vertical;min-height:52px}
-  .inrow textarea.listening{border-color:var(--primary)}
-  .mic{min-height:52px;min-width:52px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-mid);font-weight:600;font-size:.82rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;justify-content:center}
-  .mic.live{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark);animation:listenpulse 1.6s ease-out infinite}
+  .inrow textarea{flex:1 1 240px;font:inherit;font-size:.94rem;padding:11px 12px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);background:var(--card);color:var(--text);resize:vertical;min-height:52px}
+  .inrow textarea.listening{border-color:var(--green)}
+  .mic{min-height:52px;min-width:52px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--btn-border);background:var(--card);color:var(--muted);font-weight:600;font-size:.82rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+  .mic.live{border-color:var(--green);background:var(--pale);color:var(--green-dark);animation:listenpulse 1.6s ease-out infinite}
   .mic .stopglyph{width:10px;height:10px;background:currentColor;border-radius:2px;display:inline-block}
   .sayit{min-height:52px}
   .listenrow{margin:8px 0 0;display:flex;align-items:center;gap:10px}
   .listenrow .bars2{display:inline-flex;align-items:flex-end;gap:2px;height:14px}
-  .listenrow .bars2 span{width:3px;height:14px;background:var(--primary);border-radius:2px;transform-origin:bottom;animation:spkbar .9s ease-in-out infinite}
+  .listenrow .bars2 span{width:3px;height:14px;background:var(--green);border-radius:2px;transform-origin:bottom;animation:spkbar .9s ease-in-out infinite}
   .listenrow .bars2 span:nth-child(2){animation-delay:-.25s}.listenrow .bars2 span:nth-child(3){animation-delay:-.5s}
-  .listenrow p{margin:0;font-size:.78rem;color:var(--primary-dark);font-weight:600}
-  .metaline{display:flex;gap:8px 18px;flex-wrap:wrap;margin-top:8px;font-size:.72rem;color:var(--text-light)}
+  .listenrow p{margin:0;font-size:.78rem;color:var(--green-dark);font-weight:600}
+  .metaline{display:flex;gap:8px 18px;flex-wrap:wrap;margin-top:8px;font-size:.76rem;color:var(--muted)}
   .metaline .fict{font-style:italic}
-  .doorrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;border-top:1px dashed var(--border);padding-top:12px;align-items:center}
-  .doorrow .quiet{font-size:.72rem;color:var(--text-light);font-style:italic}
-  .phi{margin:12px var(--sp3) 0;padding:12px var(--sp3);background:var(--warning-light);border:1px solid var(--warning);border-radius:var(--radius-md);font-size:.84rem;color:var(--warning)}
-  .phi .acts{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
-  /* step-out */
-  .overlay{position:absolute;inset:0;background:rgba(59,51,44,.28);border-radius:var(--radius-lg);display:flex;align-items:flex-start;justify-content:center;padding:var(--sp4) 12px;z-index:20;backdrop-filter:blur(1.5px)}
-  .panel{width:min(560px,100%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp4);box-shadow:0 12px 40px rgba(35,28,22,.25);animation:fadeup .25s ease both;max-height:100%;overflow-y:auto}
+  .doorrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--line);padding-top:12px;align-items:center}
+  .doorrow .quiet{font-size:.76rem;color:var(--muted);font-style:italic}
+  .doorrow .btn:last-of-type{margin-left:auto}
+  .roomnote{margin:0 0 8px;font-size:.78rem;color:var(--muted);line-height:1.5}
+  /* the door: a private aside beside the learner, in the pilot's coach language */
+  .overlay{position:absolute;inset:0;background:rgba(33,56,62,.26);border-radius:var(--radius-lg);display:flex;align-items:flex-start;justify-content:center;padding:var(--sp4) 12px;z-index:20;backdrop-filter:blur(1.5px)}
+  .panel{width:min(600px,100%);background:var(--controls);border:1px solid var(--you-line);border-left:3px solid var(--green);border-radius:12px;padding:20px 22px;box-shadow:0 12px 40px rgba(33,56,62,.22);animation:fadeup .25s ease both;max-height:100%;overflow-y:auto}
   .panelhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-  .panelhead h2{font-size:1.25rem;margin:0}
-  .panelhead .notascore{font-size:.7rem;color:var(--text-light);margin-left:auto}
-  .waitline{margin:8px 0 0;font-size:.82rem;color:var(--text-light);font-style:italic}
-  .notes{margin-top:14px}
-  .notes .n{display:flex;gap:8px;font-size:.85rem;line-height:1.45;padding:3px 0}
+  .panelhead h2{font-size:1.5rem;margin:0}
+  .panelhead .notascore{font-size:.74rem;color:var(--muted);margin-left:auto}
+  .waitline{margin:6px 0 0;font-size:.82rem;color:var(--muted);font-style:italic}
+  .notes{margin-top:14px;background:var(--card);border:1px solid var(--bubble-line);border-radius:9px;padding:11px 13px}
+  .notes .n{display:flex;gap:8px;font-size:.86rem;line-height:1.45;padding:3px 0}
   .notes .n .mk{width:1.1em;flex:none}
-  .mk.obs{color:var(--success)} .mk.part{color:var(--warning)} .mk.miss{color:var(--danger)} .mk.na{color:var(--text-light)}
-  .notyet{margin-top:14px;border-top:1px dashed var(--border);padding-top:12px}
-  .notyet p{margin:0;font-size:.85rem;color:var(--text-mid);line-height:1.5}
-  .coach{margin-top:14px;background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 var(--radius-md) var(--radius-md) 0;padding:var(--sp2) 14px}
-  .coach .microlabel{color:var(--accent-dark);margin:0}
-  .coach p.line{margin:6px 0 0;font-family:var(--font-head);font-style:italic;font-size:.97rem;line-height:1.55;color:var(--accent-dark)}
+  .mk.obs{color:var(--success)} .mk.part{color:var(--amber)} .mk.miss{color:var(--danger)} .mk.na{color:var(--muted)}
+  .notyet{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+  .notyet p{margin:0;font-size:.86rem;color:var(--muted);line-height:1.5}
+  .coach{margin-top:14px;background:var(--card);border:1px solid var(--you-line);border-left:3px solid var(--green);border-radius:0 9px 9px 0;padding:12px 14px}
+  .coach .microlabel{margin:0}
+  .coach p.line{margin:6px 0 0;font-family:var(--serif);font-size:1.02rem;line-height:1.55;color:var(--text)}
   .panelfoot{display:flex;align-items:center;gap:12px;margin-top:var(--sp3);flex-wrap:wrap}
-  .panelfoot .esc{font-size:.72rem;color:var(--text-light)}
-  /* self-assessment */
-  .sa{margin:40px auto 0;width:min(640px,100%);animation:fadeup .4s ease both}
-  .sa h2{font-size:1.6rem;margin:6px 0 8px}
-  .sa .why{color:var(--text-mid);margin:0 0 26px;font-size:.94rem;line-height:1.55}
-  .sa .q{margin-bottom:22px}
-  .sa label{display:block;font-family:var(--font-head);font-size:1.05rem;font-weight:600;line-height:1.4}
-  .sa label .num{color:var(--primary-dark);margin-right:8px}
-  .sa textarea{width:100%;margin-top:8px;font:inherit;font-size:.92rem;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);min-height:76px;resize:vertical}
+  .panelfoot .esc{font-size:.76rem;color:var(--muted)}
+  /* a moment to reflect */
+  .sa{margin:24px auto 0;width:min(640px,100%);animation:fadeup .4s ease both;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);padding:var(--sp4)}
+  .sa h2{font-size:1.65rem;margin:6px 0 8px}
+  .sa .why{color:var(--muted);margin:0 0 24px;font-size:.94rem;line-height:1.55}
+  .sa .q{margin-bottom:20px}
+  .sa label{display:block;font-family:var(--serif);font-size:1.08rem;font-weight:500;line-height:1.4}
+  .sa label .num{color:var(--green-dark);margin-right:8px}
+  .sa textarea{width:100%;margin-top:8px;font:inherit;font-size:.94rem;padding:12px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);background:var(--card);color:var(--text);min-height:82px;resize:vertical}
   .sa .commit{display:flex;align-items:center;gap:14px;margin-top:4px;flex-wrap:wrap}
-  .sa .commit .hint{font-size:.76rem;color:var(--text-light)}
+  .sa .commit .hint{font-size:.78rem;color:var(--muted)}
   /* debrief */
-  .formative{margin:var(--sp3) 0 0;font-size:.82rem;color:var(--text-mid)}
-  .formative b{font-family:var(--font-head);color:var(--text)}
-  .crit{background:var(--ink);color:var(--ink-on);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);margin-top:var(--sp3)}
-  .crit .kick{margin:0;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
-  .crit h2{font-size:1.45rem;margin:8px 0 0;line-height:1.3;max-width:30ch}
+  .formative{margin:0 0 var(--sp3);font-size:.81rem;line-height:1.5;color:var(--amber);background:var(--amber-light);border-left:3px solid var(--amber);padding:9px 12px}
+  .formative b{font-family:var(--serif);color:inherit}
+  .crit{background:var(--deep);color:var(--deep-on);border-radius:var(--radius-lg);padding:28px;margin:0 0 var(--sp3)}
+  .crit .kick{margin:0;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+  .crit h2{font-size:1.5rem;margin:8px 0 0;line-height:1.3;max-width:30ch;color:var(--deep-on)}
   .crit .body{margin:16px 0 0;font-size:.94rem;line-height:1.6;max-width:66ch}
   .crit .rehearse{margin-top:18px;max-width:66ch}
-  .crit .rehearse .lbl{margin:0;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
-  .crit .rehearse .line{margin:6px 0 0;font-family:var(--font-head);font-style:italic;font-size:1.02rem;line-height:1.5}
+  .crit .rehearse .lbl{margin:0;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+  .crit .rehearse .line{margin:6px 0 0;font-family:var(--serif);font-style:italic;font-size:1.05rem;line-height:1.5}
   .crit .foot{display:flex;gap:10px 16px;margin-top:20px;flex-wrap:wrap;align-items:center}
-  .crit .foot .btn{border-color:var(--primary);background:var(--primary);color:var(--on-brand)}
-  .crit .foot .ref{font-size:.78rem;opacity:.75}
-  .crit .foot .myth{flex-basis:100%;font-size:.78rem;opacity:.7}
+  .crit .foot .btn{border-color:var(--pale);background:var(--pale);color:var(--green-dark)}
+  .crit .foot .btn:hover:enabled{background:var(--pale)}
+  .crit .foot .ref{font-size:.78rem;opacity:.8}
+  .crit .foot .myth{flex-basis:100%;font-size:.78rem;opacity:.75}
   .sagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-  .sacell{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px}
-  .sacell .q{margin:0;font-size:.72rem;font-weight:700;color:var(--text-light)}
-  .sacell .a{margin:6px 0 0;font-size:.84rem;font-style:italic;line-height:1.5}
-  .saecho{margin:14px 0 0;font-size:.88rem;color:var(--text-mid);line-height:1.55;border-left:3px solid var(--accent);padding-left:12px}
-  .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--sp3);margin-top:var(--sp3)}
-  .two .card{margin-top:0}
+  .sacell{background:var(--controls);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px}
+  .sacell .q{margin:0;font-size:.74rem;font-weight:700;color:var(--green-dark)}
+  .sacell .a{margin:6px 0 0;font-size:.86rem;font-style:italic;line-height:1.5}
+  .saecho{margin:14px 0 0;font-size:.9rem;color:var(--text);line-height:1.55;border-left:3px solid var(--green);padding-left:12px}
+  .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--sp3);margin:0 0 var(--sp3)}
+  .two .card{margin:0}
   .sitem{margin:0 0 12px;font-size:.9rem;line-height:1.55;border-left:3px solid var(--success);padding-left:12px}
-  .gitem{border-left:3px solid var(--warning);padding-left:12px;margin:0 0 12px}
+  .gitem{border-left:3px solid var(--amber);padding-left:12px;margin:0 0 12px}
   .gitem p{margin:0;font-size:.9rem;line-height:1.55}
-  .gitem .ref{margin:4px 0 0;font-size:.76rem;color:var(--accent-dark)}
+  .gitem .ref{margin:4px 0 0;font-size:.78rem;color:var(--green-dark)}
   .rubgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-  .rub{border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px}
-  .rub .dom{font-family:var(--font-head);font-size:.97rem;font-weight:600;margin:0}
+  .rub{border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;background:var(--controls)}
+  .rub .dom{font-family:var(--serif);font-size:1.02rem;font-weight:500;margin:0}
   .rub .word{margin:4px 0 8px;font-size:.78rem;font-weight:600}
-  .rub .word.obs{color:var(--success)} .rub .word.part{color:var(--warning)} .rub .word.miss{color:var(--text-mid)}
-  .rub ul{margin:0;padding-left:18px;font-size:.78rem;color:var(--text-mid);line-height:1.5}
+  .rub .word.obs{color:var(--success)} .rub .word.part{color:var(--amber)} .rub .word.miss{color:var(--muted)}
+  .rub ul{margin:0;padding-left:18px;font-size:.8rem;color:var(--muted);line-height:1.5}
   .covlist{list-style:none;margin:0;padding:0}
-  .covlist>li{display:flex;gap:8px;font-size:.85rem;line-height:1.5;padding:4px 0}
+  .covlist>li{display:flex;gap:8px;font-size:.86rem;line-height:1.5;padding:4px 0}
   .covrow{flex:1;min-width:0}
   .covlist .mk{width:1.1em;flex:none}
-  .covlist .word{color:var(--text-light);font-size:.76rem;margin-left:6px}
-  .covlist .dim{color:var(--text-light)}
-  .steppednote{margin:14px 0 0;font-size:.78rem;color:var(--text-mid);border-top:1px dashed var(--border);padding-top:10px}
-  .feedback-guide p{font-size:.88rem;color:var(--text-mid);margin:10px 0;line-height:1.55}
-  .exchange-review summary{cursor:pointer;min-height:44px;padding:10px 0;color:var(--accent-dark);font-weight:600}
+  .covlist .word{color:var(--muted);font-size:.76rem;margin-left:6px}
+  .covlist .dim{color:var(--muted)}
+  .steppednote{margin:14px 0 0;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+  .feedback-guide p{font-size:.88rem;color:var(--muted);margin:10px 0;line-height:1.55}
+  .exchange-review summary{cursor:pointer;min-height:44px;padding:10px 0;color:var(--green-dark);font-weight:600}
   .exchange-review ol{padding-left:24px;margin:8px 0}
-  .exchange-review li{padding:10px 0;border-top:1px solid var(--border);overflow-wrap:anywhere}
+  .exchange-review li{padding:10px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
   .exchange-review p{white-space:pre-wrap}
-  .evidence-review{margin:8px 0 12px;border-top:1px solid var(--border);color:var(--text);font-size:.84rem;overflow-wrap:anywhere}
-  .evidence-review summary{cursor:pointer;min-height:44px;padding:11px 0;color:var(--accent-dark);font-weight:600}
-  .evidence-review summary:focus-visible{outline:2px solid var(--accent-dark);outline-offset:3px}
+  .evidence-review{margin:8px 0 12px;border-top:1px solid var(--line);color:var(--text);font-size:.84rem;overflow-wrap:anywhere}
+  .evidence-review summary{cursor:pointer;min-height:44px;padding:11px 0;color:var(--green-dark);font-weight:600}
+  .evidence-review summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
   .evidence-review p{margin:8px 0;line-height:1.55;font-size:.84rem}
   .evidence-review ol{list-style:none;padding:0;margin:12px 0}
-  .evidence-review li{display:block;border-top:1px solid var(--border);padding:8px 0}
+  .evidence-review li{display:block;border-top:1px solid var(--line);padding:8px 0}
   .evidence-review .quoted-turn{white-space:pre-wrap}
-  .evidence-review a{display:inline-block;min-height:44px;padding:10px 0;color:var(--accent-dark)}
-  .crit .evidence-review{background:var(--surface);color:var(--text);padding:0 14px;border-radius:var(--radius-sm)}
+  .evidence-review a{display:inline-block;min-height:44px;padding:10px 0;color:var(--green-dark)}
+  .crit .evidence-review{background:var(--card);color:var(--text);padding:0 14px;border-radius:var(--radius-sm)}
+  .crit .evidence-review summary,.crit .evidence-review a{color:var(--green-dark)}
   .selfreport{margin-top:18px;max-width:66ch}
-  .selfreport label{display:block;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:6px}
-  .selfreport select{width:100%;font:inherit;font-size:.88rem;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);min-height:44px}
-  .selfreport .note{margin:8px 0 0;font-size:.82rem;line-height:1.5;opacity:.85}
-  .teach p{margin:0 0 10px;font-size:.88rem;line-height:1.55;color:var(--text-mid)}
-  .teach p .pin{color:var(--primary-dark);font-family:var(--font-head)}
-  .aftercare{margin:16px 0 0;padding:12px 14px;background:var(--info-light);border-radius:var(--radius-md);font-size:.82rem;color:var(--info);line-height:1.55}
+  .selfreport label{display:block;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.7;margin-bottom:6px}
+  .selfreport select{width:100%;font:inherit;font-size:.88rem;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--btn-border);background:var(--card);color:var(--text);min-height:44px}
+  .selfreport .note{margin:8px 0 0;font-size:.82rem;line-height:1.5;opacity:.9}
+  .teach p{margin:0 0 10px;font-size:.9rem;line-height:1.55;color:var(--text)}
+  .teach p .pin{color:var(--green-dark);font-family:var(--serif)}
+  .aftercare{margin:16px 0 0;padding:12px 14px;background:var(--pale);border-left:3px solid var(--green);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.84rem;color:var(--text);line-height:1.55}
   .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
-  .cfgin{width:100%;font:inherit;font-size:.9rem;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);margin:4px 0 12px;min-height:44px}
-  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-  :focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  :focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:4px}
   @keyframes spkbar{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
   @keyframes spkflat{0%,100%{transform:scaleY(.2)}50%{transform:scaleY(.55)}}
   @keyframes spkhalt{0%,18%{transform:scaleY(.9)}24%,60%{transform:scaleY(.15)}70%,82%{transform:scaleY(.7)}90%,100%{transform:scaleY(.15)}}
-  @keyframes listenpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--primary) 35%,transparent)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  @keyframes listenpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 35%,transparent)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
   @keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   @keyframes blinkdots{0%,80%,100%{opacity:.25}40%{opacity:1}}
-  @media (max-width:480px){ .card,.case,.roomhead,.composer{padding-left:var(--sp3);padding-right:var(--sp3)} .crit{padding:20px} }
-  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+  @keyframes room-halo{0%{opacity:.55;transform:scale(1)}50%{opacity:.18;transform:scale(1.07)}100%{opacity:.55;transform:scale(1)}}
+  @keyframes room-breathe{0%,100%{opacity:1}50%{opacity:.35}}
+  @media (max-width:900px){ .entrance{gap:28px} .roomhead,.audiorail,.chat,.composer,.room-view{padding-inline:20px} .recovery,.phi{margin-inline:20px} }
+  @media (max-width:700px){
+    .shell{padding:0 var(--sp3) 24px}
+    .masthead{padding:18px 0 14px;margin-bottom:16px}
+    .entrance{display:flex;flex-direction:column;gap:22px;padding-bottom:20px}
+    .door{padding:0 4px} .door h2{font-size:2.2rem}
+    .access{width:100%;padding:22px} .access h2{font-size:1.55rem}
+    .roomhead{padding:17px} .roomhead h2{font-size:1.7rem}
+    .room-view{padding:12px 14px} .room-caption{min-height:52px} .room-caption p{font-size:.86rem}
+    .audiorail,.chat{padding:14px 16px} .composer{padding:14px 16px} .recovery,.phi{margin-inline:16px}
+    .msg{max-width:100%}
+    .card,.sa{padding:var(--sp3)} .crit{padding:20px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important} .room-halo{opacity:.5}}
 </style>
 </head>
 <body>
@@ -665,6 +793,74 @@ function SpeakBars(props){ // animated speaking indicator
     [0,-0.18,-0.36,-0.09].map(function(d,i){return e('span',{key:i,style:Object.assign({},st,{animationDelay:d+'s'})});}));
 }
 
+/* ---------- the room view ----------
+   A projection of the session, in the spoken pilot's language (sp-preview, room view Slice A): who is
+   seated, whether the patient is speaking or answers next, whether the microphone is on, and the line
+   being said. It draws no case fact of its own — the setting is illustrative, and the figure shows
+   seating and turn, never expression or body language. */
+var ROOM_LEGEND='A window, a low table, a chair, a plant and the door are illustrative setting only — not case facts. The figure shows seating and whether the patient is speaking; it does not show expression or body language. Read the patient from what they say.';
+function RoomScene(props){
+  return e('svg',{className:'room-scene',viewBox:'0 0 640 230','aria-hidden':true,focusable:'false'},
+    e('defs',null,e('linearGradient',{id:'sp-room-light',x1:'0',y1:'0',x2:'0',y2:'1'},e('stop',{offset:'0',stopColor:'var(--room-light)',stopOpacity:'.7'}),e('stop',{offset:'1',stopColor:'var(--room-light)',stopOpacity:'0'}))),
+    e('rect',{className:'room-wall',x:0,y:0,width:640,height:150}),
+    e('rect',{className:'room-wainscot',x:0,y:128,width:640,height:22}),
+    e('rect',{className:'room-floor',x:0,y:150,width:640,height:80}),
+    e('polygon',{points:'236,150 404,150 452,230 188,230',fill:'url(#sp-room-light)'}),
+    e('g',{className:'room-window'},e('rect',{x:250,y:22,width:140,height:98,rx:6}),e('line',{x1:320,y1:22,x2:320,y2:120}),e('line',{x1:250,y1:71,x2:390,y2:71})),
+    e('g',{className:'room-door'},e('rect',{x:566,y:28,width:58,height:122,rx:3}),e('circle',{cx:576,cy:92,r:3})),
+    e('g',{className:'room-plant'},e('ellipse',{cx:48,cy:104,rx:12,ry:20,transform:'rotate(-28 48 104)'}),e('ellipse',{className:'room-leaf-light',cx:68,cy:102,rx:12,ry:21,transform:'rotate(22 68 102)'}),e('ellipse',{cx:58,cy:96,rx:10,ry:22}),e('path',{className:'room-pot',d:'M40 120 h36 l-4 30 h-28 z'})),
+    e('g',{className:'room-seat','data-turn':props.turn},
+      e('rect',{className:'room-chair-back',x:278,y:88,width:84,height:70,rx:12}),e('rect',{className:'room-chair-seat',x:272,y:150,width:96,height:16,rx:6}),
+      e('circle',{className:'room-halo',cx:320,cy:84,r:42}),e('circle',{className:'room-cut',cx:320,cy:84,r:42}),
+      e('circle',{className:'room-figure',cx:320,cy:84,r:19}),e('rect',{className:'room-figure',x:284,y:106,width:72,height:64,rx:26})),
+    e('g',{className:'room-table'},e('rect',{x:202,y:178,width:236,height:22}),e('ellipse',{cx:320,cy:200,rx:118,ry:20}),e('ellipse',{className:'room-table-top',cx:320,cy:178,rx:118,ry:20}),e('rect',{className:'room-cup',x:284,y:164,width:14,height:13,rx:3}),e('rect',{className:'room-cup',x:342,y:166,width:14,height:13,rx:3})),
+    e('ellipse',{className:'room-next','data-turn':props.turn,cx:320,cy:169,rx:58,ry:8}),
+    e('path',{className:'room-near',d:'M0 230 Q320 200 640 230 Z'}),
+    e('g',{className:'room-your-seat'},
+      e('path',{className:'room-your-arm',d:'M30 230 L46 186 Q50 176 64 176 L106 176 Q118 178 118 190 L118 230 Z'}),
+      e('path',{className:'room-your-arm',d:'M610 230 L594 186 Q590 176 576 176 L534 176 Q522 178 522 190 L522 230 Z'}),
+      e('path',{className:'room-your-arm-top',d:'M48 182 Q76 170 108 176 Q122 181 116 192 L66 188 Q50 190 48 182 Z'}),
+      e('path',{className:'room-your-arm-top',d:'M592 182 Q564 170 532 176 Q518 181 524 192 L574 188 Q590 190 592 182 Z'}),
+      e('path',{className:'room-your-front',d:'M118 230 Q120 212 142 210 L498 210 Q520 212 522 230 Z'})));
+}
+function RoomView(v){
+  return e('section',{className:'room-view',role:'group','aria-label':'Room view','data-room-state':v.state},
+    e('p',{className:'visually-hidden'},v.alt),
+    e('div',{className:'room-frame'},
+      e(RoomScene,{turn:v.turn}),
+      e('div',{className:'room-people'},
+        e('div',{className:'room-person'},
+          e('span',{className:'room-name'},v.name),
+          e('span',{className:'room-tag','data-kind':v.tag.kind},e('span',{className:'room-tag-dot','aria-hidden':true}),e('span',null,v.tag.text))),
+        e('div',{className:'room-mic','data-mic':v.mic},e('span',{className:'room-mic-dot','aria-hidden':true}),e('span',null,v.micText))),
+      e('div',{className:'room-caption','data-kind':v.caption.kind},e('p',null,e('strong',null,v.caption.label),e('span',null,v.caption.text))),
+      e('div',{className:'room-foot'},e('details',{className:'room-legend'},e('summary',null,'What’s in the view'),e('p',null,ROOM_LEGEND)))));
+}
+function lastPatientEntry(list){for(var i=list.length-1;i>=0;i--){if(list[i]&&list[i].who==='pt')return list[i];}return null;}
+function spokenRoomView(snap,name){
+  var phase=snap.phase, lastPt=lastPatientEntry(snap.transcript||[]);
+  var v={name:name,state:'idle',turn:'idle',mic:'off',micText:'Microphone off',tag:{kind:'',text:''},caption:{kind:'quiet',label:'Room · ',text:'Getting ready…'},alt:''};
+  if(phase==='listening'){v.state='listening';v.turn=(lastPt&&lastPt.status==='interrupted')?'interrupted':'next';v.mic='on';v.micText='Microphone on';v.tag={kind:'next',text:'answers next'};
+    v.caption=snap.learnerInterim?{kind:'you',label:'You · ',text:snap.learnerInterim+'…'}:{kind:'quiet',label:'Listening · ',text:'Your turn — take your time.'};}
+  else if(phase==='thinking'){v.state='responding';v.turn='preparing';v.mic='on';v.micText='Microphone on';v.tag={kind:'preparing',text:'thinking'};v.caption={kind:'preparing',label:name+' · ',text:'thinking…'};}
+  else if(phase==='speaking'){v.state='speaking';v.turn='speaking';v.mic='on';v.micText='Microphone on · speak to interrupt';v.tag={kind:'speaking',text:'speaking'};
+    var line=(lastPt&&lastPt.status==='pending'&&lastPt.text)||snap.patientInterim||(lastPt&&lastPt.text)||'…';v.caption={kind:'speech',label:name+' · ',text:line};}
+  else if(phase==='paused'){v.state='paused';v.tag={kind:'',text:'waiting'};v.caption={kind:'quiet',label:'Paused · ',text:'Microphone off. Resume when you are ready.'};}
+  else if(phase==='ended'){v.state='ended';v.caption={kind:'quiet',label:'Room · ',text:'The room is closed. The conversation stays above.'};}
+  else if(phase==='error'){v.state='error';v.caption={kind:'interrupted',label:'Room · ',text:'The spoken room needs your choice.'};}
+  else if(phase==='connecting'){v.tag={kind:'',text:'joining'};}
+  v.alt='Room view: '+name+' is seated across a low table. '+v.caption.label+v.caption.text;
+  return v;
+}
+function typedRoomView(voiceState,name,busy,speakingText,offline){
+  var v={name:name,state:'listening',turn:'next',mic:'typed',micText:'Typing · no microphone',tag:{kind:'next',text:'answers next'},caption:{kind:'quiet',label:'Typed room · ',text:'Say what you would actually say.'},alt:''};
+  if(busy||voiceState.phase==='awaiting_patient'){v.state='responding';v.turn='preparing';v.tag={kind:'preparing',text:'thinking'};v.caption={kind:'preparing',label:name+' · ',text:'thinking…'};}
+  else if(voiceState.phase==='speaking'){v.state='speaking';v.turn='speaking';v.tag={kind:'speaking',text:'speaking'};v.caption={kind:'speech',label:name+' · ',text:speakingText||'reading the reply aloud'};}
+  if(offline)v.caption={kind:v.caption.kind,label:v.caption.label,text:v.caption.text+' (offline simulation)'};
+  v.alt='Room view: '+name+' is seated across a low table. '+v.caption.label+v.caption.text;
+  return v;
+}
+
 function App(){
   var st=useState({screen:'loading',pack:null,err:null}); var S=st[0],setS=st[1];
   var enc=useState(null); var E=enc[0],setE=enc[1];
@@ -689,6 +885,8 @@ function App(){
   // D16(2)b "I did ask — show me": a display-only, per-encounter self-report. Never persisted,
   // never sent anywhere, never touches s.covered/unlocked/rapport. {id, turnIndex} or null.
   var srp=useState(null); var selfReport=srp[0],setSelfReport=srp[1];
+  // The door: which patient the entrance shows. Null until the learner chooses; the first attested case otherwise.
+  var scs=useState(null); var selectedCaseId=scs[0],setSelectedCaseId=scs[1];
   var chatRef=useRef(null), returnRef=useRef(null), doorRef=useRef(null), spokenConsentRef=useRef(null), roomModeRef=useRef(null), passcodeRef=useRef(null), composerRef=useRef(null), limitEndRef=useRef(null), selfAssessRef=useRef(null), evaluationAbortRef=useRef(null), providerCheckRef=useRef({generation:0,abort:null}), healthRequestRef=useRef({generation:0,abort:null}), providerModeRef=useRef(provMode), voiceRuntimeRef=useRef({caseDef:null}), rtRef=useRef(null), rtBookRef=useRef({stateByTurn:{},applied:{},recorded:{},repeated:{},lastTurn:0}), audioSinkRef=useRef(null), pendingBeginRef=useRef(null), rtPhaseRef=useRef('');
   providerModeRef.current=provMode;
   var voiceControllerRef=useRef(null);
@@ -1110,9 +1308,13 @@ function App(){
     : 'These patients are not real people, and nothing here is a real record. Practice space for supervised learning — discuss what you find with your team.';
 
   var header=e('div',null,
-    e('span',{className:'kicker'},'Clinical skills · Simulation'),
-    e('div',{className:'titlerow'},
-      e('h1',null,'The Interview Room'),
+    e('header',{className:'masthead'},
+      e('div',{className:'brand'},
+        e('span',{className:'brand-mark','aria-hidden':true}),
+        e('div',{className:'brand-text'},
+          e('span',{className:'kicker'},'Clinical skills · Simulation'),
+          e('h1',null,'The Interview Room'))),
+      e('div',{className:'masthead-tools'},
       e('button',{className:'badge mode',
         disabled:S.screen!=='select'||showSpokenConsent,
         onClick:function(){var nx=provMode==='mock'?'live':'mock';cancelProviderCheck();providerModeRef.current=nx;setProvMode(nx);setShowSpokenConsent(false);pendingBeginRef.current=null;
@@ -1125,8 +1327,8 @@ function App(){
       e('select',{id:'room_mode',ref:roomModeRef,className:'audiosel','aria-label':'Room',value:roomMode,disabled:S.screen==='selfassess'||S.screen==='debrief'||showSpokenConsent,onChange:function(ev){chooseRoomMode(ev.target.value);}},
         e('option',{value:'spoken'},'Spoken room — talk with the patient'),
         e('option',{value:'typed'},'Typed room'),
-        e('option',{value:'typed-device'},'Typed room · replies read aloud'))),
-    e('p',{className:'lede'},'Interview a fictional standardized patient. Speak or type — say what you would actually say.'),
+        e('option',{value:'typed-device'},'Typed room · replies read aloud')))),
+    S.screen==='select'?e('p',{className:'lede'},'Interview a fictional standardized patient. Speak or type — say what you would actually say.'):null,
     e(Ribbon,{line:ribbonLine}),
     (showSettings&&cfg)?e('div',{className:'card'},
       e('h2',null,'Live mode setup'),
@@ -1159,34 +1361,50 @@ function App(){
         e('button',{className:'btn primary',onClick:acceptSpokenConsent},'Enter the spoken room'),
         e('button',{className:'btn',onClick:declineSpokenConsent},'Use the typed room instead'))):null);
 
-  /* ---------- select ---------- */
+  /* ---------- the entrance: the door and the access panel ---------- */
   if(S.screen==='select'){
-    return e('div',null,header,
-      danaConversationPreviewEntry(window.location,previewConfig),
-      e('div',{className:'casegrid'},
-        eligibleCases(S.pack).map(function(cd){
-          var P=paceFor(cd), tp=cd.title.split(' — '), spokenWhy=roomMode==='spoken'?spokenUnavailableReason(cd):'', roomUnavailable=!!spokenWhy;
-          return e('div',{className:'case',key:cd.id},
-            e('div',null,
-              e('p',{className:'microlabel',style:{marginBottom:'4px'}},'Practice encounter · ~'+cd.estMinutes+' min'),
-              e('h2',null,tp[0]),
-              tp[1]?e('p',{className:'occasion'},tp[1]):null,
-              e('p',{className:'setting'},cd.setting)),
-            e('p',{className:'goal'},cd.learnerGoal),
+    var cases=eligibleCases(S.pack), chosen=null;
+    for(var ci=0;ci<cases.length;ci++){if(cases[ci].id===selectedCaseId){chosen=cases[ci];break;}}
+    if(!chosen)chosen=cases[0]||null;
+    var maxT=(S.pack.engine&&S.pack.engine.maxTurns)||40;
+    var entrance=null;
+    if(chosen){
+      var P=paceFor(chosen), tp=chosen.title.split(' — '), spokenWhy=roomMode==='spoken'?spokenUnavailableReason(chosen):'', roomUnavailable=!!spokenWhy;
+      entrance=e('div',{className:'entrance case',key:chosen.id},
+        e('section',{className:'door','aria-labelledby':'door_title'},
+          e('p',{className:'section-label'},'Before you enter'),
+          e('h2',{id:'door_title'},tp[0]),
+          tp[1]?e('p',{className:'occasion'},tp[1]):null,
+          e('p',{className:'setting'},chosen.setting),
+          e('p',{className:'goal'},chosen.learnerGoal),
+          e('details',{className:'entry-brief',open:true},
+            e('summary',null,'Your case brief'),
             e('div',{className:'voicerow'},
               e(Bars,{h:P.bars}),
-              e('p',{style:{margin:0}},e('b',null,P.label.charAt(0).toUpperCase()+P.label.slice(1)+'. '),e('span',{style:{fontStyle:'italic'}},cd.persona.voice))),
-            e('div',{className:'chips'},cd.skillTags.map(function(t,i){return e('span',{className:'chip',key:i},t);})),
-            e('div',{className:'begincol'},
-              e('p',{className:'microlabel'},roomMode==='spoken'?'Choose your room · spoken':'Choose your room · typed'),
-              roomUnavailable?e('p',{className:'setting',role:'note'},spokenWhy,' ',e('button',{type:'button',className:'btn',style:{marginTop:'6px'},onClick:function(){chooseRoomMode('typed');}},'Use the typed room')):null,
-              e('div',{className:'begin'},
-                e('button',{className:'btn primary',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(cd,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
-                e('button',{className:'btn',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(cd,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing')))));
-        })),
+              e('p',{style:{margin:0}},e('b',null,P.label.charAt(0).toUpperCase()+P.label.slice(1)+'. '),e('span',{style:{fontStyle:'italic'}},chosen.persona.voice))),
+            e('div',{className:'chips'},chosen.skillTags.map(function(t,i){return e('span',{className:'chip',key:i},t);})),
+            e('p',{className:'fine practice-note'},'Fictional practice for supervised learning. Pauses, speaking speed and fluency are never graded, and this room does not assess competence or readiness.'))),
+        e('section',{className:'card access','aria-labelledby':'access_title'},
+          e('h2',{id:'access_title'},'Choose your encounter'),
+          e('p',{className:'access-lede'},'Up to '+maxT+' turns, at your pace.'),
+          e('label',{htmlFor:'case_select'},'Patient'),
+          e('select',{id:'case_select',className:'access-select',value:chosen.id,disabled:showSpokenConsent,onChange:function(ev){setSelectedCaseId(ev.target.value);}},
+            cases.map(function(c){var ct=c.title.split(' — ');return e('option',{key:c.id,value:c.id},ct[0]+(ct[1]?' — '+ct[1]:'')+' · ~'+c.estMinutes+' min');})),
+          e('p',{className:'microlabel'},roomMode==='spoken'?'Choose your room · spoken':'Choose your room · typed'),
+          e('p',{className:'setting'},roomMode==='spoken'?'A real-time voice; typing stays available. Change rooms at the top of the page.':roomMode==='typed-device'?'The typed room, with replies read aloud by your device.':'The typed room. Change rooms at the top of the page.'),
+          roomUnavailable?e('p',{className:'setting',role:'note'},spokenWhy,' ',e('button',{type:'button',className:'btn',style:{marginTop:'6px'},onClick:function(){chooseRoomMode('typed');}},'Use the typed room')):null,
+          e('div',{className:'begin'},
+            e('button',{className:'btn primary',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(chosen,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
+            e('button',{className:'btn',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(chosen,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing'))),
+          e('p',{className:'fine'},roomMode==='spoken'?'Your microphone starts only after you agree to enter the spoken room. You can type at any time, and pause or end whenever you like.':'Nothing is recorded. The conversation lives in this tab until you leave.'),
+          e('div',{className:'entry-tip'},e('kbd',null,'Enter'),e('span',null,'sends typed words · Shift+Enter for a new line'))));
+    }
+    return e('div',null,header,
+      danaConversationPreviewEntry(window.location,previewConfig),
+      entrance,
       e('section',{className:'case familydoor','aria-labelledby':'family_door_title'},
         e('div',null,
-          e('p',{className:'setting',style:{marginBottom:'4px'}},'Shared family meeting · two voices · ~10 turns'),
+          e('p',{className:'section-label',style:{marginBottom:'4px'}},'Shared family meeting · two voices · ~10 turns'),
           e('h2',{id:'family_door_title'},'Morgan and Maya'),
           e('p',{className:'occasion'},'A family visit'),
           e('p',{className:'setting'},'Morgan, admitted after a fall while drinking, and Maya, their adult daughter, in one meeting. One person answers each turn; you choose who, or address them by name.')),
@@ -1246,11 +1464,14 @@ function App(){
       e('div',{className:'room'},
         e('div',{className:'roomhead'},
           e('div',{style:{minWidth:0}},
-            e('h2',null,sName),
+            e('p',{className:'section-label'},'In the room'),
+            e('h2',null,sName),e('span',{className:'voice-tag'},'AI voice'),
             e('p',{className:'setting'},scd.setting),
             e('p',{className:'modeline'},'Spoken room · '+(sSupported?'Supported — you can step out for your notes and a coach':'Realistic — a blank room, like the real thing'))),
           e('div',{className:'roomtools'},
-            sPhase==='speaking'?e('span',{className:'spkchip'},e(SpeakBars,{anim:SP.anim,dur:SP.dur,dim:false}),e('span',null,sName+' is speaking · '+SP.label)):null)),
+            sPhase==='speaking'?e('span',{className:'spkchip'},e(SpeakBars,{anim:SP.anim,dur:SP.dur,dim:false}),e('span',null,sName+' is speaking · '+SP.label)):null,
+            e('span',{className:'turn-count'},'Turn '+sTurn+' / '+sMax))),
+        e(RoomView,spokenRoomView(snap,sName)),
         e('div',{className:'audiorail spoken-'+sPhase,role:'group','aria-label':'Room audio status'},
           e('span',{className:'dot','aria-hidden':true}),
           e('span',{className:'audiostatus'},spokenStatusText(snap,sName)),
@@ -1306,7 +1527,6 @@ function App(){
             e('button',{className:'btn primary sayit',disabled:spokenTrouble||sPhase==='connecting'||sPhase==='paused'||!input.trim()||input.length>1200,onClick:function(){sendSpokenText(false);}},'Send')),
           input.length>1200?e('div',{className:'recovery',role:'note'},'Draft is '+input.length+' characters. Shorten it to 1200 before sending. Nothing was truncated or sent.'):null,
           e('div',{className:'metaline'},
-            e('span',null,'Turn '+sTurn+' / '+sMax),
             e('span',null,'Spoken room · '+(audioSetup==='speakers'?'speakers':'headphones')),
             e('span',null,'Enter to send typed words · Shift+Enter for a new line'),
             e('span',{className:'fict'},'Fictional practice — no real-patient details')),
@@ -1327,12 +1547,15 @@ function App(){
       e('div',{className:'room'},
         e('div',{className:'roomhead'},
           e('div',{style:{minWidth:0}},
-            e('h2',null,cd.persona.displayName),
+            e('p',{className:'section-label'},'In the room'),
+            e('h2',null,cd.persona.displayName),e('span',{className:'voice-tag'},voiceMode==='device'?'Device voice':'Typed'),
             e('p',{className:'setting'},cd.setting),
             e('p',{className:'modeline'},'Typed room · '+(supported?'Supported — you can step out for your notes and a coach':'Realistic — a blank room, like the real thing'))),
           e('div',{className:'roomtools'},
             offlineSession?e('span',{className:'offline-label'},'Offline simulation'):null,
-            voiceState.phase==='speaking'?e('span',{className:'spkchip'},e(SpeakBars,{anim:P.anim,dur:P.dur,dim:false}),e('span',null,cd.persona.displayName+' is speaking · '+P.label)):null)),
+            voiceState.phase==='speaking'?e('span',{className:'spkchip'},e(SpeakBars,{anim:P.anim,dur:P.dur,dim:false}),e('span',null,cd.persona.displayName+' is speaking · '+P.label)):null,
+            e('span',{className:'turn-count'},'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)))),
+        e(RoomView,typedRoomView(voiceState,cd.persona.displayName,isBusy,(function(){for(var mi=0;mi<E.msgs.length;mi++){var mm=E.msgs[mi];if(mm.who==='pt'&&voiceState.phase==='speaking'&&voiceState.activePatientTurn===mm.turnId)return mm.text;}return '';})(),offlineSession)),
         e('div',{className:'audiorail',role:'group','aria-label':'Room audio status'},
           e('span',{className:'dot','aria-hidden':true}),
           e('span',{className:'audiostatus'},
@@ -1381,7 +1604,6 @@ function App(){
             e('button',{className:'btn primary sayit',disabled:isBusy||voiceState.phase!=='ready'||!input.trim()||input.length>1200,onClick:function(){send(false);}},'Say it')),
           input.length>1200?e('div',{className:'recovery',role:'note'},'Draft is '+input.length+' characters. Shorten it to 1200 before sending. Nothing was truncated or sent.'):null,
           e('div',{className:'metaline'},
-            e('span',null,'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)),
             e('span',null,'Provider: '+E.provider.name+(offlineSession?' · Offline simulation':'')),
             e('span',null,'Enter to send · Shift+Enter for a new line'),
             e('span',{className:'fict'},'Fictional practice — no real-patient details')),
@@ -1400,7 +1622,7 @@ function App(){
     var ready=SA.a.trim()&&SA.b.trim()&&SA.c.trim();
     return e('div',null,header,
       e('div',{className:'sa'},
-        e('p',{className:'microlabel'},'The room is empty · before any feedback'),
+        e('p',{className:'section-label'},'The room is empty · before any feedback'),
         e('h2',null,'Your read, first.'),
         e('p',{className:'why'},'Commit before you see anything. The debrief responds to what you write here — it isn’t a form, and nothing is graded.'),
         qs.map(function(q,i){return e('div',{className:'q',key:q[0]},
