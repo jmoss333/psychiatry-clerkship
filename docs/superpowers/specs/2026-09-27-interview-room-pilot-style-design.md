@@ -41,7 +41,7 @@ As in the pilot (room view Slice A, #648), the scene draws no case fact: the set
 | paused / ended / error | dimmed | off | *Paused · …* / *Room · closed* / *needs your choice* |
 | interrupted (last reply cut, learner's turn) | amber cut ring | on | as listening |
 
-Typed room: the idle caption reads *Typed room · Say what you would actually say.*, speaking falls back to *reading the reply aloud*, and mock mode appends *(offline simulation)*; seat, ring and chip follow the same rows. The visually-hidden alt under the scene is the pilot's ("Illustration of the room from your seat …; the name, whether they are speaking, and the live caption are given in text below") — it does not repeat the caption, so a screen reader hears each line once.
+Typed room: the idle caption reads *Typed room · Say what you would actually say.*, speaking falls back to *reading the reply aloud*, and mock mode appends *(offline simulation)*; seat, ring and chip follow the same rows. A live-patient failure or a device-voice error projects the error row — dimmed seat, no floor ring, *Room · … needs your choice* — so the view agrees with the recovery notice and the disabled composer (Codex P2 on #865). The visually-hidden alt under the scene is the pilot's ("Illustration of the room from your seat …; the name, whether they are speaking, and the live caption are given in text below") — it does not repeat the caption, so a screen reader hears each line once.
 
 ### Colour: the pilot's names as aliases of the tool's tokens
 

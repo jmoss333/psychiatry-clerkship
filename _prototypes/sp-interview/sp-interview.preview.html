@@ -850,9 +850,12 @@ function spokenRoomView(snap,name){
   v.alt='Illustration of the room from your seat: '+name+' is seated across a low table from you. The name, whether they are speaking, and the live caption are given in text below.';
   return v;
 }
-function typedRoomView(voiceState,name,busy,speakingText,offline){
+function typedRoomView(voiceState,name,busy,speakingText,offline,trouble){
   var v={name:name,state:'listening',turn:'next',mic:'typed',micText:'Typing · no microphone',tag:{kind:'next',text:'answers next'},caption:{kind:'quiet',label:'Typed room · ',text:'Say what you would actually say.'},alt:''};
-  if(busy||voiceState.phase==='awaiting_patient'){v.state='responding';v.turn='preparing';v.tag={kind:'preparing',text:'thinking'};v.caption={kind:'preparing',label:name+' · ',text:'thinking…'};}
+  /* trouble: 'actor' (the live patient could not continue) or 'audio' (device playback failed) — the composer is
+     disabled and a recovery notice below asks for a choice, so the room view must not say the patient answers next */
+  if(trouble){v.state='error';v.turn='idle';v.tag={kind:'',text:'waiting'};v.caption={kind:'interrupted',label:'Room · ',text:trouble==='actor'?'The live patient needs your choice — see the notice below.':'Room audio needs your choice — your text is safe.'};}
+  else if(busy||voiceState.phase==='awaiting_patient'){v.state='responding';v.turn='preparing';v.tag={kind:'preparing',text:'thinking'};v.caption={kind:'preparing',label:name+' · ',text:'thinking…'};}
   else if(voiceState.phase==='speaking'){v.state='speaking';v.turn='speaking';v.tag={kind:'speaking',text:'speaking'};v.caption={kind:'speech',label:name+' · ',text:speakingText||'reading the reply aloud'};}
   if(offline)v.caption={kind:v.caption.kind,label:v.caption.label,text:v.caption.text+' (offline simulation)'};
   v.alt='Illustration of the room from your seat: '+name+' is seated across a low table from you. The name, whether they are speaking, and the live caption are given in text below.';
@@ -1551,7 +1554,7 @@ function App(){
           e('div',{className:'roomtools'},
             offlineSession?e('span',{className:'offline-label'},'Offline simulation'):null,
             e('span',{className:'turn-count'},'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)))),
-        e(RoomView,typedRoomView(voiceState,cd.persona.displayName,isBusy,(function(){for(var mi=0;mi<E.msgs.length;mi++){var mm=E.msgs[mi];if(mm.who==='pt'&&voiceState.phase==='speaking'&&voiceState.activePatientTurn===mm.turnId)return mm.text;}return '';})(),offlineSession)),
+        e(RoomView,typedRoomView(voiceState,cd.persona.displayName,isBusy,(function(){for(var mi=0;mi<E.msgs.length;mi++){var mm=E.msgs[mi];if(mm.who==='pt'&&voiceState.phase==='speaking'&&voiceState.activePatientTurn===mm.turnId)return mm.text;}return '';})(),offlineSession,actorIssue?'actor':voiceState.phase==='error'?'audio':'')),
         e('div',{className:'chat',ref:chatRef,role:'log','aria-live':'off','aria-label':'Conversation transcript'},
           E.msgs.map(function(m,i){
             var speaking=m.who==='pt'&&voiceState.phase==='speaking'&&voiceState.activePatientTurn===m.turnId;
