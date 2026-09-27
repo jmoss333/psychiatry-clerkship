@@ -84,6 +84,12 @@ class RedTeamClassificationTests(unittest.TestCase):
         receipt["manualRows"]["C4"]["status"] = "blocked"
         self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
         receipt = red_team_receipt(snapshot)
+        receipt["manualRows"]["C4"]["reason"] = "patient reply must not enter receipt"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
+        receipt["rawTranscript"] = "patient reply must not enter receipt"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
         receipt["mechanical"]["tier1"]["sourceCommit"] = "2" * 40
         self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
 

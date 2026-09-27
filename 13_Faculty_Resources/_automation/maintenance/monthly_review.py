@@ -415,6 +415,52 @@ def _sp_expectations(root):
     }
 
 
+def _content_free_red_team_shape(receipt):
+    """Reject additions to the bounded receipt schema before treating it as current."""
+    def keys(value, expected):
+        return isinstance(value, dict) and set(value) == set(expected)
+
+    if not keys(receipt, (
+            "schemaVersion", "state", "checkedAt", "packSha256", "packVersion",
+            "model", "deployments", "runtime", "requiredSections", "completedSections",
+            "manualRows", "incompleteRows", "mechanical", "signedBy", "checklist")):
+        return False
+    if receipt.get("incompleteRows") != [] or receipt.get("checklist") != "sp-proxy/REDTEAM_CHECKLIST.md":
+        return False
+    deployments = receipt.get("deployments")
+    if not keys(deployments, ("proxy", "ms3", "res")):
+        return False
+    if any(not keys(deployments[site],
+                    ("siteId", "deployId", "commitRef", "deployUrl", "publishedAt"))
+           for site in deployments):
+        return False
+    runtime = receipt.get("runtime")
+    if not keys(runtime, ("actorModel", "evaluatorModel", "realtimeEnabled",
+                          "realtimeModel", "transcriptionModel", "managedVoiceEnabled",
+                          "managedVoiceStack")):
+        return False
+    stack = runtime["managedVoiceStack"]
+    if stack is not None and not keys(stack, ("id", "transcriptionModel", "synthesisModel")):
+        return False
+    rows = receipt.get("manualRows")
+    if not isinstance(rows, dict) or any(
+            not keys(row, ("status", "reason")) or row["reason"] != ""
+            for row in rows.values()):
+        return False
+    mechanical = receipt.get("mechanical")
+    if not keys(mechanical, ("tier1", "tier2")):
+        return False
+    if not keys(mechanical["tier1"],
+                ("state", "checkedAt", "passes", "total", "sourceCommit")):
+        return False
+    if not keys(mechanical["tier2"], ("state", "checkedAt", "checks")):
+        return False
+    checks = mechanical["tier2"]["checks"]
+    if not isinstance(checks, list) or any(not keys(check, ("id", "status")) for check in checks):
+        return False
+    return True
+
+
 def classify_red_team_receipt(receipt, snapshot, today, pack_changed_at):
     """Judge a human receipt against the production revisions serving now."""
     if receipt is None:
@@ -423,6 +469,8 @@ def classify_red_team_receipt(receipt, snapshot, today, pack_changed_at):
         return "incomplete", "legacy receipt lacks exact-deploy and manual-row evidence"
     if receipt.get("state") != "passed":
         return "incomplete", "red-team review is not marked passed"
+    if not _content_free_red_team_shape(receipt):
+        return "incomplete", "receipt contains unsupported or unbounded fields"
     try:
         runtime = receipt["runtime"]
         sections = required_sections(runtime)
