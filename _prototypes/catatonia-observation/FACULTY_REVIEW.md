@@ -47,6 +47,8 @@ The [2023 British Association for Psychopharmacology consensus guideline](https:
 | Unknown | This scene confirms catatonia. | A brief schematic scene cannot establish a diagnosis. |
 | Unknown | The person has behaved this way all day. | We have no information about the rest of the day or the person’s baseline. |
 
+**Visual feedback received 2026-09-27:** The faculty owner identified **A brief greeting** as the scene viewed and approved its visual presentation in chat. The decision below covers the complete four-moment wording and six choice explanations, which remain open for exact-wording review. This note does not attest the prototype or authorize learner release.
+
 **Faculty decision — A brief greeting:** [ ] Accept  [ ] Revise  [ ] Hold  
 Notes / exact replacement wording: ______________________________
 
