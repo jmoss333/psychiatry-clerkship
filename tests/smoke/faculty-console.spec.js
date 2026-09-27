@@ -725,6 +725,75 @@ test('red-team revisions show exact deploys and fail closed without remounting t
   expect(await page.evaluate(() => document.querySelector('#learner-preview-frame') === window.__redTeamOriginalFrame)).toBe(true);
 });
 
+test('release status says what learners see, lists merged work that is not live, and fails closed', async ({ page }) => {
+  await installRepositoryApi(page, workflowBank());
+  let available = true;
+  let seenKey = '';
+  const live = '1'.repeat(40);
+  const site = id => ({
+    commitRef: live,
+    publishedAt: '2026-09-26T21:18:00.000Z',
+    deployUrl: `https://${id}--example.netlify.app`,
+  });
+  await page.route('**/api/release-status', async route => {
+    seenKey = (await route.request().allHeaders())['x-faculty-key'];
+    await fulfillJson(route, available ? 200 : 503, available ? {
+      state: 'partial',
+      fetchedAt: '2026-09-27T13:00:00.000Z',
+      main: '3'.repeat(40),
+      release: live,
+      live,
+      liveBasis: 'published deploys',
+      sites: { ms3: site('2'.repeat(24)), res: site('3'.repeat(24)) },
+      sitesDisagree: false,
+      releaseUnserved: false,
+      mainChecks: { verdict: 'running', conclusions: {} },
+      waiting: {
+        status: 'waiting',
+        complete: true,
+        changes: [
+          { sha: '3'.repeat(40), pr: 846, title: 'Phone dock label', signoff: false, at: '2026-09-27T12:47:46Z' },
+          { sha: '2'.repeat(40), pr: 781, title: 'attest: faculty review', signoff: true, at: '2026-09-27T10:00:00Z' },
+        ],
+      },
+      train: {
+        workflowUrl: 'https://github.com/jmoss333/psychiatry-clerkship/actions/workflows/production-release-train.yml',
+        nextSlot: '2026-09-27T15:05:00.000Z',
+        lastRun: { at: '2026-09-27T09:21:01Z', event: 'schedule', status: 'completed', conclusion: 'failure', url: 'https://github.com/jmoss333/psychiatry-clerkship/actions/runs/1' },
+      },
+      ledgerMode: false,
+      gaps: ["main's required checks: GitHub answered 403"],
+      headline: { tone: 'attention', text: '2 merged changes (1 faculty sign-off) are not live for learners yet.' },
+    } : { state: 'unavailable' });
+  });
+  await unlock(page);
+  await page.evaluate(() => { window.__releaseOriginalFrame = document.querySelector('#learner-preview-frame'); });
+
+  await page.getByRole('button', { name: 'Show release status' }).click();
+  const panel = page.locator('#release-status');
+  await expect(panel.locator('#release-headline')).toHaveText('2 merged changes (1 faculty sign-off) are not live for learners yet.');
+  await expect(panel.locator('#release-waiting li')).toHaveCount(2);
+  await expect(panel.locator('#release-waiting a', { hasText: '#846' })).toHaveAttribute('href', 'https://github.com/jmoss333/psychiatry-clerkship/pull/846');
+  await expect(panel.locator('.release-status__tag')).toHaveText('Faculty sign-off');
+  await expect(panel).toContainText('Resident learner site');
+  await expect(panel).toContainText('scheduled · failure');
+  await expect(panel).toContainText("main's required checks: GitHub answered 403");
+  await expect(panel).toContainText('never publishes');
+  expect(seenKey).toBe(FACULTY_KEY);
+  expect(await page.evaluate(() => document.querySelector('#learner-preview-frame') === window.__releaseOriginalFrame)).toBe(true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await panel.evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
+
+  available = false;
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+  // The refresh settles (its button re-enables) before the fail-closed state is judged.
+  await expect(panel.locator('#release-refresh')).toBeEnabled();
+  await expect(panel.locator('.release-status__error')).toHaveText(/^Release status is unavailable right now/);
+  await expect(panel.locator('#release-waiting')).toHaveCount(0);
+  await expect(panel.locator('#release-headline')).toHaveCount(0);
+  expect(await page.evaluate(() => document.querySelector('#learner-preview-frame') === window.__releaseOriginalFrame)).toBe(true);
+});
+
 test.describe('learner exact-question review route', () => {
   test('renders and answers only the requested question without changing learner progress', async ({ page }) => {
     await installExactReviewHarness(page);

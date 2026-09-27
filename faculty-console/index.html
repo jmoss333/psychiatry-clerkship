@@ -286,6 +286,61 @@
   .red-team-revisions__error { color: var(--blocked); font-weight: 700; }
   .red-team-revisions__status { color: var(--ink); font-weight: 700; }
 
+  .release-status {
+    margin-block: 0 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.45rem;
+    background: var(--surface);
+    padding: 0.9rem 1rem;
+  }
+
+  .release-status__heading,
+  .release-status__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1rem;
+  }
+
+  .release-status h2,
+  .release-status h3 { margin: 0; }
+  .release-status h3 { margin-block: 0.7rem 0.3rem; font-size: 1rem; }
+  .release-status__actions { justify-content: flex-start; margin-block: 0.7rem; }
+
+  .release-status__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: 0.65rem;
+    margin-block: 0.7rem;
+  }
+
+  .release-status__card {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 0.3rem;
+    background: var(--canvas);
+    padding: 0.7rem;
+  }
+
+  .release-status__card h3 { margin: 0; }
+  .release-status__card p { margin: 0.4rem 0; }
+  .release-status__card code { overflow-wrap: anywhere; }
+  .release-status__headline { font-weight: 700; color: var(--ink); }
+  .release-status__headline--attention,
+  .release-status__error { color: var(--blocked); font-weight: 700; }
+  .release-status__changes { margin: 0; padding-inline-start: 1.4rem; }
+  .release-status__changes li { margin-block: 0.25rem; overflow-wrap: anywhere; }
+  .release-status__tag {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .release-status__gaps { color: var(--muted); }
+  .release-status__gaps ul { margin: 0.2rem 0 0; }
+
   .reviewer-strip {
     display: grid;
     grid-template-columns: minmax(12rem, 22rem) minmax(0, 1fr);
