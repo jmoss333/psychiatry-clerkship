@@ -122,7 +122,7 @@ function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)
    place of the old one). Verified across 200 ids: 24/24 permutations, first-position ≈ 1/4. */
 function optOrder(card){var s=String(card.id)+"|"+todayStr(),seed=2166136261,i;for(i=0;i<s.length;i++){seed^=s.charCodeAt(i);seed=Math.imul(seed,16777619)>>>0;}var idx=card.o.map(function(_,j){return j;});for(var j=idx.length-1;j>0;j--){seed^=seed<<13;seed>>>=0;seed^=seed>>>17;seed^=seed<<5;seed>>>=0;var k=seed%(j+1);var t=idx[j];idx[j]=idx[k];idx[k]=t;}return idx;}
 function yestStr(){var d=new Date(Date.now()-DAY);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
-function freshStore(){return {v:1,cards:{},day:{lastDay:"",newToday:0},stats:{streak:0,lastStudy:"",totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}};}
+function freshStore(){return {v:1,cards:{},day:{lastDay:"",newToday:0},stats:{streak:0,lastStudy:"",totalReviews:0,correct:0,seen:0,choiceSeen:0,choiceCorrect:0,recallSeen:0,recallGoodEasy:0},settings:{newPerDay:12}};}
 /* #324 backfill: sliders set before userSet existed. Every cw_srs_v1 writer defaults
    newPerDay to 12, so a non-12 value proves an explicit choice. Learners who explicitly
    chose exactly 12 are irreducibly indistinguishable from the default and stay cappable. */
@@ -146,6 +146,7 @@ var GRADE_NAMES=["Again","Hard","Good","Easy"]; // grade buttons stay 0-3; mappe
 /*__BLOCK_STORE__*/
 /*__SESSION_RECEIPT__*/
 /*__FAM_RETRIEVAL__*/
+/*__CONCEPT_RECALL__*/
 
 /* Readable label for a content ref ("t_mood.md" -> "Mood"). Shared by the topic-card titles and
    the receipt's re-read links so one page never gets two spellings. */
@@ -284,17 +285,31 @@ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("dat
 
 function App(){
   var ld=useState(null),cards=ld[0],setCards=ld[1];
+  var cs=useState('loading'),conceptStatus=cs[0],setConceptStatus=cs[1];
+  var wf=useState('all'),conceptFilter=wf[0],setConceptFilter=wf[1];
+  var wr=useState(null),weekRefs=wr[0],setWeekRefs=wr[1];
+  var pg=useState(null),lastConcept=pg[0],setLastConcept=pg[1];
+  useEffect(function(){
+    if(window.parent===window)return;
+    var nonce=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    function receive(ev){if(ev.origin!==location.origin||ev.source!==window.parent)return;var refs=conceptWeekReply(ev.data,nonce);if(refs)setWeekRefs(refs);}
+    window.addEventListener('message',receive);
+    window.parent.postMessage({type:'cw:concept-week-request',nonce:nonce},location.origin);
+    return function(){window.removeEventListener('message',receive);};
+  },[]);
   var er=useState(false),err=er[0],setErr=er[1];
   var sv=useState(loadS()),store=sv[0],setStore=sv[1];
   var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh}
   var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1];
   var tick=useState(0),setTick=tick[1];
   var sessRef=useRef(null); sessRef.current=sess;
+  useEffect(function(){if(!sess||!sess.card)return;var el=document.querySelector(sess.revealed?'.grades button':'.qtext');if(el)el.focus();},[sess&&sess.pos,sess&&sess.revealed]);
   var blockAutoStart=useRef(null), blockLimit=useRef(null);
   useEffect(function(){ if(cards&&blockAutoStart.current&&!sess){ blockLimit.current=blockAutoStart.current; blockAutoStart.current=null; start(false); } },[cards]);
 
   useEffect(function(){
     Promise.all([
+      fetch("concepts.json").then(function(r){if(!r.ok)throw Error('Concepts unavailable');return r.arrayBuffer();}).then(function(bytes){var meta=document.querySelector('meta[name="cw-concept-digest"]');return conceptVerifyBytes(bytes,meta&&meta.content);}).then(function(out){setConceptStatus('ready');return out;}).catch(function(){setConceptStatus('unavailable');return [];}),
       fetch("quizzes.json").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}),
       fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}),
       fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}),
@@ -307,7 +322,7 @@ function App(){
          contributes nothing and the rest still runs; another source later is a builder plus a
          fetch. Order matters only for which cards a same-due-time tie serves first — the queue
          is sorted by due date below. */
-      var j=res[0]||{}, tm=res[1]||{}, fam=res[2]||{}, comm=res[3]||{}, reason=res[4]||{}, out=[];
+      var j=res[1]||{}, tm=res[2]||{}, fam=res[3]||{}, comm=res[4]||{}, reason=res[5]||{}, out=res[0]||[];
       (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,kind:"choice",q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); });
       Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+prettyRef(k),kind:"choice",q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } });
       out=out.concat(famRecallCards(fam));
@@ -320,21 +335,21 @@ function App(){
     }).catch(function(){setErr(true);});
   },[]);
   useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]);
-  useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s||!s.card)return; var k=ev.key; if(!s.revealed){ if(s.card.kind==='recall'){ if(k==="Enter")revealCard(); } else { var n=parseInt(k,10); if(s.card.o&&n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]);
+  useEffect(function(){ function onKey(ev){ if(ev.defaultPrevented||ev.ctrlKey||ev.metaKey||ev.altKey||ev.repeat)return; var target=ev.target; if(target&&target.closest&&target.closest('button,a,input,select,textarea,summary,[contenteditable="true"],[role="button"]'))return; var s=sessRef.current; if(!s||!s.card)return; var k=ev.key; if(!s.revealed){ if(s.card.kind==='recall'){ if(k==="Enter")revealCard(); } else { var n=parseInt(k,10); if(s.card.o&&n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]);
 
   function persist(s){saveS(s);setStore(Object.assign({},s));}
 
   /* dashboard metrics */
   function metrics(){
     var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0;
-    if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); }
+    if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st){if(newConceptAllowed(c,weekRefs,conceptFilter))neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); }
     var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0;
     return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen};
   }
 
   function start(ahead){
     var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[];
-    cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);});
+    cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st){if(blockLimit.current||newConceptAllowed(c,weekRefs,conceptFilter))neu.push(c);} else if(st.due<=now)due.push(c); else fut.push([c,st.due]);});
     /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so
        long-interval cards that are only slightly late don't out-rank short-
        interval cards that are badly late. Shuffle only within bands of 5 to
@@ -376,6 +391,9 @@ function App(){
     st.stats.totalReviews=(st.stats.totalReviews||0)+1;
     var ci=correctIdx(card); var gotIt=isRecall?(g>=2):(s.chosen===ci);
     st.stats.seen=(st.stats.seen||0)+1; if(gotIt)st.stats.correct=(st.stats.correct||0)+1;
+    if(isRecall){st.stats.recallSeen=(st.stats.recallSeen||0)+1;if(g>=2)st.stats.recallGoodEasy=(st.stats.recallGoodEasy||0)+1;}
+    else {st.stats.choiceSeen=(st.stats.choiceSeen||0)+1;if(gotIt)st.stats.choiceCorrect=(st.stats.choiceCorrect||0)+1;}
+    if(card.deck==='CONCEPT')setLastConcept({q:card.q,page:card.page,due:st.cards[card.id].due});
     saveS(st); setStore(Object.assign({},st));
     var rq=gradedThisSession[card.id]?1:0; gradedThisSession[card.id]=1;
     calibLog({s:'rev',id:card.id,p:GRADE_NAMES[g]||g,sug:sug,a:gotIt?1:0,rq:rq,ts:Date.now()});
@@ -384,21 +402,29 @@ function App(){
     if(g===0){ q.push(card); } // requeue lapses to end of this session
     var nextPos=pos+1;
     var reviewed=s.reviewed+1, correct=s.correct+(gotIt?1:0);
+    var sessionCounts=Object.assign({choiceSeen:0,choiceCorrect:0,recallSeen:0,recallGoodEasy:0},s.counts||{});
+    if(isRecall){sessionCounts.recallSeen++;if(g>=2)sessionCounts.recallGoodEasy++;}
+    else {sessionCounts.choiceSeen++;if(gotIt)sessionCounts.choiceCorrect++;}
     var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q,page:card.page||null});
-    if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses,fromBlock:!!s.fromBlock}); return; }
-    setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses,fromBlock:!!s.fromBlock});
+    if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,counts:sessionCounts,misses:misses,fromBlock:!!s.fromBlock}); return; }
+    setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,counts:sessionCounts,total:s.total,misses:misses,fromBlock:!!s.fromBlock});
   }
   function endSession(){ setSess(null); setTick(function(x){return x+1;}); }
   function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); }
   function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); }
 
+  function retryConcepts(){
+    Promise.resolve().then(function(){return navigator.serviceWorker?navigator.serviceWorker.getRegistration():null;}).then(function(reg){return reg?reg.update():null;}).catch(function(){}).then(function(){location.reload();});
+  }
+  var conceptNotice=e("div",{className:"panel",role:"status"},conceptStatus==='ready'?null:"Concepts "+(conceptStatus==='loading'?"loading…":"unavailable — review is incomplete. Other card sources remain available."),conceptStatus==='unavailable'?e("button",{className:"btn ghost",onClick:retryConcepts},"Retry Concepts"):null);
+  var nextDue=lastConcept?e("div",{className:"panel",role:"status"},"Concept: "+lastConcept.q+" → ",e("a",{href:"../index.html?page="+encodeURIComponent(lastConcept.page)},prettyRef(lastConcept.page))," → Next due: "+new Date(lastConcept.due).toLocaleString()):null;
   var head=e("div",{className:"topline"},
     e("div",{className:"logo"},"ψ"),
     e("div",null,e("h1",{className:"ttl"},"Daily Review"),e("div",{className:"by"},"Spaced repetition · Joshua Moss, MD")),
     e("button",{className:"thmbtn",onClick:function(){toggleTheme(setTheme);},title:"Toggle dark mode","aria-label":"Toggle dark mode"}, theme==="dark"?"☀":"☾"));
 
-  if(err) return e("div",{className:"wrap"},head,e("div",{className:"err"},"Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again."));
-  if(!cards) return e("div",{className:"wrap"},head,e("div",{className:"panel muted"},"Loading the question bank…"));
+  if(err) return e("div",{className:"wrap"},head,conceptStatus!=="ready"?conceptNotice:null,nextDue,e("div",{className:"err"},"Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again."));
+  if(!cards) return e("div",{className:"wrap"},head,conceptStatus!=="ready"?conceptNotice:null,nextDue,e("div",{className:"panel muted"},"Loading the question bank…"));
 
   /* ---- active session ---- */
   if(sess && sess.queue){
@@ -410,7 +436,7 @@ function App(){
     var sug=isRecall?'':(gotIt?'Good':'Again');
     var fbOpt=(!isRecall&&c.o[sess.chosen])||{}; var corrOpt=(!isRecall&&c.o[ci])||{};
     var isNew=!loadS().cards[c.id];
-    return e("div",{className:"wrap"},head,
+    return e("div",{className:"wrap"},head,conceptStatus!=="ready"?conceptNotice:null,nextDue,
       e("div",{className:"sess"},
         e("div",{className:"sbar"},e("i",{style:{width:pctp+"%"}})),
         e("div",{className:"sinner"},
@@ -422,13 +448,14 @@ function App(){
              Rendered above the question and visually subordinate to it, so the eye still
              lands on what is being asked. Text only — never markup. */
           c.stem? e("p",{className:"stemtext"}, c.stem) : null,
-          e("div",{className:"qtext"}, c.q),
+          e("div",{className:"qtext",tabIndex:-1}, c.q),
           c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio,"aria-label":"Paper overview audio"})) : null,
           isRecall
             ? (sess.revealed
                 ? e("div",{className:"rvl"},
                     e("span",{className:"rvl__k"},"One way to do it"),
-                    revealNodes(c.reveal))
+                    revealNodes(c.reveal),
+                    c.page?e("a",{href:"../index.html?page="+encodeURIComponent(c.page)},"Source: "+prettyRef(c.page)):null)
                 : e("button",{className:"revealbtn",onClick:revealCard},"Reveal one way to do it"))
             : e("div",{className:"opts"}, optOrder(c).map(function(oi,pos){
                 var o=c.o[oi];
@@ -443,7 +470,7 @@ function App(){
           e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},
             sess.revealed
               ? (isRecall
-                  ? "One way to do it is shown. Rate how close your answer was."
+                  ? (c.deck==='CONCEPT'?c.reveal+" Source: "+prettyRef(c.page)+". Rate your recall.":"One way to do it is shown. Rate how close your answer was.")
                   : (gotIt?"Correct. ":"Not quite. ")+(fbOpt.fb||corrOpt.fb||""))
               : ""),
           sess.revealed? e("div",{className:"grades"},
@@ -456,7 +483,7 @@ function App(){
                 ? "Answer out loud or on scratch first, then reveal. Nothing is recorded."
                 : ("Pick the best answer (or press 1–"+c.o.length+").")),
           e("div",{className:"sfoot"},
-            e("span",null,"✓ "+sess.correct+" correct"),
+            e("span",null,sess.reviewed+" graded"),
             e("button",{className:"end",onClick:endSession},"End session"))
         )));
   }
@@ -470,20 +497,20 @@ function App(){
          must not re-run on every re-render of this screen. */
       sess.receipt=cwReceipt({
         tool:'review', ref:null, blockKind:sess.fromBlock?'review':null,
-        context: sess.reviewed+" card"+(sess.reviewed===1?"":"s")+" · "+rt+"% correct",
-        headline: missed? (missed===1?"One card came back for another look.":missed+" cards came back for another look.") : "Every card held.",
+        context: sess.reviewed+" card"+(sess.reviewed===1?"":"s")+" graded · choices and self-rated recall",
+        headline: missed? (missed===1?"One card came back for another look.":missed+" cards came back for another look.") : "Review complete.",
         sub: missed? "A miss here is scheduled sooner, not scored — it returns within the day so the second pass is the one that sticks." : "Held cards move out; the next pass is further away. "+(store.stats.streak||1)+"-day streak in Daily Review.",
-        stats:[{label:"Reviewed",value:String(sess.reviewed)},{label:"Held",value:String(sess.correct),tone:"good"},{label:"Came back",value:String(missed),tone:missed?"warn":"plain"}],
+        stats:[{label:"Reviewed",value:String(sess.reviewed)},{label:"Choices correct",value:String((sess.counts||{}).choiceCorrect||0)+" / "+String((sess.counts||{}).choiceSeen||0),tone:"good"},{label:"Self-rated recall Good/Easy",value:String((sess.counts||{}).recallGoodEasy||0)+" / "+String((sess.counts||{}).recallSeen||0)},{label:"Came back",value:String(missed),tone:missed?"warn":"plain"}],
         reread:(sess.misses||[]).slice(0,5).map(function(m){ var topic=/^TOPIC#/.test(m.id)?m.id.slice(6):null; var ref=topic||m.page||null; return {tag:"Missed",warn:true,title:m.q,note:m.deckTitle,ref:ref,refTitle:ref?prettyRef(ref):null}; }),
         actions:[{id:"cwReviewDashBtn",label:"Back to dashboard",primary:true}]
       });
     }
-    return e("div",{className:"wrap"},head,
+    return e("div",{className:"wrap"},head,conceptStatus!=="ready"?conceptNotice:null,nextDue,
       e("div",{className:"sess"},e("div",{className:"sinner",onClick:function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest("#cwReviewDashBtn"):null; if(t){ ev.preventDefault(); endSession(); } },
         dangerouslySetInnerHTML:{__html:sess.receipt.html}})));
   }
   if(sess && sess.empty){
-    return e("div",{className:"wrap"},head,
+    return e("div",{className:"wrap"},head,conceptStatus!=="ready"?conceptNotice:null,nextDue,
       e("div",{className:"panel"},e("h2",null,"All caught up ✓"),
         e("div",{className:"muted"},"Nothing is due right now and you’ve hit today’s new-card limit. Come back tomorrow, or study ahead below."),
         e("div",{style:{marginTop:"12px"}},e("button",{className:"btn ghost",onClick:function(){start(true);}},"Study ahead"),
@@ -494,13 +521,18 @@ function App(){
   var m=metrics();
   var pp=phasePolicy();
   var canStart=(m.due+m.newRemain)>0;
-  return e("div",{className:"wrap"},head,
-    e("div",{className:"lead"},"Spaced repetition schedules each board-style question to return just before you’d forget it. A few minutes a day beats cramming. Grade yourself honestly."),
+  return e("div",{className:"wrap"},head,conceptStatus!=="ready"?conceptNotice:null,nextDue,
+    e("div",{className:"lead"},"Review questions and Concepts on a spaced schedule. Answer before revealing, then rate your recall honestly."),
     e("div",{className:"statgrid"},
       e("div",{className:"stat due"},e("div",{className:"num"},m.due+m.newRemain),e("div",{className:"lab"},"Due now")),
       e("div",{className:"stat streak"},e("div",{className:"num"},store.stats.streak||0),e("div",{className:"lab"},"Day streak")),
       e("div",{className:"stat"},e("div",{className:"num"},m.mature+m.young),e("div",{className:"lab"},"Learned")),
-      e("div",{className:"stat"},e("div",{className:"num"},(store.stats.seen?Math.round(100*(store.stats.correct||0)/store.stats.seen):0)+"%"),e("div",{className:"lab"},"Retention"))),
+      e("div",{className:"stat"},e("div",{className:"num"},(store.stats.choiceCorrect||0)+" / "+(store.stats.choiceSeen||0)),e("div",{className:"lab"},"Choices correct · since this update"))),
+    e("div",{className:"panel"},e("h2",null,"Concepts"),
+      e("p",null,"Self-rated recall Good/Easy: "+(store.stats.recallGoodEasy||0)+" / "+(store.stats.recallSeen||0)+" · since this update"),
+      e("button",{className:"btn ghost","aria-pressed":conceptFilter==='all',onClick:function(){setConceptFilter('all');}},"All"),
+      weekRefs?e("button",{className:"btn ghost","aria-pressed":conceptFilter==='week',onClick:function(){setConceptFilter('week');}},"This week"):e("p",null,"Open from your Path to enable This week. All topics are available here."),
+      conceptFilter==='week'?e("p",null,cards.filter(function(c){return !store.cards[c.id]&&!newConceptAllowed(c,weekRefs,'week');}).length+" new Concepts excluded · Other library topics are available under All. Due cards stay in review."):null),
     pp.phase!=="unset"? e("div",{className:"sub"}, pp.label) : null,
     e("div",{className:"cta"},
       e("button",{className:"btn primary",disabled:!canStart,onClick:function(){start(false);}}, canStart?("Start review — "+(m.due+m.newRemain)+" card"+((m.due+m.newRemain)===1?"":"s")):"All caught up ✓"),

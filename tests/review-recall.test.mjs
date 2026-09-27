@@ -123,3 +123,58 @@ test('reveal content is rendered as text, never as markup', () => {
   assert.doesNotMatch(nodes, /innerHTML|dangerouslySetInnerHTML/);
   assert.match(nodes, /e\("li",\{key:i\}, x\)/);
 });
+
+// Execute the actual App with a tiny hook renderer: answers must be absent from
+// the element tree before Reveal, not simply hidden with CSS.
+function renderReview(stateValues) {
+  let i=0;const effects=[];
+  const React={createElement:(tag,props,...children)=>({tag,props,children}),useState:(initial)=>[i<stateValues.length?stateValues[i++]:initial,()=>{}],useRef:(v)=>({current:v}),useEffect:(fn)=>effects.push(fn)};
+  let js=review.slice(review.indexOf('var e=React.createElement'),review.indexOf('ReactDOM.createRoot'));
+  js=js.replace('/*__CONCEPT_RECALL__*/',repo('13_Faculty_Resources/_automation/site_build/concept_recall.js'));
+  const storage={getItem:()=>null,setItem:()=>{}};
+  const result=new Function('React','window','document','localStorage','phasePolicy','calibLog','cwReceipt',js+';return App();')(React,{}, {documentElement:{getAttribute:()=>null}},storage,()=>({phase:'unset'}),()=>{},()=>({html:''}));
+  return result;
+}
+const conceptFixture={id:'CONCEPT#test@1',deck:'CONCEPT',deckTitle:'Concept',kind:'recall',q:'Test […]',reveal:'SECRET <img onerror=bad>',page:'ethics_legal.md'};
+const storeFixture={cards:{},stats:{seen:100,correct:99},day:{},settings:{newPerDay:12}};
+function reviewStates(session,last=null){return [[conceptFixture],'ready','all',null,last,false,storeFixture,session];}
+test('answer absent before reveal; reveal is text and links to the shipped page',()=>{
+ const session={queue:[conceptFixture],pos:0,total:1,card:conceptFixture,revealed:false,reviewed:0,correct:0};
+ assert.doesNotMatch(JSON.stringify(renderReview(reviewStates(session))),/SECRET/);
+ const shown=JSON.stringify(renderReview(reviewStates({...session,revealed:true})));
+ assert.match(shown,/SECRET <img onerror=bad>/);assert.match(shown,/index.html\?page=ethics_legal.md/);assert.doesNotMatch(shown,/dangerouslySetInnerHTML/);
+});
+test('next-due strip remains on the last-card receipt and Again requeue',()=>{
+ const last={q:'Test […]',page:'ethics_legal.md',due:Date.now()+600000};
+ for(const session of [{finished:true,reviewed:1,correct:1,misses:[]},{queue:[conceptFixture],card:conceptFixture,pos:1,total:1,revealed:false,reviewed:1,correct:0}]){
+  const shown=JSON.stringify(renderReview(reviewStates(session,last)));assert.match(shown,/Next due:/);assert.match(shown,/ethics_legal.md/);
+ }
+});
+test('old mixed history is never represented as Retention',()=>{assert.doesNotMatch(review,/"Retention"|% correct/);assert.match(review,/Choices correct · since this update/);assert.match(review,/Self-rated recall Good\/Easy/);});
+
+test('real queue and dashboard agree: week excludes new only, All includes no-week sources',()=>{
+ const source=repo('13_Faculty_Resources/_automation/site_build/concept_recall.js');
+ const real=slice(review,'  function metrics(){','  function choose(i)');
+ const cards=[conceptFixture,{...conceptFixture,id:'CONCEPT#due@1'},{...conceptFixture,id:'CONCEPT#week@1',page:'mse.md'}];
+ for(const filter of ['all','week']){
+  let session;
+  const state={cards:{'CONCEPT#due@1':{due:0,ivl:1,reps:1}},stats:{},day:{newToday:0}};
+  const run=new Function('cards','store','loadS','rollDay','effectiveNewPerDay','queueable','maturity','shuffle','setSess','saveS','setStore','weekRefs','conceptFilter',source+';var DAY=86400000,blockLimit={current:null},gradedThisSession={};'+real+';return {metrics:metrics(),start:start};');
+  const app=run(cards,state,()=>state,x=>x,()=>12,()=>true,()=> 'young',x=>x,x=>session=x,()=>{},()=>{},['mse.md'],filter);
+  app.start(false);assert.equal(app.metrics.due,1);assert.equal(app.metrics.newRemain,filter==='all'?2:1);
+  assert.equal(session.queue.length,app.metrics.due+app.metrics.newRemain);assert.ok(session.queue.some(c=>c.id==='CONCEPT#due@1'));
+ }
+});
+test('missing feed is a visible incomplete state and Retry checks worker update',()=>{
+ const values=reviewStates(null);values[1]='unavailable';const shown=JSON.stringify(renderReview(values));assert.match(shown,/Concepts unavailable — review is incomplete/);assert.match(shown,/Retry Concepts/);assert.match(review,/reg\.update\(\)/);assert.doesNotMatch(review,/concepts\.json\?/);
+});
+test('week filter is transient and direct visit only offers All',()=>{
+ const shown=JSON.stringify(renderReview(reviewStates(null)));assert.match(shown,/All topics are available here/);assert.doesNotMatch(review,/localStorage\.setItem\([^\n]*conceptFilter/);
+ assert.match(review,/ev.origin!==location.origin\|\|ev.source!==window.parent/);
+});
+test('interactive controls suppress global shortcuts',()=>{
+ const body=slice(review,'function onKey(ev){',' window.addEventListener("keydown"');
+ let grades=0;const onKey=new Function('sessRef','grade','revealCard','choose','optOrder',body+';return onKey;')({current:{card:conceptFixture,revealed:true}},()=>grades++,()=>{},()=>{},()=>[]);
+ onKey({key:'3',target:{closest:()=>({})}});assert.equal(grades,0);
+ onKey({key:'3',target:{closest:()=>null}});assert.equal(grades,1);
+});

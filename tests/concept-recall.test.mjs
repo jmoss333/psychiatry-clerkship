@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {webcrypto,createHash} from 'node:crypto';
+const src=readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/concept_recall.js',import.meta.url),'utf8');
+const F=new Function('crypto',src+';return {conceptCardsFromFeed,newConceptAllowed,conceptVerifyBytes,conceptIdEligible,conceptWeekReply};')(webcrypto);
+const card=(id='CONCEPT#ethics-target:1@1')=>({id,q:'A […] question',reveal:'A <script> answer',page:'ethics_legal.md',source:'01/ethics.md',topic:'Ethics'});
+const feed=()=>({schemaVersion:1,cards:[card(),card('CONCEPT#mse-target@2')],withheld:[{id:'CONCEPT#withdrawn@1'}]});
+test('one text recall card per released cloze, no withdrawn or superseded IDs',()=>{const cards=F.conceptCardsFromFeed(feed());assert.equal(cards.length,2);assert.equal(cards[0].kind,'recall');assert.equal(cards[0].reveal,'A <script> answer');assert.equal(F.conceptIdEligible('CONCEPT#withdrawn@1',cards),false);assert.equal(F.conceptIdEligible('CONCEPT#mse-target@1',cards),false);assert.equal(F.conceptIdEligible(cards[0].id,cards),true);});
+test('strict schema and unique IDs fail closed',()=>{for(const f of [{}, {...feed(),schemaVersion:2},{...feed(),cards:[card(),card()]},{...feed(),cards:[{...card(),page:'javascript:alert(1)'}]}])assert.throws(()=>F.conceptCardsFromFeed(f));});
+test('All includes no-week sources; week filters new eligibility only',()=>{assert.equal(F.newConceptAllowed(card(),['mse.md'],'week'),false);assert.equal(F.newConceptAllowed(card(),['mse.md'],'all'),true);assert.equal(F.newConceptAllowed({id:'TOPIC#mse.md'},[],'week'),true);});
+test('verify entire response bytes including newline before parsing',async()=>{const bytes=new TextEncoder().encode(JSON.stringify(feed())+'\n');const digest=createHash('sha256').update(bytes).digest('hex');assert.equal((await F.conceptVerifyBytes(bytes,digest)).length,2);await assert.rejects(F.conceptVerifyBytes(bytes.slice(0,-1),digest));await assert.rejects(F.conceptVerifyBytes(bytes,''));});
+test('week reply is typed bounded and nonce bound',()=>{const nonce='a'.repeat(32),reply={type:'cw:concept-week-context',nonce,week:2,refs:['mse.md']};assert.deepEqual(F.conceptWeekReply(reply,nonce),['mse.md']);assert.equal(F.conceptWeekReply({...reply,nonce:'bad'},nonce),null);assert.equal(F.conceptWeekReply({...reply,refs:['../evil']},nonce),null);});
