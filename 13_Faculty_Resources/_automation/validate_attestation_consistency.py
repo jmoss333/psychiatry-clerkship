@@ -768,7 +768,8 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
             # spelling is accepted inside a reviewed pack: `pending`. A pending case is unselectable
             # in the tool and the proxy (both filter on `reviewed`) and its red-team probes skip, so
             # it can land in a content PR ahead of the probes a governance PR must add (L1 forbids
-            # bin/ and the pack in one diff) and flip to reviewed in a third PR once they exist.
+            # bin/ and the pack in one diff) — carrying the per-case rows the pack suites pin,
+            # see the decision note — and flip to reviewed in a third PR once they exist.
             # Every other spelling — draft, unreviewed, a typo, a missing block — stays an error: a
             # case the surfaces would not offer and the runner would refuse must not pass quietly.
             errors.append(

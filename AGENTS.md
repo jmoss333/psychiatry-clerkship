@@ -614,8 +614,9 @@ the container when the Bash 5 environment is part of the evidence.
   offer only `reviewed`, so a `pending` case is unselectable everywhere and its probes skip),
   so a new case lands `pending` in a content PR (which also carries the per-case rows the
   `_prototypes/sp-interview/tests/` and `sp-proxy/tests/` suites pin against the canonical pack
-  — the id list, the case counts, the parity and leak entries; neither directory is content or
-  governance), gains its probes in a governance PR (L1 keeps `bin/` and the pack out of one
+  — the id list, the case counts, the parity scenario, and the encounter brief the root
+  `conversation-encounter-profiles` test requires for every case, which runs before both builds;
+  none of those paths is content or governance), gains its probes in a governance PR (L1 keeps `bin/` and the pack out of one
   diff; a probe naming a case absent from the pack crashes, so the probes cannot come first),
   and flips to `reviewed` in a third content PR with the owner's read of the lines recorded on
   it. Two things a `pending` case does NOT do: hide — the built sites ship the whole pack
