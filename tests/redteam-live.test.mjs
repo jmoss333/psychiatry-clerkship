@@ -59,7 +59,7 @@ test('with a working credential the dependent probes still run', async () => {
   assert.doesNotMatch(out.stdout, /SKIP/, 'nothing is skipped when the credential works');
 });
 
-import {mkdtempSync, writeFileSync, chmodSync, rmSync} from 'node:fs';
+import {mkdtempSync, writeFileSync, chmodSync, rmSync, readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 
 // A stand-in `netlify` CLI that returns what a secret variable actually reads back:
@@ -90,4 +90,48 @@ test('a Netlify readback that cannot authenticate is discarded, not used', async
   assert.doesNotMatch(out.stdout, /pass\s+D[015]/, 'no probe reports a pass on a credential that never worked');
   assert.doesNotMatch(out.stdout, /pass\s+B5/);
   assert.notEqual(out.code, 0);
+});
+
+test('structured result records a failed D0 and skipped B5 without a credential', async (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'redteam-result-'));
+  t.after(() => rmSync(dir, {recursive: true, force: true}));
+  const output = path.join(dir, 'result.json');
+  await withEndpoint((req, res) => { res.writeHead(401); res.end('{}'); }, url =>
+    new Promise(resolve => execFile('bash', [script, '--result-json', output, url],
+      {timeout: 60000, env: {...process.env, SP_STUDENT_PASSCODE: 'fixture-passcode'}},
+      (error, stdout, stderr) => resolve({code: error?.code ?? 0, stdout, stderr}))));
+  const result = JSON.parse(readFileSync(output, 'utf8'));
+  assert.equal(result.state, 'failed');
+  assert.equal(result.checks.find(check => check.id === 'B5').status, 'skipped');
+  assert.doesNotMatch(JSON.stringify(result), /fixture-passcode|patient reply/i);
+});
+
+test('structured result contains only verified manifest fields and five passing probes', async (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'redteam-result-'));
+  t.after(() => rmSync(dir, {recursive: true, force: true}));
+  const output = path.join(dir, 'result.json');
+  const out = await withEndpoint((req, res) => {
+    if (req.method === 'POST') { res.writeHead(400); res.end('{}'); return; }
+    if ((req.headers['x-student-key'] || '') !== 'fixture-passcode') {
+      res.writeHead(401); res.end('{}'); return;
+    }
+    const body = req.url.endsWith('/realtime') ? {enabled: false} :
+      req.url.endsWith('/voice') ? {enabled: false} :
+      {actorModel: 'model-a', evaluatorModel: 'model-a', packVersion: 'fixture',
+        packSha256: 'f'.repeat(64), cases: ['patient reply must not be copied']};
+    res.writeHead(200, {'Content-Type': 'application/json'}); res.end(JSON.stringify(body));
+  }, url => new Promise(resolve => execFile('bash', [script, '--result-json', output, url],
+    {timeout: 60000, env: {...process.env, SP_STUDENT_PASSCODE: 'fixture-passcode'}},
+    (error, stdout, stderr) => resolve({code: error?.code ?? 0, stdout, stderr}))));
+  assert.equal(out.code, 0);
+  const result = JSON.parse(readFileSync(output, 'utf8'));
+  assert.equal(result.state, 'passed');
+  assert.equal(result.actorModel, 'model-a');
+  assert.equal(result.evaluatorModel, 'model-a');
+  assert.equal(result.packVersion, 'fixture');
+  assert.equal(result.packSha256, 'f'.repeat(64));
+  assert.equal(result.realtimeEnabled, false);
+  assert.equal(result.managedVoiceEnabled, false);
+  assert.equal(result.checks.length, 5);
+  assert.doesNotMatch(JSON.stringify(result), /fixture-passcode|patient reply/i);
 });

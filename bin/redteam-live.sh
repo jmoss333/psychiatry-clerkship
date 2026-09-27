@@ -23,6 +23,12 @@
 #      history and is visible in `ps` to every process on the machine. The script
 #      warns if you do this.
 set -u
+RESULT_JSON=""
+if [ "${1:-}" = "--result-json" ]; then
+  RESULT_JSON="${2:-}"
+  if [ -z "$RESULT_JSON" ]; then echo "--result-json requires a path" >&2; exit 2; fi
+  shift 2
+fi
 ENDPOINT="${1:-https://sp-interview-proxy.netlify.app/api/sp}"
 PASSCODE="${2:-}"
 ORIGIN="${3:-https://une-ms3-psychiatry.netlify.app}"
@@ -36,7 +42,7 @@ if [ -n "$PASSCODE" ]; then
 elif [ -n "${SP_STUDENT_PASSCODE:-}" ]; then
   PASSCODE="$SP_STUDENT_PASSCODE"
   echo "passcode: taken from \$SP_STUDENT_PASSCODE"
-elif command -v netlify >/dev/null 2>&1; then
+elif [ "${REDTEAM_PROMPT_ONLY:-0}" != "1" ] && command -v netlify >/dev/null 2>&1; then
   # env:get resolves against a LINKED project folder; --site alone is not enough.
   # sp-proxy/.netlify/ is gitignored, so the link is a one-time local setup.
   echo "passcode: reading it from Netlify (project '$SITE', production context) ..."
@@ -116,13 +122,21 @@ if [ -z "$PASSCODE" ]; then
 fi
 
 pass=0; fail=0; skipped=0; credential_ok=0
-ok()   { printf 'pass  %-4s %s\n' "$1" "$2"; pass=$((pass+1)); }
-bad()  { printf 'FAIL  %-4s %s\n        · %s\n' "$1" "$2" "$3"; fail=$((fail+1)); }
+if [ -n "$RESULT_JSON" ]; then
+  umask 077
+  _checks_file="$(mktemp)"
+  _realtime_file="$(mktemp)"
+  _voice_file="$(mktemp)"
+  trap 'rm -f "$_checks_file" "$_realtime_file" "$_voice_file"' EXIT
+fi
+record_check() { if [ -n "$RESULT_JSON" ]; then printf '%s %s\n' "$1" "$2" >> "$_checks_file"; fi; }
+ok()   { printf 'pass  %-4s %s\n' "$1" "$2"; pass=$((pass+1)); record_check "$1" pass; }
+bad()  { printf 'FAIL  %-4s %s\n        · %s\n' "$1" "$2" "$3"; fail=$((fail+1)); record_check "$1" fail; }
 # A probe whose result would be meaningless is SKIPPED, never passed. D5 checks for
 # an ABSENT CORS header and B5 for a refused POST — a 401 satisfies both without
 # either having been exercised, so reporting them green after a credential failure
 # is a false negative on the two probes that matter most.
-skip() { printf 'SKIP  %-4s %s\n        · %s\n' "$1" "$2" "$3"; skipped=$((skipped+1)); }
+skip() { printf 'SKIP  %-4s %s\n        · %s\n' "$1" "$2" "$3"; skipped=$((skipped+1)); record_check "$1" skipped; }
 
 echo "SP red-team — Tier 2 (deployed endpoint)"
 echo "endpoint: $ENDPOINT"
@@ -201,4 +215,91 @@ echo "metadata-only), D6 (health receipt leaks nothing), D7 (a green receipt is 
 echo "release evidence) are NOT scripted here — D2 needs a real 40-turn encounter,"
 echo "and D3/D4/D6/D7 need you to look at the tool and the Netlify logs yourself."
 echo "See docs/RED_TEAM_RUNBOOK.md."
+if [ -n "$RESULT_JSON" ]; then
+  # These two GETs reuse the in-process credential. Their raw responses remain
+  # in private temporary files; only allowlisted manifest fields reach JSON.
+  if [ "$credential_ok" -eq 1 ]; then
+    _base="${ENDPOINT%/api/sp}"
+    _realtime_code="$(curl -s -o "$_realtime_file" -w '%{http_code}' -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" "$_base/api/sp/realtime")"
+    _voice_code="$(curl -s -o "$_voice_file" -w '%{http_code}' -H "Origin: $ORIGIN" -H "x-student-key: $PASSCODE" "$_base/api/sp/voice")"
+  else
+    _realtime_code=""; _voice_code=""
+  fi
+  python3 - "$RESULT_JSON" "$_checks_file" /tmp/rt.body "$_realtime_file" "$_voice_file" "$credential_ok" "$_realtime_code" "$_voice_code" <<'PY'
+import json, os, re, sys
+
+target, checks_path, typed_path, realtime_path, voice_path, credential, realtime_code, voice_code = sys.argv[1:]
+checks = []
+with open(checks_path, encoding='utf-8') as source:
+    for line in source:
+        identifier, status = line.split()
+        checks.append({'id': identifier, 'status': status})
+
+def document(path):
+    try:
+        with open(path, encoding='utf-8') as source:
+            value = json.load(source)
+        return value if isinstance(value, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+typed = document(typed_path) if credential == '1' else {}
+realtime = document(realtime_path) if realtime_code == '200' else {}
+voice = document(voice_path) if voice_code == '200' else {}
+safe_id = re.compile(r'[A-Za-z0-9._:-]{1,128}\Z')
+safe_hash = re.compile(r'[0-9a-f]{64}\Z')
+def safe(value):
+    return value if isinstance(value, str) and safe_id.fullmatch(value) else None
+def safe_stack(value):
+    if not isinstance(value, dict):
+        return None
+    stack_id = safe(value.get('id'))
+    transcription = value.get('transcription')
+    synthesis = value.get('synthesis')
+    if (not stack_id or not isinstance(transcription, dict)
+            or not isinstance(synthesis, dict)):
+        return None
+    tr_model = safe(transcription.get('model'))
+    sy_model = safe(synthesis.get('model'))
+    if not tr_model or not sy_model:
+        return None
+    return {'id': stack_id, 'transcription': {'model': tr_model},
+            'synthesis': {'model': sy_model}}
+
+stack = safe_stack(voice.get('activeStack'))
+valid = (credential == '1' and len(checks) == 5
+         and all(check['status'] == 'pass' for check in checks)
+         and all(safe(typed.get(key)) for key in
+                 ('actorModel', 'evaluatorModel', 'packVersion'))
+         and isinstance(typed.get('packSha256'), str)
+         and bool(safe_hash.fullmatch(typed['packSha256']))
+         and isinstance(realtime.get('enabled'), bool)
+         and isinstance(voice.get('enabled'), bool)
+         and (not realtime.get('enabled') or
+              (safe(realtime.get('model')) and safe(realtime.get('transcriptionModel'))))
+         and (not voice.get('enabled') or stack is not None))
+state = 'passed' if valid else ('failed' if any(c['status'] == 'fail' for c in checks) else 'blocked')
+result = {
+    'schemaVersion': 1, 'tier': 'live', 'state': state, 'checks': checks,
+    'actorModel': safe(typed.get('actorModel')),
+    'evaluatorModel': safe(typed.get('evaluatorModel')),
+    'packVersion': safe(typed.get('packVersion')),
+    'packSha256': typed.get('packSha256') if isinstance(typed.get('packSha256'), str) and safe_hash.fullmatch(typed['packSha256']) else None,
+    'realtimeEnabled': realtime.get('enabled') if isinstance(realtime.get('enabled'), bool) else None,
+    'realtimeModel': safe(realtime.get('model')),
+    'transcriptionModel': safe(realtime.get('transcriptionModel')),
+    'managedVoiceEnabled': voice.get('enabled') if isinstance(voice.get('enabled'), bool) else None,
+    'managedVoiceStack': stack,
+}
+fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+with os.fdopen(fd, 'w', encoding='utf-8') as sink:
+    json.dump(result, sink, indent=2, sort_keys=True)
+    sink.write('\n')
+if not valid and state == 'blocked':
+    print('Tier 2 result blocked: a probe or runtime manifest was not verified', file=sys.stderr)
+sys.exit(0 if valid else 1)
+PY
+  _result_code=$?
+  [ "$_result_code" -eq 0 ] || exit 1
+fi
 [ "$fail" -eq 0 ] || exit 1
