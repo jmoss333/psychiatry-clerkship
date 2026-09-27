@@ -137,12 +137,26 @@ The same summary appears after checking choices in any scene:
 **Faculty wording decision — shared feedback:** [x] Accept  [ ] Revise  [ ] Hold
 
 **Overall faculty disposition:** [ ] Accept for further release preparation  [ ] Revise and review again  [ ] Hold
+
 **Audience decision:** medical students, PGY-1 residents, and APPs (faculty owner, 2026-09-27).
 Role-specific framing and delivery-route review: ______________________________
 
 **Feedback reveal decision:** [ ] Keep immediate reveal  [ ] Require a choice first  [ ] Revise differently  
 Notes: ______________________________
 
-**Accessibility review:** automated keyboard and narrow-screen checks passed; native VoiceOver review and a faculty check of small labels inside the artwork are still pending. The full text captions remain available below the artwork.
+## Placement review — proposal, not publication
+
+- **Medical students:** Offer the tool with Catatonia and the outbound BFCRS reference in the MS3 library, with Week 5 as the most relevant rotation entry point.
+- **PGY-1 residents:** Offer the same core tool in the resident library and consider it for Week 1 practice, where catatonia is named in the goal.
+- **APPs:** Offer the tool through the resident site's APP **On shift** pathway. No separate APP site exists in this build.
+- Shared library navigation is visible to other roles on each site. Role-specific Path placement can guide the intended learners, but it is not an access restriction. Review that broader visibility before publication.
+- The existing reviewed Catatonia page and outbound BFCRS reference do not attest this new tool. It needs its own registration, exact built-output review, and governance decision.
+
+## Accessibility review — exact private preview
+
+- **Browser and keyboard checks passed:** Chrome exposed named scene cards, timeline moments, artwork descriptions, choices, and feedback. Keyboard selection changed scenes and moments; choosing observations and checking by keyboard moved focus to the feedback heading. Existing automated checks cover narrow screens; the stylesheet includes a reduced-motion rule.
+- **Native VoiceOver: NOT RUN.** No speech or caption-panel output was captured for this revision; the browser accessibility tree and keyboard checks do not substitute for it.
+- **To verify with VoiceOver:** Check scene-card and timeline announcements; compare manual and 10-second Play/Pause pacing; check whether the changing live caption is spoken once in full; navigate choices, feedback focus, and official-material links. Record Mac/Chrome versions and the HTML SHA-256 above.
+- **Visual follow-up:** At a 375 px viewport, labels drawn inside the artwork are very small. The full moment captions remain available below the artwork, but faculty should check whether those labels are legible or need a different treatment.
 
 This packet does not itself authorize publication. Before any learner release, confirm the BFCRS rights boundary; review gallery behavior, accessibility, role-specific framing, and the exact built output for each learner route; then make an explicit release decision. Only then should the normal shipped-page registration and appropriate faculty governance record be updated. `reviewed.json` is not changed for this unshipped prototype.
