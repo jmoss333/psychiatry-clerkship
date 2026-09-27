@@ -251,7 +251,7 @@ test.describe('catatonia observation · fictional, non-scoring preview', () => {
     await expect(page.locator('#caption')).toContainText('The clinician says');
     await expect(page.getByRole('button', { name: /02 Greeting/ })).toHaveAttribute('aria-pressed', 'true');
 
-    await page.getByRole('button', { name: 'Replay' }).click();
+    await page.getByRole('button', { name: 'Start over' }).click();
     await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
     await page.getByRole('button', { name: 'Play scene' }).click();
     await expect(page.getByRole('button', { name: 'Pause scene' })).toBeVisible();
@@ -332,7 +332,7 @@ test.describe('catatonia observation · fictional, non-scoring preview', () => {
 
   test('switching scenes cancels playback and clears prior answers', async ({ page }) => {
     await page.clock.install({ time: new Date('2026-09-27T12:00:00Z') });
-    await page.getByLabel('The scripted scene states that no spoken reply occurs during the brief greeting.').check();
+    await page.getByLabel('The scripted scene states that no spoken reply occurs during the short pause after the greeting.').check();
     await page.getByRole('button', { name: 'Check my description' }).click();
     await expect(page.locator('#feedback')).toBeVisible();
     await page.getByRole('button', { name: 'Play scene' }).click();
@@ -345,6 +345,37 @@ test.describe('catatonia observation · fictional, non-scoring preview', () => {
     await expect(page.locator('#feedback')).toBeHidden();
     await page.clock.fastForward(5_000);
     await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+  });
+
+  test('playback allows time to read each caption before advancing', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-09-27T12:00:00Z') });
+    await page.getByRole('button', { name: 'Play scene' }).click();
+    await page.clock.fastForward(8_999);
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+    await page.clock.fastForward(3_001);
+    await expect(page.locator('#scene')).not.toHaveAttribute('data-frame', '0');
+  });
+
+  test('feedback pairs every original choice with its selection state', async ({ page }) => {
+    const statements = await page.locator('.choice span').allTextContents();
+    await page.locator('.choice input').nth(0).check();
+    await page.locator('.choice input').nth(3).check();
+    await page.getByRole('button', { name: 'Check my description' }).click();
+
+    const rows = page.locator('#feedbackList li');
+    await expect(rows).toHaveCount(statements.length);
+    for (let index = 0; index < statements.length; index += 1) {
+      await expect(rows.nth(index)).toContainText(statements[index]);
+      await expect(rows.nth(index)).toContainText(index === 0 || index === 3 ? 'Selected' : 'Not selected');
+    }
+  });
+
+  test('Start over truthfully rewinds the scene without starting playback', async ({ page }) => {
+    await page.getByRole('button', { name: /03 Pause/ }).click();
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '2');
+    await page.getByRole('button', { name: 'Start over' }).click();
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+    await expect(page.getByRole('button', { name: 'Play scene' })).toBeVisible();
   });
 
   test('keyboard selection announces the scene while keeping the selector reachable', async ({ page }) => {
@@ -378,7 +409,7 @@ test.describe('catatonia observation · fictional, non-scoring preview', () => {
   });
 
   test('the exercise separates visible facts from unsupported conclusions without scoring', async ({ page }) => {
-    await page.getByLabel('The scripted scene states that no spoken reply occurs during the brief greeting.').check();
+    await page.getByLabel('The scripted scene states that no spoken reply occurs during the short pause after the greeting.').check();
     await page.getByLabel('The person remains seated during the greeting and pause.').check();
     await page.getByLabel('The person’s gaze appears directed downward in this illustration.').check();
     await page.getByRole('button', { name: 'Check my description' }).click();

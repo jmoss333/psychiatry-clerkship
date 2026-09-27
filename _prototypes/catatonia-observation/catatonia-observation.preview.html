@@ -102,8 +102,12 @@
     .feedback h3 { margin: 0 0 7px; font-size: 1.18rem; }
     .feedback p { margin: 7px 0; font-size: .88rem; }
     .feedback .review-list { list-style: none; padding: 0; margin: 12px 0 0; }
-    .review-list li { border-top: 1px solid #d7e2d8; padding: 8px 0; font-size: .84rem; }
-    .review-list b { display: inline-block; min-width: 82px; color: var(--teal); }
+    .review-list li { border-top: 1px solid #d7e2d8; padding: 10px 0; font-size: .84rem; }
+    .review-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    .review-meta b { color: var(--teal); }
+    .review-meta span { color: var(--muted); font-size: .76rem; }
+    .review-statement { display: block; margin: 3px 0; color: var(--ink); }
+    .review-explanation { display: block; color: var(--muted); }
     .below { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
     .info { background: rgba(255,253,248,.82); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; }
     .info h2 { margin: 0 0 8px; font-size: 1.22rem; }
@@ -369,8 +373,8 @@
       </div>
       <div class="controls">
         <button class="control" type="button" id="play">Play scene</button>
-        <button class="control secondary" type="button" id="replay">Replay</button>
-        <small>Use the timeline to inspect any moment. Playback begins only when you press Play.</small>
+        <button class="control secondary" type="button" id="startOver">Start over</button>
+        <small>Play advances every 10 seconds. You can pause or inspect any moment on the timeline.</small>
       </div>
     </section>
 
@@ -378,7 +382,7 @@
       <div class="practice-head">
         <p class="overline">Pause &amp; describe</p>
         <h2 id="practiceTitle">What does the scene support?</h2>
-        <p>Select what is shown, narrated, or reported in this fictional scene. You can replay before checking.</p>
+        <p>Select what is shown, narrated, or reported in this fictional scene. You can revisit any moment before checking.</p>
       </div>
       <div class="practice-body">
           <fieldset>
@@ -427,7 +431,7 @@
           { name: 'Describe', text: 'Record only what the brief scene shows. A real assessment needs more observation, context, and supervision.', image: 'The same seated scene remains, with a note symbol prompting a limited description.' }
         ],
         choices: [
-          { id: 'reply', kind: 'stated', text: 'The scripted scene states that no spoken reply occurs during the brief greeting.', explanation: 'The text narration explicitly says there is no reply during this brief scene; it does not explain why.' },
+          { id: 'reply', kind: 'stated', text: 'The scripted scene states that no spoken reply occurs during the short pause after the greeting.', explanation: 'The text narration says there is no spoken reply during the short pause; it does not explain why.' },
           { id: 'seated', kind: 'seen', text: 'The person remains seated during the greeting and pause.', explanation: 'The person remains seated in every illustrated moment. Sitting briefly is nonspecific.' },
           { id: 'gaze', kind: 'seen', text: 'The person’s gaze appears directed downward in this illustration.', explanation: 'The downcast eyes and text narration show a gaze toward the lap; do not infer its cause.' },
           { id: 'refusal', kind: 'unknown', text: 'The person is refusing to take part in care.', explanation: 'A lack of reply does not establish refusal or intent.' },
@@ -463,8 +467,8 @@
         choices: [
           { id: 'silence', kind: 'stated', text: 'There is no spoken reply during the brief pause.', explanation: 'The narration states no spoken reply during this pause; it provides no cause.' },
           { id: 'point', kind: 'seen', text: 'The person points toward the cup.', explanation: 'A pointing gesture is shown; its meaning should not be assumed.' },
-          { id: 'write', kind: 'seen', text: 'The person writes “water” on a card.', explanation: 'The later illustrated moment shows writing on a card.' },
-          { id: 'refusal', kind: 'unknown', text: 'The person is refusing all communication.', explanation: 'No spoken reply does not establish refusal; this scene also shows gesture and writing.' },
+          { id: 'write', kind: 'stated', text: 'The person writes “water” on a card.', explanation: 'The narration states that the person writes the word. The illustration shows the marked card, not the act of writing.' },
+          { id: 'refusal', kind: 'unknown', text: 'The person is deliberately refusing to speak.', explanation: 'No spoken reply during this pause does not reveal intent; the person later points and writes.' },
           { id: 'capacity', kind: 'unknown', text: 'The person is unable to speak.', explanation: 'A brief silent pause cannot establish the person’s capacity to speak.' },
           { id: 'understanding', kind: 'unknown', text: 'The person understood every word of the question.', explanation: 'Gesture and writing do not establish full comprehension of the question.' }
         ]
@@ -481,7 +485,7 @@
           { id: 'report', kind: 'reported', text: 'A nurse reports seeing the person walk to the doorway earlier.', explanation: 'The earlier walk is the nurse’s report, not a movement witnessed by the learner.' },
           { id: 'bedside', kind: 'seen', text: 'At the bedside now, the clinician sees the person seated.', explanation: 'The current seated posture is directly illustrated at the bedside.' },
           { id: 'times', kind: 'stated', text: 'The nurse’s report and bedside observation refer to different times.', explanation: 'The narration explicitly distinguishes earlier from now.' },
-          { id: 'witnessed', kind: 'unknown', text: 'The clinician personally witnessed the earlier walk.', explanation: 'Only the nurse reports the earlier walk; the clinician did not witness it in this scene.' },
+          { id: 'witnessed', kind: 'unknown', text: 'The clinician personally witnessed the earlier walk.', explanation: 'The scene does not show or state that the clinician witnessed the earlier walk; here it is available as the nurse’s report.' },
           { id: 'interval', kind: 'unknown', text: 'The person remained seated throughout the interval.', explanation: 'The interval between the report and bedside observation is not shown.' },
           { id: 'typical', kind: 'unknown', text: 'The earlier walking proves that the current bedside behavior is typical for this person.', explanation: 'Neither source gives a usual baseline or explains the current behavior.' }
         ]
@@ -561,9 +565,9 @@
       if (timer !== null) { stop(); return; }
       if (frame === active.moments.length - 1) show(0);
       play.textContent = 'Pause scene';
-      timer = setInterval(() => show(frame + 1), 2300);
+      timer = setInterval(() => show(frame + 1), 10000);
     });
-    document.getElementById('replay').addEventListener('click', () => {
+    document.getElementById('startOver').addEventListener('click', () => {
       stop();
       show(0);
     });
@@ -583,9 +587,20 @@
       list.replaceChildren();
       for (const choice of active.choices) {
         const item = document.createElement('li');
+        const meta = document.createElement('div');
+        meta.className = 'review-meta';
         const label = document.createElement('b');
         label.textContent = kindLabels[choice.kind];
-        item.append(label, document.createTextNode(choice.explanation));
+        const selection = document.createElement('span');
+        selection.textContent = selected.has(choice.id) ? 'Selected' : 'Not selected';
+        meta.append(label, selection);
+        const statement = document.createElement('strong');
+        statement.className = 'review-statement';
+        statement.textContent = choice.text;
+        const explanation = document.createElement('span');
+        explanation.className = 'review-explanation';
+        explanation.textContent = choice.explanation;
+        item.append(meta, statement, explanation);
         list.append(item);
       }
       feedback.hidden = false;
