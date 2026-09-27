@@ -135,6 +135,9 @@ def main(argv=None):
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--attempts', type=int, choices=range(1, 4), default=3)
     parser.add_argument('--retry-delay', type=int, choices=range(61), default=60)
+    parser.add_argument('--github-output', type=Path,
+                        help='on a match, append revision=<sha> here (the production canary '
+                             'checks out exactly what both sites serve)')
     args = parser.parse_args(argv)
     try:
         receipt = check(canary._load_config(args.config), attempts=args.attempts,
@@ -149,6 +152,16 @@ def main(argv=None):
         return 2
     summary = ', '.join(s['name'] + '=' + s.get('revision', s.get('error', 'unknown'))
                         for s in receipt['observations'][-1]['sites']) if receipt['observations'] else 'configuration unavailable'
+    if args.github_output is not None and receipt['status'] == 'matched':
+        # Only a match hands over a revision: on a mismatch either site's commit would
+        # pair one site with the other's specs, the skew this output exists to prevent.
+        served = receipt['observations'][-1]['sites'][0]['revision']
+        try:
+            with args.github_output.open('a', encoding='utf-8') as handle:
+                handle.write(f'revision={served}\n')
+        except OSError:
+            print('::error::Served revision could not be handed to the workflow', file=sys.stderr)
+            return 2
     prefix = '::error::' if receipt['exitCode'] else ''
     print(f"{prefix}Production revisions {receipt['status']}: {summary}")
     return receipt['exitCode']

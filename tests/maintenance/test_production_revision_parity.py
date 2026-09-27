@@ -173,6 +173,36 @@ class RevisionParityTests(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertEqual(json.loads(target.read_text())['status'], 'mismatch')
 
+    def cli_with_output(self, *responses, prior=''):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'receipt.json'
+            output = Path(directory) / 'github_output'
+            output.write_text(prior, encoding='utf-8')
+            with mock.patch.object(parity, 'build_opener', return_value=Opener(*responses)):
+                code = parity.main(['--out', str(target), '--attempts', '1',
+                                    '--github-output', str(output)])
+            return code, output.read_text(encoding='utf-8')
+
+    def test_cli_hands_the_workflow_the_revision_both_sites_serve(self):
+        # The production canary checks out exactly this commit to crawl with, so its
+        # specs match the site they are pointed at rather than main's newer ones.
+        code, written = self.cli_with_output(Response(manifest(SHA_B)), Response(manifest(SHA_B)),
+                                             prior='earlier=1\n')
+        self.assertEqual(code, 0)
+        self.assertEqual(written, f'earlier=1\nrevision={SHA_B}\n')
+
+    def test_cli_hands_over_no_revision_when_the_sites_disagree(self):
+        # Crawling either site with the other's specs is the skew this exists to
+        # prevent, so a mismatch yields no revision at all, never the first one read.
+        code, written = self.cli_with_output(Response(manifest(SHA_A)), Response(manifest(SHA_B)))
+        self.assertEqual(code, 1)
+        self.assertNotIn('revision=', written)
+
+    def test_cli_hands_over_no_revision_when_a_site_is_unreadable(self):
+        code, written = self.cli_with_output(Response(manifest(SHA_A)), Response(b'', status=503))
+        self.assertEqual(code, 2)
+        self.assertNotIn('revision=', written)
+
     def test_cli_bad_config_records_unavailable(self):
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory) / 'receipt.json'
