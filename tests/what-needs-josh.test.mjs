@@ -180,6 +180,28 @@ print(J.describe_reattestation())`);
   assert.ok(!out.includes('p08.md'), 'the capped tail must not be named');
 });
 
+test('a pack case that is not reviewed is owner work, named, until it is flipped', () => {
+  // DECISION: pending-case-in-reviewed-pack. Controlled fixture, never the live pack: a live
+  // count is a test of the owner's queue, and adding a pending case in a content PR would turn
+  // it red for being right.
+  const out = py(`
+import json, tempfile, pathlib
+pack = {"cases": [
+  {"id": "sp_fixture_reviewed_001", "facultyReview": {"status": "reviewed", "reviewer": "R", "lastReviewed": "2026-01-01"}},
+  {"id": "sp_fixture_pending_001", "facultyReview": {"status": "pending", "reviewer": None, "lastReviewed": None}},
+]}
+with tempfile.TemporaryDirectory() as d:
+    p = pathlib.Path(d) / "pack.json"; p.write_text(json.dumps(pack), encoding="utf-8")
+    J.PACK = p
+    print(J.measure_pack_cases(), "|", J.describe_pack_cases())
+    pack["cases"][1]["facultyReview"]["status"] = "reviewed"
+    p.write_text(json.dumps(pack), encoding="utf-8")
+    print(J.measure_pack_cases())`);
+  const [waiting, retired] = out.split('\n');
+  assert.equal(waiting, '(1, 2) | Read and flip to reviewed: sp_fixture_pending_001');
+  assert.equal(retired, '(0, 2)', 'the row retires itself once the case is reviewed');
+});
+
 test('every row carries a measurement, a unit, a rationale and a way to act', () => {
   const out = py(`
 bad = [r["key"] for r in J.ROWS

@@ -612,10 +612,19 @@ the container when the Bash 5 environment is part of the evidence.
   in a reviewed pack whose status is anything but `reviewed`, `attested` or `pending` (decision
   `pending-case-in-reviewed-pack`, 2026-09-27 — the tool, the proxy and the red-team runner
   offer only `reviewed`, so a `pending` case is unselectable everywhere and its probes skip),
-  so a new case lands `pending` in a content PR, gains its probes in a governance PR (L1 keeps
-  `bin/` and the pack out of one diff), and flips to `reviewed` in a third content PR with the
-  owner's read of the lines recorded on it — or enters `reviewed` directly when its probes
-  already exist — and the classifier never reads the block. Everything else a content PR does to the ledger — a new pending row, a
+  so a new case lands `pending` in a content PR (which also carries the per-case rows the
+  `_prototypes/sp-interview/tests/` and `sp-proxy/tests/` suites pin against the canonical pack
+  — the id list, the case counts, the parity and leak entries; neither directory is content or
+  governance), gains its probes in a governance PR (L1 keeps `bin/` and the pack out of one
+  diff; a probe naming a case absent from the pack crashes, so the probes cannot come first),
+  and flips to `reviewed` in a third content PR with the owner's read of the lines recorded on
+  it. Two things a `pending` case does NOT do: hide — the built sites ship the whole pack
+  verbatim at `tools/sp-interview.pack.json` and precache it, so its text is public from the
+  first PR and the leak and no-PHI bar applies there, only selection is withheld; and stand in
+  for its review — a console re-attestation of the drifted `sp-interview.html` row while the
+  case is pending binds the row's bytes and is the claim of record for the cases the tool
+  offers, not that case's review, which is the flip. `bin/what_needs_josh.py` lists pending
+  pack cases as owner work until the flip lands. The classifier never reads the block. Everything else a content PR does to the ledger — a new pending row, a
   pending row edited, `reviewed`→`pending`, a row deleted, a demotion that drops
   `lastReviewed`/`reviewer` — is **registration**, and is exactly what a content PR is supposed
   to do. The rule forbids the claim, not the bookkeeping. Four laws: **L1** a governance path

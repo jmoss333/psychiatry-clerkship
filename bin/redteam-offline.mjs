@@ -69,6 +69,8 @@ const NOT_REVIEWED = Object.fromEntries(
   // with a green exit — every probe naming it skipping and, since gates are evaluated per
   // reviewed case, its gates unevaluated. Refuse a spelling this runner does not know before
   // anything runs, as the duplicate case id is refused above.
+  // DECISION: pending-case-in-reviewed-pack — `pending` is the one non-reviewed spelling the
+  // validator lets into a reviewed pack, and it is the one this runner skips rather than refuses.
   const KNOWN_STATUSES = new Set(['reviewed', 'pending']);
   const odd = pack.cases
     .filter((c) => !KNOWN_STATUSES.has(c.facultyReview && c.facultyReview.status))

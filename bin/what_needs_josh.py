@@ -137,6 +137,39 @@ def measure_red_team():
     return (0 if (matches and signed) else 1), 1
 
 
+def _pack_cases_not_reviewed():
+    pack = json.loads(PACK.read_text(encoding="utf-8"))
+    cases = pack.get("cases")
+    if not isinstance(cases, list):
+        raise ValueError("pack.cases is not a list")
+    not_reviewed = [
+        str(c.get("id") or "?") for c in cases
+        if str((c.get("facultyReview") or {}).get("status")) not in ("reviewed", "attested")
+    ]
+    return not_reviewed, len(cases)
+
+
+def measure_pack_cases():
+    """Interview Room cases that are in the pack but not yet reviewed.
+
+    DECISION: pending-case-in-reviewed-pack -- a case may sit in the reviewed pack as
+    `pending` ahead of its red-team probes. It is unselectable, but its text ships in the
+    built pack, and once the console re-signs the drifted sp-interview.html row nothing else
+    names it. Only the owner's read flips it, so it is owner work until the flip lands, and
+    the row retires itself at zero.
+    """
+    not_reviewed, total = _pack_cases_not_reviewed()
+    return len(not_reviewed), total
+
+
+def describe_pack_cases():
+    not_reviewed, _ = _pack_cases_not_reviewed()
+    named = ", ".join(not_reviewed[:NAMED_LIMIT])
+    if len(not_reviewed) > NAMED_LIMIT:
+        named += " and %d more" % (len(not_reviewed) - NAMED_LIMIT)
+    return "Read and flip to reviewed: %s" % named
+
+
 def measure_instrument_decisions():
     """Instruments still published under a provisional rights decision.
 
@@ -229,6 +262,20 @@ ROWS = [
         "do": "run sp-proxy/REDTEAM_CHECKLIST.md, then "
               "python3 13_Faculty_Resources/_automation/maintenance/record_red_team.py "
               "--state passed --signed-by 'Joshua Moss, MD'",
+    },
+    {
+        "key": "pack-cases",
+        "title": "Read the Interview Room cases that are in the pack but not yet reviewed",
+        "needs": None,
+        "measure": measure_pack_cases,
+        "detail": describe_pack_cases,
+        "unit": "pack cases learners cannot select yet",
+        "why": "A case may land in the reviewed pack as `pending` ahead of its red-team probes "
+               "(decision pending-case-in-reviewed-pack). It is unselectable, but its text ships "
+               "in the built pack, and once the console re-signs the drifted sp-interview.html "
+               "row nothing else names it. Only your read flips it to reviewed.",
+        "do": "read the case's lines, then a content PR sets its facultyReview.status to "
+              "reviewed with the read recorded on the PR; the console re-attests the drifted row",
     },
     {
         "key": "instrument-rights",
