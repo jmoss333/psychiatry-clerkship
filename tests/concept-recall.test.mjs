@@ -11,3 +11,36 @@ test('strict schema and unique IDs fail closed',()=>{for(const f of [{}, {...fee
 test('All includes no-week sources; week filters new eligibility only',()=>{assert.equal(F.newConceptAllowed(card(),['mse.md'],'week'),false);assert.equal(F.newConceptAllowed(card(),['mse.md'],'all'),true);assert.equal(F.newConceptAllowed({id:'TOPIC#mse.md'},[],'week'),true);});
 test('verify entire response bytes including newline before parsing',async()=>{const bytes=new TextEncoder().encode(JSON.stringify(feed())+'\n');const digest=createHash('sha256').update(bytes).digest('hex');assert.equal((await F.conceptVerifyBytes(bytes,digest)).length,2);await assert.rejects(F.conceptVerifyBytes(bytes.slice(0,-1),digest));await assert.rejects(F.conceptVerifyBytes(bytes,''));});
 test('week reply is typed bounded and nonce bound',()=>{const nonce='a'.repeat(32),reply={type:'cw:concept-week-context',nonce,week:2,refs:['mse.md']};assert.deepEqual(F.conceptWeekReply(reply,nonce),['mse.md']);assert.equal(F.conceptWeekReply({...reply,nonce:'bad'},nonce),null);assert.equal(F.conceptWeekReply({...reply,refs:['../evil']},nonce),null);});
+
+const recovery=()=>new Function(src+';return {conceptDigestFromDocument,conceptRecoverWorker};')();
+test('build digest requires exactly one valid meta tag',()=>{
+ const F=recovery(),digest='a'.repeat(64),doc=values=>({querySelectorAll:()=>values.map(content=>({content}))});
+ assert.equal(F.conceptDigestFromDocument(doc([digest])),digest);
+ for(const values of [[],['bad'],[digest,digest],[digest,'b'.repeat(64)]])assert.throws(()=>F.conceptDigestFromDocument(doc(values)));
+});
+function eventTarget(extra={}){const handlers={};return Object.assign({addEventListener:(t,f)=>(handlers[t]??=new Set()).add(f),removeEventListener:(t,f)=>handlers[t]?.delete(f),emit:t=>[...(handlers[t]||[])].forEach(f=>f())},extra);}
+test('Retry activates the updated waiting worker before completion without requiring clients.claim',async()=>{
+ const F=recovery();let sent=null,finished=false;
+ const worker=eventTarget({state:'installed',postMessage:m=>{sent=m;}});
+ const old={state:'activated'};
+ const reg=eventTarget({active:old,waiting:null,installing:null,update:async()=>{reg.waiting=worker;}});
+ const sw=eventTarget({controller:old,getRegistration:async()=>reg});
+ const promise=F.conceptRecoverWorker(sw,100).then(()=>{finished=true;});
+ await new Promise(r=>setTimeout(r,0));assert.deepEqual(sent,{type:'SKIP_WAITING'});assert.equal(finished,false);
+ worker.state='activated';reg.active=worker;worker.emit('statechange');await promise;assert.equal(finished,true);assert.equal(sw.controller,old,'actual worker has no clients.claim');
+});
+test('Retry fails visibly when no update or activation timeout occurs',async()=>{
+ const F=recovery();const reg=eventTarget({waiting:null,installing:null,update:async()=>{}});
+ await assert.rejects(F.conceptRecoverWorker(eventTarget({getRegistration:async()=>reg}),30),/No updated/);
+ reg.waiting=eventTarget({state:'installed',postMessage:()=>{}});
+ await assert.rejects(F.conceptRecoverWorker(eventTarget({getRegistration:async()=>reg}),10),/timed out/);
+});
+test('Retry follows an installing replacement through installed and activated',async()=>{
+ const F=recovery();let sent=0;
+ const worker=eventTarget({state:'installing',postMessage:m=>{assert.equal(m.type,'SKIP_WAITING');sent++;}});
+ const reg=eventTarget({waiting:null,installing:worker,update:async()=>{}});
+ const promise=F.conceptRecoverWorker(eventTarget({getRegistration:async()=>reg}),100);
+ await new Promise(r=>setTimeout(r,0));assert.equal(sent,0);
+ worker.state='installed';reg.waiting=worker;reg.installing=null;worker.emit('statechange');assert.equal(sent,1);
+ worker.state='activated';worker.emit('statechange');await promise;
+});

@@ -166,7 +166,7 @@ test('real queue and dashboard agree: week excludes new only, All includes no-we
  }
 });
 test('missing feed is a visible incomplete state and Retry checks worker update',()=>{
- const values=reviewStates(null);values[1]='unavailable';const shown=JSON.stringify(renderReview(values));assert.match(shown,/Concepts unavailable — review is incomplete/);assert.match(shown,/Retry Concepts/);assert.match(review,/reg\.update\(\)/);assert.doesNotMatch(review,/concepts\.json\?/);
+ const values=reviewStates(null);values[1]='unavailable';const shown=JSON.stringify(renderReview(values));assert.match(shown,/Concepts unavailable — review is incomplete/);assert.match(shown,/Retry Concepts/);assert.match(review,/conceptRecoverWorker\(navigator.serviceWorker\)/);assert.doesNotMatch(review,/concepts\.json\?/);
 });
 test('week filter is transient and direct visit only offers All',()=>{
  const shown=JSON.stringify(renderReview(reviewStates(null)));assert.match(shown,/All topics are available here/);assert.doesNotMatch(review,/localStorage\.setItem\([^\n]*conceptFilter/);
@@ -177,4 +177,9 @@ test('interactive controls suppress global shortcuts',()=>{
  let grades=0;const onKey=new Function('sessRef','grade','revealCard','choose','optOrder',body+';return onKey;')({current:{card:conceptFixture,revealed:true}},()=>grades++,()=>{},()=>{},()=>[]);
  onKey({key:'3',target:{closest:()=>({})}});assert.equal(grades,0);
  onKey({key:'3',target:{closest:()=>null}});assert.equal(grades,1);
+});
+test('recovery failure is visible and retry remains a deliberate action',()=>{
+ const values=reviewStates(null);values[1]='Concepts recovery timed out. Check your connection and try again.';
+ const shown=JSON.stringify(renderReview(values));assert.match(shown,/recovery timed out/);assert.match(shown,/Review remains incomplete/);assert.match(shown,/Retry Concepts/);
+ assert.match(review,/conceptRecoverWorker\(navigator.serviceWorker\)\.then\(function\(\)\{location.reload\(\);\}\)\.catch/);
 });

@@ -309,7 +309,7 @@ function App(){
 
   useEffect(function(){
     Promise.all([
-      fetch("concepts.json").then(function(r){if(!r.ok)throw Error('Concepts unavailable');return r.arrayBuffer();}).then(function(bytes){var meta=document.querySelector('meta[name="cw-concept-digest"]');return conceptVerifyBytes(bytes,meta&&meta.content);}).then(function(out){setConceptStatus('ready');return out;}).catch(function(){setConceptStatus('unavailable');return [];}),
+      fetch("concepts.json").then(function(r){if(!r.ok)throw Error('Concepts unavailable');return r.arrayBuffer();}).then(function(bytes){return conceptVerifyBytes(bytes,conceptDigestFromDocument(document));}).then(function(out){setConceptStatus('ready');return out;}).catch(function(){setConceptStatus('unavailable');return [];}),
       fetch("quizzes.json").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}),
       fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}),
       fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}),
@@ -414,9 +414,10 @@ function App(){
   function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); }
 
   function retryConcepts(){
-    Promise.resolve().then(function(){return navigator.serviceWorker?navigator.serviceWorker.getRegistration():null;}).then(function(reg){return reg?reg.update():null;}).catch(function(){}).then(function(){location.reload();});
+    setConceptStatus('recovering');
+    conceptRecoverWorker(navigator.serviceWorker).then(function(){location.reload();}).catch(function(error){setConceptStatus(error.message);});
   }
-  var conceptNotice=e("div",{className:"panel",role:"status"},conceptStatus==='ready'?null:"Concepts "+(conceptStatus==='loading'?"loading…":"unavailable — review is incomplete. Other card sources remain available."),conceptStatus==='unavailable'?e("button",{className:"btn ghost",onClick:retryConcepts},"Retry Concepts"):null);
+  var conceptNotice=e("div",{className:"panel",role:"status"},conceptStatus==='ready'?null:"Concepts "+(conceptStatus==='loading'?"loading…":conceptStatus==='recovering'?"updating offline cache…":conceptStatus==='unavailable'?"unavailable — review is incomplete. Other card sources remain available.":conceptStatus+" Review remains incomplete."),conceptStatus!=='ready'&&conceptStatus!=='loading'&&conceptStatus!=='recovering'?e("button",{className:"btn ghost",onClick:retryConcepts},"Retry Concepts"):null);
   var nextDue=lastConcept?e("div",{className:"panel",role:"status"},"Concept: "+lastConcept.q+" → ",e("a",{href:"../index.html?page="+encodeURIComponent(lastConcept.page)},prettyRef(lastConcept.page))," → Next due: "+new Date(lastConcept.due).toLocaleString()):null;
   var head=e("div",{className:"topline"},
     e("div",{className:"logo"},"ψ"),

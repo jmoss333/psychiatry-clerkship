@@ -26,3 +26,48 @@ function conceptWeekReply(data,nonce){
      !data.refs.every(function(ref){return typeof ref==='string' && /^[A-Za-z0-9_-]+\.(md|html)$/.test(ref);})) return null;
   return data.refs.slice();
 }
+/* Ambiguous build metadata is an integrity failure even when both tags agree. */
+function conceptDigestFromDocument(doc){
+  var tags=doc.querySelectorAll('meta[name="cw-concept-digest"]');
+  if(tags.length!==1 || !/^[a-f0-9]{64}$/.test(tags[0].content||'')) throw Error('Concepts build digest unavailable or ambiguous');
+  return tags[0].content;
+}
+/* Explicit learner-triggered recovery. The worker does not clients.claim(), so
+   activation of the replacement (not controllerchange alone) permits reload. */
+function conceptRecoverWorker(serviceWorker,timeoutMs){
+  if(!serviceWorker)return Promise.resolve();
+  return new Promise(function(resolve,reject){
+    var done=false,reg=null,worker=null;
+    var timer=setTimeout(function(){finish(Error('Concepts recovery timed out. Check your connection and try again.'));},timeoutMs||10000);
+    function finish(error){
+      if(done)return;done=true;clearTimeout(timer);
+      if(worker)worker.removeEventListener('statechange',stateChanged);
+      if(reg)reg.removeEventListener('updatefound',inspect);
+      serviceWorker.removeEventListener('controllerchange',stateChanged);
+      if(error)reject(error);else resolve();
+    }
+    function stateChanged(){
+      if(!worker||done)return;
+      if(worker.state==='activated')return finish();
+      if(worker.state==='redundant')return finish(Error('Concepts update failed. Try again when online.'));
+      if(worker.state==='installed')worker.postMessage({type:'SKIP_WAITING'});
+    }
+    function inspect(){
+      if(done)return;
+      var next=reg.waiting||reg.installing;
+      if(!next)return;
+      if(worker!==next){if(worker)worker.removeEventListener('statechange',stateChanged);worker=next;worker.addEventListener('statechange',stateChanged);}
+      stateChanged();
+    }
+    serviceWorker.addEventListener('controllerchange',stateChanged);
+    Promise.resolve().then(function(){return serviceWorker.getRegistration();}).then(function(value){
+      if(done)return;
+      reg=value;if(!reg){finish();return;}
+      reg.addEventListener('updatefound',inspect);
+      return reg.update().then(function(){
+        if(done)return;inspect();
+        if(!worker)finish(Error('No updated Concepts cache is available. Check your connection and try again later.'));
+      });
+    }).catch(function(){finish(Error('Could not update Concepts. Check your connection and try again.'));});
+  });
+}
