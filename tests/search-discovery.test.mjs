@@ -98,6 +98,7 @@ for (const site of ['ms3', 'res']) {
     }
   });
   const exactNames = [
+    ['Case Journeys', 'one-patient-six-weeks.html'],
     ['One Patient, Six Weeks', 'one-patient-six-weeks.html'],
     [`First-Episode Psychosis (Sep 7) — ${site === 'res' ? 'Resident' : 'MS3'}`, `cotw_20260907_fep_${site}.md`],
     ...(site === 'res' ? [['Post-Event Learning Huddle (2 min)', 'rp-post-event-huddle.html']] : []),

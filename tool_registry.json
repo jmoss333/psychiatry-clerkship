@@ -197,14 +197,12 @@
     },
     {
       "file": "one-patient-six-weeks.html",
-      "title": "One Patient, Six Weeks",
+      "title": "Case Journeys",
       "sourcePath": "08_Cases_and_Simulation/one-patient-six-weeks.html",
       "category": "longitudinal-simulation",
       "riskLevel": "moderate",
       "disclaimerType": "fictional-simulation-supervision",
-      "storageKeys": [
-        "cw_longitudinal_v1"
-      ],
+      "storageKeys": [],
       "evidenceIds": [],
       "relatedPages": [
         "pg_interview.md",
@@ -219,7 +217,14 @@
         "agitation.md",
         "doc_oral.md",
         "shelf.md",
-        "evidence_inpatient.md"
+        "evidence_inpatient.md",
+        "t_psychosis.md",
+        "t_sud.md",
+        "case_formulation.md",
+        "delirium.md",
+        "exp_consult.md",
+        "suicide.md",
+        "t_anxiety.md"
       ]
     },
     {
