@@ -35,6 +35,7 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 | Interview Room contract and conditional actor canary | Every 6 hours, `0 */6 * * *` | Netlify `sp-health-canary` | Blob store `sp-health-canary`, key `latest`; not a GitHub artifact |
 | Interview Room receipt monitor | Every 12 hours at minute 15, `15 */12 * * *` | `maintenance-sp-health-monitor.yml` | `maintenance-sp-health-${{ github.run_id }}` — 90 days |
 | Autonomous queue runner | Daily 04:40 UTC, `40 4 * * *` | `maintenance-queue-runner.yml` | `maintenance-queue-runner-${{ github.run_id }}` — 90 days |
+| Production release train | Daily 09:05, 15:05, and 21:05 UTC, `5 9,15,21 * * *` | `production-release-train.yml` | `production-release-train-${{ github.run_id }}` — 90 days |
 | Production learner canary | Daily 09:20 UTC, `20 9 * * *` | `maintenance-production-canary.yml` | `maintenance-production-canary-${{ github.run_id }}` — 90 days |
 | Internal workflow heartbeat | Daily 10:45 UTC, `45 10 * * *` | `maintenance-heartbeat.yml` | `maintenance-workflow-heartbeat-${{ github.run_id }}`, `maintenance-stranded-prs-${{ github.run_id }}`, `maintenance-automation-branch-prs-${{ github.run_id }}` — 90 days each |
 | Clean-room release rehearsal | Sunday 08:00 UTC, `0 8 * * 0` | `ci.yml` | `smoke-test-results-${{ github.run_number }}` — 14 days |
@@ -62,6 +63,23 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 - `pending_first_run`: the exact current workflow blob was recently activated and no
   qualifying scheduled run exists yet, within that workflow's freshness allowance.
   It is temporary grace, not success. It becomes `missing` and blocks when grace expires.
+
+### Release-train protective holds
+
+Every release-train run uploads one small, content-free receipt bound to its exact Actions
+run ID. When the spend tripwire deliberately holds a scheduled publish, the receipt records
+the observed and projected learner/account deploy counts, both budgets, and the first future
+configured train slot that would fit **if no additional billable deploys occur**. The internal
+heartbeat copies that bounded object into the exact failed workflow row as `protectiveHold`.
+That annotation distinguishes a working cost guard from broken deployment code; it does not
+turn the failed run green or claim that publication is guaranteed at the projected time.
+
+The heartbeat accepts the annotation only when the artifact name, embedded run ID, workflow,
+outcome, counts, budgets, and timestamps validate against the exact latest qualifying failed
+run. Missing, expired, duplicate, mismatched, or malformed evidence leaves the row as an
+ordinary `failed` release-train row with no `protectiveHold`. Never infer a protective hold
+from a log message alone, and do not retry or change configuration merely because the projected
+slot has not arrived; inspect the named run and any deploys added since `observedAt` first.
 
 ## Gate versus exit code
 
