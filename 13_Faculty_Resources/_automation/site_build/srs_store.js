@@ -17,12 +17,12 @@
    registry of which prefix belongs to which bucket. */
 var SRS_KEY='cw_srs_v1';
 var DAY = 86400000;
-function srsFresh(){return {v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}};}
+function srsFresh(){return {v:1,cards:{},day:{lastDay:'',newToday:0},stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0,choiceSeen:0,choiceCorrect:0,recallSeen:0,recallGoodEasy:0},settings:{newPerDay:12}};}
 function srsLoadStore(){try{var s=JSON.parse(localStorage.getItem(SRS_KEY)||'null');if(s&&s.v===1){s.cards=s.cards||{};s.stats=s.stats||srsFresh().stats;return s;}}catch(_){}return srsFresh();}
 function srsSaveStore(s){try{localStorage.setItem(SRS_KEY,JSON.stringify(s));}catch(_){}}
 
-/* Schedule one card by id. Writes `cards` only — never `stats`: review.html
-   renders Retention as correct/seen over cards it actually served, and a grade
+/* Schedule one card by id. Writes `cards` only — never `stats`: Daily Review
+   separates measured choices and self-rated recall, and a grade
    inferred inside another tool has no place in that denominator. */
 function srsGradeCard(id,grade){
   if(!id) return null;

@@ -204,8 +204,8 @@ test('srsGradeCard writes cards and never touches the retention stats', () => {
   assert.ok(card && card.due > 0 && card.reps === 1);
   const saved = JSON.parse(mem.get('cw_srs_v1'));
   assert.ok(saved.cards['COMM#x'], 'the card is persisted under its id');
-  assert.deepEqual(saved.stats, { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0 },
-    'Retention counts only what Daily Review itself served');
+  assert.deepEqual(saved.stats, { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0, choiceSeen: 0, choiceCorrect: 0, recallSeen: 0, recallGoodEasy: 0 },
+    'Scheduling alone leaves all grading counters at zero');
   assert.equal(api.srsGradeCard('', 'Good'), null, 'an empty id writes nothing');
 });
 

@@ -67,6 +67,14 @@ ledger_receipt_into() {
 
 python3 "$LIB/13_Faculty_Resources/_automation/test_validate_curriculum.py"
 python3 "$HERE/test_welcome_compass.py"
+# Native Concepts contracts run for both audiences in CI, local verify and Netlify.
+(
+  cd "$LIB"
+  python3 13_Faculty_Resources/_automation/site_build/test_concept_cards.py
+  python3 13_Faculty_Resources/_automation/site_build/test_concept_build.py
+  python3 13_Faculty_Resources/_automation/site_build/test_concept_package.py
+  python3 13_Faculty_Resources/_automation/site_build/test_review_companions.py
+)
 python3 "$LIB/13_Faculty_Resources/_automation/validate_topic_meta.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_curriculum.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_rotation_edition_schema.py"
@@ -111,8 +119,9 @@ case "$SITE" in
     python3 "$HERE/check_search_quality.py" "$MS3_OUT" ms3
     echo "── Shipped-pages parity: $MS3_OUT"
     python3 "$HERE/shipped_pages.py" --check-build "$MS3_OUT" --site ms3
-    echo "── Anki decks → $MS3_OUT/anki (fail-soft)"
-    bash "$HERE/build_anki.sh" "$MS3_OUT" || true
+    echo "── Anki decks → $MS3_OUT/anki (semantic parity gate)"
+    bash "$HERE/build_anki.sh" "$MS3_OUT"
+    python3 "$HERE/check_anki_parity.py" "$MS3_OUT" ms3
     ;;
   res)
     # Resident derives from the MS3 build, so build both; gate the published dir.
@@ -129,8 +138,9 @@ case "$SITE" in
     python3 "$HERE/check_search_quality.py" "$RES_OUT" resident
     echo "── Shipped-pages parity: $RES_OUT"
     python3 "$HERE/shipped_pages.py" --check-build "$RES_OUT" --site res
-    echo "── Anki decks → $RES_OUT/anki (fail-soft)"
-    bash "$HERE/build_anki.sh" "$RES_OUT" || true
+    echo "── Anki decks → $RES_OUT/anki (semantic parity gate)"
+    bash "$HERE/build_anki.sh" "$RES_OUT"
+    python3 "$HERE/check_anki_parity.py" "$RES_OUT" res
     ;;
   *)
     echo "unknown site '$SITE' (expected ms3|res)" >&2

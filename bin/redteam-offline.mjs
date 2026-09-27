@@ -69,8 +69,9 @@ const NOT_REVIEWED = Object.fromEntries(
   // with a green exit — every probe naming it skipping and, since gates are evaluated per
   // reviewed case, its gates unevaluated. Refuse a spelling this runner does not know before
   // anything runs, as the duplicate case id is refused above.
-  // DECISION: pending-case-in-reviewed-pack — `pending` is the one non-reviewed spelling the
-  // validator lets into a reviewed pack, and it is the one this runner skips rather than refuses.
+  // DECISION: pack-case-review-is-registration (amended 2026-09-27, #844) — `pending` is the one
+  // non-reviewed spelling the validator lets into a reviewed pack, and the one this runner skips
+  // rather than refuses.
   const KNOWN_STATUSES = new Set(['reviewed', 'pending']);
   const odd = pack.cases
     .filter((c) => !KNOWN_STATUSES.has(c.facultyReview && c.facultyReview.status))
@@ -657,8 +658,9 @@ function gateProbes(c, g) {
 // cover its gates: evaluating them would be a guaranteed, uncoverable failure that says nothing
 // about the served pack. Its gates are judged the moment its probes can run — and the CASE gate
 // requires a passing probe on it at that same moment. This is what lets a NEW case with gates
-// land at all (DECISION: pending-case-in-reviewed-pack, 2026-09-27): the attestation validator
-// accepts a `pending` case inside a reviewed pack, so the order is a content PR that adds the
+// land at all (decision pack-case-review-is-registration as amended 2026-09-27 by #844, design
+// 2026-09-27-red-team-governance-simplification §2.1): the attestation validator accepts a
+// `pending` case inside a reviewed pack, so the order is a content PR that adds the
 // case pending, a governance PR that adds its probes (they skip while it is pending; L1 forbids
 // bin/ and the pack in one diff), and a content PR that flips it to reviewed — at which point
 // CASE and GATES both demand passing probes that drove it. Until 2026-09-27 the validator refused

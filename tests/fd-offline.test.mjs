@@ -490,3 +490,16 @@ test('changing learner role rechecks the active cache even when week URLs coinci
   assert.equal(h.channels[0].port1.closed, true);
   monitor.destroy();
 });
+
+
+test('Daily Review selected pack requires every card feed and missing bytes cannot be ready', () => {
+  const urls=F.fdOfflineUrls(index([item('review.html')]),{week:2});
+  const feeds=['/tools/concepts.json','/tools/quizzes.json','/tools/review_companions.json'];
+  assert.deepEqual(urls,['/','/search-index.json','/tools/review.html',...feeds]);
+  for(const missing of feeds){
+    const partial={version:'test',ready:false,present:urls.filter(u=>u!==missing),missing:[missing]};
+    assert.deepEqual(F.fdOfflineResponse(partial,urls),partial);
+    assert.equal(F.fdOfflineResponse({...partial,ready:true},urls),null);
+    assert.equal(F.fdOfflineStatus({response:partial,expected:urls}).kind,'not-ready');
+  }
+});

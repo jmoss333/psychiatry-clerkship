@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+"""Prepare exact-deploy red-team evidence without making a human verdict."""
+
+from __future__ import annotations
+
+import argparse
+import io
+import json
+import os
+import re
+import subprocess
+import sys
+import tarfile
+import tempfile
+from datetime import datetime, timezone
+from hashlib import sha256
+from pathlib import Path
+
+try:
+    from .red_team_deploys import EvidenceUnavailable, source_pack_bytes, fetch_snapshot
+except ImportError:  # direct script execution
+    from red_team_deploys import EvidenceUnavailable, source_pack_bytes, fetch_snapshot
+
+
+ROOT = Path(__file__).resolve().parents[3]
+CONFIG = Path(__file__).resolve().parent / "maintenance_config.json"
+TIER1 = ROOT / "bin" / "redteam-offline.mjs"
+TIER2 = ROOT / "bin" / "redteam-live.sh"
+LIVE_IDS = {"D0", "D1", "D1b", "D5", "B5"}
+
+
+def run_tier1(pack_bytes: bytes, source_commit: str) -> dict:
+    """Run the deployed proxy code and probes against the supplied current pack."""
+    try:
+        archive = subprocess.run(
+            ["git", "archive", "--format=tar", source_commit,
+             "bin/redteam-offline.mjs", "sp-proxy/netlify/functions/sp.mjs",
+             "sp-proxy/netlify/functions/_shared/"],
+            cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            check=True, timeout=30,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        raise EvidenceUnavailable("Tier 1 proxy-commit code unavailable") from exc
+    modules = ROOT / "sp-proxy" / "node_modules"
+    if not modules.is_dir():
+        raise EvidenceUnavailable("Tier 1 dependencies unavailable; install sp-proxy packages")
+    with tempfile.TemporaryDirectory(prefix="sp-redteam-commit-") as directory:
+        mini = Path(directory)
+        with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as package:
+            names = set()
+            for member in package:
+                name = member.name.rstrip("/")
+                if member.isdir():
+                    continue
+                if (not member.isfile() or name.startswith("/") or ".." in Path(name).parts
+                        or not (name in ("bin/redteam-offline.mjs",
+                                             "sp-proxy/netlify/functions/sp.mjs")
+                                or name.startswith("sp-proxy/netlify/functions/_shared/"))):
+                    raise EvidenceUnavailable("Tier 1 source archive malformed")
+                names.add(name)
+                target = mini / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                source = package.extractfile(member)
+                if source is None:
+                    raise EvidenceUnavailable("Tier 1 source archive malformed")
+                target.write_bytes(source.read())
+        if not {"bin/redteam-offline.mjs", "sp-proxy/netlify/functions/sp.mjs"} <= names:
+            raise EvidenceUnavailable("Tier 1 source archive incomplete")
+        (mini / "sp-proxy" / "node_modules").symlink_to(modules, target_is_directory=True)
+        pack_path = mini / "deployed-pack.json"
+        pack_path.write_bytes(pack_bytes)
+        try:
+            result = subprocess.run(
+                ["node", str(mini / "bin" / "redteam-offline.mjs"), str(pack_path)],
+                cwd=mini, text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=120,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise EvidenceUnavailable("Tier 1 failed or empty") from exc
+    counts = re.findall(r"(\d+)/(\d+) deterministic probes pass", result.stdout)
+    if result.returncode or len(counts) != 1:
+        raise EvidenceUnavailable("Tier 1 failed or empty")
+    passes, total = map(int, counts[0])
+    return {"state": "passed", "passes": passes, "total": total,
+            "sourceCommit": source_commit}
+
+
+def run_tier2(endpoint: str) -> dict:
+    if not sys.stdin.isatty():
+        raise EvidenceUnavailable("Tier 2 requires an attached terminal for hidden passcode entry")
+    fd, path = tempfile.mkstemp(prefix="sp-redteam-live-", suffix=".json")
+    os.close(fd)
+    try:
+        env = os.environ.copy()
+        env.pop("SP_STUDENT_PASSCODE", None)
+        env["REDTEAM_PROMPT_ONLY"] = "1"
+        try:
+            result = subprocess.run(
+                ["bash", str(TIER2), "--result-json", path, endpoint],
+                cwd=ROOT, env=env, timeout=180,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise EvidenceUnavailable("Tier 2 failed or skipped") from exc
+        try:
+            live = json.loads(Path(path).read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            raise EvidenceUnavailable("Tier 2 result unavailable") from exc
+        if result.returncode:
+            raise EvidenceUnavailable("Tier 2 failed or skipped")
+        return live
+    finally:
+        Path(path).unlink(missing_ok=True)
+
+
+def prepare(snapshot: dict, tier1_runner=run_tier1, tier2_runner=run_tier2,
+            *, pack_loader=source_pack_bytes) -> dict:
+    """Return a content-free work record only after all mechanical evidence agrees."""
+    try:
+        proxy = snapshot["deployments"]["proxy"]
+        pack_source = snapshot["packSourceCommit"]
+        data = pack_loader(pack_source)
+        if sha256(data).hexdigest() != snapshot["packSha256"]:
+            raise EvidenceUnavailable("main pack source hash mismatch")
+        tier1 = tier1_runner(data, proxy["commitRef"])
+        if (tier1.get("state") != "passed" or not isinstance(tier1.get("passes"), int)
+                or not isinstance(tier1.get("total"), int) or tier1["passes"] < 1
+                or tier1["passes"] != tier1["total"]
+                or tier1.get("sourceCommit") != proxy["commitRef"]):
+            raise EvidenceUnavailable("Tier 1 failed or empty")
+        endpoint = proxy["deployUrl"].rstrip("/") + "/api/sp"
+        live = tier2_runner(endpoint)
+        checks = live.get("checks")
+        if (live.get("state") != "passed" or not isinstance(checks, list)
+                or len(checks) != len(LIVE_IDS)
+                or {check.get("id") for check in checks if isinstance(check, dict)} != LIVE_IDS
+                or any(not isinstance(check, dict) or check.get("status") != "pass"
+                       for check in checks)):
+            raise EvidenceUnavailable("Tier 2 failed or skipped")
+        if live.get("packSha256") != snapshot["packSha256"]:
+            raise EvidenceUnavailable("served pack hash mismatch")
+        if live.get("packVersion") != snapshot["packVersion"]:
+            raise EvidenceUnavailable("served pack version mismatch")
+        if (live.get("actorModel"), live.get("evaluatorModel")) != (
+                snapshot["model"], snapshot["model"]):
+            raise EvidenceUnavailable("runtime model mismatch")
+        if (not isinstance(live.get("realtimeEnabled"), bool)
+                or not isinstance(live.get("managedVoiceEnabled"), bool)):
+            raise EvidenceUnavailable("voice activation unverified")
+        if live["realtimeEnabled"] and (not live.get("realtimeModel")
+                                         or not live.get("transcriptionModel")):
+            raise EvidenceUnavailable("realtime model pins unverified")
+        stack = live.get("managedVoiceStack")
+        if live["managedVoiceEnabled"] and (not isinstance(stack, dict) or not stack.get("id")):
+            raise EvidenceUnavailable("managed voice stack unverified")
+        runtime = {
+            "actorModel": live["actorModel"], "evaluatorModel": live["evaluatorModel"],
+            "realtimeEnabled": live["realtimeEnabled"],
+            "realtimeModel": live.get("realtimeModel"),
+            "transcriptionModel": live.get("transcriptionModel"),
+            "managedVoiceEnabled": live["managedVoiceEnabled"],
+            "managedVoiceStack": (
+                {"id": stack["id"],
+                 "transcriptionModel": stack.get("transcription", {}).get("model"),
+                 "synthesisModel": stack.get("synthesis", {}).get("model")}
+                if isinstance(stack, dict) else None),
+        }
+        checked_at = datetime.now(timezone.utc).isoformat()
+        return {
+            "schemaVersion": 1, "state": "prepared", "checkedAt": checked_at,
+            "deployments": snapshot["deployments"],
+            "packSha256": snapshot["packSha256"], "packVersion": snapshot["packVersion"],
+            "model": snapshot["model"], "packSourceCommit": pack_source,
+            "runtime": runtime,
+            "mechanical": {
+                "tier1": {"state": "passed", "passes": tier1["passes"],
+                          "total": tier1["total"], "sourceCommit": proxy["commitRef"],
+                          "checkedAt": checked_at},
+                "tier2": {"state": "passed", "checks": [
+                    {"id": check["id"], "status": "pass"} for check in checks],
+                          "checkedAt": checked_at},
+            },
+        }
+    except (KeyError, TypeError, ValueError) as exc:
+        raise EvidenceUnavailable("preflight evidence malformed") from exc
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=["prepare", "record"])
+    parser.add_argument("work_file", nargs="?", type=Path)
+    args = parser.parse_args(argv)
+    if args.command == "record":
+        if args.work_file is None:
+            parser.error("record requires the prepared work-file path")
+        try:
+            from .record_red_team import record_interactive
+        except ImportError:
+            from record_red_team import record_interactive
+        return record_interactive(args.work_file)
+    if args.work_file is not None:
+        parser.error("prepare takes no work-file path")
+    try:
+        config = json.loads(CONFIG.read_text(encoding="utf-8"))
+        snapshot = fetch_snapshot(config, os.environ.get("NETLIFY_AUTH_TOKEN", ""))
+        work = prepare(snapshot)
+        fd, path = tempfile.mkstemp(prefix="sp-redteam-work-", suffix=".json")
+        with os.fdopen(fd, "w", encoding="utf-8") as output:
+            json.dump(work, output, indent=2, sort_keys=True)
+            output.write("\n")
+        print(f"Prepared exact-deploy evidence: {path}")
+        print("This is a mechanical work record, not a red-team pass. Complete the manual checklist next.")
+        return 0
+    except EvidenceUnavailable as exc:
+        print(f"Red-team preparation unverified: {exc}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

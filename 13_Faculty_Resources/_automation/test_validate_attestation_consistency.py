@@ -639,51 +639,114 @@ class AttestationConsistencyTests(unittest.TestCase):
             errors,
         )
 
-    def test_reviewed_pack_accepts_a_pending_case_and_no_other_non_reviewed_spelling(self):
-        # DECISION: pending-case-in-reviewed-pack — a pending case is unselectable everywhere
-        # (tool, proxy and red-team runner select on `reviewed`) and its probes skip, so it may
-        # sit inside a reviewed pack ahead of those probes. The accepted shape is exercised in
-        # more than one configuration (pack status, position, a synthetic id, a drifted block
-        # that keeps reviewer and date — the D6 shape) so a validator that accepts `pending`
-        # only in one of them cannot pass. Every other non-reviewed spelling is still refused,
-        # and the message names what is accepted.
-        def pending_case(case_id, review):
+    def test_reviewed_pack_registers_a_pending_case_without_signoff(self):
+        pack = pending_pack()
+        pack["status"] = "reviewed"
+        pack["cases"].append(
+            {
+                "id": "sp_synthetic_pending_001",
+                "facultyReview": {
+                    "status": "pending",
+                    "reviewer": None,
+                    "lastReviewed": None,
+                },
+                "speechProfile": draft_speech_profile("synthetic-pending-v1"),
+            }
+        )
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root, ledger_status="reviewed", tool_status="reviewed", pack=pack
+            )
+            errors = self.validate(root)
+        self.assertEqual(errors, [])
+
+    def test_pending_case_cannot_carry_a_review_claim(self):
+        for field, value in (
+            ("reviewer", "Old Reviewer"),
+            ("lastReviewed", "2026-09-01"),
+            ("reviewedAt", "2026-09-01"),
+        ):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as root:
+                pack = pending_pack()
+                pack["status"] = "reviewed"
+                pack["cases"].append(
+                    {
+                        "id": "sp_synthetic_pending_001",
+                        "facultyReview": {
+                            "status": "pending",
+                            "reviewer": None,
+                            "lastReviewed": None,
+                            field: value,
+                        },
+                        "speechProfile": draft_speech_profile("synthetic-pending-v1"),
+                    }
+                )
+                write_fixture(
+                    root, ledger_status="reviewed", tool_status="reviewed", pack=pack
+                )
+                errors = self.validate(root)
+                self.assertTrue(
+                    any("pending case sp_synthetic_pending_001" in e for e in errors),
+                    errors,
+                )
+
+    def test_unknown_case_status_cannot_use_pending_exception(self):
+        pack = pending_pack()
+        pack["status"] = "reviewed"
+        pack["cases"].append(
+            {
+                "id": "sp_synthetic_pending_001",
+                "facultyReview": {"status": "reviewed-pending"},
+                "speechProfile": draft_speech_profile("synthetic-pending-v1"),
+            }
+        )
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(root, ledger_status="reviewed", tool_status="reviewed", pack=pack)
+            errors = self.validate(root)
+        self.assertTrue(
+            any("attested pack contains non-reviewed case sp_synthetic_pending_001" in e for e in errors),
+            errors,
+        )
+
+    def test_pending_is_accepted_in_an_attested_pack_and_at_any_position(self):
+        # The accepted shape in more than one configuration — an attested pack, a case inserted
+        # first rather than appended, a synthetic id — so a validator that accepts `pending`
+        # only in the one shape test_reviewed_pack_registers_a_pending_case_without_signoff
+        # builds cannot pass. Fixtures are clean, so the whole error list must be empty.
+        def pending_case(case_id):
             return {
                 "id": case_id,
-                "facultyReview": review,
+                "facultyReview": {"status": "pending", "reviewer": None, "lastReviewed": None},
                 "speechProfile": draft_speech_profile(case_id + "-v1"),
             }
 
-        blank = {"status": "pending", "reviewer": None, "lastReviewed": None}
-        drifted = {"status": "pending", "reviewer": "Faculty Reviewer, MD", "lastReviewed": "2026-07-13"}
-        accepted = [
-            ("reviewed pack, appended, synthetic id", "reviewed", "append", "sp_new_case_fixture_001", blank),
-            ("attested pack, appended, real id", "attested", "append", "sp_mania_redirect_001", blank),
-            ("reviewed pack, inserted first", "reviewed", "first", "sp_new_case_fixture_001", blank),
-            ("reviewed pack, drifted block keeps reviewer and date", "reviewed", "append", "sp_new_case_fixture_001", drifted),
-        ]
-        for label, pack_status, position, case_id, review in accepted:
+        for label, pack_status, position, case_id in (
+            ("attested pack, appended, real id", "attested", "append", "sp_mania_redirect_001"),
+            ("reviewed pack, inserted first, synthetic id", "reviewed", "first", "sp_new_case_fixture_001"),
+        ):
             with self.subTest(label), tempfile.TemporaryDirectory() as root:
                 pack = pending_pack()
                 pack["status"] = pack_status
-                case = pending_case(case_id, dict(review))
                 if position == "first":
-                    pack["cases"].insert(0, case)
+                    pack["cases"].insert(0, pending_case(case_id))
                 else:
-                    pack["cases"].append(case)
+                    pack["cases"].append(pending_case(case_id))
                 write_fixture(
                     root, ledger_status="reviewed", tool_status="reviewed", pack=pack
                 )
                 self.assertEqual(self.validate(root), [])
+
+    def test_every_other_non_reviewed_spelling_is_refused_and_the_message_names_the_accepted_set(self):
         for spelling in ("draft", "unreviewed", "Pending", "", None):
             with self.subTest(spelling=spelling), tempfile.TemporaryDirectory() as root:
                 pack = pending_pack()
                 pack["status"] = "reviewed"
                 pack["cases"].append(
-                    pending_case(
-                        "sp_new_case_fixture_001",
-                        {"status": spelling, "reviewer": None, "lastReviewed": None},
-                    )
+                    {
+                        "id": "sp_new_case_fixture_001",
+                        "facultyReview": {"status": spelling, "reviewer": None, "lastReviewed": None},
+                        "speechProfile": draft_speech_profile("odd-v1"),
+                    }
                 )
                 write_fixture(
                     root, ledger_status="reviewed", tool_status="reviewed", pack=pack
@@ -700,8 +763,8 @@ class AttestationConsistencyTests(unittest.TestCase):
 
     def test_pending_case_in_a_reviewed_pack_may_not_carry_a_reviewed_speech_profile(self):
         # Now that `pending` is a legal case status inside a reviewed pack, this cross-check is
-        # what keeps an unselectable case from shipping a reviewed voice profile. Pinned here
-        # because a mutant exempting `pending` from it survived the rest of the file.
+        # what keeps an unselectable case from shipping a reviewed voice profile. Pinned because
+        # a mutant exempting `pending` from it survived every other test in the file.
         pack = reviewed_voice_pack()
         review_first_profile(pack)
         pack["cases"][0]["facultyReview"] = {
@@ -739,6 +802,17 @@ class AttestationConsistencyTests(unittest.TestCase):
             )
             errors = self.validate(root)
         self.assertEqual([e for e in errors if "sp_new_case_fixture_001" in e], [], errors)
+
+    def test_reviewed_pack_needs_a_selectable_reviewed_case(self):
+        pack = pending_pack()
+        pack["status"] = "reviewed"
+        pack["cases"][0]["facultyReview"] = {
+            "status": "pending", "reviewer": None, "lastReviewed": None
+        }
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(root, ledger_status="reviewed", tool_status="reviewed", pack=pack)
+            errors = self.validate(root)
+        self.assertTrue(any("no selectable reviewed case" in e for e in errors), errors)
 
     def test_reviewed_case_requires_reviewer_and_date(self):
         mutations = {

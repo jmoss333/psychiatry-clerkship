@@ -21,6 +21,7 @@
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-dark)}
 .wrap{max-width:720px;margin:0 auto;padding:18px 18px 64px}
 .topline{display:flex;align-items:center;gap:11px;margin-bottom:14px}
 .logo{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;display:grid;place-items:center;font-family:Georgia,serif;font-size:20px;flex:none}
@@ -46,6 +47,25 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow-sm);margin-bottom:14px}
 .panel h2{font-family:"Source Serif 4",Georgia,serif;font-size:1.04rem;margin:0 0 7px}
 .muted{color:var(--text-light);font-size:.86rem}
+.lanes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0 0 12px}
+@media(max-width:540px){.lanes{grid-template-columns:1fr}}
+.lane{display:block;width:100%;text-align:left;background:var(--surface);border:2px solid var(--border);border-radius:13px;padding:13px 15px;color:var(--text);font:inherit;cursor:pointer}
+.lane:hover{border-color:var(--accent)}
+.lane[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-light);box-shadow:inset 4px 0 0 var(--accent)}
+.lane__name{display:block;font-family:"Source Serif 4",Georgia,serif;font-weight:700;font-size:1.05rem}
+.lane__count{display:block;color:var(--text-mid);font-size:.84rem;margin-top:3px}
+.lane__note{display:block;color:var(--text-light);font-size:.78rem;margin-top:3px}
+.allrow{margin:0 0 16px}
+.allrow .chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+.bridge{margin:14px 0 2px;border:1.5px solid var(--accent);background:var(--surface);border-radius:13px;padding:14px}
+.bridge h2{font-family:"Source Serif 4",Georgia,serif;font-size:1.02rem;margin:0 0 9px}
+.bridge__steps{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 10px;padding:0}
+.bridge__steps li{position:relative;min-width:0;padding:10px 11px;border-radius:9px;background:var(--accent-light);border:1px solid var(--border2)}
+.bridge__steps li+li:before{content:"→";position:absolute;left:-12px;top:40%;color:var(--accent-dark);font-weight:800;background:var(--surface);border-radius:50%;padding:0 2px}
+.bridge__steps strong{display:block;color:var(--accent-dark);font-size:.75rem;margin-bottom:4px}
+.bridge__steps span{display:block;font-size:.85rem;line-height:1.45}
+.bridge__foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:.83rem}
+@media(max-width:600px){.bridge__steps{grid-template-columns:1fr}.bridge__steps li+li:before{content:"↓";top:-16px;left:50%}}
 .setrow{display:flex;align-items:center;gap:12px;margin-top:10px;font-size:.9rem;color:var(--text-mid)}
 .setrow input[type=range]{flex:1;accent-color:var(--primary)}
 .linkrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:6px}
@@ -122,7 +142,7 @@ function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)
    place of the old one). Verified across 200 ids: 24/24 permutations, first-position ≈ 1/4. */
 function optOrder(card){var s=String(card.id)+"|"+todayStr(),seed=2166136261,i;for(i=0;i<s.length;i++){seed^=s.charCodeAt(i);seed=Math.imul(seed,16777619)>>>0;}var idx=card.o.map(function(_,j){return j;});for(var j=idx.length-1;j>0;j--){seed^=seed<<13;seed>>>=0;seed^=seed>>>17;seed^=seed<<5;seed>>>=0;var k=seed%(j+1);var t=idx[j];idx[j]=idx[k];idx[k]=t;}return idx;}
 function yestStr(){var d=new Date(Date.now()-DAY);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
-function freshStore(){return {v:1,cards:{},day:{lastDay:"",newToday:0},stats:{streak:0,lastStudy:"",totalReviews:0,correct:0,seen:0},settings:{newPerDay:12}};}
+function freshStore(){return {v:1,cards:{},day:{lastDay:"",newToday:0},stats:{streak:0,lastStudy:"",totalReviews:0,correct:0,seen:0,choiceSeen:0,choiceCorrect:0,recallSeen:0,recallGoodEasy:0},settings:{newPerDay:12}};}
 /* #324 backfill: sliders set before userSet existed. Every cw_srs_v1 writer defaults
    newPerDay to 12, so a non-12 value proves an explicit choice. Learners who explicitly
    chose exactly 12 are irreducibly indistinguishable from the default and stay cappable. */
@@ -146,6 +166,7 @@ var GRADE_NAMES=["Again","Hard","Good","Easy"]; // grade buttons stay 0-3; mappe
 /*__BLOCK_STORE__*/
 /*__SESSION_RECEIPT__*/
 /*__FAM_RETRIEVAL__*/
+/*__CONCEPT_RECALL__*/
 
 /* Readable label for a content ref ("t_mood.md" -> "Mood"). Shared by the topic-card titles and
    the receipt's re-read links so one page never gets two spellings. */
@@ -190,6 +211,88 @@ function famRecallCards(data){
    and reasoning cards are `choice`, but all three are seeded by their own tool. Decks and topic
    quizzes carry no flag and remain the only sources feeding the daily new-card allowance. */
 function queueable(card, cardState){ return !card || !card.seededOnly || !!cardState; }
+
+/* ---------- review lanes ---------- */
+function reviewLane(card){ return /^(?:AR|SP)-\d+#\d+$/.test(String(card&&card.id||''))?'landmark':'clerkship'; }
+function reviewLaneAllows(card,lane,cardState,now){
+  if(lane==='all')return !!cardState&&cardState.due<=now;
+  return reviewLane(card)===lane;
+}
+function reviewInitialLane(search){
+  var q=new URLSearchParams(search||'');
+  if(q.get('block')==='1'||q.get('lane')==='all')return 'all';
+  return q.get('lane')==='landmark'?'landmark':'clerkship';
+}
+function reviewFocusedCard(cards,search,companions){
+  var id=new URLSearchParams(search||'').get('focus');
+  var pairs=companions&&companions.pairs||[];
+  if(!id||!pairs.some(function(p){return p.clinicalCardId===id||p.articleCardId===id;}))return null;
+  return (cards||[]).filter(function(c){return c.id===id;})[0]||null;
+}
+function reviewFocusAllowed(card,cardState,newRemaining){ return !!card&&(!!cardState||newRemaining>0); }
+function reviewVerifiedArticles(out){
+  if(!out||!Array.isArray(out.decks)||!out.decks.length||out.deckCount!==out.decks.length||
+      !Number.isInteger(out.questionCount)||out.questionCount<1)throw Error('article feed incomplete');
+  var count=0;
+  out.decks.forEach(function(deck){
+    if(!deck||typeof deck.id!=='string'||!Array.isArray(deck.questions)||!deck.questions.length)throw Error('article deck incomplete');
+    deck.questions.forEach(function(q){
+      if(!q||typeof q.q!=='string'||!q.q||!Array.isArray(q.o)||!q.o.length)throw Error('article question incomplete');
+      count++;
+    });
+  });
+  if(count!==out.questionCount)throw Error('article count mismatch');
+  return out;
+}
+function reviewVerifiedCompanions(out){
+  if(!out||out.schemaVersion!==1||!Array.isArray(out.pairs))throw Error('companion feed incomplete');
+  out.pairs.forEach(function(pair){
+    if(!pair||!pair.articleCardId||!pair.clinicalCardId||!pair.result||!pair.limitation||!pair.url)
+      throw Error('companion pair incomplete');
+  });
+  return out;
+}
+function reviewVerifiedTopics(out){
+  if(!out||typeof out!=='object'||Array.isArray(out))throw Error('topic feed incomplete');
+  var count=0;
+  Object.keys(out).forEach(function(key){
+    if(key.charAt(0)==='_')return;
+    var quiz=out[key]&&out[key].quiz;
+    if(quiz==null)return;
+    if(!quiz.q||!Array.isArray(quiz.o)||!quiz.o.length||!quiz.o.some(function(option){return option&&option.c;}))
+      throw Error('topic question incomplete');
+    count++;
+  });
+  if(!count)throw Error('topic feed has no questions');
+  return out;
+}
+function reviewVerifiedCases(out,kind){
+  var key=kind==='family'?'scenarios':'cases';
+  if(!out||!Array.isArray(out[key])||!out[key].length)throw Error('practice feed incomplete');
+  if(kind==='family'&&out.scenarios.some(function(item){
+    var prompts=item&&famRetrievalFor(item);
+    return !item||!item.id||!prompts.length||famRecallCards({scenarios:[item]}).length!==prompts.length;
+  }))throw Error('family cards incomplete');
+  if(kind==='communication'&&commChoiceCards(out).length!==out.cases.length)throw Error('communication cards incomplete');
+  if(kind==='reasoning'&&out.cases.some(function(item){
+    return !item||!Array.isArray(item.steps)||!item.steps.length||reasonChoiceCards({cases:[item]}).length!==item.steps.length;
+  }))throw Error('reasoning cards incomplete');
+  return out;
+}
+function reviewMissingDueIds(cards,stored,now){
+  var loaded={},missing=[];
+  (cards||[]).forEach(function(card){loaded[card.id]=true;});
+  Object.keys(stored&&stored.cards||{}).forEach(function(id){
+    var state=stored.cards[id];
+    if(!state||!Number.isFinite(state.due)||state.due>now)return;
+    /* These are the due namespaces Today promises this tool can serve. Concepts are
+       checked against the released feed by the shell, so withdrawn IDs are excluded. */
+    if(!/^(?:TOPIC#|FAM#|COMM#|REASON#)/.test(id)&&!/^(?:AR|SP)-\d+#\d+$/.test(id))return;
+    if(!loaded[id])missing.push(id);
+  });
+  return missing;
+}
+/* ---------- end review lanes ---------- */
 
 /* Map a tool's authored choices onto the queue's option shape. Both tools grade an option by
    `quality` rather than a boolean, so `best` becomes the correct answer and the option's own
@@ -284,57 +387,109 @@ function toggleTheme(setTheme){var nx=document.documentElement.getAttribute("dat
 
 function App(){
   var ld=useState(null),cards=ld[0],setCards=ld[1];
+  var cs=useState('loading'),conceptStatus=cs[0],setConceptStatus=cs[1];
+  var wf=useState('all'),conceptFilter=wf[0],setConceptFilter=wf[1];
+  var wr=useState(null),weekRefs=wr[0],setWeekRefs=wr[1];
+  var pg=useState(null),lastConcept=pg[0],setLastConcept=pg[1];
+  useEffect(function(){
+    if(window.parent===window)return;
+    var nonce=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    function receive(ev){if(ev.origin!==location.origin||ev.source!==window.parent)return;var refs=conceptWeekReply(ev.data,nonce);if(refs)setWeekRefs(refs);}
+    window.addEventListener('message',receive);
+    window.parent.postMessage({type:'cw:concept-week-request',nonce:nonce},location.origin);
+    return function(){window.removeEventListener('message',receive);};
+  },[]);
   var er=useState(false),err=er[0],setErr=er[1];
   var sv=useState(loadS()),store=sv[0],setStore=sv[1];
   var ses=useState(null),sess=ses[0],setSess=ses[1]; // {queue,pos,chosen,revealed,reviewed,correct,fresh}
   var th=useState((document.documentElement.getAttribute("data-theme")==="dark")?"dark":"light"),theme=th[0],setTheme=th[1];
   var tick=useState(0),setTick=tick[1];
+  var ln=useState(reviewInitialLane(window.location&&window.location.search)),lane=ln[0],setLane=ln[1];
+  var as=useState('loading'),articleStatus=as[0],setArticleStatus=as[1];
+  var vs=useState('loading'),practiceStatus=vs[0],setPracticeStatus=vs[1];
+  var cp=useState(null),companions=cp[0],setCompanions=cp[1];
+  var ps=useState('loading'),companionStatus=ps[0],setCompanionStatus=ps[1];
+  var fn=useState(''),focusNotice=fn[0],setFocusNotice=fn[1];
+  var bu=useState(false),blockUnavailable=bu[0],setBlockUnavailable=bu[1];
   var sessRef=useRef(null); sessRef.current=sess;
+  useEffect(function(){if(!sess)return;var selector=sess.finished?'#cwReviewDashBtn':sess.card?(sess.revealed?'.grades button':'.qtext'):null;var el=selector&&document.querySelector(selector);if(el)el.focus();},[sess&&sess.pos,sess&&sess.revealed,sess&&sess.finished]);
   var blockAutoStart=useRef(null), blockLimit=useRef(null);
-  useEffect(function(){ if(cards&&blockAutoStart.current&&!sess){ blockLimit.current=blockAutoStart.current; blockAutoStart.current=null; start(false); } },[cards]);
+  useEffect(function(){
+    if(!cards||sess||blockUnavailable)return;
+    if(blockAutoStart.current){
+      if(conceptStatus==='loading'||conceptStatus==='recovering'||articleStatus==='loading')return;
+      if(conceptStatus!=='ready'||articleStatus!=='ready'){
+        blockAutoStart.current=null; blockLimit.current=null; setBlockUnavailable(true); return;
+      }
+      blockLimit.current=blockAutoStart.current; blockAutoStart.current=null; start(false); return;
+    }
+    if(companionStatus==='loading')return;
+    var focused=reviewFocusedCard(cards,window.location&&window.location.search,companions);
+    var current=rollDay(loadS());
+    var remaining=Math.max(0,effectiveNewPerDay(current)-(current.day.newToday||0));
+    if(focused&&reviewFocusAllowed(focused,current.cards[focused.id],remaining)){
+      gradedThisSession={};setSess({queue:[focused],pos:0,card:focused,chosen:-1,revealed:false,reviewed:0,correct:0,total:1,misses:[],fromBlock:false});
+    } else if(focused) setFocusNotice('Your new-card limit is reached for today. The linked card will be available tomorrow; scheduled cards remain available now.');
+  },[cards,companions,companionStatus,conceptStatus,articleStatus,blockUnavailable]);
 
   useEffect(function(){
+    var blockSourceFailed=false,practiceSourceFailed=false;
+    function missingSource(fallback){blockSourceFailed=true;return fallback;}
+    function missingPracticeSource(fallback){practiceSourceFailed=true;return missingSource(fallback);}
     Promise.all([
-      fetch("quizzes.json").then(function(r){return r.ok?r.json():{decks:[]};}).catch(function(){return {decks:[]};}),
-      fetch("../topic_meta.json").then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}),
-      fetch("../family_systems_scenarios.json").then(function(r){return r.ok?r.json():{scenarios:[]};}).catch(function(){return {scenarios:[]};}),
-      fetch("../communication_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};}),
+      conceptFetchBytes().then(function(bytes){return conceptVerifyBytes(bytes,conceptDigestFromDocument(document));}).then(function(out){setConceptStatus('ready');return out;}).catch(function(){setConceptStatus('unavailable');return missingSource([]);}),
+      fetch("quizzes.json").then(function(r){if(!r.ok)throw Error('article feed unavailable');return r.json();}).then(reviewVerifiedArticles).then(function(out){setArticleStatus('ready');return out;}).catch(function(){setArticleStatus('unavailable');return missingSource({decks:[]});}),
+      fetch("../topic_meta.json").then(function(r){if(!r.ok)throw Error('topic feed unavailable');return r.json();}).then(reviewVerifiedTopics).catch(function(){return missingPracticeSource({});}),
+      fetch("../family_systems_scenarios.json").then(function(r){if(!r.ok)throw Error('family feed unavailable');return r.json();}).then(function(out){return reviewVerifiedCases(out,'family');}).catch(function(){return missingPracticeSource({scenarios:[]});}),
+      fetch("../communication_cases.json").then(function(r){if(!r.ok)throw Error('communication feed unavailable');return r.json();}).then(function(out){return reviewVerifiedCases(out,'communication');}).catch(function(){return missingPracticeSource({cases:[]});}),
       /* the res build overwrites this file with reasoning_cases_resident.json, so one path
          serves the right audience without the page knowing which site it is on */
-      fetch("../reasoning_cases.json").then(function(r){return r.ok?r.json():{cases:[]};}).catch(function(){return {cases:[]};})
+      fetch("../reasoning_cases.json").then(function(r){if(!r.ok)throw Error('reasoning feed unavailable');return r.json();}).then(function(out){return reviewVerifiedCases(out,'reasoning');}).catch(function(){return missingPracticeSource({cases:[]});}),
+      fetch("review_companions.json").then(function(r){if(!r.ok)throw Error('companion feed unavailable');return r.json();}).then(reviewVerifiedCompanions).then(function(out){setCompanions(out);setCompanionStatus('ready');return out;}).catch(function(){setCompanionStatus('unavailable');return null;})
     ]).then(function(res){
       /* One builder per source, concatenated into the single queue. A source that fails to load
-         contributes nothing and the rest still runs; another source later is a builder plus a
-         fetch. Order matters only for which cards a same-due-time tie serves first — the queue
-         is sorted by due date below. */
-      var j=res[0]||{}, tm=res[1]||{}, fam=res[2]||{}, comm=res[3]||{}, reason=res[4]||{}, out=[];
+         contributes nothing to ordinary review; a timed block cannot start from partial data.
+         Order matters only for which cards a same-due-time tie serves first — the queue is
+         sorted by due date below. */
+      var j=res[1]||{}, tm=res[2]||{}, fam=res[3]||{}, comm=res[4]||{}, reason=res[5]||{}, out=res[0]||[];
       (j.decks||[]).forEach(function(d){ (d.questions||[]).forEach(function(q,i){ if(!q||!q.q||!q.o)return; out.push({id:d.id+"#"+i,deck:d.id,deckTitle:d.title||d.id,kind:"choice",q:q.q,o:q.o,audio:d.audio||null,audioDur:d.audioDur||null}); }); });
       Object.keys(tm).forEach(function(k){ if(k.charAt(0)==="_")return; var m=tm[k]; if(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length){ out.push({id:"TOPIC#"+k,deck:"TOPIC",deckTitle:"Topic · "+prettyRef(k),kind:"choice",q:m.quiz.q,o:m.quiz.o.map(function(o){return {t:o.t,c:!!o.c,fb:(o.c?(m.quiz.why||""):"")};})}); } });
       out=out.concat(famRecallCards(fam));
       out=out.concat(commChoiceCards(comm));
       out=out.concat(reasonChoiceCards(reason));
       if(!out.length){ setErr(true); return; }
-      setCards(out);
+      var missingDue=reviewMissingDueIds(out,loadS(),Date.now());
+      if(missingDue.length){
+        blockSourceFailed=true;
+        if(missingDue.some(function(id){return /^(?:AR|SP)-/.test(id);}))setArticleStatus('unavailable');
+        if(missingDue.some(function(id){return /^(?:TOPIC#|FAM#|COMM#|REASON#)/.test(id);}))practiceSourceFailed=true;
+      }
+      setPracticeStatus(practiceSourceFailed?'unavailable':'ready');
       /* ?block=1&limit=N — a timed block step from Today starts straight into a bounded session. */
-      try{ var bp=new URLSearchParams(location.search); if(bp.get("block")==="1"){ var lim=parseInt(bp.get("limit")||"",10); blockAutoStart.current=(lim>=1&&lim<=50)?lim:5; } }catch(_){ }
+      try{ var bp=new URLSearchParams(location.search); if(bp.get("block")==="1"){
+        if(blockSourceFailed)setBlockUnavailable(true);
+        else {var lim=parseInt(bp.get("limit")||"",10); blockAutoStart.current=(lim>=1&&lim<=50)?lim:5;}
+      } }catch(_){ }
+      setCards(out);
     }).catch(function(){setErr(true);});
   },[]);
   useEffect(function(){ function onMsg(ev){var d=ev.data||{};if(d.type==="theme"&&(d.mode==="dark"||d.mode==="light")){document.documentElement.setAttribute("data-theme",d.mode);setTheme(d.mode);}} window.addEventListener("message",onMsg); return function(){window.removeEventListener("message",onMsg);}; },[]);
-  useEffect(function(){ function onKey(ev){ var s=sessRef.current; if(!s||!s.card)return; var k=ev.key; if(!s.revealed){ if(s.card.kind==='recall'){ if(k==="Enter")revealCard(); } else { var n=parseInt(k,10); if(s.card.o&&n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]);
+  useEffect(function(){ function onKey(ev){ if(ev.defaultPrevented||ev.ctrlKey||ev.metaKey||ev.altKey||ev.repeat)return; var target=ev.target; if(target&&target.closest&&target.closest('button,a,input,select,textarea,summary,[contenteditable="true"],[role="button"]'))return; var s=sessRef.current; if(!s||!s.card)return; var k=ev.key; if(!s.revealed){ if(s.card.kind==='recall'){ if(k==="Enter")revealCard(); } else { var n=parseInt(k,10); if(s.card.o&&n>=1&&n<=s.card.o.length){choose(optOrder(s.card)[n-1]);} } } else { if(k==="1")grade(0); else if(k==="2")grade(1); else if(k==="3")grade(2); else if(k==="4")grade(3); } } window.addEventListener("keydown",onKey); return function(){window.removeEventListener("keydown",onKey);}; },[]);
 
   function persist(s){saveS(s);setStore(Object.assign({},s));}
 
   /* dashboard metrics */
-  function metrics(){
+  function metrics(which){
+    var selected=which||lane;
     var now=Date.now(),due=0,neu=0,learn=0,young=0,mature=0,seen=0;
-    if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st){neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); }
-    var newRemain=cards?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0;
+    if(cards){ var s=rollDay(loadS()); cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st)||!reviewLaneAllows(c,selected,st,now))return; if(!st){if(newConceptAllowed(c,weekRefs,conceptFilter))neu++;return;} seen++; var m=maturity(st); if(m==="mature")mature++; else if(m==="young")young++; else learn++; if(st.due<=now)due++; }); }
+    var newRemain=cards&&selected!=='all'?Math.max(0,effectiveNewPerDay(store)-(rollDay(loadS()).day.newToday||0)):0;
     return {due:due,neu:neu,newRemain:Math.min(newRemain,neu),learn:learn,young:young,mature:mature,seen:seen};
   }
 
   function start(ahead){
     var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[];
-    cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st))return; if(!st)neu.push(c); else if(st.due<=now)due.push(c); else fut.push([c,st.due]);});
+    cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st)||!reviewLaneAllows(c,lane,st,now))return; if(!st){if(newConceptAllowed(c,weekRefs,conceptFilter))neu.push(c);} else if(st.due<=now)due.push(c); else if(lane!=='all')fut.push([c,st.due]);});
     /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so
        long-interval cards that are only slightly late don't out-rank short-
        interval cards that are badly late. Shuffle only within bands of 5 to
@@ -345,7 +500,7 @@ function App(){
     shuffle(neu);
     var newRemain=Math.max(0,effectiveNewPerDay(s)-(s.day.newToday||0));
     var q=due.concat(neu.slice(0,newRemain));
-    if(ahead){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); }
+    if(ahead&&lane!=='all'){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); }
     if(!q.length){ setSess({empty:true}); return; }
     /* A timed block asks for a bounded slice (?block=1&limit=N) — most-overdue first, as above. */
     var limit=blockLimit.current; blockLimit.current=null; var fromBlock=(typeof limit==='number'&&limit>=1);
@@ -376,6 +531,9 @@ function App(){
     st.stats.totalReviews=(st.stats.totalReviews||0)+1;
     var ci=correctIdx(card); var gotIt=isRecall?(g>=2):(s.chosen===ci);
     st.stats.seen=(st.stats.seen||0)+1; if(gotIt)st.stats.correct=(st.stats.correct||0)+1;
+    if(isRecall){st.stats.recallSeen=(st.stats.recallSeen||0)+1;if(g>=2)st.stats.recallGoodEasy=(st.stats.recallGoodEasy||0)+1;}
+    else {st.stats.choiceSeen=(st.stats.choiceSeen||0)+1;if(gotIt)st.stats.choiceCorrect=(st.stats.choiceCorrect||0)+1;}
+    if(card.deck==='CONCEPT')setLastConcept({q:card.q,page:card.page,due:st.cards[card.id].due});
     saveS(st); setStore(Object.assign({},st));
     var rq=gradedThisSession[card.id]?1:0; gradedThisSession[card.id]=1;
     calibLog({s:'rev',id:card.id,p:GRADE_NAMES[g]||g,sug:sug,a:gotIt?1:0,rq:rq,ts:Date.now()});
@@ -384,21 +542,74 @@ function App(){
     if(g===0){ q.push(card); } // requeue lapses to end of this session
     var nextPos=pos+1;
     var reviewed=s.reviewed+1, correct=s.correct+(gotIt?1:0);
+    var sessionCounts=Object.assign({choiceSeen:0,choiceCorrect:0,recallSeen:0,recallGoodEasy:0},s.counts||{});
+    if(isRecall){sessionCounts.recallSeen++;if(g>=2)sessionCounts.recallGoodEasy++;}
+    else {sessionCounts.choiceSeen++;if(gotIt)sessionCounts.choiceCorrect++;}
     var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q,page:card.page||null});
-    if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,misses:misses,fromBlock:!!s.fromBlock}); return; }
-    setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,total:s.total,misses:misses,fromBlock:!!s.fromBlock});
+    if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,counts:sessionCounts,misses:misses,fromBlock:!!s.fromBlock}); return; }
+    setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,counts:sessionCounts,total:s.total,misses:misses,fromBlock:!!s.fromBlock});
   }
   function endSession(){ setSess(null); setTick(function(x){return x+1;}); }
   function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); }
   function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); }
 
+  function retryConcepts(){
+    setConceptStatus('recovering');
+    Promise.resolve().then(function(){return conceptRetry(conceptDigestFromDocument(document),navigator.serviceWorker);}).then(function(out){
+      if(out===null){location.reload();return;}
+      setCards(function(previous){return (previous||[]).filter(function(c){return c.deck!=='CONCEPT';}).concat(out);});
+      setErr(false);setConceptStatus('ready');
+    }).catch(function(error){setConceptStatus(error.message);});
+  }
+  var conceptNotice=e("div",{className:"panel",role:"status"},conceptStatus==='ready'?null:"Concepts "+(conceptStatus==='loading'?"loading…":conceptStatus==='recovering'?"retrying verified card data…":conceptStatus==='unavailable'?"unavailable — review is incomplete. Other card sources remain available.":conceptStatus+" Review remains incomplete."),conceptStatus!=='ready'&&conceptStatus!=='loading'&&conceptStatus!=='recovering'?e("button",{className:"btn ghost",onClick:retryConcepts},"Retry Concepts"):null);
+  var articleNotice=articleStatus==='unavailable'?e("div",{className:"panel",role:"status"},"Landmark Evidence unavailable — article counts and all-due review are incomplete. Reload when the article questions are available."):null;
+  var practiceNotice=practiceStatus==='unavailable'?e("div",{className:"panel",role:"status"},"Practice card sources unavailable — Clerkship Review and All due counts are incomplete. Reload when card data is available."):null;
+  var companionNotice=companionStatus==='unavailable'?e("div",{className:"panel",role:"status"},"Study companion unavailable — source-backed links are temporarily hidden."):null;
+  var selectedIncomplete=(lane==='clerkship'&&(conceptStatus!=='ready'||practiceStatus!=='ready'))||
+    (lane==='landmark'&&articleStatus!=='ready')||
+    (lane==='all'&&(conceptStatus!=='ready'||articleStatus!=='ready'||practiceStatus!=='ready'));
+  var nextDue=lastConcept&&!(sess&&sess.queue&&!sess.revealed)?e("div",{className:"panel",role:"status"},"Concept: "+lastConcept.q+" → ",e("a",{href:"../index.html?page="+encodeURIComponent(lastConcept.page)},prettyRef(lastConcept.page))," → Next due: "+new Date(lastConcept.due).toLocaleString()):null;
+  // Keep one live region mounted across cards and the receipt so completion
+  // updates its text instead of introducing a new, possibly silent region.
+  var liveText="";
+  if(sess&&sess.finished) liveText="Review complete. "+sess.reviewed+" card"+(sess.reviewed===1?"":"s")+" graded. Choices and self-rated recall are shown separately.";
+  else if(sess&&sess.card&&sess.revealed){
+    var announced=sess.card;
+    liveText=announced.kind==='recall'?(announced.deck==='CONCEPT'?announced.reveal+" Source: "+prettyRef(announced.page)+". Rate your recall.":"One way to do it is shown. Rate how close your answer was."):
+      (sess.chosen===correctIdx(announced)?"Correct. ":"Not quite. ")+((announced.o[sess.chosen]||{}).fb||(announced.o[correctIdx(announced)]||{}).fb||"");
+  }
+  var announcement=e("div",{key:"review-announcement",className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},liveText);
   var head=e("div",{className:"topline"},
     e("div",{className:"logo"},"ψ"),
     e("div",null,e("h1",{className:"ttl"},"Daily Review"),e("div",{className:"by"},"Spaced repetition · Joshua Moss, MD")),
     e("button",{className:"thmbtn",onClick:function(){toggleTheme(setTheme);},title:"Toggle dark mode","aria-label":"Toggle dark mode"}, theme==="dark"?"☀":"☾"));
 
-  if(err) return e("div",{className:"wrap"},head,e("div",{className:"err"},"Could not load the question bank (quizzes.json). Open this tool from the hub so it can find its data, then try again."));
-  if(!cards) return e("div",{className:"wrap"},head,e("div",{className:"panel muted"},"Loading the question bank…"));
+  function companionPanel(card){
+    var pairs=companions&&companions.pairs||[], pair=null, i;
+    for(i=0;i<pairs.length;i++)if(pairs[i].clinicalCardId===card.id||pairs[i].articleCardId===card.id){pair=pairs[i];break;}
+    if(!pair)return null;
+    var clinical=(cards||[]).filter(function(x){return x.id===pair.clinicalCardId;})[0];
+    if(!clinical||typeof clinical.reveal!=='string')return null;
+    var isClinical=card.id===pair.clinicalCardId;
+    var target=isClinical?pair.articleCardId:pair.clinicalCardId;
+    var href='?lane='+(isClinical?'landmark':'clerkship')+'&focus='+encodeURIComponent(target);
+    return e("aside",{className:"bridge","aria-label":"Clinical decision and landmark evidence"},
+      e("h2",null,"From decision to evidence"),
+      e("ol",{className:"bridge__steps"},
+        e("li",null,e("strong",null,"Clinical decision"),e("span",null,clinical.reveal.replace(/\[\^[^\]]+\]/g,''))),
+        e("li",null,e("strong",null,"Study result"),e("span",null,pair.result)),
+        e("li",null,e("strong",null,"Important limitation"),e("span",null,pair.limitation))),
+      e("div",{className:"bridge__foot"},
+        e("a",{href:href},isClinical?"Study companion article card →":"Review the linked clinical card →"),
+        e("a",{href:pair.url,target:"_blank",rel:"noopener noreferrer"},"Source: "+pair.title)));
+  }
+
+  if(err) return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,e("div",{className:"err"},"Could not load review cards. Open this tool from the hub so it can find its data, then try again."));
+  if(!cards) return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,e("div",{className:"panel muted"},"Loading review cards…"));
+  if(blockUnavailable) return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,
+    e("div",{className:"panel",role:"status"},"Timed review cannot start because card data is incomplete or unavailable. No block step was recorded. Reload after the card data is available.",
+      e("button",{className:"btn ghost",onClick:function(){location.reload();}},"Retry timed review")));
+  if(blockAutoStart.current) return e("div",{className:"wrap"},head,announcement,e("div",{className:"panel muted"},"Checking timed review card sources…"));
 
   /* ---- active session ---- */
   if(sess && sess.queue){
@@ -410,25 +621,27 @@ function App(){
     var sug=isRecall?'':(gotIt?'Good':'Again');
     var fbOpt=(!isRecall&&c.o[sess.chosen])||{}; var corrOpt=(!isRecall&&c.o[ci])||{};
     var isNew=!loadS().cards[c.id];
-    return e("div",{className:"wrap"},head,
+    return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,
       e("div",{className:"sess"},
         e("div",{className:"sbar"},e("i",{style:{width:pctp+"%"}})),
         e("div",{className:"sinner"},
           e("div",{className:"smeta"},
             e("span",{className:"deckchip"+(isNew?" snew":"")}, isNew?"New":"Review"),
-            e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle),
+            e("span",{className:"deckchip",style:{background:"var(--bg-alt)",color:"var(--text-light)"}}, (c.deck==='CONCEPT'&&!sess.revealed)?"Concepts":(c.deckTitle.length>42?c.deckTitle.slice(0,40)+"…":c.deckTitle)),
             e("span",{className:"scount"}, (sess.pos+1)+" / "+sess.total)),
           /* Context the card cannot be answered without (a reasoning case's patient brief).
              Rendered above the question and visually subordinate to it, so the eye still
              lands on what is being asked. Text only — never markup. */
           c.stem? e("p",{className:"stemtext"}, c.stem) : null,
-          e("div",{className:"qtext"}, c.q),
+          e("div",{className:"qtext",tabIndex:-1}, c.q),
           c.audio? e("details",{className:"oeaudio"}, e("summary",null,"🎧 Listen — paper overview"+(c.audioDur?(" · "+c.audioDur):"")), e("audio",{controls:true,preload:"none",src:"../audio_oe/"+c.audio,"aria-label":"Paper overview audio"})) : null,
           isRecall
             ? (sess.revealed
                 ? e("div",{className:"rvl"},
                     e("span",{className:"rvl__k"},"One way to do it"),
-                    revealNodes(c.reveal))
+                    revealNodes(c.reveal),
+                    c.page?e("a",{href:"../index.html?page="+encodeURIComponent(c.page)},"Source: "+prettyRef(c.page)):null,
+                    (c.evidence||[]).map(function(link,index){return e("p",{key:link.id},e("a",{href:link.url,rel:"noopener noreferrer"},"Evidence "+(index+1)));}))
                 : e("button",{className:"revealbtn",onClick:revealCard},"Reveal one way to do it"))
             : e("div",{className:"opts"}, optOrder(c).map(function(oi,pos){
                 var o=c.o[oi];
@@ -440,12 +653,7 @@ function App(){
           (!isRecall&&sess.revealed)? e("div",{className:"fb"},
             e("b",null, gotIt?"✓ Correct. ":"✗ Not quite. "),
             (fbOpt.fb||corrOpt.fb||"") ) : null,
-          e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},
-            sess.revealed
-              ? (isRecall
-                  ? "One way to do it is shown. Rate how close your answer was."
-                  : (gotIt?"Correct. ":"Not quite. ")+(fbOpt.fb||corrOpt.fb||""))
-              : ""),
+          sess.revealed?companionPanel(c):null,
           sess.revealed? e("div",{className:"grades"},
             e("button",{className:"gr again"+(sug==='Again'?" sug":""),onClick:function(){grade(0);}},"Again",e("span",{className:"gk"},"<10m")),
             e("button",{className:"gr hard",onClick:function(){grade(1);}},"Hard",e("span",{className:"gk"},"1")),
@@ -456,7 +664,7 @@ function App(){
                 ? "Answer out loud or on scratch first, then reveal. Nothing is recorded."
                 : ("Pick the best answer (or press 1–"+c.o.length+").")),
           e("div",{className:"sfoot"},
-            e("span",null,"✓ "+sess.correct+" correct"),
+            e("span",null,sess.reviewed+" graded"),
             e("button",{className:"end",onClick:endSession},"End session"))
         )));
   }
@@ -470,45 +678,64 @@ function App(){
          must not re-run on every re-render of this screen. */
       sess.receipt=cwReceipt({
         tool:'review', ref:null, blockKind:sess.fromBlock?'review':null,
-        context: sess.reviewed+" card"+(sess.reviewed===1?"":"s")+" · "+rt+"% correct",
-        headline: missed? (missed===1?"One card came back for another look.":missed+" cards came back for another look.") : "Every card held.",
+        context: sess.reviewed+" card"+(sess.reviewed===1?"":"s")+" graded · choices and self-rated recall",
+        headline: missed? (missed===1?"One card came back for another look.":missed+" cards came back for another look.") : "Review complete.",
         sub: missed? "A miss here is scheduled sooner, not scored — it returns within the day so the second pass is the one that sticks." : "Held cards move out; the next pass is further away. "+(store.stats.streak||1)+"-day streak in Daily Review.",
-        stats:[{label:"Reviewed",value:String(sess.reviewed)},{label:"Held",value:String(sess.correct),tone:"good"},{label:"Came back",value:String(missed),tone:missed?"warn":"plain"}],
+        stats:[{label:"Reviewed",value:String(sess.reviewed)},{label:"Choices correct",value:String((sess.counts||{}).choiceCorrect||0)+" / "+String((sess.counts||{}).choiceSeen||0),tone:"good"},{label:"Self-rated recall Good/Easy",value:String((sess.counts||{}).recallGoodEasy||0)+" / "+String((sess.counts||{}).recallSeen||0)},{label:"Came back",value:String(missed),tone:missed?"warn":"plain"}],
         reread:(sess.misses||[]).slice(0,5).map(function(m){ var topic=/^TOPIC#/.test(m.id)?m.id.slice(6):null; var ref=topic||m.page||null; return {tag:"Missed",warn:true,title:m.q,note:m.deckTitle,ref:ref,refTitle:ref?prettyRef(ref):null}; }),
         actions:[{id:"cwReviewDashBtn",label:"Back to dashboard",primary:true}]
       });
     }
-    return e("div",{className:"wrap"},head,
+    return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,
       e("div",{className:"sess"},e("div",{className:"sinner",onClick:function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest("#cwReviewDashBtn"):null; if(t){ ev.preventDefault(); endSession(); } },
         dangerouslySetInnerHTML:{__html:sess.receipt.html}})));
   }
   if(sess && sess.empty){
-    return e("div",{className:"wrap"},head,
-      e("div",{className:"panel"},e("h2",null,"All caught up ✓"),
-        e("div",{className:"muted"},"Nothing is due right now and you’ve hit today’s new-card limit. Come back tomorrow, or study ahead below."),
-        e("div",{style:{marginTop:"12px"}},e("button",{className:"btn ghost",onClick:function(){start(true);}},"Study ahead"),
+    return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,
+      e("div",{className:"panel"},e("h2",null,selectedIncomplete?"Review incomplete":"All caught up ✓"),
+        e("div",{className:"muted"},selectedIncomplete?"Some card sources are unavailable. Reload to check the full review queue.":lane==='all'?"No scheduled cards are due in either lane right now.":"Nothing is due in this lane right now and you’ve hit today’s new-card limit."),
+        e("div",{style:{marginTop:"12px"}},lane==='all'?null:e("button",{className:"btn ghost",onClick:function(){start(true);}},"Study ahead"),
           e("button",{className:"btn ghost",style:{marginLeft:"8px"},onClick:endSession},"Back"))));
   }
 
   /* ---- dashboard ---- */
-  var m=metrics();
+  var m=metrics(),clerk=metrics('clerkship'),landmark=metrics('landmark'),allDue=metrics('all');
   var pp=phasePolicy();
   var canStart=(m.due+m.newRemain)>0;
-  return e("div",{className:"wrap"},head,
-    e("div",{className:"lead"},"Spaced repetition schedules each board-style question to return just before you’d forget it. A few minutes a day beats cramming. Grade yourself honestly."),
+  var incomplete=selectedIncomplete;
+  return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,focusNotice?e("div",{className:"panel",role:"status"},focusNotice):null,nextDue,
+    e("div",{className:"lead"},"Choose what to practice. Both lanes share one spaced-repetition schedule; answer before revealing, then rate your recall honestly."),
+    e("div",{className:"lanes",role:"group","aria-label":"Review lane"},
+      e("button",{type:"button",className:"lane","aria-pressed":lane==='clerkship',onClick:function(){setLane('clerkship');}},
+        e("span",{className:"lane__name"},"Clerkship Review"),
+        e("span",{className:"lane__count"},conceptStatus==='ready'&&practiceStatus==='ready'?clerk.due+" due · "+clerk.newRemain+" new":"Counts incomplete"),
+        e("span",{className:"lane__note"},"Clinical decisions, Concepts, and practice you have started")),
+      e("button",{type:"button",className:"lane","aria-pressed":lane==='landmark',onClick:function(){setLane('landmark');}},
+        e("span",{className:"lane__name"},"Landmark Evidence"),
+        e("span",{className:"lane__count"},articleStatus==='ready'?landmark.due+" due · "+landmark.newRemain+" new":"Counts unavailable"),
+        e("span",{className:"lane__note"},"Article questions and study interpretation"))),
+    e("div",{className:"allrow"},e("button",{className:"chip","aria-pressed":lane==='all',onClick:function(){setLane('all');}},"All due · "+(conceptStatus==='ready'&&articleStatus==='ready'&&practiceStatus==='ready'?allDue.due:"at least "+allDue.due))),
     e("div",{className:"statgrid"},
-      e("div",{className:"stat due"},e("div",{className:"num"},m.due+m.newRemain),e("div",{className:"lab"},"Due now")),
+      e("div",{className:"stat due"},e("div",{className:"num"},incomplete?"?":m.due+m.newRemain),e("div",{className:"lab"},lane==='all'?"Due now":"Due + new")),
       e("div",{className:"stat streak"},e("div",{className:"num"},store.stats.streak||0),e("div",{className:"lab"},"Day streak")),
       e("div",{className:"stat"},e("div",{className:"num"},m.mature+m.young),e("div",{className:"lab"},"Learned")),
-      e("div",{className:"stat"},e("div",{className:"num"},(store.stats.seen?Math.round(100*(store.stats.correct||0)/store.stats.seen):0)+"%"),e("div",{className:"lab"},"Retention"))),
+      e("div",{className:"stat"},e("div",{className:"num"},(store.stats.choiceCorrect||0)+" / "+(store.stats.choiceSeen||0)),e("div",{className:"lab"},"Choices correct · since this update"))),
+    lane==='clerkship'?e("div",{className:"panel"},e("h2",null,"Concepts"),
+      conceptStatus==='ready'?e("p",null,(function(){var counts=conceptCounts(cards,store.cards,weekRefs,conceptFilter,Date.now());return counts.available+" available · "+counts.due+" due · "+counts.neu+" new";})()):e("p",null,conceptStatus==='loading'?"Concept counts checking…":"Concept counts unavailable"),
+      e("p",null,"Progress saved in this browser; Anki reviews are separate."),
+      e("p",null,e("a",{href:"question-bank-practice.html"},"Practice Questions")),
+      e("p",null,"All recall sources · Self-rated recall Good/Easy: "+(store.stats.recallGoodEasy||0)+" / "+(store.stats.recallSeen||0)+" · since this update"),
+      e("button",{className:"btn ghost","aria-pressed":conceptFilter==='all',onClick:function(){setConceptFilter('all');}},"All"),
+      weekRefs?e("button",{className:"btn ghost","aria-pressed":conceptFilter==='week',onClick:function(){setConceptFilter('week');}},"This week"):e("p",null,"Open from your Path to enable This week. All topics are available here."),
+      conceptFilter==='week'?e("p",null,cards.filter(function(c){return c.deck==='CONCEPT'&&!store.cards[c.id]&&!newConceptAllowed(c,weekRefs,'week');}).length+" new Concepts excluded · Other library topics are available under All. Due cards stay in review."):null):null,
     pp.phase!=="unset"? e("div",{className:"sub"}, pp.label) : null,
     e("div",{className:"cta"},
-      e("button",{className:"btn primary",disabled:!canStart,onClick:function(){start(false);}}, canStart?("Start review — "+(m.due+m.newRemain)+" card"+((m.due+m.newRemain)===1?"":"s")):"All caught up ✓"),
-      e("button",{className:"btn ghost",onClick:function(){start(true);}},"Study ahead")),
+      e("button",{className:"btn primary",disabled:!canStart,onClick:function(){start(false);}}, canStart?("Start review — "+(m.due+m.newRemain)+" card"+((m.due+m.newRemain)===1?"":"s")+(lane==='all'?" · All due":"")):(incomplete?"Counts incomplete":"All caught up ✓")),
+      lane==='all'?null:e("button",{className:"btn ghost",onClick:function(){start(true);}},"Study ahead")),
     e("div",{className:"panel"},
       e("h2",null,"How it works"),
       e("div",{className:"muted"},"Each question carries its own schedule. Answer, then grade: ",
-        e("b",null,"Again")," (missed — comes back this session), ",e("b",null,"Hard"),", ",e("b",null,"Good"),", or ",e("b",null,"Easy"),". Correct, confident cards stretch further out; missed ones come back soon. Questions are drawn from the hub’s board-style bank ("+cards.length+" total)."),
+        e("b",null,"Again")," (missed — comes back this session), ",e("b",null,"Hard"),", ",e("b",null,"Good"),", or ",e("b",null,"Easy"),". Correct, confident cards stretch further out; missed ones come back soon. Clerkship Review and Landmark Evidence are two views of one schedule ("+(selectedIncomplete?"at least ":"")+cards.length+" available across both). All due contains only scheduled cards due now. Recall grades describe your own confidence; choice answers are scored separately."),
       e("div",{className:"setrow"},
         e("span",null,"New cards / day"),
         e("input",{type:"range",min:5,max:30,step:1,value:store.settings.newPerDay||12,onChange:function(ev){setNewPerDay(+ev.target.value);}}),

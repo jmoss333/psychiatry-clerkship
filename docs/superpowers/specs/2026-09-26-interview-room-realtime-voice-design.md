@@ -602,8 +602,8 @@ coach hint and the critical-miss debrief text. That is new authored content on a
 The attestation validator (`validate_attestation_consistency.py`, run before every build) then forbade
 a non-reviewed case inside a reviewed pack, so "pending until re-attested" was not a state the repo
 could hold; the alternative was to hold Morgan out of the pack until an owner-authored record
-existed, and the owner chose inclusion. (Amended 2026-09-27, decision
-`pending-case-in-reviewed-pack`: a `pending` case is now accepted inside a reviewed pack — it is
+existed, and the owner chose inclusion. (Amended 2026-09-27 by #844 in decision
+`pack-case-review-is-registration`: a `pending` case is now accepted inside a reviewed pack — it is
 unselectable everywhere and its red-team probes skip — so a later case can land pending ahead of
 its probes and be reviewed in a third PR. Morgan's inclusion predates that rule.) **Provenance.** The attestation was given in the Claude Code
 session that built this PR, on 2026-09-26, as an in-chat decision after the authored lines were

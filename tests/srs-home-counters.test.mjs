@@ -40,6 +40,8 @@ const dueCode = slice(source, 'function srsState(', '/* ---- end due breakdown -
 const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RETIRED_IDS', 'DRAFT_IDS', 'Clock', `
   var Date = Clock || globalThis.Date;
   var window = {};
+  var conceptDueState={status:"ready",releasedIds:new Set()};
+  ${readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/concept_recall.js',import.meta.url),'utf8')}
   ${seedCode}
   ${servCode}
   ${dueCode}
@@ -117,8 +119,10 @@ test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable onl
   } }));
   const srs = makeSrs(ls, QUIZ_META, docStub, undefined, undefined, FixtureDate);
   const b = srs.dueBreakdown();
-  assert.equal(b.daily.due, 2);
+  assert.equal(b.daily.due, 1);
   assert.equal(b.daily.overdue, 1);
+  assert.equal(b.landmark.due, 1);
+  assert.equal(b.landmark.overdue, 0);
   assert.equal(b.qb.due, 1);
   assert.equal(b.fam.due, 1);
   assert.equal(b.comm.due, 1);
@@ -162,7 +166,7 @@ test('dueBreakdown counts only servable QB# cards: retired never, drafts only wh
 // cards due was told nothing was due in the block. The fixture above used the invented prefix,
 // which is how the test stayed green over the defect. This reads the REAL decks, so a new deck
 // family (a prefix other than AR-/SP-) turns it red instead of silently falling into `other`.
-test('every card id Daily Review builds from quizzes.json buckets as daily', () => {
+test('every card id Daily Review builds from quizzes.json buckets as landmark', () => {
   const quizzes = JSON.parse(readFileSync(new URL(
     '../07_Evidence_and_Reading/Landmark_Trials/quizzes.json', import.meta.url,
   ), 'utf8'));
@@ -172,10 +176,29 @@ test('every card id Daily Review builds from quizzes.json buckets as daily', () 
     (deck.questions || []).forEach((q, i) => { if (q && q.q && q.o) ids.push(`${deck.id}#${i}`); });
   }
   assert.ok(ids.length > 400, `expected the full landmark set, found ${ids.length} cards`);
-  const misrouted = ids.filter((id) => srs.srsBucket(id) !== 'daily');
+  const misrouted = ids.filter((id) => srs.srsBucket(id) !== 'landmark');
   assert.deepEqual(misrouted.slice(0, 5), [], `${misrouted.length} deck cards are not in the daily bucket`);
   // And the shape is exact, not a loose prefix: near-misses stay visible in `other`.
   for (const id of ['AR-50', 'AR-50#', 'AR-x#1', 'ARX-1#0', 'SP-3#1#2', 'deck#0#1']) {
     assert.equal(srs.srsBucket(id), 'other', id);
   }
+  for (const id of ['CONCEPT#ethics-capacity:1@2', 'TOPIC#mse.md', 'FAM#case#step']) {
+    assert.notEqual(srs.srsBucket(id), 'landmark', `${id} must remain outside the article lane`);
+  }
+});
+
+
+test('Concepts count only released IDs and retain withdrawn history; null means unknown', () => {
+  const ls = memStorage();
+  const cards = {'CONCEPT#ethics-capacity:1@2':{due:1},'CONCEPT#ethics-capacity:1@1':{due:1},'CONCEPT#withdrawn:1@1':{due:1},'FAM#case#step':{due:1}};
+  ls.setItem('cw_srs_v1', JSON.stringify({cards}));
+  const srs = makeSrs(ls, QUIZ_META, docStub);
+  assert.equal(srs.srsBucket('CONCEPT#ethics-capacity:1@2'), 'daily');
+  const ready = srs.dueBreakdown(new Set(['CONCEPT#ethics-capacity:1@2']));
+  assert.equal(ready.daily.due, 1);
+  assert.equal(ready.fam.due, 1);
+  assert.equal(ready.conceptStatus, 'ready');
+  assert.equal(srs.dueBreakdown(null).conceptStatus, 'checking', 'explicit null stays unknown even when global feed state is ready');
+  assert.equal(srs.dueBreakdown().conceptStatus, 'ready', 'omitted argument uses verified production state');
+  assert.deepEqual(JSON.parse(ls.getItem('cw_srs_v1')).cards, cards);
 });

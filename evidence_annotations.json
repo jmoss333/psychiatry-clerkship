@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-24",
+  "updated": "2026-09-27",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -16,7 +16,6 @@
       "engel-1977-biopsychosocial-model",
       "felitti-1998-ace",
       "franklin-2017-suicide-risk-meta-analysis",
-      "lieberman-2005-catie",
       "linehan-1991-dbt",
       "march-2004-tads",
       "rosenhan-1973-sane-places",
@@ -2676,6 +2675,47 @@
           "direction": "positive",
           "usedBy": [
             "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "lieberman-2005-catie",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&id=16172203&retmode=xml",
+        "retrievedAt": "2026-09-27",
+        "pmid": "16172203",
+        "doi": "10.1056/nejmoa051688",
+        "sourceSpan": "Overall, 74 percent of patients discontinued the study medication before 18 months (1061 of the 1432 patients who received at least one dose): 64 percent of those assigned to olanzapine, 75 percent of those assigned to perphenazine, 82 percent of those assigned to quetiapine, 74 percent of those assigned to risperidone, and 79 percent of those assigned to ziprasidone. The time to the discontinuation of treatment for any cause was significantly longer in the olanzapine group than in the quetiapine (P<0.001) or risperidone (P=0.002) group, but not in the perphenazine (P=0.021) or ziprasidone (P=0.028) group. The times to discontinuation because of intolerable side effects were similar among the groups, but the rates differed (P=0.04); olanzapine was associated with more discontinuation for weight gain or metabolic effects, and perphenazine was associated with more discontinuation for extrapyramidal effects. The majority of patients in each group discontinued their assigned treatment owing to inefficacy or intolerable side effects or for other reasons. Olanzapine was associated with greater weight gain and increases in measures of glucose and lipid metabolism."
+      },
+      "claims": [
+        {
+          "claimId": "discontinuation-and-metabolic-tradeoff",
+          "claimText": "In CATIE, 74 percent discontinued study medication before 18 months; time to discontinuation for any cause was longer with olanzapine than quetiapine or risperidone, but not perphenazine or ziprasidone under the reported comparisons, and olanzapine had greater weight gain and glucose and lipid changes.",
+          "claimTerms": [
+            "74 percent of patients discontinued the study medication before 18 months",
+            "significantly longer in the olanzapine group than in the quetiapine",
+            "olanzapine was associated with more discontinuation for weight gain or metabolic effects",
+            "greater weight gain and increases in measures of glucose and lipid metabolism"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "CONCEPT#t_psychosis-pearl3:1@2",
+            "AR-24#5"
+          ]
+        },
+        {
+          "claimId": "discontinuation-is-composite-endpoint",
+          "claimText": "Time to discontinuation for any cause does not isolate symptom efficacy: patients discontinued assigned treatment owing to inefficacy, intolerable side effects, or other reasons.",
+          "claimTerms": [
+            "discontinuation of treatment for any cause",
+            "owing to inefficacy or intolerable side effects or for other reasons"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "CONCEPT#t_psychosis-pearl3:1@2",
+            "AR-24#5"
           ]
         }
       ]

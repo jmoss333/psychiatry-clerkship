@@ -609,9 +609,12 @@ the container when the Bash 5 environment is part of the evidence.
   `pack-case-review-is-registration`, 2026-09-26): `sp-interview.pack.json` is an `extraSources`
   entry of the `sp-interview.html` ledger row, so any case edit drifts that row to pending and
   the console's re-attestation is the claim of record; the attestation validator forbids a case
-  in a reviewed pack whose status is anything but `reviewed`, `attested` or `pending` (decision
-  `pending-case-in-reviewed-pack`, 2026-09-27 — the tool, the proxy and the red-team runner
-  offer only `reviewed`, so a `pending` case is unselectable everywhere and its probes skip),
+  in a reviewed pack whose status is anything but `reviewed`, `attested` or exactly `pending`;
+  a pending case carries no reviewer or review date and the pack keeps at least one `reviewed`
+  case (decision `pack-case-review-is-registration` as amended 2026-09-27 by #844, design
+  `docs/superpowers/specs/2026-09-27-red-team-governance-simplification-design.md` §2.1; the
+  tool, the proxy and the red-team runner offer only `reviewed`, so a `pending` case is
+  unselectable everywhere and its probes skip),
   so a new case lands `pending` in a content PR (which also carries the per-case rows the
   `_prototypes/sp-interview/tests/` and `sp-proxy/tests/` suites pin against the canonical pack
   — the id list, the case counts, the parity scenario, and the encounter brief the root

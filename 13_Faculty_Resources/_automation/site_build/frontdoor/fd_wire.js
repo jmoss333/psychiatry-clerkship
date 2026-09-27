@@ -20,7 +20,9 @@ var FD_HANDLED_ATTRS=[
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
   'data-fd-care-pack-print',
-  'data-fd-offline-open','data-fd-offline-close','data-fd-offline-refresh'
+  'data-fd-offline-open','data-fd-offline-close','data-fd-offline-refresh',
+  'data-fd-feedback-open','data-fd-feedback-cancel','data-fd-feedback-save',
+  'data-fd-feedback-edit','data-fd-feedback-confirm','data-fd-feedback-delete'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -44,6 +46,12 @@ var FD_ACTION_SEMANTICS={
   'data-fd-week':'select setup week',
   'data-fd-view-week':'preview path week',
   'data-fd-setweek':'adopt previewed week',
+  'data-fd-feedback-open':'open a private supervisor feedback note',
+  'data-fd-feedback-cancel':'close the open supervisor feedback note unsaved',
+  'data-fd-feedback-save':'save a supervisor feedback note on this device',
+  'data-fd-feedback-edit':'return to editing a held supervisor feedback note',
+  'data-fd-feedback-confirm':'save a held supervisor feedback note confirmed free of patient details',
+  'data-fd-feedback-delete':'delete one saved supervisor feedback note',
   'data-fd-role':'choose learner role',
   'data-fd-step':'toggle session protocol step',
   'data-fd-back':'return to originating tab',
@@ -228,6 +236,10 @@ function fdExtraSearch(search){
 
 function fdSearchOutsideBlock(search){
   var params=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  /* Review lane and one-card focus are route-local. Ordinary Back/tab/resource
+     navigation must not carry either into a later direct Review visit. */
+  params.delete('lane');
+  params.delete('focus');
   if(params.has('block')){
     params.delete('block'); params.delete('n'); params.delete('limit'); params.delete('cat');
   }
@@ -242,10 +254,17 @@ function fdRouteForTab(tab, search, libraryView){
   return '?tab='+encodeURIComponent(tab)+(extra?'&'+extra:'');
 }
 
-function fdRouteForRef(ref, search, blockNavigation, origin){
+function fdRouteForRef(ref, search, blockNavigation, origin, reviewNavigation){
   var key=/\.html$/.test(String(ref||''))?'tool':'page';
   var params=fdParamsWithoutRoute(blockNavigation===true?search:fdSearchOutsideBlock(search));
   var previous=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  /* A deliberate Review deep link carries its lane and companion focus. Other Front Door
+     navigation clears them, so a later ordinary visit starts in the default Review lane. */
+  if(ref==='review.html'&&reviewNavigation===true){
+    var lane=previous.get('lane');
+    if(lane) params.set('lane',lane);
+    if(lane&&lane!=='all'&&previous.has('focus')) params.set('focus',previous.get('focus'));
+  }
   var tab=origin&&fdValidTab(origin.tab)?origin.tab:previous.get('tab');
   var view=origin?origin.libraryView:previous.get('library');
   if(tab==='library'&&view==='full'){
@@ -426,6 +445,45 @@ function fdDispatch(attrs, context, state){
       effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.index.weeks,c.nowMs)}
     };
   }
+  /* Supervisor feedback notes (fd_path.js fdPathFeedback, store in fd_state.js). The open note is
+     visit-only state; the store is written by apply() above the render, the same order the other
+     read-back keys use, because fdLiveState re-reads it for the list the render paints. Saving is
+     screened by context.feedbackRisky, the shell's own patient-detail check, and fails CLOSED: with
+     no screen wired, every note is held for the learner's confirmation rather than written. */
+  if(fdOwn(a,'data-fd-feedback-open')){
+    n=fdNumberAttr(a,'data-fd-feedback-open');
+    if(n===null||!fdDispatchHasWeek(c,n)) return {patch:{},route:null,effect:null};
+    return {patch:{feedbackDraft:{week:n,text:'',hold:false},feedbackNotice:null},route:null,
+      effect:{type:'focus-feedback'}};
+  }
+  if(fdOwn(a,'data-fd-feedback-cancel')){
+    return {patch:{feedbackDraft:null},route:null,effect:{type:'focus-feedback-open'}};
+  }
+  if(fdOwn(a,'data-fd-feedback-edit')){
+    if(!s.feedbackDraft) return {patch:{},route:null,effect:null};
+    return {patch:{feedbackDraft:{week:s.feedbackDraft.week,text:String(s.feedbackDraft.text||''),hold:false}},
+      route:null,effect:{type:'focus-feedback'}};
+  }
+  if(fdOwn(a,'data-fd-feedback-save')||fdOwn(a,'data-fd-feedback-confirm')){
+    var draft=s.feedbackDraft, confirmed=fdOwn(a,'data-fd-feedback-confirm');
+    if(!draft||!fdDispatchHasWeek(c,draft.week)||!c.index||!c.index.path) return {patch:{},route:null,effect:null};
+    var note=String(confirmed?(draft.text||''):(a['data-fd-feedback-text']||'')).replace(/\s+/g,' ').trim();
+    note=note.slice(0,FD_FEEDBACK_MAX);
+    if(!note){
+      return {patch:{feedbackDraft:{week:draft.week,text:'',hold:false}},route:null,effect:{type:'focus-feedback'}};
+    }
+    if(!confirmed&&(typeof c.feedbackRisky!=='function'||c.feedbackRisky(note))){
+      return {patch:{feedbackDraft:{week:draft.week,text:note,hold:true}},route:null,
+        effect:{type:'focus-feedback-hold'}};
+    }
+    return {patch:{feedbackDraft:null},route:null,
+      effect:{type:'feedback-add',path:String(c.index.path.id||''),week:draft.week,text:note,at:c.nowMs}};
+  }
+  if(fdOwn(a,'data-fd-feedback-delete')){
+    var noteId=String(a['data-fd-feedback-delete']||'');
+    if(!fdFeedbackValidId(noteId)) return {patch:{},route:null,effect:null};
+    return {patch:{feedbackNotice:null},route:null,effect:{type:'feedback-remove',id:noteId}};
+  }
 
   if(fdOwn(a,'data-fd-safety')){
     ref=a['data-fd-safety'];
@@ -458,7 +516,7 @@ function fdDispatch(attrs, context, state){
       };
     }
     tab=fdValidTab(s.tab)?s.tab:'today';
-    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation,s);
+    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation,s,c.reviewNavigation);
     if(s.searchOpen&&s.query&&!fdIsTool(ref)){
       resourceRoute+='&guideFind='+encodeURIComponent(String(s.query).trim().slice(0,160));
     }
@@ -978,6 +1036,8 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-app-practice-open],[data-fd-app-practice-reveal],[data-fd-app-practice-classify],'+
   '[data-fd-app-practice-question],[data-fd-app-practice-reset],[data-fd-app-practice-close],'+
   '[data-fd-week],[data-fd-view-week],[data-fd-setweek],[data-fd-role],[data-fd-step],'+
+  '[data-fd-feedback-open],[data-fd-feedback-cancel],[data-fd-feedback-save],'+
+  '[data-fd-feedback-edit],[data-fd-feedback-confirm],[data-fd-feedback-delete],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
@@ -1408,6 +1468,7 @@ function fdWire(root, initialState, opts){
     if(type==='toggle-progress') surfaces.completion=true;
     if(type==='toggle-tool-layout') surfaces.layout=true;
     if(type==='set-rotation'||type==='browse-without-rotation') surfaces.base=true;
+    if(type==='feedback-add'||type==='feedback-remove') surfaces.base=true;
     var preserve=!!before.openId&&before.openId===state.openId&&!changedBase;
     if(surfaces.completion&&!preserve) surfaces.base=true;
     return {
@@ -1506,6 +1567,13 @@ function fdWire(root, initialState, opts){
       fdStoreExamDate(effect.date);
     } else if(effect.type==='print-care-pack'){
       if(win&&typeof win.print==='function') try{win.print();}catch(_){}
+    } else if(effect.type==='focus-feedback'||effect.type==='focus-feedback-hold'||
+        effect.type==='focus-feedback-open'||effect.type==='feedback-add'||
+        effect.type==='feedback-remove'){
+      /* The note's store write happened in apply(), above the render; this only places focus in
+         the repainted callout: the field while a note is open (including one a failed save kept),
+         Edit while a note is held, otherwise back on "Log what they said". */
+      focusFeedback(effect.type);
     } else if(effect.type==='refresh-offline'){
       if(offlineRefreshPending)return;
       var report=typeof o.reportOfflineRefresh==='function'?o.reportOfflineRefresh:function(){};
@@ -1672,6 +1740,18 @@ function fdWire(root, initialState, opts){
       if(heading&&heading.focus) try{heading.focus({preventScroll:true});}catch(_){try{heading.focus();}catch(__){}}
     }
   }
+  function focusFeedback(type){
+    if(!root||!root.querySelector) return;
+    var el=null;
+    if(type==='focus-feedback-hold') el=root.querySelector('[data-fd-feedback-edit]');
+    else if(state.feedbackDraft) el=root.querySelector('.fd-feedback__text');
+    else el=root.querySelector('[data-fd-feedback-open]');
+    if(!el||!el.focus) return;
+    try{el.focus();}catch(_){}
+    if(el.setSelectionRange&&typeof el.value==='string'){
+      try{el.setSelectionRange(el.value.length,el.value.length);}catch(_){}
+    }
+  }
   /* APP practice repaints its whole visit-only player. Keep keyboard focus at the next step,
      or on the equivalent rebuilt control, so Tab continues where the learner left off. */
   function focusAppPractice(invoker,before){
@@ -1735,6 +1815,27 @@ function fdWire(root, initialState, opts){
        remaining effects still follow render, when their fresh host exists. */
     if(result.effect&&result.effect.type==='toggle-progress'){
       try{ localStorage.setItem('cw_progress_v1',JSON.stringify(result.effect.raw)); }catch(_){}
+    }
+    /* A feedback note is visit-only: leaving Path, opening a resource or moving to another week
+       closes it, exactly as leaving Care clears its task. The store writes below follow the
+       progress write's order and reason -- the list is painted from a fresh read. A save the
+       device refuses keeps the note open with its text, so nothing typed is lost silently. */
+    if(state.tab!=='path'||state.openId||state.screen!=='app'||before.viewWeek!==state.viewWeek){
+      if(!fdOwn(patch,'feedbackDraft')) state.feedbackDraft=null;
+      if(!fdOwn(patch,'feedbackNotice')) state.feedbackNotice=null;
+    }
+    if(result.effect&&result.effect.type==='feedback-add'){
+      if(fdFeedbackAdd(result.effect.path,result.effect.week,result.effect.text,result.effect.at)){
+        state.feedbackNotice={week:result.effect.week,text:'Saved on this device.'};
+      } else {
+        state.feedbackDraft={week:result.effect.week,text:result.effect.text,hold:false,failed:true};
+      }
+    } else if(result.effect&&result.effect.type==='feedback-remove'){
+      var removedWeek=null, stored=fdFeedbackRead();
+      for(var ri=0;ri<stored.length;ri++){ if(stored[ri].id===result.effect.id) removedWeek=stored[ri].week; }
+      if(fdFeedbackRemove(result.effect.id)&&removedWeek!==null){
+        state.feedbackNotice={week:removedWeek,text:'Note deleted.'};
+      }
     }
     /* Same shape, same reason. The settings panel's Appearance section renders from cw_theme --
        fdLiveState re-reads it on every render -- and the panel is open by definition when this
@@ -1848,7 +1949,8 @@ function fdWire(root, initialState, opts){
       nowMs:Date.now(),theme:currentTheme(),
       search:(win&&win.location&&win.location.search)||'',
       progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,fdProgressWeek(state,index)),index:index,
-      appPracticePacks:o.appPracticePacks||[]
+      appPracticePacks:o.appPracticePacks||[],
+      feedbackRisky:typeof o.feedbackRisky==='function'?o.feedbackRisky:null
     };
     var add=extra||{};
     for(var k in add){ if(fdOwn(add,k)) c[k]=add[k]; }
@@ -1867,6 +1969,12 @@ function fdWire(root, initialState, opts){
     var attrs=fdAttrsFromTarget(target);
     var retainPathFocus=target.hasAttribute&&target.hasAttribute('data-fd-view-week');
     if(event.preventDefault) event.preventDefault();
+    /* The note is the one value a click carries that is not an attribute: read it here, where the
+       field is, so fdDispatch still decides everything from plain data. */
+    if(fdOwn(attrs,'data-fd-feedback-save')){
+      var noteField=root&&root.querySelector?root.querySelector('.fd-feedback__text'):null;
+      attrs['data-fd-feedback-text']=noteField?String(noteField.value||''):'';
+    }
     if(fdOwn(attrs,'data-fd-reading-top')){
       if(previewActive()){lockPreview();return;}
       var readingSession=o.readingPlaceSession&&o.readingPlaceSession();
@@ -1922,6 +2030,12 @@ function fdWire(root, initialState, opts){
   function inputHandler(event){
     if(destroyed) return;
     var target=event.target;
+    /* An open feedback note keeps its text on the controller as it is typed, WITHOUT a render, so
+       any later repaint (a background refresh, the patient-detail hold) puts it back as it was. */
+    if(target&&target.matches&&target.matches('.fd-feedback__text')){
+      if(state.feedbackDraft) state.feedbackDraft.text=String(target.value||'').slice(0,FD_FEEDBACK_MAX);
+      return;
+    }
     if(!target||!target.matches||!target.matches('.fd-searchpanel__input')) return;
     if(!startupCommitted){
       if(event.preventDefault) event.preventDefault();
@@ -2082,6 +2196,10 @@ function fdWire(root, initialState, opts){
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
     merged.careIntentId='';
     merged.carePackIds=[];
+    /* An open feedback note is visit-only like the Care task: Back or Forward never brings it,
+       or any text typed into it, back onto the page. */
+    merged.feedbackDraft=null;
+    merged.feedbackNotice=null;
     merged.offlineOpen=false;
     merged.searchOpen=false;
     merged.query='';
@@ -2249,4 +2367,19 @@ function fdWire(root, initialState, opts){
       return controller(false);
   }
   return controller(true);
+}
+
+/* A request is authorized only by the currently mounted learner Review window. */
+function fdConceptWeekContext(event,origin,frame,state,index,preview){
+  var data=event&&event.data;
+  if(preview||!event||event.origin!==origin||!frame||event.source!==frame.contentWindow||
+     !state||state.openId!=='review.html'||!Number.isInteger(state.week)||state.week<1||state.week>6||
+     !data||data.type!=='cw:concept-week-request'||Object.keys(data).sort().join(',')!=='nonce,type'||
+     typeof data.nonce!=='string'||!/^[a-f0-9]{32}$/.test(data.nonce))return null;
+  var weeks=index&&index.weeks;
+  var week=Array.isArray(weeks)?weeks.find(function(w){return w&&w.n===state.week;}):null;
+  if(!week||!Array.isArray(week.items))return null;
+  var refs=week.items.map(function(item){return item&&item.ref;});
+  if(refs.length>500||!refs.every(function(ref){return typeof ref==='string'&&/^[A-Za-z0-9_-]+\.(md|html)$/.test(ref);}))return null;
+  return {type:'cw:concept-week-context',nonce:data.nonce,week:state.week,refs:refs};
 }

@@ -152,7 +152,8 @@ def _pack_cases_not_reviewed():
 def measure_pack_cases():
     """Interview Room cases that are in the pack but not yet reviewed.
 
-    DECISION: pending-case-in-reviewed-pack -- a case may sit in the reviewed pack as
+    DECISION: pack-case-review-is-registration (amended 2026-09-27, #844) -- a case may sit
+    in the reviewed pack as
     `pending` ahead of its red-team probes. It is unselectable, but its text ships in the
     built pack, and once the console re-signs the drifted sp-interview.html row nothing else
     names it. Only the owner's read flips it, so it is owner work until the flip lands, and
@@ -271,7 +272,8 @@ ROWS = [
         "detail": describe_pack_cases,
         "unit": "pack cases learners cannot select yet",
         "why": "A case may land in the reviewed pack as `pending` ahead of its red-team probes "
-               "(decision pending-case-in-reviewed-pack). It is unselectable, but its text ships "
+               "(decision pack-case-review-is-registration, amended 2026-09-27). It is "
+               "unselectable, but its text ships "
                "in the built pack, and once the console re-signs the drifted sp-interview.html "
                "row nothing else names it. Only your read flips it to reviewed.",
         "do": "read the case's lines, then a content PR sets its facultyReview.status to "

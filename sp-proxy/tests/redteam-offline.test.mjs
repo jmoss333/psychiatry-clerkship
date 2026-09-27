@@ -242,7 +242,7 @@ test('a same-named gate on a second case is not covered by the first case\'s pro
 // gates: evaluating them would be a guaranteed, uncoverable failure that says nothing about the
 // served pack. The moment it is reviewed, every one of its gates is evaluated against probes
 // that drove IT, so the gates it cloned from Dana are not credited by Dana's probes. This is the
-// landing order decision pending-case-in-reviewed-pack (2026-09-27) makes real: the attestation
+// landing order the 2026-09-27 amendment of decision pack-case-review-is-registration (#844) makes real: the attestation
 // validator accepts a pending case inside a reviewed pack, so a new case lands pending, gains
 // its probes in a governance PR, and is judged here the moment a content PR flips it to reviewed.
 test('a pending case\'s gates are not evaluated until it is reviewed; once reviewed, cloned gates are its own to prove', (t) => {

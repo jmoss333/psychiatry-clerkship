@@ -34,7 +34,7 @@
   [
    "08_Cases_and_Simulation/one-patient-six-weeks.html",
    "one-patient-six-weeks.html",
-   "One Patient, Six Weeks"
+   "Case Journeys"
   ],
   [
    "04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html",
@@ -128,6 +128,22 @@
   [
    "_prototypes/sp-interview/sp-interview.realtime.js",
    "sp-interview.realtime.js"
+  ],
+  [
+   "08_Cases_and_Simulation/case-journeys/case-journeys.js",
+   "case-journeys.js"
+  ],
+  [
+   "08_Cases_and_Simulation/case-journeys/eli-psychosis.json",
+   "eli-psychosis.json"
+  ],
+  [
+   "08_Cases_and_Simulation/case-journeys/leah-depression-trauma.json",
+   "leah-depression-trauma.json"
+  ],
+  [
+   "08_Cases_and_Simulation/case-journeys/marisol-delirium-capacity.json",
+   "marisol-delirium-capacity.json"
   ]
  ],
  "md": [

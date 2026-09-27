@@ -39,6 +39,12 @@ faculty-console/
 
 **The GitHub token never leaves the server.** The browser only ever holds the faculty key (in `sessionStorage`, cleared when the tab closes).
 
+## Interview Room red-team revisions
+
+The unlocked desktop console has a **Show current revisions** panel above the review queue. It reads the exact `main` pack source and the latest published production deploys of the proxy, MS3 site, and resident site. It shows the pack's version, source commit and SHA-256 beside each deploy ID, commit, publication time, and immutable deploy link. The source pack may be newer than either learner release because those sites publish on a separate schedule. The proxy can also cache pack bytes briefly, so this panel does **not** claim to verify the pack it is serving.
+
+The panel is read-only and loads only when opened or refreshed. Its function requires the same faculty key as the attestation API; it uses the console's existing `GITHUB_TOKEN` and public Netlify deploy metadata. It adds no credential or attestation write. If any source is missing or inconsistent, the whole display reads **Unverified** and shows no partial revision set. Refresh immediately before review, then use the linked [guided red-team runbook](../docs/RED_TEAM_RUNBOOK.md) to check served pack bytes and complete the human checklist. Metadata loaded in the panel is not a red-team pass or faculty sign-off.
+
 ## The phone client (`/m/`)
 
 `m/index.html` + `m/m.mjs` is a phone-first front-end on this same site, so the learner sites'

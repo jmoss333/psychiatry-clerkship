@@ -853,7 +853,7 @@ test('explicit block Start and Continue retain the planned route while ordinary 
   for (const [ref, search] of [
     ['a.md', '?page=a.md&block=1'],
     ['question-bank-practice.html', '?tool=question-bank-practice.html&block=1&n=2&cat=mood'],
-    ['review.html', '?tool=review.html&block=1&limit=3'],
+    ['review.html', '?tool=review.html&block=1&limit=3&lane=all'],
   ]) {
     const out = F.fdDispatch({ 'data-fd-open': ref }, { search, blockNavigation: true }, roleContext);
     assert.equal(out.route, search);
@@ -862,6 +862,35 @@ test('explicit block Start and Continue retain the planned route while ordinary 
     search: '?cat=mood&n=4',
   }, roleContext);
   assert.equal(ordinary.route, '?tool=question-bank-practice.html&cat=mood&n=4');
+});
+
+test('ordinary Front Door navigation clears a transient review lane without losing explicit block routing', () => {
+  const laneSearch = '?tool=review.html&lane=all&focus=AR-24%235';
+  const ordinary = F.fdDispatch({ 'data-fd-open': 'question-bank-practice.html' },
+    { search: laneSearch }, roleContext);
+  assert.equal(ordinary.route, '?tool=question-bank-practice.html');
+  const back = F.fdDispatch({ 'data-fd-back': '' }, { search: laneSearch }, roleContext);
+  assert.equal(new URLSearchParams(back.route).has('lane'), false);
+  assert.equal(new URLSearchParams(back.route).has('focus'), false);
+
+  const explicit = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&block=1&limit=3&lane=all', blockNavigation: true }, roleContext);
+  assert.equal(explicit.route, '?tool=review.html&block=1&limit=3&lane=all');
+});
+
+test('explicit Review links carry lane and companion focus into the routed tool', () => {
+  const due = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&lane=all', reviewNavigation: true }, roleContext);
+  assert.equal(due.route, '?tool=review.html&lane=all');
+  const companion = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&lane=landmark&focus=AR-24%235', reviewNavigation: true }, roleContext);
+  assert.equal(companion.route, '?tool=review.html&lane=landmark&focus=AR-24%235');
+  const clinical = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&lane=clerkship&focus=CONCEPT%23t_psychosis-pearl3%3A1%402', reviewNavigation: true }, roleContext);
+  assert.equal(clinical.route, '?tool=review.html&lane=clerkship&focus=CONCEPT%23t_psychosis-pearl3%3A1%402');
+  const ordinary = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&lane=landmark&focus=AR-24%235' }, roleContext);
+  assert.equal(ordinary.route, '?tool=review.html');
 });
 
 test('an unrelated reader and a sheet toggle do not enter the saved block', () => {

@@ -6,6 +6,9 @@ from pathlib import Path
 # see common.py's module docstring. resident_section.py imports the same module,
 # so these no longer exist as two drifting copies.
 import common
+import concept_cards
+import review_companions
+import hashlib
 import frontdoor_catalog
 import shipped_pages
 import welcome_compass
@@ -108,7 +111,7 @@ tool_assets=[tuple(x) for x in _manifest.get("toolAssets",[])]
 # question bank practice tool. Files still ship (still in `tools` above) and stay fully reachable
 # by direct link / the home "Start review" card / per-page tool docks (all look items up by
 # filename, not by sidebar visibility) — see the `hidden` flag on the nav item below.
-HIDDEN_TOOLS={"shelf-mode.html","review.html"}
+HIDDEN_TOOLS={"shelf-mode.html"}
 
 # ---- pre-flight: verify every REQUIRED source asset exists BEFORE we build ----
 # (added 2026-07-03) A renamed/missing required source used to throw FileNotFoundError
@@ -451,7 +454,7 @@ nav=[
  {"section":"Communicate with Patients","items":[_tool("communication-practice.html","What Do You Say Next?"),_md("Psychotherapies at a Glance","psychotherapy.md"),_md("Motivational Interviewing","motivational_interviewing.md"),_md("Brief Psychotherapy on the Unit","brief_psychotherapy.md"),_md("Therapy on the Unit","therapy_on_the_unit.md"),_tool("reflection.html","Reflection & Identity")]},
  {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
- {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","One Patient, Six Weeks"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
+ {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","Case Journeys"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
  {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
  {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("The Therapy Reading Room","therapy_reading_room.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
  {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback"),_tool("rotation-curator.html","Faculty: Curate a rotation edition",True)]},
@@ -725,6 +728,19 @@ except GovernanceError as error:
 for _warning in _governance_warnings:
     print(_warning)
 print("tool governance: emitted", len(_governance["items"]), "items")
+
+# ---------- RELEASED CONCEPTS ----------
+# Recompute from this build's post-overlay effective ledger, including in the
+# resident build: the copied MS3 feed and digest are never release authority.
+_concept_raw = concept_cards.feed_bytes(Path(LIB), "ms3")
+(Path(OUT) / "tools" / "concepts.json").write_bytes(_concept_raw)
+common.inject_concept_digest(Path(OUT), hashlib.sha256(_concept_raw).hexdigest())
+
+# One explicitly paired, source-backed evidence bridge. The output is small,
+# plain JSON; review.html never derives study claims from quiz feedback.
+(Path(OUT) / "tools" / "review_companions.json").write_bytes(
+    review_companions.feed_bytes(Path(LIB), "ms3")
+)
 
 # ---------- SERVICE WORKER ----------
 # Last artifact step: the precache manifest must reflect the completed,

@@ -801,6 +801,28 @@
 .fd-detail__practice{margin:0 0 16px;padding:12px 14px;background:var(--fd-callout);border-left:3px solid var(--fd-teal);border-radius:var(--fd-radius-xs);font-size:var(--fd-font-md);line-height:1.55;color:var(--fd-text-mid)}
 .fd-detail__practice p{margin:0 0 8px}
 .fd-detail__practice p:last-child{margin-bottom:0}
+/* Supervisor feedback notes (fd_path.js fdPathFeedback): the learner's private log under the
+   callout's question. The field's type size never drops below 1rem, because iOS Safari zooms the
+   page into any field set smaller when it takes focus. Controls keep the touch target. */
+.fd-feedback{margin-top:var(--fd-space-6);padding-top:var(--fd-space-6);border-top:1px solid var(--fd-line)}
+.fd-detail__practice .fd-feedback p{margin:0 0 var(--fd-space-4)}
+.fd-feedback__open{min-height:var(--fd-target-touch)}
+.fd-feedback__label{display:block;margin:0 0 var(--fd-space-3);font-weight:600;color:var(--fd-text)}
+.fd-feedback__text{box-sizing:border-box;display:block;width:100%;min-height:calc(var(--fd-target-touch) * 2);margin:0 0 var(--fd-space-3);padding:var(--fd-space-5) var(--fd-space-6);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:max(var(--fd-font-base),1rem);line-height:1.45;resize:vertical}
+.fd-detail__practice .fd-feedback .fd-feedback__hint{font-size:var(--fd-font-sm)}
+.fd-detail__practice .fd-feedback .fd-feedback__error{color:var(--fd-danger);font-weight:600}
+.fd-feedback__hold{margin:0 0 var(--fd-space-4);padding:var(--fd-space-5) var(--fd-space-6);border:1px solid var(--fd-line-strong);border-left:4px solid var(--fd-danger);border-radius:var(--fd-radius-sm);background:var(--fd-danger-wash);color:var(--fd-text)}
+.fd-feedback__acts{display:flex;flex-wrap:wrap;gap:var(--fd-space-4)}
+.fd-feedback__acts .fd-btn{min-height:var(--fd-target-touch)}
+.fd-detail__practice .fd-feedback .fd-feedback__status{margin:var(--fd-space-3) 0 0;font-size:var(--fd-font-sm)}
+.fd-detail__practice .fd-feedback .fd-feedback__h{margin:var(--fd-space-6) 0 var(--fd-space-3)}
+.fd-feedback__list{margin:0;padding:0;list-style:none}
+.fd-feedback__item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--fd-space-2) var(--fd-space-5);align-items:baseline;padding:var(--fd-space-4) 0;border-top:1px solid var(--fd-line)}
+.fd-feedback__item:first-child{border-top:none}
+.fd-feedback__day{font-size:var(--fd-font-xs);font-weight:600;white-space:nowrap}
+.fd-feedback__note{color:var(--fd-text);overflow-wrap:anywhere}
+.fd-feedback__delete{min-height:var(--fd-target-touch);min-width:var(--fd-target-touch);padding:0 var(--fd-space-4);border:none;background:none;color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-sm);text-decoration:underline;cursor:pointer}
+.fd-feedback__delete:hover{color:var(--fd-danger)}
 .fd-detail__list{display:flex;flex-direction:column;gap:var(--fd-space-3)}
 .fd-detail .fd-row.is-compact{border:1px solid var(--fd-line)}
 

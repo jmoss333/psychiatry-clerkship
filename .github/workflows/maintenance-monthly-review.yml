@@ -31,6 +31,8 @@ jobs:
 
       - name: Build evidence and operations review
         id: monthly
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
           mkdir -p "$RUNNER_TEMP/maintenance-monthly"
           set +e

@@ -181,7 +181,7 @@ print(J.describe_reattestation())`);
 });
 
 test('a pack case that is not reviewed is owner work, named, until it is flipped', () => {
-  // DECISION: pending-case-in-reviewed-pack. Controlled fixture, never the live pack: a live
+  // Decision pack-case-review-is-registration as amended 2026-09-27. Controlled fixture, never the live pack: a live
   // count is a test of the owner's queue, and adding a pending case in a content PR would turn
   // it red for being right.
   const out = py(`

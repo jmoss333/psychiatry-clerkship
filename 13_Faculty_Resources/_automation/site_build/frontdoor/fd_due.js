@@ -5,7 +5,7 @@
 var FD_CAPTURE_PURPOSE='Saved on this device. Nothing leaves unless you choose Copy or Email. No patient details.';
 
 function fdDueCount(breakdown){
-  var b=breakdown||{}, names=['daily','qb','fam','comm','reason','other'], total=0;
+  var b=breakdown||{}, names=['daily','landmark','qb','fam','comm','reason','other'], total=0;
   for(var i=0;i<names.length;i++){
     var row=b[names[i]]||{};
     if(typeof row.due==='number'&&row.due>0) total+=row.due;
@@ -36,19 +36,23 @@ function fdDueRow(breakdown, primary){
   var b=breakdown||{}, total=fdDueCount(b), parts=[], isPrimary=primary===true;
   if(!total) return '';
   var bank=(b.qb&&typeof b.qb.due==='number'&&b.qb.due>0)?b.qb.due:0, bankOnly=bank===total;
-  if(b.daily&&b.daily.due) parts.push(b.daily.due+' daily');
+  if(b.daily&&b.daily.due) parts.push(b.daily.due+' curriculum');
+  if(b.landmark&&b.landmark.due) parts.push(b.landmark.due+' landmark');
   if(b.qb&&b.qb.due) parts.push(b.qb.due+' practice');
   if(b.fam&&b.fam.due) parts.push(b.fam.due+' family');
   if(b.comm&&b.comm.due) parts.push(b.comm.due+' communication');
   if(b.reason&&b.reason.due) parts.push(b.reason.due+' reasoning');
   if(b.other&&b.other.due) parts.push(b.other.due+' other');
-  var row='<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="'+(bankOnly?FD_DUE_BANK_REF:'review.html')+'"'+
+  /* A ref-only Front Door action drops query parameters. Use a real link for the All due
+     route so a learner with only landmark cards does not land in the default lane. */
+  var row=(bankOnly?'<button type="button" class="':'<a class="')+(isPrimary?'fd-due is-primary':'fd-due')+'"'+
+    (bankOnly?' data-fd-open="'+FD_DUE_BANK_REF+'"':' href="?tool=review.html&amp;lane=all"')+
     (isPrimary?' data-fd-dock-source="primary-due" data-fd-dock-label="'+(bankOnly?'Open practice bank':'Start review')+'"':'')+'>'+
     (isPrimary?'<span class="fd-due__kicker">Clear what’s due</span>':'')+
-    '<span class="fd-due__label">'+total+' review'+(total===1?'':'s')+' due</span>'+
+    '<span class="fd-due__label">'+(b.conceptStatus&&b.conceptStatus!=='ready'?'At least ':'')+total+' review'+(total===1?'':'s')+' due</span>'+
     '<span class="fd-due__breakdown">'+fdEsc(parts.join(' · '))+'</span>'+
     '<span class="fd-due__action">'+(bankOnly?'Open practice bank →':'Start review →')+'</span>'+
-  '</button>';
+  (bankOnly?'</button>':'</a>');
   if(!bank||bankOnly) return row;
   return '<div class="fd-due-group">'+row+
     '<button type="button" class="fd-due-group__bank" data-fd-open="'+FD_DUE_BANK_REF+'">'+

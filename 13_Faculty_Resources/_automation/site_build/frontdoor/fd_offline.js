@@ -2,6 +2,7 @@
    whether a resource is actually present in the active device cache. */
 var FD_OFFLINE_OWN=Object.prototype.hasOwnProperty;
 var FD_OFFLINE_MAX=200;
+var FD_OFFLINE_REVIEW_FEEDS=['/tools/concepts.json','/tools/quizzes.json','/tools/review_companions.json'];
 
 function fdOfflineOwn(value,key){
   return !!value&&FD_OFFLINE_OWN.call(value,key);
@@ -10,6 +11,7 @@ function fdOfflineOwn(value,key){
 function fdOfflineUrl(value){
   return typeof value==='string'&&(
     value==='/'||value==='/search-index.json'||
+    /^\/tools\/(?:concepts|quizzes|review_companions)\.json$/.test(value)||
     /^\/(?:content\/[A-Za-z0-9][A-Za-z0-9._-]*\.md|tools\/[A-Za-z0-9][A-Za-z0-9._-]*\.html)$/.test(value));
 }
 
@@ -88,6 +90,13 @@ function fdOfflineUrls(index,state){
     if(fdOfflineOwn(seen,url))continue;
     seen[url]=true;
     out.push(url);
+    if(url==='/tools/review.html'){
+      for(var k=0;k<FD_OFFLINE_REVIEW_FEEDS.length;k++){
+        var feed=FD_OFFLINE_REVIEW_FEEDS[k];
+        seen[feed]=true;
+        out.push(feed);
+      }
+    }
     if(out.length>FD_OFFLINE_MAX)return [];
   }
   return out.length>2?out:[];
