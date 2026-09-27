@@ -47,6 +47,8 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-care-share', 'data-fd-care-share-close', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-dock-browse-go', 'data-fd-dock-forward', 'data-fd-exam-date', 'data-fd-expand-tool',
+    'data-fd-feedback-cancel', 'data-fd-feedback-confirm', 'data-fd-feedback-delete', 'data-fd-feedback-edit',
+    'data-fd-feedback-open', 'data-fd-feedback-save',
     'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
     'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-settings',
     'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
@@ -105,6 +107,20 @@ test('Care pack actions have distinct transient controller semantics', () => {
     F.semantic('data-fd-care-copy'),
     F.semantic('data-fd-care-copy-selected'),
   ]).size, 7);
+});
+
+test('supervisor feedback note actions are distinct, handled, and reachable by click', () => {
+  const actions = [
+    'data-fd-feedback-open', 'data-fd-feedback-cancel', 'data-fd-feedback-save',
+    'data-fd-feedback-edit', 'data-fd-feedback-confirm', 'data-fd-feedback-delete',
+  ];
+  for (const attr of actions) {
+    assert.ok(F.handled.includes(attr), `${attr} must be handled`);
+    assert.match(wire, new RegExp(`\\[${attr}\\]`), `${attr} must be in the click selector`);
+  }
+  assert.equal(new Set(actions.map(F.semantic)).size, actions.length);
+  // The note's text is read from the field, never an attribute the renderer emits.
+  assert.doesNotMatch(readFileSync(new URL('fd_path.js', frontdoor), 'utf8'), /data-fd-feedback-text/);
 });
 
 test('setup week and browse-only week preview are distinct semantics', () => {

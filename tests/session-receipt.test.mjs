@@ -202,3 +202,14 @@ test('a resumed block session (?resume=1&block=1&n) still marks the block step â
   assert.match(r.html, /Block complete Â· 2 of 2 done/, 'the resumed qb step is marked and the block reads complete');
   assert.equal(F.blockLoad(NOW), null, 'the finished block is cleared');
 });
+
+test('Daily Review separates session choice results from self-rated recall',()=>{
+ const review=readFileSync(new URL('../07_Evidence_and_Reading/Landmark_Trials/review.html',import.meta.url),'utf8');
+ assert.match(review,/label:"Choices correct"/);assert.match(review,/label:"Self-rated recall Good\/Easy"/);assert.doesNotMatch(review,/% correct/);
+ const srs=read('srs_store.js');const old={v:1,cards:{},stats:{seen:20,correct:15}};
+ const ls=memStorage({cw_srs_v1:JSON.stringify(old)});
+ const F=new Function('localStorage',srs+';return {srsLoadStore,srsFresh};')(ls);
+ assert.deepEqual(F.srsLoadStore().stats,old.stats,'no inferred choice or recall history');
+ assert.equal(F.srsFresh().stats.choiceSeen,0);assert.equal(F.srsFresh().stats.recallSeen,0);
+ const practice=read('question-bank-practice.html');assert.match(practice,/s.stats.choiceSeen=\(s.stats.choiceSeen\|\|0\)\+1/);
+});

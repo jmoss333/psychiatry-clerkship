@@ -835,6 +835,7 @@ SNIPPET_MARKERS = {
     "/*__SESSION_RECEIPT__*/": "session_receipt.js",
     "/*__SRS_STORE__*/": "srs_store.js",
     "/*__FAM_RETRIEVAL__*/": "fam_retrieval.js",
+    "/*__CONCEPT_RECALL__*/": "concept_recall.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
     "/*__FD_READING_PLACE__*/": "frontdoor/fd_reading_place.js",
     "/*__FD_CAPTURE_EMAIL__*/": "frontdoor/fd_capture_email.js",
@@ -1080,6 +1081,25 @@ def _sw_is_excluded(rel_posix):
     if rel_posix.lower().endswith(SW_EXCLUDE_EXTS):
         return True
     return False
+
+
+def inject_concept_digest(out_dir, expected):
+    """Bind both consumers to exact feed bytes; replace an inherited MS3 digest."""
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise ValueError("concept digest must be a lowercase SHA-256")
+    tag = '<meta name="cw-concept-digest" content="%s">' % expected
+    pattern = r'<meta\b[^>]*\bname=[\'"]cw-concept-digest[\'"][^>]*>'
+    for relative in ("tools/review.html", "index.html"):
+        path = os.path.join(out_dir, relative)
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+        text, count = re.subn(r"</head\s*>", lambda match: tag + "\n" + match[0],
+                              text, flags=re.IGNORECASE)
+        if count != 1 or len(re.findall(pattern, text, re.IGNORECASE)) != 1:
+            raise ValueError("concept digest injection failed: " + relative)
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(text)
 
 
 def emit_service_worker(out_dir, kill=None):

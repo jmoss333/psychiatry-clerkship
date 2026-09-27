@@ -39,6 +39,12 @@ faculty-console/
 
 **The GitHub token never leaves the server.** The browser only ever holds the faculty key (in `sessionStorage`, cleared when the tab closes).
 
+## Interview Room red-team revisions
+
+The unlocked desktop console has a **Show current revisions** panel above the review queue. It reads the exact `main` pack source and the latest published production deploys of the proxy, MS3 site, and resident site. It shows the pack's version, source commit and SHA-256 beside each deploy ID, commit, publication time, and immutable deploy link. The source pack may be newer than either learner release because those sites publish on a separate schedule. The proxy can also cache pack bytes briefly, so this panel does **not** claim to verify the pack it is serving.
+
+The panel is read-only and loads only when opened or refreshed. Its function requires the same faculty key as the attestation API; it uses the console's existing `GITHUB_TOKEN` and public Netlify deploy metadata. It adds no credential or attestation write. If any source is missing or inconsistent, the whole display reads **Unverified** and shows no partial revision set. Refresh immediately before review, then use the linked [guided red-team runbook](../docs/RED_TEAM_RUNBOOK.md) to check served pack bytes and complete the human checklist. Metadata loaded in the panel is not a red-team pass or faculty sign-off.
+
 ## The phone client (`/m/`)
 
 `m/index.html` + `m/m.mjs` is a phone-first front-end on this same site, so the learner sites'
@@ -314,6 +320,19 @@ reports that, never "clean". Finally, `branchLag` counts how far `GIT_BRANCH` tr
 `GIT_BASE_BRANCH`: a hash compares the page to the ledger row on the *same* branch, so a lagging
 branch can be perfectly self-consistent and still be showing text the base moved past, which is why
 that banner (*"attest/pending is N commits behind main — sync before re-attesting"*) is separate.
+
+**Fingerprint v2 — citations do not void a signature** (ruling 2026-09-26). Every signature
+also records `clinicalHash`: the same manifest over the page's clinical text, with citation
+apparatus removed (the exact list is in `attestation_hash.py` above `CLINICAL_FINGERPRINT`). A
+row is bound when either hash matches, so a change that only swaps or reformats citations leaves
+the page **reviewed** — and the item carries `citationsChanged: true`, which the review rail shows
+as *"Citations changed since you signed this page…"*, because the machine citation gate is not
+built yet and a fabricated citation is exactly the change #672 made. Computing it needs the page
+bytes, so the console reads them only where they can change an answer: pages being signed, and
+rows whose v1 hash no longer matches but which carry a `clinicalHash` (cached by blob sha). A
+page that cannot be read is signed v1-only (never with an older `clinicalHash`), and on a load
+reads as "could not check". A **baseline** press also stamps `clinicalHash` on every signed page
+whose text is unchanged since signing, without touching its `at`/`by`. Ledger mode stays v1-only.
 
 **The new error.** A required file that is simply not on the branch now returns `502`
 `repository_file_missing` — *"`<path>` is not on branch `<branch>`. Update or merge the rolling

@@ -1835,7 +1835,8 @@
   }
   function capOpen(invoker,onAction){
     if(capSheet)return;
-    if(fdController&&fdController.externalModalOpened)fdController.externalModalOpened();
+    if(typeof fdController!=='undefined'&&fdController&&fdController.externalModalOpened)
+      fdController.externalModalOpened();
     capInvoker=invoker||null;
     capBackdrop=document.createElement('div'); capBackdrop.className='cap-backdrop';
     capBackdrop.addEventListener('click',function(){ capClose(); });
@@ -2001,14 +2002,27 @@
   /* id is the bank item id (no QB# prefix). */
   function qbRecordServable(id){ if(isRetiredQb(id))return false; if(!qbDraftsIncluded()&&isDraftQb(id))return false; return true; }
   /* ---- end qb servability ---- */
+  /*__CONCEPT_RECALL__*/
+  var conceptDueState={status:'checking',releasedIds:null};
+  function loadConceptDue(){
+    conceptDueState={status:'checking',releasedIds:null};
+    return Promise.resolve().then(function(){
+      var digest=conceptDigestFromDocument(document);
+      return conceptFetchBytes()
+        .then(function(bytes){return conceptVerifyBytes(bytes,digest);});
+    }).then(function(cards){
+      conceptDueState={status:'ready',releasedIds:new Set(cards.map(function(c){return c.id;}))};
+    }).catch(function(){conceptDueState={status:'unavailable',releasedIds:null};})
+      .then(function(){if(typeof specialRefresh==='function')specialRefresh();});
+  }
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
   /* Daily Review's landmark-deck cards are `<deck id>#<question index>` and every deck id in
      quizzes.json is AR-<n> or SP-<n> (review.html builds the id; tests/srs-home-counters pins
      the shape against the real file). Until 2026-09-24 this matched a `deck#` prefix nothing
      writes, so every real deck card fell into `other` and vanished from timed blocks. */
   var SRS_DECK_CARD=/^(?:AR|SP)-\d+#\d+$/;
-  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(SRS_DECK_CARD.test(id)||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
-  function dueBreakdown(){ var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},comm:{due:0,overdue:0},reason:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ var k=srsBucket(id); if(k==='qb'&&!qbRecordServable(id.slice(3)))continue; b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } return b; }
+  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(id.indexOf('CONCEPT#')===0||SRS_DECK_CARD.test(id)||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
+  function dueBreakdown(releasedIds){ if(arguments.length===0)releasedIds=typeof conceptDueState!=='undefined'?conceptDueState.releasedIds:null; var eligible=releasedIds instanceof Set?Array.from(releasedIds).map(function(id){return {id:id};}):null; var s=srsState(),b={daily:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},comm:{due:0,overdue:0},reason:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ if(id.indexOf('CONCEPT#')===0&&!conceptIdEligible(id,eligible))continue; var k=srsBucket(id); if(k==='qb'&&!qbRecordServable(id.slice(3)))continue; b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } b.conceptStatus=releasedIds instanceof Set?'ready':(typeof conceptDueState!=='undefined'&&conceptDueState.status==='unavailable'?'unavailable':'checking'); return b; }
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due,overdue:b.daily.overdue}; }
   /* ---- end due breakdown ---- */
   function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}, hy=[],cov={}, cols=(typeof FD_INDEX!=='undefined'&&FD_INDEX.columns)||[]; for(var c=0;c<cols.length;c++){ var sec=cols[c].name||'', items=cols[c].items||[]; for(var i=0;i<items.length;i++){ var it=items[i]; if(!it)continue; if(it.kind==='read'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.ref]&&p[it.ref].done)cov[sec].done++; } if(meta[it.ref]&&meta[it.ref].hy&&!(p[it.ref]&&p[it.ref].done))hy.push({f:it.ref,t:it.title,sec:sec}); } } return {hy:hy,cov:cov}; }
@@ -2456,6 +2470,11 @@
        than mirrored onto controller state so the stored key stays the single home; the panel's
        change handler writes it and the next render reads it back. */
     out.examDate=LS('cw_shelf_date')||'';
+    /* Supervisor feedback notes: read fresh on every render, the store staying their single home
+       (fd_state.js). The controller writes it above the render, so the list a save repaints is
+       the list on the device. Guarded like the usage emitter below: a surface built without the
+       store renders no notes rather than failing. */
+    out.feedbackLog=typeof fdFeedbackRead==='function'?fdFeedbackRead():[];
     /* The Usage section, and the one key on this state that is legitimately null: null means
        CLERKSHIP_ANALYTICS left the emitter out of this build entirely, and fdSheetSettingsBody
        then renders no section at all rather than describing collection that is not happening.
@@ -2578,7 +2597,7 @@
     }
     var cards={
       block:blockHtml,
-      due:fdDueRow(due,primary.kind==='due'),
+      due:fdDueRow(due,primary.kind==='due')+(due.conceptStatus==='ready'?'':'<p role="status" data-fd-concept-status>Concepts due: '+(due.conceptStatus==='checking'?'checking…':'unavailable. Review counts are incomplete. Open Daily Review to retry.')+'</p>'),
       resume:fdResumeCard(sess,primary.kind==='resume',blockStatus),
       read:fdLastReadRow(lastRead,primary.kind==='read')
     };
@@ -3183,6 +3202,13 @@
 
   function fdAuxMessage(event){
     var data=event.data||{};
+    if(data.type==='cw:concept-week-request'){
+      var reply=fdConceptWeekContext(event,location.origin,
+        contentEl&&contentEl.querySelector('iframe.toolframe'),
+        fdController&&fdController.getState(),FD_INDEX,!!facultyPreviewRequest);
+      if(reply)event.source.postMessage(reply,location.origin);
+      return;
+    }
     if(data.type==='faculty-preview-question-status'){
       if(facultyPreviewRequest&&facultyPreviewRequest.surface==='question'&&event.origin===location.origin&&
           currentToolFrame&&event.source===currentToolFrame.contentWindow&&currentItem&&
@@ -3300,6 +3326,9 @@
     fdController=null;
   }
   function fdEditionRuntimeFallback(receipt,state){
+    /* Verification starts only after successful wiring. Early fallback must not promise
+       an in-flight check that was never started. */
+    if(conceptDueState.status==='checking')conceptDueState={status:'unavailable',releasedIds:null};
     fdEditionStartupGeneration++;
     fdEditionCleanupWiring();
     if(fdEditionStartupHistoryDirty)fdEditionRestoreHistory(fdEditionStartupHistory);
@@ -3445,6 +3474,9 @@
       allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway,
       synonyms:FD_CURRICULUM.synonyms||{},
       appPracticePacks:(FD_CURRICULUM.appPathway&&FD_CURRICULUM.appPathway.practicePacks)||[],
+      /* The ward capture's own patient-detail screen, so a feedback note and a captured question
+         are held by exactly the same rule. */
+      feedbackRisky:capRisky,
       releaseStartupGate:function(){return fdEditionRuntimeReleaseGate(fdApp);}
     });
   }catch(ignoreStartupWiring){fdController=null;}
@@ -3606,6 +3638,7 @@
   fdEditionStartupHistoryDirty=false;
   fdEditionBootState='started';
   fdSyncOfflineVisit(fdController.getState());
+  loadConceptDue();
   return {ok:true,code:'STARTED'};
   }
 

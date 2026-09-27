@@ -7,6 +7,7 @@ import {
   config,
   createHandler,
 } from '../faculty-console/netlify/functions/attest.mjs';
+import { clinicalMarkdown } from '../faculty-console/attestation-hash.mjs';
 import { itemRevision } from '../faculty-console/netlify/functions/qbank-actions.mjs';
 
 const API_URL = 'https://faculty.example/api/attest';
@@ -83,6 +84,26 @@ function expectedDigest(files, sources, slug) {
   if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
     const body = { ...record };
     delete body.facultyReview;
+    lines.push(`topic_meta ${blobShaOf(canonicalJson(body))}`);
+  }
+  return blobShaOf(`${lines.join('\n')}\n`);
+}
+
+// Fingerprint v2, computed here the long way round: the manifest shape is written out rather
+// than taken from the console, and only the TEXT rule comes from attestation-hash.mjs —
+// whose byte parity with the Python rule tests/attestation-hash-parity.test.mjs pins.
+function expectedClinicalDigest(files, sources, slug) {
+  const page = files[SHIPPED_PAGES_PATH].json.pages.find(entry => entry.slug === slug);
+  const lines = ['fingerprint clinical/1', ...[page.source, ...(page.extraSources || [])]
+    .sort()
+    .map(source => `${source} ${source.endsWith('.md')
+      ? blobShaOf(clinicalMarkdown(sources[source].toString('utf8')))
+      : blobShaOf(sources[source])}`)];
+  const record = files[TOPIC_META_PATH]?.json?.[slug];
+  if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
+    const body = { ...record };
+    delete body.facultyReview;
+    delete body.evidenceIds;
     lines.push(`topic_meta ${blobShaOf(canonicalJson(body))}`);
   }
   return blobShaOf(`${lines.join('\n')}\n`);
@@ -2470,10 +2491,15 @@ test('attesting a pending item preserves risk, note, and hash fields exactly and
   assert.equal(record.evidenceHash, 'f'.repeat(64));
   assert.equal(record.evidenceThrough, '2026-06-02');
   assert.equal(Object.hasOwn(record, 'reason'), false, 'attesting removes the pending reason');
-  // {...current, status:'reviewed', at, by} exactly — nothing invented, nothing lost.
+  // Fingerprint v2: a tool page ships from HTML, whose clinical value IS its v1 value, so its
+  // clinical hash needs no page read and is always recorded.
+  assert.equal(record.clinicalHash, expectedClinicalDigest(files, mock.sources, 'mse-tool'));
+  // {...current, status:'reviewed', at, by, contentHash, clinicalHash} exactly — nothing
+  // invented, nothing lost.
   assert.deepEqual(
     Object.keys(record).sort(),
-    ['at', 'by', 'claimsHash', 'contentHash', 'evidenceHash', 'evidenceThrough', 'note', 'risk', 'status'],
+    ['at', 'by', 'claimsHash', 'clinicalHash', 'contentHash', 'evidenceHash', 'evidenceThrough', 'note',
+      'risk', 'status'],
   );
 });
 
@@ -3843,4 +3869,130 @@ test('?view=batch previews either press without reading a branch forward or writ
 
   await expectError(await handlerWith(batchMock())(viewRequest({ view: 'batch', mode: 'correction' })),
     { status: 400, code: 'batch.invalid_corrections' });
+});
+
+/* Fingerprint v2 — `clinicalHash` (ruling 2026-09-26: a change to a page's citations that
+   leaves its clinical claims unchanged keeps the signature). What is pinned: a citation-only
+   edit keeps a clinically signed row reviewed AND flags it; a clinical edit still voids it; a
+   source that cannot be read is "could not check", never either verdict; every signature
+   records a clinicalHash from today's text or none at all (never an older one); a baseline
+   gives already-signed, unchanged pages a clinicalHash without re-signing them. */
+
+const MOOD_WITH_CITATIONS = Buffer.from(
+  '# Mood Disorders\n\nSynthetic page source [1] (Smith et al., 2020).\n\n'
+    + '## References\n1. Smith J. Mood. J Synth. 2020;1:1. doi:10.1000/synthetic\n',
+  'utf8',
+);
+const MOOD_CLAIM_EDIT = Buffer.from('# Mood Disorders\n\nSynthetic page source, revised.\n', 'utf8');
+
+function clinicallySignedFiles() {
+  const files = boundFiles();
+  files[REVIEWED_PATH].json['t_mood.md'].clinicalHash = expectedClinicalDigest(
+    files, defaultSources(), 't_mood.md');
+  return files;
+}
+
+test('a citation-only edit keeps a clinically signed page reviewed, and says its citations changed', async () => {
+  const files = clinicallySignedFiles();
+  const mock = batchMock({ files, sources: { ...defaultSources(), '01_Core/t_mood.md': MOOD_WITH_CITATIONS } });
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+  const item = payload.items.find(entry => entry.slug === 't_mood.md');
+  assert.equal(item.status, 'reviewed', 'the signature stands');
+  assert.equal(Object.hasOwn(item, 'stale'), false);
+  assert.equal(item.citationsChanged, true, 'and the change is shown, not hidden');
+  assert.equal(item.reason, '');
+  assert.equal(JSON.stringify(payload).includes('clinicalHash'), false, 'no hash reaches the browser');
+  assert.equal(mock.putBodies.length, 0, 'a read never writes');
+});
+
+test('a clinical edit voids a clinically signed page exactly as before', async () => {
+  const files = clinicallySignedFiles();
+  const mock = batchMock({ files, sources: { ...defaultSources(), '01_Core/t_mood.md': MOOD_CLAIM_EDIT } });
+  const item = (await (await handlerWith(mock)(apiRequest('GET'))).json())
+    .items.find(entry => entry.slug === 't_mood.md');
+  assert.equal(item.status, 'unreviewed');
+  assert.equal(item.stale, true);
+  assert.equal(Object.hasOwn(item, 'citationsChanged'), false);
+  assert.match(item.reason, /^Content changed since faculty review on 2026-07-01/);
+});
+
+test('a page whose source cannot be read for the clinical check is "could not check", never clean or drifted', async () => {
+  const files = clinicallySignedFiles();
+  // createGithubMock serves no page bytes, so the clinical read fails. Bytes no other test
+  // uses: the clinical cache is keyed by blob sha, and a hit would need no read at all.
+  const unseen = Buffer.from('# Mood Disorders\n\nSynthetic page source [9].\n', 'utf8');
+  const mock = createGithubMock({ files, sources: { ...defaultSources(), '01_Core/t_mood.md': unseen } });
+  const item = (await (await handlerWith(mock)(apiRequest('GET'))).json())
+    .items.find(entry => entry.slug === 't_mood.md');
+  assert.equal(item.stale, true, 'not reported clean');
+  assert.equal(item.status, 'reviewed', 'not reported drifted either');
+  assert.doesNotMatch(item.reason, /^Content changed/);
+  assert.equal(Object.hasOwn(item, 'citationsChanged'), false);
+});
+
+test('a row without a clinicalHash is v1-only: a citation-only edit still voids it', async () => {
+  const files = boundFiles();
+  const mock = batchMock({ files, sources: { ...defaultSources(), '01_Core/t_mood.md': MOOD_WITH_CITATIONS } });
+  const item = (await (await handlerWith(mock)(apiRequest('GET'))).json())
+    .items.find(entry => entry.slug === 't_mood.md');
+  assert.equal(item.status, 'unreviewed');
+  assert.equal(item.stale, true);
+  const pageReads = mock.calls.filter(call => call.path === '01_Core/t_mood.md');
+  assert.equal(pageReads.length, 0, 'no clinicalHash, no page read: the v1 path stays one tree call');
+});
+
+test('signing a page records its clinical fingerprint from today\'s text', async () => {
+  const files = boundFiles();
+  files[REVIEWED_PATH].json['t_mood.md'].clinicalHash = 'e'.repeat(40);
+  const sources = { ...defaultSources(), '01_Core/t_mood.md': MOOD_CLAIM_EDIT };
+  const mock = batchMock({ files, sources });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }));
+  assert.equal(response.status, 200);
+  const record = savedJson(mock, 0)['t_mood.md'];
+  assert.equal(record.contentHash, expectedDigest(files, sources, 't_mood.md'));
+  assert.equal(record.clinicalHash, expectedClinicalDigest(files, sources, 't_mood.md'));
+});
+
+test('a signature whose page cannot be read is recorded v1-only, never with an older clinicalHash', async () => {
+  const files = boundFiles();
+  files[REVIEWED_PATH].json['t_mood.md'].clinicalHash = 'e'.repeat(40);
+  // Bytes no other test uses, so the blob-sha cache cannot answer for the unreadable page.
+  const unseen = Buffer.from('# Mood Disorders\n\nAnother synthetic revision.\n', 'utf8');
+  const mock = createGithubMock({ files, sources: { ...defaultSources(), '01_Core/t_mood.md': unseen } });
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 't_mood.md': true } },
+  }));
+  assert.equal(response.status, 200, 'the press still succeeds');
+  const saved = JSON.parse(Buffer.from(mock.putBodies[0].body.content, 'base64').toString('utf8'));
+  assert.equal(Object.hasOwn(saved['t_mood.md'], 'clinicalHash'), false,
+    'a clinicalHash describing the previous signature\'s text must not survive a new one');
+});
+
+test('a baseline gives already-signed unchanged pages a clinicalHash without re-signing them', async () => {
+  const files = boundFiles();
+  const signedAt = files[REVIEWED_PATH].json['t_mood.md'].at;
+  const mock = batchMock({ files });
+  const response = await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT, questions: false,
+  }));
+  const payload = await response.json();
+  assert.equal(response.status, 200, JSON.stringify(payload));
+  assert.deepEqual(payload.signed.map(item => item.slug), ['mse-tool'], 't_mood.md is bound: not re-signed');
+  const saved = savedJson(mock, 0);
+  assert.equal(saved['t_mood.md'].at, signedAt, 'its signature date is untouched');
+  assert.equal(saved['t_mood.md'].by, 'Synthetic Reviewer');
+  assert.equal(saved['t_mood.md'].contentHash, files[REVIEWED_PATH].json['t_mood.md'].contentHash);
+  assert.equal(saved['t_mood.md'].clinicalHash, expectedClinicalDigest(files, mock.sources, 't_mood.md'));
+  assert.match(mock.putBodies[0].body.message, /Clinical fingerprint recorded for 1 already-signed page/);
+  assert.equal(payload.fingerprinted, 1, 'the receipt can say so');
+});
+
+test('a baseline does not offer a clinically bound page for signing again', async () => {
+  const files = clinicallySignedFiles();
+  const mock = batchMock({ files, sources: { ...defaultSources(), '01_Core/t_mood.md': MOOD_WITH_CITATIONS } });
+  const preview = await (await handlerWith(mock)(viewRequest({ view: 'batch', mode: 'baseline' }))).json();
+  assert.deepEqual(preview.sign.map(item => item.slug), ['mse-tool']);
+  assert.equal(preview.excluded.some(item => item.slug === 't_mood.md'), false);
 });

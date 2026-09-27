@@ -62,9 +62,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
 from attestation_hash import (  # noqa: E402
+    HEX40,
     AttestationHashError,
     blob_sha,
     canonical_topic_meta_record,
+    clinical_digest,
     digest,
     digest_from_tree,
     ledger_hash_report,
@@ -228,8 +230,12 @@ def report_lines(ledger, report, strict_stale, strict_base):
     for slug in sorted(report["malformed"]):
         entry = ledger.get(slug)
         stored = entry.get("contentHash") if isinstance(entry, dict) else entry
-        lines.append("MALFORMED %s — contentHash is not a 40-hex git blob SHA: %.40r"
-                     % (slug, stored))
+        field = "contentHash"
+        if (isinstance(entry, dict) and isinstance(stored, str) and HEX40.fullmatch(stored)
+                and entry.get("clinicalHash") is not None):
+            field, stored = "clinicalHash", entry.get("clinicalHash")
+        lines.append("MALFORMED %s — %s is not a 40-hex git blob SHA: %.40r"
+                     % (slug, field, stored))
     for slug in sorted(report["unshipped_unlisted"]):
         lines.append("UNSHIPPED %s — reviewed, but no site ships it and it is not on "
                      "LEDGER_ONLY_LEGACY" % slug)
@@ -242,6 +248,14 @@ def report_lines(ledger, report, strict_stale, strict_base):
         lines.append("STRICT %s — this change attests it, but its inputs do not match head "
                      "(stored %s, actual %s); re-hash it against %s"
                      % (slug, _short(drift["stored"]), _short(drift["actual"]), strict_base))
+    # Not a finding: the 2026-09-26 ruling keeps a signature across a citation-only change.
+    # Listed so that change stays VISIBLE until the citation gate (#694) checks citations
+    # itself — the fingerprint exists because #672 put fabricated citations on signed pages.
+    for slug in sorted(report.get("bound_clinical", {})):
+        kept = report["bound_clinical"][slug]
+        lines.append("CITATIONS CHANGED %s — signed %s; only citations differ from the signed "
+                     "text, so the signature stands (clinical fingerprint %s)"
+                     % (slug, kept["at"], _short(kept["clinical"])))
     return lines
 
 
@@ -280,6 +294,9 @@ def run_report(root, strict_base=None, fmt="text", stream=None):
             "schemaVersion": 1,
             "reviewedEntries": reviewed,
             "bound": report["bound"],
+            # Additive, so schemaVersion stays 1: the subset of `bound` kept only by the
+            # clinical fingerprint — its citations changed since it was signed.
+            "boundClinical": report.get("bound_clinical", {}),
             "stale": {slug: {key: drift[key] for key in ("stored", "actual", "at")}
                       for slug, drift in report["stale"].items()},
             "unbound": sorted(report["unbound"]),
@@ -305,6 +322,10 @@ def run_report(root, strict_base=None, fmt="text", stream=None):
           % (len(report["bound"]), len(report["stale"]), len(report["unbound"]),
              len(report["malformed"]), len(report["unresolvable"]), len(report["legacy"]),
              reviewed), file=stream)
+    if report.get("bound_clinical"):
+        print("citations changed since signing: %d of the bound pages (listed above; not a "
+              "failure — kept by the clinical fingerprint, ruling 2026-09-26)"
+              % len(report["bound_clinical"]), file=stream)
     return code
 
 
@@ -844,6 +865,29 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         code, out = _run(["--root", str(root)])
         check("a 64-hex contentHash exits 1", code, 1)
         check_in("and says MALFORMED", "MALFORMED x.md", out)
+
+        # ---- fingerprint v2: a citation-only change keeps the signature, VISIBLY -------
+        x_clinical = clinical_digest("x.md", {"a.md": ALPHA}, topic_meta["x.md"])
+        signed = dict(_entry(content_hash=x_hash), clinicalHash=x_clinical)
+        root = _write_root(_tmp(stack), {"x.md": signed},
+                           files={"a.md": b"alpha [1] (Smith et al., 2020)\n", "b.md": BETA})
+        code, out = _run(["--root", str(root)])
+        check("a citation-only edit to a clinically signed page exits 0", code, 0)
+        check_in("and stays bound", "1 bound, 0 stale", out)
+        check_in("but is listed, never silent", "CITATIONS CHANGED x.md", out)
+        code, out = _run(["--root", str(root), "--format", "json"])
+        check("and the JSON names it under boundClinical",
+              sorted(json.loads(out)["boundClinical"]), ["x.md"])
+
+        root = _write_root(_tmp(stack), {"x.md": signed},
+                           files={"a.md": ALPHA_REVISED, "b.md": BETA})
+        code, out = _run(["--root", str(root)])
+        check_in("a clinical edit to a clinically signed page is STALE", "STALE x.md", out)
+
+        root = _write_root(_tmp(stack), {"x.md": dict(signed, clinicalHash="D" * 40)})
+        code, out = _run(["--root", str(root)])
+        check("a malformed clinicalHash exits 1", code, 1)
+        check_in("and names the field", "MALFORMED x.md — clinicalHash", out)
 
         root = _write_root(_tmp(stack), {"x.md": _entry(content_hash="")})
         code, out = _run(["--root", str(root)])

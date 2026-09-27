@@ -566,3 +566,36 @@ for (const bridge of ['pa', 'pmhnp']) {
     expect(await reopened.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role)).toBe(savedRole);
   });
 }
+
+test('Concepts precache and controlled Daily Review pack fail closed on missing feed', async ({page},info)=>{
+  await install(page,info);
+  const result=await page.evaluate(async source=>{
+    const model=new Function(source+';return {fdOfflineUrls};')();
+    const item={ref:'review.html',kind:'tool'};
+    const urls=model.fdOfflineUrls({weeks:[{n:1,items:[item]}],byRef:{'review.html':item}},{week:1});
+    const key=(await caches.keys()).find(k=>k.startsWith('cw-precache-'));
+    const cache=await caches.open(key);
+    const hit=await cache.match('/tools/concepts.json');
+    const verify=()=>new Promise(resolve=>{const channel=new MessageChannel();channel.port1.onmessage=e=>resolve(e.data);navigator.serviceWorker.controller.postMessage({type:'CW_OFFLINE_VERIFY',urls},[channel.port2]);});
+    const before=await verify();
+    const removed=await cache.delete('/tools/concepts.json');
+    const after=await verify();
+    return {urls,hit:!!hit,before,removed,after};
+  },offlineModelSource);
+  expect(result.urls).toEqual(['/','/search-index.json','/tools/review.html','/tools/concepts.json']);
+  expect(result.hit).toBe(true);
+  expect(result.before.ready).toBe(true);
+  expect(result.removed).toBe(true);
+  expect(result.after.ready).toBe(false);
+  expect(result.after.missing).toEqual(['/tools/concepts.json']);
+  await page.evaluate(async()=>{
+    const key=(await caches.keys()).find(k=>k.startsWith('cw-precache-'));
+    await (await caches.open(key)).put('/tools/concepts.json',new Response('{}',{headers:{'Content-Type':'application/json'}}));
+  });
+  await page.goto('/?tool=review.html');
+  const tool=page.locator('#content iframe.toolframe').contentFrame();
+  await expect(tool.locator('body')).toContainText('Concepts unavailable');
+  await tool.getByRole('button',{name:'Retry Concepts'}).click();
+  await expect(tool.locator('body')).toContainText('No updated Concepts cache is available', {timeout:15000});
+  await expect(tool.getByRole('button',{name:'Retry Concepts'})).toBeVisible();
+});

@@ -267,7 +267,7 @@ test('dock refresh uses the live source and clears learner actions on excluded s
   assert.doesNotMatch(h.mount.innerHTML, /primary-reader/);
   assert.equal(state.dockAction, undefined, 'derived action never mutates live state');
   h.primary(null); h.render(state);
-  assert.match(h.mount.innerHTML, /data-fd-tab="library">Essentials/);
+  assert.match(h.mount.innerHTML, /data-fd-tab="library">Essential</);
   h.guide(true); h.render(state);
   assert.match(h.mount.innerHTML, /data-capture-open/, 'enhanced guides retain the learner dock');
   h.guide(false); h.render({ screen: 'setup' });
@@ -315,7 +315,7 @@ for (const ok of [true, false]) test(`resource ${ok ? 'tool mount' : 'load failu
   if (ok) assert.match(h.mount.innerHTML, />Next: Page B →<\/button>/);
   else {
     assert.doesNotMatch(h.mount.innerHTML, /data-fd-dock-forward/);
-    assert.match(h.mount.innerHTML, />Essentials<\/button>/);
+    assert.match(h.mount.innerHTML, />Essential<\/button>/);
   }
 });
 

@@ -217,3 +217,165 @@ export function manifestForSlug(slug, sources, record) {
 export function digestFromManifest(manifest) {
   return blobSha(Buffer.from(manifest, 'utf8'));
 }
+
+// ---------------------------------------------------------------------------------------
+// FINGERPRINT v2 — the clinical text (`clinicalHash`)
+// ---------------------------------------------------------------------------------------
+//
+// Ruling (Joshua Moss, MD, 2026-09-26): a change to a page's CITATIONS that leaves its
+// clinical claims unchanged keeps the signature. The rules, their reasons, the measurement
+// behind them and the risk they accept are written once, in attestation_hash.py above
+// CLINICAL_FINGERPRINT; this is the byte-for-byte twin, pinned by
+// tests/attestation-hash-parity.test.mjs over every shipped Markdown source.
+//
+// The regex dialect is deliberately plain so both engines read it identically: explicit
+// ASCII classes (no \w \d \s), `[^\n]` (no `.`), no `i` flag, and every anchored rule run on
+// one line at a time with no `m` flag.
+
+export const CLINICAL_FINGERPRINT = 'fingerprint clinical/1';
+const CLINICAL_RECORD_EXCLUDED_KEYS = new Set(['facultyReview', 'evidenceIds']);
+
+const REFERENCE_SECTION_NAMES = new Set([
+  'references', 'reference', 'sources', 'bibliography', 'works cited', 'citations',
+]);
+const HEADING = /^(#{1,6})[ \t]+([^\n]*)$/;
+const HEADING_MARKER = /^[ \t]*#{1,6}[ \t]+/;
+const LIST_ITEM = /^[ \t]*(?:[-*+]|[0-9]+[.)])[ \t]+/;
+const YEAR = /(?:^|[^0-9])(?:19|20)[0-9][0-9](?![0-9])/;
+const KEY_PAPER_LINE = /^[ \t]*(?:[-*+][ \t]+)?\*\*[Kk]ey [Pp]apers?:\*\*/;
+const FOOTNOTE_REF = /\[\^[^\]\n]+\]/g;
+const CITATION_HOST = 'https?://(?:(?:dx\\.)?doi\\.org/|(?:pubmed|pmc)\\.ncbi\\.nlm\\.nih\\.gov/'
+  + '|www\\.ncbi\\.nlm\\.nih\\.gov/(?:pmc|pubmed)/|europepmc\\.org/)';
+const CITATION_LINK_TARGET = new RegExp(`\\]\\(${CITATION_HOST}[^) \\t\\n]*(?:[ \\t]+"[^"\\n]*")?\\)`, 'g');
+const CITATION_URL = new RegExp(`<?${CITATION_HOST}[^ \\t\\n<>)\\]]*>?`, 'g');
+const DOI = /(?<![A-Za-z0-9_])[Dd][Oo][Ii]:[ \t]*10\.[0-9]{4,9}\/[^ \t\n;,)\]]+/g;
+const PMID = /(?<![A-Za-z0-9_])(?:PMID:?[ \t]*[0-9]+|PMCID:?[ \t]*PMC[0-9]+|PMC[0-9]{4,})(?![A-Za-z0-9_])/g;
+const NUMERIC_ANCHOR = /\[[0-9]+(?:[ \t]*[,–-][ \t]*[0-9]+)*(?:[ \t]*✓)?\](?!\()/g;
+const PAREN = /\(([^()\n]*)\)/g;
+const NAME_LETTERS = 'A-Za-zÀ-ÖØ-öø-ÿ';
+const NAME = `[A-Z][${NAME_LETTERS}'’-]+`;
+const CITE_PIECE = new RegExp(
+  `^(?:see(?: also)?|e\\.g\\.,?|cf\\.)?[ \\t]*${NAME}`
+  + `(?:[ \\t]+(?:et al\\.?|(?:and|&)[ \\t]+${NAME}))?,?`
+  + `(?:[ \\t]+[*_]?[A-Z][${NAME_LETTERS}0-9 .&:-]*[*_]?,?)?`
+  + '[ \\t]+(?:19|20)[0-9][0-9][a-z]?$',
+);
+const STRONG = /\*\*|__/g;
+const EM_OPEN = /(?<![A-Za-z0-9_*])[*_](?=[^ \t\n*_])/g;
+const EM_CLOSE = /(?<=[^ \t\n*_])[*_](?![A-Za-z0-9_*])/g;
+const EMPTY_PARENS = /\([ \t]*[;,]?[ \t]*\)/g;
+const WHITESPACE = /[ \t\n\r\f\v]+/g;
+const SPACE_BEFORE_PUNCTUATION = / +(?=[.,;:!?)])/g;
+const EDGE_BLANKS = /^[ \t]+|[ \t]+$/g;
+
+// Spaces and tabs only: String.prototype.trim and Python's str.strip disagree on the rest.
+function stripBlanks(text) {
+  return text.replace(EDGE_BLANKS, '');
+}
+
+function sectionName(headingText) {
+  let name = stripBlanks(headingText.replace(/[*_`]/g, ''));
+  name = stripBlanks(name.replace(/[ \t#]*$/, ''));
+  name = stripBlanks(name.replace(/:+$/, ''));
+  name = name.replace(/[A-Z]/g, letter => letter.toLowerCase());
+  return name.replace(/^[0-9]+[.)]?[ \t]+/, '');
+}
+
+function clinicalLines(text) {
+  const kept = [];
+  let sectionLevel = 0;
+  for (const line of text.split('\n')) {
+    const heading = HEADING.exec(line);
+    if (heading) {
+      const level = heading[1].length;
+      if (sectionLevel && level <= sectionLevel) sectionLevel = 0;
+      if (!sectionLevel && REFERENCE_SECTION_NAMES.has(sectionName(heading[2]))) {
+        sectionLevel = level;
+        continue;
+      }
+    } else if (sectionLevel && LIST_ITEM.test(line) && YEAR.test(line)) {
+      continue;
+    }
+    if (KEY_PAPER_LINE.test(line)) continue;
+    kept.push(line.replace(HEADING_MARKER, ''));
+  }
+  return kept.join('\n');
+}
+
+function stripParentheticalCitations(text) {
+  return text.replace(PAREN, (whole, inner) => {
+    const pieces = inner.split(';').map(stripBlanks).filter(Boolean);
+    const kept = pieces.filter(piece => !CITE_PIECE.test(piece));
+    if (kept.length === pieces.length) return whole;
+    return kept.length ? `(${kept.join('; ')})` : '';
+  });
+}
+
+/** The clinical text of a Markdown page: its words with citation apparatus removed. */
+export function clinicalMarkdown(text) {
+  let out = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  out = clinicalLines(out);
+  out = out.replace(FOOTNOTE_REF, '');
+  out = out.replace(CITATION_LINK_TARGET, ']');
+  out = out.replace(CITATION_URL, '');
+  out = out.replace(DOI, '');
+  out = out.replace(PMID, '');
+  out = out.replace(NUMERIC_ANCHOR, '');
+  out = stripParentheticalCitations(out);
+  out = out.replace(STRONG, '');
+  out = out.replace(EM_OPEN, '');
+  out = out.replace(EM_CLOSE, '');
+  out = out.replace(EMPTY_PARENS, '');
+  out = out.replace(WHITESPACE, ' ');
+  return stripBlanks(out.replace(SPACE_BEFORE_PUNCTUATION, ''));
+}
+
+/** Whether a source is hashed over its clinical text (Markdown) rather than its bytes. */
+export function isClinicalMarkdownSource(path) {
+  return typeof path === 'string' && path.endsWith('.md');
+}
+
+/**
+ * A clinical manifest line's value for one source: the blob sha of a Markdown source's
+ * clinical text; for anything else — and for Markdown that is not valid UTF-8 — exactly the
+ * v1 value. `ignoreBOM` keeps a leading U+FEFF as text, as Python's utf-8 codec does.
+ */
+export function clinicalSourceSha(path, data) {
+  if (!isClinicalMarkdownSource(path)) return sourceBlobSha(path, data);
+  const bytes = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  let text;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+  } catch {
+    return sourceBlobSha(path, bytes);
+  }
+  return blobSha(Buffer.from(clinicalMarkdown(text), 'utf8'));
+}
+
+/** A topic_meta record's canonical bytes without `facultyReview` or `evidenceIds`. */
+export function canonicalClinicalRecord(record) {
+  const body = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (!CLINICAL_RECORD_EXCLUDED_KEYS.has(key)) body[key] = value;
+  }
+  return Buffer.from(serialize(body), 'utf8');
+}
+
+/**
+ * The clinical manifest: a version line, then v1's shape over clinical values. `sources`
+ * maps each path to its CLINICAL value (clinicalSourceSha; for a non-Markdown source that is
+ * the same value v1 carries, so the console may pass its tree sha straight through).
+ */
+export function clinicalManifestForSlug(slug, sources, record) {
+  const paths = Object.keys(sources || {}).sort(compareCodePoints);
+  if (!paths.length) {
+    throw new AttestationHashError(
+      `${slug}: no attested sources — its digest would cover nothing`,
+    );
+  }
+  const lines = [CLINICAL_FINGERPRINT, ...paths.map(path => `${path} ${sources[path]}`)];
+  if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
+    lines.push(`topic_meta ${blobSha(canonicalClinicalRecord(record))}`);
+  }
+  return `${lines.join('\n')}\n`;
+}

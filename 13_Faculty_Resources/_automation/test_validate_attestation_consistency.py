@@ -639,6 +639,86 @@ class AttestationConsistencyTests(unittest.TestCase):
             errors,
         )
 
+    def test_reviewed_pack_registers_a_pending_case_without_signoff(self):
+        pack = pending_pack()
+        pack["status"] = "reviewed"
+        pack["cases"].append(
+            {
+                "id": "sp_synthetic_pending_001",
+                "facultyReview": {
+                    "status": "pending",
+                    "reviewer": None,
+                    "lastReviewed": None,
+                },
+                "speechProfile": draft_speech_profile("synthetic-pending-v1"),
+            }
+        )
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(
+                root, ledger_status="reviewed", tool_status="reviewed", pack=pack
+            )
+            errors = self.validate(root)
+        self.assertEqual(errors, [])
+
+    def test_pending_case_cannot_carry_a_review_claim(self):
+        for field, value in (
+            ("reviewer", "Old Reviewer"),
+            ("lastReviewed", "2026-09-01"),
+            ("reviewedAt", "2026-09-01"),
+        ):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as root:
+                pack = pending_pack()
+                pack["status"] = "reviewed"
+                pack["cases"].append(
+                    {
+                        "id": "sp_synthetic_pending_001",
+                        "facultyReview": {
+                            "status": "pending",
+                            "reviewer": None,
+                            "lastReviewed": None,
+                            field: value,
+                        },
+                        "speechProfile": draft_speech_profile("synthetic-pending-v1"),
+                    }
+                )
+                write_fixture(
+                    root, ledger_status="reviewed", tool_status="reviewed", pack=pack
+                )
+                errors = self.validate(root)
+                self.assertTrue(
+                    any("pending case sp_synthetic_pending_001" in e for e in errors),
+                    errors,
+                )
+
+    def test_unknown_case_status_cannot_use_pending_exception(self):
+        pack = pending_pack()
+        pack["status"] = "reviewed"
+        pack["cases"].append(
+            {
+                "id": "sp_synthetic_pending_001",
+                "facultyReview": {"status": "reviewed-pending"},
+                "speechProfile": draft_speech_profile("synthetic-pending-v1"),
+            }
+        )
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(root, ledger_status="reviewed", tool_status="reviewed", pack=pack)
+            errors = self.validate(root)
+        self.assertTrue(
+            any("attested pack contains non-reviewed case sp_synthetic_pending_001" in e for e in errors),
+            errors,
+        )
+
+    def test_reviewed_pack_needs_a_selectable_reviewed_case(self):
+        pack = pending_pack()
+        pack["status"] = "reviewed"
+        pack["cases"][0]["facultyReview"] = {
+            "status": "pending", "reviewer": None, "lastReviewed": None
+        }
+        with tempfile.TemporaryDirectory() as root:
+            write_fixture(root, ledger_status="reviewed", tool_status="reviewed", pack=pack)
+            errors = self.validate(root)
+        self.assertTrue(any("no selectable reviewed case" in e for e in errors), errors)
+
     def test_reviewed_case_requires_reviewer_and_date(self):
         mutations = {
             "reviewer": ("reviewer", ""),

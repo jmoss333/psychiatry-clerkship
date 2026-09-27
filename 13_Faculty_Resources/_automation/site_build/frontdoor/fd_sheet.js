@@ -404,8 +404,8 @@ function fdSettingsData(confirming){
   }
   return out+
     '<p class="fd-set__note fd-set__note--warn" role="alert">This erases your progress, practice '+
-    'answers, review cards, preferences and your Interview Room setup on this device. It cannot '+
-    'be undone.</p>'+
+    'answers, review cards, feedback notes, preferences and your Interview Room setup on this '+
+    'device. It cannot be undone.</p>'+
     '<div class="fd-set__row">'+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-clear-cancel>Keep my data</button>'+
     '<button type="button" class="fd-set__danger" data-fd-clear-confirm>Erase everything</button>'+

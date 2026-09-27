@@ -403,6 +403,9 @@ export function applyLedger({ reviewed, topicMeta = null, qbank = null, events, 
         next.status = 'reviewed';
         next.by = event.by;
         next.contentHash = event.contentHash;
+        // A signed event binds v1 only. A git row's clinicalHash (fingerprint v2) describes
+        // the text of an OLDER signature and must not outlive this newer one.
+        delete next.clinicalHash;
         delete next.reason;
         report.content.attested.push(event.id);
       } else {

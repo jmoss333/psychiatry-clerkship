@@ -45,7 +45,7 @@ function fdDueRow(breakdown, primary){
   var row='<button type="button" class="'+(isPrimary?'fd-due is-primary':'fd-due')+'" data-fd-open="'+(bankOnly?FD_DUE_BANK_REF:'review.html')+'"'+
     (isPrimary?' data-fd-dock-source="primary-due" data-fd-dock-label="'+(bankOnly?'Open practice bank':'Start review')+'"':'')+'>'+
     (isPrimary?'<span class="fd-due__kicker">Clear what’s due</span>':'')+
-    '<span class="fd-due__label">'+total+' review'+(total===1?'':'s')+' due</span>'+
+    '<span class="fd-due__label">'+(b.conceptStatus&&b.conceptStatus!=='ready'?'At least ':'')+total+' review'+(total===1?'':'s')+' due</span>'+
     '<span class="fd-due__breakdown">'+fdEsc(parts.join(' · '))+'</span>'+
     '<span class="fd-due__action">'+(bankOnly?'Open practice bank →':'Start review →')+'</span>'+
   '</button>';

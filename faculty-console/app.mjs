@@ -31,6 +31,7 @@ import {
 import { isDriftReason } from './change-history.mjs';
 
 const API = '/api/attest';
+const RED_TEAM_REVISIONS_API = '/api/red-team-revisions';
 const KEY_STORAGE = 'fac_key';
 const DEFAULT_REVIEWER = 'Joshua Moss, MD';
 
@@ -254,6 +255,11 @@ export function startFacultyConsole({
     reviewResetAnnouncement: '',
     deepLinkNotice: '',
     sessionActions: [],
+    redTeamOpen: false,
+    redTeamLoading: false,
+    redTeamSnapshot: null,
+    redTeamError: '',
+    redTeamGeneration: 0,
     externalReviewOpenedKey: null,
     contentMessage: '',
     contentCommitUrl: null,
@@ -397,6 +403,11 @@ export function startFacultyConsole({
   }
 
   function clearKey() {
+    state.redTeamGeneration += 1;
+    state.redTeamSnapshot = null;
+    state.redTeamLoading = false;
+    state.redTeamError = '';
+    state.redTeamOpen = false;
     try {
       window.sessionStorage.removeItem(KEY_STORAGE);
     } catch {
@@ -429,6 +440,153 @@ export function startFacultyConsole({
     } catch {
       return {};
     }
+  }
+
+  function validRedTeamSnapshot(value) {
+    if (value?.state !== 'metadata-verified'
+        || !Number.isFinite(Date.parse(value.fetchedAt))
+        || !/^[a-f0-9]{40}$/.test(value.pack?.sourceCommit || '')
+        || !/^[a-f0-9]{64}$/.test(value.pack?.sha256 || '')
+        || !text(value.pack?.version) || !text(value.pack?.model)) return false;
+    return ['proxy', 'ms3', 'res'].every(key => {
+      const deploy = value.deployments?.[key];
+      if (!/^[a-f0-9]{24}$/.test(deploy?.deployId || '')
+          || !/^[a-f0-9]{40}$/.test(deploy?.commitRef || '')
+          || !Number.isFinite(Date.parse(deploy?.publishedAt))) return false;
+      try {
+        const url = new URL(deploy.deployUrl);
+        return url.protocol === 'https:'
+          && url.hostname.startsWith(`${deploy.deployId}--`)
+          && url.hostname.endsWith('.netlify.app')
+          && !url.port && !url.username && !url.password
+          && url.pathname === '/' && !url.search && !url.hash;
+      } catch { return false; }
+    });
+  }
+
+  function refreshRedTeamPanel(focusId = null) {
+    document.getElementById('red-team-revisions')?.replaceWith(renderRedTeamRevisions());
+    if (focusId) document.getElementById(focusId)?.focus();
+  }
+
+  async function refreshRedTeamRevisions() {
+    const generation = ++state.redTeamGeneration;
+    state.redTeamLoading = true;
+    state.redTeamSnapshot = null;
+    state.redTeamError = '';
+    refreshRedTeamPanel('red-team-refresh');
+    try {
+      const response = await fetchImpl(RED_TEAM_REVISIONS_API, { headers: apiHeaders() });
+      const payload = await responseJson(response);
+      if (generation !== state.redTeamGeneration) return;
+      if (response.status === 401) {
+        clearKey();
+        renderLogin('Key not accepted. Check the shared faculty key and try again.');
+        return;
+      }
+      if (!response.ok || !validRedTeamSnapshot(payload)) {
+        throw new Error('Exact revision evidence is unavailable. Use the guided red-team preflight.');
+      }
+      state.redTeamSnapshot = payload;
+      announce('Interview Room revision metadata loaded.');
+    } catch {
+      if (generation !== state.redTeamGeneration) return;
+      state.redTeamError = 'Unverified: exact revision evidence is unavailable. Use the guided red-team preflight.';
+      announce('Interview Room revisions are unverified.');
+    } finally {
+      if (generation === state.redTeamGeneration) {
+        state.redTeamLoading = false;
+        refreshRedTeamPanel('red-team-refresh');
+      }
+    }
+  }
+
+  function renderRedTeamRevisions() {
+    const snapshot = state.redTeamSnapshot;
+    const runbook = snapshot
+      ? `https://github.com/jmoss333/psychiatry-clerkship/blob/${snapshot.pack.sourceCommit}/docs/RED_TEAM_RUNBOOK.md`
+      : 'https://github.com/jmoss333/psychiatry-clerkship/blob/main/docs/RED_TEAM_RUNBOOK.md';
+    return el('section', {
+      id: 'red-team-revisions',
+      class: 'red-team-revisions',
+      'aria-labelledby': 'red-team-revisions-title',
+    }, [
+      el('div', { class: 'red-team-revisions__heading' }, [
+        el('div', {}, [
+          el('p', { class: 'eyebrow' }, ['Interview Room']),
+          el('h2', { id: 'red-team-revisions-title' }, ['Red-team revisions']),
+        ]),
+        el('button', {
+          id: 'red-team-toggle', type: 'button',
+          'aria-expanded': state.redTeamOpen ? 'true' : 'false',
+          'aria-controls': 'red-team-revisions-body',
+          onClick: () => {
+            state.redTeamOpen = !state.redTeamOpen;
+            if (!state.redTeamOpen) {
+              state.redTeamGeneration += 1;
+              state.redTeamLoading = false;
+              state.redTeamSnapshot = null;
+              state.redTeamError = '';
+              refreshRedTeamPanel('red-team-toggle');
+            } else {
+              void refreshRedTeamRevisions();
+            }
+          },
+        }, [state.redTeamOpen ? 'Hide revisions' : 'Show current revisions']),
+      ]),
+      state.redTeamOpen ? el('div', { id: 'red-team-revisions-body' }, [
+        el('p', { class: 'muted' }, [
+          'Check the pack source and all three published deploys before starting the guided checklist.',
+        ]),
+        el('div', { class: 'red-team-revisions__actions' }, [
+          el('button', {
+            id: 'red-team-refresh', type: 'button',
+            disabled: state.redTeamLoading,
+            onClick: () => void refreshRedTeamRevisions(),
+          }, [state.redTeamLoading ? 'Checking revisions…' : 'Refresh revisions']),
+          el('a', { href: runbook, target: '_blank', rel: 'noopener noreferrer' }, [
+            'Open guided checklist',
+          ]),
+        ]),
+        state.redTeamLoading ? el('p', { role: 'status' }, ['Checking production revision metadata…']) : null,
+        state.redTeamError ? el('p', { class: 'red-team-revisions__error', role: 'status' }, [
+          state.redTeamError,
+        ]) : null,
+        snapshot ? el('div', {}, [
+          el('p', { class: 'red-team-revisions__status' }, [
+            'Metadata loaded at ',
+            el('time', { dateTime: snapshot.fetchedAt }, [snapshot.fetchedAt]),
+            '. Refresh immediately before the review.',
+          ]),
+          el('div', { class: 'red-team-revisions__grid' }, [
+            el('div', { class: 'red-team-revisions__card' }, [
+              el('h3', {}, ['Pack source on main']),
+              el('p', {}, ['Version ', el('strong', {}, [snapshot.pack.version])]),
+              el('p', {}, ['Model ', el('code', {}, [snapshot.pack.model])]),
+              el('p', {}, ['Source commit ', el('code', {}, [snapshot.pack.sourceCommit])]),
+              el('p', {}, ['SHA-256 ', el('code', {}, [snapshot.pack.sha256])]),
+            ]),
+            ...[
+              ['proxy', 'SP proxy'], ['ms3', 'MS3 learner site'], ['res', 'Resident learner site'],
+            ].map(([key, label]) => {
+              const deploy = snapshot.deployments[key];
+              return el('div', { class: 'red-team-revisions__card' }, [
+                el('h3', {}, [label]),
+                el('p', {}, ['Deploy ', el('code', {}, [deploy.deployId])]),
+                el('p', {}, ['Commit ', el('code', {}, [deploy.commitRef])]),
+                el('p', {}, ['Published ', el('time', { dateTime: deploy.publishedAt }, [deploy.publishedAt])]),
+                el('a', {
+                  href: deploy.deployUrl, target: '_blank', rel: 'noopener noreferrer',
+                }, ['Open this exact deploy']),
+              ]);
+            }),
+          ]),
+          el('p', { class: 'muted' }, [
+            'This is source and deploy metadata, not a red-team pass. The guided preflight checks the pack actually served by the proxy; the owner still completes the human checklist.',
+          ]),
+        ]) : null,
+      ]) : null,
+    ]);
   }
 
   function validServerState(payload) {
@@ -2169,6 +2327,18 @@ export function startFacultyConsole({
     return el('p', { id: 'attestation-stale-notice', class: 'hint' }, [reason]);
   }
 
+  /* Fingerprint v2 (2026-09-26): the page changed since it was signed, but only in its
+     citations — the clinical text is what was signed, so the signature stands. Said out loud
+     rather than hidden: until the citation gate checks citations itself, the reviewer is the
+     one who can notice a citation that does not support its sentence. */
+  function renderCitationsChangedNotice(item) {
+    if (!item || item.type === 'question' || item.record?.citationsChanged !== true) return null;
+    return el('p', { id: 'attestation-citations-notice', class: 'hint' }, [
+      'Citations changed since you signed this page. The clinical text is unchanged, so your '
+        + 'signature stands; glance at the new citations when you next open it.',
+    ]);
+  }
+
   /* ── Re-sign by change (2026-09-25) ─────────────────────────────────────────────────
      A signed page drifts when a correction changes text it was signed against. When one
      correction set drifts dozens of pages at once, re-reading each whole page to find a
@@ -3015,6 +3185,11 @@ export function startFacultyConsole({
       payload.pullRequestError ? el('p', { class: 'hint' }, [
         'The signatures are saved, but the review request could not be confirmed open. Use “Reopen review request” if it appears.',
       ]) : null,
+      Number.isInteger(payload.fingerprinted) && payload.fingerprinted > 0 ? el('p', { class: 'hint' }, [
+        `Also recorded the clinical fingerprint of ${contentNoun(payload.fingerprinted)} you had already `
+          + 'signed and that are unchanged, so a later change to their citations alone will not void '
+          + 'those signatures. Their signature dates are unchanged.',
+      ]) : null,
       leftOutPages.length || leftOutQuestions.length ? el('details', { class: 'resign-group' }, [
         el('summary', {}, [`Left out · ${leftOutPages.length + leftOutQuestions.length}`]),
         el('div', { class: 'resign-group-body' }, [
@@ -3146,6 +3321,7 @@ export function startFacultyConsole({
       renderTwinContext(item),
       renderRiskContext(item),
       renderStaleNotice(item),
+      renderCitationsChangedNotice(item),
       renderResignGroupProgress(item),
       renderChangesSinceSigned(item),
       renderPendingReason(item),
@@ -3355,6 +3531,7 @@ export function startFacultyConsole({
           class: `session-notice branch-sync ${staleness.tone}`,
         }, [el('p', {}, [staleness.message])]);
       })(),
+      renderRedTeamRevisions(),
       el('section', { class: 'reviewer-strip', 'aria-label': 'Reviewer context' }, [
         el('div', { class: 'field' }, [
           el('p', { class: 'reviewer-heading' }, ['Reviewer']),

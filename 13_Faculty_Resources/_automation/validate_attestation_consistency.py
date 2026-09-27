@@ -15,7 +15,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-from attestation_hash import ledger_hash_report
+from attestation_hash import HEX40, ledger_hash_report
 from surface_governance import SurfaceGovernanceError, load_validated_ledger
 from validate_tool_governance import GovernanceError, parse_metadata_marker
 
@@ -745,6 +745,7 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
     cases = pack.get("cases")
     if not isinstance(cases, list) or not cases:
         return errors + ["%s: pack.cases must be a non-empty list" % slug]
+    selectable_count = 0
     for index, case_def in enumerate(cases):
         if not isinstance(case_def, dict):
             errors.append("%s: pack.cases[%d] must be an object" % (slug, index))
@@ -755,10 +756,18 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
             errors.append("%s: case %s is missing facultyReview" % (slug, case_id))
             review = {}
         case_status = norm_status(review.get("status"))
-        if is_reviewed(pack_status) and not is_reviewed(case_status):
-            # DECISION: pack-case-review-is-registration — this rule is why a case ENTERS the pack
-            # already reading reviewed (or attested) in the content PR that adds it: the block is
-            # registration; the ledger row for the tool, which hashes the pack, is the claim of record.
+        pending = review.get("status") == "pending"
+        if review.get("status") == "reviewed":
+            selectable_count += 1
+        if pending and any(
+            review.get(key) for key in ("reviewer", "lastReviewed", "reviewedAt")
+        ):
+            errors.append(
+                "%s: pending case %s has reviewer or review date" % (slug, case_id)
+            )
+        if is_reviewed(pack_status) and not is_reviewed(case_status) and not pending:
+            # DECISION: pack-case-review-is-registration — the per-case block controls
+            # selection; the ledger row hashing the whole pack is the attestation of record.
             errors.append(
                 "%s: attested pack contains non-reviewed case %s" % (slug, case_id)
             )
@@ -772,6 +781,9 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
                 errors.append(
                     "%s: reviewed case %s is missing review date" % (slug, case_id)
                 )
+
+    if is_reviewed(pack_status) and selectable_count == 0:
+        errors.append("%s: reviewed pack has no selectable reviewed case" % slug)
 
     errors.extend(_validate_speech_engine(slug, pack, cases))
     return errors
@@ -829,8 +841,14 @@ def _content_hash_errors(root, reviewed, document, topic_meta):
             "faculty console" % slug
         )
     for slug in sorted(report["malformed"]):
+        entry = reviewed.get(slug)
+        stored = entry.get("contentHash") if isinstance(entry, dict) else None
+        # ledger_hash_report classes a bad clinicalHash (fingerprint v2) as malformed too;
+        # name the field that is actually wrong.
+        field = ("clinicalHash" if isinstance(stored, str) and HEX40.fullmatch(stored)
+                 else "contentHash")
         errors.append(
-            "%s: contentHash is malformed (expected a 40-hex git blob SHA)" % slug
+            "%s: %s is malformed (expected a 40-hex git blob SHA)" % (slug, field)
         )
     for slug in sorted(report["unresolvable"]):
         for path in report["unresolvable"][slug]:

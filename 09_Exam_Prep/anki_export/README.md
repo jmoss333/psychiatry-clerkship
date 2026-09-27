@@ -1,62 +1,80 @@
 # Anki Export — Psychiatry Clerkship Library
 
-Two complementary decks, both built **only from attested content**:
+The site build creates three downloads from the same released Concepts feed used
+by native cards and the current, post-overlay question bank. Every rendered Anki
+card is checked before the site build succeeds.
 
-| Deck | Source | Builder | Cards |
-|---|---|---|---|
-| **Question Bank** (vignette layer) | `question_bank.json` | `export_anki.py` | 143 attested items → 168 cards |
-| **Concepts** (fact layer) | attested topic pages (`03_/04_/05_/…`) | `export_anki_content.py` | 141 cards (21 summaries · 17 cloze · 103 pearls) |
+Measured on 2026-09-27 with the local baseline ledger:
 
-## Files
-- `psychiatry_clerkship_library_ALL.apkg` — **recommended for students: one import → both subdecks** (`Psychiatry Clerkship Library (Moss)::Question Bank` + `::Concepts`).
-- `psychiatry_clerkship_library.apkg` — vignette deck only (Q-bank).
-- `psychiatry_clerkship_library.csv` — flat fallback for the Q-bank.
-- `psychiatry_clerkship_concepts.apkg` — concepts deck only (pearls + one-liners).
+| Download | Content | Cards / notes |
+|---|---|---|
+| `psychiatry_clerkship_concepts.apkg` | Released Concepts | 154 / 138 |
+| `psychiatry_clerkship_library.apkg` | 150 attested question-bank items, including 20 tier-two cards | 170 / 170 |
+| `psychiatry_clerkship_library_ALL.apkg` | Both subdecks in one import | 324 / 308 |
 
-## Rebuild
+Counts describe verified staged output, not the historical committed fallback
+packages. Signed faculty reviews can change release membership at build time.
+The 47 changed faces and four withdrawals remain pending faculty review; this
+implementation does not refresh the committed APKG baselines or establish clinical approval.
+
+## Build and inspect
+
 ```bash
-pip install genanki
-python3 13_Faculty_Resources/_automation/site_build/export_anki.py                  # Q-bank, attested-only
-python3 13_Faculty_Resources/_automation/site_build/export_anki.py --include-drafts # + watermarked drafts
-python3 13_Faculty_Resources/_automation/site_build/export_anki_content.py          # concepts (attested pages)
-python3 13_Faculty_Resources/_automation/site_build/export_anki_all.py              # combined subdeck package
-# or all of the above + stage into a site output dir:
-bash    13_Faculty_Resources/_automation/site_build/build_anki.sh [OUT_DIR]
+python3 -m pip install -r requirements.txt
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+python3 13_Faculty_Resources/_automation/site_build/check_anki_parity.py _build/ms3 ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+python3 13_Faculty_Resources/_automation/site_build/check_anki_parity.py _build/res res
 ```
 
-## Auto-regeneration on the live sites
-`build_and_check.sh` (the Netlify build command for both sites) calls `build_anki.sh`
-**after** the QA gate, which regenerates all three `.apkg` and copies them to
-`<published>/anki/` for download. It is **fail-soft**: it never exits non-zero, so a
-missing `genanki` on Netlify's build image can't break a deploy — it falls back to the
-`.apkg` committed here. Practically: regenerate + commit locally/in CI (where `genanki`
-is installed); Netlify then just serves the committed decks. Because staging happens
-after `check-static-site.mjs`, the `anki/` folder is invisible to the QA harness.
+`build_anki.sh OUT_DIR` stages exactly three APKG files into `OUT_DIR/anki`.
+`OUT_DIR/tools/concepts.json` must already exist. Routine builds never modify
+these committed baseline packages. A missing dependency fails the build. If
+export fails, committed packages are accepted only when their individual cards,
+GUIDs, ordinals, templates and sources exactly match the released feed and current
+question bank. Stale fallback packages fail the build.
 
-## Concepts deck — how cards are made (no LLM generation)
-Cards are **extracted** from already-attested structured elements, never synthesized from prose — so every card stays inside the platform's attestation chain. A page contributes cards only if it carries the "attested by …" review line.
-- **"In one line — …"** → one Basic summary card per topic.
-- **"High-yield pearls"** bullets → **cloze** cards. The occlusion target (the clinical term blanked out) is curated per pearl in `pearl_cards.json` — the deletion is chosen editorially so every front is a real recall prompt (e.g. "___, not hypnotics, is first-line for chronic insomnia"), never a generic "pearl #N". Multiple targets on one pearl → multiple cloze cards. Only *occlusion of attested text* is allowed: the builder skips any target not found verbatim in the pearl (drift guard) and falls back to author-bolded terms, then a plain recall card. To re-curate, edit `pearl_cards.json` (index-aligned to each page's pearl bullets) and rebuild.
-- Tags: `Deck::Concepts`, `Source::<page>`, `Type::summary|pearl`, `Format::cloze|basic`, `Status::attested`.
-- Stable GUIDs = source slug + hash of card text: unrelated edits don't churn review history; a deliberate reword mints a fresh card.
+## Explicit local baseline refresh
 
-To expand the concepts deck, add an `attested by …` line + a "High-yield pearls" / "In one line" section to more topic pages, then rerun the builder.
+Run only after reviewing the staged cards, outside an active ledger overlay.
+This rebuilds with the baseline ledger, verifies semantic equality, and copies
+only the three verified packages. Review and commit those three files explicitly;
+do not commit unrelated generated files or media pointer stubs.
 
-## What's in it
-- **Attested-only by default** — the same gate the SPA enforces via `reviewed.json`. Draft items are excluded unless you pass `--include-drafts`, which title-prefixes them `[DRAFT — NOT ATTESTED]` and tags them `Status::draft`.
-- **Vignette Basic (Q/A) cards** — front shows the stem + lettered options (no answer leak); back shows the best answer, trap notes per distractor, the `why` explanation, the `pearl`, the evidence cite, and a link back to the source page/tool.
-- **Two-tier items emit two chained cards** — the tier-1 management card and a tier-2 mechanism card (`<id>::t2`).
-- **Stable GUIDs keyed on item id** — re-importing an updated deck **updates** existing cards and preserves each learner's review history; it does not create duplicates. Never renumber item ids (per `question_bank.schema.json`).
+```bash
+(
+  set -e
+  test "${CLERKSHIP_LEDGER:-off}" = off
+  test -z "${NETLIFY:-}"
+  CLERKSHIP_LEDGER=off bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+  python3 13_Faculty_Resources/_automation/site_build/check_anki_parity.py _build/ms3 ms3
+  for name in psychiatry_clerkship_library psychiatry_clerkship_concepts psychiatry_clerkship_library_ALL; do
+    cp "_build/ms3/anki/$name.apkg" "09_Exam_Prep/anki_export/$name.apkg"
+  done
+)
+```
 
-## Tags (AnKing-style `::` hierarchy → drives the suspend/unsuspend workflow)
-- `Psychiatry::<category>` — mood, psychosis, anxiety, substance, personality, neurocog, safety, pharm, childdev, ethics, otherdx, relational
-- `Competency::<c>` · `Difficulty::<1-3>` · `Type::<sba|two-tier|relational>`
-- `Source::<page>` (e.g. `Source::t_sud`) · `HighYield` · `Status::attested|draft` · `Tier2::mechanism`
+## Concepts and review history
 
-**Recommended student workflow:** import, suspend everything, then unsuspend by week/topic tag as the rotation covers each block (cap ~20–30 new/day).
+Concepts consume the built `tools/concepts.json`; there is no prose scraping,
+positional pearl mapping, author-bold fallback, or generic recall prompt. Each
+editorial target becomes one cloze card, while sibling clozes share one Anki note.
+The checker renders every ordinal independently, so a missing sibling cannot hide
+behind a correct note count.
 
-## Current export
-- Bank: 192 items (143 attested / 49 draft)
-- Default deck: 143 attested items → 168 cards (two-tier items add a second card)
+`concept_guid_crosswalk.json` preserves GUIDs for unchanged notes. A changed tested
+target gives the whole grouped note a new deterministic GUID. This release reports
+sibling churn for `cultural_psychiatry-pearl5` `t_neurocog-pearl7`, `t_perinatal-pearl1`, and `t_psychosis-pearl8`. Crosswalk
+front/back text must match the generated native question and reveal exactly.
+Withdrawn and withheld cards are excluded. Re-importing does not remove already
+imported old Anki notes; learners must retire obsolete notes in their collection.
+Citation cleanup adds 11 changed cards across nine formerly preserved notes; the
+47 changed cards now use new note identities and four historical cards are withdrawn.
+The neutral “Concepts” heading replaces the topic on every Anki front, including
+107 cards whose fields/GUIDs remain unchanged. Topics and resolved evidence links
+appear only after reveal. This template change is separate from identity changes.
 
-_Joshua Moss, MD | Psychiatrist_
+Question-bank GUIDs stay keyed to the item ID (`id::t2` for tier two). Draft items
+are excluded from all three site downloads. The standalone question-bank exporter
+still offers its explicit `--include-drafts` authoring mode and CSV export; those
+are not staged as learner downloads by this build.

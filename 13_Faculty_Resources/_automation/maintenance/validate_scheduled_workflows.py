@@ -404,7 +404,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "2fd18edc8a3d3cf15ea82c4838e28fb4d075513f027fd751b995dee3ea887261"
     ),
     "maintenance-monthly-review.yml": (
-        "acd1fe78364baf65ac9842ffb62a5abacaa8c70110a254106166130985fc9689"
+        "befffbc8571c855dd5cf152c0bbe41085ffddf7cdb03a53de0d70074653f4e41"
     ),
     "maintenance-queue-runner.yml": (
         "2044dc589d3df7e1f850fca0468637fa2aa8e6798012cc1fda481b8c6d0fbf65"
@@ -1408,6 +1408,8 @@ def _validate_review_workflow(name, workflow, step_id, errors):
     if steps[enforce].get("if") != "always()":
         _error(errors, name, "gate restoration must use if: always()")
     if name == "maintenance-monthly-review.yml":
+        if steps[capture].get("env", {}).get("NETLIFY_AUTH_TOKEN") != "${{ secrets.NETLIFY_AUTH_TOKEN }}":
+            _error(errors, name, "monthly deploy lookup must use the read-only Netlify token")
         if (
             "tools/evidence_registry/validate.py --check-generated"
             not in capture_run

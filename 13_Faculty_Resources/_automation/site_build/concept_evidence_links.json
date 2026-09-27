@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "links": {
+    "boyer-shannon-2005-serotonin-syndrome": "https://doi.org/10.1056/NEJMra041867",
+    "canmat-isbd-bipolar-2018": "https://pubmed.ncbi.nlm.nih.gov/29536616/",
+    "cipriani-2013-lithium-suicide": "https://doi.org/10.1136/bmj.f3646",
+    "clozapine-rems": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "lieberman-2005-catie": "https://doi.org/10.1056/nejmoa051688",
+    "mckeith-2017-dlb-consensus": "https://doi.org/10.1212/WNL.0000000000004058",
+    "nasreddine-2005-moca": "https://doi.org/10.1111/j.1532-5415.2005.53221.x",
+    "schneider-2005-antipsychotic-dementia-mortality": "https://doi.org/10.1001/jama.294.15.1934",
+    "strawn-2007-neuroleptic-malignant-syndrome": "https://doi.org/10.1176/ajp.2007.164.6.870",
+    "vanderkruik-2017-postpartum-psychosis-prevalence": "https://doi.org/10.1186/s12888-017-1427-7",
+    "wesseloo-2016-postpartum-relapse": "https://doi.org/10.1176/appi.ajp.2015.15010124"
+  }
+}

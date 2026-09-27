@@ -9,7 +9,7 @@ function fdOfflineOwn(value,key){
 
 function fdOfflineUrl(value){
   return typeof value==='string'&&(
-    value==='/'||value==='/search-index.json'||
+    value==='/'||value==='/search-index.json'||value==='/tools/concepts.json'||
     /^\/(?:content\/[A-Za-z0-9][A-Za-z0-9._-]*\.md|tools\/[A-Za-z0-9][A-Za-z0-9._-]*\.html)$/.test(value));
 }
 
@@ -88,6 +88,7 @@ function fdOfflineUrls(index,state){
     if(fdOfflineOwn(seen,url))continue;
     seen[url]=true;
     out.push(url);
+    if(url==='/tools/review.html'){seen['/tools/concepts.json']=true;out.push('/tools/concepts.json');}
     if(out.length>FD_OFFLINE_MAX)return [];
   }
   return out.length>2?out:[];
