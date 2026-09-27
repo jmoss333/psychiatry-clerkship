@@ -21,6 +21,8 @@ function api(qrSource = qrSrc) {
     ids: typeof fdCarePackIds === 'function' ? fdCarePackIds : null,
     toggle: typeof fdCarePackToggle === 'function' ? fdCarePackToggle : null,
     qr: typeof fdCarePackQrSvg === 'function' ? fdCarePackQrSvg : null,
+    shareText: typeof fdCarePackShareText === 'function' ? fdCarePackShareText : null,
+    share: typeof fdCareShare === 'function' ? fdCareShare : null,
     render: typeof fdCarePack === 'function' ? fdCarePack : null,
   };`)();
 }
@@ -112,6 +114,49 @@ test('QR generation encodes the exact canonical URL and emits local accessible S
   assert.doesNotMatch(result.svg, /(?:href|src)=/);
 });
 
+test('share text contains only curated titles and exact canonical URLs in curriculum order', () => {
+  assert.equal(typeof F.shareText, 'function');
+  assert.equal(F.shareText(index, ['book-shelf', 'resource-finder']),
+    `${curriculum.careResources[0].title}\n${curriculum.careResources[0].url}\n\n`
+    + `${curriculum.careResources[4].title}\n${curriculum.careResources[4].url}`);
+  assert.equal(F.shareText(index, ['missing']), '');
+  assert.doesNotMatch(F.shareText(index, ['book-shelf']), /description|patient/i);
+});
+
+test('the QR drawer renders one exact canonical resource with accessible transient actions', () => {
+  assert.equal(typeof F.share, 'function');
+  const item = curriculum.careResources[2];
+  const html = F.share(index, item.id, []);
+  assert.match(html, /class="fd-care-share" role="dialog" aria-modal="true"/);
+  assert.match(html, new RegExp(`aria-labelledby="fd-care-share-title-${item.id}"`));
+  assert.match(html, new RegExp(`>${item.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}<`));
+  assert.match(html, new RegExp(`>${item.description.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}<`));
+  assert.match(html, new RegExp(`href="${item.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
+  assert.match(html, /data-fd-care-copy="education-library"/);
+  assert.match(html, /data-fd-care-pack="education-library"[^>]*aria-pressed="false"/);
+  assert.match(html, new RegExp(`aria-label="Copy link for ${item.title}"`));
+  assert.match(html, new RegExp(`aria-label="Add ${item.title} to handout"`));
+  assert.match(html, /data-fd-care-share-close/);
+  assert.match(html, new RegExp(`aria-label="QR code for ${item.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
+  assert.match(html, /data-fd-care-copy-status[^>]*role="status"[^>]*aria-live="polite"/);
+  assert.doesNotMatch(html, /<input|<textarea|contenteditable/i);
+
+  const selected = F.share(index, item.id, [item.id]);
+  assert.match(selected, /data-fd-care-pack="education-library"[^>]*aria-pressed="true"/);
+  assert.match(selected, />Remove from handout</);
+  assert.equal(F.share(index, 'missing', []), '');
+});
+
+test('a full handout explains a disabled drawer action locally', () => {
+  const item = curriculum.careResources[2];
+  const html = F.share(index, item.id,
+    ['resource-finder', 'meeting-calendar', 'book-shelf']);
+  assert.match(html, new RegExp(
+    `data-fd-care-pack="${item.id}"[^>]*aria-label="Add ${item.title} to handout"[^>]*aria-describedby="fd-care-share-limit-${item.id}"[^>]*disabled`));
+  assert.match(html, new RegExp(
+    `id="fd-care-share-limit-${item.id}"[^>]*>3 of 3 handout resources selected\. Remove one before adding this resource\.<`));
+});
+
 test('the empty builder shows five choices, automatic crisis inclusion, and no printable action', () => {
   assert.equal(typeof F.render, 'function');
   const html = F.render(index, [], crisisHtml);
@@ -121,6 +166,7 @@ test('the empty builder shows five choices, automatic crisis inclusion, and no p
   assert.match(html, /Crisis resources are included automatically/);
   assert.match(html, /<section class="crisis-block"/);
   assert.match(html, /data-fd-care-pack-print[^>]*disabled/);
+  assert.match(html, /data-fd-care-copy-selected[^>]*disabled/);
   assert.match(html, /Choose at least one resource to prepare the handout/);
   assert.doesNotMatch(html, /class="fd-care-pack is-print-ready"/);
   assert.doesNotMatch(html, /<input|<textarea|contenteditable/i);
@@ -135,6 +181,7 @@ test('three selections render exact links, QR codes, a fixed count, and disabled
   assert.equal((html.match(/class="fd-care-pack__resource"/g) || []).length, 3);
   assert.equal((html.match(/class="fd-care-pack__qr"/g) || []).length, 3);
   assert.doesNotMatch(html, /data-fd-care-pack-print[^>]*disabled/);
+  assert.doesNotMatch(html, /data-fd-care-copy-selected[^>]*disabled/);
   assert.match(html, /class="fd-care-pack is-print-ready"/);
   for (const id of ids) {
     const item = curriculum.careResources.find((row) => row.id === id);
@@ -183,9 +230,12 @@ test('the workbench uses an accessible two-column picker and paper hierarchy', (
   assert.match(css, /\.fd-care-pack__choice\[aria-pressed="true"\]\{[^}]*box-shadow:inset/);
   assert.match(css, /\.fd-care-pack__choice\[aria-pressed="true"\] \.fd-care-pack__check\{[^}]*color:var\(--fd-on-accent\)/);
   assert.match(css, /\.fd-care-pack__choice:disabled[^}]*\{[^}]*cursor:not-allowed/);
-  assert.match(css, /\.fd-care-pack__(?:choice|clear|print):focus-visible/);
+  assert.match(css, /\.fd-care-pack__(?:choice|clear|copy|print):focus-visible/);
   assert.match(css, /\.fd-care-pack__qr\{[^}]*width:calc\(var\(--fd-space-10\) \* 2 \+ var\(--fd-space-4\)\)/);
   assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?\.fd-care-pack__workbench\{grid-template-columns:minmax\(0,1fr\)\}/);
+  assert.match(css, /\.fd-care-share\{[^}]*position:fixed[^}]*width:min\(/);
+  assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?\.fd-care-share\{[^}]*inset:auto 0 0/);
+  assert.match(css, /\.fd-care-share__(?:close|copy|pack):focus-visible/);
 });
 
 test('print isolation requires a ready pack and invalid packs hide the sheet', () => {
@@ -212,6 +262,10 @@ test('the human class contract documents transient state, crisis ownership, and 
   for (const phrase of [
     '.fd-care-pack__workbench',
     '.fd-care-pack__choice.is-selected',
+    '.fd-care-share',
+    '.fd-care-share__qr',
+    '.fd-care-share__qr-fallback',
+    'Copy selected links',
     'crisis_resources.json',
     'transient',
     'Print',

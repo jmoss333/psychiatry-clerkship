@@ -187,7 +187,7 @@ test('fails closed when the governed crisis template is unavailable', async ({ p
   });
   await page.goto('/?tab=care');
 
-  await page.locator('[data-fd-care-pack="resource-finder"]').click();
+  await page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]').click();
   await expect(page.locator('.fd-care-pack__crisis-failure')).toHaveText(
     'This handout is unavailable because its crisis-resource block did not load.');
   await expect(page.locator('[data-fd-care-pack-print]')).toBeDisabled();

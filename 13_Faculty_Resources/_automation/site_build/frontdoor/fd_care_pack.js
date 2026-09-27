@@ -54,6 +54,24 @@ function fdCarePackToggle(index,ids,id){
   return fdCarePackIds(index,current);
 }
 
+function fdCarePackResourceById(index,id){
+  if(!fdCarePackSafeId(id)) return null;
+  var resources=fdCarePackResources(index);
+  for(var i=0;i<resources.length;i++) if(resources[i].id===id) return resources[i];
+  return null;
+}
+
+function fdCarePackShareText(index,ids){
+  var selectedIds=fdCarePackIds(index,ids),resources=fdCarePackResources(index);
+  var selected=Object.create(null),out=[],i,item;
+  for(i=0;i<selectedIds.length;i++) selected[selectedIds[i]]=true;
+  for(i=0;i<resources.length;i++){
+    item=resources[i];
+    if(selected[item.id]) out.push(item.title+'\n'+item.url);
+  }
+  return out.join('\n\n');
+}
+
 function fdCarePackQrSvg(url,label){
   if(typeof url!=='string'||!/^https:\/\/[^\s]+$/.test(url)||typeof qrcode!=='function'){
     return {ok:false,code:'QR_UNAVAILABLE',svg:''};
@@ -88,6 +106,38 @@ function fdCarePackResource(item){
     (qr.ok?'<div class="fd-care-pack__qr">'+qr.svg+'</div><span>Scan to open</span>':
       '<span class="fd-care-pack__qr-fallback">QR unavailable</span>')+
     '</div></section>';
+}
+
+function fdCareShare(index,id,ids){
+  var item=fdCarePackResourceById(index,id);
+  if(!item) return '';
+  var selectedIds=fdCarePackIds(index,ids),selected=false,i;
+  for(i=0;i<selectedIds.length;i++) if(selectedIds[i]===item.id) selected=true;
+  var limit=selectedIds.length>=FD_CARE_PACK_LIMIT&&!selected;
+  var qr=fdCarePackQrSvg(item.url,item.title);
+  return '<div class="fd-care-sharebackdrop" data-fd-care-share-close aria-hidden="true"></div>'+
+    '<aside class="fd-care-share" role="dialog" aria-modal="true" '+
+    'aria-labelledby="fd-care-share-title-'+fdEsc(item.id)+'" aria-describedby="fd-care-share-description-'+fdEsc(item.id)+'">'+
+    '<header class="fd-care-share__head"><div><p>Patient care resource</p><h2 id="fd-care-share-title-'+
+    fdEsc(item.id)+'">'+fdEsc(item.title)+'</h2></div><button type="button" class="fd-care-share__close" '+
+    'data-fd-care-share-close aria-label="'+fdEsc('Close QR code for '+item.title)+'">×</button></header>'+
+    '<div class="fd-care-share__body"><p id="fd-care-share-description-'+fdEsc(item.id)+'">'+
+    fdEsc(item.description)+'</p><div class="fd-care-share__scan">'+
+    (qr.ok?'<div class="fd-care-share__qr">'+qr.svg+'</div><strong>Scan to open</strong>':
+      '<p class="fd-care-share__qr-fallback">QR unavailable. Use the exact link below.</p>')+
+    '</div><a class="fd-care-share__url" href="'+fdEsc(item.url)+'" target="_blank" rel="noopener noreferrer">'+
+    fdEsc(item.url)+'</a>'+(limit?'<p class="fd-care-share__limit" id="fd-care-share-limit-'+fdEsc(item.id)+'">'+
+      FD_CARE_PACK_LIMIT+' of '+FD_CARE_PACK_LIMIT+' handout resources selected. Remove one before adding this resource.</p>':'')+
+    '<div class="fd-care-share__actions"><button type="button" class="fd-care-share__copy" '+
+    'data-fd-care-copy="'+fdEsc(item.id)+'" aria-label="'+fdEsc('Copy link for '+item.title)+'">Copy link</button>'+
+    '<button type="button" class="fd-care-share__pack" '+
+    'data-fd-care-pack="'+fdEsc(item.id)+'" aria-pressed="'+(selected?'true':'false')+'"'+
+    ' aria-label="'+fdEsc((selected?'Remove ':'Add ')+item.title+' '+(selected?'from':'to')+' handout')+'"'+
+    (limit?' aria-describedby="fd-care-share-limit-'+fdEsc(item.id)+'" disabled':'')+'>'+
+    (selected?'Remove from handout':'Add to handout')+'</button></div>'+
+    '<p class="fd-care-share__status" data-fd-care-copy-status="share-'+fdEsc(item.id)+'" role="status" aria-live="polite"></p>'+
+    '<p class="fd-care-share__privacy">Exact ReConnect link only. No patient information is added or saved.</p>'+
+    '</div></aside>';
 }
 
 function fdCarePack(index,ids,crisisHtml){
@@ -138,7 +188,10 @@ function fdCarePack(index,ids,crisisHtml){
   }
   out+='<footer class="fd-care-pack__provenance">Created by Joshua Moss, MD from personally curated ReConnect databases.</footer>'+
     '</article></div><div class="fd-care-pack__actions"><p>Your choices stay only on this screen.</p>'+
+    '<button type="button" class="fd-care-pack__copy" data-fd-care-copy-selected'+
+    (selectedIds.length?'':' disabled')+'>Copy selected links</button>'+
     '<button type="button" class="fd-care-pack__print" data-fd-care-pack-print'+
-    (!selectedIds.length||!hasCrisis?' disabled':'')+'>Print handout</button></div></section>';
+    (!selectedIds.length||!hasCrisis?' disabled':'')+'>Print handout</button>'+
+    '<p class="fd-care-pack__copy-status" data-fd-care-copy-status="pack" role="status" aria-live="polite"></p></div></section>';
   return out;
 }

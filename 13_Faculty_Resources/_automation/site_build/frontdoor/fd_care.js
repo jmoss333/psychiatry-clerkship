@@ -3,8 +3,11 @@
    route state, or patient context is ever appended. This is navigation, not attested Clerkship
    content, completion work, or a substitute for supervision. */
 
-function fdCareGroup(resources, group, title, intro){
+function fdCareGroup(resources, group, title, intro, packIds){
   var rows=Array.isArray(resources)?resources:[], matched=[];
+  var selectedIds=Array.isArray(packIds)?packIds:[],selected=Object.create(null),limit=false;
+  for(var s=0;s<selectedIds.length;s++) selected[selectedIds[s]]=true;
+  limit=selectedIds.length>=FD_CARE_PACK_LIMIT;
   for(var i=0;i<rows.length;i++) if(rows[i]&&rows[i].group===group) matched.push(rows[i]);
   if(!matched.length) return '';
   var out='<section class="fd-care-group" aria-labelledby="fd-care-'+fdEsc(group)+'">'+
@@ -12,10 +15,18 @@ function fdCareGroup(resources, group, title, intro){
     '<p>'+fdEsc(intro)+'</p></div><div class="fd-care-group__list">';
   for(var j=0;j<matched.length;j++){
     var item=matched[j];
-    out+='<a class="fd-carelink" data-care-resource="'+fdEsc(item.id)+'" href="'+fdEsc(item.url)+'" target="_blank" rel="noopener noreferrer">'+
+    var isSelected=!!selected[item.id];
+    out+='<article class="fd-careitem"><a class="fd-carelink" data-care-resource="'+fdEsc(item.id)+'" href="'+fdEsc(item.url)+'" target="_blank" rel="noopener noreferrer">'+
       '<span class="fd-carelink__mark" aria-hidden="true">↗</span><span class="fd-carelink__copy">'+
       '<span class="fd-carelink__title">'+fdEsc(item.title)+'</span>'+
-      '<span class="fd-carelink__description">'+fdEsc(item.description)+'</span></span></a>';
+      '<span class="fd-carelink__description">'+fdEsc(item.description)+'</span></span></a>'+
+      '<div class="fd-careitem__actions"><button type="button" class="fd-careitem__qr" data-fd-care-share="'+
+      fdEsc(item.id)+'" aria-label="'+fdEsc('Show QR for '+item.title)+'">Show QR</button>'+
+      '<button type="button" class="fd-careitem__pack" data-fd-care-pack="'+
+      fdEsc(item.id)+'" data-fd-care-pack-origin="group" aria-pressed="'+(isSelected?'true':'false')+'"'+
+      ' aria-label="'+fdEsc((isSelected?'Remove ':'Add ')+item.title+' '+
+        (isSelected?'from':'to')+' handout')+'" aria-describedby="fd-care-pack-limit"'+
+      (limit&&!isSelected?' disabled':'')+'>'+(isSelected?'Remove from handout':'Add to handout')+'</button></div></article>';
   }
   return out+'</div></section>';
 }
@@ -32,7 +43,7 @@ function fdCare(index,selectedIntentId,packIds,crisisHtml){
     fdCareNavigator(idx,selectedIntentId)+
     fdCarePack(idx,packIds,crisisHtml)+
     '<div class="fd-care-page__groups">'+
-    fdCareGroup(resources,'support','Find support and follow-up','Use while planning services, recovery support, or discharge follow-up.')+
-    fdCareGroup(resources,'education','Teach and share','Plain-language guides, curated listening, and books for patients and families.')+
+    fdCareGroup(resources,'support','Find support and follow-up','Use while planning services, recovery support, or discharge follow-up.',packIds)+
+    fdCareGroup(resources,'education','Teach and share','Plain-language guides, curated listening, and books for patients and families.',packIds)+
     '</div></section>';
 }
