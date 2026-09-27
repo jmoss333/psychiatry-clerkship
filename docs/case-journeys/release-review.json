@@ -1,0 +1,16 @@
+{
+  "reviewDate": "2026-09-27",
+  "authorization": "The requesting author stated: I reviewed them, can we get these published!",
+  "scope": "Shared MS3/resident learner chapters; faculty notes excluded from shipped assets.",
+  "attestation": "This release record does not promote the faculty-console attestation ledger.",
+  "sources": {
+    "eli-psychosis.json": "856e40f324f8cd7c0be2f661195a0ebaf568a4a0ca63cb69c56c4203fa7a5156",
+    "leah-depression-trauma.json": "4fa1abd69c07b12d64de7eea4d3cb361d951e33f9358bcc8201ca023c7471139",
+    "marisol-delirium-capacity.json": "db9b7bc1cd287f83797064bfd7862d70887a6e3dab5b36a1b8b96007640af4d9"
+  },
+  "projectionChanges": [
+    "Remove facultyNotes from learner assets",
+    "Remove the historical draft prefix from disclaimers; retain clinical scope text",
+    "Update status, learnerRelease, authorship, and audience labels for the authorized learner release"
+  ]
+}

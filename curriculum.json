@@ -432,7 +432,7 @@
     "communication-practice.html": "Say your first line in a hard clinical moment, then compare it with the authored options.",
     "diagnostic-reasoning.html": "Turn bedside data into a problem representation, a differential, and a supervised next step.",
     "family-systems.html": "Rehearse collateral calls, family meetings, discharge-role mapping, and high-emotion conversations.",
-    "one-patient-six-weeks.html": "Follow one fictional inpatient through changing information, risk questions, and the final handoff.",
+    "one-patient-six-weeks.html": "Follow four patients through psychosis, mood, trauma, delirium, safety, and care transitions.",
     "capacity.html": "Walk the four abilities at the bedside with sample questions, then draft a structured capacity note.",
     "oral.html": "Gather what rounds need, then rehearse a three-minute presentation or a 60-second update.",
     "violence.html": "Static and dynamic risk factors, an imminent warning-signs checklist, and the FRST screen.",
@@ -670,6 +670,7 @@
     "pharm": "drug primer pharmacology"
   } ,
   "searchAliases": {
+    "one-patient-six-weeks.html": ["one patient six weeks", "case journeys"],
     "capacity.html": [
       "capacity",
       "decisional capacity",

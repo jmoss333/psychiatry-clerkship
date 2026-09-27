@@ -29,7 +29,7 @@ def main():
     registry = json.loads(META_PATH.read_text(encoding="utf-8"))
     tool = next((item for item in registry["tools"] if item["file"] == "one-patient-six-weeks.html"), None)
     assert tool, "simulation tool must be registered in tool_registry.json"
-    assert tool["storageKeys"] == ["cw_longitudinal_v1"]
+    assert tool["storageKeys"] == [], "case navigation is transient"
 
     reviewed = json.loads(REVIEWED_PATH.read_text(encoding="utf-8"))
     # Governance PRESENCE, not a specific status. This asserted "pending" until the tool
@@ -65,7 +65,7 @@ def main():
                 f"{week['id']} links to unknown {link['kind']} {target}"
             )
 
-    print("test_longitudinal_case: OK — six weeks, registered links, review metadata, and anonymous storage contract")
+    print("test_longitudinal_case: OK — six weeks, registered links, review metadata, and transient navigation contract")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,108 @@
+{
+  "status": "draft-source-map-not-clinical-attestation",
+  "checkedOn": "2026-09-23",
+  "scope": "Sources support the named teaching concepts. Patient facts, dialogue, and timelines are newly authored fiction. This is not a systematic evidence review, source-integrity audit, or verification of local policy. No paper-specific outcome or effect-size claims are made.",
+  "sources": [
+    {
+      "id": "nimh-psychosis",
+      "title": "NIMH — Understanding Psychosis",
+      "url": "https://www.nimh.nih.gov/health/publications/understanding-psychosis",
+      "location": "What causes psychosis?; How is psychosis treated?; coordinated specialty care components",
+      "supports": "Psychosis has multiple possible causes; early care can combine medication, psychotherapy, family work, practical support, and education or employment goals.",
+      "supportingExcerpt": "There is no one cause of psychosis.",
+      "access": "Primary agency HTML opened; relevant sections read."
+    },
+    {
+      "id": "nice-psychosis",
+      "title": "NICE CG178 — Psychosis and schizophrenia in adults",
+      "url": "https://www.nice.org.uk/guidance/cg178/chapter/recommendations",
+      "location": "First episode psychosis; Choice of antipsychotic medication; How to use antipsychotic medication",
+      "supports": "Shared medication choice, baseline and continuing adverse-effect monitoring, and recognition that akathisia can resemble agitation or anxiety.",
+      "supportingExcerpt": "the overlap between akathisia and agitation or anxiety",
+      "access": "Relevant primary-source recommendation text retrieved through indexed search. Direct full-page opening returned HTTP 403."
+    },
+    {
+      "id": "nice-depression",
+      "title": "NICE NG222 — Depression in adults: treatment and management",
+      "url": "https://www.nice.org.uk/guidance/ng222/chapter/Recommendations",
+      "location": "Recognition and assessment; Antidepressant medication for people at risk of suicide",
+      "supports": "Assessment includes functional impact, illness course, coexisting disorders, and mood-elevation history; treatment follow-up includes safety and adverse effects.",
+      "supportingExcerpt": "any history of mood elevation (to determine if the depression may be part of bipolar disorder)",
+      "access": "Relevant primary-source recommendation text retrieved through indexed search. Direct full-page opening returned HTTP 403."
+    },
+    {
+      "id": "nice-self-harm",
+      "title": "NICE NG225 — Self-harm: assessment, management and preventing recurrence",
+      "url": "https://www.nice.org.uk/guidance/ng225/chapter/Recommendations",
+      "location": "Risk assessment tools and scales; recommendations 1.11.7–1.11.8 on safety planning",
+      "supports": "Limits of risk scales as prediction or disposition tools; collaborative safety planning, support contacts, and addressing access to lethal means.",
+      "supportingExcerpt": "Do not use risk assessment tools and scales to predict future suicide or repetition of self-harm.",
+      "scopeLimit": "This guideline's population is people who self-harm. Leah reports suicidal ideation without a confirmed act; applying its general safety-planning principles to her vignette is an educational extrapolation requiring faculty review. It does not establish local policy or supersede a local suicide-assessment framework.",
+      "access": "Relevant primary-source recommendation text retrieved through indexed search. Direct full-page opening returned HTTP 403."
+    },
+    {
+      "id": "asam-withdrawal",
+      "title": "ASAM — Alcohol Withdrawal Management Guideline",
+      "url": "https://www.asam.org/quality-care/clinical-guidelines/alcohol-withdrawal-management-guideline",
+      "location": "About the guideline",
+      "supports": "Withdrawal management is part of engaging a person in ongoing alcohol-use-disorder care, rather than the entirety of treatment.",
+      "supportingExcerpt": "alcohol withdrawal management alone is not an effective treatment for alcohol use disorder",
+      "access": "Primary society HTML opened. This draft uses its scope statement, not a reproduced dosing or level-of-care algorithm."
+    },
+    {
+      "id": "niaaa-aud",
+      "title": "NIAAA — Alcohol Use Disorder: From Risk to Diagnosis to Recovery",
+      "url": "https://www.niaaa.nih.gov/health-professionals-communities/core-resource-on-alcohol/alcohol-use-disorder-risk-diagnosis-recovery",
+      "location": "How is alcohol withdrawal managed?; How is AUD treated?",
+      "supports": "Withdrawal can include tremor, sweating, autonomic change, and serious complications; medical assessment and continuing behavioral or medication treatment are distinct needs.",
+      "supportingExcerpt": "Treatment and continuing care for AUD are measured in months and sometimes years",
+      "access": "Primary agency HTML opened; relevant sections read."
+    },
+    {
+      "id": "va-ptsd-sud",
+      "title": "VA National Center for PTSD — Treatment of Co-Occurring PTSD and Substance Use Disorder",
+      "url": "https://www.ptsd.va.gov/professional/treat/cooccurring/tx_sud_va.asp",
+      "location": "Key Points",
+      "supports": "Offer care for both PTSD and substance use disorder; one condition should not automatically block treatment for the other. No comparative efficacy or study-outcome claim is made in the draft.",
+      "supportingExcerpt": "Having one should not be a barrier to receiving treatment for the other.",
+      "access": "Primary agency HTML opened; guideline-based key points read."
+    },
+    {
+      "id": "nice-delirium",
+      "title": "NICE CG103 — Delirium: prevention, diagnosis and management",
+      "url": "https://www.nice.org.uk/guidance/cg103/chapter/Recommendations",
+      "location": "Indicators of delirium; assessment and diagnosis; treating delirium; if delirium does not resolve",
+      "supports": "Assess acute fluctuating changes, investigate contributors, use supportive care, and reassess persistent cognitive concerns. Medication decisions need individual review.",
+      "supportingExcerpt": "identify and manage the possible underlying cause or combination of causes",
+      "access": "Relevant primary-source recommendation text retrieved through indexed search. Direct full-page opening returned HTTP 403; the NCBI copy required a browser check. Full recommendation review remains a faculty-review task."
+    },
+    {
+      "id": "ama-capacity",
+      "title": "AMA Code of Medical Ethics 2.1.2 — Decisions for Adult Patients Who Lack Capacity",
+      "url": "https://code-medical-ethics.ama-assn.org/ethics-opinions/decisions-adult-patients-who-lack-capacity",
+      "location": "Patient participation; identifying a surrogate; substituted judgment; institutional consultation",
+      "supports": "Support participation despite impairment and identify a surrogate through applicable law and policy rather than family presence alone.",
+      "supportingExcerpt": "in keeping with applicable law and policy",
+      "scopeLimit": "Ethics guidance does not determine Maine law, a site's detention procedures, or learner privileges.",
+      "access": "Primary society HTML opened; the opinion read."
+    },
+    {
+      "id": "ama-consent",
+      "title": "AMA Code of Medical Ethics 2.1.1 — Informed Consent",
+      "url": "https://code-medical-ethics.ama-assn.org/ethics-opinions/informed-consent",
+      "location": "Patient abilities, explanation of alternatives, and documentation",
+      "supports": "Assess understanding and implications of alternatives, provide understandable information, and document the decision-making conversation.",
+      "supportingExcerpt": "Assess the patient’s ability to understand relevant medical information",
+      "scopeLimit": "The four-abilities teaching framework in Marisol chapter 4 also reuses the existing library capacity module's approach; this opinion is not presented as a statutory capacity test.",
+      "access": "Primary society HTML opened; the opinion read."
+    }
+  ],
+  "additionalFacultyReviewResources": [
+    {
+      "title": "VA/DoD — Assessment and Management of Patients at Risk for Suicide (2024)",
+      "url": "https://www.healthquality.va.gov/guidelines/MH/srb/",
+      "purpose": "Compare the local suicide-assessment framework and general suicidal-ideation population with the NICE self-harm source before release.",
+      "access": "Official index opened; the full guideline was not reviewed."
+    }
+  ]
+}
