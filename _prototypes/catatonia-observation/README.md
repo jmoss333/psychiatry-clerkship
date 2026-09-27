@@ -17,6 +17,10 @@ This prototype is **unattested and unshipped**. Do not add it to `site_manifest.
 scene, feedback, audience, accessibility, and rights boundary. The published BFCRS
 reference remains a static outbound route to the custodian's materials.
 
+`FACULTY_REVIEW.md` contains the current exact-revision faculty review packet and
+the private preview link. Its decisions remain pending until a faculty reviewer
+records them.
+
 For an interactive local preview, reveal the HTML file in Finder and open it with a
 regular browser. The file is self-contained and needs no server. Codex's in-app
 browser does not open `file:` URLs; its file tab shows the source, not a rendered
