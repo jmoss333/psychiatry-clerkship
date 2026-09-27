@@ -73,6 +73,7 @@
   .microlabel{margin:0 0 6px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
   /* masthead */
   .masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px;flex-wrap:wrap}
+  @media (max-width:1139px){ .masthead{padding-right:56px} }
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
   .brand-text{display:flex;flex-direction:column;gap:0}
   .brand-mark{display:block;flex:none;width:20px;height:26px;border:2px solid var(--green);border-right-width:6px;border-radius:8px 8px 0 0;transform:skewY(-7deg)}
@@ -130,6 +131,7 @@
   .access .access-select{width:100%}
   .access .microlabel{margin:20px 0 6px}
   .access .setting{font-size:.85rem;color:var(--muted);margin:0 0 10px}
+  .access .unavailable{margin:0 0 12px} .access .unavailable .acts{margin-top:2px}
   .begin{display:flex;flex-direction:column;gap:8px;margin-top:10px}
   .begin .btn{text-align:left;width:100%;padding:11px 14px}
   .begin .sub{display:block;font-weight:400;font-size:.8rem}
@@ -138,7 +140,7 @@
   .access>.fine{margin:12px 0 0}
   .entry-tip{display:flex;gap:12px;align-items:flex-start;border-top:1px solid var(--line);margin-top:20px;padding-top:16px;font-size:.8rem;color:var(--muted)}
   .entry-tip kbd{margin-top:2px}
-  .case.familydoor{border-style:dashed;padding:22px 24px;margin-top:16px}
+  .case.familydoor{background:var(--card);border:1px dashed var(--line-green);border-radius:var(--radius-lg);padding:22px 24px;margin-top:16px}
   .case.familydoor h2{font-size:1.5rem;margin:2px 0 0}
   .case.familydoor .occasion{font-family:var(--serif);font-style:italic;color:var(--muted);margin:2px 0 8px}
   .case.familydoor .setting{font-size:.85rem;color:var(--muted);margin:0 0 8px}
@@ -360,16 +362,17 @@
   @media (max-width:900px){ .entrance{gap:28px} .roomhead,.audiorail,.chat,.composer,.room-view{padding-inline:20px} .recovery,.phi{margin-inline:20px} }
   @media (max-width:700px){
     .shell{padding:0 var(--sp3) 24px}
-    .masthead{padding:18px 0 14px;margin-bottom:16px;gap:10px} .brand{gap:8px} .brand h1{font-size:1.18rem} .brand-mark{width:16px;height:22px} .badge.mode{font-size:.66rem;padding:6px 8px}
+    .masthead{padding:18px 56px 14px 0;margin-bottom:16px;gap:10px} .brand{gap:8px} .brand h1{font-size:1.18rem} .brand-mark{width:16px;height:22px} .badge.mode{font-size:.66rem;padding:6px 8px}
     .entrance{display:flex;flex-direction:column;gap:22px;padding-bottom:20px}
     .door{padding:0 4px} .door h2{font-size:2.2rem}
     .access{width:100%;padding:22px} .access h2{font-size:1.55rem}
-    .roomhead{padding:17px} .roomhead h2{font-size:1.7rem}
+    .roomhead{padding:17px;flex-wrap:nowrap;align-items:flex-start} .roomhead h2{font-size:1.7rem} .roomtools{flex-direction:column;align-items:flex-end;gap:6px}
     .room-view{padding:12px 14px} .room-caption{min-height:52px} .room-caption p{font-size:.86rem}
     .chat{padding:14px 16px} .audiorail{padding:14px 16px 0} .composer{padding:8px 16px 14px} .recovery,.phi{margin-inline:16px}
     .msg{max-width:100%}
     .card,.sa{padding:var(--sp3)} .crit{padding:20px}
   }
+  .composer .recovery,.composer .phi{margin-inline:0}
   @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important} .room-halo{opacity:.5}}
 </style>
 </head>
@@ -1384,7 +1387,7 @@ function App(){
             cases.map(function(c){var ct=c.title.split(' — ');return e('option',{key:c.id,value:c.id},ct[0]+(ct[1]?' — '+ct[1]:'')+' · ~'+c.estMinutes+' min');})),
           e('p',{className:'microlabel'},roomMode==='spoken'?'Choose your room · spoken':'Choose your room · typed'),
           e('p',{className:'setting'},roomMode==='spoken'?'A real-time voice; typing stays available. Change rooms at the top of the page.':roomMode==='typed-device'?'The typed room, with replies read aloud by your device.':'The typed room. Change rooms at the top of the page.'),
-          roomUnavailable?e('p',{className:'setting',role:'note'},spokenWhy,' ',e('button',{type:'button',className:'btn',style:{marginTop:'6px'},onClick:function(){chooseRoomMode('typed');}},'Use the typed room')):null,
+          roomUnavailable?e('div',{className:'unavailable',role:'note'},e('p',{className:'setting'},spokenWhy),e('div',{className:'acts'},e('button',{type:'button',className:'btn',onClick:function(){chooseRoomMode('typed');}},'Use the typed room'))):null,
           e('div',{className:'begin'},
             e('button',{className:'btn primary',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(chosen,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
             e('button',{className:'btn',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(chosen,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing'))),
@@ -1436,7 +1439,7 @@ function App(){
           e('p',{className:'microlabel'},(sess.stepOuts||0)>1?'From the hallway — your coach · again, so: more specific':'From the hallway — your coach'),
           e('p',{className:'line'},getCoach(sess))),
         e('div',{className:'panelfoot'},
-          e('button',{className:'btn primary',ref:returnRef,style:{background:'var(--accent-dark)',borderColor:'var(--accent-dark)'},onClick:closeDoor},'Return to the room'),
+          e('button',{className:'btn primary',ref:returnRef,onClick:closeDoor},'Return to the room'),
           e('span',{className:'esc'},'Esc also returns · stepping out is noted in your debrief, never against you'))));
   }
   function stepOutSpoken(){var session=rtRef.current;if(session){try{session.pause();}catch(x){}}openDoor();}
