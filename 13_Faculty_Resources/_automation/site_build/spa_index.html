@@ -2455,6 +2455,11 @@
        than mirrored onto controller state so the stored key stays the single home; the panel's
        change handler writes it and the next render reads it back. */
     out.examDate=LS('cw_shelf_date')||'';
+    /* Supervisor feedback notes: read fresh on every render, the store staying their single home
+       (fd_state.js). The controller writes it above the render, so the list a save repaints is
+       the list on the device. Guarded like the usage emitter below: a surface built without the
+       store renders no notes rather than failing. */
+    out.feedbackLog=typeof fdFeedbackRead==='function'?fdFeedbackRead():[];
     /* The Usage section, and the one key on this state that is legitimately null: null means
        CLERKSHIP_ANALYTICS left the emitter out of this build entirely, and fdSheetSettingsBody
        then renders no section at all rather than describing collection that is not happening.
@@ -3441,6 +3446,9 @@
       allowAppInvite:FD_AUDIENCE==='resident'&&!!FD_CURRICULUM.appPathway,
       synonyms:FD_CURRICULUM.synonyms||{},
       appPracticePacks:(FD_CURRICULUM.appPathway&&FD_CURRICULUM.appPathway.practicePacks)||[],
+      /* The ward capture's own patient-detail screen, so a feedback note and a captured question
+         are held by exactly the same rule. */
+      feedbackRisky:capRisky,
       releaseStartupGate:function(){return fdEditionRuntimeReleaseGate(fdApp);}
     });
   }catch(ignoreStartupWiring){fdController=null;}

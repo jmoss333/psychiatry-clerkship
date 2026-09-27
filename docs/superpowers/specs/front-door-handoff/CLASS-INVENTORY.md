@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(488 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(503 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -474,6 +474,17 @@ Omitting it collapses the rail underneath.
         .fd-eyebrow / .fd-detail__here
       .fd-detail__h2
       .fd-detail__practice
+        .fd-feedback                   (data-driven paths only, not the six-week path)
+          button.fd-btn.fd-btn--ghost.fd-feedback__open   ("Log what they said"; no note open)
+          p.fd-feedback__status[role="status"]            (after a save or delete, that week only)
+          label.fd-feedback__label + textarea.fd-feedback__text#fdFeedbackText   (note open)
+          p.fd-feedback__hint#fdFeedbackHint
+          p.fd-feedback__error[role="alert"]              (the device refused the save)
+          .fd-feedback__hold[role="alert"]                (possible patient detail: Edit / confirm)
+          .fd-feedback__acts                              (Cancel / Save note, or Edit / confirm)
+          p.fd-feedback__h + ul.fd-feedback__list
+            li.fd-feedback__item ×N
+              .fd-feedback__day / .fd-feedback__note / button.fd-feedback__delete
       .fd-detail__list
         .fd-row.is-compact ×N
       .fd-btn.fd-btn--accent           ("Set as my week")
@@ -489,6 +500,13 @@ Omitting it collapses the rail underneath.
 | `.fd-timeline__status` | Visible non-colour state text: Current, Complete, or Complete · Current. |
 | `.fd-timeline__theme` | Canonical curriculum theme; shown for the selected node, including immediately on the phone rail. |
 | `.fd-detail__here` | "you are here" pill. |
+| `.fd-feedback` | The learner's private supervisor-feedback notes for the viewed week (`cw_feedback_v1`, device only). Never progress, never exported, never an assessment. |
+| `.fd-feedback__text` | Type size is `max(var(--fd-font-base),1rem)`: iOS Safari zooms the page into any field under 16px when it takes focus. |
+| `.fd-feedback__hold` | Same fail-closed interstitial as the ward capture: the shell's `capRisky` decides, and an unwired screen holds every note. |
+| `.fd-feedback__delete` | Keeps the 44px touch target in both directions; its accessible name carries the note's date. |
+
+⚠ The open note is visit-only (`feedbackDraft`): leaving Path, opening a resource or choosing another
+week closes it. Its text is kept on the controller as it is typed, so a repaint never empties the field.
 
 ⚠ The route is a roving tab set. Arrow Left/Right/Up/Down wraps, Home/End jump to the audience's
 real endpoints, and the rebuilt selected control regains focus with `preventScroll`. Keep
