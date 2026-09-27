@@ -136,8 +136,19 @@ def prepare(snapshot: dict, tier1_runner=run_tier1, tier2_runner=run_tier2,
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["prepare"])
+    parser.add_argument("command", choices=["prepare", "record"])
+    parser.add_argument("work_file", nargs="?", type=Path)
     args = parser.parse_args(argv)
+    if args.command == "record":
+        if args.work_file is None:
+            parser.error("record requires the prepared work-file path")
+        try:
+            from .record_red_team import record_interactive
+        except ImportError:
+            from record_red_team import record_interactive
+        return record_interactive(args.work_file)
+    if args.work_file is not None:
+        parser.error("prepare takes no work-file path")
     try:
         config = json.loads(CONFIG.read_text(encoding="utf-8"))
         snapshot = fetch_snapshot(config, os.environ.get("NETLIFY_AUTH_TOKEN", ""))
