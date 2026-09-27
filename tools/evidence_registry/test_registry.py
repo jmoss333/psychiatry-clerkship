@@ -605,7 +605,7 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     # asam-oud-2020 and donofrio-2026-ed-bup (WP-1, 2026-09-24) carry PubMed ErratumIn links
     # (PMIDs 32487948 and 41915466; the JAMA one reverses Figure 2's labels only) — recorded in
     # each entry's identity note, pending faculty review with the rest of the WP-1 sources.
-    CORRECTED_IDS = {"abbass-2020", "linehan-2015", "asam-oud-2020", "donofrio-2026-ed-bup"}
+    CORRECTED_IDS = {"abbass-2020", "linehan-2015", "asam-oud-2020", "donofrio-2026-ed-bup", "lieberman-2005-catie"}
 
     registry = load_evidence_registry(REGISTRY_PATH)
     assert len(registry["sources"]) == len(ALL_SOURCE_IDS)

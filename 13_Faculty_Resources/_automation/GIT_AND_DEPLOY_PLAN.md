@@ -1,9 +1,11 @@
 # Git + Netlify-from-Git Plan — Psychiatry Clerkship Library
 
-**Owner:** Joshua Moss, MD · **Created:** 2026-07-01 · **Updated:** 2026-07-29
-**Goal:** put the library under version control and move both sites to *deploy-on-push* so concurrent editing (multiple chats/sessions) can never again silently clobber the live sites.
+**Owner:** Joshua Moss, MD · **Created:** 2026-07-01 · **Updated:** 2026-09-27
+**Goal:** put the library under version control and move both sites to *deploy-from-Git* so concurrent editing (multiple chats/sessions) can never again silently clobber the live sites.
 
 > **Status (2026-07-07): build-on-push is LIVE and verified on both sites.** §1 cleanup ✅ · §2 pushed to `jmoss333/psychiatry-clerkship` (private) ✅ · §6 media migrated to Git LFS (100 `.m4a` + 7 `.mp4`) ✅ · resident source/deploy drift reconciled ✅ · Netlify LFS env vars set on both sites ✅ · both sites git-linked and production deploys ready ✅ · media verified live as real files, not pointer stubs ✅ · build-ignore hook added to skip doc-only rebuilds (§7) ✅ — *retired 2026-09-03, see §7*. **The manual `netlify deploy --dir` flow can be retired.** Ongoing watch-item: Git-LFS bandwidth (see §6).
+>
+> **Superseded in part (2026-09-25): the learner sites no longer deploy on push.** Both publish the `release` branch, which the release train moves to the newest fully green `main` commit three times a day — see §11. A merge to `main` deploys nothing learner-facing.
 
 ---
 
@@ -51,6 +53,7 @@ Today both sites deploy manually via `netlify deploy --dir=…` from whatever se
   OUT_DIR=_build/ms3 python3 13_Faculty_Resources/_automation/site_build/build_deploy.py
   ```
 - Publish directory: `_build/ms3`
+- Production branch: `release` (since 2026-09-25; §11)
 
 **Site B — Resident (`mmc-psychiatry-residents-sanford`)**
 - Link the SAME repo to this site.
@@ -59,6 +62,7 @@ Today both sites deploy manually via `netlify deploy --dir=…` from whatever se
   OUT_DIR=_build/ms3 python3 13_Faculty_Resources/_automation/site_build/build_deploy.py && MS3_DIR=_build/ms3 OUT_DIR=_build/res python3 13_Faculty_Resources/_automation/site_build/resident_section.py
   ```
 - Publish directory: `_build/res`
+- Production branch: `release` (since 2026-09-25; §11)
 
 **Site IDs (confirmed 2026-07-02, team ReConnect Psychiatry):**
 - MS3 `une-ms3-psychiatry` — `94717a39-679b-4c78-ae02-7b19e809592e`
@@ -70,7 +74,7 @@ Today both sites deploy manually via `netlify deploy --dir=…` from whatever se
 - Confirm each site's **publish dir** and **build command** in its own settings (one repo can back multiple sites with different commands).
 - Keep build command / publish dir in each site's **UI settings** (two sites need different commands from one repo). Any legacy LFS env var still present is UI-only too, and §6a is retiring it. The repo `netlify.toml` is deliberately minimal — it carries **only** `ignore = "/bin/false"` (always build, for the two learner sites; §7 explains why they must not be scoped and why the satellites now are), no build command or env, so it does not override either site's UI build settings.
 
-After this, the workflow is: **edit source → commit → push → both sites rebuild and deploy automatically.** No more `netlify deploy` by hand, no more two-session clobbering.
+After this, the workflow was: **edit source → commit → push → both sites rebuild and deploy automatically.** No more `netlify deploy` by hand, no more two-session clobbering. *Since 2026-09-25 the last step is the release train's, not the push's: merge to `main`, and the next train slot (or publish-now) publishes both sites — §11.*
 
 ## 4. Working agreement (prevents recurrence)
 - **Source is truth; deploy folders are build artifacts.** Never hand-edit `clerkship-hub-deploy/` or `mmc-resident-deploy/` — change the source and rebuild.
@@ -133,7 +137,7 @@ From 2026-07-02 to 2026-09-03 `netlify.toml` registered `site_build/netlify-igno
 
 **What it cost, and why the price changed (2026-09-10).** The paragraph below priced always-build in build MINUTES, which is what Netlify used to bill. It does not any more. Under credit pricing **build minutes, deploy previews, branch deploys and cancelled/failed deploys are all free**, and the only metered thing is a **production deploy at 15 credits (~$0.10), flat, regardless of duration**. So "one extra ~40 s build per site" was really "$0.10 per site per merge to main". Measured over the 163 first-parent merges from 2026-08-27 to 2026-09-10: `Outreach/alex-tour/` was touched by 2 of them and billed for 163; `sp-proxy/` and `faculty-console/` by 19 each and billed for 163. 513 of 815 charged production deploys were byte-identical republishes — about $110/month. Full audit: [NETLIFY_COST_REDUCTION_PLAN.md](NETLIFY_COST_REDUCTION_PLAN.md).
 
-**Where the alarm went.** The reason always-build was worth paying for was that the "Deploy failed" email was the *only* thing that could see a deploy FREEZE — a site whose builds all fail keeps serving its last good publish, so no crawl detects it (2026-08-31). That alarm now lives in `bin/check_netlify_deploy_health.py`, which reads production deploy state from the Netlify API, discards exactly the no-content-change cancel, treats an unrecognised state as a finding rather than a pass, and runs daily inside `maintenance-production-canary.yml`. It is **inert until the `NETLIFY_AUTH_TOKEN` repository secret exists** and records `status: "skipped"` so that gap is legible. Per-site notifications must match: "Deploy failed" stays ON for the two learner sites (which never produce a no-op cancel) and goes OFF for `sp-interview-proxy`, `clerkship-faculty-attest` and `psychiatry-workforce-tour`.
+**Where the alarm went.** The reason always-build was worth paying for was that the "Deploy failed" email was the *only* thing that could see a deploy FREEZE — a site whose builds all fail keeps serving its last good publish, so no crawl detects it (2026-08-31). That alarm now lives in `bin/check_netlify_deploy_health.py`, which reads production deploy state from the Netlify API, discards exactly the no-content-change cancel, treats an unrecognised state as a finding rather than a pass, and runs daily inside `maintenance-production-canary.yml`. It is **live**: the `NETLIFY_AUTH_TOKEN` repository secret exists, and the 2026-09-27 canary run printed per-site production deploy counts (verified 2026-09-27). Without the secret it records `status: "skipped"` so the gap is legible rather than a pass. Per-site notifications must match: "Deploy failed" stays ON for the two learner sites (which never produce a no-op cancel) and goes OFF for `sp-interview-proxy`, `clerkship-faculty-attest` and `psychiatry-workforce-tour`.
 
 **What it costs.** One extra build per site per doc-only push (~40 s on the student sites, ~10–30 s on the small sites), publishing byte-identical output. The service-worker `VERSION` is a content hash that already excludes commit-stamped files (`common.py`, "Service worker emission"), so an identical rebuild does not move it and no learner re-downloads anything. Git-LFS bandwidth is unaffected on either fetch path: the legacy clone-time fetch always ran *before* the hook, and the §6a cached pull reads from Netlify's cache (~0 MB from GitHub). Netlify's own "Skipped" deploys (a newer commit on the same branch superseded a queued build; `skipped: true`, message "Skipped") are also `state: "error"` and cannot be prevented from the repo; whether the email fires on those is unverified as of 2026-09-03.
 
@@ -174,7 +178,7 @@ than debugging it), there is a build-time rollback switch — no code change req
 1. In **each** Netlify site's UI — `une-ms3-psychiatry` **and**
    `mmc-psychiatry-residents-sanford` — go to Site config → Environment variables and set
    `SW_KILL=1`.
-2. Trigger a new deploy on **both** sites (push a commit, or "Trigger deploy" in the UI). The
+2. Trigger a new deploy on **both** sites with "Trigger deploy" in each site's UI (it rebuilds the current `release` head, picking up the new env var). Pushing to `main` no longer deploys the learner sites (§11), and the release train publishes nothing when `release` is already at the newest green commit. The
    build re-emits `sw.js` with `KILL=true` baked in (see `_SW_KILL_ANCHOR` /
    `emit_service_worker(..., kill=...)` in `common.py`).
 3. On every client's next visit, the installed worker's `activate` handler sees `KILL=true`,
@@ -222,7 +226,52 @@ and diff `_build/ms3/_headers` against a build with `CONTEXT` unset — the only
 the one `frame-src` directive.
 
 
+## 11. Release train — the learner sites publish `release`, not `main` (2026-09-25)
+
+**Why.** Every Netlify production deploy is billed (15 credits, ~$0.10) however small the change, and
+both learner sites used to publish every merge to `main`: two deploys per merge, ~270 in a fortnight,
+over the monthly plan. Both sites' production branch is now `release`, and
+`.github/workflows/production-release-train.yml` moves it. Decision and numbers:
+[NETLIFY_COST_REDUCTION_PLAN.md](NETLIFY_COST_REDUCTION_PLAN.md) B1–B2.
+
+**How it moves.** At 09:05, 15:05 and 21:05 UTC (GitHub's cron often starts 10–20 min late)
+`maintenance/release_train.py` fast-forwards `release` to the newest first-parent `main` commit
+whose required checks both concluded `success`. It walks back past a running or red head, only
+ever fast-forwards, and refuses otherwise. **Never push `release` by hand except to repair it.**
+Each promotion is one production deploy on each learner site, and dispatches
+`production-release-verification.yml` for the exact commit published — that receipt, not the
+train's run, says whether the publish landed. The satellite sites (`sp-interview-proxy`,
+`clerkship-faculty-attest`, `psychiatry-workforce-tour`) still build from `main` (§7).
+
+**Publish now.** Actions → "Production — Release train" → Run workflow, with a reason. It is the
+path for a safety or crisis-contact fix and is never held by cost.
+
+**The spend tripwire.** Netlify's auto-recharge has no ceiling, so the cap lives in the train:
+before a *scheduled* promotion it counts billable production deploys over the trailing 24 h and
+holds (a red run, which emails the owner) when publishing would pass its budget. The run summary
+prints the per-site counts; read them before assuming a red train is broken. The budget values
+and their reasoning live in `release_train.py`'s docstring and constants, not here, so this page
+cannot drift from them. **A hold is visible downstream:** while `release` lags `main`, a check
+that judges production with `main`'s smoke specs fails on changes that have not shipped — on
+2026-09-27 a held 09:05 slot turned the production canary and the workflow heartbeat red against
+a healthy site (#851 re-scopes the budget; #857 makes the canary crawl with the specs of the
+revision production serves).
+
+**What is live.** Both sites report the commit they were built from in `/tool-governance.json`
+(every item's `source.revision`). `maintenance/production_revision_parity.py` reads both and fails
+when they differ; the daily canary runs it.
+
+**Rollback under the train.** Publishing an older deploy in the Netlify UI is still the instant
+first move, but it does not hold on its own: Netlify's docs ("Manage deploys → Rollbacks",
+checked 2026-09-27) say that with auto publishing on, any new Git-triggered production deploy
+overwrites a rolled-back version — here, the next train promotion, which carries the bad commit
+unless it has been reverted. Per learner site: (1) Deploys → last-known-good → Publish deploy;
+(2) optionally "Lock to stop auto publishing" while the fix is in flight; (3) revert or fix on
+`main` through a PR, then publish-now — never reset `release` backwards; (4) if locked, "Unlock to
+start auto publishing", confirm the fixed deploy is the published one, and confirm both sites
+serve the same revision. The step-by-step lives in the `clerkship-deploy` skill.
+
 ---
 *Prepared 2026-07-01; deployment migration completed 2026-07-02; scheduled-operations handoff linked
 2026-07-29. Baseline commit `a7793cc`. Manual deploys can remain retired; follow the maintenance
-runbook and watch Git-LFS bandwidth per §6.*
+runbook and watch Git-LFS bandwidth per §6. Release train documented in §11, 2026-09-27.*

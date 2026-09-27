@@ -18,6 +18,9 @@ faculty-console/
   netlify/functions/attest.mjs   authenticated state reads and commit-on-save API
   netlify/functions/qbank-actions.mjs
                                  revision-safe draft and attestation transitions
+  netlify/functions/release-status.mjs
+                                 read-only: what the learner sites serve, what is not live yet
+  release-status.mjs             the release panel's model: train slots, waiting changes, headline
   README.md                      this file
 ```
 
@@ -44,6 +47,17 @@ faculty-console/
 The unlocked desktop console has a **Show current revisions** panel above the review queue. It reads the exact `main` pack source and the latest published production deploys of the proxy, MS3 site, and resident site. It shows the pack's version, source commit and SHA-256 beside each deploy ID, commit, publication time, and immutable deploy link. The source pack may be newer than either learner release because those sites publish on a separate schedule. The proxy can also cache pack bytes briefly, so this panel does **not** claim to verify the pack it is serving.
 
 The panel is read-only and loads only when opened or refreshed. Its function requires the same faculty key as the attestation API; it uses the console's existing `GITHUB_TOKEN` and public Netlify deploy metadata. It adds no credential or attestation write. If any source is missing or inconsistent, the whole display reads **Unverified** and shows no partial revision set. Refresh immediately before review, then use the linked [guided red-team runbook](../docs/RED_TEAM_RUNBOOK.md) to check served pack bytes and complete the human checklist. Metadata loaded in the panel is not a red-team pass or faculty sign-off.
+
+## What learners see (release status)
+
+The learner sites publish from `release`, not `main`: a merged change — and a sign-off that merges to `main` with the rolling attestation PR — reaches learners only when the release train (`production-release-train.yml`, 09:05 · 15:05 · 21:05 UTC) next fast-forwards `release`, or when the owner presses its **Run workflow** (publish-now). The **Show release status** panel above the review queue answers "is it live yet?" in one sentence, then shows:
+
+- **What each learner site serves** — the commit of its latest *published* production deploy (Netlify), not the `release` branch, which a failed build can outrun. When neither site can be read it falls back to the `release` branch and says so.
+- **Merged, not live yet** — `main`'s first-parent commits after that commit, one row per pull request, with faculty sign-offs (merges from `attest/pending`) tagged.
+- **The next scheduled publish**, and whether `main`'s newest merge has passed the train's two required checks (if not, that run publishes an older, fully green merge).
+- **The last train run** and its result. A red run means it was held by the spend tripwire, refused, or failed at a step after publishing (the receipt request runs after `release` is pushed), so it is reported as a failed run, never as "nothing published" — the served commits above are what show whether a publish happened. The linked run log says which.
+
+It is **read-only** and loads only when opened or refreshed: it never publishes (a publish costs a production deploy per site, and that is the owner's call on the train's own page). It needs the faculty key and uses the console's existing `GITHUB_TOKEN`; reading `main`'s check runs and the train's runs needs that token to have *Checks* and *Actions* read access, and when it does not, the panel lists that under **Could not read everything** rather than guessing. Every unreadable fact is listed there the same way — an unread comparison is never shown as "up to date", "learners see everything" is claimed only when every learner site's published deploy was read, and a waiting count judged from one site (or the release branch) reads "at least". In ledger mode (ADR-003) sign-offs publish through the ledger on their own and are not listed. The slots, the required check names and the sign-off branch are restated from their owners and pinned to them by `tests/faculty-console-release-status.test.mjs`.
 
 ## The phone client (`/m/`)
 

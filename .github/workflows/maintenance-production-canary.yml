@@ -24,9 +24,37 @@ jobs:
         with:
           node-version: "22"
 
+      # Crawl with the specs of the revision production SERVES, not main's. The learner
+      # sites publish `release`, which the release train moves three times a day and can
+      # hold, so main's specs can run any number of merges ahead of the live sites: on
+      # 2026-09-27 #839 changed a feature and its test together, the held train had not
+      # shipped the feature, and this crawl went red against a healthy site. `release` is
+      # not the answer either -- the train's scheduled run starts as late as 09:24 and
+      # Netlify can still be building when the crawl begins. Both sites publish the
+      # revision they were built from, so read it (with the parity tool's bounded
+      # rechecks for a staggered rollout) and check out exactly that. If the sites
+      # disagree or cannot be read, nothing is crawled against a guess: this step fails
+      # red and the parity step below records the mismatch.
+      - name: Resolve the revision production serves
+        id: served
+        run: >-
+          python3 13_Faculty_Resources/_automation/maintenance/production_revision_parity.py
+          --attempts 3 --retry-delay 60
+          --out "$RUNNER_TEMP/served-revision.json"
+          --github-output "$GITHUB_OUTPUT"
+
+      # lfs: false is load-bearing. Git LFS bandwidth is metered (10 GB/month per account)
+      # and a daily media checkout would spend it; the crawl reads media from the sites.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ steps.served.outputs.revision }}
+          path: served
+          lfs: false
+          persist-credentials: false
+
       - name: Install Playwright and Chromium
         run: |
-          cd tests/smoke
+          cd served/tests/smoke
           npm ci
           npx playwright install chromium --with-deps
 
@@ -38,7 +66,7 @@ jobs:
       # crawlers earns connection resets that say nothing about the site.
       - name: Crawl both public learner sites
         run: |
-          cd tests/smoke
+          cd served/tests/smoke
           npx playwright test --project=canary-ms3 --project=canary-res --workers=2 --retries=2
         env:
           MS3_BASE_URL: https://une-ms3-psychiatry.netlify.app
@@ -90,7 +118,8 @@ jobs:
         with:
           name: maintenance-production-canary-${{ github.run_id }}
           path: |
-            tests/smoke/test-results/
+            served/tests/smoke/test-results/
+            ${{ runner.temp }}/served-revision.json
             ${{ runner.temp }}/release-twin.json
             ${{ runner.temp }}/netlify-deploy-health.json
             ${{ runner.temp }}/production-revision-parity.json

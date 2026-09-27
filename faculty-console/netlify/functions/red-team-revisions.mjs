@@ -107,7 +107,8 @@ function normalizeDeploy(record, site, deployId) {
   };
 }
 
-async function latestDeploy(fetchImpl, site) {
+// Also read by release-status.mjs: the commit each learner site actually serves.
+export async function latestDeploy(fetchImpl, site) {
   const listing = await getJson(fetchImpl,
     `${NETLIFY_API}/sites/${encodeURIComponent(site.siteId)}/deploys?production=true&latest-published=true&per_page=1`);
   if (!Array.isArray(listing) || listing.length !== 1 || !DEPLOY_ID.test(listing[0]?.id)) {

@@ -9,8 +9,26 @@ function laneHelpers() {
   const a = review.indexOf('/* ---------- review lanes ---------- */');
   const b = review.indexOf('/* ---------- end review lanes ---------- */', a);
   assert.ok(a >= 0 && b > a, 'lane helpers must be present in review.html');
-  return new Function(review.slice(a, b) + ';return {reviewLane,reviewLaneAllows,reviewInitialLane,reviewFocusedCard,reviewFocusAllowed,reviewVerifiedArticles,reviewVerifiedCompanions,reviewMissingDueIds};')();
+  return new Function(review.slice(a, b) + ';return {reviewLane,reviewLaneAllows,reviewInitialLane,reviewFocusedCard,reviewFocusAllowed,reviewVerifiedArticles,reviewVerifiedCompanions,reviewMissingDueIds,reviewReopenRevisedCards};')();
 }
+
+test('revised CATIE teaching becomes due once without erasing the learner schedule', () => {
+  const {reviewReopenRevisedCards} = laneHelpers();
+  const card = {...quizzes.decks.find(deck => deck.id === 'AR-24').questions[5], id: 'AR-24#5'};
+  const now = 1000;
+  const state = {cards: {'AR-24#5': {due: 9000, ivl: 14, reps: 4}, 'AR-24#4': {due: 9000}}, stats: {totalReviews: 12}};
+  assert.equal(reviewReopenRevisedCards([{...card, q: 'old CATIE wording'}], state, now), false);
+  assert.equal(state.cards['AR-24#5'].due, 9000);
+  assert.equal(reviewReopenRevisedCards([card], state, now), true);
+  assert.equal(state.cards['AR-24#5'].due, now);
+  assert.deepEqual(state.cards['AR-24#4'], {due: 9000});
+  assert.equal(state.cards['AR-24#5'].ivl, 14);
+  assert.equal(state.cards['AR-24#5'].reps, 4);
+  assert.deepEqual(state.stats, {totalReviews: 12});
+  assert.equal(reviewReopenRevisedCards([card], state, now + 5000), false);
+  assert.equal(state.cards['AR-24#5'].due, now);
+  assert.match(review, /reviewReopenRevisedCards\(out,[^)]*\)/);
+});
 
 test('every real article question belongs to Landmark Evidence without changing its ID', () => {
   const {reviewLane} = laneHelpers();

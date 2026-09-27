@@ -1080,10 +1080,10 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "maintenance-production-canary.yml",
             (
                 "          path: |\n"
-                "            tests/smoke/test-results/\n"
-                "            ${{ runner.temp }}/release-twin.json\n"
+                "            served/tests/smoke/test-results/\n"
+                "            ${{ runner.temp }}/served-revision.json\n"
             ),
-            "          path: tests/smoke/test-results/\n",
+            "          path: served/tests/smoke/test-results/\n",
             "job and step contract",
         )
         self.assert_mutation_rejected(
@@ -1357,6 +1357,61 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "https://mmc-psychiatry-residents-sanford.netlify.app",
             env_values,
         )
+
+    def test_production_canary_crawls_the_revision_production_serves(self):
+        # 2026-09-27: the canary crawled sites built from `release` with `main`'s specs
+        # and went red on #839's new assertion, which the held release train had not
+        # shipped. It must check out what both sites serve -- not main, and not the
+        # `release` head either, which Netlify may still be building when the crawl runs.
+        canary = steps("maintenance-production-canary.yml")
+
+        def position(predicate, label):
+            found = [i for i, step in enumerate(canary) if predicate(step)]
+            self.assertEqual(len(found), 1, label)
+            return found[0]
+
+        resolve = position(lambda s: s.get("id") == "served", "served-revision step")
+        checkout = position(
+            lambda s: str(s.get("uses", "")).startswith("actions/checkout@")
+            and (s.get("with") or {}).get("path") == "served",
+            "served checkout",
+        )
+        install = position(lambda s: s.get("name") == "Install Playwright and Chromium", "install")
+        crawl = position(lambda s: s.get("name") == "Crawl both public learner sites", "crawl")
+        self.assertLess(resolve, checkout)
+        self.assertLess(checkout, install)
+        self.assertLess(install, crawl)
+        self.assertIn("production_revision_parity.py", canary[resolve]["run"])
+        self.assertIn('--github-output "$GITHUB_OUTPUT"', canary[resolve]["run"])
+        served = canary[checkout]["with"]
+        self.assertEqual(served["ref"], "${{ steps.served.outputs.revision }}")
+        # LFS bandwidth is metered (10 GB/month); the crawl reads media from the sites.
+        self.assertEqual(served["lfs"], "false")  # action inputs load as strings
+        for index in (install, crawl):
+            self.assertTrue(canary[index]["run"].startswith("cd served/tests/smoke\n"))
+
+    def test_production_canary_rejects_crawling_anything_but_the_served_revision(self):
+        name = "maintenance-production-canary.yml"
+        for label, old, new, message in (
+            ("release head",
+             "          ref: ${{ steps.served.outputs.revision }}\n",
+             "          ref: release\n",
+             "must crawl the revision production serves"),
+            ("main's specs",
+             "          cd served/tests/smoke\n          npx playwright test",
+             "          cd tests/smoke\n          npx playwright test",
+             "must crawl from the served checkout"),
+            ("LFS media",
+             "          path: served\n          lfs: false\n",
+             "          path: served\n          lfs: true\n",
+             "served checkout must not fetch Git LFS"),
+            ("no revision handed over",
+             '          --github-output "$GITHUB_OUTPUT"\n',
+             "",
+             "must resolve the served revision before crawling"),
+        ):
+            with self.subTest(label):
+                self.assert_mutation_rejected(name, old, new, message)
 
     def test_sp_monitor_calls_only_public_content_free_status_route(self):
         runs = "\n".join(

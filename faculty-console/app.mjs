@@ -32,6 +32,8 @@ import { isDriftReason } from './change-history.mjs';
 
 const API = '/api/attest';
 const RED_TEAM_REVISIONS_API = '/api/red-team-revisions';
+const RELEASE_STATUS_API = '/api/release-status';
+const REPO_URL = 'https://github.com/jmoss333/psychiatry-clerkship';
 const KEY_STORAGE = 'fac_key';
 const DEFAULT_REVIEWER = 'Joshua Moss, MD';
 
@@ -260,6 +262,11 @@ export function startFacultyConsole({
     redTeamSnapshot: null,
     redTeamError: '',
     redTeamGeneration: 0,
+    releaseOpen: false,
+    releaseLoading: false,
+    releaseStatus: null,
+    releaseError: '',
+    releaseGeneration: 0,
     externalReviewOpenedKey: null,
     contentMessage: '',
     contentCommitUrl: null,
@@ -408,6 +415,11 @@ export function startFacultyConsole({
     state.redTeamLoading = false;
     state.redTeamError = '';
     state.redTeamOpen = false;
+    state.releaseGeneration += 1;
+    state.releaseStatus = null;
+    state.releaseLoading = false;
+    state.releaseError = '';
+    state.releaseOpen = false;
     try {
       window.sessionStorage.removeItem(KEY_STORAGE);
     } catch {
@@ -583,6 +595,171 @@ export function startFacultyConsole({
           ]),
           el('p', { class: 'muted' }, [
             'This is source and deploy metadata, not a red-team pass. The guided preflight checks the pack actually served by the proxy; the owner still completes the human checklist.',
+          ]),
+        ]) : null,
+      ]) : null,
+    ]);
+  }
+
+  // ── What learners see (GET /api/release-status) ──────────────────────────────────────
+  // Merged work, faculty sign-offs included, reaches learners only when the release train
+  // publishes `release`. This panel says what the sites serve, what is merged but not live,
+  // and when the next publish is. Read-only: it never publishes (that costs production
+  // deploys, and the train's own Run workflow button is the owner's publish-now).
+
+  const SHA40 = /^[0-9a-f]{40}$/;
+  const RELEASE_TONES = ['current', 'waiting', 'attention', 'unknown'];
+
+  function validReleaseStatus(value) {
+    if (!value || !['complete', 'partial'].includes(value.state)
+        || !SHA40.test(value.main || '')
+        || !RELEASE_TONES.includes(value.headline?.tone) || !text(value.headline?.text)
+        || !Array.isArray(value.gaps) || !Array.isArray(value.waiting?.changes)
+        || !Number.isFinite(Date.parse(value.train?.nextSlot))
+        || !/^https:\/\/github\.com\//.test(value.train?.workflowUrl || '')) return false;
+    return value.waiting.changes.every(change => SHA40.test(change?.sha || '')
+      && (change.pr === null || Number.isSafeInteger(change.pr)) && typeof change.title === 'string');
+  }
+
+  function utcStamp(value) {
+    const ms = Date.parse(value);
+    return Number.isFinite(ms) ? `${new Date(ms).toISOString().slice(0, 16).replace('T', ' ')} UTC` : '';
+  }
+
+  function refreshReleasePanel(focusId = null) {
+    document.getElementById('release-status')?.replaceWith(renderReleaseStatus());
+    if (focusId) document.getElementById(focusId)?.focus();
+  }
+
+  async function refreshReleaseStatus() {
+    const generation = ++state.releaseGeneration;
+    state.releaseLoading = true;
+    state.releaseError = '';
+    refreshReleasePanel('release-refresh');
+    try {
+      const response = await fetchImpl(RELEASE_STATUS_API, { headers: apiHeaders() });
+      const payload = await responseJson(response);
+      if (generation !== state.releaseGeneration) return;
+      if (response.status === 401) {
+        clearKey();
+        renderLogin('Key not accepted. Check the shared faculty key and try again.');
+        return;
+      }
+      if (!response.ok || !validReleaseStatus(payload)) throw new Error('unavailable');
+      state.releaseStatus = payload;
+      announce(payload.headline.text);
+    } catch {
+      if (generation !== state.releaseGeneration) return;
+      state.releaseStatus = null;
+      state.releaseError = 'Release status is unavailable right now. The release train page on GitHub shows the last publish.';
+      announce('Release status is unavailable.');
+    } finally {
+      if (generation === state.releaseGeneration) {
+        state.releaseLoading = false;
+        refreshReleasePanel('release-refresh');
+      }
+    }
+  }
+
+  function renderReleaseSite(label, site, basis) {
+    return el('div', { class: 'release-status__card' }, [
+      el('h3', {}, [label]),
+      site ? el('p', {}, ['Serves ', el('code', {}, [site.commitRef.slice(0, 12)])]) : el('p', { class: 'muted' }, [
+        basis === 'release branch' ? 'Published deploy unreadable; judged from the release branch.' : 'Published deploy unreadable.',
+      ]),
+      site ? el('p', {}, ['Published ', el('time', { dateTime: site.publishedAt }, [utcStamp(site.publishedAt)])]) : null,
+    ]);
+  }
+
+  function renderReleaseChange(change) {
+    const href = change.pr ? `${REPO_URL}/pull/${change.pr}` : `${REPO_URL}/commit/${change.sha}`;
+    return el('li', { class: 'release-status__change' }, [
+      el('a', { href, target: '_blank', rel: 'noopener noreferrer' }, [change.pr ? `#${change.pr}` : change.sha.slice(0, 7)]),
+      ' ',
+      change.signoff ? el('span', { class: 'release-status__tag' }, ['Faculty sign-off']) : null,
+      change.signoff ? ' ' : null,
+      change.title,
+      change.at ? el('span', { class: 'muted' }, [' · merged ', el('time', { dateTime: change.at }, [utcStamp(change.at)])]) : null,
+    ]);
+  }
+
+  function renderReleaseStatus() {
+    const status = state.releaseStatus;
+    const changes = status?.waiting?.changes || [];
+    const lastRun = status?.train?.lastRun;
+    return el('section', {
+      id: 'release-status',
+      class: 'release-status',
+      'aria-labelledby': 'release-status-title',
+    }, [
+      el('div', { class: 'release-status__heading' }, [
+        el('div', {}, [
+          el('p', { class: 'eyebrow' }, ['Learner sites']),
+          el('h2', { id: 'release-status-title' }, ['What learners see']),
+        ]),
+        el('button', {
+          id: 'release-toggle', type: 'button',
+          'aria-expanded': state.releaseOpen ? 'true' : 'false',
+          'aria-controls': 'release-status-body',
+          onClick: () => {
+            state.releaseOpen = !state.releaseOpen;
+            if (!state.releaseOpen) {
+              state.releaseGeneration += 1;
+              state.releaseLoading = false;
+              state.releaseStatus = null;
+              state.releaseError = '';
+              refreshReleasePanel('release-toggle');
+            } else {
+              void refreshReleaseStatus();
+            }
+          },
+        }, [state.releaseOpen ? 'Hide release status' : 'Show release status']),
+      ]),
+      state.releaseOpen ? el('div', { id: 'release-status-body' }, [
+        el('p', { class: 'muted' }, [
+          'A merge, and a sign-off that merges with it, reaches learners when the release train next publishes (09:05, 15:05 and 21:05 UTC).',
+        ]),
+        el('div', { class: 'release-status__actions' }, [
+          el('button', {
+            id: 'release-refresh', type: 'button',
+            disabled: state.releaseLoading,
+            onClick: () => void refreshReleaseStatus(),
+          }, [state.releaseLoading ? 'Checking…' : 'Refresh']),
+          el('a', {
+            href: status?.train?.workflowUrl || `${REPO_URL}/actions/workflows/production-release-train.yml`,
+            target: '_blank', rel: 'noopener noreferrer',
+          }, ['Open the release train']),
+        ]),
+        state.releaseLoading && !status ? el('p', { role: 'status' }, ['Checking what the learner sites serve…']) : null,
+        state.releaseError ? el('p', { class: 'release-status__error', role: 'status' }, [state.releaseError]) : null,
+        status ? el('div', {}, [
+          el('p', {
+            id: 'release-headline',
+            class: `release-status__headline release-status__headline--${status.headline.tone}`,
+          }, [status.headline.text]),
+          el('div', { class: 'release-status__grid' }, [
+            renderReleaseSite('MS3 learner site', status.sites?.ms3, status.liveBasis),
+            renderReleaseSite('Resident learner site', status.sites?.res, status.liveBasis),
+          ]),
+          changes.length ? el('div', {}, [
+            el('h3', {}, [status.waiting.complete ? `Merged, not live yet (${changes.length})` : `Merged, not live yet (at least ${changes.length})`]),
+            el('ol', { id: 'release-waiting', class: 'release-status__changes' }, changes.map(renderReleaseChange)),
+          ]) : null,
+          lastRun ? el('p', {}, [
+            'Last release-train run: ',
+            lastRun.url ? el('a', { href: lastRun.url, target: '_blank', rel: 'noopener noreferrer' }, [utcStamp(lastRun.at)]) : utcStamp(lastRun.at),
+            ` · ${lastRun.event === 'workflow_dispatch' ? 'publish-now' : 'scheduled'} · ${lastRun.conclusion || lastRun.status}`,
+          ]) : null,
+          status.ledgerMode ? el('p', { class: 'muted' }, [
+            'Ledger mode is on: sign-offs publish through the attestation ledger on their own and are not listed here.',
+          ]) : null,
+          status.gaps.length ? el('div', { class: 'release-status__gaps' }, [
+            el('p', {}, ['Could not read everything, so this is not the whole picture:']),
+            el('ul', {}, status.gaps.map(gap => el('li', {}, [gap]))),
+          ]) : null,
+          el('p', { class: 'muted' }, [
+            'Checked ', el('time', { dateTime: status.fetchedAt }, [utcStamp(status.fetchedAt)]),
+            '. Read-only: this panel never publishes. Publishing now costs a production deploy per site; the release train’s Run workflow button is the owner’s call.',
           ]),
         ]) : null,
       ]) : null,
@@ -3531,6 +3708,7 @@ export function startFacultyConsole({
           class: `session-notice branch-sync ${staleness.tone}`,
         }, [el('p', {}, [staleness.message])]);
       })(),
+      renderReleaseStatus(),
       renderRedTeamRevisions(),
       el('section', { class: 'reviewer-strip', 'aria-label': 'Reviewer context' }, [
         el('div', { class: 'field' }, [
