@@ -1,6 +1,6 @@
 # Interview Room red-team governance: staged cases and guided evidence
 
-**Status:** conversation design approved by Joshua Moss, MD on 2026-09-26; written spec for owner review before an implementation plan.
+**Status:** conversation design and written spec approved by Joshua Moss, MD on 2026-09-26 Eastern time. Implementation plans drafted; no code implementation begun.
 **Scope:** Interview Room case registration, red-team execution, and the red-team receipt.
 **Starting point:** `main` at `ae992321` and open PR #841 at `2f93c558`. Recheck both before implementation. This spec changes no clinical wording, pack case, attestation row, deploy, or activation flag.
 
