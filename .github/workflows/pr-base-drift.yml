@@ -1,0 +1,39 @@
+name: PR base drift advisory
+
+# GitHub already computes mergeability when a PR opens. This workflow covers the
+# missed transition: main moves later and an existing PR becomes conflicted or its
+# tests no longer describe the same tree as its branch-head preview. It runs only
+# trusted code from main and writes a neutral/success Check Run; it never modifies
+# a PR branch, posts comments, or acts as a required gate.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+concurrency:
+  group: pr-base-drift-advisory
+  cancel-in-progress: true
+
+jobs:
+  base-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Refresh advisory checks for every open PR
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 13_Faculty_Resources/_automation/maintenance/pr_base_drift.py
