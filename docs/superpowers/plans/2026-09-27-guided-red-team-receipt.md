@@ -4,7 +4,7 @@
 
 **Goal:** Give the Interview Room owner one guided, content-free route from exact deployed revisions and mechanical checks to an honest human red-team receipt that monthly maintenance can verify.
 
-**Architecture:** A read-only prepare command collects immutable Netlify deploy records, reconstructs the deployed pack from the proxy commit, checks the runtime manifests, and runs Tier 1/Tier 2 without exposing the passcode. A separate record command collects human row outcomes and writes a schema-v2 receipt only after checking every required row. Monthly review applies a pure receipt validator to the same deploy identities and pack/model facts; missing or changed evidence stays unverified, incomplete, stale, or mismatched.
+**Architecture:** A read-only prepare command collects immutable Netlify deploy records, fetches the current `main` pack source independently of the proxy commit, checks the runtime manifests, and runs Tier 1/Tier 2 without exposing the passcode. A separate record command collects human row outcomes and writes a schema-v2 receipt only after checking every required row. Monthly review applies a pure receipt validator to the same deploy identities and pack/model facts; missing or changed evidence stays unverified, incomplete, stale, or mismatched.
 
 **Tech Stack:** Python 3.11 `unittest`, `urllib.request`, Git; existing Bash Tier 2; Netlify read-only API; GitHub Actions monthly workflow.
 
@@ -34,7 +34,7 @@
 
 | File | Responsibility |
 |---|---|
-| `13_Faculty_Resources/_automation/maintenance/red_team_deploys.py` (new) | Read-only Netlify deploy lookup, strict record normalization, `git show` of the proxy commit's pack |
+| `13_Faculty_Resources/_automation/maintenance/red_team_deploys.py` (new) | Read-only Netlify deploy lookup, strict record normalization, fresh `main` source revision and pack bytes |
 | `tests/maintenance/test_red_team_deploys.py` (new) | Synthetic Netlify/Git responses, no network |
 | `bin/redteam-live.sh`, `tests/redteam-live.test.mjs` | Optional content-free `--result-json` output with per-probe pass/fail/skip and verified manifest fields; preserve hidden prompt |
 | `13_Faculty_Resources/_automation/maintenance/red_team_preflight.py` (new) | `prepare` entry point, mechanical checks and local untracked work file |
@@ -44,20 +44,20 @@
 | `13_Faculty_Resources/_automation/maintenance/validate_scheduled_workflows.py` | Update the monthly workflow contract digest if its YAML changes |
 | `docs/RED_TEAM_RUNBOOK.md`, `sp-proxy/REDTEAM_CHECKLIST.md` | Operator sequence and precise limits, after #841 |
 
-Schema-v2 receipt fields are `schemaVersion: 2`, `state`, `checkedAt`, `packSha256`, `packVersion`, `model`, `deployments` (`proxy`, `ms3`, `res`, each with `siteId`, `deployId`, `commitRef`, `deployUrl`, `publishedAt`), `runtime` (`actorModel`, `evaluatorModel`, `realtimeEnabled`, `realtimeModel`, `transcriptionModel`, `managedVoiceEnabled`, `managedVoiceStack`), `requiredSections`, `completedSections`, `manualRows` (row ID -> `pass|fail|blocked` plus bounded reason), `mechanical` (Tier 1/2 result IDs and times), `signedBy`, and `checklist`. Manual IDs are A1–A5, C1/C2/C4/C5, D2/D3/D4/D6/D7, and one E golden-transcript verdict; B1–B7, C3, D1/D5 come from the mechanical tiers. R1–R16 and V1–V10 join the manual list only when the corresponding route is verified enabled. The schema contains references and verdicts only; no prompts, patient replies, audio, headers, or raw logs. Keep the existing `packSha256`, `model`, and `state` fields for consumers, but do not treat legacy receipts as upgraded.
+Schema-v2 receipt fields are `schemaVersion: 2`, `state`, `checkedAt`, `packSha256`, `packVersion`, `packSourceCommit`, `model`, `deployments` (`proxy`, `ms3`, `res`, each with `siteId`, `deployId`, `commitRef`, `deployUrl`, `publishedAt`), `runtime` (`actorModel`, `evaluatorModel`, `realtimeEnabled`, `realtimeModel`, `transcriptionModel`, `managedVoiceEnabled`, `managedVoiceStack`), `requiredSections`, `completedSections`, `manualRows` (row ID -> `pass|fail|blocked` plus bounded reason), `mechanical` (Tier 1/2 result IDs and times), `signedBy`, and `checklist`. Manual IDs are A1–A5, C1/C2/C4/C5, D2/D3/D4/D6/D7, and one E golden-transcript verdict; B1–B7, C3, D1/D5 come from the mechanical tiers. R1–R16 and V1–V10 join the manual list only when the corresponding route is verified enabled. The schema contains references and verdicts only; no prompts, patient replies, audio, headers, or raw logs. Keep the existing `packSha256`, `model`, and `state` fields for consumers, but do not treat legacy receipts as upgraded.
 
 ### Task 1: Identify the exact deployed object without a secret readback
 
 **Files:** Create `13_Faculty_Resources/_automation/maintenance/red_team_deploys.py`, `tests/maintenance/test_red_team_deploys.py`.
 
-**Interfaces:** `deployed_pack_bytes(proxy_commit: str, git_show: Callable) -> bytes` reads only that Git revision; `fetch_snapshot(config: dict, token: str, get_json: Callable, git_show: Callable) -> dict` returns normalized `deployments`, `packSha256`, `packVersion`, and `model` or raises `EvidenceUnavailable(reason)`; its callers never receive raw Netlify JSON. `get_json` is injected for tests. Query `GET /api/v1/sites/{site_id}/deploys?production=true&latest-published=true&per_page=1`, then `GET /api/v1/deploys/{id}` for each site, and require an exact `site_id`, `context == 'production'`, `state == 'ready'`, nonempty `commit_ref`, valid `published_at`, and deploy permalink.
+**Interfaces:** `source_pack_bytes(source_commit: str, git_show: Callable) -> bytes` reads the current `main` pack revision resolved by a fresh fetch; `fetch_snapshot(config: dict, token: str, get_json: Callable, git_show: Callable, source_commit: Callable) -> dict` returns normalized `deployments`, `packSha256`, `packVersion`, `packSourceCommit`, and `model` or raises `EvidenceUnavailable(reason)`; its callers never receive raw Netlify JSON. Source fetch and `get_json` are injected for tests. Query `GET /api/v1/sites/{site_id}/deploys?production=true&latest-published=true&per_page=1`, then `GET /api/v1/deploys/{id}` for each site, and require an exact `site_id`, `context == 'production'`, `state == 'ready'`, nonempty `commit_ref`, valid `published_at`, and deploy permalink.
 
 - [ ] **Step 1: Write failing tests with fake records.** Give all three configured site IDs one ready production record and a fake `git_show(commit, path)` returning synthetic pack bytes. Assert the SHA-256 matches those bytes, not the caller's checkout. Vary each of: empty result list, second site ID, missing commit, `context='deploy-preview'`, and absent `published_at`; assert `EvidenceUnavailable` with a specific reason.
 
 ```python
 with self.assertRaisesRegex(EvidenceUnavailable, "preview context"):
     fetch_snapshot(config, "fixture-token", preview_get_json, fake_git_show)
-self.assertEqual(snapshot["packSha256"], sha256(deployed_pack_bytes).hexdigest())
+self.assertEqual(snapshot["packSha256"], sha256(current_main_pack_bytes).hexdigest())
 ```
 
 - [ ] **Step 2: Run the new test and confirm the import/function failure.**
@@ -68,15 +68,16 @@ python3 -m unittest discover -s tests/maintenance -p 'test_red_team_deploys.py'
 
 Expected: FAIL because `red_team_deploys.py` does not exist.
 
-- [ ] **Step 3: Implement strict normalization and exact-commit pack loading.** Use the site IDs in config, a 20-second API timeout, and `git show <proxy_commit>:_prototypes/sp-interview/sp-interview.pack.json` via an argument list with no shell. Reject a missing local commit as unverified; do not substitute the working tree. Validate `deploy_ssl_url` or `deploy_url` is an immutable deploy URL containing the returned ID. Never call the Netlify environment-variable API.
+- [ ] **Step 3: Implement strict normalization and exact-source pack loading.** Use the site IDs in config, a 20-second API timeout, fetch `origin main`, and read `git show <fetched_main_commit>:_prototypes/sp-interview/sp-interview.pack.json` via an argument list with no shell. Reject a missing source revision as unverified; do not substitute the working tree or proxy commit. Validate the immutable deploy permalink contains the returned ID. Never call the Netlify environment-variable API.
 
 ```python
-pack_bytes = deployed_pack_bytes(proxy["commitRef"], git_show)
+pack_bytes = source_pack_bytes(pack_source_commit, git_show)
 pack = json.loads(pack_bytes)
 return {"deployments": deployments,
         "packSha256": sha256(pack_bytes).hexdigest(),
         "packVersion": pack["version"],
-        "model": pack["engine"]["modelPinned"]}
+        "model": pack["engine"]["modelPinned"],
+        "packSourceCommit": pack_source_commit}
 ```
 
 - [ ] **Step 4: Run focused tests, then commit.**
@@ -112,7 +113,7 @@ python3 -m unittest discover -s tests/maintenance -p 'test_red_team_preflight.py
 
 Expected: the new option/work-record assertions fail before implementation.
 
-- [ ] **Step 3: Add structured emission without touching credential resolution.** Collect the script's existing `ok`, `bad`, and `skip` IDs into a temporary local list; use the same in-process passcode to GET the typed, real-time, and managed-voice health manifests. Emit only the allowlisted model/hash/voice-state fields and check verdicts to an explicit output path with mode `0600`, after all responses and the final exit state are known. In `prepare`, run Tier 1 against an extracted file of the exact proxy-commit pack bytes and reject nonzero or zero-probe output. Run Tier 2 as an attached terminal subprocess so its hidden prompt works; read only its sanitized JSON. Compare actor/evaluator models, pack version, and pack SHA-256 to `snapshot`. A failed voice health lookup is `unverified`, never `false`.
+- [ ] **Step 3: Add structured emission without touching credential resolution.** Collect the script's existing `ok`, `bad`, and `skip` IDs into a temporary local list; use the same in-process passcode to GET the typed, real-time, and managed-voice health manifests. Emit only the allowlisted model/hash/voice-state fields and check verdicts to an explicit output path with mode `0600`, after all responses and the final exit state are known. In `prepare`, run Tier 1 with current `main` pack bytes and the exact proxy-commit gate code and probes; reject nonzero or zero-probe output. Run Tier 2 as an attached terminal subprocess so its hidden prompt works; read only its sanitized JSON. Compare actor/evaluator models, pack version, and pack SHA-256 to `snapshot`. A failed voice health lookup is `unverified`, never `false`.
 
 ```python
 if live["state"] != "passed" or any(c["status"] != "pass" for c in live["checks"]):

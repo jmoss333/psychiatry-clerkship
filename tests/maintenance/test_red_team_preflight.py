@@ -29,6 +29,7 @@ def snapshot():
                              "publishedAt": "2026-09-27T01:00:00Z"}
                         for key in ("proxy", "ms3", "res")},
         "packSha256": sha256(PACK).hexdigest(), "packVersion": "fixture", "model": "model-a",
+        "packSourceCommit": "4" * 40,
     }
 
 
@@ -45,12 +46,19 @@ def live():
 
 class PreflightTests(unittest.TestCase):
     def run_prepare(self, live_result=None, snap=None, pack=PACK, tier1=None):
+        def pack_loader(commit):
+            self.assertEqual(commit, "4" * 40)
+            return pack
+        def tier1_runner(data, commit):
+            self.assertEqual(data, pack)
+            self.assertEqual(commit, "1" * 40)
+            return tier1 or {"state": "passed", "passes": 30, "total": 30,
+                             "sourceCommit": commit}
         return prepare(
             snap or snapshot(),
-            lambda data, commit: tier1 or {"state": "passed", "passes": 30, "total": 30,
-                                           "sourceCommit": commit},
+            tier1_runner,
             lambda endpoint: live_result or live(),
-            pack_loader=lambda commit: pack,
+            pack_loader=pack_loader,
         )
 
     def test_prepared_work_has_exact_revisions_and_no_pass_verdict(self):
@@ -58,6 +66,7 @@ class PreflightTests(unittest.TestCase):
         self.assertEqual(work["state"], "prepared")
         self.assertEqual(work["deployments"], snapshot()["deployments"])
         self.assertEqual(work["runtime"]["actorModel"], "model-a")
+        self.assertEqual(work["packSourceCommit"], "4" * 40)
         self.assertEqual(work["mechanical"]["tier1"]["passes"], 30)
         self.assertEqual(work["mechanical"]["tier1"]["sourceCommit"], "1" * 40)
 
@@ -96,8 +105,8 @@ class PreflightTests(unittest.TestCase):
         with self.assertRaisesRegex(EvidenceUnavailable, "Tier 1 failed or empty"):
             self.run_prepare(tier1={"state": "passed", "passes": 0, "total": 0})
 
-    def test_exact_commit_pack_and_served_manifest_must_match(self):
-        with self.assertRaisesRegex(EvidenceUnavailable, "proxy commit pack hash mismatch"):
+    def test_current_main_pack_and_served_manifest_must_match(self):
+        with self.assertRaisesRegex(EvidenceUnavailable, "main pack source hash mismatch"):
             self.run_prepare(pack=b"different")
         result = live()
         result["packSha256"] = "0" * 64

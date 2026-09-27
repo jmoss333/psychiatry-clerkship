@@ -49,9 +49,12 @@ python3 13_Faculty_Resources/_automation/maintenance/red_team_preflight.py recor
 ```
 
 `prepare` reads the **latest published production deploy** for the proxy, MS3, and resident sites,
-each with its own deploy ID and commit. It hashes the pack from the proxy deploy's Git commit, runs
-Tier 1 with the pack, probes, and gate code from that same commit, then opens Tier 2 at that
-deploy's immutable URL. Tier 2 asks for the
+each with its own deploy ID and commit. It fetches the current `main` pack source revision because
+`SP_PACK_URL` follows `main` independently of proxy deploys. Tier 1 uses those pack bytes with the
+probes and gate code from the proxy deploy's commit, then Tier 2 checks the immutable proxy URL and
+requires the served pack hash to match. The proxy may cache an older pack for up to five minutes;
+if the hashes differ, preparation stops unverified and should be retried after the cache refreshes.
+Tier 2 asks for the
 current passcode at a hidden terminal prompt. Do not place the passcode in an argument, environment
 assignment, work file, or chat. The read-only Netlify token is used only for deploy metadata; it
 cannot reveal the secret passcode. If the token, deploy, Git object, or a runtime manifest cannot be
@@ -66,8 +69,9 @@ only if you explicitly choose to preserve it. Real-time
 spoken rows R1–R16 appear when that route is verified enabled; managed voice rows V1–V10 appear
 when that route is verified enabled. An unknown activation state cannot become a pass. Review and
 commit the resulting `receipts/sp-red-team.json` separately. Monthly maintenance calls a receipt
-`current` only when its exact deploy IDs, commits, pack hash, and pinned model still match
-production. `current` means the recorded review remains tied to what is serving; it does not
+`current` only when its exact deploy IDs, commits, current `main` pack hash, and pinned model still
+match the receipt. `current` means the recorded review remains tied to those source and deployment
+facts; the live pack hash was checked during preparation, not queried again by the monthly job. It does not
 rerun your clinical judgment or grant learner readiness.
 
 Netlify [requires a new build and deploy for environment-variable changes to take effect](https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/#manage-environment-variables).

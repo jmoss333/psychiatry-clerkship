@@ -17,9 +17,9 @@ from hashlib import sha256
 from pathlib import Path
 
 try:
-    from .red_team_deploys import EvidenceUnavailable, deployed_pack_bytes, fetch_snapshot
+    from .red_team_deploys import EvidenceUnavailable, source_pack_bytes, fetch_snapshot
 except ImportError:  # direct script execution
-    from red_team_deploys import EvidenceUnavailable, deployed_pack_bytes, fetch_snapshot
+    from red_team_deploys import EvidenceUnavailable, source_pack_bytes, fetch_snapshot
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -30,7 +30,7 @@ LIVE_IDS = {"D0", "D1", "D1b", "D5", "B5"}
 
 
 def run_tier1(pack_bytes: bytes, source_commit: str) -> dict:
-    """Run the proxy commit's probes and gate implementation with its pack."""
+    """Run the deployed proxy code and probes against the supplied current pack."""
     try:
         archive = subprocess.run(
             ["git", "archive", "--format=tar", source_commit,
@@ -113,13 +113,14 @@ def run_tier2(endpoint: str) -> dict:
 
 
 def prepare(snapshot: dict, tier1_runner=run_tier1, tier2_runner=run_tier2,
-            *, pack_loader=deployed_pack_bytes) -> dict:
+            *, pack_loader=source_pack_bytes) -> dict:
     """Return a content-free work record only after all mechanical evidence agrees."""
     try:
         proxy = snapshot["deployments"]["proxy"]
-        data = pack_loader(proxy["commitRef"])
+        pack_source = snapshot["packSourceCommit"]
+        data = pack_loader(pack_source)
         if sha256(data).hexdigest() != snapshot["packSha256"]:
-            raise EvidenceUnavailable("proxy commit pack hash mismatch")
+            raise EvidenceUnavailable("main pack source hash mismatch")
         tier1 = tier1_runner(data, proxy["commitRef"])
         if (tier1.get("state") != "passed" or not isinstance(tier1.get("passes"), int)
                 or not isinstance(tier1.get("total"), int) or tier1["passes"] < 1
@@ -168,7 +169,8 @@ def prepare(snapshot: dict, tier1_runner=run_tier1, tier2_runner=run_tier2,
             "schemaVersion": 1, "state": "prepared", "checkedAt": checked_at,
             "deployments": snapshot["deployments"],
             "packSha256": snapshot["packSha256"], "packVersion": snapshot["packVersion"],
-            "model": snapshot["model"], "runtime": runtime,
+            "model": snapshot["model"], "packSourceCommit": pack_source,
+            "runtime": runtime,
             "mechanical": {
                 "tier1": {"state": "passed", "passes": tier1["passes"],
                           "total": tier1["total"], "sourceCommit": proxy["commitRef"],

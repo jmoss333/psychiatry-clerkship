@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -79,6 +80,9 @@ def build_receipt(work: dict, manual_rows: dict, signed_by: str, now: datetime,
             raise IncompleteReview("runtime model mismatch")
         if not work.get("packSha256") or not work.get("packVersion") or not work.get("model"):
             raise IncompleteReview("pack evidence incomplete")
+        if (not isinstance(work.get("packSourceCommit"), str)
+                or not re.fullmatch(r"[0-9a-f]{40}", work["packSourceCommit"])):
+            raise IncompleteReview("pack source revision incomplete")
         tier1, tier2 = mechanical["tier1"], mechanical["tier2"]
         checks = tier2.get("checks")
         mechanical_ok = (
@@ -145,6 +149,7 @@ def build_receipt(work: dict, manual_rows: dict, signed_by: str, now: datetime,
         "schemaVersion": 2, "state": "incomplete" if incomplete else "passed",
         "checkedAt": now.isoformat(), "packSha256": work["packSha256"],
         "packVersion": work["packVersion"], "model": work["model"],
+        "packSourceCommit": work["packSourceCommit"],
         "deployments": {key: {field: deployments[key][field] for field in
                              ("siteId", "deployId", "commitRef", "deployUrl", "publishedAt")}
                         for key in ("proxy", "ms3", "res")},
@@ -190,7 +195,7 @@ def record_interactive(work_path: Path, receipt_path: Path = RECEIPT,
     for key in ("proxy", "ms3", "res"):
         deploy = work["deployments"][key]
         print(f"  {key}: {deploy['deployId']}  commit {deploy['commitRef']}  {deploy['deployUrl']}")
-    print(f"Pack {work['packVersion']} · SHA-256 {work['packSha256']} · model {work['model']}")
+    print(f"Pack {work['packVersion']} · SHA-256 {work['packSha256']} · source {work['packSourceCommit']} · model {work['model']}")
     print("Read sp-proxy/REDTEAM_CHECKLIST.md while testing each row. Enter no patient text, audio, or passcode here.")
     print("Mechanical B, C3, D1, and D5 were checked in preparation. Human rows:")
     rows = {}

@@ -22,7 +22,8 @@ NOW = datetime(2026, 9, 27, 2, 0, tzinfo=timezone.utc)
 def work():
     return {
         "state": "prepared", "packSha256": "a" * 64, "packVersion": "fixture",
-        "model": "model-a", "deployments": {
+        "model": "model-a", "packSourceCommit": "4" * 40,
+        "deployments": {
             key: {"siteId": key, "deployId": key, "commitRef": "1" * 40,
                   "deployUrl": f"https://{key}.example", "publishedAt": "2026-09-27T01:00:00Z"}
             for key in ("proxy", "ms3", "res")},
@@ -67,6 +68,7 @@ class ReceiptTests(unittest.TestCase):
         self.assertEqual(receipt["requiredSections"], ["A", "B", "C", "D", "E"])
         self.assertEqual(receipt["completedSections"], ["A", "B", "C", "D", "E"])
         self.assertEqual(receipt["checkedAt"], NOW.isoformat())
+        self.assertEqual(receipt["packSourceCommit"], "4" * 40)
         self.assertEqual(receipt["checklist"], "sp-proxy/REDTEAM_CHECKLIST.md")
         self.assertNotIn("patient reply", json.dumps(receipt))
 

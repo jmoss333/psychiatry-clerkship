@@ -36,7 +36,8 @@ def red_team_snapshot():
         "siteId": key, "deployId": f"{key}-deploy", "commitRef": "1" * 40,
         "deployUrl": f"https://{key}-deploy.example", "publishedAt": "2026-07-01T13:00:00Z",
     } for key in ("proxy", "ms3", "res")},
-        "packSha256": "a" * 64, "packVersion": "fixture", "model": "fixture-model"}
+        "packSha256": "a" * 64, "packVersion": "fixture", "model": "fixture-model",
+        "packSourceCommit": "4" * 40}
 
 
 def red_team_receipt(snapshot=None):
@@ -88,6 +89,9 @@ class RedTeamClassificationTests(unittest.TestCase):
         self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
         receipt = red_team_receipt(snapshot)
         receipt["rawTranscript"] = "patient reply must not enter receipt"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
+        receipt["packSourceCommit"] = "patient reply must not enter receipt"
         self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
         receipt = red_team_receipt(snapshot)
         receipt["mechanical"]["tier1"]["sourceCommit"] = "2" * 40

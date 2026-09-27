@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 from datetime import datetime
 from hashlib import sha256
+from pathlib import Path
 from urllib.parse import quote, urlsplit
 from urllib.request import Request, urlopen
 
 
 PACK_PATH = "_prototypes/sp-interview/sp-interview.pack.json"
+ROOT = Path(__file__).resolve().parents[3]
 API_BASE = "https://api.netlify.com/api/v1"
 _COMMIT = re.compile(r"[0-9a-f]{40}\Z")
 _DEPLOY_ID = re.compile(r"[0-9a-f]{24}\Z")
@@ -19,6 +22,13 @@ _DEPLOY_ID = re.compile(r"[0-9a-f]{24}\Z")
 
 class EvidenceUnavailable(RuntimeError):
     """A required production fact could not be independently established."""
+
+
+def _git_read_env() -> dict:
+    env = os.environ.copy()
+    for key in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE"):
+        env.pop(key, None)
+    return env
 
 
 def netlify_get_json(url: str, token: str):
@@ -37,21 +47,40 @@ def git_show_at_commit(commit: str, path: str) -> bytes:
     try:
         return subprocess.run(
             ["git", "show", f"{commit}:{path}"], check=True,
+            cwd=ROOT, env=_git_read_env(),
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=20,
         ).stdout
     except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-        raise EvidenceUnavailable("proxy commit pack unavailable") from exc
+        raise EvidenceUnavailable("pack source commit unavailable") from exc
 
 
-def deployed_pack_bytes(proxy_commit: str, git_show=git_show_at_commit) -> bytes:
-    if not isinstance(proxy_commit, str) or not _COMMIT.fullmatch(proxy_commit):
-        raise EvidenceUnavailable("proxy commit ref invalid")
+def main_pack_commit() -> str:
+    """Resolve the current reviewed pack source, which the proxy loads from main."""
+    env = _git_read_env()
     try:
-        data = git_show(proxy_commit, PACK_PATH)
+        subprocess.run(["git", "fetch", "--no-tags", "origin", "main"],
+                       cwd=ROOT, env=env, check=True, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, timeout=60)
+        commit = subprocess.run(["git", "rev-parse", "--verify", "FETCH_HEAD^{commit}"],
+                                cwd=ROOT, env=env, check=True, text=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                timeout=20).stdout.strip()
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        raise EvidenceUnavailable("current main pack revision unavailable") from exc
+    if not _COMMIT.fullmatch(commit):
+        raise EvidenceUnavailable("current main pack revision unavailable")
+    return commit
+
+
+def source_pack_bytes(source_commit: str, git_show=git_show_at_commit) -> bytes:
+    if not isinstance(source_commit, str) or not _COMMIT.fullmatch(source_commit):
+        raise EvidenceUnavailable("pack source commit invalid")
+    try:
+        data = git_show(source_commit, PACK_PATH)
     except Exception as exc:
-        raise EvidenceUnavailable("proxy commit pack unavailable") from exc
+        raise EvidenceUnavailable("pack source commit unavailable") from exc
     if not isinstance(data, bytes) or not data:
-        raise EvidenceUnavailable("proxy commit pack unavailable")
+        raise EvidenceUnavailable("pack source commit unavailable")
     return data
 
 
@@ -114,8 +143,9 @@ def _normalize(record: dict, site: dict, listed_id: str) -> dict:
 
 
 def fetch_snapshot(config: dict, token: str,
-                   get_json=netlify_get_json, git_show=git_show_at_commit) -> dict:
-    """Fetch the latest published production deploy for each configured site."""
+                   get_json=netlify_get_json, git_show=git_show_at_commit,
+                   source_commit=main_pack_commit) -> dict:
+    """Fetch production deploys and the current main pack source independently."""
     if not token:
         raise EvidenceUnavailable("Netlify token unavailable")
     sites = _site_config(config)
@@ -139,7 +169,8 @@ def fetch_snapshot(config: dict, token: str,
         except Exception as exc:
             raise EvidenceUnavailable(f"{key} Netlify deploy detail unavailable") from exc
         deployments[key] = _normalize(detail, site, deploy_id)
-    data = deployed_pack_bytes(deployments["proxy"]["commitRef"], git_show)
+    commit = source_commit()
+    data = source_pack_bytes(commit, git_show)
     try:
         pack = json.loads(data)
         version = pack["version"]
@@ -147,6 +178,6 @@ def fetch_snapshot(config: dict, token: str,
         if not isinstance(version, str) or not version or not isinstance(model, str) or not model:
             raise ValueError("pack field")
     except (ValueError, KeyError, TypeError) as exc:
-        raise EvidenceUnavailable("proxy commit pack metadata unavailable") from exc
+        raise EvidenceUnavailable("main pack metadata unavailable") from exc
     return {"deployments": deployments, "packSha256": sha256(data).hexdigest(),
-            "packVersion": version, "model": model}
+            "packVersion": version, "model": model, "packSourceCommit": commit}

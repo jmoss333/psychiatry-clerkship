@@ -422,10 +422,15 @@ def _content_free_red_team_shape(receipt):
 
     if not keys(receipt, (
             "schemaVersion", "state", "checkedAt", "packSha256", "packVersion",
-            "model", "deployments", "runtime", "requiredSections", "completedSections",
+            "model", "packSourceCommit", "deployments", "runtime",
+            "requiredSections", "completedSections",
             "manualRows", "incompleteRows", "mechanical", "signedBy", "checklist")):
         return False
     if receipt.get("incompleteRows") != [] or receipt.get("checklist") != "sp-proxy/REDTEAM_CHECKLIST.md":
+        return False
+    source = receipt.get("packSourceCommit")
+    if (not isinstance(source, str) or len(source) != 40
+            or any(char not in "0123456789abcdef" for char in source)):
         return False
     deployments = receipt.get("deployments")
     if not keys(deployments, ("proxy", "ms3", "res")):
