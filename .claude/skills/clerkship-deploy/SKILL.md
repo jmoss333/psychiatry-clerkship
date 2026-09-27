@@ -1,12 +1,17 @@
 ---
 name: clerkship-deploy
-description: Use when deploying, verifying, or debugging the two clerkship Netlify sites (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) — including push-triggered builds, Git-LFS audio problems, stale-cache deploys, or "modified .m4a files" confusion. Also use before committing anything in this repo from a sandboxed environment.
+description: Use when deploying, verifying, rolling back, or debugging the two clerkship Netlify sites (une-ms3-psychiatry, mmc-psychiatry-residents-sanford) — including the release train and its publish-now button, a held or red release-train run, a red production canary, Git-LFS audio problems, stale-cache deploys, or "modified .m4a files" confusion. Also use before committing anything in this repo from a sandboxed environment.
 ---
 
 # Clerkship Site Deploy & Verify
 
-One repo (`jmoss333/psychiatry-clerkship`) feeds **two** Netlify sites that build on push:
+One repo (`jmoss333/psychiatry-clerkship`) feeds **two** learner sites:
 `une-ms3-psychiatry` (UNE COM MS3) and `mmc-psychiatry-residents-sanford` (MMC residents).
+**They publish from the `release` branch, not `main`** (since 2026-09-25): a merge to `main`
+deploys nothing learner-facing. The release train
+(`.github/workflows/production-release-train.yml`) fast-forwards `release` to the newest
+fully green `main` commit at 09:05, 15:05 and 21:05 UTC, and its "Run workflow" button is
+publish-now. Each promotion is one production deploy per site. See "Release train" below.
 Build command and publish dir live **per-site in the Netlify UI**, not in
 `netlify.toml` (which is intentionally minimal — see its header comment and
 `GIT_AND_DEPLOY_PLAN.md` §6–7 for why).
@@ -62,8 +67,10 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
    is the same class — it has no Netlify project at all. Exactly five projects are git-linked
    to this repo: the two learner sites, `sp-interview-proxy`, `clerkship-faculty-attest`,
    `psychiatry-workforce-tour`. To tell them apart without guessing: a git-linked project's
-   `branchVersionOfSite` is `main--<site>.netlify.app`, a CLI-only one's is
-   `<deploy-id>--<site>.netlify.app`; or read `deploy_source`/`build_id` from the deploy API.
+   `branchVersionOfSite` is `<production branch>--<site>.netlify.app` — `release--` for the
+   two learner sites (verified 2026-09-27), `main--` for the satellites — while a CLI-only
+   one's is `<deploy-id>--<site>.netlify.app`; or read `deploy_source`/`build_id` from the
+   deploy API.
    The cost lever on a CLI site is `--prod` discipline — every `netlify deploy --prod` bills
    ~$0.10 even when the deploy reports "All files already uploaded by a previous deploy";
    drafts (`netlify deploy`, no `--prod`) are free, so iterate on drafts and publish once.
@@ -72,8 +79,10 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
    means someone scoped a site that must not be scoped. "Failed" still means read the log.
    Netlify's own "Skipped" (superseded commit) entries are also recorded as errors and
    cannot be prevented from the repo. The alarm that the old rule was protecting now lives
-   in `bin/check_netlify_deploy_health.py` (daily, inside `maintenance-production-canary.yml`);
-   it is INERT until the `NETLIFY_AUTH_TOKEN` repository secret exists, and says so.
+   in `bin/check_netlify_deploy_health.py` (daily, inside `maintenance-production-canary.yml`).
+   It is LIVE: the `NETLIFY_AUTH_TOKEN` repository secret exists, and the 2026-09-27 canary
+   run printed per-site deploy counts (re-verified 2026-09-27). Without the secret it would
+   record `status: "skipped"` and say so rather than pass.
    See `GIT_AND_DEPLOY_PLAN.md` §7 and `_automation/NETLIFY_COST_REDUCTION_PLAN.md`.
 5. **"Every production deploy fails, nothing changed" = GitHub LFS bandwidth quota.**
    Signature: both sites red at `lfs-media: ERROR — 105 Git LFS pointer stub(s)` (or
@@ -87,16 +96,53 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
    not repeat it. Need a deploy *before* the reset = buy a GitHub data pack. Read the
    deploy log's checkout gap (~2 s reused, ~70 s fresh clone) as the meter; the `~N MB
    downloaded` line never prints (`NETLIFY_LFS_RUNBOOK.md`, "How media reach the build").
+6. **A red release-train run is usually the spend tripwire, not a failure — and it turns
+   the canary and heartbeat red behind it.** Before a scheduled promotion the train counts
+   billable production deploys in the trailing 24 h and HOLDS (exit 1, red) if publishing
+   would pass its budget; the run summary prints the per-site counts, so read them before
+   assuming anything is broken. On 2026-09-27 the 09:05 slot held with 14 green merges
+   waiting because the *satellites* had spent a single all-sites budget (#851 splits it into
+   a learner budget and an all-sites runaway ceiling; the numbers live in
+   `release_train.py`). A held train then makes `release` lag `main`, and anything that
+   judges production with `main`'s specs goes red on changes that have not shipped — that
+   morning the canary failed #839's new assertion against a healthy site, and the workflow
+   heartbeat reported both. Before calling a canary failure a site defect, check whether
+   the failing assertion exists at the revision production serves:
+   `git grep -n '<assertion text>' <served-sha> -- tests/smoke`, with the served SHA from
+   `production_revision_parity.py` (#857 makes the canary crawl with the served revision's
+   own specs).
+
+## Release train
+
+- **A merge deploys nothing learner-facing.** It lands on `main`; the train moves `release`
+  at the next slot (09:05, 15:05, 21:05 UTC; GitHub's cron often starts it 10–20 min late)
+  to the newest `main` commit whose required checks are BOTH green, and only ever
+  fast-forwards. Never push `release` by hand except to repair it.
+- **Publish now:** Actions → "Production — Release train" → Run workflow (give a reason).
+  Use it for a safety or crisis-contact fix, or after a held slot when the merges matter
+  today. It is never held by cost; it only warns.
+- **Receipt:** each promotion dispatches `production-release-verification.yml` for the exact
+  commit it published. That run, not the train's, says whether the publish landed.
+- **What is live right now:** both sites report the commit they were built from in
+  `/tool-governance.json`; `python3 13_Faculty_Resources/_automation/maintenance/production_revision_parity.py --attempts 1 --retry-delay 0 --out "$TMPDIR/served-revision.json"`
+  prints it for both and fails if they differ.
+- **Satellites are different:** `sp-interview-proxy`, `clerkship-faculty-attest` and
+  `psychiatry-workforce-tour` still build from `main` on every merge that touches their
+  directory (trap 4).
 
 ## Deploy runbook
 
 1. Pre-flight: `git status` (no LFS false-positives staged), `git lfs ls-files | wc -l`
-   (expect ~106), confirm you're on the branch each site actually deploys from (check the
-   site's UI → Build settings; don't assume `main` — feature branches like `codex/*` are
-   common here).
-2. Push. Both sites build independently — a green deploy on one says nothing about the other.
-3. Watch both deploys in the dashboard. If either fails on missing audio, suspect LFS
-   bandwidth/fetch and rerun with "Deploy without cache" (trap 2).
+   (expect ~106).
+2. Merge to `main` through a PR with the required checks green. Nothing publishes yet.
+3. Publish: wait for the next train slot, or run publish-now. Read the run summary:
+   "promoted" (with the SHA), "nothing new to publish", or "HELD" (trap 6).
+4. Watch both learner-site deploys in the dashboard or the Netlify MCP (trap 3) — they build
+   independently, and a green deploy on one says nothing about the other. If one fails the
+   LFS gate, rule out the bandwidth quota FIRST (trap 5); never clear the cache to retry an
+   LFS failure. Trap 2's "Deploy without cache" is for stale media on a deploy that
+   succeeded, not for a failed one.
+5. Confirm the release verification receipt for that SHA went green.
 
 ## Post-deploy verification — repeat PER SITE
 
@@ -109,5 +155,17 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
 
 ## Rollback
 
-Netlify UI → Deploys → select last-known-good → "Publish deploy". Instant, no git surgery.
-Fix forward in git afterward.
+A rollback alone does not hold under the train, because the bad commit is already on
+`release`, and the next promotion ships whatever newer green `main` holds — including the bad
+commit unless it has been reverted. Netlify documents that with auto publishing on, any new
+Git-triggered production deploy overwrites a rolled-back version (docs "Manage deploys →
+Rollbacks", checked 2026-09-27). So, for EACH learner site:
+
+1. Netlify UI → Deploys → last-known-good → **Publish deploy**. Instant; no rebuild, no cost.
+2. Optionally **Lock to stop auto publishing** on the same Deploys list, so a train slot cannot
+   overwrite the rollback while the fix is in flight. Netlify still builds new deploys; it
+   just does not publish them.
+3. Revert (or fix) on `main` through a PR, then run publish-now. `release` only ever
+   fast-forwards — never reset it backwards to undo a publish.
+4. If you locked: **Unlock to start auto publishing**, confirm the fixed deploy is the
+   published one (publish it by hand if not), and check both sites serve the same revision.
