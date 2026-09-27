@@ -4,9 +4,10 @@
 // live-context prototype import. This test pins the exact relationship between the two copies:
 // the pack's Morgan is the local Morgan plus the uniform suicide screen the pack's D3/D12 rule
 // requires of every case — and nothing else. That screen is authored content on an attested
-// case; the attestation validator forbids a non-reviewed case in a reviewed pack, so the pack
-// row is reviewed (owner, 2026-09-26) and every later change to those lines re-attests it (the
-// PR that carries the change lists the lines). A drift between the two copies anywhere else is
+// case; on 2026-09-26 the attestation validator forbade any non-reviewed case in a reviewed pack
+// (a `pending` case is accepted since 2026-09-27, decision pending-case-in-reviewed-pack), so the
+// pack row is reviewed (owner, 2026-09-26) and every later change to those lines re-attests it
+// (the PR that carries the change lists the lines). A drift between the two copies anywhere else is
 // a finding, not a merge.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -157,9 +158,10 @@ test('c_si is critical with the D12 partial-credit wiring; the coach hint and de
 
 test('the pack row is attested on the screen lines (2026-09-26), later than the local copy it extends', () => {
   // The owner read the authored screen lines and attested them on 2026-09-26; the attestation
-  // validator forbids a non-reviewed case in a reviewed pack, so this is the only state in which
-  // Morgan can ship. The local prototype keeps its own, earlier attestation of the case without
-  // the screen.
+  // validator then forbade any non-reviewed case in a reviewed pack, so this was the only state
+  // in which Morgan could ship (a later case may land `pending` first — decision
+  // pending-case-in-reviewed-pack, 2026-09-27). The local prototype keeps its own, earlier
+  // attestation of the case without the screen.
   assert.deepEqual(packMorgan.facultyReview, {
     status: 'reviewed',
     reviewer: localMorgan.facultyReview.reviewer,

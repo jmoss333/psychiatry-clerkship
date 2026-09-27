@@ -608,11 +608,14 @@ the container when the Bash 5 environment is part of the evidence.
   re-attests afterwards. **A pack case's `facultyReview` block is not a promotion** (decision
   `pack-case-review-is-registration`, 2026-09-26): `sp-interview.pack.json` is an `extraSources`
   entry of the `sp-interview.html` ledger row, so any case edit drifts that row to pending and
-  the console's re-attestation is the claim of record; the attestation validator forbids a
-  non-reviewed case in a reviewed pack (it accepts `reviewed` or `attested`; the tool, the proxy
-  and the red-team runner offer only `reviewed`), so a content PR writes the block when it adds
-  a case (with the owner's read of the lines recorded on that PR), and the classifier never
-  reads it. Everything else a content PR does to the ledger — a new pending row, a
+  the console's re-attestation is the claim of record; the attestation validator forbids a case
+  in a reviewed pack whose status is anything but `reviewed`, `attested` or `pending` (decision
+  `pending-case-in-reviewed-pack`, 2026-09-27 — the tool, the proxy and the red-team runner
+  offer only `reviewed`, so a `pending` case is unselectable everywhere and its probes skip),
+  so a new case lands `pending` in a content PR, gains its probes in a governance PR (L1 keeps
+  `bin/` and the pack out of one diff), and flips to `reviewed` in a third content PR with the
+  owner's read of the lines recorded on it — or enters `reviewed` directly when its probes
+  already exist — and the classifier never reads the block. Everything else a content PR does to the ledger — a new pending row, a
   pending row edited, `reviewed`→`pending`, a row deleted, a demotion that drops
   `lastReviewed`/`reviewer` — is **registration**, and is exactly what a content PR is supposed
   to do. The rule forbids the claim, not the bookkeeping. Four laws: **L1** a governance path

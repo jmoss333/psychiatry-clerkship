@@ -42,6 +42,8 @@ SHIPPED_PAGES_RELATIVE = os.path.join(
 )
 
 REVIEWED_STATUSES = {"reviewed", "attested"}
+# The one non-reviewed case status a reviewed pack may carry (DECISION: pending-case-in-reviewed-pack).
+PENDING_CASE_STATUS = "pending"
 PROFILE_STATUSES = {"draft-pending-attestation", "reviewed"}
 CADENCES = {"measured-flat", "pressured-fast", "guarded-halting"}
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
@@ -755,12 +757,24 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
             errors.append("%s: case %s is missing facultyReview" % (slug, case_id))
             review = {}
         case_status = norm_status(review.get("status"))
-        if is_reviewed(pack_status) and not is_reviewed(case_status):
-            # DECISION: pack-case-review-is-registration — this rule is why a case ENTERS the pack
-            # already reading reviewed (or attested) in the content PR that adds it: the block is
-            # registration; the ledger row for the tool, which hashes the pack, is the claim of record.
+        if (
+            is_reviewed(pack_status)
+            and not is_reviewed(case_status)
+            and case_status != PENDING_CASE_STATUS
+        ):
+            # DECISION: pack-case-review-is-registration — the block is registration; the ledger
+            # row for the tool, which hashes the pack, is the claim of record.
+            # DECISION: pending-case-in-reviewed-pack (2026-09-27) — exactly one non-reviewed
+            # spelling is accepted inside a reviewed pack: `pending`. A pending case is unselectable
+            # in the tool and the proxy (both filter on `reviewed`) and its red-team probes skip, so
+            # it can land in a content PR ahead of the probes a governance PR must add (L1 forbids
+            # bin/ and the pack in one diff) and flip to reviewed in a third PR once they exist.
+            # Every other spelling — draft, unreviewed, a typo, a missing block — stays an error: a
+            # case the surfaces would not offer and the runner would refuse must not pass quietly.
             errors.append(
-                "%s: attested pack contains non-reviewed case %s" % (slug, case_id)
+                "%s: attested pack contains non-reviewed case %s (status %s; a case in a "
+                "reviewed pack must be reviewed, attested or pending)"
+                % (slug, case_id, case_status)
             )
         if is_reviewed(case_status):
             reviewer = review.get("reviewer")

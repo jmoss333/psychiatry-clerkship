@@ -639,6 +639,53 @@ class AttestationConsistencyTests(unittest.TestCase):
             errors,
         )
 
+    def test_reviewed_pack_accepts_a_pending_case_and_no_other_non_reviewed_spelling(self):
+        # DECISION: pending-case-in-reviewed-pack — a pending case is unselectable everywhere
+        # (tool, proxy and red-team runner select on `reviewed`) and its probes skip, so it may
+        # sit inside a reviewed pack ahead of those probes. Every other non-reviewed spelling is
+        # still refused, and the message names what is accepted.
+        for pack_status in ("reviewed", "attested"):
+            with self.subTest(pack_status=pack_status), tempfile.TemporaryDirectory() as root:
+                pack = pending_pack()
+                pack["status"] = pack_status
+                pack["cases"].append(
+                    {
+                        "id": "sp_mania_redirect_001",
+                        "facultyReview": {"status": "pending", "reviewer": None, "lastReviewed": None},
+                        "speechProfile": draft_speech_profile("marcus-pressured-v1"),
+                    }
+                )
+                write_fixture(
+                    root, ledger_status="reviewed", tool_status="reviewed", pack=pack
+                )
+                errors = self.validate(root)
+                self.assertEqual(
+                    [e for e in errors if "sp_mania_redirect_001" in e], [], errors
+                )
+        for spelling in ("draft", "unreviewed", "Pending", "", None):
+            with self.subTest(spelling=spelling), tempfile.TemporaryDirectory() as root:
+                pack = pending_pack()
+                pack["status"] = "reviewed"
+                pack["cases"].append(
+                    {
+                        "id": "sp_mania_redirect_001",
+                        "facultyReview": {"status": spelling, "reviewer": None, "lastReviewed": None},
+                        "speechProfile": draft_speech_profile("marcus-pressured-v1"),
+                    }
+                )
+                write_fixture(
+                    root, ledger_status="reviewed", tool_status="reviewed", pack=pack
+                )
+                errors = self.validate(root)
+                self.assertTrue(
+                    any(
+                        "attested pack contains non-reviewed case sp_mania_redirect_001" in e
+                        and "must be reviewed, attested or pending" in e
+                        for e in errors
+                    ),
+                    errors,
+                )
+
     def test_reviewed_case_requires_reviewer_and_date(self):
         mutations = {
             "reviewer": ("reviewer", ""),

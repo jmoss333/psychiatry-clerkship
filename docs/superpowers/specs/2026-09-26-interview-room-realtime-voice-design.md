@@ -599,10 +599,13 @@ therefore enters the pack as the attested case **plus** `si_direct` (pronoun-adj
 and `si_euphemism` with the pack-wide patterns, three rapport-banded negative replies in his register,
 a **critical** `c_si` (the owner's choice: screen every inpatient plainly, a likely no included), a
 coach hint and the critical-miss debrief text. That is new authored content on an attested case.
-The attestation validator (`validate_attestation_consistency.py`, run before every build) forbids a
-non-reviewed case inside a reviewed pack, so "pending until re-attested" is not a state the repo
-can hold; the alternative was to hold Morgan out of the pack until an owner-authored record
-existed, and the owner chose inclusion. **Provenance.** The attestation was given in the Claude Code
+The attestation validator (`validate_attestation_consistency.py`, run before every build) then forbade
+a non-reviewed case inside a reviewed pack, so "pending until re-attested" was not a state the repo
+could hold; the alternative was to hold Morgan out of the pack until an owner-authored record
+existed, and the owner chose inclusion. (Amended 2026-09-27, decision
+`pending-case-in-reviewed-pack`: a `pending` case is now accepted inside a reviewed pack — it is
+unselectable everywhere and its red-team probes skip — so a later case can land pending ahead of
+its probes and be reviewed in a third PR. Morgan's inclusion predates that rule.) **Provenance.** The attestation was given in the Claude Code
 session that built this PR, on 2026-09-26, as an in-chat decision after the authored lines were
 presented. A pack-case `facultyReview` block has no console path and no `contentHash`, so nothing
 in the repository binds the row to the text — the shape the ledger's hash rule was built for, one
