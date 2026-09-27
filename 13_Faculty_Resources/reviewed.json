@@ -1381,11 +1381,11 @@
       "kind": "general",
       "level": "low"
     },
-    "at": "2026-08-11",
+    "at": "2026-09-27",
     "by": "Joshua Moss, MD",
     "note": "Navigation/download page for the Anki decks; the cards themselves are extracted only from already-attested content (no AI-generated cards). Individual draft questions still ship watermarked until each is attested.",
-    "contentHash": "36269ea95c440f4ac1b5602ba2bbb0c72976aebf",
-    "clinicalHash": "605f68108a1d798cabf022593b88f84fa0c878d4"
+    "contentHash": "35f12e8e55f77b485ee9ed19948ad38d97d07eb3",
+    "clinicalHash": "a5f39ca64a5d7535329edb35a6663af559c7359e"
   },
   "cotw_20260810_panic_ms3.md": {
     "status": "reviewed",
