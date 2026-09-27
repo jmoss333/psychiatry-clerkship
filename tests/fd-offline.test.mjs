@@ -490,3 +490,13 @@ test('changing learner role rechecks the active cache even when week URLs coinci
   assert.equal(h.channels[0].port1.closed, true);
   monitor.destroy();
 });
+
+
+test('Daily Review selected pack requires Concepts bytes and missing bytes cannot be ready', () => {
+  const urls=F.fdOfflineUrls(index([item('review.html')]),{week:2});
+  assert.deepEqual(urls,['/','/search-index.json','/tools/review.html','/tools/concepts.json']);
+  const partial={version:'test',ready:false,present:urls.filter(u=>u!=='/tools/concepts.json'),missing:['/tools/concepts.json']};
+  assert.deepEqual(F.fdOfflineResponse(partial,urls),partial);
+  assert.equal(F.fdOfflineResponse({...partial,ready:true},urls),null);
+  assert.equal(F.fdOfflineStatus({response:partial,expected:urls}).kind,'not-ready');
+});

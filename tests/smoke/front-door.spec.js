@@ -3910,3 +3910,55 @@ test('Path: a supervisor feedback note saves privately, survives reload, and scr
   expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   await expectHealthy(page);
 });
+
+test('Concepts Today released count, phone keyboard recall and trusted Path context',async({page},info)=>{
+  await page.setViewportSize(PHONE);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  const feed=await (await page.request.get('/tools/concepts.json')).json();
+  const card=feed.cards[0];
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[card.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1},'CONCEPT#withdrawn:1@1':{due:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/');
+  await expect(page.locator('[data-fd-concept-status]')).toHaveCount(0);
+  await expect(page.locator('.fd-due__label')).toHaveText('1 review due');
+  await page.locator('[data-fd-open="review.html"]:visible').first().click();
+  const tool=page.locator('#content iframe.toolframe').contentFrame();
+  await expect(tool.getByRole('button',{name:'This week',exact:true})).toBeVisible();
+  await tool.getByRole('button',{name:/Start review/}).click();
+  await expect(tool.locator('body')).not.toContainText(card.reveal);
+  await tool.getByRole('button',{name:'Reveal one way to do it'}).focus();
+  await page.keyboard.press('Enter');
+  await expect(tool.locator('body')).toContainText(card.reveal);
+  await expect(tool.locator('.grades button').first()).toBeFocused();
+  await page.screenshot({path:join(tmpdir(),'task5-concepts-'+info.project.name+'.png'),fullPage:true});
+  await tool.getByRole('button',{name:/^Good/}).focus();
+  await page.keyboard.press('Enter');
+  await expect(tool.locator('body')).toContainText('Next due:');
+  await expect(tool.locator('.qtext')).toBeFocused();
+  await tool.locator('a[href*="page='+card.page+'"]').first().click();
+  await expect(page.locator('.fd-reader .fd-src')).toHaveText(card.page);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('Concepts altered feed visibly leaves Today count incomplete',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/concepts.json',route=>route.fulfill({contentType:'application/json',body:'{}'}));
+  await page.goto('/');
+  await expect(page.locator('[data-fd-concept-status]')).toContainText('unavailable. Review counts are incomplete.');
+});
+
+
+test('Concepts timed block keeps one-card limit and records recall receipt',async({page},info)=>{
+  const feed=await (await page.request.get('/tools/concepts.json')).json();
+  const card=feed.cards[0];
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[card.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/?tool=review.html&block=1&limit=1');
+  const tool=page.locator('#content iframe.toolframe').contentFrame();
+  await expect(tool.locator('.scount')).toHaveText('1 / 1');
+  await tool.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await expect(tool.locator('[aria-live="polite"]')).toHaveCount(1);
+  await expect(tool.locator('[aria-live="polite"]')).toContainText(card.reveal);
+  await tool.getByRole('button',{name:/^Good/}).click();
+  await expect(tool.locator('body')).toContainText('Self-rated recall Good/Easy');
+  await expect(tool.locator('body')).toContainText('Next due:');
+  await expect(tool.getByRole('button',{name:/^Good/})).toHaveCount(0);
+});

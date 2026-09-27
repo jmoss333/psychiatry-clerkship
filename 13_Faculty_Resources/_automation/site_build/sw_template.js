@@ -18,7 +18,7 @@ function offlineVerifyUrls(input){
   var urls=[],seen=Object.create(null),url,hasRouteResource=false;
   for(var i=0;i<input.length;i++){
     url=input[i];
-    if(typeof url!=='string'||!(url==='/'||url==='/search-index.json'||
+    if(typeof url!=='string'||!(url==='/'||url==='/search-index.json'||url==='/tools/concepts.json'||
       /^\/(?:content\/[A-Za-z0-9][A-Za-z0-9._-]*\.md|tools\/[A-Za-z0-9][A-Za-z0-9._-]*\.html)$/.test(url)))return null;
     if(url.indexOf('/content/')===0||url.indexOf('/tools/')===0)hasRouteResource=true;
     if(!seen[url]){ seen[url]=true; urls.push(url); }

@@ -95,3 +95,25 @@ test('Continue on a live block resumes an interrupted question set instead of st
   assert.match(cont, /fdOpenRef\(status\.next\.ref, *resume\)/);
   assert.match(cont, /fdOpenBlockStep\(status\.next\)/, 'the fresh-start route remains the fallback');
 });
+
+
+test('timed Daily Review block bypasses new Concepts week filtering before limiting',()=>{
+  assert.match(review,/if\(blockLimit\.current\|\|newConceptAllowed\(c,weekRefs,conceptFilter\)\)neu\.push\(c\)/);
+  assert.match(review,/q=q\.slice\(0,limit\)/);
+});
+
+test('real block start bypasses week exclusion for new Concepts and limits selected queue',()=>{
+  const start=review.slice(review.indexOf('  function start(ahead){'),review.indexOf('  function choose(i)'));
+  const helpers=read(`${BUILD}/concept_recall.js`);
+  const run=new Function('limit',helpers+`;var DAY=86400000,gradedThisSession={},blockLimit={current:limit},weekRefs=[],conceptFilter='week';
+    var cards=[{id:'CONCEPT#outside:1@1',page:'outside.md'},{id:'CONCEPT#other:1@1',page:'other.md'}];
+    var state={cards:{},day:{newToday:0}},result;
+    function loadS(){return state;} function rollDay(s){return s;} function queueable(){return true;}
+    function shuffle(s){return s;} function effectiveNewPerDay(){return 12;} function setSess(s){result=s;}
+    function saveS(){} function setStore(){};`+start+';start(false);return result;');
+  assert.deepEqual(run(null),{empty:true});
+  const block=run(1);
+  assert.equal(block.queue.length,1);
+  assert.equal(block.queue[0].id,'CONCEPT#outside:1@1');
+  assert.equal(block.fromBlock,true);
+});
