@@ -4,7 +4,7 @@
     {
       "clinicalCardId": "CONCEPT#t_psychosis-pearl3:1@2",
       "articleCardId": "AR-24#5",
-      "articleQuestion": "According to the 'Clinical Pearls' derived from CATIE, how should a clinician primarily choose between different non-clozapine antipsychotics?",
+      "articleQuestion": "In CATIE phase 1, what trade-off was observed among the studied non-clozapine antipsychotics?",
       "sourceId": "lieberman-2005-catie",
       "resultExcerpt": "Seventy-four percent discontinued assigned treatment before 18 months; olanzapine had longer persistence than some agents but greater weight and metabolic effects",
       "limitationExcerpt": "time to discontinuation combines efficacy, tolerability, and other reasons rather than isolating symptom efficacy.",

@@ -929,7 +929,7 @@
         "status": "verified",
         "source": "zotero-local-api-and-pubmed",
         "verifiedAt": "2026-07-12",
-        "note": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal."
+        "note": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal. NEJM published a correction on 2010-09-09 (doi:10.1056/NEJMx100054) to the hospitalization person-year figures in Results and Table 3 and the prolactin unit in Table 3. The correction does not change the discontinuation and weight/metabolic findings taught here; scope verified against the journal notice on 2026-09-27."
       },
       "zotero": {
         "libraryType": "user",
@@ -963,12 +963,17 @@
         "lastReviewed": "2026-07-12",
         "reviewCadence": "annual",
         "supersededBy": [],
-        "correctionStatus": "none-known",
+        "correctionStatus": "corrected",
         "noteHistory": [
           {
             "date": "2026-07-12",
             "note": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal.",
             "reason": "Initial history entry: the note as it stood at this source's most recent verification. The field was introduced after these entries were written, so any earlier revisions live only in git history."
+          },
+          {
+            "date": "2026-09-27",
+            "note": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal. NEJM published a correction on 2010-09-09 (doi:10.1056/NEJMx100054) to the hospitalization person-year figures in Results and Table 3 and the prolactin unit in Table 3. The correction does not change the discontinuation and weight/metabolic findings taught here; scope verified against the journal notice on 2026-09-27.",
+            "reason": "Record the published CATIE correction during landmark card review; retain the source because the taught discontinuation and metabolic findings were not corrected."
           }
         ]
       }

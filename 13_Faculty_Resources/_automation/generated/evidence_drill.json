@@ -713,8 +713,8 @@
      "key": "D"
     }
    ],
-   "why": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal.",
-   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "why": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal. NEJM published a correction on 2010-09-09 (doi:10.1056/NEJMx100054) to the hospitalization person-year figures in Results and Table 3 and the prolactin unit in Table 3. The correction does not change the discontinuation and weight/metabolic findings taught here; scope verified against the journal notice on 2026-09-27.",
+   "pearl": "The correction does not change the discontinuation and weight/metabolic findings taught here; scope verified against the journal notice on 2026-09-27.",
    "citation": {
     "title": "Effectiveness of antipsychotic drugs in patients with chronic schizophrenia.",
     "doi": "10.1056/nejmoa051688",

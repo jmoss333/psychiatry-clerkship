@@ -230,6 +230,28 @@ function reviewFocusedCard(cards,search,companions){
   return (cards||[]).filter(function(c){return c.id===id;})[0]||null;
 }
 function reviewFocusAllowed(card,cardState,newRemaining){ return !!card&&(!!cardState||newRemaining>0); }
+/* A changed answer must be seen again even when the old card has a long interval.
+   Record the revision in the shared store only after the verified, revised card loads;
+   keep prior grades and stats, and bring just its due date forward once. */
+var REVIEW_CARD_REVISIONS={
+  'AR-24#5':{revision:'2026-09-27-catie-persistence-metabolic',
+    question:'In CATIE phase 1, what trade-off was observed among the studied non-clozapine antipsychotics?'}
+};
+function reviewReopenRevisedCards(cards,stored,now){
+  if(!stored||!stored.cards||!Number.isFinite(now))return false;
+  var revisions=stored.reviewCardRevisions;
+  if(!revisions||typeof revisions!=='object'||Array.isArray(revisions))revisions={};
+  var changed=false;
+  (cards||[]).forEach(function(card){
+    var spec=card&&REVIEW_CARD_REVISIONS[card.id];
+    if(!spec||card.q!==spec.question||revisions[card.id]===spec.revision)return;
+    revisions[card.id]=spec.revision;changed=true;
+    var previous=stored.cards[card.id];
+    if(previous&&(!Number.isFinite(previous.due)||previous.due>now))previous.due=now;
+  });
+  if(changed)stored.reviewCardRevisions=revisions;
+  return changed;
+}
 function reviewVerifiedArticles(out){
   if(!out||!Array.isArray(out.decks)||!out.decks.length||out.deckCount!==out.decks.length||
       !Number.isInteger(out.questionCount)||out.questionCount<1)throw Error('article feed incomplete');
@@ -458,7 +480,11 @@ function App(){
       out=out.concat(commChoiceCards(comm));
       out=out.concat(reasonChoiceCards(reason));
       if(!out.length){ setErr(true); return; }
-      var missingDue=reviewMissingDueIds(out,loadS(),Date.now());
+      var currentStore=loadS(), checkedAt=Date.now();
+      if(reviewReopenRevisedCards(out,currentStore,checkedAt)){
+        saveS(currentStore);setStore(Object.assign({},currentStore));
+      }
+      var missingDue=reviewMissingDueIds(out,currentStore,checkedAt);
       if(missingDue.length){
         blockSourceFailed=true;
         if(missingDue.some(function(id){return /^(?:AR|SP)-/.test(id);}))setArticleStatus('unavailable');

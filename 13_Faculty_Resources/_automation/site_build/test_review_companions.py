@@ -202,6 +202,22 @@ class ReviewCompanionTests(unittest.TestCase):
 
 
 class RealReviewCompanionTests(unittest.TestCase):
+    def test_catie_quiz_copies_teach_persistence_and_metabolic_tradeoff(self):
+        root = HERE.parents[2]
+        cards = []
+        for path in (QUIZZES, '_prototypes/canon-quiz/quizzes.json'):
+            decks = json.loads((root / path).read_text())['decks']
+            catie = [deck for deck in decks if deck['id'] == 'AR-24']
+            self.assertEqual(len(catie), 1, path)
+            cards.append(catie[0]['questions'][5])
+        self.assertEqual(cards[0], cards[1], 'the resident quiz copy must match the shipped CATIE card')
+        correct = [option for option in cards[0]['o'] if option['c'] is True]
+        self.assertEqual(len(correct), 1)
+        teaching = ' '.join((cards[0]['q'], correct[0]['t'], correct[0]['fb'])).lower()
+        for term in ('olanzapine', 'persistence', 'weight gain', 'metabolic'):
+            self.assertIn(term, teaching)
+        self.assertNotIn('most agents showed similar effectiveness', teaching)
+
     def test_current_pair_projects_catie_appraisal_without_rewriting_quiz(self):
         self.assertIsNotNone(importlib.util.find_spec('review_companions'))
         projection = importlib.import_module('review_companions')
