@@ -1,6 +1,10 @@
+import json
+import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import yaml
 
@@ -85,6 +89,25 @@ def deploy(hours_ago, context="production", state="ready"):
     return {"created_at": created, "context": context, "state": state}
 
 
+def snapshot(*, ms3=(), res=(), proxy=(), console=(), tour=()):
+    return {
+        "counts": counts(
+            ms3=len(ms3),
+            res=len(res),
+            proxy=len(proxy),
+            console=len(console),
+            tour=len(tour),
+        ),
+        "createdAt": {
+            "une-ms3-psychiatry": list(ms3),
+            "mmc-psychiatry-residents-sanford": list(res),
+            "sp-interview-proxy": list(proxy),
+            "clerkship-faculty-attest": list(console),
+            "psychiatry-workforce-tour": list(tour),
+        },
+    }
+
+
 class SpendTripwireTests(unittest.TestCase):
     def test_counts_only_billable_production_deploys_inside_24_hours(self):
         table = {
@@ -97,6 +120,73 @@ class SpendTripwireTests(unittest.TestCase):
         got = train.billable_deploys_24h("tok", now=NOW, sites=SITES,
                                          fetch=lambda sid, tok, since: table[sid])
         self.assertEqual(got, {"une-ms3-psychiatry": 3, "sp-interview-proxy": 0})
+
+    def test_snapshot_keeps_the_exact_rolling_boundary_for_projection(self):
+        table = {
+            "ms3": [deploy(24), deploy(24.0001), deploy(1), deploy(-1)],
+            "sp": [],
+        }
+        got = train.billable_deploy_snapshot_24h(
+            "tok",
+            now=NOW,
+            sites=SITES,
+            fetch=lambda sid, tok, since: table[sid],
+        )
+        self.assertEqual(got["counts"]["une-ms3-psychiatry"], 2)
+        self.assertEqual(
+            got["createdAt"]["une-ms3-psychiatry"],
+            [NOW - train.timedelta(hours=24), NOW - train.timedelta(hours=1)],
+        )
+
+    def test_next_eligible_publish_is_a_real_future_train_slot(self):
+        # Nine learner deploys currently hold a two-site publish. The oldest is
+        # still inside the window at 15:05, but falls out before the 21:05 slot.
+        previous_day = NOW - train.timedelta(days=1)
+        learner_times = [previous_day.replace(hour=20)] + [
+            NOW - train.timedelta(hours=index)
+            for index in range(1, 9)
+        ]
+        history = snapshot(ms3=learner_times[:5], res=learner_times[5:])
+        self.assertEqual(
+            train.next_eligible_publish_at(history, now=NOW),
+            NOW.replace(hour=21, minute=5),
+        )
+
+    def test_a_deploy_exactly_24_hours_old_still_counts_at_a_candidate_slot(self):
+        candidate = NOW.replace(hour=21, minute=5)
+        exact_boundary = candidate - train.timedelta(hours=24)
+        learner_times = [exact_boundary] + [
+            NOW - train.timedelta(hours=index)
+            for index in range(1, 9)
+        ]
+        history = snapshot(ms3=learner_times[:5], res=learner_times[5:])
+        self.assertEqual(
+            train.next_eligible_publish_at(history, now=NOW),
+            (NOW + train.timedelta(days=1)).replace(hour=9, minute=5),
+        )
+
+    def test_protective_hold_records_counts_budgets_and_next_slot(self):
+        previous_day = NOW - train.timedelta(days=1)
+        learner_times = [previous_day.replace(hour=20)] + [
+            NOW - train.timedelta(hours=index)
+            for index in range(1, 9)
+        ]
+        history = snapshot(ms3=learner_times[:5], res=learner_times[5:])
+        hold = train.protective_hold_receipt(history, now=NOW)
+        self.assertEqual(hold["reason"], "spend_tripwire")
+        self.assertEqual(hold["observedDeploys"]["learnerSites"], 9)
+        self.assertEqual(hold["projectedDeploys"]["learnerSites"], 11)
+        self.assertEqual(hold["budgets"]["learnerSites"], train.LEARNER_BUDGET_24H)
+        self.assertEqual(hold["nextEligiblePublishAt"], "2026-09-25T21:05:00+00:00")
+
+    def test_hold_refuses_counts_that_do_not_match_the_timestamp_history(self):
+        history = snapshot(
+            ms3=[NOW - train.timedelta(hours=index) for index in range(1, 6)],
+            res=[NOW - train.timedelta(hours=index) for index in range(6, 10)],
+        )
+        history["counts"]["une-ms3-psychiatry"] += 1
+        with self.assertRaises(train.CouldNotCheck):
+            train.protective_hold_receipt(history, now=NOW)
 
     def test_a_missing_token_is_could_not_check_never_zero(self):
         with self.assertRaises(train.CouldNotCheck):
@@ -215,7 +305,11 @@ class WorkflowWiringTests(unittest.TestCase):
 
     def test_train_is_scheduled_and_has_a_publish_now_button(self):
         on = self.trigger(self.train)
-        self.assertEqual([e["cron"] for e in on["schedule"]], ["5 9,15,21 * * *"])
+        expected_cron = (
+            f"{train.SCHEDULE_MINUTE_UTC} "
+            f"{','.join(str(hour) for hour in train.SCHEDULE_HOURS_UTC)} * * *"
+        )
+        self.assertEqual([e["cron"] for e in on["schedule"]], [expected_cron])
         self.assertIn("workflow_dispatch", on)
         self.assertNotIn("push", on)
 
@@ -225,6 +319,25 @@ class WorkflowWiringTests(unittest.TestCase):
     def test_promote_step_can_read_netlify_for_the_spend_tripwire(self):
         promote = [s for s in self.train["jobs"]["promote"]["steps"] if s.get("id") == "promote"][0]
         self.assertEqual(promote["env"]["NETLIFY_AUTH_TOKEN"], "${{ secrets.NETLIFY_AUTH_TOKEN }}")
+
+    def test_every_train_run_uploads_a_run_bound_receipt(self):
+        steps = self.train["jobs"]["promote"]["steps"]
+        promote = [step for step in steps if step.get("id") == "promote"][0]
+        self.assertIn('--out "$RUNNER_TEMP/production-release-train.json"', promote["run"])
+        upload = [
+            step for step in steps
+            if str(step.get("uses", "")).startswith("actions/upload-artifact@")
+        ]
+        self.assertEqual(len(upload), 1)
+        self.assertEqual(upload[0]["if"], "always()")
+        self.assertEqual(
+            upload[0]["with"]["name"],
+            "production-release-train-${{ github.run_id }}",
+        )
+        self.assertEqual(
+            upload[0]["with"]["path"],
+            "${{ runner.temp }}/production-release-train.json",
+        )
 
     def test_verifier_no_longer_waits_on_every_merge_to_main(self):
         # A merge to main no longer deploys the learner sites, so a push-triggered
@@ -236,6 +349,37 @@ class WorkflowWiringTests(unittest.TestCase):
         dispatch = [s for s in steps if "gh workflow run production-release-verification.yml" in s.get("run", "")]
         self.assertEqual(len(dispatch), 1)
         self.assertIn("steps.promote.outputs.promoted == 'true'", dispatch[0]["if"])
+
+
+class ReceiptCLITests(unittest.TestCase):
+    def test_cli_writes_a_receipt_bound_to_the_actions_run(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "receipt.json"
+
+            def fake_run(*_args, receipt, **_kwargs):
+                receipt.update({
+                    "outcome": "held",
+                    "releaseSha": "a" * 40,
+                    "targetSha": "b" * 40,
+                    "protectiveHold": {"reason": "spend_tripwire"},
+                })
+                return 1
+
+            with (
+                mock.patch.object(train, "run", side_effect=fake_run),
+                mock.patch.dict(
+                    os.environ,
+                    {"GITHUB_RUN_ID": "123", "GITHUB_REPOSITORY": "example/repo"},
+                    clear=False,
+                ),
+            ):
+                code = train.main(["--out", str(output)])
+
+            self.assertEqual(code, 1)
+            receipt = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(receipt["runId"], 123)
+            self.assertEqual(receipt["workflowFile"], "production-release-train.yml")
+            self.assertEqual(receipt["outcome"], "held")
 
 
 if __name__ == "__main__":
