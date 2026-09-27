@@ -202,6 +202,36 @@ with tempfile.TemporaryDirectory() as d:
   assert.equal(retired, '(0, 2)', 'the row retires itself once the case is reviewed');
 });
 
+test('pack-cases counts every case that is not literally reviewed: attested is not selectable', () => {
+  // Codex P2 on #855: the predicate read `attested` as done. The attestation validator lets
+  // `attested` into a reviewed pack, but the tool, the proxy and bin/redteam-offline.mjs select
+  // on exactly `reviewed` (the runner refuses `attested` with FAIL PACK), so an `attested` case
+  // is a case learners cannot select that no surface names -- exactly what this row is for.
+  // A missing block, an empty status and a typo count the same way; only the literal flip retires.
+  const out = py(`
+import json, tempfile, pathlib
+pack = {"cases": [
+  {"id": "sp_fixture_reviewed_001", "facultyReview": {"status": "reviewed", "reviewer": "R", "lastReviewed": "2026-01-01"}},
+  {"id": "sp_fixture_attested_001", "facultyReview": {"status": "attested", "reviewer": "R", "lastReviewed": "2026-01-01"}},
+  {"id": "sp_fixture_typo_001", "facultyReview": {"status": "Reviewed", "reviewer": "R", "lastReviewed": "2026-01-01"}},
+  {"id": "sp_fixture_blockless_001"},
+]}
+with tempfile.TemporaryDirectory() as d:
+    p = pathlib.Path(d) / "pack.json"; p.write_text(json.dumps(pack), encoding="utf-8")
+    J.PACK = p
+    print(J.measure_pack_cases(), "|", J.describe_pack_cases())
+    for c in pack["cases"]:
+        c["facultyReview"] = {"status": "reviewed", "reviewer": "R", "lastReviewed": "2026-01-01"}
+    p.write_text(json.dumps(pack), encoding="utf-8")
+    print(J.measure_pack_cases())`);
+  const [waiting, retired] = out.split('\n');
+  assert.equal(
+    waiting,
+    '(3, 4) | Read and flip to reviewed: sp_fixture_attested_001, sp_fixture_typo_001, sp_fixture_blockless_001',
+  );
+  assert.equal(retired, '(0, 4)', 'only the literal reviewed spelling retires the row');
+});
+
 test('every row carries a measurement, a unit, a rationale and a way to act', () => {
   const out = py(`
 bad = [r["key"] for r in J.ROWS

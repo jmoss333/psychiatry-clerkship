@@ -142,9 +142,14 @@ def _pack_cases_not_reviewed():
     cases = pack.get("cases")
     if not isinstance(cases, list):
         raise ValueError("pack.cases is not a list")
+    # Literal `reviewed` only. The tool (sp-interview.html), the proxy (sp-realtime-session.mjs,
+    # sp-governance.mjs) and the red-team runner (bin/redteam-offline.mjs) select a case on
+    # exactly that spelling; the attestation validator also lets `attested` into a reviewed pack,
+    # but no surface offers such a case and Tier 1 refuses it (FAIL PACK). Counting `attested`
+    # as done retired this row over a case learners could not select (Codex P2 on #855).
     not_reviewed = [
         str(c.get("id") or "?") for c in cases
-        if str((c.get("facultyReview") or {}).get("status")) not in ("reviewed", "attested")
+        if (c.get("facultyReview") or {}).get("status") != "reviewed"
     ]
     return not_reviewed, len(cases)
 
@@ -157,7 +162,8 @@ def measure_pack_cases():
     `pending` ahead of its red-team probes. It is unselectable, but its text ships in the
     built pack, and once the console re-signs the drifted sp-interview.html row nothing else
     names it. Only the owner's read flips it, so it is owner work until the flip lands, and
-    the row retires itself at zero.
+    the row retires itself at zero. "Not reviewed" is any status but the literal `reviewed`
+    every selecting surface filters on -- `pending`, `attested`, a typo or a missing block.
     """
     not_reviewed, total = _pack_cases_not_reviewed()
     return len(not_reviewed), total
@@ -275,7 +281,9 @@ ROWS = [
                "(decision pack-case-review-is-registration, amended 2026-09-27). It is "
                "unselectable, but its text ships "
                "in the built pack, and once the console re-signs the drifted sp-interview.html "
-               "row nothing else names it. Only your read flips it to reviewed.",
+               "row nothing else names it. Only your read flips it to reviewed -- the literal "
+               "spelling the tool, the proxy and the red-team runner select on; `attested` "
+               "passes the validator but no surface offers it, so it counts here too.",
         "do": "read the case's lines, then a content PR sets its facultyReview.status to "
               "reviewed with the read recorded on the PR; the console re-attests the drifted row",
     },
