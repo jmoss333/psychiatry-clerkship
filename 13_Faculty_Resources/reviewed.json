@@ -1180,16 +1180,15 @@
     "clinicalHash": "af5ff9ae2dabc5f19e6e000a148fad1c15cc5556"
   },
   "question-bank-practice.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "general",
       "level": "moderate"
     },
     "at": "2026-09-27",
-    "by": "Pending faculty review",
-    "reason": "Source changed after faculty review; awaiting re-attestation.",
-    "contentHash": "a0a9387ba7b3b9bc33923fb926da0dcf115405ad",
-    "clinicalHash": "4fea56db9e5d370333fc1716f5f9f9b1295511b8"
+    "by": "Joshua Moss, MD",
+    "contentHash": "eac6dd868706d480c37e8b2e774c4cb3815647b0",
+    "clinicalHash": "ef306ec8f280be0b1aabefdab43dac3c6850811f"
   },
   "qbank-attest.html": {
     "status": "reviewed",
