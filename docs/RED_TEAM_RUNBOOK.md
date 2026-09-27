@@ -47,8 +47,8 @@ node bin/redteam-offline.mjs
 ```
 
 **Expected result:** the script prints `N/N deterministic probes pass`, followed by the reminder
-that this is not a pass — where `N` is `PROBES.length` inside `bin/redteam-offline.mjs` (18 as of
-2026-09-09). Trust the script's own printed count, not a number copied into this doc: `N` moves
+that this is not a pass — where `N` is `PROBES.length` inside `bin/redteam-offline.mjs`.
+Trust the script's own printed count, not a number copied into this doc: `N` moves
 every time a probe is added, and a stale count here has already drifted once (12 vs. 18). This
 runs checklist **B1–B4, B6, B7, B8, B9** and **C3** against the real `sp.mjs` gate logic — the same
 functions the live deploy uses. Run `node bin/redteam-offline.mjs --coverage` for the per-case
@@ -62,6 +62,15 @@ the gate and what leaked: a code or pack bug, not a model behaviour question. A 
 disclosure gates, has no passing probe that drove that case (credit is per case, so a probe on
 another case never counts), or nothing was proved. The fix is a probe in `bin/redteam-offline.mjs`
 (a governance PR), not a pack edit; run `--coverage` for the table.
+
+### Landing a new case
+
+Keep the clinical case and the tests that judge it in separate changes:
+
+1. Add a synthetic case to the reviewed pack with `facultyReview.status: "pending"` and no reviewer or review date. Learner tools and proxy routes cannot select it. The pack JSON is a public learner-site asset, so pending text must still be synthetic and free of PHI.
+2. In a separate governance PR, add probes for that case. Test a temporary copy of the pack with only that case's status changed to `reviewed`; this checks the candidate probes before promotion. The official run still lists the pending case and its gates as unevaluated. Candidate results are not passing production coverage or faculty sign-off.
+3. After the probes pass, promote the case in an owner-reviewed content PR with its reviewer and date. Tier 1 must then find passing probes for that exact case and each of its gates.
+4. Re-attest the final `sp-interview.html` pack hash through the faculty console. The per-case review block controls selection; the faculty ledger row records the review of the complete pack.
 
 ---
 
