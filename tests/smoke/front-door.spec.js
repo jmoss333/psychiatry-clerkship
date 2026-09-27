@@ -3835,3 +3835,67 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: '
     await expectHealthy(page);
   });
 }
+
+// "Log what they said" (2026-09-26): the four-week path's supervisor question gains a private,
+// device-only note. One tap opens it; a clean note saves and survives a reload; a possible patient
+// detail is held until the learner edits or confirms; Delete removes it. The six-week path has no
+// such control. On a phone, the field and both buttons stay inside the viewport.
+test('Path: a supervisor feedback note saves privately, survives reload, and screens patient details', async ({ page }, testInfo) => {
+  const resident = isResidentProject(testInfo.project.name);
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-tab="path"]:visible').click();
+  const open = page.locator('[data-fd-feedback-open]');
+  if (!resident) {
+    await expect(page.locator('.fd-detail__practice')).toBeVisible();
+    await expect(open).toHaveCount(0);
+    await expectHealthy(page);
+    return;
+  }
+  await expect(open).toHaveText('Log what they said');
+  await open.click();
+  const field = page.locator('#fdFeedbackText');
+  await expect(field).toBeFocused();
+  const box = await field.boundingBox();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(PHONE.width);
+  expect(await field.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+
+  await field.fill('Name the acute risk first, then the plan.');
+  await page.locator('[data-fd-feedback-save]').click();
+  await expect(page.locator('.fd-feedback__status')).toHaveText('Saved on this device.');
+  await expect(open).toBeFocused();
+  await expect(page.locator('.fd-feedback__note')).toHaveText(['Name the acute risk first, then the plan.']);
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_feedback_v1')));
+  expect(stored.items).toHaveLength(1);
+  expect(stored.items[0]).toMatchObject({ path: 'resident-four-week', week: 1 });
+
+  // A possible patient detail is held, not written, until the learner confirms.
+  await open.click();
+  await page.locator('#fdFeedbackText').fill('Pt in room 12 needed a clearer plan');
+  await page.locator('[data-fd-feedback-save]').click();
+  await expect(page.locator('.fd-feedback__hold')).toContainText('This may contain patient details.');
+  await expect(page.locator('[data-fd-feedback-edit]')).toBeFocused();
+  await expect(page.locator('#fdFeedbackText')).toHaveValue('Pt in room 12 needed a clearer plan');
+  expect((await page.evaluate(() => JSON.parse(localStorage.getItem('cw_feedback_v1')))).items).toHaveLength(1);
+  await page.locator('[data-fd-feedback-edit]').click();
+  await page.locator('#fdFeedbackText').fill('Needed a clearer plan');
+  await page.locator('[data-fd-feedback-save]').click();
+  await expect(page.locator('.fd-feedback__note')).toHaveCount(2);
+
+  // Another week shows none of week 1's notes; the notes survive a reload.
+  await page.locator('[data-fd-view-week="2"]').click();
+  await expect(page.locator('.fd-feedback__note')).toHaveCount(0);
+  await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+  await page.reload();
+  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-view-week="1"]').click();
+  await expect(page.locator('.fd-feedback__note')).toHaveCount(2);
+
+  await page.locator('.fd-feedback__delete').first().click();
+  await expect(page.locator('.fd-feedback__note')).toHaveCount(1);
+  await expect(page.locator('.fd-feedback__status')).toHaveText('Note deleted.');
+  expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await expectHealthy(page);
+});
