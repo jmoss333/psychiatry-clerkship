@@ -277,6 +277,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/checkout"),
             ("uses", "actions/setup-python"),
             ("uses", "actions/setup-node"),
+            ("name", "Resolve the revision production serves"),
+            ("uses", "actions/checkout"),
             ("name", "Install Playwright and Chromium"),
             ("name", "Crawl both public learner sites"),
             ("name", "Build content-free release twin"),
@@ -410,7 +412,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "2044dc589d3df7e1f850fca0468637fa2aa8e6798012cc1fda481b8c6d0fbf65"
     ),
     "maintenance-production-canary.yml": (
-        "d4c32a08473580eb3ecea8eecad2c7a7202d52e3532541b697500305874e78a0"
+        "fe71a56f8bd2cd7f3ff752ee5dab681219323d113ed5bc46fecace047335737c"
     ),
     "maintenance-rotation-readiness.yml": (
         "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
@@ -671,15 +673,24 @@ npx playwright test --project=lfs""",
                 "required production revision parity gate",
             ),
             (
+                "Resolve the revision production serves",
+                "python3 13_Faculty_Resources/_automation/maintenance/"
+                "production_revision_parity.py --attempts 3 --retry-delay 60 "
+                '--out "$RUNNER_TEMP/served-revision.json" '
+                '--github-output "$GITHUB_OUTPUT"',
+                None,
+                "required production served-revision resolution",
+            ),
+            (
                 "Install Playwright and Chromium",
-                "cd tests/smoke\nnpm ci\n"
+                "cd served/tests/smoke\nnpm ci\n"
                 "npx playwright install chromium --with-deps",
                 None,
                 "required production canary install",
             ),
             (
                 "Crawl both public learner sites",
-                "cd tests/smoke\n"
+                "cd served/tests/smoke\n"
                 "npx playwright test --project=canary-ms3 "
                 "--project=canary-res --workers=2 --retries=2",
                 None,
@@ -1351,6 +1362,59 @@ def _validate_production_canary(workflow, errors):
     for url in (MS3_URL, RES_URL):
         if url not in values:
             _error(errors, name, f"production URL is missing: {url}")
+    _validate_canary_served_revision(steps, errors)
+
+
+SERVED_REF = "${{ steps.served.outputs.revision }}"
+SERVED_SMOKE_DIR = "cd served/tests/smoke\n"
+
+
+def _validate_canary_served_revision(steps, errors):
+    """The crawl must use the specs of the revision both learner sites serve.
+
+    The learner sites publish `release`, which the release train can hold behind
+    main; crawling them with main's specs failed a healthy site on 2026-09-27
+    (#839). The `release` head is no better -- Netlify may still be building it.
+    Each rule below has a mutation test in test_scheduled_workflows.py.
+    """
+    name = "maintenance-production-canary.yml"
+
+    def index_of(predicate):
+        found = [i for i, step in enumerate(steps) if isinstance(step, dict) and predicate(step)]
+        return found[0] if len(found) == 1 else None
+
+    resolve = index_of(lambda s: s.get("id") == "served")
+    checkout = index_of(
+        lambda s: str(s.get("uses", "")).startswith("actions/checkout@")
+        and isinstance(s.get("with"), dict) and s["with"].get("path") == "served"
+    )
+    crawl = index_of(lambda s: s.get("name") == "Crawl both public learner sites")
+    install = index_of(lambda s: s.get("name") == "Install Playwright and Chromium")
+    resolve_run = str(steps[resolve].get("run", "")) if resolve is not None else ""
+    if (
+        resolve is None
+        or "production_revision_parity.py" not in resolve_run
+        or '--github-output "$GITHUB_OUTPUT"' not in resolve_run
+        or checkout is None
+        or not resolve < checkout
+    ):
+        _error(errors, name, "production canary must resolve the served revision before crawling")
+    if checkout is not None:
+        served = steps[checkout]["with"]
+        if served.get("ref") != SERVED_REF:
+            _error(errors, name, "production canary must crawl the revision production serves")
+        # Action inputs load as strings, GitHub's own coercion (see _load).
+        if str(served.get("lfs")).lower() != "false":
+            _error(errors, name, "production canary served checkout must not fetch Git LFS")
+    for index in (install, crawl):
+        if (
+            index is None
+            or checkout is None
+            or index < checkout
+            or not str(steps[index].get("run", "")).startswith(SERVED_SMOKE_DIR)
+        ):
+            _error(errors, name, "production canary must crawl from the served checkout")
+            break
 
 
 def _validate_sp_monitor(workflow, errors):
