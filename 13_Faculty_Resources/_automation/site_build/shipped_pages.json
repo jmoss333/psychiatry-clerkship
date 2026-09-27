@@ -3,7 +3,7 @@
   "generated_from": {
     "cotw_registry.json": "4a2e8b78489e9a11261fa18d39de62c23f64ae11ee6c91e2540b691dba356d23",
     "site_extras.py": "428536e42ebe205d3f42969dd232087c0bd173636bfc3849e3a91ed25755d23f",
-    "site_manifest.json": "cc0f3b9fd3625fe80a06a75faba6241dc55c9a3d1605fdccca41116bc6288087"
+    "site_manifest.json": "f6c5a6ed8d875b3df4e8a5b73423ddd6dafdabdcc387781883e9dd31b124a5d8"
   },
   "pages": [
     {
@@ -763,6 +763,10 @@
     },
     {
       "extraSources": [
+        "08_Cases_and_Simulation/case-journeys/case-journeys.js",
+        "08_Cases_and_Simulation/case-journeys/eli-psychosis.json",
+        "08_Cases_and_Simulation/case-journeys/leah-depression-trauma.json",
+        "08_Cases_and_Simulation/case-journeys/marisol-delirium-capacity.json",
         "longitudinal_case.json"
       ],
       "kind": "tool",
@@ -773,7 +777,7 @@
       ],
       "slug": "one-patient-six-weeks.html",
       "source": "08_Cases_and_Simulation/one-patient-six-weeks.html",
-      "title": "One Patient, Six Weeks"
+      "title": "Case Journeys"
     },
     {
       "extraSources": [

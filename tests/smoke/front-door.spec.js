@@ -1091,6 +1091,7 @@ test('learner-language search finds tasks, safety abbreviations and complete res
 test('Enter on a punctuated exact resource name opens that resource, not a spurious safety panel', async ({ page }, testInfo) => {
   const resident = isResidentProject(testInfo.project.name);
   const cases = [
+    ['Case Journeys', 'one-patient-six-weeks.html'],
     ['One Patient, Six Weeks', 'one-patient-six-weeks.html'],
     [`First-Episode Psychosis (Sep 7) — ${resident ? 'Resident' : 'MS3'}`, `cotw_20260907_fep_${resident ? 'res' : 'ms3'}.md`],
     ...(resident ? [['Post-Event Learning Huddle (2 min)', 'rp-post-event-huddle.html']] : []),

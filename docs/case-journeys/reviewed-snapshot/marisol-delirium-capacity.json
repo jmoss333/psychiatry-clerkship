@@ -1,0 +1,182 @@
+{
+  "id": "case_journey_marisol_delirium_capacity_draft_001",
+  "title": "Marisol: An Acute Change Is Not a New Baseline",
+  "status": "faculty-review-draft",
+  "learnerRelease": false,
+  "clinicalAuthorship": "AI-assisted synthetic draft requested by faculty; not faculty-approved",
+  "setting": "Medical ward consultation, inpatient recovery, and follow-up after discharge",
+  "disclaimer": "DRAFT — FACULTY REVIEW REQUIRED. Entirely fictional; no real patient record was used. For supervised educational discussion only, not a medical-clearance tool, capacity determination, treatment protocol, or assessment of learner competence. Responsible clinicians apply local emergency, consent, and discharge policies.",
+  "audience": "Shared MS3 core with optional resident and APP discussion prompts; scope follows the learner's actual supervision arrangements.",
+  "timeFrame": "Six chapters from an acute hospital change to follow-up several weeks later; improvement is not guaranteed to follow this fictional timetable.",
+  "suggestedAccent": "olive",
+  "patient": {
+    "displayName": "Marisol",
+    "description": "Marisol is a fictional 74-year-old retired librarian who lives alone and values her weekly reading group. She uses hearing aids and usually manages her basic daily activities. She is admitted to a medical ward with pneumonia and becomes frightened and confused overnight.",
+    "frame": "Distinguish baseline function from acute change, visible agitation from impaired attention, and decision-specific capacity from agreement with the team. Follow the medical, cognitive, and practical consequences beyond the consult."
+  },
+  "learningObjectives": [
+    "Recognize acute inattention and fluctuation as a reason to assess for delirium and urgent medical contributors.",
+    "Use collateral and medication reconciliation to establish baseline function and potential contributors.",
+    "Recognize hypoactive presentations and avoid equating quiet behavior with recovery.",
+    "Support a decision-specific capacity assessment with communication aids and patient participation.",
+    "Carry residual cognitive uncertainty and support needs into a verified transition and follow-up plan."
+  ],
+  "weeks": [
+    {
+      "id": "marisol-01-acute-change",
+      "label": "Medical ward · night 1",
+      "title": "The consult request is not the whole problem",
+      "focus": ["delirium recognition", "medical urgency", "attention"],
+      "patientState": "The consult request reads 'agitation and hallucinations.' Marisol is pulling at her oxygen tubing, says insects are on the blanket, and cannot stay with a simple question. Earlier she could explain why she was in hospital. The nurse reports that her alertness varies over minutes. Oxygen saturation is now 89% on room air after she removed the tubing, respiratory rate is 26, and temperature is 38.2°C. Her usual cognitive baseline and medication list are not yet available. She repeatedly asks where her daughter is.",
+      "learnerTask": "Immediately alert the bedside nurse, supervising clinician, and responsible medical team to the physiologic and mental-status change, using the local urgent-response process. Do not delay medical care to complete a psychiatric interview. Once immediate care is underway, help document onset, fluctuation, attention, and observations that support delirium while the medical team evaluates contributors.",
+      "checklist": [
+        {
+          "prompt": "Reframe the request around the acute medical change.",
+          "example": "Marisol has an acute change in attention and alertness together with low oxygen and increased breathing effort. I am concerned about delirium in the setting of medical illness. She needs medical reassessment now; I will stay involved while we contact the responsible team."
+        }
+      ],
+      "handoff": "This is an acute fluctuating attention and awareness change with concerning physiology, not an isolated behavior complaint. Escalate the exact vital signs and change from earlier function. The medical team owns immediate stabilization and the search for causes; psychiatry can assist with assessment and distress as part of that response.",
+      "reflectionPrompt": "What would go wrong if the only response to the consult request were to recommend a sedating medication?",
+      "facultyNotes": {
+        "teachingPoint": "Delirium assessment and treatment require attention to underlying causes. In this fictional scene, medical urgency precedes an extended psychiatric interview.",
+        "advancedPrompt": "How would you organize the differential for the acute change without anchoring on pneumonia as the only possible contributor?",
+        "pitfall": "Labeling hallucinations as a primary psychotic disorder while missing acute inattention, fluctuation, and physiologic deterioration.",
+        "sourceIds": ["nice-delirium"]
+      },
+      "links": [
+        {"label": "Delirium", "kind": "page", "target": "delirium.md"},
+        {"label": "Consultation, capacity, delirium, and withdrawal", "kind": "page", "target": "exp_consult.md"}
+      ]
+    },
+    {
+      "id": "marisol-02-baseline",
+      "label": "After urgent treatment · day 2",
+      "title": "Reconstruct the baseline and the exposures",
+      "focus": ["collateral", "medication reconciliation", "multiple contributors"],
+      "patientState": "After medical reassessment and treatment, Marisol's oxygenation improves, but attention still fluctuates. Her daughter reports occasional repeated questions and missed bill payments over eight months, with no previous episode like this. Marisol had continued cooking and attending her reading group. The daughter brings in an over-the-counter sleep aid containing diphenhydramine that Marisol began taking recently. Hearing aids were left at home. The ward team also identifies constipation, poor intake, and disrupted sleep. The relative contribution of each factor has not been established.",
+      "learnerTask": "Obtain concrete examples and timing of baseline cognitive and functional changes. Reconcile prescribed, over-the-counter, and as-needed medication with the team and pharmacist. Help return hearing and vision supports and identify comfort, sleep, mobility, and hydration needs under the medical plan. Ask the responsible clinicians to review potential contributors instead of asserting a single cause.",
+      "checklist": [
+        {
+          "prompt": "Separate gradual concerns from the current acute change.",
+          "example": "The missed bills and repeated questions deserve follow-up, but this sudden confusion is a different change. We are looking at the infection, oxygen, medicines, and other stresses together. Bringing her hearing aids may also help her understand us and participate."
+        }
+      ],
+      "handoff": "Collateral suggests possible pre-existing cognitive change without a confirmed diagnosis. The current episode is acute and fluctuating. Pneumonia, impaired oxygenation, a recent sleep aid, poor intake, constipation, sleep disruption, and missing hearing aids are relevant to review; none should be declared the sole cause from this history.",
+      "reflectionPrompt": "Which parts of the baseline are supported by examples rather than the label 'independent'?",
+      "facultyNotes": {
+        "teachingPoint": "The case supports review of several contributors and communication barriers. Baseline concerns warrant later reassessment rather than a dementia subtype assigned during acute illness.",
+        "advancedPrompt": "Which medication exposures, sensory barriers, and functional changes would you verify with pharmacy or collateral before changing the formulation?",
+        "pitfall": "Calling the entire episode 'dementia' or treating a recently discovered medication as proof of a single cause.",
+        "sourceIds": ["nice-delirium"]
+      },
+      "links": [
+        {"label": "Collateral workflow", "kind": "page", "target": "collateral_workflow.md"},
+        {"label": "Medication monitoring", "kind": "page", "target": "med_monitoring.md"}
+      ]
+    },
+    {
+      "id": "marisol-03-quiet",
+      "label": "Medical ward · day 3",
+      "title": "Quiet does not necessarily mean recovered",
+      "focus": ["hypoactive delirium", "serial observation", "distress support"],
+      "patientState": "Overnight agitation decreases. At morning review Marisol is drowsy, gives short answers, and loses track of a simple conversation. She has eaten little. A handoff describes her as 'settled.' Later she becomes more alert and asks why she cannot go home. The team is reviewing the illness course and medication exposures. There is no sustained return to her usual attention or function. Her daughter notices that a calm explanation and hearing aids reduce fear during care.",
+      "learnerTask": "Describe attention, arousal, intake, and function across time rather than reporting only the absence of agitation. Request medical reassessment of new or persistent drowsiness and relevant medication effects. Support reorientation, sensory aids, familiar contact, and a calm environment. Any medication for distress requires a specific clinician assessment, monitoring, and review of its ongoing need.",
+      "checklist": [
+        {
+          "prompt": "Make the less visible change clinically visible.",
+          "example": "She is less restless, but she is still drowsy and cannot sustain attention. I would not describe this as recovery yet. We should report the change, review possible contributors, and compare her function across the day."
+        }
+      ],
+      "handoff": "Motor agitation has decreased while inattention, drowsiness, and poor intake continue. Describe the fluctuation and any sedating exposures, and ask the medical team to reassess. Record which supportive measures help. The next review should track attention and function, not only whether she has been disruptive.",
+      "reflectionPrompt": "What outcome would show that Marisol is improving rather than simply becoming quieter?",
+      "facultyNotes": {
+        "teachingPoint": "Hypoactive features can be overlooked. Treating causes and supporting the person remain central even when there is little visible agitation.",
+        "advancedPrompt": "When would severe distress or danger justify a medication discussion after nonpharmacologic measures, and which cardiac, neurologic, or drug-related risks would matter?",
+        "pitfall": "Equating sedation or reduced demands on staff with resolution of delirium.",
+        "sourceIds": ["nice-delirium"]
+      },
+      "links": [
+        {"label": "Delirium", "kind": "page", "target": "delirium.md"},
+        {"label": "Communication practice", "kind": "tool", "target": "communication-practice.html"}
+      ]
+    },
+    {
+      "id": "marisol-04-decision",
+      "label": "Medical ward · day 4",
+      "title": "Assess a decision, not a person's worth",
+      "focus": ["capacity", "supported communication", "surrogate boundaries"],
+      "patientState": "Marisol says she wants to leave before the medical team believes treatment is complete. During a lucid morning conversation with hearing aids in place, she can describe the infection and why the team recommends further care. Later she cannot explain those facts or how leaving could affect her. She remains consistent about wanting to sleep at home. Her daughter says, 'I am her daughter, so I can decide.' No advance directive or legally authorized decision-maker has yet been verified. Marisol becomes upset when the discussion shifts to talking about her as if she were absent.",
+      "learnerTask": "With the supervisor and treating clinician, specify the exact decision and assess understanding, appreciation of personal consequences, reasoning, and ability to communicate a choice at that time. Address hearing, language, discomfort, and timing first. Document examples, not an orientation score alone. Verify any surrogate authority under local policy and involve Marisol as much as possible; this exercise does not determine detention authority.",
+      "checklist": [
+        {
+          "prompt": "Ask for understanding and reasoning while preserving the patient's role.",
+          "example": "I hear that being home matters to you. Could you tell me what you understand about the illness, what the team is recommending, and what you think might happen if you leave now? We want to understand your reasons and help you take part in this decision."
+        }
+      ],
+      "handoff": "The decision is whether to leave before the recommended medical treatment is complete. Relevant abilities vary across conversations and require clinician reassessment with communication supports. Document Marisol's responses and values. Surrogate authority is unverified; the responsible team must resolve consent and legal questions through the local process.",
+      "reflectionPrompt": "How would your assessment differ if Marisol understood the consequences and still disagreed with the recommendation?",
+      "facultyNotes": {
+        "teachingPoint": "Participation should be supported even when capacity is impaired. Ethical surrogate principles do not themselves establish a relative's legal authority or permission to detain.",
+        "advancedPrompt": "Separate capacity for this treatment decision, discharge support needs, and legal authority for any restriction. Who can answer each question locally?",
+        "pitfall": "Inferring incapacity from refusal, a diagnosis, or an orientation score; automatically assigning authority to the available relative.",
+        "sourceIds": ["ama-capacity", "ama-consent"]
+      },
+      "links": [
+        {"label": "Decisional capacity", "kind": "tool", "target": "capacity.html"},
+        {"label": "Family meeting playbook", "kind": "page", "target": "family_playbook.md"}
+      ]
+    },
+    {
+      "id": "marisol-05-transition",
+      "label": "Discharge planning · day 7",
+      "title": "A better interview does not finish the discharge plan",
+      "focus": ["functional assessment", "medication reconciliation", "caregiver capacity"],
+      "patientState": "Marisol's infection and oxygen needs have improved under medical care. She is attentive through today's interview, can discuss the transition options, and agrees to a short stay with her daughter. She still has trouble remembering a new medication schedule. Her daughter initially offers help with 'everything,' then explains that she works long shifts and cannot provide continuous supervision. The discharge draft still contains an as-needed sedating medication used during the acute illness, with no documented indication for continuing it. No clinician has yet accepted responsibility for cognitive follow-up.",
+      "learnerTask": "Ask the supervising team to reconcile each discharge medication and document its current indication and review plan. Clarify actual assistance available for medication management, mobility, meals, and appointments; involve nursing, therapy, pharmacy, and care coordination as appropriate. Confirm who owns medical and cognitive follow-up. Reassess decision-making abilities if they change instead of carrying forward an earlier capacity conclusion.",
+      "checklist": [
+        {
+          "prompt": "Turn a generous offer into a realistic support plan.",
+          "example": "It helps to know when support will actually be available. Let us walk through a typical day: medicines, meals, moving around, and whom to call if confusion returns. We should adjust the plan around what you both can realistically manage."
+        }
+      ],
+      "handoff": "Medical improvement and better attention do not establish full return to baseline function. Medication continuation, practical support, and cognitive follow-up remain unresolved. The team must review the acute-use sedating medication and confirm receiving clinicians and support arrangements before finalizing the transition.",
+      "reflectionPrompt": "Which task can Marisol do herself, which needs help, and which has no reliable owner yet?",
+      "facultyNotes": {
+        "teachingPoint": "This chapter tests continuity reasoning: acute medication and support plans require active review as the illness changes.",
+        "advancedPrompt": "What would you communicate if the family cannot provide the proposed support? Distinguish willingness, availability, skill, and the patient's preferences.",
+        "pitfall": "Copying an acute-use medication forward indefinitely or treating 'family available' as a complete support assessment.",
+        "sourceIds": ["nice-delirium", "ama-capacity"]
+      },
+      "links": [
+        {"label": "Medication monitoring", "kind": "page", "target": "med_monitoring.md"},
+        {"label": "Documentation and oral presentation", "kind": "page", "target": "doc_oral.md"}
+      ]
+    },
+    {
+      "id": "marisol-06-reassessment",
+      "label": "Follow-up · week 4",
+      "title": "Keep the unresolved question in the handoff",
+      "focus": ["cognitive follow-up", "residual uncertainty", "recovery goals"],
+      "patientState": "The transition team confirmed a primary-care visit and arranged temporary practical help. At follow-up Marisol has no new respiratory complaint and sustains attention through the visit. She recalls little of the hospital nights. Her daughter reports improvement but says managing bills still requires help, as it did before admission. Marisol wants to return home and to her reading group; she is worried that the hospitalization means she has permanently lost independence. A formal cognitive evaluation has been requested but has not yet occurred.",
+      "learnerTask": "Compare current function with both the pre-illness baseline and the hospital course. Ask about new fluctuation or medical symptoms and bring any recurrence promptly to the clinician. Help the team state what remains uncertain, identify a clinician and date for reassessment, and review the current support plan with Marisol. Avoid declaring either complete recovery or a new chronic diagnosis from this vignette alone.",
+      "checklist": [
+        {
+          "prompt": "Describe improvement without erasing the remaining question.",
+          "example": "Your attention has improved since the hospital stay. The difficulty with bills was present before the infection, so we should look at that carefully as you recover. We can plan that follow-up while also working toward the activities and independence that matter to you."
+        }
+      ],
+      "handoff": "The acute fluctuating syndrome improved after medical care, but pre-existing and residual functional concerns need reassessment. The primary-care clinician owns interim follow-up while the cognitive evaluation is pending. Confirm the appointment and support plan, and distinguish new acute confusion from the longer-standing memory question.",
+      "reflectionPrompt": "What uncertainty should remain explicit so that the next clinician does not mistake an unfinished evaluation for a settled diagnosis?",
+      "facultyNotes": {
+        "teachingPoint": "Persistent or recurrent concerns require follow-up for unresolved causes and possible underlying cognitive disorder. The fictional improvement does not predict every patient's recovery.",
+        "advancedPrompt": "Explain how an acute illness can expose a previously unrecognized functional problem without proving the nature or permanence of that problem.",
+        "pitfall": "Removing the cognitive concern because the infection improved, or assigning a dementia subtype without an adequate longitudinal assessment.",
+        "sourceIds": ["nice-delirium"]
+      },
+      "links": [
+        {"label": "Delirium", "kind": "page", "target": "delirium.md"},
+        {"label": "Case formulation", "kind": "page", "target": "case_formulation.md"}
+      ]
+    }
+  ]
+}
