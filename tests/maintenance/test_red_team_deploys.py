@@ -165,6 +165,17 @@ class DeploySnapshotTests(unittest.TestCase):
         with self.assertRaisesRegex(EvidenceUnavailable, "immutable deploy permalink"):
             snapshot(records=records)
 
+    def test_raw_netlify_record_without_links_derives_immutable_url(self):
+        records = fixture_records()
+        for key, record in records.items():
+            record["deploy_ssl_url"] = f"https://{record['branch']}--{SITE_NAMES[key]}.netlify.app"
+            record["deploy_url"] = f"http://{record['branch']}--{SITE_NAMES[key]}.netlify.app"
+            self.assertNotIn("links", record)
+        observed = snapshot(records=records)
+        for key in records:
+            self.assertEqual(observed["deployments"][key]["deployUrl"],
+                             f"https://{DEPLOY_IDS[key]}--{SITE_NAMES[key]}.netlify.app")
+
     def test_missing_latest_published_deploy_is_unverified(self):
         with self.assertRaisesRegex(EvidenceUnavailable, "no published production deploy"):
             fetch_snapshot(fixture_config(), "fixture-token",
