@@ -23,10 +23,96 @@ from maintenance.monthly_review import (
     MonthlyReviewError,
     _utc_today,
     build_monthly_review,
+    classify_red_team_receipt,
     render_monthly_markdown,
 )
+from maintenance.record_red_team import MANUAL_ROWS, build_receipt
 
 SURVEILLANCE_HISTORY = Path("13_Faculty_Resources/_automation/surveillance/history")
+
+
+def red_team_snapshot():
+    return {"deployments": {key: {
+        "siteId": key, "deployId": f"{key}-deploy", "commitRef": "1" * 40,
+        "deployUrl": f"https://{key}-deploy.example", "publishedAt": "2026-07-01T13:00:00Z",
+    } for key in ("proxy", "ms3", "res")},
+        "packSha256": "a" * 64, "packVersion": "fixture", "model": "fixture-model",
+        "packSourceCommit": "4" * 40}
+
+
+def red_team_receipt(snapshot=None):
+    snapshot = snapshot or red_team_snapshot()
+    work = {**snapshot, "state": "prepared", "runtime": {
+        "actorModel": snapshot["model"], "evaluatorModel": snapshot["model"],
+        "realtimeEnabled": False, "realtimeModel": None, "transcriptionModel": None,
+        "managedVoiceEnabled": False, "managedVoiceStack": None},
+        "mechanical": {
+            "tier1": {"state": "passed", "checkedAt": "2026-07-01T13:10:00Z",
+                      "passes": 30, "total": 30,
+                      "sourceCommit": snapshot["deployments"]["proxy"]["commitRef"]},
+            "tier2": {"state": "passed", "checkedAt": "2026-07-01T13:10:00Z",
+                      "checks": [{"id": key, "status": "pass"} for key in
+                                 ("D0", "D1", "D1b", "D5", "B5")]},
+        }}
+    rows = {row: {"status": "pass", "reason": ""} for section in ("A", "C", "D", "E")
+            for row in MANUAL_ROWS[section]}
+    return build_receipt(work, rows, "Fixture Owner", datetime(2026, 7, 2, tzinfo=timezone.utc))
+
+
+class RedTeamClassificationTests(unittest.TestCase):
+    def test_exact_current_receipt_and_missing_evidence(self):
+        snapshot = red_team_snapshot()
+        receipt = red_team_receipt(snapshot)
+        today = date(2026, 7, 15)
+        changed = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "current")
+        self.assertEqual(classify_red_team_receipt(None, snapshot, today, changed)[0], "missing")
+        self.assertEqual(classify_red_team_receipt(receipt, None, today, changed)[0], "unverified")
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, None)[0], "unverified")
+
+    def test_legacy_missing_manual_voice_and_failed_rows_are_incomplete(self):
+        snapshot = red_team_snapshot()
+        today = date(2026, 7, 15)
+        changed = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        legacy = {"state": "passed", "schemaVersion": 1, "packSha256": snapshot["packSha256"]}
+        self.assertEqual(classify_red_team_receipt(legacy, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
+        receipt["runtime"]["realtimeEnabled"] = True
+        receipt["runtime"]["realtimeModel"] = "rt"
+        receipt["runtime"]["transcriptionModel"] = "tx"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
+        receipt["manualRows"]["C4"]["status"] = "blocked"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
+        receipt["manualRows"]["C4"]["reason"] = "patient reply must not enter receipt"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
+        receipt["rawTranscript"] = "patient reply must not enter receipt"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
+        receipt["packSourceCommit"] = "patient reply must not enter receipt"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+        receipt = red_team_receipt(snapshot)
+        receipt["mechanical"]["tier1"]["sourceCommit"] = "2" * 40
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "incomplete")
+
+    def test_later_deploy_pack_model_and_clock_are_not_current(self):
+        snapshot = red_team_snapshot()
+        receipt = red_team_receipt(snapshot)
+        today = date(2026, 7, 15)
+        changed = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        newer = copy.deepcopy(snapshot)
+        newer["deployments"]["proxy"]["deployId"] = "later-deploy"
+        self.assertEqual(classify_red_team_receipt(receipt, newer, today, changed)[0], "stale")
+        newer = copy.deepcopy(snapshot)
+        newer["packSha256"] = "b" * 64
+        self.assertEqual(classify_red_team_receipt(receipt, newer, today, changed)[0], "mismatch")
+        newer = copy.deepcopy(snapshot)
+        newer["model"] = "model-b"
+        self.assertEqual(classify_red_team_receipt(receipt, newer, today, changed)[0], "mismatch")
+        receipt["checkedAt"] = "2026-07-01T12:00:00Z"
+        self.assertEqual(classify_red_team_receipt(receipt, snapshot, today, changed)[0], "stale")
 
 
 class MonthlyReviewTests(unittest.TestCase):
@@ -193,12 +279,13 @@ class MonthlyReviewTests(unittest.TestCase):
         self.git_calls.append(list(argv))
         return self.git_dates.get(argv[-1])
 
-    def build_report(self, *, config=None):
+    def build_report(self, *, config=None, deploy_snapshot=None):
         return build_monthly_review(
             self.root,
             copy.deepcopy(config or self.config),
             date(2026, 7, 15),
             self.git_last_changed,
+            deploy_snapshot,
         )
 
     def test_existing_accessibility_debt_is_review_only_but_new_debt_blocks(self):
@@ -515,7 +602,7 @@ class MonthlyReviewTests(unittest.TestCase):
             {"total": 1, "current": 0, "stale": 0, "unknown": 1},
         )
         self.assertEqual(report["operations"]["openEvidenceReceipt"], "invalid")
-        self.assertEqual(report["operations"]["redTeamReceipt"], "invalid")
+        self.assertEqual(report["operations"]["redTeamReceipt"], "incomplete")
         self.assertEqual(report["gate"], "review")
 
     def test_future_sp_pack_git_timestamp_is_not_treated_as_known_recency(self):
@@ -534,7 +621,7 @@ class MonthlyReviewTests(unittest.TestCase):
         report = self.build_report()
         self.assertEqual(
             report["operations"]["redTeamReceipt"],
-            "unknown_pack_change",
+            "incomplete",
         )
 
     def test_symlinked_receipt_cannot_escape_repository_root(self):
@@ -785,7 +872,7 @@ class MonthlyReviewTests(unittest.TestCase):
             report["expectedSp"],
             {"packSha256": pack_hash, "modelSha256": model_hash},
         )
-        self.assertEqual(report["operations"]["redTeamReceipt"], "pack_mismatch")
+        self.assertEqual(report["operations"]["redTeamReceipt"], "incomplete")
         self.assertIn(
             [
                 "git",
@@ -808,7 +895,15 @@ class MonthlyReviewTests(unittest.TestCase):
             },
         )
         report = self.build_report()
-        self.assertEqual(report["operations"]["redTeamReceipt"], "stale")
+        self.assertEqual(report["operations"]["redTeamReceipt"], "incomplete")
+
+        snapshot = red_team_snapshot()
+        snapshot["packSha256"] = pack_hash
+        self.write_json("receipts/red-team.json", red_team_receipt(snapshot))
+        report = self.build_report(deploy_snapshot=snapshot)
+        self.assertEqual(report["operations"]["redTeamReceipt"], "current")
+        self.assertIn("three current production deploys", report["operations"]["redTeamReason"])
+        self.assertEqual(self.build_report()["operations"]["redTeamReceipt"], "unverified")
 
         self.write_json(
             "receipts/red-team.json",
@@ -820,7 +915,7 @@ class MonthlyReviewTests(unittest.TestCase):
             },
         )
         report = self.build_report()
-        self.assertEqual(report["operations"]["redTeamReceipt"], "current")
+        self.assertEqual(report["operations"]["redTeamReceipt"], "incomplete")
 
     def test_output_is_deterministic_content_free_and_makes_no_deploy_claim(self):
         first = self.build_report()
@@ -838,7 +933,7 @@ class MonthlyReviewTests(unittest.TestCase):
         self.assertNotIn("deployRecency", serialized)
         self.assertNotIn("attachment", serialized.lower())
         markdown = render_monthly_markdown(first)
-        self.assertIn("does not assess authenticated Netlify deploy recency", markdown)
+        self.assertIn("compares exact production deploys when Netlify read-only access is available", markdown)
 
     def test_operational_and_receipt_paths_must_be_safe_relative_paths(self):
         unsafe = (

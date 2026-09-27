@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
@@ -845,7 +846,9 @@ test('first run reaches Today; browse mode exposes the exact audience Library', 
   await page.locator('[data-fd-week="0"]').click();
   await expect(page.locator('.fd-library')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBeNull();
-  await page.locator('[data-fd-library-view="full"]').click();
+  // "Just browse" lands on the whole Library (Everything), not The Essentials.
+  await expect(page).toHaveURL(/[?&]library=full(?:&|$)/);
+  await expect(page.locator('[data-fd-library-view="essentials"]:visible')).toHaveCount(1);
 
   const refs = await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open'))
@@ -1088,6 +1091,7 @@ test('learner-language search finds tasks, safety abbreviations and complete res
 test('Enter on a punctuated exact resource name opens that resource, not a spurious safety panel', async ({ page }, testInfo) => {
   const resident = isResidentProject(testInfo.project.name);
   const cases = [
+    ['Case Journeys', 'one-patient-six-weeks.html'],
     ['One Patient, Six Weeks', 'one-patient-six-weeks.html'],
     [`First-Episode Psychosis (Sep 7) — ${resident ? 'Resident' : 'MS3'}`, `cotw_20260907_fep_${resident ? 'res' : 'ms3'}.md`],
     ...(resident ? [['Post-Event Learning Huddle (2 min)', 'rp-post-event-huddle.html']] : []),
@@ -3835,3 +3839,402 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: '
     await expectHealthy(page);
   });
 }
+
+// "Log what they said" (2026-09-26): the four-week path's supervisor question gains a private,
+// device-only note. One tap opens it; a clean note saves and survives a reload; a possible patient
+// detail is held until the learner edits or confirms; Delete removes it. The six-week path has no
+// such control. On a phone, the field and both buttons stay inside the viewport.
+test('Path: a supervisor feedback note saves privately, survives reload, and screens patient details', async ({ page }, testInfo) => {
+  const resident = isResidentProject(testInfo.project.name);
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-tab="path"]:visible').click();
+  const open = page.locator('[data-fd-feedback-open]');
+  if (!resident) {
+    await expect(page.locator('.fd-detail__practice')).toBeVisible();
+    await expect(open).toHaveCount(0);
+    await expectHealthy(page);
+    return;
+  }
+  await expect(open).toHaveText('Log what they said');
+  await open.click();
+  const field = page.locator('#fdFeedbackText');
+  await expect(field).toBeFocused();
+  const box = await field.boundingBox();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(PHONE.width);
+  expect(await field.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+
+  await field.fill('Name the acute risk first, then the plan.');
+  await page.locator('[data-fd-feedback-save]').click();
+  await expect(page.locator('.fd-feedback__status')).toHaveText('Saved on this device.');
+  await expect(open).toBeFocused();
+  await expect(page.locator('.fd-feedback__note')).toHaveText(['Name the acute risk first, then the plan.']);
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_feedback_v1')));
+  expect(stored.items).toHaveLength(1);
+  expect(stored.items[0]).toMatchObject({ path: 'resident-four-week', week: 1 });
+
+  // A possible patient detail is held, not written, until the learner confirms.
+  await open.click();
+  await page.locator('#fdFeedbackText').fill('Pt in room 12 needed a clearer plan');
+  await page.locator('[data-fd-feedback-save]').click();
+  await expect(page.locator('.fd-feedback__hold')).toContainText('This may contain patient details.');
+  await expect(page.locator('[data-fd-feedback-edit]')).toBeFocused();
+  await expect(page.locator('#fdFeedbackText')).toHaveValue('Pt in room 12 needed a clearer plan');
+  expect((await page.evaluate(() => JSON.parse(localStorage.getItem('cw_feedback_v1')))).items).toHaveLength(1);
+  await page.locator('[data-fd-feedback-edit]').click();
+  await page.locator('#fdFeedbackText').fill('Needed a clearer plan');
+  await page.locator('[data-fd-feedback-save]').click();
+  await expect(page.locator('.fd-feedback__note')).toHaveCount(2);
+
+  // Another week shows none of week 1's notes; the notes survive a reload.
+  await page.locator('[data-fd-view-week="2"]').click();
+  await expect(page.locator('.fd-feedback__note')).toHaveCount(0);
+  await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+  await page.reload();
+  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-view-week="1"]').click();
+  await expect(page.locator('.fd-feedback__note')).toHaveCount(2);
+
+  // Visit-only: Back then Forward never restores an open note or its unsaved text (Codex P2, #843).
+  await open.click();
+  await page.locator('#fdFeedbackText').fill('typed but never saved');
+  await page.goBack();
+  await page.goForward();
+  await expect(page.locator('.fd-feedback')).toBeVisible();
+  await expect(page.locator('#fdFeedbackText')).toHaveCount(0);
+  await expect(page.locator('[data-fd-view-week="1"]')).toHaveAttribute('aria-selected', 'true');
+
+  await page.locator('.fd-feedback__delete').first().click();
+  await expect(page.locator('.fd-feedback__note')).toHaveCount(1);
+  await expect(page.locator('.fd-feedback__status')).toHaveText('Note deleted.');
+  expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await expectHealthy(page);
+});
+
+test('Concepts Today released count, phone keyboard recall and trusted Path context',async({page},info)=>{
+  await page.setViewportSize(PHONE);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  const feed=await (await page.request.get('/tools/concepts.json')).json();
+  const card=feed.cards[0];
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[card.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1},'CONCEPT#withdrawn:1@1':{due:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/');
+  await expect(page.locator('[data-fd-concept-status]')).toHaveCount(0);
+  await expect(page.locator('.fd-due__label')).toHaveText('1 review due');
+  await page.locator('.fd-due:visible').first().click();
+  await expect(page).toHaveURL(/tool=review\.html.*lane=all/);
+  const tool=page.locator('#content iframe.toolframe').contentFrame();
+  await expect(tool.locator('.allrow .chip')).toHaveAttribute('aria-pressed','true');
+  await tool.getByRole('button',{name:/Start review/}).click();
+  await expect(tool.locator('body')).not.toContainText(card.reveal);
+  await tool.getByRole('button',{name:'Reveal one way to do it'}).focus();
+  await page.keyboard.press('Enter');
+  await expect(tool.locator('body')).toContainText(card.reveal);
+  await expect(tool.locator('.grades button').first()).toBeFocused();
+  await page.screenshot({path:join(tmpdir(),'task5-concepts-'+info.project.name+'.png'),fullPage:true});
+  await tool.getByRole('button',{name:/^Good/}).focus();
+  await page.keyboard.press('Enter');
+  await expect(tool.locator('.cw-receipt')).toBeVisible();
+  await expect(tool.locator('#cwReviewDashBtn')).toBeFocused();
+  await expect(tool.locator('body')).toContainText('Next due:');
+  await tool.locator('a[href*="page='+card.page+'"]').first().click();
+  await expect(page.locator('.fd-reader .fd-src')).toHaveText(card.page);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('Review companion stays hidden until reveal and opens the exact article card',async({page},info)=>{
+  const companion=await (await page.request.get('/tools/review_companions.json')).json();
+  const pair=companion.pairs[0];
+  const concepts=await (await page.request.get('/tools/concepts.json')).json();
+  const clinical=concepts.cards.find(card=>card.id===pair.clinicalCardId);
+  const quizzes=await (await page.request.get('/tools/quizzes.json')).json();
+  const article=quizzes.decks.find(deck=>pair.articleCardId.startsWith(deck.id+'#'));
+  const question=article.questions[Number(pair.articleCardId.split('#')[1])];
+  expect(clinical).toBeTruthy();
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[clinical.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/?tool=review.html&lane=clerkship&focus='+encodeURIComponent(clinical.id));
+  const tool=page.locator('#content iframe.toolframe').contentFrame();
+  await expect(tool.locator('.qtext')).toHaveText(clinical.q);
+  await expect(tool.locator('.bridge')).toHaveCount(0);
+  await expect(tool.locator('body')).not.toContainText(pair.result);
+  await tool.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await expect(tool.locator('.bridge')).toContainText(pair.result);
+  await expect(tool.locator('.bridge')).toContainText(pair.limitation);
+  await tool.getByRole('link',{name:/Study companion article card/}).click();
+  await expect(tool.locator('.qtext')).toHaveText(question.q);
+});
+
+test('a fresh companion card waits when the shared daily new-card limit is reached',async({page},info)=>{
+  const companion=await (await page.request.get('/tools/review_companions.json')).json();
+  const pair=companion.pairs[0];
+  await seedApp(page,info);
+  await page.addInitScript(()=>{
+    const now=new Date();
+    const day=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+    localStorage.setItem('cw_srs_v1',JSON.stringify({v:1,cards:{},day:{lastDay:day,newToday:30},
+      settings:{newPerDay:5,userSet:true},stats:{seen:0,correct:0}}));
+  });
+  await page.goto('/tools/review.html?lane=landmark&focus='+encodeURIComponent(pair.articleCardId));
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  await expect(page.getByRole('status').filter({hasText:'new-card limit is reached for today'})).toBeVisible();
+  await expect(page.getByRole('button',{name:/Landmark Evidence/})).toHaveAttribute('aria-pressed','true');
+});
+
+test('malformed successful Review feeds show unavailable instead of false zero counts',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/quizzes.json*',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
+  await page.route('**/tools/review_companions.json',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Landmark Evidence unavailable');
+  await expect(page.locator('body')).toContainText('Study companion unavailable');
+  await expect(page.getByRole('button',{name:/Landmark Evidence/})).toContainText('Counts unavailable');
+});
+
+test('timed Review block does not start from a malformed landmark feed',async({page},info)=>{
+  const concepts=await (await page.request.get('/tools/concepts.json')).json();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    [concepts.cards[0].id]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  await page.route('**/tools/quizzes.json*',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  await expect(page.locator('.cw-receipt')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+});
+
+test('timed Review block does not record completion when a practice-card feed fails',async({page},info)=>{
+  const topics=await (await page.request.get('/topic_meta.json')).json();
+  const topic=Object.keys(topics).find(key=>topics[key]?.quiz?.q);
+  expect(topic).toBeTruthy();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    ['TOPIC#'+topic]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  await page.route('**/topic_meta.json',route=>route.fulfill({status:503,body:'temporarily unavailable'}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+});
+
+test('timed Review block rejects a practice feed whose rows make no cards',async({page},info)=>{
+  const communication=await (await page.request.get('/communication_cases.json')).json();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    ['COMM#'+communication.cases[0].id]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  await page.route('**/communication_cases.json',route=>route.fulfill({status:200,contentType:'application/json',body:'{"cases":[{}]}'}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+});
+
+test('timed Review block rejects a nonempty feed missing a scheduled due card',async({page},info)=>{
+  const topics=await (await page.request.get('/topic_meta.json')).json();
+  const topic=Object.keys(topics).find(key=>topics[key]?.quiz?.q);
+  expect(topic).toBeTruthy();
+  const block={...OTF.block,steps:[{...OTF.block.steps[0],done:false},OTF.block.steps[1]]};
+  const srs={...OTF.srs,cards:{
+    ['TOPIC#'+topic]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR},
+    'AR-50#0':OTF.srs.cards['AR-50#0'],
+  }};
+  await seedApp(page,info,{storage:{cw_block_v1:block,cw_srs_v1:srs}});
+  delete topics[topic];
+  await page.route('**/topic_meta.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(topics)}));
+  await page.goto('/tools/review.html?block=1&limit=2');
+  await expect(page.locator('body')).toContainText('Timed review cannot start');
+  await expect(page.locator('.qtext')).toHaveCount(0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('cw_block_v1')));
+  expect(saved.steps[0].done).not.toBe(true);
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Practice card sources unavailable');
+  await expect(page.getByRole('button',{name:/Clerkship Review/})).toContainText('Counts incomplete');
+});
+
+test('ordinary Clerkship Review labels practice counts incomplete when its feed fails',async({page},info)=>{
+  const topics=await (await page.request.get('/topic_meta.json')).json();
+  const topic=Object.keys(topics).find(key=>topics[key]?.quiz?.q);
+  expect(topic).toBeTruthy();
+  const srs={...OTF.srs,cards:{['TOPIC#'+topic]:{ease:2.5,ivl:1,reps:1,lapses:0,due:OTF_NOW-OTF_HOUR,last:OTF_NOW-25*OTF_HOUR}}};
+  await seedApp(page,info,{storage:{cw_srs_v1:srs}});
+  await page.route('**/topic_meta.json',route=>route.fulfill({status:503,body:'temporarily unavailable'}));
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Practice card sources unavailable');
+  await expect(page.getByRole('button',{name:/Clerkship Review/})).toContainText('Counts incomplete');
+  await expect(page.getByRole('button',{name:/All due/})).toContainText('at least');
+});
+
+test('Concepts altered feed visibly leaves Today count incomplete',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/concepts.json',route=>route.fulfill({contentType:'application/json',body:'{}'}));
+  await page.goto('/');
+  await expect(page.locator('[data-fd-concept-status]')).toContainText('unavailable. Review counts are incomplete.');
+});
+
+
+test('Concepts timed block keeps one-card limit and records recall receipt',async({page},info)=>{
+  const feed=await (await page.request.get('/tools/concepts.json')).json();
+  const card=feed.cards[0];
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[card.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/?tool=review.html&block=1&limit=1');
+  const tool=page.locator('#content iframe.toolframe').contentFrame();
+  await expect(tool.locator('.scount')).toHaveText('1 / 1');
+  await tool.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await expect(tool.locator('[aria-live="polite"]')).toHaveCount(1);
+  await expect(tool.locator('[aria-live="polite"]')).toContainText(card.reveal);
+  await tool.getByRole('button',{name:/^Good/}).click();
+  await expect(tool.locator('body')).toContainText('Self-rated recall Good/Easy');
+  await expect(tool.locator('body')).toContainText('Next due:');
+  await expect(tool.getByRole('button',{name:/^Good/})).toHaveCount(0);
+});
+
+
+// UI regressions must not depend on which clinical sources faculty have released.
+// These neutral fixture faces exercise the real byte-digest verifier and renderer;
+// source/ledger eligibility remains covered by the separate concept Python suites.
+const conceptUiSiblings = [
+  {id:'CONCEPT#ui-sibling:1@1',editorialId:'ui-sibling:1',noteId:'ui-sibling',ordinal:1,revision:1,target:'amber token',q:'Study the […] and cobalt token.'},
+  {id:'CONCEPT#ui-sibling:2@1',editorialId:'ui-sibling:2',noteId:'ui-sibling',ordinal:2,revision:1,target:'cobalt token',q:'Study the amber token and […].'},
+].map(card=>({...card,reveal:'Study the amber token and cobalt token.',topic:'Study tokens',page:READING_REF,source:'03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md'}));
+
+async function controlledConceptFeed(page,cards){
+  const body=JSON.stringify({schemaVersion:1,cards,withheld:[]})+'\n';
+  const digest=createHash('sha256').update(body).digest('hex');
+  await page.route('**/tools/concepts.json',route=>route.fulfill({contentType:'application/json',body}));
+  await page.route(/\/tools\/review\.html(?:\?|$)/,async route=>{
+    const response=await routeFetchWithRetry(route);
+    const html=await response.text();
+    const tag=/<meta name="cw-concept-digest" content="[a-f0-9]{64}">/g;
+    expect(html.match(tag)).toHaveLength(1);
+    await route.fulfill({response,body:html.replace(tag,'<meta name="cw-concept-digest" content="'+digest+'">')});
+  });
+  // The fixture's source ref remains a working shipped reading on both sites.
+  expect((await requestGetWithRetry(page.request,'/content/'+READING_REF)).ok()).toBe(true);
+  return digest;
+}
+
+test('Concepts sibling clozes keep answers private and completion is announced and focused',async({page},info)=>{
+  const siblings=conceptUiSiblings;
+  const digest=await controlledConceptFeed(page,siblings);
+  await seedApp(page,info);
+  await page.addInitScript((cards)=>{
+    const now=new Date();
+    const day=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+    localStorage.setItem('cw_srs_v1',JSON.stringify({v:1,cards:Object.fromEntries(cards.map(c=>[c.id,{due:1,reps:1,ivl:1,ease:2.5,last:1}])),day:{lastDay:day,newToday:30},stats:{seen:0,correct:0},settings:{newPerDay:12}}));
+  },siblings);
+  await page.goto('/tools/review.html');
+  await expect(page.locator('meta[name="cw-concept-digest"]')).toHaveAttribute('content',digest);
+  await page.getByRole('button',{name:/Start review/}).click();
+  await expect(page.locator('.scount')).toHaveText('1 / 2');
+  await page.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await page.getByRole('button',{name:/^Good/}).click();
+  await expect(page.locator('.scount')).toHaveText('2 / 2');
+  const prompt=await page.locator('.qtext').innerText();
+  const current=siblings.find(c=>c.q===prompt);
+  expect(current).toBeTruthy();
+  await expect(page.locator('body')).not.toContainText(current.target);
+  await expect(page.locator('body')).not.toContainText('Next due:');
+  await expect(page.locator('.qtext')).toBeFocused();
+  await page.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await page.getByRole('button',{name:/^Good/}).click();
+  await expect(page.locator('.cw-receipt')).toBeVisible();
+  await expect(page.locator('#cwReviewDashBtn')).toBeFocused();
+  await expect(page.locator('[aria-live="polite"]')).toHaveCount(1);
+  await expect(page.locator('[aria-live="polite"]')).toContainText('Review complete. 2 cards graded.');
+  await expect(page.locator('body')).toContainText('Next due:');
+});
+
+
+test('Concepts stalled response times out while other Daily Review cards become available',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/concepts.json',()=>new Promise(()=>{}));
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Concepts unavailable — review is incomplete.',{timeout:15000});
+  await expect(page.getByRole('button',{name:/Start review/})).toBeVisible();
+  await page.getByRole('button',{name:/Start review/}).click();
+  await expect(page.locator('.qtext')).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('Loading the question bank');
+});
+
+
+test('Concepts topic cannot disclose the fixture target before reveal',async({page},info)=>{
+  const card={...conceptUiSiblings[0],topic:'Study the amber token'};
+  const digest=await controlledConceptFeed(page,[card]);
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[card.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/tools/review.html?block=1&limit=1');
+  await expect(page.locator('meta[name="cw-concept-digest"]')).toHaveAttribute('content',digest);
+  await expect(page.locator('.qtext')).toHaveText(card.q);
+  await expect(page.locator('.deckchip').last()).toHaveText('Concepts');
+  await expect(page.locator('body')).not.toContainText(card.target);
+  await page.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await expect(page.locator('body')).toContainText(card.reveal);
+});
+
+test('Concepts real generated feed keeps evidence out of DOM until reveal',async({page},info)=>{
+  const feed=await (await requestGetWithRetry(page.request,'/tools/concepts.json')).json();
+  expect(feed.cards.length).toBeGreaterThan(0);
+  for(const c of feed.cards){expect(c.q).not.toContain('[^');expect(c.reveal).not.toContain('[^');}
+  // Exercise the current release without requiring any fixed live governance count.
+  // The root DOM/package suites independently exercise all 154 catalog cards.
+  const card=feed.cards.find(c=>c.evidence?.length)||feed.cards[0];
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[card.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/tools/review.html?block=1&limit=1');
+  await expect(page.locator('.qtext')).toHaveText(card.q);
+  await expect(page.locator('.deckchip').last()).toHaveText('Concepts');
+  for(const evidence of card.evidence||[]){
+    expect(await page.locator('#root').innerHTML()).not.toContain(evidence.url);
+    expect(await page.locator('#root').innerHTML()).not.toContain(evidence.id);
+  }
+  await page.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await expect(page.locator('.rvl')).toContainText(card.reveal);
+  for(const [index,evidence] of (card.evidence||[]).entries())await expect(page.getByRole('link',{name:'Evidence '+(index+1),exact:true})).toHaveAttribute('href',evidence.url);
+});
+
+test('Concepts Retry restores a transient fetch failure without reloading',async({page},info)=>{
+  await seedApp(page,info);let failed=true;
+  await page.route('**/tools/concepts.json',route=>failed?route.fulfill({status:503,body:'temporarily unavailable'}):route.continue());
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Concept counts unavailable');
+  await page.evaluate(()=>window.conceptRetryDocumentMarker='same document');
+  failed=false;
+  await page.getByRole('button',{name:'Retry Concepts'}).click();
+  await expect(page.locator('body')).toContainText(/\d+ available · \d+ due · \d+ new/);
+  await expect(page.getByRole('button',{name:'Retry Concepts'})).toHaveCount(0);
+  expect(await page.evaluate(()=>window.conceptRetryDocumentMarker)).toBe('same document');
+  await expect(page.getByRole('link',{name:'Practice Questions',exact:true})).toHaveAttribute('href','question-bank-practice.html');
+  await expect(page.locator('body')).toContainText('Progress saved in this browser; Anki reviews are separate.');
+});
+
+test('Concepts Retry keeps mismatched bytes unavailable',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/concepts.json',async route=>{
+    const response=await routeFetchWithRetry(route);
+    await route.fulfill({response,body:(await response.text())+' '});
+  });
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Concept counts unavailable');
+  await page.getByRole('button',{name:'Retry Concepts'}).click();
+  await expect(page.getByRole('button',{name:'Retry Concepts'})).toBeVisible({timeout:15000});
+  await expect(page.locator('body')).toContainText('Concept counts unavailable');
+  await expect(page.locator('body')).not.toContainText(/\d+ available · \d+ due · \d+ new/);
+});
+
+test('Concepts shell stalled response becomes actionable unavailable',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/concepts.json',()=>new Promise(()=>{}));
+  await page.goto('/');
+  await expect(page.locator('[data-fd-concept-status]')).toContainText('unavailable. Review counts are incomplete. Open Daily Review to retry.',{timeout:15000});
+});

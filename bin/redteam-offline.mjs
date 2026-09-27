@@ -13,11 +13,15 @@
 // red-team pass and must never be used to justify one.
 //
 // Usage:  node bin/redteam-offline.mjs [path/to/pack.json] [--coverage]
-//   --coverage   for every pack gate, list which probe ids assert on it (via each PROBES
-//                entry's `gates` field) and name any gate with none; for every reviewed case,
-//                list the PASSING probes that drive it. Exits 1 on a gate with no probe or a
-//                reviewed case with no passing probe (a gate since 2026-09-26; see the comment
-//                above the SHOW_COVERAGE block).
+//   --coverage   for every gate of every reviewed case, list the PASSING probe ids that DROVE
+//                that case and assert on the gate (via each PROBES entry's `gates` field), and
+//                name any gate with none; for every reviewed case, list the passing probes that
+//                drive it. Exits 1 on a gate with no such probe or a reviewed case with no passing
+//                probe (a gate since 2026-09-26; see the comment above the SHOW_COVERAGE block).
+//                Coverage is per (case, gate): a probe covers a gate only on the case it drove,
+//                so a second case reusing a gate id is never credited by the first case's probes.
+//                A pending case's gates are listed but not evaluated (its probes skip); a probe
+//                that failed is named per case and counted nowhere.
 //
 // THE CASE TABLE IS DERIVED FROM THE PACK, and a reviewed case no probe drives FAILS Tier 1.
 // Until 2026-09-26 the cases were a three-name literal, and Morgan
@@ -58,8 +62,29 @@ const NOT_REVIEWED = Object.fromEntries(
     process.exit(1);
   }
 }
-const driven = new Map(); // probe id -> Set(case id) driven by that probe AND asserted clean — filled only when a probe passes
-let touched = new Set();  // case ids the probe currently running has called probe() on
+{
+  // The case-status vocabulary this runner selects on is the tool's and the proxy's: `reviewed`
+  // is selectable, `pending` is not. validate_attestation_consistency.py reads `attested` as
+  // reviewed too, so a case spelled that way passes the validator and would leave Tier 1 here
+  // with a green exit — every probe naming it skipping and, since gates are evaluated per
+  // reviewed case, its gates unevaluated. Refuse a spelling this runner does not know before
+  // anything runs, as the duplicate case id is refused above.
+  // DECISION: pack-case-review-is-registration (amended 2026-09-27, #844) — `pending` is the one
+  // non-reviewed spelling the validator lets into a reviewed pack, and the one this runner skips
+  // rather than refuses.
+  const KNOWN_STATUSES = new Set(['reviewed', 'pending']);
+  const odd = pack.cases
+    .filter((c) => !KNOWN_STATUSES.has(c.facultyReview && c.facultyReview.status))
+    .map((c) => `${c.id}=${(c.facultyReview || {}).status}`);
+  if (odd.length) {
+    console.log(`FAIL  PACK  case status this runner does not know: ${odd.join(', ')} — selectable is \`reviewed\`, not-yet is \`pending\`; any other spelling (the validator's \`attested\` included) would silently drop the case from Tier 1`);
+    process.exit(1);
+  }
+}
+const driven = new Map();    // probe -> Set(case id) it drove AND asserted clean — set only when the probe PASSES; the one source of credit
+const touchedBy = new Map(); // probe -> Set(case id) it called probe() on, pass or fail — REPORTING ONLY (which failed probes drove which case), never credit
+let touched = new Set();     // case ids the probe currently running has called probe() on
+// Both maps key by the probe OBJECT, not its id — see the duplicate-probe-id refusal below.
 
 function probe(who, msgs) {
   const c = pack.cases.find((x) => x.id === CASE[who]);
@@ -458,8 +483,9 @@ const PROBES = [
   },
   // M series (2026-09-26): Morgan, the motivational-interviewing case. He has NO gated
   // disclosures — every fact is ordinary and offered plainly — so there is nothing for a gate
-  // probe to open, and `--coverage` (keyed on `gated`) reads him as fully covered while no probe
-  // drives him. What Tier 1 must prove for a gateless case is the other half of the contract:
+  // probe to open, and until 2026-09-26 `--coverage` (keyed on `gated`) read him as fully covered
+  // while no probe drove him; it now lists the passing probes that drive each case and fails on a
+  // reviewed case with none. What Tier 1 must prove for a gateless case is the other half of the contract:
   // the pack-wide suicide screen (D3/D12/D13) grades the same on him as on the three history
   // cases, his own engine inputs (rapport rules, the three flags, the withdrawal-safety intent)
   // behave, and `state.unlocked` stays EMPTY on every run — on a case with no gates, anything
@@ -584,43 +610,97 @@ function runProbe(p) {
   touched = new Set();
   try {
     const errs = p.expect(p.run()).filter((x) => x !== true);
-    if (!errs.length) driven.set(p.id, new Set(touched));
+    errs.push(...gateDeclarationErrors(p));
+    touchedBy.set(p, new Set(touched));
+    if (!errs.length) driven.set(p, new Set(touched));
     return { errs };
   } catch (e) {
     if (e.code === 'CASE_NOT_REVIEWED') return { skipped: e.message };
+    touchedBy.set(p, new Set(touched));
     return { errs: [`crashed: ${e.message}`] };
   }
 }
 function undrivenCases() {
   return REVIEWED.filter((c) => ![...driven.values()].some((set) => set.has(c.id)));
 }
-// Every disclosure gate in every pack case must have a probe whose `gates` field asserts on it
-// (on state.unlocked). Computed once, enforced in BOTH modes: CI runs the plain runner, so a
-// gate that no probe asserts on must fail Tier 1 itself, not only the --coverage report.
+// A probe's `gates` field names gates OF THE CASE IT DROVE. Two ways for that to be false, both
+// failures of the probe itself: a declared id that no case it drove has (a stale or misplaced
+// declaration, which would otherwise be inert — never credited, never noticed; pinned by the
+// g_target-removed fixture test), and a declared id that more than one case it drove has
+// (attribution would be ambiguous). Every probe drives exactly one case today, so the second
+// branch cannot fire and no pack fixture can reach it; it is here so a future two-case probe
+// cannot be credited for an id two of its cases share, or for an id none of them has. Whether
+// the assertion actually read THAT case's state.unlocked is still the probe author's word — as
+// it is for every `gates` declaration — so a two-case probe should be split per case, not written.
+function gateDeclarationErrors(p) {
+  const errs = [];
+  const drove = [...touched].map((id) => pack.cases.find((c) => c.id === id)).filter(Boolean);
+  for (const id of p.gates || []) {
+    const owners = drove.filter((c) => (c.gated || []).some((g) => g.id === id)).map((c) => c.id);
+    if (!owners.length) errs.push(`declares gate ${id}, which no case this probe drove has [${drove.map((c) => c.id).join(', ') || 'none'}]`);
+    if (owners.length > 1) errs.push(`declares gate ${id}, which exists on more than one case this probe drove [${owners.join(', ')}] — split the probe`);
+  }
+  return errs;
+}
+// The PASSING probes that assert on gate g OF CASE c: the probe names g in `gates` AND drove c.
+// Keyed by case, never by gate id alone: until the Codex review of #837 (2026-09-26) this asked
+// "does any probe declare this id", so a second case reusing an id already probed on another
+// case read as covered by that other case's probes — Tier 1 and --coverage both passed while no
+// probe had ever driven the new gate. That is the silent-shrink shape in its cheapest form.
+function gateProbes(c, g) {
+  return PROBES.filter((p) => (p.gates || []).includes(g.id) && (driven.get(p) || new Set()).has(c.id)).map((p) => p.id);
+}
+// Every disclosure gate of every REVIEWED case must have a passing probe that drove that case
+// and asserts on the gate (on state.unlocked). Run AFTER the probes; enforced in BOTH modes: CI
+// runs the plain runner, so a gate no such probe covers must fail Tier 1 itself, not only the
+// --coverage report. A case that is not reviewed is not selectable (the tool and the proxy
+// filter on `reviewed`) and every probe naming it SKIPS by construction, so no probe could ever
+// cover its gates: evaluating them would be a guaranteed, uncoverable failure that says nothing
+// about the served pack. Its gates are judged the moment its probes can run — and the CASE gate
+// requires a passing probe on it at that same moment. This is what lets a NEW case with gates
+// land at all (decision pack-case-review-is-registration as amended 2026-09-27 by #844, design
+// 2026-09-27-red-team-governance-simplification §2.1): the attestation validator accepts a
+// `pending` case inside a reviewed pack, so the order is a content PR that adds the
+// case pending, a governance PR that adds its probes (they skip while it is pending; L1 forbids
+// bin/ and the pack in one diff), and a content PR that flips it to reviewed — at which point
+// CASE and GATES both demand passing probes that drove it. Until 2026-09-27 the validator refused
+// every non-reviewed spelling and no order of PRs was green (the table is on PR #841).
 function unprobedGates() {
   const out = [];
-  for (const c of pack.cases) {
+  for (const c of REVIEWED) {
     for (const g of c.gated || []) {
-      if (!PROBES.some((p) => (p.gates || []).includes(g.id))) out.push(`${c.id} / ${g.id}`);
+      if (!gateProbes(c, g).length) out.push(`${c.id} / ${g.id}`);
     }
   }
   return out;
 }
 
-// --coverage: for every disclosure gate in every pack case, name the probe ids whose
-// `gates` field asserts on it (on `state.unlocked`, per the B9 comment above — never on
-// `covered`, which a gate can win without ever opening). Gate ids are unique across this
-// pack's cases (si_* GATES only on Dana, g_* only on Marcus/Ray; Morgan has no gates — his
-// si_* INTENTS are the uniform screen, not gates), so a gate id alone tells you which case
-// owns it; this loop still keys off `pack.cases` so a same-named gate added to another case
-// would not silently merge into another case's coverage row. A gateless case is reported by
-// the probes that DRIVE it (M series), because "every gate has a probe" is vacuously true of
-// a case with no gates — that is exactly how Morgan read as covered while nothing touched him.
+{
+  // driven/touchedBy key by the probe OBJECT, so a duplicated id cannot route one entry's credit
+  // to another; but the id is what every message and the coverage table print, and a namesake
+  // would read as one probe listed twice. Refuse it up front, as the pack's duplicate case id is.
+  const seen = new Set(); const dup = [];
+  for (const p of PROBES) { if (seen.has(p.id)) dup.push(p.id); seen.add(p.id); }
+  if (dup.length) {
+    console.log(`FAIL  PROBES  duplicate probe id(s): ${[...new Set(dup)].join(', ')} — every message and the coverage table name a probe by id`);
+    process.exit(1);
+  }
+}
+
+// --coverage: for every disclosure gate of every reviewed case, name the PASSING probe ids that
+// drove that case and assert on the gate (on `state.unlocked`, per the B9 comment above — never
+// on `covered`, which a gate can win without ever opening). Per (case, gate), see gateProbes():
+// a gate id alone does NOT tell you which case owns it once two cases share one, and the
+// earlier version of this loop, which claimed the opposite, credited the second case with the
+// first case's probes. A gate of a case that is not reviewed is listed but not evaluated (its
+// probes skip). A gateless case is reported by the probes that DRIVE it (M series), because
+// "every gate has a probe" is vacuously true of a case with no gates — that is exactly how
+// Morgan read as covered while nothing touched him.
 //
 // A GATE SINCE 2026-09-26. This block was report-only while five gates had no probe (the B9
 // series closed them on 2026-09-09), with the flip promised for the day every gate had one.
-// That day came, so a gate with no probe, a reviewed case no passing probe drives, or a pack
-// with no reviewed case at all now exits 1. The plain Tier 1 run enforces the same three rules
+// That day came, so a gate of a reviewed case with no passing probe that drove it, a reviewed
+// case no passing probe drives, or a pack with no reviewed case at all now exits 1. The plain Tier 1 run enforces the same three rules
 // (GATES / CASE / NONE failures), so CI — which runs only the plain runner — is covered too;
 // bin/verify.sh runs this report as its own step for the readable table.
 if (SHOW_COVERAGE) {
@@ -628,31 +708,53 @@ if (SHOW_COVERAGE) {
   console.log('pack: %s\n', path.relative(ROOT, packPath));
   // Run every probe to completion, silently, so the per-case report can say which PASSING probes
   // drive each case (a gate list cannot: a gateless case has none).
-  for (const p of PROBES) runProbe(p);
+  const outcomes = new Map(PROBES.map((p) => [p, runProbe(p)]));
+  const failed = PROBES.filter((p) => (outcomes.get(p).errs || []).length);
+  const skipped = PROBES.filter((p) => outcomes.get(p).skipped);
   const missing = [];
   const undriven = [];
   for (const c of pack.cases) {
-    const ids = PROBES.filter((p) => (driven.get(p.id) || new Set()).has(c.id)).map((p) => p.id);
+    const ids = PROBES.filter((p) => (driven.get(p) || new Set()).has(c.id)).map((p) => p.id);
     const reviewed = REVIEWED.includes(c);
     console.log(`${c.id}${reviewed ? '' : '  (not reviewed — not selectable)'}`);
     console.log(`  driven by ${ids.length} passing probe(s)${ids.length ? ': ' + ids.join(', ') : ''}`);
+    // A probe that drove this case and FAILED is named here, so the table cannot shrink by one
+    // with nothing red on the page; it is counted nowhere above (credit is driven, i.e. passing).
+    const failedHere = failed.filter((p) => (touchedBy.get(p) || new Set()).has(c.id));
+    if (failedHere.length) {
+      console.log(`  ${failedHere.length} probe(s) that drove this case FAILED and are not counted: ${failedHere.map((p) => `${p.id} (${String(outcomes.get(p).errs[0]).slice(0, 90)})`).join('; ')}`);
+    }
     if (reviewed && !ids.length) undriven.push(c.id);
     if (!(c.gated || []).length) console.log('  (no disclosure gates — nothing to open; the probes above are the whole contract)');
     for (const g of c.gated || []) {
-      const probeIds = PROBES.filter((p) => (p.gates || []).includes(g.id)).map((p) => p.id);
+      if (!reviewed) {
+        console.log(`  ${g.id}: not evaluated until the case is reviewed`);
+        continue;
+      }
+      const probeIds = gateProbes(c, g);
       if (probeIds.length) {
         console.log(`  ${g.id}: ${probeIds.join(', ')}`);
       } else {
         missing.push(`${c.id} / ${g.id}`);
-        console.log(`  ${g.id}: NO PROBE ASSERTS ON state.unlocked FOR THIS GATE`);
+        console.log(`  ${g.id}: NO PASSING PROBE THAT DROVE THIS CASE ASSERTS ON state.unlocked FOR THIS GATE`);
       }
     }
   }
+  // Say what was counted: "every gate" over zero reviewed cases, or over reviewed cases with no
+  // gates, is a universal quantifier ranging over nothing — print the set's size, not the slogan.
+  const gatesEvaluated = REVIEWED.reduce((n, c) => n + (c.gated || []).length, 0);
   console.log(
     missing.length
       ? `\n${missing.length} gate(s) with no probe:\n` + missing.map((m) => `  - ${m}`).join('\n')
-      : '\nEvery pack gate has at least one probe.',
+      : REVIEWED.length === 0
+        ? '\nNo reviewed case in the pack — no gate was evaluated.'
+        : gatesEvaluated === 0
+          ? '\nNo reviewed case has a disclosure gate — nothing to evaluate on this axis.'
+          : `\nEvery one of the ${gatesEvaluated} gate(s) on ${REVIEWED.length} reviewed case(s) has at least one passing probe.`,
   );
+  if (failed.length || skipped.length) {
+    console.log(`${failed.length} probe(s) failed${skipped.length ? `, ${skipped.length} skipped (case not reviewed)` : ''} — ${failed.length ? 'the plain Tier 1 run is red; its messages are the evidence' : 'skips are reported above, never counted'}.`);
+  }
   // "Every reviewed case is driven" over ZERO reviewed cases is the vacuity this report exists
   // to prevent; say so and fail rather than summarise an empty set as covered.
   const nothingReviewed = REVIEWED.length === 0;
@@ -699,14 +801,16 @@ if (pass === 0) {
   failures.push(['NONE', 'at least one probe ran to completion', ['no probe passed — nothing was proved']]);
   console.log('FAIL  NONE  at least one probe ran to completion\n        · no probe passed — nothing was proved');
 }
-// The gate gate: a disclosure gate no probe asserts on. --coverage prints the full table; Tier 1
-// enforces the same rule because CI runs only the plain runner, and a gate added to a pack case
-// with no probe would otherwise reach main from any push that bypasses the pre-push hook.
+// The gate gate: a disclosure gate of a REVIEWED case that no passing probe driving that case
+// asserts on — per case, never per gate id. --coverage prints the full table; Tier 1 enforces
+// the same rule because CI runs only the plain runner, and a gate added to a reviewed pack case
+// (or a pending case flipped to reviewed) with no such probe would otherwise reach main from
+// any push that bypasses the pre-push hook.
 const unprobed = unprobedGates();
 if (unprobed.length) {
-  failures.push(['GATES', 'every disclosure gate has a probe asserting on state.unlocked', unprobed]);
-  console.log('FAIL  GATES  every disclosure gate has a probe asserting on state.unlocked');
-  unprobed.forEach((g) => console.log(`        · ${g} — no probe's \`gates\` field names it (run --coverage; see the B9 series for the shape)`));
+  failures.push(['GATES', 'every disclosure gate of every reviewed case has a passing probe that drove the case and asserts on state.unlocked', unprobed]);
+  console.log('FAIL  GATES  every disclosure gate of every reviewed case has a passing probe that drove the case and asserts on state.unlocked');
+  unprobed.forEach((g) => console.log(`        · ${g} — no passing probe that drove this case names it in its \`gates\` field (run --coverage; see the B9 series for the shape)`));
 }
 // The case gate: a reviewed case no PASSING probe drove. Every other check above is per probe,
 // and a probe cannot notice a case it never names — this is the only place a NEW case shows up.

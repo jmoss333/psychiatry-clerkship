@@ -328,3 +328,98 @@ function fdActivityDays(stores, nowMs){
   for(i=6;i>=0;i--){ out.push(on[today-i]===true); }
   return out;
 }
+
+/* Supervisor feedback notes (2026-09-26): the learner's own short record of what a supervisor
+   said, kept beside the week the question was asked in. Device-only and private. Nothing here is
+   sent, exported, counted as progress or read as an assessment; it is the learner's notebook, not
+   a program record. It has its own key rather than joining the ward question capture
+   (cw_capture_v1) because capture items are questions waiting to be asked and routed. A note of
+   what was said is neither, and in capture's triage it would read as an unanswered question.
+
+   The limits are capture's, for capture's reasons: one short note (280 characters), a bounded
+   store (60, oldest dropped first), and patient-detail screening before any write. The screen
+   itself is the shell's own (capRisky), handed to the controller, so the two features can never
+   disagree about what looks like a patient detail. The key is spelled as a literal at each call
+   site so check-static-site.mjs's storage scan can verify the cw_ namespace, and the device
+   erase in the settings panel removes it with every other cw_ key. */
+var FD_FEEDBACK_MAX=280, FD_FEEDBACK_LIMIT=60;
+
+function fdFeedbackValidId(v){
+  return typeof v==='string'&&/^f_[a-z0-9_]{1,40}$/.test(v);
+}
+
+function fdFeedbackItem(it){
+  if(!it||typeof it!=='object'||!fdFeedbackValidId(it.id)) return null;
+  if(typeof it.path!=='string'||!/^[a-z0-9][a-z0-9-]{0,63}$/.test(it.path)) return null;
+  if(typeof it.week!=='number'||!isFinite(it.week)||it.week%1!==0||it.week<1||it.week>52) return null;
+  if(typeof it.text!=='string') return null;
+  var text=it.text.replace(/\s+/g,' ').trim().slice(0,FD_FEEDBACK_MAX);
+  if(!text) return null;
+  var at=typeof it.at==='number'&&isFinite(it.at)&&it.at>=0&&it.at%1===0?it.at:0;
+  return {id:it.id,path:it.path,week:it.week,text:text,at:at};
+}
+
+/* Oldest first, ties broken by id, so eviction and display never depend on insertion order. */
+function fdFeedbackTrim(items){
+  items.sort(function(a,b){ return a.at-b.at||(a.id<b.id?-1:(a.id>b.id?1:0)); });
+  while(items.length>FD_FEEDBACK_LIMIT) items.shift();
+  return items;
+}
+
+function fdFeedbackRead(){
+  var d=null, out=[], seen={};
+  try{ d=JSON.parse(localStorage.getItem('cw_feedback_v1')||'null'); }catch(_){ d=null; }
+  if(!d||typeof d!=='object'||d.v!==1||Object.prototype.toString.call(d.items)!=='[object Array]') return out;
+  for(var i=0;i<d.items.length;i++){
+    var it=fdFeedbackItem(d.items[i]);
+    if(it&&!Object.prototype.hasOwnProperty.call(seen,it.id)){ seen[it.id]=true; out.push(it); }
+  }
+  return fdFeedbackTrim(out);
+}
+
+function fdFeedbackWrite(items){
+  try{
+    if(!items.length){
+      localStorage.removeItem('cw_feedback_v1');
+      return localStorage.getItem('cw_feedback_v1')===null;
+    }
+    localStorage.setItem('cw_feedback_v1',JSON.stringify({v:1,items:items}));
+    return true;
+  }catch(_){ return false; }
+}
+
+/* Returns the new note's id, or false when nothing was stored (an invalid note, or storage that
+   refused the write). The id is derived from the time with a counter, never Math.random, so the
+   same inputs always produce the same store. */
+function fdFeedbackAdd(pathId, week, text, nowMs){
+  var items=fdFeedbackRead(), taken={}, i, base, id, n=0;
+  for(i=0;i<items.length;i++) taken[items[i].id]=true;
+  if(typeof nowMs!=='number'||!isFinite(nowMs)||nowMs<0||nowMs%1!==0) return false;
+  base='f_'+nowMs.toString(36);
+  id=base;
+  while(Object.prototype.hasOwnProperty.call(taken,id)){ n++; id=base+'_'+n; }
+  var item=fdFeedbackItem({id:id,path:pathId,week:week,text:String(text||''),at:nowMs});
+  if(!item) return false;
+  items.push(item);
+  return fdFeedbackWrite(fdFeedbackTrim(items))?id:false;
+}
+
+function fdFeedbackRemove(id){
+  var items=fdFeedbackRead(), kept=[], found=false;
+  for(var i=0;i<items.length;i++){
+    if(items[i].id===id) found=true;
+    else kept.push(items[i]);
+  }
+  return found?fdFeedbackWrite(kept):false;
+}
+
+/* One path week's notes, newest first: the note just saved is the one the learner looks for. */
+function fdFeedbackForWeek(items, pathId, week){
+  var list=Object.prototype.toString.call(items)==='[object Array]'?items:[], out=[];
+  for(var i=0;i<list.length;i++){
+    var it=list[i];
+    if(it&&it.path===pathId&&it.week===week) out.push(it);
+  }
+  out.sort(function(a,b){ return b.at-a.at||(a.id<b.id?1:(a.id>b.id?-1:0)); });
+  return out;
+}

@@ -85,8 +85,10 @@ var FD_PATH_PRACTICE=[
    viewed week's practice from curriculum.json (week.practice, schema since #774), carried into
    the index by fdBuildIndex: since 2026-09-26 the four-week path maps each week to the rotation
    plan's "Demonstrate across the block" list. Same callout, same class; a suggestion to bring to
-   supervision, never an assignment, a tracked item or a competence assessment. */
-function fdPathPractice(index, week){
+   supervision, never an assignment or a competence assessment. Since 2026-09-26 the data-driven
+   callout also holds the learner's own notes of what the supervisor said (fdPathFeedback below):
+   private, on this device, and never progress, a checkmark or an assessment. */
+function fdPathPractice(index, week, state){
   if(!index.path) return '';
   if(index.path.id==='ms3-six-week'){
     var practice=FD_PATH_PRACTICE[week];
@@ -102,7 +104,69 @@ function fdPathPractice(index, week){
   return '<div class="fd-detail__practice">'+
     '<p><strong>Demonstrate this week</strong><br>'+fdEsc(row.skill)+'</p>'+
     '<p><strong>Ask your supervisor</strong><br>“'+fdEsc(row.feedback)+'”</p>'+
+    fdPathFeedback(index.path.id, week, state)+
   '</div>';
+}
+
+/* Local month and day for a note's timestamp ("Sep 26"). Formats a time it is given and never
+   reads the clock, so the renderer stays pure. */
+var FD_FEEDBACK_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fdFeedbackDay(at){
+  var d=new Date(typeof at==='number'&&isFinite(at)?at:0);
+  return FD_FEEDBACK_MONTHS[d.getMonth()]+' '+d.getDate();
+}
+
+/* "Log what they said": one tap opens a short note under the supervisor question; the saved
+   notes for this week list beneath it, newest first. state.feedbackLog is the stored list
+   (fdFeedbackRead, read fresh on every render); state.feedbackDraft is the open note, which is
+   visit-only and never saved as route state. A draft held for possible patient details shows the
+   same fail-closed choice the question capture shows: edit it, or confirm there are none. */
+function fdPathFeedback(pathId, week, state){
+  var st=state||{}, draft=st.feedbackDraft, notice=st.feedbackNotice;
+  var notes=fdFeedbackForWeek(st.feedbackLog, pathId, week);
+  var open=!!draft&&draft.week===week, out='<div class="fd-feedback">';
+  if(open){
+    out+='<label class="fd-feedback__label" for="fdFeedbackText">What did they say?</label>'+
+      '<textarea id="fdFeedbackText" class="fd-feedback__text" rows="3" maxlength="'+FD_FEEDBACK_MAX+'"'+
+      ' aria-describedby="fdFeedbackHint" placeholder="The one thing to keep doing, or to change">'+
+      fdEsc(draft.text||'')+'</textarea>'+
+      '<p class="fd-feedback__hint" id="fdFeedbackHint">The feedback, not the patient. No names, '+
+      'initials, room or bed numbers, dates, or MRNs. Stays on this device.</p>';
+    if(draft.failed){
+      out+='<p class="fd-feedback__error" role="alert">Couldn\'t save on this device. Copy your note '+
+        'before you leave this page.</p>';
+    }
+    if(draft.hold){
+      out+='<div class="fd-feedback__hold" role="alert"><p><strong>This may contain patient details.'+
+        '</strong></p><div class="fd-feedback__acts">'+
+        '<button type="button" class="fd-btn fd-btn--accent" data-fd-feedback-edit>Edit</button>'+
+        '<button type="button" class="fd-btn fd-btn--ghost" data-fd-feedback-confirm>No patient details — save</button>'+
+        '</div></div>';
+    } else {
+      out+='<div class="fd-feedback__acts">'+
+        '<button type="button" class="fd-btn fd-btn--ghost" data-fd-feedback-cancel>Cancel</button>'+
+        '<button type="button" class="fd-btn fd-btn--accent" data-fd-feedback-save>Save note</button>'+
+        '</div>';
+    }
+  } else {
+    out+='<button type="button" class="fd-btn fd-btn--ghost fd-feedback__open" data-fd-feedback-open="'+
+      fdEsc(week)+'">Log what they said</button>';
+    if(notice&&notice.week===week&&notice.text){
+      out+='<p class="fd-feedback__status" role="status">'+fdEsc(notice.text)+'</p>';
+    }
+  }
+  if(notes.length){
+    out+='<p class="fd-feedback__h"><strong>What they said</strong></p><ul class="fd-feedback__list">';
+    for(var i=0;i<notes.length;i++){
+      var day=fdFeedbackDay(notes[i].at);
+      out+='<li class="fd-feedback__item"><span class="fd-feedback__day">'+fdEsc(day)+'</span>'+
+        '<span class="fd-feedback__note">'+fdEsc(notes[i].text)+'</span>'+
+        '<button type="button" class="fd-feedback__delete" data-fd-feedback-delete="'+fdEsc(notes[i].id)+'"'+
+        ' aria-label="Delete the note from '+fdEsc(day)+'">Delete</button></li>';
+    }
+    out+='</ul>';
+  }
+  return out+'</div>';
 }
 
 /* One timeline row. .fd-timeline__line is emitted unconditionally on every row, including the
@@ -168,7 +232,7 @@ function fdPathDetail(index, state){
   if(isCurrent) out+='<span class="fd-detail__here">you are here</span>';
   out+='</div>';
   out+='<h2 class="fd-detail__h2">'+fdEsc(wk?wk.title:'')+'</h2>';
-  out+=fdPathPractice(idx,viewN);
+  out+=fdPathPractice(idx,viewN,state);
   out+='<div class="fd-detail__list">';
   for(var i=0;i<items.length;i++){ out+=fdRow(items[i], i, done, true); }
   out+='</div>';

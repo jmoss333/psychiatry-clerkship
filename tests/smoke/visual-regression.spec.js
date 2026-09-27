@@ -43,6 +43,13 @@
  * silently stopped running would simply be re-baselined as the new normal on the
  * next refresh, and the gate would quietly protect nothing.
  *
+ * GOVERNANCE IS PINNED, NOT READ. Every capture runs under governance-fixture.js: all pages
+ * reviewed by one fixture reviewer on one fixture date, whatever reviewed.json says today.
+ * Before 2026-09-27 the baselines rendered live review state, so a faculty sign-off or an
+ * attestation drift re-opened PNGs no code change had touched (#833's refresh: eight of 16).
+ * expectGovernancePinned() fails a test whose fixture did not engage, rather than letting it
+ * baseline live state again; the reader and Essentials tests also assert the pinned rendering.
+ *
  * Known limitation, deliberately not changed here: playwright.config.js sets
  * `maxDiffPixelRatio: 0.20` for every snapshot in the repo. That is a loose gate,
  * and it is especially loose on a short page. Tightening it would re-open all four
@@ -51,6 +58,9 @@
 
 import { test, expect } from '@playwright/test';
 import { essentialsResources } from './essentials-inventory.js';
+import {
+  governancePinState, pinVisualGovernance, VISUAL_REVIEWER, VISUAL_REVIEWED_AT,
+} from './governance-fixture.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const VIEWPORTS = [
@@ -59,6 +69,7 @@ const VIEWPORTS = [
 ];
 
 async function seedResident(page, tab = 'today') {
+  await pinVisualGovernance(page);
   await page.clock.setFixedTime(FROZEN_NOW);
   await page.addInitScript(({ initialTab }) => {
     localStorage.setItem('cw_rotation_start', '2026-08-17');
@@ -72,24 +83,31 @@ async function seedResident(page, tab = 'today') {
   }, { initialTab: tab });
 }
 
+// The fixture rewrote the shell (its inlined manifest and topic_meta) and the fetched ledger.
+// Without this, renaming an inlined registry or moving the ledger would silently stop the pin
+// and the baselines would read live state again.
+async function expectGovernancePinned(page) {
+  await expect.poll(() => governancePinState(page).ledgers).toBeGreaterThan(0);
+  const state = governancePinState(page);
+  expect(state.error).toBeNull();
+  expect(state.shells).toBeGreaterThan(0);
+}
+
 async function waitForStableFrontDoor(page, surface) {
   await expect(page.locator(surface)).toBeVisible();
+  await expectGovernancePinned(page);
   await expect(page.locator('.fd-fallback[role="alert"]')).toHaveCount(0);
   await page.evaluate(() => document.fonts && document.fonts.ready);
 }
 
 async function waitForStableReader(page) {
   await waitForStableFrontDoor(page, '.fd-reader .fd-article__body');
-  // A governance notice of SOME kind must have rendered -- that is what proves the ledger
-  // arrived and the reader painted it, which is the only thing a baseline needs settled.
-  // It deliberately does NOT require the reviewed receipt: a baselined page whose attestation
-  // drifts renders pending-high or pending-compact instead, and an assertion failure (unlike
-  // snapshot drift) cannot be fixed by refreshing baselines -- it would red the visual and
-  // nav projects until the owner re-attests, which is the deadlock D1 exists to prevent.
-  // `unavailable` stays banned: baselining "Review status unavailable" would freeze a
-  // governance FETCH FAILURE into the reference images, which is the real hazard here.
-  await expect(page.locator('.fd-reader .governance-notice').first()).toBeVisible();
-  await expect(page.locator('.fd-reader .governance-notice.unavailable')).toHaveCount(0);
+  // The pinned ledger arrived and the reader painted it: exactly the fixture receipt, never a
+  // live reviewer, a pending notice, or "Review status unavailable" (a governance FETCH FAILURE,
+  // which must never be frozen into a reference image).
+  await expect(page.locator('.fd-reader .governance-notice.reviewed-receipt').first())
+    .toHaveText(`Reviewed by ${VISUAL_REVIEWER} · ${VISUAL_REVIEWED_AT}`);
+  await expect(page.locator('.fd-reader .governance-notice:not(.reviewed-receipt)')).toHaveCount(0);
 }
 
 /**
@@ -183,6 +201,7 @@ for (const site of ['ms3', 'res']) {
       test.use({ viewport: { width: viewport.width, height: viewport.height } });
       for (const view of ['kit', 'full', ...(site === 'ms3' ? ['today'] : [])]) {
         test(`${view} first viewport`, async ({ page }) => {
+          await pinVisualGovernance(page);
           await page.clock.setFixedTime(FROZEN_NOW);
           await page.addInitScript(role => {
             localStorage.setItem('cw_rotation_start', '2026-08-17');
@@ -192,6 +211,7 @@ for (const site of ['ms3', 'res']) {
           const base = site === 'ms3' ? process.env.MS3_BASE_URL || 'http://localhost:4200' : process.env.RES_BASE_URL || 'http://localhost:4201';
           await page.goto(`${base}/?tab=${view === 'today' ? 'today' : 'library'}${view === 'full' ? '&library=full' : ''}`);
           await waitForStableFrontDoor(page, view === 'today' ? '.fd-today' : '.fd-library');
+          await expect(page.locator('.governance-badge, .fd-kit__pending')).toHaveCount(0);
           if (view !== 'today') await expect(
             view === 'full' ? page.locator('.fd-collink') : essentialsResources(page),
           ).toHaveCount(view === 'full' ? (site === 'ms3' ? 83 : 93) : (site === 'ms3' ? 30 : 35));

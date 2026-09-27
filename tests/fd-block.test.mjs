@@ -81,7 +81,7 @@ test('the review step counts every bucket review.html serves, and only those', (
   assert.deepEqual(onlyQb.steps.map((s) => s.kind), ['page', 'qb'],
     'review.html cannot serve QB# cards, so they must not be promised as a review step');
 
-  assert.deepEqual(F.FD_BLOCK_REVIEW_BUCKETS, ['daily', 'fam', 'comm', 'reason'],
+  assert.deepEqual(F.FD_BLOCK_REVIEW_BUCKETS, ['daily', 'landmark', 'fam', 'comm', 'reason'],
     'keep this list in step with the card sources in review.html');
 
   for (const bucket of F.FD_BLOCK_REVIEW_BUCKETS) {
@@ -90,8 +90,8 @@ test('the review step counts every bucket review.html serves, and only those', (
     assert.equal(plan.steps[0].n, 3, `${bucket} dues must be counted`);
   }
 
-  const mixed = F.fdBlockPlan(IDX, state(), 10, { due: { daily: { due: 1 }, fam: { due: 1 }, comm: { due: 1 }, reason: { due: 1 }, qb: { due: 6 }, other: { due: 9 } }, weakest: null });
-  assert.equal(mixed.steps[0].n, 4, 'the served buckets sum; qb and other stay out');
+  const mixed = F.fdBlockPlan(IDX, state(), 10, { due: { daily: { due: 1 }, landmark: { due: 1 }, fam: { due: 1 }, comm: { due: 1 }, reason: { due: 1 }, qb: { due: 6 }, other: { due: 9 } }, weakest: null });
+  assert.equal(mixed.steps[0].n, 4, 'the served buckets sum up to the two-minute cap; qb and other stay out');
 });
 
 test('no dues means no review step; no weak area means unfiltered questions', () => {
@@ -133,7 +133,7 @@ test('with nothing due and every page read, the plan is questions alone or empty
 });
 
 test('step routes carry the block flag and the bounded size the tools read', () => {
-  assert.equal(F.fdBlockRouteForStep({ kind: 'review', n: 3 }), '?tool=review.html&block=1&limit=3');
+  assert.equal(F.fdBlockRouteForStep({ kind: 'review', n: 3 }), '?tool=review.html&block=1&limit=3&lane=all');
   assert.equal(F.fdBlockRouteForStep({ kind: 'qb', n: 4, cat: 'mood' }), '?tool=question-bank-practice.html&block=1&n=4&cat=mood');
   assert.equal(F.fdBlockRouteForStep({ kind: 'qb', n: 4, cat: null }), '?tool=question-bank-practice.html&block=1&n=4');
   assert.equal(F.fdBlockRouteForStep({ kind: 'page', ref: 't_mood.md' }), '?page=t_mood.md&block=1');

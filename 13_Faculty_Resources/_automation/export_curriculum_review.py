@@ -386,6 +386,71 @@ class Doc:
         return sum(len(x) + 1 for x in self.lines)
 
 
+def render_case_journeys(doc: Doc, build: Path) -> dict[str, int]:
+    """Transcribe cases from the built viewer's declared loaders, including future cases.
+
+    Reuse the teaching-input parser rather than keeping a second case filename list.
+    Unreadable assets and unsupported loaders fail explicitly; a partial transcript
+    must never look like the complete clinical review set.
+    """
+    from teaching_dependencies import local_url, references
+
+    page_url = "tools/one-patient-six-weeks.html"
+    queue = [(page_url, True)]
+    seen = set()
+    cases = []
+    case_ids = set()
+    while queue:
+        url, is_html = queue.pop(0)
+        if url in seen:
+            continue
+        seen.add(url)
+        raw = (build / url).read_text(encoding="utf-8")
+        if url.endswith(".json"):
+            case = json.loads(raw)
+            if not isinstance(case, dict) or "weeks" not in case:
+                continue
+            if not case.get("id") or case["id"] in case_ids:
+                raise ValueError("missing or duplicate case journey id: " + url)
+            if not isinstance(case.get("patient"), dict) or not isinstance(case["weeks"], list) or not case["weeks"]:
+                raise ValueError("invalid case journey: " + url)
+            case_ids.add(case["id"])
+            cases.append((url, case))
+            continue
+        for reference, is_script in references(raw, html=is_html, source=url):
+            asset_url = local_url(reference, page_url)
+            if asset_url and (is_script or asset_url.endswith(".json")):
+                queue.append((asset_url, False))
+    if not cases:
+        raise ValueError("Case Journeys has no exportable teaching data")
+
+    counts = {"cases": len(cases), "chapters": sum(len(case["weeks"]) for _, case in cases)}
+    doc.add(f"## Case Journeys ({counts['cases']} cases / {counts['chapters']} chapters)", "")
+    for url, case in cases:
+        doc.add(f"### {case['id']} — {case['title']}", "", f"Built teaching source: `{url}`", "",
+                f"**Setting.** {case.get('setting', '')}", "", f"> {case.get('disclaimer', '')}", "")
+        for key in ("audience", "timeFrame"):
+            if case.get(key):
+                doc.add(f"**{key}.** {case[key]}", "")
+        patient = case["patient"]
+        doc.add(f"**Patient.** {patient.get('displayName', '')} — {patient.get('description', '')}", "")
+        if patient.get("frame"):
+            doc.add(f"**Frame.** {patient['frame']}", "")
+        for chapter in case["weeks"]:
+            doc.add(f"#### {chapter['label']} — {chapter['title']}", "", f"Chapter id: `{chapter['id']}`", "",
+                    "- Focus: " + ", ".join(chapter.get("focus", [])), "",
+                    f"**Patient state.** {chapter['patientState']}", "",
+                    f"**Learner task.** {chapter['learnerTask']}", "")
+            for item in chapter["checklist"]:
+                doc.add(f"**Prompt.** {item['prompt']}", "", f"**Model language.** {item['example']}", "")
+            doc.add(f"**Reflection prompt.** {chapter['reflectionPrompt']}", "",
+                    f"**Handoff.** {chapter['handoff']}", "")
+            for link in chapter.get("links", []):
+                doc.add(f"- Resource: {link['label']} (`{link['kind']}:{link['target']}`)")
+            doc.add("")
+    return counts
+
+
 def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:
     cfg = AUDIENCES[aud_key]
     B = build_root / cfg["build"]
@@ -616,7 +681,7 @@ def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:
     cdoc = Doc("A2_CASE_SIMULATIONS.md", "Case simulations and rehearsal banks")
     cdoc.add(f"# {cfg['prefix']} · Appendix A2 — Simulation and rehearsal content", "",
              "The branching content behind *What Do You Say Next?*, the Diagnostic Reasoning "
-             "Workbench, Family Systems Practice, and *One Patient, Six Weeks*. Every branch, "
+             "Workbench, Family Systems Practice, and *Case Journeys*. Every branch, "
              "keyed response and coaching line is shown.", "")
 
     cc = _load(B / "communication_cases.json", {"cases": []})
@@ -713,29 +778,9 @@ def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:
                 cdoc.add(f"- **{k}:** " + json.dumps(s[k], ensure_ascii=False))
         cdoc.add("")
 
-    lc = _load(B / "longitudinal_case.json", {})
-    if lc:
-        cdoc.add("## Longitudinal case — *One Patient, Six Weeks*", "",
-                 f"**{lc.get('title','')}** · setting: {lc.get('setting','')}", "",
-                 f"> {lc.get('disclaimer','')}", "")
-        pt = lc.get("patient", {})
-        cdoc.add(f"**Patient.** {pt.get('displayName','')} — {pt.get('description','')}", "")
-        if pt.get("frame"):
-            cdoc.add(f"**Frame.** {pt['frame']}", "")
-        for w in lc.get("weeks", []):
-            cdoc.add(f"### {w.get('label','')} — {w.get('title','')}", "",
-                     f"- Focus: {w.get('focus','')}", "",
-                     f"**Patient state.** {w.get('patientState','')}", "",
-                     f"**Learner task.** {w.get('learnerTask','')}", "")
-            if w.get("checklist"):
-                cdoc.add("**Checklist:**", "")
-                for c2 in w["checklist"]:
-                    cdoc.add("- " + (c2 if isinstance(c2, str) else json.dumps(c2, ensure_ascii=False)))
-                cdoc.add("")
-            for k, lbl in (("reflectionPrompt", "Reflection prompt"), ("handoff", "Handoff")):
-                if w.get(k):
-                    cdoc.add(f"**{lbl}.** " + (w[k] if isinstance(w[k], str)
-                                               else json.dumps(w[k], ensure_ascii=False)), "")
+    journey_counts = render_case_journeys(cdoc, B)
+    stats["case_journeys"] = journey_counts["cases"]
+    stats["journey_chapters"] = journey_counts["chapters"]
     docs.append(cdoc)
     stats["comm_cases"] = len(cc["cases"])
     stats["reasoning_cases"] = len(rc["cases"])
@@ -853,6 +898,7 @@ def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:
         f"| Communication cases | {stats['comm_cases']} |",
         f"| Diagnostic reasoning cases | {stats['reasoning_cases']} |",
         f"| Family systems scenarios | {stats['family_scenarios']} |",
+        f"| Case journeys / chapters | {stats['case_journeys']} / {stats['journey_chapters']} |",
         f"| Registered evidence sources | {stats['evidence_sources']} |",
         f"| Annotated claims with verbatim source spans | {stats['evidence_annotations']} |",
         "",
@@ -975,6 +1021,7 @@ summarised or truncated.
 | Question-bank items | {ms3['qbank']} | {res['qbank']} |
 | Audio-companion questions | {ms3['quiz_questions']} | {res['quiz_questions']} |
 | Communication cases | {ms3['comm_cases']} | {res['comm_cases']} |
+| Case journeys / chapters | {ms3['case_journeys']} / {ms3['journey_chapters']} | {res['case_journeys']} / {res['journey_chapters']} |
 | Reasoning cases | {ms3['reasoning_cases']} | {res['reasoning_cases']} |
 | Family systems scenarios | {ms3['family_scenarios']} | {res['family_scenarios']} |
 | Evidence sources / annotated claims | {ms3['evidence_sources']} / {ms3['evidence_annotations']} | {res['evidence_sources']} / {res['evidence_annotations']} |

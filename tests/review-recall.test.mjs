@@ -5,6 +5,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 
 const repo = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 const review = repo('07_Evidence_and_Reading/Landmark_Trials/review.html');
@@ -122,4 +124,138 @@ test('reveal content is rendered as text, never as markup', () => {
   const nodes = slice(review, 'function revealNodes(', '\n}\n');
   assert.doesNotMatch(nodes, /innerHTML|dangerouslySetInnerHTML/);
   assert.match(nodes, /e\("li",\{key:i\}, x\)/);
+});
+
+// Execute the actual App with a tiny hook renderer: answers must be absent from
+// the element tree before Reveal, not simply hidden with CSS.
+function renderReview(stateValues) {
+  let i=0;const effects=[];
+  const React={createElement:(tag,props,...children)=>({tag,props,children}),useState:(initial)=>[i<stateValues.length?stateValues[i++]:initial,()=>{}],useRef:(v)=>({current:v}),useEffect:(fn)=>effects.push(fn)};
+  let js=review.slice(review.indexOf('var e=React.createElement'),review.indexOf('ReactDOM.createRoot'));
+  js=js.replace('/*__CONCEPT_RECALL__*/',repo('13_Faculty_Resources/_automation/site_build/concept_recall.js'));
+  const storage={getItem:()=>null,setItem:()=>{}};
+  const result=new Function('React','window','document','localStorage','phasePolicy','calibLog','cwReceipt',js+';return App();')(React,{}, {documentElement:{getAttribute:()=>null}},storage,()=>({phase:'unset'}),()=>{},()=>({html:''}));
+  return result;
+}
+const conceptFixture={id:'CONCEPT#test@1',deck:'CONCEPT',deckTitle:'SECRET topic',kind:'recall',q:'Test […]',reveal:'SECRET <img onerror=bad>',page:'ethics_legal.md'};
+const storeFixture={cards:{},stats:{seen:100,correct:99},day:{},settings:{newPerDay:12}};
+function reviewStates(session,last=null){return [[conceptFixture],'ready','all',null,last,false,storeFixture,session,'light',0,'clerkship','ready','ready',null,'ready','',false];}
+test('answer absent before reveal; reveal is text and links to the shipped page',()=>{
+ const session={queue:[conceptFixture],pos:0,total:1,card:conceptFixture,revealed:false,reviewed:0,correct:0};
+ assert.doesNotMatch(JSON.stringify(renderReview(reviewStates(session))),/SECRET/);
+ const shown=JSON.stringify(renderReview(reviewStates({...session,revealed:true})));
+ assert.match(shown,/SECRET <img onerror=bad>/);assert.match(shown,/index.html\?page=ethics_legal.md/);assert.doesNotMatch(shown,/dangerouslySetInnerHTML/);
+});
+test('next-due strip remains on the last-card receipt and revealed Again requeue',()=>{
+ const last={q:'Test […]',page:'ethics_legal.md',due:Date.now()+600000};
+ for(const session of [{finished:true,reviewed:1,correct:1,misses:[]},{queue:[conceptFixture],card:conceptFixture,pos:1,total:1,revealed:true,reviewed:1,correct:0}]){
+  const shown=JSON.stringify(renderReview(reviewStates(session,last)));assert.match(shown,/Next due:/);assert.match(shown,/ethics_legal.md/);
+ }
+});
+test('old mixed history is never represented as Retention',()=>{assert.doesNotMatch(review,/"Retention"|% correct/);assert.match(review,/Choices correct · since this update/);assert.match(review,/Self-rated recall Good\/Easy/);});
+
+test('real queue and dashboard agree: week excludes new only, All includes no-week sources',()=>{
+ const source=repo('13_Faculty_Resources/_automation/site_build/concept_recall.js');
+ const real=slice(review,'  function metrics(which){','  function choose(i)');
+ const lanes=slice(review,'/* ---------- review lanes ---------- */','/* ---------- end review lanes ---------- */');
+ const cards=[conceptFixture,{...conceptFixture,id:'CONCEPT#due@1'},{...conceptFixture,id:'CONCEPT#week@1',page:'mse.md'}];
+ for(const filter of ['all','week']){
+  let session;
+  const state={cards:{'CONCEPT#due@1':{due:0,ivl:1,reps:1}},stats:{},day:{newToday:0}};
+  const run=new Function('cards','store','loadS','rollDay','effectiveNewPerDay','queueable','maturity','shuffle','setSess','saveS','setStore','weekRefs','conceptFilter',source+lanes+';var DAY=86400000,blockLimit={current:null},gradedThisSession={},lane="clerkship";'+real+';return {metrics:metrics(),start:start};');
+  const app=run(cards,state,()=>state,x=>x,()=>12,()=>true,()=> 'young',x=>x,x=>session=x,()=>{},()=>{},['mse.md'],filter);
+  app.start(false);assert.equal(app.metrics.due,1);assert.equal(app.metrics.newRemain,filter==='all'?2:1);
+  assert.equal(session.queue.length,app.metrics.due+app.metrics.newRemain);assert.ok(session.queue.some(c=>c.id==='CONCEPT#due@1'));
+ }
+});
+test('missing feed is a visible incomplete state and Retry checks worker update',()=>{
+ const values=reviewStates(null);values[1]='unavailable';const shown=JSON.stringify(renderReview(values));assert.match(shown,/Concepts unavailable — review is incomplete/);assert.match(shown,/Retry Concepts/);assert.match(review,/conceptRetry\(conceptDigestFromDocument\(document\),navigator.serviceWorker\)/);assert.doesNotMatch(review,/concepts\.json\?/);
+});
+test('week filter is transient and direct visit only offers All',()=>{
+ const shown=JSON.stringify(renderReview(reviewStates(null)));assert.match(shown,/All topics are available here/);assert.doesNotMatch(review,/localStorage\.setItem\([^\n]*conceptFilter/);
+ assert.match(review,/ev.origin!==location.origin\|\|ev.source!==window.parent/);
+});
+test('interactive controls suppress global shortcuts',()=>{
+ const body=slice(review,'function onKey(ev){',' window.addEventListener("keydown"');
+ let grades=0;const onKey=new Function('sessRef','grade','revealCard','choose','optOrder',body+';return onKey;')({current:{card:conceptFixture,revealed:true}},()=>grades++,()=>{},()=>{},()=>[]);
+ onKey({key:'3',target:{closest:()=>({})}});assert.equal(grades,0);
+ onKey({key:'3',target:{closest:()=>null}});assert.equal(grades,1);
+});
+test('recovery failure is visible and retry remains a deliberate action',()=>{
+ const values=reviewStates(null);values[1]='Concepts recovery timed out. Check your connection and try again.';
+ const shown=JSON.stringify(renderReview(values));assert.match(shown,/recovery timed out/);assert.match(shown,/Review remains incomplete/);assert.match(shown,/Retry Concepts/);
+ assert.match(review,/if\(out===null\)\{location.reload\(\);return;\}/);
+});
+
+test('prior sibling prompt cannot leak the next cloze answer before reveal',()=>{
+ const card={...conceptFixture,q:'A […]',reveal:'A SECRET'};
+ const session={queue:[card],card,pos:1,total:2,revealed:false,reviewed:1,correct:0};
+ const last={q:'[…] SECRET',page:card.page,due:Date.now()};
+ assert.doesNotMatch(JSON.stringify(renderReview(reviewStates(session,last))),/SECRET|Next due:/);
+});
+test('completed review has a nonempty live announcement',()=>{
+ const tree=renderReview(reviewStates({finished:true,reviewed:2,correct:0,misses:[]}));
+ function findLive(node){if(!node||typeof node!=='object')return [];return [...(node.props?.['aria-live']==='polite'?[node]:[]),...(node.children||[]).flat(Infinity).flatMap(findLive)];}
+ const live=findLive(tree);assert.equal(live.length,1);assert.match(JSON.stringify(live[0]),/Review complete.*2 cards graded/);
+});
+
+test('Concepts dashboard names available due new and aggregate recall separately',()=>{
+ const shown=JSON.stringify(renderReview(reviewStates(null)));
+ assert.match(shown,/1 available · 0 due · 1 new/);
+ assert.match(shown,/All recall sources/);
+ assert.match(shown,/Practice Questions/);assert.match(shown,/question-bank-practice.html/);
+ assert.match(shown,/Progress saved in this browser; Anki reviews are separate/);
+ const values=reviewStates(null);values[1]='unavailable';
+ const unavailable=JSON.stringify(renderReview(values));
+ assert.match(unavailable,/Concept counts unavailable/);assert.doesNotMatch(unavailable,/available · 0 due/);
+});
+test('evidence is absent from the actual render tree before reveal and linked after',()=>{
+ const card={...conceptFixture,evidence:[{id:'secret-citation',url:'https://doi.org/secret-citation'}]};
+ const session={queue:[card],pos:0,total:1,card,revealed:false,reviewed:0,correct:0};
+ assert.doesNotMatch(JSON.stringify(renderReview(reviewStates(session))),/secret-citation/);
+ assert.match(JSON.stringify(renderReview(reviewStates({...session,revealed:true}))),/https:\/\/doi.org\/secret-citation/);
+});
+
+test('source-backed clinical-to-article bridge appears only after reveal and opens the exact companion',()=>{
+ const card={...conceptFixture,id:'CONCEPT#t_psychosis-pearl3:1@2',reveal:'Use the side-effect fit'};
+ const pair={clinicalCardId:card.id,articleCardId:'AR-24#5',sourceId:'lieberman-2005-catie',title:'Secret CATIE title',result:'Secret outcome',limitation:'Secret limitation',url:'https://doi.org/10.1056/nejmoa051688'};
+ const session={queue:[card],pos:0,total:1,card,revealed:false,reviewed:0,correct:0};
+ const state=(s)=>{const values=reviewStates(s);values[0]=[card];values[13]={schemaVersion:1,pairs:[pair]};return values;};
+ const hidden=JSON.stringify(renderReview(state(session)));
+ assert.doesNotMatch(hidden,/Secret CATIE title|Secret outcome|Secret limitation|lieberman-2005-catie/);
+ const shown=JSON.stringify(renderReview(state({...session,revealed:true})));
+ assert.match(shown,/Clinical decision/);assert.match(shown,/Study result/);assert.match(shown,/Important limitation/);
+ assert.match(shown,/Secret outcome/);assert.match(shown,/Secret limitation/);
+ assert.match(shown,/lane=landmark/);assert.match(shown,/focus=AR-24%235/);
+});
+
+test('missing article feed shows unknown Landmark counts rather than false zero',()=>{
+ const values=reviewStates(null);values[10]='landmark';values[11]='unavailable';
+ const shown=JSON.stringify(renderReview(values));
+ assert.match(shown,/Landmark Evidence unavailable/);
+ assert.match(shown,/Counts unavailable/);
+ assert.doesNotMatch(shown,/All caught up ✓/);
+});
+
+test('all real generated candidate faces keep citation IDs and evidence out of unrevealed DOM',()=>{
+ const root=fileURLToPath(new URL('../',import.meta.url));
+ const cards=JSON.parse(execFileSync('python3',['-c',"import sys,json;from pathlib import Path;sys.path.insert(0,'13_Faculty_Resources/_automation/site_build');import concept_cards as c;print(json.dumps(c.validate_candidates(Path('.'),c.load_candidates(Path('.')))))"],{cwd:root,encoding:'utf8'}));
+ const adapt=new Function(repo('13_Faculty_Resources/_automation/site_build/concept_recall.js')+';return conceptCardsFromFeed;')();
+ assert.equal(cards.length,154);
+ for(const card of adapt({schemaVersion:1,cards})){
+  const session={queue:[card],pos:0,total:1,card,revealed:false,reviewed:0,correct:0};
+  const hidden=JSON.stringify(renderReview(reviewStates(session)));
+  assert.doesNotMatch(hidden,/\[\^/);
+  for(const evidence of card.evidence){assert.ok(!hidden.includes(evidence.id));assert.ok(!hidden.includes(evidence.url));}
+  const shown=JSON.stringify(renderReview(reviewStates({...session,revealed:true})));
+  for(const evidence of card.evidence)assert.ok(shown.includes(evidence.url));
+ }
+});
+
+test('Retry keeps missing build digest failure inside the visible recovery state',async()=>{
+ let status;
+ const retry=new Function('setConceptStatus','conceptDigestFromDocument','document','navigator','conceptRetry',slice(review,'  function retryConcepts(){','  var conceptNotice=')+';return retryConcepts;')(x=>status=x,()=>{throw Error('Concepts build digest unavailable');},{},{},()=>{throw Error('must not fetch');});
+ assert.doesNotThrow(()=>retry());
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(status,'Concepts build digest unavailable');
 });

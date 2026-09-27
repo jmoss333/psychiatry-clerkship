@@ -50,17 +50,18 @@ test('due row is omitted at zero and uses exact singular/plural labels', () => {
   assert.doesNotMatch(one, /1 reviews/);
 
   const many = F.fdDueRow({
-    daily: { due: 2 }, qb: { due: 3 }, fam: { due: 1 }, other: { due: 0 },
+    daily: { due: 2 }, landmark: { due: 1 }, qb: { due: 3 }, fam: { due: 1 }, other: { due: 0 },
   });
-  assert.match(many, />6 reviews due</);
-  assert.match(many, /2 daily/);
+  assert.match(many, />7 reviews due</);
+  assert.match(many, /2 curriculum/);
+  assert.match(many, /1 landmark/);
   assert.match(many, /3 practice/);
   assert.match(many, /1 family/);
   // Re-pinned 2026-09-24. This used to assert the whole row opened review.html -- which was the
   // defect: Daily Review cannot serve QB# cards, so the 3 practice cards could never clear there.
   // The row's control still opens Daily Review (it serves the daily and family cards); the bank's
   // share gets its own control, pinned in the tests below.
-  assert.match(many, /<button type="button" class="fd-due" data-fd-open="review\.html">/);
+  assert.match(many, /<a class="fd-due" href="\?tool=review\.html&amp;lane=all">/);
   assert.match(many, /data-fd-open="question-bank-practice\.html">Practice bank · 3 due for review →</);
 });
 
@@ -87,18 +88,27 @@ test('only bank cards due: the row itself opens the practice bank, never Daily R
     'the phone dock names where the primary actually goes');
 });
 
-test('no bank cards due: markup is exactly the pre-2026-09-24 row, still Daily Review', () => {
+test('no bank cards due: the primary opens all due reviews', () => {
   const out = F.fdDueRow({ daily: { due: 2 }, qb: { due: 0 }, comm: { due: 1 } }, true);
-  assert.match(out, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html"/);
+  assert.match(out, /^<a class="fd-due is-primary" href="\?tool=review\.html&amp;lane=all"/);
   assert.doesNotMatch(out, /question-bank-practice|fd-due-group/);
+});
+
+test('landmark-only history is counted and opens the all-due lane', () => {
+  const out = F.fdDueRow({ daily: { due: 0 }, landmark: { due: 2 }, qb: { due: 0 } }, true);
+  assert.match(out, /^<a class="fd-due is-primary" href="\?tool=review\.html&amp;lane=all"/);
+  assert.match(out, /2 reviews due/);
+  assert.match(out, /2 landmark/);
+  assert.doesNotMatch(out, /data-fd-open="review\.html"/,
+    'the Front Door would intercept a ref action and drop the lane query');
 });
 
 test('both due: Daily Review keeps the row, the bank gets one secondary control with its own count', () => {
   const out = F.fdDueRow(MIXED, true);
   const opens = out.match(/data-fd-open="[^"]+"/g);
-  assert.deepEqual(opens, ['data-fd-open="review.html"', 'data-fd-open="question-bank-practice.html"'],
-    'the row first, then the bank -- and nothing else routes');
-  assert.match(out, /^<div class="fd-due-group"><button type="button" class="fd-due is-primary" data-fd-open="review\.html"/);
+  assert.deepEqual(opens, ['data-fd-open="question-bank-practice.html"'],
+    'the review route retains lane=all in its href; the bank keeps its existing action');
+  assert.match(out, /^<div class="fd-due-group"><a class="fd-due is-primary" href="\?tool=review\.html&amp;lane=all"/);
   assert.match(out, />3 reviews due</, 'the label still counts everything due -- it is what the picker ranks');
   assert.match(out, /<button type="button" class="fd-due-group__bank" data-fd-open="question-bank-practice\.html">Practice bank · 1 due for review →<\/button><\/div>$/);
 });
@@ -109,10 +119,9 @@ test('the secondary control is never a second primary and never nested in the ro
     assert.equal((out.match(/data-fd-dock-source=/g) || []).length, primary ? 1 : 0,
       'One Thing First: the dock mirrors exactly one control, and only when the row won');
     assert.equal((out.match(/is-primary/g) || []).length, primary ? 1 : 0);
-    // A <button> may not contain interactive content: the bank control must follow the row's
-    // closing tag, not sit inside it.
-    const row = out.slice(out.indexOf('<button'), out.indexOf('</button>') + '</button>'.length);
-    assert.equal((row.match(/<button/g) || []).length, 1, 'no button inside the row button');
+    // The bank control must follow the review link, not sit inside it.
+    const row = out.slice(out.indexOf('<a'), out.indexOf('</a>') + '</a>'.length);
+    assert.doesNotMatch(row, /<button/, 'no bank action inside the review link');
   }
   assert.equal(F.fdDueRow({ qb: { due: 0 }, daily: { due: 0 } }, true), '', 'nothing due is still nothing');
 });
@@ -188,7 +197,7 @@ test('fdDueRow(b, true) is the primary: is-primary plus the kicker; false or und
   assert.equal(F.fdDueRow(DUE_ONE, undefined), plain);
   assert.doesNotMatch(plain, /is-primary|fd-due__kicker/);
   const primary = F.fdDueRow(DUE_ONE, true);
-  assert.match(primary, /^<button type="button" class="fd-due is-primary" data-fd-open="review\.html" data-fd-dock-source="primary-due" data-fd-dock-label="Start review"><span class="fd-due__kicker">Clear what’s due<\/span><span class="fd-due__label">1 review due<\/span>/);
+  assert.match(primary, /^<a class="fd-due is-primary" href="\?tool=review\.html&amp;lane=all" data-fd-dock-source="primary-due" data-fd-dock-label="Start review"><span class="fd-due__kicker">Clear what’s due<\/span><span class="fd-due__label">1 review due<\/span>/);
   assert.equal(primary.replace(' is-primary', '').replace(' data-fd-dock-source="primary-due" data-fd-dock-label="Start review"', '').replace('<span class="fd-due__kicker">Clear what’s due</span>', ''), plain);
   assert.equal(F.fdDueRow({ daily: { due: 0 } }, true), '', 'nothing due renders nothing, primary or not');
 });

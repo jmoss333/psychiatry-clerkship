@@ -745,6 +745,7 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
     cases = pack.get("cases")
     if not isinstance(cases, list) or not cases:
         return errors + ["%s: pack.cases must be a non-empty list" % slug]
+    selectable_count = 0
     for index, case_def in enumerate(cases):
         if not isinstance(case_def, dict):
             errors.append("%s: pack.cases[%d] must be an object" % (slug, index))
@@ -755,12 +756,29 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
             errors.append("%s: case %s is missing facultyReview" % (slug, case_id))
             review = {}
         case_status = norm_status(review.get("status"))
-        if is_reviewed(pack_status) and not is_reviewed(case_status):
-            # DECISION: pack-case-review-is-registration — this rule is why a case ENTERS the pack
-            # already reading reviewed (or attested) in the content PR that adds it: the block is
-            # registration; the ledger row for the tool, which hashes the pack, is the claim of record.
+        pending = review.get("status") == "pending"
+        if review.get("status") == "reviewed":
+            selectable_count += 1
+        if pending and any(
+            review.get(key) for key in ("reviewer", "lastReviewed", "reviewedAt")
+        ):
             errors.append(
-                "%s: attested pack contains non-reviewed case %s" % (slug, case_id)
+                "%s: pending case %s has reviewer or review date" % (slug, case_id)
+            )
+        if is_reviewed(pack_status) and not is_reviewed(case_status) and not pending:
+            # DECISION: pack-case-review-is-registration — the per-case block controls
+            # selection; the ledger row hashing the whole pack is the attestation of record.
+            # Amended 2026-09-27 (#844, design 2026-09-27-red-team-governance-simplification
+            # §2.1): exactly `pending` is the one non-reviewed spelling a reviewed pack may carry —
+            # with no reviewer or review date (above), and never as the pack's only case (below).
+            # A pending case is unselectable in the tool and the proxy and its red-team probes
+            # skip, so it can land in a content PR ahead of the probes a governance PR must add.
+            # Every other spelling — draft, unreviewed, a typo, a missing block — stays an error,
+            # and the message names what is accepted.
+            errors.append(
+                "%s: attested pack contains non-reviewed case %s (status %s; a case in a "
+                "reviewed pack must be reviewed, attested or pending)"
+                % (slug, case_id, case_status)
             )
         if is_reviewed(case_status):
             reviewer = review.get("reviewer")
@@ -772,6 +790,9 @@ def _validate_pack(slug, pack_path, ledger_status, meta_status):
                 errors.append(
                     "%s: reviewed case %s is missing review date" % (slug, case_id)
                 )
+
+    if is_reviewed(pack_status) and selectable_count == 0:
+        errors.append("%s: reviewed pack has no selectable reviewed case" % slug)
 
     errors.extend(_validate_speech_engine(slug, pack, cases))
     return errors

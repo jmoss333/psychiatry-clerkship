@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "pairs": [
+    {
+      "clinicalCardId": "CONCEPT#t_psychosis-pearl3:1@2",
+      "articleCardId": "AR-24#5",
+      "articleQuestion": "According to the 'Clinical Pearls' derived from CATIE, how should a clinician primarily choose between different non-clozapine antipsychotics?",
+      "sourceId": "lieberman-2005-catie",
+      "resultExcerpt": "Seventy-four percent discontinued assigned treatment before 18 months; olanzapine had longer persistence than some agents but greater weight and metabolic effects",
+      "limitationExcerpt": "time to discontinuation combines efficacy, tolerability, and other reasons rather than isolating symptom efficacy.",
+      "expected": {
+        "title": "Effectiveness of antipsychotic drugs in patients with chronic schizophrenia.",
+        "result": "Seventy-four percent discontinued assigned treatment before 18 months; olanzapine had longer persistence than some agents but greater weight and metabolic effects, while perphenazine had similar effectiveness to several newer agents and more extrapyramidal effects.",
+        "limitation": "Very high discontinuation limits long-term outcome ascertainment; time to discontinuation combines efficacy, tolerability, and other reasons rather than isolating symptom efficacy.",
+        "url": "https://doi.org/10.1056/nejmoa051688"
+      }
+    }
+  ]
+}

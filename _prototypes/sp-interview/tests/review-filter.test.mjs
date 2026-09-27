@@ -93,7 +93,7 @@ assert.deepEqual(
       cases: [
         { id: 'synthetic_reviewed', facultyReview: { status: 'reviewed' } },
         { id: 'synthetic_draft', facultyReview: { status: 'draft' } },
-        { id: 'synthetic_pending', facultyReview: { status: 'draft-pending-attestation' } },
+        { id: 'synthetic_pending', facultyReview: { status: 'pending' } },
         { id: 'synthetic_no_review_block' },
       ],
     })
@@ -138,6 +138,11 @@ assert.equal(
   eligibleWith({ ...reviewedAll, caseStatus: 'draft-pending-attestation' }),
   false,
   'draft case must not be managed-voice eligible even with a reviewed engine',
+);
+assert.equal(
+  eligibleWith({ ...reviewedAll, caseStatus: 'pending' }),
+  false,
+  'pending case must not be managed-voice eligible even with a reviewed engine',
 );
 assert.equal(
   eligibleWith({ ...reviewedAll, profileStatus: 'draft-pending-attestation' }),

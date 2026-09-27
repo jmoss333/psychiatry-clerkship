@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(488 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(503 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -170,7 +170,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 |---|---|
 | `.fd-dock` | `<nav aria-label="Learning actions">`; fixed five-column phone grid under `#fdDockMount`. Its safe-area padding is the only phone bottom-edge action surface. Hidden above 640px. |
 | `.fd-dock__item` | `<button>` for four of the five slots, `<details>` for Browse (see below). Every phone target has at least 44×44 CSS pixels and visible text. Height is bounded to 60px with three visible lines so a long reader title cannot exceed the 84px content clearance; the full text remains the accessible name. `[aria-current="page"]` marks the active top-level destination; `:disabled` dims an unavailable item. |
-| `.fd-dock__item--context` | Modifier on the center button. A marked primary source forwards its existing click through `data-fd-dock-forward` and is raised; absent or stale source opens the Library (Essentials) as a flat **Essentials** item. Renamed from **Browse** (2026-09-25) once the dedicated `.fd-dock__browse` item shipped beside it -- both landing on the same word read as a duplicate-label bug rather than two purposeful controls, since this fallback only appears when nothing is actively being read while the dedicated Browse item is always present. The reader's marked source stays in the hidden legacy action bar solely to own its behavior; Today sources remain visible in their cards. |
+| `.fd-dock__item--context` | Modifier on the center button. A marked primary source forwards its existing click through `data-fd-dock-forward` and is raised; absent or stale source opens the Library (Essentials) as a flat **Essential** item (singular since 2026-09-27: at 390px the plural split mid-word, `Essential`/`s`). Renamed from **Browse** (2026-09-25) once the dedicated `.fd-dock__browse` item shipped beside it -- both landing on the same word read as a duplicate-label bug rather than two purposeful controls, since this fallback only appears when nothing is actively being read while the dedicated Browse item is always present. The reader's marked source stays in the hidden legacy action bar solely to own its behavior; Today sources remain visible in their cards. |
 | `.fd-dock__browse` | Replaces the dock's old Search button (2026-09-25) and carries Search as its third item (2026-09-26): the phone header is not pinned -- it scrolls away with the page -- so `.fd-searchbtn` is out of reach mid-page, and reaching it scrolls the reader (and its saved reading place) to the top. A native `<details>`/`<summary>` disclosure, not a dispatched action: opening/closing it is browser-owned, so it needs no state field and nothing to reset on unrelated navigation. `fdRenderDock` replaces the dock's entire innerHTML on every refresh, which closes an open disclosure for free -- except while search is open, when `fdRenderDock` retains the open disclosure because its Search item is the dialog's opener and must survive hydration to take focus back. Overrides `.fd-dock__item`'s `overflow:hidden`/line-clamp (built for a plain text label) with `overflow:visible`, since `.fd-dock__browsemenu` is an absolutely-positioned descendant that must escape this box to float above the dock. |
 | `.fd-dock__browsemenu` | The popover revealed by `.fd-dock__browse[open]`; `position:absolute;bottom:100%` anchors it above the dock. `role="menu"`. |
 | `.fd-dock__browseitem` | `<button role="menuitem" data-fd-dock-browse-go="essentials"\|"full"\|"search">` -- a thin alias fd_wire.js resolves onto `data-fd-library-view` (the exact action the desktop Essentials/Everything tabs use) or `data-fd-search`. Its own attribute, never the target's: a bare `data-fd-library-view="full"` would duplicate the Library footer button, and a bare `data-fd-search` would let focus restore land on the off-screen header `.fd-searchbtn`. |
@@ -474,6 +474,17 @@ Omitting it collapses the rail underneath.
         .fd-eyebrow / .fd-detail__here
       .fd-detail__h2
       .fd-detail__practice
+        .fd-feedback                   (data-driven paths only, not the six-week path)
+          button.fd-btn.fd-btn--ghost.fd-feedback__open   ("Log what they said"; no note open)
+          p.fd-feedback__status[role="status"]            (after a save or delete, that week only)
+          label.fd-feedback__label + textarea.fd-feedback__text#fdFeedbackText   (note open)
+          p.fd-feedback__hint#fdFeedbackHint
+          p.fd-feedback__error[role="alert"]              (the device refused the save)
+          .fd-feedback__hold[role="alert"]                (possible patient detail: Edit / confirm)
+          .fd-feedback__acts                              (Cancel / Save note, or Edit / confirm)
+          p.fd-feedback__h + ul.fd-feedback__list
+            li.fd-feedback__item ×N
+              .fd-feedback__day / .fd-feedback__note / button.fd-feedback__delete
       .fd-detail__list
         .fd-row.is-compact ×N
       .fd-btn.fd-btn--accent           ("Set as my week")
@@ -489,6 +500,13 @@ Omitting it collapses the rail underneath.
 | `.fd-timeline__status` | Visible non-colour state text: Current, Complete, or Complete · Current. |
 | `.fd-timeline__theme` | Canonical curriculum theme; shown for the selected node, including immediately on the phone rail. |
 | `.fd-detail__here` | "you are here" pill. |
+| `.fd-feedback` | The learner's private supervisor-feedback notes for the viewed week (`cw_feedback_v1`, device only). Never progress, never exported, never an assessment. |
+| `.fd-feedback__text` | Type size is `max(var(--fd-font-base),1rem)`: iOS Safari zooms the page into any field under 16px when it takes focus. |
+| `.fd-feedback__hold` | Same fail-closed interstitial as the ward capture: the shell's `capRisky` decides, and an unwired screen holds every note. |
+| `.fd-feedback__delete` | Keeps the 44px touch target in both directions; its accessible name carries the note's date. |
+
+⚠ The open note is visit-only (`feedbackDraft`): leaving Path, opening a resource or choosing another
+week closes it. Its text is kept on the controller as it is typed, so a repaint never empties the field.
 
 ⚠ The route is a roving tab set. Arrow Left/Right/Up/Down wraps, Home/End jump to the audience's
 real endpoints, and the rebuilt selected control regains focus with `preventScroll`. Keep

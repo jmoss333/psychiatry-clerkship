@@ -1,145 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="One Patient, Six Weeks" version="1.0" built="2026-07-11" category="longitudinal-simulation" audience="ms3,resident" settings="inpatient,self-study" time="10-20min" summary="Fictional composite longitudinal inpatient psychiatry case with six evolving states, checklist reflection, and links to supervised practice tools. Stores only anonymous checklist state under cw_longitudinal_v1; no PHI or free-text patient fields." -->
+<!-- [CLERKSHIP-META v1] tool="Case Journeys" version="2.1" built="2026-09-27" category="longitudinal-simulation" audience="ms3,resident" settings="inpatient,outpatient,self-study" time="10-20min" summary="Follow four fictional patients through six chapters of supervised psychiatric practice. Transient, unscored chapter navigation; no patient entry or saved case progress." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
-<title>One Patient, Six Weeks</title>
+<title>Case Journeys</title>
+<link rel="stylesheet" href="/clinical-warm.css">
 <style>
 :root{
-  --bg:#f6f3ee;--surface:#fff;--focus:#155eef;
-  --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
-  --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  --opf-paper:#f6f0e4;--opf-sheet:#fffdf8;--opf-ink:#26302e;--opf-muted:#6e6a61;
+  --opf-line:#c9bda9;--opf-thread:#a64935;--opf-thread-dark:#713327;--opf-teal:#276b68;
+  --opf-teal-pale:#dcecea;--opf-plum:#4a3047;--opf-sun:#d6a64d;--opf-focus:#155eef;
+  --opf-card-clay:#a64935;--opf-card-teal:#276b68;--opf-card-plum:#77516f;--opf-card-olive:#7a6732;
+  --opf-panel:rgba(255,253,248,.74);--opf-panel-solid:#fffdf8;--opf-folio-back:#e7dbc9;
+  --opf-language:#fff8e8;--opf-hero-start:rgba(74,48,71,.98);--opf-hero-end:rgba(38,77,75,.94);
+  --opf-hero-fallback:#4a3047;--opf-hero-ink:#fffaf1;--opf-hero-muted:#f1ece3;
+  --opf-hero-eyebrow:#ead397;--opf-hero-mark:#efd076;--opf-hero-boundary:#eee8dd;
+  --opf-hero-line:rgba(255,255,255,.34);--opf-body-glow:rgba(214,166,77,.16);
+  --opf-shadow:0 24px 54px rgba(48,40,32,.14);
+  --opf-sans:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --opf-serif:"Source Serif 4","Iowan Old Style",Georgia,serif;
 }
+html[data-case-accent="teal"]{--opf-thread:#276b68;--opf-thread-dark:#164a48;--opf-hero-start:rgba(43,63,82,.98);--opf-hero-end:rgba(30,84,80,.94)}
+html[data-case-accent="plum"]{--opf-thread:#77516f;--opf-thread-dark:#4a3047;--opf-hero-start:rgba(74,48,71,.98);--opf-hero-end:rgba(76,66,86,.94)}
+html[data-case-accent="olive"]{--opf-thread:#7a6732;--opf-thread-dark:#55461f;--opf-hero-start:rgba(66,59,55,.98);--opf-hero-end:rgba(84,84,54,.94)}
+:root[data-theme="dark"]{--opf-paper:#181d1c;--opf-sheet:#242a29;--opf-ink:#f4efe6;--opf-muted:#c8c0b3;--opf-line:#625d55;--opf-teal:#70bbb5;--opf-teal-pale:#193d3b;--opf-plum:#d1a8c7;--opf-sun:#e4bf68;--opf-focus:#7aa2ff;--opf-card-clay:#e09278;--opf-card-teal:#70bbb5;--opf-card-plum:#c991ba;--opf-card-olive:#c6b36d;--opf-panel:rgba(36,42,41,.8);--opf-panel-solid:#242a29;--opf-folio-back:#37312a;--opf-language:#332d1e;--opf-hero-start:rgba(45,31,43,.98);--opf-hero-end:rgba(22,51,50,.98);--opf-hero-fallback:#211d2a;--opf-hero-ink:#f7efe3;--opf-hero-muted:#ded5c8;--opf-hero-eyebrow:#f0cf82;--opf-hero-mark:#f4d37e;--opf-hero-boundary:#d8d0c5;--opf-hero-line:rgba(244,239,230,.48);--opf-body-glow:rgba(198,179,109,.11);--opf-shadow:0 24px 54px rgba(0,0,0,.34)}
+:root[data-theme="dark"][data-case-accent="clay"]{--opf-thread:#e09278;--opf-thread-dark:#f2b29c;--opf-hero-start:rgba(45,31,43,.98);--opf-hero-end:rgba(22,51,50,.98)}
+:root[data-theme="dark"][data-case-accent="teal"]{--opf-thread:#70bbb5;--opf-thread-dark:#9dd5d0;--opf-hero-start:rgba(30,42,54,.98);--opf-hero-end:rgba(17,58,55,.98)}
+:root[data-theme="dark"][data-case-accent="plum"]{--opf-thread:#c991ba;--opf-thread-dark:#e1b8d8;--opf-hero-start:rgba(45,31,43,.98);--opf-hero-end:rgba(47,40,53,.98)}
+:root[data-theme="dark"][data-case-accent="olive"]{--opf-thread:#c6b36d;--opf-thread-dark:#ded092;--opf-hero-start:rgba(40,36,32,.98);--opf-hero-end:rgba(51,50,30,.98)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fd-text);font-family:var(--font-body);font-size:16px;line-height:1.5}
-.shell{max-width:1160px;margin:0 auto;padding:24px 18px 72px}
-.top{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,420px);gap:18px;align-items:start;margin-bottom:18px}
-.kicker{text-transform:uppercase;letter-spacing:.13em;font-size:.72rem;font-weight:900;color:var(--fd-teal-deep)}
-h1{font-family:var(--font-head);font-size:2.2rem;line-height:1.05;color:var(--fd-terracotta-dark);margin:.08em 0 .22em}
-.sub{max-width:72ch;color:var(--fd-text-mid);margin:0}
-.notice{border:1px solid var(--fd-olive);border-left:4px solid var(--fd-olive);border-radius:10px;background:var(--fd-olive-wash);padding:11px 13px;color:var(--fd-text-mid);font-size:.91rem}
-.layout{display:grid;grid-template-columns:minmax(235px,290px) minmax(0,1fr);gap:16px}
-.side,.card,.week-card,.links-card{background:var(--surface);border:1px solid var(--fd-line-strong);border-radius:14px;box-shadow:0 1px 4px rgba(56,48,40,.06);min-width:0}
-.side{align-self:start;position:sticky;top:12px;padding:11px}
-.progress{padding:5px 5px 12px;margin-bottom:8px;border-bottom:1px solid var(--fd-line-strong)}
-.progress b{display:block}
-.progress .small{display:block;color:var(--fd-text-dim);font-size:.82rem}
-.bar{height:8px;border-radius:999px;border:1px solid var(--fd-line-strong);background:var(--fd-surface-warm);overflow:hidden;margin-top:8px}
-.bar span{display:block;height:100%;width:0;background:var(--fd-teal);transition:width .2s ease}
-.weekbtn{display:block;width:100%;border:1px solid transparent;background:transparent;border-radius:10px;padding:10px;text-align:left;color:var(--fd-text);font:inherit;cursor:pointer}
-.weekbtn:hover{background:var(--fd-teal-wash)}
-.weekbtn.current{background:var(--fd-teal);color:var(--fd-on-accent)}
-.weekbtn.current .weektitle,.weekbtn.current .weekmeta,.weekbtn.current .done{color:var(--fd-on-accent)}
-.weekbtn .weektitle{display:block;font-weight:900;line-height:1.2}
-.weekbtn .weekmeta{display:block;color:var(--fd-text-dim);font-size:.78rem;margin-top:3px}
-.weekbtn .done{display:inline-block;color:var(--fd-teal-deep);font-size:.69rem;font-weight:900;margin-top:5px}
-.main{display:grid;gap:14px}
-.card,.week-card,.links-card{padding:17px}
-.patient-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-.patient-title{font-family:var(--font-head);font-size:1.42rem;color:var(--fd-terracotta-dark);margin:0 0 3px}
-.patient-copy{margin:0;color:var(--fd-text-mid);max-width:76ch}
-.pillrow{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-.pill{display:inline-block;border:1px solid var(--fd-line-strong);border-radius:999px;background:var(--fd-surface-warm);padding:3px 9px;color:var(--fd-text-mid);font-size:.74rem;font-weight:900}
-.weekhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-.weeklabel{text-transform:uppercase;letter-spacing:.11em;color:var(--fd-teal-deep);font-size:.74rem;font-weight:900}
-.weektitle{font-family:var(--font-head);font-size:1.6rem;line-height:1.12;color:var(--fd-text);margin:3px 0 0}
-.status{border:1px solid var(--fd-line-strong);border-radius:999px;background:var(--fd-surface-warm);padding:4px 9px;font-size:.75rem;font-weight:900;color:var(--fd-text-dim)}
-.status.done{border-color:var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
-.focus{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 16px}
-.focus .pill{color:var(--fd-teal-deep);border-color:var(--fd-teal);background:var(--fd-teal-wash)}
-.state{border-left:4px solid var(--fd-terracotta);border-radius:0 10px 10px 0;background:var(--fd-terracotta-wash);padding:11px 13px;color:var(--fd-text-mid);margin-bottom:14px}
-.state b,.task b{color:var(--fd-text)}
-.task{font-size:1.07rem;color:var(--fd-text);margin:0 0 15px}
-.check-title{font-size:.76rem;text-transform:uppercase;letter-spacing:.1em;color:var(--fd-teal-deep);font-weight:900;margin:0 0 7px}
-.checks{display:grid;gap:7px}
-.checkitem{border:1px solid var(--fd-line-strong);border-radius:10px;background:var(--fd-surface-warm);color:var(--fd-text-mid);overflow:hidden}
-.checkitem:hover{border-color:var(--fd-teal)}
-.checkitem.done{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
-.check{display:flex;align-items:flex-start;gap:9px;padding:10px;color:inherit;cursor:pointer}
-.check input{width:18px;height:18px;flex:none;margin:1px 0 0;accent-color:var(--fd-teal)}
-.example{border-top:1px solid var(--fd-teal);border-left:4px solid var(--fd-teal);background:var(--surface);padding:10px 12px;margin:0 10px 10px;color:var(--fd-text-mid)}
-.example-label{display:block;text-transform:uppercase;letter-spacing:.08em;color:var(--fd-teal-deep);font-size:.7rem;font-weight:900;margin-bottom:3px}
-.example p{margin:0}
-.prompt{border-top:1px solid var(--fd-line-strong);margin:16px 0 0;padding-top:13px;color:var(--fd-text-mid)}
-.prompt b{color:var(--fd-text)}
-.handoff{border:1px solid var(--fd-teal);border-left:4px solid var(--fd-teal);border-radius:0 10px 10px 0;background:var(--fd-teal-wash);padding:11px 13px;color:var(--fd-text-mid);margin-top:14px}
-.handoff b{color:var(--fd-teal-deep)}
-.links-card h3{font-family:var(--font-head);font-size:1.22rem;color:var(--fd-terracotta-dark);margin:0 0 9px}
-.links{display:flex;flex-wrap:wrap;gap:8px}
-.links a{border:1px solid var(--fd-line-strong);border-radius:999px;padding:6px 10px;color:var(--fd-teal-deep);background:var(--fd-surface-warm);text-decoration:none;font-size:.84rem;font-weight:900}
-.links a:hover{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
-.navrow{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px}
-.btn{border:1px solid var(--fd-teal);background:var(--fd-teal);color:#fff;border-radius:999px;padding:8px 13px;font:inherit;font-size:.87rem;font-weight:900;cursor:pointer}
-.btn:hover{background:var(--fd-teal-deep)}
-.btn.secondary{background:var(--surface);color:var(--fd-teal-deep)}
-.btn.secondary:hover{background:var(--fd-teal-wash)}
-.btn.danger{border-color:var(--fd-line-strong);background:var(--surface);color:var(--fd-text-dim)}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.storage{font-size:.82rem;color:var(--fd-text-dim);margin-top:12px}
-.live{min-height:1.4em;color:var(--fd-teal-deep);font-size:.84rem;font-weight:700}
-.empty{background:var(--surface);border:1px solid var(--fd-line-strong);border-radius:14px;padding:18px;color:var(--fd-text-mid)}
-button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-@media(max-width:820px){
-  .top{grid-template-columns:1fr}
-  .layout{grid-template-columns:1fr}
-  .side{position:static}
-  .weeklist{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
-  .weekbtn{min-width:190px}
-  h1{font-size:1.95rem}
-}
+body{margin:0;color:var(--opf-ink);background-color:var(--opf-paper);background-image:radial-gradient(circle at 12% 2%,var(--opf-body-glow),transparent 27rem),linear-gradient(180deg,var(--opf-folio-back) 0,var(--opf-paper) 32rem);font:16px/1.55 var(--opf-sans)}
+button{font:inherit}button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px solid var(--opf-focus);outline-offset:4px}
+.opf-shell{width:min(1240px,calc(100% - 40px));margin-inline:auto}
+.opf-hero{position:relative;overflow:hidden;padding:68px 0 60px;color:var(--opf-hero-ink);background-color:var(--opf-hero-fallback);background-image:linear-gradient(105deg,var(--opf-hero-start),var(--opf-hero-end))}
+.opf-hero::after{content:"";position:absolute;width:520px;height:220px;right:-90px;bottom:-128px;border:1px solid rgba(255,255,255,.18);border-radius:50%;box-shadow:0 0 0 34px rgba(255,255,255,.04),0 0 0 68px rgba(255,255,255,.03);transform:rotate(-8deg)}
+.opf-hero__grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.65fr);gap:clamp(32px,7vw,96px);align-items:end}
+.opf-eyebrow,.opf-note__label,.opf-sheet__chapter{margin:0;font-size:.73rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase}.opf-eyebrow{color:var(--opf-hero-eyebrow)}
+.opf-hero h1{max-width:860px;margin:11px 0 18px;font:700 clamp(3.15rem,7vw,6.3rem)/.87 var(--opf-serif);letter-spacing:-.055em}.opf-dek{max-width:735px;margin:0;color:var(--opf-hero-muted);font-size:clamp(1rem,1.8vw,1.22rem)}
+.opf-boundary{padding:20px 0 0 22px;border-left:1px solid var(--opf-hero-line)}.opf-boundary__mark{display:block;margin-bottom:14px;color:var(--opf-hero-mark);font-weight:800;font-size:1.15rem;letter-spacing:.12em}.opf-boundary p{margin:0;color:var(--opf-hero-boundary);font-size:.9rem}
+.opf-library{padding:48px 0 0}.opf-library__heading{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.7fr);gap:28px;align-items:end}.opf-library__heading .opf-eyebrow,.opf-context-label{color:var(--opf-thread-dark)}
+.opf-library__heading h2{margin:7px 0 0;font:700 clamp(2rem,4vw,3.5rem)/1 var(--opf-serif);letter-spacing:-.035em}.opf-library__heading>p{max-width:570px;margin:0;color:var(--opf-muted)}
+.opf-case-catalog{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:25px 0 0;padding:0;list-style:none}.opf-case-card{--opf-card-accent:var(--opf-card-clay);--opf-card-dark:#713327;display:grid;grid-template-rows:auto 1fr auto auto;min-height:154px;padding:18px;border:1px solid var(--opf-line);border-top:5px solid var(--opf-card-accent);color:var(--opf-ink);background:var(--opf-panel);text-decoration:none}
+.opf-case-card--teal{--opf-card-accent:var(--opf-card-teal);--opf-card-dark:#164a48}.opf-case-card--plum{--opf-card-accent:var(--opf-card-plum);--opf-card-dark:#4a3047}.opf-case-card--olive{--opf-card-accent:var(--opf-card-olive);--opf-card-dark:#55461f}
+:root[data-theme="dark"] .opf-case-card{--opf-card-dark:#f2b29c}:root[data-theme="dark"] .opf-case-card--teal{--opf-card-dark:#9dd5d0}:root[data-theme="dark"] .opf-case-card--plum{--opf-card-dark:#e1b8d8}:root[data-theme="dark"] .opf-case-card--olive{--opf-card-dark:#ded092}
+.opf-case-card:hover{border-color:var(--opf-card-accent);background:var(--opf-panel-solid)}.opf-case-card[aria-current="page"]{border-color:var(--opf-card-accent);background:var(--opf-panel-solid);box-shadow:0 9px 26px rgba(48,40,32,.12)}
+.opf-case-card__name{color:var(--opf-card-dark);font-size:.72rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.opf-case-card__title{margin-top:8px;font:700 1.16rem/1.2 var(--opf-serif)}.opf-case-card__count{margin-top:12px;color:var(--opf-muted);font-size:.73rem;font-weight:750}.opf-case-card__selected{justify-self:start;margin-top:10px;color:var(--opf-card-dark);font-size:.68rem;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
+.opf-selection-note{margin:18px 0 0;padding:12px 14px;border-left:4px solid var(--opf-sun);background:var(--opf-language)}
+.opf-case-context{display:grid;grid-template-columns:minmax(220px,.65fr) minmax(280px,1fr) minmax(320px,1.25fr);gap:16px;padding-top:28px}.opf-case-context__frame,.opf-case-facts,.opf-source-boundary{margin:0;padding:19px 20px;border:1px solid var(--opf-line);background:var(--opf-panel)}
+.opf-context-label,.opf-case-facts dt{margin:0;font-size:.68rem;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.opf-case-context__frame>p:last-child,.opf-source-boundary>p{margin:8px 0 0}.opf-case-facts{display:grid;gap:17px}.opf-case-facts div+div{padding-top:15px;border-top:1px solid var(--opf-line)}.opf-case-facts dt{color:var(--opf-thread-dark)}.opf-case-facts dd{margin:7px 0 0;color:var(--opf-muted);font-size:.86rem}.opf-source-boundary{border-left:5px solid var(--opf-thread)}.opf-source-boundary>p:not(.opf-context-label){color:var(--opf-muted);font-size:.83rem}.opf-source-boundary .opf-source-boundary__note{color:var(--opf-thread-dark);font-weight:750}
+.opf-workbench{display:grid;grid-template-columns:minmax(245px,315px) minmax(0,1fr);gap:clamp(24px,4vw,58px);padding:54px 0 44px}.opf-error{margin:32px auto;padding:14px;border:1px solid var(--opf-thread);background:var(--opf-language)}
+.opf-spine{align-self:start;position:sticky;top:20px;min-width:0}.opf-spine__heading{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--opf-ink)}.opf-spine__heading span{font-weight:800}.opf-spine__heading strong{color:var(--opf-thread-dark);font-size:.78rem;letter-spacing:.12em}
+.opf-route{position:relative;display:grid;gap:2px;margin:0;padding:0;list-style:none}.opf-route::before{content:"";position:absolute;top:24px;bottom:24px;left:19px;width:2px;background:var(--opf-line)}.opf-route__item{position:relative}.opf-route__tab{position:relative;display:grid;grid-template-columns:40px 1fr;gap:13px;width:100%;padding:9px 10px 9px 0;border:0;color:var(--opf-muted);background:transparent;text-align:left;cursor:pointer}.opf-route__node{z-index:1;display:grid;place-items:center;width:40px;height:40px;border:2px solid var(--opf-line);border-radius:50%;background:var(--opf-paper);font-size:.76rem;font-weight:900}.opf-route__copy{display:block;min-width:0;padding-top:1px}.opf-route__week{display:block;font-size:.69rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.opf-route__title{display:-webkit-box;margin-top:1px;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font:700 .9rem/1.25 var(--opf-serif)}.opf-route__tab:hover{color:var(--opf-thread-dark)}.opf-route__tab[aria-selected="true"]{color:var(--opf-ink)}.opf-route__tab[aria-selected="true"] .opf-route__node{border-color:var(--opf-thread);color:#fff;background:var(--opf-thread);box-shadow:0 0 0 5px color-mix(in srgb,var(--opf-thread) 18%,transparent)}
+.opf-folio{position:relative;min-width:0}.opf-folio__back{position:absolute;inset:12px -10px 48px 12px;border:1px solid var(--opf-line);background:var(--opf-folio-back);transform:rotate(.65deg)}.opf-sheet{position:relative;min-height:680px;padding:clamp(26px,5vw,58px);border:1px solid var(--opf-line);background:linear-gradient(90deg,transparent 0 70px,color-mix(in srgb,var(--opf-thread) 16%,transparent) 70px 71px,transparent 71px),repeating-linear-gradient(180deg,transparent 0 34px,color-mix(in srgb,var(--opf-teal) 6%,transparent) 34px 35px),var(--opf-sheet);box-shadow:var(--opf-shadow)}.opf-sheet::before{content:"";position:absolute;left:22px;top:46px;width:12px;height:12px;border-radius:50%;background:var(--opf-line);box-shadow:0 170px var(--opf-line),0 340px var(--opf-line),0 510px var(--opf-line)}
+.opf-sheet__topline{display:flex;justify-content:space-between;gap:16px;align-items:center}.opf-sheet__chapter{color:var(--opf-teal)}.opf-sheet__stamp{padding:5px 9px;border:1px solid var(--opf-thread);color:var(--opf-thread-dark);font-size:.65rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;transform:rotate(1.5deg)}.opf-sheet h2{max-width:780px;margin:18px 0 14px;font:700 clamp(2rem,4vw,3.65rem)/1.02 var(--opf-serif);letter-spacing:-.035em}
+.opf-focus{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 34px;padding:0;list-style:none}.opf-focus li{padding:4px 9px;border:1px solid color-mix(in srgb,var(--opf-teal) 55%,var(--opf-line));border-radius:999px;color:var(--opf-teal);background:var(--opf-teal-pale);font-size:.72rem;font-weight:800}
+.opf-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.opf-note{min-width:0;padding:20px 21px;border-top:4px solid var(--opf-thread);background:var(--opf-panel);box-shadow:0 5px 18px rgba(55,45,35,.08)}.opf-note p{margin:10px 0 0}.opf-note__label{color:var(--opf-thread-dark)}.opf-note--story{grid-column:1/-1;border-top-color:var(--opf-plum)}.opf-note--story .opf-note__label{color:var(--opf-plum)}.opf-note--task{border-top-color:var(--opf-teal)}.opf-note--task .opf-note__label{color:var(--opf-teal)}.opf-note--language{border-top-color:var(--opf-sun);background:var(--opf-language);transform:rotate(-.35deg)}.opf-note--language .opf-note__label{color:var(--opf-ink)}.opf-language+.opf-language{margin-top:18px;padding-top:16px;border-top:1px solid var(--opf-line)}.opf-note__prompt{color:var(--opf-muted);font-size:.82rem;font-weight:700}.opf-note blockquote{margin:11px 0 0;padding-left:14px;border-left:2px solid var(--opf-sun);font:400 1.03rem/1.5 var(--opf-serif)}.opf-note--rounds{grid-column:1/-1;border:1px solid color-mix(in srgb,var(--opf-teal) 55%,var(--opf-line));border-left:5px solid var(--opf-teal);background:var(--opf-teal-pale)}.opf-note--rounds .opf-note__label{color:var(--opf-teal)}
+.opf-reflection{margin-top:20px;padding:18px 20px;border:1px solid var(--opf-line);background:var(--opf-panel)}.opf-reflection summary{cursor:pointer;color:var(--opf-thread-dark);font-weight:800}.opf-reflection>p{margin:14px 0}.opf-reflection ul{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}.opf-reflection a{display:inline-block;padding:6px 10px;border:1px solid var(--opf-line);color:var(--opf-teal);background:var(--opf-sheet);font-size:.84rem;font-weight:800;text-decoration:none}.opf-reflection a:hover{border-color:var(--opf-teal)}
+.opf-controls{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;margin-top:26px}.opf-controls p{margin:0;color:var(--opf-muted);font-size:.78rem;text-align:center}.opf-controls button{min-height:44px;padding:9px 14px;border:1px solid var(--opf-ink);border-radius:2px;color:var(--opf-ink);background:transparent;font-weight:800;cursor:pointer}.opf-controls button:hover:not(:disabled){color:var(--opf-sheet);background:var(--opf-ink)}.opf-controls button:disabled{opacity:.38;cursor:default}.opf-footer{display:flex;justify-content:space-between;gap:16px;padding:20px 0 42px;border-top:1px solid var(--opf-line);color:var(--opf-muted);font-size:.78rem}
+@media(max-width:860px){.opf-hero{padding:48px 0}.opf-hero__grid,.opf-workbench{grid-template-columns:1fr}.opf-boundary{max-width:700px}.opf-case-catalog{grid-template-columns:repeat(2,minmax(0,1fr))}.opf-case-context{grid-template-columns:1fr 1fr}.opf-source-boundary{grid-column:1/-1}.opf-spine{position:static}.opf-route{grid-template-columns:repeat(6,minmax(92px,1fr));gap:8px;overflow-x:auto;padding:4px 3px 12px}.opf-route::before{display:none}.opf-route__tab{grid-template-columns:1fr;min-width:94px;padding:4px;text-align:center}.opf-route__node{margin-inline:auto}.opf-route__title{font-size:.78rem}.opf-sheet{min-height:0;padding-left:clamp(32px,7vw,54px);background:repeating-linear-gradient(180deg,transparent 0 34px,color-mix(in srgb,var(--opf-teal) 6%,transparent) 34px 35px),var(--opf-sheet)}.opf-sheet::before{left:12px}}
+@media(max-width:620px){.opf-shell{width:min(100% - 24px,1240px)}.opf-hero h1{font-size:clamp(2.8rem,15vw,4.4rem)}.opf-library__heading,.opf-case-context{grid-template-columns:1fr}.opf-case-catalog{grid-template-columns:1fr 1fr}.opf-case-card{min-height:138px;padding:14px}.opf-source-boundary{grid-column:auto}.opf-route{grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}.opf-route__tab{min-width:0}.opf-folio__back{right:0;transform:none}.opf-grid{grid-template-columns:1fr}.opf-note,.opf-note--story,.opf-note--rounds{grid-column:auto}.opf-sheet__topline{align-items:flex-start;flex-direction:column}.opf-controls{grid-template-columns:1fr 1fr}.opf-controls p{grid-column:1/-1;grid-row:2}.opf-footer{flex-direction:column}}
+@media(max-width:380px){.opf-case-catalog{grid-template-columns:1fr}.opf-case-card{min-height:0}.opf-hero h1{font-size:2.65rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}.opf-note--language,.opf-sheet__stamp,.opf-folio__back{transform:none}}
+@media print{body{background:#fff;color:#000}.opf-hero{padding:24px 0;color:#000;background:#fff;border-bottom:2px solid #000}.opf-hero h1,.opf-eyebrow,.opf-dek,.opf-boundary p,.opf-boundary__mark{color:#000}.opf-spine,.opf-controls,.opf-folio__back,.opf-case-catalog{display:none}.opf-workbench{display:block;padding-top:24px}.opf-sheet{min-height:0;box-shadow:none}.opf-reflection{display:block}}
 </style>
 </head>
 <body>
-<main class="shell">
-  <div class="top">
-    <div>
-      <div class="kicker">Longitudinal case arc</div>
-      <h1>One Patient, Six Weeks</h1>
-      <p class="sub">Follow one fictional inpatient across changing information, relationships, safety questions, treatment conversations, and the final handoff.</p>
-    </div>
-    <div class="notice"><b>Boundary:</b> fictional composite only. Do not enter patient information. This is a learning simulation, not a clinical decision tool or substitute for supervision and local policy.</div>
-  </div>
-  <div id="app"><div class="empty">Loading the longitudinal case...</div></div>
-</main>
-<script>
-(function(){
-  var app=document.getElementById('app');
-  var state={caseData:null,current:requestedWeek(),progress:loadProgress()};
-
-  function esc(s){return String(s==null?'':s).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c];});}
-  function requestedWeek(){try{var n=parseInt(new URLSearchParams(location.search).get('week')||'1',10);return Math.max(0,Math.min(5,n-1));}catch(_){return 0;}}
-  function loadProgress(){try{var p=JSON.parse(localStorage.getItem('cw_longitudinal_v1')||'{}');return p&&p.version===1?p:{version:1,current:0,completed:{}};}catch(_){return {version:1,current:0,completed:{}};}}
-  function saveProgress(){try{localStorage.setItem('cw_longitudinal_v1',JSON.stringify(state.progress));}catch(_){} }
-  function week(){return state.caseData.weeks[state.current];}
-  function record(id){return state.progress.completed[id]||{checks:{}};}
-  function complete(w){var r=record(w.id);return (w.checklist||[]).length>0&&(w.checklist||[]).every(function(_,i){return !!r.checks['c'+i];});}
-  function completedCount(){return state.caseData.weeks.filter(complete).length;}
-  function setWeek(i){state.current=Math.max(0,Math.min(state.caseData.weeks.length-1,i));state.progress.current=state.current;saveProgress();try{history.replaceState(null,'','?week='+(state.current+1));}catch(_){}render();}
-  function weekList(){return '<div class="weeklist">'+state.caseData.weeks.map(function(w,i){var on=i===state.current,done=complete(w);return '<button type="button" class="weekbtn'+(on?' current':'')+'" data-week="'+i+'"'+(on?' aria-current="step"':'')+'"><span class="weektitle">'+esc(w.label)+': '+esc(w.title)+'</span><span class="weekmeta">'+esc((w.focus||[]).join(' · '))+'</span>'+(done?'<span class="done">Completed</span>':'');}).join('')+'</div>';}
-  function sidebar(){var done=completedCount(),total=state.caseData.weeks.length,pct=Math.round(done*100/total);return '<aside class="side" aria-label="Six-week case timeline"><div class="progress"><b>'+done+' of '+total+' weeks completed</b><span class="small">Checklist progress saved in this browser only</span><div class="bar" role="progressbar" aria-label="Longitudinal case progress" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+done+'"><span style="width:'+pct+'%"></span></div></div>'+weekList()+'</aside>';}
-  function patientCard(){var p=state.caseData.patient;return '<section class="card"><div class="patient-row"><div><h2 class="patient-title">'+esc(p.displayName)+': a changing story</h2><p class="patient-copy">'+esc(p.description)+'</p></div></div><div class="pillrow"><span class="pill">'+esc(state.caseData.setting)+'</span><span class="pill">Fictional composite</span><span class="pill">No free-text patient data</span></div><p class="storage">'+esc(p.frame)+'</p></section>';}
-  function checklist(w){
-    var r=record(w.id);
-    return '<div><p class="check-title">Before you move on</p><div class="checks">'+w.checklist.map(function(item,i){
-      var key='c'+i;
-      var on=!!r.checks[key];
-      var inputId='check-'+w.id+'-'+key;
-      var exampleId='example-'+w.id+'-'+key;
-      return '<div class="checkitem'+(on?' done':'')+'"><label class="check" for="'+inputId+'"><input id="'+inputId+'" type="checkbox" data-check="'+key+'" '+(on?'checked aria-describedby="'+exampleId+'"':'')+'> <span>'+esc(item.prompt)+'</span></label>'+(on?'<div class="example" id="'+exampleId+'"><span class="example-label">One way to say it</span><p>'+esc(item.example)+'</p></div>':'')+'</div>';
-    }).join('')+'</div></div>';
-  }
-  function links(w){return '<section class="links-card"><h3>Practice this part of the story</h3><div class="links">'+w.links.map(function(link){var param=link.kind==='tool'?'tool':'page';return '<a target="_parent" href="../index.html?'+param+'='+encodeURIComponent(link.target)+'">'+esc(link.label)+' <span aria-hidden="true">→</span></a>';}).join('')+'</div><p class="storage">Use the linked page or tool with your supervising team. The simulator does not store notes about a patient.</p></section>';}
-  function weekCard(w){var done=complete(w);var r=record(w.id);return '<section class="week-card"><div class="weekhead"><div><div class="weeklabel">'+esc(w.label)+'</div><h2 class="weektitle">'+esc(w.title)+'</h2></div><span class="status'+(done?' done':'')+'">'+(done?'Completed':'In progress')+'</span></div><div class="focus">'+w.focus.map(function(x){return '<span class="pill">'+esc(x)+'</span>';}).join('')+'</div><div class="state"><b>What changes in the story:</b> '+esc(w.patientState)+'</div><p class="task"><b>Your learning task:</b> '+esc(w.learnerTask)+'</p>'+checklist(w)+'<p class="prompt"><b>Pause and reflect:</b> '+esc(w.reflectionPrompt)+'</p><div class="handoff"><b>Carry it to rounds:</b> '+esc(w.handoff)+'</div><div class="navrow"><button type="button" class="btn secondary" data-prev '+(state.current===0?'disabled':'')+'>Previous week</button><button type="button" class="btn" data-next '+(!done||state.current===state.caseData.weeks.length-1?'disabled':'')+'>'+(state.current===state.caseData.weeks.length-1?'Six-week arc complete':'Next week')+'</button></div><div class="navrow"><button type="button" class="btn danger" data-reset>Reset local journey</button><span class="live" aria-live="polite" id="statusMessage">'+(done?'Week complete.':'Complete the checklist to unlock the next week.')+'</span></div><p class="storage">Stored locally: week number, checklist state, and date. No names, notes, or patient identifiers.</p></section>'+links(w);}
-  function render(){if(!state.caseData){app.innerHTML='<div class="empty">No longitudinal case is available.</div>';return;}var w=week();app.innerHTML='<div class="layout">'+sidebar()+'<div class="main">'+patientCard()+weekCard(w)+'</div></div>';}
-  app.addEventListener('click',function(ev){var weekButton=ev.target.closest&&ev.target.closest('[data-week]');if(weekButton){setWeek(parseInt(weekButton.getAttribute('data-week'),10)||0);return;}if(ev.target.closest&&ev.target.closest('[data-prev]')){setWeek(state.current-1);return;}if(ev.target.closest&&ev.target.closest('[data-next]')){if(complete(week()))setWeek(state.current+1);return;}if(ev.target.closest&&ev.target.closest('[data-reset]')){if(window.confirm('Reset the six-week checklist stored in this browser?')){state.progress={version:1,current:0,completed:{}};setWeek(0);}}});
-  app.addEventListener('change',function(ev){var input=ev.target.closest&&ev.target.closest('[data-check]');if(!input)return;var w=week(),r=record(w.id);r.checks=r.checks||{};r.checks[input.getAttribute('data-check')]=!!input.checked;r.at=new Date().toISOString().slice(0,10);state.progress.completed[w.id]=r;saveProgress();render();});
-  fetch('../longitudinal_case.json').then(function(r){if(!r.ok)throw new Error('missing case');return r.json();}).then(function(data){state.caseData=data;state.current=Math.max(0,Math.min(data.weeks.length-1,state.progress.current||state.current));render();}).catch(function(){app.innerHTML='<div class="empty">Could not load the longitudinal case. Rebuild the site or check longitudinal_case.json.</div>';});
-})();
-</script>
-<!-- Static (non-React) on purpose: crisis contacts must render even if the app script
-     fails. Build-injected from crisis_resources.json — do not hand-edit numbers here. -->
+<div id="app" aria-busy="true"><main class="opf-shell"><p>Loading case journeys…</p></main></div>
+<noscript><main class="opf-shell"><p>JavaScript is needed to explore these case journeys. Return to the library for the written Practice Cases.</p></main></noscript>
+<script src="case-journeys.js"></script>
 <!-- crisis-block-html -->
 </body>
 </html>

@@ -256,7 +256,7 @@ function srsLoad(){
   var s = lsGet('cw_srs_v1');
   if(!s||s.v!==1){
     s={v:1,cards:{},day:{lastDay:'',newToday:0},
-      stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0},
+      stats:{streak:0,lastStudy:'',totalReviews:0,correct:0,seen:0,choiceSeen:0,choiceCorrect:0,recallSeen:0,recallGoodEasy:0},
       settings:{newPerDay:12}};
   }
   return s;
@@ -292,6 +292,8 @@ function srsUpdate(item, confidence, correct, twoTierResult){
   s.stats.totalReviews = (s.stats.totalReviews||0)+1;
   if(correct) s.stats.correct=(s.stats.correct||0)+1;
   s.stats.seen=(s.stats.seen||0)+1;
+  s.stats.choiceSeen=(s.stats.choiceSeen||0)+1;
+  if(correct) s.stats.choiceCorrect=(s.stats.choiceCorrect||0)+1;
   srsSave(s);
   return grade;
 }

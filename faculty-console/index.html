@@ -244,6 +244,48 @@
 
   .console-subtitle { margin: 0.3rem 0 0; color: var(--muted); }
 
+  .red-team-revisions {
+    margin-block: 0 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.45rem;
+    background: var(--surface);
+    padding: 0.9rem 1rem;
+  }
+
+  .red-team-revisions__heading,
+  .red-team-revisions__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem 1rem;
+  }
+
+  .red-team-revisions h2,
+  .red-team-revisions h3 { margin: 0; }
+
+  .red-team-revisions__actions { justify-content: flex-start; margin-block: 0.7rem; }
+
+  .red-team-revisions__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 0.65rem;
+    margin-block: 0.7rem;
+  }
+
+  .red-team-revisions__card {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 0.3rem;
+    background: var(--canvas);
+    padding: 0.7rem;
+  }
+
+  .red-team-revisions__card p { margin: 0.4rem 0; }
+  .red-team-revisions__card code { overflow-wrap: anywhere; }
+  .red-team-revisions__error { color: var(--blocked); font-weight: 700; }
+  .red-team-revisions__status { color: var(--ink); font-weight: 700; }
+
   .reviewer-strip {
     display: grid;
     grid-template-columns: minmax(12rem, 22rem) minmax(0, 1fr);

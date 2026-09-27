@@ -510,6 +510,7 @@ test('view-week previews only; setup-week and set-week return Monday-aligned wri
   const browse = F.fdDispatch({ 'data-fd-week': '0' }, weekContext, roleContext);
   assert.deepEqual(browse.effect, { type: 'browse-without-rotation' });
   assert.equal(browse.patch.tab, 'library');
+  assert.equal(browse.patch.libraryView, 'full', '"just browse" opens the whole Library, not The Essentials');
   assert.equal(browse.patch.week, null);
   assert.equal(browse.patch.viewWeek, 1);
   for (const attr of ['data-fd-week', 'data-fd-view-week', 'data-fd-setweek']) {
@@ -852,7 +853,7 @@ test('explicit block Start and Continue retain the planned route while ordinary 
   for (const [ref, search] of [
     ['a.md', '?page=a.md&block=1'],
     ['question-bank-practice.html', '?tool=question-bank-practice.html&block=1&n=2&cat=mood'],
-    ['review.html', '?tool=review.html&block=1&limit=3'],
+    ['review.html', '?tool=review.html&block=1&limit=3&lane=all'],
   ]) {
     const out = F.fdDispatch({ 'data-fd-open': ref }, { search, blockNavigation: true }, roleContext);
     assert.equal(out.route, search);
@@ -861,6 +862,35 @@ test('explicit block Start and Continue retain the planned route while ordinary 
     search: '?cat=mood&n=4',
   }, roleContext);
   assert.equal(ordinary.route, '?tool=question-bank-practice.html&cat=mood&n=4');
+});
+
+test('ordinary Front Door navigation clears a transient review lane without losing explicit block routing', () => {
+  const laneSearch = '?tool=review.html&lane=all&focus=AR-24%235';
+  const ordinary = F.fdDispatch({ 'data-fd-open': 'question-bank-practice.html' },
+    { search: laneSearch }, roleContext);
+  assert.equal(ordinary.route, '?tool=question-bank-practice.html');
+  const back = F.fdDispatch({ 'data-fd-back': '' }, { search: laneSearch }, roleContext);
+  assert.equal(new URLSearchParams(back.route).has('lane'), false);
+  assert.equal(new URLSearchParams(back.route).has('focus'), false);
+
+  const explicit = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&block=1&limit=3&lane=all', blockNavigation: true }, roleContext);
+  assert.equal(explicit.route, '?tool=review.html&block=1&limit=3&lane=all');
+});
+
+test('explicit Review links carry lane and companion focus into the routed tool', () => {
+  const due = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&lane=all', reviewNavigation: true }, roleContext);
+  assert.equal(due.route, '?tool=review.html&lane=all');
+  const companion = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&lane=landmark&focus=AR-24%235', reviewNavigation: true }, roleContext);
+  assert.equal(companion.route, '?tool=review.html&lane=landmark&focus=AR-24%235');
+  const clinical = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&lane=clerkship&focus=CONCEPT%23t_psychosis-pearl3%3A1%402', reviewNavigation: true }, roleContext);
+  assert.equal(clinical.route, '?tool=review.html&lane=clerkship&focus=CONCEPT%23t_psychosis-pearl3%3A1%402');
+  const ordinary = F.fdDispatch({ 'data-fd-open': 'review.html' },
+    { search: '?tool=review.html&lane=landmark&focus=AR-24%235' }, roleContext);
+  assert.equal(ordinary.route, '?tool=review.html');
 });
 
 test('an unrelated reader and a sheet toggle do not enter the saved block', () => {
@@ -3965,8 +3995,11 @@ test('Library view actions close overlays, reject invalid values, and explicit L
   assert.deepEqual(F.fdDispatch({'data-fd-library-view':'invalid'}, {}, initial), {patch:{},route:null,effect:null});
   const kit = F.fdDispatch({'data-fd-tab':'library'}, {search:'?tab=library&library=full'}, {...initial,libraryView:'full'});
   assert.equal(kit.patch.libraryView, 'essentials'); assert.equal(kit.route, '?tab=library');
-  const browse = F.fdDispatch({'data-fd-week':'0'}, {index:FOUR_INDEX,search:'?library=full'}, initial);
-  assert.equal(browse.patch.libraryView, 'essentials'); assert.equal(browse.route, '?tab=library');
+  const browse = F.fdDispatch({'data-fd-week':'0'}, {index:FOUR_INDEX,search:''}, initial);
+  assert.equal(browse.patch.libraryView, 'full'); assert.equal(browse.route, '?tab=library&library=full');
+  // Idempotent over a route that already carries the full view: one library=full, not two.
+  const again = F.fdDispatch({'data-fd-week':'0'}, {index:FOUR_INDEX,search:'?library=full'}, initial);
+  assert.equal(again.route, '?tab=library&library=full');
 });
 
 test('the Everything tab is an alias for the full Library view, not a new tab state', () => {
