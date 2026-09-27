@@ -1163,10 +1163,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-09-27",
     "by": "Joshua Moss, MD",
-    "contentHash": "ca1f2d0990ea19b3d74e8a7b88588ef51f647fdf",
-    "clinicalHash": "87db40b5bb0f23a793f7bb671cc31f715c8e0710"
+    "contentHash": "ced12f78a11cfcdf7e3a3fa7123094d0d763103c",
+    "clinicalHash": "6b5e57fe6b9a0ee4e4f11426da8ab0c91cc633d6"
   },
   "feedback.html": {
     "status": "reviewed",
@@ -1180,16 +1180,15 @@
     "clinicalHash": "af5ff9ae2dabc5f19e6e000a148fad1c15cc5556"
   },
   "question-bank-practice.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "general",
       "level": "moderate"
     },
     "at": "2026-09-27",
-    "by": "Pending faculty review",
-    "reason": "Source changed after faculty review; awaiting re-attestation.",
-    "contentHash": "a0a9387ba7b3b9bc33923fb926da0dcf115405ad",
-    "clinicalHash": "4fea56db9e5d370333fc1716f5f9f9b1295511b8"
+    "by": "Joshua Moss, MD",
+    "contentHash": "eac6dd868706d480c37e8b2e774c4cb3815647b0",
+    "clinicalHash": "ef306ec8f280be0b1aabefdab43dac3c6850811f"
   },
   "qbank-attest.html": {
     "status": "reviewed",
@@ -1257,10 +1256,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-09-27",
     "by": "Joshua Moss, MD",
-    "contentHash": "6b95ca047e42225481bdaaf83e4a59a60e266299",
-    "clinicalHash": "f60003e87476f6a4c5d8c0e3cf4c32e56ef7c0a0"
+    "contentHash": "c80df458bdb95dce02e0c50e3253d73ea8367085",
+    "clinicalHash": "245fcc11a9dd338f556002bdfabf92a7a31a42b2"
   },
   "rp-agitation.html": {
     "status": "reviewed",
@@ -1369,11 +1368,11 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-09-27",
     "by": "Joshua Moss, MD",
     "note": "Fictional composite longitudinal simulation.",
-    "contentHash": "54b3e2c3d3b0aedf9be1ba13626583814fc80ba0",
-    "clinicalHash": "af87fefcd136423c32a9609e614983d58089315d"
+    "contentHash": "cda8fb566e31b9215b66a274487e66cf46c0be0d",
+    "clinicalHash": "fddd807b1cba94b579852e5ba2bbfba8f223d294"
   },
   "anki.md": {
     "status": "reviewed",
@@ -1381,11 +1380,11 @@
       "kind": "general",
       "level": "low"
     },
-    "at": "2026-08-11",
+    "at": "2026-09-27",
     "by": "Joshua Moss, MD",
     "note": "Navigation/download page for the Anki decks; the cards themselves are extracted only from already-attested content (no AI-generated cards). Individual draft questions still ship watermarked until each is attested.",
-    "contentHash": "36269ea95c440f4ac1b5602ba2bbb0c72976aebf",
-    "clinicalHash": "605f68108a1d798cabf022593b88f84fa0c878d4"
+    "contentHash": "35f12e8e55f77b485ee9ed19948ad38d97d07eb3",
+    "clinicalHash": "a5f39ca64a5d7535329edb35a6663af559c7359e"
   },
   "cotw_20260810_panic_ms3.md": {
     "status": "reviewed",
