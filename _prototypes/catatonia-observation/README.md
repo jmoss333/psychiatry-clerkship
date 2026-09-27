@@ -6,6 +6,9 @@ separate check-ins, gesture and writing after a spoken pause, and the difference
 between a nurse's earlier report and a current bedside observation. Each scene
 has four user-controlled moments and a description exercise. Selecting another
 scene stops playback and clears the prior answers.
+The gallery shows all four illustrations at once; choosing a card opens its
+four moments in the shared scene player. The gallery reuses the original SVG
+artwork without extra image files.
 
 This is not a BFCRS implementation, examination video, diagnostic aid, or clinical
 guidance. It stores no answers and runs without a network connection; its optional

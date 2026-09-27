@@ -5,12 +5,12 @@
 ## Exact revision to review
 
 - Source: [`catatonia-observation.preview.html`](catatonia-observation.preview.html), the self-contained, fictional four-scene prototype.
-- HTML SHA-256: `ef2bea18ccac19411e996995660a157e0a634f35ca82e4c25f846324df81438f`
-- Source commit: `600cbf5938d3ee133899c30e0b99820734118b61`
-- Private deploy permalink: [Open the exact four-scene candidate](https://6ab9313b0daf02992ae4e8db--catatonia-faculty-preview.netlify.app/) (Netlify team sign-in required; deploy `6ab9313b0daf02992ae4e8db`, ready 2026-09-27).
+- HTML SHA-256: `ba593a0049aa4d54c15a05bc6a61e4ab5c42f0faa3ca4ccd616669af9198ca03`
+- Source commit: `b7202c2ede84b950c5f6642b7d04c83ed37d7be2`
+- Private deploy permalink: [Open the exact four-scene gallery](https://6ab9487cc41bca4d076e25a8--catatonia-faculty-preview.netlify.app/) (Netlify team sign-in required; deploy `6ab9487cc41bca4d076e25a8`, ready 2026-09-27).
 - Intended audience: **PENDING faculty decision** (MS3, resident, both, or neither).
 
-If the HTML changes, compare this packet with the changed source and review the new exact revision. The private preview is separate from the MS3 and resident learner sites.
+If the HTML changes, compare this packet with the changed source and review the new exact revision. The private preview is separate from the MS3 and resident learner sites. The gallery at the top shows four previews cloned from the existing fictional artwork; it adds no new clinical scene wording.
 
 ## What the faculty is reviewing
 
