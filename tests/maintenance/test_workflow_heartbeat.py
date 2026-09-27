@@ -29,8 +29,11 @@ from maintenance.workflow_heartbeat import (  # noqa: E402
     EXPECTATIONS,
     HeartbeatError,
     _cron_present,
+    annotate_release_train_hold,
+    attach_release_train_protective_hold,
     derive_schedule_activation,
     evaluate_runs,
+    fetch_release_train_receipt,
     fetch_runs,
 )
 
@@ -121,6 +124,199 @@ class WorkflowHeartbeatTests(unittest.TestCase):
         )
         self.assertEqual(receipt["gate"], "blocked")
         self.assertEqual(receipt["workflows"][0]["state"], "failed")
+
+    def test_exact_failed_release_train_run_gets_a_valid_protective_hold(self):
+        receipt = evaluate_runs(
+            {"production-release-train.yml": 14},
+            {"production-release-train.yml": [run_record(conclusion="failure")]},
+            now=NOW,
+            **provenance_for("production-release-train.yml"),
+        )
+        artifact = {
+            "schemaVersion": 1,
+            "workflowFile": "production-release-train.yml",
+            "runId": 101,
+            "outcome": "held",
+            "protectiveHold": {
+                "reason": "spend_tripwire",
+                "observedAt": "2026-07-28T11:00:00+00:00",
+                "nextEligiblePublishAt": "2026-07-28T15:05:00+00:00",
+                "observedDeploys": {"learnerSites": 9, "allSites": 15},
+                "projectedDeploys": {"learnerSites": 11, "allSites": 17},
+                "budgets": {"learnerSites": 10, "allSites": 24},
+                "triggeredBudgets": ["learnerSites"],
+            },
+        }
+        attach_release_train_protective_hold(receipt, artifact)
+        row = receipt["workflows"][0]
+        self.assertEqual(row["state"], "failed")
+        self.assertEqual(
+            row["protectiveHold"]["nextEligiblePublishAt"],
+            "2026-07-28T15:05:00+00:00",
+        )
+
+    def test_wrong_run_or_malformed_hold_stays_an_ordinary_failure(self):
+        def failed_receipt():
+            return evaluate_runs(
+                {"production-release-train.yml": 14},
+                {"production-release-train.yml": [run_record(conclusion="failure")]},
+                now=NOW,
+                **provenance_for("production-release-train.yml"),
+            )
+
+        wrong_run = {
+            "schemaVersion": 1,
+            "workflowFile": "production-release-train.yml",
+            "runId": 999,
+            "outcome": "held",
+            "protectiveHold": {},
+        }
+        malformed = {
+            "schemaVersion": 1,
+            "workflowFile": "production-release-train.yml",
+            "runId": 101,
+            "outcome": "held",
+            "protectiveHold": {
+                "reason": "spend_tripwire",
+                "nextEligiblePublishAt": "not-a-time",
+            },
+        }
+        wrong_slot = {
+            "schemaVersion": 1,
+            "workflowFile": "production-release-train.yml",
+            "runId": 101,
+            "outcome": "held",
+            "protectiveHold": {
+                "reason": "spend_tripwire",
+                "observedAt": "2026-07-28T11:00:00+00:00",
+                "nextEligiblePublishAt": "2026-07-28T16:00:00+00:00",
+                "observedDeploys": {"learnerSites": 9, "allSites": 15},
+                "projectedDeploys": {"learnerSites": 11, "allSites": 17},
+                "budgets": {"learnerSites": 10, "allSites": 24},
+                "triggeredBudgets": ["learnerSites"],
+            },
+        }
+        for artifact in (wrong_run, malformed, wrong_slot, None):
+            with self.subTest(artifact=artifact):
+                receipt = failed_receipt()
+                attach_release_train_protective_hold(receipt, artifact)
+                row = receipt["workflows"][0]
+                self.assertEqual(row["state"], "failed")
+                self.assertNotIn("protectiveHold", row)
+
+    def test_annotation_loader_is_called_for_the_exact_failed_run(self):
+        receipt = evaluate_runs(
+            {"production-release-train.yml": 14},
+            {"production-release-train.yml": [run_record(conclusion="failure")]},
+            now=NOW,
+            **provenance_for("production-release-train.yml"),
+        )
+        artifact = {
+            "schemaVersion": 1,
+            "workflowFile": "production-release-train.yml",
+            "runId": 101,
+            "outcome": "held",
+            "protectiveHold": {
+                "reason": "spend_tripwire",
+                "observedAt": "2026-07-28T11:00:00+00:00",
+                "nextEligiblePublishAt": "2026-07-28T15:05:00+00:00",
+                "observedDeploys": {"learnerSites": 9, "allSites": 15},
+                "projectedDeploys": {"learnerSites": 11, "allSites": 17},
+                "budgets": {"learnerSites": 10, "allSites": 24},
+                "triggeredBudgets": ["learnerSites"],
+            },
+        }
+        calls = []
+
+        def loader(repository, run_id, token):
+            calls.append((repository, run_id, token))
+            return artifact
+
+        self.assertTrue(annotate_release_train_hold(
+            receipt,
+            "example/repo",
+            "PRIVATE TOKEN SENTINEL",
+            loader=loader,
+        ))
+        self.assertEqual(calls, [("example/repo", 101, "PRIVATE TOKEN SENTINEL")])
+        self.assertIn("protectiveHold", receipt["workflows"][0])
+        self.assertNotIn("PRIVATE TOKEN SENTINEL", json.dumps(receipt))
+
+    def test_unavailable_artifact_leaves_the_failed_row_unannotated(self):
+        receipt = evaluate_runs(
+            {"production-release-train.yml": 14},
+            {"production-release-train.yml": [run_record(conclusion="failure")]},
+            now=NOW,
+            **provenance_for("production-release-train.yml"),
+        )
+
+        def unavailable(*_args):
+            raise HeartbeatError("artifact unavailable")
+
+        self.assertFalse(annotate_release_train_hold(
+            receipt,
+            "example/repo",
+            "PRIVATE TOKEN SENTINEL",
+            loader=unavailable,
+        ))
+        self.assertNotIn("protectiveHold", receipt["workflows"][0])
+
+    def test_artifact_fetch_is_bound_to_run_name_and_one_bounded_json_file(self):
+        artifact = {
+            "schemaVersion": 1,
+            "workflowFile": "production-release-train.yml",
+            "runId": 101,
+            "outcome": "refused",
+        }
+        calls = []
+
+        def runner(command, **kwargs):
+            calls.append((command, kwargs))
+            Path(kwargs["cwd"], "production-release-train.json").write_text(
+                json.dumps(artifact),
+                encoding="utf-8",
+            )
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        got = fetch_release_train_receipt(
+            "example/repo",
+            101,
+            "PRIVATE TOKEN SENTINEL",
+            runner=runner,
+        )
+        self.assertEqual(got, artifact)
+        command, kwargs = calls[0]
+        self.assertEqual(command, [
+            "gh", "run", "download", "101",
+            "--repo", "example/repo",
+            "--name", "production-release-train-101",
+            "--dir", ".",
+        ])
+        self.assertEqual(kwargs["env"]["GH_TOKEN"], "PRIVATE TOKEN SENTINEL")
+        self.assertNotIn("PRIVATE TOKEN SENTINEL", " ".join(command))
+
+    def test_artifact_fetch_rejects_download_failure_or_extra_files(self):
+        def failed(command, **_kwargs):
+            return subprocess.CompletedProcess(command, 1, "", "not found")
+
+        with self.assertRaises(HeartbeatError):
+            fetch_release_train_receipt("example/repo", 101, "tok", runner=failed)
+
+        def extra(command, **kwargs):
+            Path(kwargs["cwd"], "production-release-train.json").write_text(
+                "{}", encoding="utf-8"
+            )
+            Path(kwargs["cwd"], "unexpected.txt").write_text("x", encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        with self.assertRaises(HeartbeatError):
+            fetch_release_train_receipt("example/repo", 101, "tok", runner=extra)
+
+        def missing_cli(*_args, **_kwargs):
+            raise OSError("gh unavailable")
+
+        with self.assertRaises(HeartbeatError):
+            fetch_release_train_receipt("example/repo", 101, "tok", runner=missing_cli)
 
     def test_expectation_list_is_exact_and_excludes_heartbeat_itself(self):
         self.assertEqual(

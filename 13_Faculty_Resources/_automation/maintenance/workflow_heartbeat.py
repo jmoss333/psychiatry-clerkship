@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote, urlsplit
@@ -102,6 +103,7 @@ SAFE_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$")
 SAFE_WORKFLOW = re.compile(r"^[A-Za-z0-9_.-]{1,128}\.ya?ml$")
 SAFE_GIT_SHA = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
 MAX_API_BYTES = 2_000_000
+MAX_RECEIPT_BYTES = 64_000
 API_TIMEOUT_SECONDS = 20
 
 # A heartbeat measures pulse, not health.
@@ -437,6 +439,131 @@ def evaluate_runs(
     }
 
 
+def _normalized_protective_hold(artifact, expected_run_id):
+    """Return a bounded hold only when it belongs to the exact failed run."""
+    if (
+        not isinstance(artifact, dict)
+        or artifact.get("schemaVersion") != 1
+        or artifact.get("workflowFile") != "production-release-train.yml"
+        or artifact.get("runId") != expected_run_id
+        or artifact.get("outcome") != "held"
+    ):
+        return None
+    hold = artifact.get("protectiveHold")
+    expected_keys = {
+        "reason",
+        "observedAt",
+        "nextEligiblePublishAt",
+        "observedDeploys",
+        "projectedDeploys",
+        "budgets",
+        "triggeredBudgets",
+    }
+    if not isinstance(hold, dict) or set(hold) != expected_keys:
+        return None
+    if hold.get("reason") != "spend_tripwire":
+        return None
+    try:
+        observed_at = _parse_timestamp(hold.get("observedAt"))
+        next_at = _parse_timestamp(hold.get("nextEligiblePublishAt"))
+    except HeartbeatError:
+        return None
+    if (
+        next_at <= observed_at
+        or next_at.hour not in (9, 15, 21)
+        or next_at.minute != 5
+        or next_at.second != 0
+        or next_at.microsecond != 0
+    ):
+        return None
+    count_keys = {"learnerSites", "allSites"}
+    normalized = {}
+    for field in ("observedDeploys", "projectedDeploys", "budgets"):
+        value = hold.get(field)
+        if not isinstance(value, dict) or set(value) != count_keys:
+            return None
+        if any(type(item) is not int or item < 0 for item in value.values()):
+            return None
+        normalized[field] = dict(value)
+    if any(item <= 0 for item in normalized["budgets"].values()):
+        return None
+    for key in count_keys:
+        if normalized["projectedDeploys"][key] != normalized["observedDeploys"][key] + 2:
+            return None
+    triggered = hold.get("triggeredBudgets")
+    if (
+        not isinstance(triggered, list)
+        or not triggered
+        or len(triggered) != len(set(triggered))
+        or any(item not in count_keys for item in triggered)
+    ):
+        return None
+    computed = {
+        key
+        for key in count_keys
+        if normalized["projectedDeploys"][key] > normalized["budgets"][key]
+    }
+    if set(triggered) != computed:
+        return None
+    return {
+        "reason": "spend_tripwire",
+        "observedAt": observed_at.isoformat(timespec="seconds"),
+        "nextEligiblePublishAt": next_at.isoformat(timespec="seconds"),
+        **normalized,
+        "triggeredBudgets": list(triggered),
+    }
+
+
+def attach_release_train_protective_hold(receipt, artifact):
+    """Annotate an exact failed train row; invalid evidence stays a failure."""
+    if not isinstance(receipt, dict) or not isinstance(receipt.get("workflows"), list):
+        return False
+    for row in receipt["workflows"]:
+        if (
+            not isinstance(row, dict)
+            or row.get("workflowFile") != "production-release-train.yml"
+            or row.get("state") != "failed"
+            or type(row.get("runId")) is not int
+        ):
+            continue
+        hold = _normalized_protective_hold(artifact, row["runId"])
+        if hold is None:
+            return False
+        row["protectiveHold"] = hold
+        return True
+    return False
+
+
+def annotate_release_train_hold(
+    receipt,
+    repository,
+    token,
+    *,
+    loader=None,
+):
+    """Load evidence for only the exact failed train run, then attach it."""
+    if not isinstance(receipt, dict) or not isinstance(receipt.get("workflows"), list):
+        return False
+    row = next(
+        (
+            item for item in receipt["workflows"]
+            if isinstance(item, dict)
+            and item.get("workflowFile") == "production-release-train.yml"
+            and item.get("state") == "failed"
+            and type(item.get("runId")) is int
+        ),
+        None,
+    )
+    if row is None:
+        return False
+    loader = loader or fetch_release_train_receipt
+    try:
+        artifact = loader(repository, row["runId"], token)
+    except HeartbeatError:
+        return False
+    return attach_release_train_protective_hold(receipt, artifact)
+
+
 def classify_blockers(receipt):
     """Split a receipt's blocking rows into (pulse, delegated).
 
@@ -501,6 +628,68 @@ def fetch_runs(repository, workflow_file, *, token, opener=None):
     ):
         raise HeartbeatError("GitHub workflow API response is malformed")
     return payload["workflow_runs"]
+
+
+def fetch_release_train_receipt(
+    repository,
+    run_id,
+    token,
+    *,
+    runner=subprocess.run,
+):
+    """Fetch the one small receipt artifact for one exact train run."""
+    if not isinstance(repository, str) or SAFE_REPOSITORY.fullmatch(repository) is None:
+        raise HeartbeatError("GitHub repository is invalid")
+    if type(run_id) is not int or run_id <= 0:
+        raise HeartbeatError("release-train run id is invalid")
+    if not isinstance(token, str) or not token:
+        raise HeartbeatError("GITHUB_TOKEN is unavailable")
+    expected_name = f"production-release-train-{run_id}"
+    command = [
+        "gh",
+        "run",
+        "download",
+        str(run_id),
+        "--repo",
+        repository,
+        "--name",
+        expected_name,
+        "--dir",
+        ".",
+    ]
+    with tempfile.TemporaryDirectory(prefix="release-train-receipt-") as directory:
+        environment = os.environ.copy()
+        environment["GH_TOKEN"] = token
+        try:
+            result = runner(
+                command,
+                cwd=directory,
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+        except OSError as exc:
+            raise HeartbeatError("GitHub CLI is unavailable") from exc
+        if type(getattr(result, "returncode", None)) is not int or result.returncode != 0:
+            raise HeartbeatError("exact release-train artifact is unavailable")
+        files = [path for path in Path(directory).rglob("*") if path.is_file()]
+        expected = Path(directory) / "production-release-train.json"
+        if files != [expected]:
+            raise HeartbeatError("release-train artifact contents are malformed")
+        try:
+            if expected.stat().st_size > MAX_RECEIPT_BYTES:
+                raise HeartbeatError("release-train receipt is too large")
+            raw_receipt = expected.read_bytes()
+        except OSError as exc:
+            raise HeartbeatError("release-train receipt is unavailable") from exc
+    try:
+        receipt = json.loads(raw_receipt)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise HeartbeatError("release-train receipt is malformed") from exc
+    if not isinstance(receipt, dict):
+        raise HeartbeatError("release-train receipt is malformed")
+    return receipt
 
 
 def _run_git(root, args, *, allow_failure=False):
@@ -737,6 +926,16 @@ def main(argv=None, *, opener=None, now=_utc_now):
         now=checked_at,
         activation_records=activations,
         run_provenance=provenance,
+    )
+    annotate_release_train_hold(
+        receipt,
+        repository,
+        token,
+        loader=lambda repo, run_id, auth: fetch_release_train_receipt(
+            repo,
+            run_id,
+            auth,
+        ),
     )
     # Name every unclean workflow before exiting — without this the log gives no
     # hint which one (see receipt_summary). The verdict is passed explicitly:

@@ -46,7 +46,18 @@ jobs:
           # Read-only use: the spend tripwire counts the last 24 h of production
           # deploys across all five Netlify sites before a scheduled publish.
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        run: python3 13_Faculty_Resources/_automation/maintenance/release_train.py
+        run: >-
+          python3 13_Faculty_Resources/_automation/maintenance/release_train.py
+          --out "$RUNNER_TEMP/production-release-train.json"
+
+      - name: Upload release-train receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: production-release-train-${{ github.run_id }}
+          path: ${{ runner.temp }}/production-release-train.json
+          if-no-files-found: error
+          retention-days: 90
 
       # Pushes made with GITHUB_TOKEN do not start other workflows, so the release
       # receipt is requested explicitly for the exact commit just published.
