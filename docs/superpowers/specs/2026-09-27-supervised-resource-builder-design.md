@@ -1,6 +1,6 @@
 # Supervised Resource Builder — Design
 
-**Status:** Proposed for review; no implementation is authorized by this document.
+**Status:** Approved 2026-09-27. Implementation, clinical/data review, merge, deployment, and the later Clerkship launch link remain separately gated.
 
 **Date:** 2026-09-27
 
@@ -263,9 +263,9 @@ No earlier step is evidence for a later one.
 
 This sequencing avoids shared-file collisions with the active Quick Share work and prevents a Clerkship link from landing before its destination is governed and stable.
 
-## Decisions requested
+## Approved decisions
 
-The proposal uses these recommended defaults unless review changes them:
+The approved design uses these defaults unless a later governed review changes them:
 
 1. **Name:** “Supervised Resource Builder,” with the task label “Build a patient resource page.”
 2. **Supervisor boundary:** require a transient Reviewed with supervisor checkbox before Print or Copy.
