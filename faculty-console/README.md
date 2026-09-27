@@ -59,6 +59,8 @@ The learner sites publish from `release`, not `main`: a merged change — and a 
 
 It is **read-only** and loads only when opened or refreshed: it never publishes (a publish costs a production deploy per site, and that is the owner's call on the train's own page). It needs the faculty key and uses the console's existing `GITHUB_TOKEN`; reading `main`'s check runs and the train's runs needs that token to have *Checks* and *Actions* read access, and when it does not, the panel lists that under **Could not read everything** rather than guessing. Every unreadable fact is listed there the same way — an unread comparison is never shown as "up to date", "learners see everything" is claimed only when every learner site's published deploy was read, and a waiting count judged from one site (or the release branch) reads "at least". In ledger mode (ADR-003) sign-offs publish through the ledger on their own and are not listed. The slots, the required check names and the sign-off branch are restated from their owners and pinned to them by `tests/faculty-console-release-status.test.mjs`.
 
+**The same reading runs daily without anyone opening the panel.** `maintenance-release-watch.yml` (10:05 UTC) runs `bin/release_watch.mjs`, which calls this panel's loader with one difference: it reads the commit each site *serves* from its own `/tool-governance.json` (no credential, as the production canary does) instead of Netlify's deploy record. It reads every release-train run started in the last 26 h (`TRAIN_LOOKBACK_HOURS`), not only the newest, so a held 15:05 run that a green 21:05 run follows still reaches the next morning's watch. It exits 1 on anything the panel marks *attention* — plus merged work waiting over 24 h (`STALE_WAIT_HOURS`), which the panel also flags — and 2 when it could not read both sites or any other fact, never 0 over a partial read. A red run lands in the rolling escalation issue with the headline as its first error line.
+
 ## The phone client (`/m/`)
 
 `m/index.html` + `m/m.mjs` is a phone-first front-end on this same site, so the learner sites'
@@ -265,9 +267,12 @@ Attestations therefore commit to `GIT_BRANCH` and reach `GIT_BASE_BRANCH` throug
 request**, which the server attempts to open on the first write and reuse thereafter. This is
 best-effort housekeeping performed only after the attestation commit succeeds. If GitHub cannot
 open or find the pull request, the console keeps the confirmed commit receipt and shows a
-**rolling review request needs attention** warning in the session ledger. A repository maintainer
-should then open or reuse a pull request from `GIT_BRANCH` to `GIT_BASE_BRANCH`; the attestation
-must not be repeated. CI still gates every attestation, and protection on `main` is untouched.
+**rolling review request needs attention** warning in the session ledger. On the next load, a
+`stranded-no-pr` probe carrying the exact branch-head SHA makes one automatic attempt to open or
+reuse that rolling request. A failed attempt stays in a persistent `role="alert"` notice with its
+stable error code and a **Retry opening PR** button; ordinary preview status cannot erase it. The
+attestation must not be repeated. CI still gates every attestation, and protection on `main` is
+untouched.
 
 Before each write the console **fast-forwards the attestation branch from the base branch, but only
 when the branch carries nothing of its own** (`compare(base...branch).ahead_by === 0`). This is the
@@ -361,7 +366,8 @@ open review request:
 gh pr list --repo jmoss333/psychiatry-clerkship --head attest/pending --state open
 gh pr update-branch <number> --repo jmoss333/psychiatry-clerkship
 
-# If no rolling PR exists, press "Reopen review request" in the console banner, or:
+# If no rolling PR exists, the console tries once automatically. Use "Retry opening PR"
+# after a reported failure (or "Reopen review request" on an older/unversioned response), or:
 gh pr create --repo jmoss333/psychiatry-clerkship --base main --head attest/pending \
   --title 'attest: faculty review from the attestation console'
 

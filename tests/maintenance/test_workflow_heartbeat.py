@@ -325,6 +325,7 @@ class WorkflowHeartbeatTests(unittest.TestCase):
                 "maintenance-sp-health-monitor.yml": 16,
                 "production-release-train.yml": 14,
                 "maintenance-production-canary.yml": 30,
+                "maintenance-release-watch.yml": 30,
                 "maintenance-queue-runner.yml": 30,
                 "maintenance-rotation-readiness.yml": 30,
                 "ci.yml": 8 * 24,

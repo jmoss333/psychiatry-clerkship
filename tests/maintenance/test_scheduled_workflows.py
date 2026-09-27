@@ -28,6 +28,7 @@ EXPECTED = {
     "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
+    "maintenance-release-watch.yml": "5 10 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",
     "maintenance-governance-digest.yml": "30 12 * * 1",
     "maintenance-monthly-review.yml": "0 13 1 * *",
@@ -412,6 +413,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "actions/download-artifact": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
             "actions/cache": "55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
             "lycheeverse/lychee-action": "e7477775783ea5526144ba13e8db5eec57747ce8",
+            "actions/create-github-app-token": "bcd2ba49218906704ab6c1aa796996da409d3eb1",
         }
         self.assertEqual(PINNED_ACTIONS, expected_pins)
         names = [
@@ -616,6 +618,11 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "ci.yml": {"contents": "read"},
             "maintenance-sp-health-monitor.yml": {"contents": "read"},
             "maintenance-production-canary.yml": {"contents": "read"},
+            "maintenance-release-watch.yml": {
+                "actions": "read",
+                "checks": "read",
+                "contents": "read",
+            },
             "maintenance-heartbeat.yml": {
                 "actions": "read",
                 "contents": "read",

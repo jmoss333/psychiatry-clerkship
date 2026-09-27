@@ -17,6 +17,7 @@ on:
       - "Maintenance — Faculty Governance Digest"
       - "Maintenance — Interview Room Health Monitor"
       - "Maintenance — Production Learner Canary"
+      - "Maintenance — Release Watch"
       - "Maintenance — Rotation Readiness"
       - "Maintenance — Workflow Heartbeat"
       - "Surveillance — Citation Validity"
