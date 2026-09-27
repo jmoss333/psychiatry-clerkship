@@ -28,6 +28,7 @@ EXPECTED = {
     "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
+    "maintenance-release-watch.yml": "5 10 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",
     "maintenance-governance-digest.yml": "30 12 * * 1",
     "maintenance-monthly-review.yml": "0 13 1 * *",
@@ -617,6 +618,11 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "ci.yml": {"contents": "read"},
             "maintenance-sp-health-monitor.yml": {"contents": "read"},
             "maintenance-production-canary.yml": {"contents": "read"},
+            "maintenance-release-watch.yml": {
+                "actions": "read",
+                "checks": "read",
+                "contents": "read",
+            },
             "maintenance-heartbeat.yml": {
                 "actions": "read",
                 "contents": "read",

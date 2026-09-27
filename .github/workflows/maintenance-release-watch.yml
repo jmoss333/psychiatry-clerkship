@@ -1,0 +1,51 @@
+name: Maintenance — Release Watch
+
+# Once a day, after the morning publish has had time to build, read what the learner
+# sites actually serve against what is merged to main -- the faculty console's "What
+# learners see" panel, run by a schedule instead of a person. Red when it needs the owner
+# (a held or failed train run, sites serving different commits, `release` unserved, main's
+# newest merge failing its checks, merged work waiting over 24 h) or when it could not
+# check; automation-failure-escalation.yml turns a red run into the rolling issue.
+# 10:05 UTC: the train's 09:05 slot starts as late as 09:24 and Netlify then builds for
+# several minutes. Read-only: it never publishes, and needs no Netlify credential (it reads
+# each site's served /tool-governance.json, as the production canary does).
+# Logic: bin/release_watch.mjs + faculty-console/release-status.mjs;
+# tests: tests/faculty-console-release-status.test.mjs.
+
+on:
+  schedule:
+    - cron: "5 10 * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+
+jobs:
+  release-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          lfs: false
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22"
+
+      - name: Read what learners see against main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node bin/release_watch.mjs --out "$RUNNER_TEMP/release-watch.json"
+
+      - name: Upload release watch receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: maintenance-release-watch-${{ github.run_id }}
+          path: ${{ runner.temp }}/release-watch.json
+          if-no-files-found: warn
+          retention-days: 90
