@@ -57,6 +57,8 @@ class ReceiptTests(unittest.TestCase):
 
     def test_complete_voice_off_receipt_is_v2_with_exact_evidence(self):
         source = work()
+        source["runtime"]["rawReply"] = "patient reply must not be copied"
+        source["mechanical"]["tier2"]["rawLog"] = "patient reply must not be copied"
         receipt = build_receipt(source, passing_rows("A", "C", "D", "E"),
                                 "Joshua Moss, MD", NOW)
         self.assertEqual(receipt["state"], "passed")
@@ -66,6 +68,7 @@ class ReceiptTests(unittest.TestCase):
         self.assertEqual(receipt["completedSections"], ["A", "B", "C", "D", "E"])
         self.assertEqual(receipt["checkedAt"], NOW.isoformat())
         self.assertEqual(receipt["checklist"], "sp-proxy/REDTEAM_CHECKLIST.md")
+        self.assertNotIn("patient reply", json.dumps(receipt))
 
     def test_realtime_and_managed_voice_add_their_manual_rows(self):
         source = work()

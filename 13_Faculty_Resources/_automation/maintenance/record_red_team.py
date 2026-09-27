@@ -120,6 +120,22 @@ def build_receipt(work: dict, manual_rows: dict, signed_by: str, now: datetime,
     completed = [section for section in sections if
                  (section == "B" and mechanical_ok) or
                  (section != "B" and all(row not in incomplete for row in MANUAL_ROWS.get(section, ())))]
+    voice_stack = runtime.get("managedVoiceStack")
+    safe_runtime = {key: runtime.get(key) for key in
+                    ("actorModel", "evaluatorModel", "realtimeEnabled", "realtimeModel",
+                     "transcriptionModel", "managedVoiceEnabled")}
+    safe_runtime["managedVoiceStack"] = (
+        {key: voice_stack.get(key) for key in
+         ("id", "transcriptionModel", "synthesisModel")}
+        if isinstance(voice_stack, dict) else None)
+    safe_mechanical = {
+        "tier1": {key: tier1.get(key) for key in
+                  ("state", "checkedAt", "passes", "total")},
+        "tier2": {"state": tier2.get("state"), "checkedAt": tier2.get("checkedAt"),
+                  "checks": [{"id": check.get("id"), "status": check.get("status")}
+                             for check in (checks if isinstance(checks, list) else [])
+                             if isinstance(check, dict)]},
+    }
     return {
         "schemaVersion": 2, "state": "incomplete" if incomplete else "passed",
         "checkedAt": now.isoformat(), "packSha256": work["packSha256"],
@@ -127,9 +143,9 @@ def build_receipt(work: dict, manual_rows: dict, signed_by: str, now: datetime,
         "deployments": {key: {field: deployments[key][field] for field in
                              ("siteId", "deployId", "commitRef", "deployUrl", "publishedAt")}
                         for key in ("proxy", "ms3", "res")},
-        "runtime": runtime, "requiredSections": sections,
+        "runtime": safe_runtime, "requiredSections": sections,
         "completedSections": completed, "manualRows": sanitized,
-        "incompleteRows": incomplete, "mechanical": mechanical,
+        "incompleteRows": incomplete, "mechanical": safe_mechanical,
         "signedBy": signed_by.strip(), "checklist": CHECKLIST,
     }
 

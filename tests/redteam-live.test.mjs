@@ -135,3 +135,24 @@ test('structured result contains only verified manifest fields and five passing 
   assert.equal(result.checks.length, 5);
   assert.doesNotMatch(JSON.stringify(result), /fixture-passcode|patient reply/i);
 });
+
+test('a forged-state POST returning 200 cannot become a mechanical pass', async (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'redteam-result-'));
+  t.after(() => rmSync(dir, {recursive: true, force: true}));
+  const output = path.join(dir, 'result.json');
+  await withEndpoint((req, res) => {
+    if (req.method === 'POST') { res.writeHead(200); res.end('{}'); return; }
+    if ((req.headers['x-student-key'] || '') !== 'fixture-passcode') {
+      res.writeHead(401); res.end('{}'); return;
+    }
+    const body = req.url.endsWith('/realtime') || req.url.endsWith('/voice') ?
+      {enabled: false} : {actorModel: 'model-a', evaluatorModel: 'model-a',
+        packVersion: 'fixture', packSha256: 'f'.repeat(64)};
+    res.writeHead(200); res.end(JSON.stringify(body));
+  }, url => new Promise(resolve => execFile('bash', [script, '--result-json', output, url],
+    {timeout: 60000, env: {...process.env, SP_STUDENT_PASSCODE: 'fixture-passcode'}},
+    (error, stdout, stderr) => resolve({code: error?.code ?? 0, stdout, stderr}))));
+  const result = JSON.parse(readFileSync(output, 'utf8'));
+  assert.equal(result.state, 'failed');
+  assert.equal(result.checks.find(check => check.id === 'B5').status, 'fail');
+});

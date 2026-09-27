@@ -31,10 +31,13 @@ def run_tier1(pack_bytes: bytes) -> dict:
     with tempfile.TemporaryDirectory(prefix="sp-redteam-pack-") as directory:
         pack_path = Path(directory) / "deployed-pack.json"
         pack_path.write_bytes(pack_bytes)
-        result = subprocess.run(
-            ["node", str(TIER1), str(pack_path)], cwd=ROOT, text=True,
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=120,
-        )
+        try:
+            result = subprocess.run(
+                ["node", str(TIER1), str(pack_path)], cwd=ROOT, text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=120,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise EvidenceUnavailable("Tier 1 failed or empty") from exc
     counts = re.findall(r"(\d+)/(\d+) deterministic probes pass", result.stdout)
     if result.returncode or len(counts) != 1:
         raise EvidenceUnavailable("Tier 1 failed or empty")
@@ -51,10 +54,13 @@ def run_tier2(endpoint: str) -> dict:
         env = os.environ.copy()
         env.pop("SP_STUDENT_PASSCODE", None)
         env["REDTEAM_PROMPT_ONLY"] = "1"
-        result = subprocess.run(
-            ["bash", str(TIER2), "--result-json", path, endpoint],
-            cwd=ROOT, env=env, timeout=180,
-        )
+        try:
+            result = subprocess.run(
+                ["bash", str(TIER2), "--result-json", path, endpoint],
+                cwd=ROOT, env=env, timeout=180,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise EvidenceUnavailable("Tier 2 failed or skipped") from exc
         try:
             live = json.loads(Path(path).read_text(encoding="utf-8"))
         except (OSError, ValueError) as exc:
