@@ -412,6 +412,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
             "actions/download-artifact": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
             "actions/cache": "55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
             "lycheeverse/lychee-action": "e7477775783ea5526144ba13e8db5eec57747ce8",
+            "actions/create-github-app-token": "bcd2ba49218906704ab6c1aa796996da409d3eb1",
         }
         self.assertEqual(PINNED_ACTIONS, expected_pins)
         names = [

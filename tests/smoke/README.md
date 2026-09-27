@@ -97,8 +97,14 @@ Refresh them only after publishing an authorized branch:
 
 1. Open GitHub Actions → **Refresh visual baselines**.
 2. Run the workflow for that branch.
-3. Inspect the workflow's `[skip ci]` baseline commit.
-4. Explicitly rerun CI, because the bot commit may not trigger it automatically.
+3. Inspect the workflow's baseline commit. It may touch `tests/smoke/baseline/` and nothing
+   else, and it carries no CI-skip token.
+4. Wait for the PR's own **pull_request** CI run on that commit, and merge on its result.
+   With the baseline GitHub App configured (the Setup note at the top of
+   `.github/workflows/refresh-baselines.yml`) that run starts by itself. Without it, GitHub
+   holds the run for a maintainer: PR → Checks → the CI run → **Approve and run**. A
+   `workflow_dispatch` run of CI on the same commit does not count toward the PR's required
+   checks, even when it is green (#839).
 
 The visual project is expected to remain red while the new semantic baselines are absent. That
 handoff is separate from the functional projects, which must be green first.
