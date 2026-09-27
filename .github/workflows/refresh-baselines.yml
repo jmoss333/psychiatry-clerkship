@@ -20,17 +20,31 @@ name: Refresh visual baselines
 #      token, so Netlify builds the PR's deploy previews on it as on any push.
 #   3. Runs the governance/content guard (bin/check_governance_separation.py) over each
 #      open PR's range (from its merge-base with the PR's base branch, as the PR's own diff
-#      is), with the new commit as the head, BEFORE pushing. ci.yml runs that
-#      guard only on pull_request events, and step 5's run is a workflow_dispatch, so this
-#      is where the head gets judged. The guard's output is in this run's log.
-#   4. Pushes. A push made with this workflow's GITHUB_TOKEN starts no workflow at all,
-#      which is why step 5 exists.
-#   5. Starts ci.yml on the branch (workflow_dispatch is the one event that token can
-#      start). Its build-test-validate and smoke-tests runs attach to the new head, and
-#      those are the checks main's ruleset requires, so the PR can merge when they are
-#      green, with no hand-made follow-up commit. With no open PR from the branch, it
-#      pushes and stops. Opening the PR then runs the ordinary pull_request CI, guard
-#      included.
+#      is), with the new commit as the head, BEFORE pushing, so a refresh never hands a PR
+#      a head its own CI guard would refuse. The guard's output is in this run's log.
+#   4. Pushes, as the baseline GitHub App when one is configured (Setup, below). A push
+#      made with an App's token is an ordinary push: it starts the PR's own pull_request
+#      CI on the new head, governance guard included, and that run's build-test-validate
+#      and smoke-tests are the checks main's ruleset counts. With no open PR from the
+#      branch it pushes and stops; opening the PR runs the same pull_request CI.
+#
+# Why an App. A push made with this workflow's own GITHUB_TOKEN does not start the PR's
+# CI unattended. On 2026-09-27 (#839) GitHub created that pull_request run as
+# "action_required" and held it for a maintainer's "Approve and run". Until then this
+# workflow also started ci.yml by workflow_dispatch on the new commit, on the theory that
+# a dispatch run's checks satisfy the ruleset. They do not: #839's dispatch run went
+# green on the head while the PR still listed both required checks as "Expected —
+# Waiting for status to be reported", and the PR became mergeable only after the held
+# pull_request run was approved and passed. The dispatch cost a duplicate ~20-minute CI
+# run and satisfied nothing, so it is gone, and so is the actions: write it needed.
+#
+# Setup (the owner, once). Create a GitHub App with one repository permission,
+# Contents: Read and write, and no webhook. Install it on this repository only. Set the
+# repository VARIABLE BASELINE_APP_CLIENT_ID to the App's Client ID and the repository
+# SECRET BASELINE_APP_PRIVATE_KEY to a private key the App generated. Until the variable
+# is set, the workflow pushes with GITHUB_TOKEN and ends with a notice saying where to
+# click "Approve and run". Once the variable is set, a missing or wrong key fails the
+# token step, and the run, rather than quietly falling back.
 #
 # Until 2026-09-25 this committed with a CI-skip token. The PR head then carried no
 # required checks, and #669 needed two extra commits (both empty; the first quoted the
@@ -41,8 +55,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write       # push the refreshed baselines back to the dispatching branch
-  actions: write        # start ci.yml on the new commit (step 5)
+  contents: write       # push the refreshed baselines when no baseline App is configured
   pull-requests: read   # find the open PRs whose ranges the guard judges (step 3)
 
 jobs:
@@ -124,18 +137,35 @@ jobs:
           # the normal comparison threshold. A refresh must replace every baseline.
           npx playwright test visual-regression.spec.js --project=visual --update-snapshots=all
 
-      - name: Commit, guard, push, and start CI on the new commit
+      # Step 4's identity. Skipped, leaving the token empty, until the owner sets the
+      # variable (Setup, above). The token reaches only this repository, carries only
+      # contents: write, and the action revokes it when the job ends.
+      - name: Mint the baseline App's token
+        id: app-token
+        if: ${{ vars.BASELINE_APP_CLIENT_ID != '' }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.BASELINE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.BASELINE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Commit, guard, and push the new commit
         env:
           BRANCH: ${{ github.ref_name }}
           GH_TOKEN: ${{ github.token }}
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
+          # The App's token lives in an unexported shell variable from here on, so the
+          # guard below (code from the branch) and every other child starts without it.
+          app_token="${APP_TOKEN:-}"
+          unset APP_TOKEN
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add tests/smoke/baseline/
           if git diff --staged --quiet; then
-            echo "No baseline changes — images already match this environment. Nothing pushed, no CI started."
+            echo "No baseline changes — images already match this environment. Nothing pushed."
             exit 0
           fi
           git commit --quiet -m "chore(smoke): refresh visual baselines (Ubuntu/Chromium)" -m "Regenerated by $RUN_URL"
@@ -162,15 +192,27 @@ jobs:
             python3 bin/check_governance_separation.py --base "$base" --head HEAD --head-branch "$BRANCH"
           done
 
-          # Step 4.
-          git push origin "HEAD:$BRANCH"
+          # Step 4. With the App's token, this one command authenticates as the App: the
+          # empty extraheader clears the GITHUB_TOKEN header actions/checkout persisted,
+          # and the next one puts the App's in its place. Nothing is written to disk.
+          push_auth=()
+          if [ -n "$app_token" ]; then
+            basic=$(printf 'x-access-token:%s' "$app_token" | base64 | tr -d '\n')
+            echo "::add-mask::$basic"
+            push_auth=(-c "http.https://github.com/.extraheader="
+                       -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $basic")
+          fi
+          git ${push_auth[@]+"${push_auth[@]}"} push origin "HEAD:$BRANCH"
+          short=$(git rev-parse --short HEAD)
 
-          # Step 5.
           if [ -z "$tips" ]; then
-            echo "No open PR from $BRANCH: pushed $(git rev-parse --short HEAD) without starting CI."
+            echo "No open PR from $BRANCH: pushed $short."
             echo "Opening the PR runs the ordinary pull_request CI, governance guard included."
             exit 0
           fi
-          gh workflow run ci.yml --ref "$BRANCH"
-          echo "Pushed $(git rev-parse --short HEAD) and started ci.yml on $BRANCH:"
-          echo "its build-test-validate and smoke-tests runs are this head's required checks."
+          if [ -n "$app_token" ]; then
+            echo "Pushed $short as the baseline App: the PR's own pull_request CI starts on it,"
+            echo "and that run's build-test-validate and smoke-tests are this head's required checks."
+            exit 0
+          fi
+          echo "::notice title=Approve the PR's CI run::Pushed $short with GITHUB_TOKEN because no baseline App is configured. If GitHub holds the PR's pull_request CI run for a maintainer, as it did on #839, open the PR, then Checks, then that CI run, then Approve and run. Merge on that run's result. The Setup note at the top of refresh-baselines.yml removes this click."
