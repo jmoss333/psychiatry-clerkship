@@ -142,8 +142,11 @@ def _pack_cases_not_reviewed():
     cases = pack.get("cases")
     if not isinstance(cases, list):
         raise ValueError("pack.cases is not a list")
-    # Literal `reviewed` only. The tool (sp-interview.html), the proxy (sp-realtime-session.mjs,
-    # sp-governance.mjs) and the red-team runner (bin/redteam-offline.mjs) select a case on
+    # Literal `reviewed` only. The tool (sp-interview.html isCaseReviewed), the proxy
+    # (sp-governance.mjs reviewedCase(), which sp.mjs, sp-voice.mjs and sp-realtime.mjs resolve
+    # every case through; it also wants a reviewer and a review date not in the future, which
+    # this row deliberately does not mirror -- a reviewed case with a bad date is a data error,
+    # not an unread case) and the red-team runner (bin/redteam-offline.mjs) select a case on
     # exactly that spelling; the attestation validator also lets `attested` into a reviewed pack,
     # but no surface offers such a case and Tier 1 refuses it (FAIL PACK). Counting `attested`
     # as done retired this row over a case learners could not select (Codex P2 on #855).
