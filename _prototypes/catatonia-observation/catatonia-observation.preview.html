@@ -35,23 +35,33 @@
     h1 { font-size: clamp(2.35rem, 5vw, 4.5rem); margin: 0 0 12px; max-width: 14ch; }
     .intro { max-width: 61ch; margin: 0; color: var(--muted); font-size: clamp(.96rem, 1.3vw, 1.08rem); }
     .badge { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; background: var(--coral-wash); border: 1px solid #e4b7a9; border-radius: 100px; color: #7f3929; padding: 9px 14px; font-weight: 750; font-size: .79rem; }
+    .picker-intro { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 10px; }
+    .picker-intro h2 { margin: 0; font-size: 1.45rem; }
+    .picker-intro p { margin: 0; color: var(--muted); font-size: .85rem; }
     .scene-picker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 0 0 24px; }
-    .scene-option { display: flex; align-items: center; gap: 13px; min-width: 0; text-align: left; background: rgba(255,253,248,.7); color: var(--ink); border: 1px solid var(--line); border-radius: 13px; padding: 13px 14px; }
+    .scene-option { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 0; text-align: left; background: rgba(255,253,248,.7); color: var(--ink); border: 1px solid var(--line); border-radius: 13px; padding: 9px; }
     .scene-option:hover { border-color: var(--teal); }
     .scene-option[aria-pressed="true"] { background: var(--teal-wash); border-color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal); }
-    .scene-option svg { width: 34px; height: 34px; flex: 0 0 34px; color: var(--teal); }
+    .scene-option > svg { width: 34px; height: 34px; flex: 0 0 34px; color: var(--teal); }
+    .scene-option.has-preview > svg { display: none; }
+    .scene-copy { display: block; padding: 0 5px 3px; }
     .scene-option strong, .scene-option small { display: block; }
     .scene-option strong { font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-size: 1.03rem; line-height: 1.2; }
     .scene-option small { color: var(--muted); font-size: .72rem; line-height: 1.25; margin-top: 4px; }
+    .scene-current { display: none; align-self: flex-start; margin: 0 5px 3px; color: var(--teal); font-size: .7rem; font-weight: 800; }
+    .scene-option[aria-pressed="true"] .scene-current { display: inline; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
     .grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 24px; align-items: start; }
     .scene-card, .practice-card { min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); }
     .scene-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding: 24px 28px 14px; }
     .scene-head h2, .practice-head h2 { font-size: clamp(1.4rem, 2vw, 1.8rem); margin: 0; }
     .scene-head p { margin: 0; color: var(--muted); font-size: .82rem; }
+    .scene-head .scene-count { color: var(--teal); font-size: .73rem; font-weight: 800; margin: 0 0 5px; }
     .scene-wrap { padding: 0 16px; }
     .scene { position: relative; overflow: hidden; aspect-ratio: 16 / 10; min-height: 300px; background: #dcebe6; border: 1px solid #c7d9d0; border-radius: 16px; }
     .scene svg { width: 100%; height: 100%; display: block; }
+    .scene-picker .scene-preview { display: block; width: 100%; min-height: 0; aspect-ratio: 16 / 10; border-radius: 8px; }
+    .scene-picker .scene-preview * { animation: none !important; transition: none !important; }
     .scene [data-art] { display: none; }
     .scene[data-scene="greeting"] [data-art="greeting"], .scene[data-scene="across-time"] [data-art="across-time"], .scene[data-scene="more-than-speech"] [data-art="more-than-speech"], .scene[data-scene="two-witnesses"] [data-art="two-witnesses"] { display: inline; }
     .scene .clinician { transition: transform .65s ease; }
@@ -119,7 +129,7 @@
     .links a:hover { background: var(--teal-wash); }
     footer { color: var(--muted); font-size: .75rem; margin: 24px 0 8px; }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .hero { align-items: start; flex-direction: column; } .badge { order: -1; } .scene-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 600px) { .scene-picker { gap: 7px; } .scene-option { gap: 8px; padding: 10px; } .scene-option svg { width: 27px; height: 27px; flex-basis: 27px; } .scene-option strong { font-size: .91rem; } .scene-option small { font-size: .65rem; } .scene-head, .caption, .controls { padding-left: 17px; padding-right: 17px; } .scene-wrap { padding: 0 9px; } .scene { min-height: 0; aspect-ratio: 16 / 10; } .timeline { padding-left: 17px; padding-right: 17px; grid-template-columns: repeat(2, 1fr); } .below { grid-template-columns: 1fr; } .controls small { margin-left: 0; } .practice-head, .practice-body { padding-left: 18px; padding-right: 18px; } }
+    @media (max-width: 600px) { .scene-picker { gap: 7px; } .scene-option { gap: 6px; padding: 7px; } .scene-option > svg { width: 27px; height: 27px; flex-basis: 27px; } .scene-option strong { font-size: .91rem; } .scene-option small { font-size: .65rem; } .scene-head, .caption, .controls { padding-left: 17px; padding-right: 17px; } .scene-wrap { padding: 0 9px; } .scene { min-height: 0; aspect-ratio: 16 / 10; } .timeline { padding-left: 17px; padding-right: 17px; grid-template-columns: repeat(2, 1fr); } .below { grid-template-columns: 1fr; } .controls small { margin-left: 0; } .practice-head, .practice-body { padding-left: 18px; padding-right: 18px; } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
     @media (prefers-color-scheme: dark) {
       :root { --ink: #eef3ed; --muted: #b9c9bf; --paper: #172a27; --card: #213631; --line: #49625a; --teal: #a0dfc7; --teal-wash: #294f43; --coral: #f2ab91; --coral-wash: #513a32; --shadow: 0 20px 55px rgba(0, 0, 0, .23); }
@@ -149,29 +159,33 @@
     <span class="badge">PREVIEW · Unattested · Not published</span>
   </div>
 
-  <nav class="scene-picker" aria-label="Choose an observation scene">
+  <div class="picker-intro">
+    <h2 id="scenePickerTitle">Explore four scenes</h2>
+    <p>Choose one to view its four moments, then practice describing what is known.</p>
+  </div>
+  <nav class="scene-picker" aria-labelledby="scenePickerTitle">
     <button class="scene-option" type="button" data-scene-select="greeting" aria-pressed="true">
       <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M5 7h26v17H17l-8 6v-6H5Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M11 14h14M11 19h9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-      <span><strong>A brief greeting</strong><small>One short encounter</small></span>
+      <span class="scene-copy"><strong>A brief greeting</strong><small>One short encounter</small></span>
     </button>
     <button class="scene-option" type="button" data-scene-select="across-time" aria-pressed="false">
       <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><circle cx="18" cy="18" r="13" stroke="currentColor" stroke-width="2.5"/><path d="M18 9v10l7 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span><strong>Across time</strong><small>Two separate check-ins</small></span>
+      <span class="scene-copy"><strong>Across time</strong><small>Two separate check-ins</small></span>
     </button>
     <button class="scene-option" type="button" data-scene-select="more-than-speech" aria-pressed="false">
       <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M6 7h24v16H17l-8 6v-6H6Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M12 15h12M12 19h6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-      <span><strong>More than speech</strong><small>Gesture and writing</small></span>
+      <span class="scene-copy"><strong>More than speech</strong><small>Gesture and writing</small></span>
     </button>
     <button class="scene-option" type="button" data-scene-select="two-witnesses" aria-pressed="false">
       <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2.5"/><circle cx="25" cy="12" r="5" stroke="currentColor" stroke-width="2.5"/><path d="M3 29c0-6 4-10 9-10s9 4 9 10M17 22c2-2 5-3 8-3 5 0 8 4 8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-      <span><strong>Two witnesses</strong><small>Who saw what, when</small></span>
+      <span class="scene-copy"><strong>Two witnesses</strong><small>Who saw what, when</small></span>
     </button>
   </nav>
   <span class="sr-only" id="sceneStatus" role="status" aria-live="polite" aria-atomic="true"></span>
 
   <div class="grid">
     <section class="scene-card" aria-labelledby="sceneTitle">
-      <div class="scene-head"><h2 id="sceneTitle">A brief greeting</h2><p>Illustration · narrated in text</p></div>
+      <div class="scene-head"><div><p class="scene-count" id="sceneCount">Scene 1 of 4</p><h2 id="sceneTitle">A brief greeting</h2></div><p>Illustration · narrated in text</p></div>
       <div class="scene-wrap">
         <div class="scene" id="scene" data-scene="greeting" data-frame="0" role="img" aria-label="Schematic inpatient room: a person sits in a chair, looking toward their lap, while a clinician approaches.">
           <span class="scene-label">Fictional scene</span>
@@ -494,6 +508,7 @@
     const kindLabels = { seen: 'Seen', stated: 'Stated', reported: 'Reported', unknown: 'Unknown' };
     const scene = document.getElementById('scene');
     const sceneTitle = document.getElementById('sceneTitle');
+    const sceneCount = document.getElementById('sceneCount');
     const sceneStatus = document.getElementById('sceneStatus');
     const caption = document.getElementById('caption');
     const steps = [...document.querySelectorAll('[data-step]')];
@@ -504,6 +519,39 @@
     let active = scenes[0];
     let frame = 0;
     let timer = null;
+
+    const previewFrames = { greeting: 1, 'across-time': 2, 'more-than-speech': 3, 'two-witnesses': 3 };
+    const sourceArt = scene.querySelector('svg');
+    for (const button of sceneButtons) {
+      const id = button.dataset.sceneSelect;
+      const preview = document.createElement('span');
+      preview.className = 'scene scene-preview';
+      preview.dataset.scene = id;
+      preview.dataset.frame = String(previewFrames[id]);
+      preview.setAttribute('aria-hidden', 'true');
+      const art = sourceArt.cloneNode(true);
+      art.querySelectorAll('[data-art]').forEach((group) => {
+        if (group.dataset.art !== id) group.remove();
+      });
+      for (const definition of art.querySelectorAll('defs [id]')) {
+        const original = definition.id;
+        const unique = `preview-${id}-${original}`;
+        art.querySelectorAll('[fill],[stroke]').forEach((shape) => {
+          for (const attribute of ['fill', 'stroke']) {
+            if (shape.getAttribute(attribute) === `url(#${original})`) shape.setAttribute(attribute, `url(#${unique})`);
+          }
+        });
+        definition.id = unique;
+      }
+      preview.append(art);
+      button.prepend(preview);
+      button.classList.add('has-preview');
+      const current = document.createElement('span');
+      current.className = 'scene-current';
+      current.setAttribute('aria-hidden', 'true');
+      current.textContent = 'Now viewing';
+      button.append(current);
+    }
 
     function stop() {
       if (timer !== null) clearInterval(timer);
@@ -547,9 +595,11 @@
     }
     function selectScene(id, announce = true) {
       stop();
-      active = scenes.find((item) => item.id === id);
+      const index = scenes.findIndex((item) => item.id === id);
+      active = scenes[index];
       scene.dataset.scene = active.id;
       sceneTitle.textContent = active.title;
+      sceneCount.textContent = `Scene ${index + 1} of ${scenes.length}`;
       sceneStatus.textContent = announce ? `${active.title} selected.` : '';
       sceneButtons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.sceneSelect === id)));
       renderChoices();

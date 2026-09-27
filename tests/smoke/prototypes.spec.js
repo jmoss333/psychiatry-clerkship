@@ -297,6 +297,43 @@ test.describe('catatonia observation · fictional, non-scoring preview', () => {
     expect(new Set(imageDescriptions).size).toBe(scenes.length);
   });
 
+  test('gallery visibly previews the matching source artwork for all four scenes', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'Explore four scenes' })).toBeVisible();
+    const previews = page.locator('.scene-picker .scene-preview');
+    await expect(previews).toHaveCount(4);
+
+    for (const id of ['greeting', 'across-time', 'more-than-speech', 'two-witnesses']) {
+      const preview = page.locator(`[data-scene-select="${id}"] .scene-preview`);
+      await expect(preview).toBeVisible();
+      await expect(preview).toHaveAttribute('aria-hidden', 'true');
+      const artwork = preview.locator('[data-art]');
+      await expect(artwork).toHaveCount(1);
+      await expect(artwork).toHaveAttribute('data-art', id);
+    }
+  });
+
+  test('gallery shows which scene is open as each scene is selected', async ({ page }) => {
+    const scenes = [
+      { id: 'greeting', title: 'A brief greeting' },
+      { id: 'across-time', title: 'Across time' },
+      { id: 'more-than-speech', title: 'More than speech' },
+      { id: 'two-witnesses', title: 'Two witnesses' },
+    ];
+
+    for (const [index, { id, title }] of scenes.entries()) {
+      const selected = page.locator(`[data-scene-select="${id}"]`);
+      await selected.click();
+      await expect(selected.getByText('Now viewing', { exact: true })).toBeVisible();
+      await expect(page.locator('[data-scene-select][aria-pressed="true"]')).toHaveCount(1);
+      await expect(page.getByText(/^Scene [1-4] of 4$/)).toHaveCount(1);
+      await expect(page.getByText(`Scene ${index + 1} of 4`, { exact: true })).toBeVisible();
+      await expect(page.locator('#sceneTitle')).toHaveText(title);
+      for (const { id: otherId } of scenes.filter((scene) => scene.id !== id)) {
+        await expect(page.locator(`[data-scene-select="${otherId}"]`).getByText('Now viewing', { exact: true })).not.toBeVisible();
+      }
+    }
+  });
+
   test('each added scene separates evidence from assumptions', async ({ page }) => {
     const cases = [
       { id: 'across-time', evidence: ['seen', 'unknown'],
@@ -395,13 +432,14 @@ test.describe('catatonia observation · fictional, non-scoring preview', () => {
     for (const id of ['greeting', 'across-time', 'more-than-speech', 'two-witnesses']) {
       const selector = page.locator(`[data-scene-select="${id}"]`);
       await expect(selector).toBeVisible();
+      await expect(selector.locator('.scene-preview')).toBeVisible();
       await selector.click();
       await expect(page.locator('#scene')).toHaveAttribute('data-scene', id);
     }
     await page.locator('[data-step="3"]').click();
     const illustration = await page.locator('#scene').boundingBox();
     for (const label of ['Nurse report', 'Bedside now', 'I saw them walk']) {
-      const bounds = await page.locator('[data-art="two-witnesses"] text').filter({ hasText: label }).boundingBox();
+      const bounds = await page.locator('#scene [data-art="two-witnesses"] text').filter({ hasText: label }).boundingBox();
       expect(bounds.x, `${label} must not be cropped on mobile`).toBeGreaterThanOrEqual(illustration.x);
       expect(bounds.x + bounds.width, `${label} must not be cropped on mobile`).toBeLessThanOrEqual(illustration.x + illustration.width);
     }
