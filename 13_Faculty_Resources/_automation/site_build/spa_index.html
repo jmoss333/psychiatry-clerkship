@@ -2006,7 +2006,7 @@
     conceptDueState={status:'checking',releasedIds:null};
     return Promise.resolve().then(function(){
       var digest=conceptDigestFromDocument(document);
-      return fetch('tools/concepts.json').then(function(r){if(!r.ok)throw Error('Concepts unavailable');return r.arrayBuffer();})
+      return conceptFetchBytes()
         .then(function(bytes){return conceptVerifyBytes(bytes,digest);});
     }).then(function(cards){
       conceptDueState={status:'ready',releasedIds:new Set(cards.map(function(c){return c.id;}))};

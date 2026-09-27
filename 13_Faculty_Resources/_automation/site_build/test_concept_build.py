@@ -14,6 +14,7 @@ import concept_cards
 import teaching_dependencies as deps
 
 CANDIDATE = '13_Faculty_Resources/_automation/site_build/concept_candidates.json'
+EVIDENCE = '13_Faculty_Resources/_automation/site_build/concept_evidence_links.json'
 
 
 class ConceptBuildTests(unittest.TestCase):
@@ -22,10 +23,11 @@ class ConceptBuildTests(unittest.TestCase):
     sign = fixtures.ConceptCardsTests.sign
 
     def setup_tool(self):
+        (self.root / 'evidence_registry.json').write_text('{"sources": []}')
         self.tool = self.root / 'review.html'
         self.tool.write_text('<html><head></head><body>Review</body></html>')
         self.tool_page = {'source': 'review.html', 'slug': 'review.html', 'kind': 'tool',
-                          'sites': ['ms3', 'res'], 'extraSources': [CANDIDATE]}
+                          'sites': ['ms3', 'res'], 'extraSources': [CANDIDATE, EVIDENCE]}
         self.shipped['pages'].append(self.tool_page)
         self.write('shipped_pages.json', self.shipped)
         self.out = self.root / '_build/ms3'
@@ -39,7 +41,7 @@ class ConceptBuildTests(unittest.TestCase):
             expected = concept_cards.feed_bytes(self.root, site)
             asset = self.out / 'tools/concepts.json'
             asset.write_bytes(expected)
-            self.assertEqual(deps.discover(self.root, self.tool_page, {}, site, self.out), {CANDIDATE})
+            self.assertEqual(deps.discover(self.root, self.tool_page, {}, site, self.out), {CANDIDATE, EVIDENCE})
             asset.write_bytes(expected[:-1])
             with self.assertRaisesRegex(deps.DependencyError, 'concepts.json'):
                 deps.discover(self.root, self.tool_page, {}, site, self.out)
@@ -51,7 +53,7 @@ class ConceptBuildTests(unittest.TestCase):
         self.setup_tool()
         self.sign('pending')
         before = attestation_hash.digest_from_tree(self.root, self.shipped, {}, 'review.html')
-        self.assertEqual(deps.discover(self.root, self.tool_page, {}, 'ms3'), {CANDIDATE})
+        self.assertEqual(deps.discover(self.root, self.tool_page, {}, 'ms3'), {CANDIDATE, EVIDENCE})
         with self.assertRaisesRegex(ValueError, 'empty release'):
             concept_cards.feed_bytes(self.root, 'ms3')
         source_hash = attestation_hash.digest_from_tree(self.root, self.shipped, {}, 'different-route.md')

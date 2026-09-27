@@ -939,6 +939,7 @@
       "extraSources": [
         "07_Evidence_and_Reading/Landmark_Trials/quizzes.json",
         "13_Faculty_Resources/_automation/site_build/concept_candidates.json",
+        "13_Faculty_Resources/_automation/site_build/concept_evidence_links.json",
         "communication_cases.json",
         "family_systems_scenarios.json",
         "reasoning_cases.json",

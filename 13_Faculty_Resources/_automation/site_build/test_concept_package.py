@@ -75,6 +75,41 @@ class PackageTests(unittest.TestCase):
         genanki.Package(deck).write_to_file(str(self.package))
         check_concepts(read_cards(self.package), {'cards':cards}, concepts.load_crosswalk(), concepts.DECK_ID)
 
+    def test_actual_package_front_decoration_cannot_disclose_topic(self):
+        self.feed['cards'][0]['topic'] = 'Alpha'
+        self.feed['cards'][1]['topic'] = 'Alpha'
+        self.write()
+        for row in read_cards(self.package):
+            template = row['template'][0]
+            self.assertNotIn('{{Topic}}', template['qfmt'])
+            self.assertIn('{{Topic}}', template['afmt'])
+        rows = read_cards(self.package)
+        rows[0]['template'][0]['qfmt'] = '<div>{{Topic}}</div>{{cloze:Text}}'
+        with self.assertRaisesRegex(ValueError, 'template'):
+            check_concepts(rows, self.feed, self.crosswalk, concepts.DECK_ID)
+
+    def test_real_package_decorated_fronts_hide_citations_and_topic(self):
+        import re, html
+        from check_anki_parity import CLOZE
+        root = Path(__file__).resolve().parents[3]
+        cards = concept_cards.validate_candidates(root, concept_cards.load_candidates(root))
+        deck, _ = concepts.build_deck({'cards': cards})
+        genanki.Package(deck).write_to_file(str(self.package))
+        by_key = {(c['noteId'],c['ordinal']-1):c for c in cards}
+        for row in read_cards(self.package):
+            uid,topic,text,source = row['fields']
+            card = by_key[(uid,row['ordinal'])]
+            front = row['template'][0]['qfmt'].replace('{{cloze:Text}}', CLOZE.sub(lambda m:'[…]' if int(m[1])==row['ordinal']+1 else m[2],text))
+            for name,value in zip(row['fieldNames'],row['fields']):
+                front = front.replace('{{'+name+'}}', value)
+            self.assertEqual(html.unescape(re.sub('<[^>]*>', '', front)), 'Concepts'+card['q'])
+            self.assertNotIn('[^', front)
+            self.assertNotIn('<a ', front)
+            for evidence in card['evidence']:
+                self.assertNotIn(evidence['url'], front)
+                self.assertIn(html.escape(evidence['url'], quote=True), source)
+        check_concepts(read_cards(self.package), {'cards':cards}, concepts.load_crosswalk(), concepts.DECK_ID)
+
     def test_source_position_does_not_renumber_targets(self):
         feed = copy.deepcopy(self.feed)
         cw = copy.deepcopy(self.crosswalk)

@@ -57,3 +57,22 @@ test('Concepts byte fetch returns bytes and rejects failed HTTP status',async()=
  assert.equal(await make(async()=>({ok:true,arrayBuffer:async()=>bytes}))(100),bytes);
  await assert.rejects(make(async()=>({ok:false}))(100),/unavailable/);
 });
+
+test('Retry restores verified current-build bytes without requiring a new worker',async()=>{
+ const bytes=new TextEncoder().encode(JSON.stringify(feed()));
+ const digest=createHash('sha256').update(bytes).digest('hex');let updates=0;
+ const reg=eventTarget({update:async()=>updates++});
+ const run=new Function('crypto','fetch',src+';return conceptRetry;')(webcrypto,async()=>({ok:true,arrayBuffer:async()=>bytes}));
+ const cards=await run(digest,eventTarget({getRegistration:async()=>reg}),100);
+ assert.equal(cards.length,2);assert.equal(updates,0);
+});
+test('Retry never admits persistently mismatched bytes when worker is current',async()=>{
+ const run=new Function('crypto','fetch',src+';return conceptRetry;')(webcrypto,async()=>({ok:true,arrayBuffer:async()=>new TextEncoder().encode(JSON.stringify(feed()))}));
+ const reg=eventTarget({waiting:null,installing:null,update:async()=>{}});
+ await assert.rejects(run('a'.repeat(64),eventTarget({getRegistration:async()=>reg}),100),/No updated/);
+});
+test('evidence links are structurally validated and retained by the adapter',()=>{
+ const evidence=[{id:'existing-source',url:'https://doi.org/10.1234/example'}];
+ assert.deepEqual(F.conceptCardsFromFeed({schemaVersion:1,cards:[{...card(),evidence}]})[0].evidence,evidence);
+ for(const url of ['javascript:alert(1)','//evil.test','http://evil.test'])assert.throws(()=>F.conceptCardsFromFeed({schemaVersion:1,cards:[{...card(),evidence:[{id:'x',url}]}]}));
+});

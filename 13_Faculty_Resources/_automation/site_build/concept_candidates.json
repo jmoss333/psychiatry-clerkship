@@ -871,7 +871,7 @@
         {
           "id": "t_mood-pearl3:1",
           "text": "Lithium",
-          "contentRevision": 1
+          "contentRevision": 2
         }
       ]
     },
@@ -910,7 +910,7 @@
         {
           "id": "t_mood-pearl7:1",
           "text": "avoid valproate",
-          "contentRevision": 1
+          "contentRevision": 2
         }
       ]
     },
@@ -950,7 +950,7 @@
         {
           "id": "t_neurocog-pearl2:1",
           "text": "Lewy body disease",
-          "contentRevision": 1
+          "contentRevision": 2
         }
       ]
     },
@@ -963,7 +963,7 @@
         {
           "id": "t_neurocog-pearl3:1",
           "text": "Lewy body",
-          "contentRevision": 1
+          "contentRevision": 2
         }
       ]
     },
@@ -1002,7 +1002,7 @@
         {
           "id": "t_neurocog-pearl6:1",
           "text": "MoCA",
-          "contentRevision": 1
+          "contentRevision": 2
         }
       ]
     },
@@ -1158,12 +1158,12 @@
         {
           "id": "t_perinatal-pearl1:1",
           "text": "Postpartum psychosis",
-          "contentRevision": 1
+          "contentRevision": 2
         },
         {
           "id": "t_perinatal-pearl1:2",
           "text": "bipolar-spectrum",
-          "contentRevision": 1
+          "contentRevision": 2
         }
       ]
     },
@@ -1360,7 +1360,7 @@
         {
           "id": "t_psychosis-pearl3:1",
           "text": "side-effect fit",
-          "contentRevision": 1
+          "contentRevision": 2
         }
       ]
     },
@@ -1391,7 +1391,7 @@
         {
           "id": "t_psychosis-pearl5:1",
           "text": "consider clozapine",
-          "contentRevision": 2
+          "contentRevision": 3
         }
       ],
       "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
@@ -1418,7 +1418,7 @@
         {
           "id": "t_psychosis-pearl7:1",
           "text": "Neuroleptic malignant syndrome",
-          "contentRevision": 1
+          "contentRevision": 2
         }
       ]
     },
@@ -1431,12 +1431,12 @@
         {
           "id": "t_psychosis-pearl8:1",
           "text": "lead-pipe rigidity + hyporeflexia",
-          "contentRevision": 1
+          "contentRevision": 2
         },
         {
           "id": "t_psychosis-pearl8:2",
           "text": "clonus + hyperreflexia",
-          "contentRevision": 1
+          "contentRevision": 2
         }
       ]
     },

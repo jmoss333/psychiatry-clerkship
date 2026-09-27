@@ -14,7 +14,7 @@ Measured on 2026-09-27 with the local baseline ledger:
 
 Counts describe verified staged output, not the historical committed fallback
 packages. Signed faculty reviews can change release membership at build time.
-The 36 changed faces and four withdrawals remain pending faculty review; this
+The 47 changed faces and four withdrawals remain pending faculty review; this
 implementation does not refresh the committed APKG baselines or establish clinical approval.
 
 ## Build and inspect
@@ -64,10 +64,15 @@ behind a correct note count.
 
 `concept_guid_crosswalk.json` preserves GUIDs for unchanged notes. A changed tested
 target gives the whole grouped note a new deterministic GUID. This release reports
-sibling churn for `cultural_psychiatry-pearl5` and `t_neurocog-pearl7`. Crosswalk
+sibling churn for `cultural_psychiatry-pearl5` `t_neurocog-pearl7`, `t_perinatal-pearl1`, and `t_psychosis-pearl8`. Crosswalk
 front/back text must match the generated native question and reveal exactly.
 Withdrawn and withheld cards are excluded. Re-importing does not remove already
 imported old Anki notes; learners must retire obsolete notes in their collection.
+Citation cleanup adds 11 changed cards across nine formerly preserved notes; the
+47 changed cards now use new note identities and four historical cards are withdrawn.
+The neutral “Concepts” heading replaces the topic on every Anki front, including
+107 cards whose fields/GUIDs remain unchanged. Topics and resolved evidence links
+appear only after reveal. This template change is separate from identity changes.
 
 Question-bank GUIDs stay keyed to the item ID (`id::t2` for tier two). Draft items
 are excluded from all three site downloads. The standalone question-bank exporter

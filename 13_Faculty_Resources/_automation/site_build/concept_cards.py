@@ -10,6 +10,7 @@ import re
 import sys
 from collections import Counter
 from pathlib import Path
+from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from surface_governance import load_effective_ledger
@@ -95,9 +96,58 @@ def _inventory(root):
     return result
 
 
+CITATION = re.compile(r'\[\^([^\]\s]+)\]')
+
+
+def canonical_citations(root, ids):
+    """Resolve only referenced registry IDs; never copy internal registry notes."""
+    evidence = []
+    if ids:
+        sources = json.loads((Path(root)/'evidence_registry.json').read_text(encoding='utf-8'))['sources']
+        for citation_id in ids:
+            matches = [s for s in sources if s.get('id') == citation_id]
+            if len(matches) != 1:
+                raise ValueError('concept citation missing or ambiguous: ' + citation_id)
+            url = matches[0].get('citation', {}).get('url', '')
+            parsed = urlsplit(url)
+            if parsed.scheme != 'https' or not parsed.netloc or parsed.username or parsed.password or any(c.isspace() for c in url):
+                raise ValueError('concept citation needs safe HTTPS URL: ' + citation_id)
+            evidence.append({'id': citation_id, 'url': url})
+    return evidence
+
+
+def load_evidence_links(root):
+    document = _json(root, 'concept_evidence_links.json')
+    if document.get('schemaVersion') != 1 or not isinstance(document.get('links'), dict):
+        raise ValueError('concept evidence links: invalid schema')
+    return document['links']
+
+
+def evidence_links_document(root):
+    """Generate the small, tracked teaching input; changes require deliberate review."""
+    ids = sorted({key for note in load_candidates(root)['notes'] for key in CITATION.findall(note['excerpt'])})
+    return {'schemaVersion': 1, 'links': {row['id']: row['url'] for row in canonical_citations(root, ids)}}
+
+
+def citation_face(root, excerpt):
+    """Keep matching exact; pin selected links without hashing unrelated metadata."""
+    ids = list(dict.fromkeys(CITATION.findall(excerpt)))
+    evidence = canonical_citations(root, ids)
+    if ids:
+        links = load_evidence_links(root)
+        for row in evidence:
+            if links.get(row['id']) != row['url']:
+                raise ValueError('concept evidence link drift: ' + row['id'] + '; regenerate concept_evidence_links.json and review the change')
+            row['url'] = links[row['id']]
+    return ' '.join(CITATION.sub('', excerpt).split()), evidence
+
+
 def validate_candidates(root: Path, document: dict) -> list[dict]:
     if document.get('schemaVersion') != 1 or not isinstance(document.get('notes'), list) or not isinstance(document.get('exclusions'), list):
         raise ValueError('concept catalog: invalid schema')
+    expected_ids = {key for note in document['notes'] for key in CITATION.findall(note.get('excerpt', ''))}
+    if set(load_evidence_links(root)) != expected_ids:
+        raise ValueError('concept evidence links: missing or orphaned citation mapping')
     inventory = _inventory(root)
     covered = Counter()
     excluded_sources = set()
@@ -132,6 +182,7 @@ def validate_candidates(root: Path, document: dict) -> list[dict]:
         covered[(source, kind, excerpt)] += 1
         if not note.get('targets'):
             raise ValueError(f'{label}: missing targets; generic prompts forbidden')
+        face, evidence = citation_face(root, excerpt)
         spans = []
         for ordinal, target in enumerate(note['targets'], 1):
             tid, text, revision = target.get('id'), target.get('text'), target.get('contentRevision')
@@ -147,10 +198,15 @@ def validate_candidates(root: Path, document: dict) -> list[dict]:
             if any(start < b and end > a for a, b in spans):
                 raise ValueError(f'{label}: overlapping targets')
             spans.append((start, end))
+            if face.count(text) != 1:
+                raise ValueError(f'{label}: target must occur once after citation removal')
+            face_start = face.index(text)
+            face_end = face_start + len(text)
             output.append({'id': f'CONCEPT#{tid}@{revision}', 'noteId': note_id,
                 'editorialId': tid, 'ordinal': ordinal, 'revision': revision, 'kind': kind,
-                'q': excerpt[:start] + '[…]' + excerpt[end:], 'reveal': excerpt,
-                'target': text, 'targetStart': start, 'targetEnd': end,
+                'q': face[:face_start] + '[…]' + face[face_end:], 'reveal': face,
+                'evidence': evidence,
+                'target': text, 'targetStart': face_start, 'targetEnd': face_end,
                 'page': page['slug'], 'source': source, 'topic': page.get('title', page['slug'])})
     for source, (_, sections) in inventory.items():
         if source in excluded_sources:
@@ -191,7 +247,7 @@ def release_cards(root: Path, site: str) -> dict:
     if not released:
         raise ValueError('concept empty release: no effectively reviewed cards')
     return {'schemaVersion': 1, 'cards': released, 'examinedSources': examined,
-            'withheld': withheld, 'exclusions': document['exclusions'], 'digest': _digest(released),
+            'withheld': withheld, 'exclusions': [{k: v for k, v in exclusion.items() if k != 'excerpt'} for exclusion in document['exclusions']], 'digest': _digest(released),
             'eligibilityDigest': _digest({'released': [c['id'] for c in released], 'withheld': withheld}),
             'examinedSourcesDigest': _digest(examined)}
 
@@ -204,6 +260,12 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--site', choices=['ms3', 'res'], default='ms3')
+    parser.add_argument('--write-evidence-links', action='store_true', help='regenerate the tracked selected ID/URL map for review')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[3]
-    print(json.dumps(release_cards(root, args.site), indent=2, ensure_ascii=False))
+    if args.write_evidence_links:
+        path = root / BUILD / 'concept_evidence_links.json'
+        path.write_text(json.dumps(evidence_links_document(root), indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+        print('Wrote selected concept evidence links:', path.relative_to(root))
+    else:
+        print(json.dumps(release_cards(root, args.site), indent=2, ensure_ascii=False))

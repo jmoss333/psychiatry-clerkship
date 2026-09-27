@@ -43,7 +43,7 @@ CLOZE_MODEL = genanki.Model(
             {"name": "Source"}],
     templates=[{
         "name": "Cloze",
-        "qfmt": '<div class="topic">{{Topic}}</div>{{cloze:Text}}',
+        "qfmt": '<div class="topic">Concepts</div>{{cloze:Text}}',
         "afmt": '<div class="topic">{{Topic}}</div>{{cloze:Text}}'
                 '{{#Source}}<div class="src">{{Source}}</div>{{/Source}}',
     }],
@@ -85,7 +85,15 @@ def note_groups(feed, crosswalk=None):
 
 
 def source_field(card):
-    return html.escape(card['page'] + ' | ' + card['source'])
+    source = html.escape(card['page'] + ' | ' + card['source'])
+    for index, evidence in enumerate(card.get('evidence', []), 1):
+        from urllib.parse import urlsplit
+        url = evidence['url']
+        parsed = urlsplit(url)
+        if parsed.scheme != 'https' or not parsed.netloc or parsed.username or parsed.password or any(c.isspace() for c in url):
+            raise ValueError('unsafe concept evidence URL')
+        source += '<br><a href="' + html.escape(url, quote=True) + '">Evidence ' + str(index) + '</a>'
+    return source
 
 
 def build_deck(feed, deck_id=DECK_ID, deck_name=DECK_NAME, crosswalk=None):

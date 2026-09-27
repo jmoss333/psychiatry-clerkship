@@ -1,5 +1,6 @@
 """Contract tests: exact selections, complete coverage and post-overlay release."""
 import copy
+from contextlib import closing
 import json
 import shutil
 import sqlite3
@@ -36,6 +37,7 @@ class ConceptCardsTests(unittest.TestCase):
              'targets': [{'id': 'second:1', 'text': 'Second', 'contentRevision': 1}]}],
             'exclusions': []}
         self.write('concept_candidates.json', self.document)
+        self.write('concept_evidence_links.json', {'schemaVersion':1,'links':{}})
         faculty = self.root / '13_Faculty_Resources'
         shutil.copyfile(HERE.parents[1] / 'reviewed.schema.json', faculty / 'reviewed.schema.json')
         (self.root / 'topic_meta.json').write_text('{}')
@@ -113,6 +115,27 @@ class ConceptCardsTests(unittest.TestCase):
         self.assertEqual(cards.normalize('Use <5 when low and >10 when high.'),
                          'Use <5 when low and >10 when high.')
 
+    def test_selected_evidence_links_require_deliberate_update_when_canonical_url_changes(self):
+        registry = self.root/'evidence_registry.json'
+        row = {'id':'source', 'citation':{'url':'https://example.org/original'}}
+        registry.write_text(json.dumps({'sources':[row]}))
+        self.write('concept_evidence_links.json', {'schemaVersion':1,'links':{'source':'https://example.org/original'}})
+        before = cards.citation_face(self.root, 'Exact source words.[^source]')
+        row['governance'] = {'note':'Internal review metadata'}
+        registry.write_text(json.dumps({'sources':[row]}))
+        self.assertEqual(cards.citation_face(self.root, 'Exact source words.[^source]'), before)
+        row['citation']['url'] = 'https://example.org/changed'
+        registry.write_text(json.dumps({'sources':[row]}))
+        with self.assertRaisesRegex(ValueError, 'evidence link drift'):
+            cards.citation_face(self.root, 'Exact source words.[^source]')
+
+    def test_citation_resolution_rejects_missing_ambiguous_or_unsafe_registry_rows(self):
+        registry = self.root/'evidence_registry.json'
+        for sources in [[], [{'id':'source','citation':{'url':'javascript:alert(1)'}}], [{'id':'source','citation':{'url':'https://example.org'}}]*2]:
+            registry.write_text(json.dumps({'sources': sources}))
+            with self.subTest(sources=sources), self.assertRaises(ValueError):
+                cards.citation_face(self.root, 'Exact source words.[^source]')
+
     def test_heading_variant_and_inline_formatting(self):
         text = '# Topic\n\n## In one line\nA **specific** answer.\n\n## High-yield pearls\n- First *answer*.\n\n## Next section\n- Not a pearl\n'
         self.assertEqual(cards.extract_sections(text), {'summary': ['A specific answer.'], 'pearl': ['First answer.']})
@@ -153,6 +176,42 @@ class ConceptCardsTests(unittest.TestCase):
 
 
 class PublishedInventoryTests(unittest.TestCase):
+    def test_real_generated_feed_hides_citation_keys_and_excluded_excerpts(self):
+        root = HERE.parents[2]
+        feed = cards.release_cards(root, 'ms3')
+        registry = {s['id']: s for s in json.loads((root/'evidence_registry.json').read_text())['sources']}
+        for card in feed['cards']:
+            with self.subTest(card=card['id']):
+                self.assertNotIn('[^', card['q'])
+                self.assertNotIn('[^', card['reveal'])
+                for evidence in card.get('evidence', []):
+                    self.assertEqual(evidence['url'], registry[evidence['id']]['citation']['url'])
+        self.assertTrue(any(c.get('evidence') for c in feed['cards']))
+
+    def test_release_omits_excluded_excerpts_but_catalog_retains_them(self):
+        root = HERE.parents[2]
+        feed = cards.release_cards(root, 'ms3')
+        self.assertTrue(any(e.get('excerpt') for e in cards.load_candidates(root)['exclusions']))
+        for excluded in cards.load_candidates(root)['exclusions']:
+            if excluded.get('excerpt'):
+                self.assertNotIn(excluded['excerpt'], json.dumps(feed, ensure_ascii=False))
+
+    def test_all_historical_faces_match_baseline_including_withdrawn_clozes(self):
+        import html, re
+        root = HERE.parents[2]
+        cw = json.loads((HERE/'concept_guid_crosswalk.json').read_text())
+        with zipfile.ZipFile(root/cw['package']) as archive, tempfile.TemporaryDirectory() as tmp:
+            archive.extract('collection.anki2', tmp)
+            with closing(sqlite3.connect(str(Path(tmp)/'collection.anki2'))) as db:
+                fields = {guid: text.split('\x1f') for guid,text in db.execute('select guid,flds from notes')}
+        for row in cw['cards']:
+            field = fields[row['oldGuid']]
+            text = field[2]
+            front = re.sub(r'\{\{c(\d+)::(.*?)\}\}', lambda m: '[…]' if int(m[1]) == row['oldOrdinal']+1 else m[2], text)
+            self.assertEqual(row['oldFront'], cards.normalize(html.unescape(front)))
+            back = field[3] if len(field) == 5 else re.sub(r'\{\{c(\d+)::(.*?)\}\}', lambda m:m[2], text)
+            self.assertEqual(row['oldBack'], cards.normalize(html.unescape(back)))
+
     def test_every_published_card_has_unique_migration_and_current_coverage(self):
         root = HERE.parents[2]
         document = cards.load_candidates(root)
@@ -161,7 +220,7 @@ class PublishedInventoryTests(unittest.TestCase):
         cross = crosswalk['cards']
         with zipfile.ZipFile(root / crosswalk['package']) as archive, tempfile.TemporaryDirectory() as temp:
             archive.extract('collection.anki2', temp)
-            with sqlite3.connect(str(Path(temp) / 'collection.anki2')) as db:
+            with closing(sqlite3.connect(str(Path(temp) / 'collection.anki2'))) as db:
                 published = set(db.execute('select notes.guid, cards.ord from cards join notes on notes.id=cards.nid'))
                 self.assertEqual(db.execute('select count(*) from notes').fetchone()[0], 142)
         self.assertEqual(len(published), 158)

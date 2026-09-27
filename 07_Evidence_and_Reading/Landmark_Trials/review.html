@@ -415,9 +415,13 @@ function App(){
 
   function retryConcepts(){
     setConceptStatus('recovering');
-    conceptRecoverWorker(navigator.serviceWorker).then(function(){location.reload();}).catch(function(error){setConceptStatus(error.message);});
+    Promise.resolve().then(function(){return conceptRetry(conceptDigestFromDocument(document),navigator.serviceWorker);}).then(function(out){
+      if(out===null){location.reload();return;}
+      setCards(function(previous){return (previous||[]).filter(function(c){return c.deck!=='CONCEPT';}).concat(out);});
+      setErr(false);setConceptStatus('ready');
+    }).catch(function(error){setConceptStatus(error.message);});
   }
-  var conceptNotice=e("div",{className:"panel",role:"status"},conceptStatus==='ready'?null:"Concepts "+(conceptStatus==='loading'?"loading…":conceptStatus==='recovering'?"updating offline cache…":conceptStatus==='unavailable'?"unavailable — review is incomplete. Other card sources remain available.":conceptStatus+" Review remains incomplete."),conceptStatus!=='ready'&&conceptStatus!=='loading'&&conceptStatus!=='recovering'?e("button",{className:"btn ghost",onClick:retryConcepts},"Retry Concepts"):null);
+  var conceptNotice=e("div",{className:"panel",role:"status"},conceptStatus==='ready'?null:"Concepts "+(conceptStatus==='loading'?"loading…":conceptStatus==='recovering'?"retrying verified card data…":conceptStatus==='unavailable'?"unavailable — review is incomplete. Other card sources remain available.":conceptStatus+" Review remains incomplete."),conceptStatus!=='ready'&&conceptStatus!=='loading'&&conceptStatus!=='recovering'?e("button",{className:"btn ghost",onClick:retryConcepts},"Retry Concepts"):null);
   var nextDue=lastConcept&&!(sess&&sess.queue&&!sess.revealed)?e("div",{className:"panel",role:"status"},"Concept: "+lastConcept.q+" → ",e("a",{href:"../index.html?page="+encodeURIComponent(lastConcept.page)},prettyRef(lastConcept.page))," → Next due: "+new Date(lastConcept.due).toLocaleString()):null;
   // Keep one live region mounted across cards and the receipt so completion
   // updates its text instead of introducing a new, possibly silent region.
@@ -466,7 +470,8 @@ function App(){
                 ? e("div",{className:"rvl"},
                     e("span",{className:"rvl__k"},"One way to do it"),
                     revealNodes(c.reveal),
-                    c.page?e("a",{href:"../index.html?page="+encodeURIComponent(c.page)},"Source: "+prettyRef(c.page)):null)
+                    c.page?e("a",{href:"../index.html?page="+encodeURIComponent(c.page)},"Source: "+prettyRef(c.page)):null,
+                    (c.evidence||[]).map(function(link,index){return e("p",{key:link.id},e("a",{href:link.url,rel:"noopener noreferrer"},"Evidence "+(index+1)));}))
                 : e("button",{className:"revealbtn",onClick:revealCard},"Reveal one way to do it"))
             : e("div",{className:"opts"}, optOrder(c).map(function(oi,pos){
                 var o=c.o[oi];
@@ -534,7 +539,10 @@ function App(){
       e("div",{className:"stat"},e("div",{className:"num"},m.mature+m.young),e("div",{className:"lab"},"Learned")),
       e("div",{className:"stat"},e("div",{className:"num"},(store.stats.choiceCorrect||0)+" / "+(store.stats.choiceSeen||0)),e("div",{className:"lab"},"Choices correct · since this update"))),
     e("div",{className:"panel"},e("h2",null,"Concepts"),
-      e("p",null,"Self-rated recall Good/Easy: "+(store.stats.recallGoodEasy||0)+" / "+(store.stats.recallSeen||0)+" · since this update"),
+      conceptStatus==='ready'?e("p",null,(function(){var counts=conceptCounts(cards,store.cards,weekRefs,conceptFilter,Date.now());return counts.available+" available · "+counts.due+" due · "+counts.neu+" new";})()):e("p",null,conceptStatus==='loading'?"Concept counts checking…":"Concept counts unavailable"),
+      e("p",null,"Progress saved in this browser; Anki reviews are separate."),
+      e("p",null,e("a",{href:"question-bank-practice.html"},"Practice Questions")),
+      e("p",null,"All recall sources · Self-rated recall Good/Easy: "+(store.stats.recallGoodEasy||0)+" / "+(store.stats.recallSeen||0)+" · since this update"),
       e("button",{className:"btn ghost","aria-pressed":conceptFilter==='all',onClick:function(){setConceptFilter('all');}},"All"),
       weekRefs?e("button",{className:"btn ghost","aria-pressed":conceptFilter==='week',onClick:function(){setConceptFilter('week');}},"This week"):e("p",null,"Open from your Path to enable This week. All topics are available here."),
       conceptFilter==='week'?e("p",null,cards.filter(function(c){return !store.cards[c.id]&&!newConceptAllowed(c,weekRefs,'week');}).length+" new Concepts excluded · Other library topics are available under All. Due cards stay in review."):null),

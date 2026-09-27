@@ -235,6 +235,10 @@ def discover(root, page, manifest, site, out_dir=None):
                 if not (Path(root) / source).is_file():
                     raise DependencyError("missing teaching source " + source)
                 found.add(source)
+                evidence_source = '13_Faculty_Resources/_automation/site_build/concept_evidence_links.json'
+                if not (Path(root) / evidence_source).is_file():
+                    raise DependencyError('missing teaching source ' + evidence_source)
+                found.add(evidence_source)
                 if out_dir is not None:
                     import concept_cards
                     built = Path(out_dir) / url

@@ -5,6 +5,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 
 const repo = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 const review = repo('07_Evidence_and_Reading/Landmark_Trials/review.html');
@@ -166,7 +168,7 @@ test('real queue and dashboard agree: week excludes new only, All includes no-we
  }
 });
 test('missing feed is a visible incomplete state and Retry checks worker update',()=>{
- const values=reviewStates(null);values[1]='unavailable';const shown=JSON.stringify(renderReview(values));assert.match(shown,/Concepts unavailable — review is incomplete/);assert.match(shown,/Retry Concepts/);assert.match(review,/conceptRecoverWorker\(navigator.serviceWorker\)/);assert.doesNotMatch(review,/concepts\.json\?/);
+ const values=reviewStates(null);values[1]='unavailable';const shown=JSON.stringify(renderReview(values));assert.match(shown,/Concepts unavailable — review is incomplete/);assert.match(shown,/Retry Concepts/);assert.match(review,/conceptRetry\(conceptDigestFromDocument\(document\),navigator.serviceWorker\)/);assert.doesNotMatch(review,/concepts\.json\?/);
 });
 test('week filter is transient and direct visit only offers All',()=>{
  const shown=JSON.stringify(renderReview(reviewStates(null)));assert.match(shown,/All topics are available here/);assert.doesNotMatch(review,/localStorage\.setItem\([^\n]*conceptFilter/);
@@ -181,7 +183,7 @@ test('interactive controls suppress global shortcuts',()=>{
 test('recovery failure is visible and retry remains a deliberate action',()=>{
  const values=reviewStates(null);values[1]='Concepts recovery timed out. Check your connection and try again.';
  const shown=JSON.stringify(renderReview(values));assert.match(shown,/recovery timed out/);assert.match(shown,/Review remains incomplete/);assert.match(shown,/Retry Concepts/);
- assert.match(review,/conceptRecoverWorker\(navigator.serviceWorker\)\.then\(function\(\)\{location.reload\(\);\}\)\.catch/);
+ assert.match(review,/if\(out===null\)\{location.reload\(\);return;\}/);
 });
 
 test('prior sibling prompt cannot leak the next cloze answer before reveal',()=>{
@@ -194,4 +196,44 @@ test('completed review has a nonempty live announcement',()=>{
  const tree=renderReview(reviewStates({finished:true,reviewed:2,correct:0,misses:[]}));
  function findLive(node){if(!node||typeof node!=='object')return [];return [...(node.props?.['aria-live']==='polite'?[node]:[]),...(node.children||[]).flat(Infinity).flatMap(findLive)];}
  const live=findLive(tree);assert.equal(live.length,1);assert.match(JSON.stringify(live[0]),/Review complete.*2 cards graded/);
+});
+
+test('Concepts dashboard names available due new and aggregate recall separately',()=>{
+ const shown=JSON.stringify(renderReview(reviewStates(null)));
+ assert.match(shown,/1 available · 0 due · 1 new/);
+ assert.match(shown,/All recall sources/);
+ assert.match(shown,/Practice Questions/);assert.match(shown,/question-bank-practice.html/);
+ assert.match(shown,/Progress saved in this browser; Anki reviews are separate/);
+ const values=reviewStates(null);values[1]='unavailable';
+ const unavailable=JSON.stringify(renderReview(values));
+ assert.match(unavailable,/Concept counts unavailable/);assert.doesNotMatch(unavailable,/available · 0 due/);
+});
+test('evidence is absent from the actual render tree before reveal and linked after',()=>{
+ const card={...conceptFixture,evidence:[{id:'secret-citation',url:'https://doi.org/secret-citation'}]};
+ const session={queue:[card],pos:0,total:1,card,revealed:false,reviewed:0,correct:0};
+ assert.doesNotMatch(JSON.stringify(renderReview(reviewStates(session))),/secret-citation/);
+ assert.match(JSON.stringify(renderReview(reviewStates({...session,revealed:true}))),/https:\/\/doi.org\/secret-citation/);
+});
+
+test('all real generated candidate faces keep citation IDs and evidence out of unrevealed DOM',()=>{
+ const root=fileURLToPath(new URL('../',import.meta.url));
+ const cards=JSON.parse(execFileSync('python3',['-c',"import sys,json;from pathlib import Path;sys.path.insert(0,'13_Faculty_Resources/_automation/site_build');import concept_cards as c;print(json.dumps(c.validate_candidates(Path('.'),c.load_candidates(Path('.')))))"],{cwd:root,encoding:'utf8'}));
+ const adapt=new Function(repo('13_Faculty_Resources/_automation/site_build/concept_recall.js')+';return conceptCardsFromFeed;')();
+ assert.equal(cards.length,154);
+ for(const card of adapt({schemaVersion:1,cards})){
+  const session={queue:[card],pos:0,total:1,card,revealed:false,reviewed:0,correct:0};
+  const hidden=JSON.stringify(renderReview(reviewStates(session)));
+  assert.doesNotMatch(hidden,/\[\^/);
+  for(const evidence of card.evidence){assert.ok(!hidden.includes(evidence.id));assert.ok(!hidden.includes(evidence.url));}
+  const shown=JSON.stringify(renderReview(reviewStates({...session,revealed:true})));
+  for(const evidence of card.evidence)assert.ok(shown.includes(evidence.url));
+ }
+});
+
+test('Retry keeps missing build digest failure inside the visible recovery state',async()=>{
+ let status;
+ const retry=new Function('setConceptStatus','conceptDigestFromDocument','document','navigator','conceptRetry',slice(review,'  function retryConcepts(){','  var conceptNotice=')+';return retryConcepts;')(x=>status=x,()=>{throw Error('Concepts build digest unavailable');},{},{},()=>{throw Error('must not fetch');});
+ assert.doesNotThrow(()=>retry());
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(status,'Concepts build digest unavailable');
 });

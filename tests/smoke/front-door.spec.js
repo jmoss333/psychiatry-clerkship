@@ -4047,3 +4047,59 @@ test('Concepts topic cannot disclose the fixture target before reveal',async({pa
   await page.getByRole('button',{name:'Reveal one way to do it'}).click();
   await expect(page.locator('body')).toContainText(card.reveal);
 });
+
+test('Concepts real generated feed keeps evidence out of DOM until reveal',async({page},info)=>{
+  const feed=await (await requestGetWithRetry(page.request,'/tools/concepts.json')).json();
+  expect(feed.cards.length).toBeGreaterThan(0);
+  for(const c of feed.cards){expect(c.q).not.toContain('[^');expect(c.reveal).not.toContain('[^');}
+  // Exercise the current release without requiring any fixed live governance count.
+  // The root DOM/package suites independently exercise all 154 catalog cards.
+  const card=feed.cards.find(c=>c.evidence?.length)||feed.cards[0];
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[card.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/tools/review.html?block=1&limit=1');
+  await expect(page.locator('.qtext')).toHaveText(card.q);
+  await expect(page.locator('.deckchip').last()).toHaveText('Concepts');
+  for(const evidence of card.evidence||[]){
+    expect(await page.locator('#root').innerHTML()).not.toContain(evidence.url);
+    expect(await page.locator('#root').innerHTML()).not.toContain(evidence.id);
+  }
+  await page.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await expect(page.locator('.rvl')).toContainText(card.reveal);
+  for(const [index,evidence] of (card.evidence||[]).entries())await expect(page.getByRole('link',{name:'Evidence '+(index+1),exact:true})).toHaveAttribute('href',evidence.url);
+});
+
+test('Concepts Retry restores a transient fetch failure without reloading',async({page},info)=>{
+  await seedApp(page,info);let failed=true;
+  await page.route('**/tools/concepts.json',route=>failed?route.fulfill({status:503,body:'temporarily unavailable'}):route.continue());
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Concept counts unavailable');
+  await page.evaluate(()=>window.conceptRetryDocumentMarker='same document');
+  failed=false;
+  await page.getByRole('button',{name:'Retry Concepts'}).click();
+  await expect(page.locator('body')).toContainText(/\d+ available · \d+ due · \d+ new/);
+  await expect(page.getByRole('button',{name:'Retry Concepts'})).toHaveCount(0);
+  expect(await page.evaluate(()=>window.conceptRetryDocumentMarker)).toBe('same document');
+  await expect(page.getByRole('link',{name:'Practice Questions',exact:true})).toHaveAttribute('href','question-bank-practice.html');
+  await expect(page.locator('body')).toContainText('Progress saved in this browser; Anki reviews are separate.');
+});
+
+test('Concepts Retry keeps mismatched bytes unavailable',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/concepts.json',async route=>{
+    const response=await routeFetchWithRetry(route);
+    await route.fulfill({response,body:(await response.text())+' '});
+  });
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Concept counts unavailable');
+  await page.getByRole('button',{name:'Retry Concepts'}).click();
+  await expect(page.getByRole('button',{name:'Retry Concepts'})).toBeVisible({timeout:15000});
+  await expect(page.locator('body')).toContainText('Concept counts unavailable');
+  await expect(page.locator('body')).not.toContainText(/\d+ available · \d+ due · \d+ new/);
+});
+
+test('Concepts shell stalled response becomes actionable unavailable',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/concepts.json',()=>new Promise(()=>{}));
+  await page.goto('/');
+  await expect(page.locator('[data-fd-concept-status]')).toContainText('unavailable. Review counts are incomplete. Open Daily Review to retry.',{timeout:15000});
+});

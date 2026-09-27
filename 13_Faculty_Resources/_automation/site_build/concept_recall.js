@@ -7,8 +7,12 @@ function conceptCardsFromFeed(feed){
     if(!c || typeof c.id!=='string' || !/^CONCEPT#[A-Za-z0-9_:-]+@[1-9][0-9]*$/.test(c.id) || seen[c.id] ||
        !['q','reveal','page','source','topic'].every(function(k){return typeof c[k]==='string' && c[k].length>0 && c[k].length<20000;}) ||
        !/^[A-Za-z0-9_-]+\.md$/.test(c.page)) throw Error('Concepts card unavailable');
+    if(c.evidence!==undefined && (!Array.isArray(c.evidence) || c.evidence.length>50 || !c.evidence.every(function(v){
+      if(!v || typeof v.id!=='string' || !v.id || typeof v.url!=='string' || /\s/.test(v.url))return false;
+      try{var u=new URL(v.url);return u.protocol==='https:' && !!u.hostname && !u.username && !u.password;}catch(_){return false;}
+    })))throw Error('Concepts evidence unavailable');
     seen[c.id]=true;
-    return {id:c.id,kind:'recall',deck:'CONCEPT',deckTitle:'Concept · '+c.topic,q:c.q,reveal:c.reveal,page:c.page,source:c.source};
+    return {id:c.id,kind:'recall',deck:'CONCEPT',deckTitle:'Concept · '+c.topic,q:c.q,reveal:c.reveal,page:c.page,source:c.source,evidence:c.evidence||[]};
   });
 }
 function conceptIdEligible(id,cards){return Array.isArray(cards) && cards.some(function(c){return c.id===id;});}
@@ -78,8 +82,31 @@ function conceptFetchBytes(timeoutMs){
   return new Promise(function(resolve,reject){
     var controller=new AbortController();
     var timer=setTimeout(function(){controller.abort();reject(Error('Concepts request timed out'));},timeoutMs||10000);
-    Promise.resolve().then(function(){return fetch('concepts.json',{signal:controller.signal});})
+    Promise.resolve().then(function(){return fetch('/tools/concepts.json',{signal:controller.signal,cache:'no-cache'});})
       .then(function(response){if(!response.ok)throw Error('Concepts unavailable');return response.arrayBuffer();})
       .then(function(bytes){clearTimeout(timer);resolve(bytes);},function(error){clearTimeout(timer);reject(error);});
   });
+}
+
+/* Try this build first: a transient request failure needs no worker replacement.
+   Stale bytes never enter the queue. An activated replacement requires reload so
+   the page and feed acquire their new digest together. */
+async function conceptRetry(digest,serviceWorker,timeoutMs){
+  try{return await conceptVerifyBytes(await conceptFetchBytes(timeoutMs),digest);}
+  catch(error){
+    if(!serviceWorker)throw error;
+    await conceptRecoverWorker(serviceWorker,timeoutMs);
+    return null;
+  }
+}
+function conceptCounts(cards,schedules,refs,filter,now){
+  var counts={available:0,due:0,neu:0};
+  (cards||[]).forEach(function(card){
+    if(card.deck!=='CONCEPT')return;
+    counts.available++;
+    var schedule=(schedules||{})[card.id];
+    if(schedule){if(schedule.due<=now)counts.due++;}
+    else if(newConceptAllowed(card,refs,filter))counts.neu++;
+  });
+  return counts;
 }

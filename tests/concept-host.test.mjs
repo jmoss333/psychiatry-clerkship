@@ -29,3 +29,11 @@ test('shell feed state is unknown during loading and unavailable after invalid b
  assert.equal(fixture.state().status,'unavailable');
  assert.equal(fixture.state().releasedIds,null);
 });
+
+test('shell stalled fetch becomes actionable unavailable within the shared bound',async()=>{
+ let aborted=false;
+ const make=new Function('fetch','document','setTimeout',helpers+loader+';return {load:loadConceptDue,state:()=>conceptDueState}');
+ const fixture=make((url,options)=>{options.signal.addEventListener('abort',()=>aborted=true);return new Promise(()=>{});},{querySelectorAll:()=>[{content:'a'.repeat(64)}]},fn=>setTimeout(fn,5));
+ await Promise.race([fixture.load(),new Promise((resolve,reject)=>setTimeout(()=>reject(Error('shell request did not settle')),100))]);
+ assert.equal(fixture.state().status,'unavailable');assert.equal(aborted,true);
+});

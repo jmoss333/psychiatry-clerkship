@@ -192,7 +192,7 @@
       "noteId": "t_anxiety-pearl4",
       "identityAction": "withdrawn",
       "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED.",
-      "oldFront": "{{c1::SSRIs/SNRIs}} are first-line; benzodiazepines are a liability on the unit, not a maintenance plan.",
+      "oldFront": "[…] are first-line; benzodiazepines are a liability on the unit, not a maintenance plan.",
       "oldBack": "SSRIs/SNRIs are first-line; benzodiazepines are a liability on the unit, not a maintenance plan.",
       "newFront": null,
       "newBack": null
@@ -874,12 +874,12 @@
       "oldOrdinal": 0,
       "editorialId": "t_mood-pearl3:1",
       "noteId": "t_mood-pearl3",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "[…] is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
       "oldBack": "Lithium is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
-      "newFront": "[…] is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
-      "newBack": "Lithium is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it."
+      "newFront": "[…] is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it.",
+      "newBack": "Lithium is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it."
     },
     {
       "oldGuid": "e3~Pw!MgSZ",
@@ -912,7 +912,7 @@
       "noteId": "t_mood-pearl6",
       "identityAction": "withdrawn",
       "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED.",
-      "oldFront": "Lithium runs a narrow therapeutic window (~{{c1::0.6–1.2 mEq/L}}): check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+      "oldFront": "Lithium runs a narrow therapeutic window (~[…]): check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
       "oldBack": "Lithium runs a narrow therapeutic window (~0.6–1.2 mEq/L): check baseline and periodic renal and thyroid function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
       "newFront": null,
       "newBack": null
@@ -922,12 +922,12 @@
       "oldOrdinal": 0,
       "editorialId": "t_mood-pearl7:1",
       "noteId": "t_mood-pearl7",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but […] in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
       "oldBack": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but avoid valproate in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
-      "newFront": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but […] in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
-      "newBack": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic[^canmat-isbd-bipolar-2018] — but avoid valproate in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered."
+      "newFront": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic — but […] in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered.",
+      "newBack": "For acute mania, first-line is lithium, valproate, or a second-generation antipsychotic — but avoid valproate in anyone who could become pregnant (teratogenic, including neural-tube defects); confirm before it is ordered."
     },
     {
       "oldGuid": "M!SJ/NrAgs",
@@ -958,24 +958,24 @@
       "oldOrdinal": 0,
       "editorialId": "t_neurocog-pearl2:1",
       "noteId": "t_neurocog-pearl2",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and avoid neuroleptics in […].",
       "oldBack": "Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and avoid neuroleptics in Lewy body disease.",
-      "newFront": "Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and avoid neuroleptics in […].",
-      "newBack": "Antipsychotics in dementia carry a black-box mortality warning[^schneider-2005-antipsychotic-dementia-mortality]; nonpharmacologic first, and avoid neuroleptics in Lewy body disease."
+      "newFront": "Antipsychotics in dementia carry a black-box mortality warning; nonpharmacologic first, and avoid neuroleptics in […].",
+      "newBack": "Antipsychotics in dementia carry a black-box mortality warning; nonpharmacologic first, and avoid neuroleptics in Lewy body disease."
     },
     {
       "oldGuid": "be%Lasq;W,",
       "oldOrdinal": 0,
       "editorialId": "t_neurocog-pearl3:1",
       "noteId": "t_neurocog-pearl3",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "[…] core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]",
       "oldBack": "Lewy body core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]",
-      "newFront": "[…] core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]",
-      "newBack": "Lewy body core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.[^mckeith-2017-dlb-consensus]"
+      "newFront": "[…] core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe.",
+      "newBack": "Lewy body core four = fluctuating cognition + visual hallucinations + REM sleep behavior disorder + parkinsonism. Severe neuroleptic sensitivity is a supportive feature — it doesn't make the diagnosis, but it decides what you must not prescribe."
     },
     {
       "oldGuid": "d<q;u]>/t{",
@@ -1006,12 +1006,12 @@
       "oldOrdinal": 0,
       "editorialId": "t_neurocog-pearl6:1",
       "noteId": "t_neurocog-pearl6",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "[…] beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]",
       "oldBack": "MoCA beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]",
-      "newFront": "[…] beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]",
-      "newBack": "MoCA beats MMSE for mild and executive impairment.[^nasreddine-2005-moca]"
+      "newFront": "[…] beats MMSE for mild and executive impairment.",
+      "newBack": "MoCA beats MMSE for mild and executive impairment."
     },
     {
       "oldGuid": "O&3bn5*^ZA",
@@ -1162,24 +1162,24 @@
       "oldOrdinal": 0,
       "editorialId": "t_perinatal-pearl1:1",
       "noteId": "t_perinatal-pearl1",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "[…] is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
       "oldBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
-      "newFront": "[…] is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
-      "newBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way."
+      "newFront": "[…] is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women, usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all — so future pregnancies warrant advance planning either way.",
+      "newBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women, usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all — so future pregnancies warrant advance planning either way."
     },
     {
       "oldGuid": "M9nv-sR5_T",
       "oldOrdinal": 1,
       "editorialId": "t_perinatal-pearl1:2",
       "noteId": "t_perinatal-pearl1",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "Postpartum psychosis is an emergency and is […] until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
       "oldBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
-      "newFront": "Postpartum psychosis is an emergency and is […] until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way.",
-      "newBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women[^vanderkruik-2017-postpartum-psychosis-prevalence], usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all[^wesseloo-2016-postpartum-relapse] — so future pregnancies warrant advance planning either way."
+      "newFront": "Postpartum psychosis is an emergency and is […] until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women, usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all — so future pregnancies warrant advance planning either way.",
+      "newBack": "Postpartum psychosis is an emergency and is bipolar-spectrum until proven otherwise — screen for mania and admit. Reported incidence across population studies is ~0.9–2.6 per 1,000 women, usually within the first 1–4 weeks. In women with a prior postpartum psychosis, ~29% have a severe episode after a subsequent delivery; for women with both bipolar disorder and a prior postpartum episode the pooled data are insufficient to quote a number at all — so future pregnancies warrant advance planning either way."
     },
     {
       "oldGuid": "xuRE&G-ez/",
@@ -1354,12 +1354,12 @@
       "oldOrdinal": 0,
       "editorialId": "t_psychosis-pearl3:1",
       "noteId": "t_psychosis-pearl3",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "Per CATIE, pick the antipsychotic by […]; \"newer\" is not automatically better.[^lieberman-2005-catie]",
       "oldBack": "Per CATIE, pick the antipsychotic by side-effect fit; \"newer\" is not automatically better.[^lieberman-2005-catie]",
-      "newFront": "Per CATIE, pick the antipsychotic by […]; \"newer\" is not automatically better.[^lieberman-2005-catie]",
-      "newBack": "Per CATIE, pick the antipsychotic by side-effect fit; \"newer\" is not automatically better.[^lieberman-2005-catie]"
+      "newFront": "Per CATIE, pick the antipsychotic by […]; \"newer\" is not automatically better.",
+      "newBack": "Per CATIE, pick the antipsychotic by side-effect fit; \"newer\" is not automatically better."
     },
     {
       "oldGuid": "j*r>{7UpsB",
@@ -1391,11 +1391,11 @@
       "editorialId": "t_psychosis-pearl5:1",
       "noteId": "t_psychosis-pearl5",
       "identityAction": "new-note-required",
-      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "Two failed adequate antipsychotic trials means consider […], with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]",
       "oldBack": "Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]",
-      "newFront": "Two failed adequate antipsychotic trials means […], with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]",
-      "newBack": "Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).[^clozapine-rems]"
+      "newFront": "Two failed adequate antipsychotic trials means […], with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025).",
+      "newBack": "Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025)."
     },
     {
       "oldGuid": "s9t6*h-c&Z",
@@ -1414,36 +1414,36 @@
       "oldOrdinal": 0,
       "editorialId": "t_psychosis-pearl7:1",
       "noteId": "t_psychosis-pearl7",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "[…] (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]",
       "oldBack": "Neuroleptic malignant syndrome (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]",
-      "newFront": "[…] (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]",
-      "newBack": "Neuroleptic malignant syndrome (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.[^strawn-2007-neuroleptic-malignant-syndrome]"
+      "newFront": "[…] (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases.",
+      "newBack": "Neuroleptic malignant syndrome (fever, lead-pipe rigidity, autonomic instability, elevated CK) is the can't-miss antipsychotic emergency — stop the antipsychotic and treat supportively; consider dantrolene/bromocriptine in severe cases."
     },
     {
       "oldGuid": "DKkUSBhBW1",
       "oldOrdinal": 0,
       "editorialId": "t_psychosis-pearl8:1",
       "noteId": "t_psychosis-pearl8",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — […] → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
       "oldBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
-      "newFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — […] → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
-      "newBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis."
+      "newFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — […] → NMS; clonus + hyperreflexia (especially ankle clonus) → SS. Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
+      "newBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS. Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis."
     },
     {
       "oldGuid": "DKkUSBhBW1",
       "oldOrdinal": 1,
       "editorialId": "t_psychosis-pearl8:2",
       "noteId": "t_psychosis-pearl8",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; […] (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
       "oldBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
-      "newFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; […] (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
-      "newBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS.[^boyer-shannon-2005-serotonin-syndrome] Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis."
+      "newFront": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; […] (especially ankle clonus) → SS. Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis.",
+      "newBack": "NMS vs. serotonin syndrome: the key discriminator is the reflex exam — lead-pipe rigidity + hyporeflexia → NMS; clonus + hyperreflexia (especially ankle clonus) → SS. Onset timeline and offending agent (dopamine blocker vs. serotonergic drug) also direct the diagnosis."
     },
     {
       "oldGuid": "FG*y]?XDUX",
@@ -1572,7 +1572,7 @@
       "noteId": "t_sexual-pearl3",
       "identityAction": "withdrawn",
       "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED.",
-      "oldFront": "Non-consenting paraphilic behavior triggers {{c1::safety and reporting duties}}.",
+      "oldFront": "Non-consenting paraphilic behavior triggers […].",
       "oldBack": "Non-consenting paraphilic behavior triggers safety and reporting duties.",
       "newFront": null,
       "newBack": null
@@ -1836,7 +1836,7 @@
       "noteId": "ect_neuromodulation-pearl3",
       "identityAction": "withdrawn",
       "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED.",
-      "oldFront": "Hold {{c1::benzodiazepines/anticonvulsants}} before ECT (they blunt the seizure).",
+      "oldFront": "Hold […] before ECT (they blunt the seizure).",
       "oldBack": "Hold benzodiazepines/anticonvulsants before ECT (they blunt the seizure).",
       "newFront": null,
       "newBack": null
