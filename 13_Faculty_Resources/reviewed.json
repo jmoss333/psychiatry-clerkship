@@ -1158,13 +1158,14 @@
     "clinicalHash": "470fe3eb5a80011850866c86795cb9c425ce8338"
   },
   "review.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "general",
       "level": "moderate"
     },
     "at": "2026-09-27",
-    "by": "Joshua Moss, MD",
+    "by": "Pending faculty review",
+    "reason": "Source changed after faculty review; awaiting re-attestation.",
     "contentHash": "f07390a605667e7b01289ff1df4f6d66685e39e0",
     "clinicalHash": "38d42dcafd49e9786cfb5626667d050681d5862d"
   },
