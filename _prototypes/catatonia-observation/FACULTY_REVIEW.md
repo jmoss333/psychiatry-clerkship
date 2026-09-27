@@ -12,6 +12,10 @@
 
 If the HTML changes, compare this packet with the changed source and review the new exact revision. The private preview is separate from the MS3 and resident learner sites. The gallery at the top shows four previews cloned from the existing fictional artwork; it adds no new clinical scene wording.
 
+## Visual feedback recorded 2026-09-27
+
+The faculty owner approved the visual presentation of **A brief greeting** after viewing it, then explicitly approved the remaining scene visuals: **Across time**, **More than speech**, and **Two witnesses**. This records approval of the four fictional illustrations. The gallery layout, exact moment captions, choice statements and explanations, shared feedback, audience, and learner release remain pending the decisions below. The scene decision boxes therefore remain open.
+
 ## What the faculty is reviewing
 
 The educational aim is to practice describing what is **Seen**, **Stated** in the narration, or **Reported** by another person, while leaving unsupported conclusions **Unknown**. Each scene is a compressed, schematic illustration with text narration. Its exercise is not a clinical examination or BFCRS score. The categories below are the prototype's current teaching key, submitted for faculty judgment.
@@ -46,8 +50,6 @@ The [2023 British Association for Psychopharmacology consensus guideline](https:
 | Unknown | The person is refusing to take part in care. | A lack of reply does not establish refusal or intent. |
 | Unknown | This scene confirms catatonia. | A brief schematic scene cannot establish a diagnosis. |
 | Unknown | The person has behaved this way all day. | We have no information about the rest of the day or the person’s baseline. |
-
-**Visual feedback received 2026-09-27:** The faculty owner identified **A brief greeting** as the scene viewed and approved its visual presentation in chat. The decision below covers the complete four-moment wording and six choice explanations, which remain open for exact-wording review. This note does not attest the prototype or authorize learner release.
 
 **Faculty decision — A brief greeting:** [ ] Accept  [ ] Revise  [ ] Hold  
 Notes / exact replacement wording: ______________________________
