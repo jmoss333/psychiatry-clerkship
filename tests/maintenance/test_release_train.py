@@ -73,6 +73,13 @@ SITES = [{"slug": "une-ms3-psychiatry", "siteId": "ms3"},
          {"slug": "sp-interview-proxy", "siteId": "sp"}]
 
 
+def counts(ms3=0, res=0, proxy=0, console=0, tour=0):
+    """A full five-site count, as billable_deploys_24h returns it."""
+    return {"une-ms3-psychiatry": ms3, "mmc-psychiatry-residents-sanford": res,
+            "sp-interview-proxy": proxy, "clerkship-faculty-attest": console,
+            "psychiatry-workforce-tour": tour}
+
+
 def deploy(hours_ago, context="production", state="ready"):
     created = (NOW - train.timedelta(hours=hours_ago)).isoformat().replace("+00:00", "Z")
     return {"created_at": created, "context": context, "state": state}
@@ -102,19 +109,71 @@ class SpendTripwireTests(unittest.TestCase):
         self.assertEqual(len(slugs), 5)
         self.assertTrue({"une-ms3-psychiatry", "mmc-psychiatry-residents-sanford"} <= slugs)
 
-    def test_scheduled_run_within_budget_proceeds(self):
-        budget = train.DEPLOY_BUDGET_24H
-        ok, _ = train.spend_gate("schedule", lambda: {"a": budget - train.LEARNER_SITES})
+    def test_the_learner_slugs_are_the_sites_built_from_the_whole_repo(self):
+        # The learner rule is only as right as this set. The deploy-health table
+        # marks the two learner sites as the ones with no scope; pin them together
+        # so a renamed or added site cannot fall out of the learner count silently.
+        unscoped = {s["slug"] for s in train._deploy_health_module().SITES
+                    if s.get("scope") is None}
+        self.assertEqual(set(train.LEARNER_SLUGS), unscoped)
+        self.assertEqual(train.LEARNER_SITES, len(train.LEARNER_SLUGS))
+
+    def test_2026_09_27_satellite_work_does_not_hold_the_learner_sites(self):
+        # The run that motivated the split: the learner sites had deployed 4 times
+        # (two train slots) and the satellites 8 (Interview Room + console merges,
+        # #844 #845 #847). The old all-sites budget of 12 held the 09:05 slot and
+        # stranded 14 green merges; none of that spend was the train's doing.
+        ok, _ = train.spend_gate("schedule", lambda: counts(
+            ms3=2, res=2, proxy=4, console=4))
         self.assertTrue(ok)
 
-    def test_scheduled_run_that_would_exceed_budget_holds(self):
-        budget = train.DEPLOY_BUDGET_24H
-        ok, lines = train.spend_gate("schedule", lambda: {"a": budget - 1})
+    def test_2026_09_25_learner_merge_storm_still_holds(self):
+        # The pattern the tripwire exists for: learner sites deploying far more
+        # often than three slots a day allow (here, still publishing per merge).
+        ok, lines = train.spend_gate("schedule", lambda: counts(
+            ms3=25, res=25, proxy=2, console=4))
         self.assertFalse(ok)
-        self.assertTrue(any("HELD" in line for line in lines))
+        self.assertTrue(any("HELD" in line and "learner" in line for line in lines))
+
+    def test_learner_budget_boundary(self):
+        at_limit = train.LEARNER_BUDGET_24H - train.LEARNER_SITES
+        ok, _ = train.spend_gate("schedule", lambda: counts(
+            ms3=at_limit // 2, res=at_limit - at_limit // 2))
+        self.assertTrue(ok)
+        over = at_limit + 1
+        ok, _ = train.spend_gate("schedule", lambda: counts(
+            ms3=over // 2, res=over - over // 2))
+        self.assertFalse(ok)
+
+    def test_an_account_wide_runaway_still_holds_and_goes_red(self):
+        # The train cannot stop a satellite storm, but a red run is the owner's
+        # only alarm short of the invoice -- so a runaway anywhere still holds.
+        at_limit = train.ACCOUNT_BUDGET_24H - train.LEARNER_SITES
+        ok, _ = train.spend_gate("schedule", lambda: counts(proxy=at_limit))
+        self.assertTrue(ok)
+        ok, lines = train.spend_gate("schedule", lambda: counts(proxy=at_limit + 1))
+        self.assertFalse(ok)
+        self.assertTrue(any("HELD" in line and "all five" in line for line in lines))
+
+    def test_the_summary_names_the_learner_count_and_the_account_count(self):
+        _, lines = train.spend_gate("schedule", lambda: counts(ms3=2, res=2, proxy=4))
+        text = "\n".join(lines)
+        self.assertIn(f"learner sites 4 of {train.LEARNER_BUDGET_24H}", text)
+        self.assertIn(f"all five sites 8 of {train.ACCOUNT_BUDGET_24H}", text)
+        self.assertIn("sp-interview-proxy 4", text)
+
+    def test_a_count_missing_a_learner_site_is_could_not_check_never_zero(self):
+        # A partial count would read as "learner sites quiet" and wave through
+        # exactly the storm this rule is for.
+        partial = {"une-ms3-psychiatry": 0, "sp-interview-proxy": 0}
+        with self.assertRaises(train.CouldNotCheck):
+            train.spend_gate("schedule", lambda: partial)
+        ok, lines = train.spend_gate("workflow_dispatch", lambda: partial)
+        self.assertTrue(ok)
+        self.assertTrue(any("WARNING" in line for line in lines))
 
     def test_a_local_run_with_no_event_is_as_strict_as_a_scheduled_one(self):
-        ok, _ = train.spend_gate("", lambda: {"a": 99})
+        ok, _ = train.spend_gate("", lambda: counts(ms3=99))
         self.assertFalse(ok)
 
     def test_scheduled_run_that_cannot_read_netlify_does_not_publish_blind(self):
@@ -125,7 +184,7 @@ class SpendTripwireTests(unittest.TestCase):
 
     def test_manual_publish_now_is_never_blocked_by_cost(self):
         # A safety fix outranks $0.10: over budget or unreadable, it proceeds.
-        ok, lines = train.spend_gate("workflow_dispatch", lambda: {"a": 99})
+        ok, lines = train.spend_gate("workflow_dispatch", lambda: counts(ms3=99, proxy=99))
         self.assertTrue(ok)
         self.assertTrue(any("WARNING" in line for line in lines))
 
@@ -134,9 +193,16 @@ class SpendTripwireTests(unittest.TestCase):
         ok, _ = train.spend_gate("workflow_dispatch", broken)
         self.assertTrue(ok)
 
-    def test_budget_leaves_room_for_the_full_schedule_plus_satellites(self):
-        # 3 promotions x 2 learner sites + 2 satellite deploys must never trip it.
-        self.assertGreaterEqual(train.DEPLOY_BUDGET_24H, 3 * train.LEARNER_SITES + 2 + train.LEARNER_SITES)
+    def test_learner_budget_covers_the_schedule_under_cron_jitter_plus_one_publish_now(self):
+        # GitHub's schedule drifts by minutes, so a trailing 24 h window can hold
+        # all three previous slots; one publish-now a day must not hold the next
+        # slot either: 3 slots + 1 publish-now + this promotion, 2 deploys each.
+        self.assertGreaterEqual(train.LEARNER_BUDGET_24H, (3 + 1 + 1) * train.LEARNER_SITES)
+
+    def test_account_budget_leaves_a_busy_satellite_day_on_top_of_the_learner_budget(self):
+        # 8 satellite deploys in 24 h was an ordinary day of Interview Room work
+        # (2026-09-27); it must not be what holds the learner sites.
+        self.assertGreaterEqual(train.ACCOUNT_BUDGET_24H, train.LEARNER_BUDGET_24H + 8)
 
 
 class WorkflowWiringTests(unittest.TestCase):

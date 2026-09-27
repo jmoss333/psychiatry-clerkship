@@ -20,11 +20,13 @@ refuses rather than rewrite what learners were served.
 THE SPEND TRIPWIRE. Netlify's auto-recharge has no ceiling -- only on or off --
 and "off" can take the learner sites offline mid-rotation when credits run
 out. So the cap lives here instead: before a SCHEDULED promotion, the train
-counts billable production deploys across all five Netlify sites in the last
-24 hours. If publishing would take that count past DEPLOY_BUDGET_24H, it holds
-(exit 1, a red run that emails the owner) instead of adding to a runaway.
-Steady state is at most 6 learner deploys plus a satellite or two a day; the
-pre-train pattern was 24+ per learner site on a busy merge day. A MANUAL
+counts billable production deploys on each of the five Netlify sites in the
+last 24 hours and holds (exit 1, a red run that emails the owner) if publishing
+would pass either budget: LEARNER_BUDGET_24H over the two sites the train
+publishes, or ACCOUNT_BUDGET_24H over all five, a runaway ceiling. Steady state
+is at most 6 learner deploys a day; the satellites deploy per merge, so a busy
+day there is normal and is not the train's to hold. The pre-train pattern was
+24+ per learner site on a busy merge day. A MANUAL
 "publish now" is never blocked by cost -- a safety fix outranks $0.10 -- it
 only records a warning. The guard does not see AI-inference or bandwidth
 credits; those show only on the Netlify billing page.
@@ -58,11 +60,25 @@ WINDOW = 40  # first-parent commits of main examined, newest first
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
-# Billable production deploys allowed across ALL five Netlify sites in any
-# trailing 24 hours before a scheduled promotion holds. 12 x 15 credits = 180
-# credits/day: double the steady state, half of one pre-train merge storm.
-DEPLOY_BUDGET_24H = 12
-LEARNER_SITES = 2  # one promotion = one production deploy on each learner site
+# The two sites the train publishes. They build from the whole repo, which is why
+# check_netlify_deploy_health.SITES gives them no scope; the tests pin the two
+# lists together.
+LEARNER_SLUGS = ("une-ms3-psychiatry", "mmc-psychiatry-residents-sanford")
+LEARNER_SITES = len(LEARNER_SLUGS)  # one promotion = one production deploy on each
+
+# Two budgets over the trailing 24 hours, both checked before a SCHEDULED promotion.
+# LEARNER: what the train itself controls. GitHub's cron drifts by minutes, so the
+# window can hold all three previous slots; 10 = those 3 + one publish-now + this
+# promotion, 2 deploys each. More than that means something other than the train is
+# publishing the learner sites (the 2026-09-25 pattern: 25 each, per merge).
+# ACCOUNT: a runaway anywhere, satellites included. The train cannot stop a
+# satellite storm, but a held run is red and emails the owner, the only alarm short
+# of the invoice. It sits well above the learner budget because the satellites
+# deploy per merge: until 2026-09-27 a single all-sites budget of 12 was used, and
+# an ordinary day of Interview Room work (8 satellite deploys) held the 09:05 slot
+# with 14 green merges waiting. 24 x 15 credits = 360 credits/day at the ceiling.
+LEARNER_BUDGET_24H = 10
+ACCOUNT_BUDGET_24H = 24
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEPLOY_HEALTH = REPO_ROOT / "bin" / "check_netlify_deploy_health.py"
 
@@ -134,37 +150,62 @@ def _parse_time(value):
     return parsed.astimezone(timezone.utc)
 
 
-def spend_gate(event_name: str, read_counts, budget: int = DEPLOY_BUDGET_24H):
+def _read_full_counts(read_counts) -> dict:
+    counts = read_counts()
+    missing = [slug for slug in LEARNER_SLUGS if slug not in counts]
+    if missing:
+        # A partial count reads as "learner sites quiet" -- the one answer that
+        # would wave through the storm the learner budget exists to catch.
+        raise CouldNotCheck(f"deploy count has no entry for {', '.join(missing)}")
+    return counts
+
+
+def spend_gate(event_name: str, read_counts,
+               learner_budget: int = LEARNER_BUDGET_24H,
+               account_budget: int = ACCOUNT_BUDGET_24H):
     """Decide whether a promotion may proceed on cost grounds.
 
-    Returns (proceed, lines). Scheduled (and local) runs are strict: over budget
-    holds, and an unreadable count raises CouldNotCheck. A manual publish-now
-    always proceeds and only records what it saw.
+    Returns (proceed, lines). Scheduled (and local) runs are strict: over either
+    budget holds, and an unreadable or partial count raises CouldNotCheck. A
+    manual publish-now always proceeds and only records what it saw.
     """
     manual = event_name == "workflow_dispatch"
     try:
-        counts = read_counts()
+        counts = _read_full_counts(read_counts)
     except CouldNotCheck as exc:
         if manual:
             return True, [f"- WARNING: spend tripwire could not read Netlify ({exc}); "
                           "publishing anyway because this is a manual publish-now"]
         raise
+    learner = sum(counts[slug] for slug in LEARNER_SLUGS)
     total = sum(counts.values())
     busy = ", ".join(f"{slug} {n}" for slug, n in counts.items() if n)
-    lines = [f"- Netlify production deploys in the last 24 h: {total} of a {budget} budget"
+    lines = [f"- Netlify production deploys in the last 24 h: learner sites {learner} of "
+             f"{learner_budget}, all five sites {total} of {account_budget}"
              + (f" ({busy})" if busy else "")]
-    if total + LEARNER_SITES <= budget:
+    held = []
+    if learner + LEARNER_SITES > learner_budget:
+        held.append(f"- HELD by the spend tripwire: this publish would make it "
+                    f"{learner + LEARNER_SITES} learner-site deploys in 24 h, over the budget "
+                    f"of {learner_budget}. The train allows three slots a day, so something "
+                    "else is publishing the learner sites -- check their Netlify deploy list "
+                    "and which branch each site builds from.")
+    if total + LEARNER_SITES > account_budget:
+        held.append(f"- HELD by the spend tripwire: this publish would make it "
+                    f"{total + LEARNER_SITES} production deploys across all five sites in "
+                    f"24 h, over the runaway ceiling of {account_budget}. Look at the busiest "
+                    "site above.")
+    if not held:
         return True, lines
     if manual:
         lines.append("- WARNING: over the deploy budget; publishing anyway because this "
                      "is a manual publish-now")
-        print(f"::warning title=Spend tripwire::{total} production deploys in 24 h "
-              f"(budget {budget}); manual publish went ahead")
+        print(f"::warning title=Spend tripwire::learner sites {learner}/{learner_budget}, "
+              f"all sites {total}/{account_budget} production deploys in 24 h; "
+              "manual publish went ahead")
         return True, lines
-    lines.append(f"- HELD by the spend tripwire: this publish would make it "
-                 f"{total + LEARNER_SITES} in 24 h, over the budget of {budget}. Something is "
-                 "deploying more than the train allows -- look at the busiest site above. "
-                 "The next slot retries automatically; Run workflow publishes now regardless.")
+    lines.extend(held)
+    lines.append("- The next slot retries automatically; Run workflow publishes now regardless.")
     return False, lines
 
 
