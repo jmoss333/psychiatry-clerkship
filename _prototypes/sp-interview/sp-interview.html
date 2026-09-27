@@ -280,7 +280,7 @@
   .sa .why{color:var(--muted);margin:0 0 24px;font-size:.94rem;line-height:1.55}
   .sa .q{margin-bottom:20px}
   .sa label{display:block;font-family:var(--serif);font-size:1.08rem;font-weight:500;line-height:1.4}
-  .sa label .num{color:var(--green-dark);margin-right:8px}
+  .sa label .num{color:var(--primary-dark);margin-right:8px}
   .sa textarea{width:100%;margin-top:8px;font:inherit;font-size:.94rem;padding:12px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);background:var(--card);color:var(--text);min-height:82px;resize:vertical}
   .sa .commit{display:flex;align-items:center;gap:14px;margin-top:4px;flex-wrap:wrap}
   .sa .commit .hint{font-size:.78rem;color:var(--muted)}
@@ -343,7 +343,7 @@
   .selfreport select{width:100%;font:inherit;font-size:.88rem;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--btn-border);background:var(--card);color:var(--text);min-height:44px}
   .selfreport .note{margin:8px 0 0;font-size:.82rem;line-height:1.5;opacity:.9}
   .teach p{margin:0 0 10px;font-size:.9rem;line-height:1.55;color:var(--text)}
-  .teach p .pin{color:var(--green-dark);font-family:var(--serif)}
+  .teach p .pin{color:var(--primary-dark);font-family:var(--serif)}
   .aftercare{margin:16px 0 0;padding:12px 14px;background:var(--pale);border-left:3px solid var(--green);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.84rem;color:var(--text);line-height:1.55}
   .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
   .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -1467,7 +1467,6 @@ function App(){
             e('p',{className:'setting'},scd.setting),
             e('p',{className:'modeline'},'Spoken room · '+(sSupported?'Supported — you can step out for your notes and a coach':'Realistic — a blank room, like the real thing'))),
           e('div',{className:'roomtools'},
-            sPhase==='speaking'?e('span',{className:'spkchip'},e(SpeakBars,{anim:SP.anim,dur:SP.dur,dim:false}),e('span',null,sName+' is speaking · '+SP.label)):null,
             e('span',{className:'turn-count'},'Turn '+sTurn+' / '+sMax))),
         e(RoomView,spokenRoomView(snap,sName)),
         e('div',{className:'audiorail spoken-'+sPhase,role:'group','aria-label':'Room audio status'},
@@ -1551,7 +1550,6 @@ function App(){
             e('p',{className:'modeline'},'Typed room · '+(supported?'Supported — you can step out for your notes and a coach':'Realistic — a blank room, like the real thing'))),
           e('div',{className:'roomtools'},
             offlineSession?e('span',{className:'offline-label'},'Offline simulation'):null,
-            voiceState.phase==='speaking'?e('span',{className:'spkchip'},e(SpeakBars,{anim:P.anim,dur:P.dur,dim:false}),e('span',null,cd.persona.displayName+' is speaking · '+P.label)):null,
             e('span',{className:'turn-count'},'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)))),
         e(RoomView,typedRoomView(voiceState,cd.persona.displayName,isBusy,(function(){for(var mi=0;mi<E.msgs.length;mi++){var mm=E.msgs[mi];if(mm.who==='pt'&&voiceState.phase==='speaking'&&voiceState.activePatientTurn===mm.turnId)return mm.text;}return '';})(),offlineSession)),
         e('div',{className:'audiorail',role:'group','aria-label':'Room audio status'},
