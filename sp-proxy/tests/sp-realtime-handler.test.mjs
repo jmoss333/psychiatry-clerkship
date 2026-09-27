@@ -489,6 +489,12 @@ test('an unapproved pack, an unknown case and an unreviewed case are refused bef
   assert.equal((await errorBody(unreviewed)).code, 'case_not_reviewed');
   const unreviewedTurn = await harness.handler(jsonRequest('turn', turnBody('x', itemsFrom(['hi']))));
   assert.equal(unreviewedTurn.status, 403);
+  const staged = enabledHandler({ snapshot: realSnapshot((pack) => { pack.cases[0].facultyReview.status = 'pending'; }) });
+  const pendingStart = await staged.handler(jsonRequest('start', startBody()));
+  assert.equal(pendingStart.status, 403);
+  assert.equal((await errorBody(pendingStart)).code, 'case_not_reviewed');
+  assert.deepEqual(staged.fetch.calls, []);
+  assert.deepEqual(staged.fake.calls, []);
   assert.deepEqual(harness.fetch.calls, []);
   assert.deepEqual(harness.fake.calls, []);
   // The demoted case disappears from health; the others keep their voices.
