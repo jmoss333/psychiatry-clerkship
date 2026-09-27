@@ -9,7 +9,7 @@
 - **Question Bank** — every attested board-style item as a vignette card (best answer, the trap in each distractor, the teaching point, and a link back to the source page). Two-tier items include a second card for the mechanism.
 - **Concepts** — selected source-exact summaries and pearls with specific hidden answer targets. The site and Anki use the same released card set; some sources and pearls are deferred for faculty review.
 
-**Review on this site** — Open [Daily Review](?tool=review.html) and choose Concepts. Reveal the source wording, follow its reading link, and grade your recall. Progress is saved in this browser; Anki review schedules are separate.
+**Review on this site** — Open [Daily Review](?tool=review.html) to study Concepts alongside other recall cards and questions. Use All or This week to filter new Concepts when reviewing from your Path. Reveal the source wording, follow its reading link, and grade your recall. Progress is saved in this browser; Anki review schedules are separate.
 
 ## Download
 

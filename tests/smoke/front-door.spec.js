@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
@@ -3966,10 +3967,33 @@ test('Concepts timed block keeps one-card limit and records recall receipt',asyn
 });
 
 
+// UI regressions must not depend on which clinical sources faculty have released.
+// These neutral fixture faces exercise the real byte-digest verifier and renderer;
+// source/ledger eligibility remains covered by the separate concept Python suites.
+const conceptUiSiblings = [
+  {id:'CONCEPT#ui-sibling:1@1',editorialId:'ui-sibling:1',noteId:'ui-sibling',ordinal:1,revision:1,target:'amber token',q:'Study the […] and cobalt token.'},
+  {id:'CONCEPT#ui-sibling:2@1',editorialId:'ui-sibling:2',noteId:'ui-sibling',ordinal:2,revision:1,target:'cobalt token',q:'Study the amber token and […].'},
+].map(card=>({...card,reveal:'Study the amber token and cobalt token.',topic:'Study tokens',page:READING_REF,source:'03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md'}));
+
+async function controlledConceptFeed(page,cards){
+  const body=JSON.stringify({schemaVersion:1,cards,withheld:[]})+'\n';
+  const digest=createHash('sha256').update(body).digest('hex');
+  await page.route('**/tools/concepts.json',route=>route.fulfill({contentType:'application/json',body}));
+  await page.route(/\/tools\/review\.html(?:\?|$)/,async route=>{
+    const response=await routeFetchWithRetry(route);
+    const html=await response.text();
+    const tag=/<meta name="cw-concept-digest" content="[a-f0-9]{64}">/g;
+    expect(html.match(tag)).toHaveLength(1);
+    await route.fulfill({response,body:html.replace(tag,'<meta name="cw-concept-digest" content="'+digest+'">')});
+  });
+  // The fixture's source ref remains a working shipped reading on both sites.
+  expect((await requestGetWithRetry(page.request,'/content/'+READING_REF)).ok()).toBe(true);
+  return digest;
+}
+
 test('Concepts sibling clozes keep answers private and completion is announced and focused',async({page},info)=>{
-  const feed=await (await page.request.get('/tools/concepts.json')).json();
-  const siblings=feed.cards.filter(c=>c.noteId==='cultural_psychiatry-pearl5');
-  expect(siblings).toHaveLength(2);
+  const siblings=conceptUiSiblings;
+  const digest=await controlledConceptFeed(page,siblings);
   await seedApp(page,info);
   await page.addInitScript((cards)=>{
     const now=new Date();
@@ -3977,6 +4001,7 @@ test('Concepts sibling clozes keep answers private and completion is announced a
     localStorage.setItem('cw_srs_v1',JSON.stringify({v:1,cards:Object.fromEntries(cards.map(c=>[c.id,{due:1,reps:1,ivl:1,ease:2.5,last:1}])),day:{lastDay:day,newToday:30},stats:{seen:0,correct:0},settings:{newPerDay:12}}));
   },siblings);
   await page.goto('/tools/review.html');
+  await expect(page.locator('meta[name="cw-concept-digest"]')).toHaveAttribute('content',digest);
   await page.getByRole('button',{name:/Start review/}).click();
   await expect(page.locator('.scount')).toHaveText('1 / 2');
   await page.getByRole('button',{name:'Reveal one way to do it'}).click();
@@ -4010,12 +4035,12 @@ test('Concepts stalled response times out while other Daily Review cards become 
 });
 
 
-test('Concepts topic cannot disclose the real ECT target before reveal',async({page},info)=>{
-  const feed=await (await page.request.get('/tools/concepts.json')).json();
-  const card=feed.cards.find(c=>c.target==='ECT'&&c.topic.includes('ECT'));
-  expect(card).toBeTruthy();
+test('Concepts topic cannot disclose the fixture target before reveal',async({page},info)=>{
+  const card={...conceptUiSiblings[0],topic:'Study the amber token'};
+  const digest=await controlledConceptFeed(page,[card]);
   await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[card.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
   await page.goto('/tools/review.html?block=1&limit=1');
+  await expect(page.locator('meta[name="cw-concept-digest"]')).toHaveAttribute('content',digest);
   await expect(page.locator('.qtext')).toHaveText(card.q);
   await expect(page.locator('.deckchip').last()).toHaveText('Concepts');
   await expect(page.locator('body')).not.toContainText(card.target);
