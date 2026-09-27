@@ -141,6 +141,10 @@ test('an expired pack cache fails closed on fetch or parse errors instead of ser
 
 test('reviewed case resolution and summaries expose only fully attested reviewed public fields', () => {
   const pack = createReviewedPack();
+  const pending = structuredClone(pack.cases[0]);
+  pending.id = 'case-pending';
+  pending.facultyReview.status = 'pending';
+  pack.cases.push(pending);
   assert.strictEqual(
     resolveReviewedCase({ pack, caseId: 'case-reviewed', now: () => NOW_MS }),
     pack.cases[0],
@@ -160,6 +164,25 @@ test('reviewed case resolution and summaries expose only fully attested reviewed
   );
   assert.throws(
     () => resolveReviewedCase({ pack, caseId: 'case-draft', now: () => NOW_MS }),
+    (error) => assertOperationalError(error, {
+      status: 403,
+      code: 'case_not_reviewed',
+      message: 'This case is not reviewed for learner use.',
+    }),
+  );
+  assert.throws(
+    () => resolveReviewedCase({ pack, caseId: 'case-pending', now: () => NOW_MS }),
+    (error) => assertOperationalError(error, {
+      status: 403,
+      code: 'case_not_reviewed',
+      message: 'This case is not reviewed for learner use.',
+    }),
+    'pending status alone must deny even when stale reviewer/date fields remain',
+  );
+  pending.facultyReview.reviewer = null;
+  pending.facultyReview.lastReviewed = null;
+  assert.throws(
+    () => resolveReviewedCase({ pack, caseId: 'case-pending', now: () => NOW_MS }),
     (error) => assertOperationalError(error, {
       status: 403,
       code: 'case_not_reviewed',
@@ -424,6 +447,7 @@ test('managed voice independently fails closed on every review, privacy, hash, a
     ['active rate duplicated', ({ pack }) => { pack.speechEngine.rateCard.rates.push({ ...pack.speechEngine.rateCard.rates[0] }); refreshGovernanceHashes(pack); }],
     ['active rate source is not HTTPS', ({ pack }) => { pack.speechEngine.rateCard.rates[0].sourceUrl = 'javascript:alert(1)'; refreshGovernanceHashes(pack); }],
     ['case not reviewed', ({ caseDef }) => { caseDef.facultyReview.status = 'draft'; }],
+    ['case pending', ({ caseDef }) => { caseDef.facultyReview.status = 'pending'; }],
     ['case reviewer missing', ({ caseDef }) => { caseDef.facultyReview.reviewer = ''; }],
     ['case review date missing', ({ caseDef }) => { caseDef.facultyReview.lastReviewed = ''; }],
     ['case review date impossible', ({ caseDef }) => { caseDef.facultyReview.lastReviewed = '2026-02-30'; }],
