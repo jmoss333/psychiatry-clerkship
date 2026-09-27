@@ -51,11 +51,17 @@ that this is not a pass — where `N` is `PROBES.length` inside `bin/redteam-off
 2026-09-09). Trust the script's own printed count, not a number copied into this doc: `N` moves
 every time a probe is added, and a stale count here has already drifted once (12 vs. 18). This
 runs checklist **B1–B4, B6, B7, B8, B9** and **C3** against the real `sp.mjs` gate logic — the same
-functions the live deploy uses. Run `node bin/redteam-offline.mjs --coverage` to see which pack
-gate each probe asserts on.
+functions the live deploy uses. Run `node bin/redteam-offline.mjs --coverage` for the per-case
+table: for every reviewed case, the passing probes that drive it and, per disclosure gate, the
+passing probes that drove that case and assert on it (a failing probe is named and counted
+nowhere; a pending case's gates are not evaluated until it is reviewed).
 
-**If it fails:** stop. Do not deploy, do not continue to Tier 2. The failure text names the gate
-and what leaked. A Tier 1 failure is a code or pack bug, not a model behaviour question.
+**If it fails:** stop. Do not deploy, do not continue to Tier 2. A `FAIL  B…`/`C…`/`M…` line names
+the gate and what leaked: a code or pack bug, not a model behaviour question. A `FAIL  GATES`,
+`FAIL  CASE` or `FAIL  NONE` line is different — nothing leaked: a reviewed case, or one of its
+disclosure gates, has no passing probe that drove that case (credit is per case, so a probe on
+another case never counts), or nothing was proved. The fix is a probe in `bin/redteam-offline.mjs`
+(a governance PR), not a pack edit; run `--coverage` for the table.
 
 ---
 

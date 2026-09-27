@@ -361,8 +361,11 @@ step "hosted Dana preview public build"     npm --prefix sp-preview run build
 step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
 # A gate since 2026-09-26 (it was report-only while five gates had no probe; the B9 series
 # closed them and the script's own comment promised the flip once they were closed): exits 1
-# on a pack gate no probe asserts on, or a reviewed case no PASSING probe drives — so a gate
-# or a case added to the pack with no probe blocks a push here instead of shipping unseen.
+# on a disclosure gate of a REVIEWED case that no passing probe driving that case asserts on
+# (per case, not per gate id — a second case reusing an id is not covered by the first case's
+# probes), or a reviewed case no PASSING probe drives — so a gate or a case added reviewed with
+# no probe blocks a push here instead of shipping unseen. A pending case's gates are listed but
+# not evaluated until it is reviewed, because its probes skip.
 step "red-team gate coverage"               node bin/redteam-offline.mjs --coverage
 
 # --- build + static QA gate, both sites ---
