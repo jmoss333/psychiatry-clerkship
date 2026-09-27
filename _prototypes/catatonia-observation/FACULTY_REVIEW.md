@@ -1,6 +1,6 @@
 # Catatonia observation studio — faculty review packet
 
-**Status: PENDING faculty review.** This packet records the current prototype wording for review; it does not attest clinical accuracy, approve learner release, or grant rights to a rating instrument.
+**Status: Scene visuals and wording accepted for this private prototype; overall release review PENDING.** This packet records the current prototype wording and faculty feedback; it does not attest clinical accuracy, approve learner release, or grant rights to a rating instrument.
 
 ## Exact revision to review
 
@@ -14,7 +14,11 @@ If the HTML changes, compare this packet with the changed source and review the 
 
 ## Visual feedback recorded 2026-09-27
 
-The faculty owner approved the visual presentation of **A brief greeting** after viewing it, then explicitly approved the remaining scene visuals: **Across time**, **More than speech**, and **Two witnesses**. This records approval of the four fictional illustrations. The gallery layout, exact moment captions, choice statements and explanations, shared feedback, audience, and learner release remain pending the decisions below. The scene decision boxes therefore remain open.
+The faculty owner approved the visual presentation of **A brief greeting** after viewing it, then explicitly approved the remaining scene visuals: **Across time**, **More than speech**, and **Two witnesses**. This records approval of the four fictional illustrations. The later wording decision is recorded separately below; the gallery layout, audience, and learner release remain open.
+
+## Wording feedback recorded 2026-09-27
+
+After receiving this exact-wording review packet and the request to review its captions and feedback, the faculty owner replied **“approved”** in chat. This is recorded for the HTML SHA-256 above as acceptance of the 16 moment captions, 24 choice statements and explanations, and two shared feedback messages listed below. It does not resolve the gallery layout, intended audience, native VoiceOver review, overall release disposition, or learner publication.
 
 ## What the faculty is reviewing
 
@@ -51,7 +55,7 @@ The [2023 British Association for Psychopharmacology consensus guideline](https:
 | Unknown | This scene confirms catatonia. | A brief schematic scene cannot establish a diagnosis. |
 | Unknown | The person has behaved this way all day. | We have no information about the rest of the day or the person’s baseline. |
 
-**Faculty decision — A brief greeting:** [ ] Accept  [ ] Revise  [ ] Hold  
+**Faculty decision — A brief greeting:** [x] Accept  [ ] Revise  [ ] Hold
 Notes / exact replacement wording: ______________________________
 
 ## 2. Across time
@@ -74,7 +78,7 @@ Notes / exact replacement wording: ______________________________
 | Unknown | Reaching for a cup later rules out catatonia. | One later movement cannot settle a diagnosis. |
 | Unknown | The earlier pause proves the person had catatonia. | Brief stillness is nonspecific and cannot establish a diagnosis. |
 
-**Faculty decision — Across time:** [ ] Accept  [ ] Revise  [ ] Hold  
+**Faculty decision — Across time:** [x] Accept  [ ] Revise  [ ] Hold
 Notes / exact replacement wording: ______________________________
 
 ## 3. More than speech
@@ -97,7 +101,7 @@ Notes / exact replacement wording: ______________________________
 | Unknown | The person is unable to speak. | A brief silent pause cannot establish the person’s capacity to speak. |
 | Unknown | The person understood every word of the question. | Gesture and writing do not establish full comprehension of the question. |
 
-**Faculty decision — More than speech:** [ ] Accept  [ ] Revise  [ ] Hold  
+**Faculty decision — More than speech:** [x] Accept  [ ] Revise  [ ] Hold
 Notes / exact replacement wording: ______________________________
 
 ## 4. Two witnesses
@@ -120,7 +124,7 @@ Notes / exact replacement wording: ______________________________
 | Unknown | The person remained seated throughout the interval. | The interval between the report and bedside observation is not shown. |
 | Unknown | The earlier walking proves that the current bedside behavior is typical for this person. | Neither source gives a usual baseline or explains the current behavior. |
 
-**Faculty decision — Two witnesses:** [ ] Accept  [ ] Revise  [ ] Hold  
+**Faculty decision — Two witnesses:** [x] Accept  [ ] Revise  [ ] Hold
 Notes / exact replacement wording: ______________________________
 
 ## Shared feedback and release boundary
@@ -129,6 +133,8 @@ The same summary appears after checking choices in any scene:
 
 - When all Seen, Stated, and Reported choices are selected and Unknown choices are left clear: **A grounded description** — “Your choices stay with what is shown, narrated, or reported. These observations alone neither establish nor rule out catatonia.”
 - Otherwise: **Look again at what is known** — “Review which details are shown, stated, or reported and what remains unknown. These details neither establish nor rule out catatonia. Revise your choices after reading the distinctions below.”
+
+**Faculty wording decision — shared feedback:** [x] Accept  [ ] Revise  [ ] Hold
 
 **Overall faculty disposition:** [ ] Accept for further release preparation  [ ] Revise and review again  [ ] Hold  
 Audience decision and required wording changes: ______________________________
