@@ -232,3 +232,58 @@ test.describe('safety-planning-practice.preview.html · the promises it prints o
     await expect(page.locator('.draft')).toContainText(/not attested|unattested/i);
   });
 });
+
+test.describe('catatonia observation · fictional, non-scoring preview', () => {
+  const REL = 'catatonia-observation/catatonia-observation.preview.html';
+
+  test.beforeEach(async ({ page }) => {
+    await isolate(page);
+    await page.goto(fileUrl(REL), { waitUntil: 'load' });
+  });
+
+  test('the visual scene has a readable, user-controlled text equivalent', async ({ page }) => {
+    await expect(page.locator('.badge')).toContainText('Unattested');
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+    await expect(page.locator('#caption')).toContainText('We do not know');
+
+    await page.getByRole('button', { name: /02 Greeting/ }).click();
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '1');
+    await expect(page.locator('#caption')).toContainText('The clinician says');
+    await expect(page.getByRole('button', { name: /02 Greeting/ })).toHaveAttribute('aria-pressed', 'true');
+
+    await page.getByRole('button', { name: 'Replay' }).click();
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+    await page.getByRole('button', { name: 'Play scene' }).click();
+    await expect(page.getByRole('button', { name: 'Pause scene' })).toBeVisible();
+    await page.getByRole('button', { name: 'Pause scene' }).click();
+    await expect(page.getByRole('button', { name: 'Play scene' })).toBeVisible();
+  });
+
+  test('the exercise separates visible facts from unsupported conclusions without scoring', async ({ page }) => {
+    await page.getByLabel('The scripted scene states that no spoken reply occurs during the brief greeting.').check();
+    await page.getByLabel('The person remains seated during the greeting and pause.').check();
+    await page.getByLabel('The person’s gaze appears directed downward in this illustration.').check();
+    await page.getByRole('button', { name: 'Check my description' }).click();
+    await expect(page.locator('#feedbackTitle')).toHaveText('A grounded description');
+    await expect(page.locator('#feedbackTitle')).toBeFocused();
+    await expect(page.locator('#feedback')).toContainText('A brief schematic scene cannot establish a diagnosis.');
+
+    await page.getByRole('button', { name: 'Clear choices' }).click();
+    await expect(page.locator('#feedback')).toBeHidden();
+    await page.getByLabel('This scene confirms catatonia.').check();
+    await page.getByRole('button', { name: 'Check my description' }).click();
+    await expect(page.locator('#feedbackTitle')).toHaveText('Look again at what is known');
+    await expect(page.locator('#feedbackTitle')).toBeFocused();
+    await expect(page.locator('#feedback')).toContainText('neither establish nor rule out catatonia');
+    await expect(page.locator('input[type="number"], [data-score]')).toHaveCount(0);
+  });
+
+  test('the preview links outward to URMC and has no export or storage behavior', async ({ page }) => {
+    await expect(page.getByRole('link', { name: /URMC training videos/ })).toHaveAttribute('href',
+      'https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale');
+    await expect(page.getByRole('link', { name: /URMC calculator/ })).toHaveAttribute('href',
+      'https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale/calculator');
+    await expect(page.locator('[download], input[type="text"], textarea')).toHaveCount(0);
+    await expect(page.getByText('No responses are saved or sent.')).toBeVisible();
+  });
+});

@@ -48,6 +48,14 @@ test('the route is a followable link to URMC’s own scale and training', () => 
   assert.ok(html.includes(`href="${src.trainingUrl}"`), 'link the training modules too');
 });
 
+test('the URMC calculator is linked without adding a local scorer', () => {
+  const calculatorUrl = 'https://www.urmc.rochester.edu/psychiatry/divisions/'
+    + 'collaborative-care-and-wellness/bush-francis-catatonia-rating-scale/calculator';
+  assert.ok(html.includes(`href="${calculatorUrl}"`), 'link URMC’s interactive calculator');
+  assert.doesNotMatch(html, /<(?:form|input|select|textarea|button)\b/i,
+    'the reference page must not become a local scoring form');
+});
+
 test('the page title equals the rights-registry requiredTitle', () => {
   const entry = rights.instruments.find((i) => i.id === 'bfcrs');
   const pin = entry.pages.find((p) => p.file === 'bfcrs.html');

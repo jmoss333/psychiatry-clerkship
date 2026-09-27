@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Notice, then describe · Catatonia observation prototype</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --ink: #243a37;
+      --muted: #536963;
+      --paper: #f5f1e9;
+      --card: #fffdf8;
+      --line: #d5dfd8;
+      --teal: #195d54;
+      --teal-wash: #e1f0ea;
+      --coral: #a94e39;
+      --coral-wash: #fae8df;
+      --gold: #a9792c;
+      --shadow: 0 20px 55px rgba(26, 64, 54, .10);
+      font-family: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: radial-gradient(circle at 5% 4%, #dcece3, transparent 38%), var(--paper); line-height: 1.5; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible + span { outline: 3px solid var(--coral); outline-offset: 3px; }
+    a { color: var(--teal); text-underline-offset: .18em; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: clamp(16px, 3vw, 42px); }
+    .eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; color: var(--teal); font-size: .72rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--coral); }
+    .hero { display: flex; justify-content: space-between; gap: 30px; align-items: end; margin: 18px 0 28px; }
+    h1, h2, h3 { font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; letter-spacing: -.025em; line-height: 1.12; }
+    h1 { font-size: clamp(2.35rem, 5vw, 4.5rem); margin: 0 0 12px; max-width: 14ch; }
+    .intro { max-width: 61ch; margin: 0; color: var(--muted); font-size: clamp(.96rem, 1.3vw, 1.08rem); }
+    .badge { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; background: var(--coral-wash); border: 1px solid #e4b7a9; border-radius: 100px; color: #7f3929; padding: 9px 14px; font-weight: 750; font-size: .79rem; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 24px; align-items: start; }
+    .scene-card, .practice-card { min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); }
+    .scene-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding: 24px 28px 14px; }
+    .scene-head h2, .practice-head h2 { font-size: clamp(1.4rem, 2vw, 1.8rem); margin: 0; }
+    .scene-head p { margin: 0; color: var(--muted); font-size: .82rem; }
+    .scene-wrap { padding: 0 16px; }
+    .scene { position: relative; overflow: hidden; aspect-ratio: 16 / 10; min-height: 300px; background: #dcebe6; border: 1px solid #c7d9d0; border-radius: 16px; }
+    .scene svg { width: 100%; height: 100%; display: block; }
+    .scene .clinician { transition: transform .65s ease; }
+    .scene[data-frame="0"] .clinician { transform: translateX(-70px); }
+    .scene[data-frame="1"] .clinician, .scene[data-frame="2"] .clinician, .scene[data-frame="3"] .clinician { transform: translateX(0); }
+    .scene .greeting, .scene .pause-cue, .scene .note-cue { opacity: 0; transition: opacity .5s ease; }
+    .scene[data-frame="1"] .greeting, .scene[data-frame="2"] .greeting { opacity: 1; }
+    .scene[data-frame="2"] .pause-cue { opacity: 1; }
+    .scene[data-frame="3"] .note-cue { opacity: 1; }
+    .scene .gentle-ring { animation: ring 2.3s ease-in-out infinite; transform-origin: center; }
+    @keyframes ring { 50% { opacity: .38; transform: scale(1.08); } }
+    .scene-label { position: absolute; left: 16px; top: 16px; background: rgba(255, 253, 248, .95); border: 1px solid #c7d9d0; color: var(--teal); border-radius: 100px; padding: 6px 11px; font-size: .72rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    .caption { margin: 0; padding: 18px 28px 13px; min-height: 92px; color: var(--ink); }
+    .caption strong { display: block; color: var(--teal); font-size: .77rem; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+    .caption span { display: block; max-width: 63ch; }
+    .timeline { padding: 6px 28px 22px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .step { text-align: left; border: 1px solid var(--line); background: #f6f8f4; color: var(--muted); border-radius: 10px; padding: 9px 10px; font-size: .79rem; font-weight: 700; transition: background .2s ease, border .2s ease; }
+    .step:hover { border-color: var(--teal); }
+    .step[aria-pressed="true"] { color: var(--teal); background: var(--teal-wash); border-color: var(--teal); }
+    .step .number { display: block; font-size: .69rem; letter-spacing: .07em; margin-bottom: 2px; }
+    .controls { border-top: 1px solid var(--line); padding: 17px 28px 22px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .control { background: var(--teal); color: white; border: 1px solid var(--teal); border-radius: 10px; padding: 10px 17px; font-weight: 750; }
+    .control:hover { background: #124940; }
+    .control.secondary { background: transparent; color: var(--teal); }
+    .control.secondary:hover { background: var(--teal-wash); }
+    .controls small { margin-left: auto; max-width: 30ch; color: var(--muted); font-size: .75rem; }
+    .practice-head { padding: 24px 25px 16px; background: linear-gradient(150deg, #eef6ef, #fdfbf5); border-bottom: 1px solid var(--line); }
+    .practice-head .overline { color: var(--coral); font-size: .72rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; margin: 0 0 7px; }
+    .practice-head p:last-child { color: var(--muted); margin: 9px 0 0; font-size: .9rem; }
+    .practice-body { padding: 19px 25px 25px; }
+    fieldset { border: 0; margin: 0; padding: 0; }
+    legend { font-size: .8rem; font-weight: 800; color: var(--teal); letter-spacing: .06em; text-transform: uppercase; padding: 0 0 12px; }
+    .choice { display: block; cursor: pointer; position: relative; margin-bottom: 9px; }
+    .choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .choice span { display: flex; align-items: start; gap: 11px; padding: 12px 13px; border: 1px solid var(--line); border-radius: 11px; background: #fff; transition: border .2s ease, background .2s ease; font-size: .88rem; }
+    .choice span::before { content: ""; flex: 0 0 17px; height: 17px; margin-top: 2px; border: 1.5px solid #849c90; border-radius: 5px; background: #fff; }
+    .choice:hover span { border-color: var(--teal); }
+    .choice input:checked + span { border-color: var(--teal); background: var(--teal-wash); }
+    .choice input:checked + span::before { background: var(--teal); border-color: var(--teal); box-shadow: inset 0 0 0 3px var(--teal-wash); }
+    .practice-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 15px; }
+    .feedback { margin-top: 19px; padding: 17px; background: #f1f5ef; border-left: 4px solid var(--teal); border-radius: 0 10px 10px 0; }
+    .feedback[hidden] { display: none; }
+    .feedback h3 { margin: 0 0 7px; font-size: 1.18rem; }
+    .feedback p { margin: 7px 0; font-size: .88rem; }
+    .feedback .review-list { list-style: none; padding: 0; margin: 12px 0 0; }
+    .review-list li { border-top: 1px solid #d7e2d8; padding: 8px 0; font-size: .84rem; }
+    .review-list b { display: inline-block; min-width: 82px; color: var(--teal); }
+    .below { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .info { background: rgba(255,253,248,.82); border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; }
+    .info h2 { margin: 0 0 8px; font-size: 1.22rem; }
+    .info p, .info li { color: var(--muted); font-size: .85rem; }
+    .info p { margin: 0 0 9px; }
+    .info ul { margin: 0; padding-left: 19px; }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 13px; }
+    .links a { display: inline-block; border: 1px solid var(--teal); border-radius: 9px; padding: 9px 12px; font-weight: 700; font-size: .83rem; text-decoration: none; }
+    .links a:hover { background: var(--teal-wash); }
+    footer { color: var(--muted); font-size: .75rem; margin: 24px 0 8px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .hero { align-items: start; flex-direction: column; } .badge { order: -1; } }
+    @media (max-width: 600px) { .scene-head, .caption, .controls { padding-left: 17px; padding-right: 17px; } .scene-wrap { padding: 0 9px; } .scene { min-height: 240px; aspect-ratio: 1.22; } .timeline { padding-left: 17px; padding-right: 17px; grid-template-columns: repeat(2, 1fr); } .below { grid-template-columns: 1fr; } .controls small { margin-left: 0; } .practice-head, .practice-body { padding-left: 18px; padding-right: 18px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+    @media (prefers-color-scheme: dark) {
+      :root { --ink: #eef3ed; --muted: #b9c9bf; --paper: #172a27; --card: #213631; --line: #49625a; --teal: #a0dfc7; --teal-wash: #294f43; --coral: #f2ab91; --coral-wash: #513a32; --shadow: 0 20px 55px rgba(0, 0, 0, .23); }
+      body { background: radial-gradient(circle at 5% 4%, #294a3f, transparent 38%), var(--paper); }
+      .scene { background: #25463e; border-color: #4e6b61; }
+      .scene-label, .info { background: #263d36; }
+      .step { background: #284039; }
+      .choice span { background: #253d36; }
+      .choice span::before { background: #2b493f; }
+      .practice-head { background: linear-gradient(150deg, #294b3e, #263b33); }
+      .badge { color: #ffd2c1; border-color: #9a6556; }
+      .feedback { background: #29443a; }
+      .control { color: #15382f; }
+      .control:hover { color: white; }
+    }
+  </style>
+</head>
+<body>
+<main class="shell">
+  <div class="eyebrow"><span class="dot" aria-hidden="true"></span> Clinical observation studio <span aria-hidden="true">/</span> Catatonia</div>
+  <div class="hero">
+    <div>
+      <h1>Notice, then describe.</h1>
+      <p class="intro">Pause a fictional, schematic ward moment. Practice separating what the scene shows or states from what it cannot establish.</p>
+    </div>
+    <span class="badge">PREVIEW · Unattested · Not published</span>
+  </div>
+
+  <div class="grid">
+    <section class="scene-card" aria-labelledby="sceneTitle">
+      <div class="scene-head"><h2 id="sceneTitle">A brief greeting</h2><p>Illustration · narrated in text</p></div>
+      <div class="scene-wrap">
+        <div class="scene" id="scene" data-frame="0" role="img" aria-label="Schematic inpatient room: a person sits in a chair, looking toward their lap, while a clinician approaches. The illustrated person's position stays unchanged throughout the short scene.">
+          <span class="scene-label">Fictional scene</span>
+          <svg viewBox="0 0 720 450" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#ebf3e9"/><stop offset="1" stop-color="#cadcd4"/></linearGradient>
+              <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#b8ccc0"/><stop offset="1" stop-color="#96b5a7"/></linearGradient>
+            </defs>
+            <rect width="720" height="450" fill="url(#wall)"/>
+            <path d="M0 331H720V450H0Z" fill="url(#floor)"/>
+            <path d="M0 331H720" stroke="#87a99a" stroke-width="4"/>
+            <rect x="432" y="58" width="212" height="164" rx="9" fill="#f3f8e9" stroke="#8cae9e" stroke-width="9"/>
+            <path d="M538 61V220M436 141H640" stroke="#8cae9e" stroke-width="8"/>
+            <path d="M445 199c35-25 59-21 86-13s59-20 105-14v44H445Z" fill="#aacdb8"/>
+            <path d="M449 127c24-19 54-20 77-10s48-17 80-16" fill="none" stroke="#dae8cf" stroke-width="10" stroke-linecap="round"/>
+            <rect x="100" y="154" width="90" height="170" rx="8" fill="#d1e0d0" stroke="#7c9c8c" stroke-width="7"/>
+            <path d="M115 190h62M115 220h62" stroke="#a6c1ad" stroke-width="5"/>
+            <ellipse cx="350" cy="365" rx="132" ry="23" fill="#6d9a87" opacity=".29"/>
+            <path d="M319 258l-19 95h130l-24-95" fill="#637e70"/>
+            <path d="M320 326v38m93-38v38" stroke="#486456" stroke-width="13" stroke-linecap="round"/>
+            <g class="person">
+              <path d="M365 232c-30 1-47 20-49 47l-8 68h104l-8-69c-1-26-14-43-39-46Z" fill="#b8684d"/>
+              <path d="M331 269c-13 19-13 37-14 64m75-64c11 15 12 38 12 64" fill="none" stroke="#9e513b" stroke-width="18" stroke-linecap="round"/>
+              <path d="M339 340l-22 32m76-32 26 32" stroke="#424e47" stroke-width="23" stroke-linecap="round"/>
+              <path d="M326 370h-23m114 0h23" stroke="#34453e" stroke-width="12" stroke-linecap="round"/>
+              <path d="M353 224v21h22v-21" fill="#a87359"/>
+              <ellipse cx="365" cy="193" rx="37" ry="45" fill="#bd896a"/>
+              <path d="M328 187c-3-36 18-52 42-51 27 1 41 21 37 46-16-10-26-10-39-8-15 2-27 8-40 13Z" fill="#3e4741"/>
+              <ellipse cx="350" cy="198" rx="7" ry="4" fill="#f5dfc8"/>
+              <ellipse cx="380" cy="198" rx="7" ry="4" fill="#f5dfc8"/>
+              <circle cx="350" cy="201" r="2.3" fill="#3e4741"/>
+              <circle cx="380" cy="201" r="2.3" fill="#3e4741"/>
+              <path d="M353 219h24" fill="none" stroke="#805d4d" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <g class="clinician">
+              <ellipse cx="139" cy="365" rx="62" ry="12" fill="#6d9a87" opacity=".3"/>
+              <path d="M132 151v17" stroke="#997159" stroke-width="18"/>
+              <circle cx="132" cy="127" r="31" fill="#b5876e"/>
+              <path d="M102 122c-3-24 10-39 32-40 24-1 37 18 33 36-19-6-36-13-65 4Z" fill="#555851"/>
+              <path d="M109 166c-28 7-37 26-35 54l7 82h104l7-82c1-29-10-48-38-54Z" fill="#f9f8ee" stroke="#bac8b9" stroke-width="3"/>
+              <path d="M109 168l23 56 23-56" fill="none" stroke="#8ba999" stroke-width="5"/>
+              <path d="M93 296l-8 69m92-69 7 69" stroke="#394b4a" stroke-width="22" stroke-linecap="round"/>
+              <path d="M77 213l-19 76m126-76 19 76" stroke="#e8eee4" stroke-width="19" stroke-linecap="round"/>
+              <path d="M82 369H65m117 0h18" stroke="#31403c" stroke-width="12" stroke-linecap="round"/>
+              <path d="M112 247h41" stroke="#bac8b9" stroke-width="3"/>
+            </g>
+            <g class="greeting">
+              <path d="M219 92h187q12 0 12 12v58q0 12-12 12H275l-27 23 2-23h-31q-12 0-12-12v-58q0-12 12-12Z" fill="#fffdf8" stroke="#7caa94" stroke-width="3"/>
+              <text x="230" y="128" fill="#26574b" font-family="system-ui,sans-serif" font-size="18" font-weight="650">Good morning.</text>
+              <text x="230" y="154" fill="#26574b" font-family="system-ui,sans-serif" font-size="17">I’m checking in.</text>
+            </g>
+            <g class="pause-cue">
+              <circle class="gentle-ring" cx="498" cy="282" r="31" fill="none" stroke="#b3714d" stroke-width="3"/>
+              <circle cx="498" cy="282" r="24" fill="#fff8ed" stroke="#c78f66" stroke-width="3"/>
+              <path d="M491 271v22m14-22v22" stroke="#a36543" stroke-width="5" stroke-linecap="round"/>
+            </g>
+            <g class="note-cue">
+              <rect x="468" y="244" width="114" height="82" rx="8" fill="#fffdf8" stroke="#78a992" stroke-width="3"/>
+              <path d="M484 262h82M484 278h69M484 294h77" stroke="#a2bdb0" stroke-width="5" stroke-linecap="round"/>
+              <path d="m544 315 28-28" stroke="#a96e4c" stroke-width="6" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <p class="caption" id="caption" aria-live="polite" aria-atomic="true"><strong>01 / Arrival</strong><span>A clinician approaches a seated person. We do not know the person’s usual behavior or why they are here.</span></p>
+      <div class="timeline" role="group" aria-label="Scene moments">
+        <button class="step" type="button" data-step="0" aria-pressed="true"><span class="number">01</span>Arrival</button>
+        <button class="step" type="button" data-step="1" aria-pressed="false"><span class="number">02</span>Greeting</button>
+        <button class="step" type="button" data-step="2" aria-pressed="false"><span class="number">03</span>Pause</button>
+        <button class="step" type="button" data-step="3" aria-pressed="false"><span class="number">04</span>Describe</button>
+      </div>
+      <div class="controls">
+        <button class="control" type="button" id="play">Play scene</button>
+        <button class="control secondary" type="button" id="replay">Replay</button>
+        <small>Use the timeline to inspect any moment. Playback begins only when you press Play.</small>
+      </div>
+    </section>
+
+    <section class="practice-card" aria-labelledby="practiceTitle">
+      <div class="practice-head">
+        <p class="overline">Pause &amp; describe</p>
+        <h2 id="practiceTitle">What does the scene support?</h2>
+        <p>Select what is drawn or stated in this fictional scene. You can replay before checking.</p>
+      </div>
+      <div class="practice-body">
+        <fieldset>
+          <legend>Choose observations, not conclusions</legend>
+          <label class="choice"><input type="checkbox" value="reply"><span>The scripted scene states that no spoken reply occurs during the brief greeting.</span></label>
+          <label class="choice"><input type="checkbox" value="seated"><span>The person remains seated during the greeting and pause.</span></label>
+          <label class="choice"><input type="checkbox" value="gaze"><span>The person’s gaze appears directed downward in this illustration.</span></label>
+          <label class="choice"><input type="checkbox" value="refusal"><span>The person is refusing to take part in care.</span></label>
+          <label class="choice"><input type="checkbox" value="diagnosis"><span>This scene confirms catatonia.</span></label>
+          <label class="choice"><input type="checkbox" value="baseline"><span>The person has behaved this way all day.</span></label>
+        </fieldset>
+        <div class="practice-actions">
+          <button class="control" type="button" id="check">Check my description</button>
+          <button class="control secondary" type="button" id="reset">Clear choices</button>
+        </div>
+        <div class="feedback" id="feedback" hidden>
+          <h3 id="feedbackTitle" tabindex="-1">Observation review</h3>
+          <p id="feedbackSummary"></p>
+          <ul class="review-list" id="feedbackList"></ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="below">
+    <section class="info" aria-labelledby="boundaryTitle">
+      <h2 id="boundaryTitle">What this scene can teach</h2>
+      <p>This is an original schematic, with compressed timing and text narration instead of sound. It is not a patient recording, a standardized examination, a diagnostic demonstration, or a substitute for supervised assessment.</p>
+      <p>No responses are saved or sent. The exercise gives no BFCRS items, anchors, or score.</p>
+    </section>
+    <section class="info" aria-labelledby="nextTitle">
+      <h2 id="nextTitle">See the real teaching materials</h2>
+      <p>After practicing neutral description, use URMC’s official examination videos and your institution’s approved form for formal assessment.</p>
+      <div class="links">
+        <a href="https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale" target="_blank" rel="noopener noreferrer">URMC training videos ↗</a>
+        <a href="https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale/calculator" target="_blank" rel="noopener noreferrer">URMC calculator ↗</a>
+      </div>
+    </section>
+  </div>
+  <footer>Faculty review prototype · Fictional artwork and text · No clinical or instrument attestation</footer>
+</main>
+<script>
+  (() => {
+    const moments = [
+      ['01 / Arrival', 'A clinician approaches a seated person. We do not know the person’s usual behavior or why they are here.'],
+      ['02 / Greeting', 'The clinician says, “Good morning. I’m checking in.” The person remains seated and looks toward their lap.'],
+      ['03 / Pause', 'In this fictional scene, the person does not speak during the short pause. The scene does not establish intent, cause, or how long this has lasted.'],
+      ['04 / Describe', 'Record only what the brief scene shows. A real assessment needs more observation, context, and supervision.']
+    ];
+    const descriptions = {
+      reply: ['Stated', 'The text narration explicitly says there is no reply during this brief scene; it does not explain why.'],
+      seated: ['Seen', 'The person remains seated in every illustrated moment. Sitting briefly is nonspecific.'],
+      gaze: ['Seen', 'The downcast eyes and text narration show a gaze toward the lap; do not infer its cause.'],
+      refusal: ['Unknown', 'A lack of reply does not establish refusal or intent.'],
+      diagnosis: ['Unknown', 'A brief schematic scene cannot establish a diagnosis.'],
+      baseline: ['Unknown', 'We have no information about the rest of the day or the person’s baseline.']
+    };
+    const seen = new Set(['reply', 'seated', 'gaze']);
+    const scene = document.getElementById('scene');
+    const caption = document.getElementById('caption');
+    const steps = [...document.querySelectorAll('[data-step]')];
+    const play = document.getElementById('play');
+    const feedback = document.getElementById('feedback');
+    const boxes = [...document.querySelectorAll('.choice input')];
+    let frame = 0;
+    let timer = null;
+
+    function stop() {
+      if (timer !== null) clearInterval(timer);
+      timer = null;
+      play.textContent = 'Play scene';
+    }
+    function show(next) {
+      frame = next;
+      scene.dataset.frame = String(frame);
+      caption.querySelector('strong').textContent = moments[frame][0];
+      caption.querySelector('span').textContent = moments[frame][1];
+      steps.forEach((step, index) => step.setAttribute('aria-pressed', String(index === frame)));
+      if (frame === moments.length - 1) stop();
+    }
+    steps.forEach((step) => step.addEventListener('click', () => {
+      stop();
+      show(Number(step.dataset.step));
+    }));
+    play.addEventListener('click', () => {
+      if (timer !== null) { stop(); return; }
+      if (frame === moments.length - 1) show(0);
+      play.textContent = 'Pause scene';
+      timer = setInterval(() => show(frame + 1), 2300);
+    });
+    document.getElementById('replay').addEventListener('click', () => {
+      stop();
+      show(0);
+    });
+    document.getElementById('reset').addEventListener('click', () => {
+      boxes.forEach((box) => { box.checked = false; });
+      feedback.hidden = true;
+    });
+    document.getElementById('check').addEventListener('click', () => {
+      const selected = new Set(boxes.filter((box) => box.checked).map((box) => box.value));
+      const supported = [...seen].filter((key) => selected.has(key)).length;
+      const assumptions = [...selected].filter((key) => !seen.has(key)).length;
+      document.getElementById('feedbackTitle').textContent =
+        supported === seen.size && assumptions === 0 ? 'A grounded description' : 'Look again at what is known';
+      document.getElementById('feedbackSummary').textContent =
+        supported === seen.size && assumptions === 0
+          ? 'Your choices stay with what is shown or stated. These observations alone neither establish nor rule out catatonia.'
+          : 'The scene supports three limited observations. They neither establish nor rule out catatonia, and cannot establish motive or baseline. Review the distinctions below, then revise your choices.';
+      const list = document.getElementById('feedbackList');
+      list.replaceChildren();
+      for (const box of boxes) {
+        const item = document.createElement('li');
+        const label = document.createElement('b');
+        label.textContent = descriptions[box.value][0];
+        item.append(label, document.createTextNode(descriptions[box.value][1]));
+        list.append(item);
+      }
+      feedback.hidden = false;
+      document.getElementById('feedbackTitle').focus();
+    });
+  })();
+</script>
+</body>
+</html>

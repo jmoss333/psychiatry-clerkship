@@ -159,6 +159,61 @@ async function openBuilder(page) {
   await expect(page.getByRole('checkbox', { name: 'no SI/HI', exact: true })).toBeVisible();
 }
 
+test('domain guide focuses one domain and carries it into the builder on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto(TOOL);
+  await page.getByRole('button', { name: /1 · Learn the domains/ }).click();
+
+  const guide = page.getByRole('navigation', { name: 'MSE domain guide' });
+  const details = page.getByRole('region', { name: 'Domain details' });
+  await expect(guide.getByRole('button')).toHaveCount(11);
+  await expect(details.getByRole('heading', { name: 'Appearance' })).toBeVisible();
+
+  await guide.getByRole('button', { name: 'Mood', exact: true }).focus();
+  await page.keyboard.press('Space');
+  await expect(details.getByRole('heading', { name: 'Mood' })).toBeVisible();
+  await expect(details).toContainText('The patient’s subjective emotional state');
+  await expect(details).not.toContainText('Apparent age');
+
+  await details.getByRole('button', { name: 'Use Mood in builder' }).click();
+  await expect(page.getByRole('group', { name: 'Mood' })).toBeFocused();
+  const size = await page.evaluate(() => ({ view: document.documentElement.clientWidth, content: document.documentElement.scrollWidth }));
+  expect(size.content).toBeLessThanOrEqual(size.view);
+});
+
+test('keyboard can advance through consecutive domains without losing the Next control', async ({ page }) => {
+  await page.goto(TOOL);
+  await page.getByRole('button', { name: /1 · Learn the domains/ }).click();
+  const details = page.getByRole('region', { name: 'Domain details' });
+  const next = details.getByRole('button', { name: 'Next domain' });
+
+  await next.focus();
+  await page.keyboard.press('Enter');
+  await expect(details.getByRole('heading', { name: 'Behavior & psychomotor' })).toBeVisible();
+  await expect(details.getByRole('status')).toHaveText('Domain 2 of 11: Behavior & psychomotor');
+  await expect(next).toBeFocused();
+
+  await page.keyboard.press('Enter');
+  await expect(details.getByRole('heading', { name: 'Speech' })).toBeVisible();
+  await expect(next).toBeFocused();
+});
+
+test('builder coverage map jumps to a domain and follows selected descriptors', async ({ page }) => {
+  await openBuilder(page);
+  const coverage = page.getByRole('navigation', { name: 'Draft coverage' });
+  await expect(coverage.getByRole('button')).toHaveCount(11);
+  const empty = coverage.getByRole('button', { name: 'Go to Thought content: no descriptors selected' });
+  await empty.click();
+  await expect(page.getByRole('group', { name: 'Thought content' })).toBeFocused();
+
+  await page.getByRole('checkbox', { name: 'no SI/HI', exact: true }).click();
+  await expect(coverage.getByRole('button', { name: 'Go to Thought content: 1 descriptor selected' })).toBeVisible();
+  await expect(page.locator('.note')).toContainText('Thought content — no SI/HI.');
+
+  await page.getByRole('button', { name: 'Reset' }).click();
+  await expect(empty).toBeVisible();
+});
+
 test('new contradictory finding replaces the old one in state, draft, status, and clipboard', async ({ page }) => {
   const errors = collectRuntimeErrors(page);
   await openBuilder(page);
