@@ -1082,6 +1082,25 @@ def _sw_is_excluded(rel_posix):
     return False
 
 
+def inject_concept_digest(out_dir, expected):
+    """Bind both consumers to exact feed bytes; replace an inherited MS3 digest."""
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise ValueError("concept digest must be a lowercase SHA-256")
+    tag = '<meta name="cw-concept-digest" content="%s">' % expected
+    pattern = r'<meta\b[^>]*\bname=[\'"]cw-concept-digest[\'"][^>]*>'
+    for relative in ("tools/review.html", "index.html"):
+        path = os.path.join(out_dir, relative)
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+        text, count = re.subn(r"</head\s*>", lambda match: tag + "\n" + match[0],
+                              text, flags=re.IGNORECASE)
+        if count != 1 or len(re.findall(pattern, text, re.IGNORECASE)) != 1:
+            raise ValueError("concept digest injection failed: " + relative)
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(text)
+
+
 def emit_service_worker(out_dir, kill=None):
     """Walk `out_dir` and write a per-site `sw.js` with an embedded precache list.
 

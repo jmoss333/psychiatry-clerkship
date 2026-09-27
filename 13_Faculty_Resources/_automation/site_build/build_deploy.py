@@ -6,6 +6,8 @@ from pathlib import Path
 # see common.py's module docstring. resident_section.py imports the same module,
 # so these no longer exist as two drifting copies.
 import common
+import concept_cards
+import hashlib
 import frontdoor_catalog
 import shipped_pages
 import welcome_compass
@@ -108,7 +110,7 @@ tool_assets=[tuple(x) for x in _manifest.get("toolAssets",[])]
 # question bank practice tool. Files still ship (still in `tools` above) and stay fully reachable
 # by direct link / the home "Start review" card / per-page tool docks (all look items up by
 # filename, not by sidebar visibility) — see the `hidden` flag on the nav item below.
-HIDDEN_TOOLS={"shelf-mode.html","review.html"}
+HIDDEN_TOOLS={"shelf-mode.html"}
 
 # ---- pre-flight: verify every REQUIRED source asset exists BEFORE we build ----
 # (added 2026-07-03) A renamed/missing required source used to throw FileNotFoundError
@@ -725,6 +727,13 @@ except GovernanceError as error:
 for _warning in _governance_warnings:
     print(_warning)
 print("tool governance: emitted", len(_governance["items"]), "items")
+
+# ---------- RELEASED CONCEPTS ----------
+# Recompute from this build's post-overlay effective ledger, including in the
+# resident build: the copied MS3 feed and digest are never release authority.
+_concept_raw = concept_cards.feed_bytes(Path(LIB), "ms3")
+(Path(OUT) / "tools" / "concepts.json").write_bytes(_concept_raw)
+common.inject_concept_digest(Path(OUT), hashlib.sha256(_concept_raw).hexdigest())
 
 # ---------- SERVICE WORKER ----------
 # Last artifact step: the precache manifest must reflect the completed,

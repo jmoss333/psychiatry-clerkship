@@ -220,11 +220,33 @@ def discover(root, page, manifest, site, out_dir=None):
             text = Path(path).read_text(encoding="utf-8")
         except OSError as error:
             raise DependencyError("unreadable teaching input %s: %s" % (path, error)) from error
-        for reference, is_script in references(text, html, source_label):
+        refs = references(text, html, source_label)
+        # Daily Review consumes a projected feed; its tracked editorial catalog is
+        # an explicit input even before/independent of the learner fetch markup.
+        if html and page["slug"] == "review.html":
+            refs.append(("/tools/concepts.json", False))
+        for reference, is_script in refs:
             url = local_url(reference, page_url)
             if url is None or _separately_governed(url) or url in visited:
                 continue
             visited.add(url)
+            if url == "tools/concepts.json":
+                source = "13_Faculty_Resources/_automation/site_build/concept_candidates.json"
+                if not (Path(root) / source).is_file():
+                    raise DependencyError("missing teaching source " + source)
+                found.add(source)
+                if out_dir is not None:
+                    import concept_cards
+                    built = Path(out_dir) / url
+                    if not built.is_file():
+                        raise DependencyError("concepts.json teaching asset not built")
+                    try:
+                        expected = concept_cards.feed_bytes(Path(root), site)
+                    except ValueError as error:
+                        raise DependencyError("concepts.json projection failed: " + str(error)) from error
+                    if built.read_bytes() != expected:
+                        raise DependencyError("concepts.json differs from current effective release")
+                continue
             source = assets.get(url)
             if source is None:
                 raise DependencyError(
