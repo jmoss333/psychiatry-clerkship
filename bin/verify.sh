@@ -318,6 +318,9 @@ step "contrast-check"                       node tests/contrast-check.mjs
 # Fails when a producer (site_manifest.json, cotw_registry.json, site_extras.py) changed
 # and shipped_pages.json was not regenerated. The message prints the --write command.
 step "unit — shipped_pages derivation"      python3 $A/site_build/test_shipped_pages.py
+step "unit — concept source catalog"        python3 $A/site_build/test_concept_cards.py
+step "unit — concept build governance"      python3 $A/site_build/test_concept_build.py
+step "unit — concept package parity"        python3 $A/site_build/test_concept_package.py
 step "shipped_pages is current"             python3 $A/site_build/shipped_pages.py --check
 
 # --- faculty console: shared modules + the pending-visibility invariant ---

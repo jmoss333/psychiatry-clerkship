@@ -44,3 +44,16 @@ test('Retry follows an installing replacement through installed and activated',a
  worker.state='installed';reg.waiting=worker;reg.installing=null;worker.emit('statechange');assert.equal(sent,1);
  worker.state='activated';worker.emit('statechange');await promise;
 });
+
+test('Concepts byte fetch is bounded even when fetch never settles',async()=>{
+ let signal;
+ const get=new Function('fetch','AbortController',src+';return conceptFetchBytes;')((url,options)=>{signal=options.signal;return new Promise(()=>{});},AbortController);
+ await assert.rejects(get(10),/timed out/);
+ assert.equal(signal.aborted,true);
+});
+test('Concepts byte fetch returns bytes and rejects failed HTTP status',async()=>{
+ const bytes=new Uint8Array([1,2]).buffer;
+ const make=fetcher=>new Function('fetch','AbortController',src+';return conceptFetchBytes;')(fetcher,AbortController);
+ assert.equal(await make(async()=>({ok:true,arrayBuffer:async()=>bytes}))(100),bytes);
+ await assert.rejects(make(async()=>({ok:false}))(100),/unavailable/);
+});

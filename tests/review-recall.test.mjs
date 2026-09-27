@@ -135,7 +135,7 @@ function renderReview(stateValues) {
   const result=new Function('React','window','document','localStorage','phasePolicy','calibLog','cwReceipt',js+';return App();')(React,{}, {documentElement:{getAttribute:()=>null}},storage,()=>({phase:'unset'}),()=>{},()=>({html:''}));
   return result;
 }
-const conceptFixture={id:'CONCEPT#test@1',deck:'CONCEPT',deckTitle:'Concept',kind:'recall',q:'Test […]',reveal:'SECRET <img onerror=bad>',page:'ethics_legal.md'};
+const conceptFixture={id:'CONCEPT#test@1',deck:'CONCEPT',deckTitle:'SECRET topic',kind:'recall',q:'Test […]',reveal:'SECRET <img onerror=bad>',page:'ethics_legal.md'};
 const storeFixture={cards:{},stats:{seen:100,correct:99},day:{},settings:{newPerDay:12}};
 function reviewStates(session,last=null){return [[conceptFixture],'ready','all',null,last,false,storeFixture,session];}
 test('answer absent before reveal; reveal is text and links to the shipped page',()=>{
@@ -144,9 +144,9 @@ test('answer absent before reveal; reveal is text and links to the shipped page'
  const shown=JSON.stringify(renderReview(reviewStates({...session,revealed:true})));
  assert.match(shown,/SECRET <img onerror=bad>/);assert.match(shown,/index.html\?page=ethics_legal.md/);assert.doesNotMatch(shown,/dangerouslySetInnerHTML/);
 });
-test('next-due strip remains on the last-card receipt and Again requeue',()=>{
+test('next-due strip remains on the last-card receipt and revealed Again requeue',()=>{
  const last={q:'Test […]',page:'ethics_legal.md',due:Date.now()+600000};
- for(const session of [{finished:true,reviewed:1,correct:1,misses:[]},{queue:[conceptFixture],card:conceptFixture,pos:1,total:1,revealed:false,reviewed:1,correct:0}]){
+ for(const session of [{finished:true,reviewed:1,correct:1,misses:[]},{queue:[conceptFixture],card:conceptFixture,pos:1,total:1,revealed:true,reviewed:1,correct:0}]){
   const shown=JSON.stringify(renderReview(reviewStates(session,last)));assert.match(shown,/Next due:/);assert.match(shown,/ethics_legal.md/);
  }
 });
@@ -182,4 +182,16 @@ test('recovery failure is visible and retry remains a deliberate action',()=>{
  const values=reviewStates(null);values[1]='Concepts recovery timed out. Check your connection and try again.';
  const shown=JSON.stringify(renderReview(values));assert.match(shown,/recovery timed out/);assert.match(shown,/Review remains incomplete/);assert.match(shown,/Retry Concepts/);
  assert.match(review,/conceptRecoverWorker\(navigator.serviceWorker\)\.then\(function\(\)\{location.reload\(\);\}\)\.catch/);
+});
+
+test('prior sibling prompt cannot leak the next cloze answer before reveal',()=>{
+ const card={...conceptFixture,q:'A […]',reveal:'A SECRET'};
+ const session={queue:[card],card,pos:1,total:2,revealed:false,reviewed:1,correct:0};
+ const last={q:'[…] SECRET',page:card.page,due:Date.now()};
+ assert.doesNotMatch(JSON.stringify(renderReview(reviewStates(session,last))),/SECRET|Next due:/);
+});
+test('completed review has a nonempty live announcement',()=>{
+ const tree=renderReview(reviewStates({finished:true,reviewed:2,correct:0,misses:[]}));
+ function findLive(node){if(!node||typeof node!=='object')return [];return [...(node.props?.['aria-live']==='polite'?[node]:[]),...(node.children||[]).flat(Infinity).flatMap(findLive)];}
+ const live=findLive(tree);assert.equal(live.length,1);assert.match(JSON.stringify(live[0]),/Review complete.*2 cards graded/);
 });

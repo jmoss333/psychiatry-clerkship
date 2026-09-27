@@ -15,11 +15,15 @@ import concept_cards
 class PackageTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
+        # genanki 0.13.1 leaves its SQLite tempfile; contain it in our fixture.
+        self.old_tempdir = tempfile.tempdir
+        tempfile.tempdir = self.tmp.name
         self.package = Path(self.tmp.name) / 'fixture.apkg'
         text = 'Alpha and beta.'
         self.feed = {'cards': [dict(id=f'CONCEPT#n:{i}@1', editorialId=f'n:{i}', noteId='n', ordinal=i, revision=1, kind='cloze', q=q, reveal=text, target=t, targetStart=s, targetEnd=e, page='p.md', source='03_Core_Topics/p.md', topic='Topic') for i,t,s,e,q in [(1,'Alpha',0,5,'[…] and beta.'),(2,'beta',10,14,'Alpha and […].')]]}
-        self.crosswalk = {'cards': [dict(editorialId=c['editorialId'], noteId='n', oldGuid='old-guid', oldOrdinal=c['ordinal']-1, identityAction='preserve-guid', newFront=c['q'], newBack=c['reveal']) for c in self.feed['cards']]}
+        self.crosswalk = {'cards': [dict(editorialId=c['editorialId'], noteId='n', oldGuid='old-guid', oldOrdinal=c['ordinal']-1, identityAction='preserve-guid', oldFront=c['q'], oldBack=c['reveal'], newFront=c['q'], newBack=c['reveal']) for c in self.feed['cards']]}
     def tearDown(self):
+        tempfile.tempdir = self.old_tempdir
         self.tmp.cleanup()
     def write(self, feed=None, crosswalk=None):
         deck, _ = concepts.build_deck(feed or self.feed, crosswalk=crosswalk or self.crosswalk)
@@ -53,6 +57,15 @@ class PackageTests(unittest.TestCase):
         cw = copy.deepcopy(self.crosswalk)
         cw['cards'][0]['newFront'] = 'stale'
         with self.assertRaises(ValueError): self.write(crosswalk=cw)
+
+    def test_preserve_guid_rejects_changed_old_face(self):
+        # Updating both the feed and new crosswalk face must not silently keep
+        # an old Anki schedule when the historical teaching face differs.
+        for field in ('oldFront', 'oldBack'):
+            cw = copy.deepcopy(self.crosswalk)
+            cw['cards'][0][field] += ' historical difference'
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, 'preserved face changed'):
+                self.write(crosswalk=cw)
 
     def test_all_candidate_faces_pin_crosswalk(self):
         root = Path(__file__).resolve().parents[3]

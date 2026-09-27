@@ -201,6 +201,12 @@ jobs:
       - name: Unit — root node regression tests (tests/*.test.mjs)
         run: node --test tests/*.test.mjs
 
+      - name: Unit — native Concepts source, build and package contracts
+        run: |
+          python3 13_Faculty_Resources/_automation/site_build/test_concept_cards.py
+          python3 13_Faculty_Resources/_automation/site_build/test_concept_build.py
+          python3 13_Faculty_Resources/_automation/site_build/test_concept_package.py
+
       - name: Validate — WCAG AA contrast tokens
         run: node tests/contrast-check.mjs
 

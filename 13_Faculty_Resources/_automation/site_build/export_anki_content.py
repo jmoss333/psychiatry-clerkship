@@ -72,6 +72,8 @@ def note_groups(feed, crosswalk=None):
         if len(actions) != 1 or len(old_guids) != 1 or [c['ordinal'] for c in cards] != list(range(1,len(cards)+1)):
             raise ValueError('inconsistent grouped note: ' + note_id)
         if actions == {'preserve-guid'}:
+            if any(r.get('oldFront') != c['q'] or r.get('oldBack') != c['reveal'] for r,c in zip(rows,cards)):
+                raise ValueError('preserved face changed: ' + note_id)
             if any(r['oldOrdinal'] != c['ordinal']-1 for r,c in zip(rows,cards)):
                 raise ValueError('preserved ordinal changed: ' + note_id)
             guid = rows[0]['oldGuid']

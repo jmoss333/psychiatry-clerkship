@@ -22,8 +22,9 @@ implementation does not refresh the committed APKG baselines or establish clinic
 ```bash
 python3 -m pip install -r requirements.txt
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
-bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
 python3 13_Faculty_Resources/_automation/site_build/check_anki_parity.py _build/ms3 ms3
+bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+python3 13_Faculty_Resources/_automation/site_build/check_anki_parity.py _build/res res
 ```
 
 `build_anki.sh OUT_DIR` stages exactly three APKG files into `OUT_DIR/anki`.

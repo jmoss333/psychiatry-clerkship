@@ -3932,8 +3932,10 @@ test('Concepts Today released count, phone keyboard recall and trusted Path cont
   await page.screenshot({path:join(tmpdir(),'task5-concepts-'+info.project.name+'.png'),fullPage:true});
   await tool.getByRole('button',{name:/^Good/}).focus();
   await page.keyboard.press('Enter');
-  await expect(tool.locator('body')).toContainText('Next due:');
+  await expect(tool.locator('body')).not.toContainText('Next due:');
   await expect(tool.locator('.qtext')).toBeFocused();
+  await tool.getByRole('button',{name:'End session',exact:true}).click();
+  await expect(tool.locator('body')).toContainText('Next due:');
   await tool.locator('a[href*="page='+card.page+'"]').first().click();
   await expect(page.locator('.fd-reader .fd-src')).toHaveText(card.page);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -3961,4 +3963,62 @@ test('Concepts timed block keeps one-card limit and records recall receipt',asyn
   await expect(tool.locator('body')).toContainText('Self-rated recall Good/Easy');
   await expect(tool.locator('body')).toContainText('Next due:');
   await expect(tool.getByRole('button',{name:/^Good/})).toHaveCount(0);
+});
+
+
+test('Concepts sibling clozes keep answers private and completion is announced and focused',async({page},info)=>{
+  const feed=await (await page.request.get('/tools/concepts.json')).json();
+  const siblings=feed.cards.filter(c=>c.noteId==='cultural_psychiatry-pearl5');
+  expect(siblings).toHaveLength(2);
+  await seedApp(page,info);
+  await page.addInitScript((cards)=>{
+    const now=new Date();
+    const day=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+    localStorage.setItem('cw_srs_v1',JSON.stringify({v:1,cards:Object.fromEntries(cards.map(c=>[c.id,{due:1,reps:1,ivl:1,ease:2.5,last:1}])),day:{lastDay:day,newToday:30},stats:{seen:0,correct:0},settings:{newPerDay:12}}));
+  },siblings);
+  await page.goto('/tools/review.html');
+  await page.getByRole('button',{name:/Start review/}).click();
+  await expect(page.locator('.scount')).toHaveText('1 / 2');
+  await page.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await page.getByRole('button',{name:/^Good/}).click();
+  await expect(page.locator('.scount')).toHaveText('2 / 2');
+  const prompt=await page.locator('.qtext').innerText();
+  const current=siblings.find(c=>c.q===prompt);
+  expect(current).toBeTruthy();
+  await expect(page.locator('body')).not.toContainText(current.target);
+  await expect(page.locator('body')).not.toContainText('Next due:');
+  await expect(page.locator('.qtext')).toBeFocused();
+  await page.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await page.getByRole('button',{name:/^Good/}).click();
+  await expect(page.locator('.cw-receipt')).toBeVisible();
+  await expect(page.locator('#cwReviewDashBtn')).toBeFocused();
+  await expect(page.locator('[aria-live="polite"]')).toHaveCount(1);
+  await expect(page.locator('[aria-live="polite"]')).toContainText('Review complete. 2 cards graded.');
+  await expect(page.locator('body')).toContainText('Next due:');
+});
+
+
+test('Concepts stalled response times out while other Daily Review cards become available',async({page},info)=>{
+  await seedApp(page,info);
+  await page.route('**/tools/concepts.json',()=>new Promise(()=>{}));
+  await page.goto('/tools/review.html');
+  await expect(page.locator('body')).toContainText('Concepts unavailable — review is incomplete.',{timeout:15000});
+  await expect(page.getByRole('button',{name:/Start review/})).toBeVisible();
+  await page.getByRole('button',{name:/Start review/}).click();
+  await expect(page.locator('.qtext')).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('Loading the question bank');
+});
+
+
+test('Concepts topic cannot disclose the real ECT target before reveal',async({page},info)=>{
+  const feed=await (await page.request.get('/tools/concepts.json')).json();
+  const card=feed.cards.find(c=>c.target==='ECT'&&c.topic.includes('ECT'));
+  expect(card).toBeTruthy();
+  await seedApp(page,info,{storage:{cw_srs_v1:{v:1,cards:{[card.id]:{due:1,reps:1,ivl:1,ease:2.5,last:1}},stats:{seen:0,correct:0}}}});
+  await page.goto('/tools/review.html?block=1&limit=1');
+  await expect(page.locator('.qtext')).toHaveText(card.q);
+  await expect(page.locator('.deckchip').last()).toHaveText('Concepts');
+  await expect(page.locator('body')).not.toContainText(card.target);
+  await page.getByRole('button',{name:'Reveal one way to do it'}).click();
+  await expect(page.locator('body')).toContainText(card.reveal);
 });

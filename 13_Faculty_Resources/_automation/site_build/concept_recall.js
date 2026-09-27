@@ -71,3 +71,15 @@ function conceptRecoverWorker(serviceWorker,timeoutMs){
     }).catch(function(){finish(Error('Could not update Concepts. Check your connection and try again.'));});
   });
 }
+
+/* A stalled Concepts request must not hold the other Daily Review sources hostage.
+   Reject independently of fetch settling: abort alone is not a completion guarantee. */
+function conceptFetchBytes(timeoutMs){
+  return new Promise(function(resolve,reject){
+    var controller=new AbortController();
+    var timer=setTimeout(function(){controller.abort();reject(Error('Concepts request timed out'));},timeoutMs||10000);
+    Promise.resolve().then(function(){return fetch('concepts.json',{signal:controller.signal});})
+      .then(function(response){if(!response.ok)throw Error('Concepts unavailable');return response.arrayBuffer();})
+      .then(function(bytes){clearTimeout(timer);resolve(bytes);},function(error){clearTimeout(timer);reject(error);});
+  });
+}
