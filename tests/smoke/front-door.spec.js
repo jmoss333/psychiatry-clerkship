@@ -3893,6 +3893,15 @@ test('Path: a supervisor feedback note saves privately, survives reload, and scr
   await page.locator('[data-fd-view-week="1"]').click();
   await expect(page.locator('.fd-feedback__note')).toHaveCount(2);
 
+  // Visit-only: Back then Forward never restores an open note or its unsaved text (Codex P2, #843).
+  await open.click();
+  await page.locator('#fdFeedbackText').fill('typed but never saved');
+  await page.goBack();
+  await page.goForward();
+  await expect(page.locator('.fd-feedback')).toBeVisible();
+  await expect(page.locator('#fdFeedbackText')).toHaveCount(0);
+  await expect(page.locator('[data-fd-view-week="1"]')).toHaveAttribute('aria-selected', 'true');
+
   await page.locator('.fd-feedback__delete').first().click();
   await expect(page.locator('.fd-feedback__note')).toHaveCount(1);
   await expect(page.locator('.fd-feedback__status')).toHaveText('Note deleted.');

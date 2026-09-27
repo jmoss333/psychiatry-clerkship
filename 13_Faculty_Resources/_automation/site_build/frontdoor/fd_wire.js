@@ -2182,6 +2182,10 @@ function fdWire(root, initialState, opts){
     var merged=fdClone(state), snap=event&&event.state&&event.state.fd&&event.state.state;
     merged.careIntentId='';
     merged.carePackIds=[];
+    /* An open feedback note is visit-only like the Care task: Back or Forward never brings it,
+       or any text typed into it, back onto the page. */
+    merged.feedbackDraft=null;
+    merged.feedbackNotice=null;
     merged.offlineOpen=false;
     merged.searchOpen=false;
     merged.query='';
