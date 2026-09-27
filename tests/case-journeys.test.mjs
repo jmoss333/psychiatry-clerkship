@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
+import {execFileSync} from 'node:child_process';
 const require = createRequire(import.meta.url);
 const api = require('../08_Cases_and_Simulation/case-journeys/case-journeys.js');
 const read = path => JSON.parse(fs.readFileSync(new URL('../' + path, import.meta.url), 'utf8'));
@@ -69,4 +70,41 @@ test('all linked resources are shipped and the renderer has no learner persisten
   }
   const js = fs.readFileSync(new URL('../08_Cases_and_Simulation/case-journeys/case-journeys.js', import.meta.url), 'utf8');
   assert.doesNotMatch(js, /localStorage|sessionStorage|indexedDB|document\.cookie/);
+});
+
+test('curriculum review follows every shipped case asset and refuses missing data', () => {
+  const result = JSON.parse(execFileSync('python3', ['-B', '-c', `
+import sys,json,tempfile,shutil
+from pathlib import Path
+sys.path.insert(0,'13_Faculty_Resources/_automation')
+from export_curriculum_review import Doc, render_case_journeys
+with tempfile.TemporaryDirectory() as directory:
+    build=Path(directory); (build/'tools').mkdir()
+    shutil.copyfile('08_Cases_and_Simulation/one-patient-six-weeks.html',build/'tools/one-patient-six-weeks.html')
+    shutil.copyfile('longitudinal_case.json',build/'longitudinal_case.json')
+    for source in Path('08_Cases_and_Simulation/case-journeys').iterdir():
+        shutil.copyfile(source,build/'tools'/source.name)
+    doc=Doc('cases.md','Cases'); counts=render_case_journeys(doc,build)
+    transcript=doc.text
+    # A future declared case joins automatically, without an exporter filename list.
+    extra=json.loads((build/'longitudinal_case.json').read_text());extra['id']='test_future_case'
+    (build/'tools/future-case.json').write_text(json.dumps(extra))
+    script=build/'tools/case-journeys.js'
+    script.write_text(script.read_text()+"\\nfetch('future-case.json');\\n")
+    future=render_case_journeys(Doc('future.md','Future'),build)
+    (build/'tools/leah-depression-trauma.json').unlink()
+    missing=False
+    try: render_case_journeys(Doc('missing.md','Missing'),build)
+    except FileNotFoundError: missing=True
+    print(json.dumps({'counts':counts,'text':transcript,'future':future,'missing':missing}))
+`], {cwd:new URL('../',import.meta.url),encoding:'utf8'}));
+  assert.deepEqual(result.counts, {cases:4,chapters:24});
+  assert.deepEqual(result.future, {cases:5,chapters:30});
+  assert.equal(result.missing,true);
+  for (const data of cases) for (const chapter of data.weeks) {
+    for (const text of [chapter.patientState,chapter.learnerTask,chapter.handoff,chapter.reflectionPrompt,
+      ...chapter.checklist.flatMap(item=>[item.prompt,item.example])]) {
+      assert.equal(result.text.split(text).length-1,1,chapter.id);
+    }
+  }
 });
