@@ -24,6 +24,7 @@ EXPECTED_CRONS = {
     "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
+    "maintenance-release-watch.yml": "5 10 * * *",
     "maintenance-heartbeat.yml": "45 10 * * *",
     "maintenance-governance-digest.yml": "30 12 * * 1",
     "maintenance-monthly-review.yml": "0 13 1 * *",
@@ -73,6 +74,12 @@ EXPECTED_PERMISSIONS = {
     },
     "maintenance-sp-health-monitor.yml": {"contents": "read"},
     "maintenance-production-canary.yml": {"contents": "read"},
+    # Read-only: main's check runs and the release train's runs, for the release verdict.
+    "maintenance-release-watch.yml": {
+        "actions": "read",
+        "checks": "read",
+        "contents": "read",
+    },
     "maintenance-heartbeat.yml": {
         "actions": "read",
         "contents": "read",
@@ -147,6 +154,7 @@ EXPECTED_JOB_IDS = {
     "maintenance-queue-runner.yml": {"queue-runner"},
     "maintenance-sp-health-monitor.yml": {"monitor"},
     "maintenance-production-canary.yml": {"production-canary"},
+    "maintenance-release-watch.yml": {"release-watch"},
     "maintenance-heartbeat.yml": {"heartbeat"},
     "maintenance-governance-digest.yml": {"governance"},
     "maintenance-monthly-review.yml": {"monthly"},
@@ -287,6 +295,14 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/upload-artifact"),
         ),
     },
+    "maintenance-release-watch.yml": {
+        "release-watch": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-node"),
+            ("name", "Read what learners see against main"),
+            ("uses", "actions/upload-artifact"),
+        ),
+    },
     "maintenance-rotation-readiness.yml": {
         "rotation": (
             ("uses", "actions/checkout"),
@@ -396,7 +412,7 @@ EXPECTED_STEP_INVENTORIES = {
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
-        "674b60ea33bcf8545c60ce5094fc0aa64fc27c241db417e74ed26c5842670677"
+        "a8bebbaa3a154105d2491c0c0a468a5fe107e9db29d83ff844b7a23c7efda0d5"
     ),
     "ci.yml": "babeede50264b1de455e816e3ac38c353152f69a823356024b64e278187c207b",
     "maintenance-governance-digest.yml": (
@@ -410,6 +426,9 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ),
     "maintenance-queue-runner.yml": (
         "2044dc589d3df7e1f850fca0468637fa2aa8e6798012cc1fda481b8c6d0fbf65"
+    ),
+    "maintenance-release-watch.yml": (
+        "d49c1642eb80de62b2971a06ecb142d908023ec281b36e213ad5d3b97ffcbb56"
     ),
     "maintenance-production-canary.yml": (
         "fe71a56f8bd2cd7f3ff752ee5dab681219323d113ed5bc46fecace047335737c"
@@ -659,6 +678,16 @@ npx playwright test --project=lfs""",
                 '--out "$RUNNER_TEMP/sp-health-monitor.json"',
                 None,
                 "required SP health gate",
+            ),
+        ),
+    },
+    "maintenance-release-watch.yml": {
+        "release-watch": (
+            (
+                "Read what learners see against main",
+                'node bin/release_watch.mjs --out "$RUNNER_TEMP/release-watch.json"',
+                None,
+                "required release watch",
             ),
         ),
     },

@@ -29,6 +29,7 @@ EXPECTATIONS = {
     # Fires every 6 h; 14 h tolerates one missed slot before the heartbeat says so.
     "production-release-train.yml": 14,
     "maintenance-production-canary.yml": 30,
+    "maintenance-release-watch.yml": 30,
     "maintenance-queue-runner.yml": 30,
     "maintenance-rotation-readiness.yml": 30,
     "ci.yml": 8 * 24,
@@ -58,6 +59,7 @@ EXPECTED_CRONS = {
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
     "production-release-train.yml": "5 9,15,21 * * *",
     "maintenance-production-canary.yml": "20 9 * * *",
+    "maintenance-release-watch.yml": "5 10 * * *",
     "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-rotation-readiness.yml": "15 13 * * *",
     "ci.yml": "0 8 * * 0",

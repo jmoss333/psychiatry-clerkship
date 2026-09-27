@@ -667,7 +667,7 @@ export function startFacultyConsole({
       site ? el('p', {}, ['Serves ', el('code', {}, [site.commitRef.slice(0, 12)])]) : el('p', { class: 'muted' }, [
         basis === 'release branch' ? 'Published deploy unreadable; judged from the release branch.' : 'Published deploy unreadable.',
       ]),
-      site ? el('p', {}, ['Published ', el('time', { dateTime: site.publishedAt }, [utcStamp(site.publishedAt)])]) : null,
+      site?.publishedAt ? el('p', {}, ['Published ', el('time', { dateTime: site.publishedAt }, [utcStamp(site.publishedAt)])]) : null,
     ]);
   }
 

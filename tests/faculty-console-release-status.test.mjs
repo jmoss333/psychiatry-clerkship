@@ -9,10 +9,15 @@ import {
   nextTrainSlot,
   parseMergeSubject,
   releaseHeadline,
+  STALE_WAIT_HOURS,
+  watchVerdict,
   REQUIRED_CHECKS,
   TRAIN_SLOTS_UTC,
 } from '../faculty-console/release-status.mjs';
-import { createHandler } from '../faculty-console/netlify/functions/release-status.mjs';
+import {
+  createHandler, loadReleaseStatus, servedRevisionReader,
+} from '../faculty-console/netlify/functions/release-status.mjs';
+import { main as releaseWatch } from '../bin/release_watch.mjs';
 
 const ROOT = new URL('../', import.meta.url);
 const read = path => readFileSync(new URL(path, ROOT), 'utf8');
@@ -157,7 +162,10 @@ const CONFIG = {
   sites: Object.entries(SITES).map(([name, site]) => ({ name, siteId: site.siteId, baseUrl: `https://${site.host}` })),
 };
 
-function fixtureFetch({ netlifyDown = false, compareDown = false, checksDown = false, served = {} } = {}) {
+function fixtureFetch({
+  netlifyDown = false, compareDown = false, checksDown = false, served = {},
+  sitesDown = false, trainConclusion = 'failure', manifest = null,
+} = {}) {
   const calls = [];
   const fetchImpl = async (url) => {
     calls.push(url);
@@ -171,7 +179,7 @@ function fixtureFetch({ netlifyDown = false, compareDown = false, checksDown = f
       return Response.json({ check_runs: REQUIRED_CHECKS.map(name => ({ name, conclusion: 'success', started_at: '2026-09-27T12:00:00Z' })) });
     }
     if (url.includes('/actions/workflows/production-release-train.yml/runs')) {
-      return Response.json({ workflow_runs: [{ run_started_at: '2026-09-27T09:21:01Z', event: 'schedule', status: 'completed', conclusion: 'failure', html_url: 'https://github.com/jmoss333/psychiatry-clerkship/actions/runs/1' }] });
+      return Response.json({ workflow_runs: [{ run_started_at: '2026-09-27T09:21:01Z', event: 'schedule', status: 'completed', conclusion: trainConclusion, html_url: 'https://github.com/jmoss333/psychiatry-clerkship/actions/runs/1' }] });
     }
     if (url.includes('/compare/')) {
       if (compareDown) return new Response('', { status: 502 });
@@ -183,6 +191,16 @@ function fixtureFetch({ netlifyDown = false, compareDown = false, checksDown = f
           { sha: MAIN, parents: [{ sha: SIGNOFF }], commit: { message: 'Phone dock label (#846)', committer: { date: '2026-09-27T12:47:46Z' } } },
         ],
       });
+    }
+    if (url.endsWith('/tool-governance.json')) {
+      if (sitesDown) return new Response('', { status: 503 });
+      const [key] = Object.entries(SITES).find(([, value]) => url.startsWith(`https://${value.host}/`)) || [];
+      if (!key) throw new Error(`Unexpected site request: ${url}`);
+      const body = manifest || { schemaVersion: 1, items: [
+        { id: 'tool-a', source: { repository: 'jmoss333/psychiatry-clerkship', revision: served[key] || LIVE } },
+        { id: 'tool-b', source: { repository: 'jmoss333/psychiatry-clerkship', revision: served[key] || LIVE } },
+      ] };
+      return Response.json(body);
     }
     if (url.startsWith('https://api.netlify.com/')) {
       if (netlifyDown) return new Response('', { status: 503 });
@@ -280,4 +298,102 @@ test('main unreadable is a 503 with no partial claim', async () => {
   const response = await handler(fetchImpl)(request());
   assert.equal(response.status, 503);
   assert.equal((await response.json()).state, 'unavailable');
+});
+
+// ── The daily release watch (maintenance-release-watch.yml → bin/release_watch.mjs) ─────
+
+test('merged work waiting over a day is attention, not schedule', () => {
+  const at = hoursAgo => new Date(Date.parse('2026-09-28T10:05:00Z') - hoursAgo * 3_600_000).toISOString();
+  const status = changes => ({
+    fetchedAt: '2026-09-28T10:05:00Z', liveComplete: true, mainChecks: { verdict: 'green' }, train,
+    waiting: { status: 'waiting', complete: true, changes },
+  });
+  const fresh = releaseHeadline(status([{ at: at(3) }, { at: at(STALE_WAIT_HOURS - 1) }]));
+  assert.equal(fresh.tone, 'waiting');
+  const stuck = releaseHeadline(status([{ at: at(3) }, { at: at(STALE_WAIT_HOURS + 2) }]));
+  assert.equal(stuck.tone, 'attention');
+  assert.match(stuck.text, /The oldest has waited 26 h/);
+});
+
+test('the watch verdict: attention 1, anything unread 2, and only a complete read passes', () => {
+  const ok = { headline: { tone: 'waiting' }, liveComplete: true, gaps: [] };
+  assert.equal(watchVerdict(ok), 0);
+  assert.equal(watchVerdict({ ...ok, headline: { tone: 'current' } }), 0);
+  assert.equal(watchVerdict({ ...ok, headline: { tone: 'attention' }, gaps: ['x'] }), 1);
+  assert.equal(watchVerdict({ ...ok, headline: { tone: 'unknown' } }), 2);
+  assert.equal(watchVerdict({ ...ok, liveComplete: false }), 2);
+  assert.equal(watchVerdict({ ...ok, gaps: ["main's required checks: GitHub answered 403"] }), 2);
+  assert.equal(watchVerdict(null), 2);
+});
+
+test('the served-revision reader takes one shared revision of this repository, or fails', async () => {
+  const site = { baseUrl: `https://${SITES.ms3.host}` };
+  const good = await servedRevisionReader(fixtureFetch().fetchImpl)(site);
+  assert.equal(good.commitRef, LIVE);
+  const mixed = { schemaVersion: 1, items: [
+    { id: 'a', source: { repository: 'jmoss333/psychiatry-clerkship', revision: sha('1') } },
+    { id: 'b', source: { repository: 'jmoss333/psychiatry-clerkship', revision: sha('2') } },
+  ] };
+  await assert.rejects(servedRevisionReader(fixtureFetch({ manifest: mixed }).fetchImpl)(site), /ambiguous/);
+  const foreign = { schemaVersion: 1, items: [{ id: 'a', source: { repository: 'someone/else', revision: sha('1') } }] };
+  await assert.rejects(servedRevisionReader(fixtureFetch({ manifest: foreign }).fetchImpl)(site), /ambiguous/);
+  const html = async () => new Response('<html>', { headers: { 'content-type': 'text/html' } });
+  await assert.rejects(servedRevisionReader(html)(site), /not JSON/);
+});
+
+test('the loader reads served revisions when given that reader, and names what it could not read', async () => {
+  const opts = fetchImpl => ({ now: () => Date.parse('2026-09-27T13:00:00Z'), readSite: servedRevisionReader(fetchImpl) });
+  const { fetchImpl } = fixtureFetch();
+  const status = await loadReleaseStatus(fetchImpl, 'synthetic', opts(fetchImpl));
+  assert.equal(status.liveBasis, 'served revisions');
+  assert.equal(status.liveComplete, true);
+  assert.deepEqual(status.gaps, []);
+  const down = fixtureFetch({ sitesDown: true }).fetchImpl;
+  const partial = await loadReleaseStatus(down, 'synthetic', opts(down));
+  assert.equal(partial.liveComplete, false);
+  assert.ok(partial.gaps.some(gap => gap.startsWith('ms3 served revision')));
+  assert.ok(partial.gaps.some(gap => gap.startsWith('live commit: no learner site could be read')));
+});
+
+async function runWatch(t, fetchOptions) {
+  const logged = [];
+  t.mock.method(console, 'log', line => logged.push(String(line)));
+  const code = await releaseWatch({
+    argv: [], env: { GITHUB_TOKEN: 'synthetic' },
+    fetchImpl: fixtureFetch(fetchOptions).fetchImpl, now: () => Date.parse('2026-09-27T13:00:00Z'),
+  });
+  return { code, errors: logged.filter(line => line.startsWith('::error')) };
+}
+
+test('the watch is green for waiting-on-schedule, red 1 for a held train, red 2 when it cannot see', async t => {
+  const green = await runWatch(t, { trainConclusion: 'success' });
+  assert.equal(green.code, 0);
+  assert.deepEqual(green.errors, []);
+
+  const held = await runWatch(t, {});
+  assert.equal(held.code, 1);
+  // The escalation issue quotes the first "error" line of a failed run: it must be the sentence.
+  assert.match(held.errors[0], /^::error title=Release watch::2 merged changes \(1 faculty sign-off\) are not live/);
+
+  const blind = await runWatch(t, { trainConclusion: 'success', sitesDown: true });
+  assert.equal(blind.code, 2);
+  assert.match(blind.errors[0], /could not check: ms3 served revision/);
+
+  const split = await runWatch(t, { trainConclusion: 'success', served: { res: sha('9') } });
+  assert.equal(split.code, 1);
+  assert.match(split.errors[0], /serve different commits/);
+});
+
+test('the watch workflow runs the watch after the morning publish and is on the escalation list', () => {
+  const workflow = read('.github/workflows/maintenance-release-watch.yml');
+  const [, minute, hour] = workflow.match(/cron:\s*"(\d+) (\d+) \* \* \*"/) || [];
+  const [trainHour, trainMinute] = TRAIN_SLOTS_UTC[0];
+  const after = (Number(hour) * 60 + Number(minute)) - (trainHour * 60 + trainMinute);
+  // The train's 09:05 slot starts as late as 09:24 and Netlify then builds: earlier than
+  // ~45 min reads a build in progress as "release unserved"; much later and the next slot
+  // (15:05) is closer than the morning one.
+  assert.ok(after >= 45 && after <= 120, `watch runs ${after} min after the morning slot`);
+  assert.match(workflow, /run: node bin\/release_watch\.mjs --out "\$RUNNER_TEMP\/release-watch\.json"/);
+  assert.match(workflow, /^name: Maintenance — Release Watch$/m);
+  assert.match(read('.github/workflows/automation-failure-escalation.yml'), /- "Maintenance — Release Watch"/);
 });

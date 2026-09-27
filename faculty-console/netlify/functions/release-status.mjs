@@ -18,6 +18,49 @@ const GITHUB_API = `https://api.github.com/repos/${REPO}`;
 const SHA = /^[0-9a-f]{40}$/;
 const COMPARE_PAGE = 100;
 const COMPARE_MAX_PAGES = 5;
+const SERVED_REVISION_PATH = '/tool-governance.json';
+const SERVED_MAX_BYTES = 4 * 1024 * 1024;
+
+/** The console's reader: each site's latest published production deploy (Netlify). */
+function deployReader(fetchImpl) {
+  const read = async site => {
+    const deploy = await latestDeploy(fetchImpl, site);
+    return { commitRef: deploy.commitRef, publishedAt: deploy.publishedAt, deployUrl: deploy.deployUrl };
+  };
+  read.basis = 'published deploys';
+  return read;
+}
+
+/**
+ * The daily watch's reader: the revision each site SERVES, from its own
+ * /tool-governance.json, with no credential -- the rule the production canary's
+ * production_revision_parity.py applies (every item names this repository and one shared
+ * 40-hex revision, or the read fails). Netlify's API is not needed from a GitHub runner.
+ */
+export function servedRevisionReader(fetchImpl) {
+  const read = async site => {
+    const response = await fetchImpl(`${String(site.baseUrl).replace(/\/+$/, '')}${SERVED_REVISION_PATH}`, {
+      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+      redirect: 'error',
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!response.ok) throw new Error(`served manifest answered ${response.status}`);
+    const type = (response.headers.get('content-type') || '').split(';', 1)[0].trim().toLowerCase();
+    if (type !== 'application/json') throw new Error('served manifest is not JSON');
+    const text = await response.text();
+    if (text.length > SERVED_MAX_BYTES) throw new Error('served manifest too large');
+    const data = JSON.parse(text);
+    const items = Array.isArray(data?.items) ? data.items : [];
+    const revisions = new Set(items.map(item => (item?.source?.repository === REPO ? item.source.revision : null)));
+    const [revision] = revisions;
+    if (!items.length || revisions.size !== 1 || !SHA.test(revision || '')) {
+      throw new Error('served revision missing or ambiguous');
+    }
+    return { commitRef: revision, publishedAt: null, deployUrl: String(site.baseUrl) };
+  };
+  read.basis = 'served revisions';
+  return read;
+}
 
 function sameKey(candidate, expected) {
   const left = String(candidate || '');
@@ -78,7 +121,9 @@ async function compare(github, base, head) {
   return { status: first?.status, total: first?.total_commits ?? commits.length, commits };
 }
 
-export async function loadReleaseStatus(fetchImpl, token, { now = Date.now, ledgerMode = false } = {}) {
+export async function loadReleaseStatus(fetchImpl, token, {
+  now = Date.now, ledgerMode = false, readSite = deployReader(fetchImpl),
+} = {}) {
   if (!token) throw new Error('GitHub token unavailable');
   const github = githubReader(fetchImpl, token);
   const nowMs = now();
@@ -92,10 +137,9 @@ export async function loadReleaseStatus(fetchImpl, token, { now = Date.now, ledg
   const [sitesResult, releaseResult, checksResult, runsResult] = await Promise.allSettled([
     learnerSites(github).then(sites => Promise.all(SITE_KEYS.map(async key => {
       try {
-        const deploy = await latestDeploy(fetchImpl, sites[key]);
-        return [key, { commitRef: deploy.commitRef, publishedAt: deploy.publishedAt, deployUrl: deploy.deployUrl }];
+        return [key, await readSite(sites[key])];
       } catch (error) {
-        note(`${key} published deploy`, error);
+        note(`${key} ${readSite.basis === 'served revisions' ? 'served revision' : 'published deploy'}`, error);
         return [key, null];
       }
     }))),
@@ -138,7 +182,7 @@ export async function loadReleaseStatus(fetchImpl, token, { now = Date.now, ledg
   let liveBasis = null;
   let live = null;
   if (served.length) {
-    liveBasis = 'published deploys';
+    liveBasis = readSite.basis || 'published deploys';
     // Compare from the site that is further behind: what one learner cohort still lacks.
     live = served[0];
     if (sitesDisagree) {
@@ -152,7 +196,7 @@ export async function loadReleaseStatus(fetchImpl, token, { now = Date.now, ledg
   } else if (release) {
     liveBasis = 'release branch';
     live = release;
-    gaps.push('live commit: no published deploy could be read; judged from the release branch');
+    gaps.push('live commit: no learner site could be read; judged from the release branch');
   }
 
   let waiting = { status: 'unknown', changes: [], complete: false };

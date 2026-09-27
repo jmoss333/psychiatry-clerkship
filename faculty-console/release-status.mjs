@@ -31,6 +31,12 @@ export const REQUIRED_CHECKS = Object.freeze([
 /** The branch faculty sign-offs merge from in git mode (check_governance_separation ATTEST_BRANCH). */
 export const ATTEST_BRANCH = 'attest/pending';
 export const SITE_KEYS = Object.freeze(['ms3', 'res']);
+/**
+ * Merged work older than this is stuck, not scheduled: three train slots a day means a
+ * healthy change reaches learners within eight hours, so a day of waiting is a hold that
+ * repeated, a head that stayed red, or a train that stopped running.
+ */
+export const STALE_WAIT_HOURS = 24;
 
 const SHA = /^[0-9a-f]{40}$/;
 
@@ -166,6 +172,13 @@ export function releaseHeadline(status) {
       : `At least ${plural(waiting.changes.length, 'merged change')}`;
     const signoffs = waiting.changes.filter(change => change.signoff).length;
     lines.push(`${count}${signoffs ? ` (${plural(signoffs, 'faculty sign-off')})` : ''} ${waiting.changes.length === 1 ? 'is' : 'are'} not live for learners yet.`);
+    const now = Date.parse(status?.fetchedAt);
+    const oldest = Math.min(...waiting.changes.map(change => Date.parse(change?.at)).filter(Number.isFinite));
+    const hours = (now - oldest) / 3_600_000;
+    if (Number.isFinite(hours) && hours > STALE_WAIT_HOURS) {
+      raise('attention');
+      lines.push(`The oldest has waited ${Math.floor(hours)} h, longer than a day of publish slots.`);
+    }
   }
   if (status?.sitesDisagree) {
     raise('attention');
@@ -196,4 +209,22 @@ export function releaseHeadline(status) {
     lines.push(`The last release-train ${kind} (${hhmmUtc(Date.parse(last.at))}) ended in ${last.conclusion} — held by the spend tripwire, refused, or a step after publishing failed; its run log says which.`);
   }
   return { tone, text: lines.join(' ') };
+}
+
+/**
+ * The daily release watch's exit code (maintenance-release-watch.yml). A red run lands in
+ * the rolling escalation issue, so the owner hears about a held or failed publish without
+ * digging for it.
+ *   1  attention: something the owner should act on (see releaseHeadline)
+ *   2  could not check: an unread fact, or a served commit not read from every learner
+ *      site. The watch exists to see a failed build, which one unread site can hide, so
+ *      a partial read is never a pass.
+ *   0  learners are current, or merged work is waiting on schedule
+ */
+export function watchVerdict(status) {
+  const tone = status?.headline?.tone;
+  if (tone === 'attention') return 1;
+  if (tone !== 'current' && tone !== 'waiting') return 2;
+  if (status?.liveComplete !== true || (Array.isArray(status?.gaps) && status.gaps.length)) return 2;
+  return 0;
 }

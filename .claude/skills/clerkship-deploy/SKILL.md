@@ -123,6 +123,14 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
   today. It is never held by cost; it only warns.
 - **Receipt:** each promotion dispatches `production-release-verification.yml` for the exact
   commit it published. That run, not the train's, says whether the publish landed.
+- **Daily release watch:** `maintenance-release-watch.yml` (10:05 UTC, after the morning
+  slot has built) runs `node bin/release_watch.mjs` — the faculty console's "What learners
+  see" reading, against what each site serves — and goes red when a train run was held or
+  failed, the sites serve different commits, `release` is unserved, `main`'s newest merge
+  failed its checks, or merged work has waited over 24 h (exit 1), or when it could not read
+  both sites (exit 2). A red run lands in the rolling escalation issue; its step summary
+  lists every merged change not yet live. `GITHUB_TOKEN=… node bin/release_watch.mjs` gives
+  the same answer locally (a sandbox that cannot reach the sites reports exit 2, not a pass).
 - **What is live right now:** both sites report the commit they were built from in
   `/tool-governance.json`; `python3 13_Faculty_Resources/_automation/maintenance/production_revision_parity.py --attempts 1 --retry-delay 0 --out "$TMPDIR/served-revision.json"`
   prints it for both and fails if they differ.
