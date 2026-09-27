@@ -1158,16 +1158,15 @@
     "clinicalHash": "470fe3eb5a80011850866c86795cb9c425ce8338"
   },
   "review.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "general",
       "level": "moderate"
     },
     "at": "2026-09-27",
-    "by": "Pending faculty review",
-    "reason": "Source changed after faculty review; awaiting re-attestation.",
-    "contentHash": "f07390a605667e7b01289ff1df4f6d66685e39e0",
-    "clinicalHash": "38d42dcafd49e9786cfb5626667d050681d5862d"
+    "by": "Joshua Moss, MD",
+    "contentHash": "ced12f78a11cfcdf7e3a3fa7123094d0d763103c",
+    "clinicalHash": "6b5e57fe6b9a0ee4e4f11426da8ab0c91cc633d6"
   },
   "feedback.html": {
     "status": "reviewed",
@@ -1257,10 +1256,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-09-27",
     "by": "Joshua Moss, MD",
-    "contentHash": "6b95ca047e42225481bdaaf83e4a59a60e266299",
-    "clinicalHash": "f60003e87476f6a4c5d8c0e3cf4c32e56ef7c0a0"
+    "contentHash": "c80df458bdb95dce02e0c50e3253d73ea8367085",
+    "clinicalHash": "245fcc11a9dd338f556002bdfabf92a7a31a42b2"
   },
   "rp-agitation.html": {
     "status": "reviewed",
