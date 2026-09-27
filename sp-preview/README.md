@@ -10,7 +10,7 @@ Private reflection and the existing attending presentation stay in page memory. 
 
 # Protected spoken Interview Room
 
-A protected pilot of ten spoken turns with Dana, Marcus, Ray, Morgan, or Morgan and Maya, hosted separately from the learner sites. The learner sites' Interview Room links here through a top-level navigation, so microphone and media permissions belong to this origin. The original Interview Room and its production SP proxy continue to work. Dana's disclosure overlay and conversational portrayal retain their recorded review status.
+A protected pilot of ten spoken turns with Dana, Marcus, Ray, Morgan, or Morgan and Maya, hosted separately from the learner sites. Since #821 the learner sites' Interview Room runs its own spoken room; only its family-visit door links here (opened in the top frame), so microphone permissions for the two-voice room belong to this origin. The original Interview Room and its production SP proxy continue to work. Dana's disclosure overlay and conversational portrayal retain their recorded review status.
 
 ## Local verification
 

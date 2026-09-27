@@ -18,9 +18,11 @@
      2026-09-27): a masthead with the door mark, a two-column entrance (the door and the access panel),
      one encounter panel with the room view above the transcript, a status row with a dot, and quiet
      green controls. Colour comes from the Clinical Warm tokens every tool shares, so dark mode and
-     the design-drift gate hold: the pilot's paper, ink, green and pale are ALIASES of --bg, --text,
-     --accent and --accent-light below. To wear the pilot's exact tint instead, set --paper to #edf2ef
-     and --green to #245e60 in :root and nothing else changes. */
+     the design-drift gate hold: the pilot's paper, card, line, muted, green and pale are ALIASES of
+     --bg, --surface, --border, --text-mid, --accent and --accent-light below; text roles carry --green
+     and --green-dark is hover only, as in the pilot. To wear the pilot's exact tint in light mode, set
+     --paper to #edf2ef and --green to #245e60 in :root; --green-dark, --pale, --line and --muted stay
+     on the site's tokens and the dark block is unaffected. */
   :root{
     --bg:#f6f3ee; --bg-alt:#faf6f0; --surface:#ffffff; --on-brand:#ffffff; --border:#ddd3c6;
     --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
@@ -40,6 +42,8 @@
     --paper:var(--bg); --card:var(--surface); --line:var(--border); --muted:var(--text-mid);
     --green:var(--accent); --green-dark:var(--accent-dark); --pale:var(--accent-light); --deep:var(--accent-dark);
     --amber:var(--warning); --amber-light:var(--warning-light); --serif:var(--font-head); --deep-on:#ffffff;
+    /* the build-injected crisis block reads these (crisis_block.py); declared here so it follows the theme instead of staying a light island */
+    --cw-surface:var(--surface); --cw-text:var(--text); --cw-border:var(--border); --cw-accent:var(--accent-dark);
     --line-green:#a9c2bc; --btn-border:#78958b; --bubble:#f4f7f6; --bubble-line:#e1e8e5; --controls:#fafcfb; --you-line:#c8dbd3;
     /* the room scene: warm neutrals, an illustration rather than interface colour */
     --room-wall:#f6f1e9; --room-wainscot:#ece4d8; --room-floor:#e3d9cb; --room-near:#d8cdbc; --room-arm:#b9a98f; --room-arm-top:#cbbca6; --room-front:#ad9c82;
@@ -47,7 +51,7 @@
     --room-chair:#cbbfae; --room-chair-seat:#bfb19d; --room-figure:#9a8c7d; --room-table:#c3b39c; --room-table-top:#d2c4b0; --room-light:#fffdf8;
   }
   [data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--surface:#2a2520;--on-brand:#211d1a;--border:#3d3630;--text:#e8e2da;--text-mid:#b3a596;--text-light:#a09488;--primary:#d4896e;--primary-dark:#dd9277;--primary-light:rgba(212,137,110,.16);--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-light:rgba(90,173,154,.16);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--danger:#d46858;--danger-light:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--focus:#7aa2ff;--ink:#e8e2da;--ink-on:#211d1a;--shadow-sm:0 1px 3px rgba(0,0,0,.35);
-    --paper:var(--bg);--card:var(--surface);--line:var(--border);--muted:var(--text-mid);--green:var(--accent);--green-dark:var(--accent-dark);--pale:var(--accent-light);--deep:#1e4a42;--deep-on:#e8f2ef;--amber:var(--warning);--amber-light:var(--warning-light);
+    --paper:var(--bg);--card:var(--surface);--line:var(--border);--muted:var(--text-mid);--green:var(--accent);--green-dark:var(--accent-dark);--pale:var(--accent-light);--deep:#1e4a42;--deep-on:#e8f2ef;--cw-surface:var(--surface);--cw-text:var(--text);--cw-border:var(--border);--cw-accent:var(--accent-dark);--amber:var(--warning);--amber-light:var(--warning-light);
     --line-green:#3f6b60;--btn-border:#4f7a6d;--bubble:#241f1b;--bubble-line:#3d3630;--controls:#221e1a;--you-line:#3f6b60;
     --room-wall:#2f2a25;--room-wainscot:#3a332c;--room-floor:#3f372f;--room-near:#463e35;--room-arm:#5b5044;--room-arm-top:#675b4d;--room-front:#544a3f;
     --room-window:#3b362f;--room-trim:#5a4e41;--room-door:#4b4238;--room-door-edge:#5f5348;--room-knob:#8a7b6a;--room-leaf:#4f6b5c;--room-leaf-light:#5d7a69;--room-pot:#7d5a4c;
@@ -55,7 +59,7 @@
   }
   *,*::before,*::after{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.55}
-  a{color:var(--green-dark);text-underline-offset:3px} a:hover{color:var(--green)}
+  a{color:var(--green);text-underline-offset:3px} a:hover{color:var(--green-dark)}
   p{margin:0 0 14px}
   h1,h2,h3{line-height:1.2;margin:0 0 16px}
   h1,h2{font-family:var(--serif);font-weight:500;color:var(--text)}
@@ -63,10 +67,10 @@
   h2{font-size:1.65rem}
   h3{font-size:1rem}
   .shell{width:min(1060px,100%);margin:0 auto;padding:0 var(--sp4) 28px}
-  .kicker{display:block;text-transform:uppercase;letter-spacing:.12em;font-size:.68rem;font-weight:700;color:var(--green-dark);margin-bottom:2px}
-  .section-label{font-size:.79rem;font-weight:650;color:var(--green-dark);margin:0 0 12px}
+  .kicker{display:block;text-transform:uppercase;letter-spacing:.12em;font-size:.68rem;font-weight:700;color:var(--green);margin-bottom:2px}
+  .section-label{font-size:.79rem;font-weight:650;color:var(--green);margin:0 0 12px}
   .fine{font-size:.81rem;color:var(--muted);line-height:1.55}
-  .microlabel{margin:0 0 6px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-dark)}
+  .microlabel{margin:0 0 6px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
   /* masthead */
   .masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
@@ -74,19 +78,18 @@
   .brand-mark{display:block;flex:none;width:20px;height:26px;border:2px solid var(--green);border-right-width:6px;border-radius:8px 8px 0 0;transform:skewY(-7deg)}
   .masthead-tools{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
   .titlerow{display:contents}
-  .lede{color:var(--muted);margin:0 0 14px;max-width:62ch;font-size:1.02rem}
   .badge{display:inline-block;font-size:.72rem;font-weight:600;border-radius:6px;padding:4px 10px;vertical-align:middle;min-height:0;white-space:nowrap}
-  .badge.mode{background:var(--card);color:var(--green-dark);border:1px solid var(--line-green);cursor:pointer;font:inherit;font-size:.74rem;font-weight:600;min-height:44px;padding:8px 12px}
+  .badge.mode{background:var(--card);color:var(--green);border:1px solid var(--line-green);cursor:pointer;font:inherit;font-size:.74rem;font-weight:600;min-height:44px;padding:8px 12px}
   .badge.mode:hover:enabled{background:var(--pale)}
   .badge.mode:disabled{opacity:.55;cursor:default}
-  .ribbon{display:flex;align-items:flex-start;gap:10px;margin:0 0 18px;padding:9px 12px;background:var(--pale);border-left:3px solid var(--green);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.82rem;color:var(--green-dark);line-height:1.5}
+  .ribbon{display:flex;align-items:flex-start;gap:10px;margin:0 0 18px;padding:9px 12px;background:var(--pale);border-left:3px solid var(--green);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:.82rem;color:var(--green);line-height:1.5}
   .ribbon .mark{font-family:var(--serif);font-style:italic;padding-top:1px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);padding:var(--sp4);margin:0 0 var(--sp3)}
   .card>h2{font-size:1.45rem;margin-bottom:10px}
   .themebtn{position:fixed;top:12px;right:12px;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;font-size:1rem;z-index:40;box-shadow:var(--shadow-sm)}
   /* controls: the pilot's quiet green buttons */
   button,input,textarea,select{font:inherit}
-  .btn{border:1px solid var(--btn-border);border-radius:var(--radius-sm);padding:10px 14px;font-weight:600;cursor:pointer;font:inherit;font-size:.86rem;background:var(--card);color:var(--green-dark);min-height:44px}
+  .btn{border:1px solid var(--btn-border);border-radius:var(--radius-sm);padding:10px 14px;font-weight:600;cursor:pointer;font:inherit;font-size:1rem;background:var(--card);color:var(--green);min-height:44px}
   .btn:hover:enabled{background:var(--pale)}
   a.btn{display:inline-flex;flex-direction:column;justify-content:center;text-decoration:none;box-sizing:border-box}
   .btn.primary{background:var(--green);color:var(--on-brand);border-color:var(--green)}
@@ -96,30 +99,31 @@
   .btn.quiet,.btn.door{background:transparent}
   .btn:disabled,.btn.is-disabled{opacity:.48;cursor:not-allowed}
   .btn.is-disabled{pointer-events:none}
-  kbd{font:500 .72rem/1.2 system-ui,sans-serif;border:1px solid currentColor;border-radius:4px;padding:3px 5px;white-space:nowrap;color:var(--green-dark)}
+  kbd{font:500 .72rem/1.2 system-ui,sans-serif;border:1px solid currentColor;border-radius:4px;padding:3px 5px;white-space:nowrap;color:var(--green)}
   select.audiosel,select.access-select,.cfgin{min-height:44px;padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--btn-border);background:var(--card);color:var(--text);font:inherit;font-size:.88rem}
   select.audiosel{padding-right:30px;font-weight:600;font-size:.8rem;max-width:100%}
   .cfgin{width:100%;margin:4px 0 12px}
   .chk{display:inline-flex;align-items:center;gap:8px;font-size:.84rem;color:var(--text);min-height:44px;cursor:pointer}
   .chk input{width:18px;height:18px;margin:0;accent-color:var(--green);flex-shrink:0}
-  summary{cursor:pointer;color:var(--green-dark);font-weight:600;min-height:44px;align-content:center}
+  summary{cursor:pointer;color:var(--green);font-weight:600;min-height:44px;align-content:center}
   /* the entrance: the door and the access panel */
-  .entrance{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(28px,5vw,72px);align-items:start;padding:8px 0 28px}
-  .door{padding-top:10px;min-width:0}
+  .entrance{display:grid;grid-template-columns:1.1fr 1fr;grid-template-areas:"door access";gap:clamp(28px,5vw,72px);align-items:start;padding:8px 0 28px}
+  .door{grid-area:door;padding-top:10px;min-width:0}
   .door h2{font-size:clamp(2.2rem,4vw,3.4rem);letter-spacing:-.04em;margin:0 0 6px;max-width:12em}
-  .door .occasion{font-family:var(--serif);font-size:1.15rem;color:var(--green-dark);margin:0 0 18px}
+  .door .occasion{font-family:var(--serif);font-size:1.15rem;color:var(--muted);margin:0 0 4px}
+  .door .lede{font-size:1.15rem;color:var(--green);margin:20px 0 18px}
   .door .setting{font-size:.92rem;color:var(--muted);margin:0 0 10px;max-width:48ch}
   .door .goal{font-size:1rem;line-height:1.55;max-width:45ch;margin:0 0 4px}
   .entry-brief{border-top:1px solid var(--line);margin-top:22px;padding-top:6px}
   .entry-brief summary{margin-bottom:6px}
   .voicerow{display:flex;gap:10px;align-items:flex-start;padding:6px 0 10px;font-size:.84rem;color:var(--muted);line-height:1.45}
-  .voicerow b{font-weight:600;color:var(--green-dark)}
+  .voicerow b{font-weight:600;color:var(--green)}
   .bars{display:inline-flex;align-items:flex-end;gap:2px;height:20px;flex:none;padding-top:2px}
   .bars span{width:3px;background:var(--green);border-radius:2px;opacity:.75}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
-  .chip{font-size:.72rem;font-weight:600;color:var(--green-dark);border:1px solid var(--line-green);border-radius:var(--radius-pill);padding:3px 10px;background:var(--card)}
+  .chip{font-size:.72rem;font-weight:600;color:var(--green);border:1px solid var(--line-green);border-radius:var(--radius-pill);padding:3px 10px;background:var(--card)}
   .practice-note{margin:10px 0 0;max-width:46ch}
-  .access{border-top:4px solid var(--green);box-shadow:0 12px 28px rgba(33,56,62,.05);padding:28px;margin:0}
+  .access{grid-area:access;border-top:4px solid var(--green);box-shadow:0 12px 28px rgba(33,56,62,.05);padding:28px;margin:0}
   .access h2{margin-bottom:6px}
   .access .access-lede{color:var(--muted);font-size:.91rem;margin-bottom:6px}
   .access label{display:block;font-size:.86rem;font-weight:650;margin:18px 0 7px}
@@ -128,7 +132,7 @@
   .access .setting{font-size:.85rem;color:var(--muted);margin:0 0 10px}
   .begin{display:flex;flex-direction:column;gap:8px;margin-top:10px}
   .begin .btn{text-align:left;width:100%;padding:11px 14px}
-  .begin .sub{display:block;font-weight:400;font-size:.76rem}
+  .begin .sub{display:block;font-weight:400;font-size:.8rem}
   .begin .primary .sub{opacity:.94}
   .begin .btn:not(.primary) .sub{color:var(--muted)}
   .access>.fine{margin:12px 0 0}
@@ -154,9 +158,6 @@
   .roomhead .modeline{margin:2px 0 0;font-size:.78rem;color:var(--muted)}
   .roomtools{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .turn-count{font-size:.77rem;color:var(--muted);white-space:nowrap;padding:5px 9px;background:var(--paper);border-radius:6px}
-  .spkchip{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;color:var(--green-dark);font-weight:600}
-  .spkbars{display:inline-flex;align-items:flex-end;gap:2px;height:18px;transition:opacity .3s}
-  .spkbars span{width:3px;height:16px;background:var(--green);border-radius:2px;transform-origin:bottom}
   /* the room view: a projection of the session, never a case fact */
   .room-view{background:var(--room-wall);border-bottom:1px solid var(--line);padding:16px 26px 14px}
   .room-frame{position:relative;max-width:720px;margin:0 auto}
@@ -176,41 +177,42 @@
   .room-next[data-turn="next"],.room-next[data-turn="interrupted"]{display:block}
   .room-seat[data-turn="speaking"] .room-halo{display:block}
   .room-seat[data-turn="interrupted"] .room-cut{display:block}
-  .room-view[data-room-state="paused"] .room-seat,.room-view[data-room-state="ended"] .room-seat{opacity:.68}
+  .room-view[data-room-state="paused"] .room-seat,.room-view[data-room-state="ended"] .room-seat,.room-view[data-room-state="error"] .room-seat{opacity:.68}
   .room-people{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;margin-top:10px}
   .room-person{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0}
   .room-name{display:inline-flex;gap:6px;align-items:baseline;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:.84rem;font-weight:650;color:var(--text);max-width:100%}
   .room-tag{display:inline-flex;gap:5px;align-items:center;font-size:.74rem;font-weight:650;color:var(--muted);min-height:1.2em}
   .room-tag-dot{display:none;width:7px;height:7px;border-radius:50%;background:currentColor}
-  .room-tag[data-kind="speaking"],.room-tag[data-kind="next"]{color:var(--green-dark)}
-  .room-tag[data-kind="preparing"],.room-tag[data-kind="interrupted"]{color:var(--amber)}
+  .room-tag[data-kind="speaking"],.room-tag[data-kind="next"]{color:var(--green)}
+  .room-tag[data-kind="preparing"]{color:var(--amber)}
   .room-tag[data-kind="speaking"] .room-tag-dot,.room-tag[data-kind="preparing"] .room-tag-dot{display:inline-block;animation:room-breathe 1.6s ease-in-out infinite}
   .room-mic{display:inline-flex;gap:7px;align-items:center;justify-self:center;font-size:.74rem;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 10px;white-space:nowrap;margin-top:2px}
   .room-mic-dot{width:8px;height:8px;border-radius:50%;border:2px solid var(--muted);box-sizing:border-box}
-  .room-mic[data-mic="on"]{color:var(--green-dark);background:var(--pale);border-color:var(--line-green)}
+  .room-mic[data-mic="on"]{color:var(--green);background:var(--pale);border-color:var(--line-green)}
   .room-mic[data-mic="on"] .room-mic-dot{border:0;background:var(--green);animation:room-breathe 1.8s ease-in-out infinite}
   .room-mic[data-mic="typed"] .room-mic-dot{border-style:dashed}
   .room-caption{margin-top:10px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:8px;padding:9px 12px;min-height:58px}
   .room-caption p{margin:0;font-size:.9rem;line-height:1.45;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .room-caption strong{color:var(--green-dark);font-size:.78rem;margin-right:6px}
+  .room-caption strong{color:var(--green);font-size:.78rem;margin-right:6px}
   .room-caption[data-kind="quiet"]{border-left-color:var(--muted)} .room-caption[data-kind="quiet"] strong{color:var(--muted)}
   .room-caption[data-kind="quiet"] span,.room-caption[data-kind="you"] span,.room-caption[data-kind="preparing"] span,.room-caption[data-kind="interrupted"] span{font-style:italic;color:var(--muted)}
   .room-caption[data-kind="interrupted"],.room-caption[data-kind="preparing"]{border-left-color:var(--amber)}
   .room-caption[data-kind="interrupted"] strong,.room-caption[data-kind="preparing"] strong{color:var(--amber)}
   .room-foot{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;align-items:baseline;margin-top:8px}
   .room-legend{font-size:.76rem;color:var(--muted)}
-  .room-legend summary{font-size:.76rem;min-height:28px;display:inline-flex;align-items:center}
+  .room-legend summary{font-size:.76rem;display:inline-flex;align-items:center}
   .room-legend p{margin:6px 0 0;max-width:52ch;line-height:1.5}
   /* status row */
-  .audiorail{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;padding:12px 26px;border-bottom:1px solid var(--line);background:var(--controls);font-size:.83rem;color:var(--muted)}
+  .audiorail{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:18px 26px 0;border-top:1px solid var(--line);background:var(--controls);font-size:.83rem;color:var(--muted)}
   .audiorail .dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex:none}
-  .audiostatus{font-weight:700;color:var(--green-dark);font-size:.95rem}
-  .audiorail .audiohint{color:var(--muted)}
+  .audiostatus{font-weight:700;color:var(--green);font-size:.95rem}
+  .audiorail .audiohint{flex:0 0 100%;margin:0;font-size:.81rem;color:var(--muted);line-height:1.5}
   .audiorail.spoken-listening .dot{animation:listenpulse 1.6s ease-out infinite;background:var(--green)}
   .audiorail.spoken-speaking .dot{background:var(--green)}
-  .audiorail.spoken-thinking .dot,.audiorail.spoken-connecting .dot{background:var(--amber)}
+  .audiorail.spoken-thinking .dot,.audiorail.spoken-connecting .dot,.audiorail.typed-thinking .dot{background:var(--amber)}
   .audiorail.spoken-paused .dot,.audiorail.spoken-ended .dot{background:transparent;border:2px solid var(--muted)}
-  .audiorail.spoken-error .dot{background:var(--danger)}
+  .audiorail.typed-ready .dot{background:transparent;border:2px solid var(--green)}
+  .audiorail.spoken-error .dot,.audiorail.typed-error .dot{background:var(--danger)}
   .offline-label{display:inline-flex;align-items:center;border:1px solid var(--amber);border-radius:var(--radius-pill);padding:2px 8px;color:var(--amber);background:var(--amber-light);font-size:.66rem;font-weight:700;margin-left:7px}
   /* transcript */
   .chat{display:flex;flex-direction:column;gap:14px;min-height:180px;max-height:clamp(230px,42dvh,520px);overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable;padding:20px 26px;background:var(--card)}
@@ -219,11 +221,11 @@
   .msg.me{align-self:flex-end;background:var(--pale);border-color:var(--you-line);border-radius:14px 4px 14px 14px}
   .msg.speaking{box-shadow:0 0 0 2px var(--pale),0 0 0 3px var(--green)}
   .msg.interim{opacity:.6;font-style:italic;border-style:dashed}
-  .msg .who{display:block;font-size:.74rem;font-weight:700;color:var(--green-dark);margin-bottom:6px}
+  .msg .who{display:block;font-size:.74rem;font-weight:700;color:var(--green);margin-bottom:6px}
   .msg .tag{display:inline-block;margin-top:8px;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--radius-pill);padding:2px 8px;border:1px solid var(--line);color:var(--muted);background:var(--card)}
   .msg .tag.warn{border-color:var(--amber);color:var(--amber);background:var(--amber-light)}
   .message-actions{display:flex;gap:8px;margin-top:8px}
-  .message-actions button{min-height:44px;padding:8px 12px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);background:var(--card);color:var(--green-dark);font:inherit;font-size:.74rem;font-weight:700;cursor:pointer}
+  .message-actions button{min-height:44px;padding:8px 12px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);background:var(--card);color:var(--green);font:inherit;font-size:.74rem;font-weight:700;cursor:pointer}
   .typing{display:inline-flex;gap:3px;padding-top:4px}
   .typing span{width:6px;height:6px;border-radius:99px;background:var(--muted);animation:blinkdots 1.2s infinite}
   .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
@@ -233,26 +235,27 @@
   .phi{margin:12px 26px 0;padding:12px 16px;background:var(--amber-light);border:1px solid var(--amber);border-radius:var(--radius-md);font-size:.86rem;color:var(--amber)}
   .phi .acts{margin-top:10px}
   /* controls */
-  .composer{padding:18px 26px 16px;border-top:1px solid var(--line);background:var(--controls)}
+  .composer{padding:10px 26px 16px;background:var(--controls)}
   .talkrow{display:flex;gap:8px 10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
   .talkrow .btn{min-height:44px;font-size:.83rem}
-  .talkrow .btn.live{border-color:var(--green);background:var(--pale);color:var(--green-dark)}
+  .talkrow .btn.live{border-color:var(--green);background:var(--pale);color:var(--green)}
   .talkrow .chk{font-size:.8rem;margin-left:auto}
   .inrow{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
   .inrow textarea{flex:1 1 240px;font:inherit;font-size:.94rem;padding:11px 12px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);background:var(--card);color:var(--text);resize:vertical;min-height:52px}
   .inrow textarea.listening{border-color:var(--green)}
   .mic{min-height:52px;min-width:52px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--btn-border);background:var(--card);color:var(--muted);font-weight:600;font-size:.82rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;justify-content:center}
-  .mic.live{border-color:var(--green);background:var(--pale);color:var(--green-dark);animation:listenpulse 1.6s ease-out infinite}
+  .mic.live{border-color:var(--green);background:var(--pale);color:var(--green);animation:listenpulse 1.6s ease-out infinite}
   .mic .stopglyph{width:10px;height:10px;background:currentColor;border-radius:2px;display:inline-block}
   .sayit{min-height:52px}
   .listenrow{margin:8px 0 0;display:flex;align-items:center;gap:10px}
   .listenrow .bars2{display:inline-flex;align-items:flex-end;gap:2px;height:14px}
   .listenrow .bars2 span{width:3px;height:14px;background:var(--green);border-radius:2px;transform-origin:bottom;animation:spkbar .9s ease-in-out infinite}
   .listenrow .bars2 span:nth-child(2){animation-delay:-.25s}.listenrow .bars2 span:nth-child(3){animation-delay:-.5s}
-  .listenrow p{margin:0;font-size:.78rem;color:var(--green-dark);font-weight:600}
+  .listenrow p{margin:0;font-size:.78rem;color:var(--green);font-weight:600}
   .metaline{display:flex;gap:8px 18px;flex-wrap:wrap;margin-top:8px;font-size:.76rem;color:var(--muted)}
   .metaline .fict{font-style:italic}
   .doorrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--line);padding-top:12px;align-items:center}
+  .doorrow .btn{font-size:.83rem}
   .doorrow .quiet{font-size:.76rem;color:var(--muted);font-style:italic}
   .doorrow .btn:last-of-type{margin-left:auto}
   .roomnote{margin:0 0 8px;font-size:.78rem;color:var(--muted);line-height:1.5}
@@ -295,13 +298,13 @@
   .crit .rehearse .lbl{margin:0;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
   .crit .rehearse .line{margin:6px 0 0;font-family:var(--serif);font-style:italic;font-size:1.05rem;line-height:1.5}
   .crit .foot{display:flex;gap:10px 16px;margin-top:20px;flex-wrap:wrap;align-items:center}
-  .crit .foot .btn{border-color:var(--pale);background:var(--pale);color:var(--green-dark)}
-  .crit .foot .btn:hover:enabled{background:var(--pale)}
+  .crit .foot .btn{border-color:var(--card);background:var(--card);color:var(--green)}
+  .crit .foot .btn:hover:enabled{background:var(--controls)}
   .crit .foot .ref{font-size:.78rem;opacity:.8}
   .crit .foot .myth{flex-basis:100%;font-size:.78rem;opacity:.75}
   .sagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
   .sacell{background:var(--controls);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px}
-  .sacell .q{margin:0;font-size:.74rem;font-weight:700;color:var(--green-dark)}
+  .sacell .q{margin:0;font-size:.74rem;font-weight:700;color:var(--green)}
   .sacell .a{margin:6px 0 0;font-size:.86rem;font-style:italic;line-height:1.5}
   .saecho{margin:14px 0 0;font-size:.9rem;color:var(--text);line-height:1.55;border-left:3px solid var(--green);padding-left:12px}
   .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--sp3);margin:0 0 var(--sp3)}
@@ -309,7 +312,7 @@
   .sitem{margin:0 0 12px;font-size:.9rem;line-height:1.55;border-left:3px solid var(--success);padding-left:12px}
   .gitem{border-left:3px solid var(--amber);padding-left:12px;margin:0 0 12px}
   .gitem p{margin:0;font-size:.9rem;line-height:1.55}
-  .gitem .ref{margin:4px 0 0;font-size:.78rem;color:var(--green-dark)}
+  .gitem .ref{margin:4px 0 0;font-size:.78rem;color:var(--green)}
   .rubgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
   .rub{border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;background:var(--controls)}
   .rub .dom{font-family:var(--serif);font-size:1.02rem;font-weight:500;margin:0}
@@ -324,20 +327,20 @@
   .covlist .dim{color:var(--muted)}
   .steppednote{margin:14px 0 0;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
   .feedback-guide p{font-size:.88rem;color:var(--muted);margin:10px 0;line-height:1.55}
-  .exchange-review summary{cursor:pointer;min-height:44px;padding:10px 0;color:var(--green-dark);font-weight:600}
+  .exchange-review summary{cursor:pointer;min-height:44px;padding:10px 0;color:var(--green);font-weight:600}
   .exchange-review ol{padding-left:24px;margin:8px 0}
   .exchange-review li{padding:10px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
   .exchange-review p{white-space:pre-wrap}
   .evidence-review{margin:8px 0 12px;border-top:1px solid var(--line);color:var(--text);font-size:.84rem;overflow-wrap:anywhere}
-  .evidence-review summary{cursor:pointer;min-height:44px;padding:11px 0;color:var(--green-dark);font-weight:600}
+  .evidence-review summary{cursor:pointer;min-height:44px;padding:11px 0;color:var(--green);font-weight:600}
   .evidence-review summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
   .evidence-review p{margin:8px 0;line-height:1.55;font-size:.84rem}
   .evidence-review ol{list-style:none;padding:0;margin:12px 0}
   .evidence-review li{display:block;border-top:1px solid var(--line);padding:8px 0}
   .evidence-review .quoted-turn{white-space:pre-wrap}
-  .evidence-review a{display:inline-block;min-height:44px;padding:10px 0;color:var(--green-dark)}
+  .evidence-review a{display:inline-block;min-height:44px;padding:10px 0;color:var(--green)}
   .crit .evidence-review{background:var(--card);color:var(--text);padding:0 14px;border-radius:var(--radius-sm)}
-  .crit .evidence-review summary,.crit .evidence-review a{color:var(--green-dark)}
+  .crit .evidence-review summary,.crit .evidence-review a{color:var(--green)}
   .selfreport{margin-top:18px;max-width:66ch}
   .selfreport label{display:block;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.7;margin-bottom:6px}
   .selfreport select{width:100%;font:inherit;font-size:.88rem;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--btn-border);background:var(--card);color:var(--text);min-height:44px}
@@ -349,8 +352,6 @@
   .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
   :focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:4px}
   @keyframes spkbar{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
-  @keyframes spkflat{0%,100%{transform:scaleY(.2)}50%{transform:scaleY(.55)}}
-  @keyframes spkhalt{0%,18%{transform:scaleY(.9)}24%,60%{transform:scaleY(.15)}70%,82%{transform:scaleY(.7)}90%,100%{transform:scaleY(.15)}}
   @keyframes listenpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 35%,transparent)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
   @keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   @keyframes blinkdots{0%,80%,100%{opacity:.25}40%{opacity:1}}
@@ -359,13 +360,13 @@
   @media (max-width:900px){ .entrance{gap:28px} .roomhead,.audiorail,.chat,.composer,.room-view{padding-inline:20px} .recovery,.phi{margin-inline:20px} }
   @media (max-width:700px){
     .shell{padding:0 var(--sp3) 24px}
-    .masthead{padding:18px 0 14px;margin-bottom:16px}
+    .masthead{padding:18px 0 14px;margin-bottom:16px;gap:10px} .brand{gap:8px} .brand h1{font-size:1.18rem} .brand-mark{width:16px;height:22px} .badge.mode{font-size:.66rem;padding:6px 8px}
     .entrance{display:flex;flex-direction:column;gap:22px;padding-bottom:20px}
     .door{padding:0 4px} .door h2{font-size:2.2rem}
     .access{width:100%;padding:22px} .access h2{font-size:1.55rem}
     .roomhead{padding:17px} .roomhead h2{font-size:1.7rem}
     .room-view{padding:12px 14px} .room-caption{min-height:52px} .room-caption p{font-size:.86rem}
-    .audiorail,.chat{padding:14px 16px} .composer{padding:14px 16px} .recovery,.phi{margin-inline:16px}
+    .chat{padding:14px 16px} .audiorail{padding:14px 16px 0} .composer{padding:8px 16px 14px} .recovery,.phi{margin-inline:16px}
     .msg{max-width:100%}
     .card,.sa{padding:var(--sp3)} .crit{padding:20px}
   }
@@ -787,12 +788,6 @@ function Ribbon(props){
 function Bars(props){ // static cadence preview
   return e('span',{className:'bars','aria-hidden':true},props.h.map(function(px,i){return e('span',{key:i,style:{height:px+'px'}});}));
 }
-function SpeakBars(props){ // animated speaking indicator
-  var st={animation:props.anim.split(' ').pop()+' '+props.dur+' ease-in-out infinite'};
-  return e('span',{className:'spkbars','aria-hidden':true,style:{opacity:props.dim?.3:1}},
-    [0,-0.18,-0.36,-0.09].map(function(d,i){return e('span',{key:i,style:Object.assign({},st,{animationDelay:d+'s'})});}));
-}
-
 /* ---------- the room view ----------
    A projection of the session, in the spoken pilot's language (sp-preview, room view Slice A): who is
    seated, whether the patient is speaking or answers next, whether the microphone is on, and the line
@@ -849,7 +844,7 @@ function spokenRoomView(snap,name){
   else if(phase==='ended'){v.state='ended';v.caption={kind:'quiet',label:'Room · ',text:'The room is closed. The conversation stays above.'};}
   else if(phase==='error'){v.state='error';v.caption={kind:'interrupted',label:'Room · ',text:'The spoken room needs your choice.'};}
   else if(phase==='connecting'){v.tag={kind:'',text:'joining'};}
-  v.alt='Room view: '+name+' is seated across a low table. '+v.caption.label+v.caption.text;
+  v.alt='Illustration of the room from your seat: '+name+' is seated across a low table from you. The name, whether they are speaking, and the live caption are given in text below.';
   return v;
 }
 function typedRoomView(voiceState,name,busy,speakingText,offline){
@@ -857,7 +852,7 @@ function typedRoomView(voiceState,name,busy,speakingText,offline){
   if(busy||voiceState.phase==='awaiting_patient'){v.state='responding';v.turn='preparing';v.tag={kind:'preparing',text:'thinking'};v.caption={kind:'preparing',label:name+' · ',text:'thinking…'};}
   else if(voiceState.phase==='speaking'){v.state='speaking';v.turn='speaking';v.tag={kind:'speaking',text:'speaking'};v.caption={kind:'speech',label:name+' · ',text:speakingText||'reading the reply aloud'};}
   if(offline)v.caption={kind:v.caption.kind,label:v.caption.label,text:v.caption.text+' (offline simulation)'};
-  v.alt='Room view: '+name+' is seated across a low table. '+v.caption.label+v.caption.text;
+  v.alt='Illustration of the room from your seat: '+name+' is seated across a low table from you. The name, whether they are speaking, and the live caption are given in text below.';
   return v;
 }
 
@@ -1328,7 +1323,6 @@ function App(){
         e('option',{value:'spoken'},'Spoken room — talk with the patient'),
         e('option',{value:'typed'},'Typed room'),
         e('option',{value:'typed-device'},'Typed room · replies read aloud')))),
-    S.screen==='select'?e('p',{className:'lede'},'Interview a fictional standardized patient. Speak or type — say what you would actually say.'):null,
     e(Ribbon,{line:ribbonLine}),
     (showSettings&&cfg)?e('div',{className:'card'},
       e('h2',null,'Live mode setup'),
@@ -1370,11 +1364,11 @@ function App(){
     var entrance=null;
     if(chosen){
       var P=paceFor(chosen), tp=chosen.title.split(' — '), spokenWhy=roomMode==='spoken'?spokenUnavailableReason(chosen):'', roomUnavailable=!!spokenWhy;
-      entrance=e('div',{className:'entrance case',key:chosen.id},
-        e('section',{className:'door','aria-labelledby':'door_title'},
+      var doorSection=e('section',{className:'door','aria-labelledby':'door_title'},
           e('p',{className:'section-label'},'Before you enter'),
-          e('h2',{id:'door_title'},tp[0]),
+          e('h2',{id:'door_title'},'Begin with '+tp[0]+'’s story.'),
           tp[1]?e('p',{className:'occasion'},tp[1]):null,
+          e('p',{className:'lede'},'Practice a conversation.',e('br'),'Leave room to listen.'),
           e('p',{className:'setting'},chosen.setting),
           e('p',{className:'goal'},chosen.learnerGoal),
           e('details',{className:'entry-brief',open:true},
@@ -1383,8 +1377,8 @@ function App(){
               e(Bars,{h:P.bars}),
               e('p',{style:{margin:0}},e('b',null,P.label.charAt(0).toUpperCase()+P.label.slice(1)+'. '),e('span',{style:{fontStyle:'italic'}},chosen.persona.voice))),
             e('div',{className:'chips'},chosen.skillTags.map(function(t,i){return e('span',{className:'chip',key:i},t);})),
-            e('p',{className:'fine practice-note'},'Fictional practice for supervised learning. Pauses, speaking speed and fluency are never graded, and this room does not assess competence or readiness.'))),
-        e('section',{className:'card access','aria-labelledby':'access_title'},
+            e('p',{className:'fine practice-note'},'Fictional practice for supervised learning. Pauses, speaking speed and fluency are never graded, and this room does not assess competence or readiness.')));
+      var accessSection=e('section',{className:'card access','aria-labelledby':'access_title'},
           e('h2',{id:'access_title'},'Choose your encounter'),
           e('p',{className:'access-lede'},'Up to '+maxT+' turns, at your pace.'),
           e('label',{htmlFor:'case_select'},'Patient'),
@@ -1397,7 +1391,8 @@ function App(){
             e('button',{className:'btn primary',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(chosen,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
             e('button',{className:'btn',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(chosen,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing'))),
           e('p',{className:'fine'},roomMode==='spoken'?'Your microphone starts only after you agree to enter the spoken room. You can type at any time, and pause or end whenever you like.':'Nothing is recorded. The conversation lives in this tab until you leave.'),
-          e('div',{className:'entry-tip'},e('kbd',null,'Enter'),e('span',null,'sends typed words · Shift+Enter for a new line'))));
+          e('div',{className:'entry-tip'},e('kbd',null,'Enter'),e('span',null,'sends typed words · Shift+Enter for a new line')));
+      entrance=e('div',{className:'entrance case'},accessSection,doorSection);
     }
     return e('div',null,header,
       danaConversationPreviewEntry(window.location,previewConfig),
@@ -1471,10 +1466,6 @@ function App(){
           e('div',{className:'roomtools'},
             e('span',{className:'turn-count'},'Turn '+sTurn+' / '+sMax))),
         e(RoomView,spokenRoomView(snap,sName)),
-        e('div',{className:'audiorail spoken-'+sPhase,role:'group','aria-label':'Room audio status'},
-          e('span',{className:'dot','aria-hidden':true}),
-          e('span',{className:'audiostatus'},spokenStatusText(snap,sName)),
-          e('span',{className:'audiohint'},'Speak naturally; interrupting is allowed. Patient text is complete and authoritative.')),
         e('div',{className:'chat',ref:chatRef,role:'log','aria-live':'off','aria-label':'Conversation transcript'},
           (snap.transcript||[]).map(function(m,i){
             var pt=m.who==='pt', speaking=pt&&sPhase==='speaking'&&m.status==='pending';
@@ -1508,6 +1499,10 @@ function App(){
             canReconnect?e('button',{className:'btn primary',type:'button',onClick:reconnectSpoken},'Reconnect'):null,
             e('button',{className:'btn'+(canReconnect?'':' primary'),type:'button',onClick:continueTyping},'Continue typing'),
             e('button',{className:'btn',type:'button',onClick:endEncounter},'End encounter'))):null,
+        e('div',{className:'audiorail spoken-'+sPhase,role:'group','aria-label':'Room audio status'},
+          e('span',{className:'dot','aria-hidden':true}),
+          e('span',{className:'audiostatus'},spokenStatusText(snap,sName)),
+          e('span',{className:'audiohint'},'Speak naturally; interrupting is allowed. Patient text is complete and authoritative.')),
         (atLimit||(sPhase==='ended'&&!spokenTrouble))?e('div',{className:'composer'},
           e('p',{className:'recovery',role:'note'},atLimit?'Turn limit reached. The final patient reply remains above for review.':(snap.notice&&snap.notice.message)||'The room has closed. The conversation remains above for review.'),
           e('div',{className:'doorrow'},e('button',{ref:limitEndRef,className:'btn primary',type:'button',onClick:endEncounter},'End encounter and reflect'))):e('div',{className:'composer'},
@@ -1554,16 +1549,6 @@ function App(){
             offlineSession?e('span',{className:'offline-label'},'Offline simulation'):null,
             e('span',{className:'turn-count'},'Turn '+sess.turns.length+' / '+(S.pack.engine.maxTurns||40)))),
         e(RoomView,typedRoomView(voiceState,cd.persona.displayName,isBusy,(function(){for(var mi=0;mi<E.msgs.length;mi++){var mm=E.msgs[mi];if(mm.who==='pt'&&voiceState.phase==='speaking'&&voiceState.activePatientTurn===mm.turnId)return mm.text;}return '';})(),offlineSession)),
-        e('div',{className:'audiorail',role:'group','aria-label':'Room audio status'},
-          e('span',{className:'dot','aria-hidden':true}),
-          e('span',{className:'audiostatus'},
-            voiceState.notice?voiceState.notice.message:
-            voiceState.phase==='awaiting_patient'?cd.persona.displayName+' is thinking…':
-            voiceState.phase==='buffering_audio'?'Patient text is ready · preparing optional audio…':
-            voiceState.phase==='speaking'?cd.persona.displayName+' is speaking':
-            actorIssue?'Live patient needs your choice':voiceState.phase==='error'?'Room audio needs your choice':
-            voiceMode==='off'?'Room audio off':'Device voice · typing stays available'),
-          e('span',{className:'audiohint'},'Patient text is always complete and authoritative.')),
         e('div',{className:'chat',ref:chatRef,role:'log','aria-live':'off','aria-label':'Conversation transcript'},
           E.msgs.map(function(m,i){
             var speaking=m.who==='pt'&&voiceState.phase==='speaking'&&voiceState.activePatientTurn===m.turnId;
@@ -1591,6 +1576,16 @@ function App(){
           e('div',{className:'acts'},
             e('button',{className:'btn primary',type:'button',onClick:function(){resolveVoiceFallback('text');}},'Continue with text'),
             e('button',{className:'btn',type:'button',onClick:function(){resolveVoiceFallback('device');}},'Use device voice'))):null,
+        e('div',{className:'audiorail typed-'+((actorIssue||voiceState.phase==='error')?'error':(isBusy||voiceState.phase==='awaiting_patient'||voiceState.phase==='buffering_audio')?'thinking':voiceState.phase==='speaking'?'speaking':'ready'),role:'group','aria-label':'Room audio status'},
+          e('span',{className:'dot','aria-hidden':true}),
+          e('span',{className:'audiostatus'},
+            voiceState.notice?voiceState.notice.message:
+            voiceState.phase==='awaiting_patient'?cd.persona.displayName+' is thinking…':
+            voiceState.phase==='buffering_audio'?'Patient text is ready · preparing optional audio…':
+            voiceState.phase==='speaking'?cd.persona.displayName+' is speaking':
+            actorIssue?'Live patient needs your choice':voiceState.phase==='error'?'Room audio needs your choice':
+            voiceMode==='off'?'Room audio off':'Device voice · typing stays available'),
+          e('span',{className:'audiohint'},'Patient text is always complete and authoritative.')),
         turnLimitReached?e('div',{className:'composer'},
           e('p',{className:'recovery',role:'note'},'Turn limit reached. The final patient reply remains above for review.'),
           e('div',{className:'doorrow'},e('button',{ref:limitEndRef,className:'btn primary',type:'button',onClick:endEncounter},'End encounter and reflect'))):e('div',{className:'composer'},

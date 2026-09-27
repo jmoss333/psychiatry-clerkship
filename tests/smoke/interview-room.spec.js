@@ -545,8 +545,9 @@ async function installFakes(page, scenario = {}) {
 }
 
 function caseCard(page) {
+  // The door's headline is the pilot's sentence around the patient's name ("Begin with Dana’s story.").
   return page.locator('.case').filter({
-    has: page.getByRole('heading', { name: CASE_HEADING, exact: true }),
+    has: page.getByRole('heading', { name: `Begin with ${CASE_HEADING}’s story.`, exact: true }),
   });
 }
 
