@@ -317,6 +317,129 @@ function reviewMissingDueIds(cards,stored,now){
 }
 /* ---------- end review lanes ---------- */
 
+/* ---------- review restore ---------- */
+/* Prepare a new SRS store in memory. Both exported formats contain the same
+   `srs` member; all other study-export fields belong to other tools and are
+   deliberately left on the receiving browser. */
+function reviewRestoreObject(value){return !!value&&typeof value==='object'&&!Array.isArray(value)&&Object.getPrototypeOf(value)===Object.prototype;}
+function reviewRestoreInt(value,max){return Number.isInteger(value)&&value>=0&&value<=max;}
+function reviewRestoreDay(value){return typeof value==='string'&&(value===''||/^\d{4}-\d{1,2}-\d{1,2}$/.test(value));}
+function reviewQbInventoryFromDocument(doc){
+  var node=doc&&doc.getElementById('cw-review-qb-inventory'),items;
+  try{items=JSON.parse(node&&node.textContent||'');}catch(_){throw Error('Current question-bank card list is unavailable. Reload and try again.');}
+  if(!Array.isArray(items)||!items.length)throw Error('Current question-bank card list is incomplete.');
+  var seen=Object.create(null);
+  items.forEach(function(item){
+    if(!item||typeof item.id!=='string'||!item.id||seen[item.id]||typeof item.retired!=='boolean')
+      throw Error('Current question-bank card list is invalid. Reload and try again.');
+    seen[item.id]=true;
+  });
+  return items;
+}
+function reviewSourceDigestsFromDocument(doc){
+  var node=doc&&doc.getElementById('cw-review-source-digests'),value;
+  try{value=JSON.parse(node&&node.textContent||'');}catch(_){throw Error('Current review source checks are unavailable. Reload and try again.');}
+  var keys=['articles','topics','family','communication','reasoning'];
+  if(!reviewRestoreObject(value)||Object.keys(value).length!==keys.length||keys.some(function(key){return !/^[0-9a-f]{64}$/.test(value[key]||'');}))
+    throw Error('Current review source checks are incomplete. Reload and try again.');
+  return value;
+}
+function reviewVerifySourceBytes(bytes,expected){
+  if(!bytes||!/^[0-9a-f]{64}$/.test(expected||'')||!crypto||!crypto.subtle)
+    return Promise.reject(Error('Review source integrity check is unavailable.'));
+  return crypto.subtle.digest('SHA-256',bytes).then(function(hash){
+    var actual=Array.from(new Uint8Array(hash)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    if(actual!==expected)throw Error('Review source does not match this site build.');
+    return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+  });
+}
+function reviewFetchVerifiedSource(request,key){
+  return request.then(function(response){
+    var expected=reviewSourceDigestsFromDocument(document)[key];
+    if(!response.ok)throw Error('Review source unavailable.');
+    return response.arrayBuffer().then(function(bytes){return reviewVerifySourceBytes(bytes,expected);});
+  });
+}
+function reviewPrepareRestore(raw,reviewCards,qbItems,now){
+  if(typeof raw!=='string'||raw.length>10000000)throw Error('Review backup is too large or unreadable.');
+  var payload;try{payload=JSON.parse(raw);}catch(_){throw Error('Review backup is not valid JSON.');}
+  if(!reviewRestoreObject(payload)||['clerkship-review-backup-v1','clerkship-study-v2'].indexOf(payload.schema)<0||
+      typeof payload.exported_at!=='string'||!/^\d{4}-\d{2}-\d{2}T/.test(payload.exported_at)||
+      !Number.isFinite(Date.parse(payload.exported_at)))throw Error('Unrecognized review backup format.');
+  var source=payload.srs;
+  if(!reviewRestoreObject(source)||source.v!==1||!reviewRestoreObject(source.cards)||
+      !reviewRestoreObject(source.day)||!reviewRestoreObject(source.settings)||
+      !Array.isArray(reviewCards)||!reviewCards.length||!Array.isArray(qbItems)||!qbItems.length||
+      !Number.isFinite(now))throw Error('Review backup or current card inventory is incomplete.');
+  var allowed=Object.create(null),i,id;
+  for(i=0;i<reviewCards.length;i++){
+    id=reviewCards[i]&&reviewCards[i].id;
+    if(typeof id!=='string'||!id||id==='__proto__')throw Error('Current review card inventory is invalid.');
+    allowed[id]='review';
+  }
+  for(i=0;i<qbItems.length;i++){
+    var item=qbItems[i];id=item&&item.id;
+    if(typeof id!=='string'||!id||id==='__proto__'||typeof item.retired!=='undefined'&&typeof item.retired!=='boolean')
+      throw Error('Current question-bank inventory is invalid.');
+    if(!item.retired)allowed['QB#'+id]='qb';
+  }
+  var result=freshStore(),counts={review:0,qb:0,skipped:0};
+  var names=Object.keys(source.cards);
+  if(!names.length||names.length>20000)throw Error('Review backup contains no usable cards.');
+  names.forEach(function(key){
+    if(key==='__proto__'||key==='constructor'||key==='prototype'||key.length>200)
+      throw Error('Review backup contains an unsafe card ID.');
+    var c=source.cards[key];
+    if(!reviewRestoreObject(c)||typeof c.ease!=='number'||!Number.isFinite(c.ease)||c.ease<1||c.ease>5||
+        !reviewRestoreInt(c.ivl,365)||!reviewRestoreInt(c.reps,1000000)||!reviewRestoreInt(c.lapses,1000000)||
+        !reviewRestoreInt(c.due,4102444800000)||!reviewRestoreInt(c.last,4102444800000))
+      throw Error('Review backup has a malformed card schedule.');
+    if(!allowed[key]){counts.skipped++;return;}
+    result.cards[key]={ease:c.ease,ivl:c.ivl,reps:c.reps,lapses:c.lapses,due:c.due,last:c.last};
+    counts[allowed[key]]++;
+  });
+  if(!counts.review&&!counts.qb)throw Error('No cards in this backup are available on the current site.');
+  if(!reviewRestoreDay(source.day.lastDay)||!reviewRestoreInt(source.day.newToday,1000000))
+    throw Error('Review backup has invalid daily progress.');
+  result.day={lastDay:source.day.lastDay,newToday:source.day.newToday};
+  if(source.stats!==undefined){
+    if(!reviewRestoreObject(source.stats))throw Error('Review backup has invalid statistics.');
+    Object.keys(result.stats).forEach(function(key){
+      if(key==='lastStudy'){
+        if(source.stats[key]!==undefined){
+          if(!reviewRestoreDay(source.stats[key]))throw Error('Review backup has invalid study date.');
+          result.stats[key]=source.stats[key];
+        }
+      }else if(source.stats[key]!==undefined){
+        if(!reviewRestoreInt(source.stats[key],100000000))throw Error('Review backup has invalid statistics.');
+        result.stats[key]=source.stats[key];
+      }
+    });
+  }
+  if(!reviewRestoreInt(source.settings.newPerDay,30)||source.settings.newPerDay<5||
+      source.settings.userSet!==undefined&&typeof source.settings.userSet!=='boolean')
+    throw Error('Review backup has invalid daily settings.');
+  result.settings.newPerDay=source.settings.newPerDay;
+  if(source.settings.userSet!==undefined)result.settings.userSet=source.settings.userSet;
+  if(source.reviewCardRevisions!==undefined){
+    if(!reviewRestoreObject(source.reviewCardRevisions))throw Error('Review backup has invalid card revisions.');
+    result.reviewCardRevisions={};
+    Object.keys(source.reviewCardRevisions).forEach(function(key){
+      if(key==='__proto__'||key==='constructor'||key==='prototype')throw Error('Review backup has an unsafe revision ID.');
+      if(REVIEW_CARD_REVISIONS[key]&&source.reviewCardRevisions[key]===REVIEW_CARD_REVISIONS[key].revision)
+        result.reviewCardRevisions[key]=source.reviewCardRevisions[key];
+    });
+  }
+  reviewReopenRevisedCards(reviewCards,result,now);
+  return {store:result,reviewCount:counts.review,qbCount:counts.qb,skippedCount:counts.skipped};
+}
+function reviewApplyRestore(prepared,storage){
+  if(!prepared||!prepared.store||!storage||typeof storage.setItem!=='function')throw Error('No validated review schedule is ready.');
+  storage.setItem('cw_srs_v1',JSON.stringify(prepared.store));
+  return prepared.store;
+}
+/* ---------- end review restore ---------- */
+
 /* Map a tool's authored choices onto the queue's option shape. Both tools grade an option by
    `quality` rather than a boolean, so `best` becomes the correct answer and the option's own
    feedback becomes its explanation.
@@ -434,6 +557,8 @@ function App(){
   var ps=useState('loading'),companionStatus=ps[0],setCompanionStatus=ps[1];
   var fn=useState(''),focusNotice=fn[0],setFocusNotice=fn[1];
   var bu=useState(false),blockUnavailable=bu[0],setBlockUnavailable=bu[1];
+  var rr=useState(null),restoreState=rr[0],setRestoreState=rr[1];
+  var restoreRequest=useRef(0);
   var sessRef=useRef(null); sessRef.current=sess;
   useEffect(function(){if(!sess)return;var selector=sess.finished?'#cwReviewDashBtn':sess.card?(sess.revealed?'.grades button':'.qtext'):null;var el=selector&&document.querySelector(selector);if(el)el.focus();},[sess&&sess.pos,sess&&sess.revealed,sess&&sess.finished]);
   var blockAutoStart=useRef(null), blockLimit=useRef(null);
@@ -461,13 +586,13 @@ function App(){
     function missingPracticeSource(fallback){practiceSourceFailed=true;return missingSource(fallback);}
     Promise.all([
       conceptFetchBytes().then(function(bytes){return conceptVerifyBytes(bytes,conceptDigestFromDocument(document));}).then(function(out){setConceptStatus('ready');return out;}).catch(function(){setConceptStatus('unavailable');return missingSource([]);}),
-      fetch("quizzes.json").then(function(r){if(!r.ok)throw Error('article feed unavailable');return r.json();}).then(reviewVerifiedArticles).then(function(out){setArticleStatus('ready');return out;}).catch(function(){setArticleStatus('unavailable');return missingSource({decks:[]});}),
-      fetch("../topic_meta.json").then(function(r){if(!r.ok)throw Error('topic feed unavailable');return r.json();}).then(reviewVerifiedTopics).catch(function(){return missingPracticeSource({});}),
-      fetch("../family_systems_scenarios.json").then(function(r){if(!r.ok)throw Error('family feed unavailable');return r.json();}).then(function(out){return reviewVerifiedCases(out,'family');}).catch(function(){return missingPracticeSource({scenarios:[]});}),
-      fetch("../communication_cases.json").then(function(r){if(!r.ok)throw Error('communication feed unavailable');return r.json();}).then(function(out){return reviewVerifiedCases(out,'communication');}).catch(function(){return missingPracticeSource({cases:[]});}),
+      reviewFetchVerifiedSource(fetch("quizzes.json"),"articles").then(reviewVerifiedArticles).then(function(out){setArticleStatus('ready');return out;}).catch(function(){setArticleStatus('unavailable');return missingSource({decks:[]});}),
+      reviewFetchVerifiedSource(fetch("../topic_meta.json"),"topics").then(reviewVerifiedTopics).catch(function(){return missingPracticeSource({});}),
+      reviewFetchVerifiedSource(fetch("../family_systems_scenarios.json"),"family").then(function(out){return reviewVerifiedCases(out,'family');}).catch(function(){return missingPracticeSource({scenarios:[]});}),
+      reviewFetchVerifiedSource(fetch("../communication_cases.json"),"communication").then(function(out){return reviewVerifiedCases(out,'communication');}).catch(function(){return missingPracticeSource({cases:[]});}),
       /* the res build overwrites this file with reasoning_cases_resident.json, so one path
          serves the right audience without the page knowing which site it is on */
-      fetch("../reasoning_cases.json").then(function(r){if(!r.ok)throw Error('reasoning feed unavailable');return r.json();}).then(function(out){return reviewVerifiedCases(out,'reasoning');}).catch(function(){return missingPracticeSource({cases:[]});}),
+      reviewFetchVerifiedSource(fetch("../reasoning_cases.json"),"reasoning").then(function(out){return reviewVerifiedCases(out,'reasoning');}).catch(function(){return missingPracticeSource({cases:[]});}),
       fetch("review_companions.json").then(function(r){if(!r.ok)throw Error('companion feed unavailable');return r.json();}).then(reviewVerifiedCompanions).then(function(out){setCompanions(out);setCompanionStatus('ready');return out;}).catch(function(){setCompanionStatus('unavailable');return null;})
     ]).then(function(res){
       /* One builder per source, concatenated into the single queue. A source that fails to load
@@ -587,6 +712,48 @@ function App(){
   function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); }
   function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); }
 
+  function downloadReviewBackup(){
+    try{
+      var current=JSON.parse(localStorage.getItem(KEY)||'null');
+      if(!current||current.v!==1||!reviewRestoreObject(current.cards))throw Error('No review schedule has been saved in this browser yet.');
+      var payload={schema:'clerkship-review-backup-v1',exported_at:new Date().toISOString(),srs:current};
+      var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+      var url=URL.createObjectURL(blob),link=document.createElement('a');
+      link.href=url;link.download='clerkship_review_'+todayStr()+'.json';
+      document.body.appendChild(link);link.click();link.remove();
+      setTimeout(function(){URL.revokeObjectURL(url);},30000);
+      setRestoreState({phase:'success',message:'Review backup downloaded. Keep the file private; it contains your study history.'});
+    }catch(error){setRestoreState({phase:'error',message:error.message||'Could not download the review backup.'});}
+  }
+  function chooseRestoreFile(ev){
+    var file=ev.target.files&&ev.target.files[0];ev.target.value='';
+    if(!file)return;
+    var request=++restoreRequest.current;
+    if(conceptStatus!=='ready'||articleStatus!=='ready'||practiceStatus!=='ready'){
+      setRestoreState({phase:'error',message:'Restore is unavailable until all review card sources have loaded.'});return;
+    }
+    if(file.size>10000000){setRestoreState({phase:'error',message:'Review backup is too large.'});return;}
+    setRestoreState({phase:'loading',fileName:file.name});
+    Promise.resolve().then(function(){return file.text();}).then(function(raw){
+      var bank=reviewQbInventoryFromDocument(document);
+      var prepared=reviewPrepareRestore(raw,cards,bank,Date.now());
+      if(request===restoreRequest.current)setRestoreState({phase:'ready',prepared:prepared,fileName:file.name,request:request});
+    }).catch(function(error){
+      if(request===restoreRequest.current)setRestoreState({phase:'error',message:error.message||'Could not read this review backup.',fileName:file.name});
+    });
+  }
+  function replaceReviewSchedule(){
+    if(!restoreState||restoreState.phase!=='ready'||
+        restoreState.request!==restoreRequest.current||
+        conceptStatus!=='ready'||articleStatus!=='ready'||practiceStatus!=='ready')return;
+    if(!window.confirm('Replace the review schedule in this browser with the selected backup? Your current review schedule will be lost.'))return;
+    try{
+      var restored=reviewApplyRestore(restoreState.prepared,localStorage);
+      setStore(Object.assign({},restored));setSess(null);setLastConcept(null);setTick(function(x){return x+1;});
+      setRestoreState({phase:'success',message:'Review schedule restored in this browser. Other study progress was not changed.'});
+    }catch(error){setRestoreState({phase:'error',message:'Restore failed; this browser’s review schedule was not changed. '+(error.message||'')});}
+  }
+
   function retryConcepts(){
     setConceptStatus('recovering');
     Promise.resolve().then(function(){return conceptRetry(conceptDigestFromDocument(document),navigator.serviceWorker);}).then(function(out){
@@ -602,6 +769,7 @@ function App(){
   var selectedIncomplete=(lane==='clerkship'&&(conceptStatus!=='ready'||practiceStatus!=='ready'))||
     (lane==='landmark'&&articleStatus!=='ready')||
     (lane==='all'&&(conceptStatus!=='ready'||articleStatus!=='ready'||practiceStatus!=='ready'));
+  var restoreSourcesReady=conceptStatus==='ready'&&articleStatus==='ready'&&practiceStatus==='ready';
   var nextDue=lastConcept&&!(sess&&sess.queue&&!sess.revealed)?e("div",{className:"panel",role:"status"},"Concept: "+lastConcept.q+" → ",e("a",{href:"../index.html?page="+encodeURIComponent(lastConcept.page)},prettyRef(lastConcept.page))," → Next due: "+new Date(lastConcept.due).toLocaleString()):null;
   // Keep one live region mounted across cards and the receipt so completion
   // updates its text instead of introducing a new, possibly silent region.
@@ -785,6 +953,20 @@ function App(){
       e("div",{className:"linkrow"},
         e("a",{className:"chip",href:"../index.html?tool=shelf-mode.html"},"Browse full quiz bank"),
         e("button",{className:"chip danger",onClick:resetAll},"Reset progress"))),
+    e("div",{className:"panel"},
+      e("h2",null,"Move your review schedule"),
+      e("p",{className:"muted"},"Download a review-only backup on the old device, then open it here. You can also use the anonymous progress export from Progress. Restore replaces this browser’s review schedule, including Practice Questions cards. Reading progress, quiz history, calibration, and Anki reviews are separate."),
+      e("div",{className:"linkrow"},e("button",{className:"chip",type:"button",onClick:downloadReviewBackup},"Download review backup")),
+      e("label",{htmlFor:"reviewRestoreFile"},"Restore review schedule from a JSON file"),
+      e("input",{id:"reviewRestoreFile",type:"file",accept:".json,application/json",disabled:!restoreSourcesReady,onChange:chooseRestoreFile}),
+      !restoreSourcesReady?e("p",{className:"muted"},"Restore is available when all review card sources have loaded."):null,
+      restoreState&&restoreState.phase==='loading'?e("p",{role:"status"},"Checking review backup…"):null,
+      restoreState&&restoreState.phase==='error'?e("p",{role:"alert"},restoreState.message):null,
+      restoreState&&restoreState.phase==='success'?e("p",{role:"status"},restoreState.message):null,
+      restoreState&&restoreState.phase==='ready'?e("div",{role:"status"},
+        e("p",null,restoreState.fileName+": "+restoreState.prepared.reviewCount+" Daily Review cards and "+restoreState.prepared.qbCount+" Practice Questions cards ready. "+restoreState.prepared.skippedCount+" unavailable cards skipped. "+Object.keys(store.cards||{}).length+" cards currently scheduled in this browser."),
+        e("p",{className:"muted"},"Nothing has changed yet. Download a backup of this browser first if you want to keep its current schedule."),
+        e("button",{className:"btn ghost",type:"button",onClick:replaceReviewSchedule,disabled:!restoreSourcesReady},"Replace this browser’s review schedule")):null),
     e("div",{className:"sig"},"Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.",e("br"),"Spacing schedule is stored only in this browser.")
   );
 }

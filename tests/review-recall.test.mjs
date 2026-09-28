@@ -88,7 +88,7 @@ test('the prompt list is injected, never re-declared, in either consumer', () =>
 });
 
 test('Daily Review loads the scenarios and appends them as a third source', () => {
-  assert.match(review, /fetch\("\.\.\/family_systems_scenarios\.json"\)/);
+  assert.match(review, /reviewFetchVerifiedSource\(fetch\("\.\.\/family_systems_scenarios\.json"\),"family"\)/);
   assert.match(review, /out=out\.concat\(famRecallCards\(fam\)\)/);
   assert.equal((review.match(/kind:"choice"/g) || []).length, 4,
     'the deck, topic, communication and reasoning sources are all marked as choice cards');
