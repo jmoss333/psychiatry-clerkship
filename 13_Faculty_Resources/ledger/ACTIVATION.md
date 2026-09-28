@@ -66,9 +66,16 @@ Set `CLERKSHIP_LEDGER=on` (Builds scope) on **both** `une-ms3-psychiatry` and `m
 > 2026-09-27). Every command below names its site by ID in `NETLIFY_SITE_ID` (the IDs are in
 > `_automation/maintenance/maintenance_config.json`), and every write is followed by a read.
 
+> **Production context only, never "all".** A deploy preview builds its PR's own branch, and a
+> branch cut before the keys PR merged carries a `keys.json` without the console's key. With the
+> overlay on in previews, the first signed event would fail every such preview as an unknown key,
+> turning a required check red on every older open PR. Previews therefore keep building from the
+> git baseline, exactly as before activation. Only production builds (the release train, publish
+> now, and the ledger's build hooks) overlay the ledger.
+
 ```bash
-NETLIFY_SITE_ID=94717a39-679b-4c78-ae02-7b19e809592e netlify env:set CLERKSHIP_LEDGER on --scope builds  # une-ms3-psychiatry
-NETLIFY_SITE_ID=af64d5d4-e0b5-4f03-9857-be40e3b48329 netlify env:set CLERKSHIP_LEDGER on --scope builds  # mmc-psychiatry-residents-sanford
+NETLIFY_SITE_ID=94717a39-679b-4c78-ae02-7b19e809592e netlify env:set CLERKSHIP_LEDGER on --context production --scope builds  # une-ms3-psychiatry
+NETLIFY_SITE_ID=af64d5d4-e0b5-4f03-9857-be40e3b48329 netlify env:set CLERKSHIP_LEDGER on --context production --scope builds  # mmc-psychiatry-residents-sanford
 # Read it back. Each line must list CLERKSHIP_LEDGER:
 NETLIFY_SITE_ID=94717a39-679b-4c78-ae02-7b19e809592e netlify env:list --json
 NETLIFY_SITE_ID=af64d5d4-e0b5-4f03-9857-be40e3b48329 netlify env:list --json
