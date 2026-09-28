@@ -96,6 +96,58 @@ test('the actual session builder serves each due share and All due introduces no
   assert.deepEqual(Object.keys(state.cards).sort(),['AR-24#5','CONCEPT#due']);
 });
 
+test('Quick 5 and Quick 10 cap the existing due-first queue while Review all serves the full selected lane', () => {
+  const a=review.indexOf('/* ---------- review lanes ---------- */');
+  const b=review.indexOf('/* ---------- end review lanes ---------- */',a);
+  const start=review.indexOf('  function metrics(which){');
+  const end=review.indexOf('  function choose(i)',start);
+  assert.ok(a>=0 && b>a && start>=0 && end>start);
+  const now=Date.now();
+  const due=Array.from({length:12},(_,i)=>({id:`CONCEPT#due${i+1}`,page:'x'}));
+  const cards=[...due,{id:'AR-24#5'}];
+  const state={cards:Object.fromEntries(cards.map((card,i)=>[card.id,{due:now-(13-i)*86400000,ivl:1,reps:1}])),day:{newToday:0}};
+  const run=new Function('cards','lane','state', `
+    ${review.slice(a,b)}
+    var DAY=86400000, blockLimit={current:null}, gradedThisSession={}, store=state, weekRefs=null, conceptFilter='all', session;
+    function loadS(){return state;} function rollDay(s){return s;} function queueable(){return true;}
+    function newConceptAllowed(){return true;} function effectiveNewPerDay(){return 12;}
+    function maturity(){return 'young';} function shuffle(x){return x;}
+    function saveS(){} function setStore(){} function setSess(s){session=s;}
+    ${review.slice(start,end)}
+    return {quick:function(n){startQuick(n);return session;},all:function(){start(false);return session;}};
+  `);
+  const clerk=run(cards,'clerkship',state);
+  const ids=due.map(card=>card.id);
+  assert.deepEqual(clerk.quick(5).queue.map(card=>card.id),ids.slice(0,5));
+  assert.deepEqual(clerk.quick(10).queue.map(card=>card.id),ids.slice(0,10));
+  assert.deepEqual(clerk.all().queue.map(card=>card.id),ids);
+  assert.deepEqual(run(cards,'landmark',state).quick(5).queue.map(card=>card.id),['AR-24#5']);
+  assert.deepEqual(Object.keys(state.cards).sort(),cards.map(card=>card.id).sort(),
+    'short sessions do not create a second schedule');
+});
+
+test('an empty Quick attempt does not cap a later Review all session', () => {
+  const a=review.indexOf('/* ---------- review lanes ---------- */');
+  const b=review.indexOf('/* ---------- end review lanes ---------- */',a);
+  const start=review.indexOf('  function metrics(which){');
+  const end=review.indexOf('  function choose(i)',start);
+  const cards=[];
+  const state={cards:{},day:{newToday:0}};
+  const run=new Function('cards','state', `
+    ${review.slice(a,b)}
+    var DAY=86400000, blockLimit={current:null}, gradedThisSession={}, store=state, weekRefs=null, conceptFilter='all', lane='clerkship', session;
+    function loadS(){return state;} function rollDay(s){return s;} function queueable(){return true;}
+    function newConceptAllowed(){return true;} function effectiveNewPerDay(){return 12;}
+    function maturity(){return 'young';} function shuffle(x){return x;}
+    function saveS(){} function setStore(){} function setSess(s){session=s;}
+    ${review.slice(start,end)}
+    return {quick:function(){startQuick(5);return session;},all:function(){start(false);return session;}};
+  `)(cards,state);
+  assert.equal(run.quick().empty,true);
+  for(let i=0;i<8;i++)cards.push({id:`TOPIC#${i}`});
+  assert.equal(run.all().queue.length,8);
+});
+
 test('a companion deep link focuses only a mapped existing card', () => {
   const {reviewFocusedCard}=laneHelpers();
   const cards=[{id:'AR-24#5'},{id:'CONCEPT#paired'},{id:'AR-24#4'}];

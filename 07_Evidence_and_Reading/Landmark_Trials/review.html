@@ -44,6 +44,7 @@ a{color:var(--accent-dark)}
 .btn.primary:disabled{background:var(--border);color:var(--text-light);cursor:default}
 .btn.ghost{background:var(--surface);border:1px solid var(--border);color:var(--text-mid)}
 .btn.ghost:hover{background:var(--hover)}
+.btn.ghost:disabled{opacity:.5;cursor:default}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow-sm);margin-bottom:14px}
 .panel h2{font-family:"Source Serif 4",Georgia,serif;font-size:1.04rem;margin:0 0 7px}
 .muted{color:var(--text-light);font-size:.86rem}
@@ -514,6 +515,8 @@ function App(){
   }
 
   function start(ahead){
+    /* startQuick passes a one-call cap; normal and timed-block starts pass none. */
+    var requestedQuick=arguments[1];
     var s=rollDay(loadS()); var now=Date.now(); var due=[],neu=[],fut=[];
     cards.forEach(function(c){var st=s.cards[c.id]; if(!queueable(c,st)||!reviewLaneAllows(c,lane,st,now))return; if(!st){if(newConceptAllowed(c,weekRefs,conceptFilter))neu.push(c);} else if(st.due<=now)due.push(c); else if(lane!=='all')fut.push([c,st.due]);});
     /* Overdue-first: sort by how overdue each card is (ratio, not raw days) so
@@ -527,14 +530,19 @@ function App(){
     var newRemain=Math.max(0,effectiveNewPerDay(s)-(s.day.newToday||0));
     var q=due.concat(neu.slice(0,newRemain));
     if(ahead&&lane!=='all'){ fut.sort(function(a,b){return a[1]-b[1];}); q=q.concat(fut.map(function(x){return x[0];})); }
+    /* Both limits cap the initial queue only. Clear the timed-block ref before an
+       empty return so a later Review all cannot inherit its old limit. */
+    var limit=blockLimit.current; blockLimit.current=null; var fromBlock=(typeof limit==='number'&&limit>=1);
+    var shortLimit=!fromBlock&&(requestedQuick===5||requestedQuick===10)?requestedQuick:null;
     if(!q.length){ setSess({empty:true}); return; }
     /* A timed block asks for a bounded slice (?block=1&limit=N) — most-overdue first, as above. */
-    var limit=blockLimit.current; blockLimit.current=null; var fromBlock=(typeof limit==='number'&&limit>=1);
     if(fromBlock&&limit<q.length) q=q.slice(0,limit);
+    if(shortLimit&&shortLimit<q.length) q=q.slice(0,shortLimit);
     saveS(s); setStore(Object.assign({},s));
     gradedThisSession={};
-    setSess({queue:q,pos:0,card:q[0],chosen:-1,revealed:false,reviewed:0,correct:0,total:q.length,misses:[],fromBlock:fromBlock});
+    setSess({queue:q,pos:0,card:q[0],chosen:-1,revealed:false,reviewed:0,correct:0,total:q.length,misses:[],fromBlock:fromBlock,quickLimit:shortLimit,sessionLane:lane});
   }
+  function startQuick(limit){ start(false,limit); }
   function choose(i){ var s=sessRef.current; if(!s||s.revealed)return; var ns=Object.assign({},s); ns.chosen=i; ns.revealed=true; setSess(ns); }
   /* A recall card carries no options, so -1 is the honest answer rather than a crash. */
   function correctIdx(card){ if(!card||!card.o)return -1; for(var i=0;i<card.o.length;i++){if(card.o[i].c)return i;} return -1; }
@@ -572,8 +580,8 @@ function App(){
     if(isRecall){sessionCounts.recallSeen++;if(g>=2)sessionCounts.recallGoodEasy++;}
     else {sessionCounts.choiceSeen++;if(gotIt)sessionCounts.choiceCorrect++;}
     var misses=(s.misses||[]).slice(); if(!gotIt&&!misses.some(function(m){return m.id===card.id;})) misses.push({id:card.id,deckTitle:card.deckTitle,q:card.q,page:card.page||null});
-    if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,counts:sessionCounts,misses:misses,fromBlock:!!s.fromBlock}); return; }
-    setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,counts:sessionCounts,total:s.total,misses:misses,fromBlock:!!s.fromBlock});
+    if(nextPos>=q.length){ setSess({finished:true,reviewed:reviewed,correct:correct,counts:sessionCounts,misses:misses,fromBlock:!!s.fromBlock,quickLimit:s.quickLimit||null,sessionLane:s.sessionLane||lane}); return; }
+    setSess({queue:q,pos:nextPos,card:q[nextPos],chosen:-1,revealed:false,reviewed:reviewed,correct:correct,counts:sessionCounts,total:q.length,misses:misses,fromBlock:!!s.fromBlock,quickLimit:s.quickLimit||null,sessionLane:s.sessionLane||lane});
   }
   function endSession(){ setSess(null); setTick(function(x){return x+1;}); }
   function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); }
@@ -681,7 +689,7 @@ function App(){
             (fbOpt.fb||corrOpt.fb||"") ) : null,
           sess.revealed?companionPanel(c):null,
           sess.revealed? e("div",{className:"grades"},
-            e("button",{className:"gr again"+(sug==='Again'?" sug":""),onClick:function(){grade(0);}},"Again",e("span",{className:"gk"},"<10m")),
+            e("button",{className:"gr again"+(sug==='Again'?" sug":""),onClick:function(){grade(0);}},"Again",e("span",{className:"gk"},"this session")),
             e("button",{className:"gr hard",onClick:function(){grade(1);}},"Hard",e("span",{className:"gk"},"1")),
             e("button",{className:"gr good"+(sug==='Good'?" sug":""),onClick:function(){grade(2);},disabled:!isRecall&&!gotIt,title:(isRecall||gotIt)?null:"Missed items can only be graded Again or Hard"},"Good",e("span",{className:"gk"},"↑")),
             e("button",{className:"gr easy",onClick:function(){grade(3);},disabled:!isRecall&&!gotIt,title:(isRecall||gotIt)?null:"Missed items can only be graded Again or Hard"},"Easy",e("span",{className:"gk"},"↑↑"))
@@ -699,6 +707,11 @@ function App(){
   if(sess && sess.finished){
     var rt=sess.reviewed?Math.round(100*sess.correct/sess.reviewed):0;
     var missed=(sess.misses||[]).length;
+    /* Keep this outside the one-time cwReceipt HTML: a source can become unavailable
+       after the receipt is built, and a cached exact count would then be misleading. */
+    var quickDue=sess.quickLimit?(selectedIncomplete
+      ?"The remaining due count is incomplete because card data is unavailable."
+      :metrics(sess.sessionLane).due+" due remain in "+(sess.sessionLane==='landmark'?"Landmark Evidence":sess.sessionLane==='all'?"All due":"Clerkship Review")+"."):null;
     if(!sess.receipt){
       /* Built once per finished session: cwReceipt writes (block step, never a page here) and
          must not re-run on every re-render of this screen. */
@@ -714,7 +727,8 @@ function App(){
     }
     return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,
       e("div",{className:"sess"},e("div",{className:"sinner",onClick:function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest("#cwReviewDashBtn"):null; if(t){ ev.preventDefault(); endSession(); } },
-        dangerouslySetInnerHTML:{__html:sess.receipt.html}})));
+        dangerouslySetInnerHTML:{__html:sess.receipt.html}})),
+      quickDue?e("div",{className:"panel",role:"status"},quickDue):null);
   }
   if(sess && sess.empty){
     return e("div",{className:"wrap"},head,announcement,conceptStatus!=="ready"?conceptNotice:null,articleNotice,practiceNotice,companionNotice,nextDue,
@@ -755,8 +769,10 @@ function App(){
       weekRefs?e("button",{className:"btn ghost","aria-pressed":conceptFilter==='week',onClick:function(){setConceptFilter('week');}},"This week"):e("p",null,"Open from your Path to enable This week. All topics are available here."),
       conceptFilter==='week'?e("p",null,cards.filter(function(c){return c.deck==='CONCEPT'&&!store.cards[c.id]&&!newConceptAllowed(c,weekRefs,'week');}).length+" new Concepts excluded · Other library topics are available under All. Due cards stay in review."):null):null,
     pp.phase!=="unset"? e("div",{className:"sub"}, pp.label) : null,
-    e("div",{className:"cta"},
-      e("button",{className:"btn primary",disabled:!canStart,onClick:function(){start(false);}}, canStart?("Start review — "+(m.due+m.newRemain)+" card"+((m.due+m.newRemain)===1?"":"s")+(lane==='all'?" · All due":"")):(incomplete?"Counts incomplete":"All caught up ✓")),
+    e("div",{className:"cta",role:"group","aria-label":"Review session size"},
+      e("button",{className:"btn ghost",disabled:!canStart,onClick:function(){startQuick(5);}},"Quick 5"),
+      e("button",{className:"btn ghost",disabled:!canStart,onClick:function(){startQuick(10);}},"Quick 10"),
+      e("button",{className:"btn primary",disabled:!canStart,onClick:function(){start(false);}}, canStart?("Review all — "+(m.due+m.newRemain)+" card"+((m.due+m.newRemain)===1?"":"s")+(lane==='all'?" · All due":"")):(incomplete?"Counts incomplete":"All caught up ✓")),
       lane==='all'?null:e("button",{className:"btn ghost",onClick:function(){start(true);}},"Study ahead")),
     e("div",{className:"panel"},
       e("h2",null,"How it works"),

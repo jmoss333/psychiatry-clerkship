@@ -128,13 +128,13 @@ test('reveal content is rendered as text, never as markup', () => {
 
 // Execute the actual App with a tiny hook renderer: answers must be absent from
 // the element tree before Reveal, not simply hidden with CSS.
-function renderReview(stateValues) {
+function renderReview(stateValues, saved=null, receipt=()=>({html:''})) {
   let i=0;const effects=[];
   const React={createElement:(tag,props,...children)=>({tag,props,children}),useState:(initial)=>[i<stateValues.length?stateValues[i++]:initial,()=>{}],useRef:(v)=>({current:v}),useEffect:(fn)=>effects.push(fn)};
   let js=review.slice(review.indexOf('var e=React.createElement'),review.indexOf('ReactDOM.createRoot'));
   js=js.replace('/*__CONCEPT_RECALL__*/',repo('13_Faculty_Resources/_automation/site_build/concept_recall.js'));
-  const storage={getItem:()=>null,setItem:()=>{}};
-  const result=new Function('React','window','document','localStorage','phasePolicy','calibLog','cwReceipt',js+';return App();')(React,{}, {documentElement:{getAttribute:()=>null}},storage,()=>({phase:'unset'}),()=>{},()=>({html:''}));
+  const storage={getItem:(key)=>key==='cw_srs_v1'&&saved?JSON.stringify(saved):null,setItem:()=>{}};
+  const result=new Function('React','window','document','localStorage','phasePolicy','calibLog','cwReceipt',js+';return App();')(React,{}, {documentElement:{getAttribute:()=>null}},storage,()=>({phase:'unset'}),()=>{},receipt);
   return result;
 }
 const conceptFixture={id:'CONCEPT#test@1',deck:'CONCEPT',deckTitle:'SECRET topic',kind:'recall',q:'Test […]',reveal:'SECRET <img onerror=bad>',page:'ethics_legal.md'};
@@ -151,6 +151,49 @@ test('next-due strip remains on the last-card receipt and revealed Again requeue
  for(const session of [{finished:true,reviewed:1,correct:1,misses:[]},{queue:[conceptFixture],card:conceptFixture,pos:1,total:1,revealed:true,reviewed:1,correct:0}]){
   const shown=JSON.stringify(renderReview(reviewStates(session,last)));assert.match(shown,/Next due:/);assert.match(shown,/ethics_legal.md/);
  }
+});
+
+test('Again names its same-session return and a repeated Quick card expands the progress total',()=>{
+ const card={id:'TOPIC#t_mood.md',deck:'TOPIC',deckTitle:'Topic · Mood',kind:'choice',q:'Question',o:[{t:'Correct',c:true},{t:'Wrong',c:false}]};
+ const queue=Array.from({length:4},(_,i)=>({...card,id:`TOPIC#other${i}`})).concat(card);
+ const session={queue,pos:4,total:5,card,chosen:1,revealed:true,reviewed:4,correct:4,misses:[],quickLimit:5,sessionLane:'clerkship'};
+ const revealed=JSON.stringify(renderReview(reviewStates(session)));
+ assert.match(revealed,/Again.*this session/);
+ assert.doesNotMatch(revealed,/<10m/);
+
+ const grader=repo('13_Faculty_Resources/_automation/site_build/sm2_apply_grade.js');
+ const grade=review.slice(review.indexOf('  function grade(g){'),review.indexOf('  function endSession(){'));
+ const state={cards:{},day:{newToday:0},stats:{totalReviews:0,seen:0,correct:0,choiceSeen:0,choiceCorrect:0}};
+ const result=new Function('session','state',`
+   var DAY=86400000,GRADE_NAMES=['Again','Hard','Good','Easy'],gradedThisSession={},sug='Again',sessRef={current:session},next;
+   ${grader}
+   function loadS(){return state;} function rollDay(s){return s;} function saveS(){}
+   function setStore(){} function bumpStreak(){} function setLastConcept(){} function calibLog(){}
+   function setSess(value){next=value;} function correctIdx(c){return c.o.findIndex(o=>o.c);}
+   ${grade}
+   grade(0); return next;
+ `)(session,state);
+ assert.equal(result.queue.length,6,'Again retries the same card');
+ assert.equal(result.total,6,'progress denominator includes the retry');
+ assert.equal(result.quickLimit,5,'the initial cap remains session metadata');
+ assert.equal(result.sessionLane,'clerkship');
+ assert.match(JSON.stringify(renderReview(reviewStates(result))),/6 \/ 6/);
+});
+
+test('a completed Quick screen reports persisted due cards in its lane, or incomplete when a source is missing',()=>{
+ const clerkA={...conceptFixture,id:'CONCEPT#dueA'},clerkB={...conceptFixture,id:'CONCEPT#dueB'};
+ const article={id:'AR-24#5',deck:'AR-24',deckTitle:'Article',kind:'choice',q:'Article question',o:[{t:'Yes',c:true},{t:'No',c:false}]};
+ const saved={v:1,cards:{[clerkA.id]:{due:0,ivl:1,reps:1},[clerkB.id]:{due:0,ivl:1,reps:1},[article.id]:{due:0,ivl:1,reps:1}},day:{lastDay:'',newToday:0},stats:{streak:0},settings:{newPerDay:12}};
+ const receipt=(details)=>({html:details.sub});
+ const session={finished:true,reviewed:5,correct:5,counts:{},misses:[],quickLimit:5,sessionLane:'clerkship'};
+ const ready=reviewStates(session);ready[0]=[clerkA,clerkB,article];
+ const shown=JSON.stringify(renderReview(ready,saved,receipt));
+ assert.match(shown,/2 due remain in Clerkship Review/);
+ assert.doesNotMatch(shown,/3 due remain/,'the article belongs to another lane');
+ const unavailable=reviewStates({...session});unavailable[0]=[clerkA,clerkB,article];unavailable[1]='unavailable';
+ const incomplete=JSON.stringify(renderReview(unavailable,saved,receipt));
+ assert.match(incomplete,/remaining due count is incomplete/i);
+ assert.doesNotMatch(incomplete,/2 due remain in Clerkship Review/);
 });
 test('old mixed history is never represented as Retention',()=>{assert.doesNotMatch(review,/"Retention"|% correct/);assert.match(review,/Choices correct · since this update/);assert.match(review,/Self-rated recall Good\/Easy/);});
 
