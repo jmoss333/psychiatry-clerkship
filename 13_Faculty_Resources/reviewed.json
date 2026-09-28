@@ -11,14 +11,15 @@
     "clinicalHash": "7637e6599e8e12b3bd4452772eec704c4807083b"
   },
   "cotw_20260928_mania_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New Case of the Week (bipolar mania, resident) added 2026-09-28; awaiting faculty attestation.",
     "at": "2026-09-28",
-    "by": "Pending faculty review"
+    "by": "Joshua Moss, MD",
+    "contentHash": "de3ba600f9f4c944a0cb3109c6b3a51f1febd1cd",
+    "clinicalHash": "c98161c28eb84ae5c69df7139f8fa4cd2bf51d39"
   },
   "cotw_20260923_agitation_ms3.md": {
     "status": "reviewed",
