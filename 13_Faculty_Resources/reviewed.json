@@ -313,11 +313,11 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-09-28",
     "by": "Joshua Moss, MD",
     "note": "Re-attested 2026-09-17 (recorded on the owner's approval of #565, issue comment 2026-09-17): Dana's direct suicide question discloses at any rapport and an earlier flag never blocks it; the local draft overlay that carried that policy is retired into the reviewed pack; debrief states that asking early was right. Dana's pack facultyReview.lastReviewed advanced to 2026-09-17 in the same change. Prior: 2026-09-09 (WP-5m chain, F1-F5 / D16(2)).",
-    "contentHash": "5fcf3d9c1fd83f2563f8d91ad43569452ff15153",
-    "clinicalHash": "235fa447ed72a21775894836ba53b210155799a2"
+    "contentHash": "ea2905b4018032e5f7a43e03b1ad2b81211d2551",
+    "clinicalHash": "e3b00e917a7b0602504906306d1ae9ee7436e68c"
   },
   "welcome.md": {
     "status": "reviewed",
