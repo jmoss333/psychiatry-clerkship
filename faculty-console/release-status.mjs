@@ -44,6 +44,73 @@ export const STALE_WAIT_HOURS = 24;
  */
 export const TRAIN_LOOKBACK_HOURS = 26;
 const RUN_OK = new Set(['success', 'skipped', 'neutral']);
+/** The trailing window the weekly train line counts over. */
+export const TRAIN_WEEK_DAYS = 7;
+/** The two steps of production-release-train.yml a failure can sit in -- pinned to it by a test. */
+export const TRAIN_PROMOTE_STEP = 'Promote the newest green main commit to release';
+export const TRAIN_RECEIPT_STEP = 'Request the production release receipt';
+
+/**
+ * Where a failed train run stopped, from its jobs listing: `before` publishing (the promote
+ * step: held by the spend tripwire, refused, or could not check), `after` publishing (`release`
+ * was pushed, then the receipt request failed), or `unknown`.
+ */
+export function failedStage(jobs) {
+  const failed = (Array.isArray(jobs) ? jobs : [])
+    .flatMap(job => (Array.isArray(job?.steps) ? job.steps : []))
+    .filter(step => step?.conclusion === 'failure')
+    .map(step => String(step.name || ''));
+  if (failed.includes(TRAIN_PROMOTE_STEP)) return 'before';
+  if (failed.includes(TRAIN_RECEIPT_STEP)) return 'after';
+  return 'unknown';
+}
+
+/**
+ * The release train's last TRAIN_WEEK_DAYS, counted: how often it ran, published (or had
+ * nothing new), stopped before publishing, or failed after. `stages` maps a failed run's id
+ * to failedStage(); a run with no entry counts as unclassified. `complete` is false when the
+ * listing stopped inside the window, so the counts are minimums.
+ */
+export function trainWeek(runs, nowMs, stages = {}) {
+  const since = nowMs - TRAIN_WEEK_DAYS * 86_400_000;
+  const list = Array.isArray(runs) ? runs : [];
+  const inWindow = list.filter(run => Date.parse(run?.at) >= since);
+  const week = {
+    days: TRAIN_WEEK_DAYS, complete: inWindow.length < list.length,
+    scheduled: 0, publishNow: 0, ok: 0, before: 0, after: 0, unknown: 0, running: 0,
+  };
+  for (const run of inWindow) {
+    if (run.event === 'workflow_dispatch') week.publishNow += 1;
+    else week.scheduled += 1;
+    if (run.status !== 'completed' || !run.conclusion) week.running += 1;
+    else if (RUN_OK.has(run.conclusion)) week.ok += 1;
+    else week[['before', 'after'].includes(stages[run.id]) ? stages[run.id] : 'unknown'] += 1;
+  }
+  return week;
+}
+
+/**
+ * One line for the week. Informational: it never raises the tone. It names the spend
+ * tripwire only when runs stopping before publishing are a pattern (three or more, and at
+ * least a third of the scheduled runs), which is the question the owner has to answer.
+ */
+export function trainWeekLine(week) {
+  if (!week) return '';
+  const total = week.scheduled + week.publishNow;
+  const lead = `${week.complete ? '' : 'At least '}${plural(week.scheduled, 'scheduled run')}${week.publishNow ? ` and ${week.publishNow} publish-now` : ''}`;
+  const parts = [
+    week.ok && `${week.ok} published or had nothing new`,
+    week.before && `${week.before} stopped before publishing (held by the spend tripwire, refused, or could not check)`,
+    week.after && `${week.after} failed after publishing`,
+    week.unknown && `${week.unknown} failed at an unread step`,
+    week.running && `${week.running} still running`,
+  ].filter(Boolean);
+  let line = `Release train, last ${week.days} days: ${lead}${total ? ` — ${parts.join(', ')}` : ''}.`;
+  if (week.before >= 3 && week.before * 3 >= week.scheduled) {
+    line += ' Stops before publishing are a pattern this week; if the run logs say "HELD by the spend tripwire", the budget in release_train.py may need retuning.';
+  }
+  return line;
+}
 
 /**
  * The completed release-train runs in the lookback that did not succeed, newest first, and

@@ -3,7 +3,10 @@
 // only reads. Every read that fails becomes a named gap in the payload, never a zero.
 import {
   checksVerdict,
+  failedStage,
   failedTrainRuns,
+  TRAIN_WEEK_DAYS,
+  trainWeek,
   firstParentChain,
   nextTrainSlot,
   releaseHeadline,
@@ -19,8 +22,10 @@ const GITHUB_API = `https://api.github.com/repos/${REPO}`;
 const SHA = /^[0-9a-f]{40}$/;
 const COMPARE_PAGE = 100;
 const COMPARE_MAX_PAGES = 5;
-// Three scheduled slots a day plus any publish-now presses: 20 covers the lookback window.
-const TRAIN_RUNS_PAGE = 20;
+// Three scheduled slots a day plus any publish-now presses: 50 covers the 7-day week.
+const TRAIN_RUNS_PAGE = 50;
+// Failed runs whose failing step is read for the weekly line (one request each).
+const STAGE_LOOKUPS = 10;
 const SERVED_REVISION_PATH = '/tool-governance.json';
 const SERVED_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -166,8 +171,10 @@ export async function loadReleaseStatus(fetchImpl, token, {
 
   let lastRun = null;
   let failedRuns = null;
+  let week = null;
   if (runsResult.status === 'fulfilled' && Array.isArray(runsResult.value?.workflow_runs)) {
     const runs = runsResult.value.workflow_runs.map(run => ({
+      id: run.id,
       at: run.run_started_at || run.created_at,
       event: run.event,
       status: run.status,
@@ -182,6 +189,22 @@ export async function loadReleaseStatus(fetchImpl, token, {
     if (runs.length >= TRAIN_RUNS_PAGE && !window.coveredWindow) {
       note('release-train runs', `more than ${TRAIN_RUNS_PAGE} in the lookback; older runs unread`);
     }
+    // The weekly line: which step each failed run of the week stopped at. Best effort -- an
+    // unread step counts as unclassified in the line and is never a gap, because the line is
+    // information, not a verdict.
+    const weekSince = nowMs - TRAIN_WEEK_DAYS * 86_400_000;
+    const failedThisWeek = runs.filter(run => Date.parse(run.at) >= weekSince && run.status === 'completed'
+      && run.conclusion && !['success', 'skipped', 'neutral'].includes(run.conclusion) && Number.isSafeInteger(run.id))
+      .slice(0, STAGE_LOOKUPS);
+    const stages = Object.fromEntries(await Promise.all(failedThisWeek.map(async run => {
+      try {
+        const body = await github(`/actions/runs/${run.id}/jobs`);
+        return [run.id, failedStage(body?.jobs)];
+      } catch {
+        return [run.id, 'unknown'];
+      }
+    })));
+    week = trainWeek(runs, nowMs, stages);
   } else note('release-train runs', runsResult.reason || 'unreadable');
 
   // What learners are served: the published deploys. When both sites are unreadable, fall
@@ -242,6 +265,7 @@ export async function loadReleaseStatus(fetchImpl, token, {
       nextSlot: new Date(nextTrainSlot(nowMs)).toISOString(),
       lastRun,
       failedRuns,
+      week,
     },
     // Ledger mode (ADR-003): sign-offs never merge to main; ledger-publish rebuilds the sites
     // for them on its own, so a sign-off is not a "waiting change" here.

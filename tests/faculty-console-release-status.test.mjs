@@ -12,6 +12,11 @@ import {
   STALE_WAIT_HOURS,
   failedTrainRuns,
   TRAIN_LOOKBACK_HOURS,
+  failedStage,
+  TRAIN_PROMOTE_STEP,
+  TRAIN_RECEIPT_STEP,
+  trainWeek,
+  trainWeekLine,
   watchVerdict,
   REQUIRED_CHECKS,
   TRAIN_SLOTS_UTC,
@@ -166,7 +171,7 @@ const CONFIG = {
 
 function fixtureFetch({
   netlifyDown = false, compareDown = false, checksDown = false, served = {},
-  sitesDown = false, trainConclusion = 'failure', manifest = null, trainRuns = null,
+  sitesDown = false, trainConclusion = 'failure', manifest = null, trainRuns = null, jobs = {},
 } = {}) {
   const calls = [];
   const fetchImpl = async (url) => {
@@ -194,6 +199,12 @@ function fixtureFetch({
           { sha: MAIN, parents: [{ sha: SIGNOFF }], commit: { message: 'Phone dock label (#846)', committer: { date: '2026-09-27T12:47:46Z' } } },
         ],
       });
+    }
+    const jobsMatch = url.match(/\/actions\/runs\/(\d+)\/jobs$/);
+    if (jobsMatch) {
+      const failing = jobs[jobsMatch[1]];
+      if (failing === 'down') return new Response('', { status: 502 });
+      return Response.json({ jobs: [{ steps: failing ? [{ name: failing, conclusion: 'failure' }] : [] }] });
     }
     if (url.endsWith('/tool-governance.json')) {
       if (sitesDown) return new Response('', { status: 503 });
@@ -404,7 +415,7 @@ test('the watch workflow runs the watch after the morning publish and is on the 
 // ── Every train run in the lookback (Codex P1 on #864) ─────────────────────────────────
 
 const run = (at, conclusion, extra = {}) => ({
-  run_started_at: at, event: 'schedule', status: 'completed', conclusion,
+  id: Date.parse(at) / 1000, run_started_at: at, event: 'schedule', status: 'completed', conclusion,
   html_url: `https://github.com/jmoss333/psychiatry-clerkship/actions/runs/${Date.parse(at)}`, ...extra,
 });
 
@@ -456,9 +467,75 @@ test('a green day stays green, and a full page inside the window is a gap, not a
   ];
   const green = await releaseWatch({ argv: [], env: { GITHUB_TOKEN: 's' }, fetchImpl: fixtureFetch({ trainRuns: calm }).fetchImpl, now });
   assert.equal(green, 0);
-  const busy = Array.from({ length: 20 }, (_, i) => run(new Date(Date.parse('2026-09-28T05:30:00Z') - i * 3_600_000).toISOString(), 'success'));
+  const busy = Array.from({ length: 50 }, (_, i) => run(new Date(Date.parse('2026-09-28T05:30:00Z') - i * 1_800_000).toISOString(), 'success'));
   const fetchImpl = fixtureFetch({ trainRuns: busy }).fetchImpl;
   const full = await loadReleaseStatus(fetchImpl, 's', { now, readSite: servedRevisionReader(fetchImpl) });
-  assert.ok(full.gaps.some(gap => gap.startsWith('release-train runs: more than 20')));
+  assert.ok(full.gaps.some(gap => gap.startsWith('release-train runs: more than 50')));
   assert.equal(watchVerdict(full), 2);
+});
+
+// ── The weekly train line ───────────────────────────────────────────────────────────────
+
+test('the two failure steps are the release-train workflow\'s own step names', () => {
+  const workflow = read('.github/workflows/production-release-train.yml');
+  assert.match(workflow, new RegExp(`- name: ${TRAIN_PROMOTE_STEP}\\n`));
+  assert.match(workflow, new RegExp(`- name: ${TRAIN_RECEIPT_STEP}\\n`));
+});
+
+test('a failed run is classified by the step it stopped at', () => {
+  const job = (...steps) => [{ steps: steps.map(([name, conclusion]) => ({ name, conclusion })) }];
+  assert.equal(failedStage(job(['Set up job', 'success'], [TRAIN_PROMOTE_STEP, 'failure'])), 'before');
+  assert.equal(failedStage(job([TRAIN_PROMOTE_STEP, 'success'], [TRAIN_RECEIPT_STEP, 'failure'])), 'after');
+  assert.equal(failedStage(job(['actions/checkout', 'failure'])), 'unknown');
+  assert.equal(failedStage(undefined), 'unknown');
+});
+
+test('the week counts runs by outcome, says "at least" when cut short, and names a hold pattern', () => {
+  const now = Date.parse('2026-09-28T10:05:00Z');
+  const at = hoursAgo => ({ at: new Date(now - hoursAgo * 3_600_000).toISOString() });
+  const r = (hoursAgo, conclusion, extra = {}) => ({ ...at(hoursAgo), id: hoursAgo, event: 'schedule', status: 'completed', conclusion, ...extra });
+  const runs = [
+    r(1, 'success'), r(6, 'failure'), r(12, 'failure'), r(25, 'success', { event: 'workflow_dispatch' }),
+    r(30, 'failure'), r(40, 'success'), r(50, 'cancelled'), r(60, 'success', { status: 'in_progress', conclusion: null }),
+    r(24 * 8, 'failure'), // outside the week: proves the listing reached past it
+  ];
+  const week = trainWeek(runs, now, { 6: 'before', 12: 'before', 30: 'after' });
+  assert.deepEqual(
+    { ...week },
+    { days: 7, complete: true, scheduled: 7, publishNow: 1, ok: 3, before: 2, after: 1, unknown: 1, running: 1 },
+  );
+  assert.equal(trainWeekLine(week),
+    'Release train, last 7 days: 7 scheduled runs and 1 publish-now — 3 published or had nothing new, '
+    + '2 stopped before publishing (held by the spend tripwire, refused, or could not check), 1 failed after publishing, '
+    + '1 failed at an unread step, 1 still running.');
+  const cut = trainWeek(runs.slice(0, 3), now, {});
+  assert.equal(cut.complete, false);
+  assert.match(trainWeekLine(cut), /^Release train, last 7 days: At least 3 scheduled runs/);
+  const held = trainWeek([r(1, 'failure'), r(9, 'failure'), r(17, 'failure'), r(25, 'success'), r(33, 'success'), r(200, 'success')], now,
+    { 1: 'before', 9: 'before', 17: 'before' });
+  assert.match(trainWeekLine(held), /are a pattern this week; .*release_train\.py may need retuning/);
+  assert.doesNotMatch(trainWeekLine(week), /pattern/);
+});
+
+test('the loader reads each failed run\'s steps for the week; an unreadable one is unclassified, never a gap', async () => {
+  const now = () => Date.parse('2026-09-28T06:00:00Z');
+  const trainRuns = [
+    run('2026-09-27T21:17:00Z', 'success'),
+    run('2026-09-27T15:18:00Z', 'failure'),
+    run('2026-09-27T09:21:00Z', 'failure'),
+    run('2026-09-26T09:21:00Z', 'failure'),
+    run('2026-09-15T09:21:00Z', 'success'),
+  ];
+  const jobs = {
+    [Date.parse('2026-09-27T15:18:00Z') / 1000]: TRAIN_PROMOTE_STEP,
+    [Date.parse('2026-09-27T09:21:00Z') / 1000]: TRAIN_RECEIPT_STEP,
+    [Date.parse('2026-09-26T09:21:00Z') / 1000]: 'down',
+  };
+  const fetchImpl = fixtureFetch({ trainRuns, jobs }).fetchImpl;
+  const status = await loadReleaseStatus(fetchImpl, 's', { now, readSite: servedRevisionReader(fetchImpl) });
+  assert.deepEqual(
+    { ...status.train.week },
+    { days: 7, complete: true, scheduled: 4, publishNow: 0, ok: 1, before: 1, after: 1, unknown: 1, running: 0 },
+  );
+  assert.ok(!status.gaps.some(gap => gap.includes('jobs')));
 });
