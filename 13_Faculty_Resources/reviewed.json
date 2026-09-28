@@ -1185,10 +1185,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-27",
+    "at": "2026-09-28",
     "by": "Joshua Moss, MD",
-    "contentHash": "eac6dd868706d480c37e8b2e774c4cb3815647b0",
-    "clinicalHash": "ef306ec8f280be0b1aabefdab43dac3c6850811f"
+    "contentHash": "5493a70552a9abccedd382582268ceb114e64836",
+    "clinicalHash": "295dad1a0bc2f2b5c0db07630439b65ab92f880d"
   },
   "qbank-attest.html": {
     "status": "reviewed",
