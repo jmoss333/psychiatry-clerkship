@@ -78,6 +78,20 @@ NETLIFY_SITE_ID=af64d5d4-e0b5-4f03-9857-be40e3b48329 netlify env:list --json
 
 ## 4. Build hooks, then the console
 
+> **First, `keys.json` must be on `release`, not only on `main`.** The console checks its key
+> against `keys.json` on `main`, but each learner build verifies signatures against the
+> `keys.json` in the `release` checkout it builds (`ledger_overlay.mjs` reads it from the build
+> root). If the console signs before the release train has carried the keys PR to `release`,
+> every learner build refuses the ledger (`LEDGER INVALID`, unknown key). The last good deploy
+> stays live, but no sign-off publishes until the train catches up. Check before continuing:
+>
+> ```bash
+> git fetch origin release main && git merge-base --is-ancestor <keys PR merge commit> origin/release && echo on-release
+> ```
+>
+> If it is not there yet, wait for the next train (09:05, 15:05, 21:05 UTC) or press the
+> release train's **Run workflow** (publish-now).
+
 Create one build hook per learner site (Site configuration → Build & deploy → Build hooks, branch **`release`**, name "attestation ledger"). Then set these on `clerkship-faculty-attest`, scope Functions:
 
 > **Why `release`, not `main`.** Since #802 the learner sites publish the `release` branch, which the release train moves only to a `main` commit whose build and smoke checks passed. A hook on `release` rebuilds exactly what learners already see and adds the newest signatures. A hook on `main` would publish whatever `main` holds at that minute, so it would skip the green-checks gate. The ledger itself comes from the `attestations` branch at build time either way, so a signature still appears within one rebuild.
