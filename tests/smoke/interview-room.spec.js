@@ -545,8 +545,9 @@ async function installFakes(page, scenario = {}) {
 }
 
 function caseCard(page) {
+  // The door's headline is the pilot's sentence around the patient's name ("Begin with Dana’s story.").
   return page.locator('.case').filter({
-    has: page.getByRole('heading', { name: CASE_HEADING, exact: true }),
+    has: page.getByRole('heading', { name: `Begin with ${CASE_HEADING}’s story.`, exact: true }),
   });
 }
 
@@ -615,7 +616,8 @@ test('the spoken room is the default, chosen before a case, and its consent name
   await openRoom(page);
   const select = roomMode(page);
   await expect(select).toHaveValue('spoken');
-  expect(await select.evaluate((element) => !!(element.compareDocumentPosition(document.querySelector('.casegrid')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  // The Room select sits in the masthead, before the entrance (the door and the access panel).
+  expect(await select.evaluate((element) => !!(element.compareDocumentPosition(document.querySelector('.entrance')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
   await expect(page.getByRole('region', { name: 'Spoken interviews' })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /Start a spoken interview/i })).toHaveCount(0);
   await expect(page.getByRole('combobox', { name: /voice mode/i })).toHaveCount(0);
@@ -1052,11 +1054,11 @@ test('the family visit is one card that opens the faculty preview in this tab, b
   await expect(card).toBeVisible();
   await expect(card).toContainText(/two voices/i);
   await expect(card).toContainText(/passcode stays here/i);
-  // The door follows the whole case grid and is not inside it (a door inside the grid, or after
-  // the first card only, would both satisfy a weaker "after a .case" check).
+  // The door follows the whole entrance (the door and the access panel) and is not inside it — a
+  // door inside the entrance would satisfy a weaker "after a .case" check.
   expect(await card.evaluate((element) => {
-    const grid = document.querySelector('.casegrid');
-    return !element.closest('.casegrid') && !!(grid.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const entrance = document.querySelector('.entrance');
+    return !element.closest('.entrance') && !!(entrance.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING);
   })).toBe(true);
   expect(await card.evaluate((element) => parseFloat(getComputedStyle(element).marginTop))).toBeGreaterThanOrEqual(12);
   const link = card.getByRole('link', { name: /Open the family visit/ });
