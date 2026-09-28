@@ -421,6 +421,7 @@ function reviewPrepareRestore(raw,reviewCards,qbItems,now){
     throw Error('Review backup has invalid daily settings.');
   result.settings.newPerDay=source.settings.newPerDay;
   if(source.settings.userSet!==undefined)result.settings.userSet=source.settings.userSet;
+  else if(source.settings.newPerDay!==12)result.settings.userSet=true; /* Match loadS()'s legacy choice backfill. */
   if(source.reviewCardRevisions!==undefined){
     if(!reviewRestoreObject(source.reviewCardRevisions))throw Error('Review backup has invalid card revisions.');
     result.reviewCardRevisions={};

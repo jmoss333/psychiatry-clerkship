@@ -69,6 +69,32 @@ test('review-only backups and older exports with optional statistics omitted rem
   }
 });
 
+test('legacy custom daily limits stay effective immediately after restore', () => {
+  const budgetBegin = review.indexOf('function effectiveNewPerDay(s){');
+  const budgetEnd = review.indexOf('var gradedThisSession', budgetBegin);
+  assert.ok(budgetBegin >= 0 && budgetEnd > budgetBegin);
+  const effectiveNewPerDay = new Function('phasePolicy',
+    review.slice(budgetBegin, budgetEnd) + ';return effectiveNewPerDay;')(
+    () => ({newPerDayCap: 5}));
+  for (const schema of ['clerkship-review-backup-v1', 'clerkship-study-v2']) {
+    const payload = JSON.parse(exported(schema));
+    payload.srs.settings = {newPerDay: 20};
+    const legacy = restore.reviewPrepareRestore(JSON.stringify(payload), reviews, bank, now);
+    assert.equal(legacy.store.settings.userSet, true);
+    assert.equal(effectiveNewPerDay(legacy.store), 20);
+
+    payload.srs.settings = {newPerDay: 20, userSet: false};
+    const explicitDefault = restore.reviewPrepareRestore(JSON.stringify(payload), reviews, bank, now);
+    assert.equal(explicitDefault.store.settings.userSet, false);
+    assert.equal(effectiveNewPerDay(explicitDefault.store), 5);
+
+    payload.srs.settings = {newPerDay: 12};
+    const defaultLimit = restore.reviewPrepareRestore(JSON.stringify(payload), reviews, bank, now);
+    assert.equal(defaultLimit.store.settings.userSet, undefined);
+    assert.equal(effectiveNewPerDay(defaultLimit.store), 5);
+  }
+});
+
 test('an imported schedule reopens corrected CATIE wording without erasing its grades', () => {
   const payload = JSON.parse(exported());
   payload.srs.cards['AR-24#5'] = {...card(now + 30 * 86_400_000), reps: 9};
