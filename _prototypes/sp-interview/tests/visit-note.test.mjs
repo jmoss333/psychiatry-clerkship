@@ -151,3 +151,49 @@ test('the next encounter with the same patient is offered only once faculty have
   assert.equal(T.nextEncounterFor(copy('pending'), dayOne.id), null);
   assert.equal(T.nextEncounterFor(copy('reviewed'), 'sp_mania_redirect_001'), null);
 });
+
+// Final review (2026-09-28): a turn can be recognized for a topic her reply never addresses. Offline
+// Dana answers one topic per turn, so the agenda line ("… your medicines, your safety plan and the
+// form …") is recognized for the plan while she answers about her medicines.
+test('the quote is the exchange where she said it, not the agenda turn that only named the topic', () => {
+  const r = row(T.gradeVisitNote(cd, visit(SKILLED), RIGHT), 'plan_used');
+  assert.equal(r.evidence.number, 19, 'the safety-plan question, not exchange 1');
+  assert.match(r.evidence.patient, /used it last night/);
+});
+
+test('an honest "not established" is no difference when her reply never stated the fact', () => {
+  const agendaOnly = T.gradeVisitNote(cd, visit([SKILLED[0]]), { ...RIGHT, plan_used: 'unknown' });
+  const plan = row(agendaOnly, 'plan_used');
+  assert.equal(plan.result, 'unconfirmed');
+  assert.match(plan.word, /does not state it/);
+  assert.equal(plan.evidence.number, 1, 'the recognized exchange is still shown, to check');
+  assert.equal(agendaOnly.counts.differ, 0);
+  // A specific question answered generically is the same case.
+  const generic = T.gradeVisitNote(cd, visit(['Are you taking your medications, like the sertraline?']), { ...RIGHT, sertraline: 'unknown' });
+  assert.equal(row(generic, 'sertraline').result, 'unconfirmed');
+  // Once she has said it, leaving it out of the note is still a difference.
+  assert.equal(row(T.gradeVisitNote(cd, visit(SKILLED), { ...RIGHT, plan_used: 'unknown' }), 'plan_used').result, 'unrecorded');
+});
+
+test('a softened question or a held-back disclosure is recognized: the row says she did not disclose it', () => {
+  const soft = row(T.gradeVisitNote(cd, visit(['Have you had any thoughts of hurting yourself?']), { ...RIGHT, si_since: 'none' }), 'si_since');
+  assert.equal(soft.result, 'differs-unestablished');
+  assert.equal(soft.recognized, true);
+  assert.doesNotMatch(soft.word, /did not recognize/);
+  assert.match(soft.word, /did not disclose/);
+  assert.equal(soft.evidence.number, 1);
+  assert.match(soft.evidence.patient, /Hurt myself\? No/);
+  const held = row(T.gradeVisitNote(cd, visit(['You should really keep your appointments.', 'Did you make it to the intake on Monday?']), RIGHT), 'intake');
+  assert.equal(held.result, 'unsupported');
+  assert.equal(held.recognized, true);
+  assert.match(held.word, /did not disclose/);
+  assert.equal(held.evidence.number, 2, 'the question she deflected');
+  const never = row(T.gradeVisitNote(cd, visit(['Hi.']), RIGHT), 'intake');
+  assert.equal(never.recognized, false);
+  assert.match(never.word, /did not recognize the topic/);
+});
+
+test('each case speaks at its declared rate, so the follow-up keeps Day 1\'s measured pace', () => {
+  for (const c of pack.cases) assert.equal(T.paceFor(c).rate, c.speechProfile.speakingRate, c.id);
+  assert.equal(T.paceFor(cd).label, T.paceFor(dayOne).label);
+});

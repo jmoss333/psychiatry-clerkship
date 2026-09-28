@@ -1351,7 +1351,16 @@ test('the follow-up chart is on the door and in the room, and Escape returns foc
   await chartButton.click();
   const dialog = page.getByRole('dialog', { name: 'Chart — Dana' });
   await expect(dialog.getByText('Item scores in order, 1 to 9: 2 · 2 · 1 · 2 · 1 · 2 · 1 · 1 · 0.')).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Back to the conversation' })).toBeFocused();
+  // Focus starts on the heading, so the chart opens at its top; the only control is at its foot.
+  const heading = dialog.getByRole('heading', { name: 'Chart — Dana' });
+  await expect(heading).toBeFocused();
+  await expect.poll(async () => (await heading.boundingBox()).y).toBeGreaterThanOrEqual(0);
+  // The trap holds from the heading in both directions.
+  const back = dialog.getByRole('button', { name: 'Back to the conversation' });
+  await page.keyboard.press('Shift+Tab');
+  await expect(back).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(back).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(chartButton).toBeFocused();
@@ -1374,6 +1383,13 @@ test('the visit note gates the debrief, sits beside the record, and starts empty
   await choose('Therapy intake (booked for day 3)', 'Missed');
   await choose('Sertraline — once daily, in the morning', 'Not established in this visit');
   await choose('Trazodone — at bedtime, as needed for sleep', 'Not established in this visit');
+  // Changing one's mind: ticking "None found" keeps what was typed, and unticking brings it back.
+  const others = page.getByLabel('Anything she takes that is not on the list', { exact: true });
+  await others.fill('melatonin');
+  await page.getByLabel('None found', { exact: true }).check();
+  await expect(others).toBeDisabled();
+  await page.getByLabel('None found', { exact: true }).uncheck();
+  await expect(others).toHaveValue('melatonin');
   await page.getByLabel('None found', { exact: true }).check();
   await page.getByLabel('Total, as marked (0–27)', { exact: true }).fill('12');
   await choose('Severity band', 'Moderate (10–14)');
@@ -1398,4 +1414,23 @@ test('the visit note gates the debrief, sits beside the record, and starts empty
   await page.getByRole('button', { name: 'End encounter' }).click();
   await expect(page.getByRole('group', { name: 'Therapy intake (booked for day 3)', exact: true }).getByLabel('Missed', { exact: true })).not.toBeChecked();
   await expect(page.getByLabel('Total, as marked (0–27)', { exact: true })).toHaveValue('');
+});
+
+test('a Live reply that lands while the chart is open leaves focus in the chart, so Escape still closes it', async ({ page }) => {
+  await openRoom(page, { slowActorMs: 900, roomMode: 'typed', followUpReviewed: true });
+  await page.getByLabel('Patient').selectOption(FOLLOW_UP_ID);
+  await beginTyped(page);
+  await sayTyped(page, 'How has the week been?');
+  await expect(page.locator('.audiostatus')).toContainText(/Dana is thinking/i);
+  const chartButton = page.getByRole('button', { name: 'Chart', exact: true });
+  await chartButton.click();
+  const dialog = page.getByRole('dialog', { name: 'Chart — Dana' });
+  await expect(dialog).toBeVisible();
+  // The reply lands behind the dialog; its focus hand-off to the composer runs on the next tick.
+  await expect(page.locator('.msg.pt').filter({ hasText: LATE_REPLY })).toHaveCount(1, { timeout: 5000 });
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => !!(document.activeElement && document.activeElement.closest('[role="dialog"]')))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(chartButton).toBeFocused();
 });

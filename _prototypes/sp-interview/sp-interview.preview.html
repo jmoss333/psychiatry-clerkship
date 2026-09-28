@@ -679,12 +679,25 @@ function isManagedVoiceEligible(pack,caseDef){
 /* Per-persona speech pace, derived from the pack's authored persona.voice field.
    The rhythm is clinical content: pressured speech reveals fast and dense; guarded
    psychosis reveals in clusters with long silences; depression reveals flat and even. */
+var PACES=[
+  {w:75,ch:4,sent:170,cl:60,ell:220,stage:450,caps:140,rate:1.15,anim:'spkflat spkbar',dur:'.45s',label:'pressured, fast',bars:[14,20,17,20,18]},
+  {w:300,ch:2,sent:1050,cl:520,ell:1650,stage:2100,caps:0,rate:0.85,anim:'spkhalt',dur:'2.1s',label:'halting, careful',bars:[17,5,4,16,5]},
+  {w:220,ch:2,sent:520,cl:240,ell:800,stage:1100,caps:0,rate:0.98,anim:'spkflat',dur:'1.4s',label:'conversational, even',bars:[10,13,11,13,10]},
+  {w:260,ch:2,sent:620,cl:280,ell:950,stage:1300,caps:0,rate:0.95,anim:'spkflat',dur:'1.7s',label:'measured, flat',bars:[9,12,10,12,9]}
+];
+/* A case's declared delivery (speechProfile.speakingRate) names its preset; the voice text is the
+   fallback for a case that declares none. The declared rate reproduces the voice-text reading for
+   every case attested before 2026-09-28, and keeps a follow-up whose voice line says "careful"
+   at its own measured pace rather than the halting psychosis rhythm. */
 function paceFor(caseDef){
+  var sp=caseDef.speechProfile,rate=sp&&typeof sp.speakingRate==='number'?sp.speakingRate:null;
+  var byRate=rate===null?null:PACES.filter(function(p){return p.rate===rate;})[0];
+  if(byRate)return Object.assign({},byRate);
   var v=(caseDef.persona.voice||'').toLowerCase();
-  if(/rapid|pressured|run-on/.test(v)) return {w:75,ch:4,sent:170,cl:60,ell:220,stage:450,caps:140,rate:1.15,anim:'spkflat spkbar',dur:'.45s',label:'pressured, fast',bars:[14,20,17,20,18]};
-  if(/pause|halting|careful|tests you/.test(v)) return {w:300,ch:2,sent:1050,cl:520,ell:1650,stage:2100,caps:0,rate:0.85,anim:'spkhalt',dur:'2.1s',label:'halting, careful',bars:[17,5,4,16,5]};
-  if(/conversational|thoughtful|reflective/.test(v)) return {w:220,ch:2,sent:520,cl:240,ell:800,stage:1100,caps:0,rate:0.98,anim:'spkflat',dur:'1.4s',label:'conversational, even',bars:[10,13,11,13,10]};
-  return {w:260,ch:2,sent:620,cl:280,ell:950,stage:1300,caps:0,rate:0.95,anim:'spkflat',dur:'1.7s',label:'measured, flat',bars:[9,12,10,12,9]};
+  if(/rapid|pressured|run-on/.test(v)) return Object.assign({},PACES[0]);
+  if(/pause|halting|careful|tests you/.test(v)) return Object.assign({},PACES[1]);
+  if(/conversational|thoughtful|reflective/.test(v)) return Object.assign({},PACES[2]);
+  return Object.assign({},PACES[3]);
 }
 /* Adaptive coach: process before content, stakes before list order, escalating specificity. */
 function getCoach(sess){
@@ -837,19 +850,62 @@ function visitNoteComplete(caseDef,entries){
     return false;
   });
 }
-/* The patient turn where a field's fact became available: the first turn whose recognized intents
-   include one of the field's, or, for a gate, the first turn at which replaying the learner's words
-   through the same cascade the server runs opens it (parity.test.mjs keeps MockProvider and
-   sp.mjs deriveState identical on `unlocked`). Null when neither happened. */
+/* A turn can be recognized for a topic its reply never addresses: offline, the patient answers one
+   topic per turn, so an agenda line that names the medicines, the safety plan and the form is
+   recognized for all three while she answers about her medicines. A reply CARRIES a field's fact
+   when it contains one of the case's own lines for it — a response line of the field's intents, or
+   the gate's reveal or repeat line. A Live reply is the model's own words and never matches, so
+   the room cannot confirm from text alone that a paraphrase stated the fact. */
+function visitNoteFactLines(caseDef,field){
+  var r=field.revealedBy||{},lines=[];
+  (r.intents||[]).forEach(function(id){
+    var bank=caseDef.responses&&caseDef.responses[id];
+    if(bank)Object.keys(bank).forEach(function(tier){(bank[tier]||[]).forEach(function(l){lines.push(l);});});
+  });
+  var g=r.gate?(caseDef.gated||[]).filter(function(x){return x.id===r.gate;})[0]:null;
+  if(g){if(g.reveal)lines.push(g.reveal);if(g.repeatAsk)lines.push(g.repeatAsk);}
+  return lines;
+}
+function visitNoteCarries(reply,lines){
+  return typeof reply==='string'&&lines.some(function(l){return l&&reply.indexOf(l)>=0;});
+}
+/* The intents that show the learner raised a gate's topic: the gate's keys, and its euphemism —
+   a softened question is recognized, though it never opens the disclosure. */
+function visitNoteGateIntents(caseDef,gateId){
+  var g=(caseDef.gated||[]).filter(function(x){return x.id===gateId;})[0];
+  return g?(g.requiresIntents||[]).concat(g.euphemismIntent?[g.euphemismIntent]:[]):[];
+}
+function visitNoteRecognized(caseDef,s,field){
+  var r=field.revealedBy||{};
+  if(visitNoteEstablished(s,field))return true;
+  var ids=r.gate?visitNoteGateIntents(caseDef,r.gate):[];
+  return ids.some(function(id){return !!(s.covered&&s.covered[id]);});
+}
+/* The patient turn to quote. For intents: the first recognized turn whose reply carries the fact,
+   else the first recognized turn (still shown, to check). For a gate: the first turn at which
+   replaying the learner's words through the same cascade the server runs opens it (parity.test.mjs
+   keeps MockProvider and sp.mjs deriveState identical on `unlocked`), else — the gate never opened —
+   the first turn that raised its topic, so a deflection is shown for what it was. `carried` says
+   whether the quoted reply is the disclosure itself. Null when nothing was recognized. */
 function visitNoteEvidenceTurn(s,field){
-  var r=field.revealedBy||{},turns=s.turns||[],i;
+  var r=field.revealedBy||{},turns=s.turns||[],i,first=null;
+  function at(i,carried){return {number:i+1,learner:turns[i].me,patient:turns[i].pt,carried:carried};}
+  function raised(i,ids){return (turns[i].intents||[]).some(function(id){return ids.indexOf(id)>=0;});}
   if(r.intents){
-    for(i=0;i<turns.length;i++){if((turns[i].intents||[]).some(function(id){return r.intents.indexOf(id)>=0;}))return {number:i+1,learner:turns[i].me,patient:turns[i].pt};}
-    return null;
+    var lines=visitNoteFactLines(s.caseDef,field);
+    for(i=0;i<turns.length;i++){
+      if(!raised(i,r.intents))continue;
+      if(visitNoteCarries(turns[i].pt,lines))return at(i,true);
+      if(!first)first=at(i,false);
+    }
+    return first;
   }
   if(r.gate){
     var replayer=new MockProvider(),replay=replayer.start(s.caseDef,{difficulty:'supported'});
-    for(i=0;i<turns.length;i++){replayer.respond(replay,turns[i].me);if(replay.unlocked[r.gate])return {number:i+1,learner:turns[i].me,patient:turns[i].pt};}
+    for(i=0;i<turns.length;i++){replayer.respond(replay,turns[i].me);if(replay.unlocked[r.gate])return at(i,true);}
+    if(s.unlocked&&s.unlocked[r.gate])return null; // opened on a turn the replay cannot place (spoken)
+    var ids=visitNoteGateIntents(s.caseDef,r.gate);
+    for(i=0;i<turns.length;i++){if(raised(i,ids))return at(i,false);}
   }
   return null;
 }
@@ -862,27 +918,39 @@ function visitNoteEntryText(field,value){
 var VISIT_NOTE_WORD={
   match:'Matches the record',
   unrecorded:'The room recognized this topic in your turns — your note records it as not established; check the reply',
+  unconfirmed:'The room recognized this topic in your turns, but her reply there does not state it — “not established” is an honest entry; check the exchange',
   differs:'Differs from the record',
   accurate:'Not established in this visit — an honest entry',
   unsupported:'Matches the record, though the room did not recognize the topic in your turns',
   'differs-unestablished':'Differs from the record, and the room did not recognize the topic in your turns'
 };
+/* The same results for a gate whose topic the learner raised but whose disclosure never opened —
+   a softened question, or a question held back after a judgmental turn. */
+var VISIT_NOTE_WORD_UNDISCLOSED={
+  accurate:'Not established in this visit — an honest entry',
+  unsupported:'Matches the record, though she did not disclose it in this visit',
+  'differs-unestablished':'Differs from the record — she did not disclose it in this visit'
+};
 function gradeVisitNote(caseDef,s,entries){
   var fields=visitNoteFields(caseDef),rows=[],counts={match:0,differ:0,notEstablished:0};
   fields.forEach(function(item){
     var f=item.field,v=entries?entries[f.id]:undefined,r=f.revealedBy||{};
-    var established=visitNoteEstablished(s,f),result,note='';
+    var established=visitNoteEstablished(s,f),recognized=visitNoteRecognized(caseDef,s,f),result,note='';
+    var evidence=r.chart?null:visitNoteEvidenceTurn(s,f);
+    // Leaving a fact out is a difference only when her reply stated it; a gate's disclosure is the
+    // opening itself, including a spoken turn the replay cannot place.
+    var heard=r.intents?!!(evidence&&evidence.carried):established;
     if(f.type==='integer'){
       result=visitNoteInteger(v,f)===f.answer?'match':'differs';
     }else if(f.type==='items'){
       var it=visitNoteItems(f,v),requiredOk=!it.none&&!it.missingRequired.length;
-      if(established)result=requiredOk?'match':(it.none?'unrecorded':'differs');
+      if(established)result=requiredOk?'match':(it.none?(heard?'unrecorded':'unconfirmed'):'differs');
       else result=it.none?'accurate':(requiredOk?'unsupported':'differs-unestablished');
       var extra=it.none?[]:it.matched.filter(function(ex){return !ex.required;}).map(function(ex){return ex.label;});
       if(extra.length)note='You also recorded: '+extra.join(', ')+'.';
     }else{
       var isUnknown=f.unknown!=null&&v===f.unknown;
-      if(established)result=v===f.answer?'match':(isUnknown?'unrecorded':'differs');
+      if(established)result=v===f.answer?'match':(isUnknown?(heard?'unrecorded':'unconfirmed'):'differs');
       else result=isUnknown?'accurate':(v===f.answer?'unsupported':'differs-unestablished');
       if(f.bandOf&&result!=='match'){
         var totalItem=fields.filter(function(x){return x.field.id===f.bandOf;})[0];
@@ -891,11 +959,12 @@ function gradeVisitNote(caseDef,s,entries){
       }
     }
     if(result==='match')counts.match++;
-    else if(result==='accurate'||result==='unsupported')counts.notEstablished++;
+    else if(result==='accurate'||result==='unsupported'||result==='unconfirmed')counts.notEstablished++;
     else counts.differ++;
+    var word=(!established&&recognized&&VISIT_NOTE_WORD_UNDISCLOSED[result])||VISIT_NOTE_WORD[result];
     rows.push({id:f.id,section:item.section.title,label:f.label,type:f.type,entry:visitNoteEntryText(f,v),record:f.record,
-      teach:f.teach,result:result,word:VISIT_NOTE_WORD[result],established:established,fromChart:!!r.chart,
-      evidence:r.chart?null:visitNoteEvidenceTurn(s,f),note:note});
+      teach:f.teach,result:result,word:word,established:established,recognized:recognized,fromChart:!!r.chart,
+      evidence:evidence,note:note});
   });
   return {rows:rows,counts:counts};
 }
@@ -969,7 +1038,7 @@ function VisitNoteReview(props){
         e('p',null,e('b',null,'Your note: '),r.entry),
         e('p',null,e('b',null,'The record: '),r.record),
         r.evidence?e('p',{className:'quoted-turn'},e('b',null,'Exchange '+r.evidence.number+' · '+who+': '),r.evidence.patient)
-          :(r.fromChart?null:e('p',{className:'fine'},r.established?'The room recognized this topic; review the full exchange.':'Not established in this visit — '+who+' would have told you if asked.')),
+          :(r.fromChart?null:e('p',{className:'fine'},r.established?'The room recognized this topic; review the full exchange.':r.recognized?'The room recognized this topic in your turns, but '+who+' did not disclose it in this visit.':'Not established in this visit — '+who+' would have told you if asked.')),
         r.note?e('p',{className:'fine'},r.note):null,
         e('p',null,r.teach));
     })));
@@ -1082,7 +1151,7 @@ function App(){
   // Page memory only: never persisted, never sent — the evaluate request keeps its three answers.
   var vns=useState({}); var VN=vns[0],setVN=vns[1];
   var cho=useState(false); var chartOpen=cho[0],setChartOpen=cho[1];
-  var chartBtnRef=useRef(null), chartCloseRef=useRef(null);
+  var chartBtnRef=useRef(null), chartCloseRef=useRef(null), chartTitleRef=useRef(null), chartOpenRef=useRef(false);
   // The door: which patient the entrance shows. Null until the learner chooses; the first attested case otherwise.
   var scs=useState(null); var selectedCaseId=scs[0],setSelectedCaseId=scs[1];
   var chatRef=useRef(null), returnRef=useRef(null), doorRef=useRef(null), spokenConsentRef=useRef(null), roomModeRef=useRef(null), passcodeRef=useRef(null), composerRef=useRef(null), limitEndRef=useRef(null), selfAssessRef=useRef(null), evaluationAbortRef=useRef(null), providerCheckRef=useRef({generation:0,abort:null}), healthRequestRef=useRef({generation:0,abort:null}), providerModeRef=useRef(provMode), voiceRuntimeRef=useRef({caseDef:null}), rtRef=useRef(null), rtBookRef=useRef({stateByTurn:{},applied:{},recorded:{},repeated:{},lastTurn:0}), audioSinkRef=useRef(null), pendingBeginRef=useRef(null), rtPhaseRef=useRef('');
@@ -1303,9 +1372,9 @@ function App(){
     if(ev.key!=='Tab')return;
     var nodes=Array.prototype.slice.call(ev.currentTarget.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'));
     if(!nodes.length){ev.preventDefault();return;}
-    var first=nodes[0],last=nodes[nodes.length-1],active=document.activeElement;
-    if(ev.shiftKey&&(active===first||active===ev.currentTarget)){ev.preventDefault();last.focus();}
-    else if(!ev.shiftKey&&active===last){ev.preventDefault();first.focus();}
+    var first=nodes[0],last=nodes[nodes.length-1],active=document.activeElement,inOrder=nodes.indexOf(active)>=0;
+    if(ev.shiftKey&&(active===first||!inOrder)){ev.preventDefault();last.focus();}
+    else if(!ev.shiftKey&&(active===last||!inOrder)){ev.preventDefault();first.focus();}
   }
 
   useEffect(function(){
@@ -1348,7 +1417,7 @@ function App(){
   useEffect(function(){if(S.screen==='encounter'&&composerRef.current&&!(E&&E.spoken)){try{composerRef.current.focus();}catch(x){}}else if(S.screen==='selfassess'&&selfAssessRef.current){try{selfAssessRef.current.focus();}catch(x){}}},[S.screen,E&&E.encounterId]);
   useEffect(function(){
     var last=E&&E.msgs&&E.msgs[E.msgs.length-1],limit=S.pack&&S.pack.engine&&(S.pack.engine.maxTurns||40);
-    if(S.screen==='encounter'&&E&&!E.spoken&&last&&last.who==='pt'&&E.session.turns.length>=limit&&limitEndRef.current){try{limitEndRef.current.focus();}catch(x){}}
+    if(S.screen==='encounter'&&E&&!E.spoken&&last&&last.who==='pt'&&E.session.turns.length>=limit&&limitEndRef.current&&!chartOpenRef.current){try{limitEndRef.current.focus();}catch(x){}}
   },[S.screen,E&&E.msgs&&E.msgs.length]);
   useEffect(function(){
     var b=document.getElementById('themebtn');
@@ -1376,7 +1445,7 @@ function App(){
     setTimeout(function(){
       acceptRenderedReply(result);
       var limit=S.pack&&S.pack.engine&&(S.pack.engine.maxTurns||40),atLimit=E&&E.session.turns.length>=limit;
-      if(S.screen==='encounter'&&!atLimit&&composerRef.current){try{composerRef.current.focus();}catch(x){}}
+      if(S.screen==='encounter'&&!atLimit&&composerRef.current&&!chartOpenRef.current){try{composerRef.current.focus();}catch(x){}}
     },0);
   }
   function runOpening(provider,session,isOffline){
@@ -1408,7 +1477,7 @@ function App(){
     var sess=p.start(caseDef,{difficulty:difficulty,encounterId:encounterId});
     setE({provider:p,session:sess,caseDef:caseDef,difficulty:difficulty,
           encounterId:encounterId,msgs:[],phiHold:null,feedback:null,spoken:spoken});
-    setSA({a:'',b:'',c:''});setActorIssue(null);setOfflineSession(p instanceof MockProvider);setStepOut(false);setInput('');setSelfReport(null);setVN({});setChartOpen(false);
+    setSA({a:'',b:'',c:''});setActorIssue(null);setOfflineSession(p instanceof MockProvider);setStepOut(false);setInput('');setSelfReport(null);setVN({});setChartOpen(false);chartOpenRef.current=false;
     setS(Object.assign({},S,{screen:'encounter'}));
     announce('Encounter started with '+caseDef.persona.displayName+', '+difficulty+' mode'+(spoken?', spoken room.':'.'));
     if(spoken){startSpokenSession(caseDef,encounterId);return;}
@@ -1463,7 +1532,7 @@ function App(){
     setTimeout(function(){ if(doorRef.current)try{doorRef.current.focus();}catch(x){} },30); }
   function endEncounter(){ setShowSpokenConsent(false);
     if(E&&E.spoken){var last=rt;disposeSpokenSession();if(last)recordSpokenTurns(last);setRt(null);}
-    voiceControllerRef.current.endEncounter();setBusy(false); setStepOut(false); setChartOpen(false);
+    voiceControllerRef.current.endEncounter();setBusy(false); setStepOut(false); setChartOpen(false); chartOpenRef.current=false;
     setS(Object.assign({},S,{screen:'selfassess'})); announce('Encounter ended. Your read comes before any feedback.'); }
   function toDebrief(){
     cancelEvaluation();
@@ -1625,15 +1694,15 @@ function App(){
   }
 
   /* ---------- encounter: shared step-out overlay ---------- */
-  function openChart(){ setChartOpen(true); announce('Chart open. '+E.caseDef.persona.displayName+' waits.');
-    setTimeout(function(){ if(chartCloseRef.current)try{chartCloseRef.current.focus();}catch(x){} },30); }
-  function closeChart(){ setChartOpen(false); announce('Chart closed.');
+  function openChart(){ chartOpenRef.current=true; setChartOpen(true); announce('Chart open. '+E.caseDef.persona.displayName+' waits.');
+    setTimeout(function(){ if(chartTitleRef.current)try{chartTitleRef.current.focus();}catch(x){} },30); }
+  function closeChart(){ chartOpenRef.current=false; setChartOpen(false); announce('Chart closed.');
     setTimeout(function(){ if(chartBtnRef.current)try{chartBtnRef.current.focus();}catch(x){} },30); }
   function chartOverlay(cd){
     return e('div',{className:'overlay',onKeyDown:function(ev){trapDialogKey(ev,closeChart);}},
       e('div',{className:'panel',role:'dialog','aria-modal':true,'aria-labelledby':'chart_title'},
         e('div',{className:'panelhead'},
-          e('h2',{id:'chart_title'},'Chart — '+cd.persona.displayName),
+          e('h2',{id:'chart_title',tabIndex:-1,ref:chartTitleRef},'Chart — '+cd.persona.displayName),
           e('span',{className:'notascore'},'the record you brought in')),
         e(ChartDocs,{docs:chartDocs(cd),idSuffix:'dialog'}),
         e('div',{className:'panelfoot'},
