@@ -730,7 +730,7 @@
         "label": "Open the Psychopharmacology Primer",
         "href": "?page=psychopharm_primer.md"
       },
-      "stem": "A 34-year-old man with treatment-resistant schizophrenia has just been started on clozapine. He reports feeling better than he has in years. The treatment team asks the student to identify the most critical ongoing monitoring parameter for this medication. Which of the following is correct?",
+      "stem": "A 34-year-old man with treatment-resistant schizophrenia has just been started on clozapine. He reports feeling better than he has in years. Which ongoing monitoring is most critical for this medication?",
       "options": [
         {
           "key": "A",
@@ -742,7 +742,7 @@
         },
         {
           "key": "B",
-          "t": "Weekly Absolute neutrophil count monitoring— clozapine carries a risk of agranulocytosis",
+          "t": "Weekly absolute neutrophil count (ANC) monitoring — clozapine carries a risk of severe neutropenia (agranulocytosis)",
           "c": true
         },
         {
@@ -2359,7 +2359,7 @@
       "options": [
         {
           "key": "A",
-          "t": "\"Patient endorses suicidal ideation — reviewed risks and benefits of hospitalization, patient agrees to continued treatment.\"",
+          "t": "\"Patient endorses suicidal ideation. Reviewed the risks, benefits, and alternatives of hospitalization with the patient at length; patient verbalizes understanding of the plan and agrees to continued treatment on the inpatient unit.\"",
           "trap": {
             "name": "Document and continue",
             "note": "Consent documentation does not substitute for a safety formulation — reviewing risks and benefits of hospitalization does not record chronic factors, acute drivers, protective factor limits, or modifiable targets."
@@ -2375,7 +2375,7 @@
         },
         {
           "key": "C",
-          "t": "\"Acute suicide risk elevated due to active plan, persistent insomnia, escalating alcohol use, and firearm access not yet confirmed secured; chronic risk elevated by prior attempt and family history; modifiable targets include means restriction and substance stabilization; continued inpatient care indicated.\"",
+          "t": "\"Acute suicide risk elevated: active plan, persistent insomnia, escalating alcohol use, unsecured firearms. Chronic risk: prior attempt, family history. Targets: means restriction, substance stabilization. Continue inpatient care.\"",
           "c": true
         },
         {
@@ -3338,7 +3338,7 @@
       ],
       "why": "Contraindication confusion and Long half-life equals smooth coverage are the two active errors. The clinical principle: lorazepam and oxazepam are preferred in hepatic impairment precisely because their glucuronidation pathway is preserved while oxidative metabolism (which processes chlordiazepoxide and diazepam) is impaired in cirrhosis. All drugs equal ignores a clinically important pharmacokinetic distinction.",
       "pearl": "Hepatic impairment + alcohol withdrawal: use lorazepam or oxazepam (glucuronidation preserved); avoid long-acting benzodiazepines that accumulate.",
-      "evidence": "substance_use_inpatient_teaching.md 'Benzodiazepine choice in hepatic impairment' — Lorazepam, oxazepam, and temazepam (the LOT drugs) bypass oxidative CYP450 metabolism; they are conjugated by glucuronidation, a pathway that is relatively preserved in cirrhosis, and produce no clinically significant active metabolites. Chlordiazepoxide and diazepam rely on hepatic oxidative metabolism and produce long-lived active metabolites that accumulate in significant hepatic impairment, risking progressive over-sedation and worsening hepatic encephalopathy (Schuckit, N Engl J Med 2014; Saitz, Alcohol Health Res World 1998)."
+      "evidence": "t_sud.md 'Benzodiazepine choice in hepatic impairment' — Lorazepam, oxazepam, and temazepam (the LOT drugs) bypass oxidative CYP450 metabolism; they are conjugated by glucuronidation, a pathway that is relatively preserved in cirrhosis, and produce no clinically significant active metabolites. Chlordiazepoxide and diazepam rely on hepatic oxidative metabolism and produce long-lived active metabolites that accumulate in significant hepatic impairment, risking progressive over-sedation and worsening hepatic encephalopathy (Schuckit, N Engl J Med 2014; Saitz, Alcohol Health Res World 1998)."
     },
     {
       "id": "qb_sud_014",
@@ -3669,7 +3669,7 @@
         "label": "Open the Psychopharmacology Primer",
         "href": "?page=psychopharm_primer.md"
       },
-      "stem": "A 29-year-old man presents with a 3-week first depressive episode. His maternal grandmother and aunt both have bipolar disorder. The team is ready to prescribe sertraline. The student asks whether a bipolar screen should be done first. The most appropriate response is:",
+      "stem": "A 29-year-old man presents with a 3-week first depressive episode. His maternal grandmother and aunt both have bipolar disorder. The team is ready to prescribe sertraline. The student asks whether a bipolar screen should be done first. What is the most appropriate response?",
       "options": [
         {
           "key": "A",
@@ -3778,12 +3778,12 @@
       "options": [
         {
           "key": "A",
-          "t": "All antidepressants carry an FDA black box warning for increased suicidal thinking and behavior through age 24 — close monitoring especially early in treatment is mandated; this is a monitoring requirement, not a contraindication.",
+          "t": "It covers all antidepressants through age 24 — it calls for close monitoring early in treatment, not avoidance.",
           "c": true
         },
         {
           "key": "B",
-          "t": "The warning applies only to tricyclic antidepressants — SSRIs are exempt from the black box warning.",
+          "t": "The warning applies only to tricyclic antidepressants — SSRIs such as escitalopram are exempt from the black box warning.",
           "trap": {
             "name": "Selective citation",
             "note": "The black box warning applies to all antidepressants, not just tricyclics — SSRIs, SNRIs, and others are all included through age 24."
