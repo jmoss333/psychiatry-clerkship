@@ -36,7 +36,7 @@ a{color:var(--accent-dark)}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 12px;box-shadow:var(--shadow-sm)}
 .stat .num{font-family:"Source Serif 4",Georgia,serif;font-size:1.5rem;font-weight:700;line-height:1}
 .stat .lab{color:var(--text-light);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
-.stat.due .num{color:var(--primary-dark)} .stat.streak .num{color:var(--accent-dark)}
+.stat.due .num{color:var(--primary-dark)} .stat.fixed .num{color:var(--accent-dark)}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .btn{border:none;border-radius:11px;padding:13px 18px;font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit}
 .btn.primary{background:var(--primary);color:#fff;flex:1;min-width:200px}
@@ -527,6 +527,28 @@ function effectiveNewPerDay(s){
 }
 var gradedThisSession={}; // session-local: has card.id already been graded once this session? (a requeued Again-card's 2nd grade sets calibLog's rq flag). Reset in start().
 function maturity(st){if(!st||!st.reps)return "new";if(st.ivl>=21)return "mature";if(st.lapses&&st.ivl<=1)return "learning";return "young";}
+/* ---------- error correction ---------- */
+/* FT-3 (2026-09-28): the dashboard counts relearned cards, not days in a row: cards Daily Review
+   shows that lapsed at least once and whose latest grade was a pass (Hard, Good or Easy). The
+   canonical grader moves `due` at least a day past `last` on a pass and re-dues an Again at the
+   moment it is graded, so `due > last` means "the latest grade held". The label says
+   "Relearned", not "now right": a wrong choice may still be graded Hard, which is a pass.
+   Nothing here reads today's date, so a skipped day never lowers the number. Only cards this
+   page loaded are counted, so question-bank and retired ids never inflate it.
+   Pinned by tests/review-error-correction.test.mjs. */
+function reviewCorrected(cardState){
+  return !!cardState && (cardState.lapses||0) > 0 && typeof cardState.last === 'number' && cardState.due > cardState.last;
+}
+function reviewCorrectedCount(cards,stateCards,lane){
+  var n=0;
+  (cards||[]).forEach(function(c){
+    if(!c||!reviewCorrected(stateCards&&stateCards[c.id]))return;
+    if(lane!=='all'&&reviewLane(c)!==lane)return;
+    n++;
+  });
+  return n;
+}
+/* ---------- end error correction ---------- */
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 
 /* ---------- theme ---------- */
@@ -711,7 +733,7 @@ function App(){
   }
   function endSession(){ setSess(null); setTick(function(x){return x+1;}); }
   function setNewPerDay(v){ var s=loadS(); s.settings.newPerDay=v; s.settings.userSet=true; persist(s); }
-  function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule and streak. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); }
+  function resetAll(){ if(!window.confirm("Reset all spaced-repetition progress? This clears your review schedule. This also clears your calibration history. Reading progress elsewhere is unaffected."))return; try{localStorage.removeItem(KEY);}catch(_){ } calibClear(); setStore(freshStore()); setSess(null); setTick(function(x){return x+1;}); }
 
   function downloadReviewBackup(){
     try{
@@ -888,7 +910,7 @@ function App(){
         tool:'review', ref:null, blockKind:sess.fromBlock?'review':null,
         context: sess.reviewed+" card"+(sess.reviewed===1?"":"s")+" graded · choices and self-rated recall",
         headline: missed? (missed===1?"One card came back for another look.":missed+" cards came back for another look.") : "Review complete.",
-        sub: missed? "A miss here is scheduled sooner, not scored — it returns within the day so the second pass is the one that sticks." : "Held cards move out; the next pass is further away. "+(store.stats.streak||1)+"-day streak in Daily Review.",
+        sub: missed? "A miss here is scheduled sooner, not scored — it returns within the day so the second pass is the one that sticks." : "Held cards move out; the next pass is further away."+(function(){var n=reviewCorrectedCount(cards,store.cards,"all");return n?(n===1?" One card you once missed has been relearned.":" "+n+" cards you once missed have been relearned."):"";})(),
         stats:[{label:"Reviewed",value:String(sess.reviewed)},{label:"Choices correct",value:String((sess.counts||{}).choiceCorrect||0)+" / "+String((sess.counts||{}).choiceSeen||0),tone:"good"},{label:"Self-rated recall Good/Easy",value:String((sess.counts||{}).recallGoodEasy||0)+" / "+String((sess.counts||{}).recallSeen||0)},{label:"Came back",value:String(missed),tone:missed?"warn":"plain"}],
         reread:(sess.misses||[]).slice(0,5).map(function(m){ var topic=/^TOPIC#/.test(m.id)?m.id.slice(6):null; var ref=topic||m.page||null; return {tag:"Missed",warn:true,title:m.q,note:m.deckTitle,ref:ref,refTitle:ref?prettyRef(ref):null}; }),
         actions:[{id:"cwReviewDashBtn",label:"Back to dashboard",primary:true}]
@@ -926,7 +948,7 @@ function App(){
     e("div",{className:"allrow"},e("button",{className:"chip","aria-pressed":lane==='all',onClick:function(){setLane('all');}},"All due · "+(conceptStatus==='ready'&&articleStatus==='ready'&&practiceStatus==='ready'?allDue.due:"at least "+allDue.due))),
     e("div",{className:"statgrid"},
       e("div",{className:"stat due"},e("div",{className:"num"},incomplete?"?":m.due+m.newRemain),e("div",{className:"lab"},lane==='all'?"Due now":"Due + new")),
-      e("div",{className:"stat streak"},e("div",{className:"num"},store.stats.streak||0),e("div",{className:"lab"},"Day streak")),
+      e("div",{className:"stat fixed"},e("div",{className:"num"},reviewCorrectedCount(cards,store.cards,lane)),e("div",{className:"lab"},"Relearned")),
       e("div",{className:"stat"},e("div",{className:"num"},m.mature+m.young),e("div",{className:"lab"},"Learned")),
       e("div",{className:"stat"},e("div",{className:"num"},(store.stats.choiceCorrect||0)+" / "+(store.stats.choiceSeen||0)),e("div",{className:"lab"},"Choices correct · since this update"))),
     lane==='clerkship'?e("div",{className:"panel"},e("h2",null,"Concepts"),
@@ -946,7 +968,7 @@ function App(){
     e("div",{className:"panel"},
       e("h2",null,"How it works"),
       e("div",{className:"muted"},"Each question carries its own schedule. Answer, then grade: ",
-        e("b",null,"Again")," (missed — comes back this session), ",e("b",null,"Hard"),", ",e("b",null,"Good"),", or ",e("b",null,"Easy"),". Correct, confident cards stretch further out; missed ones come back soon. Clerkship Review and Landmark Evidence are two views of one schedule ("+(selectedIncomplete?"at least ":"")+cards.length+" available across both). All due contains only scheduled cards due now. Recall grades describe your own confidence; choice answers are scored separately."),
+        e("b",null,"Again")," (missed — comes back this session), ",e("b",null,"Hard"),", ",e("b",null,"Good"),", or ",e("b",null,"Easy"),". Correct, confident cards stretch further out; missed ones come back soon. Clerkship Review and Landmark Evidence are two views of one schedule ("+(selectedIncomplete?"at least ":"")+cards.length+" available across both). All due contains only scheduled cards due now. Recall grades describe your own confidence; choice answers are scored separately. Relearned counts cards you once missed and have passed since (Hard, Good or Easy); a day off never lowers it."),
       e("div",{className:"setrow"},
         e("span",null,"New cards / day"),
         e("input",{type:"range",min:5,max:30,step:1,value:store.settings.newPerDay||12,onChange:function(ev){setNewPerDay(+ev.target.value);}}),
