@@ -2,13 +2,16 @@
 
 ## What this is, and what it is not
 
-This is a **change gate, not a usage gate.** It does not stand between the tool and the students
-using it. The Interview Room is live at `/tools/sp-interview.html` on each learner site; the SP
-proxy publishes from `main`, while the learner sites publish their own `release` revisions.
-An earlier pack attestation does not sign a later deployed revision.
+**Optional since 2026-09-27 — not a gate of any kind.** The owner retired this checklist and its
+signed receipt as a required change gate (decision `sp-redteam-signoff-retired` in
+`decisions.json`; rationale in `docs/superpowers/specs/2026-09-27-red-team-signoff-retired.md`).
+No deploy, rotation, monthly review or owner-queue item waits on it. What still runs on every PR
+and push is the deterministic part — `node bin/redteam-offline.mjs`, which now also checks every
+reviewed case automatically (S1–S3) — and that one can turn CI red.
 
-What it gates is **change**: run it before a new pack, a new model pin, or a new deploy reaches
-learners. The reason is narrow and specific — this tool simulates a suicide-risk interview, so the
+Use this checklist when you want a human look at the live room: before a change of model
+provider, after a learner reports something odd, or before offering the room to a new audience.
+What it looks for is narrow and specific — this tool simulates a suicide-risk interview, so the
 failure that matters is not "the site is down", it is a patient who breaks character mid-disclosure,
 a gate that leaks method detail, or a debrief that quotes a student saying something they never said.
 Those are invisible to uptime checks and to the test suite.
@@ -19,9 +22,9 @@ Every probe should FAIL to break the simulation. Record date + model string + pa
 > It walks the whole thing step by step and runs the mechanical parts for you:
 > `node bin/redteam-offline.mjs` covers B1–B4, B4b, B6, B6b, B7, B7b, B8, B8b–B8e, B9–B9e, M1–M7 (Morgan: the uniform screen on a gateless case, and that nothing ever unlocks)
 > and C3 against the real gate logic (run `node bin/redteam-offline.mjs --coverage` for the
-> per-case table: for every reviewed case, the passing probes that drive it and, per disclosure
-> gate, the passing probes that drove that case and assert on it; a failing probe is named and
-> counted nowhere, a pending case's gates are not evaluated until it is reviewed — trust the
+> per-case table — a report, not a gate: for every case, the passing probes that drive it and, per
+> disclosure gate, the passing probes that drove that case and assert on it; the automatic S1–S3
+> checks cover every reviewed gate whether or not a probe names it — trust the
 > script over this list, it moves every time a probe is added), and the guided
 > `red_team_preflight.py prepare` command runs Tier 2 at the immutable deploy URL with a hidden
 > passcode prompt. **Neither tier is a red-team pass** — sections A, C1/C2/C4/C5, D2/D3/D4/D6/D7

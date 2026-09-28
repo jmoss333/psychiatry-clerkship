@@ -220,7 +220,19 @@ the container when the Bash 5 environment is part of the evidence.
 - Root data + schemas: `question_bank.json`, `topic_meta.json`, `communication_cases.json`, etc. —
   each validates against its paired `*.schema.json`.
 - `sp-proxy/` — serverless LLM patient for The Interview Room. **API key stays server-side; the browser
-  holds only a passcode.** Run `sp-proxy/REDTEAM_CHECKLIST.md` after every deploy and every model/pack change.
+  holds only a passcode.** Its live red-team checklist (`sp-proxy/REDTEAM_CHECKLIST.md`) and signed
+  receipt are **optional, not a change gate** (decision `sp-redteam-signoff-retired`, 2026-09-27):
+  never tell the owner a deploy, rotation or case "needs a red-team pass", and never re-add it to a
+  checklist, the owner queue or the monthly gate. What does gate every PR and push is
+  `node bin/redteam-offline.mjs` — the hand-written B/C/M probes plus the automatic S1–S3 checks
+  over every reviewed case (small talk opens no gate; every gate is wired to intents and parent
+  gates that exist; no gate opens on a euphemism). A reviewed case or gate with no hand-written
+  probe is named in its output, never failed.
+- `bin/rotation_turnover.py` — the rotation-start Netlify visit for `sp-interview-proxy` as one
+  command (rotation ID, origins, a new operations credential via the macOS Keychain, redeploy,
+  live proof, a summary on the rotation issue). **The owner runs it on the Mac**; dry run by
+  default, `--apply` to change anything. It never touches the learner passcode (decision
+  `passcode-fixed`) and never prints a credential; an agent must not run `--apply` unasked.
 - `.claude/agents/` — project subagents (`evidence-verifier`, `deploy-verifier`). The frontmatter
   tool allowlist is the enforcement; `tests/agent-definitions.test.mjs` pins each agent's scope.
   **`deploy-verifier` cannot reach `*.netlify.app` from a sandboxed web session** — the egress
@@ -618,14 +630,17 @@ the container when the Bash 5 environment is part of the evidence.
   `docs/superpowers/specs/2026-09-27-red-team-governance-simplification-design.md` §2.1; the
   tool, the proxy and the red-team runner offer only `reviewed`, so a `pending` case is
   unselectable everywhere and its probes skip),
-  so a new case lands `pending` in a content PR (which also carries the per-case rows the
-  `_prototypes/sp-interview/tests/` and `sp-proxy/tests/` suites pin against the canonical pack
-  — the id list, the case counts, the parity scenario, and the encounter brief the root
-  `conversation-encounter-profiles` test requires for every case, which runs before both builds;
-  none of those paths is content or governance), gains its probes in a governance PR (L1 keeps `bin/` and the pack out of one
-  diff; a probe naming a case absent from the pack crashes, so the probes cannot come first),
-  and flips to `reviewed` in a third content PR with the owner's read of the lines recorded on
-  it. Two things a `pending` case does NOT do: hide — the built sites ship the whole pack
+  so a new case lands in ONE content PR — `reviewed` with the owner's read of the lines recorded
+  on it, or `pending` first if it goes into the pack ahead of that read (either way the PR also
+  carries the per-case rows the `_prototypes/sp-interview/tests/` and `sp-proxy/tests/` suites pin
+  against the canonical pack — the id list, the case counts, the parity scenario, and the
+  encounter brief the root `conversation-encounter-profiles` test requires for every case, which
+  runs before both builds; none of those paths is content or governance). It needs no
+  hand-written red-team probe: `bin/redteam-offline.mjs`'s S1–S3 check every reviewed case's
+  gates automatically, and a `FAIL  S…` is a pack wiring mistake fixed in the same PR (decision
+  `sp-redteam-signoff-retired`, 2026-09-27; from 2026-09-26 to 2026-09-27 a governance PR of
+  probes had to land between a `pending` PR and a promoting PR). Two things a `pending` case
+  does NOT do: hide — the built sites ship the whole pack
   verbatim at `tools/sp-interview.pack.json` and precache it, so its text is public from the
   first PR and the leak and no-PHI bar applies there, only selection is withheld; and stand in
   for its review — a console re-attestation of the drifted `sp-interview.html` row while the

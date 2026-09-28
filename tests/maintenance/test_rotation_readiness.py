@@ -224,7 +224,6 @@ class RotationReadinessTests(unittest.TestCase):
                 "keep SP_ALLOWED_ORIGINS tight; remove http://localhost:8888 unless actively testing",
                 "check the rotation ledger for usage that does not match a real cohort",
                 "preserve the prior content-free usage receipt",
-                "run the Interview Room red-team checklist and golden transcript",
                 "verify the latest production canary, release rehearsal, governance digest, and attestation gate",
                 "confirm managed voice remains disabled unless all external faculty/privacy gates are recorded",
             ],

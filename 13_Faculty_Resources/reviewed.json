@@ -313,11 +313,11 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-09-28",
     "by": "Joshua Moss, MD",
     "note": "Re-attested 2026-09-17 (recorded on the owner's approval of #565, issue comment 2026-09-17): Dana's direct suicide question discloses at any rapport and an earlier flag never blocks it; the local draft overlay that carried that policy is retired into the reviewed pack; debrief states that asking early was right. Dana's pack facultyReview.lastReviewed advanced to 2026-09-17 in the same change. Prior: 2026-09-09 (WP-5m chain, F1-F5 / D16(2)).",
-    "contentHash": "5fcf3d9c1fd83f2563f8d91ad43569452ff15153",
-    "clinicalHash": "235fa447ed72a21775894836ba53b210155799a2"
+    "contentHash": "ea2905b4018032e5f7a43e03b1ad2b81211d2551",
+    "clinicalHash": "e3b00e917a7b0602504906306d1ae9ee7436e68c"
   },
   "welcome.md": {
     "status": "reviewed",
@@ -1152,10 +1152,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-27",
+    "at": "2026-09-28",
     "by": "Joshua Moss, MD",
-    "contentHash": "74a84e916d4f3e7f746555f803fd940713073c4d",
-    "clinicalHash": "470fe3eb5a80011850866c86795cb9c425ce8338"
+    "contentHash": "075a3b09efd4606e976f87f47a13d8ee259e381a",
+    "clinicalHash": "f209fd5ec2d609729cf5217a17c111a4595e65b1"
   },
   "review.html": {
     "status": "reviewed",
@@ -1185,10 +1185,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-27",
+    "at": "2026-09-28",
     "by": "Joshua Moss, MD",
-    "contentHash": "eac6dd868706d480c37e8b2e774c4cb3815647b0",
-    "clinicalHash": "ef306ec8f280be0b1aabefdab43dac3c6850811f"
+    "contentHash": "5493a70552a9abccedd382582268ceb114e64836",
+    "clinicalHash": "295dad1a0bc2f2b5c0db07630439b65ab92f880d"
   },
   "qbank-attest.html": {
     "status": "reviewed",

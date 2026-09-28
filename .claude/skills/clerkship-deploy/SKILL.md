@@ -129,7 +129,8 @@ Build command and publish dir live **per-site in the Netlify UI**, not in
   26 h was held or failed (not only the newest), the sites serve different commits, `release` is unserved, `main`'s newest merge
   failed its checks, or merged work has waited over 24 h (exit 1), or when it could not read
   both sites (exit 2). A red run lands in the rolling escalation issue; its step summary
-  lists every merged change not yet live. `GITHUB_TOKEN=… node bin/release_watch.mjs` gives
+  lists every merged change not yet live, and ends with a 7-day train line (runs that
+  stopped before publishing vs. failed after it) — the evidence for retuning the spend budget. `GITHUB_TOKEN=… node bin/release_watch.mjs` gives
   the same answer locally (a sandbox that cannot reach the sites reports exit 2, not a pass).
 - **What is live right now:** both sites report the commit they were built from in
   `/tool-governance.json`; `python3 13_Faculty_Resources/_automation/maintenance/production_revision_parity.py --attempts 1 --retry-delay 0 --out "$TMPDIR/served-revision.json"`

@@ -127,6 +127,37 @@ test('pre_edit_guard allows the same number inside crisis_resources.json and in 
   assert.equal(decision(runHook('pre_edit_guard.py', editCall('docs/superpowers/specs/x.md', `Deny ${lifelineDigits} in content.`))), 'allow');
 });
 
+// A content digest is not prose. On 2026-09-28 three of reviewed.json's contentHash/clinicalHash
+// values held a short crisis code between two hex letters, and because the pre-commit gate scans a
+// staged file whole, every commit that staged the ledger was blocked (the weekly case run stopped
+// short of committing). A hex run is built around the code so no digest is hard-coded here.
+const emergencyDigits = crisis.resources.find((r) => /emergency/i.test(r.name)).contact.match(/\d{3,}/)[0];
+function digestWith(code, length) {
+  return `c${code}b${'0f1e2d3c4b5a6978'.repeat(5)}`.slice(0, length);
+}
+
+test('a crisis code that is only digits inside a content digest is not a contact', () => {
+  for (const code of [lifelineDigits, emergencyDigits]) {
+    for (const [file, text] of [
+      ['13_Faculty_Resources/reviewed.json', `"clinicalHash": "${digestWith(code, 40)}"`], // git blob sha
+      ['13_Faculty_Resources/reviewed.json', `"evidenceHash": "${digestWith(code, 64)}"`], // sha256
+      ['13_Faculty_Resources/ledger/keys.json', `"keyId": "${digestWith(code, 16)}"`], // ledger key id
+    ]) {
+      assert.equal(decision(runHook('pre_edit_guard.py', editCall(file, text))), 'allow', `${file}: ${text}`);
+    }
+    // The same number as words in the same file is still a contact...
+    const ledgerProse = runHook('pre_edit_guard.py', editCall('13_Faculty_Resources/reviewed.json', `"reason": "call ${code} if unsafe"`));
+    assert.equal(decision(ledgerProse), 'deny');
+    assert.match(reason(ledgerProse), /crisis-contact/);
+    // ...and so is a number fused to letters that is not a standalone digest: a URL, a short token.
+    const page = '03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md';
+    assert.equal(decision(runHook('pre_edit_guard.py', editCall(page, `See ${code}lifeline.org today.`))), 'deny');
+    assert.equal(decision(runHook('pre_edit_guard.py', editCall(page, `Token ab${code}cd here.`))), 'deny');
+    // Fifteen hex characters is below the shortest digest this repo writes, so it stays scanned.
+    assert.equal(decision(runHook('pre_edit_guard.py', editCall(page, `id ${digestWith(code, 15)} here`))), 'deny');
+  }
+});
+
 test('pre_edit_guard denies dose literals only where the QA gate is hard', () => {
   assert.equal(decision(runHook('pre_edit_guard.py', editCall('tools/rp-taper-planner.html', 'start at 5 mg nightly'))), 'deny');
   assert.equal(decision(runHook('pre_edit_guard.py', editCall('_prototypes/sp-interview/sp-interview.pack.json', '"line": "I take 10 mg"'))), 'deny');
@@ -399,6 +430,30 @@ test('precommit_gate blocks raw media, parity drift, and machine paths in staged
   assert.equal(p.status, 1);
   assert.match(p.stdout, /machine-path/);
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('precommit_gate passes a staged ledger whose only crisis digits sit inside its hashes', (t) => {
+  const { dir, git } = tmpRepo();
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const run = () => spawnSync('python3', [path.join(hooks, 'precommit_gate.py')], { cwd: dir, encoding: 'utf8', env: cleanEnv() });
+  // The patterns come from the fixture's own crisis_resources.json, as in the real repository.
+  fs.copyFileSync(path.join(repo, 'crisis_resources.json'), path.join(dir, 'crisis_resources.json'));
+  fs.mkdirSync(path.join(dir, '13_Faculty_Resources'));
+  const ledger = path.join(dir, '13_Faculty_Resources', 'reviewed.json');
+  const write = (rows) => fs.writeFileSync(ledger, `${JSON.stringify(rows, null, 2)}\n`);
+
+  // The 2026-09-28 shape: the whole staged ledger is scanned, and its hashes carry the codes.
+  write({ 'a.md': { status: 'reviewed', contentHash: digestWith(lifelineDigits, 40), clinicalHash: digestWith(emergencyDigits, 40) } });
+  git('add', 'crisis_resources.json', '13_Faculty_Resources/reviewed.json');
+  let p = run();
+  assert.equal(p.status, 0, p.stdout + p.stderr);
+
+  // A crisis number written into a field a learner can read is still blocked.
+  write({ 'a.md': { status: 'pending', reason: `call ${lifelineDigits} if unsafe` } });
+  git('add', '13_Faculty_Resources/reviewed.json');
+  p = run();
+  assert.equal(p.status, 1);
+  assert.match(p.stdout, /crisis-contact/);
 });
 
 test('precommit_gate passes with nothing staged', () => {

@@ -28,13 +28,16 @@ STATUSES = {"planned", "active", "completed"}
 # revocation path, so the two items that follow the credential line carry the
 # obligations that decision created. See sp-proxy/README.md, "Passcode policy".
 # DECISION: passcode-fixed  (decisions.json; bin/check_decision_drift.py)
+#
+# "run the Interview Room red-team checklist and golden transcript" was an item until
+# 2026-09-27. DECISION: sp-redteam-signoff-retired -- that checklist is optional now, so
+# it is not a rotation-start obligation. Do not re-add it here.
 MANUAL_CHECKLIST = (
     "issue a new non-identifying SP_ROTATION_ID",
     "rotate the separate operations credential (the learner passcode is fixed per the 2026-08-31 decision)",
     "keep SP_ALLOWED_ORIGINS tight; remove http://localhost:8888 unless actively testing",
     "check the rotation ledger for usage that does not match a real cohort",
     "preserve the prior content-free usage receipt",
-    "run the Interview Room red-team checklist and golden transcript",
     "verify the latest production canary, release rehearsal, governance digest, and attestation gate",
     "confirm managed voice remains disabled unless all external faculty/privacy gates are recorded",
 )
