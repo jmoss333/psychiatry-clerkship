@@ -10722,11 +10722,11 @@
         "status": "verified",
         "source": "PubMed efetch (PMID 30335462): title, all three authors, journal, volume, issue, pages and DOI match",
         "verifiedAt": "2026-09-28",
-        "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case student_jargon_rupture_001 teaches repairing a rupture the student caused. Two meta-analyses. Rupture repair episodes were associated with better patient outcome (11 studies, 1,314 patients; r = .29, d = .62). Rupture-resolution training or supervision was NOT significantly related to patient outcome (6 studies, 276 trainees; r = .11, d = .22, p = .28). It licenses 'repair is associated with better outcomes', not 'training in repair improves outcomes'. Correlational evidence. Annotation is AI-drafted and awaits faculty signature."
+        "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case student_jargon_rupture_001 teaches repairing a rupture the student caused. Two meta-analyses. Rupture repair episodes were associated with better patient outcome (11 studies, 1,314 patients; r = .29, d = .62). Rupture-resolution training or supervision was NOT significantly related to patient outcome (6 studies, 276 trainees; r = .11, d = .22, p = .28). It licenses 'repair is associated with better outcomes', not 'training in repair improves outcomes'. The repair-outcome analysis is correlational; the training analysis compared trained groups with comparison groups. Annotation is AI-drafted and awaits faculty signature."
       },
       "requiredAccess": "abstract",
       "governance": {
-        "evidenceLevel": "systematic review / meta-analysis (two meta-analyses; correlational)",
+        "evidenceLevel": "systematic review / meta-analysis (two meta-analyses: repair episodes vs outcome, correlational; training vs comparison groups)",
         "facultyReviewStatus": "pending",
         "lastReviewed": "2026-09-28",
         "reviewCadence": "annual",
@@ -10743,7 +10743,7 @@
         "noteHistory": [
           {
             "date": "2026-09-28",
-            "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case student_jargon_rupture_001 teaches repairing a rupture the student caused. Two meta-analyses. Rupture repair episodes were associated with better patient outcome (11 studies, 1,314 patients; r = .29, d = .62). Rupture-resolution training or supervision was NOT significantly related to patient outcome (6 studies, 276 trainees; r = .11, d = .22, p = .28). It licenses 'repair is associated with better outcomes', not 'training in repair improves outcomes'. Correlational evidence. Annotation is AI-drafted and awaits faculty signature.",
+            "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case student_jargon_rupture_001 teaches repairing a rupture the student caused. Two meta-analyses. Rupture repair episodes were associated with better patient outcome (11 studies, 1,314 patients; r = .29, d = .62). Rupture-resolution training or supervision was NOT significantly related to patient outcome (6 studies, 276 trainees; r = .11, d = .22, p = .28). It licenses 'repair is associated with better outcomes', not 'training in repair improves outcomes'. The repair-outcome analysis is correlational; the training analysis compared trained groups with comparison groups. Annotation is AI-drafted and awaits faculty signature.",
             "reason": "curriculum fine-tuning WP-I (plan FT-2, approved by Josh 2026-09-28): new communication-practice case student_jargon_rupture_001"
           }
         ]

@@ -2758,7 +2758,7 @@
       "claims": [
         {
           "claimId": "repair-associated-training-not-significant",
-          "claimText": "Across 11 studies, rupture repair episodes were associated with better patient outcome (r = .29, d = .62), but across 6 studies rupture resolution training or supervision did not show a significant relation to patient outcome (d = .22, p = .28), so repair is taught as a skill without promising that training improves outcomes.",
+          "claimText": "Across 11 studies, rupture repair episodes were associated with better patient outcome (r = .29, d = .62), but across 6 studies rupture resolution training or supervision did not show a significant relation to patient outcome (d = .22, p = .28).",
           "claimTerms": [
             "moderate relation between rupture resolution and positive patient outcome",
             "did not find a significant relation"

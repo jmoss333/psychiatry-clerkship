@@ -779,7 +779,7 @@
           "id": "c",
           "text": "It sounds exhausting to feel shut out when you're this worried. I can't share details about anyone's care without their permission, but I can listen. What have you been noticing? And I'll make sure the team knows you want to talk with them.",
           "quality": "best",
-          "feedback": "Best choice. It names her distress, takes in her information (listening discloses nothing), holds the limit, and routes her to the team. Retry: she says she is his legal guardian. Who verifies that?"
+          "feedback": "Best choice. It names her distress, takes in what she knows (listening discloses nothing), holds the limit, and loops in the team. Retry: she says she is his guardian. Who verifies that before sharing?"
         },
         {
           "id": "d",
@@ -820,9 +820,10 @@
         "targetSeconds": 30,
         "stance": "Get curious before you persuade: ask for the reason, reflect it, then say you will bring the team in now.",
         "mustInclude": [
+          "Hear 'I'm done' as a possible safety cue, and ask about it directly",
           "Invite the reason behind 'today' with an open question",
           "Reflect what you hear before offering any counterpoint",
-          "Say you will let the team know now; decisions about leaving are theirs, not yours"
+          "Say you will let the team know now; the team, not you, responds to a request to leave"
         ],
         "avoid": [
           "Threats, arguing, or predicting what will happen to his legal status"
@@ -840,7 +841,7 @@
           "id": "b",
           "text": "It sounds like being here has gotten really hard. Before anything else, can you tell me what's making today the day? I want to understand, and I'm going to let your team know right away so they can sit down with you.",
           "quality": "best",
-          "feedback": "Best choice. It is curious, keeps the alliance, and escalates same-day, as a discharge demand after a suicide attempt requires. Retry: \"My dog's been alone since Friday.\" Reflect it, then problem-solve together."
+          "feedback": "Best choice. It is curious, keeps the alliance, and alerts the team now, as a discharge demand after a suicide attempt requires. Retry: \"My dog's been alone since Friday.\" Reflect it, then problem-solve together."
         },
         {
           "id": "c",
@@ -859,7 +860,8 @@
         "discharge",
         "motivational-interviewing",
         "shared-decision-making",
-        "safety"
+        "safety",
+        "suicide"
       ],
       "linkedPages": [
         "motivational_interviewing.md",
@@ -919,7 +921,7 @@
           "id": "d",
           "text": "If you don't follow this plan, you'll probably end up back here.",
           "quality": "harmful",
-          "feedback": "A threat framed as information. It shames rather than checks, and it discourages him from admitting what he did not follow."
+          "feedback": "A threat framed as information. It shames rather than checks, and it discourages him from admitting what he did not understand."
         }
       ],
       "skillTags": [
@@ -988,6 +990,7 @@
       ],
       "skillTags": [
         "alliance",
+        "rupture",
         "rupture-repair",
         "language"
       ],
