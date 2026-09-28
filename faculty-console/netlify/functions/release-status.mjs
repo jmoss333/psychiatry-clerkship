@@ -12,6 +12,7 @@ import {
   nextTrainSlot,
   releaseHeadline,
   SITE_KEYS,
+  staleSignoffs,
   TRAIN_WORKFLOW,
   waitingChange,
 } from '../../release-status.mjs';
@@ -32,6 +33,40 @@ const PUSH_PAGE = 100;
 const RELEASE_BRANCH = 'release';
 const SERVED_REVISION_PATH = '/tool-governance.json';
 const SERVED_MAX_BYTES = 4 * 1024 * 1024;
+const SERVED_GOVERNANCE_PATH = '/governance.json';
+// The `site` each learner build writes into its /governance.json (build_deploy.py and
+// build_resident.py call surface_governance.build_site_document with these).
+export const GOVERNANCE_SITE = Object.freeze({ ms3: 'ms3', res: 'resident' });
+
+async function servedJson(fetchImpl, site, path, what) {
+  const response = await fetchImpl(`${String(site.baseUrl).replace(/\/+$/, '')}${path}`, {
+    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+    redirect: 'error',
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!response.ok) throw new Error(`${what} answered ${response.status}`);
+  const type = (response.headers.get('content-type') || '').split(';', 1)[0].trim().toLowerCase();
+  if (type !== 'application/json') throw new Error(`${what} is not JSON`);
+  const text = await response.text();
+  if (text.length > SERVED_MAX_BYTES) throw new Error(`${what} too large`);
+  return JSON.parse(text);
+}
+
+/**
+ * What a learner site serves as its governance: the /governance.json every build emits
+ * (surface_governance.write_site_document), whose pending items carry the reason a learner
+ * sees. Read with no credential by both the console and the watch. A document for another
+ * site, or one with no items, is unread rather than clean.
+ */
+export async function readServedGovernance(fetchImpl, site, key) {
+  const data = await servedJson(fetchImpl, site, SERVED_GOVERNANCE_PATH, 'served governance');
+  const items = data?.items;
+  if (data?.site !== GOVERNANCE_SITE[key] || !items || typeof items !== 'object' || Array.isArray(items)
+    || !Object.keys(items).length) {
+    throw new Error('served governance is not this site\'s document');
+  }
+  return data;
+}
 
 /** The console's reader: each site's latest published production deploy (Netlify). */
 function deployReader(fetchImpl) {
@@ -51,17 +86,7 @@ function deployReader(fetchImpl) {
  */
 export function servedRevisionReader(fetchImpl) {
   const read = async site => {
-    const response = await fetchImpl(`${String(site.baseUrl).replace(/\/+$/, '')}${SERVED_REVISION_PATH}`, {
-      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-      redirect: 'error',
-      signal: AbortSignal.timeout(20000),
-    });
-    if (!response.ok) throw new Error(`served manifest answered ${response.status}`);
-    const type = (response.headers.get('content-type') || '').split(';', 1)[0].trim().toLowerCase();
-    if (type !== 'application/json') throw new Error('served manifest is not JSON');
-    const text = await response.text();
-    if (text.length > SERVED_MAX_BYTES) throw new Error('served manifest too large');
-    const data = JSON.parse(text);
+    const data = await servedJson(fetchImpl, site, SERVED_REVISION_PATH, 'served manifest');
     const items = Array.isArray(data?.items) ? data.items : [];
     const revisions = new Set(items.map(item => (item?.source?.repository === REPO ? item.source.revision : null)));
     const [revision] = revisions;
@@ -148,11 +173,14 @@ export async function loadReleaseStatus(fetchImpl, token, {
 
   const [sitesResult, releaseResult, checksResult, runsResult] = await Promise.allSettled([
     learnerSites(github).then(sites => Promise.all(SITE_KEYS.map(async key => {
+      // Read beside the revision, never as a gap: the sign-off line is information, and an
+      // unread site is named in it rather than counted as clean.
+      const governance = readServedGovernance(fetchImpl, sites[key], key).catch(() => null);
       try {
-        return [key, await readSite(sites[key])];
+        return [key, await readSite(sites[key]), await governance];
       } catch (error) {
         note(`${key} ${readSite.basis === 'served revisions' ? 'served revision' : 'published deploy'}`, error);
-        return [key, null];
+        return [key, null, await governance];
       }
     }))),
     github('/git/ref/heads/release'),
@@ -161,8 +189,13 @@ export async function loadReleaseStatus(fetchImpl, token, {
   ]);
 
   const sites = Object.fromEntries(SITE_KEYS.map(key => [key, null]));
-  if (sitesResult.status === 'fulfilled') Object.assign(sites, Object.fromEntries(sitesResult.value));
-  else note('learner site configuration', sitesResult.reason);
+  const governance = Object.fromEntries(SITE_KEYS.map(key => [key, null]));
+  if (sitesResult.status === 'fulfilled') {
+    for (const [key, site, served] of sitesResult.value) {
+      sites[key] = site;
+      governance[key] = served;
+    }
+  } else note('learner site configuration', sitesResult.reason);
 
   const release = releaseResult.status === 'fulfilled' && SHA.test(releaseResult.value?.object?.sha || '')
     ? releaseResult.value.object.sha : null;
@@ -279,6 +312,7 @@ export async function loadReleaseStatus(fetchImpl, token, {
     releaseUnserved: Boolean(release && served.length && !served.includes(release)),
     mainChecks,
     waiting,
+    signoffs: staleSignoffs(governance),
     train: {
       workflowUrl: `https://github.com/${REPO}/actions/workflows/${TRAIN_WORKFLOW}`,
       nextSlot: new Date(nextTrainSlot(nowMs)).toISOString(),

@@ -19,7 +19,7 @@
 import { appendFileSync, writeFileSync } from 'node:fs';
 
 import { servedRevisionReader, loadReleaseStatus } from '../faculty-console/netlify/functions/release-status.mjs';
-import { trainWeekLine, watchVerdict } from '../faculty-console/release-status.mjs';
+import { staleSignoffLine, trainWeekLine, watchVerdict } from '../faculty-console/release-status.mjs';
 
 const REPO_URL = 'https://github.com/jmoss333/psychiatry-clerkship';
 
@@ -45,6 +45,7 @@ export function renderSummary(status, verdict) {
   }
   lines.push(`Next scheduled publish: ${status.train.nextSlot} · publish now: ${status.train.workflowUrl}`);
   if (status.train.week) lines.push('', trainWeekLine(status.train.week));
+  if (status.signoffs) lines.push('', staleSignoffLine(status.signoffs));
   if (status.gaps.length) lines.push('', '### Could not read', '', ...status.gaps.map(gap => `- ${gap}`));
   return `${lines.join('\n')}\n`;
 }
