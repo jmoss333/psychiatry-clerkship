@@ -42,6 +42,13 @@
 [functions."ledger-publish"]
   schedule = "*/10 * * * *"
 
+# Rolling attestation PR sweep: every 15 minutes, if attest/pending carries signatures main
+# does not, make sure the rolling PR is open with auto-merge (merge commit) armed. The
+# console's own post-write PR call is best-effort and silent; on 2026-09-28 it left the
+# Interview Room re-attestation stranded for hours. Returns immediately in ledger mode.
+[functions."rolling-pr-sweep"]
+  schedule = "*/15 * * * *"
+
 # Private governance tool — never index it.
 [[headers]]
   for = "/*"
