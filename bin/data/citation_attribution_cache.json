@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-09-27",
+  "refreshedAt": "2026-09-28",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -191,6 +191,28 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "36853245"
+    },
+    "10.1001/jama.2023.18588": {
+      "title": "Diagnosis and Treatment of Bipolar Disorder",
+      "container": "JAMA",
+      "containerAlt": [
+        "JAMA"
+      ],
+      "year": 2023,
+      "authors": [
+        "Nierenberg",
+        "Agustini",
+        "Köhler-Forsberg",
+        "Cusin",
+        "Katz",
+        "Sylvia",
+        "Peters",
+        "Berk"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-09-28",
+      "pmid": "37815563"
     },
     "10.1001/jama.2023.19761": {
       "title": "Pharmacotherapy for Alcohol Use Disorder",
@@ -1685,6 +1707,32 @@
       "resolvedAt": "2026-09-27",
       "pmid": "38924903"
     },
+    "10.1016/s0140-6736(11)60873-8": {
+      "title": "Comparative efficacy and acceptability of antimanic drugs in acute mania: a multiple-treatments meta-analysis",
+      "container": "The Lancet",
+      "containerAlt": [
+        "Lancet",
+        "Lancet (London, England)",
+        "The Lancet"
+      ],
+      "year": 2011,
+      "authors": [
+        "Cipriani",
+        "Barbui",
+        "Salanti",
+        "Rendell",
+        "Brown",
+        "Stockton",
+        "Purgato",
+        "Spineli",
+        "Goodwin",
+        "Geddes"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-09-28",
+      "pmid": "21851976"
+    },
     "10.1016/s0140-6736(17)32802-7": {
       "title": "Comparative efficacy and acceptability of 21 antidepressant drugs for the acute treatment of adults with major depressive disorder: a systematic review and network meta-analysis",
       "container": "The Lancet",
@@ -1779,6 +1827,32 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "34688371"
+    },
+    "10.1016/s0140-6736(25)01140-7": {
+      "title": "Bipolar disorder",
+      "container": "The Lancet",
+      "containerAlt": [
+        "Lancet",
+        "Lancet (London, England)",
+        "The Lancet"
+      ],
+      "year": 2025,
+      "authors": [
+        "Singh",
+        "Swartz",
+        "Cuellar-Barboza",
+        "Schaffer",
+        "Kato",
+        "Dols",
+        "Sperry",
+        "Vassilev",
+        "Burdick",
+        "Frye"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-09-28",
+      "pmid": "40712624"
     },
     "10.1016/s2215-0366(18)30474-7": {
       "title": "Structure and neural mechanisms of catatonia",
@@ -2922,6 +2996,41 @@
       "resolvedAt": "2026-09-27",
       "pmid": "31112628"
     },
+    "10.1111/bdi.13036": {
+      "title": "The 2020 Royal Australian and New Zealand College of psychiatrists clinical practice guidelines for mood disorders: Bipolar disorder summary",
+      "container": "Bipolar Disorders",
+      "containerAlt": [
+        "Bipolar Disord",
+        "Bipolar Disorders",
+        "Bipolar disorders"
+      ],
+      "year": 2020,
+      "authors": [
+        "Malhi",
+        "Bell",
+        "Boyce",
+        "Bassett",
+        "Berk",
+        "Bryant",
+        "Gitlin",
+        "Hamilton",
+        "Hazell",
+        "Hopwood",
+        "Lyndon",
+        "McIntyre",
+        "Morris",
+        "Mulder",
+        "Porter",
+        "Singh",
+        "Yatham",
+        "Young",
+        "Murray"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-09-28",
+      "pmid": "33296123"
+    },
     "10.1111/bdi.13302": {
       "title": "Quality of laboratory biomarker monitoring during treatment with lithium in patients with bipolar disorder",
       "container": "Bipolar Disorders",
@@ -3406,6 +3515,24 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "38952224"
+    },
+    "10.1177/0004867415614109": {
+      "title": "Comparative efficacy and acceptability of combined antipsychotics and mood stabilizers versus individual drug classes for acute mania: Network meta-analysis",
+      "container": "Aust N Z J Psychiatry",
+      "containerAlt": [
+        "Aust N Z J Psychiatry",
+        "Australian & New Zealand Journal of Psychiatry",
+        "The Australian and New Zealand journal of psychiatry"
+      ],
+      "year": 2015,
+      "authors": [
+        "Glue",
+        "Herbison"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-09-28",
+      "pmid": "26546499"
     },
     "10.1177/02698811221104058": {
       "title": "Systematic review and meta-analysis of augmentation and combination treatments for early-stage treatment-resistant depression",
