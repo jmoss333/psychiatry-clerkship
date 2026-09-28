@@ -32,7 +32,8 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   that stands in for the auto-recharge ceiling Netlify does not offer; publish-now is never
   held. A held or failed publish is not silent: `maintenance-release-watch.yml` (10:05 UTC)
   compares what both sites serve with `main` and goes red into the escalation issue (the
-  faculty console's "What learners see" panel shows the same reading on demand). The
+  faculty console's "What learners see" panel shows the same reading on demand, and both name
+  the pages learners are served as awaiting re-signature — information, never the verdict). The
   satellite sites (sp-proxy, faculty console, workforce tour)
   still build from `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
 - **Git LFS** tracks `*.mp3 *.m4a *.wav *.mp4`. Never commit LFS **pointer stubs** (~133 B) in place

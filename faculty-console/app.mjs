@@ -29,7 +29,7 @@ import {
   twinOf,
 } from './review-model.mjs';
 import { isDriftReason } from './change-history.mjs';
-import { trainWeekLine } from './release-status.mjs';
+import { staleSignoffLine, trainWeekLine } from './release-status.mjs';
 
 const API = '/api/attest';
 const RED_TEAM_REVISIONS_API = '/api/red-team-revisions';
@@ -780,6 +780,7 @@ export function startFacultyConsole({
             ` · ${lastRun.event === 'workflow_dispatch' ? 'publish-now' : 'scheduled'} · ${lastRun.conclusion || lastRun.status}`,
           ]) : null,
           status.train?.week ? el('p', { id: 'release-week', class: 'muted' }, [trainWeekLine(status.train.week)]) : null,
+          status.signoffs ? el('p', { id: 'release-signoffs', class: status.signoffs.items.length ? 'release-status__signoffs' : 'muted' }, [staleSignoffLine(status.signoffs)]) : null,
           status.ledgerMode ? el('p', { class: 'muted' }, [
             'Ledger mode is on: sign-offs publish through the attestation ledger on their own and are not listed here.',
           ]) : null,
