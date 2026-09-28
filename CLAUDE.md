@@ -74,6 +74,9 @@ most wasted work here has been one session not seeing another.
 - **Order content merges around an open attestation sitting.** While an `attest/pending` PR is
   open, a content PR that edits a page in it lands after it, or says in its body that it forces
   a re-sign — #813 and its siblings drifted 22 pages the owner had signed that same day.
+  Every PR carries a **`Sign-offs (advisory)`** check (`pr-signoff-impact.yml`) naming the
+  signatures merging it would reopen, from the base tip to GitHub's test merge; run
+  `python3 bin/signoff_impact.py` before pushing to see the same list. Information, never a gate.
 - **A handoff records the SHA it was verified at, and the receiver re-verifies against current
   `main` before acting** — the #626 handoff prescribed committing 35 MB past LFS and writing
   attestations. `13_Faculty_Resources/Handoffs/STATUS_LATEST.md` is a superseded July snapshot.
