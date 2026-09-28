@@ -313,7 +313,9 @@ Rules, each pinned by a test with a fake peer connection, data channel, fetch an
 - **Room chooser.** A header control offers *Spoken room — talk with the patient* (default), *Typed
   room*, and *Typed room · replies read aloud*; a case card whose spoken room is unavailable says why
   (live mode off, no passcode, room not enabled, allowance reached, patient not in the spoken room)
-  and offers the typed room instead. Nothing changes mode silently.
+  and offers the typed room instead. Nothing changes mode silently. (Presentation since 2026-09-27:
+  the case cards are the entrance's door and access panel and the status rail is the pilot's status
+  row — see `2026-09-27-interview-room-pilot-style-design.md`; the behaviour here is unchanged.)
 - **Consent** (D8) on first spoken entry, with a *speakers, not headphones* checkbox that sets the
   session's noise-reduction profile.
 - **The room.** Status rail: *Connecting → Listening → <Patient> is thinking → <Patient> is
