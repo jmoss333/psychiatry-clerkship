@@ -2969,11 +2969,11 @@
           "category": "data",
           "coverage": "core",
           "patterns": [
-            "\\bintake\\b",
-            "\\btherap(?:y|ist)\\b.*\\b(?:appointment|visit|session|go|went|make it|made it|start|started|see|seen)\\b",
-            "\\b(?:see|seen|meet|met) (?:the|a|your) (?:therapist|counselor)\\b",
-            "\\b(?:did|have) you (?:go|gone|been|make it|made it) to (?:the|your|any|that) (?:appointment|intake|therap|counsel|session)",
-            "\\b(?:other|any other|your other) appointments?\\b",
+            "\\b(?:did|have|has|were|was|are) you\\b[^.?!]*\\b(?:intake|appointments?|therap(?:y|ist)|counsel(?:ing|or)|sessions?)\\b",
+            "\\b(?:did|has|was|is) (?:the|your|that|monday'?s) (?:therapy |counseling )?(?:intake|appointment|session)\\b",
+            "\\bhow (?:did|was|were|is|has) (?:the|your|that|monday'?s) (?:therapy |counseling )?(?:intake|appointment|session|therapy)\\b",
+            "\\bwhat (?:happened|about)\\b[^.?!]*\\b(?:intake|appointment|therap(?:y|ist)|session)\\b",
+            "\\bany (?:other )?appointments?\\b",
             "\\bappointments?\\b.*\\b(?:since|after) (?:you (?:left|got home|were discharged)|discharge|the hospital)\\b"
           ]
         },

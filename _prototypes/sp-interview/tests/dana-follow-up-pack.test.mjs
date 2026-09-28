@@ -124,6 +124,29 @@ test('reading item 9 aloud opens the disclosure and grades c_si partial; a euphe
   assert.deepEqual(Object.keys(deriveState(cd, ['Have you had any thoughts of hurting yourself?']).unlocked), []);
 });
 
+test('naming the intake in an agenda opens nothing; asking whether it happened opens her answer', () => {
+  // The planted gap is found only by asking (spec §1): an agenda that names the intake or the
+  // therapy appointment must not reveal that she cancelled, or mark c_appt observed.
+  const AGENDA = [
+    "Today we'll discuss your intake, medications, and questionnaire.",
+    "Today I'd like to go over your therapy appointment, your medicines and the form.",
+    "I'd like to cover the intake and your safety plan today.",
+    'Before we start, the plan mentions an intake on Monday.',
+  ];
+  for (const line of AGENDA) {
+    const s = deriveState(cd, [line]);
+    assert.ok(!s.unlocked.appt_detail, `an agenda line opened the intake disclosure: ${line}`);
+    assert.notEqual(computeCoverage(cd, s).find((r) => r.id === 'c_appt').status, 'observed', line);
+  }
+  const ASKS = [
+    'Did you make it to the intake on Monday?', 'How did the intake go?', 'Did the intake happen?',
+    'Were you able to get to your therapy intake?', 'Have you had your intake yet?',
+    'What happened with the intake appointment?', 'Did you go to therapy on Monday?',
+    'Have you seen the therapist since you left?', 'Any appointments since you got home?',
+  ];
+  for (const line of ASKS) assert.ok(deriveState(cd, [line]).unlocked.appt_detail, `a real question stayed shut: ${line}`);
+});
+
 test('a judgmental turn holds back the intake answer until it is two turns back', () => {
   assert.ok(!deriveState(cd, ['You should really keep your appointments.', 'Did you make it to the intake on Monday?']).unlocked.appt_detail);
   assert.ok(deriveState(cd, ['You should really keep your appointments.', 'Okay.', 'Okay.', 'Did you make it to the intake on Monday?']).unlocked.appt_detail);
