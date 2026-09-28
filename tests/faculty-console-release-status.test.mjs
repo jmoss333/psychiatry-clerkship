@@ -726,3 +726,53 @@ test('the watch prints the sign-off line and it never moves the exit code', asyn
   assert.match(summary, /No page learners see is awaiting your re-signature\./);
   assert.match(summary, /Learners see 1 page as awaiting your re-signature — the content changed after it was signed: sp-interview\.html \(signed 2026-09-26\)\./);
 });
+
+// ── Re-sign before the next publish: drifted signatures ordered by when learners are affected. ──
+
+test('the re-signing list sorts each drifted page by when learners are affected', async () => {
+  const { resignSchedule, resignHeading, untilLabel } = await import('../faculty-console/release-status.mjs');
+  const nowMs = Date.parse('2026-09-28T13:53:00Z');
+  const nextSlot = nextTrainSlot(nowMs);
+  assert.equal(new Date(nextSlot).toISOString(), '2026-09-28T15:05:00.000Z');
+  assert.equal(untilLabel(nextSlot, nowMs), 'in 1 h 12 min');
+  assert.equal(untilLabel(nowMs + 45 * 60_000, nowMs), 'in 45 min');
+  assert.equal(untilLabel(nowMs + 120 * 60_000, nowMs), 'in 2 h');
+  assert.equal(untilLabel(nowMs - 5, nowMs), 'now');
+
+  const signoffs = staleSignoffs({
+    ms3: governanceDoc('ms3', { 'sp-interview.html': staleItem('2026-09-26', 'tool'), 'anki.md': staleItem('2026-08-11'), 'orphan.md': staleItem('2026-09-01') }),
+    res: governanceDoc('res', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+  });
+  const schedule = resignSchedule({
+    drifted: ['sp-interview.html', 'review.html'],
+    known: ['sp-interview.html', 'review.html', 'anki.md'],
+    signoffs, nextSlot, nowMs,
+  });
+  // Drifted and served pending: now. Drifted, not served pending: next. Served pending but
+  // signed in the console's queue: signed. Served pending and unknown to the console: now.
+  assert.deepEqual(schedule.now.map(e => e.slug), ['orphan.md', 'sp-interview.html']);
+  assert.deepEqual(schedule.next.map(e => e.slug), ['review.html']);
+  assert.deepEqual(schedule.signed.map(e => [e.slug, e.signedAt]), [['anki.md', '2026-08-11']]);
+  assert.equal(schedule.total, 4);
+  assert.equal(resignHeading(schedule), 'Re-sign 3 pages before the next publish — 15:05 UTC, in 1 h 12 min.');
+
+  const signedOnly = resignSchedule({ drifted: [], known: ['anki.md'], signoffs, nextSlot, nowMs });
+  assert.deepEqual(signedOnly.now.map(e => e.slug), ['orphan.md', 'sp-interview.html']);
+  const allSigned = resignSchedule({ drifted: [], known: ['anki.md', 'sp-interview.html', 'orphan.md'], signoffs, nextSlot, nowMs });
+  assert.equal(resignHeading(allSigned),
+    'Every drifted page is signed; learners see them cleared after the sign-offs merge and the 15:05 UTC publish (in 1 h 12 min).');
+  assert.match(resignHeading({ ...allSigned, ledgerMode: true }), /ledger publish rebuilds the sites/);
+  assert.equal(resignHeading(resignSchedule({ drifted: [], known: [], signoffs: staleSignoffs({ ms3: governanceDoc('ms3', {}), res: governanceDoc('res', {}) }), nextSlot, nowMs })), '');
+});
+
+test('the re-signing list never lets an unread site make "not live yet" read as certain', async () => {
+  const { resignSchedule, resignHeading } = await import('../faculty-console/release-status.mjs');
+  const nowMs = Date.parse('2026-09-28T13:53:00Z');
+  const nextSlot = nextTrainSlot(nowMs);
+  const halfRead = staleSignoffs({ ms3: governanceDoc('ms3', {}), res: null });
+  const schedule = resignSchedule({ drifted: ['review.html'], known: ['review.html'], signoffs: halfRead, nextSlot, nowMs });
+  assert.equal(schedule.complete, false);
+  assert.match(resignHeading(schedule), /a learner site could not be read, so some pages marked "not live yet" may already be/);
+  const blind = resignSchedule({ drifted: ['review.html'], known: ['review.html'], signoffs: null, nextSlot, nowMs });
+  assert.equal(blind.complete, false);
+});
