@@ -1,13 +1,14 @@
 {
   "cotw_20260928_mania_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New Case of the Week (bipolar mania, MS3) added 2026-09-28; awaiting faculty attestation.",
     "at": "2026-09-28",
-    "by": "Pending faculty review"
+    "by": "Joshua Moss, MD",
+    "contentHash": "13598181c5471e4580b6eb1d9aa3f2a0f484f5f5",
+    "clinicalHash": "7637e6599e8e12b3bd4452772eec704c4807083b"
   },
   "cotw_20260928_mania_res.md": {
     "status": "pending",
