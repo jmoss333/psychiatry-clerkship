@@ -309,6 +309,26 @@
   .sacell .q{margin:0;font-size:.74rem;font-weight:700;color:var(--green)}
   .sacell .a{margin:6px 0 0;font-size:.86rem;font-style:italic;line-height:1.5}
   .saecho{margin:14px 0 0;font-size:.9rem;color:var(--text);line-height:1.55;border-left:3px solid var(--green);padding-left:12px}
+  .chart-brief{border-top:1px solid var(--line);margin-top:14px;padding-top:6px}
+  .chart-brief summary{cursor:pointer;min-height:44px;padding:10px 0;color:var(--green);font-weight:600}
+  .chart-docs{display:grid;gap:12px;margin:8px 0 12px}
+  .chart-doc{background:var(--controls);border:1px solid var(--line);border-radius:var(--radius-md);padding:14px}
+  .chart-doc h3{margin:0 0 6px;font-size:.94rem}
+  .chart-doc p{margin:4px 0;font-size:.86rem;line-height:1.5}
+  .vn{margin:0 0 24px}
+  .vn h3{font-size:1.08rem;margin:0 0 6px}
+  .vn-sec{border:1px solid var(--line);border-radius:var(--radius-md);padding:14px;margin:0 0 12px}
+  .vn-sec>legend{font-weight:700;font-size:.94rem;padding:0 6px}
+  .vn-field{border:0;margin:0 0 12px;padding:0}
+  .vn-field>legend,.vn-field>label{display:block;font-size:.86rem;font-weight:600;margin-bottom:6px}
+  .vn-choices{display:flex;flex-wrap:wrap;gap:10px 16px}
+  .vn-choices label,.vn-none{display:flex;align-items:center;gap:6px;min-height:44px;font-size:.86rem}
+  .vn-field input[type=number]{width:100%;max-width:220px;font:inherit;padding:10px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);min-height:44px;background:var(--card);color:var(--text)}
+  .vn-field textarea{width:100%;font:inherit;font-size:.94rem;padding:12px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);background:var(--card);color:var(--text)}
+  .vn-summary{font-weight:600;margin:0 0 12px}
+  .vn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .vn-row p{margin:6px 0 0;font-size:.86rem;line-height:1.5}
+  .vn-row .vn-word{font-weight:600}
   .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--sp3);margin:0 0 var(--sp3)}
   .two .card{margin:0}
   .sitem{margin:0 0 12px;font-size:.9rem;line-height:1.55;border-left:3px solid var(--success);padding-left:12px}
@@ -899,6 +919,61 @@ function EvidenceReview(props){
       e('p',{className:'quoted-turn'},e('b',null,'Patient: '),t.patient));})):null,
     e('a',{href:'#exchange-review',onClick:function(event){var review=document.getElementById('exchange-review');if(review){event.preventDefault();review.open=true;review.querySelector('summary').focus();review.scrollIntoView({block:'start'});}}},'Review the full exchange'));
 }
+function ChartDocs(props){
+  return e('div',{className:'chart-docs'},props.docs.map(function(d){
+    var hid='chart_'+props.idSuffix+'_'+d.id;
+    return e('section',{key:d.id,className:'chart-doc','aria-labelledby':hid},
+      e('h3',{id:hid},d.title),
+      d.lines.map(function(line,i){return e('p',{key:i},line);}),
+      d.source?e('p',{className:'fine'},'Source: '+d.source):null);
+  }));
+}
+function VisitNoteForm(props){
+  var note=props.note,entries=props.entries;
+  function set(id,value){props.onChange(id,value);}
+  return e('section',{className:'vn','aria-labelledby':'vn_title'},
+    e('h3',{id:'vn_title',tabIndex:-1,ref:props.headingRef},'Your visit note'),
+    e('p',{className:'why'},note.intro),
+    note.sections.map(function(sec){
+      return e('fieldset',{key:sec.id,className:'vn-sec'},
+        e('legend',null,sec.title),
+        sec.fields.map(function(f){
+          var id='vn_'+f.id,v=entries[f.id];
+          if(f.type==='choice')return e('fieldset',{key:f.id,className:'vn-field'},
+            e('legend',null,f.label),
+            e('div',{className:'vn-choices'},f.choices.map(function(ch){
+              var cid=id+'_'+ch[0];
+              return e('label',{key:ch[0],htmlFor:cid},e('input',{type:'radio',id:cid,name:id,value:ch[0],checked:v===ch[0],onChange:function(){set(f.id,ch[0]);}}),' '+ch[1]);
+            })));
+          if(f.type==='integer')return e('div',{key:f.id,className:'vn-field'},
+            e('label',{htmlFor:id},f.label),
+            e('input',{type:'number',id:id,inputMode:'numeric',min:f.min,max:f.max,step:1,value:v==null?'':v,onChange:function(ev){set(f.id,ev.target.value);}}));
+          var item=v||{text:'',none:false};
+          return e('div',{key:f.id,className:'vn-field'},
+            e('label',{htmlFor:id},f.label),
+            e('textarea',{id:id,rows:2,value:item.text,disabled:item.none,onChange:function(ev){set(f.id,{text:ev.target.value,none:false});}}),
+            e('label',{className:'vn-none',htmlFor:id+'_none'},e('input',{type:'checkbox',id:id+'_none',checked:item.none,onChange:function(ev){set(f.id,{text:item.text,none:ev.target.checked});}}),' '+(f.none||'None found')));
+        }));
+    }));
+}
+function VisitNoteReview(props){
+  var graded=gradeVisitNote(props.caseDef,props.session,props.entries),c=graded.counts,who=props.caseDef.persona.displayName;
+  return e('div',{className:'card vn-review',id:'visit-note-review'},
+    e('h2',null,'Your note beside the record'),
+    e('p',{className:'fine'},'Each entry sits next to what the case record says, with '+who+'’s reply from your transcript where the room recognized the topic. Recognition does not establish that a question was directed to the patient or that the patient answered — review the exchange with your supervisor.'),
+    e('p',{className:'vn-summary'},c.match+' match · '+c.differ+' differ · '+c.notEstablished+' not established in this visit'),
+    e('div',{className:'vn-grid'},graded.rows.map(function(r){
+      return e('div',{className:'sacell vn-row',key:r.id},
+        e('p',{className:'q'},r.section+' · '+r.label),
+        e('p',{className:'vn-word'},r.word),
+        e('p',null,e('b',null,'Your note: '),r.entry),
+        e('p',null,e('b',null,'The record: '),r.record),
+        r.evidence?e('p',{className:'quoted-turn'},e('b',null,'Exchange '+r.evidence.number+' · '+who+': '),r.evidence.patient)
+          :(r.fromChart?null:e('p',{className:'fine'},r.established?'The room recognized this topic; review the full exchange.':'Not established in this visit — '+who+' would have told you if asked.')),
+        r.note?e('p',{className:'fine'},r.note):null,
+        e('p',null,r.teach));
+    })));
+}
 function Ribbon(props){
   return e('div',{className:'ribbon',role:'note'},
     e('span',{className:'mark','aria-hidden':true},'✳'),
@@ -1003,6 +1078,11 @@ function App(){
   // D16(2)b "I did ask — show me": a display-only, per-encounter self-report. Never persisted,
   // never sent anywhere, never touches s.covered/unlocked/rapport. {id, turnIndex} or null.
   var srp=useState(null); var selfReport=srp[0],setSelfReport=srp[1];
+  // The visit note and the chart dialog, per encounter, for cases that declare visitNote / chart.
+  // Page memory only: never persisted, never sent — the evaluate request keeps its three answers.
+  var vns=useState({}); var VN=vns[0],setVN=vns[1];
+  var cho=useState(false); var chartOpen=cho[0],setChartOpen=cho[1];
+  var chartBtnRef=useRef(null), chartCloseRef=useRef(null);
   // The door: which patient the entrance shows. Null until the learner chooses; the first attested case otherwise.
   var scs=useState(null); var selectedCaseId=scs[0],setSelectedCaseId=scs[1];
   var chatRef=useRef(null), returnRef=useRef(null), doorRef=useRef(null), spokenConsentRef=useRef(null), roomModeRef=useRef(null), passcodeRef=useRef(null), composerRef=useRef(null), limitEndRef=useRef(null), selfAssessRef=useRef(null), evaluationAbortRef=useRef(null), providerCheckRef=useRef({generation:0,abort:null}), healthRequestRef=useRef({generation:0,abort:null}), providerModeRef=useRef(provMode), voiceRuntimeRef=useRef({caseDef:null}), rtRef=useRef(null), rtBookRef=useRef({stateByTurn:{},applied:{},recorded:{},repeated:{},lastTurn:0}), audioSinkRef=useRef(null), pendingBeginRef=useRef(null), rtPhaseRef=useRef('');
@@ -1328,7 +1408,7 @@ function App(){
     var sess=p.start(caseDef,{difficulty:difficulty,encounterId:encounterId});
     setE({provider:p,session:sess,caseDef:caseDef,difficulty:difficulty,
           encounterId:encounterId,msgs:[],phiHold:null,feedback:null,spoken:spoken});
-    setSA({a:'',b:'',c:''});setActorIssue(null);setOfflineSession(p instanceof MockProvider);setStepOut(false);setInput('');setSelfReport(null);
+    setSA({a:'',b:'',c:''});setActorIssue(null);setOfflineSession(p instanceof MockProvider);setStepOut(false);setInput('');setSelfReport(null);setVN({});setChartOpen(false);
     setS(Object.assign({},S,{screen:'encounter'}));
     announce('Encounter started with '+caseDef.persona.displayName+', '+difficulty+' mode'+(spoken?', spoken room.':'.'));
     if(spoken){startSpokenSession(caseDef,encounterId);return;}
@@ -1383,7 +1463,7 @@ function App(){
     setTimeout(function(){ if(doorRef.current)try{doorRef.current.focus();}catch(x){} },30); }
   function endEncounter(){ setShowSpokenConsent(false);
     if(E&&E.spoken){var last=rt;disposeSpokenSession();if(last)recordSpokenTurns(last);setRt(null);}
-    voiceControllerRef.current.endEncounter();setBusy(false); setStepOut(false);
+    voiceControllerRef.current.endEncounter();setBusy(false); setStepOut(false); setChartOpen(false);
     setS(Object.assign({},S,{screen:'selfassess'})); announce('Encounter ended. Your read comes before any feedback.'); }
   function toDebrief(){
     cancelEvaluation();
@@ -1412,6 +1492,10 @@ function App(){
       lines.push('','--- Phrasings the simulator did not recognize ---',
         'Self-reported by the learner, not detected by the simulator. This is not evidence that a screen occurred — bring it to your supervisor.',
         '['+selfReport.turnIndex+'] STUDENT: '+(reportedTurn?reportedTurn.me:''));
+    }
+    if(cd.visitNote){
+      lines.push('','Visit note (compared with the case record in the debrief):');
+      gradeVisitNote(cd,s,VN).rows.forEach(function(r){lines.push('- '+r.section+' · '+r.label+': '+r.entry+' — '+r.word+'. Record: '+r.record);});
     }
     lines.push('','Self-assessment:','1. '+SA.a,'2. '+SA.b,'3. '+SA.c,'','Bring this to your supervisor — the conversation about it is the point.');
     var blob=new Blob([lines.join('\n')],{type:'text/plain'});
@@ -1500,6 +1584,9 @@ function App(){
               e(Bars,{h:P.bars}),
               e('p',{style:{margin:0}},e('b',null,P.label.charAt(0).toUpperCase()+P.label.slice(1)+'. '),e('span',{style:{fontStyle:'italic'}},chosen.persona.voice))),
             e('div',{className:'chips'},chosen.skillTags.map(function(t,i){return e('span',{className:'chip',key:i},t);})),
+            chartDocs(chosen).length?e('details',{className:'chart-brief'},
+              e('summary',null,'Chart · '+chartDocs(chosen).length+' documents'),
+              e(ChartDocs,{docs:chartDocs(chosen),idSuffix:'door'})):null,
             e('p',{className:'fine practice-note'},'Fictional practice for supervised learning. Pauses, speaking speed and fluency are never graded, and this room does not assess competence or readiness.')));
       var accessSection=e('section',{className:'card access','aria-labelledby':'access_title'},
           e('h2',{id:'access_title'},'Choose your encounter'),
@@ -1538,6 +1625,21 @@ function App(){
   }
 
   /* ---------- encounter: shared step-out overlay ---------- */
+  function openChart(){ setChartOpen(true); announce('Chart open. '+E.caseDef.persona.displayName+' waits.');
+    setTimeout(function(){ if(chartCloseRef.current)try{chartCloseRef.current.focus();}catch(x){} },30); }
+  function closeChart(){ setChartOpen(false); announce('Chart closed.');
+    setTimeout(function(){ if(chartBtnRef.current)try{chartBtnRef.current.focus();}catch(x){} },30); }
+  function chartOverlay(cd){
+    return e('div',{className:'overlay',onKeyDown:function(ev){trapDialogKey(ev,closeChart);}},
+      e('div',{className:'panel',role:'dialog','aria-modal':true,'aria-labelledby':'chart_title'},
+        e('div',{className:'panelhead'},
+          e('h2',{id:'chart_title'},'Chart — '+cd.persona.displayName),
+          e('span',{className:'notascore'},'the record you brought in')),
+        e(ChartDocs,{docs:chartDocs(cd),idSuffix:'dialog'}),
+        e('div',{className:'panelfoot'},
+          e('button',{className:'btn primary',ref:chartCloseRef,onClick:closeChart},'Back to the conversation'),
+          e('span',{className:'esc'},'Esc also closes · reading the chart is never noted against you'))));
+  }
   function stepOutOverlay(cd,sess){
     return e('div',{className:'overlay',onKeyDown:function(ev){trapDialogKey(ev,closeDoor);}},
       e('div',{className:'panel',role:'dialog','aria-modal':true,'aria-label':'Stepped out of the room'},
@@ -1649,9 +1751,11 @@ function App(){
             e('span',{className:'fict'},'Fictional practice — no real-patient details')),
           e('div',{className:'doorrow'},
             sSupported?e('button',{className:'btn door',ref:doorRef,onClick:stepOutSpoken},(ssess.stepOuts||0)>0?'Step out again':'Step out a moment'):null,
+            chartDocs(scd).length?e('button',{className:'btn',ref:chartBtnRef,onClick:openChart},'Chart'):null,
             e('button',{className:'btn',onClick:endEncounter},'End encounter'),
             !sSupported?e('span',{className:'quiet'},'Realistic — no map, no coach. Your debrief will have both.'):null)),
-        stepOut?e('div',{onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeDoorSpoken();}}},stepOutOverlay(scd,ssess)):null));
+        stepOut?e('div',{onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();closeDoorSpoken();}}},stepOutOverlay(scd,ssess)):null,
+        chartOpen?chartOverlay(scd):null));
   }
 
   /* ---------- encounter: the typed room ---------- */
@@ -1725,9 +1829,11 @@ function App(){
             e('span',{className:'fict'},'Fictional practice — no real-patient details')),
           e('div',{className:'doorrow'},
             supported?e('button',{className:'btn door',ref:doorRef,onClick:openDoor},(sess.stepOuts||0)>0?'Step out again':'Step out a moment'):null,
+            chartDocs(cd).length?e('button',{className:'btn',ref:chartBtnRef,onClick:openChart},'Chart'):null,
             e('button',{className:'btn',onClick:endEncounter},'End encounter'),
             !supported?e('span',{className:'quiet'},'Realistic — no map, no coach. Your debrief will have both.'):null)),
-        stepOut?stepOutOverlay(cd,sess):null));
+        stepOut?stepOutOverlay(cd,sess):null,
+        chartOpen?chartOverlay(cd):null));
   }
 
   /* ---------- self-assessment ---------- */
@@ -1735,18 +1841,20 @@ function App(){
     var qs=[['a','What was this patient most afraid of?'],
             ['b','What do you wish you had asked?'],
             ['c','Commit to it: your one-line problem representation.']];
-    var ready=SA.a.trim()&&SA.b.trim()&&SA.c.trim();
+    var noteDef=E.caseDef.visitNote||null, noteReady=!noteDef||visitNoteComplete(E.caseDef,VN);
+    var ready=SA.a.trim()&&SA.b.trim()&&SA.c.trim()&&noteReady;
     return e('div',null,header,
       e('div',{className:'sa'},
         e('p',{className:'section-label'},'The room is empty · before any feedback'),
         e('h2',null,'Your read, first.'),
-        e('p',{className:'why'},'Commit before you see anything. The debrief responds to what you write here — it isn’t a form, and nothing is graded.'),
+        e('p',{className:'why'},noteDef?'Commit before you see anything. Your note is compared with the case record in the debrief; your read below is not graded.':'Commit before you see anything. The debrief responds to what you write here — it isn’t a form, and nothing is graded.'),
+        noteDef?e(VisitNoteForm,{note:noteDef,entries:VN,headingRef:selfAssessRef,onChange:function(id,value){var o={};o[id]=value;setVN(Object.assign({},VN,o));}}):null,
         qs.map(function(q,i){return e('div',{className:'q',key:q[0]},
           e('label',{htmlFor:'sa_'+q[0]},e('span',{className:'num'},String(i+1)),q[1]),
-          e('textarea',{id:'sa_'+q[0],ref:i===0?selfAssessRef:null,value:SA[q[0]],onChange:function(ev){var o={};o[q[0]]=ev.target.value;setSA(Object.assign({},SA,o));}}));}),
+          e('textarea',{id:'sa_'+q[0],ref:(i===0&&!noteDef)?selfAssessRef:null,value:SA[q[0]],onChange:function(ev){var o={};o[q[0]]=ev.target.value;setSA(Object.assign({},SA,o));}}));}),
         e('div',{className:'commit'},
           e('button',{className:'btn primary',disabled:!ready,onClick:toDebrief},'I’ve committed — show the debrief'),
-          e('span',{className:'hint'},ready?'Nothing here is graded — it seeds the conversation.':'All three first — the debrief responds to your read.'))));
+          e('span',{className:'hint'},ready?(noteDef?'Your note will sit beside the record in the debrief.':'Nothing here is graded — it seeds the conversation.'):(noteDef&&!noteReady?'Finish your visit note — every line needs an answer, and “not established” counts.':'All three first — the debrief responds to your read.')))));
   }
 
   /* ---------- debrief ---------- */
@@ -1806,6 +1914,7 @@ function App(){
           e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty);}},'Re-run this encounter'),
           refLine?e('span',{className:'ref'},refLine):null,
           reframeLine?e('span',{className:'myth'},reframeLine):null)):null,
+      E.caseDef.visitNote?e(VisitNoteReview,{caseDef:E.caseDef,session:sess2,entries:VN}):null,
       e('div',{className:'card'},
         e('h2',null,'Your read, then the room’s'),
         e('p',{style:{margin:'0 0 14px',fontSize:'.78rem',color:'var(--text-light)'}},'What you committed to, before any feedback.'),
@@ -1868,6 +1977,7 @@ function App(){
           e('button',{className:'btn primary',onClick:downloadTranscript},'Download transcript for supervision'),
           e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty==='supported'?'realistic':'supported');}},
             E.difficulty==='supported'?'Re-run — Realistic (blank room)':'Re-run — Supported (with the door)'),
+          (function(){var next=nextEncounterFor(S.pack,E.caseDef.id);return next?e('button',{className:'btn',onClick:function(){setSelectedCaseId(next.id);backToCases();}},'Next with '+next.persona.displayName+': '+(next.title.split(' — ')[1]||next.title)+' →'):null;})(),
           e('button',{className:'btn ghost',onClick:backToCases},'Back to cases'))));
   }
   return null;

@@ -16,6 +16,8 @@ const sourcePack = JSON.parse(fs.readFileSync(
   'utf8',
 ));
 const CASE_ID = 'sp_depression_gated_si_001';
+// Dana one week after discharge: pending in the real pack, released below only by fixture.
+const FOLLOW_UP_ID = 'sp_depression_followup_001';
 // The learner selector renders one card per attested persona — all three since Marcus and
 // Ray were attested 2026-07-22. This spec drives the Dana encounter specifically (its fakes,
 // opening line and voice are all Dana's), so selection locators are scoped to her card.
@@ -36,6 +38,10 @@ const CONSENT_KEY = 'cw_sp_spoken_consent_v1';
 function reviewedPack(scenario = {}) {
   const pack = JSON.parse(JSON.stringify(sourcePack));
   if (scenario.maxTurns) pack.engine.maxTurns = scenario.maxTurns;
+  // A controlled governance fixture, never live state (CLAUDE.md): the follow-up is released here only.
+  if (scenario.followUpReviewed) {
+    pack.cases.find((c) => c.id === FOLLOW_UP_ID).facultyReview = { status: 'reviewed', reviewer: 'Fixture reviewer', lastReviewed: '2026-01-01' };
+  }
   return pack;
 }
 
@@ -1321,3 +1327,75 @@ async function learnerSaysAndHears(page, line, replyText) {
   await expect(page.locator('.msg.me').filter({ hasText: line })).toBeVisible();
   await expect(page.locator('.msg.pt').filter({ hasText: replyText }).first()).toBeVisible();
 }
+
+/* ------------------------------------------------------------------ Dana, one week after discharge */
+// The fake proxy's opening line is Day 1's; after "Continue offline" the page's own engine answers
+// with the follow-up case's scripted lines, so every reply asserted below is the follow-up's.
+async function openFollowUp(page) {
+  await openRoom(page, { actorError: true, roomMode: 'typed', followUpReviewed: true });
+  await page.getByLabel('Patient').selectOption(FOLLOW_UP_ID);
+  await expect(page.getByText('One week after discharge', { exact: true })).toBeVisible();
+}
+
+async function sayTyped(page, text) {
+  await page.getByLabel('Your next words to the patient').fill(text);
+  await page.getByRole('button', { name: 'Say it' }).click();
+}
+
+test('the follow-up chart is on the door and in the room, and Escape returns focus to the Chart button', async ({ page }) => {
+  await openFollowUp(page);
+  await page.getByText('Chart · 4 documents').click();
+  await expect(page.getByRole('heading', { name: 'Discharge medications' })).toBeVisible();
+  await beginTyped(page);
+  const chartButton = page.getByRole('button', { name: 'Chart', exact: true });
+  await chartButton.click();
+  const dialog = page.getByRole('dialog', { name: 'Chart — Dana' });
+  await expect(dialog.getByText('Item scores in order, 1 to 9: 2 · 2 · 1 · 2 · 1 · 2 · 1 · 1 · 0.')).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Back to the conversation' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(chartButton).toBeFocused();
+});
+
+test('the visit note gates the debrief, sits beside the record, and starts empty on a re-run', async ({ page }) => {
+  await openFollowUp(page);
+  await beginTyped(page);
+  await sayTyped(page, 'Did you make it to the therapy intake on Monday?');
+  await page.getByRole('button', { name: 'Continue offline' }).click();
+  await expect(page.locator('.msg.pt').last()).toContainText('cancelled');
+  await sayTyped(page, 'Since you left the hospital, have you had any thoughts of killing yourself?');
+  await expect(page.locator('.msg.pt').last()).toContainText('put zero on the form');
+  await page.getByRole('button', { name: 'End encounter' }).click();
+  await completeSelfAssessment(page, 'follow-up');
+  const commit = page.getByRole('button', { name: /show the debrief/i });
+  await expect(commit).toBeDisabled();
+  await expect(page.getByText(/Finish your visit note/)).toBeVisible();
+  const choose = (field, option) => page.getByRole('group', { name: field, exact: true }).getByLabel(option, { exact: true }).check();
+  await choose('Therapy intake (booked for day 3)', 'Missed');
+  await choose('Sertraline — once daily, in the morning', 'Not established in this visit');
+  await choose('Trazodone — at bedtime, as needed for sleep', 'Not established in this visit');
+  await page.getByLabel('None found', { exact: true }).check();
+  await page.getByLabel('Total, as marked (0–27)', { exact: true }).fill('12');
+  await choose('Severity band', 'Moderate (10–14)');
+  await page.getByLabel('Item 9, as marked (0–3)', { exact: true }).fill('0');
+  await choose('Suicidal thoughts since discharge, from the interview', 'Passive thoughts, some nights');
+  await choose('Compared with admission (22)', 'Improved');
+  await choose('Has used her plan since discharge', 'Not asked in this visit');
+  await choose("Tom's sleep medication out of the house", 'Not asked in this visit');
+  await choose('Firearms at home', 'Not asked in this visit');
+  await choose('Contacts she would actually use', 'Not asked in this visit');
+  await expect(commit).toBeEnabled();
+  await commit.click();
+  const review = page.locator('#visit-note-review');
+  await expect(review.getByRole('heading', { name: 'Your note beside the record' })).toBeVisible();
+  await expect(review.getByText('6 match · 0 differ · 7 not established in this visit')).toBeVisible();
+  const intake = review.locator('.vn-row').filter({ hasText: 'Therapy intake (booked for day 3)' });
+  await expect(intake.getByText('Matches the record')).toBeVisible();
+  await expect(intake.locator('.quoted-turn')).toContainText('cancelled');
+  // Re-run: a fresh encounter starts with an empty note; the old entries never grade it.
+  await page.getByRole('button', { name: /Re-run — Realistic/i }).click();
+  await expect(page.locator('.msg.pt').filter({ hasText: OPENING })).toBeVisible();
+  await page.getByRole('button', { name: 'End encounter' }).click();
+  await expect(page.getByRole('group', { name: 'Therapy intake (booked for day 3)', exact: true }).getByLabel('Missed', { exact: true })).not.toBeChecked();
+  await expect(page.getByLabel('Total, as marked (0–27)', { exact: true })).toHaveValue('');
+});
