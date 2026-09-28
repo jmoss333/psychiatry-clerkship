@@ -760,6 +760,7 @@ test('release status says what learners see, lists merged work that is not live,
         workflowUrl: 'https://github.com/jmoss333/psychiatry-clerkship/actions/workflows/production-release-train.yml',
         nextSlot: '2026-09-27T15:05:00.000Z',
         lastRun: { at: '2026-09-27T09:21:01Z', event: 'schedule', status: 'completed', conclusion: 'failure', url: 'https://github.com/jmoss333/psychiatry-clerkship/actions/runs/1' },
+        week: { days: 7, complete: true, scheduled: 21, publishNow: 2, ok: 18, before: 4, after: 1, unknown: 0, running: 0 },
       },
       ledgerMode: false,
       gaps: ["main's required checks: GitHub answered 403"],
@@ -779,6 +780,10 @@ test('release status says what learners see, lists merged work that is not live,
   await expect(panel).toContainText('scheduled · failure');
   await expect(panel).toContainText("main's required checks: GitHub answered 403");
   await expect(panel).toContainText('never publishes');
+  await expect(panel.locator('#release-week')).toHaveText(
+    'Release train, last 7 days: 21 scheduled runs and 2 publish-now — 18 published or had nothing new, '
+    + '4 stopped before publishing (held by the spend tripwire, refused, or could not check), 1 failed after publishing.',
+  );
   expect(seenKey).toBe(FACULTY_KEY);
   expect(await page.evaluate(() => document.querySelector('#learner-preview-frame') === window.__releaseOriginalFrame)).toBe(true);
   await page.setViewportSize({ width: 390, height: 844 });
