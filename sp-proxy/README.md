@@ -18,7 +18,7 @@ sp-proxy/
   netlify/functions/sp-realtime-reaper.mjs
                               scheduled hangup of spoken sessions past their deadline
   package.json                @netlify/blobs (durable daily quota counter)
-  REDTEAM_CHECKLIST.md        run after every deploy and every model/pack change
+  REDTEAM_CHECKLIST.md        optional live checklist (not a gate since 2026-09-27)
 ```
 
 ## What the function does
@@ -112,10 +112,10 @@ The independent Codex deadman supplies the separate alert path.
 
 A learner-ready success proves that the contract is intact and that the actor answered one neutral turn. It does
 **not** evaluate what the actor said, exercise the evaluator, the safety screen, voice behavior, or
-the coverage map; it does not authorize managed voice; and it does not replace the deploy/model/pack
-red-team checklist and external activation gates below. A green receipt still is not release
+the coverage map; it does not authorize managed voice; and it does not replace the external
+activation gates below. A green receipt still is not release
 evidence (D7). Only a learner-ready success is evidence that the tool can speak; a green
-draft-pack receipt skips actor probing. Neither replaces a red-team pass.
+draft-pack receipt skips actor probing. Neither is a human look at what the patient says.
 
 ## One-time setup (~10 min, Netlify dashboard)
 
@@ -144,9 +144,9 @@ draft-pack receipt skips actor probing. Neither replaces a red-team pass.
    → `{"schemaVersion":1,"actorModel":"claude-haiku-4-5-20251001","evaluatorModel":"claude-haiku-4-5-20251001","packVersion":"<reviewed pack version>","packStatus":"<reviewed status>","cases":[...]}`.
 4. In the tool: mode chip → **Live** → settings panel → paste endpoint URL
    (`https://<site>/api/sp`) + passcode → **Test connection**.
-5. Run `REDTEAM_CHECKLIST.md` end to end **before a new pack, model pin, or deploy reaches
-   learners** — it is a change gate, not a usage gate; an already-attested build stays live without
-   re-running it. Step-by-step, with the mechanical probes scripted:
+5. Optional: run `REDTEAM_CHECKLIST.md` when you want a human look at the live room. Since
+   2026-09-27 it is not a change gate (decision `sp-redteam-signoff-retired`); the deterministic
+   gate-integrity checks (`node bin/redteam-offline.mjs`) run on every PR instead. Step-by-step:
    [`docs/RED_TEAM_RUNBOOK.md`](../docs/RED_TEAM_RUNBOOK.md).
 
 ## Governance couplings (do not skip)
@@ -285,9 +285,7 @@ Netlify UI or provider-console change made by the owner, and the route stays dar
    but its row: the proxy accepts him as soon as the PR merges to `main` (`SP_PACK_URL` reads
    `?ref=main`, 5-minute TTL), and learners see him in the typed room — offline mock included —
    at the release train's next fast-forward, before any step on this list is taken; the spoken
-   room only adds his voice. The pack sha changed with him, so after that deploy the **full**
-   `REDTEAM_CHECKLIST.md` is re-run and re-signed with `record_red_team.py` against the new
-   sha, not only section R. The Morgan-and-Maya family visit is not a
+   room only adds his voice. The Morgan-and-Maya family visit is not a
    realtime case at all yet: the learner tool shows one door card to the faculty preview
    (chained pipeline, two voices) until the two-session family room in
    `docs/superpowers/specs/2026-09-26-family-room-two-voice-design.md` is built.
@@ -295,8 +293,9 @@ Netlify UI or provider-console change made by the owner, and the route stays dar
    audio or transcript, does not claim zero provider retention, and is bound to the model name, so a
    model change re-asks every learner. Bump `SPOKEN_CONSENT_VERSION` in the tool if the deployed
    project's retention or Traces setting changes.
-6. **Red-team section R** (`REDTEAM_CHECKLIST.md`) after the first production deploy and after every
-   model or pack change, with a headset and with speakers.
+6. **Optional: red-team section R** (`REDTEAM_CHECKLIST.md`) with a headset and with speakers — a
+   useful structure for the faculty speech-to-speech audition below, not a separate gate since
+   2026-09-27 (decision `sp-redteam-signoff-retired`).
 
 ## Environment variables (names only)
 
@@ -377,7 +376,8 @@ replies, or raw idempotency material.
 Subscribe an accountable owner to provider security, privacy, retention, price, model-deprecation,
 and incident notices. A policy, model, price, voice, adapter mapping, or account-control change makes
 the corresponding review stale: disable managed voice, update the pack evidence and hashes, repeat
-privacy and faculty review, and rerun the red-team checklist before considering reactivation.
+privacy and faculty review before considering reactivation (the live red-team checklist is an
+optional aid there, not a gate).
 
 ## Rollback
 
@@ -416,7 +416,8 @@ All of these must be recorded outside the automated receipt before learner activ
 For the real-time spoken room, additionally:
 
 - faculty audition of each case/voice pairing **in speech-to-speech** (the TTS audition does not
-  carry over — a different model speaks) and a spoken red-team pass (`REDTEAM_CHECKLIST.md` §R);
+  carry over — a different model speaks); `REDTEAM_CHECKLIST.md` §R is an optional structure for
+  it, not a separate gate since 2026-09-27;
 - privacy approval of the Realtime data terms for the deployed account, **including the Traces
   dashboard and data-retention controls at project level** — a connected client can enable tracing
   for its own session over the data channel, which the function cannot forbid;

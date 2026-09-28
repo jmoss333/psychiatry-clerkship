@@ -2,9 +2,9 @@
  * bin/what_needs_josh.py — the author-gated mirror of the agent work queue.
  *
  * what_can_i_do_today.py answers "what can an unattended agent do here". Nothing answered the
- * other half — what can ONLY the author do — so attestation, a red-team signature and a rights
- * decision lived in memory files and handoff notes, which is how the WP-5m red-team receipt
- * survived four sessions unwritten.
+ * other half — what can ONLY the author do — so attestation and a rights decision lived in
+ * memory files and handoff notes. (The Interview Room red-team signature was a row until
+ * 2026-09-27; decision sp-redteam-signoff-retired made the live checklist optional.)
  *
  * The numbers move as the work gets done; that is the point. What needs pinning are the
  * invariants that make the list trustworthy:
@@ -15,8 +15,7 @@
  *     remember to prune.
  *   · a row's predicate must be satisfiable ONLY by the human act. The queue learned this the
  *     hard way: "isbn-verify" was measured by whether a line carried an ISBN-13, so a DIFFERENT
- *     task writing them retired it having confirmed nothing. Here the same trap would read "the
- *     recorder script ran" as "the red team ran".
+ *     task writing them retired it having confirmed nothing.
  *   · it is report-only: exit 0 always, even when every measurement fails.
  *
  * NO TEST HERE TOUCHES THE NETWORK — the gh-backed rows are exercised through injected stubs.
@@ -77,57 +76,14 @@ print(J.render(rows, False))`);
   assert.match(out, /unknown is NOT zero/);
 });
 
-test('the red-team receipt is not satisfied by a receipt for a different pack', () => {
-  // The isbn-verify trap in its local form: a receipt proves a checklist was run against
-  // THE PACK IT NAMES. A stale receipt must read as still-owed, not as done.
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wnj-'));
-  const pack = path.join(tmp, 'pack.json');
-  const receipt = path.join(tmp, 'receipt.json');
-  fs.writeFileSync(pack, JSON.stringify({ version: '2', engine: {} }));
-  fs.writeFileSync(receipt, JSON.stringify({
-    state: 'passed', signedBy: 'Joshua Moss, MD', packSha256: 'sha-of-an-older-pack',
-  }));
-  const out = py(`
-import pathlib
-J.PACK = pathlib.Path(${JSON.stringify(pack)})
-J.RECEIPT = pathlib.Path(${JSON.stringify(receipt)})
-print(J.measure_red_team())`);
-  assert.equal(out, '(1, 1)', 'a receipt for another pack must still count as owed');
-  fs.rmSync(tmp, { recursive: true, force: true });
-});
-
-test('a matching, signed, passing receipt does settle the red-team row', () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wnj-'));
-  const pack = path.join(tmp, 'pack.json');
-  const receipt = path.join(tmp, 'receipt.json');
-  const body = JSON.stringify({ version: '2', engine: {} });
-  fs.writeFileSync(pack, body);
-  const out = py(`
-import pathlib, json, hashlib
-J.PACK = pathlib.Path(${JSON.stringify(pack)})
-J.RECEIPT = pathlib.Path(${JSON.stringify(receipt)})
-sha = hashlib.sha256(J.PACK.read_bytes()).hexdigest()
-J.RECEIPT.write_text(json.dumps({"state": "passed", "signedBy": "Joshua Moss, MD",
-                                 "packSha256": sha}))
-print(J.measure_red_team())`);
-  assert.equal(out, '(0, 1)');
-  fs.rmSync(tmp, { recursive: true, force: true });
-});
-
-test('an unsigned receipt does not settle the row', () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wnj-'));
-  const pack = path.join(tmp, 'pack.json');
-  const receipt = path.join(tmp, 'receipt.json');
-  fs.writeFileSync(pack, JSON.stringify({ version: '2' }));
-  const out = py(`
-import pathlib, json, hashlib
-J.PACK = pathlib.Path(${JSON.stringify(pack)})
-J.RECEIPT = pathlib.Path(${JSON.stringify(receipt)})
-sha = hashlib.sha256(J.PACK.read_bytes()).hexdigest()
-J.RECEIPT.write_text(json.dumps({"state": "passed", "signedBy": "   ", "packSha256": sha}))
-print(J.measure_red_team())`);
-  assert.equal(out, '(1, 1)');
-  fs.rmSync(tmp, { recursive: true, force: true });
+test('the retired red-team row stays retired (decision sp-redteam-signoff-retired)', () => {
+  // The live checklist is optional since 2026-09-27, so a signature for it is not owner work.
+  // A row that came back would put a permanent, never-satisfied item on the owner's list again.
+  const proc = run(['--json']);
+  assert.equal(proc.status, 0);
+  const keys = JSON.parse(proc.stdout).map((row) => row.key);
+  assert.ok(!keys.includes('red-team'), `red-team row is back: ${keys.join(', ')}`);
+  assert.doesNotMatch(fs.readFileSync(script, 'utf8'), /def measure_red_team/);
 });
 
 test('a page whose text changed after review is owed a re-attestation, not settled', () => {
@@ -305,9 +261,9 @@ test('it is report-only: exit 0 even when a measurement explodes', () => {
 });
 
 test('--why explains one row and rejects an unknown key without failing', () => {
-  const ok = run(['--why', 'red-team']);
+  const ok = run(['--why', 'pack-cases']);
   assert.equal(ok.status, 0);
-  assert.match(ok.stdout, /REDTEAM_CHECKLIST/);
+  assert.match(ok.stdout, /pack-case-review-is-registration/);
   const bad = run(['--why', 'not-a-row']);
   assert.equal(bad.status, 0, 'a typo must not fail the report');
   assert.match(bad.stderr, /no such row/);
