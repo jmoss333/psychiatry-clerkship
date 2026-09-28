@@ -81,6 +81,8 @@ EXPECTED_PERMISSIONS = {
         "actions": "read",
         "checks": "read",
         "contents": "read",
+        # The rolling attestation PR, for the signed-vs-served delivery check (step 2).
+        "pull-requests": "read",
     },
     "maintenance-heartbeat.yml": {
         "actions": "read",
@@ -304,6 +306,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/checkout"),
             ("uses", "actions/setup-node"),
             ("name", "Read what learners see against main"),
+            ("name", "Compare what is signed with what learners see"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -434,7 +437,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "2044dc589d3df7e1f850fca0468637fa2aa8e6798012cc1fda481b8c6d0fbf65"
     ),
     "maintenance-release-watch.yml": (
-        "d49c1642eb80de62b2971a06ecb142d908023ec281b36e213ad5d3b97ffcbb56"
+        "e91af78ce495d3edc91bd07d3eb5d68d258347e09bf877f502b3cde6db27c8d7"
     ),
     "maintenance-production-canary.yml": (
         "fe71a56f8bd2cd7f3ff752ee5dab681219323d113ed5bc46fecace047335737c"
@@ -721,6 +724,12 @@ npx playwright test --project=lfs""",
                 'node bin/release_watch.mjs --out "$RUNNER_TEMP/release-watch.json"',
                 None,
                 "required release watch",
+            ),
+            (
+                "Compare what is signed with what learners see",
+                'python3 bin/check_attestation_delivery.py --out "$RUNNER_TEMP/attestation-delivery.json"',
+                "always()",
+                "required attestation delivery check",
             ),
         ),
     },

@@ -230,6 +230,7 @@ If the console uses a different origin, update the learner site's exact `frame-a
 | `GITHUB_REPO` | `jmoss333/psychiatry-clerkship` *(optional; this is the default)* |
 | `GIT_BRANCH` | `attest/pending` *(optional; default)* — the branch attestations commit to |
 | `GIT_BASE_BRANCH` | `main` *(optional; default)* — where the rolling pull request lands |
+| `ATTEST_ROLLING_PR_AUTOMERGE` | *(optional)* `off` stops the 15-minute sweep arming auto-merge; it still opens the PR |
 | `STUDENT_SITE_URL` | MS3 learner site to embed *(optional; defaults to `https://une-ms3-psychiatry.netlify.app`)* |
 | `RESIDENT_SITE_URL` | resident learner site, used to preview the resident half of a Case-of-the-Week pair *(optional; defaults to `https://mmc-psychiatry-residents-sanford.netlify.app`)* |
 | `ALLOWED_ORIGIN` | the exact faculty site origin, e.g. `https://clerkship-faculty-attest.netlify.app` *(optional; tightens API CORS)* |
@@ -275,6 +276,20 @@ reuse that rolling request. A failed attempt stays in a persistent `role="alert"
 stable error code and a **Retry opening PR** button; ordinary preview status cannot erase it. The
 attestation must not be repeated. CI still gates every attestation, and protection on `main` is
 untouched.
+
+**The rolling PR no longer depends on anyone opening the console again (2026-09-28).** The
+post-write attempt above is silent by design, and on 2026-09-28 it left the owner's 08:06 ET
+Interview Room re-attestation on `attest/pending` with no PR: both learner sites showed the room as
+*pending faculty review* on the first day of a rotation until someone noticed. A scheduled function,
+`netlify/functions/rolling-pr-sweep.mjs` (every 15 minutes; logic in `rolling-pr-sweep.mjs`), now
+asks one question — does `GIT_BRANCH` carry commits `GIT_BASE_BRANCH` does not? — and if so opens the
+rolling PR (reopening it under the same title if it was closed) and arms GitHub **auto-merge with a
+merge commit**. A PR whose checks already passed cannot take auto-merge, so it is merged directly; a
+PR whose checks are failing is left for a person. It never writes a file or a signature, and it does
+nothing in ledger mode. Set `ATTEST_ROLLING_PR_AUTOMERGE=off` to keep the PR open for a person to
+merge. Its function log carries one content-free JSON line per tick. The daily check that this works
+is `bin/check_attestation_delivery.py`, step 2 of `maintenance-release-watch.yml`: page by page, what
+is signed against what each learner site shows, naming where anything undelivered is stuck.
 
 Before each write the console **fast-forwards the attestation branch from the base branch, but only
 when the branch carries nothing of its own** (`compare(base...branch).ahead_by === 0`). This is the
