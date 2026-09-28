@@ -578,9 +578,13 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 _concept_raw = concept_cards.feed_bytes(Path(LIB), "res")
 (Path(OUT) / "tools" / "concepts.json").write_bytes(_concept_raw)
 common.inject_concept_digest(Path(OUT), hashlib.sha256(_concept_raw).hexdigest())
+common.inject_review_qb_inventory(
+    Path(OUT), json.loads((Path(OUT) / "question_bank.json").read_text(encoding="utf-8"))["items"]
+)
 (Path(OUT) / "tools" / "review_companions.json").write_bytes(
     review_companions.feed_bytes(Path(LIB), "res")
 )
+common.inject_review_source_digests(Path(OUT))
 
 # ---------- SERVICE WORKER ----------
 # Very end of the artifact steps: the resident build starts as a copytree of

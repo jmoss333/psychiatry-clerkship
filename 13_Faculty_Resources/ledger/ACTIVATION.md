@@ -26,6 +26,7 @@ What it does:
 
 * Generates a key pair.
 * Stores the **private** half in the faculty console's Netlify settings as `LEDGER_SIGNING_KEY`. It is a *secret*: nobody can read it back, not you, not an agent, not the Netlify API. It is available to the production site only, so pull-request previews cannot sign.
+* Confirms the secret actually landed. Its `updated_at` must move, and it must sit in production only. A success line reads `… stored as a production-only Netlify secret on clerkship-faculty-attest (confirmed: LEDGER_SIGNING_KEY updated <time>)`. Anything else means nothing was recorded; fix what it names and run it again.
 * Writes the **public** half into `13_Faculty_Resources/ledger/keys.json`.
 
 The private key is never shown on screen and never saved to disk. Nobody else should run this step, because whoever runs it briefly holds the key.
@@ -60,14 +61,43 @@ Pushes to this branch trigger nothing. CI runs on pushes to `main` only. The two
 
 Set `CLERKSHIP_LEDGER=on` (Builds scope) on **both** `une-ms3-psychiatry` and `mmc-psychiatry-residents-sanford`, then trigger one build of each.
 
+> **Target sites by `NETLIFY_SITE_ID`, never `--site`.** netlify-cli 26 ignores `--site` on
+> `env:*` outside a linked folder: it exits 0, prints nothing and changes nothing (probed
+> 2026-09-27). Every command below names its site by ID in `NETLIFY_SITE_ID` (the IDs are in
+> `_automation/maintenance/maintenance_config.json`), and every write is followed by a read.
+
+> **Production context only, never "all".** A deploy preview builds its PR's own branch, and a
+> branch cut before the keys PR merged carries a `keys.json` without the console's key. With the
+> overlay on in previews, the first signed event would fail every such preview as an unknown key,
+> turning a required check red on every older open PR. Previews therefore keep building from the
+> git baseline, exactly as before activation. Only production builds (the release train, publish
+> now, and the ledger's build hooks) overlay the ledger.
+
 ```bash
-netlify env:set CLERKSHIP_LEDGER on --site une-ms3-psychiatry --scope builds
-netlify env:set CLERKSHIP_LEDGER on --site mmc-psychiatry-residents-sanford --scope builds
+NETLIFY_SITE_ID=94717a39-679b-4c78-ae02-7b19e809592e netlify env:set CLERKSHIP_LEDGER on --context production --scope builds  # une-ms3-psychiatry
+NETLIFY_SITE_ID=af64d5d4-e0b5-4f03-9857-be40e3b48329 netlify env:set CLERKSHIP_LEDGER on --context production --scope builds  # mmc-psychiatry-residents-sanford
+# Read it back. Each line must list CLERKSHIP_LEDGER:
+NETLIFY_SITE_ID=94717a39-679b-4c78-ae02-7b19e809592e netlify env:list --json
+NETLIFY_SITE_ID=af64d5d4-e0b5-4f03-9857-be40e3b48329 netlify env:list --json
 ```
 
 **Acceptance:** each site then serves `/ledger-receipt.json` with `"status": "applied"` and `"seq": 0`.
 
 ## 4. Build hooks, then the console
+
+> **First, `keys.json` must be on `release`, not only on `main`.** The console checks its key
+> against `keys.json` on `main`, but each learner build verifies signatures against the
+> `keys.json` in the `release` checkout it builds (`ledger_overlay.mjs` reads it from the build
+> root). If the console signs before the release train has carried the keys PR to `release`,
+> every learner build refuses the ledger (`LEDGER INVALID`, unknown key). The last good deploy
+> stays live, but no sign-off publishes until the train catches up. Check before continuing:
+>
+> ```bash
+> git fetch origin release main && git merge-base --is-ancestor <keys PR merge commit> origin/release && echo on-release
+> ```
+>
+> If it is not there yet, wait for the next train (09:05, 15:05, 21:05 UTC) or press the
+> release train's **Run workflow** (publish-now).
 
 Create one build hook per learner site (Site configuration → Build & deploy → Build hooks, branch **`release`**, name "attestation ledger"). Then set these on `clerkship-faculty-attest`, scope Functions:
 
@@ -77,6 +107,17 @@ Create one build hook per learner site (Site configuration → Build & deploy �
 |---|---|
 | `LEDGER_BUILD_HOOKS` | `ms3=<une-ms3 hook URL>,res=<residents hook URL>`, marked **secret** (a hook URL spends money when called) |
 | `ATTEST_LEDGER` | `on` |
+
+A secret must name its context. Netlify refuses a secret in the "all contexts" context, and the
+CLI reports success anyway, so `--context production` is not optional here:
+
+```bash
+NETLIFY_SITE_ID=295ae8dd-412c-47ad-aac3-7e7cd4b3110d netlify env:set LEDGER_BUILD_HOOKS "ms3=<hook>,res=<hook>" --context production --scope functions --secret --force
+NETLIFY_SITE_ID=295ae8dd-412c-47ad-aac3-7e7cd4b3110d netlify env:set ATTEST_LEDGER on --scope functions
+```
+
+Read both back before redeploying. A secret's value never reads back, so check that its
+`updated_at` moved: `netlify api getEnvVar --data '{"account_id":"<acct>","key":"LEDGER_BUILD_HOOKS","site_id":"295ae8dd-412c-47ad-aac3-7e7cd4b3110d"}'`.
 
 Redeploy the console. Environment changes apply only to a new deploy.
 

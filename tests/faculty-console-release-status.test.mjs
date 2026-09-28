@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -18,12 +19,16 @@ import {
   trainWeek,
   trainWeekLine,
   pushedDuring,
+  staleSignoffLine,
+  staleSignoffs,
+  STALE_SIGNOFF_NAMES,
+  STALE_SIGNOFF_REASON,
   watchVerdict,
   REQUIRED_CHECKS,
   TRAIN_SLOTS_UTC,
 } from '../faculty-console/release-status.mjs';
 import {
-  createHandler, loadReleaseStatus, servedRevisionReader,
+  createHandler, GOVERNANCE_SITE, loadReleaseStatus, readServedGovernance, servedRevisionReader,
 } from '../faculty-console/netlify/functions/release-status.mjs';
 import { main as releaseWatch } from '../bin/release_watch.mjs';
 
@@ -173,7 +178,7 @@ const CONFIG = {
 function fixtureFetch({
   netlifyDown = false, compareDown = false, checksDown = false, served = {},
   sitesDown = false, trainConclusion = 'failure', manifest = null, trainRuns = null, jobs = {},
-  pushes = [], activityDown = false,
+  pushes = [], activityDown = false, governance = {},
 } = {}) {
   const calls = [];
   const fetchImpl = async (url) => {
@@ -211,6 +216,15 @@ function fixtureFetch({
       const failing = jobs[jobsMatch[1]];
       if (failing === 'down') return new Response('', { status: 502 });
       return Response.json({ jobs: [{ steps: failing ? [{ name: failing, conclusion: 'failure' }] : [] }] });
+    }
+    if (url.endsWith('/governance.json') && !url.endsWith('/tool-governance.json')) {
+      const [key] = Object.entries(SITES).find(([, value]) => url.startsWith(`https://${value.host}/`)) || [];
+      if (!key) throw new Error(`Unexpected site request: ${url}`);
+      const doc = governance[key];
+      if (doc === 'down') return new Response('', { status: 503 });
+      return Response.json(doc || { schemaVersion: 1, site: GOVERNANCE_SITE[key], items: {
+        'agitation.md': { kind: 'page', status: 'reviewed', reviewer: 'Joshua Moss, MD', reviewedAt: '2026-09-25' },
+      } });
     }
     if (url.endsWith('/tool-governance.json')) {
       if (sitesDown) return new Response('', { status: 503 });
@@ -584,4 +598,131 @@ test('the loader reads each failed run\'s steps for the week; an unreadable one 
   const unread = await loadReleaseStatus(blind, 's', { now, readSite: servedRevisionReader(blind) });
   assert.equal(unread.train.week.before, 0);
   assert.equal(unread.train.week.unknown, 2);
+});
+
+// ── Signatures learners see: pages each site SERVES as awaiting re-signature. ──
+
+const staleItem = (at, kind = 'page') => ({
+  kind, status: 'pending', reviewer: 'Pending faculty review', reviewedAt: at,
+  reason: `Content changed since faculty review on ${at}; awaiting re-attestation.`,
+  warning: `Content changed since faculty review on ${at}; awaiting re-attestation.`,
+});
+const governanceDoc = (key, items) => ({ schemaVersion: 1, site: GOVERNANCE_SITE[key], items });
+
+test('the served document the builds emit is what the sign-off reader reads', () => {
+  // Build each site's governance.json with the Python modules the learner builds use, from a
+  // ledger carrying one drifted row (its reason is attestation_hash.STALE_REASON itself) and
+  // one never-signed row, and read it back through the console's own reader.
+  const PYTHON = `
+import json, sys
+sys.path.insert(0, '13_Faculty_Resources/_automation')
+import attestation_hash, surface_governance
+risk = {'kind': 'clinical', 'level': 'high'}
+ledger = {
+  'sp-interview.html': {'status': 'pending', 'by': attestation_hash.PENDING_SENTINEL, 'at': '2026-09-26',
+                        'reason': attestation_hash.STALE_REASON.format(at='2026-09-26'), 'risk': risk},
+  'new-case.md': {'status': 'pending', 'by': 'Pending faculty review', 'at': '2026-09-27',
+                  'reason': 'New case awaiting first faculty review.', 'risk': risk},
+  'agitation.md': {'status': 'reviewed', 'by': 'Joshua Moss, MD', 'at': '2026-09-25', 'risk': risk},
+}
+nav = [{'items': [{'f': 'sp-interview.html', 'k': 'tool'}, {'f': 'new-case.md', 'k': 'md'}, {'f': 'agitation.md', 'k': 'md'}]}]
+print(json.dumps({site: surface_governance.build_site_document(ledger, nav, site) for site in ('ms3', 'resident')}))
+`;
+  const proc = spawnSync('python3', ['-c', PYTHON], { cwd: new URL('../', import.meta.url), encoding: 'utf8' });
+  assert.equal(proc.status, 0, proc.stderr);
+  const built = JSON.parse(proc.stdout);
+  const docs = { ms3: built[GOVERNANCE_SITE.ms3], res: built[GOVERNANCE_SITE.res] };
+  assert.equal(docs.ms3.site, GOVERNANCE_SITE.ms3);
+  assert.equal(docs.res.site, GOVERNANCE_SITE.res);
+  const signoffs = staleSignoffs(docs);
+  assert.deepEqual(signoffs.items, [{ slug: 'sp-interview.html', kind: 'tool', signedAt: '2026-09-26', sites: ['ms3', 'res'] }]);
+  assert.equal(signoffs.complete, true);
+  assert.match(read('13_Faculty_Resources/_automation/attestation_hash.py'),
+    /^STALE_REASON = "Content changed since faculty review on \{at\}; awaiting re-attestation\."$/m);
+  assert.ok(STALE_SIGNOFF_REASON.test('Content changed since faculty review on 2026-09-26; awaiting re-attestation.'));
+  // The site names the reader expects are the ones the two builds pass.
+  assert.match(read('13_Faculty_Resources/_automation/site_build/build_deploy.py'),
+    new RegExp(`build_site_document\\(_ledger, nav, "${GOVERNANCE_SITE.ms3}"\\)`));
+  assert.match(read('13_Faculty_Resources/_automation/site_build/resident_section.py'),
+    new RegExp(`build_site_document\\(_ledger, nav, "${GOVERNANCE_SITE.res}"\\)`));
+});
+
+test('the sign-off line names drifted pages, says where, and never reads an unread site as clean', () => {
+  const clean = staleSignoffs({ ms3: governanceDoc('ms3', {}), res: governanceDoc('res', {}) });
+  assert.equal(staleSignoffLine(clean), 'No page learners see is awaiting your re-signature.');
+
+  const both = staleSignoffs({
+    ms3: governanceDoc('ms3', { 'sp-interview.html': staleItem('2026-09-26', 'tool'), 'anki.md': staleItem('2026-08-11') }),
+    res: governanceDoc('res', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+  });
+  assert.deepEqual(both.items.map(item => [item.slug, item.sites]), [['anki.md', ['ms3']], ['sp-interview.html', ['ms3', 'res']]]);
+  assert.equal(staleSignoffLine(both),
+    'Learners see 2 pages as awaiting your re-signature — the content changed after it was signed: '
+    + 'anki.md (signed 2026-08-11 · ms3 only), sp-interview.html (signed 2026-09-26). Re-attest under Needs review.');
+
+  // An ordinary pending page (never signed) is first review, not a drifted signature.
+  const firstReview = { ...staleItem('2026-09-27'), reason: 'New case awaiting first faculty review.' };
+  assert.equal(staleSignoffs({ ms3: governanceDoc('ms3', { 'c.md': firstReview }), res: null }).items.length, 0);
+  // Only a pending item renders the warning; a reviewed one with a stray reason is not drift.
+  assert.equal(staleSignoffs({ ms3: governanceDoc('ms3', { 'c.md': { ...staleItem('2026-09-26'), status: 'reviewed' } }), res: null }).items.length, 0);
+
+  const halfRead = staleSignoffs({ ms3: governanceDoc('ms3', { 'anki.md': staleItem('2026-08-11') }), res: null });
+  assert.equal(halfRead.complete, false);
+  assert.match(staleSignoffLine(halfRead), /anki\.md \(signed 2026-08-11\)\. Re-attest under Needs review\. res could not be read, so this is a minimum\.$/);
+  assert.equal(staleSignoffLine(staleSignoffs({ ms3: governanceDoc('ms3', {}), res: null })),
+    'No page learners see is awaiting your re-signature on ms3. res could not be read.');
+  assert.equal(staleSignoffLine(staleSignoffs({ ms3: null, res: null })),
+    'Signatures learners see: neither site\'s governance.json could be read.');
+
+  const many = Object.fromEntries(Array.from({ length: STALE_SIGNOFF_NAMES + 2 }, (_, i) => [`p${i}.md`, staleItem('2026-09-01')]));
+  const line = staleSignoffLine(staleSignoffs({ ms3: governanceDoc('ms3', many), res: governanceDoc('res', many) }));
+  assert.match(line, new RegExp(`^Learners see ${STALE_SIGNOFF_NAMES + 2} pages`));
+  assert.match(line, /, \+2 more\. Re-attest/);
+});
+
+test('the served governance reader takes only this site\'s own document', async () => {
+  const site = { baseUrl: `https://${SITES.ms3.host}` };
+  const doc = governanceDoc('ms3', { 'a.md': staleItem('2026-09-26') });
+  assert.deepEqual(await readServedGovernance(fixtureFetch({ governance: { ms3: doc } }).fetchImpl, site, 'ms3'), doc);
+  await assert.rejects(readServedGovernance(fixtureFetch({ governance: { ms3: governanceDoc('res', doc.items) } }).fetchImpl, site, 'ms3'), /not this site/);
+  await assert.rejects(readServedGovernance(fixtureFetch({ governance: { ms3: governanceDoc('ms3', {}) } }).fetchImpl, site, 'ms3'), /not this site/);
+  await assert.rejects(readServedGovernance(fixtureFetch({ governance: { ms3: 'down' } }).fetchImpl, site, 'ms3'), /answered 503/);
+});
+
+test('the loader reports served sign-offs in both modes; an unread site is named, never a gap', async () => {
+  const governance = {
+    ms3: governanceDoc('ms3', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+    res: governanceDoc('res', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+  };
+  const now = () => Date.parse('2026-09-27T13:00:00Z');
+  const console = await loadReleaseStatus(fixtureFetch({ governance }).fetchImpl, 's', { now });
+  assert.deepEqual(console.signoffs.items.map(item => item.slug), ['sp-interview.html']);
+  assert.equal(console.signoffs.complete, true);
+
+  const clean = fixtureFetch().fetchImpl;
+  const calm = await loadReleaseStatus(clean, 's', { now, readSite: servedRevisionReader(clean) });
+  assert.deepEqual(calm.signoffs, { items: [], unread: [], complete: true });
+
+  const blind = fixtureFetch({ governance: { ...governance, res: 'down' } }).fetchImpl;
+  const partial = await loadReleaseStatus(blind, 's', { now, readSite: servedRevisionReader(blind) });
+  assert.deepEqual(partial.signoffs.unread, ['res']);
+  assert.equal(partial.gaps.some(gap => /governance/.test(gap)), false);
+  assert.deepEqual(partial.gaps, calm.gaps);
+});
+
+test('the watch prints the sign-off line and it never moves the exit code', async t => {
+  const out = [];
+  t.mock.method(console, 'log', line => out.push(String(line)));
+  const trainRuns = [{ id: 5, run_started_at: '2026-09-28T09:21:00Z', updated_at: '2026-09-28T09:23:00Z', event: 'schedule', status: 'completed', conclusion: 'success', html_url: 'https://github.com/jmoss333/psychiatry-clerkship/actions/runs/5' }];
+  const now = () => Date.parse('2026-09-28T10:05:00Z');
+  const run = governance => releaseWatch({ argv: [], env: { GITHUB_TOKEN: 's' }, fetchImpl: fixtureFetch({ trainRuns, governance }).fetchImpl, now });
+  const clean = await run({});
+  const stale = await run({
+    ms3: governanceDoc('ms3', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+    res: governanceDoc('res', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+  });
+  assert.equal(stale, clean);
+  const summary = out.join('\n');
+  assert.match(summary, /No page learners see is awaiting your re-signature\./);
+  assert.match(summary, /Learners see 1 page as awaiting your re-signature — the content changed after it was signed: sp-interview\.html \(signed 2026-09-26\)\./);
 });

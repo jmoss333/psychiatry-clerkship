@@ -1102,6 +1102,68 @@ def inject_concept_digest(out_dir, expected):
             handle.write(text)
 
 
+def inject_review_qb_inventory(out_dir, items):
+    """Embed the complete current QB ID set for local-only Daily Review restores."""
+    if not isinstance(items, list) or not items:
+        raise ValueError("review question-bank inventory is empty")
+    inventory = []
+    seen = set()
+    for item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str) or not item["id"]:
+            raise ValueError("review question-bank inventory has an invalid ID")
+        if item["id"] in seen:
+            raise ValueError("review question-bank inventory has a duplicate ID: " + item["id"])
+        retired = item.get("retired", False)
+        if not isinstance(retired, bool):
+            raise ValueError("review question-bank inventory has an invalid retired flag")
+        seen.add(item["id"])
+        inventory.append({"id": item["id"], "retired": retired})
+    payload = json.dumps(inventory, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
+    tag = '<script id="cw-review-qb-inventory" type="application/json">' + payload + '</script>'
+    path = os.path.join(out_dir, "tools", "review.html")
+    with open(path, encoding="utf-8") as handle:
+        text = handle.read()
+    pattern = r'<script\b[^>]*\bid=[\'\"]cw-review-qb-inventory[\'\"][^>]*>.*?</script\s*>'
+    text = re.sub(pattern, "", text, flags=re.IGNORECASE | re.DOTALL)
+    text, count = re.subn(r"</head\s*>", lambda match: tag + "\n" + match[0], text,
+                          flags=re.IGNORECASE)
+    if count != 1 or len(re.findall(pattern, text, flags=re.IGNORECASE | re.DOTALL)) != 1:
+        raise ValueError("review question-bank inventory injection failed")
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write(text)
+
+
+def inject_review_source_digests(out_dir):
+    """Bind review restores to the exact published bytes of each card source."""
+    source_files = {
+        "articles": "tools/quizzes.json",
+        "topics": "topic_meta.json",
+        "family": "family_systems_scenarios.json",
+        "communication": "communication_cases.json",
+        "reasoning": "reasoning_cases.json",
+    }
+    digests = {}
+    for key, relative in source_files.items():
+        path = os.path.join(out_dir, *relative.split("/"))
+        with open(path, "rb") as handle:
+            digests[key] = hashlib.sha256(handle.read()).hexdigest()
+    payload = json.dumps(digests, sort_keys=True, separators=(",", ":"))
+    tag = '<script id="cw-review-source-digests" type="application/json">' + payload + '</script>'
+    path = os.path.join(out_dir, "tools", "review.html")
+    with open(path, encoding="utf-8") as handle:
+        text = handle.read()
+    pattern = r'<script\b[^>]*\bid=[\'\"]cw-review-source-digests[\'\"][^>]*>.*?</script\s*>'
+    text = re.sub(pattern, "", text, flags=re.IGNORECASE | re.DOTALL)
+    text, count = re.subn(r"</head\s*>", lambda match: tag + "\n" + match[0], text,
+                          flags=re.IGNORECASE)
+    if count != 1 or len(re.findall(r'\bid=[\'\"]cw-review-source-digests[\'\"]', text,
+                                     flags=re.IGNORECASE)) != 1:
+        raise ValueError("review source digest injection failed")
+    with open(path, "w", encoding="utf-8") as handle:
+        handle.write(text)
+    return digests
+
+
 def emit_service_worker(out_dir, kill=None):
     """Walk `out_dir` and write a per-site `sw.js` with an embedded precache list.
 

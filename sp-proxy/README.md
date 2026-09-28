@@ -399,6 +399,20 @@ ledger under the approved retention schedule. Never
 derive or reuse a rotation ID from a passcode, learner, date of birth, medical record, case, or
 transcript. Do not compact an active ledger.
 
+**One command does the Netlify part.** From the repository root on the owner's Mac (where
+`netlify` and `gh` are logged in), run `python3 bin/rotation_turnover.py` for a dry run, then
+`python3 bin/rotation_turnover.py --apply`. It sets `SP_ROTATION_ID` to the block due in
+`rotation_blocks.json`, removes loopback entries from `SP_ALLOWED_ORIGINS` (it never adds one),
+writes a new operations credential to the macOS Keychain (service
+`sp-interview-proxy SP_OPERATIONS_KEY`, account = the block ID) before setting it in Netlify,
+and redeploys with a cleared cache, because Functions read variables from the deploy snapshot.
+It then proves the result live: the new credential authenticates, every earlier credential the
+Keychain holds, a wrong one and none are refused (`401`), both learner sites get CORS and
+`http://localhost:8888` does not, and managed voice is still off. It posts a content-free summary
+to the rotation readiness issue. It never touches the learner passcode and never prints a
+credential. A re-run is a no-op; pass `--rotate-key` to replace the credential again inside a block
+after a suspected disclosure.
+
 ## External activation gates
 
 All of these must be recorded outside the automated receipt before learner activation:

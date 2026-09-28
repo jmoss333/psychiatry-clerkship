@@ -4013,7 +4013,7 @@ test('Concepts Today released count, phone keyboard recall and trusted Path cont
   await expect(page).toHaveURL(/tool=review\.html.*lane=all/);
   const tool=page.locator('#content iframe.toolframe').contentFrame();
   await expect(tool.locator('.allrow .chip')).toHaveAttribute('aria-pressed','true');
-  await tool.getByRole('button',{name:/Start review/}).click();
+  await tool.getByRole('button',{name:/^Review all/}).click();
   await expect(tool.locator('body')).not.toContainText(card.reveal);
   await tool.getByRole('button',{name:'Reveal one way to do it'}).focus();
   await page.keyboard.press('Enter');
@@ -4224,7 +4224,7 @@ test('Concepts sibling clozes keep answers private and completion is announced a
   },siblings);
   await page.goto('/tools/review.html');
   await expect(page.locator('meta[name="cw-concept-digest"]')).toHaveAttribute('content',digest);
-  await page.getByRole('button',{name:/Start review/}).click();
+  await page.getByRole('button',{name:/^Review all/}).click();
   await expect(page.locator('.scount')).toHaveText('1 / 2');
   await page.getByRole('button',{name:'Reveal one way to do it'}).click();
   await page.getByRole('button',{name:/^Good/}).click();
@@ -4250,8 +4250,8 @@ test('Concepts stalled response times out while other Daily Review cards become 
   await page.route('**/tools/concepts.json',()=>new Promise(()=>{}));
   await page.goto('/tools/review.html');
   await expect(page.locator('body')).toContainText('Concepts unavailable — review is incomplete.',{timeout:15000});
-  await expect(page.getByRole('button',{name:/Start review/})).toBeVisible();
-  await page.getByRole('button',{name:/Start review/}).click();
+  await expect(page.getByRole('button',{name:/^Review all/})).toBeVisible();
+  await page.getByRole('button',{name:/^Review all/}).click();
   await expect(page.locator('.qtext')).toBeVisible();
   await expect(page.locator('body')).not.toContainText('Loading the question bank');
 });

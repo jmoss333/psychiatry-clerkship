@@ -16,6 +16,7 @@
  *   waiting   main's first-parent commits after the live commit (GitHub compare)
  *   checks    the release train's two required checks on main's head
  *   train     the newest run of the release-train workflow
+ *   signoffs  the pages each site serves as awaiting re-signature (its /governance.json)
  * A fact that could not be read is reported as a gap, never as "nothing": zero waiting
  * changes means up to date, so an unread comparison must never render as zero.
  */
@@ -247,6 +248,66 @@ function hhmmUtc(ms) {
 
 function plural(count, word) {
   return `${count} ${word}${count === 1 ? '' : 's'}`;
+}
+
+/**
+ * The reason a learner build gives a drifted attestation: attestation_hash.STALE_REASON,
+ * which surface_governance copies into each site's served /governance.json. A test builds
+ * that document with the Python modules themselves and reads it back through this pattern,
+ * so a reworded reason or a reshaped document breaks the test, not the line.
+ */
+export const STALE_SIGNOFF_REASON = /^Content changed since faculty review on (\d{4}-\d{2}-\d{2}); awaiting re-attestation\.$/;
+/** Pages named in the line before the rest are counted as "+N more". */
+export const STALE_SIGNOFF_NAMES = 5;
+
+/**
+ * The pages learners are SERVED as awaiting the faculty's re-signature: an item of a site's
+ * /governance.json that is pending with the drift reason. A page never signed (pending for
+ * any other reason) is not counted -- it is ordinary first review, not a signature the
+ * content outgrew. `docs` maps each site key to its served document, or null when it could
+ * not be read; an unread site is named, never counted as clean.
+ *
+ * Why served state and not the ledger: #865 rewrote sp-interview.html under a 2026-09-26
+ * signature and the release train published it at 09:05 on 2026-09-28; the drift was in
+ * `bin/check_attestation_hashes.py` all along, but nothing said "learners are seeing this
+ * as pending now". Information, never a verdict: a drifted page warns, it never unplaces.
+ */
+export function staleSignoffs(docs) {
+  const unread = SITE_KEYS.filter(key => !docs?.[key]);
+  const bySlug = new Map();
+  for (const key of SITE_KEYS) {
+    const items = docs?.[key]?.items;
+    if (!items) continue;
+    for (const [slug, item] of Object.entries(items)) {
+      const match = item?.status === 'pending' && typeof item.reason === 'string'
+        ? item.reason.match(STALE_SIGNOFF_REASON) : null;
+      if (!match) continue;
+      const entry = bySlug.get(slug) || { slug, kind: item.kind === 'tool' ? 'tool' : 'page', signedAt: match[1], sites: [] };
+      entry.sites.push(key);
+      bySlug.set(slug, entry);
+    }
+  }
+  const items = [...bySlug.values()].sort((a, b) => a.slug.localeCompare(b.slug));
+  return { items, unread, complete: unread.length === 0 };
+}
+
+/** One sentence for the panel and the daily watch summary. */
+export function staleSignoffLine(signoffs) {
+  if (!signoffs) return '';
+  const read = SITE_KEYS.filter(key => !signoffs.unread.includes(key));
+  if (!read.length) return 'Signatures learners see: neither site\'s governance.json could be read.';
+  const unreadNote = signoffs.unread.length
+    ? ` ${signoffs.unread.join(', ')} could not be read${signoffs.items.length ? ', so this is a minimum' : ''}.` : '';
+  if (!signoffs.items.length) {
+    return `No page learners see is awaiting your re-signature${signoffs.unread.length ? ` on ${read.join(', ')}` : ''}.${unreadNote}`;
+  }
+  const named = signoffs.items.slice(0, STALE_SIGNOFF_NAMES).map(item => {
+    const where = item.sites.length < read.length ? ` · ${item.sites.join(', ')} only` : '';
+    return `${item.slug} (signed ${item.signedAt}${where})`;
+  });
+  const more = signoffs.items.length - named.length;
+  return `Learners see ${plural(signoffs.items.length, 'page')} as awaiting your re-signature — the content changed after it was signed: `
+    + `${named.join(', ')}${more ? `, +${more} more` : ''}. Re-attest under Needs review.${unreadNote}`;
 }
 
 /**

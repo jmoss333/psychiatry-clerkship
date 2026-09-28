@@ -90,6 +90,14 @@ CRISIS_EXEMPT = (
 # such as "F9 1.1" cannot trip the guard; longer numbers may carry any separators.
 CRISIS_SHORT_CODE_MAX = 4
 CRISIS_SHORT_SEPARATORS = r"[ .\-]"
+# A content digest is not prose. reviewed.json carries a 40-hex contentHash and clinicalHash on
+# every attested row, sha256s run 64 and a ledger keyId 16; their digits are random, so a short
+# code turns up inside one by chance between two hex letters, where the digit-only lookarounds
+# above cannot tell it from a sentence. The pre-commit gate scans a staged file whole, so on
+# 2026-09-28 three such hashes blocked every commit that staged the ledger and pushed the weekly
+# case run toward --no-verify. A standalone run of 16+ hex characters is blanked before the scan;
+# a number anywhere else, fused to letters or not, still matches.
+DIGEST_RE = re.compile(r"(?<![0-9A-Za-z])[0-9A-Fa-f]{16,}(?![0-9A-Za-z])")
 SCRIPT_TAG_RE = re.compile(r"</?script\b", re.I)
 
 REGISTRY_SCHEMAS = TOOLING_PREFIX + "validate_registry_schemas.py"
@@ -209,9 +217,15 @@ def crisis_patterns(root: Path) -> list[tuple[str, re.Pattern]]:
     return out
 
 
+def mask_digests(text: str) -> str:
+    """Blank every standalone digest (DIGEST_RE), keeping its length, so none reads as a contact."""
+    return DIGEST_RE.sub(lambda match: "x" * len(match.group(0)), text)
+
+
 def check_crisis(text: str, rel: str, root: Path) -> list[tuple[str, str, str]]:
     if not is_learner_surface(rel) or rel in CRISIS_EXEMPT:
         return []
+    text = mask_digests(text)
     hits = []
     for name, pattern in crisis_patterns(root):
         if pattern.search(text):

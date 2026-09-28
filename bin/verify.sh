@@ -127,6 +127,24 @@ step "attestation hashes"                   python3 bin/check_attestation_hashes
 # CLERKSHIP_PR_BASE=origin/<parent-branch> git push and the gate compares against the parent.
 step "unit — governance/content separation" python3 bin/check_governance_separation.py --self-test
 step "governance/content separation"        python3 bin/check_governance_separation.py
+# The fourth question, and the one #640 walked through: may a commit change the RULES and the
+# work the rules govern at the same time? #640 wrote a governance rule into CLAUDE.md from
+# inside a 926-line content PR; #672 then invoked that rule to bypass review. Enforced per
+# COMMIT, not per PR — per-PR still lets both land in one merge. Same base convention as the
+# step above: CLERKSHIP_PR_BASE overrides it on a stacked branch.
+step "unit — policy/content separation"     python3 bin/check_policy_content_separation.py --self-test
+step "policy/content separation"            python3 bin/check_policy_content_separation.py --base "${CLERKSHIP_PR_BASE:-origin/main}"
+# And the citation gate the two drafts never shipped. #672's 43-of-47 wrong citations passed
+# every gate here because NONE of them carried a DOI or PMID, so the liveness check in
+# surveillance/ had nothing to look at. This requires the identifier (allowlist capped at 3,
+# shrink-only) and then checks it resolves to the paper CLAIMED, against a committed cache —
+# no network, so it cannot flake. docs/superpowers/specs/2026-09-27-citation-attribution-gate-ruling.md
+step "unit — citation attribution"          python3 bin/check_citation_attribution.py --self-test
+step "citation attribution"                 python3 bin/check_citation_attribution.py
+# Option B is deliberately NOT a gate — it is a scheduled sweep whose job is working the
+# allowlist down (surveillance-citations.yml). Only its falsification runs here, because
+# check_vacuity.py is right that a --self-test nothing invokes is not a falsification.
+step "unit — allowlist audit"               python3 bin/audit_citation_allowlist.py --self-test
 
 # --- python validators ---
 # This block mirrors the python half of ci.yml's build-test-validate job, step for step.
