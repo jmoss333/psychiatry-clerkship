@@ -946,7 +946,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Evidence:** Fluoxetine reduces binge-purge frequency in bulimia; the effective dose (60 mg) is higher than the typical antidepressant dose.
 
-- **Key paper:** USPSTF, JAMA 2022.
+- **Key paper:** Fluoxetine Bulimia Nervosa Collaborative Study Group, Arch Gen Psychiatry 1992 — the 60 mg/day bulimia trial behind the fluoxetine indication; McElroy et al., Neuropsychopharmacology 2016 — the two pivotal phase 3 lisdexamfetamine trials in binge eating disorder.
 
 - **Pearl:** The dose of fluoxetine for bulimia (60 mg) is higher than for depression (20 mg) — similar to OCD, eating disorders require higher SSRI doses.
 
