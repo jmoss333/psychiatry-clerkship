@@ -16,6 +16,7 @@
  *   waiting   main's first-parent commits after the live commit (GitHub compare)
  *   checks    the release train's two required checks on main's head
  *   train     the newest run of the release-train workflow
+ *   signoffs  the pages each site serves as awaiting re-signature (its /governance.json)
  * A fact that could not be read is reported as a gap, never as "nothing": zero waiting
  * changes means up to date, so an unread comparison must never render as zero.
  */
@@ -44,6 +45,97 @@ export const STALE_WAIT_HOURS = 24;
  */
 export const TRAIN_LOOKBACK_HOURS = 26;
 const RUN_OK = new Set(['success', 'skipped', 'neutral']);
+/** The trailing window the weekly train line counts over. */
+export const TRAIN_WEEK_DAYS = 7;
+/** The two steps of production-release-train.yml a failure can sit in -- pinned to it by a test. */
+export const TRAIN_PROMOTE_STEP = 'Promote the newest green main commit to release';
+export const TRAIN_RECEIPT_STEP = 'Request the production release receipt';
+
+/**
+ * Whether `release` was pushed while a run was running, from the repository's push activity
+ * on the branch: true, false, or null when that cannot be told (no activity listing, a run
+ * with no end time, or a run older than the oldest push a full listing reached).
+ */
+export function pushedDuring(pushes, run) {
+  if (!pushes || !Array.isArray(pushes.times)) return null;
+  const start = Date.parse(run?.at);
+  const end = Date.parse(run?.endedAt);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  if (!pushes.complete && pushes.times.length && start < Math.min(...pushes.times)) return null;
+  return pushes.times.some(t => t >= start && t <= end + 60_000);
+}
+
+/**
+ * Where a failed train run stopped. The receipt step runs only after `release` was pushed,
+ * so a failure there is `after` publishing. The promote step pushes `release` and then writes
+ * its summary and outputs, so its failure alone does not prove nothing was published (Codex
+ * P2 on #867): it is `before` only when no push to `release` happened during the run, `after`
+ * when one did, and `unknown` when the push record could not be read.
+ */
+export function failedStage(jobs, pushed = null) {
+  const failed = (Array.isArray(jobs) ? jobs : [])
+    .flatMap(job => (Array.isArray(job?.steps) ? job.steps : []))
+    .filter(step => step?.conclusion === 'failure')
+    .map(step => String(step.name || ''));
+  if (failed.includes(TRAIN_RECEIPT_STEP)) return 'after';
+  if (failed.includes(TRAIN_PROMOTE_STEP)) return pushed === true ? 'after' : pushed === false ? 'before' : 'unknown';
+  return 'unknown';
+}
+
+/**
+ * The release train's last TRAIN_WEEK_DAYS, counted: how often it ran, published (or had
+ * nothing new), stopped before publishing, or failed after. `stages` maps a failed run's id
+ * to failedStage(); a run with no entry counts as unclassified. `complete` is false when the
+ * listing stopped inside the window, so the counts are minimums.
+ */
+export function trainWeek(runs, nowMs, stages = {}) {
+  const since = nowMs - TRAIN_WEEK_DAYS * 86_400_000;
+  const list = Array.isArray(runs) ? runs : [];
+  const inWindow = list.filter(run => Date.parse(run?.at) >= since);
+  const week = {
+    days: TRAIN_WEEK_DAYS, complete: inWindow.length < list.length,
+    scheduled: 0, publishNow: 0, ok: 0, before: 0, after: 0, unknown: 0, running: 0,
+    // Scheduled runs only: publish-now is never held by cost, so it is no evidence about the budget.
+    beforeScheduled: 0,
+  };
+  for (const run of inWindow) {
+    if (run.event === 'workflow_dispatch') week.publishNow += 1;
+    else week.scheduled += 1;
+    if (run.status !== 'completed' || !run.conclusion) week.running += 1;
+    else if (RUN_OK.has(run.conclusion)) week.ok += 1;
+    else {
+      const stage = ['before', 'after'].includes(stages[run.id]) ? stages[run.id] : 'unknown';
+      week[stage] += 1;
+      if (stage === 'before' && run.event !== 'workflow_dispatch') week.beforeScheduled += 1;
+    }
+  }
+  return week;
+}
+
+/**
+ * One line for the week. Informational: it never raises the tone. It names the spend
+ * tripwire only when runs stopping before publishing are a pattern (three or more, and at
+ * least a third of the scheduled runs), which is the question the owner has to answer.
+ */
+export function trainWeekLine(week) {
+  if (!week) return '';
+  const total = week.scheduled + week.publishNow;
+  const lead = `${week.complete ? '' : 'At least '}${plural(week.scheduled, 'scheduled run')}${week.publishNow ? ` and ${week.publishNow} publish-now` : ''}`;
+  const parts = [
+    week.ok && `${week.ok} published or had nothing new`,
+    week.before && `${week.before} stopped before publishing (held by the spend tripwire, refused, or could not check)`,
+    week.after && `${week.after} failed after publishing`,
+    week.unknown && `${week.unknown} failed at an unread step`,
+    week.running && `${week.running} still running`,
+  ].filter(Boolean);
+  let line = `Release train, last ${week.days} days: ${lead}${total ? ` — ${parts.join(', ')}` : ''}.`;
+  // Scheduled runs over scheduled runs (Codex P2 on #867): a failed publish-now press is not
+  // a hold, since the spend tripwire never holds publish-now.
+  if (week.beforeScheduled >= 3 && week.beforeScheduled * 3 >= week.scheduled) {
+    line += ' Scheduled runs stopping before publishing are a pattern this week; if the run logs say "HELD by the spend tripwire", the budget in release_train.py may need retuning.';
+  }
+  return line;
+}
 
 /**
  * The completed release-train runs in the lookback that did not succeed, newest first, and
@@ -156,6 +248,66 @@ function hhmmUtc(ms) {
 
 function plural(count, word) {
   return `${count} ${word}${count === 1 ? '' : 's'}`;
+}
+
+/**
+ * The reason a learner build gives a drifted attestation: attestation_hash.STALE_REASON,
+ * which surface_governance copies into each site's served /governance.json. A test builds
+ * that document with the Python modules themselves and reads it back through this pattern,
+ * so a reworded reason or a reshaped document breaks the test, not the line.
+ */
+export const STALE_SIGNOFF_REASON = /^Content changed since faculty review on (\d{4}-\d{2}-\d{2}); awaiting re-attestation\.$/;
+/** Pages named in the line before the rest are counted as "+N more". */
+export const STALE_SIGNOFF_NAMES = 5;
+
+/**
+ * The pages learners are SERVED as awaiting the faculty's re-signature: an item of a site's
+ * /governance.json that is pending with the drift reason. A page never signed (pending for
+ * any other reason) is not counted -- it is ordinary first review, not a signature the
+ * content outgrew. `docs` maps each site key to its served document, or null when it could
+ * not be read; an unread site is named, never counted as clean.
+ *
+ * Why served state and not the ledger: #865 rewrote sp-interview.html under a 2026-09-26
+ * signature and the release train published it at 09:05 on 2026-09-28; the drift was in
+ * `bin/check_attestation_hashes.py` all along, but nothing said "learners are seeing this
+ * as pending now". Information, never a verdict: a drifted page warns, it never unplaces.
+ */
+export function staleSignoffs(docs) {
+  const unread = SITE_KEYS.filter(key => !docs?.[key]);
+  const bySlug = new Map();
+  for (const key of SITE_KEYS) {
+    const items = docs?.[key]?.items;
+    if (!items) continue;
+    for (const [slug, item] of Object.entries(items)) {
+      const match = item?.status === 'pending' && typeof item.reason === 'string'
+        ? item.reason.match(STALE_SIGNOFF_REASON) : null;
+      if (!match) continue;
+      const entry = bySlug.get(slug) || { slug, kind: item.kind === 'tool' ? 'tool' : 'page', signedAt: match[1], sites: [] };
+      entry.sites.push(key);
+      bySlug.set(slug, entry);
+    }
+  }
+  const items = [...bySlug.values()].sort((a, b) => a.slug.localeCompare(b.slug));
+  return { items, unread, complete: unread.length === 0 };
+}
+
+/** One sentence for the panel and the daily watch summary. */
+export function staleSignoffLine(signoffs) {
+  if (!signoffs) return '';
+  const read = SITE_KEYS.filter(key => !signoffs.unread.includes(key));
+  if (!read.length) return 'Signatures learners see: neither site\'s governance.json could be read.';
+  const unreadNote = signoffs.unread.length
+    ? ` ${signoffs.unread.join(', ')} could not be read${signoffs.items.length ? ', so this is a minimum' : ''}.` : '';
+  if (!signoffs.items.length) {
+    return `No page learners see is awaiting your re-signature${signoffs.unread.length ? ` on ${read.join(', ')}` : ''}.${unreadNote}`;
+  }
+  const named = signoffs.items.slice(0, STALE_SIGNOFF_NAMES).map(item => {
+    const where = item.sites.length < read.length ? ` · ${item.sites.join(', ')} only` : '';
+    return `${item.slug} (signed ${item.signedAt}${where})`;
+  });
+  const more = signoffs.items.length - named.length;
+  return `Learners see ${plural(signoffs.items.length, 'page')} as awaiting your re-signature — the content changed after it was signed: `
+    + `${named.join(', ')}${more ? `, +${more} more` : ''}. Re-attest under Needs review.${unreadNote}`;
 }
 
 /**

@@ -1,0 +1,39 @@
+{
+  "_note": "The named, capped grandfather list for curriculum references that carry no DOI or PMID. Read by bin/check_citation_attribution.py; never written by it. An entry suppresses exactly one finding, citation.no_identifier, for exactly one citation, and suppresses nothing else — an allowlisted citation is still checked for every other defect, and a contradicted citation is fixed, not adjudicated. The cap lives in ALLOWLIST_CAP in bin/check_citation_attribution.py, not here: the copy below exists so this file reads on its own, and the gate fails if the two disagree. THE LIST MAY ONLY SHRINK. An addition past the cap fails. An entry whose citation no longer appears in the tree fails as stale until it is deleted, so a grandfather clause cannot outlive the thing it grandfathers. Keys are sha256[:16] of the citation's own text with the leading reference number and whitespace normalised away, so renumbering a list is harmless and editing a citation retires its entry — which is correct, because an edited citation is new work.",
+  "_schema": {
+    "citationKey": "derived, not chosen: python3 bin/check_citation_attribution.py --key '<citation text>'",
+    "citation": "the citation verbatim, so this file is readable without the source page",
+    "path": "where it lives, informational — the key is what matches",
+    "reason": "why this specific source has no DOI/PMID, in a sentence a reviewer can check",
+    "by": "who decided",
+    "at": "YYYY-MM-DD"
+  },
+  "cap": 3,
+  "measuredAt": "2026-09-27",
+  "entries": [
+    {
+      "citationKey": "9e2688a9f09f1e4d",
+      "citation": "5. NHS Specialist Pharmacy Service. *SSRIs to other antidepressants: switching in adults.* Updated 2024. [Article](https://sps.nhs.uk/articles/ssris-to-other-antidepressants-switching-in-adults/)",
+      "path": "08_Cases_and_Simulation/case-of-the-week/2026-07-20_mdd-treatment-selection-augmentation_MS3.md",
+      "reason": "NHS Specialist Pharmacy Service guidance is a continuously-updated web article, not a journal publication: it is issued with no DOI and is not indexed in PubMed, so no identifier exists to require. Cited for the switching tables, which have no journal equivalent. Watched by the link monitor, which is what detects it moving or disappearing.",
+      "by": "Josh Moss",
+      "at": "2026-09-27"
+    },
+    {
+      "citationKey": "c6afcd74e27f140d",
+      "citation": "9. National Institute for Health and Care Excellence. *Generalised anxiety disorder and panic disorder in adults: management.* NICE clinical guideline CG113 (recommendation 1.3.41 for panic pharmacotherapy review; recommendation 1.2.30 for people aged under 30 started on an SSRI or SNRI, applied to panic disorder by the cross-reference in 1.3.22–1.3.23). [Guidance](https://www.nice.org.uk/guidance/cg113/chapter/Recommendations)",
+      "path": "08_Cases_and_Simulation/case-of-the-week/2026-08-10_anxiety-panic-disorder_MS3.md",
+      "reason": "NICE clinical guidelines are issued as versioned web guidance with no DOI and are not PubMed-indexed records. The citation is to numbered recommendations, which is the addressable unit NICE itself provides; a PubMed commentary about CG113 would be a different document making different claims. Under guideline surveillance, which is what catches a revision.",
+      "by": "Josh Moss",
+      "at": "2026-09-27"
+    },
+    {
+      "citationKey": "5597c61beafe2856",
+      "citation": "8. National Institute for Health and Care Excellence. *Psychosis and schizophrenia in adults: prevention and management.* NICE clinical guideline CG178, 2014 (recommendations 1.3.6.3 and 1.5.7.1–1.5.7.2). [Guidance](https://www.nice.org.uk/guidance/cg178/chapter/Recommendations)",
+      "path": "08_Cases_and_Simulation/case-of-the-week/2026-09-07_first-episode-psychosis_Resident.md",
+      "reason": "Same class as CG113: NICE guidance, no DOI, not a PubMed record, cited to numbered recommendations. Note the 2026-09-21 Option-B sweep proposed PMID 25934299 (Taylor & Perera, Br J Psychiatry 2015) for this line — that is a commentary ABOUT CG178, not CG178, and accepting it would have replaced the source with a different document. That near-miss is the reason this list is human-written and the sweep only proposes.",
+      "by": "Josh Moss",
+      "at": "2026-09-27"
+    }
+  ]
+}

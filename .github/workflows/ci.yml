@@ -73,6 +73,21 @@ jobs:
             python3 bin/check_attestation_hashes.py --strict --base "$BASE_SHA"
           fi
 
+      - name: Guard — policy/content separation
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then echo "::error::no base sha"; exit 2; fi
+          python3 bin/check_policy_content_separation.py --self-test
+          python3 bin/check_policy_content_separation.py --base "$BASE_SHA"
+
+      - name: Guard — citation attribution
+        run: |
+          python3 bin/check_citation_attribution.py --self-test
+          python3 bin/check_citation_attribution.py
+          python3 bin/audit_citation_allowlist.py --self-test
+
       - name: Unit — media guard
         run: python3 13_Faculty_Resources/_automation/site_build/test_media_guard.py
 

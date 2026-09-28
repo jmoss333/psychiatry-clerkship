@@ -8,16 +8,45 @@ checks — the ones that must be zero regardless — live *beside* the ratchets,
 
 Six tools use it (the sixth, `bin/qbank_blueprint_report.py`, has no pin yet -- see below). Each ships its own falsification (`--self-test`) that proves a synthetic
 regression exits 1 and the live tree exits 0, and `bin/verify.sh` runs both the self-test and the
-gate, so the pre-push hook is the enforcement. None of them is in `ci.yml`: adding a step
-there trips three separate contracts (`bin/check-verify-coverage.py`, the step inventory and the
-workflow digest in `validate_scheduled_workflows.py`), and `verify.sh` runs before every push
-anyway. See `CLAUDE.md`, "Validate & test".
+gate, so the pre-push hook is the enforcement.
+
+Most of them are **not** in `ci.yml`: adding a step there trips several contracts
+(`bin/check-verify-coverage.py`, the step inventory, the whole-file digest and `CRITICAL_STEPS`
+in `validate_scheduled_workflows.py`), and `verify.sh` runs before every push anyway.
+`bin/check_citation_attribution.py` **is** in `ci.yml` as of 2026-09-27, and those contracts
+were paid rather than dodged — because the defect it gates arrives *in a pull request from an
+agent session*, which is exactly the path a pre-push hook on one Mac does not cover. That is
+the test for whether a future ratchet belongs in CI too. See `CLAUDE.md`, "Validate & test".
 
 | Tool | Baseline | Pinned keys | Hard checks beside the ratchet |
 |---|---|---|---|
 | `bin/check_design_drift.py` | `13_Faculty_Resources/_automation/site_build/design_drift_baseline.json` | raw dimension declarations, distinct font sizes, sub-floor font sizes, non-standard breakpoints (per file) | C1–C9, see `docs/DESIGN_SYSTEM.md` §3 |
 | `bin/verify_spans.py` | `bin/verify_spans_baseline.json` | `rows_flagged`, `sentences_truncated`, `sentences_edited`, `rows_uncached` | any **REWORDED** sentence (a sentence the paper never wrote) fails whatever the baseline says |
 | `bin/check_qbank_coherence.py` | `bin/check_qbank_coherence_baseline.json` | `pairs` (0 today) | none — the pin is the floor |
+| `bin/check_citation_attribution.py` | `bin/citation_identifier_allowlist.json`, capped by `ALLOWLIST_CAP` **in the script** | the number of grandfathered identifier-less references (3 today) | a citation whose identifier resolves to a different paper, a missing cache entry, a self-attribution, a fabricated author list — none of which any allowlist entry can suppress |
+
+## The allowlist ratchet is shaped differently, on purpose
+
+The three tools above pin a **count** in JSON beside the tool, and `--update-baseline` rewrites
+it. `check_citation_attribution.py` pins a **named list** instead, and the pin lives in the
+script rather than in the JSON. Three departures, each for a reason:
+
+- **The cap is in the code, not the data.** Raising it is therefore a policy edit, which
+  `bin/check_policy_content_separation.py` forces into its own commit under its own review.
+  Deleting an entry — the direction we want — stays an ordinary content change, because the
+  JSON is data. There is no `--update-cap`: lowering the pin is a one-line human edit, and the
+  gate prints a note naming the number to lower it to once the list is shorter than the cap.
+- **Entries are named, not counted.** A count cannot see one flagged row replaced by a
+  different one (the "Known limitation" below). A named list can: every entry carries the
+  citation verbatim, a written reason, who decided and when.
+- **A stale entry FAILS.** Entries are keyed by a hash of the citation's own text, so fixing or
+  editing the citation retires its entry, and the gate then fails until the dead entry is
+  deleted. Without that half, a capped list fills with grandfather clauses for citations that
+  no longer exist and the cap stops bounding anything real.
+
+Run `python3 bin/check_citation_attribution.py --self-test` to falsify it: the four failure
+classes (no identifier; an identifier on a different paper; an addition past the cap; a stale
+entry) each have a case, and the last assertion runs the live tree against the committed cap.
 | `bin/check_editorial_leaks.py` | `bin/editorial_leaks_baseline.json` | `leaks` (16 at 2026-09-24: the three pasted-instruction audio-quiz items, both deck copies; 0 since 2026-09-25, after WP-3 #772 removed them) | could-not-check is exit 2: a required registry missing or unparsable, a listed shipped source missing, no pack, nothing examined |
 | `bin/check_qbank_length_cue.py` | `bin/qbank_length_cue_baseline.json` | `attested_uniquely_longest` (125 of 134), `live_uniquely_longest` (155 of 189) — items whose keyed option is the uniquely longest (WP-7) | none; the flagged ids it prints are the rewrite work list. Report-only lines for `topic_meta.json` quizzes and the practice-case JSONs never move the exit |
 | `bin/qbank_blueprint_report.py` | `bin/qbank_blueprint_baseline.json` — **not shipped yet** | points outside the NBME/COMAT band, per dimension, over the attested pool (WP-8) | any untagged attested item exits 2 (PARTIAL), so only `--self-test` is in `verify.sh` until tagging is complete |

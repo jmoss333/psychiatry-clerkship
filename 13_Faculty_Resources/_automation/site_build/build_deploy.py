@@ -735,12 +735,16 @@ print("tool governance: emitted", len(_governance["items"]), "items")
 _concept_raw = concept_cards.feed_bytes(Path(LIB), "ms3")
 (Path(OUT) / "tools" / "concepts.json").write_bytes(_concept_raw)
 common.inject_concept_digest(Path(OUT), hashlib.sha256(_concept_raw).hexdigest())
+common.inject_review_qb_inventory(
+    Path(OUT), json.loads((Path(OUT) / "question_bank.json").read_text(encoding="utf-8"))["items"]
+)
 
 # One explicitly paired, source-backed evidence bridge. The output is small,
 # plain JSON; review.html never derives study claims from quiz feedback.
 (Path(OUT) / "tools" / "review_companions.json").write_bytes(
     review_companions.feed_bytes(Path(LIB), "ms3")
 )
+common.inject_review_source_digests(Path(OUT))
 
 # ---------- SERVICE WORKER ----------
 # Last artifact step: the precache manifest must reflect the completed,

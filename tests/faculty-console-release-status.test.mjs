@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -12,12 +13,22 @@ import {
   STALE_WAIT_HOURS,
   failedTrainRuns,
   TRAIN_LOOKBACK_HOURS,
+  failedStage,
+  TRAIN_PROMOTE_STEP,
+  TRAIN_RECEIPT_STEP,
+  trainWeek,
+  trainWeekLine,
+  pushedDuring,
+  staleSignoffLine,
+  staleSignoffs,
+  STALE_SIGNOFF_NAMES,
+  STALE_SIGNOFF_REASON,
   watchVerdict,
   REQUIRED_CHECKS,
   TRAIN_SLOTS_UTC,
 } from '../faculty-console/release-status.mjs';
 import {
-  createHandler, loadReleaseStatus, servedRevisionReader,
+  createHandler, GOVERNANCE_SITE, loadReleaseStatus, readServedGovernance, servedRevisionReader,
 } from '../faculty-console/netlify/functions/release-status.mjs';
 import { main as releaseWatch } from '../bin/release_watch.mjs';
 
@@ -166,7 +177,8 @@ const CONFIG = {
 
 function fixtureFetch({
   netlifyDown = false, compareDown = false, checksDown = false, served = {},
-  sitesDown = false, trainConclusion = 'failure', manifest = null, trainRuns = null,
+  sitesDown = false, trainConclusion = 'failure', manifest = null, trainRuns = null, jobs = {},
+  pushes = [], activityDown = false, governance = {},
 } = {}) {
   const calls = [];
   const fetchImpl = async (url) => {
@@ -194,6 +206,25 @@ function fixtureFetch({
           { sha: MAIN, parents: [{ sha: SIGNOFF }], commit: { message: 'Phone dock label (#846)', committer: { date: '2026-09-27T12:47:46Z' } } },
         ],
       });
+    }
+    if (url.includes('/activity?')) {
+      if (activityDown) return new Response('', { status: 403 });
+      return Response.json(pushes.map(timestamp => ({ activity_type: 'push', ref: 'refs/heads/release', timestamp })));
+    }
+    const jobsMatch = url.match(/\/actions\/runs\/(\d+)\/jobs$/);
+    if (jobsMatch) {
+      const failing = jobs[jobsMatch[1]];
+      if (failing === 'down') return new Response('', { status: 502 });
+      return Response.json({ jobs: [{ steps: failing ? [{ name: failing, conclusion: 'failure' }] : [] }] });
+    }
+    if (url.endsWith('/governance.json') && !url.endsWith('/tool-governance.json')) {
+      const [key] = Object.entries(SITES).find(([, value]) => url.startsWith(`https://${value.host}/`)) || [];
+      if (!key) throw new Error(`Unexpected site request: ${url}`);
+      const doc = governance[key];
+      if (doc === 'down') return new Response('', { status: 503 });
+      return Response.json(doc || { schemaVersion: 1, site: GOVERNANCE_SITE[key], items: {
+        'agitation.md': { kind: 'page', status: 'reviewed', reviewer: 'Joshua Moss, MD', reviewedAt: '2026-09-25' },
+      } });
     }
     if (url.endsWith('/tool-governance.json')) {
       if (sitesDown) return new Response('', { status: 503 });
@@ -404,7 +435,8 @@ test('the watch workflow runs the watch after the morning publish and is on the 
 // ── Every train run in the lookback (Codex P1 on #864) ─────────────────────────────────
 
 const run = (at, conclusion, extra = {}) => ({
-  run_started_at: at, event: 'schedule', status: 'completed', conclusion,
+  id: Date.parse(at) / 1000, run_started_at: at, updated_at: new Date(Date.parse(at) + 20_000).toISOString(),
+  event: 'schedule', status: 'completed', conclusion,
   html_url: `https://github.com/jmoss333/psychiatry-clerkship/actions/runs/${Date.parse(at)}`, ...extra,
 });
 
@@ -456,9 +488,241 @@ test('a green day stays green, and a full page inside the window is a gap, not a
   ];
   const green = await releaseWatch({ argv: [], env: { GITHUB_TOKEN: 's' }, fetchImpl: fixtureFetch({ trainRuns: calm }).fetchImpl, now });
   assert.equal(green, 0);
-  const busy = Array.from({ length: 20 }, (_, i) => run(new Date(Date.parse('2026-09-28T05:30:00Z') - i * 3_600_000).toISOString(), 'success'));
+  const busy = Array.from({ length: 50 }, (_, i) => run(new Date(Date.parse('2026-09-28T05:30:00Z') - i * 1_800_000).toISOString(), 'success'));
   const fetchImpl = fixtureFetch({ trainRuns: busy }).fetchImpl;
   const full = await loadReleaseStatus(fetchImpl, 's', { now, readSite: servedRevisionReader(fetchImpl) });
-  assert.ok(full.gaps.some(gap => gap.startsWith('release-train runs: more than 20')));
+  assert.ok(full.gaps.some(gap => gap.startsWith('release-train runs: more than 50')));
   assert.equal(watchVerdict(full), 2);
+});
+
+// ── The weekly train line ───────────────────────────────────────────────────────────────
+
+test('the two failure steps are the release-train workflow\'s own step names', () => {
+  const workflow = read('.github/workflows/production-release-train.yml');
+  assert.match(workflow, new RegExp(`- name: ${TRAIN_PROMOTE_STEP}\\n`));
+  assert.match(workflow, new RegExp(`- name: ${TRAIN_RECEIPT_STEP}\\n`));
+});
+
+test('a failed run is classified by the step it stopped at, and a promote failure by whether release moved', () => {
+  const job = (...steps) => [{ steps: steps.map(([name, conclusion]) => ({ name, conclusion })) }];
+  const promote = job(['Set up job', 'success'], [TRAIN_PROMOTE_STEP, 'failure']);
+  // The promote step pushes release and THEN writes its summary and outputs, so its failure
+  // is "before" only when no push happened during the run (Codex P2 on #867).
+  assert.equal(failedStage(promote, false), 'before');
+  assert.equal(failedStage(promote, true), 'after');
+  assert.equal(failedStage(promote, null), 'unknown');
+  assert.equal(failedStage(promote), 'unknown');
+  assert.equal(failedStage(job([TRAIN_PROMOTE_STEP, 'success'], [TRAIN_RECEIPT_STEP, 'failure'])), 'after');
+  assert.equal(failedStage(job(['actions/checkout', 'failure'])), 'unknown');
+  assert.equal(failedStage(undefined), 'unknown');
+});
+
+test('pushedDuring reads the release push record, and says null rather than guess', () => {
+  const runAt = { at: '2026-09-27T21:17:39Z', endedAt: '2026-09-27T21:18:01Z' };
+  const t = iso => Date.parse(iso);
+  assert.equal(pushedDuring({ times: [t('2026-09-27T21:17:57Z')], complete: true }, runAt), true);
+  assert.equal(pushedDuring({ times: [t('2026-09-27T13:47:12Z')], complete: true }, runAt), false);
+  assert.equal(pushedDuring(null, runAt), null);
+  assert.equal(pushedDuring({ times: [], complete: true }, { at: runAt.at, endedAt: null }), null);
+  // A full listing that stops after the run began cannot prove there was no push.
+  assert.equal(pushedDuring({ times: [t('2026-09-28T09:00:00Z')], complete: false }, runAt), null);
+});
+
+test('the week counts runs by outcome, says "at least" when cut short, and names a hold pattern', () => {
+  const now = Date.parse('2026-09-28T10:05:00Z');
+  const at = hoursAgo => ({ at: new Date(now - hoursAgo * 3_600_000).toISOString() });
+  const r = (hoursAgo, conclusion, extra = {}) => ({ ...at(hoursAgo), id: hoursAgo, event: 'schedule', status: 'completed', conclusion, ...extra });
+  const runs = [
+    r(1, 'success'), r(6, 'failure'), r(12, 'failure'), r(25, 'success', { event: 'workflow_dispatch' }),
+    r(30, 'failure'), r(40, 'success'), r(50, 'cancelled'), r(60, 'success', { status: 'in_progress', conclusion: null }),
+    r(24 * 8, 'failure'), // outside the week: proves the listing reached past it
+  ];
+  const week = trainWeek(runs, now, { 6: 'before', 12: 'before', 30: 'after' });
+  assert.deepEqual(
+    { ...week },
+    { days: 7, complete: true, scheduled: 7, publishNow: 1, ok: 3, before: 2, after: 1, unknown: 1, running: 1, beforeScheduled: 2 },
+  );
+  assert.equal(trainWeekLine(week),
+    'Release train, last 7 days: 7 scheduled runs and 1 publish-now — 3 published or had nothing new, '
+    + '2 stopped before publishing (held by the spend tripwire, refused, or could not check), 1 failed after publishing, '
+    + '1 failed at an unread step, 1 still running.');
+  const cut = trainWeek(runs.slice(0, 3), now, {});
+  assert.equal(cut.complete, false);
+  assert.match(trainWeekLine(cut), /^Release train, last 7 days: At least 3 scheduled runs/);
+  const held = trainWeek([r(1, 'failure'), r(9, 'failure'), r(17, 'failure'), r(25, 'success'), r(33, 'success'), r(200, 'success')], now,
+    { 1: 'before', 9: 'before', 17: 'before' });
+  assert.match(trainWeekLine(held), /Scheduled runs stopping before publishing are a pattern this week; .*release_train\.py may need retuning/);
+  assert.doesNotMatch(trainWeekLine(week), /pattern/);
+  // Publish-now is never held by cost: three failed presses beside nine green scheduled runs
+  // are no evidence about the budget (Codex P2 on #867).
+  const pressed = trainWeek([
+    ...[1, 2, 3].map(h => r(h, 'failure', { event: 'workflow_dispatch' })),
+    ...[10, 18, 26, 34, 42, 50, 58, 66, 74].map(h => r(h, 'success')),
+    r(24 * 8, 'success'),
+  ], now, { 1: 'before', 2: 'before', 3: 'before' });
+  assert.equal(pressed.before, 3);
+  assert.equal(pressed.beforeScheduled, 0);
+  assert.doesNotMatch(trainWeekLine(pressed), /pattern/);
+});
+
+test('the loader reads each failed run\'s steps for the week; an unreadable one is unclassified, never a gap', async () => {
+  const now = () => Date.parse('2026-09-28T06:00:00Z');
+  const trainRuns = [
+    run('2026-09-27T21:17:00Z', 'success'),
+    run('2026-09-27T15:18:00Z', 'failure'),
+    run('2026-09-27T09:21:00Z', 'failure'),
+    run('2026-09-26T09:21:00Z', 'failure'),
+    run('2026-09-15T09:21:00Z', 'success'),
+  ];
+  const jobs = {
+    [Date.parse('2026-09-27T15:18:00Z') / 1000]: TRAIN_PROMOTE_STEP,
+    [Date.parse('2026-09-27T09:21:00Z') / 1000]: TRAIN_RECEIPT_STEP,
+    [Date.parse('2026-09-26T09:21:00Z') / 1000]: 'down',
+  };
+  // release was pushed during the 21:17 run only: the 15:18 promote failure published nothing.
+  const pushes = ['2026-09-27T21:17:50Z'];
+  const fetchImpl = fixtureFetch({ trainRuns, jobs, pushes }).fetchImpl;
+  const status = await loadReleaseStatus(fetchImpl, 's', { now, readSite: servedRevisionReader(fetchImpl) });
+  assert.deepEqual(
+    { ...status.train.week },
+    { days: 7, complete: true, scheduled: 4, publishNow: 0, ok: 1, before: 1, after: 1, unknown: 1, running: 0, beforeScheduled: 1 },
+  );
+  assert.ok(!status.gaps.some(gap => gap.includes('jobs')));
+  // A promote failure DURING which release was pushed published: it is "after", not a hold.
+  const published = fixtureFetch({ trainRuns, jobs, pushes: ['2026-09-27T15:18:10Z'] }).fetchImpl;
+  const moved = await loadReleaseStatus(published, 's', { now, readSite: servedRevisionReader(published) });
+  assert.equal(moved.train.week.before, 0);
+  assert.equal(moved.train.week.after, 2);
+  // No push record: a promote failure cannot be called a hold, so it is unclassified.
+  const blind = fixtureFetch({ trainRuns, jobs, activityDown: true }).fetchImpl;
+  const unread = await loadReleaseStatus(blind, 's', { now, readSite: servedRevisionReader(blind) });
+  assert.equal(unread.train.week.before, 0);
+  assert.equal(unread.train.week.unknown, 2);
+});
+
+// ── Signatures learners see: pages each site SERVES as awaiting re-signature. ──
+
+const staleItem = (at, kind = 'page') => ({
+  kind, status: 'pending', reviewer: 'Pending faculty review', reviewedAt: at,
+  reason: `Content changed since faculty review on ${at}; awaiting re-attestation.`,
+  warning: `Content changed since faculty review on ${at}; awaiting re-attestation.`,
+});
+const governanceDoc = (key, items) => ({ schemaVersion: 1, site: GOVERNANCE_SITE[key], items });
+
+test('the served document the builds emit is what the sign-off reader reads', () => {
+  // Build each site's governance.json with the Python modules the learner builds use, from a
+  // ledger carrying one drifted row (its reason is attestation_hash.STALE_REASON itself) and
+  // one never-signed row, and read it back through the console's own reader.
+  const PYTHON = `
+import json, sys
+sys.path.insert(0, '13_Faculty_Resources/_automation')
+import attestation_hash, surface_governance
+risk = {'kind': 'clinical', 'level': 'high'}
+ledger = {
+  'sp-interview.html': {'status': 'pending', 'by': attestation_hash.PENDING_SENTINEL, 'at': '2026-09-26',
+                        'reason': attestation_hash.STALE_REASON.format(at='2026-09-26'), 'risk': risk},
+  'new-case.md': {'status': 'pending', 'by': 'Pending faculty review', 'at': '2026-09-27',
+                  'reason': 'New case awaiting first faculty review.', 'risk': risk},
+  'agitation.md': {'status': 'reviewed', 'by': 'Joshua Moss, MD', 'at': '2026-09-25', 'risk': risk},
+}
+nav = [{'items': [{'f': 'sp-interview.html', 'k': 'tool'}, {'f': 'new-case.md', 'k': 'md'}, {'f': 'agitation.md', 'k': 'md'}]}]
+print(json.dumps({site: surface_governance.build_site_document(ledger, nav, site) for site in ('ms3', 'resident')}))
+`;
+  const proc = spawnSync('python3', ['-c', PYTHON], { cwd: new URL('../', import.meta.url), encoding: 'utf8' });
+  assert.equal(proc.status, 0, proc.stderr);
+  const built = JSON.parse(proc.stdout);
+  const docs = { ms3: built[GOVERNANCE_SITE.ms3], res: built[GOVERNANCE_SITE.res] };
+  assert.equal(docs.ms3.site, GOVERNANCE_SITE.ms3);
+  assert.equal(docs.res.site, GOVERNANCE_SITE.res);
+  const signoffs = staleSignoffs(docs);
+  assert.deepEqual(signoffs.items, [{ slug: 'sp-interview.html', kind: 'tool', signedAt: '2026-09-26', sites: ['ms3', 'res'] }]);
+  assert.equal(signoffs.complete, true);
+  assert.match(read('13_Faculty_Resources/_automation/attestation_hash.py'),
+    /^STALE_REASON = "Content changed since faculty review on \{at\}; awaiting re-attestation\."$/m);
+  assert.ok(STALE_SIGNOFF_REASON.test('Content changed since faculty review on 2026-09-26; awaiting re-attestation.'));
+  // The site names the reader expects are the ones the two builds pass.
+  assert.match(read('13_Faculty_Resources/_automation/site_build/build_deploy.py'),
+    new RegExp(`build_site_document\\(_ledger, nav, "${GOVERNANCE_SITE.ms3}"\\)`));
+  assert.match(read('13_Faculty_Resources/_automation/site_build/resident_section.py'),
+    new RegExp(`build_site_document\\(_ledger, nav, "${GOVERNANCE_SITE.res}"\\)`));
+});
+
+test('the sign-off line names drifted pages, says where, and never reads an unread site as clean', () => {
+  const clean = staleSignoffs({ ms3: governanceDoc('ms3', {}), res: governanceDoc('res', {}) });
+  assert.equal(staleSignoffLine(clean), 'No page learners see is awaiting your re-signature.');
+
+  const both = staleSignoffs({
+    ms3: governanceDoc('ms3', { 'sp-interview.html': staleItem('2026-09-26', 'tool'), 'anki.md': staleItem('2026-08-11') }),
+    res: governanceDoc('res', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+  });
+  assert.deepEqual(both.items.map(item => [item.slug, item.sites]), [['anki.md', ['ms3']], ['sp-interview.html', ['ms3', 'res']]]);
+  assert.equal(staleSignoffLine(both),
+    'Learners see 2 pages as awaiting your re-signature — the content changed after it was signed: '
+    + 'anki.md (signed 2026-08-11 · ms3 only), sp-interview.html (signed 2026-09-26). Re-attest under Needs review.');
+
+  // An ordinary pending page (never signed) is first review, not a drifted signature.
+  const firstReview = { ...staleItem('2026-09-27'), reason: 'New case awaiting first faculty review.' };
+  assert.equal(staleSignoffs({ ms3: governanceDoc('ms3', { 'c.md': firstReview }), res: null }).items.length, 0);
+  // Only a pending item renders the warning; a reviewed one with a stray reason is not drift.
+  assert.equal(staleSignoffs({ ms3: governanceDoc('ms3', { 'c.md': { ...staleItem('2026-09-26'), status: 'reviewed' } }), res: null }).items.length, 0);
+
+  const halfRead = staleSignoffs({ ms3: governanceDoc('ms3', { 'anki.md': staleItem('2026-08-11') }), res: null });
+  assert.equal(halfRead.complete, false);
+  assert.match(staleSignoffLine(halfRead), /anki\.md \(signed 2026-08-11\)\. Re-attest under Needs review\. res could not be read, so this is a minimum\.$/);
+  assert.equal(staleSignoffLine(staleSignoffs({ ms3: governanceDoc('ms3', {}), res: null })),
+    'No page learners see is awaiting your re-signature on ms3. res could not be read.');
+  assert.equal(staleSignoffLine(staleSignoffs({ ms3: null, res: null })),
+    'Signatures learners see: neither site\'s governance.json could be read.');
+
+  const many = Object.fromEntries(Array.from({ length: STALE_SIGNOFF_NAMES + 2 }, (_, i) => [`p${i}.md`, staleItem('2026-09-01')]));
+  const line = staleSignoffLine(staleSignoffs({ ms3: governanceDoc('ms3', many), res: governanceDoc('res', many) }));
+  assert.match(line, new RegExp(`^Learners see ${STALE_SIGNOFF_NAMES + 2} pages`));
+  assert.match(line, /, \+2 more\. Re-attest/);
+});
+
+test('the served governance reader takes only this site\'s own document', async () => {
+  const site = { baseUrl: `https://${SITES.ms3.host}` };
+  const doc = governanceDoc('ms3', { 'a.md': staleItem('2026-09-26') });
+  assert.deepEqual(await readServedGovernance(fixtureFetch({ governance: { ms3: doc } }).fetchImpl, site, 'ms3'), doc);
+  await assert.rejects(readServedGovernance(fixtureFetch({ governance: { ms3: governanceDoc('res', doc.items) } }).fetchImpl, site, 'ms3'), /not this site/);
+  await assert.rejects(readServedGovernance(fixtureFetch({ governance: { ms3: governanceDoc('ms3', {}) } }).fetchImpl, site, 'ms3'), /not this site/);
+  await assert.rejects(readServedGovernance(fixtureFetch({ governance: { ms3: 'down' } }).fetchImpl, site, 'ms3'), /answered 503/);
+});
+
+test('the loader reports served sign-offs in both modes; an unread site is named, never a gap', async () => {
+  const governance = {
+    ms3: governanceDoc('ms3', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+    res: governanceDoc('res', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+  };
+  const now = () => Date.parse('2026-09-27T13:00:00Z');
+  const console = await loadReleaseStatus(fixtureFetch({ governance }).fetchImpl, 's', { now });
+  assert.deepEqual(console.signoffs.items.map(item => item.slug), ['sp-interview.html']);
+  assert.equal(console.signoffs.complete, true);
+
+  const clean = fixtureFetch().fetchImpl;
+  const calm = await loadReleaseStatus(clean, 's', { now, readSite: servedRevisionReader(clean) });
+  assert.deepEqual(calm.signoffs, { items: [], unread: [], complete: true });
+
+  const blind = fixtureFetch({ governance: { ...governance, res: 'down' } }).fetchImpl;
+  const partial = await loadReleaseStatus(blind, 's', { now, readSite: servedRevisionReader(blind) });
+  assert.deepEqual(partial.signoffs.unread, ['res']);
+  assert.equal(partial.gaps.some(gap => /governance/.test(gap)), false);
+  assert.deepEqual(partial.gaps, calm.gaps);
+});
+
+test('the watch prints the sign-off line and it never moves the exit code', async t => {
+  const out = [];
+  t.mock.method(console, 'log', line => out.push(String(line)));
+  const trainRuns = [{ id: 5, run_started_at: '2026-09-28T09:21:00Z', updated_at: '2026-09-28T09:23:00Z', event: 'schedule', status: 'completed', conclusion: 'success', html_url: 'https://github.com/jmoss333/psychiatry-clerkship/actions/runs/5' }];
+  const now = () => Date.parse('2026-09-28T10:05:00Z');
+  const run = governance => releaseWatch({ argv: [], env: { GITHUB_TOKEN: 's' }, fetchImpl: fixtureFetch({ trainRuns, governance }).fetchImpl, now });
+  const clean = await run({});
+  const stale = await run({
+    ms3: governanceDoc('ms3', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+    res: governanceDoc('res', { 'sp-interview.html': staleItem('2026-09-26', 'tool') }),
+  });
+  assert.equal(stale, clean);
+  const summary = out.join('\n');
+  assert.match(summary, /No page learners see is awaiting your re-signature\./);
+  assert.match(summary, /Learners see 1 page as awaiting your re-signature — the content changed after it was signed: sp-interview\.html \(signed 2026-09-26\)\./);
 });

@@ -622,6 +622,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
                 "actions": "read",
                 "checks": "read",
                 "contents": "read",
+                "pull-requests": "read",
             },
             "maintenance-heartbeat.yml": {
                 "actions": "read",

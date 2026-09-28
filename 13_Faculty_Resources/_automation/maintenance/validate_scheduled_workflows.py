@@ -81,6 +81,8 @@ EXPECTED_PERMISSIONS = {
         "actions": "read",
         "checks": "read",
         "contents": "read",
+        # The rolling attestation PR, for the signed-vs-served delivery check (step 2).
+        "pull-requests": "read",
     },
     "maintenance-heartbeat.yml": {
         "actions": "read",
@@ -178,6 +180,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Validate — scheduled workflow contracts"),
             ("name", "Lint — no hard-coded machine paths in tracked Python"),
             ("name", "Guard — governance/content separation"),
+            ("name", "Guard — policy/content separation"),
+            ("name", "Guard — citation attribution"),
             ("name", "Unit — media guard"),
             ("name", "Unit — shared build logic (common.py)"),
             ("name", "Unit — pairing block renderer"),
@@ -302,6 +306,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("uses", "actions/checkout"),
             ("uses", "actions/setup-node"),
             ("name", "Read what learners see against main"),
+            ("name", "Compare what is signed with what learners see"),
             ("uses", "actions/upload-artifact"),
         ),
     },
@@ -348,6 +353,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Prepare run directory"),
             ("name", "Hydrate rolling surveillance inbox"),
             ("name", "Check source URLs and cited identifiers"),
+            ("name", "Audit — propose identifiers for grandfathered citations "
+                     "(Option B, non-blocking)"),
             ("name", "Sync findings into issues and reports"),
             ("name", "Rebuild faculty status page from live issue state"),
             ("uses", "actions/upload-artifact"),
@@ -416,7 +423,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "a8bebbaa3a154105d2491c0c0a468a5fe107e9db29d83ff844b7a23c7efda0d5"
     ),
-    "ci.yml": "babeede50264b1de455e816e3ac38c353152f69a823356024b64e278187c207b",
+    "ci.yml": "b27cb9797a0864f8ac1b924a1d2d8a7ff0f783d56564235627681967e16312d0",
     "maintenance-governance-digest.yml": (
         "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),
@@ -430,7 +437,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "2044dc589d3df7e1f850fca0468637fa2aa8e6798012cc1fda481b8c6d0fbf65"
     ),
     "maintenance-release-watch.yml": (
-        "d49c1642eb80de62b2971a06ecb142d908023ec281b36e213ad5d3b97ffcbb56"
+        "e91af78ce495d3edc91bd07d3eb5d68d258347e09bf877f502b3cde6db27c8d7"
     ),
     "maintenance-production-canary.yml": (
         "fe71a56f8bd2cd7f3ff752ee5dab681219323d113ed5bc46fecace047335737c"
@@ -442,7 +449,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
         "fa79af1e841096550e462774445a6b2a5a198c52aa24423301abf1d3bcb0501e"
     ),
     "surveillance-citations.yml": (
-        "3ae306c847088fbfccdbe6abe95d7e5f0ea927df8122bdde1b2ac02bd37d5f7a"
+        "c2395675498c9796dfcaa33b459a752b416129062329b5f67f0353a6d21054db"
     ),
     "surveillance-guideline.yml": (
         "ba27d694f588f7a8019b37a25d6f28636ffa14e62a4e19f35daf9f013890e8c3"
@@ -612,6 +619,33 @@ CRITICAL_STEPS = {
                 "github.event_name == 'pull_request'",
                 "required CI gate",
             ),
+            # PR-only, for the same reason as the step above: the rule is about a PR's commit
+            # range and `github.event.pull_request.base.sha` is the one base a push event does
+            # not carry. The self-test is inside the same `run:` deliberately — a falsification
+            # that does not run beside the gate it falsifies is what check_vacuity.py exists to
+            # catch, and pinning both commands here is what stops a later agent from clearing a
+            # red by deleting one of them and recomputing the digest.
+            (
+                "Guard — policy/content separation",
+                'if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then '
+                'echo "::error::no base sha"; exit 2; fi\n'
+                "python3 bin/check_policy_content_separation.py --self-test\n"
+                'python3 bin/check_policy_content_separation.py --base "$BASE_SHA"',
+                "github.event_name == 'pull_request'",
+                "required CI gate",
+            ),
+            # NOT PR-only: a citation's attribution is a property of the tree, not of a diff,
+            # so this runs on every event. All three commands are pinned. The third is the
+            # falsification for the Option-B sweep, whose GATE half deliberately does not run
+            # here — it searches PubMed live and belongs on a schedule, not in the merge path.
+            (
+                "Guard — citation attribution",
+                "python3 bin/check_citation_attribution.py --self-test\n"
+                "python3 bin/check_citation_attribution.py\n"
+                "python3 bin/audit_citation_allowlist.py --self-test",
+                None,
+                "required CI gate",
+            ),
             (
                 "Unit — root node regression tests (tests/*.test.mjs)",
                 "node --test tests/*.test.mjs",
@@ -690,6 +724,12 @@ npx playwright test --project=lfs""",
                 'node bin/release_watch.mjs --out "$RUNNER_TEMP/release-watch.json"',
                 None,
                 "required release watch",
+            ),
+            (
+                "Compare what is signed with what learners see",
+                'python3 bin/check_attestation_delivery.py --out "$RUNNER_TEMP/attestation-delivery.json"',
+                "always()",
+                "required attestation delivery check",
             ),
         ),
     },

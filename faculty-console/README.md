@@ -59,7 +59,9 @@ The learner sites publish from `release`, not `main`: a merged change — and a 
 
 It is **read-only** and loads only when opened or refreshed: it never publishes (a publish costs a production deploy per site, and that is the owner's call on the train's own page). It needs the faculty key and uses the console's existing `GITHUB_TOKEN`; reading `main`'s check runs and the train's runs needs that token to have *Checks* and *Actions* read access, and when it does not, the panel lists that under **Could not read everything** rather than guessing. Every unreadable fact is listed there the same way — an unread comparison is never shown as "up to date", "learners see everything" is claimed only when every learner site's published deploy was read, and a waiting count judged from one site (or the release branch) reads "at least". In ledger mode (ADR-003) sign-offs publish through the ledger on their own and are not listed. The slots, the required check names and the sign-off branch are restated from their owners and pinned to them by `tests/faculty-console-release-status.test.mjs`.
 
-**The same reading runs daily without anyone opening the panel.** `maintenance-release-watch.yml` (10:05 UTC) runs `bin/release_watch.mjs`, which calls this panel's loader with one difference: it reads the commit each site *serves* from its own `/tool-governance.json` (no credential, as the production canary does) instead of Netlify's deploy record. It reads every release-train run started in the last 26 h (`TRAIN_LOOKBACK_HOURS`), not only the newest, so a held 15:05 run that a green 21:05 run follows still reaches the next morning's watch. It exits 1 on anything the panel marks *attention* — plus merged work waiting over 24 h (`STALE_WAIT_HOURS`), which the panel also flags — and 2 when it could not read both sites or any other fact, never 0 over a partial read. A red run lands in the rolling escalation issue with the headline as its first error line.
+**The same reading runs daily without anyone opening the panel.** `maintenance-release-watch.yml` (10:05 UTC) runs `bin/release_watch.mjs`, which calls this panel's loader with one difference: it reads the commit each site *serves* from its own `/tool-governance.json` (no credential, as the production canary does) instead of Netlify's deploy record. It reads every release-train run started in the last 26 h (`TRAIN_LOOKBACK_HOURS`), not only the newest, so a held 15:05 run that a green 21:05 run follows still reaches the next morning's watch. Its summary, and the panel, end with **the week's train line** — the last 7 days of release-train runs counted by outcome, with each failed run classified by where it stopped: *failed after publishing* when the receipt request failed (it runs only after `release` was pushed) or when `release` was pushed during the run, per the branch's push activity; *stopped before publishing* (held by the spend tripwire, refused, or could not check) only when the promote step failed **and** no push to `release` happened during the run; otherwise unclassified. The retune hint counts scheduled runs only — publish-now is never held by cost. The line is information, never a verdict; it names the spend tripwire only when stops are a pattern (three or more, and at least a third of the scheduled runs). It exits 1 on anything the panel marks *attention* — plus merged work waiting over 24 h (`STALE_WAIT_HOURS`), which the panel also flags — and 2 when it could not read both sites or any other fact, never 0 over a partial read. A red run lands in the rolling escalation issue with the headline as its first error line.
+
+**Signatures learners see.** The panel and the watch summary also name every page a learner site *serves* as awaiting your re-signature: an item of that site's own `/governance.json` that is pending with the build's drift reason (`attestation_hash.STALE_REASON`, `Content changed since faculty review on <date>; awaiting re-attestation.`). That is the page's text having changed after you signed it — #865 rewrote `sp-interview.html` under a 2026-09-26 signature and the 09:05 train published it on 2026-09-28 — as opposed to a page never signed, which is ordinary first review and is not counted. It is read from what each site serves, with no credential, in both the console and the watch, so it says what learners see *now*, not what the ledger on `main` will produce at the next publish (`bin/check_attestation_hashes.py` answers that). Like the week's line it is information, never a verdict: a drifted page warns and never unplaces, so the line never changes the tone or the watch's exit code, and a site whose `/governance.json` could not be read is named in the line (the count is then a minimum) rather than read as clean. A test builds that document with `surface_governance.build_site_document` itself and reads it back through the console's reader, so a reworded reason or a reshaped document fails there first.
 
 ## The phone client (`/m/`)
 
@@ -228,6 +230,7 @@ If the console uses a different origin, update the learner site's exact `frame-a
 | `GITHUB_REPO` | `jmoss333/psychiatry-clerkship` *(optional; this is the default)* |
 | `GIT_BRANCH` | `attest/pending` *(optional; default)* — the branch attestations commit to |
 | `GIT_BASE_BRANCH` | `main` *(optional; default)* — where the rolling pull request lands |
+| `ATTEST_ROLLING_PR_AUTOMERGE` | *(optional)* `off` stops the 15-minute sweep arming auto-merge; it still opens the PR |
 | `STUDENT_SITE_URL` | MS3 learner site to embed *(optional; defaults to `https://une-ms3-psychiatry.netlify.app`)* |
 | `RESIDENT_SITE_URL` | resident learner site, used to preview the resident half of a Case-of-the-Week pair *(optional; defaults to `https://mmc-psychiatry-residents-sanford.netlify.app`)* |
 | `ALLOWED_ORIGIN` | the exact faculty site origin, e.g. `https://clerkship-faculty-attest.netlify.app` *(optional; tightens API CORS)* |
@@ -273,6 +276,20 @@ reuse that rolling request. A failed attempt stays in a persistent `role="alert"
 stable error code and a **Retry opening PR** button; ordinary preview status cannot erase it. The
 attestation must not be repeated. CI still gates every attestation, and protection on `main` is
 untouched.
+
+**The rolling PR no longer depends on anyone opening the console again (2026-09-28).** The
+post-write attempt above is silent by design, and on 2026-09-28 it left the owner's 08:06 ET
+Interview Room re-attestation on `attest/pending` with no PR: both learner sites showed the room as
+*pending faculty review* on the first day of a rotation until someone noticed. A scheduled function,
+`netlify/functions/rolling-pr-sweep.mjs` (every 15 minutes; logic in `rolling-pr-sweep.mjs`), now
+asks one question — does `GIT_BRANCH` carry commits `GIT_BASE_BRANCH` does not? — and if so opens the
+rolling PR (reopening it under the same title if it was closed) and arms GitHub **auto-merge with a
+merge commit**. A PR whose checks already passed cannot take auto-merge, so it is merged directly; a
+PR whose checks are failing is left for a person. It never writes a file or a signature, and it does
+nothing in ledger mode. Set `ATTEST_ROLLING_PR_AUTOMERGE=off` to keep the PR open for a person to
+merge. Its function log carries one content-free JSON line per tick. The daily check that this works
+is `bin/check_attestation_delivery.py`, step 2 of `maintenance-release-watch.yml`: page by page, what
+is signed against what each learner site shows, naming where anything undelivered is stuck.
 
 Before each write the console **fast-forwards the attestation branch from the base branch, but only
 when the branch carries nothing of its own** (`compare(base...branch).ahead_by === 0`). This is the

@@ -50,6 +50,24 @@ jobs:
             --checked-out "$RUNNER_TEMP/surveillance/checked-sources.json" \
             2>&1 | tee "$RUNNER_TEMP/surveillance/collector.log"
 
+      # Option B from the citation-gate design, and the reason it lives HERE and not in ci.yml:
+      # it searches PubMed at run time, so it is heuristic and non-deterministic — the same
+      # commit can match today and not next month. As a merge gate that is a flake generator,
+      # and a flaky gate gets marked continue-on-error within a week. As a weekly sweep it is
+      # free to be wrong, because a wrong proposal costs a human thirty seconds and blocks
+      # nobody. Its job is working bin/citation_identifier_allowlist.json down toward zero.
+      #
+      # "Non-blocking" is a property of the TOOL, not a `continue-on-error:` here — the
+      # workflow validator forbids that key, and rightly: continue-on-error is how a gate gets
+      # neutered without anyone editing the gate. audit_citation_allowlist.py returns 0 whatever
+      # it finds, by contract, asserted in its own --self-test which ci.yml runs. It returns
+      # non-zero only when it cannot read the allowlist at all, which is a repo-integrity
+      # problem that should redden something.
+      - name: Audit — propose identifiers for grandfathered citations (Option B, non-blocking)
+        run: >-
+          python3 bin/audit_citation_allowlist.py
+          --out "$RUNNER_TEMP/surveillance/allowlist-audit.json"
+
       - name: Sync findings into issues and reports
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -73,6 +91,7 @@ jobs:
           name: surveillance-citation-monitor-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/surveillance/findings.json
+            ${{ runner.temp }}/surveillance/allowlist-audit.json
             ${{ runner.temp }}/surveillance/checked-sources.json
             ${{ runner.temp }}/surveillance/issue-state.json
             ${{ runner.temp }}/surveillance/collector.log

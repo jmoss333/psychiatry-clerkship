@@ -32,7 +32,8 @@ bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → 
   that stands in for the auto-recharge ceiling Netlify does not offer; publish-now is never
   held. A held or failed publish is not silent: `maintenance-release-watch.yml` (10:05 UTC)
   compares what both sites serve with `main` and goes red into the escalation issue (the
-  faculty console's "What learners see" panel shows the same reading on demand). The
+  faculty console's "What learners see" panel shows the same reading on demand, and both name
+  the pages learners are served as awaiting re-signature — information, never the verdict). The
   satellite sites (sp-proxy, faculty console, workforce tour)
   still build from `main`. Deploy previews: `https://deploy-preview-{PR}--{slug}.netlify.app`.
 - **Git LFS** tracks `*.mp3 *.m4a *.wav *.mp4`. Never commit LFS **pointer stubs** (~133 B) in place
@@ -73,6 +74,9 @@ most wasted work here has been one session not seeing another.
 - **Order content merges around an open attestation sitting.** While an `attest/pending` PR is
   open, a content PR that edits a page in it lands after it, or says in its body that it forces
   a re-sign — #813 and its siblings drifted 22 pages the owner had signed that same day.
+  Every PR carries a **`Sign-offs (advisory)`** check (`pr-signoff-impact.yml`) naming the
+  signatures merging it would reopen, from the base tip to GitHub's test merge; run
+  `python3 bin/signoff_impact.py` before pushing to see the same list. Information, never a gate.
 - **A handoff records the SHA it was verified at, and the receiver re-verifies against current
   `main` before acting** — the #626 handoff prescribed committing 35 MB past LFS and writing
   attestations. `13_Faculty_Resources/Handoffs/STATUS_LATEST.md` is a superseded July snapshot.
@@ -142,9 +146,24 @@ Never regenerate visual baselines from it; use the existing workflow_dispatch jo
 made from the host Mac still runs its pre-push gate under host Bash 3.2; run the push from
 the container when the Bash 5 environment is part of the evidence.
 
-- CI (`.github/workflows/ci.yml`) runs on every PR: path-lint → media/topic_meta/longitudinal
-  validators → build+QA gate (ms3 & res) → smoke tests. It mirrors Netlify, so breakage turns a PR
-  red instead of only failing at deploy.
+- CI (`.github/workflows/ci.yml`) runs on every PR: path-lint → governance/policy separation →
+  citation attribution → media/topic_meta/longitudinal validators → build+QA gate (ms3 & res) →
+  smoke tests. It mirrors Netlify, so breakage turns a PR red instead of only failing at deploy.
+- **A citation must carry a DOI or PMID, and it must resolve to the paper claimed.**
+  `bin/check_citation_attribution.py` runs in both `verify.sh` and `ci.yml`.
+  `--require-identifier` is **on by default** — that is the ruling, and it is what #672 needed,
+  because not one of its 85 citations carried an identifier at all and the liveness check in
+  `surveillance/` therefore had nothing to look at. Scope is numbered lines under a
+  `## References` heading in curriculum markdown (270 today, 267 with an identifier). The three
+  that have none are grandfathered by name in `bin/citation_identifier_allowlist.json`, **capped
+  at 3 by `ALLOWLIST_CAP` in the script**; the list may only shrink, and an entry whose citation
+  no longer reproduces fails as **stale** until deleted. Comparison runs against the committed
+  cache `bin/data/citation_attribution_cache.json` and **touches no network** — refresh it
+  deliberately with `bin/refresh_citation_attribution_cache.py`, never from CI. Option B
+  (search-and-judge) is `bin/audit_citation_allowlist.py`, a weekly sweep in
+  `surveillance-citations.yml` that proposes identifiers and **blocks nothing**; keep it out of
+  the merge path. Ruling and measurements:
+  `docs/superpowers/specs/2026-09-27-citation-attribution-gate-ruling.md`.
 - `bin/verify.sh` is a **superset** of `ci.yml`, not a mirror: `bin/check-verify-coverage.py`
   enforces that every CI step has a local equivalent (or a recorded `ALLOWED` exemption), but
   verify.sh may run more. `bin/verify_spans.py` and `bin/check_qbank_coherence.py` run there and
@@ -228,6 +247,21 @@ the container when the Bash 5 environment is part of the evidence.
   over every reviewed case (small talk opens no gate; every gate is wired to intents and parent
   gates that exist; no gate opens on a euphemism). A reviewed case or gate with no hand-written
   probe is named in its output, never failed.
+- `bin/rotation_turnover.py` — the rotation-start Netlify visit for `sp-interview-proxy` as one
+  command (rotation ID, origins, a new operations credential via the macOS Keychain, redeploy,
+  live proof, a summary on the rotation issue). **The owner runs it on the Mac**; dry run by
+  default, `--apply` to change anything. It never touches the learner passcode (decision
+  `passcode-fixed`) and never prints a credential; an agent must not run `--apply` unasked.
+- `faculty-console/rolling-pr-sweep.mjs` + `bin/check_attestation_delivery.py` — **signatures
+  deliver themselves**. The sweep (a Netlify scheduled function on the console site, every 15 min)
+  opens or reopens the rolling `attest/pending` PR when that branch is ahead of `main` and arms
+  auto-merge with a **merge commit** (L4 reads the console identity per commit; never squash). The
+  daily check (step 2 of `maintenance-release-watch.yml`) compares, page by page, what is signed
+  against what each learner site serves and names where anything is stuck — stranded (no PR, red
+  after 30 min), in the PR (6 h), merged but unpublished (24 h), published but not shown (at once);
+  a page whose text changed after signing is re-attestation work, not a delivery gap. Neither
+  creates a signature; they only move ones the owner made. Born of 2026-09-28, when the Interview
+  Room re-attestation sat on `attest/pending` with no PR on a rotation's first morning.
 - `.claude/agents/` — project subagents (`evidence-verifier`, `deploy-verifier`). The frontmatter
   tool allowlist is the enforcement; `tests/agent-definitions.test.mjs` pins each agent's scope.
   **`deploy-verifier` cannot reach `*.netlify.app` from a sandboxed web session** — the egress
@@ -355,6 +389,61 @@ the container when the Bash 5 environment is part of the evidence.
   — assembles a complete human-readable transcript of everything each site ships (one set per
   audience) for external clinical review. Reads the **builds**, not the source tree, so it
   reflects nav order and audience scoping. Report-only; regenerate after building both sites.
+
+## Branching, worktrees & pushing
+- **Policy and content may not travel in the same commit.** A commit may touch the governing
+  surface (`CLAUDE.md`, `AGENTS.md`, `.github/workflows/**`, `bin/verify.sh`, the `bin/check_*`
+  / `bin/audit_*` / `bin/refresh_*` scripts, `validate_scheduled_workflows.py`, `docs/adr/*`,
+  attestation config) **or** content (curriculum, tools, snapshots, registries, and the DATA
+  gates read — baselines, caches, allowlists) — never both. `docs/superpowers/specs/*` is a
+  **third, neutral class**: a design spec describes policy without enacting it, so it pairs
+  with neither and rides with either. (Not "exempt": the first draft made specs exempt, which
+  silently classified them as content, so a rule shipped with its own spec tripped its own
+  gate. `bin/check_policy_content_separation.py` keeps that regression in `--self-test`.)
+  *A PR that can edit `CLAUDE.md` can edit the rules governing PRs* — that is exactly what
+  #640 did (a governance rule inside a curriculum PR) and what #672 then invoked to bypass
+  review, shipping 85 citations of which 43 of 47 checkable ones were wrong. Splitting them
+  makes the rule change its own reviewable object and keeps `git log -- CLAUDE.md` an honest
+  record. Gate DATA is content on purpose: shrinking a debt (fixing a citation *and* deleting
+  its allowlist entry) stays one ordinary commit, while raising the cap that bounds the debt
+  is a policy edit under its own review.
+- **Push the branch the day you create it, before the work is finished.** A branch that exists
+  only locally is invisible to every gate, every reviewer and every automation here. The
+  2026-09-17 review found two branches stranded on one machine — including the 8-commit branch
+  carrying `automation_branch_prs.py`, *the stranded-branch detector itself*, which could not
+  report its own condition because it had never been pushed. Open the PR as a draft if the work
+  is not ready; do not hold the branch back.
+- **Branch names are `<agent>/<topic>` or `<agent>/<topic>-<date>`** — e.g.
+  `claude/citation-gate-land-2026-09-27`, `codex/rounds-prep-quick-guided`. Keep the agent
+  prefix: it is what makes ownership legible in `git branch -a` and what
+  `automation_branch_prs.py` matches on.
+- **Never merge to `main` locally and never force-push.** `main` is covered by the active
+  ruleset *main protection* (verified 2026-09-27): **no bypass actors**, `deletion` and
+  `non_fast_forward` blocked, **0 required approvals**, **strict mode OFF**, and **4 required
+  checks** — `build-test-validate`, `Smoke tests (nav crawl · faculty console · LFS · visual)`,
+  and both Netlify deploy previews. Strict mode being off is the operationally important half:
+  a PR merges on green checks **without** re-syncing, so re-sync only a PR that conflicts or
+  shares files with what just merged.
+- **Worktrees live in one of three pools**, each registered in `.git/worktrees`:
+  `.worktrees/<topic>/` (in-repo), `.claude/worktrees/<name>/`, or a loose sibling checkout
+  `~/Psychiatry-Clerkship-Library-<purpose>/`. Remove with `git worktree remove <path>` once
+  the PR merges — deleting the directory by hand leaves the registration behind.
+- **Never run `git worktree prune` from an agent sandbox.** Worktrees are registered at host
+  paths (`/Users/jm/...`) that do not resolve inside a sandbox mount, so **every** worktree
+  reports `prunable` there regardless of its real state — 26 of 26 did on 2026-09-17. Pruning
+  on that signal deregisters trees holding uncommitted work. The same mount gap means git
+  itself does not run inside a sandboxed worktree (`fatal: not a git repository`), so
+  `bin/check_vacuity.py` and anything else that shells out to git must run host-side.
+  `git worktree list` is safe and read-only; act on it only from a host shell, and only after
+  checking each tree for uncommitted changes.
+- **Anything that commits runs host-side, not in the Cowork sandbox.** Git-LFS is absent there,
+  so the ~100 `.m4a` files under `07_Evidence_and_Reading/` show as falsely modified and a
+  commit made there replaces real media with pointer stubs. Read and analyse in the sandbox;
+  commit, push and build on the host. Confirm with `git status --porcelain | grep -c '\.m4a'`
+  → expect `0`.
+- **`bin/verify.sh` is the pre-push hook**, so a red gate blocks the push itself. It runs the
+  full battery including both site builds (several minutes) — background it to a log and poll
+  rather than waiting on it interactively.
 
 ## Conventions & gotchas
 - **localStorage keys must be namespaced `cw_*` (shared hub) or `rp_*` (resident).** The QA gate
