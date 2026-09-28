@@ -66,6 +66,7 @@ assert.deepEqual(
     'sp_mania_redirect_001',
     'sp_psychosis_paranoid_001',
     'sp_alcohol_ambivalence_001',
+    'sp_depression_followup_001',
   ],
   'all deterministic regression cases must remain in the canonical pack',
 );

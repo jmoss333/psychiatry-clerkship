@@ -29,6 +29,7 @@ export const REALTIME_VOICES = Object.freeze({
   sp_mania_redirect_001: 'cedar',
   sp_psychosis_paranoid_001: 'cedar',
   sp_alcohol_ambivalence_001: 'marin',
+  sp_depression_followup_001: 'marin',
 });
 
 const DELIVERY = Object.freeze({

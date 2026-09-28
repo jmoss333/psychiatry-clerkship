@@ -8,9 +8,9 @@
 
   // Local simulation authoring, layered on top of the actor's authoritative case
   // and channel projection, which still control every fact and disclosure.
-  // Faculty attested the spoken portrayal/station layer for all five encounters
-  // 2026-09-09 (Joshua Moss, MD); front-door cards contain only information
-  // available at entry.
+  // Faculty attested the spoken portrayal/station layer for the five original encounters
+  // 2026-09-09 (Joshua Moss, MD). A record that sets reviewStatus 'pending' is a draft brief for
+  // a pack case not yet reviewed. Front-door cards contain only information available at entry.
   var studentRole = 'You are an MD or DO medical student working with a supervising clinician. Introduce your role accurately and bring decisions and unresolved concerns back to the team.';
   var handoffPrompts = [
     'In about one minute, describe the presenting concern and what the patient wants help with.',
@@ -101,6 +101,27 @@
       }]
     },
     {
+      caseId:'sp_depression_followup_001', title:'Dana — One week after discharge', reviewStatus:'pending',
+      task:'See Dana in clinic seven days after discharge: find out whether the plan held — the intake, her medicines, her safety plan and the questionnaire she filled out — and close with what happens next.',
+      doorNote:'Dana is in her 30s and was discharged a week ago after a six-day voluntary admission for depression. This is her seven-day psychiatry follow-up; she completed a check-in questionnaire in the waiting room.',
+      objectives:['Explain your student role and agree what today’s visit will cover.', 'Confirm the discharge plan with Dana — appointments, each medicine by name, and her safety plan — by asking rather than assuming.', 'Score the check-in questionnaire, ask about suicide directly whatever it shows, and summarize next steps she can correct.'],
+      chartCards:[
+        {id:'discharge-summary', title:'Discharge summary', source:'Authored discharge record', text:'Six-day voluntary admission for a major depressive episode with passive suicidal ideation; no suicide attempt. PHQ-9 at admission: 22. A safety plan was written with Dana before discharge, and Tom joined the means-safety conversation by phone.'},
+        {id:'discharge-medications', title:'Discharge medications', source:'Authored discharge record', text:'Sertraline once daily in the morning and trazodone at bedtime as needed for sleep, both started in hospital. Names and schedules only; no doses are supplied.'},
+        {id:'follow-up-plan', title:'Follow-up plan', source:'Authored discharge record', text:'Therapy intake at the community clinic three days after discharge; psychiatry follow-up seven days after discharge (today).'},
+        {id:'phq9-today', title:'PHQ-9 at check-in', source:'Authored clinic record', text:'Item scores in order, 1 to 9: 2 · 2 · 1 · 2 · 1 · 2 · 1 · 1 · 0. The item wording lives on the official form at phqscreeners.com.'},
+        {id:'chart-limits', title:'Information not supplied', source:'Simulation chart boundary', text:'No doses, examination findings, vital signs, laboratory results or collateral from Tom are supplied. Ask Dana what she knows and identify what you would need to verify with the team. Missing information is not a normal result.'}
+      ],
+      participants:[{
+        id:'dana', name:'Dana',
+        priorities:['Leave the visit looking well enough to keep her job interview next month.', 'Avoid anything that sounds like going back to the hospital, while wanting someone to ask plainly.'],
+        portrayal:['Keep Day 1’s short, polite style, a shade brighter and more careful: she is performing “better”.', 'Answer what is asked, specifically; a vague question gets a vague “fine”. A plain, unflinching question can be met with a plain answer.', 'Remember the learner’s explanations across the visit. A repair can help her continue without erasing her worry about being sent back or revealing gated facts automatically.'],
+        cues:{opening:'Dana sits forward with her bag on her lap and hands back the check-in tablet.', interrupted:'Dana stops mid-sentence and waits.', repair:'Dana pauses, then looks back toward you.', closing:'Dana glances toward the door, then back at you.'},
+        reflectionQuestion:'Where does your wording leave room for Dana to tell you something the form did not?',
+        reflectionPossibility:'One possibility to explore is whether Dana might hear an invitation to correct the form, or a hope that it is the whole story. Compare those possibilities with what she actually said; neither is an established feeling.'
+      }]
+    },
+    {
       caseId:'family_morgan_maya_001', title:'Morgan and Maya — A family visit',
       task:'Hear Morgan and Maya separately and together, make room for different priorities, and close with a realistic next step without requiring agreement or assigning a monitoring role.',
       doorNote:'Morgan, an inpatient in their 40s, and Maya, their adult daughter, have voluntarily accepted a family meeting after Morgan was medically stabilized following an alcohol-related fall. Morgan lives alone; Maya does not live with them.',
@@ -139,7 +160,7 @@
   records.forEach(function (profile) {
     profile.studentRole = studentRole;
     profile.handoffPrompts = handoffPrompts;
-    profile.reviewStatus = 'reviewed';
+    profile.reviewStatus = profile.reviewStatus || 'reviewed';
     profile.cueDisclosure = 'Authored observable behavior for this fictional encounter. A cue has no single required interpretation; explore its meaning with the patient.';
     registry[profile.caseId] = freeze(profile);
   });

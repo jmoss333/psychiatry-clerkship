@@ -39,7 +39,7 @@ test('Node selection uses the separately authored Morgan draft while the embedde
   assert.equal(selected.patient.persona.pronouns,'they/them');
   assert.equal(selected.voice,'Marin');assert.equal(selected.localDraft,true);
   assert.equal(selected.patient.facultyReview.status,'reviewed');
-  assert.equal(pack.cases.length,4);assert.equal(JSON.stringify(pack),before);
+  assert.equal(pack.cases.length,5);assert.equal(JSON.stringify(pack),before);
 });
 
 test('live selection maps only the three canonical cases to their own person, goal, context, and voice',()=>{

@@ -116,10 +116,45 @@ const RAY_LIMITS = {
   personalDetails: {sisterName:'unknown', jobTitle:'unknown', city:'unknown'},
 };
 
+// Dana one week after discharge (sp_depression_followup_001). Like Day 1's, these facts derive only
+// from the case's canonical response banks, and the hash in CASE_PROFILES binds them to that
+// snapshot. Gated disclosures (the cancelled intake, Tom's pills, the two nights) stay gated.
+const FOLLOWUP_FACTS = {
+  // greeting_agenda.open[0]
+  preference: 'Dana wants to hear that she is okay to start applying for jobs again; she has an interview next month.',
+  // open_invite.open[0], mood.open[0]
+  mood: 'Mornings are lighter than in the hospital and nights are heavier. Some days feel almost normal, and then they do not.',
+  // sleep.open[0]
+  sleep: 'She falls asleep, but she is still awake at four most nights.',
+  // energy.open[0]
+  energy: 'Her energy is better than in the hospital; a shower no longer takes the whole afternoon.',
+  // meds_medical, med_sertraline, med_trazodone, med_other, side_effects
+  medicines: 'She takes the sertraline started in hospital each morning, except last Saturday and Sunday, when it made her queasy. She never filled the trazodone because she did not want another bottle in the house. She started St. John\'s wort on Tuesday because the sertraline was not doing anything yet. Asked generally, she says only that she takes the two medicines from the hospital.',
+  // substance.open[0]
+  alcohol: 'She has a glass of wine some nights to get to sleep.',
+  // questionnaire_review.open[0]
+  questionnaire: 'She filled out the check-in questionnaire and says it is better than the one she did in the hospital.',
+  // plan_review.open[0], plan_contacts.open[0]
+  safetyPlan: 'Her safety plan is on her phone. She used it last night: she went downstairs, made tea and looked at the drawing her niece Ellie made until it passed. The person listed on it is her sister, whom she has not told about the job or the hospital and would not call at three in the morning.',
+  // firearms.open[0]
+  firearms: 'There are no guns in the house; Tom has never wanted one.',
+  // family_social.open[0], work_stressor.open[0]
+  home: 'Tom drove her and is waiting in the car; he has been attentive, almost too watchful. She saw Ellie on Sunday. There is a clinic nurse job with an interview next month.',
+};
+const FOLLOWUP_LIMITS = {
+  medicines: {doses:'unknown — this simulation lists no doses', pharmacy:'unknown', tomsMedicationName:'unknown', tomsMedicationDose:'unknown'},
+  appointments: {intakeClinicName:'unknown', intakeTime:'unknown', clinicianNames:'unknown'},
+  hospitalCourse: {admissionDate:'unknown', unitName:'unknown', inpatientClinicians:'unknown', relatedKnownFact:'She was discharged seven days ago after a six-day voluntary admission.'},
+  questionnaire: {itemWording:'not reproduced — the official form is at phqscreeners.com', relatedKnownFact:'She completed it on the clinic tablet at check-in.'},
+  personalDetails: {sisterName:'unknown', employerName:'unknown', city:'unknown'},
+};
+
 const CASE_PROFILES = {
   [DANA_CASE_ID]: {hash:FACT_SOURCE_HASH, localDraftHash:'51a5192004001874e7c24cac48238f4d23e8e04661b98983954aa3e40fb54859', facts:ORDINARY_FACTS, limits:INFORMATION_LIMITS, name:'Dana'},
   sp_mania_redirect_001: {hash:'9539e32a8bea93f3ff2a82fed637df1f98f836fdd845e4c1518ef24062da1b2e', facts:MARCUS_FACTS, limits:MARCUS_LIMITS, name:'Marcus'},
   sp_psychosis_paranoid_001: {hash:'2690e542e817396271f7f298ec125aaa0b0a5dd0aff1a25191ebb00de03f7aec', facts:RAY_FACTS, limits:RAY_LIMITS, name:'Ray'},
+  // name 'Dana' selects Day 1's conversation rules (her spoken style); the facts are the follow-up's.
+  sp_depression_followup_001: {hash:'e226634329a259e875532dc019a1426ffe96a9923a8f31fa7d04c1245a6a6747', facts:FOLLOWUP_FACTS, limits:FOLLOWUP_LIMITS, name:'Dana'},
 };
 
 const MORGAN = localCases.cases.find(item => item.id === 'sp_alcohol_ambivalence_001');
