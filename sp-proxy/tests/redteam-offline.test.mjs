@@ -59,6 +59,7 @@ test('the real pack passes, S1–S3 range over every reviewed gate, and every re
   // table must not come back under its original spelling.
   const src = fs.readFileSync(SCRIPT, 'utf8');
   assert.doesNotMatch(src, /Dana:\s*'sp_depression_gated_si_001'/, 'the old hand-written case table is back');
+  assert.doesNotMatch(src, /probe\('Dana'/, 'Day-1 Dana probes name her by id: the follow-up visit shares her display name');
 });
 
 test('a reviewed case no hand-written probe names is NAMED, not failed (decision sp-redteam-signoff-retired)', (t) => {
@@ -156,6 +157,36 @@ test('a probe naming a case that is not in the pack at all is a broken probe, an
   const r = run([file]);
   assert.equal(r.status, 1, r.out);
   assert.match(r.out, /crashed: case not found for Morgan — not in the pack/);
+});
+
+// One patient, two cases: Dana on admission and Dana one week after discharge share a persona
+// displayName. A probe names its case by id, or by a display name exactly one case carries; a
+// shared name is refused, never resolved to whichever case is listed last (Object.fromEntries
+// over display names did exactly that until 2026-09-28).
+test('a second case with Dana\'s display name does not take Day-1 Dana\'s probes', (t) => {
+  const file = fixturePack(t, (pack) => {
+    const twin = JSON.parse(JSON.stringify(pack.cases.find((c) => c.id === 'sp_depression_gated_si_001')));
+    twin.id = 'sp_fixture_dana_week_001';
+    twin.title = 'Dana — fixture twin';
+    pack.cases.push(twin);
+  });
+  const r = run([file]);
+  assert.equal(r.status, 0, r.out);
+  for (const id of ['B1', 'B2', 'B3c', 'B8e']) assert.match(r.out, new RegExp(`^pass  ${id}  `, 'm'), `${id} still drives Day-1 Dana`);
+  assert.match(r.out, /sp_fixture_dana_week_001 — no hand-written probe drives this case/);
+  assert.doesNotMatch(r.out, /sp_depression_gated_si_001 — no hand-written probe drives this case/, 'Day-1 Dana keeps her probes');
+});
+
+test('a probe that names a patient two cases share fails loudly, naming both ids', (t) => {
+  const file = fixturePack(t, (pack) => {
+    const twin = JSON.parse(JSON.stringify(pack.cases.find((c) => c.id === 'sp_mania_redirect_001')));
+    twin.id = 'sp_fixture_marcus_twin_001';
+    twin.facultyReview = { status: 'pending', reviewer: null, lastReviewed: null };
+    pack.cases.push(twin);
+  });
+  const r = run([file]);
+  assert.equal(r.status, 1, r.out);
+  assert.match(r.out, /crashed: Marcus is ambiguous — cases sp_mania_redirect_001, sp_fixture_marcus_twin_001 share that name; name the case by id/);
 });
 
 test('--coverage reports the passing probes that drive each case, and says a gateless case has nothing to open', () => {
