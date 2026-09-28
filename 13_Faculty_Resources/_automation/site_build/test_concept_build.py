@@ -2,6 +2,7 @@
 import ast
 import hashlib
 import json
+import re
 import subprocess
 import unittest
 from pathlib import Path
@@ -101,11 +102,65 @@ process.exitCode = run(['--root',root,'--receipt',path.join(root,'receipt.json')
         common.emit_service_worker(str(self.out))
         self.assertIn('"/tools/concepts.json"', (self.out / 'sw.js').read_text())
 
+    def test_review_restore_inventory_embeds_every_bank_id_and_replaces_inherited_site_data(self):
+        self.setup_tool()
+        first = [{'id': 'QB-one', 'retired': False}, {'id': 'QB-old', 'retired': True}]
+        second = [{'id': 'QB-two', 'retired': False}]
+        common.inject_review_qb_inventory(self.out, first)
+        common.inject_review_qb_inventory(self.out, second)
+        text = (self.out / 'tools/review.html').read_text()
+        match = re.findall(r'<script id="cw-review-qb-inventory" type="application/json">(.*?)</script>', text)
+        self.assertEqual(len(match), 1)
+        self.assertEqual(json.loads(match[0]), second)
+        self.assertNotIn('QB-one', text)
+        self.assertNotIn('QB-old', text)
+        with self.assertRaisesRegex(ValueError, 'duplicate'):
+            common.inject_review_qb_inventory(self.out, [{'id': 'x'}, {'id': 'x'}])
+
+    def test_review_source_digests_bind_exact_built_bytes_and_replace_inherited_site_data(self):
+        self.setup_tool()
+        sources = {
+            'articles': 'tools/quizzes.json',
+            'topics': 'topic_meta.json',
+            'family': 'family_systems_scenarios.json',
+            'communication': 'communication_cases.json',
+            'reasoning': 'reasoning_cases.json',
+        }
+        for key, relative in sources.items():
+            path = self.out / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(('ms3-' + key).encode('utf-8'))
+        first = common.inject_review_source_digests(self.out)
+        self.assertEqual(first, {
+            key: hashlib.sha256(('ms3-' + key).encode('utf-8')).hexdigest()
+            for key in sources
+        })
+        for key, relative in sources.items():
+            (self.out / relative).write_bytes(('resident-' + key).encode('utf-8'))
+        second = common.inject_review_source_digests(self.out)
+        text = (self.out / 'tools/review.html').read_text()
+        match = re.findall(r'<script id="cw-review-source-digests" type="application/json">(.*?)</script>', text)
+        self.assertEqual(len(match), 1)
+        self.assertEqual(json.loads(match[0]), second)
+        self.assertEqual(second, {
+            key: hashlib.sha256(('resident-' + key).encode('utf-8')).hexdigest()
+            for key in sources
+        })
+        self.assertNotIn(first['articles'], text)
+        (self.out / 'reasoning_cases.json').unlink()
+        with self.assertRaisesRegex(FileNotFoundError, 'reasoning_cases.json'):
+            common.inject_review_source_digests(self.out)
+
     def test_each_builder_projects_before_worker_and_daily_review_is_visible(self):
         for name, site in [('build_deploy.py', 'ms3'), ('resident_section.py', 'res')]:
             text = (HERE / name).read_text()
             self.assertIn('concept_cards.feed_bytes(Path(LIB), "' + site + '")', text)
             self.assertLess(text.index('common.inject_concept_digest('), text.index('common.emit_service_worker('))
+            self.assertLess(text.index('common.inject_review_qb_inventory('), text.index('common.emit_service_worker('))
+            self.assertLess(text.index('common.inject_review_qb_inventory('), text.index('common.inject_review_source_digests('))
+            self.assertLess(text.index('common.inject_review_source_digests('), text.index('common.emit_service_worker('))
+            self.assertLess(text.index('_tm_built'), text.index('common.inject_review_source_digests('))
+            self.assertIn('Path(OUT) / "question_bank.json"', text)
             tree = ast.parse(text)
             if site == 'ms3':
                 hidden = next(ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign)
