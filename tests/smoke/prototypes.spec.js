@@ -334,6 +334,46 @@ test.describe('catatonia observation · fictional, non-scoring preview', () => {
     }
   });
 
+  test('learner starting points open their suggested scene while keeping the full gallery', async ({ page }) => {
+    const starts = [
+      { audience: 'Medical students (MS3)', scene: 'A brief greeting' },
+      { audience: 'PGY-1 residents', scene: 'Across time' },
+      { audience: 'APPs', scene: 'Two witnesses' },
+    ];
+    await expect(page.getByRole('heading', { name: 'Choose a starting point' })).toBeVisible();
+    for (const { audience, scene } of starts) {
+      const card = page.locator('.entry-card').filter({ hasText: audience });
+      await card.getByRole('button', { name: `Start with ${scene}` }).click();
+      await expect(page.locator('#sceneTitle')).toHaveText(scene);
+      await expect(page.locator('#sceneTitle')).toBeFocused();
+      await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+      await expect(page.locator('[data-scene-select]')).toHaveCount(4);
+    }
+  });
+
+  test('a new starting point stops playback and clears the previous description', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-09-27T12:00:00Z') });
+    await page.getByLabel('The scripted scene states that no spoken reply occurs during the short pause after the greeting.').check();
+    await page.getByRole('button', { name: 'Check my description' }).click();
+    await page.getByRole('button', { name: 'Play scene' }).click();
+
+    await page.getByRole('button', { name: 'Start with Two witnesses' }).click();
+    await expect(page.locator('#sceneTitle')).toHaveText('Two witnesses');
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+    await expect(page.getByRole('button', { name: 'Play scene' })).toBeVisible();
+    await expect(page.locator('.choice input:checked')).toHaveCount(0);
+    await expect(page.locator('#feedback')).toBeHidden();
+    await page.clock.fastForward(5_000);
+    await expect(page.locator('#scene')).toHaveAttribute('data-frame', '0');
+  });
+
+  test('the three starting points fit a narrow screen', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await expect(page.locator('.entry-card')).toHaveCount(3);
+    await expect(page.getByRole('button', { name: 'Start with Two witnesses' })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  });
+
   test('each added scene separates evidence from assumptions', async ({ page }) => {
     const cases = [
       { id: 'across-time', evidence: ['seen', 'unknown'],

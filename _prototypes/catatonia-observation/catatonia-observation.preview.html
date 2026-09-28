@@ -35,6 +35,14 @@
     h1 { font-size: clamp(2.35rem, 5vw, 4.5rem); margin: 0 0 12px; max-width: 14ch; }
     .intro { max-width: 61ch; margin: 0; color: var(--muted); font-size: clamp(.96rem, 1.3vw, 1.08rem); }
     .badge { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; background: var(--coral-wash); border: 1px solid #e4b7a9; border-radius: 100px; color: #7f3929; padding: 9px 14px; font-weight: 750; font-size: .79rem; }
+    .entry-intro { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 10px; }
+    .entry-intro h2 { margin: 0; font-size: 1.45rem; }
+    .entry-intro p { margin: 0; color: var(--muted); font-size: .85rem; }
+    .entry-points { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0 0 26px; }
+    .entry-card { display: flex; flex-direction: column; align-items: start; min-width: 0; padding: 13px 16px; background: rgba(255,253,248,.7); border: 1px solid var(--line); border-left: 3px solid var(--teal); border-radius: 11px; }
+    .entry-card h3 { font-size: 1.02rem; margin: 0 0 5px; }
+    .entry-card p { color: var(--muted); font-size: .84rem; margin: 0 0 10px; }
+    .entry-start { margin-top: auto; padding: 0; border: 0; background: transparent; color: var(--teal); font-weight: 750; text-align: left; text-decoration: underline; text-underline-offset: .2em; }
     .picker-intro { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 10px; }
     .picker-intro h2 { margin: 0; font-size: 1.45rem; }
     .picker-intro p { margin: 0; color: var(--muted); font-size: .85rem; }
@@ -129,13 +137,14 @@
     .links a:hover { background: var(--teal-wash); }
     footer { color: var(--muted); font-size: .75rem; margin: 24px 0 8px; }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .hero { align-items: start; flex-direction: column; } .badge { order: -1; } .scene-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 600px) { .scene-picker { gap: 7px; } .scene-option { gap: 6px; padding: 7px; } .scene-option > svg { width: 27px; height: 27px; flex-basis: 27px; } .scene-option strong { font-size: .91rem; } .scene-option small { font-size: .65rem; } .scene-head, .caption, .controls { padding-left: 17px; padding-right: 17px; } .scene-wrap { padding: 0 9px; } .scene { min-height: 0; aspect-ratio: 16 / 10; } .timeline { padding-left: 17px; padding-right: 17px; grid-template-columns: repeat(2, 1fr); } .below { grid-template-columns: 1fr; } .controls small { margin-left: 0; } .practice-head, .practice-body { padding-left: 18px; padding-right: 18px; } }
+    @media (max-width: 600px) { .entry-points { grid-template-columns: 1fr; gap: 8px; } .scene-picker { gap: 7px; } .scene-option { gap: 6px; padding: 7px; } .scene-option > svg { width: 27px; height: 27px; flex-basis: 27px; } .scene-option strong { font-size: .91rem; } .scene-option small { font-size: .65rem; } .scene-head, .caption, .controls { padding-left: 17px; padding-right: 17px; } .scene-wrap { padding: 0 9px; } .scene { min-height: 0; aspect-ratio: 16 / 10; } .timeline { padding-left: 17px; padding-right: 17px; grid-template-columns: repeat(2, 1fr); } .below { grid-template-columns: 1fr; } .controls small { margin-left: 0; } .practice-head, .practice-body { padding-left: 18px; padding-right: 18px; } }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
     @media (prefers-color-scheme: dark) {
       :root { --ink: #eef3ed; --muted: #b9c9bf; --paper: #172a27; --card: #213631; --line: #49625a; --teal: #a0dfc7; --teal-wash: #294f43; --coral: #f2ab91; --coral-wash: #513a32; --shadow: 0 20px 55px rgba(0, 0, 0, .23); }
       body { background: radial-gradient(circle at 5% 4%, #294a3f, transparent 38%), var(--paper); }
       .scene { background: #25463e; border-color: #4e6b61; }
       .scene-label, .info { background: #263d36; }
+      .entry-card { background: #253d36; }
       .scene-option { background: #253d36; }
       .step { background: #284039; }
       .choice span { background: #253d36; }
@@ -158,6 +167,30 @@
     </div>
     <span class="badge">PREVIEW · Unattested · Not published</span>
   </div>
+
+  <section aria-labelledby="entryTitle">
+    <div class="entry-intro">
+      <h2 id="entryTitle">Choose a starting point</h2>
+      <p>All four scenes remain available whichever you choose.</p>
+    </div>
+    <div class="entry-points">
+      <article class="entry-card">
+        <h3>Medical students (MS3)</h3>
+        <p>What can you see, what does the narration state, and what remains unknown?</p>
+        <button class="entry-start" type="button" data-start-scene="greeting">Start with A brief greeting</button>
+      </article>
+      <article class="entry-card">
+        <h3>PGY-1 residents</h3>
+        <p>Describe each check-in without filling in the interval.</p>
+        <button class="entry-start" type="button" data-start-scene="across-time">Start with Across time</button>
+      </article>
+      <article class="entry-card">
+        <h3>APPs</h3>
+        <p>Separate the nurse’s earlier report from the bedside observation now.</p>
+        <button class="entry-start" type="button" data-start-scene="two-witnesses">Start with Two witnesses</button>
+      </article>
+    </div>
+  </section>
 
   <div class="picker-intro">
     <h2 id="scenePickerTitle">Explore four scenes</h2>
@@ -185,7 +218,7 @@
 
   <div class="grid">
     <section class="scene-card" aria-labelledby="sceneTitle">
-      <div class="scene-head"><div><p class="scene-count" id="sceneCount">Scene 1 of 4</p><h2 id="sceneTitle">A brief greeting</h2></div><p>Illustration · narrated in text</p></div>
+      <div class="scene-head"><div><p class="scene-count" id="sceneCount">Scene 1 of 4</p><h2 id="sceneTitle" tabindex="-1">A brief greeting</h2></div><p>Illustration · narrated in text</p></div>
       <div class="scene-wrap">
         <div class="scene" id="scene" data-scene="greeting" data-frame="0" role="img" aria-label="Schematic inpatient room: a person sits in a chair, looking toward their lap, while a clinician approaches.">
           <span class="scene-label">Fictional scene</span>
@@ -513,6 +546,7 @@
     const caption = document.getElementById('caption');
     const steps = [...document.querySelectorAll('[data-step]')];
     const sceneButtons = [...document.querySelectorAll('[data-scene-select]')];
+    const entryButtons = [...document.querySelectorAll('[data-start-scene]')];
     const play = document.getElementById('play');
     const feedback = document.getElementById('feedback');
     const choices = document.getElementById('choices');
@@ -607,6 +641,10 @@
       show(0);
     }
     sceneButtons.forEach((button) => button.addEventListener('click', () => selectScene(button.dataset.sceneSelect)));
+    entryButtons.forEach((button) => button.addEventListener('click', () => {
+      selectScene(button.dataset.startScene);
+      sceneTitle.focus();
+    }));
     steps.forEach((step) => step.addEventListener('click', () => {
       stop();
       show(Number(step.dataset.step));

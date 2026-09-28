@@ -6,8 +6,10 @@ separate check-ins, gesture and writing after a spoken pause, and the difference
 between a nurse's earlier report and a current bedside observation. Each scene
 has four user-controlled moments and a description exercise. Selecting another
 scene stops playback and clears the prior answers.
-The gallery shows all four illustrations at once; choosing a card opens its
-four moments in the shared scene player. The gallery reuses the original SVG
+Three starting cards suggest a first scene for MS3 students, PGY-1 residents,
+and APPs. Each opens the same shared scene player at moment one; all four
+scenes remain available to everyone, and switching clears earlier choices.
+The gallery shows all four illustrations at once and reuses the original SVG
 artwork without extra image files.
 
 This is not a BFCRS implementation, examination video, diagnostic aid, or clinical
@@ -16,8 +18,9 @@ outbound links point to URMC's official training and calculator. No scene suppli
 BFCRS item text, anchors, or a score.
 
 This prototype is **unattested and unshipped**. The faculty owner accepted the four
-scene visuals and exact wording, and named medical students, PGY-1 residents, and
-APPs as intended learners. The current student site is MS3; PGY-1 and APP are
+scene visuals and exact scene wording, and approved the proposed starter-card
+layout and prompts for this private prototype. The new starter copy still needs
+exact-revision faculty wording review before learner release. The current student site is MS3; PGY-1 and APP are
 separate roles within the resident site. Do not add it to `site_manifest.json`,
 `site_extras.py`, learner navigation, or either build before gallery behavior,
 accessibility, role-specific delivery, and rights review and an explicit
