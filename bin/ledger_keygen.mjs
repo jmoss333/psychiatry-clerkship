@@ -55,25 +55,44 @@ function netlify(args, site) {
   });
 }
 
-/** `netlify api <method>`: the parsed response, `notFound`, or a failure. Never throws. */
+// A CLI that cannot be spawned. The case the owner hit first (2026-09-28): a non-interactive shell
+// never reads ~/.zshrc, the one place ~/.npm-global/bin joins PATH, so `node` resolved and
+// `netlify` did not.
+const MISSING_CLI = 'the netlify CLI was not found on PATH. A non-interactive shell does not read '
+  + '~/.zshrc, so a CLI added to PATH there is invisible to it; put the directory holding `netlify` '
+  + 'on PATH for this command';
+
+/**
+ * `netlify api <method>`: the parsed response, or `failed` with `why` — the CLI's own first line,
+ * or MISSING_CLI — and `notFound`. Never throws. Only ever called with requests that carry no
+ * secret, so quoting the CLI is safe.
+ */
 function netlifyApi(method, data, site) {
   const result = netlify(['api', method, '--data', JSON.stringify(data)], site);
+  if (result.error?.code === 'ENOENT') return { failed: true, why: MISSING_CLI };
   if (result.status !== 0) {
     const said = `${result.stderr || ''}${result.stdout || ''}`;
-    return { failed: true, notFound: /not found/i.test(said), missingCli: result.error?.code === 'ENOENT' };
+    const first = said.split('\n').map(line => line.replace(/^[\s›]+/, '').trim()).find(Boolean);
+    return {
+      failed: true,
+      notFound: /not found/i.test(said),
+      why: first ? first.slice(0, 200) : `netlify exited ${result.status ?? `on ${result.signal}`}`,
+    };
   }
   try {
     return { json: JSON.parse(result.stdout) };
   } catch {
-    return { failed: true };
+    return { failed: true, why: 'the netlify CLI printed something other than JSON' };
   }
 }
 
-/** The site's name and account, or null when the CLI cannot read it. */
+/** The site's name and account, or `{ why }` when the CLI cannot read it. */
 function readSite(site) {
   const response = netlifyApi('getSite', { site_id: site }, site);
   const accountId = response.json?.account_id;
-  if (typeof accountId !== 'string' || !accountId) return null;
+  if (typeof accountId !== 'string' || !accountId) {
+    return { why: response.why || 'its record has no account id' };
+  }
   return { name: String(response.json.name || site), accountId };
 }
 
@@ -119,9 +138,10 @@ function main(argv) {
   // Read the target BEFORE a key exists: a CLI that cannot see the site would otherwise be
   // handed a key it will silently drop.
   const target = readSite(site);
-  if (!target) {
-    console.error(`Could not read Netlify site ${site}, so no key was made and nothing changed.`);
-    console.error('Is the Netlify CLI installed, on PATH, and logged in to the account that owns the console? (`netlify status`)');
+  if (!target.accountId) {
+    console.error(`Could not read Netlify site ${site}, so no key was made and nothing changed:`);
+    console.error(`  ${target.why}.`);
+    console.error('The CLI must be installed, on PATH, and logged in to the account that owns the console (`netlify status`).');
     return 1;
   }
   let before;

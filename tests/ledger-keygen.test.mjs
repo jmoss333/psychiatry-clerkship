@@ -31,9 +31,10 @@ const COPIED = [
 ];
 
 // A stand-in for netlify-cli 26, driven by STUB_MODE:
-//   cli26  — honours NETLIFY_SITE_ID; `--site` alone is ignored (exit 0, silent, nothing done)
-//   noop   — `env:set` exits 0 and writes nothing, even with NETLIFY_SITE_ID
-//   widen  — `env:set` lands, but in the `all` context whatever was asked for
+//   cli26     — honours NETLIFY_SITE_ID; `--site` alone is ignored (exit 0, silent, nothing done)
+//   noop      — `env:set` exits 0 and writes nothing, even with NETLIFY_SITE_ID
+//   widen     — `env:set` lands, but in the `all` context whatever was asked for
+//   loggedout — every `api` call fails the way netlify-cli does when no one is logged in
 const STUB = String.raw`'use strict';
 const fs = require('node:fs');
 const argv = process.argv.slice(2);
@@ -60,6 +61,11 @@ function data() {
 }
 function notFound() {
   process.stderr.write(' ›   JSONHTTPError: Not Found\n');
+  process.exit(1);
+}
+
+if (argv[0] === 'api' && mode === 'loggedout') {
+  process.stderr.write(' ›   Error: Not logged in. Please log in to run this command.\n');
   process.exit(1);
 }
 
@@ -130,7 +136,9 @@ function activeKeysDoc() {
   };
 }
 
-function fixture(t, { mode = 'cli26', sites = consoleSite(), keys = { version: 1, keys: [] } } = {}) {
+function fixture(t, {
+  mode = 'cli26', sites = consoleSite(), keys = { version: 1, keys: [] }, cliOnPath = true,
+} = {}) {
   const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'ledger-keygen-')));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   for (const rel of COPIED) {
@@ -152,7 +160,11 @@ function fixture(t, { mode = 'cli26', sites = consoleSite(), keys = { version: 1
   const stateFile = path.join(dir, 'netlify-state.json');
   fs.writeFileSync(stateFile, JSON.stringify({ clock: 0, calls: [], sites }));
 
-  const env = { ...process.env, PATH: `${bin}${path.delimiter}${process.env.PATH}` };
+  // cliOnPath: false is the owner's 2026-09-28 run: a non-interactive shell that never read
+  // ~/.zshrc, so no `netlify` anywhere on PATH. The script itself runs by absolute node path.
+  const emptyBin = path.join(dir, 'emptybin');
+  fs.mkdirSync(emptyBin);
+  const env = { ...process.env, PATH: cliOnPath ? `${bin}${path.delimiter}${process.env.PATH}` : emptyBin };
   delete env.NETLIFY_SITE_ID;
   Object.assign(env, { STUB_STATE: stateFile, STUB_MODE: mode });
   return {
@@ -246,6 +258,24 @@ test('a site the CLI cannot read stops the run before any key exists', t => {
   // A refusal the owner can act on, not a crash that happens to exit 1 before the write.
   assert.match(r.stderr, /Could not read Netlify site .*no key was made/);
   assert.doesNotMatch(r.stderr, /TypeError|at main \(/);
+});
+
+test('a netlify CLI missing from PATH is named as the cause, not blamed on the site', t => {
+  const f = fixture(t, { cliOnPath: false });
+  const before = f.keysText();
+  const r = f.run('--install');
+  assert.equal(r.status, 1);
+  assert.equal(f.keysText(), before);
+  assert.match(r.stderr, /netlify CLI was not found on PATH/);
+  assert.match(r.stderr, /~\/\.zshrc|interactive/, 'says why a working CLI can be invisible here');
+});
+
+test('a CLI that fails is quoted, so a logged-out CLI reads as logged out', t => {
+  const f = fixture(t, { mode: 'loggedout' });
+  const r = f.run('--install');
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /Not logged in/);
+  assert.equal(f.state().calls.some(call => call.argv[0] === 'env:set'), false);
 });
 
 test('without --install it refuses, and there is still no mode that prints a key', t => {
