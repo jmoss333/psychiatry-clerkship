@@ -17,6 +17,7 @@ import {
   TRAIN_RECEIPT_STEP,
   trainWeek,
   trainWeekLine,
+  pushedDuring,
   watchVerdict,
   REQUIRED_CHECKS,
   TRAIN_SLOTS_UTC,
@@ -172,6 +173,7 @@ const CONFIG = {
 function fixtureFetch({
   netlifyDown = false, compareDown = false, checksDown = false, served = {},
   sitesDown = false, trainConclusion = 'failure', manifest = null, trainRuns = null, jobs = {},
+  pushes = [], activityDown = false,
 } = {}) {
   const calls = [];
   const fetchImpl = async (url) => {
@@ -199,6 +201,10 @@ function fixtureFetch({
           { sha: MAIN, parents: [{ sha: SIGNOFF }], commit: { message: 'Phone dock label (#846)', committer: { date: '2026-09-27T12:47:46Z' } } },
         ],
       });
+    }
+    if (url.includes('/activity?')) {
+      if (activityDown) return new Response('', { status: 403 });
+      return Response.json(pushes.map(timestamp => ({ activity_type: 'push', ref: 'refs/heads/release', timestamp })));
     }
     const jobsMatch = url.match(/\/actions\/runs\/(\d+)\/jobs$/);
     if (jobsMatch) {
@@ -415,7 +421,8 @@ test('the watch workflow runs the watch after the morning publish and is on the 
 // ── Every train run in the lookback (Codex P1 on #864) ─────────────────────────────────
 
 const run = (at, conclusion, extra = {}) => ({
-  id: Date.parse(at) / 1000, run_started_at: at, event: 'schedule', status: 'completed', conclusion,
+  id: Date.parse(at) / 1000, run_started_at: at, updated_at: new Date(Date.parse(at) + 20_000).toISOString(),
+  event: 'schedule', status: 'completed', conclusion,
   html_url: `https://github.com/jmoss333/psychiatry-clerkship/actions/runs/${Date.parse(at)}`, ...extra,
 });
 
@@ -482,12 +489,29 @@ test('the two failure steps are the release-train workflow\'s own step names', (
   assert.match(workflow, new RegExp(`- name: ${TRAIN_RECEIPT_STEP}\\n`));
 });
 
-test('a failed run is classified by the step it stopped at', () => {
+test('a failed run is classified by the step it stopped at, and a promote failure by whether release moved', () => {
   const job = (...steps) => [{ steps: steps.map(([name, conclusion]) => ({ name, conclusion })) }];
-  assert.equal(failedStage(job(['Set up job', 'success'], [TRAIN_PROMOTE_STEP, 'failure'])), 'before');
+  const promote = job(['Set up job', 'success'], [TRAIN_PROMOTE_STEP, 'failure']);
+  // The promote step pushes release and THEN writes its summary and outputs, so its failure
+  // is "before" only when no push happened during the run (Codex P2 on #867).
+  assert.equal(failedStage(promote, false), 'before');
+  assert.equal(failedStage(promote, true), 'after');
+  assert.equal(failedStage(promote, null), 'unknown');
+  assert.equal(failedStage(promote), 'unknown');
   assert.equal(failedStage(job([TRAIN_PROMOTE_STEP, 'success'], [TRAIN_RECEIPT_STEP, 'failure'])), 'after');
   assert.equal(failedStage(job(['actions/checkout', 'failure'])), 'unknown');
   assert.equal(failedStage(undefined), 'unknown');
+});
+
+test('pushedDuring reads the release push record, and says null rather than guess', () => {
+  const runAt = { at: '2026-09-27T21:17:39Z', endedAt: '2026-09-27T21:18:01Z' };
+  const t = iso => Date.parse(iso);
+  assert.equal(pushedDuring({ times: [t('2026-09-27T21:17:57Z')], complete: true }, runAt), true);
+  assert.equal(pushedDuring({ times: [t('2026-09-27T13:47:12Z')], complete: true }, runAt), false);
+  assert.equal(pushedDuring(null, runAt), null);
+  assert.equal(pushedDuring({ times: [], complete: true }, { at: runAt.at, endedAt: null }), null);
+  // A full listing that stops after the run began cannot prove there was no push.
+  assert.equal(pushedDuring({ times: [t('2026-09-28T09:00:00Z')], complete: false }, runAt), null);
 });
 
 test('the week counts runs by outcome, says "at least" when cut short, and names a hold pattern', () => {
@@ -502,7 +526,7 @@ test('the week counts runs by outcome, says "at least" when cut short, and names
   const week = trainWeek(runs, now, { 6: 'before', 12: 'before', 30: 'after' });
   assert.deepEqual(
     { ...week },
-    { days: 7, complete: true, scheduled: 7, publishNow: 1, ok: 3, before: 2, after: 1, unknown: 1, running: 1 },
+    { days: 7, complete: true, scheduled: 7, publishNow: 1, ok: 3, before: 2, after: 1, unknown: 1, running: 1, beforeScheduled: 2 },
   );
   assert.equal(trainWeekLine(week),
     'Release train, last 7 days: 7 scheduled runs and 1 publish-now — 3 published or had nothing new, '
@@ -513,8 +537,18 @@ test('the week counts runs by outcome, says "at least" when cut short, and names
   assert.match(trainWeekLine(cut), /^Release train, last 7 days: At least 3 scheduled runs/);
   const held = trainWeek([r(1, 'failure'), r(9, 'failure'), r(17, 'failure'), r(25, 'success'), r(33, 'success'), r(200, 'success')], now,
     { 1: 'before', 9: 'before', 17: 'before' });
-  assert.match(trainWeekLine(held), /are a pattern this week; .*release_train\.py may need retuning/);
+  assert.match(trainWeekLine(held), /Scheduled runs stopping before publishing are a pattern this week; .*release_train\.py may need retuning/);
   assert.doesNotMatch(trainWeekLine(week), /pattern/);
+  // Publish-now is never held by cost: three failed presses beside nine green scheduled runs
+  // are no evidence about the budget (Codex P2 on #867).
+  const pressed = trainWeek([
+    ...[1, 2, 3].map(h => r(h, 'failure', { event: 'workflow_dispatch' })),
+    ...[10, 18, 26, 34, 42, 50, 58, 66, 74].map(h => r(h, 'success')),
+    r(24 * 8, 'success'),
+  ], now, { 1: 'before', 2: 'before', 3: 'before' });
+  assert.equal(pressed.before, 3);
+  assert.equal(pressed.beforeScheduled, 0);
+  assert.doesNotMatch(trainWeekLine(pressed), /pattern/);
 });
 
 test('the loader reads each failed run\'s steps for the week; an unreadable one is unclassified, never a gap', async () => {
@@ -531,11 +565,23 @@ test('the loader reads each failed run\'s steps for the week; an unreadable one 
     [Date.parse('2026-09-27T09:21:00Z') / 1000]: TRAIN_RECEIPT_STEP,
     [Date.parse('2026-09-26T09:21:00Z') / 1000]: 'down',
   };
-  const fetchImpl = fixtureFetch({ trainRuns, jobs }).fetchImpl;
+  // release was pushed during the 21:17 run only: the 15:18 promote failure published nothing.
+  const pushes = ['2026-09-27T21:17:50Z'];
+  const fetchImpl = fixtureFetch({ trainRuns, jobs, pushes }).fetchImpl;
   const status = await loadReleaseStatus(fetchImpl, 's', { now, readSite: servedRevisionReader(fetchImpl) });
   assert.deepEqual(
     { ...status.train.week },
-    { days: 7, complete: true, scheduled: 4, publishNow: 0, ok: 1, before: 1, after: 1, unknown: 1, running: 0 },
+    { days: 7, complete: true, scheduled: 4, publishNow: 0, ok: 1, before: 1, after: 1, unknown: 1, running: 0, beforeScheduled: 1 },
   );
   assert.ok(!status.gaps.some(gap => gap.includes('jobs')));
+  // A promote failure DURING which release was pushed published: it is "after", not a hold.
+  const published = fixtureFetch({ trainRuns, jobs, pushes: ['2026-09-27T15:18:10Z'] }).fetchImpl;
+  const moved = await loadReleaseStatus(published, 's', { now, readSite: servedRevisionReader(published) });
+  assert.equal(moved.train.week.before, 0);
+  assert.equal(moved.train.week.after, 2);
+  // No push record: a promote failure cannot be called a hold, so it is unclassified.
+  const blind = fixtureFetch({ trainRuns, jobs, activityDown: true }).fetchImpl;
+  const unread = await loadReleaseStatus(blind, 's', { now, readSite: servedRevisionReader(blind) });
+  assert.equal(unread.train.week.before, 0);
+  assert.equal(unread.train.week.unknown, 2);
 });

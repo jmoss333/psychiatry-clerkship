@@ -4,6 +4,7 @@
 import {
   checksVerdict,
   failedStage,
+  pushedDuring,
   failedTrainRuns,
   TRAIN_WEEK_DAYS,
   trainWeek,
@@ -26,6 +27,9 @@ const COMPARE_MAX_PAGES = 5;
 const TRAIN_RUNS_PAGE = 50;
 // Failed runs whose failing step is read for the weekly line (one request each).
 const STAGE_LOOKUPS = 10;
+// Pushes to `release` read per call: a week of slots and presses is well under this.
+const PUSH_PAGE = 100;
+const RELEASE_BRANCH = 'release';
 const SERVED_REVISION_PATH = '/tool-governance.json';
 const SERVED_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -176,6 +180,7 @@ export async function loadReleaseStatus(fetchImpl, token, {
     const runs = runsResult.value.workflow_runs.map(run => ({
       id: run.id,
       at: run.run_started_at || run.created_at,
+      endedAt: run.status === 'completed' ? run.updated_at : null,
       event: run.event,
       status: run.status,
       conclusion: run.conclusion,
@@ -196,10 +201,24 @@ export async function loadReleaseStatus(fetchImpl, token, {
     const failedThisWeek = runs.filter(run => Date.parse(run.at) >= weekSince && run.status === 'completed'
       && run.conclusion && !['success', 'skipped', 'neutral'].includes(run.conclusion) && Number.isSafeInteger(run.id))
       .slice(0, STAGE_LOOKUPS);
+    // Pushes to `release` this week, to tell a promote-step failure that published from one
+    // that did not. Unreadable → null, and such runs stay unclassified.
+    let pushes = null;
+    if (failedThisWeek.length) {
+      try {
+        const activity = await github(`/activity?ref=refs%2Fheads%2F${RELEASE_BRANCH}&activity_type=push&per_page=${PUSH_PAGE}`);
+        if (Array.isArray(activity)) {
+          pushes = {
+            times: activity.map(item => Date.parse(item?.timestamp)).filter(Number.isFinite),
+            complete: activity.length < PUSH_PAGE,
+          };
+        }
+      } catch { /* pushes stays null */ }
+    }
     const stages = Object.fromEntries(await Promise.all(failedThisWeek.map(async run => {
       try {
         const body = await github(`/actions/runs/${run.id}/jobs`);
-        return [run.id, failedStage(body?.jobs)];
+        return [run.id, failedStage(body?.jobs, pushedDuring(pushes, run))];
       } catch {
         return [run.id, 'unknown'];
       }

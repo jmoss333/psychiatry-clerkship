@@ -51,17 +51,33 @@ export const TRAIN_PROMOTE_STEP = 'Promote the newest green main commit to relea
 export const TRAIN_RECEIPT_STEP = 'Request the production release receipt';
 
 /**
- * Where a failed train run stopped, from its jobs listing: `before` publishing (the promote
- * step: held by the spend tripwire, refused, or could not check), `after` publishing (`release`
- * was pushed, then the receipt request failed), or `unknown`.
+ * Whether `release` was pushed while a run was running, from the repository's push activity
+ * on the branch: true, false, or null when that cannot be told (no activity listing, a run
+ * with no end time, or a run older than the oldest push a full listing reached).
  */
-export function failedStage(jobs) {
+export function pushedDuring(pushes, run) {
+  if (!pushes || !Array.isArray(pushes.times)) return null;
+  const start = Date.parse(run?.at);
+  const end = Date.parse(run?.endedAt);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  if (!pushes.complete && pushes.times.length && start < Math.min(...pushes.times)) return null;
+  return pushes.times.some(t => t >= start && t <= end + 60_000);
+}
+
+/**
+ * Where a failed train run stopped. The receipt step runs only after `release` was pushed,
+ * so a failure there is `after` publishing. The promote step pushes `release` and then writes
+ * its summary and outputs, so its failure alone does not prove nothing was published (Codex
+ * P2 on #867): it is `before` only when no push to `release` happened during the run, `after`
+ * when one did, and `unknown` when the push record could not be read.
+ */
+export function failedStage(jobs, pushed = null) {
   const failed = (Array.isArray(jobs) ? jobs : [])
     .flatMap(job => (Array.isArray(job?.steps) ? job.steps : []))
     .filter(step => step?.conclusion === 'failure')
     .map(step => String(step.name || ''));
-  if (failed.includes(TRAIN_PROMOTE_STEP)) return 'before';
   if (failed.includes(TRAIN_RECEIPT_STEP)) return 'after';
+  if (failed.includes(TRAIN_PROMOTE_STEP)) return pushed === true ? 'after' : pushed === false ? 'before' : 'unknown';
   return 'unknown';
 }
 
@@ -78,13 +94,19 @@ export function trainWeek(runs, nowMs, stages = {}) {
   const week = {
     days: TRAIN_WEEK_DAYS, complete: inWindow.length < list.length,
     scheduled: 0, publishNow: 0, ok: 0, before: 0, after: 0, unknown: 0, running: 0,
+    // Scheduled runs only: publish-now is never held by cost, so it is no evidence about the budget.
+    beforeScheduled: 0,
   };
   for (const run of inWindow) {
     if (run.event === 'workflow_dispatch') week.publishNow += 1;
     else week.scheduled += 1;
     if (run.status !== 'completed' || !run.conclusion) week.running += 1;
     else if (RUN_OK.has(run.conclusion)) week.ok += 1;
-    else week[['before', 'after'].includes(stages[run.id]) ? stages[run.id] : 'unknown'] += 1;
+    else {
+      const stage = ['before', 'after'].includes(stages[run.id]) ? stages[run.id] : 'unknown';
+      week[stage] += 1;
+      if (stage === 'before' && run.event !== 'workflow_dispatch') week.beforeScheduled += 1;
+    }
   }
   return week;
 }
@@ -106,8 +128,10 @@ export function trainWeekLine(week) {
     week.running && `${week.running} still running`,
   ].filter(Boolean);
   let line = `Release train, last ${week.days} days: ${lead}${total ? ` — ${parts.join(', ')}` : ''}.`;
-  if (week.before >= 3 && week.before * 3 >= week.scheduled) {
-    line += ' Stops before publishing are a pattern this week; if the run logs say "HELD by the spend tripwire", the budget in release_train.py may need retuning.';
+  // Scheduled runs over scheduled runs (Codex P2 on #867): a failed publish-now press is not
+  // a hold, since the spend tripwire never holds publish-now.
+  if (week.beforeScheduled >= 3 && week.beforeScheduled * 3 >= week.scheduled) {
+    line += ' Scheduled runs stopping before publishing are a pattern this week; if the run logs say "HELD by the spend tripwire", the budget in release_train.py may need retuning.';
   }
   return line;
 }
