@@ -172,14 +172,14 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Society of Addiction Medicine · 2020",
-     "sourceId": "asam-alcohol-withdrawal-2020",
-     "key": "A"
-    },
-    {
      "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
      "c": true,
      "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "Brodsky et al. · 2025 · Am J Psychiatry",
+     "sourceId": "brodsky-2025",
      "key": "B"
     },
     {
@@ -188,8 +188,8 @@
      "key": "C"
     },
     {
-     "t": "March et al. · 2004 · JAMA",
-     "sourceId": "march-2004-tads",
+     "t": "Ferguson et al. · 2026 · Crisis",
+     "sourceId": "ferguson-2026",
      "key": "D"
     }
    ],
@@ -223,13 +223,13 @@
      "key": "B"
     },
     {
-     "t": "Rush et al. · 2006 · American Journal of Psychiatry",
-     "sourceId": "rush-2006-stard",
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
      "key": "C"
     },
     {
-     "t": "Uphoff et al. · 2020 · Cochrane Database Syst Rev",
-     "sourceId": "uphoff-2020-behavioural-activation",
+     "t": "Kleiman et al. · 2026 · JAMA Psychiatry",
+     "sourceId": "kleiman-2026",
      "key": "D"
     }
    ],
@@ -252,8 +252,8 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Aoki et al. · 2022 · Cochrane Database Syst Rev",
-     "sourceId": "aoki-2022-cochrane-sdm",
+     "t": "Brown et al. · 1972 · The British Journal of Psychiatry",
+     "sourceId": "brown-1972-expressed-emotion",
      "key": "A"
     },
     {
@@ -303,8 +303,8 @@
      "key": "B"
     },
     {
-     "t": "National Institute for Health and Care Excellence · 2023",
-     "sourceId": "nice-delirium-cg103",
+     "t": "Links et al. · 2025 · Am J Psychother",
+     "sourceId": "links-ross-2025",
      "key": "C"
     },
     {
@@ -342,8 +342,8 @@
      "key": "B"
     },
     {
-     "t": "Modini et al. · 2026 · Australas Psychiatry",
-     "sourceId": "modini-large-2026",
+     "t": "Cohen-Chazani et al. · 2022 · Psychiatry",
+     "sourceId": "cohen-chazani-2022",
      "key": "C"
     },
     {
@@ -532,13 +532,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Yatham et al. · 2018 · Bipolar Disorders",
-     "sourceId": "canmat-isbd-bipolar-2018",
+     "t": "Soler et al. · 2022 · Acta Psychiatr Scand",
+     "sourceId": "soler-2022",
      "key": "A"
     },
     {
-     "t": "U.S. Preventive Services Task Force · 2026",
-     "sourceId": "uspstf-mental-health",
+     "t": "SPRAVATO REMS · 2026",
+     "sourceId": "spravato-rems",
      "key": "B"
     },
     {
@@ -572,13 +572,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Cuijpers et al. · 2026 · Clin Psychol Rev",
-     "sourceId": "cuijpers-2026",
+     "t": "Links et al. · 2025 · Am J Psychother",
+     "sourceId": "links-ross-2025",
      "key": "A"
     },
     {
-     "t": "Man et al. · 2023 · Clin Psychol Psychother",
-     "sourceId": "man-2023",
+     "t": "March et al. · 2004 · JAMA",
+     "sourceId": "march-2004-tads",
      "key": "B"
     },
     {

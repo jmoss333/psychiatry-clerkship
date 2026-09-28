@@ -741,6 +741,269 @@
         "reviewer": "",
         "lastReviewed": ""
       }
+    },
+    {
+      "id": "family_hallway_confidentiality_001",
+      "title": "Respond to a Frustrated Family Member Within Your Role",
+      "topic": "Family and confidentiality",
+      "setting": "Unit hallway",
+      "learnerGoal": "Acknowledge a family member's distress, receive what she knows, and stay inside the patient's consent and your student role.",
+      "prompt": "The patient's sister stops you: \"Nobody tells us anything. Is he even taking his medication?\" He has asked the team not to share information with family. What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 30,
+        "stance": "Lead with her worry, offer to listen, be honest about what you cannot share, and connect her to the team.",
+        "mustInclude": [
+          "Respond to her worry and frustration before anything else",
+          "Offer to hear what she has noticed; listening discloses nothing",
+          "Say plainly that you cannot share details without his permission, and connect her with the treating team"
+        ],
+        "avoid": [
+          "Confirming or denying any detail of his care, or using 'confidentiality' to end the conversation without acknowledging her"
+        ],
+        "starter": "Start with what she is feeling, then say what you can do."
+      },
+      "choices": [
+        {
+          "id": "a",
+          "text": "He's been refusing his evening medication, but please don't tell him I told you.",
+          "quality": "harmful",
+          "feedback": "This discloses protected information against his stated wishes and asks her to keep a secret from him. It breaches confidentiality and damages trust on both sides."
+        },
+        {
+          "id": "b",
+          "text": "I'm sorry, that's confidential.",
+          "quality": "missed",
+          "feedback": "Accurate, but it uses confidentiality to end the conversation. Her distress goes unacknowledged, and you lose information she may have about his safety."
+        },
+        {
+          "id": "c",
+          "text": "It sounds exhausting to feel shut out when you're this worried. I can't share details about anyone's care without their permission, but I can listen. What have you been noticing? And I'll make sure the team knows you want to talk with them.",
+          "quality": "best",
+          "feedback": "Best choice. It names her distress, takes in her information (listening discloses nothing), holds the limit, and routes her to the team. Retry: she says she is his legal guardian. Who verifies that?"
+        },
+        {
+          "id": "d",
+          "text": "I'm just a medical student, so I really can't help with that.",
+          "quality": "partial",
+          "feedback": "Honest about your role, but it closes the door. Listening and connecting her to the team are within your role."
+        }
+      ],
+      "skillTags": [
+        "family",
+        "confidentiality",
+        "de-escalation",
+        "collateral"
+      ],
+      "linkedPages": [
+        "collateral_workflow.md",
+        "exp_family.md",
+        "family_playbook.md"
+      ],
+      "evidenceIds": [
+        "hansson-2022",
+        "haselden-2019-family-involvement-followup"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
+    },
+    {
+      "id": "discharge_demand_elicit_001",
+      "title": "When a Patient Demands Discharge Today",
+      "topic": "Discharge and shared decision-making",
+      "setting": "Morning check-in on the unit",
+      "learnerGoal": "Elicit the patient's reasons before offering the team's view, reflect what you hear, and bring the team in promptly.",
+      "prompt": "On day 3, a patient admitted voluntarily after a suicide attempt says, \"I'm done. I'm leaving today, and you can't stop me.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 30,
+        "stance": "Get curious before you persuade: ask for the reason, reflect it, then say you will bring the team in now.",
+        "mustInclude": [
+          "Invite the reason behind 'today' with an open question",
+          "Reflect what you hear before offering any counterpoint",
+          "Say you will let the team know now; decisions about leaving are theirs, not yours"
+        ],
+        "avoid": [
+          "Threats, arguing, or predicting what will happen to his legal status"
+        ],
+        "starter": "Try: \"Something about today feels urgent. Tell me about it.\""
+      },
+      "choices": [
+        {
+          "id": "a",
+          "text": "If you try to leave, we'll just put you on a hold.",
+          "quality": "harmful",
+          "feedback": "A threat escalates, is not the student's decision, and misstates a legal process that depends on the team's assessment and local law."
+        },
+        {
+          "id": "b",
+          "text": "It sounds like being here has gotten really hard. Before anything else, can you tell me what's making today the day? I want to understand, and I'm going to let your team know right away so they can sit down with you.",
+          "quality": "best",
+          "feedback": "Best choice. It is curious, keeps the alliance, and escalates same-day, as a discharge demand after a suicide attempt requires. Retry: \"My dog's been alone since Friday.\" Reflect it, then problem-solve together."
+        },
+        {
+          "id": "c",
+          "text": "You really need to stay. Leaving now would be a huge mistake.",
+          "quality": "missed",
+          "feedback": "The righting reflex: arguing for staying invites him to argue for leaving, and it skips his reasons entirely."
+        },
+        {
+          "id": "d",
+          "text": "Okay, I'll tell the team you want to go.",
+          "quality": "partial",
+          "feedback": "Escalating is right, but you missed the chance to understand why. His reason may be solvable, and it matters to the team's risk assessment."
+        }
+      ],
+      "skillTags": [
+        "discharge",
+        "motivational-interviewing",
+        "shared-decision-making",
+        "safety"
+      ],
+      "linkedPages": [
+        "motivational_interviewing.md",
+        "pg_suicide.md",
+        "ethics_legal.md"
+      ],
+      "evidenceIds": [
+        "aoki-2022-cochrane-sdm",
+        "chung-2017-postdischarge-suicide"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
+    },
+    {
+      "id": "teach_back_closing_001",
+      "title": "Close With Teach-Back, Not 'Any Questions?'",
+      "topic": "Discharge planning and health literacy",
+      "setting": "Bedside, before discharge",
+      "learnerGoal": "Confirm understanding of the plan with teach-back, framed as a check on your explanation rather than a test of the patient.",
+      "prompt": "You just reviewed tomorrow's discharge plan: a new medication, a Tuesday follow-up appointment, and what to do if suicidal thoughts return. The patient says, \"Yeah, yeah, I get it.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 20,
+        "stance": "Own the check: ask for the plan back in their words, then fill any gap without shame.",
+        "mustInclude": [
+          "Frame it as checking your explanation, not testing them",
+          "Ask for the plan back in their own words, including what they would do if the thoughts return",
+          "Re-explain any gap, then check again"
+        ],
+        "avoid": [
+          "Yes/no checks such as 'Do you understand?' or a quizzing tone"
+        ],
+        "starter": "Try: \"I want to make sure I explained it well...\""
+      },
+      "choices": [
+        {
+          "id": "a",
+          "text": "Great. Do you understand everything?",
+          "quality": "missed",
+          "feedback": "A yes/no question invites 'yes'. It checks politeness, not understanding."
+        },
+        {
+          "id": "b",
+          "text": "Any questions before tomorrow?",
+          "quality": "partial",
+          "feedback": "Better than yes/no, but it still asks the patient to know what they missed."
+        },
+        {
+          "id": "c",
+          "text": "I want to make sure I explained it well. Can you tell me in your own words what you'll take, when your appointment is, and what you'll do if those thoughts come back?",
+          "quality": "best",
+          "feedback": "Best choice. Teach-back tests your explanation, not the patient, and covers the safety step too. Retry: he recalls the medication but says the appointment is \"sometime next month.\" Re-explain without shaming, then re-ask."
+        },
+        {
+          "id": "d",
+          "text": "If you don't follow this plan, you'll probably end up back here.",
+          "quality": "harmful",
+          "feedback": "A threat framed as information. It shames rather than checks, and it discourages him from admitting what he did not follow."
+        }
+      ],
+      "skillTags": [
+        "discharge",
+        "teach-back",
+        "safety-planning"
+      ],
+      "linkedPages": [
+        "pg_suicide.md",
+        "therapy_on_the_unit.md"
+      ],
+      "evidenceIds": [
+        "talevski-2020-teach-back"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
+    },
+    {
+      "id": "student_jargon_rupture_001",
+      "title": "Repair a Rupture You Caused",
+      "topic": "Therapeutic alliance",
+      "setting": "Admission interview",
+      "learnerGoal": "Notice the withdrawal, own your part without over-apologizing, and invite the patient back in.",
+      "prompt": "Ten minutes into the interview you ask, \"Any history of noncompliance with your meds?\" The patient crosses her arms: \"Here we go. You're just like the rest of them.\" What do you say next?",
+      "rapidDrill": {
+        "targetSeconds": 30,
+        "stance": "Stop the agenda, name what just happened, take responsibility for your words, and invite her to say more.",
+        "mustInclude": [
+          "Respond to the shift in the room, not the next item on your list",
+          "Take responsibility for how the question landed",
+          "Invite her to say what she heard, or what 'the rest of them' did"
+        ],
+        "avoid": [
+          "Defending the question, explaining the jargon away, or apologizing so much that she has to reassure you"
+        ],
+        "starter": "Start with what you noticed change."
+      },
+      "choices": [
+        {
+          "id": "a",
+          "text": "It's just a standard question we ask everyone.",
+          "quality": "missed",
+          "feedback": "True, but defensive. It explains your intent instead of responding to her experience."
+        },
+        {
+          "id": "b",
+          "text": "That came out wrong. 'Noncompliance' sounds like blame, and I'm sorry. It sounds like you've been judged before. Would you tell me what that's been like?",
+          "quality": "best",
+          "feedback": "Best choice. It notices the rupture, owns the words without groveling, and invites her to say more. Retry: she stays silent. Tolerate the silence, then offer a choice of what to discuss next."
+        },
+        {
+          "id": "c",
+          "text": "I'm so sorry, I'm terrible at this. I'm only a student, and I really didn't mean anything by it...",
+          "quality": "missed",
+          "feedback": "Acknowledging the misstep is right, but over-apologizing reverses the roles: now she has to take care of you."
+        },
+        {
+          "id": "d",
+          "text": "You seem pretty defensive. Is that part of why you're here?",
+          "quality": "harmful",
+          "feedback": "It turns your misstep into her pathology. Interpreting the reaction as a symptom shames her and deepens the rupture."
+        }
+      ],
+      "skillTags": [
+        "alliance",
+        "rupture-repair",
+        "language"
+      ],
+      "linkedPages": [
+        "pg_interview.md",
+        "brief_psychotherapy.md"
+      ],
+      "evidenceIds": [
+        "eubanks-2018-rupture-repair",
+        "fluckiger-2018"
+      ],
+      "facultyReview": {
+        "status": "draft",
+        "reviewer": "",
+        "lastReviewed": ""
+      }
     }
   ]
 }

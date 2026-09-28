@@ -10622,6 +10622,132 @@
           }
         ]
       }
+    },
+    {
+      "id": "talevski-2020-teach-back",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Teach-back: A systematic review of implementation and impacts",
+        "authors": [
+          {
+            "family": "Talevski",
+            "given": "J"
+          },
+          {
+            "family": "Wong Shee",
+            "given": "A"
+          },
+          {
+            "family": "Rasmussen",
+            "given": "B"
+          },
+          {
+            "family": "Kemp",
+            "given": "G"
+          },
+          {
+            "family": "Beauchamp",
+            "given": "A"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "PLoS One",
+        "volume": "15",
+        "pages": "e0231350",
+        "doi": "10.1371/journal.pone.0231350",
+        "pmid": "32287296",
+        "url": "https://doi.org/10.1371/journal.pone.0231350"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 32287296): title, all five authors, journal, volume, issue, pages, DOI and PMC id (PMC7156054) match",
+        "verifiedAt": "2026-09-28",
+        "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case teach_back_closing_001 teaches closing a discharge conversation with teach-back. The review included 20 studies of moderate quality (four high, nine moderate, seven weak), heterogeneous in setting, population and outcomes; teach-back proved effective in 19 of the 20, from knowledge recall and retention to hospital re-admissions and quality of life. There is no pooled effect size, so teach it as a well-supported practice, not a number. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review (20 heterogeneous studies; narrative synthesis, no pooled estimate)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-28",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "teach-back",
+          "discharge",
+          "patient education",
+          "communication"
+        ],
+        "clerkshipRelevance": "Why the discharge conversation ends with 'tell me in your own words' instead of 'any questions?': across 20 studies teach-back proved effective in 19, from knowledge recall to re-admissions. The evidence is heterogeneous and unpooled, so teach it as a well-supported practice that checks your explanation, not the patient.",
+        "noteHistory": [
+          {
+            "date": "2026-09-28",
+            "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case teach_back_closing_001 teaches closing a discharge conversation with teach-back. The review included 20 studies of moderate quality (four high, nine moderate, seven weak), heterogeneous in setting, population and outcomes; teach-back proved effective in 19 of the 20, from knowledge recall and retention to hospital re-admissions and quality of life. There is no pooled effect size, so teach it as a well-supported practice, not a number. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "curriculum fine-tuning WP-I (plan FT-2, approved by Josh 2026-09-28): new communication-practice case teach_back_closing_001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "eubanks-2018-rupture-repair",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Alliance rupture repair: A meta-analysis",
+        "authors": [
+          {
+            "family": "Eubanks",
+            "given": "CF"
+          },
+          {
+            "family": "Muran",
+            "given": "JC"
+          },
+          {
+            "family": "Safran",
+            "given": "JD"
+          }
+        ],
+        "organization": "",
+        "year": 2018,
+        "journal": "Psychotherapy (Chic)",
+        "volume": "55",
+        "pages": "508-519",
+        "doi": "10.1037/pst0000185",
+        "pmid": "30335462",
+        "url": "https://doi.org/10.1037/pst0000185"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 30335462): title, all three authors, journal, volume, issue, pages and DOI match",
+        "verifiedAt": "2026-09-28",
+        "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case student_jargon_rupture_001 teaches repairing a rupture the student caused. Two meta-analyses. Rupture repair episodes were associated with better patient outcome (11 studies, 1,314 patients; r = .29, d = .62). Rupture-resolution training or supervision was NOT significantly related to patient outcome (6 studies, 276 trainees; r = .11, d = .22, p = .28). It licenses 'repair is associated with better outcomes', not 'training in repair improves outcomes'. Correlational evidence. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review / meta-analysis (two meta-analyses; correlational)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-28",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "alliance",
+          "rupture repair",
+          "therapy",
+          "communication"
+        ],
+        "clerkshipRelevance": "Why owning a misstep matters: rupture repair episodes were associated with better patient outcome (r = .29, d = .62), but training in rupture resolution did not significantly improve outcome (d = .22, p = .28). Teach repair as a skill worth practicing, and keep the null training result attached.",
+        "noteHistory": [
+          {
+            "date": "2026-09-28",
+            "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case student_jargon_rupture_001 teaches repairing a rupture the student caused. Two meta-analyses. Rupture repair episodes were associated with better patient outcome (11 studies, 1,314 patients; r = .29, d = .62). Rupture-resolution training or supervision was NOT significantly related to patient outcome (6 studies, 276 trainees; r = .11, d = .22, p = .28). It licenses 'repair is associated with better outcomes', not 'training in repair improves outcomes'. Correlational evidence. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "curriculum fine-tuning WP-I (plan FT-2, approved by Josh 2026-09-28): new communication-practice case student_jargon_rupture_001"
+          }
+        ]
+      }
     }
   ]
 }
