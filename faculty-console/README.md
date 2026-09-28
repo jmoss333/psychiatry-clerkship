@@ -63,6 +63,8 @@ It is **read-only** and loads only when opened or refreshed: it never publishes 
 
 **Signatures learners see.** The panel and the watch summary also name every page a learner site *serves* as awaiting your re-signature: an item of that site's own `/governance.json` that is pending with the build's drift reason (`attestation_hash.STALE_REASON`, `Content changed since faculty review on <date>; awaiting re-attestation.`). That is the page's text having changed after you signed it — #865 rewrote `sp-interview.html` under a 2026-09-26 signature and the 09:05 train published it on 2026-09-28 — as opposed to a page never signed, which is ordinary first review and is not counted. It is read from what each site serves, with no credential, in both the console and the watch, so it says what learners see *now*, not what the ledger on `main` will produce at the next publish (`bin/check_attestation_hashes.py` answers that). Like the week's line it is information, never a verdict: a drifted page warns and never unplaces, so the line never changes the tone or the watch's exit code, and a site whose `/governance.json` could not be read is named in the line (the count is then a minimum) rather than read as clean. A test builds that document with `surface_governance.build_site_document` itself and reads it back through the console's reader, so a reworded reason or a reshaped document fails there first.
 
+**Re-sign before the next publish.** Below that line the panel lists every drifted signature, ordered by when learners are affected, with the deadline the next release-train slot sets (`Re-sign 3 pages before the next publish — 15:05 UTC, in 1 h 12 min.`). It joins three facts the console already holds: the pages its own queue shows drifted, the pages each site serves as awaiting re-signature, and the next slot. **Learners see it pending now** is a drifted page a site already serves as pending (or a served-pending page the queue does not list — never assumed signed). **Not live yet** is a drifted page no site serves as pending yet: the next publish takes it out pending unless the re-signature reaches `main` first. **Signed** is a page learners still see pending that the queue shows signed: it clears once that sign-off reaches `main` (the rolling `attest/pending` merge) and the next publish runs — in ledger mode, when the ledger publish rebuilds the sites. When a site could not be read, the heading says some "not live yet" pages may already be live. Each row opens the page with *What changed since you signed* expanded. The countdown runs from the panel's own check time; press Refresh for a new one. Model: `resignSchedule` / `resignHeading` in `release-status.mjs`.
+
 ## The phone client (`/m/`)
 
 `m/index.html` + `m/m.mjs` is a phone-first front-end on this same site, so the learner sites'
@@ -230,6 +232,7 @@ If the console uses a different origin, update the learner site's exact `frame-a
 | `GITHUB_REPO` | `jmoss333/psychiatry-clerkship` *(optional; this is the default)* |
 | `GIT_BRANCH` | `attest/pending` *(optional; default)* — the branch attestations commit to |
 | `GIT_BASE_BRANCH` | `main` *(optional; default)* — where the rolling pull request lands |
+| `ATTEST_ROLLING_PR_AUTOMERGE` | *(optional)* `off` stops the 15-minute sweep arming auto-merge; it still opens the PR |
 | `STUDENT_SITE_URL` | MS3 learner site to embed *(optional; defaults to `https://une-ms3-psychiatry.netlify.app`)* |
 | `RESIDENT_SITE_URL` | resident learner site, used to preview the resident half of a Case-of-the-Week pair *(optional; defaults to `https://mmc-psychiatry-residents-sanford.netlify.app`)* |
 | `ALLOWED_ORIGIN` | the exact faculty site origin, e.g. `https://clerkship-faculty-attest.netlify.app` *(optional; tightens API CORS)* |
@@ -275,6 +278,20 @@ reuse that rolling request. A failed attempt stays in a persistent `role="alert"
 stable error code and a **Retry opening PR** button; ordinary preview status cannot erase it. The
 attestation must not be repeated. CI still gates every attestation, and protection on `main` is
 untouched.
+
+**The rolling PR no longer depends on anyone opening the console again (2026-09-28).** The
+post-write attempt above is silent by design, and on 2026-09-28 it left the owner's 08:06 ET
+Interview Room re-attestation on `attest/pending` with no PR: both learner sites showed the room as
+*pending faculty review* on the first day of a rotation until someone noticed. A scheduled function,
+`netlify/functions/rolling-pr-sweep.mjs` (every 15 minutes; logic in `rolling-pr-sweep.mjs`), now
+asks one question — does `GIT_BRANCH` carry commits `GIT_BASE_BRANCH` does not? — and if so opens the
+rolling PR (reopening it under the same title if it was closed) and arms GitHub **auto-merge with a
+merge commit**. A PR whose checks already passed cannot take auto-merge, so it is merged directly; a
+PR whose checks are failing is left for a person. It never writes a file or a signature, and it does
+nothing in ledger mode. Set `ATTEST_ROLLING_PR_AUTOMERGE=off` to keep the PR open for a person to
+merge. Its function log carries one content-free JSON line per tick. The daily check that this works
+is `bin/check_attestation_delivery.py`, step 2 of `maintenance-release-watch.yml`: page by page, what
+is signed against what each learner site shows, naming where anything undelivered is stuck.
 
 Before each write the console **fast-forwards the attestation branch from the base branch, but only
 when the branch carries nothing of its own** (`compare(base...branch).ahead_by === 0`). This is the

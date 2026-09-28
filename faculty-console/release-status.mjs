@@ -310,6 +310,65 @@ export function staleSignoffLine(signoffs) {
     + `${named.join(', ')}${more ? `, +${more} more` : ''}. Re-attest under Needs review.${unreadNote}`;
 }
 
+/** How long until `slotMs`, for a person: "in 1 h 12 min", "in 45 min", "now". */
+export function untilLabel(slotMs, nowMs) {
+  const minutes = Math.max(0, Math.round((slotMs - nowMs) / 60_000));
+  if (minutes < 1) return 'now';
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return `in ${hours ? `${hours} h${rest ? ' ' : ''}` : ''}${rest ? `${rest} min` : ''}`;
+}
+
+/**
+ * The re-signing list: every drifted signature, ordered by when learners are affected.
+ *
+ *   now      learners are served the page as awaiting re-signature today, and it still needs
+ *            yours (drifted in the console's own queue, or a page the console does not list)
+ *   next     it needs your re-signature and is not yet live as pending: the change that
+ *            drifted it is merged or on its way, so the next publish takes it out unless the
+ *            re-signature reaches main first
+ *   signed   learners still see it pending, but the console's queue shows it signed: it clears
+ *            once that sign-off reaches main and the next publish runs (ledger mode: the
+ *            ledger-publish rebuild about 10 minutes after sign-offs go quiet)
+ *
+ * `drifted` and `known` are the console's content slugs (drifted ones, and all of them);
+ * `signoffs` is staleSignoffs() of what each site serves. When a site could not be read,
+ * `next` may hold pages that are in fact already live as pending, so the result says it is
+ * partial rather than letting `next` read as "not live yet". Information, never a verdict.
+ */
+export function resignSchedule({ drifted = [], known = [], signoffs = null, nextSlot, nowMs, ledgerMode = false }) {
+  const driftedSet = new Set(drifted);
+  const knownSet = new Set(known);
+  const served = new Map((signoffs?.items || []).map(item => [item.slug, item]));
+  const now = [];
+  const signed = [];
+  for (const [slug, item] of served) {
+    if (driftedSet.has(slug) || !knownSet.has(slug)) now.push({ slug, signedAt: item.signedAt });
+    else signed.push({ slug, signedAt: item.signedAt });
+  }
+  const next = [...driftedSet].filter(slug => !served.has(slug)).sort().map(slug => ({ slug }));
+  return {
+    now, next, signed,
+    nextSlot, until: untilLabel(nextSlot, nowMs), ledgerMode: Boolean(ledgerMode),
+    complete: Boolean(signoffs && signoffs.complete),
+    total: now.length + next.length + signed.length,
+  };
+}
+
+/** The list's heading: what to do and the deadline the next publish sets. */
+export function resignHeading(schedule) {
+  const toSign = schedule.now.length + schedule.next.length;
+  const at = `${new Date(schedule.nextSlot).toISOString().slice(11, 16)} UTC`;
+  if (!schedule.total) return '';
+  if (!toSign) {
+    return schedule.ledgerMode
+      ? 'Every drifted page is signed; learners see them cleared once the ledger publish rebuilds the sites.'
+      : `Every drifted page is signed; learners see them cleared after the sign-offs merge and the ${at} publish (${schedule.until}).`;
+  }
+  return `Re-sign ${plural(toSign, 'page')} before the next publish — ${at}, ${schedule.until}`
+    + `${schedule.complete ? '' : ' (a learner site could not be read, so some pages marked "not live yet" may already be)'}.`;
+}
+
 /**
  * The panel's one-sentence answer, plus a tone: `current` (learners are up to date),
  * `waiting` (merged work is not live yet), `attention` (something the owner should act on:

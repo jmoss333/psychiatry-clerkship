@@ -11,6 +11,13 @@ name: Maintenance — Release Watch
 # each site's served /tool-governance.json, as the production canary does).
 # Logic: bin/release_watch.mjs + faculty-console/release-status.mjs;
 # tests: tests/faculty-console-release-status.test.mjs.
+#
+# Second step (2026-09-28): what the owner has SIGNED against what each learner site SHOWS,
+# page by page, naming where any undelivered signature is stuck (no rolling PR, PR unmerged,
+# merged but unpublished, published but not shown). It runs even when the release verdict
+# is red, and needs pull-requests: read to see the rolling attestation PR.
+# Logic: bin/check_attestation_delivery.py; tests: tests/maintenance/test_attestation_delivery.py.
+# The healing half is faculty-console/rolling-pr-sweep.mjs (every 15 min, on Netlify).
 
 on:
   schedule:
@@ -21,6 +28,7 @@ permissions:
   actions: read
   checks: read
   contents: read
+  pull-requests: read
 
 jobs:
   release-watch:
@@ -41,11 +49,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node bin/release_watch.mjs --out "$RUNNER_TEMP/release-watch.json"
 
+      - name: Compare what is signed with what learners see
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 bin/check_attestation_delivery.py --out "$RUNNER_TEMP/attestation-delivery.json"
+
       - name: Upload release watch receipt
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: maintenance-release-watch-${{ github.run_id }}
-          path: ${{ runner.temp }}/release-watch.json
+          path: |
+            ${{ runner.temp }}/release-watch.json
+            ${{ runner.temp }}/attestation-delivery.json
           if-no-files-found: warn
           retention-days: 90
