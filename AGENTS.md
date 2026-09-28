@@ -228,6 +228,11 @@ the container when the Bash 5 environment is part of the evidence.
   over every reviewed case (small talk opens no gate; every gate is wired to intents and parent
   gates that exist; no gate opens on a euphemism). A reviewed case or gate with no hand-written
   probe is named in its output, never failed.
+- `bin/rotation_turnover.py` — the rotation-start Netlify visit for `sp-interview-proxy` as one
+  command (rotation ID, origins, a new operations credential via the macOS Keychain, redeploy,
+  live proof, a summary on the rotation issue). **The owner runs it on the Mac**; dry run by
+  default, `--apply` to change anything. It never touches the learner passcode (decision
+  `passcode-fixed`) and never prints a credential; an agent must not run `--apply` unasked.
 - `.claude/agents/` — project subagents (`evidence-verifier`, `deploy-verifier`). The frontmatter
   tool allowlist is the enforcement; `tests/agent-definitions.test.mjs` pins each agent's scope.
   **`deploy-verifier` cannot reach `*.netlify.app` from a sandboxed web session** — the egress

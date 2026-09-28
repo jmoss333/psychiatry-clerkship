@@ -297,6 +297,10 @@ def _rotation_body(report, run_url, artifact_url):
         "Manual checklist:",
         *(f"- {item}" for item in MANUAL_CHECKLIST),
         "",
+        "The Netlify items (rotation ID, operations credential, origins, redeploy) are one "
+        "command on the owner's Mac: `python3 bin/rotation_turnover.py` (dry run), then "
+        "`--apply`. It verifies the result live and posts its summary here.",
+        "",
         DISCLAIMER,
     ]
     return marker, f"maintenance: rotation readiness {block_id}", "\n".join(lines)
