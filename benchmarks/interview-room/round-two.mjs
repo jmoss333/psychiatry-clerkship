@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { loadBenchmark, replay, runBenchmark } from './run.mjs';
+import { caseForName, loadBenchmark, replay, runBenchmark } from './run.mjs';
 import { renderCalibration, runSide } from './calibration.mjs';
 
 const INPUT = new URL('./round-two.json', import.meta.url);
@@ -32,7 +32,7 @@ export function validateRoundTwo(corpus, runtime) {
     keys(pair, ['id', 'case', 'setup', 'before', 'sides', 'discussion']);
     assert.match(pair.id, /^r2-\d{2}$/);
     assert.ok(!ids.has(pair.id), 'Duplicate pair id'); ids.add(pair.id);
-    assert.ok(runtime.pack.cases.some(cd => cd.persona.displayName === pair.case), 'Unknown persona');
+    assert.ok(caseForName(runtime.corpus, runtime.pack, pair.case), 'Unknown persona');
     assert.ok(Object.hasOwn(runtime.corpus.setups, pair.setup), 'Unknown setup');
     assert.ok(Array.isArray(pair.before) && pair.before.every(nonempty));
     assert.ok(nonempty(pair.discussion));
@@ -57,7 +57,7 @@ export async function runRoundTwo(runtime, corpus) {
   for (const [index, pair] of corpus.pairs.entries()) {
     const setup = [...runtime.corpus.setups[pair.setup], ...pair.before];
     const context = { ...runtime, corpus: { ...runtime.corpus, setups: { ...runtime.corpus.setups, roundTwo: setup } } };
-    const caseData = runtime.pack.cases.find(cd => cd.persona.displayName === pair.case);
+    const caseData = caseForName(runtime.corpus, runtime.pack, pair.case);
     const selectedRows = caseData.checklist.filter(row => ['c_si', 'c_si_followup'].includes(row.id))
       .map(({ id, label }) => ({ id, label }));
     assert.ok(selectedRows.some(row => row.id === 'c_si'), `${pair.id}: no screening checklist row`);

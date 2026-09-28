@@ -52,11 +52,11 @@ function withoutScreen(caseDef) {
   return copy;
 }
 
-test('Morgan is in the pack, last, and both copies exist', () => {
+test('Morgan is in the pack, fourth, and both copies exist', () => {
   assert.ok(packMorgan, 'pack carries Morgan');
   assert.ok(localMorgan, 'the local prototype still carries Morgan');
-  assert.equal(pack.cases[pack.cases.length - 1].id, MORGAN, 'appended after the three original cases');
-  assert.equal(pack.cases.length, 4);
+  assert.equal(pack.cases[3].id, MORGAN, 'appended after the three original cases; Dana\'s one-week follow-up comes after him');
+  assert.equal(pack.cases.length, 5);
 });
 
 test('the pack Morgan is the attested local Morgan plus the uniform suicide screen, and nothing else', () => {

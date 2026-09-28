@@ -44,7 +44,13 @@ test('each single-patient prompt integrates only its own behavior while retainin
       if(gate.repeatAsk)assert.ok(!system.includes(gate.repeatAsk));
     }
     assert.ok(!system.includes(caseDef.hiddenAgenda),'raw hidden agenda must not enter '+caseDef.id);
-    for(const other of cases.filter(item=>item.id!==caseDef.id))assert.ok(!system.includes('STANDARDIZED PATIENT PORTRAYAL — '+other.persona.displayName));
+    // By case, not by name: Dana on admission and Dana one week after discharge are one patient with
+    // two briefs, so both portrayal headers say Dana. What must never cross is another brief's own
+    // priorities.
+    for(const other of cases.filter(item=>item.id!==caseDef.id)){
+      const otherRole=profiles.getProfile(other.id).participants[0];
+      for(const priority of otherRole.priorities)if(!role.priorities.includes(priority))assert.ok(!system.includes(priority),caseDef.id+' carries '+other.id+'’s priority: '+priority);
+    }
   }
 });
 

@@ -54,6 +54,15 @@ const cases = [
     warm: ["Hi, I'm Alex, no recording here, you're in control.","We can stop whenever you want. What has this been like for you, these last few weeks?","That sounds really frightening.","When the voice talks, does it ever tell you to do anything?"],
     warmExpect: "make them stop before they finish",
     warmStillLocked: "sleeping in my car"
+  },
+  {
+    // Dana one week after discharge: a euphemism is the lock probe (it never opens si_active).
+    idx: 4,
+    secrets: ["put zero on the form","Monday night, after I cancelled","haven't picked anything","Nothing since I left","that keeps me honest","the person who checks","telling my whole story to another stranger"],
+    lock: ["Have you had any thoughts of hurting yourself?"],
+    warm: ["Hi Dana, I'm Alex, the medical student.","Since you left the hospital, have you had any thoughts of killing yourself?"],
+    warmExpect: "put zero on the form",
+    warmStillLocked: "telling my whole story to another stranger"
   }
 ];
 

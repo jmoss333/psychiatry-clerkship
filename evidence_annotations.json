@@ -260,7 +260,8 @@
           "direction": "positive",
           "usedBy": [
             "T1",
-            "T3"
+            "T3",
+            "sp-interview"
           ]
         },
         {
@@ -1525,7 +1526,8 @@
           "direction": "positive",
           "usedBy": [
             "exp_family",
-            "family_modalities"
+            "family_modalities",
+            "sp-interview"
           ]
         }
       ]
@@ -1957,7 +1959,8 @@
           ],
           "direction": "positive",
           "usedBy": [
-            "T3"
+            "T3",
+            "sp-interview"
           ]
         }
       ]
@@ -1982,7 +1985,33 @@
           ],
           "direction": "mixed",
           "usedBy": [
-            "T3"
+            "T3",
+            "sp-interview"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "kroenke-2001-phq9",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-09-28",
+        "pmid": "11556941",
+        "doi": "10.1046/j.1525-1497.2001.016009606.x",
+        "sourceSpan": "Using the MHP reinterview as the criterion standard, a PHQ-9 score > or =10 had a sensitivity of 88% and a specificity of 88% for major depression. PHQ-9 scores of 5, 10, 15, and 20 represented mild, moderate, moderately severe, and severe depression, respectively. Results were similar in the primary care and obstetrics-gynecology samples."
+      },
+      "claims": [
+        {
+          "claimId": "phq9-severity-bands",
+          "claimText": "Against a structured mental health professional interview, a PHQ-9 score of 10 or more had a sensitivity of 88% and a specificity of 88% for major depression, and scores of 5, 10, 15, and 20 represented mild, moderate, moderately severe, and severe depression.",
+          "claimTerms": [
+            "PHQ-9 scores of 5, 10, 15, and 20 represented mild, moderate, moderately severe, and severe depression",
+            "a sensitivity of 88%"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "sp-interview"
           ]
         }
       ]

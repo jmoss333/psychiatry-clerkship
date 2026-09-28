@@ -10,12 +10,14 @@ const pack = require('../_prototypes/sp-interview/sp-interview.pack.json');
 // Morgan is in the pack since 2026-09-26; the family meeting is not, so the set is spelled out.
 const expectedIds = [...new Set([...pack.cases.map(c => c.id), 'sp_alcohol_ambivalence_001', 'family_morgan_maya_001'])];
 
-test('all five current encounters have a complete MD/DO student encounter brief', () => {
+test('every current encounter has a complete MD/DO student encounter brief', () => {
   for (const id of expectedIds) {
     const profile = profiles.getProfile(id);
     assert.equal(profile.caseId, id);
     assert.match(profile.studentRole, /MD.*DO/);
-    assert.equal(profile.reviewStatus, 'reviewed');
+    // A brief never reads more reviewed than its case: a pending pack case has a pending brief.
+    const packCase = pack.cases.find((c) => c.id === id);
+    assert.equal(profile.reviewStatus, packCase && packCase.facultyReview.status === 'pending' ? 'pending' : 'reviewed');
     assert.ok(profile.doorNote && profile.task);
     assert.equal(profile.objectives.length, 3);
     assert.ok(profile.chartCards.length >= 2);
@@ -41,6 +43,7 @@ test('door notes and chart cards do not reveal gated or private case information
   assert.doesNotMatch(frontDoor(expectedIds[2]), /voice.*tell|stop them|pumping|uncle/i);
   assert.doesNotMatch(frontDoor('sp_alcohol_ambivalence_001'), /four to six|two beers|three weeks|six months/i);
   assert.doesNotMatch(frontDoor('family_morgan_maya_001'), /four to six|two beers|three weeks|uncaring/i);
+  assert.doesNotMatch(frontDoor('sp_depression_followup_001'), /cancel|skipped|never filled|wort|two nights|send me back|haven't looked|not calling|sister/i);
 });
 
 test('profile trees are immutable and callers cannot replace authoritative authoring', () => {

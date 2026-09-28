@@ -67,6 +67,18 @@ function loadClient(html) {
   return window.__SP_TEST__;
 }
 
+// The corpus names patients the way faculty read them ("Dana", "Marcus", "Ray"). One patient
+// can be two cases — Dana on admission and one week after discharge — so a name resolves through
+// the corpus's own caseIds table, never by scanning the pack for a displayName: the last-wins
+// Object.fromEntries this replaced would have re-pointed every Dana scenario at the follow-up.
+export function caseForName(corpus, pack, name) {
+  const id = corpus.caseIds && Object.hasOwn(corpus.caseIds, name) ? corpus.caseIds[name] : null;
+  const cd = id ? pack.cases.find(c => c.id === id) : null;
+  assert.ok(cd, `unknown persona ${name}: add it to corpus.caseIds`);
+  assert.equal(cd.persona.displayName, name, `corpus.caseIds.${name} names ${id}, whose persona is ${cd.persona.displayName}`);
+  return cd;
+}
+
 export function validateCorpus(corpus, pack) {
   assert.equal(corpus.schemaVersion, 1);
   assert.equal(corpus.reviewStatus, REVIEW, 'Benchmark labels cannot self-attest');
@@ -87,7 +99,7 @@ export function validateCorpus(corpus, pack) {
     );
   }
   assert.ok(Array.isArray(corpus.scenarios) && corpus.scenarios.length > 0);
-  const byName = Object.fromEntries(pack.cases.map(c => [c.persona.displayName, c]));
+  for (const name of Object.keys(corpus.caseIds || {})) caseForName(corpus, pack, name);
   const ids = new Set();
   for (const scenario of corpus.scenarios) {
     assert.ok(nonempty(scenario.id) && !ids.has(scenario.id), 'Missing or duplicate scenario id');
@@ -102,8 +114,7 @@ export function validateCorpus(corpus, pack) {
     assert.equal(new Set(scenario.cases).size, scenario.cases.length);
     assert.ok(Array.isArray(scenario.checks) && scenario.checks.length > 0);
     for (const name of scenario.cases) {
-      const cd = byName[name];
-      assert.ok(cd, `${scenario.id}: unknown persona ${name}`);
+      const cd = caseForName(corpus, pack, name);
       assert.ok(scenario.checks.some(check => !check.forCase || check.forCase === name), `${scenario.id}: no checks for ${name}`);
       for (const check of scenario.checks) {
         if (check.forCase !== undefined) {
@@ -131,7 +142,7 @@ export function validateCorpus(corpus, pack) {
   for (const pair of corpus.responsePairs) {
     assert.ok(nonempty(pair.id) && !ids.has(pair.id), 'Missing or duplicate pair id');
     ids.add(pair.id);
-    assert.ok(byName[pair.case] && nonempty(pair.question) && nonempty(pair.questionForFaculty));
+    assert.ok(caseForName(corpus, pack, pair.case) && nonempty(pair.question) && nonempty(pair.questionForFaculty));
     assert.equal(pair.patients.length, 2);
     assert.ok(pair.patients.every(nonempty));
     assert.notEqual(pair.patients[0], pair.patients[1]);
@@ -153,7 +164,7 @@ function snapshot(state, coverage) {
 }
 
 export async function replay(runtime, scenario, name) {
-  const cd = runtime.pack.cases.find(c => c.persona.displayName === name);
+  const cd = caseForName(runtime.corpus, runtime.pack, name);
   assert.ok(cd, `Unknown persona ${name}`);
   const provider = new runtime.hooks.MockProvider();
   const session = provider.start(cd, { difficulty: 'supported' });
@@ -203,7 +214,7 @@ export async function replay(runtime, scenario, name) {
 // refuses every POST with 403 pack_not_approved, and this leg is reported as a
 // named, visible skip rather than stubbed to a false success or a fatal crash.
 async function responsePair(runtime, pair) {
-  const cd = runtime.pack.cases.find(c => c.persona.displayName === pair.case);
+  const cd = caseForName(runtime.corpus, runtime.pack, pair.case);
   const variants = [];
   const now = Date.parse(`${runtime.corpus.governanceAsOf}T12:00:00Z`);
   const packHash = sha(fs.readFileSync(path.join(ROOT, PACK)));
