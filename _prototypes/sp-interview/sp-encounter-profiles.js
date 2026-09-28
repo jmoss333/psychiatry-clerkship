@@ -101,7 +101,7 @@
       }]
     },
     {
-      caseId:'sp_depression_followup_001', title:'Dana — One week after discharge', reviewStatus:'pending',
+      caseId:'sp_depression_followup_001', title:'Dana — One week after discharge', reviewStatus:'reviewed',
       task:'See Dana in clinic seven days after discharge: find out whether the plan held — the intake, her medicines, her safety plan and the questionnaire she filled out — and close with what happens next.',
       doorNote:'Dana is in her 30s and was discharged a week ago after a six-day voluntary admission for depression. This is her seven-day psychiatry follow-up; she completed a check-in questionnaire in the waiting room.',
       objectives:['Explain your student role and agree what today’s visit will cover.', 'Confirm the discharge plan with Dana — appointments, each medicine by name, and her safety plan — by asking rather than assuming.', 'Score the check-in questionnaire, ask about suicide directly whatever it shows, and summarize next steps she can correct.'],

@@ -72,7 +72,8 @@ assert.deepEqual(
 );
 // Snapshot of who the shipped pack currently exposes to learners. Marcus and Ray were
 // attested 2026-07-22 and Morgan 2026-09-26 (Joshua Moss, MD; his uniform suicide screen is
-// pinned by tests/morgan-pack.test.mjs), so all four personas are eligible. This assertion
+// pinned by tests/morgan-pack.test.mjs) and Dana one week after discharge 2026-09-28, so all five
+// cases are eligible. This assertion
 // tracks pack state; the behavioural proof that the filter still fails closed for an
 // unattested case lives in the synthetic eligibleWith() block below.
 assert.deepEqual(
@@ -82,6 +83,7 @@ assert.deepEqual(
     'sp_mania_redirect_001',
     'sp_psychosis_paranoid_001',
     'sp_alcohol_ambivalence_001',
+    'sp_depression_followup_001',
   ],
 );
 // Discriminating coverage for the learner-facing attestation gate. Every case in the

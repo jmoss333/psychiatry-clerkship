@@ -2845,9 +2845,9 @@
         "va-dod-suicide-cpg-2024"
       ],
       "facultyReview": {
-        "status": "pending",
-        "reviewer": null,
-        "lastReviewed": null
+        "status": "reviewed",
+        "reviewer": "Joshua Moss, MD",
+        "lastReviewed": "2026-09-28"
       },
       "speechProfile": {
         "id": "dana-followup-measured-v1",
