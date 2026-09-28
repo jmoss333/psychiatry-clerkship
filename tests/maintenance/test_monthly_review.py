@@ -933,7 +933,10 @@ class MonthlyReviewTests(unittest.TestCase):
         self.assertNotIn("deployRecency", serialized)
         self.assertNotIn("attachment", serialized.lower())
         markdown = render_monthly_markdown(first)
-        self.assertIn("compares exact production deploys when Netlify read-only access is available", markdown)
+        self.assertIn("exact production deploys if Netlify read-only access is available", markdown)
+        # DECISION: sp-redteam-signoff-retired -- the receipt is reported as optional, never as owed.
+        self.assertIn("Red-team currency is informational", markdown)
+        self.assertIn("optional since 2026-09-27; never moves the gate", markdown)
 
     def test_operational_and_receipt_paths_must_be_safe_relative_paths(self):
         unsafe = (
@@ -948,6 +951,55 @@ class MonthlyReviewTests(unittest.TestCase):
                 config["operationalDocs"][0]["path"] = path
                 with self.assertRaises(MonthlyReviewError):
                     self.build_report(config=config)
+
+
+
+class RedTeamReceiptIsInformationalTests(unittest.TestCase):
+    """DECISION: sp-redteam-signoff-retired (2026-09-27) -- the live Interview Room checklist is
+    optional, so its receipt state is reported but never moves the monthly gate. Pinned on the
+    predicate itself because the report's constant attended-only count keeps the whole gate at
+    `review`, which would let a regression here hide behind it."""
+
+    @staticmethod
+    def quiet_inputs():
+        evidence = {
+            "identity": {"pending": 0, "unknown": 0},
+            "facultyReview": {"pending": 0, "unknown": 0},
+            "cadence": {"due": 0, "overdue": 0, "unknown": 0},
+            "localPolicyDependent": 0,
+        }
+        media = {"existingDebt": []}
+        operations = {
+            "attendedOnlyReviewCount": 0,
+            "apaCrosswalkPresent": True,
+            "openEvidenceReceipt": "current",
+            "rulesetBypassReceipt": "current",
+            "staleClaimsReceipt": "current",
+            "sourceIntegrityReceipt": "current",
+            "runbooks": {"stale": 0, "unknown": 0},
+        }
+        return evidence, media, operations
+
+    def test_quiet_inputs_need_no_review(self):
+        self.assertFalse(monthly_review._needs_review(*self.quiet_inputs()))
+
+    def test_every_red_team_state_leaves_the_gate_alone(self):
+        for state in ("missing", "incomplete", "stale", "mismatch", "unverified", "current"):
+            with self.subTest(state=state):
+                evidence, media, operations = self.quiet_inputs()
+                operations["redTeamReceipt"] = state
+                self.assertFalse(monthly_review._needs_review(evidence, media, operations))
+
+    def test_the_predicate_still_bites_on_a_real_reason(self):
+        # The mirror check: an always-False predicate would pass the two tests above.
+        evidence, media, operations = self.quiet_inputs()
+        operations["openEvidenceReceipt"] = "missing"
+        self.assertTrue(monthly_review._needs_review(evidence, media, operations))
+
+    def test_source_no_longer_gates_on_the_receipt(self):
+        source = Path(monthly_review.__file__).read_text(encoding="utf-8")
+        self.assertIn("DECISION: sp-redteam-signoff-retired", source)
+        self.assertNotIn('operations["redTeamReceipt"] != "current"', source)
 
 
 if __name__ == "__main__":

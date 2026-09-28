@@ -1,5 +1,7 @@
 # Staged Interview Room Cases Implementation Plan
 
+> **Superseded in part, 2026-09-27** — decision `sp-redteam-signoff-retired` (`docs/superpowers/specs/2026-09-27-red-team-signoff-retired.md`). The live checklist and receipt are now optional, not the required default after every deploy, and a new case no longer needs hand-written probes in a separate governance PR: it lands in one content PR, and `bin/redteam-offline.mjs` checks every reviewed case automatically (S1–S3). The `pending` stage and the per-(case, gate) coverage table remain, the latter as a report. The text below is kept as it was designed.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Permit a synthetic `pending` case to be registered in the reviewed Interview Room pack while keeping it unavailable to learners and visibly outside deterministic red-team coverage until promotion.

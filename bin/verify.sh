@@ -354,19 +354,15 @@ fi
 step "hosted Dana preview suite"            npm --prefix sp-preview test
 step "hosted Dana preview public build"     npm --prefix sp-preview run build
 
-# Red-team tier 1: the deterministic gate probes from sp-proxy/REDTEAM_CHECKLIST.md,
-# run against the real sp.mjs gate logic. No model call, ~1s, so it belongs in the gate.
-# It is NOT a red-team pass — sections A, C1/C4/C5, D and E are human/live checks.
-# See docs/RED_TEAM_RUNBOOK.md.
+# Interview Room gate integrity (the step keeps its old "red-team tier 1" name, as does its ci.yml
+# twin, whose name validate_scheduled_workflows.py pins): the automatic S1–S3 checks over every
+# reviewed case plus the hand-written B/C/M probes, run against the real sp.mjs gate logic. No
+# model call, ~1s, so it belongs in the gate.
+# DECISION: sp-redteam-signoff-retired (2026-09-27) — the `--coverage` table was a separate step
+# here from 2026-09-26 and failed a push on any reviewed case or gate with no HAND-WRITTEN probe,
+# which forced every new case through three PRs. It is a report again
+# (`node bin/redteam-offline.mjs --coverage`); S1–S3 in this step cover every reviewed gate.
 step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
-# A gate since 2026-09-26 (it was report-only while five gates had no probe; the B9 series
-# closed them and the script's own comment promised the flip once they were closed): exits 1
-# on a disclosure gate of a REVIEWED case that no passing probe driving that case asserts on
-# (per case, not per gate id — a second case reusing an id is not covered by the first case's
-# probes), or a reviewed case no PASSING probe drives — so a gate or a case added reviewed with
-# no probe blocks a push here instead of shipping unseen. A pending case's gates are listed but
-# not evaluated until it is reviewed, because its probes skip.
-step "red-team gate coverage"               node bin/redteam-offline.mjs --coverage
 
 # --- build + static QA gate, both sites ---
 if [ $QUICK -eq 0 ]; then

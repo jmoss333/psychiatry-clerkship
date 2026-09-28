@@ -575,6 +575,36 @@ def _red_team_state(
     return classify_red_team_receipt(receipt, deploy_snapshot, today, changed_at)
 
 
+def _needs_review(evidence, media, operations):
+    """True when something in the report is owed a human look this month.
+
+    The red-team receipt is deliberately NOT in this list. DECISION: sp-redteam-signoff-retired
+    (2026-09-27, Joshua Moss, MD) -- the live Interview Room checklist is optional, so a missing
+    or stale receipt is reported for information and never moves the gate. Until then it was
+    `missing` every month from 2026-08-31, which kept this gate at `review` for a reason nobody
+    was going to act on and hid the reasons someone should.
+    """
+    return (
+        bool(media["existingDebt"])
+        or operations["attendedOnlyReviewCount"] > 0
+        or not operations["apaCrosswalkPresent"]
+        or operations["openEvidenceReceipt"] != "current"
+        or operations["rulesetBypassReceipt"] != "current"
+        or operations["staleClaimsReceipt"] != "current"
+        or operations["sourceIntegrityReceipt"] != "current"
+        or operations["runbooks"]["stale"] > 0
+        or operations["runbooks"]["unknown"] > 0
+        or evidence["identity"]["pending"] > 0
+        or evidence["identity"]["unknown"] > 0
+        or evidence["facultyReview"]["pending"] > 0
+        or evidence["facultyReview"]["unknown"] > 0
+        or evidence["cadence"]["due"] > 0
+        or evidence["cadence"]["overdue"] > 0
+        or evidence["cadence"]["unknown"] > 0
+        or evidence["localPolicyDependent"] > 0
+    )
+
+
 def build_monthly_review(root, config, today, git_last_changed, deploy_snapshot=None):
     """Build the content-free monthly report from canonical local inputs."""
     root = Path(root)
@@ -690,26 +720,7 @@ def build_monthly_review(root, config, today, git_last_changed, deploy_snapshot=
     }
 
     blocked = bool(media["newRegressions"]) or not generated_views_valid
-    review = (
-        bool(media["existingDebt"])
-        or operations["attendedOnlyReviewCount"] > 0
-        or not operations["apaCrosswalkPresent"]
-        or operations["openEvidenceReceipt"] != "current"
-        or operations["redTeamReceipt"] != "current"
-        or operations["rulesetBypassReceipt"] != "current"
-        or operations["staleClaimsReceipt"] != "current"
-        or operations["sourceIntegrityReceipt"] != "current"
-        or operations["runbooks"]["stale"] > 0
-        or operations["runbooks"]["unknown"] > 0
-        or evidence["identity"]["pending"] > 0
-        or evidence["identity"]["unknown"] > 0
-        or evidence["facultyReview"]["pending"] > 0
-        or evidence["facultyReview"]["unknown"] > 0
-        or evidence["cadence"]["due"] > 0
-        or evidence["cadence"]["overdue"] > 0
-        or evidence["cadence"]["unknown"] > 0
-        or evidence["localPolicyDependent"] > 0
-    )
+    review = _needs_review(evidence, media, operations)
     return {
         "schemaVersion": 1,
         "asOf": today.isoformat(),
@@ -754,7 +765,8 @@ def render_monthly_markdown(report):
         f"- Attended-only reviews: {operations['attendedOnlyReviewCount']}",
         f"- APA crosswalk present: {str(operations['apaCrosswalkPresent']).lower()}",
         f"- OpenEvidence receipt: `{operations['openEvidenceReceipt']}`",
-        f"- Red-team receipt: `{operations['redTeamReceipt']}`",
+        f"- Red-team receipt (optional since 2026-09-27; never moves the gate): "
+        f"`{operations['redTeamReceipt']}`",
         f"- Red-team reason: {operations['redTeamReason']}",
         f"- Ruleset bypass receipt: `{operations['rulesetBypassReceipt']}`"
         " (local-only: needs ruleset write access)",
@@ -766,7 +778,9 @@ def render_monthly_markdown(report):
         "Cadence counts credit a green guideline-surveillance examination as the review,",
         "on the same rule `bin/check_review_cadence.py` applies; that tool names the rows.",
         "",
-        "Red-team currency compares exact production deploys when Netlify read-only access is available.",
+        "Red-team currency is informational: the live Interview Room checklist is optional",
+        "(decision sp-redteam-signoff-retired). When a receipt exists it is compared with the",
+        "exact production deploys if Netlify read-only access is available.",
         "Provider-policy and local Zotero checks remain attended-only review items.",
         "",
     ]

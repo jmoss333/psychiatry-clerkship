@@ -1,33 +1,42 @@
 #!/usr/bin/env node
-// Tier 1 of the SP red-team: the deterministic probes.
+// The Interview Room's deterministic gate-integrity checks (formerly "Tier 1 of the SP red-team").
 //
-// Runs the gate-integrity probes from sp-proxy/REDTEAM_CHECKLIST.md section B
-// against the REAL server logic (sp.mjs _internals.deriveState / computeCoverage)
-// — the same functions the live deploy uses to drive gates and the coverage map.
+// Two kinds of check, both against the REAL server logic (sp.mjs _internals.deriveState /
+// computeCoverage) — the same functions the live deploy uses to drive gates and the coverage map:
+//
+//   S1–S3  AUTOMATIC, over every reviewed case in the pack. Nobody writes them per case: they read
+//          the pack and prove each disclosure gate stays shut through small talk (S1), is wired to
+//          intents and parent gates that exist, with no cycle (S2), and never opens on a euphemism
+//          (S3, faculty decision G1 of #410). A new case gets them the moment it is `reviewed`.
+//   B/C/M  HAND-WRITTEN probes for the cases they name — the defect-regression ledger of the
+//          D12–D17 faculty decisions. Every probe that runs must pass.
 //
 // WHAT THIS PROVES: the state machine gates and grades as ratified.
-// WHAT THIS DOES NOT PROVE: that the model stays in character (A1–A5), that the
-// patient's words are clinically safe (C1, C4), that the evaluator does not
-// fabricate quotes (C5), or anything about the deployed endpoint (D1–D7).
-// Those are judgment calls and live-endpoint checks. This script is NOT a
-// red-team pass and must never be used to justify one.
+// WHAT THIS DOES NOT PROVE: that the model stays in character, that its words are clinically
+// safe, that the evaluator does not fabricate quotes, or anything about the deployed endpoint.
+//
+// DECISION: sp-redteam-signoff-retired (2026-09-27, Joshua Moss, MD). The live human checklist
+// (sp-proxy/REDTEAM_CHECKLIST.md) and its signed receipt are no longer a required change gate,
+// and a reviewed case or gate with no HAND-WRITTEN probe no longer fails this script (#837/#841
+// made it fail from 2026-09-26 to 2026-09-27, which forced every new case through three PRs:
+// pending, probes, promotion). What still fails it: a hand-written probe that fails, a pack this
+// runner cannot read (duplicate case id, unknown case status), an S1–S3 violation, or a run in
+// which nothing passed. Hand-written probe coverage is still REPORTED, never silently dropped.
 //
 // Usage:  node bin/redteam-offline.mjs [path/to/pack.json] [--coverage]
-//   --coverage   for every gate of every reviewed case, list the PASSING probe ids that DROVE
-//                that case and assert on the gate (via each PROBES entry's `gates` field), and
-//                name any gate with none; for every reviewed case, list the passing probes that
-//                drive it. Exits 1 on a gate with no such probe or a reviewed case with no passing
-//                probe (a gate since 2026-09-26; see the comment above the SHOW_COVERAGE block).
-//                Coverage is per (case, gate): a probe covers a gate only on the case it drove,
-//                so a second case reusing a gate id is never credited by the first case's probes.
-//                A pending case's gates are listed but not evaluated (its probes skip); a probe
-//                that failed is named per case and counted nowhere.
+//   --coverage   REPORT ONLY (exits 0 once the pack is readable): for every gate of every
+//                reviewed case, list the PASSING hand-written probe ids that DROVE that case and
+//                assert on the gate (via each PROBES entry's `gates` field), and name any gate with
+//                none; for every case, list the passing probes that drive it. Coverage is per
+//                (case, gate): a probe covers a gate only on the case it drove, so a second case
+//                reusing a gate id is never credited by the first case's probes. A pending case's
+//                gates are listed but not evaluated (its probes skip); a probe that failed is named
+//                per case and counted nowhere.
 //
-// THE CASE TABLE IS DERIVED FROM THE PACK, and a reviewed case no probe drives FAILS Tier 1.
-// Until 2026-09-26 the cases were a three-name literal, and Morgan
-// (sp_alcohol_ambivalence_001) shipped `reviewed` with no probe on any line of him;
-// `--coverage` could not see it either, because it keys on `gated` and Morgan has no gates.
-// A case learners can select is a case the deterministic red team must drive.
+// THE CASE TABLE IS DERIVED FROM THE PACK. Until 2026-09-26 the cases were a three-name literal,
+// and Morgan (sp_alcohol_ambivalence_001) shipped `reviewed` with no probe on any line of him
+// while this script read green. S1–S3 are the answer that does not need a person to remember:
+// every reviewed case is checked automatically, and one with no hand-written probe is named.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -484,19 +493,18 @@ const PROBES = [
   // M series (2026-09-26): Morgan, the motivational-interviewing case. He has NO gated
   // disclosures — every fact is ordinary and offered plainly — so there is nothing for a gate
   // probe to open, and until 2026-09-26 `--coverage` (keyed on `gated`) read him as fully covered
-  // while no probe drove him; it now lists the passing probes that drive each case and fails on a
-  // reviewed case with none. What Tier 1 must prove for a gateless case is the other half of the contract:
+  // while no probe drove him; it now lists the passing probes that drive each case. What Tier 1 must prove for a gateless case is the other half of the contract:
   // the pack-wide suicide screen (D3/D12/D13) grades the same on him as on the three history
   // cases, his own engine inputs (rapport rules, the three flags, the withdrawal-safety intent)
   // behave, and `state.unlocked` stays EMPTY on every run — on a case with no gates, anything
-  // in `unlocked` is a leak from nowhere. M1 also pins that he IS gateless: a gate added to
-  // Morgan later needs a B-style probe on state.unlocked, and this whole series assumes none.
+  // in `unlocked` is a leak from nowhere. M1 also pins that he IS gateless, because this whole
+  // series assumes none; S1–S3 check the wiring of any gate he gains.
   {
     id: 'M1', name: 'Morgan: the plain screen is credited, and there is no gate to open',
     gates: [],
     run: () => ({ screen: probe('Morgan', [...MORGAN_RAPPORT, SCREEN]), gates: (pack.cases.find((c) => c.id === CASE.Morgan).gated || []).map((g) => g.id) }),
     expect: (r) => [
-      r.gates.length === 0 || `Morgan gained disclosure gate(s) [${r.gates.join(', ')}] — the M series assumes a gateless case; add a B-style probe per gate`,
+      r.gates.length === 0 || `Morgan gained disclosure gate(s) [${r.gates.join(', ')}] — the M series assumes a gateless case; update M1 alongside the pack`,
       r.screen.covered.includes('si_direct') || 'si_direct not counted as asked on Morgan',
       r.screen.row('c_si') === 'observed' || `c_si = ${r.screen.row('c_si')} (want observed)`,
       r.screen.unlocked.length === 0 || `state.unlocked is [${r.screen.unlocked.join(', ')}] on a case with no gates`,
@@ -650,21 +658,13 @@ function gateDeclarationErrors(p) {
 function gateProbes(c, g) {
   return PROBES.filter((p) => (p.gates || []).includes(g.id) && (driven.get(p) || new Set()).has(c.id)).map((p) => p.id);
 }
-// Every disclosure gate of every REVIEWED case must have a passing probe that drove that case
-// and asserts on the gate (on state.unlocked). Run AFTER the probes; enforced in BOTH modes: CI
-// runs the plain runner, so a gate no such probe covers must fail Tier 1 itself, not only the
-// --coverage report. A case that is not reviewed is not selectable (the tool and the proxy
-// filter on `reviewed`) and every probe naming it SKIPS by construction, so no probe could ever
-// cover its gates: evaluating them would be a guaranteed, uncoverable failure that says nothing
-// about the served pack. Its gates are judged the moment its probes can run — and the CASE gate
-// requires a passing probe on it at that same moment. This is what lets a NEW case with gates
-// land at all (decision pack-case-review-is-registration as amended 2026-09-27 by #844, design
-// 2026-09-27-red-team-governance-simplification §2.1): the attestation validator accepts a
-// `pending` case inside a reviewed pack, so the order is a content PR that adds the
-// case pending, a governance PR that adds its probes (they skip while it is pending; L1 forbids
-// bin/ and the pack in one diff), and a content PR that flips it to reviewed — at which point
-// CASE and GATES both demand passing probes that drove it. Until 2026-09-27 the validator refused
-// every non-reviewed spelling and no order of PRs was green (the table is on PR #841).
+// The disclosure gates of REVIEWED cases that no passing hand-written probe driving that case
+// asserts on (on state.unlocked). REPORTED, not enforced (decision sp-redteam-signoff-retired,
+// 2026-09-27): from 2026-09-26 to 2026-09-27 this failed Tier 1, which meant a new case needed a
+// separate governance PR of probes before it could be promoted (L1 forbids bin/ and the pack in
+// one diff). S1–S3 below now cover every reviewed gate's wiring automatically, so a new case
+// lands in one content PR. A case that is not reviewed is not selectable and its probes skip, so
+// its gates are not listed here at all.
 function unprobedGates() {
   const out = [];
   for (const c of REVIEWED) {
@@ -687,6 +687,99 @@ function unprobedGates() {
   }
 }
 
+// S1–S3: the AUTOMATIC checks. They read the pack and apply to every reviewed case and every one
+// of its disclosure gates, so a new case is covered the day it is marked `reviewed` with no probe
+// written for it. Each returns a list of `case / gate — reason` strings; empty means it held.
+// SMALL_TALK must stay free of clinical content: a line here that asked about mood, safety, sleep,
+// food, money or voices would make S1 test the wrong thing. It deliberately includes an open
+// invitation and a reflection, the two moves most likely to raise rapport, so a gate whose only
+// real lock is rapport is exercised with rapport raised.
+const SMALL_TALK = [
+  'Hi.',
+  'Thanks for taking the time to talk with me.',
+  'Okay.',
+  'Tell me more about that.',
+  'It sounds like it has been a long week.',
+];
+function reviewedGates() {
+  return REVIEWED.flatMap((c) => (c.gated || []).map((g) => ({ c, g })));
+}
+function s1SmallTalkKeepsGatesShut() {
+  const errs = [];
+  for (const c of REVIEWED) {
+    if (!(c.gated || []).length) continue;
+    const intents = new Map((c.intents || []).map((i) => [i.id, i]));
+    for (const g of c.gated) {
+      for (const id of g.requiresIntents || []) {
+        const it = intents.get(id);
+        if (!it) continue; // S2 names a missing intent; S1 has nothing to test
+        const hit = SMALL_TALK.find((line) => (it.patterns || []).some((p) => new RegExp(p, 'i').test(line)));
+        if (hit) errs.push(`${c.id} / ${g.id} — its required intent ${id} matches the small-talk line "${hit}", so it can open without the question being asked`);
+      }
+    }
+    let s;
+    try { s = deriveState(c, SMALL_TALK); } catch (e) { errs.push(`${c.id} — the engine threw on small talk: ${e.message}`); continue; }
+    const open = Object.keys(s.unlocked || {});
+    if (open.length) errs.push(`${c.id} — small talk alone unlocked [${open.join(', ')}]`);
+  }
+  return errs;
+}
+function s2GatesAreWired() {
+  const errs = [];
+  for (const c of REVIEWED) {
+    const intentIds = new Set((c.intents || []).map((i) => i.id));
+    const gates = c.gated || [];
+    const byId = new Map();
+    for (const g of gates) {
+      if (byId.has(g.id)) errs.push(`${c.id} / ${g.id} — duplicate gate id on one case`);
+      byId.set(g.id, g);
+    }
+    for (const g of gates) {
+      const req = g.requiresIntents;
+      if (!Array.isArray(req) || !req.length) {
+        errs.push(`${c.id} / ${g.id} — requiresIntents is empty, so the gate can never open`);
+      } else {
+        for (const id of req) if (!intentIds.has(id)) errs.push(`${c.id} / ${g.id} — requires intent ${id}, which the case does not define (the gate can never open)`);
+      }
+      if (g.euphemismIntent && !intentIds.has(g.euphemismIntent)) errs.push(`${c.id} / ${g.id} — euphemismIntent ${g.euphemismIntent} is not an intent of this case`);
+      if (g.requiresGate != null) {
+        if (g.requiresGate === g.id) errs.push(`${c.id} / ${g.id} — requires itself`);
+        else if (!byId.has(g.requiresGate)) errs.push(`${c.id} / ${g.id} — requires gate ${g.requiresGate}, which this case does not have`);
+        else {
+          // Follow the parent chain; revisiting a gate means a cycle, which no turn can open.
+          const seen = new Set([g.id]);
+          let cur = byId.get(g.requiresGate);
+          while (cur) {
+            if (seen.has(cur.id)) { errs.push(`${c.id} / ${g.id} — its requiresGate chain loops back to ${cur.id}`); break; }
+            seen.add(cur.id);
+            cur = cur.requiresGate != null ? byId.get(cur.requiresGate) : undefined;
+          }
+        }
+      }
+    }
+  }
+  return errs;
+}
+function s3EuphemismNeverOpens() {
+  // Faculty decision G1 (#410, ratified 2026-08-31): a euphemism scores `partial` and does not
+  // unlock disclosure. si_euphemism is the pack-wide spelling; a gate's own euphemismIntent is
+  // the per-gate one. Neither may be a key that opens a gate.
+  const errs = [];
+  for (const { c, g } of reviewedGates()) {
+    const req = g.requiresIntents || [];
+    if (req.includes('si_euphemism')) errs.push(`${c.id} / ${g.id} — si_euphemism opens this gate (G1: a euphemism never unlocks disclosure)`);
+    if (g.euphemismIntent && g.euphemismIntent !== 'si_euphemism' && req.includes(g.euphemismIntent)) {
+      errs.push(`${c.id} / ${g.id} — its own euphemismIntent ${g.euphemismIntent} is also a key that opens it`);
+    }
+  }
+  return errs;
+}
+const STRUCTURAL = [
+  { id: 'S1', name: 'every reviewed gate stays shut through small talk', run: s1SmallTalkKeepsGatesShut },
+  { id: 'S2', name: 'every reviewed gate is wired to intents and parent gates that exist, with no cycle', run: s2GatesAreWired },
+  { id: 'S3', name: 'no reviewed gate opens on a euphemism (G1)', run: s3EuphemismNeverOpens },
+];
+
 // --coverage: for every disclosure gate of every reviewed case, name the PASSING probe ids that
 // drove that case and assert on the gate (on `state.unlocked`, per the B9 comment above — never
 // on `covered`, which a gate can win without ever opening). Per (case, gate), see gateProbes():
@@ -697,14 +790,12 @@ function unprobedGates() {
 // "every gate has a probe" is vacuously true of a case with no gates — that is exactly how
 // Morgan read as covered while nothing touched him.
 //
-// A GATE SINCE 2026-09-26. This block was report-only while five gates had no probe (the B9
-// series closed them on 2026-09-09), with the flip promised for the day every gate had one.
-// That day came, so a gate of a reviewed case with no passing probe that drove it, a reviewed
-// case no passing probe drives, or a pack with no reviewed case at all now exits 1. The plain Tier 1 run enforces the same three rules
-// (GATES / CASE / NONE failures), so CI — which runs only the plain runner — is covered too;
-// bin/verify.sh runs this report as its own step for the readable table.
+// REPORT ONLY AGAIN SINCE 2026-09-27 (decision sp-redteam-signoff-retired). It was a gate from
+// 2026-09-26; S1–S3 in the plain run now check every reviewed gate's wiring automatically, so the
+// hand-written table is information for whoever is writing probes, not a precondition for
+// shipping a case. It still says what it counted and never summarises an empty set as covered.
 if (SHOW_COVERAGE) {
-  console.log('SP red-team — gate coverage');
+  console.log('Interview Room — hand-written probe coverage (report only)');
   console.log('pack: %s\n', path.relative(ROOT, packPath));
   // Run every probe to completion, silently, so the per-case report can say which PASSING probes
   // drive each case (a gate list cannot: a gateless case has none).
@@ -765,15 +856,16 @@ if (SHOW_COVERAGE) {
         ? `${undriven.length} reviewed case(s) with no passing probe: ${undriven.join(', ')}`
         : 'Every reviewed case is driven by at least one passing probe.',
   );
-  const gap = missing.length || undriven.length || nothingReviewed;
-  if (gap) console.log('\nCOVERAGE GAP — add a probe (see the B9 series for the shape); this exits 1.');
-  process.exit(gap ? 1 : 0);
+  if (missing.length || undriven.length) {
+    console.log('\nInformational only: the automatic checks S1–S3 cover every reviewed gate in the plain run; a hand-written probe (see the B9 series for the shape) is optional.');
+  }
+  process.exit(0);
 }
 
 let pass = 0;
 let skipped = 0;
 const failures = [];
-console.log('SP red-team — Tier 1 (deterministic gate integrity)');
+console.log('Interview Room — deterministic gate integrity (S1–S3 automatic + hand-written probes)');
 console.log('pack: %s\n', path.relative(ROOT, packPath));
 for (const p of PROBES) {
   const result = runProbe(p);
@@ -794,41 +886,50 @@ for (const p of PROBES) {
     console.log(`pass  ${p.id}  ${p.name}`);
   }
 }
+// S1–S3 over every reviewed case. Say how many gates they ranged over, so "every gate" over
+// zero gates cannot read as coverage.
+const gateCount = reviewedGates().length;
+for (const check of STRUCTURAL) {
+  if (!gateCount) {
+    console.log(`skip  ${check.id}  ${check.name}\n        · no reviewed case has a disclosure gate — nothing to check`);
+    continue;
+  }
+  let errs;
+  try { errs = check.run(); } catch (e) { errs = [`crashed: ${e.message}`]; }
+  if (errs.length) {
+    failures.push([check.id, check.name, errs]);
+    console.log(`FAIL  ${check.id}  ${check.name}`);
+    errs.forEach((e) => console.log(`        · ${e}`));
+  } else {
+    pass++;
+    console.log(`pass  ${check.id}  ${check.name} (${gateCount} gate(s) on ${REVIEWED.length} reviewed case(s))`);
+  }
+}
 // The pass floor: a run in which nothing passed proved nothing, whatever the reason (every case
-// pending, every probe skipped, an empty pack). "Tier 1 clean" over zero passes is the vacuity
-// the rest of this file exists to prevent.
+// pending, every probe skipped, an empty pack). "Clean" over zero passes is the vacuity the rest
+// of this file exists to prevent.
 if (pass === 0) {
   failures.push(['NONE', 'at least one probe ran to completion', ['no probe passed — nothing was proved']]);
   console.log('FAIL  NONE  at least one probe ran to completion\n        · no probe passed — nothing was proved');
 }
-// The gate gate: a disclosure gate of a REVIEWED case that no passing probe driving that case
-// asserts on — per case, never per gate id. --coverage prints the full table; Tier 1 enforces
-// the same rule because CI runs only the plain runner, and a gate added to a reviewed pack case
-// (or a pending case flipped to reviewed) with no such probe would otherwise reach main from
-// any push that bypasses the pre-push hook.
+// Hand-written probe coverage: REPORTED, never enforced (decision sp-redteam-signoff-retired).
+// A reviewed case or gate no passing hand-written probe drove is named here so it is visible —
+// S1–S3 above already checked its wiring — but it does not fail the run.
 const unprobed = unprobedGates();
-if (unprobed.length) {
-  failures.push(['GATES', 'every disclosure gate of every reviewed case has a passing probe that drove the case and asserts on state.unlocked', unprobed]);
-  console.log('FAIL  GATES  every disclosure gate of every reviewed case has a passing probe that drove the case and asserts on state.unlocked');
-  unprobed.forEach((g) => console.log(`        · ${g} — no passing probe that drove this case names it in its \`gates\` field (run --coverage; see the B9 series for the shape)`));
-}
-// The case gate: a reviewed case no PASSING probe drove. Every other check above is per probe,
-// and a probe cannot notice a case it never names — this is the only place a NEW case shows up.
 const undriven = undrivenCases();
-if (undriven.length) {
-  const msg = `reviewed case(s) with no Tier-1 probe: ${undriven.map((c) => c.id).join(', ')}`;
-  failures.push(['CASE', 'every reviewed case is driven by at least one probe', [msg]]);
-  console.log(`FAIL  CASE  every reviewed case is driven by at least one probe\n        · ${msg}`);
-  console.log('        · a case learners can select must be driven by the deterministic red team — add a probe that names it');
+if (unprobed.length || undriven.length) {
+  console.log('note  hand-written probe coverage (informational — S1–S3 cover these automatically)');
+  undriven.forEach((c) => console.log(`        · ${c.id} — no hand-written probe drives this case`));
+  unprobed.forEach((g) => console.log(`        · ${g} — no hand-written probe asserts on this gate`));
 }
-console.log('\n%d/%d deterministic probes pass%s', pass, PROBES.length, skipped ? ` (${skipped} skipped: case not reviewed)` : '');
+const total = PROBES.length + (gateCount ? STRUCTURAL.length : 0);
+console.log('\n%d/%d deterministic checks pass%s', pass, total, skipped ? ` (${skipped} skipped: case not reviewed)` : '');
 if (failures.length) {
-  console.log('\nDO NOT RECORD A RED-TEAM PASS. Fix the failures above first.');
+  console.log('\nFix the failures above: the Interview Room state machine is not behaving as ratified.');
   process.exit(1);
 }
 console.log(
-  '\nTier 1 clean. This is NOT a red-team pass — it proves the state machine only.\n' +
-  'Sections A (character), C1/C4/C5 (content + evaluator), D (endpoint) and E (golden\n' +
-  'transcript) are human/live checks. See docs/RED_TEAM_RUNBOOK.md, then record with\n' +
-  'record_red_team.py once the WHOLE checklist has actually been run.',
+  '\nGate integrity clean. This proves the state machine only — not what the model says.\n' +
+  'The live checklist in sp-proxy/REDTEAM_CHECKLIST.md is optional since 2026-09-27\n' +
+  '(decision sp-redteam-signoff-retired); run it when you want a human look at the live room.',
 );

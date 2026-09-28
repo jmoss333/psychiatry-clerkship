@@ -135,8 +135,9 @@ with `bash bin/verify.sh`.
   - the faculty console needs a GitHub token, a faculty key and `ATTESTER_NAME`
     ([setup](../faculty-console/README.md));
   - The Interview Room needs a language-model API key and a student passcode
-    ([`sp-proxy/README.md`](../sp-proxy/README.md)); run its
-    [red-team checklist](../sp-proxy/REDTEAM_CHECKLIST.md) after every deploy;
+    ([`sp-proxy/README.md`](../sp-proxy/README.md)); its live
+    [red-team checklist](../sp-proxy/REDTEAM_CHECKLIST.md) is optional (the deterministic
+    gate-integrity checks run in CI);
   - usage counts are off unless you set `CLERKSHIP_ANALYTICS`.
 - **Scheduled maintenance** (live-site checks and literature surveillance) is described in the
   [operations runbook](../13_Faculty_Resources/_automation/maintenance/README.md). Retarget those

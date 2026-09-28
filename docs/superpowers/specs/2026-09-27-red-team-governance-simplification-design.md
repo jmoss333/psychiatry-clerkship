@@ -1,5 +1,7 @@
 # Interview Room red-team governance: staged cases and guided evidence
 
+> **Superseded in part, 2026-09-27** — decision `sp-redteam-signoff-retired` (`docs/superpowers/specs/2026-09-27-red-team-signoff-retired.md`). The live checklist and receipt are now optional, not the required default after every deploy, and a new case no longer needs hand-written probes in a separate governance PR: it lands in one content PR, and `bin/redteam-offline.mjs` checks every reviewed case automatically (S1–S3). The `pending` stage and the per-(case, gate) coverage table remain, the latter as a report. The text below is kept as it was designed.
+
 **Status:** conversation design and written spec approved by Joshua Moss, MD on 2026-09-26 Eastern time. Implementation plans drafted; no code implementation begun.
 **Scope:** Interview Room case registration, red-team execution, and the red-team receipt.
 **Starting point:** `main` at `ae992321` and open PR #841 at `2f93c558`. Recheck both before implementation. This spec changes no clinical wording, pack case, attestation row, deploy, or activation flag.

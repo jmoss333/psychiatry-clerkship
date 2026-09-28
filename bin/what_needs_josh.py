@@ -3,9 +3,8 @@
 
 The mirror of bin/what_can_i_do_today.py. That one answers "what can an unattended
 agent do here"; this one answers the question nothing answered: **what can only Josh
-do**. Attestation, a red-team signature, a rights decision, a merge — none of it is
-delegable, and until now it lived scattered across memory files and handoff notes,
-which is how the WP-5m red-team receipt survived four sessions without being written.
+do**. Attestation, a rights decision, a merge — none of it is delegable, and until
+now it lived scattered across memory files and handoff notes.
 
 Same three contracts as the queue, for the same reasons:
 
@@ -17,10 +16,13 @@ Same three contracts as the queue, for the same reasons:
   a row's predicate must be satisfiable ONLY by the human act. This is the trap the
   queue learned the hard way: "isbn-verify" was measured by whether a line carried
   an ISBN-13, so the moment a DIFFERENT task wrote them it reported 0 of 51 and
-  retired, having confirmed nothing. Here the same trap would read "the red-team
-  script ran" as "the red team ran". It does not: the receipt carries the sha256 of
-  the pack bytes it was signed against, so a receipt that does not match today's
-  pack is not a receipt.
+  retired, having confirmed nothing. Here the same trap would read "the console
+  ran" as "the page was re-attested"; each row below is measured on the record the
+  human act writes, never on a script having run.
+
+The Interview Room red-team signature was a row here until 2026-09-27.
+DECISION: sp-redteam-signoff-retired -- the live checklist is optional, so it is no
+longer owner work, and it must not come back as a row.
 
 Report-only. Exits 0 always. Not a gate, not in CI, not in verify.sh -- a report that
 fails a push is a report nobody keeps.
@@ -30,7 +32,6 @@ import json
 import os
 import subprocess
 import sys
-from hashlib import sha256
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,7 +40,6 @@ REVIEWED = ROOT / "13_Faculty_Resources/reviewed.json"
 TOPIC_META = ROOT / "topic_meta.json"
 RIGHTS = ROOT / "instrument_rights.json"
 PACK = ROOT / "_prototypes/sp-interview/sp-interview.pack.json"
-RECEIPT = ROOT / "13_Faculty_Resources/_automation/maintenance/receipts/sp-red-team.json"
 
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
@@ -121,22 +121,6 @@ def describe_reattestation():
         len(stale), noun, named)
 
 
-def measure_red_team():
-    """Is there a red-team receipt for the pack that is actually shipping?
-
-    Not "did a script run". record_red_team.py stores packSha256 from the canonical
-    pack bytes, so a receipt signed against an older pack does not answer for this
-    one. Missing receipt and stale receipt are the same answer: still owed.
-    """
-    pack_sha = sha256(PACK.read_bytes()).hexdigest()
-    if not RECEIPT.exists():
-        return 1, 1
-    receipt = json.loads(RECEIPT.read_text(encoding="utf-8"))
-    signed = str(receipt.get("signedBy") or "").strip()
-    matches = receipt.get("packSha256") == pack_sha and receipt.get("state") == "passed"
-    return (0 if (matches and signed) else 1), 1
-
-
 def _pack_cases_not_reviewed():
     pack = json.loads(PACK.read_text(encoding="utf-8"))
     cases = pack.get("cases")
@@ -146,9 +130,9 @@ def _pack_cases_not_reviewed():
     # (sp-governance.mjs reviewedCase(), which sp.mjs, sp-voice.mjs and sp-realtime.mjs resolve
     # every case through; it also wants a reviewer and a review date not in the future, which
     # this row deliberately does not mirror -- a reviewed case with a bad date is a data error,
-    # not an unread case) and the red-team runner (bin/redteam-offline.mjs) select a case on
-    # exactly that spelling; the attestation validator also lets `attested` into a reviewed pack,
-    # but no surface offers such a case and Tier 1 refuses it (FAIL PACK). Counting `attested`
+    # not an unread case) and the gate-integrity runner (bin/redteam-offline.mjs) select a case
+    # on exactly that spelling; the attestation validator also lets `attested` into a reviewed
+    # pack, but no surface offers such a case and the runner refuses it (FAIL PACK). Counting `attested`
     # as done retired this row over a case learners could not select (Codex P2 on #855).
     not_reviewed = [
         str(c.get("id") or "?") for c in cases
@@ -162,7 +146,7 @@ def measure_pack_cases():
 
     DECISION: pack-case-review-is-registration (amended 2026-09-27, #844) -- a case may sit
     in the reviewed pack as
-    `pending` ahead of its red-team probes. It is unselectable, but its text ships in the
+    `pending` ahead of the owner's read. It is unselectable, but its text ships in the
     built pack, and once the console re-signs the drifted sp-interview.html row nothing else
     names it. Only the owner's read flips it, so it is owner work until the flip lands, and
     the row retires itself at zero. "Not reviewed" is any status but the literal `reviewed`
@@ -260,32 +244,18 @@ ROWS = [
               "python3 bin/check_attestation_hashes.py --explain <slug> names the inputs",
     },
     {
-        "key": "red-team",
-        "title": "Sign the SP red-team receipt for the shipping pack",
-        "needs": None,
-        "measure": measure_red_team,
-        "unit": "receipt missing or signed against a different pack",
-        "why": "sp-proxy/REDTEAM_CHECKLIST.md is run against the LIVE deploy and needs "
-               "the passcode, so only you can run it. No receipt has ever been written. "
-               "Measured by packSha256, not by whether the recorder script ran -- a "
-               "receipt for an older pack does not answer for this one.",
-        "do": "run sp-proxy/REDTEAM_CHECKLIST.md, then "
-              "python3 13_Faculty_Resources/_automation/maintenance/record_red_team.py "
-              "--state passed --signed-by 'Joshua Moss, MD'",
-    },
-    {
         "key": "pack-cases",
         "title": "Read the Interview Room cases that are in the pack but not yet reviewed",
         "needs": None,
         "measure": measure_pack_cases,
         "detail": describe_pack_cases,
         "unit": "pack cases learners cannot select yet",
-        "why": "A case may land in the reviewed pack as `pending` ahead of its red-team probes "
+        "why": "A case may land in the reviewed pack as `pending` ahead of your read "
                "(decision pack-case-review-is-registration, amended 2026-09-27). It is "
                "unselectable, but its text ships "
                "in the built pack, and once the console re-signs the drifted sp-interview.html "
                "row nothing else names it. Only your read flips it to reviewed -- the literal "
-               "spelling the tool, the proxy and the red-team runner select on; `attested` "
+               "spelling the tool, the proxy and the gate-integrity runner select on; `attested` "
                "passes the validator but no surface offers it, so it counts here too.",
         "do": "read the case's lines, then a content PR sets its facultyReview.status to "
               "reviewed with the read recorded on the PR; the console re-attests the drifted row",

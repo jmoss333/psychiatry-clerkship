@@ -1,8 +1,17 @@
 # Runbook: run the SP Interview red team
 
-**Owner:** Joshua Moss, MD (faculty reviewer) · **Frequency:** after **every** deploy, model change, or pack change — and before any rotation's passcode is handed out
-**Checklist:** `sp-proxy/REDTEAM_CHECKLIST.md` (the authority; this runbook is how to execute it)
+**Owner:** Joshua Moss, MD (faculty reviewer) · **Frequency:** **optional** — whenever you want a human look at the live room (decision `sp-redteam-signoff-retired`, 2026-09-27)
+**Checklist:** `sp-proxy/REDTEAM_CHECKLIST.md` (this runbook is how to execute it)
 **Last updated:** 2026-09-27
+
+> **Not a required gate since 2026-09-27.** The owner retired the live checklist and its signed
+> receipt as a change gate, and retired the rule that every case needs hand-written probes
+> (`decisions.json` → `sp-redteam-signoff-retired`; rationale in
+> `docs/superpowers/specs/2026-09-27-red-team-signoff-retired.md`). Nothing waits on a receipt:
+> not a deploy, not a rotation, not the monthly review, not the owner queue. What still runs on
+> every PR and push is Tier 1 — `bin/redteam-offline.mjs`, now with the automatic S1–S3 checks
+> over every reviewed case. Everything below still works if you choose to run a live pass —
+> before a model-provider change, say, or after a learner reports something odd.
 
 ---
 
@@ -95,31 +104,32 @@ cd ~/Psychiatry-Clerkship-Library
 node bin/redteam-offline.mjs
 ```
 
-**Expected result:** the script prints `N/N deterministic probes pass`, followed by the reminder
-that this is not a pass — where `N` is `PROBES.length` inside `bin/redteam-offline.mjs`.
+**Expected result:** the script prints `N/N deterministic checks pass` — where `N` is the
+hand-written probes (`PROBES.length` inside `bin/redteam-offline.mjs`) plus the three automatic
+checks S1–S3.
 Trust the script's own printed count, not a number copied into this doc: `N` moves
 every time a probe is added, and a stale count here has already drifted once (12 vs. 18). This
 runs checklist **B1–B4, B6, B7, B8, B9** and **C3** against the real `sp.mjs` gate logic — the same
-functions the live deploy uses. Run `node bin/redteam-offline.mjs --coverage` for the per-case
-table: for every reviewed case, the passing probes that drive it and, per disclosure gate, the
-passing probes that drove that case and assert on it (a failing probe is named and counted
-nowhere; a pending case's gates are not evaluated until it is reviewed).
+functions the live deploy uses — and the automatic checks over **every** reviewed case: **S1** small
+talk opens no gate, **S2** every gate is keyed to intents and parent gates the case really has (no
+loops), **S3** no gate opens on a euphemism (G1). Run `node bin/redteam-offline.mjs --coverage`
+for the per-case table of hand-written probes — a report, not a gate: for every case, the passing
+probes that drive it and, per disclosure gate, the passing probes that drove that case and assert
+on it.
 
-**If it fails:** stop. Do not deploy, do not continue to Tier 2. A `FAIL  B…`/`C…`/`M…` line names
-the gate and what leaked: a code or pack bug, not a model behaviour question. A `FAIL  GATES`,
-`FAIL  CASE` or `FAIL  NONE` line is different — nothing leaked: a reviewed case, or one of its
-disclosure gates, has no passing probe that drove that case (credit is per case, so a probe on
-another case never counts), or nothing was proved. The fix is a probe in `bin/redteam-offline.mjs`
-(a governance PR), not a pack edit; run `--coverage` for the table.
+**If it fails:** stop. A `FAIL  B…`/`C…`/`M…` line names the gate and what leaked; a `FAIL  S…`
+line names a case whose gate wiring is wrong (fix the pack in the same content PR); `FAIL  NONE`
+means nothing was proved. All of them are code or pack bugs, not model behaviour questions. A
+`note  hand-written probe coverage` line is **not** a failure: it names a reviewed case or gate no
+hand-written probe drives, which S1–S3 have already checked.
 
 ### Landing a new case
 
-Keep the clinical case and the tests that judge it in separate changes:
+One content PR (decision `sp-redteam-signoff-retired`):
 
-1. Add a synthetic case to the reviewed pack with `facultyReview.status: "pending"` and no reviewer or review date. Learner tools and proxy routes cannot select it. The pack JSON is a public learner-site asset, so pending text must still be synthetic and free of PHI.
-2. In a separate governance PR, add probes for that case. Test a temporary copy of the pack with only that case's status changed to `reviewed`; this checks the candidate probes before promotion. The official run still lists the pending case and its gates as unevaluated. Candidate results are not passing production coverage or faculty sign-off.
-3. After the probes pass, promote the case in an owner-reviewed content PR with its reviewer and date. Tier 1 must then find passing probes for that exact case and each of its gates.
-4. Re-attest the final `sp-interview.html` pack hash through the faculty console. The per-case review block controls selection; the faculty ledger row records the review of the complete pack.
+1. Add the synthetic case to the pack. It may go straight in as `reviewed` with the owner's read recorded on the PR, or as `pending` (no reviewer, no review date) if you want it in the pack before you have read it — learner tools and proxy routes cannot select a pending case. Either way the pack JSON is a public learner-site asset, so the text must be synthetic and free of PHI.
+2. CI runs `bin/redteam-offline.mjs`; S1–S3 check every gate of the new case the moment it is `reviewed`. A `FAIL  S…` line is a wiring mistake in the pack — fix it in the same PR. Hand-written probes for the case are welcome in a later governance PR but not required.
+3. Re-attest the final `sp-interview.html` pack hash through the faculty console. The per-case review block controls selection; the faculty ledger row records the review of the complete pack.
 
 ---
 
@@ -338,3 +348,4 @@ If a Tier 3 failure appears **after** students have the passcode:
 | Date | Run by | Pack | Model | Notes |
 |---|---|---|---|---|
 | 2026-08-31 | Joshua Moss, MD | 0.1.0 (`main`, status `reviewed`) | `claude-haiku-4-5-20251001` | **Tiers 1 and 2 only.** Tier 1 12/12; Tier 2 5/5 (D0 200, D1/D1b 401, D5 no ACAO, B5 forged `state.unlocked` → 400). Tier 3 **not run** — sections A, C1/C4/C5, D2/D3/D4/D6/D7 and E outstanding. Faculty approved the current build for continued learner use on this evidence; no receipt written, because `record_red_team.py --state passed` would assert the whole checklist ran. First run of this runbook. |
+| 2026-09-27 | Joshua Moss, MD (decision) | — | — | **Live checklist and receipt retired as a required change gate; per-case hand-written probes no longer required** (decision `sp-redteam-signoff-retired`). Tier 1 stays in CI with the automatic S1–S3 checks. The 2026-08-31 partial run above remains the last live run; no receipt was ever written and none is now owed. |
