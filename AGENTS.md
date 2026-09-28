@@ -252,6 +252,16 @@ the container when the Bash 5 environment is part of the evidence.
   live proof, a summary on the rotation issue). **The owner runs it on the Mac**; dry run by
   default, `--apply` to change anything. It never touches the learner passcode (decision
   `passcode-fixed`) and never prints a credential; an agent must not run `--apply` unasked.
+- `faculty-console/rolling-pr-sweep.mjs` + `bin/check_attestation_delivery.py` — **signatures
+  deliver themselves**. The sweep (a Netlify scheduled function on the console site, every 15 min)
+  opens or reopens the rolling `attest/pending` PR when that branch is ahead of `main` and arms
+  auto-merge with a **merge commit** (L4 reads the console identity per commit; never squash). The
+  daily check (step 2 of `maintenance-release-watch.yml`) compares, page by page, what is signed
+  against what each learner site serves and names where anything is stuck — stranded (no PR, red
+  after 30 min), in the PR (6 h), merged but unpublished (24 h), published but not shown (at once);
+  a page whose text changed after signing is re-attestation work, not a delivery gap. Neither
+  creates a signature; they only move ones the owner made. Born of 2026-09-28, when the Interview
+  Room re-attestation sat on `attest/pending` with no PR on a rotation's first morning.
 - `.claude/agents/` — project subagents (`evidence-verifier`, `deploy-verifier`). The frontmatter
   tool allowlist is the enforcement; `tests/agent-definitions.test.mjs` pins each agent's scope.
   **`deploy-verifier` cannot reach `*.netlify.app` from a sandboxed web session** — the egress
