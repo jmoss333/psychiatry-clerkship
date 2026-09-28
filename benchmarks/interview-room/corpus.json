@@ -4,6 +4,11 @@
   "governanceAsOf": "2026-09-26",
   "purpose": "Synthetic, local, formative-feedback benchmark. Proposed labels are review hypotheses, not faculty decisions or a release gate.",
   "decisionReference": "docs/superpowers/plans/2026-08-31-faculty-decisions-410.md",
+  "caseIds": {
+    "Dana": "sp_depression_gated_si_001",
+    "Marcus": "sp_mania_redirect_001",
+    "Ray": "sp_psychosis_paranoid_001"
+  },
   "setups": {
     "warm": [
       "Hi, my name is Alex, I'm the medical student on the team. Before we start, what would you most want us to understand today?",
