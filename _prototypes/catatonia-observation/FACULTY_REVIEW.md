@@ -1,24 +1,38 @@
 # Catatonia observation studio — faculty review packet
 
-**Status: Scene visuals and wording accepted for this private prototype; overall release review PENDING.** This packet records the current prototype wording and faculty feedback; it does not attest clinical accuracy, approve learner release, or grant rights to a rating instrument.
+**Status: Scene visuals and wording accepted for this private prototype; starter cards approved for private preview; overall release review PENDING.** This packet records the current prototype wording and faculty feedback; it does not attest clinical accuracy, approve learner release, or grant rights to a rating instrument.
 
 ## Exact revision to review
 
 - Source: [`catatonia-observation.preview.html`](catatonia-observation.preview.html), the self-contained, fictional four-scene prototype.
-- HTML SHA-256: `ba593a0049aa4d54c15a05bc6a61e4ab5c42f0faa3ca4ccd616669af9198ca03`
-- Source commit: `b7202c2ede84b950c5f6642b7d04c83ed37d7be2`
-- Private deploy permalink: [Open the exact four-scene gallery](https://6ab9487cc41bca4d076e25a8--catatonia-faculty-preview.netlify.app/) (Netlify team sign-in required; deploy `6ab9487cc41bca4d076e25a8`, ready 2026-09-27).
+- HTML SHA-256: `e2dd7e3c859a3524d57d61b5ac941e05c256ee0f4ec468212a51bc774a80e7bb`
+- Source commit: `280d0e9b94c0163a6d639869b13bf2b97d00c75a`
+- Private deploy permalink: [Open this starter-card revision](https://6ab9b0176eda28f9562f5b13--catatonia-faculty-preview.netlify.app/) (Netlify team sign-in required; deploy `6ab9b0176eda28f9562f5b13`, ready 2026-09-28 00:09 UTC, `deploy-preview`, unpublished). The [earlier gallery deploy](https://6ab9487cc41bca4d076e25a8--catatonia-faculty-preview.netlify.app/) is the prior HTML revision (`ba593a0049aa4d54c15a05bc6a61e4ab5c42f0faa3ca4ccd616669af9198ca03`); it does **not** show the new starter cards.
 - Intended learners (faculty owner, 2026-09-27): **medical students, PGY-1 residents, and APPs**. The current student site is MS3; PGY-1 and APP are separate roles within the resident site. Each proposed route and its role-specific framing remain to be checked before learner release.
 
-If the HTML changes, compare this packet with the changed source and review the new exact revision. The private preview is separate from the MS3 and resident learner sites. The gallery at the top shows four previews cloned from the existing fictional artwork; it adds no new clinical scene wording.
+If the HTML changes, compare this packet with the changed source and review the new exact revision. The private preview is separate from the MS3 and resident learner sites. The four gallery previews reuse the existing fictional artwork. The new starting cards change navigation and introduce the three short prompts below; existing scene captions, choices, and explanations are unchanged.
 
 ## Visual feedback recorded 2026-09-27
 
-The faculty owner approved the visual presentation of **A brief greeting** after viewing it, then explicitly approved the remaining scene visuals: **Across time**, **More than speech**, and **Two witnesses**. This records approval of the four fictional illustrations. The later wording decision is recorded separately below; the gallery layout, audience, and learner release remain open.
+The faculty owner approved the visual presentation of **A brief greeting** after viewing it, then explicitly approved the remaining scene visuals: **Across time**, **More than speech**, and **Two witnesses**. This records approval of the four fictional illustrations. The later wording decision is recorded separately below; learner release remains open.
 
 ## Wording feedback recorded 2026-09-27
 
-After receiving this exact-wording review packet and the request to review its captions and feedback, the faculty owner replied **“approved”** in chat. This is recorded for the HTML SHA-256 above as acceptance of the 16 moment captions, 24 choice statements and explanations, and two shared feedback messages listed below. It does not resolve the gallery layout, native VoiceOver review, overall release disposition, or learner publication. The intended learners were named in a separate reply, recorded above.
+After receiving the earlier exact-wording review packet and the request to review its captions and feedback, the faculty owner replied **“approved”** in chat. This is recorded for the prior HTML SHA-256 (`ba593a0049aa4d54c15a05bc6a61e4ab5c42f0faa3ca4ccd616669af9198ca03`) as acceptance of the 16 moment captions, 24 choice statements and explanations, and two shared feedback messages listed below. Those strings are unchanged in the current source. It does not resolve the new starter-card wording, native VoiceOver review, overall release disposition, or learner publication. The intended learners were named in a separate reply, recorded above.
+
+## Starter cards added for private preview
+
+The faculty owner approved the proposed **three compact starting cards above the four-scene gallery** in chat. These cards suggest where to begin; they do not restrict scenes by role. Each opens the suggested scene at moment one and clears earlier selections. The exact new prompt copy is recorded here for faculty wording review before learner release:
+
+| Card heading | Suggested scene | Exact prompt |
+|---|---|---|
+| Medical students (MS3) | A brief greeting | What can you see, what does the narration state, and what remains unknown? |
+| PGY-1 residents | Across time | Describe each check-in without filling in the interval. |
+| APPs | Two witnesses | Separate the nurse’s earlier report from the bedside observation now. |
+
+**Faculty wording decision — starter cards:** [ ] Accept  [ ] Revise  [ ] Hold
+
+Notes / exact replacement wording: ______________________________
 
 ## What the faculty is reviewing
 
@@ -154,8 +168,8 @@ Notes: ______________________________
 
 ## Accessibility review — exact private preview
 
-- **Browser and keyboard checks passed:** Chrome exposed named scene cards, timeline moments, artwork descriptions, choices, and feedback. Keyboard selection changed scenes and moments; choosing observations and checking by keyboard moved focus to the feedback heading. Existing automated checks cover narrow screens; the stylesheet includes a reduced-motion rule.
-- **Native VoiceOver: attempted, spoken walkthrough unverified (2026-09-27).** On macOS 26.6.2, VoiceOver was started from System Settings and its process was running. The exact local HTML file with the SHA-256 above was opened in Safari 26.6.2. Safari exposed named scene cards, moments, artwork description, checkboxes, feedback button, and official-material links in its native accessibility tree. VoiceOver Utility showed its caption panel enabled, but the desktop control tool did not expose that panel or spoken output, and its synthesized VoiceOver navigation commands did not move the VoiceOver cursor. This is an access limitation of the test setup, not a pass or a demonstrated page defect. VoiceOver was switched off and the temporary Safari tab and utility were closed after the attempt.
+- **Browser and keyboard checks passed:** The current private deploy opened in Chrome, showed all three starting cards and all four scenes, and the APP card opened **Two witnesses** at moment one with focus on the scene heading. The complete prototype Playwright suite passed (68 checks), including starter-card selection, reset behavior, and 375 px width; a desktop and phone visual check found no horizontal overflow. The stylesheet includes a reduced-motion rule.
+- **Native VoiceOver: attempted on the prior revision, spoken walkthrough unverified (2026-09-27).** On macOS 26.6.2, VoiceOver was started from System Settings and its process was running. The prior local HTML file (`ba593a0049aa4d54c15a05bc6a61e4ab5c42f0faa3ca4ccd616669af9198ca03`) was opened in Safari 26.6.2. Safari exposed named scene cards, moments, artwork description, checkboxes, feedback button, and official-material links in its native accessibility tree. VoiceOver Utility showed its caption panel enabled, but the desktop control tool did not expose that panel or spoken output, and its synthesized VoiceOver navigation commands did not move the VoiceOver cursor. This is an access limitation of the test setup, not a pass or a demonstrated page defect. VoiceOver was switched off and the temporary Safari tab and utility were closed after the attempt.
 - **Native VoiceOver follow-up deferred by the faculty owner (2026-09-27):** After the attempted walkthrough above, the owner said, “Let’s skip the test.” This closes the planned follow-up for this prototype without recording a VoiceOver pass. Browser and keyboard checks remain the available accessibility evidence; actual spoken announcements and 10-second playback pacing remain unknown.
 - **Visual follow-up:** At a 375 px viewport, labels drawn inside the artwork are very small. The full moment captions remain available below the artwork, but faculty should check whether those labels are legible or need a different treatment.
 
