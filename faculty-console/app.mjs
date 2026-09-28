@@ -29,7 +29,9 @@ import {
   twinOf,
 } from './review-model.mjs';
 import { isDriftReason } from './change-history.mjs';
-import { staleSignoffLine, trainWeekLine } from './release-status.mjs';
+import {
+  resignHeading, resignSchedule, staleSignoffLine, trainWeekLine,
+} from './release-status.mjs';
 
 const API = '/api/attest';
 const RED_TEAM_REVISIONS_API = '/api/red-team-revisions';
@@ -781,6 +783,7 @@ export function startFacultyConsole({
           ]) : null,
           status.train?.week ? el('p', { id: 'release-week', class: 'muted' }, [trainWeekLine(status.train.week)]) : null,
           status.signoffs ? el('p', { id: 'release-signoffs', class: status.signoffs.items.length ? 'release-status__signoffs' : 'muted' }, [staleSignoffLine(status.signoffs)]) : null,
+          status.signoffs ? renderResignSchedule(status) : null,
           status.ledgerMode ? el('p', { class: 'muted' }, [
             'Ledger mode is on: sign-offs publish through the attestation ledger on their own and are not listed here.',
           ]) : null,
@@ -794,6 +797,54 @@ export function startFacultyConsole({
           ]),
         ]) : null,
       ]) : null,
+    ]);
+  }
+
+  /* Re-sign before the next publish (2026-09-28). Joins three facts the console already has:
+     the pages its own queue shows drifted, the pages each learner site SERVES as awaiting
+     re-signature (status.signoffs), and the next release-train slot. The countdown runs from
+     the panel's own "Checked" time so it describes the reading it came from. A row opens the
+     page with "What changed since you signed" expanded, the same as Re-sign by change. */
+  const RESIGN_LISTED = 12;
+
+  function renderResignRow(entry, group, index) {
+    const item = contentItemBySlug(entry.slug);
+    const id = `resign-now-open-${group}-${index}`;
+    const label = group === 'now' ? 'Learners see it pending now'
+      : group === 'next' ? 'Not live yet — goes out pending at the next publish unless re-signed first'
+        : 'Signed — clears once the sign-off reaches learners';
+    return el('li', { class: `resign-now-row resign-now-row--${group}` }, [
+      item ? el('button', {
+        id, type: 'button', class: 'quiet',
+        onClick: () => openFromChangeView(item, null, id),
+      }, [entry.slug]) : el('code', {}, [entry.slug]),
+      el('span', { class: 'resign-now-status' }, [
+        ` · ${label}${entry.signedAt ? ` (signed ${entry.signedAt})` : ''}`,
+      ]),
+    ]);
+  }
+
+  function renderResignSchedule(status) {
+    const content = state.reviewItems.filter(item => item.type !== 'question');
+    const schedule = resignSchedule({
+      drifted: content.filter(isDriftedItem).map(item => item.identity),
+      known: content.map(item => item.identity),
+      signoffs: status.signoffs,
+      nextSlot: Date.parse(status.train?.nextSlot),
+      nowMs: Date.parse(status.fetchedAt),
+      ledgerMode: status.ledgerMode,
+    });
+    if (!schedule.total) return null;
+    const rows = [
+      ...schedule.now.map((entry, index) => renderResignRow(entry, 'now', index)),
+      ...schedule.next.map((entry, index) => renderResignRow(entry, 'next', index)),
+      ...schedule.signed.map((entry, index) => renderResignRow(entry, 'signed', index)),
+    ];
+    return el('div', { id: 'resign-now', class: 'resign-now' }, [
+      el('h3', { id: 'resign-now-heading' }, [resignHeading(schedule)]),
+      el('ul', { class: 'resign-now-list' }, rows.slice(0, RESIGN_LISTED)),
+      rows.length > RESIGN_LISTED
+        ? el('p', { class: 'muted' }, [`+${rows.length - RESIGN_LISTED} more under Needs review.`]) : null,
     ]);
   }
 

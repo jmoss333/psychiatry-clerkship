@@ -793,6 +793,14 @@ test('release status says what learners see, lists merged work that is not live,
     'Learners see 1 page as awaiting your re-signature — the content changed after it was signed: '
     + 'sp-interview.html (signed 2026-09-26). Re-attest under Needs review.',
   );
+  // Re-sign before the next publish: the countdown runs from the panel's own check time
+  // (13:00 UTC), and a served-pending page the queue does not list is "now", never "signed".
+  await expect(panel.locator('#resign-now-heading')).toHaveText(
+    'Re-sign 1 page before the next publish — 15:05 UTC, in 2 h 5 min.',
+  );
+  await expect(panel.locator('.resign-now-row--now')).toHaveText(
+    'sp-interview.html · Learners see it pending now (signed 2026-09-26)',
+  );
   expect(seenKey).toBe(FACULTY_KEY);
   expect(await page.evaluate(() => document.querySelector('#learner-preview-frame') === window.__releaseOriginalFrame)).toBe(true);
   await page.setViewportSize({ width: 390, height: 844 });
