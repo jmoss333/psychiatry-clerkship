@@ -54,13 +54,10 @@ const pack = JSON.parse(fs.readFileSync(packPath, 'utf8'));
 // exactly that; the proxy additionally requires a reviewer and a review date not in the future,
 // so this set is a safe superset of what the proxy serves), so it is a case Tier 1 must drive.
 // Probes name a case by
-// its persona displayName; a name that is in the pack but not reviewed makes its probes SKIP
-// (reported, never silent), a name absent from the pack is a broken probe and FAILS.
+// id, or by a persona displayName exactly one case carries (resolveProbeCase below); a case that
+// is in the pack but not reviewed makes its probes SKIP (reported, never silent), a name absent
+// from the pack is a broken probe and FAILS, and a name two cases share FAILS too.
 const REVIEWED = pack.cases.filter((c) => c.facultyReview && c.facultyReview.status === 'reviewed');
-const CASE = Object.fromEntries(REVIEWED.map((c) => [c.persona.displayName, c.id]));
-const NOT_REVIEWED = Object.fromEntries(
-  pack.cases.filter((c) => !REVIEWED.includes(c)).map((c) => [c.persona.displayName, c.id]),
-);
 {
   // The case gate below keys by id, so a duplicate id would let the second copy count as driven
   // by probes that only ever ran on the first. Refuse the pack before anything runs.
@@ -95,13 +92,34 @@ const touchedBy = new Map(); // probe -> Set(case id) it called probe() on, pass
 let touched = new Set();     // case ids the probe currently running has called probe() on
 // Both maps key by the probe OBJECT, not its id — see the duplicate-probe-id refusal below.
 
+// A probe names its case by id, or by persona displayName when exactly one case in the pack
+// carries that name. A name two cases share — one patient seen twice, as Dana is on admission and
+// at her one-week follow-up — is refused with both ids and fails the probe; it is never resolved
+// to whichever case is listed last. Until 2026-09-28 this was Object.fromEntries over display
+// names, so a second reviewed "Dana" would silently have taken every probe written for the
+// first: on a pack with the follow-up reviewed, 31 of 33 checks still passed, on the wrong case.
+function resolveProbeCase(who) {
+  const byId = pack.cases.find((c) => c.id === who);
+  if (byId) return byId;
+  const named = pack.cases.filter((c) => c.persona && c.persona.displayName === who);
+  if (named.length > 1) {
+    const err = new Error(`${who} is ambiguous — cases ${named.map((c) => c.id).join(', ')} share that name; name the case by id`);
+    err.code = 'CASE_AMBIGUOUS';
+    throw err;
+  }
+  return named[0] || null;
+}
+
 function probe(who, msgs) {
-  const c = pack.cases.find((x) => x.id === CASE[who]);
+  const c = resolveProbeCase(who);
   if (!c) {
-    const err = new Error(NOT_REVIEWED[who]
-      ? `${who} (${NOT_REVIEWED[who]}) is in the pack but not reviewed — learners cannot select it`
-      : `case not found for ${who} — not in the pack`);
-    err.code = NOT_REVIEWED[who] ? 'CASE_NOT_REVIEWED' : 'CASE_MISSING';
+    const err = new Error(`case not found for ${who} — not in the pack`);
+    err.code = 'CASE_MISSING';
+    throw err;
+  }
+  if (!REVIEWED.includes(c)) {
+    const err = new Error(`${c.persona.displayName} (${c.id}) is in the pack but not reviewed — learners cannot select it`);
+    err.code = 'CASE_NOT_REVIEWED';
     throw err;
   }
   touched.add(c.id);
@@ -118,6 +136,8 @@ function probe(who, msgs) {
 // NB: JUDGMENTAL must be phrasing the case's own `judgmental` intent actually matches.
 // Dana keys on "you should", "at least", "snap out", "look on the bright side"; "calm down"
 // is MARCUS's vocabulary. A probe that does not trip the flag proves nothing at all.
+// Day-1 Dana by id: the one-week follow-up shares her display name (see resolveProbeCase).
+const DANA = 'sp_depression_gated_si_001';
 const JUDGMENTAL = 'You should think about what this is doing to your kids.';
 const SCREEN = 'Have you had thoughts of killing yourself?';
 const REPAIR = [
@@ -150,7 +170,7 @@ const PROBES = [
     // punished. Until 2026-09-17 this probe pinned the opposite (a rapport-1 gate).
     id: 'B1', name: 'SI as the FIRST message — discloses (D17)',
     gates: ['si_active'],
-    run: () => probe('Dana', ['Have you had thoughts of killing yourself?']),
+    run: () => probe(DANA, ['Have you had thoughts of killing yourself?']),
     expect: (r) => [
       r.unlocked.includes('si_active') || 'si_active stayed shut to a cold direct question — D17 violation',
       r.covered.includes('si_direct') || 'si_direct not counted as asked',
@@ -160,7 +180,7 @@ const PROBES = [
   {
     id: 'B2', name: 'rapport, then the plain screen — disclosure fires',
     gates: ['si_active'],
-    run: () => probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?']),
+    run: () => probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?']),
     expect: (r) => [
       r.unlocked.includes('si_active') || 'si_active did NOT unlock after rapport — the disclosure is unreachable',
       r.row('c_si') === 'observed' || `c_si = ${r.row('c_si')} (want observed)`,
@@ -169,7 +189,7 @@ const PROBES = [
   {
     id: 'B3', name: 'plan question with no screen — locked gate leaks nothing',
     gates: ['si_plan_detail', 'si_active'],
-    run: () => probe('Dana', [...RAPPORT, 'Do you have a plan?']),
+    run: () => probe(DANA, [...RAPPORT, 'Do you have a plan?']),
     expect: (r) => [
       !r.unlocked.includes('si_plan_detail') || 'si_plan_detail unlocked without a suicide screen — method detail leaks',
       !r.unlocked.includes('si_active') || 'si_active unlocked by a plan question alone',
@@ -179,7 +199,7 @@ const PROBES = [
   {
     id: 'B3d', name: 'past-attempt question with no screen — locked gate leaks nothing',
     gates: ['si_behavior_detail', 'si_active'],
-    run: () => probe('Dana', [...RAPPORT, 'Have you ever tried to hurt yourself before?']),
+    run: () => probe(DANA, [...RAPPORT, 'Have you ever tried to hurt yourself before?']),
     expect: (r) => [
       !r.unlocked.includes('si_behavior_detail') || 'si_behavior_detail unlocked without a suicide screen — attempt history leaks',
       !r.unlocked.includes('si_active') || 'si_active unlocked by a past-attempt question alone',
@@ -192,7 +212,7 @@ const PROBES = [
   {
     id: 'B3b', name: 'D14: a DISCHARGE plan question is not a plan question',
     gates: ['si_plan_detail'],
-    run: () => probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'What is your plan for after discharge?']),
+    run: () => probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?', 'What is your plan for after discharge?']),
     expect: (r) => [
       !r.unlocked.includes('si_plan_detail') || 'si_plan_detail fired on a discharge-planning question (D14 regression)',
       !r.covered.includes('si_plan') || 'si_plan credited for a discharge-planning question (D14 regression)',
@@ -204,10 +224,10 @@ const PROBES = [
     id: 'B3c', name: 'after disclosure, the real follow-up gates do open',
     gates: ['si_plan_detail', 'si_means_detail', 'si_protective_detail', 'si_behavior_detail'],
     run: () => ({
-      plan: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have a plan?']),
-      means: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have access to the pills?']),
-      prot: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'What keeps you going?']),
-      behavior: probe('Dana', [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Have you ever tried to hurt yourself before?']),
+      plan: probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have a plan?']),
+      means: probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have access to the pills?']),
+      prot: probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?', 'What keeps you going?']),
+      behavior: probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Have you ever tried to hurt yourself before?']),
     }),
     expect: (r) => [
       r.plan.unlocked.includes('si_plan_detail') || 'si_plan_detail did not open after a real screen — D14 over-narrowed',
@@ -230,9 +250,9 @@ const PROBES = [
     // is Marcus's flag vocabulary, not hers — hers keys on "you should", "at least",
     // "snap out", "look on the bright side". A probe that does not flag proves nothing.
     run: () => ({
-      flagged: probe('Dana', [...RAPPORT, JUDGMENTAL]),
-      screened: probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN]),
-      cold: probe('Dana', [JUDGMENTAL, SCREEN]),
+      flagged: probe(DANA, [...RAPPORT, JUDGMENTAL]),
+      screened: probe(DANA, [...RAPPORT, JUDGMENTAL, SCREEN]),
+      cold: probe(DANA, [JUDGMENTAL, SCREEN]),
     }),
     expect: (r) => [
       r.flagged.covered.includes('judgmental') || 'the judgmental phrasing did not trip the flag — the probe proves nothing',
@@ -248,9 +268,9 @@ const PROBES = [
     id: 'B4b', name: 'repair turns are not what opens the safety question — asking is (D17)',
     gates: ['si_active'],
     run: () => ({
-      repairedOnly: probe('Dana', [...RAPPORT, JUDGMENTAL, ...REPAIR]),
-      askedAfterOne: probe('Dana', [...RAPPORT, JUDGMENTAL, REPAIR[0], SCREEN]),
-      askedAfterTwo: probe('Dana', [...RAPPORT, JUDGMENTAL, ...REPAIR, SCREEN]),
+      repairedOnly: probe(DANA, [...RAPPORT, JUDGMENTAL, ...REPAIR]),
+      askedAfterOne: probe(DANA, [...RAPPORT, JUDGMENTAL, REPAIR[0], SCREEN]),
+      askedAfterTwo: probe(DANA, [...RAPPORT, JUDGMENTAL, ...REPAIR, SCREEN]),
     }),
     expect: (r) => [
       !r.repairedOnly.unlocked.includes('si_active') || 'repair turns alone opened si_active',
@@ -303,7 +323,7 @@ const PROBES = [
     // are the regression pins for the cascade-precedence defect the 2026-09-06 red-team found.
     id: 'B8', name: 'a past-attempts question before any screen leaks nothing',
     gates: ['si_behavior_detail'],
-    run: () => probe('Dana', [...RAPPORT, 'Have you had any past attempts?']),
+    run: () => probe(DANA, [...RAPPORT, 'Have you had any past attempts?']),
     expect: (r) => [
       !r.unlocked.includes('si_behavior_detail')
         || 'si_behavior_detail unlocked without a disclosure — the attempt history is reachable unearned',
@@ -318,9 +338,9 @@ const PROBES = [
     id: 'B8b', name: 'a past-attempts question that also names the act opens the attempt gate',
     gates: ['si_behavior_detail'],
     run: () => ({
-      names: probe('Dana', [...RAPPORT, SCREEN, 'Have you ever tried to kill yourself?']),
-      alt: probe('Dana', [...RAPPORT, SCREEN, 'Have you ever attempted suicide?']),
-      soft: probe('Dana', [...RAPPORT, SCREEN, 'Have you had any past attempts?']),
+      names: probe(DANA, [...RAPPORT, SCREEN, 'Have you ever tried to kill yourself?']),
+      alt: probe(DANA, [...RAPPORT, SCREEN, 'Have you ever attempted suicide?']),
+      soft: probe(DANA, [...RAPPORT, SCREEN, 'Have you had any past attempts?']),
     }),
     expect: (r) => [
       r.names.unlocked.includes('si_behavior_detail')
@@ -339,9 +359,9 @@ const PROBES = [
     id: 'B8c', name: 'a judgmental turn cannot shut the safety question, and cannot open the attempt-history gate on its own',
     gates: ['si_active', 'si_behavior_detail'],
     run: () => ({
-      after: probe('Dana', [...RAPPORT, JUDGMENTAL, SCREEN, 'Have you ever tried to end your life?']),
-      sameTurn: probe('Dana', [...RAPPORT, JUDGMENTAL, 'Have you ever tried to end your life?']),
-      noScreen: probe('Dana', [...RAPPORT, JUDGMENTAL, 'Have you had any past attempts?']),
+      after: probe(DANA, [...RAPPORT, JUDGMENTAL, SCREEN, 'Have you ever tried to end your life?']),
+      sameTurn: probe(DANA, [...RAPPORT, JUDGMENTAL, 'Have you ever tried to end your life?']),
+      noScreen: probe(DANA, [...RAPPORT, JUDGMENTAL, 'Have you had any past attempts?']),
     }),
     expect: (r) => [
       r.after.unlocked.includes('si_active') || 'the direct question after a judgment did not disclose',
@@ -365,8 +385,8 @@ const PROBES = [
     id: 'B8d', name: 'an explicit plan question opens the same gate as the soft form',
     gates: ['si_plan_detail'],
     run: () => ({
-      explicit: probe('Dana', [...RAPPORT, SCREEN, 'Have you thought about how you would kill yourself?']),
-      soft: probe('Dana', [...RAPPORT, SCREEN, 'Do you have a plan?']),
+      explicit: probe(DANA, [...RAPPORT, SCREEN, 'Have you thought about how you would kill yourself?']),
+      soft: probe(DANA, [...RAPPORT, SCREEN, 'Do you have a plan?']),
     }),
     expect: (r) => [
       r.explicit.unlocked.includes('si_plan_detail')
@@ -384,12 +404,12 @@ const PROBES = [
     // si_behavior_detail/si_protective_detail are exactly the gates that comparison spans.
     gates: ['si_plan_detail', 'si_means_detail', 'si_behavior_detail', 'si_protective_detail'],
     run: () => ({
-      explicit: probe('Dana', [...RAPPORT, SCREEN,
+      explicit: probe(DANA, [...RAPPORT, SCREEN,
         'Have you thought about how you would kill yourself?',
         'Do you have access to the pills?',
         'Have you ever tried to kill yourself?',
         'What keeps you going?']),
-      soft: probe('Dana', [...RAPPORT, SCREEN,
+      soft: probe(DANA, [...RAPPORT, SCREEN,
         'Do you have a plan?', 'Do you have access to the pills?',
         'Have you had any past attempts?', 'What keeps you going?']),
     }),
@@ -413,7 +433,7 @@ const PROBES = [
     id: 'C3', name: 'a symptom outside the inventory invents nothing',
     // Coverage-only: asserts a covered-intent flag, never state.unlocked.
     gates: [],
-    run: () => probe('Dana', [...RAPPORT, 'Have you had any seizures?']),
+    run: () => probe(DANA, [...RAPPORT, 'Have you had any seizures?']),
     expect: (r) => [
       !r.covered.includes('si_direct') || 'an unrelated symptom question credited a safety intent',
     ],
@@ -502,7 +522,7 @@ const PROBES = [
   {
     id: 'M1', name: 'Morgan: the plain screen is credited, and there is no gate to open',
     gates: [],
-    run: () => ({ screen: probe('Morgan', [...MORGAN_RAPPORT, SCREEN]), gates: (pack.cases.find((c) => c.id === CASE.Morgan).gated || []).map((g) => g.id) }),
+    run: () => ({ screen: probe('Morgan', [...MORGAN_RAPPORT, SCREEN]), gates: (resolveProbeCase('Morgan').gated || []).map((g) => g.id) }),
     expect: (r) => [
       r.gates.length === 0 || `Morgan gained disclosure gate(s) [${r.gates.join(', ')}] — the M series assumes a gateless case; update M1 alongside the pack`,
       r.screen.covered.includes('si_direct') || 'si_direct not counted as asked on Morgan',
