@@ -715,7 +715,7 @@
     },
     {
       "id": "qb_pha_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -2340,7 +2340,7 @@
     },
     {
       "id": "qb_saf_006",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -3654,7 +3654,7 @@
     },
     {
       "id": "qb_pha_007",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3760,7 +3760,7 @@
     },
     {
       "id": "qb_pha_009",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "pharm",
       "competency": [
