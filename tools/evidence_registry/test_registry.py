@@ -341,6 +341,10 @@ import run_citation_check as citation_checker
 
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | PEER_REVIEW_WP9_2026_09_IDS
 
+# The Interview Room follow-up visit (2026-09-28): the PHQ-9 severity bands its visit note grades.
+INTERVIEW_ROOM_FOLLOWUP_2026_09_IDS = {"kroenke-2001-phq9"}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | INTERVIEW_ROOM_FOLLOWUP_2026_09_IDS
+
 
 def _zotero_config() -> dict:
     return json.loads(ZOTERO_CONFIG_PATH.read_text(encoding="utf-8"))
