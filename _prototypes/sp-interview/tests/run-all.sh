@@ -12,6 +12,7 @@ echo "── locked-content leak check (every pack case) ──"; node leak.test
 echo "── learner review filter + managed-voice gate ──"; node review-filter.test.mjs
 echo "── Morgan in the pack: attested local case + uniform screen ──"; node --test morgan-pack.test.mjs
 echo "── Dana one week after discharge: the pack case ──"; node --test dana-follow-up-pack.test.mjs
+echo "── chart + visit note (per case, browser-only) ──"; node --test visit-note.test.mjs
 echo "── generated preview reproducibility ──"; node preview.test.mjs
 echo "── Dana harness failure propagation ──"; node harness-exit.test.mjs
 echo "── deterministic voice state ──"; node --test voice-state.test.mjs

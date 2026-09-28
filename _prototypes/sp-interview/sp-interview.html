@@ -765,6 +765,123 @@ var UNCLEAR_REVIEW='Use “Unclear from this exchange” when the evidence is in
 var STATUS_CLS={observed:'obs',partial:'part',missed:'miss',na:'na','self-reported':'selfrep'};
 var STATUS_MK={observed:'●',partial:'◐',missed:'○',na:'○','self-reported':'◇'};
 
+/* ======================= Chart and visit note (per case, browser-only) ======================= */
+/* A case may declare `chart` (documents the learner can read before and during the visit) and
+   `visitNote` (a short structured note written after the encounter). The note is graded here, in
+   the browser, against the case record. Nothing in this block is sent anywhere or reaches a model:
+   sp.mjs builds the actor and evaluator prompts from fixed case fields, and the evaluate request
+   still carries exactly the three self-assessment answers. */
+function chartDocs(caseDef){
+  return (caseDef&&Array.isArray(caseDef.chart)?caseDef.chart:[]).filter(function(d){
+    return d&&typeof d.id==='string'&&typeof d.title==='string'&&Array.isArray(d.lines);
+  });
+}
+function visitNoteFields(caseDef){
+  var note=caseDef&&caseDef.visitNote,out=[];
+  if(!note||!Array.isArray(note.sections))return out;
+  note.sections.forEach(function(sec){(sec.fields||[]).forEach(function(f){out.push({section:sec,field:f});});});
+  return out;
+}
+function visitNoteEstablished(s,field){
+  var r=field.revealedBy||{};
+  if(r.chart)return true;
+  if(r.gate)return !!(s.unlocked&&s.unlocked[r.gate]);
+  if(r.intents)return r.intents.some(function(id){return !!(s.covered&&s.covered[id]);});
+  return false;
+}
+function visitNoteBandFor(field,total){
+  if(!Array.isArray(field.bands)||typeof total!=='number'||!isFinite(total))return null;
+  for(var i=0;i<field.bands.length;i++){if(total<=field.bands[i].max)return field.bands[i].value;}
+  return null;
+}
+function visitNoteInteger(value,field){
+  var text=String(value==null?'':value).trim();
+  if(!/^\d+$/.test(text))return null;
+  var n=Number(text);
+  return n>=field.min&&n<=field.max?n:null;
+}
+function visitNoteItems(field,entry){
+  var text=(entry&&typeof entry.text==='string')?entry.text:'';
+  var matched=(field.expect||[]).filter(function(ex){return (ex.match||[]).some(function(p){return new RegExp(p,'i').test(text);});});
+  return {text:text,none:!!(entry&&entry.none),matched:matched,
+    missingRequired:(field.expect||[]).filter(function(ex){return ex.required&&matched.indexOf(ex)<0;})};
+}
+function visitNoteComplete(caseDef,entries){
+  return visitNoteFields(caseDef).every(function(item){
+    var f=item.field,v=entries?entries[f.id]:undefined;
+    if(f.type==='choice')return f.choices.some(function(ch){return ch[0]===v;});
+    if(f.type==='integer')return visitNoteInteger(v,f)!==null;
+    if(f.type==='items')return !!(v&&(v.none||(typeof v.text==='string'&&v.text.trim())));
+    return false;
+  });
+}
+/* The patient turn where a field's fact became available: the first turn whose recognized intents
+   include one of the field's, or, for a gate, the first turn at which replaying the learner's words
+   through the same cascade the server runs opens it (parity.test.mjs keeps MockProvider and
+   sp.mjs deriveState identical on `unlocked`). Null when neither happened. */
+function visitNoteEvidenceTurn(s,field){
+  var r=field.revealedBy||{},turns=s.turns||[],i;
+  if(r.intents){
+    for(i=0;i<turns.length;i++){if((turns[i].intents||[]).some(function(id){return r.intents.indexOf(id)>=0;}))return {number:i+1,learner:turns[i].me,patient:turns[i].pt};}
+    return null;
+  }
+  if(r.gate){
+    var replayer=new MockProvider(),replay=replayer.start(s.caseDef,{difficulty:'supported'});
+    for(i=0;i<turns.length;i++){replayer.respond(replay,turns[i].me);if(replay.unlocked[r.gate])return {number:i+1,learner:turns[i].me,patient:turns[i].pt};}
+  }
+  return null;
+}
+function visitNoteEntryText(field,value){
+  if(field.type==='choice'){var ch=field.choices.filter(function(c){return c[0]===value;})[0];return ch?ch[1]:'—';}
+  if(field.type==='integer'){var n=visitNoteInteger(value,field);return n===null?'—':String(n);}
+  if(field.type==='items'){var it=visitNoteItems(field,value);return it.none?(field.none||'None found'):(it.text.trim()||'—');}
+  return '—';
+}
+var VISIT_NOTE_WORD={
+  match:'Matches the record',
+  unrecorded:'The room recognized this topic in your turns — your note records it as not established; check the reply',
+  differs:'Differs from the record',
+  accurate:'Not established in this visit — an honest entry',
+  unsupported:'Matches the record, though the room did not recognize the topic in your turns',
+  'differs-unestablished':'Differs from the record, and the room did not recognize the topic in your turns'
+};
+function gradeVisitNote(caseDef,s,entries){
+  var fields=visitNoteFields(caseDef),rows=[],counts={match:0,differ:0,notEstablished:0};
+  fields.forEach(function(item){
+    var f=item.field,v=entries?entries[f.id]:undefined,r=f.revealedBy||{};
+    var established=visitNoteEstablished(s,f),result,note='';
+    if(f.type==='integer'){
+      result=visitNoteInteger(v,f)===f.answer?'match':'differs';
+    }else if(f.type==='items'){
+      var it=visitNoteItems(f,v),requiredOk=!it.none&&!it.missingRequired.length;
+      if(established)result=requiredOk?'match':(it.none?'unrecorded':'differs');
+      else result=it.none?'accurate':(requiredOk?'unsupported':'differs-unestablished');
+      var extra=it.none?[]:it.matched.filter(function(ex){return !ex.required;}).map(function(ex){return ex.label;});
+      if(extra.length)note='You also recorded: '+extra.join(', ')+'.';
+    }else{
+      var isUnknown=f.unknown!=null&&v===f.unknown;
+      if(established)result=v===f.answer?'match':(isUnknown?'unrecorded':'differs');
+      else result=isUnknown?'accurate':(v===f.answer?'unsupported':'differs-unestablished');
+      if(f.bandOf&&result!=='match'){
+        var totalItem=fields.filter(function(x){return x.field.id===f.bandOf;})[0];
+        var own=totalItem?visitNoteInteger(entries&&entries[f.bandOf],totalItem.field):null;
+        if(own!==null&&visitNoteBandFor(f,own)===v)note='That is the right band for the total you wrote ('+own+').';
+      }
+    }
+    if(result==='match')counts.match++;
+    else if(result==='accurate'||result==='unsupported')counts.notEstablished++;
+    else counts.differ++;
+    rows.push({id:f.id,section:item.section.title,label:f.label,type:f.type,entry:visitNoteEntryText(f,v),record:f.record,
+      teach:f.teach,result:result,word:VISIT_NOTE_WORD[result],established:established,fromChart:!!r.chart,
+      evidence:r.chart?null:visitNoteEvidenceTurn(s,f),note:note});
+  });
+  return {rows:rows,counts:counts};
+}
+
+function nextEncounterFor(pack,caseId){
+  return eligibleCases(pack).filter(function(c){return c.continues===caseId;})[0]||null;
+}
+
 /* ================================== UI ================================== */
 function EvidenceReview(props){
   var evidence=props.evidence;
@@ -1753,7 +1870,7 @@ function App(){
   }
   return null;
 }
-try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible};}catch(x){}
+try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible,chartDocs:chartDocs,visitNoteFields:visitNoteFields,visitNoteEstablished:visitNoteEstablished,visitNoteBandFor:visitNoteBandFor,visitNoteComplete:visitNoteComplete,visitNoteEvidenceTurn:visitNoteEvidenceTurn,gradeVisitNote:gradeVisitNote,nextEncounterFor:nextEncounterFor};}catch(x){}
 function isLocalDanaPreview(location, config){
   return !!(location && config && config.generated === true && config.providerMode === 'mock' &&
     (location.protocol === 'http:' || location.protocol === 'https:') &&
