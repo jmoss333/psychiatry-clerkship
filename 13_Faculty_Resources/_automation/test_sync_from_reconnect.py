@@ -12,6 +12,7 @@ import ast
 import hashlib
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -22,6 +23,14 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
+
+# This module builds throwaway git repositories. An inherited GIT_DIR (every hook exports one,
+# and bin/verify.sh is the pre-push hook) would aim them at the repository running the test.
+# See bin/_git_env.py and tests/git-env-isolation.test.mjs.
+sys.path.insert(0, str(ROOT / "bin"))
+from _git_env import scrub_inherited_git_env  # noqa: E402
+
+scrub_inherited_git_env()
 ENGINE = HERE / "sync_from_reconnect.py"
 WRAPPER = HERE / "sync_crisis_from_reconnect.py"
 FIXTURES = ROOT / "tests" / "fixtures" / "reconnect"
@@ -37,6 +46,7 @@ LOCAL_FOR = {
 }
 SOURCE_REPOSITORY = "https://github.com/jmoss333/reconnect-psychiatry-system.git"
 GIT = shutil.which("git")
+HERMETIC_ENV = {**os.environ, "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull}
 GIT_IDENTITY = [
     "-c", "user.name=Fixture",
     "-c", "user.email=fixture@example.invalid",
@@ -79,6 +89,7 @@ def git(cwd: Path, *args) -> str:
         check=True,
         capture_output=True,
         text=True,
+        env=HERMETIC_ENV,
     )
     return result.stdout.strip()
 
@@ -293,6 +304,7 @@ class GitBackedTests(unittest.TestCase):
             [GIT, "-C", str(self.upstream), "show", f"{self.pinned}:{DATA_ALL}"],
             check=True,
             capture_output=True,
+            env=HERMETIC_ENV,
         ).stdout
         record = {
             "derivedPath": "pharmacy.json",

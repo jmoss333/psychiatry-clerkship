@@ -30,6 +30,7 @@ but do not count as drift.
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -121,14 +122,18 @@ def read_json(path: Path, label: str):
 
 
 # --- git (read-only: --no-optional-locks keeps even `status` from touching the index) ---
+# Every inherited GIT_* is dropped for these calls: a hook-exported GIT_DIR outranks `-C` and
+# would silently point "the ReConnect checkout" at the clerkship repository instead.
 
 
 def git(reconnect: Path, *args):
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
     try:
         return subprocess.run(
             ["git", "--no-optional-locks", "-C", str(reconnect), *args],
             check=False,
             capture_output=True,
+            env=env,
         )
     except OSError:
         return None
