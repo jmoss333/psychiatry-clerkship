@@ -208,6 +208,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Guard — production rotation edition stays exactly empty and disabled"),
             ("name", "Test — ReConnect snapshot provenance"),
             ("name", "Validate — ReConnect snapshot provenance"),
+            ("name", "Test — ReConnect sync engine"),
             ("name", "Unit — surface governance"),
             ("name", "Unit — tool governance"),
             ("name", "Validate — tool governance"),
@@ -424,7 +425,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "a8bebbaa3a154105d2491c0c0a468a5fe107e9db29d83ff844b7a23c7efda0d5"
     ),
-    "ci.yml": "1c7346fae1eae3cc20a0504930451d748544c4aa53ff1a4f0d2328134e8643a6",
+    "ci.yml": "8aaf3b99530ec5fc6be09d74613b9fab31413ebf57691497bdd888189120423b",
     "maintenance-governance-digest.yml": (
         "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),
