@@ -9,7 +9,9 @@ faculty-console/
   review-model.mjs               queue, preview-route, deep-link, twin, and eligibility rules
   m/                             phone client (/m/): index.html, m.mjs, m-model.mjs, manifest
   content-universe.mjs           the exact set of pages and tools the two sites publish
-  qbank-rules.mjs                shared question-bank structural checks
+  qbank-rules.mjs                shared question-bank structural checks (also run at merge time by
+                                 bin/check-qbank-drafts.mjs: every live draft must be gate=ready,
+                                 because the phone view never offers Attest for a flagged question)
   check_pending_visible.mjs      CI invariant: no pending item is unreachable here
   content-universe.test.mjs      universe, slug parity with the builds, the invariant
   console-navigation.test.mjs    deep links, twins, bookmarklet, site routing

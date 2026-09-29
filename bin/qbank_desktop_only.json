@@ -1,0 +1,4 @@
+{
+  "_about": "Draft questions the owner has decided may stay desktop-only (their console warnings are deliberate). Read by bin/check-qbank-drafts.mjs. Each entry: {\"id\": \"qb_x_000\", \"codes\": [\"warning.code\"], \"reason\": \"why\"}. The cap is MAX_DESKTOP_ONLY in that script (0 as of 2026-09-29, decision qbank-drafts-phone-attestable), so any entry here fails the gate until the owner raises the cap in its own policy commit. A stale entry (the draft is ready, attested, retired, or its warnings changed) also fails.",
+  "entries": []
+}
