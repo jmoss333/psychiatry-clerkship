@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "description": "Synthetic fixture only. Every number is a reserved fictional 555-01xx number; none is a real crisis line.",
+  "upstreamDiscrepancies": [
+    {
+      "reconnectRecord": "crisis[1] — Fixture Text Line",
+      "upstreamValue": "Text HELLO to 555-0111",
+      "verifiedValue": "Text HOME to 555-0111",
+      "verificationSource": "https://example.org/fixture-text-line",
+      "verifiedOn": "2026-07-27",
+      "action": "Fixture only: the snapshot uses the verified value."
+    }
+  ],
+  "resources": [
+    {
+      "id": "fixture_national",
+      "contact": "(555) 555-0100",
+      "verifiedOn": "2026-07-27",
+      "reconnectRecord": "crisis[0] — Fixture National Line"
+    },
+    {
+      "id": "fixture_text",
+      "contact": "Text HOME to 555-0111",
+      "verifiedOn": "2026-07-27",
+      "reconnectRecord": "crisis[1] — Fixture Text Line"
+    },
+    {
+      "id": "fixture_regional",
+      "contact": "555-555-0101",
+      "verifiedOn": "2026-07-27",
+      "reconnectRecord": "crisis[2] — Fixture Regional Line"
+    },
+    {
+      "id": "fixture_local_only",
+      "contact": "555-555-0102",
+      "verifiedOn": "2026-07-27"
+    },
+    {
+      "id": "fixture_bad_ref",
+      "contact": "555-555-0103",
+      "verifiedOn": "2026-07-27",
+      "reconnectRecord": "crisis[9] — Missing Fixture Record"
+    }
+  ]
+}

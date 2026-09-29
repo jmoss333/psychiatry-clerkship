@@ -1,0 +1,21 @@
+upstream: <RECONNECT>/databases/core/data_all.json (3 crisis records)
+local:    crisis_resources.json (5 resources)
+
+  fixture_national       local '(555) 555-0100' (verified 2026-07-27) | upstream '1-555-555-0100' (verified 2026-01-10)
+  fixture_text           local 'Text HOME to 555-0111' (verified 2026-07-27) | upstream 'Text HELLO to 555-0111' (verified 2026-07-01)
+  fixture_regional       local '555-555-0101' (verified 2026-07-27) | upstream '(555) 555-0199' (verified 2026-08-01)  <-- DIGITS DIFFER
+  fixture_local_only     no upstream record (local-only)
+  fixture_bad_ref        upstream record ref unresolvable: crisis[9] — Missing Fixture Record
+
+DRIFT — review each against the official source before changing anything:
+  fixture_regional: local '555-555-0101' vs upstream '(555) 555-0199'
+
+Upstream is OLDER than this snapshot for 2 record(s) — do not pull those back:
+  fixture_national: upstream 2026-01-10 < local 2026-07-27
+  fixture_text: upstream 2026-07-01 < local 2026-07-27
+
+KNOWN UPSTREAM DISCREPANCY — crisis[1] — Fixture Text Line
+  upstream 'Text HELLO to 555-0111' vs verified 'Text HOME to 555-0111' (https://example.org/fixture-text-line)
+  Fixture only: the snapshot uses the verified value.
+
+Report only — nothing was written.
