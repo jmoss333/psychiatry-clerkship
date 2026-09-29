@@ -1,0 +1,141 @@
+[
+  {
+    "finding_id": "link:lcme.org::broken-link::6b13fd593531c1d3",
+    "fingerprint": "link:lcme.org::broken-link::6b13fd593531c1d3",
+    "job": "link-source-monitor",
+    "source_id": "link:lcme.org",
+    "source_name": "lcme.org",
+    "source_url": "https://lcme.org/wp-content/uploads/2025/05/2026-27-Functions-and-Structure_2025-05-21.docx",
+    "source_type": "html",
+    "detected_at": "2026-09-28T06:41:05+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md: https://lcme.org/wp-content/uploads/2025/05/2026-27-Functions-and-Structure_2025-05-21.docx",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "disposition": "actionable",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/876"
+  },
+  {
+    "finding_id": "link:www.admsep.org::broken-link::56951baa3f00270a",
+    "fingerprint": "link:www.admsep.org::broken-link::56951baa3f00270a",
+    "job": "link-source-monitor",
+    "source_id": "link:www.admsep.org",
+    "source_name": "www.admsep.org",
+    "source_url": "https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php",
+    "source_type": "html",
+    "detected_at": "2026-09-28T06:41:05+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md: https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  },
+  {
+    "finding_id": "link:www.fda.gov::broken-link::7415e355b41cccda",
+    "fingerprint": "link:www.fda.gov::broken-link::7415e355b41cccda",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications",
+    "source_type": "html",
+    "detected_at": "2026-09-28T06:41:05+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on docs/curriculum-review/resident/RESIDENT_CURRICULUM_COMPLETE.md: https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "docs/curriculum-review/resident/RESIDENT_CURRICULUM_COMPLETE.md"
+    ],
+    "recommended_action": "Fix or replace the link in `docs/curriculum-review/resident/RESIDENT_CURRICULUM_COMPLETE.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "new",
+    "disposition": "environment"
+  },
+  {
+    "finding_id": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "fingerprint": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "source_type": "html",
+    "detected_at": "2026-09-28T06:41:05+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on docs/curriculum-review/resident/RESIDENT_CURRICULUM_COMPLETE.md: https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "docs/curriculum-review/resident/RESIDENT_CURRICULUM_COMPLETE.md"
+    ],
+    "recommended_action": "Fix or replace the link in `docs/curriculum-review/resident/RESIDENT_CURRICULUM_COMPLETE.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "new",
+    "disposition": "environment"
+  },
+  {
+    "finding_id": "link:unknown::broken-link::5917a7dbc2c315b7",
+    "fingerprint": "link:unknown::broken-link::5917a7dbc2c315b7",
+    "job": "link-source-monitor",
+    "source_id": "link:unknown",
+    "source_name": "unknown",
+    "source_url": "error:",
+    "source_type": "html",
+    "detected_at": "2026-09-28T06:41:05+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on 08_Cases_and_Simulation/one-patient-six-weeks.html: error:",
+    "evidence": {
+      "http_status": null,
+      "confirm_status": null
+    },
+    "affects": [
+      "08_Cases_and_Simulation/one-patient-six-weeks.html"
+    ],
+    "recommended_action": "Fix or replace the link in `08_Cases_and_Simulation/one-patient-six-weeks.html`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  },
+  {
+    "finding_id": "link:www.admsep.org::broken-link::378d5c25815a68ca",
+    "fingerprint": "link:www.admsep.org::broken-link::378d5c25815a68ca",
+    "job": "link-source-monitor",
+    "source_id": "link:www.admsep.org",
+    "source_name": "www.admsep.org",
+    "source_url": "https://www.admsep.org/csi-emodules.php",
+    "source_type": "html",
+    "detected_at": "2026-09-28T06:41:05+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/csi-emodules.php",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  }
+]
