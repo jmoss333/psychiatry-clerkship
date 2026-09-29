@@ -71,7 +71,7 @@ test('the note is complete only when every field has an answer; numbers are whol
 
 test('a skilled visit with a right note: every row matches, with her reply beside each elicited fact', () => {
   const graded = T.gradeVisitNote(cd, visit(SKILLED), RIGHT);
-  assert.deepEqual(graded.counts, { match: 13, differ: 0, notEstablished: 0 });
+  assert.deepEqual(graded.counts, { match: 13, differ: 0, notEstablished: 0, unclear: 0 });
   assert.equal(row(graded, 'si_since').evidence.number, 13, 'the plain question is exchange 13');
   assert.match(row(graded, 'si_since').evidence.patient, /put zero on the form/);
   assert.equal(row(graded, 'intake').evidence.number, 7);
@@ -83,7 +83,7 @@ test('a skilled visit with a right note: every row matches, with her reply besid
 test('no questions asked and an honest note: elicited rows are "not established", chart rows still score', () => {
   const honest = { intake: 'unknown', sertraline: 'unknown', trazodone: 'unknown', other: { text: '', none: true }, total: '12', band: 'moderate', item9: '0', si_since: 'unknown', trend: 'improved', plan_used: 'unknown', tom_meds: 'unknown', firearms: 'unknown', contacts: 'unknown' };
   const graded = T.gradeVisitNote(cd, visit(['Hi.']), honest);
-  assert.deepEqual(graded.counts, { match: 4, differ: 0, notEstablished: 9 });
+  assert.deepEqual(graded.counts, { match: 4, differ: 0, notEstablished: 9, unclear: 0 });
   assert.ok(graded.rows.filter((r) => !r.fromChart).every((r) => r.result === 'accurate'));
 });
 
@@ -196,4 +196,113 @@ test('a softened question or a held-back disclosure is recognized: the row says 
 test('each case speaks at its declared rate, so the follow-up keeps Day 1\'s measured pace', () => {
   for (const c of pack.cases) assert.equal(T.paceFor(c).rate, c.speechProfile.speakingRate, c.id);
   assert.equal(T.paceFor(cd).label, T.paceFor(dayOne).label);
+});
+
+// Review of #880 (2026-09-29): a Live reply is the model's paraphrase of the scripted lines (sp.mjs
+// tells the actor to paraphrase), so a check for whole scripted lines never heard one. Every
+// omission after a Live answer read "her reply there does not state it", above a reply that did.
+function liveVisit(exchanges) {
+  const P = new T.ProxyProvider('https://example.invalid', '', { rapportMin: pack.engine.rapportMin, rapportMax: pack.engine.rapportMax });
+  const s = P.start(cd, { difficulty: 'supported' });
+  // The proxy's director state is derived from the learner's words alone, and parity.test.mjs keeps
+  // MockProvider identical to sp.mjs deriveState, so the offline engine supplies it here.
+  const director = new T.MockProvider();
+  const d = director.start(cd, { difficulty: 'supported' });
+  for (const [me, pt] of exchanges) {
+    director.respond(d, me);
+    const t = d.turns[d.turns.length - 1];
+    P._applyState(s, { reply: pt, state: { intents: t.intents, flags: t.flags, rapport: t.rapport, unlocked: Object.keys(d.unlocked) }, ticket: null }, me);
+  }
+  return s;
+}
+const HONEST = { intake: 'unknown', sertraline: 'unknown', trazodone: 'unknown', other: { text: '', none: true }, total: '12', band: 'moderate', item9: '0', si_since: 'unknown', trend: 'improved', plan_used: 'unknown', tom_meds: 'unknown', firearms: 'unknown', contacts: 'unknown' };
+const ASKED = ['sertraline', 'trazodone', 'other', 'plan_used', 'firearms', 'contacts'];
+// Two of these are the reviewer's own reproductions; two carry the typographic apostrophe a model writes.
+const PARAPHRASED = [
+  ['Are you taking the sertraline every morning?', "I missed Saturday and Sunday because it made me sick. I'm back on it now."],
+  ['What about the trazodone, the one for sleep?', "I never got that one filled. I didn't want more pills around the house."],
+  ['Are you taking anything over the counter, herbal, or any supplements?', "Some St. John's wort since Tuesday. It's just an herb."],
+  ['Have you used your safety plan since you got home?', 'Last night, actually. I went down to the kitchen and made tea until it passed.'],
+  ['Are there any guns in the house?', 'No, we don’t have any guns. Tom never wanted one.'],
+  ['Who would you call at three in the morning?', 'The only name on it is my sister, and I’m not going to call her.'],
+];
+
+test('a Live paraphrase that states the fact is heard: leaving it out of the note is a difference', () => {
+  const graded = T.gradeVisitNote(cd, liveVisit(PARAPHRASED), HONEST);
+  ASKED.forEach((id, i) => {
+    const r = row(graded, id);
+    assert.equal(r.result, 'unrecorded', id);
+    assert.equal(r.evidence.number, i + 1, id);
+    assert.equal(r.evidence.patient, PARAPHRASED[i][1], id);
+  });
+  assert.deepEqual(graded.counts, { match: 4, differ: 6, notEstablished: 3, unclear: 0 });
+});
+
+test('the room never says a reply it did not write left the fact unsaid: it asks the learner to check', () => {
+  const live = row(T.gradeVisitNote(cd, liveVisit([['Are you taking the sertraline every morning?', 'I take it every morning.']]), HONEST), 'sertraline');
+  assert.equal(live.result, 'unclear');
+  assert.doesNotMatch(live.word, /does not state it|honest entry/);
+  assert.equal(live.evidence.patient, 'I take it every morning.');
+  // "Continue offline" replays a Live encounter through the offline engine but keeps her Live words
+  // (continueOffline in sp-interview.html), so the rule reads the reply, never the provider.
+  const replayed = visit(['Are you taking the sertraline every morning?']);
+  replayed.turns[0].pt = 'I take it every morning.';
+  const graded = T.gradeVisitNote(cd, replayed, HONEST);
+  assert.equal(row(graded, 'sertraline').result, 'unclear');
+  assert.deepEqual(graded.counts, { match: 4, differ: 0, notEstablished: 8, unclear: 1 });
+  // A scripted turn that only named the topic and a Live reply to the question itself: the quote is
+  // the reply the learner has to read, not the one the room could.
+  const mixed = visit([SKILLED[0], 'Have you used your safety plan since you got home?']);
+  mixed.turns[1].pt = 'It’s on my phone.';
+  const plan = row(T.gradeVisitNote(cd, mixed, HONEST), 'plan_used');
+  assert.equal(plan.result, 'unclear');
+  assert.equal(plan.evidence.number, 2);
+});
+
+test('the patterns hear every scripted line that states the fact, and no other line the room can speak', () => {
+  const own = T.visitNoteCaseLines(cd);
+  assert.ok(own.includes(cd.responses.family_social.open[0]) && own.includes(cd.gated.find((g) => g.id === 'si_behavior_detail').reveal), 'the scan covers response banks and gates');
+  const asked = T.visitNoteFields(cd).map(({ field }) => field).filter((f) => f.revealedBy.intents);
+  assert.deepEqual(asked.map((f) => f.id), ASKED);
+  for (const field of asked) {
+    const facts = T.visitNoteFactLines(cd, field);
+    assert.ok(facts.length >= 2, field.id);
+    for (const line of facts) assert.ok(T.visitNoteCarries(line, [], field.revealedBy.replyMatch), `${field.id} misses its own line: ${line}`);
+    for (const line of own.filter((l) => !facts.includes(l))) assert.ok(!T.visitNoteCarries(line, [], field.revealedBy.replyMatch), `${field.id} hears a line that is not its fact: ${line}`);
+  }
+});
+
+// Written for precision: a miss leaves the row for the learner to check, but a false hit would
+// count an honest "not established" as a difference.
+const HEARD = {
+  sertraline: ["I skipped a couple of days when it upset my stomach.", 'Every day except the weekend — it made me nauseous.', "I didn't take it Saturday or Sunday; my stomach couldn't handle it.", 'Apart from two days last weekend, yes.'],
+  trazodone: ["I haven't picked it up from the pharmacy.", "I didn't fill it. Another bottle at home didn't seem like a good idea.", 'I’m not taking that one.'],
+  other: ['St John’s Wort. I read it helps.'],
+  plan_used: ["I used it last night. Tea, and Ellie's drawing.", 'I did use it once, and it helped a bit.', 'I looked at the picture Ellie drew me until it passed.'],
+  firearms: ['No guns. None at all.', 'We’ve never had a gun in the house.'],
+  contacts: ["My sister, and I wouldn't call her at three in the morning.", "Just my sister. I haven't even told her I was in the hospital.", 'I’d never call my sister about this.'],
+};
+const UNHEARD = {
+  sertraline: ['I take it every morning.', 'Every morning, like they told me.', "I haven't missed any days.", 'It made me a bit queasy at first, but I take it.', 'I saw Ellie on Sunday.'],
+  trazodone: ['I take it most nights.', "I'm not taking it every night, just when I can't sleep.", 'I filled it out. Honestly.', 'It helps me sleep.'],
+  other: ['Just the two from the hospital.', 'A glass of wine some nights.'],
+  plan_used: ["It's on my phone.", "I haven't used it.", "I never used it. I didn't need to.", 'I went downstairs instead.'],
+  firearms: ['Tom has a hunting rifle in the basement.', 'Guns? Why do you ask?', 'Tom keeps one locked in the closet.'],
+  contacts: ["My sister's on it, and I'd call her.", "My sister wouldn't mind if I called.", "I'd call Tom."],
+};
+
+test('the patterns hear a paraphrase of the record, never a reply that leaves it unsaid or says otherwise', () => {
+  const fields = Object.fromEntries(T.visitNoteFields(cd).map(({ field }) => [field.id, field]));
+  assert.deepEqual(Object.keys(HEARD), ASKED);
+  assert.deepEqual(Object.keys(UNHEARD), ASKED);
+  for (const id of ASKED) {
+    const patterns = fields[id].revealedBy.replyMatch;
+    for (const reply of HEARD[id]) assert.ok(T.visitNoteCarries(reply, [], patterns), `${id} should hear: ${reply}`);
+    for (const reply of UNHEARD[id]) assert.ok(!T.visitNoteCarries(reply, [], patterns), `${id} should not hear: ${reply}`);
+  }
+});
+
+test('the summary counts the rows to check apart, and says nothing of them when there are none', () => {
+  assert.equal(T.visitNoteSummary({ match: 4, differ: 5, notEstablished: 3, unclear: 1 }), '4 match · 5 differ · 3 not established in this visit · 1 to check');
+  assert.equal(T.visitNoteSummary({ match: 6, differ: 0, notEstablished: 7, unclear: 0 }), '6 match · 0 differ · 7 not established in this visit');
 });

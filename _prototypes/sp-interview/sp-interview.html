@@ -852,8 +852,10 @@ function visitNoteComplete(caseDef,entries){
    topic per turn, so an agenda line that names the medicines, the safety plan and the form is
    recognized for all three while she answers about her medicines. A reply CARRIES a field's fact
    when it contains one of the case's own lines for it — a response line of the field's intents, or
-   the gate's reveal or repeat line. A Live reply is the model's own words and never matches, so
-   the room cannot confirm from text alone that a paraphrase stated the fact. */
+   the gate's reveal or repeat line — or when it matches one of the field's `replyMatch` patterns:
+   a Live reply is the model's paraphrase of those lines and rarely repeats one whole. The patterns
+   are written for precision: a paraphrase they miss is left for the learner to check, while a false
+   hit would count an honest "not established" as a difference. */
 function visitNoteFactLines(caseDef,field){
   var r=field.revealedBy||{},lines=[];
   (r.intents||[]).forEach(function(id){
@@ -864,8 +866,22 @@ function visitNoteFactLines(caseDef,field){
   if(g){if(g.reveal)lines.push(g.reveal);if(g.repeatAsk)lines.push(g.repeatAsk);}
   return lines;
 }
-function visitNoteCarries(reply,lines){
-  return typeof reply==='string'&&lines.some(function(l){return l&&reply.indexOf(l)>=0;});
+function visitNoteCarries(reply,lines,patterns){
+  if(typeof reply!=='string')return false;
+  var text=reply.replace(/[‘’]/g,"'"); // a model writes typographic apostrophes
+  return lines.some(function(l){return l&&text.indexOf(l)>=0;})||
+    (patterns||[]).some(function(p){return new RegExp(p,'i').test(text);});
+}
+/* The room can say a reply does NOT state a fact only when it wrote the reply: offline, every reply
+   is one of these lines. A Live reply is the model's own words, and "Continue offline" keeps those
+   words in the replayed turns, so the test is the reply itself, never the provider. */
+function visitNoteCaseLines(caseDef){
+  var out=[];
+  Object.keys(caseDef.responses||{}).forEach(function(id){var bank=caseDef.responses[id]||{};
+    Object.keys(bank).forEach(function(tier){(bank[tier]||[]).forEach(function(l){out.push(l);});});});
+  (caseDef.gated||[]).forEach(function(g){
+    ['reveal','repeatAsk','deflectIfLocked','deflectLowRapport','deflectEuphemism'].forEach(function(k){if(g[k])out.push(g[k]);});});
+  return out;
 }
 /* The intents that show the learner raised a gate's topic: the gate's keys, and its euphemism —
    a softened question is recognized, though it never opens the disclosure. */
@@ -880,23 +896,26 @@ function visitNoteRecognized(caseDef,s,field){
   return ids.some(function(id){return !!(s.covered&&s.covered[id]);});
 }
 /* The patient turn to quote. For intents: the first recognized turn whose reply carries the fact,
-   else the first recognized turn (still shown, to check). For a gate: the first turn at which
+   else the first recognized turn whose reply the room did not write (the one to check), else the
+   first recognized turn (still shown, to check). For a gate: the first turn at which
    replaying the learner's words through the same cascade the server runs opens it (parity.test.mjs
    keeps MockProvider and sp.mjs deriveState identical on `unlocked`), else — the gate never opened —
    the first turn that raised its topic, so a deflection is shown for what it was. `carried` says
-   whether the quoted reply is the disclosure itself. Null when nothing was recognized. */
+   whether the quoted reply is the disclosure itself; `scripted`, whether it is one of the case's
+   own lines. Null when nothing was recognized. */
 function visitNoteEvidenceTurn(s,field){
-  var r=field.revealedBy||{},turns=s.turns||[],i,first=null;
-  function at(i,carried){return {number:i+1,learner:turns[i].me,patient:turns[i].pt,carried:carried};}
+  var r=field.revealedBy||{},turns=s.turns||[],own=visitNoteCaseLines(s.caseDef),i,first=null,unread=null;
+  function at(i,carried){return {number:i+1,learner:turns[i].me,patient:turns[i].pt,carried:carried,scripted:own.indexOf(turns[i].pt)>=0};}
   function raised(i,ids){return (turns[i].intents||[]).some(function(id){return ids.indexOf(id)>=0;});}
   if(r.intents){
     var lines=visitNoteFactLines(s.caseDef,field);
     for(i=0;i<turns.length;i++){
       if(!raised(i,r.intents))continue;
-      if(visitNoteCarries(turns[i].pt,lines))return at(i,true);
+      if(visitNoteCarries(turns[i].pt,lines,r.replyMatch))return at(i,true);
       if(!first)first=at(i,false);
+      if(!unread&&own.indexOf(turns[i].pt)<0)unread=at(i,false);
     }
-    return first;
+    return unread||first;
   }
   if(r.gate){
     var replayer=new MockProvider(),replay=replayer.start(s.caseDef,{difficulty:'supported'});
@@ -917,6 +936,7 @@ var VISIT_NOTE_WORD={
   match:'Matches the record',
   unrecorded:'The room recognized this topic in your turns — your note records it as not established; check the reply',
   unconfirmed:'The room recognized this topic in your turns, but her reply there does not state it — “not established” is an honest entry; check the exchange',
+  unclear:'The room recognized this topic in your turns but cannot tell from her words whether she stated it — check the exchange; if she did, it belongs in your note',
   differs:'Differs from the record',
   accurate:'Not established in this visit — an honest entry',
   unsupported:'Matches the record, though the room did not recognize the topic in your turns',
@@ -930,25 +950,27 @@ var VISIT_NOTE_WORD_UNDISCLOSED={
   'differs-unestablished':'Differs from the record — she did not disclose it in this visit'
 };
 function gradeVisitNote(caseDef,s,entries){
-  var fields=visitNoteFields(caseDef),rows=[],counts={match:0,differ:0,notEstablished:0};
+  var fields=visitNoteFields(caseDef),rows=[],counts={match:0,differ:0,notEstablished:0,unclear:0};
   fields.forEach(function(item){
     var f=item.field,v=entries?entries[f.id]:undefined,r=f.revealedBy||{};
     var established=visitNoteEstablished(s,f),recognized=visitNoteRecognized(caseDef,s,f),result,note='';
     var evidence=r.chart?null:visitNoteEvidenceTurn(s,f);
     // Leaving a fact out is a difference only when her reply stated it; a gate's disclosure is the
-    // opening itself, including a spoken turn the replay cannot place.
+    // opening itself, including a spoken turn the replay cannot place. That her reply did NOT state
+    // it can be said only of a reply the room wrote; of any other, the learner is asked to check.
     var heard=r.intents?!!(evidence&&evidence.carried):established;
+    var unsaid=heard?'unrecorded':(!r.intents||(evidence&&evidence.scripted))?'unconfirmed':'unclear';
     if(f.type==='integer'){
       result=visitNoteInteger(v,f)===f.answer?'match':'differs';
     }else if(f.type==='items'){
       var it=visitNoteItems(f,v),requiredOk=!it.none&&!it.missingRequired.length;
-      if(established)result=requiredOk?'match':(it.none?(heard?'unrecorded':'unconfirmed'):'differs');
+      if(established)result=requiredOk?'match':(it.none?unsaid:'differs');
       else result=it.none?'accurate':(requiredOk?'unsupported':'differs-unestablished');
       var extra=it.none?[]:it.matched.filter(function(ex){return !ex.required;}).map(function(ex){return ex.label;});
       if(extra.length)note='You also recorded: '+extra.join(', ')+'.';
     }else{
       var isUnknown=f.unknown!=null&&v===f.unknown;
-      if(established)result=v===f.answer?'match':(isUnknown?(heard?'unrecorded':'unconfirmed'):'differs');
+      if(established)result=v===f.answer?'match':(isUnknown?unsaid:'differs');
       else result=isUnknown?'accurate':(v===f.answer?'unsupported':'differs-unestablished');
       if(f.bandOf&&result!=='match'){
         var totalItem=fields.filter(function(x){return x.field.id===f.bandOf;})[0];
@@ -957,6 +979,7 @@ function gradeVisitNote(caseDef,s,entries){
       }
     }
     if(result==='match')counts.match++;
+    else if(result==='unclear')counts.unclear++;
     else if(result==='accurate'||result==='unsupported'||result==='unconfirmed')counts.notEstablished++;
     else counts.differ++;
     var word=(!established&&recognized&&VISIT_NOTE_WORD_UNDISCLOSED[result])||VISIT_NOTE_WORD[result];
@@ -965,6 +988,10 @@ function gradeVisitNote(caseDef,s,entries){
       evidence:evidence,note:note});
   });
   return {rows:rows,counts:counts};
+}
+// Rows the room cannot read are neither differences nor facts it knows went unestablished.
+function visitNoteSummary(c){
+  return c.match+' match · '+c.differ+' differ · '+c.notEstablished+' not established in this visit'+(c.unclear?' · '+c.unclear+' to check':'');
 }
 
 function nextEncounterFor(pack,caseId){
@@ -1028,7 +1055,7 @@ function VisitNoteReview(props){
   return e('div',{className:'card vn-review',id:'visit-note-review'},
     e('h2',null,'Your note beside the record'),
     e('p',{className:'fine'},'Each entry sits next to what the case record says, with '+who+'’s reply from your transcript where the room recognized the topic. Recognition does not establish that a question was directed to the patient or that the patient answered — review the exchange with your supervisor.'),
-    e('p',{className:'vn-summary'},c.match+' match · '+c.differ+' differ · '+c.notEstablished+' not established in this visit'),
+    e('p',{className:'vn-summary'},visitNoteSummary(c)),
     e('div',{className:'vn-grid'},graded.rows.map(function(r){
       return e('div',{className:'sacell vn-row',key:r.id},
         e('p',{className:'q'},r.section+' · '+r.label),
@@ -2049,7 +2076,7 @@ function App(){
   }
   return null;
 }
-try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible,chartDocs:chartDocs,visitNoteFields:visitNoteFields,visitNoteEstablished:visitNoteEstablished,visitNoteBandFor:visitNoteBandFor,visitNoteComplete:visitNoteComplete,visitNoteEvidenceTurn:visitNoteEvidenceTurn,gradeVisitNote:gradeVisitNote,nextEncounterFor:nextEncounterFor};}catch(x){}
+try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible,chartDocs:chartDocs,visitNoteFields:visitNoteFields,visitNoteEstablished:visitNoteEstablished,visitNoteBandFor:visitNoteBandFor,visitNoteComplete:visitNoteComplete,visitNoteEvidenceTurn:visitNoteEvidenceTurn,visitNoteFactLines:visitNoteFactLines,visitNoteCarries:visitNoteCarries,visitNoteCaseLines:visitNoteCaseLines,gradeVisitNote:gradeVisitNote,visitNoteSummary:visitNoteSummary,nextEncounterFor:nextEncounterFor};}catch(x){}
 function isLocalDanaPreview(location, config){
   return !!(location && config && config.generated === true && config.providerMode === 'mock' &&
     (location.protocol === 'http:' || location.protocol === 'https:') &&
