@@ -11,5 +11,1396 @@
     "fieldMapPath": "13_Faculty_Resources/_automation/pharmacy/reconnect_meds_fieldmap.json",
     "note": "Report-only sync. Nothing is copied automatically; each record is added by a reviewed edit."
   },
-  "records": []
+  "records": [
+    {
+      "id": "lithium",
+      "generic": "lithium carbonate",
+      "brands": [
+        "Lithobid"
+      ],
+      "group": "mood-stabilizer",
+      "class": [
+        "mood stabilizer"
+      ],
+      "rxcui": "42351",
+      "dailymedSetId": "f7f5b69a-c2a1-4586-a189-1475d41387c0",
+      "labelVersionDate": "2026-08-24",
+      "mechanism": {
+        "t1": "Mechanism not fully established; proposed actions include GSK-3 inhibition and inositol depletion."
+      },
+      "fdaIndications": [
+        "Bipolar disorder: treatment of manic episodes",
+        "Bipolar disorder: maintenance treatment"
+      ],
+      "boxedWarning": {
+        "present": true,
+        "summary": "Lithium toxicity is closely related to serum lithium levels and can occur close to the therapeutic range; prompt serum level measurement must be available."
+      },
+      "inpatientUses": [
+        {
+          "use": "Acute mania and bipolar maintenance — the maintenance benchmark",
+          "offLabel": false,
+          "evidenceIds": [
+            "nolen-2019-lithium-levels"
+          ]
+        }
+      ],
+      "dosing": {
+        "titration": "Titrated to a 12-hour trough serum level, not to a fixed dose; draw a level about 5 days after any start or change. Confirm the dose itself with pharmacy and the current label.",
+        "forms": [
+          "PO",
+          "ER",
+          "liquid"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f7f5b69a-c2a1-4586-a189-1475d41387c0"
+      },
+      "flags": {
+        "qtcRisk": "Low",
+        "weightImpact": "Moderate gain",
+        "bloodMonitoring": "Yes",
+        "ekgRequired": "If cardiac risk"
+      },
+      "pk": {
+        "halfLifeHours": "24",
+        "timeToEffect": "1–2 weeks (mania); 6–8 weeks (full maintenance)"
+      },
+      "monitoring": {
+        "baseline": [
+          "BMP (renal)",
+          "TSH",
+          "Calcium",
+          "β-hCG",
+          "EKG if cardiac risk"
+        ],
+        "ongoing": [
+          "Level ~5 days after start or change (12-hour trough)",
+          "Renal function and TSH periodically",
+          "Calcium/PTH (resident depth)"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Tremor",
+          "Polyuria / polydipsia",
+          "Weight gain",
+          "GI upset",
+          "Cognitive dulling"
+        ],
+        "dangerous": [
+          {
+            "name": "Lithium toxicity",
+            "recognize": "Tremor, ataxia, and confusion — often when something changed (dehydration, renal function, an interacting drug).",
+            "firstMove": "Tell the senior now; hold the next dose and send a stat level with a BMP. Severe toxicity is a nephrology conversation (extracorporeal removal)."
+          },
+          {
+            "name": "Teratogenicity",
+            "recognize": "Ebstein anomaly risk with first-trimester exposure.",
+            "firstMove": "β-hCG before starting; peripartum decisions are made collaboratively, not by default discontinuation."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {},
+        "keyTraps": [
+          "NSAIDs",
+          "ACE inhibitors / ARBs",
+          "Thiazides",
+          "Dehydration or any volume change"
+        ]
+      },
+      "populations": {
+        "pregnancy": "Teratogen (Ebstein anomaly): β-hCG before starting. Weigh treated illness against exposure with maternal-fetal medicine and pharmacy rather than defaulting to discontinuation.",
+        "geriatric": "Older adults usually run lower target levels — check the attested Monitoring & Labs table.",
+        "renal": "Renally eliminated: renal function gates both starting and continuing.",
+        "perinatalSnapshotRef": "03_Core_Topics/Perinatal/_source/Medication_Safety_Pregnancy_Clinician_Notes_CLI.md"
+      },
+      "pearls": {
+        "t1": [
+          "Lithium level is a 12-hour trough, drawn ~5 days after any dose change.",
+          "Tremor, ataxia, and confusion on lithium means think toxicity — especially after a change in hydration, kidney function, or medications."
+        ],
+        "t2": [
+          "NSAIDs, ACE inhibitors/ARBs, and thiazides raise levels toward toxicity.",
+          "Anti-suicidal effect: meta-analytic support (Cipriani 2013), but the 2022 VA RCT adding lithium to usual care found no reduction in suicide-related events (Katz 2022). Know both before you quote either."
+        ]
+      },
+      "attendingAsks": [
+        "When is the next level due, and why a trough?",
+        "Which of this patient's home medications could push the level up?",
+        "What has to be back before the first dose?"
+      ],
+      "familyExplainer": {
+        "text": "Lithium can work very well, but the safe amount is a narrow window. That is why your family member needs regular blood tests. Help them drink enough fluids. Check with the team before they take pain pills like ibuprofen. Call if you see new shaking, stumbling, vomiting, or confusion.",
+        "handoutRef": "FH-MED02"
+      },
+      "evidenceIds": [
+        "nolen-2019-lithium-levels",
+        "cipriani-2013-lithium-suicide",
+        "katz-2022-lithium-va",
+        "decker-2015-extrip-lithium"
+      ],
+      "qbankIds": [
+        "qb_pha_005",
+        "qb_pha_013",
+        "qb_mood_002",
+        "qb_mood_007",
+        "qb_mood_012"
+      ],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "boxedWarning.summary": "L",
+          "class": "R",
+          "mechanism.t1": "R",
+          "flags": "R",
+          "pk": "R",
+          "monitoring": "E",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "dosing.labelLink": "L",
+          "adverseEffects.common": "J",
+          "adverseEffects.dangerous": "J",
+          "interactions.cyp": "R",
+          "interactions.keyTraps": "J",
+          "populations": "J",
+          "pearls": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J",
+          "familyExplainer.handoutRef": "R"
+        },
+        "reconnectRecords": [
+          "medications[name=Lithium]"
+        ],
+        "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+        "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+        "labelVerifiedOn": "2026-09-29",
+        "labelReceipt": "lithium",
+        "carried": {
+          "drug_class": "Mood Stabilizer/Anticonvulsant",
+          "mechanism_of_action": "Multiple mechanisms: GSK-3 inhibition; inositol depletion; neuroprotection",
+          "QTc Risk": "Low",
+          "Weight Impact": "Moderate Gain",
+          "Requires Blood Monitoring": "Yes",
+          "ekg_required": "Yes",
+          "baseline_workup": "BMP; TSH; Cr; EKG; pregnancy test",
+          "half_life_hours": "24",
+          "time_to_effect": "1-2 weeks (mania); 6-8 weeks (full maintenance)",
+          "counseling": "NARROW therapeutic window - REQUIRES regular blood tests (levels, kidney, thyroid). Stay hydrated. Avoid NSAIDs. Signs of toxicity: vomiting, diarrhea, tremor, confusion.",
+          "family_handout_ref": "FH-MED02",
+          "common_side_effects": "Tremor; Polyuria; Polydipsia; Weight Gain; GI Upset; Cognitive Dulling"
+        },
+        "jSources": {
+          "monitoring": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "| **Lithium** | BMP (renal), TSH, calcium, β-hCG, EKG if cardiac risk |"
+            },
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "monitor renal function, TSH, and calcium/PTH"
+            }
+          ],
+          "dosing.titration": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "Level ~5 days after start/change (12-h trough;"
+            }
+          ],
+          "adverseEffects.dangerous": [
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "*Lithium toxicity:* tremor, ataxia, and confusion, often when something changed (dehydration, renal function, an interacting drug)."
+            },
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "teratogen (Ebstein anomaly)"
+            }
+          ],
+          "interactions.keyTraps": [
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "remember that NSAIDs, ACE inhibitors/ARBs, and thiazides raise levels toward toxicity"
+            },
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "hold a low threshold for suspecting lithium toxicity during any volume or interacting-drug change"
+            }
+          ],
+          "populations": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "older adults usually 0.4–0.6"
+            },
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "weigh treated illness against medication exposure collaboratively"
+            },
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "Valproate and lithium are teratogenic — β-hCG before starting"
+            }
+          ],
+          "pearls": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "Lithium level is a 12-hour trough, drawn ~5 days after any dose change."
+            },
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "Lithium remains the maintenance benchmark and carries a distinct anti-suicidal signal not matched by alternatives"
+            }
+          ],
+          "inpatientUses": [
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "Lithium remains the maintenance benchmark"
+            }
+          ],
+          "familyExplainer.text": [
+            {
+              "page": "reconnect:counseling",
+              "quote": "NARROW therapeutic window - REQUIRES regular blood tests (levels, kidney, thyroid). Stay hydrated. Avoid NSAIDs. Signs of toxicity: vomiting, diarrhea, tremor, confusion."
+            }
+          ],
+          "adverseEffects.common": [
+            {
+              "page": "reconnect:common_side_effects",
+              "quote": "Tremor; Polyuria; Polydipsia; Weight Gain; GI Upset; Cognitive Dulling"
+            }
+          ]
+        },
+        "authoredFields": [
+          "dosing.forms",
+          "attendingAsks",
+          "adverseEffects.dangerous[0].firstMove",
+          "pearls.t2[1]",
+          "familyExplainer.text",
+          "populations.renal"
+        ],
+        "upstreamDiscrepancies": [
+          {
+            "field": "drug_class",
+            "upstreamValue": "Mood Stabilizer/Anticonvulsant",
+            "usedValue": "mood stabilizer",
+            "basis": "Lithium is not an anticonvulsant."
+          },
+          {
+            "field": "ekg_required",
+            "upstreamValue": "Yes",
+            "usedValue": "If cardiac risk",
+            "basis": "Attested med_monitoring.md: 'EKG if cardiac risk'."
+          },
+          {
+            "field": "brand_names",
+            "upstreamValue": "Lithobid, Eskalith, Lithonate",
+            "usedValue": "Lithobid",
+            "basis": "Only LITHOBID appears among current openFDA labels (receipt brandsSeen)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "clozapine",
+      "generic": "clozapine",
+      "brands": [
+        "Clozaril",
+        "Versacloz"
+      ],
+      "group": "antipsychotic",
+      "class": [
+        "second-generation antipsychotic"
+      ],
+      "rxcui": "2626",
+      "dailymedSetId": "90876802-0e3a-44c9-9ff7-1754dfbe736a",
+      "labelVersionDate": "2025-06-06",
+      "mechanism": {
+        "t1": "5-HT2A and D4 antagonist with muscarinic, histaminergic, and adrenergic antagonism."
+      },
+      "fdaIndications": [
+        "Treatment-resistant schizophrenia",
+        "Reducing the risk of recurrent suicidal behavior in schizophrenia or schizoaffective disorder"
+      ],
+      "boxedWarning": {
+        "present": true,
+        "summary": "Severe neutropenia; orthostatic hypotension, bradycardia, and syncope; seizure; myocarditis, pericarditis, and cardiomyopathy; increased mortality in elderly patients with dementia-related psychosis."
+      },
+      "regulatory": {
+        "rems": false,
+        "remsVerifiedOn": "2026-09-29"
+      },
+      "inpatientUses": [
+        {
+          "use": "Treatment-resistant schizophrenia (failure of two adequate antipsychotic trials) — the only agent with demonstrated superiority",
+          "offLabel": false,
+          "evidenceIds": []
+        },
+        {
+          "use": "Chronic suicidal behavior in schizophrenia or schizoaffective disorder",
+          "offLabel": false,
+          "evidenceIds": []
+        }
+      ],
+      "dosing": {
+        "titration": "Slow titration is required; after an interruption in dosing, re-titrate rather than resuming the prior dose (see the prescribing information). Confirm the dose itself with pharmacy.",
+        "forms": [
+          "PO",
+          "ODT",
+          "liquid"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=90876802-0e3a-44c9-9ff7-1754dfbe736a"
+      },
+      "flags": {
+        "qtcRisk": "Moderate",
+        "weightImpact": "Significant gain",
+        "bloodMonitoring": "Yes",
+        "ekgRequired": "Yes"
+      },
+      "pk": {
+        "halfLifeHours": "12",
+        "timeToEffect": "2–4 weeks; up to 6 months for full effect"
+      },
+      "monitoring": {
+        "baseline": [
+          "ANC",
+          "Metabolic panel",
+          "EKG",
+          "Troponin/CRP (many protocols)"
+        ],
+        "ongoing": [
+          "ANC weekly × 6 months → every 2 weeks × 6 months → monthly (per the prescribing information; not REMS-enforced)",
+          "Troponin/CRP weekly for the first 4 weeks (many protocols)",
+          "Metabolic monitoring"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Sedation",
+          "Weight gain",
+          "Sialorrhea",
+          "Constipation",
+          "Tachycardia"
+        ],
+        "dangerous": [
+          {
+            "name": "Severe neutropenia",
+            "recognize": "Fever, sore throat, or other signs of infection.",
+            "firstMove": "Tell the senior now and get an ANC today."
+          },
+          {
+            "name": "Myocarditis",
+            "recognize": "Early (mostly weeks 1–4): fever, tachycardia, chest pain, or flu-like illness.",
+            "firstMove": "Urgent troponin/CRP and EKG; escalate."
+          },
+          {
+            "name": "Constipation → ileus",
+            "recognize": "Constipation that can progress to ileus and be fatal.",
+            "firstMove": "Bowel regimen is part of the prescription; ask about stools every day."
+          },
+          {
+            "name": "Seizures",
+            "recognize": "Dose-related lowering of the seizure threshold.",
+            "firstMove": "Escalate any seizure; review dose and levels."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {
+          "substrateOf": [
+            "1A2",
+            "3A4"
+          ]
+        },
+        "keyTraps": [
+          "Smoking cessation (loss of CYP1A2 induction raises levels)",
+          "Stacking QTc-prolonging or anticholinergic agents"
+        ]
+      },
+      "pearls": {
+        "t1": [
+          "The clozapine ANC schedule (weekly → biweekly → monthly) is worth memorizing; myocarditis is the early killer beyond the count.",
+          "Low ANC, myocarditis, ileus, or a seizure on clozapine is a 'tell someone now' finding."
+        ],
+        "t2": [
+          "Two adequate failed trials = treatment-resistant; raise clozapine rather than cycling further agents.",
+          "Smoking cessation raises clozapine levels (CYP1A2): the patient who quits at admission may need a dose decrease, not an increase.",
+          "The FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information."
+        ]
+      },
+      "attendingAsks": [
+        "How many adequate antipsychotic trials has this patient had?",
+        "What was today's ANC, and when is the next one due?",
+        "What is the bowel regimen, and when did they last have a bowel movement?"
+      ],
+      "familyExplainer": {
+        "text": "Clozapine is often the best medicine when others have not worked. It needs regular blood tests, weekly at first. Call the team right away for fever, sore throat, chest pain, or constipation that lasts more than a day or two. Tell the team if your family member stops or starts smoking.",
+        "handoutRef": "FH-MED03"
+      },
+      "evidenceIds": [
+        "clozapine-rems"
+      ],
+      "qbankIds": [
+        "qb_pha_011",
+        "qb_psy_007",
+        "qb_psy_012",
+        "qb_psy_014"
+      ],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "boxedWarning.summary": "L",
+          "class": "R",
+          "mechanism.t1": "R",
+          "flags": "R",
+          "pk": "R",
+          "monitoring": "E",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "dosing.labelLink": "L",
+          "adverseEffects.common": "J",
+          "adverseEffects.dangerous": "J",
+          "interactions.cyp": "R",
+          "interactions.keyTraps": "J",
+          "populations": "J",
+          "pearls": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J",
+          "familyExplainer.handoutRef": "R",
+          "regulatory": "L"
+        },
+        "reconnectRecords": [
+          "medications[name=Clozapine]"
+        ],
+        "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+        "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+        "labelVerifiedOn": "2026-09-29",
+        "labelReceipt": "clozapine",
+        "carried": {
+          "drug_class": "Atypical Antipsychotic",
+          "mechanism_of_action": "D4 antagonist; 5-HT2A antagonist; muscarinic/histaminergic/adrenergic antagonist",
+          "QTc Risk": "Moderate",
+          "Weight Impact": "Significant Gain",
+          "Requires Blood Monitoring": "Yes",
+          "ekg_required": "Yes",
+          "baseline_workup": "ANC; EKG; fasting glucose/lipids; troponin",
+          "half_life_hours": "12",
+          "time_to_effect": "2-4 weeks; up to 6 months for full effect",
+          "counseling": "Gold standard for treatment-resistant psychosis. REQUIRES weekly blood draws initially. Report fever, sore throat, constipation, chest pain immediately.",
+          "family_psychoeducation": "For patients with schizophrenia or psychotic disorders, APA guidelines (Grade 1A) recommend family psychoeducation when the patient is in contact with family members. Ask your treatment team about family education sessions, which have been shown to reduce relapse and improve outcomes.",
+          "family_handout_ref": "FH-MED03",
+          "rems_program": true,
+          "common_side_effects": "Sedation; Weight Gain; Hypersalivation; Constipation; Tachycardia"
+        },
+        "jSources": {
+          "monitoring": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "ANC weekly ×6 months → every 2 weeks ×6 months → monthly (per the prescribing information; not REMS-enforced); metabolic panel; EKG"
+            },
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "many protocols check troponin/CRP at baseline and weekly for the first 4 weeks"
+            }
+          ],
+          "adverseEffects.dangerous": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "check urgently with fever, tachycardia, chest pain, or flu-like illness"
+            },
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "severe constipation that can progress to ileus and be fatal (treat bowel regimens as non-optional)"
+            },
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "*Clozapine red flags:* agranulocytosis / low ANC, myocarditis, ileus, and lowered seizure threshold — any of these is a \"tell someone now\" finding."
+            }
+          ],
+          "interactions.keyTraps": [
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "Smoking cessation raises clozapine levels (CYP1A2)"
+            }
+          ],
+          "pearls": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "The clozapine ANC schedule (weekly → biweekly → monthly) is worth memorizing; myocarditis is the early killer beyond the count."
+            },
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "Name the failure threshold for schizophrenia (two adequate trials) and proactively raise clozapine rather than cycling further agents."
+            },
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "the patient who quits at admission may need a dose *decrease*, not the reflexive increase"
+            },
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "the FDA eliminated the clozapine REMS in 2025"
+            }
+          ],
+          "inpatientUses": [
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "clozapine is the *only* agent with demonstrated superiority in TRS and also carries an anti-suicidal indication"
+            }
+          ],
+          "regulatory": [
+            {
+              "page": "05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md",
+              "quote": "the FDA eliminated the clozapine REMS in 2025; monitoring continues per the PI, not REMS-enforced"
+            }
+          ],
+          "familyExplainer.text": [
+            {
+              "page": "reconnect:counseling",
+              "quote": "Gold standard for treatment-resistant psychosis. REQUIRES weekly blood draws initially. Report fever, sore throat, constipation, chest pain immediately."
+            }
+          ],
+          "adverseEffects.common": [
+            {
+              "page": "reconnect:common_side_effects",
+              "quote": "Sedation; Weight Gain; Hypersalivation; Constipation; Tachycardia"
+            }
+          ]
+        },
+        "authoredFields": [
+          "dosing.forms",
+          "attendingAsks",
+          "dosing.titration",
+          "adverseEffects.dangerous[*].firstMove",
+          "familyExplainer.text",
+          "interactions.keyTraps[1]"
+        ],
+        "upstreamDiscrepancies": [
+          {
+            "field": "rems_program",
+            "upstreamValue": true,
+            "usedValue": false,
+            "basis": "FDA removed the clozapine REMS in 2025 (evidence clozapine-rems; attested primer, protocol library, med_monitoring)."
+          },
+          {
+            "field": "brand_names",
+            "upstreamValue": "Clozaril, Versacloz, FazaClo",
+            "usedValue": "Clozaril, Versacloz",
+            "basis": "FazaClo does not appear among current openFDA labels (receipt brandsSeen)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "haloperidol",
+      "generic": "haloperidol",
+      "brands": [],
+      "group": "antipsychotic",
+      "class": [
+        "first-generation antipsychotic (high potency)"
+      ],
+      "rxcui": "5093",
+      "dailymedSetId": "a0751f2e-05ab-4ba9-9bae-7b791bf1a621",
+      "labelVersionDate": "2026-08-31",
+      "mechanism": {
+        "t1": "High-potency D2 receptor antagonist."
+      },
+      "fdaIndications": [
+        "Psychotic disorders",
+        "Tics and vocal utterances of Tourette's disorder",
+        "Severe behavior problems in children (after other measures)",
+        "Short-term treatment of hyperactive children (after other measures)"
+      ],
+      "boxedWarning": {
+        "present": true,
+        "summary": "Increased mortality in elderly patients with dementia-related psychosis."
+      },
+      "inpatientUses": [
+        {
+          "use": "Acute psychosis and agitation when sedation is not wanted",
+          "offLabel": false,
+          "evidenceIds": [
+            "project-beta-psychopharm-agitation-2012"
+          ]
+        },
+        {
+          "use": "Long-acting injectable (decanoate) when nonadherence drives relapse",
+          "offLabel": false,
+          "evidenceIds": []
+        }
+      ],
+      "dosing": {
+        "titration": "Oral, short-acting IM, and monthly decanoate forms exist; the IV route is off-label and carries the highest QTc risk. Confirm dose and route with pharmacy.",
+        "forms": [
+          "PO",
+          "liquid",
+          "IM",
+          "LAI"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a0751f2e-05ab-4ba9-9bae-7b791bf1a621"
+      },
+      "flags": {
+        "qtcRisk": "High (IV route highest)",
+        "weightImpact": "Neutral",
+        "bloodMonitoring": "No",
+        "ekgRequired": "Yes"
+      },
+      "pk": {
+        "halfLifeHours": "20",
+        "timeToEffect": "Hours for agitation; 2–4 weeks for psychosis"
+      },
+      "monitoring": {
+        "baseline": [
+          "EKG (QTc)",
+          "Potassium and magnesium"
+        ],
+        "ongoing": [
+          "Repeat QTc with dose changes",
+          "EPS/akathisia checks",
+          "AIMS for tardive dyskinesia"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Akathisia",
+          "Acute dystonia",
+          "Parkinsonism"
+        ],
+        "dangerous": [
+          {
+            "name": "Neuroleptic malignant syndrome",
+            "recognize": "Lead-pipe rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
+          },
+          {
+            "name": "Torsades de pointes",
+            "recognize": "QTc prolongation, highest with IV use or stacked QT-prolonging agents.",
+            "firstMove": "Baseline QTc; replete potassium and magnesium; check what else is on board."
+          },
+          {
+            "name": "Tardive dyskinesia",
+            "recognize": "Late involuntary movements.",
+            "firstMove": "AIMS at baseline and on a schedule."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {
+          "substrateOf": [
+            "2D6",
+            "3A4"
+          ]
+        },
+        "keyTraps": [
+          "Other QT-prolonging agents (methadone is often already on board)",
+          "Stacking anticholinergics to treat EPS"
+        ]
+      },
+      "pearls": {
+        "t1": [
+          "High-potency D2 blocker: little weight gain or sedation, more EPS and akathisia.",
+          "NMS: lead-pipe rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker."
+        ],
+        "t2": [
+          "Tempo plus reflexes triages the hyperthermic patient: hyporeflexic and slow-onset points to NMS; hyperreflexic with clonus points to serotonin syndrome.",
+          "IV haloperidol is on the QT-prolonging list — check what the patient is already taking before adding a second agent.",
+          "Haloperidol decanoate is a first-generation LAI option."
+        ]
+      },
+      "attendingAsks": [
+        "What is the baseline QTc, and what else is prolonging it?",
+        "How would you tell akathisia from worsening agitation?",
+        "What distinguishes NMS from serotonin syndrome at the bedside?"
+      ],
+      "familyExplainer": {
+        "text": "Haloperidol is an older medicine that works well for psychosis and agitation. It can cause stiffness, shaking, or a strong feeling of restlessness. Tell the team if you notice these. The team will check heart tracings while it is used.",
+        "handoutRef": "FH-MED03"
+      },
+      "evidenceIds": [
+        "lieberman-2005-catie",
+        "strawn-2007-neuroleptic-malignant-syndrome",
+        "gurrera-2011-nms-criteria",
+        "lima-2004-betablockers-akathisia",
+        "project-beta-psychopharm-agitation-2012"
+      ],
+      "qbankIds": [
+        "qb_psy_008",
+        "qb_anx_003",
+        "qb_pha_003",
+        "qb_cog_003"
+      ],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "boxedWarning.summary": "L",
+          "class": "R",
+          "mechanism.t1": "R",
+          "flags": "R",
+          "pk": "R",
+          "monitoring": "E",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "dosing.labelLink": "L",
+          "adverseEffects.common": "J",
+          "adverseEffects.dangerous": "J",
+          "interactions.cyp": "R",
+          "interactions.keyTraps": "J",
+          "populations": "J",
+          "pearls": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J",
+          "familyExplainer.handoutRef": "R"
+        },
+        "reconnectRecords": [
+          "medications[name=Haloperidol]"
+        ],
+        "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+        "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+        "labelVerifiedOn": "2026-09-29",
+        "labelReceipt": "haloperidol",
+        "carried": {
+          "drug_class": "Typical Antipsychotic",
+          "mechanism_of_action": "D2 receptor antagonist (high potency)",
+          "QTc Risk": "High",
+          "Weight Impact": "Neutral",
+          "Requires Blood Monitoring": "No",
+          "ekg_required": "Yes",
+          "baseline_workup": "EKG; electrolytes",
+          "half_life_hours": "20",
+          "time_to_effect": "0 (agitation), 2-4 (psychosis)",
+          "counseling": "Older medication, very effective for psychosis. May cause stiffness and restlessness. Need heart monitoring.",
+          "family_psychoeducation": "For patients with schizophrenia or psychotic disorders, APA guidelines (Grade 1A) recommend family psychoeducation when the patient is in contact with family members. Ask your treatment team about family education sessions, which have been shown to reduce relapse and improve outcomes.",
+          "family_handout_ref": "FH-MED03",
+          "common_side_effects": "EPS; Akathisia; Dystonia; Parkinsonism"
+        },
+        "jSources": {
+          "monitoring": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+            },
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia"
+            }
+          ],
+          "adverseEffects.dangerous": [
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+            },
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "check what the patient is already taking before adding a second QT-prolonging agent"
+            }
+          ],
+          "interactions.keyTraps": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "check what the patient is already taking before adding a second QT-prolonging agent"
+            }
+          ],
+          "pearls": [
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "Tempo plus reflexes triages the hyperthermic patient: hyporeflexic and slow-onset points to NMS; hyperreflexic with clonus points to serotonin syndrome."
+            },
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "first-generation depots — haloperidol and fluphenazine decanoate"
+            }
+          ],
+          "inpatientUses": [
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "Consider an LAI when nonadherence drives relapse"
+            }
+          ],
+          "familyExplainer.text": [
+            {
+              "page": "reconnect:counseling",
+              "quote": "Older medication, very effective for psychosis. May cause stiffness and restlessness. Need heart monitoring."
+            }
+          ],
+          "adverseEffects.common": [
+            {
+              "page": "reconnect:common_side_effects",
+              "quote": "EPS; Akathisia; Dystonia; Parkinsonism"
+            }
+          ]
+        },
+        "authoredFields": [
+          "dosing.forms",
+          "attendingAsks",
+          "pearls.t1[0]",
+          "adverseEffects.dangerous[*].firstMove",
+          "dosing.titration",
+          "inpatientUses[0]",
+          "familyExplainer.text"
+        ],
+        "upstreamDiscrepancies": [
+          {
+            "field": "cyp_pathways",
+            "upstreamValue": "2D6 Substrate; 3A4 Substrate; 1A2 Substrate",
+            "usedValue": "2D6, 3A4",
+            "basis": "Label lists CYP3A4 and CYP2D6; 1A2 contribution is minor — reviewer to confirm."
+          }
+        ]
+      }
+    },
+    {
+      "id": "olanzapine",
+      "generic": "olanzapine",
+      "brands": [
+        "Zyprexa",
+        "Zyprexa Zydis",
+        "Zyprexa IntraMuscular",
+        "Zyprexa Relprevv"
+      ],
+      "group": "antipsychotic",
+      "class": [
+        "second-generation antipsychotic"
+      ],
+      "rxcui": "61381",
+      "dailymedSetId": "b418946a-1ab4-4d89-a012-d94fc361a3c4",
+      "labelVersionDate": "2026-02-11",
+      "mechanism": {
+        "t1": "D2 and 5-HT2A antagonist with prominent H1 and muscarinic antagonism."
+      },
+      "fdaIndications": [
+        "Schizophrenia",
+        "Bipolar I disorder: acute manic or mixed episodes and maintenance",
+        "Adjunct to lithium or valproate for bipolar I manic or mixed episodes",
+        "IM: acute agitation in schizophrenia and bipolar I mania",
+        "With fluoxetine: bipolar I depression and treatment-resistant depression"
+      ],
+      "boxedWarning": {
+        "present": true,
+        "summary": "Increased mortality in elderly patients with dementia-related psychosis; the long-acting injection adds post-injection delirium/sedation syndrome."
+      },
+      "inpatientUses": [
+        {
+          "use": "Acute psychosis or mania, especially when sedation is wanted",
+          "offLabel": false,
+          "evidenceIds": [
+            "lieberman-2005-catie"
+          ]
+        },
+        {
+          "use": "Acute agitation (IM or ODT)",
+          "offLabel": false,
+          "evidenceIds": [
+            "project-beta-psychopharm-agitation-2012"
+          ]
+        }
+      ],
+      "dosing": {
+        "titration": "Tablet, orally disintegrating, and short-acting IM forms; a monthly LAI requires post-injection observation. Confirm dose and route with pharmacy.",
+        "forms": [
+          "PO",
+          "ODT",
+          "IM",
+          "LAI"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=b418946a-1ab4-4d89-a012-d94fc361a3c4"
+      },
+      "flags": {
+        "qtcRisk": "Low",
+        "weightImpact": "Significant gain",
+        "bloodMonitoring": "Yes",
+        "ekgRequired": "No"
+      },
+      "pk": {
+        "halfLifeHours": "30",
+        "timeToEffect": "1–2 weeks"
+      },
+      "monitoring": {
+        "baseline": [
+          "Weight/BMI and waist",
+          "Fasting glucose or A1c",
+          "Lipids",
+          "Blood pressure"
+        ],
+        "ongoing": [
+          "Glucose/lipids at ~12 weeks then annually",
+          "Weight each visit",
+          "AIMS for tardive dyskinesia"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Weight gain",
+          "Sedation",
+          "Dry mouth",
+          "Constipation",
+          "Dizziness"
+        ],
+        "dangerous": [
+          {
+            "name": "Metabolic syndrome / new diabetes",
+            "recognize": "Weight gain, rising glucose and lipids on the monitoring schedule.",
+            "firstMove": "Treat monitoring as part of the prescription; flag abnormal results on rounds."
+          },
+          {
+            "name": "Neuroleptic malignant syndrome",
+            "recognize": "Lead-pipe rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker.",
+            "firstMove": "Tell the senior now."
+          },
+          {
+            "name": "Excess sedation with parenteral benzodiazepines",
+            "recognize": "Oversedation or cardiorespiratory depression when IM olanzapine is combined with a parenteral benzodiazepine.",
+            "firstMove": "Check the MAR for recent benzodiazepines before an IM dose."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {
+          "substrateOf": [
+            "1A2"
+          ]
+        },
+        "keyTraps": [
+          "Smoking status changes levels (CYP1A2)",
+          "Parenteral benzodiazepines with IM olanzapine"
+        ]
+      },
+      "pearls": {
+        "t1": [
+          "Choose antipsychotics by side-effect profile, not recency — olanzapine sits at the heavy end for weight and glucose.",
+          "Baseline and ongoing metabolic monitoring is part of prescribing an antipsychotic, not optional."
+        ],
+        "t2": [
+          "CATIE's punchline: most patients stopped their assigned antipsychotic within 18 months.",
+          "IM olanzapine plus a parenteral benzodiazepine: check the MAR first."
+        ]
+      },
+      "attendingAsks": [
+        "What metabolic labs are due, and when?",
+        "Why olanzapine rather than a weight-neutral agent for this patient?",
+        "Has this patient had a benzodiazepine in the last hour?"
+      ],
+      "familyExplainer": {
+        "text": "Olanzapine works well for psychosis and mania and helps with sleep. It often increases appetite and weight and can raise blood sugar and cholesterol. The team will check weight and blood tests. Healthy meals and activity help.",
+        "handoutRef": "FH-MED03"
+      },
+      "evidenceIds": [
+        "lieberman-2005-catie",
+        "project-beta-psychopharm-agitation-2012"
+      ],
+      "qbankIds": [
+        "qb_pha_003",
+        "qb_psy_007",
+        "qb_cog_006"
+      ],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "boxedWarning.summary": "L",
+          "class": "R",
+          "mechanism.t1": "R",
+          "flags": "R",
+          "pk": "R",
+          "monitoring": "E",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "dosing.labelLink": "L",
+          "adverseEffects.common": "J",
+          "adverseEffects.dangerous": "J",
+          "interactions.cyp": "R",
+          "interactions.keyTraps": "J",
+          "populations": "J",
+          "pearls": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J",
+          "familyExplainer.handoutRef": "R"
+        },
+        "reconnectRecords": [
+          "medications[name=Olanzapine]"
+        ],
+        "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+        "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+        "labelVerifiedOn": "2026-09-29",
+        "labelReceipt": "olanzapine",
+        "carried": {
+          "drug_class": "Atypical Antipsychotic",
+          "mechanism_of_action": "D2 antagonist; 5-HT2A antagonist; H1 antagonist; muscarinic antagonist",
+          "QTc Risk": "Low",
+          "Weight Impact": "Significant Gain",
+          "Requires Blood Monitoring": "Yes",
+          "ekg_required": "No",
+          "baseline_workup": "Fasting glucose/lipids; HbA1c; weight; waist circumference",
+          "half_life_hours": "30",
+          "time_to_effect": "1-2 weeks",
+          "counseling": "Very effective but SIGNIFICANT metabolic effects. Monitor weight, blood sugar, cholesterol closely. ODT available.",
+          "family_psychoeducation": "For patients with schizophrenia or psychotic disorders, APA guidelines (Grade 1A) recommend family psychoeducation when the patient is in contact with family members. Ask your treatment team about family education sessions, which have been shown to reduce relapse and improve outcomes.",
+          "family_handout_ref": "FH-MED03",
+          "common_side_effects": "Weight Gain; Sedation; Dry Mouth; Constipation; Dizziness"
+        },
+        "jSources": {
+          "monitoring": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia"
+            }
+          ],
+          "pearls": [
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "Choose antipsychotics by side-effect profile (CATIE), not by recency — 74% stopped their drug within 18 months"
+            },
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "Baseline and ongoing metabolic monitoring is part of prescribing an antipsychotic, not optional."
+            }
+          ],
+          "adverseEffects.dangerous": [
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker"
+            }
+          ],
+          "familyExplainer.text": [
+            {
+              "page": "reconnect:counseling",
+              "quote": "Very effective but SIGNIFICANT metabolic effects. Monitor weight, blood sugar, cholesterol closely. ODT available."
+            }
+          ],
+          "adverseEffects.common": [
+            {
+              "page": "reconnect:common_side_effects",
+              "quote": "Weight Gain; Sedation; Dry Mouth; Constipation; Dizziness"
+            }
+          ]
+        },
+        "authoredFields": [
+          "dosing.forms",
+          "attendingAsks",
+          "pearls.t2[1]",
+          "adverseEffects.dangerous[2]",
+          "interactions.keyTraps",
+          "dosing.titration",
+          "familyExplainer.text",
+          "inpatientUses"
+        ],
+        "upstreamDiscrepancies": [
+          {
+            "field": "cyp_pathways",
+            "upstreamValue": "1A2 substrate; 2D6 substrate",
+            "usedValue": "1A2",
+            "basis": "Label: primarily CYP1A2 (2D6 minor) — reviewer to confirm."
+          }
+        ]
+      }
+    },
+    {
+      "id": "sertraline",
+      "generic": "sertraline",
+      "brands": [
+        "Zoloft"
+      ],
+      "group": "antidepressant",
+      "class": [
+        "SSRI"
+      ],
+      "rxcui": "36437",
+      "dailymedSetId": "fda754f6-d0f3-4dce-a17a-927d64f912f7",
+      "labelVersionDate": "2023-08-08",
+      "mechanism": {
+        "t1": "Selective serotonin reuptake inhibitor."
+      },
+      "fdaIndications": [
+        "Major depressive disorder",
+        "Obsessive-compulsive disorder",
+        "Panic disorder",
+        "Posttraumatic stress disorder",
+        "Social anxiety disorder",
+        "Premenstrual dysphoric disorder"
+      ],
+      "boxedWarning": {
+        "present": true,
+        "summary": "Suicidal thoughts and behaviors: antidepressants increased the risk in pediatric and young adult patients in short-term studies; monitor closely for worsening and emergent suicidal thoughts."
+      },
+      "inpatientUses": [
+        {
+          "use": "First-line for major depression and the anxiety disorders",
+          "offLabel": false,
+          "evidenceIds": [
+            "cipriani-2018-antidepressant-nma"
+          ]
+        }
+      ],
+      "dosing": {
+        "titration": "Start low and titrate; expect delayed onset. Taper rather than stopping abruptly. Confirm the dose with pharmacy and the current label.",
+        "forms": [
+          "PO",
+          "liquid"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=fda754f6-d0f3-4dce-a17a-927d64f912f7"
+      },
+      "flags": {
+        "qtcRisk": "Low",
+        "weightImpact": "Neutral",
+        "bloodMonitoring": "No",
+        "ekgRequired": "No"
+      },
+      "pk": {
+        "halfLifeHours": "26",
+        "timeToEffect": "2–4 weeks"
+      },
+      "monitoring": {
+        "baseline": [
+          "Screen for bipolarity",
+          "No routine labs required"
+        ],
+        "ongoing": [
+          "Activation and suicidality under age 25",
+          "Sodium in older adults",
+          "Bleeding risk",
+          "Discontinuation symptoms"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Nausea",
+          "Diarrhea",
+          "Insomnia",
+          "Sexual dysfunction",
+          "Headache"
+        ],
+        "dangerous": [
+          {
+            "name": "Serotonin syndrome",
+            "recognize": "Clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased.",
+            "firstMove": "Tell the senior now; stop serotonergic agents pending evaluation."
+          },
+          {
+            "name": "Switch to mania in unrecognized bipolar disorder",
+            "recognize": "Emerging mania or mixed features after starting.",
+            "firstMove": "Screen for bipolarity before the first dose."
+          },
+          {
+            "name": "Hyponatremia",
+            "recognize": "Confusion or falls in an older adult.",
+            "firstMove": "Check sodium."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {
+          "inhibits": [
+            "2D6 (dose-dependent)"
+          ]
+        },
+        "keyTraps": [
+          "MAOIs: allow ≥2 weeks after stopping sertraline before an MAOI, and ≥2 weeks after an MAOI before sertraline",
+          "Serotonergic stacking",
+          "NSAIDs or anticoagulants (bleeding)"
+        ]
+      },
+      "pearls": {
+        "t1": [
+          "Don't start an SSRI without screening for bipolarity, and expect delayed onset.",
+          "The suicidality black box covers antidepressants through age 24 — monitor young adults closely early."
+        ],
+        "t2": [
+          "Serotonin syndrome is rapid-onset with hyperreflexia and clonus; NMS is slower and stiffer.",
+          "Antidepressant choice is about tolerability and fit as much as rank order in network meta-analyses."
+        ]
+      },
+      "attendingAsks": [
+        "How did you screen for bipolar disorder before starting this?",
+        "When would you expect to see a response?",
+        "What would make you worry about serotonin syndrome on this regimen?"
+      ],
+      "familyExplainer": {
+        "text": "Sertraline is a common medicine for depression and anxiety. It usually takes 2 to 4 weeks to help. Upset stomach is common at first. Do not stop it suddenly. In young adults, watch for new or worse thoughts of self-harm early on, and tell the team right away.",
+        "handoutRef": "FH-MED01"
+      },
+      "evidenceIds": [
+        "cipriani-2018-antidepressant-nma",
+        "boyer-shannon-2005-serotonin-syndrome"
+      ],
+      "qbankIds": [
+        "qb_pha_001",
+        "qb_pha_008",
+        "qb_mood_009",
+        "qb_mood_014"
+      ],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "boxedWarning.summary": "L",
+          "class": "R",
+          "mechanism.t1": "R",
+          "flags": "R",
+          "pk": "R",
+          "monitoring": "E",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "dosing.labelLink": "L",
+          "adverseEffects.common": "J",
+          "adverseEffects.dangerous": "J",
+          "interactions.cyp": "R",
+          "interactions.keyTraps": "J",
+          "populations": "J",
+          "pearls": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J",
+          "familyExplainer.handoutRef": "R"
+        },
+        "reconnectRecords": [
+          "medications[name=Sertraline]"
+        ],
+        "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+        "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+        "labelVerifiedOn": "2026-09-29",
+        "labelReceipt": "sertraline",
+        "carried": {
+          "drug_class": "SSRI",
+          "mechanism_of_action": "Selective serotonin reuptake inhibitor",
+          "QTc Risk": "Low",
+          "Weight Impact": "Neutral",
+          "Requires Blood Monitoring": "No",
+          "ekg_required": "No",
+          "baseline_workup": "None routinely required",
+          "half_life_hours": "26",
+          "time_to_effect": "2-4 weeks",
+          "counseling": "Most commonly prescribed antidepressant. Takes 2-4 weeks to work. May cause GI upset initially. Do not stop abruptly.",
+          "family_handout_ref": "FH-MED01",
+          "common_side_effects": "Nausea; Diarrhea; Insomnia; Sexual Dysfunction; Headache"
+        },
+        "jSources": {
+          "monitoring": [
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "| **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
+            }
+          ],
+          "adverseEffects.dangerous": [
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "*Serotonin syndrome:* clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased"
+            },
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "Don't start an SSRI without screening for bipolarity"
+            }
+          ],
+          "interactions.keyTraps": [
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent"
+            },
+            {
+              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+              "quote": "a serotonergic stack"
+            }
+          ],
+          "pearls": [
+            {
+              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 — monitor young adults closely early."
+            },
+            {
+              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+              "quote": "serotonin syndrome (rapid onset, *hyperreflexia* and clonus, often GI prominence)"
+            }
+          ],
+          "familyExplainer.text": [
+            {
+              "page": "reconnect:counseling",
+              "quote": "Most commonly prescribed antidepressant. Takes 2-4 weeks to work. May cause GI upset initially. Do not stop abruptly."
+            }
+          ],
+          "adverseEffects.common": [
+            {
+              "page": "reconnect:common_side_effects",
+              "quote": "Nausea; Diarrhea; Insomnia; Sexual Dysfunction; Headache"
+            }
+          ]
+        },
+        "authoredFields": [
+          "dosing.forms",
+          "attendingAsks",
+          "pearls.t2[1]",
+          "adverseEffects.dangerous[*].firstMove",
+          "interactions.keyTraps[2]",
+          "dosing.titration",
+          "familyExplainer.text",
+          "inpatientUses"
+        ],
+        "upstreamDiscrepancies": [
+          {
+            "field": "serious_adverse_effects",
+            "upstreamValue": "QTc Prolongation (high doses)",
+            "usedValue": null,
+            "basis": "Dose-related QTc prolongation is the citalopram signal; the attested QT table does not list sertraline. Dropped pending reviewer confirmation."
+          },
+          {
+            "field": "cyp_pathways",
+            "upstreamValue": "2D6 inhibitor (weak); 2B6 substrate",
+            "usedValue": "2D6 inhibitor (dose-dependent)",
+            "basis": "Reviewer to confirm against label section 7."
+          }
+        ]
+      }
+    }
+  ]
 }

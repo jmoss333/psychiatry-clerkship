@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "description": "How verify_pharmacy_labels.py finds each agent's FDA label. rxnormName resolves the RxNorm ingredient (tty IN); openfdaGenericNames select every matching SPL in openFDA for the agreement count; referenceBrand (optional) picks the reference label, else the most recent ORAL label. Reviewable data, not code.",
+  "agents": {
+    "lithium":     { "rxnormName": "lithium carbonate", "openfdaGenericNames": ["LITHIUM CARBONATE"], "referenceBrand": "LITHOBID" },
+    "clozapine":   { "rxnormName": "clozapine", "openfdaGenericNames": ["CLOZAPINE"], "referenceBrand": "CLOZARIL" },
+    "haloperidol": { "rxnormName": "haloperidol", "openfdaGenericNames": ["HALOPERIDOL"] },
+    "olanzapine":  { "rxnormName": "olanzapine", "openfdaGenericNames": ["OLANZAPINE"], "referenceBrand": "ZYPREXA" },
+    "sertraline":  { "rxnormName": "sertraline", "openfdaGenericNames": ["SERTRALINE HYDROCHLORIDE"], "referenceBrand": "ZOLOFT" }
+  }
+}

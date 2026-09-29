@@ -560,6 +560,83 @@
                     "null"
                   ]
                 }
+              },
+              "jSources": {
+                "type": "object",
+                "description": "Where each J or E field came from: field path -> one or more verbatim quotes. 'page' is a repo path to an attested learner page (the quote must appear in it verbatim, whitespace-normalised) or 'reconnect:<upstream field>' (the quote must equal provenance.carried[<field>]). validate_pharmacy.py checks every quote.",
+                "additionalProperties": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "page",
+                      "quote"
+                    ],
+                    "properties": {
+                      "page": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "quote": {
+                        "type": "string",
+                        "minLength": 12
+                      }
+                    }
+                  }
+                }
+              },
+              "authoredFields": {
+                "type": "array",
+                "description": "J field paths written new for the pharmacy, with no attested source to quote — the faculty reviewer's first stop.",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "upstreamDiscrepancies": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "field",
+                    "upstreamValue",
+                    "usedValue",
+                    "basis"
+                  ],
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    },
+                    "upstreamValue": {
+                      "type": [
+                        "string",
+                        "boolean",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "usedValue": {
+                      "type": [
+                        "string",
+                        "boolean",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "basis": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "labelReceipt": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$",
+                "description": "Key into _automation/pharmacy/label_receipt.json"
               }
             }
           },
