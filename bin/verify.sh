@@ -323,6 +323,8 @@ step "test_validate_rotation_edition_catalog" python3 $A/test_validate_rotation_
 step "test_reconnect_snapshot_provenance"   python3 $A/test_validate_reconnect_snapshot_provenance.py
 step "validate_reconnect_snapshot_provenance" python3 $A/validate_reconnect_snapshot_provenance.py
 step "test_sync_from_reconnect"         python3 $A/test_sync_from_reconnect.py
+step "test_validate_pharmacy"              python3 $A/pharmacy/test_validate_pharmacy.py
+step "validate_pharmacy"                   python3 $A/pharmacy/validate_pharmacy.py
 step "unit — surface governance"            python3 $A/test_surface_governance.py
 step "unit — tool governance"               python3 $A/test_validate_tool_governance.py
 step "validate_tool_governance"             python3 $A/validate_tool_governance.py
