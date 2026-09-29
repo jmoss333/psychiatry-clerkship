@@ -28,6 +28,7 @@ PAIRS = (
     ("pairings.json", "pairings.schema.json"),
     ("standards.json", "standards.schema.json"),
     ("vocabulary.json", "vocabulary.schema.json"),
+    ("pharmacy.json", "pharmacy.schema.json"),
     (
         "13_Faculty_Resources/_automation/site_build/shipped_pages.json",
         "13_Faculty_Resources/_automation/site_build/shipped_pages.schema.json",

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "description": "Psychiatric pharmacy records (spec 02). Empty until faculty gate G0 approves the field map; records land in reviewed batches.",
+  "provenance": {
+    "upstreamRepository": "https://github.com/jmoss333/reconnect-psychiatry-system.git",
+    "upstreamPath": "databases/core/data_all.json",
+    "upstreamField": "medications",
+    "relation": "derived",
+    "syncPolicy": "manual-reviewed-only",
+    "syncTool": "13_Faculty_Resources/_automation/sync_from_reconnect.py",
+    "fieldMapPath": "13_Faculty_Resources/_automation/pharmacy/reconnect_meds_fieldmap.json",
+    "note": "Report-only sync. Nothing is copied automatically; each record is added by a reviewed edit."
+  },
+  "records": []
+}
