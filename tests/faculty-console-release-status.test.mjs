@@ -26,6 +26,10 @@ import {
   watchVerdict,
   REQUIRED_CHECKS,
   TRAIN_SLOTS_UTC,
+  facultyTime,
+  publishWait,
+  publishWaitText,
+  servedSlugs,
 } from '../faculty-console/release-status.mjs';
 import {
   createHandler, GOVERNANCE_SITE, loadReleaseStatus, readServedGovernance, servedRevisionReader,
@@ -775,4 +779,82 @@ test('the re-signing list never lets an unread site make "not live yet" read as 
   assert.match(resignHeading(schedule), /a learner site could not be read, so some pages marked "not live yet" may already be/);
   const blind = resignSchedule({ drifted: ['review.html'], known: ['review.html'], signoffs: null, nextSlot, nowMs });
   assert.equal(blind.complete, false);
+});
+
+// ── "Not found" that is only "not published yet" (2026-09-28 Case of the Week) ────────────
+
+const COTW = { identity: 'cotw_20260928_mania_ms3.md', site: 'ms3', type: 'page' };
+// The morning of 2026-09-28: the COTW merged 12:54 UTC (08:54 ET), after the 09:05 UTC slot,
+// and the owner previewed it on the phone at 14:50 UTC (10:50 ET).
+const PREVIEWED = Date.parse('2026-09-28T14:50:00Z');
+function waitingStatus({ ms3 = ['agitation.md'], res = ['agitation.md'], waiting = 'waiting', mergedAt = '2026-09-28T12:54:00Z' } = {}) {
+  return {
+    served: { ms3, res },
+    waiting: { status: waiting, complete: true, changes: waiting === 'waiting' ? [{ sha: sha('c'), pr: 897, title: 'COTW', signoff: false, at: mergedAt }] : [] },
+  };
+}
+
+test('servedSlugs lists every served slug per site, sorted, and null for an unread site', () => {
+  const served = servedSlugs({
+    ms3: { items: { 'b.md': { kind: 'page' }, 'a.md': { kind: 'page' }, 'tool.html': { kind: 'tool' } } },
+    res: null,
+  });
+  assert.deepEqual(served, { ms3: ['a.md', 'b.md', 'tool.html'], res: null });
+  assert.deepEqual(servedSlugs({ ms3: { items: [] }, res: { items: 'x' } }), { ms3: null, res: null });
+});
+
+test('facultyTime reads a slot on the Maine clock, across daylight saving', () => {
+  assert.equal(facultyTime(Date.parse('2026-09-28T15:05:00Z')), '11:05 AM ET');
+  assert.equal(facultyTime(Date.parse('2026-01-15T15:05:00Z')), '10:05 AM ET');
+  assert.equal(facultyTime(Date.parse('2026-09-28T21:05:00Z')), '5:05 PM ET');
+});
+
+test('the 2026-09-28 COTW reads as unpublished, with the 11:05 AM ET publish', () => {
+  const wait = publishWait(waitingStatus(), COTW, PREVIEWED);
+  assert.deepEqual(wait, {
+    state: 'unpublished',
+    nextSlot: '2026-09-28T15:05:00.000Z',
+    at: '11:05 AM ET',
+    until: 'in 15 min',
+    waiting: 1,
+    stuck: false,
+  });
+  assert.equal(publishWaitText(wait),
+    'Merged, but not on the learner site yet. It goes live at the 11:05 AM ET publish (in 15 min); preview it after that.');
+});
+
+test('a slug the site serves is a real not-found, never "not published yet"', () => {
+  assert.equal(publishWait(waitingStatus({ ms3: ['agitation.md', COTW.identity] }), COTW, PREVIEWED), null);
+});
+
+test('nothing waiting means the page should be live: a real not-found', () => {
+  assert.equal(publishWait(waitingStatus({ waiting: 'current' }), COTW, PREVIEWED), null);
+  assert.equal(publishWait(waitingStatus({ waiting: 'unknown' }), COTW, PREVIEWED), null);
+});
+
+test('an unread site, a missing status or a malformed item cannot tell', () => {
+  assert.equal(publishWait(waitingStatus({ ms3: null }), COTW, PREVIEWED), null);
+  assert.equal(publishWait(null, COTW, PREVIEWED), null);
+  assert.equal(publishWait(waitingStatus(), { identity: COTW.identity }, PREVIEWED), null);
+  assert.equal(publishWait(waitingStatus(), { site: 'ms3' }, PREVIEWED), null);
+  assert.equal(publishWait(waitingStatus(), COTW, Number.NaN), null);
+});
+
+test('a resident-only page is judged against the resident site', () => {
+  const resPage = { identity: 'cotw_20260928_mania_res.md', site: 'res', type: 'page' };
+  assert.equal(publishWait(waitingStatus({ res: ['agitation.md'] }), resPage, PREVIEWED).state, 'unpublished');
+  assert.equal(publishWait(waitingStatus({ res: ['agitation.md', resPage.identity] }), resPage, PREVIEWED), null);
+});
+
+test('merged work waiting more than a day is called stuck, not scheduled', () => {
+  const wait = publishWait(waitingStatus({ mergedAt: '2026-09-27T12:00:00Z' }), COTW, PREVIEWED);
+  assert.equal(wait.stuck, true);
+  assert.match(publishWaitText(wait), /publishing looks stuck/);
+  assert.equal(publishWaitText(null), '');
+});
+
+test('the endpoint reports every served slug, and null for a site it could not read', async () => {
+  const { fetchImpl } = fixtureFetch({ governance: { res: 'down' } });
+  const body = await (await handler(fetchImpl)(request())).json();
+  assert.deepEqual(body.served, { ms3: ['agitation.md'], res: null });
 });

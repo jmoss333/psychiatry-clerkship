@@ -469,3 +469,78 @@ export function watchVerdict(status) {
   if (status?.liveComplete !== true || (Array.isArray(status?.gaps) && status.gaps.length)) return 2;
   return 0;
 }
+
+// ── "Not found" that is only "not published yet" ─────────────────────────────────────────
+// On 2026-09-28 a Case of the Week merged at 08:54 ET, missed the morning publish, and the
+// phone console answered the owner's preview with "Not found" and the learner site's own
+// "Page unavailable". Nothing was wrong: the page was on main and went live at the next
+// slot. The console already knows both facts it needs to say so — which slugs each site
+// serves (its /governance.json lists every page and tool it publishes, reviewed or not) and
+// whether merged work is waiting — so a missing page that is merely unpublished is named as
+// such, with the time it goes live. A missing page the site SHOULD serve stays "Not found".
+
+/** The faculty's clock: both learner sites and the owner are in Maine. */
+export const FACULTY_TIME_ZONE = 'America/New_York';
+
+/**
+ * Every slug each learner site serves, from its served /governance.json, sorted; null for a
+ * site that could not be read (never an empty list, which would claim it serves nothing).
+ */
+export function servedSlugs(docs) {
+  return Object.fromEntries(SITE_KEYS.map(key => {
+    const items = docs?.[key]?.items;
+    const readable = items && typeof items === 'object' && !Array.isArray(items);
+    return [key, readable ? Object.keys(items).sort() : null];
+  }));
+}
+
+/** A slot as the faculty read it: "11:05 AM ET". */
+export function facultyTime(ms) {
+  const time = new Intl.DateTimeFormat('en-US', {
+    timeZone: FACULTY_TIME_ZONE, hour: 'numeric', minute: '2-digit',
+  }).format(new Date(ms));
+  return `${time} ET`;
+}
+
+/**
+ * Why a learner site answered "not found" for a page or tool the console queues, when the
+ * release status can tell. `item` is a review item ({ identity: slug, site }).
+ *   null  cannot tell (no status, or the item's preview site was not read), or the site does
+ *         serve that slug, or nothing merged is waiting — in each case "Not found" is a real
+ *         fault and the console keeps saying so
+ *   { state: 'unpublished', nextSlot, at, until, waiting, stuck }
+ *         the site does not serve it yet and merged work is waiting: it is on main and goes
+ *         live at the next publish. `stuck` when the oldest waiting change is older than
+ *         STALE_WAIT_HOURS — the next slot is then a hope, not a schedule.
+ * Information only: it never changes what may be attested.
+ */
+export function publishWait(status, item, nowMs) {
+  const site = item?.site;
+  const slug = typeof item?.identity === 'string' ? item.identity : '';
+  if (!status || !slug || !SITE_KEYS.includes(site) || !Number.isFinite(nowMs)) return null;
+  const served = status.served?.[site];
+  if (!Array.isArray(served) || served.includes(slug)) return null;
+  if (status.waiting?.status !== 'waiting') return null;
+  const changes = Array.isArray(status.waiting.changes) ? status.waiting.changes : [];
+  const times = changes.map(change => Date.parse(change?.at)).filter(Number.isFinite);
+  const stuck = times.length > 0 && nowMs - Math.min(...times) > STALE_WAIT_HOURS * 3_600_000;
+  const nextSlot = nextTrainSlot(nowMs);
+  return {
+    state: 'unpublished',
+    nextSlot: new Date(nextSlot).toISOString(),
+    at: facultyTime(nextSlot),
+    until: untilLabel(nextSlot, nowMs),
+    waiting: changes.length,
+    stuck,
+  };
+}
+
+/** The sentence both consoles show in place of "Not found" for an unpublished item. */
+export function publishWaitText(wait) {
+  if (!wait || wait.state !== 'unpublished') return '';
+  if (wait.stuck) {
+    return 'Merged, but not on the learner site yet — and merged changes have waited more than a day, '
+      + 'so publishing looks stuck. Check “What learners see” on the desktop console.';
+  }
+  return `Merged, but not on the learner site yet. It goes live at the ${wait.at} publish (${wait.until}); preview it after that.`;
+}
