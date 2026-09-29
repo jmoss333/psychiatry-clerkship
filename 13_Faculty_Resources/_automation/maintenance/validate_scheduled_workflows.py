@@ -221,6 +221,7 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Install — metrics collector dependencies"),
             ("name", "Unit — metrics collector"),
             ("name", "Unit — faculty console modules and pending-visibility invariant"),
+            ("name", "Validate — question-bank drafts are attestable from the phone"),
             ("name", "Install — managed SP proxy dependencies"),
             ("name", "Test — SP Interview and managed proxy"),
             ("name", "Install — hosted Dana preview dependencies"),
@@ -423,7 +424,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "a8bebbaa3a154105d2491c0c0a468a5fe107e9db29d83ff844b7a23c7efda0d5"
     ),
-    "ci.yml": "b27cb9797a0864f8ac1b924a1d2d8a7ff0f783d56564235627681967e16312d0",
+    "ci.yml": "1c7346fae1eae3cc20a0504930451d748544c4aa53ff1a4f0d2328134e8643a6",
     "maintenance-governance-digest.yml": (
         "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),
@@ -649,6 +650,16 @@ CRITICAL_STEPS = {
             (
                 "Unit — root node regression tests (tests/*.test.mjs)",
                 "node --test tests/*.test.mjs",
+                None,
+                "required CI gate",
+            ),
+            # Both commands pinned: the self-test plants a flagged and a blocked draft and asserts
+            # they go red, so deleting it to clear a red would leave a gate that can pass over
+            # nothing. See bin/check-qbank-drafts.mjs (decision qbank-drafts-phone-attestable).
+            (
+                "Validate — question-bank drafts are attestable from the phone",
+                "node bin/check-qbank-drafts.mjs --self-test\n"
+                "node bin/check-qbank-drafts.mjs",
                 None,
                 "required CI gate",
             ),
