@@ -22,7 +22,11 @@ faculty-console/
                                  revision-safe draft and attestation transitions
   netlify/functions/release-status.mjs
                                  read-only: what the learner sites serve, what is not live yet
-  release-status.mjs             the release panel's model: train slots, waiting changes, headline
+  release-status.mjs             the release panel's model: train slots, waiting changes, headline;
+                                 also publishWait(), which turns a preview's "Not found" into
+                                 "Not published yet — goes live at the 11:05 AM ET publish" when
+                                 the site does not serve the page yet and merged work is waiting
+                                 (desktop and phone; information only, never eligibility)
   README.md                      this file
 ```
 

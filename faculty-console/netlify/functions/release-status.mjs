@@ -12,6 +12,7 @@ import {
   nextTrainSlot,
   releaseHeadline,
   SITE_KEYS,
+  servedSlugs,
   staleSignoffs,
   TRAIN_WORKFLOW,
   waitingChange,
@@ -313,6 +314,9 @@ export async function loadReleaseStatus(fetchImpl, token, {
     mainChecks,
     waiting,
     signoffs: staleSignoffs(governance),
+    // Every slug each site serves (null = unread), so a preview's "not found" for a page that
+    // is merged but not yet published can be told from a real fault (publishWait()).
+    served: servedSlugs(governance),
     train: {
       workflowUrl: `https://github.com/${REPO}/actions/workflows/${TRAIN_WORKFLOW}`,
       nextSlot: new Date(nextTrainSlot(nowMs)).toISOString(),
