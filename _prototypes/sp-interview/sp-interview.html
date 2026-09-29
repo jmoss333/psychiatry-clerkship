@@ -1719,10 +1719,20 @@ function App(){
   }
 
   /* ---------- encounter: shared step-out overlay ---------- */
-  function openChart(){ chartOpenRef.current=true; setChartOpen(true); announce('Chart open. '+E.caseDef.persona.displayName+' waits.');
+  // Only the typed room waits behind the chart; the spoken room keeps its microphone on (stepping
+  // out is what pauses it), so it says so, unless the learner has already paused it.
+  function chartOpenLine(){
+    if(!E.spoken)return 'Chart open. '+E.caseDef.persona.displayName+' waits.';
+    var phase=(rt||{phase:'connecting'}).phase;
+    if(phase==='paused')return 'Chart open. The room stays paused.';
+    return (phase==='listening'||phase==='thinking'||phase==='speaking')?'Chart open. The room does not pause for it — your microphone stays on.':'Chart open.';
+  }
+  function openChart(){ chartOpenRef.current=true; setChartOpen(true); announce(chartOpenLine());
     setTimeout(function(){ if(chartTitleRef.current)try{chartTitleRef.current.focus();}catch(x){} },30); }
+  // At the turn limit the composer, Chart button and all, gives way to "End encounter and reflect"
+  // while the chart can still be open; focus returns to whichever of the two the room now shows.
   function closeChart(){ chartOpenRef.current=false; setChartOpen(false); announce('Chart closed.');
-    setTimeout(function(){ if(chartBtnRef.current)try{chartBtnRef.current.focus();}catch(x){} },30); }
+    setTimeout(function(){ var back=chartBtnRef.current||limitEndRef.current; if(back)try{back.focus();}catch(x){} },30); }
   function chartOverlay(cd){
     return e('div',{className:'overlay',onKeyDown:function(ev){trapDialogKey(ev,closeChart);}},
       e('div',{className:'panel',role:'dialog','aria-modal':true,'aria-labelledby':'chart_title'},
