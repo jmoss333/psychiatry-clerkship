@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
-"""Validate pinned ReConnect snapshot provenance without network or repo access."""
+"""Validate pinned ReConnect snapshot provenance without network or repo access.
+
+Two kinds of record:
+  exact-copy  a byte-identical snapshot under a `_source/` directory (keyed by snapshotPath)
+  derived     a registry re-shaped from a ReConnect dataset at a pinned revision (keyed by
+              derivedPath). It needs a fieldMap, and every `reconnectRecord` in that
+              registry must point at a pinned `sourceRecords` index (spec AC8, bridge check BR4).
+
+This file runs in the build (build_and_check.sh), so it must never import the dev-only
+sync engine (bridge check BR3).
+"""
 
 import argparse
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -59,24 +70,96 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def validate_root(root: Path) -> tuple[list[str], int]:
-    """Return deterministic diagnostics and the number of valid records."""
+def resolve_inside(root: Path, relative: str):
+    """(path, None) for a regular, non-symlinked file inside root; else (None, diagnostic)."""
+    cursor = root
+    for part in Path(relative).parts:
+        cursor /= part
+        if cursor.is_symlink():
+            return None, f"{relative}: symbolic links are not allowed"
+    try:
+        resolved = (root / relative).resolve()
+    except (OSError, RuntimeError):
+        return None, f"{relative}: UNRESOLVABLE"
+    try:
+        resolved.relative_to(root)
+    except ValueError:
+        return None, f"{relative}: path escapes repository root"
+    if not resolved.is_file():
+        return None, f"{relative}: MISSING"
+    return resolved, None
+
+
+def reconnect_refs(value):
+    """Every reconnectRecord string anywhere in a registry, at any depth."""
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key == "reconnectRecord" and isinstance(item, str):
+                yield item
+            else:
+                yield from reconnect_refs(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from reconnect_refs(item)
+
+
+def validate_derived(root: Path, records: list[dict]) -> list[str]:
+    diagnostics = []
+    pinned_sources = set()
+    for record in records:
+        relative = record["derivedPath"]
+        source = (record["dataset"], record["sourcePath"])
+        if source in pinned_sources:
+            diagnostics.append(
+                f"{relative}: another derived record already pins "
+                f"{record['dataset']} from {record['sourcePath']}"
+            )
+        pinned_sources.add(source)
+        pinned = record["sourceRecords"]
+        if pinned != sorted(pinned):
+            diagnostics.append(f"{relative}: sourceRecords must be sorted ascending")
+
+        registry_path, problem = resolve_inside(root, relative)
+        if problem:
+            diagnostics.append(problem)
+            continue
+        registry, error = load_json(registry_path)
+        if error:
+            diagnostics.append(error.replace(registry_path.name, relative, 1))
+            continue
+        reference = re.compile(r"^" + re.escape(record["dataset"]) + r"\[(\d+)\]")
+        for ref in sorted(set(reconnect_refs(registry))):
+            match = reference.match(ref)
+            if not match:
+                diagnostics.append(
+                    f"{relative}: reconnectRecord {ref!r} does not reference "
+                    f"{record['dataset']}[N]"
+                )
+            elif int(match.group(1)) not in pinned:
+                diagnostics.append(
+                    f"{relative}: reconnectRecord {ref!r} is not pinned in sourceRecords"
+                )
+    return diagnostics
+
+
+def validate_root(root: Path) -> tuple[list[str], int, int]:
+    """Return deterministic diagnostics and the exact-copy and derived record counts."""
     root = root.resolve()
     schema, schema_error = load_json(SCHEMA)
     if schema_error:
-        return [schema_error], 0
+        return [schema_error], 0, 0
     try:
         Draft7Validator.check_schema(schema)
     except SchemaError as error:
         return [
             f"{SCHEMA.name}: INVALID SCHEMA at "
             f"{json_pointer(error.absolute_path)}: {error.message}"
-        ], 0
+        ], 0, 0
 
     inventory_path = root / INVENTORY_RELATIVE
     inventory, inventory_error = load_json(inventory_path)
     if inventory_error:
-        return [inventory_error], 0
+        return [inventory_error], 0, 0
 
     schema_errors = sorted(
         Draft7Validator(schema).iter_errors(inventory),
@@ -91,19 +174,20 @@ def validate_root(root: Path) -> tuple[list[str], int]:
             f"{inventory_path.name}: INVALID at "
             f"{json_pointer(error.absolute_path)}: {error.message}"
             for error in schema_errors
-        ], 0
+        ], 0, 0
 
     records = inventory["records"]
-    snapshot_paths = [record["snapshotPath"] for record in records]
+    keys = [record.get("snapshotPath") or record.get("derivedPath") for record in records]
     diagnostics = []
-    if snapshot_paths != sorted(snapshot_paths) or len(set(snapshot_paths)) != len(
-        snapshot_paths
-    ):
+    if keys != sorted(keys) or len(set(keys)) != len(keys):
         diagnostics.append(
-            f"{inventory_path.name}: INVALID: records must be sorted by unique snapshotPath"
+            f"{inventory_path.name}: INVALID: records must be sorted by unique "
+            "snapshotPath/derivedPath"
         )
 
-    for record in records:
+    exact = [record for record in records if "snapshotPath" in record]
+    derived = [record for record in records if "snapshotPath" not in record]
+    for record in exact:
         relative = record["snapshotPath"]
         if record["sourceSha256"] != record["snapshotSha256"]:
             diagnostics.append(
@@ -111,29 +195,9 @@ def validate_root(root: Path) -> tuple[list[str], int]:
                 "for relation exact-copy"
             )
 
-        candidate = root / relative
-        cursor = root
-        symlinked = False
-        for part in Path(relative).parts:
-            cursor /= part
-            if cursor.is_symlink():
-                symlinked = True
-                break
-        if symlinked:
-            diagnostics.append(f"{relative}: symbolic links are not allowed")
-            continue
-        try:
-            snapshot = candidate.resolve()
-        except (OSError, RuntimeError):
-            diagnostics.append(f"{relative}: UNRESOLVABLE")
-            continue
-        try:
-            snapshot.relative_to(root)
-        except ValueError:
-            diagnostics.append(f"{relative}: path escapes repository root")
-            continue
-        if not snapshot.is_file():
-            diagnostics.append(f"{relative}: MISSING")
+        snapshot, problem = resolve_inside(root, relative)
+        if problem:
+            diagnostics.append(problem)
             continue
         try:
             actual = file_sha256(snapshot)
@@ -146,7 +210,8 @@ def validate_root(root: Path) -> tuple[list[str], int]:
                 f"{relative}: SHA-256 mismatch (expected {expected}, actual {actual})"
             )
 
-    return sorted(diagnostics), len(records)
+    diagnostics.extend(validate_derived(root, derived))
+    return sorted(diagnostics), len(exact), len(derived)
 
 
 def main() -> int:
@@ -166,7 +231,7 @@ def main() -> int:
         )
         return 2
 
-    diagnostics, count = validate_root(args.root)
+    diagnostics, exact, derived = validate_root(args.root)
     if diagnostics:
         print(
             "reconnect snapshot provenance INVALID — "
@@ -176,10 +241,10 @@ def main() -> int:
             print("  -", diagnostic)
         return 1
 
-    print(
-        "reconnect snapshot provenance OK — "
-        f"{count} exact-copy record(s), manual review required"
-    )
+    summary = f"{exact} exact-copy record(s)"
+    if derived:
+        summary += f", {derived} derived record(s)"
+    print(f"reconnect snapshot provenance OK — {summary}, manual review required")
     return 0
 
 

@@ -507,8 +507,12 @@ the container when the Bash 5 environment is part of the evidence.
   adding a surface: the learner must plausibly be *doing* risk work there (assessing, rehearsing,
   or planning disposition) — not merely reading a page that mentions suicide. Data is derived
   from the ReConnect crisis dataset and independently re-verified — refresh with
-  `_automation/sync_crisis_from_reconnect.py --reconnect <path>` (dev-only, report-only; never
-  runs on Netlify).
+  `_automation/sync_from_reconnect.py --dataset crisis --reconnect <path>` (dev-only, report-only;
+  never runs on Netlify; `sync_crisis_from_reconnect.py` is the same report under its old name).
+  The same engine diffs `--dataset meds` (`pharmacy.json`) and `--dataset evidence`; exit 1 means
+  drift. A registry reshaped from ReConnect declares `relation: derived` in the provenance
+  inventory (pinned `sourceRevision` + required `fieldMap`); the engine then also reports field
+  changes since that revision.
   **Opting a surface in has two non-obvious consequences, each of which has cost a cycle.**
   (1) **The Reader stops collapsing that page.** `makeCollapsible()` in `spa_index.html` returns
   early on any body containing `.crisis-block-hook`, so the contacts can never be stranded inside

@@ -1,0 +1,68 @@
+{
+  "crisis": [
+    {
+      "name": "Fixture National Line",
+      "phone": "1-555-555-0100",
+      "last_verified_date": "2026-01-10"
+    },
+    {
+      "name": "Fixture Text Line",
+      "phone": "Text HELLO to 555-0111",
+      "last_verified_date": "2026-07-01"
+    },
+    {
+      "name": "Fixture Regional Line",
+      "phone": "(555) 555-0199",
+      "last_verified_date": "2026-08-01"
+    }
+  ],
+  "medications": [
+    {
+      "name": "Alphazine",
+      "generic_name": "alphazine",
+      "drug_class": "Fixture Class A",
+      "mechanism_of_action": "Fixture mechanism A",
+      "black_box_warning": "No",
+      "freshness_status": "red",
+      "last_verified_date": "2026-03-20",
+      "starting_dose": "10",
+      "typical_dose_min": "10",
+      "typical_dose_max": "20",
+      "absolute_max_dose": "40",
+      "pregnancy_category": "C",
+      "cost_plus_price": "$1.00",
+      "goodrx_url": "https://example.org/fixture-alphazine"
+    },
+    {
+      "name": "Betamol",
+      "generic_name": "betamol",
+      "drug_class": "Fixture Class B",
+      "mechanism_of_action": "Fixture mechanism B",
+      "black_box_warning": "Yes",
+      "freshness_status": "green",
+      "last_verified_date": "2026-06-01"
+    },
+    {
+      "name": "Gammatrol",
+      "generic_name": "gammatrol",
+      "drug_class": "Fixture Class C",
+      "mechanism_of_action": "Fixture mechanism C",
+      "black_box_warning": "No",
+      "freshness_status": "red",
+      "last_verified_date": "2026-03-20",
+      "MaineCare Status": "Preferred",
+      "pharmacy_options": [
+        {
+          "source": "Fixture",
+          "cost": "$0"
+        }
+      ]
+    }
+  ],
+  "ebp_reference": [
+    {
+      "name": "Fixture Modality",
+      "freshness_status": "green"
+    }
+  ]
+}

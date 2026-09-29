@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "records": [
+    {
+      "id": "alphazine",
+      "generic": "alphazine",
+      "familyExplainer": {
+        "text": "Synthetic fixture text.",
+        "reconnectRecord": "medications[0]"
+      }
+    },
+    {
+      "id": "betamol",
+      "generic": "betamol",
+      "familyExplainer": {
+        "text": "Synthetic fixture text.",
+        "reconnectRecord": "medications[2]"
+      }
+    }
+  ]
+}

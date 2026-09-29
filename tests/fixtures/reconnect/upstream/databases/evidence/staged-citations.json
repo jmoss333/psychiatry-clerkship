@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "name": "Fixture staged citations",
+    "description": "Synthetic fixture only. PMIDs 9000000x and DOIs 10.9999/* do not exist."
+  },
+  "seen_pmids": ["90000001", "90000002", "90000003"],
+  "seen_dois": ["10.9999/fixture.1", "10.9999/fixture.2", "10.9999/fixture.3"],
+  "staged": [
+    {
+      "pmid": "90000001",
+      "doi": "10.9999/fixture.1",
+      "title": "Fixture trial one",
+      "year": "2025"
+    },
+    {
+      "pmid": "90000002",
+      "doi": "10.9999/fixture.2",
+      "title": "Fixture trial two",
+      "year": "2026"
+    },
+    {
+      "pmid": "90000003",
+      "doi": "10.9999/fixture.3",
+      "title": "Fixture trial three",
+      "year": "2026"
+    }
+  ]
+}

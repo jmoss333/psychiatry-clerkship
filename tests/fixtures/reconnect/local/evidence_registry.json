@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "fixture-one",
+      "citation": {
+        "title": "Fixture trial one",
+        "pmid": "90000001",
+        "doi": "10.9999/fixture.1"
+      }
+    },
+    {
+      "id": "fixture-two",
+      "citation": {
+        "title": "Fixture trial two",
+        "pmid": "90000002",
+        "doi": "10.9999/fixture.2-conflicting"
+      }
+    },
+    {
+      "id": "fixture-local-only",
+      "citation": {
+        "title": "Fixture local-only source",
+        "pmid": "",
+        "doi": ""
+      }
+    }
+  ]
+}
