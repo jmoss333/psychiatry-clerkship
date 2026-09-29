@@ -8944,6 +8944,64 @@
       }
     },
     {
+      "id": "kroenke-2001-phq9",
+      "type": "primary-study",
+      "citation": {
+        "title": "The PHQ-9: validity of a brief depression severity measure",
+        "authors": [
+          {
+            "family": "Kroenke",
+            "given": "K"
+          },
+          {
+            "family": "Spitzer",
+            "given": "RL"
+          },
+          {
+            "family": "Williams",
+            "given": "JB"
+          }
+        ],
+        "organization": "",
+        "year": 2001,
+        "journal": "J Gen Intern Med",
+        "volume": "16",
+        "pages": "606-613",
+        "doi": "10.1046/j.1525-1497.2001.016009606.x",
+        "pmid": "11556941",
+        "url": "https://doi.org/10.1046/j.1525-1497.2001.016009606.x"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "NCBI E-utilities esummary/efetch (PMID 11556941): title, three authors, J Gen Intern Med 16(9):606-13, DOI 10.1046/j.1525-1497.2001.016009606.x and PMCID PMC1495268 match",
+        "verifiedAt": "2026-09-28",
+        "note": "Added for the Interview Room follow-up visit (sp_depression_followup_001): the severity bands its visit note grades against. The library's Screeners page shows the same bands without citing a source."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "validation study (6,000 primary care and obstetrics-gynecology patients)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-09-28",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "depression",
+          "screening",
+          "follow-up"
+        ],
+        "clerkshipRelevance": "The PHQ-9 severity bands (5, 10, 15 and 20 mark mild, moderate, moderately severe and severe) a learner applies when scoring a completed questionnaire.",
+        "noteHistory": [
+          {
+            "date": "2026-09-28",
+            "note": "Added for the Interview Room follow-up visit (sp_depression_followup_001): the severity bands its visit note grades against. The library's Screeners page shows the same bands without citing a source.",
+            "reason": "The follow-up visit's debrief and visit note state the PHQ-9 severity bands; the library's Screeners page shows them without a registered source."
+          }
+        ]
+      }
+    },
+    {
       "id": "doupnik-2020-acute-care-suicide-prevention",
       "type": "systematic-review",
       "citation": {

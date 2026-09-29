@@ -64,7 +64,8 @@ function matchingSafetyIntentIds(caseDef, text) {
 // case were dropped from the pack, which would also silently drop every
 // per-case safety assertion below (the loops would simply iterate less).
 // 2026-09-26: Morgan (sp_alcohol_ambivalence_001) joined the pack with the uniform screen.
-const EXPECTED_CASE_COUNT = 4;
+// 2026-09-28: Dana one week after discharge (sp_depression_followup_001) joined it with Day 1's screen.
+const EXPECTED_CASE_COUNT = 5;
 
 test('every case recognizes all three approved suicide-screen phrasing families as a safety intent', () => {
   assert.equal(pack.cases.length, EXPECTED_CASE_COUNT, 'pack case count changed');
