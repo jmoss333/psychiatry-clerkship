@@ -8,7 +8,9 @@ check's own tag. A check that cannot be made to fail is not a check (SILENT_SHRI
 import ast
 import copy
 import json
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -70,6 +72,40 @@ class ValidatePharmacyTest(unittest.TestCase):
         data = self.mutate()
         first(data)["provenance"]["carried"]["absolute_max_dose"] = "x"
         self.assertTagged(run(data), "AC13")
+
+    def test_denylisted_key_at_record_level_fails(self):  # #898: "top-level or nested"
+        data = self.mutate()
+        first(data)["starting_dose"] = "x"
+        self.assertTagged(run(data), "AC13")
+
+    def test_interaction_card_ids_resolve_against_the_interaction_cards_page(self):  # AC5
+        data = self.mutate()
+        first(data)["interactions"]["interactionCardIds"] = ["lithium"]
+        self.assertEqual(run(data), [])
+        first(data)["interactions"]["interactionCardIds"] = ["no-such-card"]
+        self.assertTagged(run(data), "AC5")
+
+    def test_oe_audio_ids_resolve_against_the_audio_manifest(self):  # AC5
+        data = self.mutate()
+        first(data)["oeAudioIds"] = ["03", "3"]  # leading zeros ignored, as in pairings.json
+        self.assertEqual(run(data), [])
+        first(data)["oeAudioIds"] = ["999"]
+        self.assertTagged(run(data), "AC5")
+
+    def test_off_card_ids_fail_when_their_target_cannot_be_read(self):  # AC5, fail closed
+        data = self.mutate()
+        first(data)["interactions"]["interactionCardIds"] = ["lithium"]
+        first(data)["oeAudioIds"] = ["03"]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for name in ("evidence_registry.json", "question_bank.json", "topic_meta.json"):
+                shutil.copy(vp.ROOT / name, root / name)
+            findings, _ = vp.check(data, RECEIPT, FIELDMAP, root=root)
+        self.assertEqual(
+            sorted(f.split(":")[1].strip().split(" ")[0] for f in findings
+                   if f.startswith("AC5 lithium") and ("interaction" in f or "audio" in f)),
+            ["audio", "interaction"],
+        )
 
     def test_unknown_evidence_id_fails(self):
         data = self.mutate()
