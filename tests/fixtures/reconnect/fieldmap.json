@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "description": "Synthetic meds field map for test_sync_from_reconnect.py. Same shape as 13_Faculty_Resources/_automation/pharmacy/reconnect_meds_fieldmap.json; invented drugs only.",
+  "status": "fixture",
+  "upstream": {"path": "databases/core/data_all.json", "field": "medications", "keyField": "name"},
+  "classes": {
+    "L": "label-verifiable by script",
+    "R": "ReConnect-inherited, hash-pinned",
+    "J-seed": "seed text for a faculty-judgment field; never shipped verbatim",
+    "meta": "provenance only, not carried as content"
+  },
+  "phase1Roster": [
+    {"id": "alphazine", "reconnectNames": ["Alphazine"], "group": "fixture"},
+    {"id": "betamol", "reconnectNames": ["Betamol"], "group": "fixture"},
+    {"id": "deltanol", "reconnectNames": ["Deltanol"], "group": "fixture"}
+  ],
+  "fieldMap": {
+    "name": {"target": "generic", "class": "L"},
+    "generic_name": {"target": "generic", "class": "L"},
+    "drug_class": {"target": "class", "class": "R"},
+    "mechanism_of_action": {"target": "mechanism.t1", "class": "R"},
+    "black_box_warning": {"target": "boxedWarning.present", "class": "L"},
+    "half_life_hours": {"target": "pk.halfLifeHours", "class": "R"},
+    "freshness_status": {"target": null, "class": "meta"},
+    "last_verified_date": {"target": null, "class": "meta"}
+  },
+  "denylist": {
+    "starting_dose": "Option A",
+    "typical_dose_min": "Option A",
+    "typical_dose_max": "Option A",
+    "absolute_max_dose": "Option A",
+    "pregnancy_category": "PLLR",
+    "MaineCare Status": "out of scope",
+    "cost_plus_price": "out of scope",
+    "goodrx_url": "out of scope",
+    "pharmacy_options": "out of scope"
+  }
+}

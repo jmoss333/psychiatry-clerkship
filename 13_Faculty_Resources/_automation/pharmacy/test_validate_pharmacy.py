@@ -5,6 +5,7 @@ The committed pharmacy.json must pass; then one mutation per check must fail wit
 check's own tag. A check that cannot be made to fail is not a check (SILENT_SHRINK §F).
 """
 
+import ast
 import copy
 import json
 import sys
@@ -114,8 +115,21 @@ class ValidatePharmacyTest(unittest.TestCase):
         record["pearls"]["t1"][0] += " (edited)"
         self.assertTagged(run(data), "AC6")
 
-    def test_fieldmap_denylist_covers_the_sync_engine(self):
-        self.assertLessEqual(set(vp.ENGINE_DENYLIST), set(FIELDMAP["denylist"]))
+    def test_denylist_has_one_source_and_the_gate_never_imports_the_dev_only_sync(self):
+        # The field map is the one denylist; sync_from_reconnect.py reads the same file
+        # (pinned in test_sync_from_reconnect). A CI gate importing the dev-only sync would
+        # blur the build-isolation line (C4 / BR3), so the validator must not.
+        self.assertEqual(vp.FIELDMAP.name, "reconnect_meds_fieldmap.json")
+        tree = ast.parse(Path(vp.__file__).read_text(encoding="utf-8"))
+        imported = {alias.name for node in ast.walk(tree) if isinstance(node, ast.Import)
+                    for alias in node.names}
+        imported |= {node.module for node in ast.walk(tree)
+                     if isinstance(node, ast.ImportFrom) and node.module}
+        self.assertFalse({name for name in imported if "sync_from_reconnect" in name}, imported)
+        for key in ("starting_dose", "typical_dose_min", "typical_dose_max", "absolute_max_dose",
+                    "pregnancy_category", "goodrx_url", "cost_plus_price", "pharmacy_options",
+                    "MaineCare Status", "Walmart $4 List", "Prior Auth Usually Required"):
+            self.assertIn(key, FIELDMAP["denylist"])
 
     def test_l_field_edit_does_not_reopen_review(self):
         data = self.mutate()

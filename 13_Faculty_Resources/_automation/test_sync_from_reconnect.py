@@ -37,6 +37,7 @@ FIXTURES = ROOT / "tests" / "fixtures" / "reconnect"
 UPSTREAM = FIXTURES / "upstream"
 LOCAL = FIXTURES / "local"
 GOLDEN = FIXTURES / "crisis_report.golden.txt"
+FIELDMAP = FIXTURES / "fieldmap.json"
 UPSTREAM_TOKEN = "<RECONNECT>/databases/core/data_all.json"
 DATA_ALL = "databases/core/data_all.json"
 LOCAL_FOR = {
@@ -72,7 +73,7 @@ def run(script: Path, *args) -> subprocess.CompletedProcess:
     )
 
 
-def run_engine(dataset, inventory, *, reconnect=UPSTREAM, local=None, fmt="md"):
+def run_engine(dataset, inventory, *, reconnect=UPSTREAM, local=None, fmt="md", fieldmap=FIELDMAP):
     return run(
         ENGINE,
         "--dataset", dataset,
@@ -80,7 +81,34 @@ def run_engine(dataset, inventory, *, reconnect=UPSTREAM, local=None, fmt="md"):
         "--local", local or LOCAL_FOR[dataset],
         "--inventory", inventory,
         "--format", fmt,
+        "--fieldmap", fieldmap,
     )
+
+
+def copy_upstream(directory: Path, mutate=None) -> Path:
+    """A plain (non-git) copy of the upstream fixture, optionally edited."""
+    destination = directory / "reconnect"
+    shutil.copytree(UPSTREAM, destination)
+    if mutate is not None:
+        path = destination / DATA_ALL
+        data = json.loads(path.read_text(encoding="utf-8"))
+        mutate(data)
+        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    return destination
+
+
+def write_pharmacy(directory: Path, records) -> Path:
+    path = directory / "pharmacy.json"
+    path.write_text(json.dumps({"schemaVersion": 1, "records": records}), encoding="utf-8")
+    return path
+
+
+def name_keyed(rid, name, carried):
+    """A Phase 0 / G1-shaped pharmacy record: name-keyed ref plus carried upstream values."""
+    return {
+        "id": rid,
+        "provenance": {"reconnectRecords": ["medications[name=%s]" % name], "carried": carried},
+    }
 
 
 def git(cwd: Path, *args) -> str:
@@ -147,10 +175,45 @@ class ContractTests(unittest.TestCase):
             module.DEFAULT_INVENTORY,
             ROOT / "13_Faculty_Resources/_automation/provenance/reconnect_snapshot_provenance.json",
         )
+        self.assertEqual(
+            module.DEFAULT_FIELDMAP,
+            ROOT / "13_Faculty_Resources/_automation/pharmacy/reconnect_meds_fieldmap.json",
+        )
         args = module.build_parser().parse_args(["--dataset", "crisis", "--reconnect", "x"])
         self.assertIsNone(args.local)
         self.assertEqual(args.inventory, module.DEFAULT_INVENTORY)
+        self.assertEqual(args.fieldmap, module.DEFAULT_FIELDMAP)
         self.assertEqual(args.format, "md")
+
+    def test_engine_and_build_validator_read_one_denylist(self):  # AC13 / BR6, single source
+        module = load_engine_module()
+        spec = importlib.util.spec_from_file_location(
+            "validate_pharmacy", HERE / "pharmacy" / "validate_pharmacy.py")
+        validator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(validator)
+        self.assertEqual(module.DEFAULT_FIELDMAP.resolve(), validator.FIELDMAP.resolve())
+        source = ENGINE.read_text(encoding="utf-8")
+        for key in ("starting_dose", "absolute_max_dose", "goodrx_url"):
+            self.assertNotIn('"%s"' % key, source, "the engine must not restate the denylist")
+
+    def test_production_field_map_is_internally_consistent(self):
+        fieldmap = json.loads(load_engine_module().DEFAULT_FIELDMAP.read_text(encoding="utf-8"))
+        self.assertEqual(fieldmap["upstream"]["field"], "medications")
+        self.assertEqual(fieldmap["upstream"]["keyField"], "name")
+        self.assertEqual(set(fieldmap["fieldMap"]) & set(fieldmap["denylist"]), set())
+        self.assertLessEqual(
+            {spec["class"] for spec in fieldmap["fieldMap"].values()}, set(fieldmap["classes"]))
+        roster_ids = [agent["id"] for agent in fieldmap["phase1Roster"]]
+        self.assertEqual(len(roster_ids), 45)
+        self.assertEqual(len(set(roster_ids)), 45)
+        self.assertTrue(all(isinstance(agent["reconnectNames"], list)
+                            for agent in fieldmap["phase1Roster"]))
+        # An empty reconnectNames is an agent authored from the label alone (4 of 45 at G0).
+        unnamed = [agent["id"] for agent in fieldmap["phase1Roster"] if not agent["reconnectNames"]]
+        self.assertLessEqual(len(unnamed), 4, unnamed)
+        # G-1 Option A: every dose field is denylisted, never mapped.
+        for key in ("starting_dose", "typical_dose_min", "typical_dose_max", "absolute_max_dose"):
+            self.assertIn(key, fieldmap["denylist"])
 
     def test_reconnect_path_is_required(self):  # BR2
         result = run(ENGINE, "--dataset", "crisis")
@@ -280,6 +343,168 @@ class ReportTests(unittest.TestCase):
                     self.assertTrue(first.stdout)
 
 
+class MedsFieldMapTests(unittest.TestCase):
+    """The Phase 0 meds checks: field-map coverage, Phase-1 roster, name-keyed carried drift."""
+
+    def setUp(self):
+        self._temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self._temporary.cleanup)
+        self.base = Path(self._temporary.name)
+        self.inventory = empty_inventory(self.base)
+        self.no_local = self.base / "absent-pharmacy.json"
+
+    def report(self, *, reconnect=UPSTREAM, local=None, fmt="json"):
+        result = run_engine("meds", self.inventory, reconnect=reconnect,
+                            local=local or self.no_local, fmt=fmt)
+        self.assertEqual(result.stderr, "")
+        return result.returncode, (json.loads(result.stdout) if fmt == "json" else result.stdout)
+
+    def kinds(self, report):
+        return [item["kind"] for item in report["conflicts"]]
+
+    def test_roster_coverage_and_mapped_but_absent_keys(self):
+        code, report = self.report()
+        self.assertEqual(code, 0)
+        self.assertEqual(report["roster"], {
+            "size": 3,
+            "covered": 2,
+            "missingUpstream": ["deltanol"],
+            "phase2Pool": ["Gammatrol"],
+        })
+        self.assertIn("mapped but absent upstream: half_life_hours", report["notes"])
+        self.assertEqual(self.kinds(report), [])
+        _, markdown = self.report(fmt="md")
+        self.assertIn("PHASE-1 ROSTER — 2 of 3 covered upstream", markdown)
+        self.assertIn("missing upstream (L fields from the label): deltanol", markdown)
+
+    def test_unclassified_upstream_key_is_drift(self):
+        def mutate(data):
+            data["medications"][1]["brand_new_field"] = "x"
+
+        code, report = self.report(reconnect=copy_upstream(self.base, mutate))
+        self.assertEqual(code, 1)
+        self.assertEqual(self.kinds(report), ["unclassified-upstream-key"])
+        self.assertIn("'brand_new_field' (present on 1 records)", report["conflicts"][0]["detail"])
+
+    def test_name_keyed_record_with_matching_carried_values_is_clean(self):
+        # The local id deliberately differs from the upstream generic (the real Lithium case):
+        # the name-keyed ref alone must mark the upstream row as covered, not "added".
+        local = write_pharmacy(self.base, [name_keyed("alphazine-local-id", "Alphazine", {
+            "drug_class": "Fixture Class A",
+            "mechanism_of_action": "Fixture mechanism A",
+            "black_box_warning": "No",
+        })])
+        code, report = self.report(local=local)
+        self.assertEqual(code, 0)
+        self.assertEqual(report["changed"], [])
+        self.assertEqual(self.kinds(report), [])
+        self.assertEqual([item["id"] for item in report["added"]], ["betamol", "gammatrol"])
+
+    def test_carried_value_drift_is_reported_with_its_basis(self):
+        local = write_pharmacy(self.base, [name_keyed("alphazine", "Alphazine", {
+            "drug_class": "Fixture Class A (as carried)",
+            "black_box_warning": "No",
+        })])
+        code, report = self.report(local=local)
+        self.assertEqual(code, 1)
+        self.assertEqual(report["changed"], [{
+            "record": 0,
+            "id": "alphazine",
+            "field": "drug_class",
+            "target": "class",
+            "before": "Fixture Class A (as carried)",
+            "after": "Fixture Class A",
+            "basis": "carried",
+        }])
+        _, markdown = self.report(local=local, fmt="md")
+        self.assertIn("(since carried)", markdown)
+
+    def test_a_card_citing_several_rows_drifts_only_when_no_row_holds_the_value(self):
+        # Real case: buprenorphine cites Buprenorphine and Buprenorphine/Naloxone, and each
+        # carried value came from one of them.
+        def card(carried):
+            return {"id": "alphazine", "provenance": {
+                "reconnectRecords": ["medications[name=Alphazine]", "medications[name=Betamol]"],
+                "carried": carried,
+            }}
+
+        local = write_pharmacy(self.base, [card({"drug_class": "Fixture Class B"})])
+        code, report = self.report(local=local)
+        self.assertEqual((code, report["changed"]), (0, []))
+        local = write_pharmacy(self.base, [card({"drug_class": "Neither row"})])
+        code, report = self.report(local=local)
+        self.assertEqual(code, 1)
+        self.assertEqual(report["changed"], [{
+            "record": 0,  # the first-listed row (Alphazine) is the one shown
+            "id": "alphazine",
+            "field": "drug_class",
+            "target": "class",
+            "before": "Neither row",
+            "after": "Fixture Class A",
+            "basis": "carried",
+        }])
+
+    def test_unresolvable_name_ref_is_a_conflict(self):
+        local = write_pharmacy(self.base, [name_keyed("omegatol", "Omegatol", {})])
+        code, report = self.report(local=local)
+        self.assertEqual(code, 1)
+        self.assertEqual(report["conflicts"], [{
+            "kind": "unresolvable-ref",
+            "id": "omegatol",
+            "ref": "medications[name=Omegatol]",
+            "detail": "no upstream record named 'Omegatol'",
+        }])
+
+    def test_denylisted_values_are_never_printed(self):  # BR6, console included
+        def mutate(data):
+            data["medications"][0]["absolute_max_dose"] = "987654"
+            data["medications"][0]["goodrx_url"] = "https://denylisted.invalid/alphazine"
+
+        reconnect = copy_upstream(self.base, mutate)
+        local = write_pharmacy(self.base, [name_keyed("alphazine", "Alphazine", {
+            "absolute_max_dose": "123456",
+        })])
+        for fmt in ("md", "json"):
+            with self.subTest(fmt=fmt):
+                code, output = self.report(reconnect=reconnect, local=local, fmt=fmt)
+                text = output if fmt == "md" else json.dumps(output)
+                self.assertEqual(code, 1)
+                for value in ("987654", "123456", "denylisted.invalid"):
+                    self.assertNotIn(value, text)
+                self.assertIn("denylisted-carried-field", text)
+
+    def test_duplicate_upstream_names_are_a_conflict(self):
+        def mutate(data):
+            data["medications"].append(dict(data["medications"][0]))
+
+        code, report = self.report(reconnect=copy_upstream(self.base, mutate))
+        self.assertEqual(code, 1)
+        self.assertEqual(self.kinds(report), ["duplicate-upstream-name"])
+
+    def test_upstream_dataset_that_is_not_a_list_of_records_exits_2(self):
+        for shape in ({"Alphazine": {}}, ["Alphazine"], None):
+            with self.subTest(shape=shape):
+                directory = self.base / ("shape-%d" % id(shape))
+                directory.mkdir()
+
+                def mutate(data, shape=shape):
+                    data["medications"] = shape
+
+                reconnect = copy_upstream(directory, mutate)
+                result = run_engine("meds", self.inventory, reconnect=reconnect,
+                                    local=self.no_local, fmt="json")
+                self.assertEqual(result.returncode, 2)
+                self.assertEqual(result.stdout, "")
+                self.assertIn("no 'medications' list of records", result.stderr)
+
+    def test_missing_field_map_exits_2(self):
+        result = run_engine("meds", self.inventory, local=self.no_local,
+                            fieldmap=self.base / "nope.json")
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("field map not found", result.stderr)
+
+
 @unittest.skipIf(GIT is None, "git is required for revision-pinned tests")
 class GitBackedTests(unittest.TestCase):
     def setUp(self):
@@ -367,6 +592,7 @@ class GitBackedTests(unittest.TestCase):
                 "target": "class",
                 "before": "Fixture Class A",
                 "after": "Fixture Class A2",
+                "basis": "pinned",
             }],
         )
         self.assertEqual(report["removed"], [{"record": 2, "id": "gammatrol"}])
