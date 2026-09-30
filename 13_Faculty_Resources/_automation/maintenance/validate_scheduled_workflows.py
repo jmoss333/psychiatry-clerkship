@@ -209,6 +209,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Test — ReConnect snapshot provenance"),
             ("name", "Validate — ReConnect snapshot provenance"),
             ("name", "Test — ReConnect sync engine"),
+            ("name", "Test — pharmacy registry gate"),
+            ("name", "Validate — pharmacy registry"),
             ("name", "Unit — surface governance"),
             ("name", "Unit — tool governance"),
             ("name", "Validate — tool governance"),
@@ -425,7 +427,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "a8bebbaa3a154105d2491c0c0a468a5fe107e9db29d83ff844b7a23c7efda0d5"
     ),
-    "ci.yml": "8aaf3b99530ec5fc6be09d74613b9fab31413ebf57691497bdd888189120423b",
+    "ci.yml": "0dd4904f099e5696c0d9687917ef1148c11261bc6f15468672b64514a8fa9c38",
     "maintenance-governance-digest.yml": (
         "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),

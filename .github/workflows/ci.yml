@@ -194,6 +194,12 @@ jobs:
       - name: Test — ReConnect sync engine
         run: python3 13_Faculty_Resources/_automation/test_sync_from_reconnect.py
 
+      - name: Test — pharmacy registry gate
+        run: python3 13_Faculty_Resources/_automation/pharmacy/test_validate_pharmacy.py
+
+      - name: Validate — pharmacy registry
+        run: python3 13_Faculty_Resources/_automation/pharmacy/validate_pharmacy.py
+
       - name: Unit — surface governance
         run: python3 13_Faculty_Resources/_automation/test_surface_governance.py
 
