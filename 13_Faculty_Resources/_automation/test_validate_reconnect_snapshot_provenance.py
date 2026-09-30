@@ -137,15 +137,19 @@ class ReconnectSnapshotProvenanceTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn(
             "reconnect snapshot provenance OK — 32 exact-copy record(s), "
-            "manual review required",
+            "1 derived record(s), manual review required",
             result.stdout,
         )
         inventory = json.loads((ROOT / INVENTORY_RELATIVE).read_text(encoding="utf-8"))
         records = inventory["records"]
-        self.assertEqual(len(records), 32)
+        snapshots = [item for item in records if item["relation"] == "exact-copy"]
+        derived = [item for item in records if item["relation"] == "derived"]
+        self.assertEqual(len(snapshots), 32)
+        # pharmacy.json (spec 02) is the first registry pinned as `relation: derived`.
+        self.assertEqual([item["derivedPath"] for item in derived], ["pharmacy.json"])
         self.assertEqual(
-            [item["snapshotPath"] for item in records],
-            sorted(item["snapshotPath"] for item in records),
+            [item["snapshotPath"] for item in snapshots],
+            sorted(item["snapshotPath"] for item in snapshots),
         )
         self.assertTrue(all(item["clinicalReviewRequired"] is True for item in records))
         self.assertTrue(all(item["syncPolicy"] == "manual-reviewed-only" for item in records))

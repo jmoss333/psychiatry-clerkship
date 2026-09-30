@@ -28,6 +28,7 @@ PAIRS = (
     ("pairings.json", "pairings.schema.json"),
     ("standards.json", "standards.schema.json"),
     ("vocabulary.json", "vocabulary.schema.json"),
+    ("pharmacy.json", "pharmacy.schema.json"),
     (
         "13_Faculty_Resources/_automation/site_build/shipped_pages.json",
         "13_Faculty_Resources/_automation/site_build/shipped_pages.schema.json",
@@ -736,6 +737,33 @@ class RegistrySchemaGateTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("curriculum.json: INVALID at /", result.stdout)
         self.assertIn("unreviewedRoot", result.stdout)
+
+    def edited_pharmacy_result(self, mutate) -> subprocess.CompletedProcess[str]:
+        with self.make_registry_copy() as temporary:
+            root = Path(temporary)
+            document = json.loads((root / "pharmacy.json").read_text(encoding="utf-8"))
+            mutate(document["records"][0])
+            (root / "pharmacy.json").write_text(json.dumps(document), encoding="utf-8")
+            return run_validator(root)
+
+    def test_pharmacy_rejects_an_unknown_record_property(self) -> None:  # #898 AC1
+        result = self.edited_pharmacy_result(lambda record: record.update(unreviewedField=True))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("pharmacy.json: INVALID at /records/0", result.stdout)
+        self.assertIn("unreviewedField", result.stdout)
+
+    def test_pharmacy_dosing_has_no_numeric_dose_properties(self) -> None:  # #898 Option A
+        for key in ("start", "typical", "max"):
+            with self.subTest(key=key):
+                result = self.edited_pharmacy_result(
+                    lambda record, key=key: record["dosing"].update({key: "prose"}))
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("pharmacy.json: INVALID at /records/0/dosing", result.stdout)
+
+    def test_pharmacy_safety_level_is_always_high(self) -> None:  # #898, charter C2
+        result = self.edited_pharmacy_result(lambda record: record.update(safetyLevel="standard"))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("pharmacy.json: INVALID at /records/0/safetyLevel", result.stdout)
 
     def test_curriculum_accepts_exact_audience_paths(self) -> None:
         with self.make_registry_copy() as temporary:

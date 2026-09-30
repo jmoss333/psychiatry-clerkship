@@ -1,0 +1,322 @@
+{
+  "schemaVersion": 1,
+  "description": "How verify_pharmacy_labels.py finds each agent's FDA label. rxnormName resolves the RxNorm ingredient (tty IN); openfdaGenericNames select every matching SPL in openFDA for the agreement count; referenceBrand (optional) picks the reference label, else the most recent label on the configured route (default ORAL). Reviewable data, not code.",
+  "agents": {
+    "acamprosate": {
+      "rxnormName": "acamprosate",
+      "openfdaGenericNames": [
+        "ACAMPROSATE CALCIUM"
+      ]
+    },
+    "aripiprazole": {
+      "rxnormName": "aripiprazole",
+      "openfdaGenericNames": [
+        "ARIPIPRAZOLE"
+      ],
+      "referenceBrand": "ABILIFY"
+    },
+    "benztropine": {
+      "rxnormName": "benztropine",
+      "openfdaGenericNames": [
+        "BENZTROPINE MESYLATE"
+      ]
+    },
+    "buprenorphine": {
+      "rxnormName": "buprenorphine",
+      "openfdaGenericNames": [
+        "BUPRENORPHINE HYDROCHLORIDE AND NALOXONE HYDROCHLORIDE",
+        "BUPRENORPHINE AND NALOXONE",
+        "BUPRENORPHINE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "SUBOXONE",
+      "route": "SUBLINGUAL"
+    },
+    "bupropion": {
+      "rxnormName": "bupropion",
+      "openfdaGenericNames": [
+        "BUPROPION HYDROCHLORIDE"
+      ],
+      "referenceBrand": "WELLBUTRIN XL"
+    },
+    "carbamazepine": {
+      "rxnormName": "carbamazepine",
+      "openfdaGenericNames": [
+        "CARBAMAZEPINE"
+      ],
+      "referenceBrand": "TEGRETOL"
+    },
+    "cariprazine": {
+      "rxnormName": "cariprazine",
+      "openfdaGenericNames": [
+        "CARIPRAZINE HYDROCHLORIDE",
+        "CARIPRAZINE"
+      ],
+      "referenceBrand": "VRAYLAR"
+    },
+    "chlordiazepoxide": {
+      "rxnormName": "chlordiazepoxide",
+      "openfdaGenericNames": [
+        "CHLORDIAZEPOXIDE HYDROCHLORIDE"
+      ]
+    },
+    "chlorpromazine": {
+      "rxnormName": "chlorpromazine",
+      "openfdaGenericNames": [
+        "CHLORPROMAZINE HYDROCHLORIDE"
+      ]
+    },
+    "citalopram": {
+      "rxnormName": "citalopram",
+      "openfdaGenericNames": [
+        "CITALOPRAM HYDROBROMIDE",
+        "CITALOPRAM"
+      ],
+      "referenceBrand": "CELEXA"
+    },
+    "clonazepam": {
+      "rxnormName": "clonazepam",
+      "openfdaGenericNames": [
+        "CLONAZEPAM"
+      ],
+      "referenceBrand": "KLONOPIN"
+    },
+    "clonidine": {
+      "rxnormName": "clonidine",
+      "openfdaGenericNames": [
+        "CLONIDINE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "CATAPRES"
+    },
+    "clozapine": {
+      "rxnormName": "clozapine",
+      "openfdaGenericNames": [
+        "CLOZAPINE"
+      ],
+      "referenceBrand": "CLOZARIL"
+    },
+    "diazepam": {
+      "rxnormName": "diazepam",
+      "openfdaGenericNames": [
+        "DIAZEPAM"
+      ],
+      "referenceBrand": "VALIUM"
+    },
+    "diphenhydramine": {
+      "rxnormName": "diphenhydramine",
+      "openfdaGenericNames": [
+        "DIPHENHYDRAMINE HYDROCHLORIDE"
+      ]
+    },
+    "duloxetine": {
+      "rxnormName": "duloxetine",
+      "openfdaGenericNames": [
+        "DULOXETINE HYDROCHLORIDE",
+        "DULOXETINE"
+      ],
+      "referenceBrand": "CYMBALTA"
+    },
+    "escitalopram": {
+      "rxnormName": "escitalopram",
+      "openfdaGenericNames": [
+        "ESCITALOPRAM OXALATE",
+        "ESCITALOPRAM"
+      ],
+      "referenceBrand": "LEXAPRO"
+    },
+    "fluoxetine": {
+      "rxnormName": "fluoxetine",
+      "openfdaGenericNames": [
+        "FLUOXETINE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "PROZAC"
+    },
+    "fluphenazine": {
+      "rxnormName": "fluphenazine",
+      "openfdaGenericNames": [
+        "FLUPHENAZINE HYDROCHLORIDE"
+      ]
+    },
+    "haloperidol": {
+      "rxnormName": "haloperidol",
+      "openfdaGenericNames": [
+        "HALOPERIDOL"
+      ]
+    },
+    "hydroxyzine": {
+      "rxnormName": "hydroxyzine",
+      "openfdaGenericNames": [
+        "HYDROXYZINE HYDROCHLORIDE",
+        "HYDROXYZINE PAMOATE"
+      ]
+    },
+    "lamotrigine": {
+      "rxnormName": "lamotrigine",
+      "openfdaGenericNames": [
+        "LAMOTRIGINE"
+      ],
+      "referenceBrand": "LAMICTAL"
+    },
+    "lithium": {
+      "rxnormName": "lithium carbonate",
+      "openfdaGenericNames": [
+        "LITHIUM CARBONATE"
+      ],
+      "referenceBrand": "LITHOBID"
+    },
+    "lorazepam": {
+      "rxnormName": "lorazepam",
+      "openfdaGenericNames": [
+        "LORAZEPAM"
+      ],
+      "referenceBrand": "ATIVAN"
+    },
+    "lurasidone": {
+      "rxnormName": "lurasidone",
+      "openfdaGenericNames": [
+        "LURASIDONE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "LATUDA"
+    },
+    "methadone": {
+      "rxnormName": "methadone",
+      "openfdaGenericNames": [
+        "METHADONE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "METHADOSE"
+    },
+    "methylphenidate": {
+      "rxnormName": "methylphenidate",
+      "openfdaGenericNames": [
+        "METHYLPHENIDATE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "RITALIN"
+    },
+    "mirtazapine": {
+      "rxnormName": "mirtazapine",
+      "openfdaGenericNames": [
+        "MIRTAZAPINE"
+      ],
+      "referenceBrand": "REMERON"
+    },
+    "naltrexone": {
+      "rxnormName": "naltrexone",
+      "openfdaGenericNames": [
+        "NALTREXONE HYDROCHLORIDE",
+        "NALTREXONE"
+      ],
+      "referenceBrand": "VIVITROL"
+    },
+    "nicotine-replacement": {
+      "rxnormName": "nicotine",
+      "openfdaGenericNames": [
+        "NICOTINE"
+      ],
+      "route": "TRANSDERMAL"
+    },
+    "nortriptyline": {
+      "rxnormName": "nortriptyline",
+      "openfdaGenericNames": [
+        "NORTRIPTYLINE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "PAMELOR"
+    },
+    "olanzapine": {
+      "rxnormName": "olanzapine",
+      "openfdaGenericNames": [
+        "OLANZAPINE"
+      ],
+      "referenceBrand": "ZYPREXA"
+    },
+    "paliperidone": {
+      "rxnormName": "paliperidone",
+      "openfdaGenericNames": [
+        "PALIPERIDONE"
+      ],
+      "referenceBrand": "INVEGA"
+    },
+    "paroxetine": {
+      "rxnormName": "paroxetine",
+      "openfdaGenericNames": [
+        "PAROXETINE HYDROCHLORIDE",
+        "PAROXETINE"
+      ],
+      "referenceBrand": "PAXIL"
+    },
+    "phenelzine": {
+      "rxnormName": "phenelzine",
+      "openfdaGenericNames": [
+        "PHENELZINE SULFATE"
+      ],
+      "referenceBrand": "NARDIL"
+    },
+    "prazosin": {
+      "rxnormName": "prazosin",
+      "openfdaGenericNames": [
+        "PRAZOSIN HYDROCHLORIDE"
+      ],
+      "referenceBrand": "MINIPRESS"
+    },
+    "propranolol": {
+      "rxnormName": "propranolol",
+      "openfdaGenericNames": [
+        "PROPRANOLOL HYDROCHLORIDE"
+      ]
+    },
+    "quetiapine": {
+      "rxnormName": "quetiapine",
+      "openfdaGenericNames": [
+        "QUETIAPINE FUMARATE"
+      ],
+      "referenceBrand": "SEROQUEL"
+    },
+    "risperidone": {
+      "rxnormName": "risperidone",
+      "openfdaGenericNames": [
+        "RISPERIDONE"
+      ],
+      "referenceBrand": "RISPERDAL"
+    },
+    "sertraline": {
+      "rxnormName": "sertraline",
+      "openfdaGenericNames": [
+        "SERTRALINE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "ZOLOFT"
+    },
+    "trazodone": {
+      "rxnormName": "trazodone",
+      "openfdaGenericNames": [
+        "TRAZODONE HYDROCHLORIDE"
+      ]
+    },
+    "valproate": {
+      "rxnormName": "valproic acid",
+      "openfdaGenericNames": [
+        "DIVALPROEX SODIUM"
+      ],
+      "referenceBrand": "DEPAKOTE"
+    },
+    "varenicline": {
+      "rxnormName": "varenicline",
+      "openfdaGenericNames": [
+        "VARENICLINE TARTRATE",
+        "VARENICLINE"
+      ],
+      "referenceBrand": "CHANTIX"
+    },
+    "venlafaxine": {
+      "rxnormName": "venlafaxine",
+      "openfdaGenericNames": [
+        "VENLAFAXINE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "EFFEXOR XR"
+    },
+    "ziprasidone": {
+      "rxnormName": "ziprasidone",
+      "openfdaGenericNames": [
+        "ZIPRASIDONE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "GEODON"
+    }
+  }
+}

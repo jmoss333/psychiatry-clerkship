@@ -323,6 +323,11 @@ step "test_validate_rotation_edition_catalog" python3 $A/test_validate_rotation_
 step "test_reconnect_snapshot_provenance"   python3 $A/test_validate_reconnect_snapshot_provenance.py
 step "validate_reconnect_snapshot_provenance" python3 $A/validate_reconnect_snapshot_provenance.py
 step "test_sync_from_reconnect"         python3 $A/test_sync_from_reconnect.py
+# Pharmacy (spec 02): offline registry gate, its tests, and the RX# deck freshness check.
+step "test_validate_pharmacy"              python3 $A/pharmacy/test_validate_pharmacy.py
+step "validate_pharmacy"                   python3 $A/pharmacy/validate_pharmacy.py
+step "test_build_rx_deck"                  python3 $A/pharmacy/test_build_rx_deck.py
+step "rx deck is regenerated"              python3 $A/pharmacy/build_rx_deck.py --check
 step "unit — surface governance"            python3 $A/test_surface_governance.py
 step "unit — tool governance"               python3 $A/test_validate_tool_governance.py
 step "validate_tool_governance"             python3 $A/validate_tool_governance.py

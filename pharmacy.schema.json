@@ -1,0 +1,694 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Clerkship psychiatric pharmacy",
+  "description": "Drug records for the searchable pharmacy (spec 02). Derived in part from the ReConnect medications table via sync_from_reconnect.py (report-only) plus label-verified and faculty-authored fields. Educational reference, not order entry: no numeric doses (spec 4a Option A).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "description",
+    "provenance",
+    "records"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upstreamRepository",
+        "upstreamPath",
+        "upstreamField",
+        "relation",
+        "syncPolicy",
+        "syncTool",
+        "fieldMapPath"
+      ],
+      "properties": {
+        "upstreamRepository": {
+          "const": "https://github.com/jmoss333/reconnect-psychiatry-system.git"
+        },
+        "upstreamPath": {
+          "const": "databases/core/data_all.json"
+        },
+        "upstreamField": {
+          "const": "medications"
+        },
+        "relation": {
+          "const": "derived"
+        },
+        "syncPolicy": {
+          "const": "manual-reviewed-only"
+        },
+        "syncTool": {
+          "const": "13_Faculty_Resources/_automation/sync_from_reconnect.py"
+        },
+        "fieldMapPath": {
+          "const": "13_Faculty_Resources/_automation/pharmacy/reconnect_meds_fieldmap.json"
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "generic",
+          "class",
+          "group",
+          "safetyLevel",
+          "facultyReview",
+          "provenance"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "generic": {
+            "type": "string",
+            "minLength": 1
+          },
+          "brands": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "group": {
+            "enum": [
+              "antipsychotic",
+              "mood-stabilizer",
+              "antidepressant",
+              "anxiolytic-agitation",
+              "sud",
+              "other"
+            ]
+          },
+          "class": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "rxcui": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "dailymedSetId": {
+            "type": "string",
+            "pattern": "^[0-9a-f-]{36}$"
+          },
+          "labelVersionDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "controlledSchedule": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mechanism": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "t1": {
+                "type": "string",
+                "minLength": 1
+              },
+              "t2": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "fdaIndications": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "inpatientUses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "use",
+                "offLabel"
+              ],
+              "properties": {
+                "use": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "offLabel": {
+                  "type": "boolean"
+                },
+                "evidenceIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          },
+          "boxedWarning": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "present"
+            ],
+            "properties": {
+              "present": {
+                "type": "boolean"
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "dosing": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Option A (spec 4a): qualitative only. No numeric dose fields exist by design; the sync tool also fails on any dose literal anywhere in this file (AC4').",
+            "properties": {
+              "titration": {
+                "type": "string",
+                "minLength": 1
+              },
+              "forms": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "PO",
+                    "ODT",
+                    "liquid",
+                    "ER",
+                    "IM",
+                    "IV",
+                    "LAI",
+                    "SL",
+                    "transdermal",
+                    "other"
+                  ]
+                }
+              },
+              "labelLink": {
+                "type": "string",
+                "pattern": "^https://dailymed\\.nlm\\.nih\\.gov/"
+              }
+            }
+          },
+          "flags": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "qtcRisk": {
+                "type": "string",
+                "minLength": 1
+              },
+              "weightImpact": {
+                "type": "string",
+                "minLength": 1
+              },
+              "bloodMonitoring": {
+                "type": "string",
+                "minLength": 1
+              },
+              "ekgRequired": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "pk": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "halfLifeHours": {
+                "type": "string",
+                "minLength": 1
+              },
+              "timeToEffect": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "monitoring": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "baseline": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "ongoing": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "sourcePage": {
+                "type": "string",
+                "pattern": "^[a-z0-9_]+\\.md$"
+              }
+            }
+          },
+          "adverseEffects": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "common": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "dangerous": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "recognize": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "firstMove": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "interactions": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "cyp": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "substrateOf": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "inhibits": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "induces": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "keyTraps": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "interactionCardIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "populations": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "pregnancy": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lactation": {
+                "type": "string",
+                "minLength": 1
+              },
+              "geriatric": {
+                "type": "string",
+                "minLength": 1
+              },
+              "renal": {
+                "type": "string",
+                "minLength": 1
+              },
+              "hepatic": {
+                "type": "string",
+                "minLength": 1
+              },
+              "perinatalSnapshotRef": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "pearls": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "t1": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "t2": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "attendingAsks": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "familyExplainer": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fkGrade": {
+                "type": "number",
+                "maximum": 8.0
+              },
+              "handoutRef": {
+                "type": "string",
+                "pattern": "^FH-MED[0-9]{2,}$"
+              }
+            }
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "qbankIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "oeAudioIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "standards": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "acgme": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "epa": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "safetyLevel": {
+            "const": "high",
+            "description": "Every pharmacy card carries dosing and monitoring content, so it is always high-safety (charter C2, #898)."
+          },
+          "facultyReview": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "pending",
+                  "reviewed",
+                  "needs-review"
+                ]
+              },
+              "reviewer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lastReviewed": {
+                "type": "string",
+                "format": "date"
+              },
+              "reviewedFieldsHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "retrievalHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          },
+          "provenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fieldClasses"
+            ],
+            "properties": {
+              "reconnectRecords": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^medications\\[name=[^\\]]+\\]$"
+                }
+              },
+              "sourceRevision": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{40}$"
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "labelVerifiedOn": {
+                "type": "string",
+                "format": "date"
+              },
+              "fieldClasses": {
+                "type": "object",
+                "additionalProperties": {
+                  "enum": [
+                    "L",
+                    "R",
+                    "E",
+                    "J"
+                  ]
+                }
+              },
+              "carried": {
+                "type": "object",
+                "description": "Upstream R-class values as carried at sourceRevision, keyed by upstream field name; the sync tool diffs these for drift.",
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              },
+              "jSources": {
+                "type": "object",
+                "description": "Where each J or E field came from: field path -> one or more verbatim quotes. 'page' is a repo path to an attested learner page (the quote must appear in it verbatim, whitespace-normalised) or 'reconnect:<upstream field>' (the quote must equal provenance.carried[<field>]). validate_pharmacy.py checks every quote.",
+                "additionalProperties": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "page",
+                      "quote"
+                    ],
+                    "properties": {
+                      "page": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "quote": {
+                        "type": "string",
+                        "minLength": 12
+                      }
+                    }
+                  }
+                }
+              },
+              "authoredFields": {
+                "type": "array",
+                "description": "J field paths written new for the pharmacy, with no attested source to quote — the faculty reviewer's first stop.",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "upstreamDiscrepancies": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "field",
+                    "upstreamValue",
+                    "usedValue",
+                    "basis"
+                  ],
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    },
+                    "upstreamValue": {
+                      "type": [
+                        "string",
+                        "boolean",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "usedValue": {
+                      "type": [
+                        "string",
+                        "boolean",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "basis": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "labelReceipt": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$",
+                "description": "Key into _automation/pharmacy/label_receipt.json"
+              }
+            }
+          },
+          "regulatory": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "rems": {
+                "type": "boolean"
+              },
+              "remsVerifiedOn": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          },
+          "retrieval": {
+            "type": "array",
+            "description": "Maps each attendingAsks item to the approved card fields that answer it, so an RX# flashcard can reveal only text faculty already attested. No clinical wording lives here. Reviewed separately from the J fields (facultyReview.retrievalHash).",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "askIndex",
+                "revealFrom"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^ask[0-9]+$"
+                },
+                "askIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2
+                },
+                "revealFrom": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9]+(?:\\.[A-Za-z0-9]+|\\[[0-9]+\\])*$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
