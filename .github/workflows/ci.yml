@@ -206,6 +206,9 @@ jobs:
       - name: Validate — RX# deck is regenerated from pharmacy.json
         run: python3 13_Faculty_Resources/_automation/pharmacy/build_rx_deck.py --check
 
+      - name: Test — pharmacy page never ships an invalid review
+        run: python3 13_Faculty_Resources/_automation/pharmacy/test_build_pharmacy_public.py
+
       - name: Unit — surface governance
         run: python3 13_Faculty_Resources/_automation/test_surface_governance.py
 
