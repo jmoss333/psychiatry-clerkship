@@ -1,7 +1,624 @@
 {
   "schemaVersion": 1,
   "description": "Derived by build_rx_deck.py from pharmacy.json. Do not edit by hand.",
-  "cards": [],
+  "cards": [
+    {
+      "drug": "clozapine",
+      "generic": "clozapine",
+      "group": "antipsychotic",
+      "id": "RX#clozapine#boxed",
+      "kind": "default",
+      "prompt": "What does the boxed warning cover?",
+      "reveal": [
+        {
+          "label": "Boxed warning",
+          "from": "boxedWarning.summary",
+          "lines": [
+            "Severe neutropenia; orthostatic hypotension, bradycardia, and syncope; seizure; myocarditis, pericarditis, and cardiomyopathy; increased mortality in elderly patients with dementia-related psychosis."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "clozapine",
+      "generic": "clozapine",
+      "group": "antipsychotic",
+      "id": "RX#clozapine#baseline",
+      "kind": "default",
+      "prompt": "Name the baseline workup before the first dose.",
+      "reveal": [
+        {
+          "label": "Baseline",
+          "from": "monitoring.baseline",
+          "lines": [
+            "ANC",
+            "Metabolic panel",
+            "EKG",
+            "Troponin/CRP (many protocols)"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "clozapine",
+      "generic": "clozapine",
+      "group": "antipsychotic",
+      "id": "RX#clozapine#ongoing",
+      "kind": "default",
+      "prompt": "What gets monitored once it is running?",
+      "reveal": [
+        {
+          "label": "Ongoing monitoring",
+          "from": "monitoring.ongoing",
+          "lines": [
+            "ANC weekly × 6 months → every 2 weeks × 6 months → monthly (per the prescribing information; not REMS-enforced)",
+            "Troponin/CRP weekly for the first 4 weeks (many protocols)",
+            "Metabolic monitoring"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "clozapine",
+      "generic": "clozapine",
+      "group": "antipsychotic",
+      "id": "RX#clozapine#danger",
+      "kind": "default",
+      "prompt": "Name the dangerous adverse effects, and how you would recognize each.",
+      "reveal": [
+        {
+          "label": "Dangerous adverse effects",
+          "from": "adverseEffects.dangerous",
+          "lines": [
+            "Severe neutropenia — Fever, sore throat, or other signs of infection. — Tell the senior now and get an ANC today.",
+            "Myocarditis — Early (mostly weeks 1–4): fever, tachycardia, chest pain, or flu-like illness. — Urgent troponin/CRP and EKG; escalate.",
+            "Constipation → ileus — Constipation that can progress to ileus and be fatal. — Bowel regimen is part of the prescription; ask about stools every day.",
+            "Seizures — Dose-related lowering of the seizure threshold. — Escalate any seizure; review dose and levels."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "clozapine",
+      "generic": "clozapine",
+      "group": "antipsychotic",
+      "id": "RX#clozapine#traps",
+      "kind": "default",
+      "prompt": "Name the interaction traps.",
+      "reveal": [
+        {
+          "label": "Interaction traps",
+          "from": "interactions.keyTraps",
+          "lines": [
+            "Smoking cessation (loss of CYP1A2 induction raises levels)",
+            "Stacking QTc-prolonging or anticholinergic agents"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "clozapine",
+      "generic": "clozapine",
+      "group": "antipsychotic",
+      "id": "RX#clozapine#ask0",
+      "kind": "ask",
+      "prompt": "How many adequate antipsychotic trials has this patient had?",
+      "reveal": [
+        {
+          "label": "Pearl (resident)",
+          "from": "pearls.t2[0]",
+          "lines": [
+            "Two adequate failed trials = treatment-resistant; raise clozapine rather than cycling further agents."
+          ]
+        },
+        {
+          "label": "Inpatient use",
+          "from": "inpatientUses[0].use",
+          "lines": [
+            "Treatment-resistant schizophrenia (failure of two adequate antipsychotic trials) — the only agent with demonstrated superiority"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "clozapine",
+      "generic": "clozapine",
+      "group": "antipsychotic",
+      "id": "RX#clozapine#ask1",
+      "kind": "ask",
+      "prompt": "What was today's ANC, and when is the next one due?",
+      "reveal": [
+        {
+          "label": "Ongoing monitoring",
+          "from": "monitoring.ongoing[0]",
+          "lines": [
+            "ANC weekly × 6 months → every 2 weeks × 6 months → monthly (per the prescribing information; not REMS-enforced)"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "clozapine",
+      "generic": "clozapine",
+      "group": "antipsychotic",
+      "id": "RX#clozapine#ask2",
+      "kind": "ask",
+      "prompt": "What is the bowel regimen, and when did they last have a bowel movement?",
+      "reveal": [
+        {
+          "label": "Dangerous adverse effects",
+          "from": "adverseEffects.dangerous[2]",
+          "lines": [
+            "Constipation → ileus — Constipation that can progress to ileus and be fatal. — Bowel regimen is part of the prescription; ask about stools every day."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "lithium",
+      "generic": "lithium carbonate",
+      "group": "mood-stabilizer",
+      "id": "RX#lithium#boxed",
+      "kind": "default",
+      "prompt": "What does the boxed warning cover?",
+      "reveal": [
+        {
+          "label": "Boxed warning",
+          "from": "boxedWarning.summary",
+          "lines": [
+            "Lithium toxicity is closely related to serum lithium levels and can occur close to the therapeutic range; prompt serum level measurement must be available."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "lithium",
+      "generic": "lithium carbonate",
+      "group": "mood-stabilizer",
+      "id": "RX#lithium#baseline",
+      "kind": "default",
+      "prompt": "Name the baseline workup before the first dose.",
+      "reveal": [
+        {
+          "label": "Baseline",
+          "from": "monitoring.baseline",
+          "lines": [
+            "BMP (renal)",
+            "TSH",
+            "Calcium",
+            "β-hCG",
+            "EKG if cardiac risk"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "lithium",
+      "generic": "lithium carbonate",
+      "group": "mood-stabilizer",
+      "id": "RX#lithium#ongoing",
+      "kind": "default",
+      "prompt": "What gets monitored once it is running?",
+      "reveal": [
+        {
+          "label": "Ongoing monitoring",
+          "from": "monitoring.ongoing",
+          "lines": [
+            "Level ~5 days after start or change (12-hour trough)",
+            "Renal function and TSH periodically",
+            "Calcium/PTH (resident depth)"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "lithium",
+      "generic": "lithium carbonate",
+      "group": "mood-stabilizer",
+      "id": "RX#lithium#danger",
+      "kind": "default",
+      "prompt": "Name the dangerous adverse effects, and how you would recognize each.",
+      "reveal": [
+        {
+          "label": "Dangerous adverse effects",
+          "from": "adverseEffects.dangerous",
+          "lines": [
+            "Lithium toxicity — Tremor, ataxia, and confusion — often when something changed (dehydration, renal function, an interacting drug). — Tell the senior now; hold the next dose and send a stat level with a BMP. Severe toxicity is a nephrology conversation (extracorporeal removal).",
+            "Teratogenicity — Ebstein anomaly risk with first-trimester exposure. — β-hCG before starting; peripartum decisions are made collaboratively, not by default discontinuation."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "lithium",
+      "generic": "lithium carbonate",
+      "group": "mood-stabilizer",
+      "id": "RX#lithium#traps",
+      "kind": "default",
+      "prompt": "Name the interaction traps.",
+      "reveal": [
+        {
+          "label": "Interaction traps",
+          "from": "interactions.keyTraps",
+          "lines": [
+            "NSAIDs",
+            "ACE inhibitors / ARBs",
+            "Thiazides",
+            "Dehydration or any volume change"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "lithium",
+      "generic": "lithium carbonate",
+      "group": "mood-stabilizer",
+      "id": "RX#lithium#ask0",
+      "kind": "ask",
+      "prompt": "When is the next level due, and why a trough?",
+      "reveal": [
+        {
+          "label": "Pearl",
+          "from": "pearls.t1[0]",
+          "lines": [
+            "Lithium level is a 12-hour trough, drawn ~5 days after any dose change."
+          ]
+        },
+        {
+          "label": "Titration",
+          "from": "dosing.titration",
+          "lines": [
+            "Titrated to a 12-hour trough serum level, not to a fixed dose; draw a level about 5 days after any start or change. Confirm the dose itself with pharmacy and the current label."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "lithium",
+      "generic": "lithium carbonate",
+      "group": "mood-stabilizer",
+      "id": "RX#lithium#ask1",
+      "kind": "ask",
+      "prompt": "Which of this patient's home medications could push the level up?",
+      "reveal": [
+        {
+          "label": "Interaction traps",
+          "from": "interactions.keyTraps",
+          "lines": [
+            "NSAIDs",
+            "ACE inhibitors / ARBs",
+            "Thiazides",
+            "Dehydration or any volume change"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "lithium",
+      "generic": "lithium carbonate",
+      "group": "mood-stabilizer",
+      "id": "RX#lithium#ask2",
+      "kind": "ask",
+      "prompt": "What has to be back before the first dose?",
+      "reveal": [
+        {
+          "label": "Baseline",
+          "from": "monitoring.baseline",
+          "lines": [
+            "BMP (renal)",
+            "TSH",
+            "Calcium",
+            "β-hCG",
+            "EKG if cardiac risk"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "olanzapine",
+      "generic": "olanzapine",
+      "group": "antipsychotic",
+      "id": "RX#olanzapine#boxed",
+      "kind": "default",
+      "prompt": "What does the boxed warning cover?",
+      "reveal": [
+        {
+          "label": "Boxed warning",
+          "from": "boxedWarning.summary",
+          "lines": [
+            "Increased mortality in elderly patients with dementia-related psychosis; the long-acting injection adds post-injection delirium/sedation syndrome."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "olanzapine",
+      "generic": "olanzapine",
+      "group": "antipsychotic",
+      "id": "RX#olanzapine#baseline",
+      "kind": "default",
+      "prompt": "Name the baseline workup before the first dose.",
+      "reveal": [
+        {
+          "label": "Baseline",
+          "from": "monitoring.baseline",
+          "lines": [
+            "Weight/BMI and waist",
+            "Fasting glucose or A1c",
+            "Lipids",
+            "Blood pressure"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "olanzapine",
+      "generic": "olanzapine",
+      "group": "antipsychotic",
+      "id": "RX#olanzapine#ongoing",
+      "kind": "default",
+      "prompt": "What gets monitored once it is running?",
+      "reveal": [
+        {
+          "label": "Ongoing monitoring",
+          "from": "monitoring.ongoing",
+          "lines": [
+            "Glucose/lipids at ~12 weeks then annually",
+            "Weight each visit",
+            "AIMS for tardive dyskinesia"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "olanzapine",
+      "generic": "olanzapine",
+      "group": "antipsychotic",
+      "id": "RX#olanzapine#danger",
+      "kind": "default",
+      "prompt": "Name the dangerous adverse effects, and how you would recognize each.",
+      "reveal": [
+        {
+          "label": "Dangerous adverse effects",
+          "from": "adverseEffects.dangerous",
+          "lines": [
+            "Metabolic syndrome / new diabetes — Weight gain, rising glucose and lipids on the monitoring schedule. — Treat monitoring as part of the prescription; flag abnormal results on rounds.",
+            "Neuroleptic malignant syndrome — Lead-pipe rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker. — Tell the senior now.",
+            "Excess sedation with parenteral benzodiazepines — Oversedation or cardiorespiratory depression when IM olanzapine is combined with a parenteral benzodiazepine. — Check the MAR for recent benzodiazepines before an IM dose."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "olanzapine",
+      "generic": "olanzapine",
+      "group": "antipsychotic",
+      "id": "RX#olanzapine#traps",
+      "kind": "default",
+      "prompt": "Name the interaction traps.",
+      "reveal": [
+        {
+          "label": "Interaction traps",
+          "from": "interactions.keyTraps",
+          "lines": [
+            "Smoking status changes levels (CYP1A2)",
+            "Parenteral benzodiazepines with IM olanzapine"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "olanzapine",
+      "generic": "olanzapine",
+      "group": "antipsychotic",
+      "id": "RX#olanzapine#ask0",
+      "kind": "ask",
+      "prompt": "What metabolic labs are due, and when?",
+      "reveal": [
+        {
+          "label": "Ongoing monitoring",
+          "from": "monitoring.ongoing",
+          "lines": [
+            "Glucose/lipids at ~12 weeks then annually",
+            "Weight each visit",
+            "AIMS for tardive dyskinesia"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "olanzapine",
+      "generic": "olanzapine",
+      "group": "antipsychotic",
+      "id": "RX#olanzapine#ask1",
+      "kind": "ask",
+      "prompt": "Why olanzapine rather than a weight-neutral agent for this patient?",
+      "reveal": [
+        {
+          "label": "Pearl",
+          "from": "pearls.t1[0]",
+          "lines": [
+            "Choose antipsychotics by side-effect profile, not recency — olanzapine sits at the heavy end for weight and glucose."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "olanzapine",
+      "generic": "olanzapine",
+      "group": "antipsychotic",
+      "id": "RX#olanzapine#ask2",
+      "kind": "ask",
+      "prompt": "Has this patient had a benzodiazepine in the last hour?",
+      "reveal": [
+        {
+          "label": "Dangerous adverse effects",
+          "from": "adverseEffects.dangerous[2]",
+          "lines": [
+            "Excess sedation with parenteral benzodiazepines — Oversedation or cardiorespiratory depression when IM olanzapine is combined with a parenteral benzodiazepine. — Check the MAR for recent benzodiazepines before an IM dose."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "sertraline",
+      "generic": "sertraline",
+      "group": "antidepressant",
+      "id": "RX#sertraline#boxed",
+      "kind": "default",
+      "prompt": "What does the boxed warning cover?",
+      "reveal": [
+        {
+          "label": "Boxed warning",
+          "from": "boxedWarning.summary",
+          "lines": [
+            "Suicidal thoughts and behaviors: antidepressants increased the risk in pediatric and young adult patients in short-term studies; monitor closely for worsening and emergent suicidal thoughts."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "sertraline",
+      "generic": "sertraline",
+      "group": "antidepressant",
+      "id": "RX#sertraline#baseline",
+      "kind": "default",
+      "prompt": "Name the baseline workup before the first dose.",
+      "reveal": [
+        {
+          "label": "Baseline",
+          "from": "monitoring.baseline",
+          "lines": [
+            "Screen for bipolarity",
+            "No routine labs required"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "sertraline",
+      "generic": "sertraline",
+      "group": "antidepressant",
+      "id": "RX#sertraline#ongoing",
+      "kind": "default",
+      "prompt": "What gets monitored once it is running?",
+      "reveal": [
+        {
+          "label": "Ongoing monitoring",
+          "from": "monitoring.ongoing",
+          "lines": [
+            "Activation and suicidality under age 25",
+            "Sodium in older adults",
+            "Bleeding risk",
+            "Discontinuation symptoms"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "sertraline",
+      "generic": "sertraline",
+      "group": "antidepressant",
+      "id": "RX#sertraline#danger",
+      "kind": "default",
+      "prompt": "Name the dangerous adverse effects, and how you would recognize each.",
+      "reveal": [
+        {
+          "label": "Dangerous adverse effects",
+          "from": "adverseEffects.dangerous",
+          "lines": [
+            "Serotonin syndrome — Clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. — Tell the senior now; stop serotonergic agents pending evaluation.",
+            "Switch to mania in unrecognized bipolar disorder — Emerging mania or mixed features after starting. — Screen for bipolarity before the first dose.",
+            "Hyponatremia — Confusion or falls in an older adult. — Check sodium."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "sertraline",
+      "generic": "sertraline",
+      "group": "antidepressant",
+      "id": "RX#sertraline#traps",
+      "kind": "default",
+      "prompt": "Name the interaction traps.",
+      "reveal": [
+        {
+          "label": "Interaction traps",
+          "from": "interactions.keyTraps",
+          "lines": [
+            "MAOIs: allow ≥2 weeks after stopping sertraline before an MAOI, and ≥2 weeks after an MAOI before sertraline",
+            "Serotonergic stacking",
+            "NSAIDs or anticoagulants (bleeding)"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "sertraline",
+      "generic": "sertraline",
+      "group": "antidepressant",
+      "id": "RX#sertraline#ask0",
+      "kind": "ask",
+      "prompt": "How did you screen for bipolar disorder before starting this?",
+      "reveal": [
+        {
+          "label": "Pearl",
+          "from": "pearls.t1[0]",
+          "lines": [
+            "Don't start an SSRI without screening for bipolarity, and expect delayed onset."
+          ]
+        },
+        {
+          "label": "Dangerous adverse effects",
+          "from": "adverseEffects.dangerous[1]",
+          "lines": [
+            "Switch to mania in unrecognized bipolar disorder — Emerging mania or mixed features after starting. — Screen for bipolarity before the first dose."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "sertraline",
+      "generic": "sertraline",
+      "group": "antidepressant",
+      "id": "RX#sertraline#ask1",
+      "kind": "ask",
+      "prompt": "When would you expect to see a response?",
+      "reveal": [
+        {
+          "label": "Time to effect",
+          "from": "pk.timeToEffect",
+          "lines": [
+            "2–4 weeks"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "sertraline",
+      "generic": "sertraline",
+      "group": "antidepressant",
+      "id": "RX#sertraline#ask2",
+      "kind": "ask",
+      "prompt": "What would make you worry about serotonin syndrome on this regimen?",
+      "reveal": [
+        {
+          "label": "Dangerous adverse effects",
+          "from": "adverseEffects.dangerous[0]",
+          "lines": [
+            "Serotonin syndrome — Clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased. — Tell the senior now; stop serotonergic agents pending evaluation."
+          ]
+        },
+        {
+          "label": "Interaction traps",
+          "from": "interactions.keyTraps[0]",
+          "lines": [
+            "MAOIs: allow ≥2 weeks after stopping sertraline before an MAOI, and ≥2 weeks after an MAOI before sertraline"
+          ]
+        }
+      ]
+    }
+  ],
   "withheld": [
     {
       "drug": "acamprosate",
@@ -52,10 +669,6 @@
       "reason": "J fields not reviewed (or changed since)"
     },
     {
-      "drug": "clozapine",
-      "reason": "J fields not reviewed (or changed since)"
-    },
-    {
       "drug": "diazepam",
       "reason": "J fields not reviewed (or changed since)"
     },
@@ -92,10 +705,6 @@
       "reason": "J fields not reviewed (or changed since)"
     },
     {
-      "drug": "lithium",
-      "reason": "J fields not reviewed (or changed since)"
-    },
-    {
       "drug": "lorazepam",
       "reason": "J fields not reviewed (or changed since)"
     },
@@ -128,10 +737,6 @@
       "reason": "J fields not reviewed (or changed since)"
     },
     {
-      "drug": "olanzapine",
-      "reason": "J fields not reviewed (or changed since)"
-    },
-    {
       "drug": "paliperidone",
       "reason": "J fields not reviewed (or changed since)"
     },
@@ -157,10 +762,6 @@
     },
     {
       "drug": "risperidone",
-      "reason": "J fields not reviewed (or changed since)"
-    },
-    {
-      "drug": "sertraline",
       "reason": "J fields not reviewed (or changed since)"
     },
     {
