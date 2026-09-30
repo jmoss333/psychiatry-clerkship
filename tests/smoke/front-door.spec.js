@@ -37,7 +37,7 @@ async function controlledReading(page, ref = READING_REF) {
 
 async function readingReady(page, ref = READING_REF) {
   const reader = page.locator('.fd-reader:visible');
-  await expect(reader.locator('.fd-src')).toHaveText(ref);
+  await expect(reader.locator('.fd-article')).toHaveAttribute('data-ref', ref);
   await expect(reader.locator('.fd-article__body h3')).toHaveCount(3);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveCount(1);
   await expect(reader).not.toHaveClass(/fd-reader--guide/);
@@ -998,24 +998,24 @@ test('legacy completion objects survive Reader previous/next and browser history
   }, legacy);
   await page.locator(`.fd-collink[data-fd-open="${firstRef}"]`).click();
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
-  await expect(page.locator('.fd-src')).toHaveText(firstRef);
+  await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', firstRef);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1')))).toEqual(legacy);
 
   const next = page.locator('.fd-prevnext__btn.is-next');
   await expect(next).toHaveAttribute('data-fd-open', nextRef);
   await next.click();
-  await expect(page.locator('.fd-src')).toHaveText(nextRef);
+  await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', nextRef);
   expect(new URL(page.url()).searchParams.get('page')).toBe(nextRef);
 
   const previous = page.locator('.fd-prevnext__btn').filter({
     has: page.locator('.fd-prevnext__label', { hasText: 'Prev' }),
   });
   await previous.click();
-  await expect(page.locator('.fd-src')).toHaveText(firstRef);
+  await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', firstRef);
   await page.goBack();
-  await expect(page.locator('.fd-src')).toHaveText(nextRef);
+  await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', nextRef);
   await page.goForward();
-  await expect(page.locator('.fd-src')).toHaveText(firstRef);
+  await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', firstRef);
 
   await page.goto(`/?page=${encodeURIComponent(nextRef)}`);
   await page.locator('.fd-article__actions [data-fd-toggle]').click();
@@ -1050,7 +1050,7 @@ test('command-K and slash search restore focus on dismissal and open results dir
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
   await expect(page.locator('.fd-search')).toHaveCount(0);
   await expect(page.locator('.fd-sheet')).toHaveCount(0);
-  await expect(page.locator('.fd-src')).toHaveText(firstRef);
+  await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', firstRef);
   expect(new URL(page.url()).searchParams.get(firstRef.endsWith('.html') ? 'tool' : 'page')).toBe(firstRef);
   await expectHealthy(page);
 });
@@ -1106,7 +1106,7 @@ test('Enter on a punctuated exact resource name opens that resource, not a spuri
     await input.press('Enter');
     await expect(page.locator('.fd-search')).toHaveCount(0);
     await expect(page.locator('.fd-sheet')).toHaveCount(0);
-    await expect(page.locator('.fd-src')).toHaveText(ref);
+    await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
     expect(new URL(page.url()).searchParams.get(ref.endsWith('.html') ? 'tool' : 'page')).toBe(ref);
     await expectHealthy(page);
   }
@@ -1130,7 +1130,7 @@ test('dated title variants retain safety priority and open the first ordinary re
   await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   await input.fill(query);
   await page.locator('.fd-result[data-fd-open]').first().click();
-  await expect(page.locator('.fd-src')).toHaveText(ref);
+  await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
   expect(new URL(page.url()).searchParams.get('page')).toBe(ref);
   await expectHealthy(page);
 });
@@ -1900,7 +1900,7 @@ test.describe('Clinical field guide', () => {
       await expect(result).toHaveCount(1);
       await result.press('Enter');
       await expect(page.locator('.fd-reader--guide')).toBeVisible();
-      await expect(page.locator('.fd-src')).toHaveText(ref);
+      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
       expect(new URL(page.url()).searchParams.get('guideFind')).toBe(query);
       await expect(page.locator('.fd-guide-arrival')).toContainText('No matching passage in this guide.');
       await expect(page.locator('.fd-guide-match')).toHaveCount(0);
@@ -1928,7 +1928,7 @@ test.describe('Clinical field guide', () => {
     expect(url.searchParams.has('guideFind')).toBe(false);
     expect(url.searchParams.has('guideSection')).toBe(false);
     await page.getByRole('button', { name: 'Return to guide', exact: true }).click();
-    await expect(page.locator('.fd-src')).toHaveText('motivational_interviewing.md');
+    await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', 'motivational_interviewing.md');
     await expect(page.getByLabel('Find in this guide', { exact: true })).toHaveValue('change talk');
     expect(new URL(page.url()).searchParams.get('guideFind')).toBe('change talk');
     await page.reload();
@@ -2119,7 +2119,7 @@ test.describe('Clinical field guide', () => {
     const plain = [];
     for (const ref of candidates) {
       await page.goto(`/?page=${ref}`);
-      await expect(page.locator('.fd-reader:visible .fd-src')).toHaveText(ref);
+      await expect(page.locator('.fd-reader:visible .fd-article')).toHaveAttribute('data-ref', ref);
       await expect(page.locator('.fd-reader:visible .fd-article__body')).toBeVisible();
       const links = page.locator('[data-guide-section]');
       if (await page.locator('.fd-reader--guide').count()) {
@@ -3359,7 +3359,7 @@ test.describe('Essentials Phase 2', () => {
   const curriculum = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8'));
   const expectedKit = info => curriculum.essentials[audience(info).role === 'student' ? 'ms3' : 'resident'].flatMap(column => column.refs);
   async function readyReader(page, ref) {
-    await expect(page.locator('.fd-src')).toHaveText(ref);
+    await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
     if (ref.endsWith('.html')) {
       await expect(page.locator('.fd-article iframe')).toBeVisible();
       await expect.poll(async () => (await page.frameLocator('.fd-article iframe').locator('body').innerText()).trim().length).toBeGreaterThan(100);
@@ -4026,7 +4026,7 @@ test('Concepts Today released count, phone keyboard recall and trusted Path cont
   await expect(tool.locator('#cwReviewDashBtn')).toBeFocused();
   await expect(tool.locator('body')).toContainText('Next due:');
   await tool.locator('a[href*="page='+card.page+'"]').first().click();
-  await expect(page.locator('.fd-reader .fd-src')).toHaveText(card.page);
+  await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', card.page);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
