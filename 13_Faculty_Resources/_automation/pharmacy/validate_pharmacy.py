@@ -5,8 +5,9 @@ Checks, by acceptance-criterion id:
   AC2/AC3  label facts equal the committed label receipt (rxcui, DailyMed set id, label date,
            boxed-warning presence) — the receipt is written by verify_pharmacy_labels.py;
   AC4'     no dose literal anywhere in pharmacy.json (spec 4a, Option A);
-  AC5      every evidenceIds / qbankIds / perinatalSnapshotRef / monitoring.sourcePage resolves,
-           and dosing.labelLink points at the record's own DailyMed set id;
+  AC5      every evidenceIds / qbankIds / interactionCardIds (interaction-cards.html) /
+           oeAudioIds (audio_oe MANIFEST.csv) / perinatalSnapshotRef / monitoring.sourcePage
+           resolves, and dosing.labelLink points at the record's own DailyMed set id;
   AC6      a record marked reviewed carries a reviewedFieldsHash equal to the hash of its J
            fields as they stand now (edit a J field and the record stops counting as reviewed);
   AC7      familyExplainer text reads at or below grade 8 (Flesch-Kincaid, heuristic syllables);
@@ -24,6 +25,7 @@ when it does the page's own attestation row is what gates it.
 """
 
 import argparse
+import csv
 import hashlib
 import json
 import re
@@ -35,12 +37,13 @@ ROOT = HERE.parents[2]
 PHARMACY = ROOT / "pharmacy.json"
 RECEIPT = HERE / "label_receipt.json"
 FIELDMAP = HERE / "reconnect_meds_fieldmap.json"
+# AC5 resolution targets for the two id lists that point off the card (#898).
+INTERACTION_CARDS = Path("05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html")
+AUDIO_OE_MANIFEST = Path("12_Media/audio_oe/MANIFEST.csv")
 
 DOSE_RE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg/kg)\b", re.I)
 FK_MAX = 8.0
 
-sys.path.insert(0, str(HERE.parent))
-from sync_from_reconnect import PHARMACY_DENYLIST as ENGINE_DENYLIST  # noqa: E402
 
 
 def norm(text):
@@ -134,14 +137,41 @@ def walk(value, trail=""):
             yield from walk(child, "%s/%d" % (trail, index))
 
 
+def interaction_card_ids(root):
+    """The card keys interaction-cards.html renders (its ORDER list); None if unreadable."""
+    try:
+        text = (root / INTERACTION_CARDS).read_text(encoding="utf-8")
+    except OSError:
+        return None
+    match = re.search(r"var ORDER = \[([^\]]*)\]", text)
+    return set(re.findall(r'"([^"]+)"', match.group(1))) if match else None
+
+
+def audio_brief_key(value):
+    """Landmark audio briefs are keyed by manifest number, leading zeros ignored — the same
+    convention pairings.json uses for its audio_oe refs."""
+    return str(value).strip().lstrip("0") or "0"
+
+
+def audio_brief_ids(root):
+    """Every brief number in the audio_oe manifest; None if unreadable."""
+    try:
+        with (root / AUDIO_OE_MANIFEST).open(encoding="utf-8") as handle:
+            rows = list(csv.DictReader(handle))
+    except OSError:
+        return None
+    return {audio_brief_key(row["number"]) for row in rows if (row.get("number") or "").strip()}
+
+
 def check(pharmacy, receipt, fieldmap, root=ROOT):
     findings, notes = [], []
-    # The sync engine's PHARMACY_DENYLIST is the other statement of this rule (its docstring
-    # asks the validator to import it); enforce the union so neither can drift narrower.
-    denylist = set(fieldmap["denylist"]) | set(ENGINE_DENYLIST)
+    # The field map's denylist is the ONE statement of this rule: the dev-only sync engine
+    # reads the same file (test_sync_from_reconnect pins that), so nothing here imports it.
+    denylist = set(fieldmap["denylist"])
     evidence = {s["id"] for s in json.loads((root / "evidence_registry.json").read_text())["sources"]}
     qbank = {q["id"] for q in json.loads((root / "question_bank.json").read_text())["items"]}
     topics = set(json.loads((root / "topic_meta.json").read_text()))
+    cards, briefs = interaction_card_ids(root), audio_brief_ids(root)
     page_cache = {}
 
     for path, key, child in walk(pharmacy):
@@ -183,6 +213,16 @@ def check(pharmacy, receipt, fieldmap, root=ROOT):
         for qid in record.get("qbankIds", []):
             if qid not in qbank:
                 findings.append("AC5 %s: qbank id %r not in question_bank.json" % (rid, qid))
+        # An unreadable target fails every id that needs it: a card cannot link a page or a
+        # brief nobody can confirm exists.
+        for cid in get_path(record, "interactions.interactionCardIds") or []:
+            if cards is None or cid not in cards:
+                findings.append("AC5 %s: interaction card %r is not on %s"
+                                % (rid, cid, INTERACTION_CARDS.name))
+        for aid in record.get("oeAudioIds", []):
+            if briefs is None or audio_brief_key(aid) not in briefs:
+                findings.append("AC5 %s: audio brief %r is not in %s"
+                                % (rid, aid, AUDIO_OE_MANIFEST.as_posix()))
         ref_path = get_path(record, "populations.perinatalSnapshotRef")
         if ref_path and not (root / ref_path).is_file():
             findings.append("AC5 %s: perinatalSnapshotRef missing: %s" % (rid, ref_path))
