@@ -29,6 +29,10 @@ if (careSrc) {
       fdCareNavigatorAnnouncement: typeof fdCareNavigatorAnnouncement === 'function'
         ? fdCareNavigatorAnnouncement : null,
       fdCarePack: typeof fdCarePack === 'function' ? fdCarePack : null,
+      fdCareBuilder: typeof fdCareBuilder === 'function' ? fdCareBuilder : null,
+      fdCarePackResources: fdCarePackResources, fdCarePackIds: fdCarePackIds,
+      fdCarePackShareText: fdCarePackShareText, fdCareShare: fdCareShare,
+      fdBuildIndex: fdBuildIndex,
     };
   `)();
 }
@@ -312,4 +316,43 @@ test('the governed builder launcher is required, fixed and separate from the loc
   for (const row of curriculum.careNavigator) {
     assert.ok(![row.primaryResourceId, ...(row.alternativeResourceIds || [])].includes(expectedBuilder.id));
   }
+});
+
+
+test('the supervised builder is projected and renders only a fixed safe external launcher', () => {
+  const index = F.fdBuildIndex(curriculum, {}, {}, {});
+  assert.deepEqual(index.careBuilder, expectedBuilder);
+  assert.equal(typeof F.fdCareBuilder, 'function');
+  const html = F.fdCareBuilder(index);
+  assert.match(html, /data-fd-care-builder="supervised-resource-builder"/);
+  assert.ok(html.includes('href="' + expectedBuilder.url + '"'));
+  assert.match(html, /target="_blank" rel="noopener noreferrer"/);
+  assert.ok(html.includes(expectedBuilder.description));
+  assert.match(html, /Opens ReConnect in a new tab/);
+  for (const item of [null, {}, { ...expectedBuilder, id: 'other' },
+    { ...expectedBuilder, title: '' }, { ...expectedBuilder, description: '' },
+    ...['http://example.test/', expectedBuilder.url + '?topic=test', expectedBuilder.url + '#area',
+      'https://example.test/" onclick="bad()', 'https://example.test/<script>'].map(url => ({ ...expectedBuilder, url }))]) {
+    assert.equal(F.fdCareBuilder({ careBuilder: item }), '', JSON.stringify(item));
+  }
+  const escaped = F.fdCareBuilder({ careBuilder: { ...expectedBuilder,
+    title: '<img src=x onerror=1>', description: '<script>bad()</script>' } });
+  assert.doesNotMatch(escaped, /<img|<script/);
+  assert.match(escaped, /&lt;img/);
+  assert.doesNotMatch(packSrc, /localStorage\.|sessionStorage\.|document\.|window\.|fetch\(|XMLHttpRequest|cwAnalytics|\.record\(|\bconst\s|\blet\s|=>/);
+});
+
+test('the builder cannot enter the three-item handout, QR drawer or copied links', () => {
+  const index = { careBuilder: expectedBuilder, careResources: curriculum.careResources };
+  const ids = [...curriculum.careResources.map(row => row.id), expectedBuilder.id];
+  assert.equal(F.fdCarePackResources(index).length, 5);
+  assert.equal(F.fdCarePackIds(index, ids).length, 3);
+  assert.equal(F.fdCareShare(index, expectedBuilder.id, ids), '');
+  assert.ok(!F.fdCarePackShareText(index, ids).includes(expectedBuilder.url));
+  const html = F.fdCarePack(index, ids, '<section class="crisis-block">Crisis</section>');
+  assert.ok(html.indexOf('data-fd-care-builder=') > html.indexOf('</header>'));
+  assert.ok(html.indexOf('data-fd-care-builder=') < html.indexOf('fd-care-pack__workbench'));
+  const sheet = html.slice(html.indexOf('<article'), html.indexOf('</article>'));
+  assert.ok(!sheet.includes(expectedBuilder.url));
+  assert.doesNotMatch(html, /data-fd-care-(?:pack|share)="supervised-resource-builder"/);
 });

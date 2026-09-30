@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(524 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(526 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -391,6 +391,8 @@ Omitting it collapses the rail underneath.
       h2 / p
       .fd-care-pack__included           valid governed crisis content only
       .fd-care-pack__crisis-failure      role="alert" in the header when crisis content is missing
+    .fd-care-builder <aside>             external launch only; excluded from print
+      div / p / .fd-care-builder__link <a>
     .fd-care-pack__workbench
       .fd-care-pack__picker
         .fd-care-pack__choices
@@ -451,6 +453,7 @@ Omitting it collapses the rail underneath.
 | `.vh-live` (`#careNavigatorStatus`) | Persistent, initially empty shell status beside `#routeStatus`, outside replaceable `#content`. The shell updates its polite, atomic text after a valid Care choice and clears it when the choice or Care surface ends. It keeps the same DOM node through Care re-renders. |
 | `.fd-care-navigator__alternatives` | Zero to two secondary links; shares the responsive one-column phone layout. |
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
+| `.fd-care-builder` / `.fd-care-builder__link` | Fixed context-free ReConnect launcher before the local picker, outside the handout sheet. Copy is linked by `aria-describedby`; new-tab link has `noopener noreferrer`, 44px minimum height, wrapping and visible focus. Flex stacks at ≤640px; `@media print` hides it in every state. No selection, QR, storage or analytics hook. |
 | `.fd-care-pack__workbench` | Transient two-column builder: a flat choice list beside a paper-like preview, stacking to one column at ≤640px. It accepts only canonical `careResources` records and has no patient fields, route state, storage, analytics, or network request. |
 | `.fd-care-pack__choice.is-selected` | The active choice pairs `.is-selected` with `aria-pressed="true"`; its visible check and inset rule keep selection non-color-only. A fourth unselected choice disables until one of the three is removed. |
 | `.fd-care-share__qr` / `.fd-care-share__qr-fallback` | The drawer renders the local SVG in the QR wrapper; the fallback replaces it with text when local QR generation is unavailable. Neither branch makes a network request. |

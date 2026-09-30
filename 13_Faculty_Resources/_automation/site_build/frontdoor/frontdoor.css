@@ -658,6 +658,14 @@
 .fd-care-pack__head h2{margin:0 0 var(--fd-space-2);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-snug)}
 .fd-care-pack__head p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
 .fd-care-pack__included{display:inline-flex;align-items:center;gap:var(--fd-space-2);flex:0 0 auto;padding:var(--fd-space-2) var(--fd-space-4);border:var(--fd-space-1) solid var(--fd-olive);border-radius:var(--fd-radius-pill);background:var(--fd-olive-wash);color:var(--fd-olive-deep) !important;font-size:var(--fd-font-xs) !important;font-weight:750}
+/* External builder launcher stays outside the local handout picker and printed sheet. */
+.fd-care-builder{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-6);margin-bottom:var(--fd-space-6);padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-callout)}
+.fd-care-builder>div{min-width:0;flex:1;overflow-wrap:anywhere}
+.fd-care-builder p{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
+.fd-care-builder p+p{margin-top:var(--fd-space-2)}
+.fd-care-builder__link{display:inline-flex;align-items:center;min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-4);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);color:var(--fd-teal-deep);font-weight:600;overflow-wrap:anywhere}
+.fd-care-builder__link:focus-visible{outline:2px solid var(--fd-focus);outline-offset:2px}
+@media (max-width:640px){.fd-care-builder{align-items:stretch;flex-direction:column}}
 .fd-care-pack__workbench{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--fd-space-7);align-items:start}
 .fd-care-pack__picker{min-width:0;padding-top:var(--fd-space-4);border-top:var(--fd-space-2) solid var(--fd-olive)}
 .fd-care-pack__picker h3{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-lg)}
@@ -1926,6 +1934,7 @@
 }
 
 @media print{
+  .fd-care-builder{display:none !important}
   /* System print ink/paper tokens remain legible even when the screen is in dark mode. */
   body:has(.fd-reader--guide){--fd-guide-print-ink:CanvasText;--fd-guide-print-paper:Canvas;color-scheme:light;background:var(--fd-guide-print-paper) !important;color:var(--fd-guide-print-ink) !important}
   .fd-shell:has(.fd-reader--guide),.fd-main:has(.fd-reader--guide){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-guide-print-paper) !important}

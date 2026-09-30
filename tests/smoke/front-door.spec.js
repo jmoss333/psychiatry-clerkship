@@ -3209,6 +3209,78 @@ test('Care Quick Share keeps exact links transient, keyboard-safe, and usable at
   await expectHealthy(page);
 });
 
+test('Supervised Resource Builder opens context-free without changing Care Quick Share', async ({ page }, testInfo) => {
+  const url = 'https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html';
+  const launches = [];
+  await page.context().route('https://reconnect-tools.netlify.app/**', async route => {
+    launches.push({ url: route.request().url(), referer: route.request().headers().referer });
+    await route.fulfill({ contentType: 'text/html', body: '<title>Builder destination fixture</title>' });
+  });
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=care');
+  await page.locator('[data-fd-care-intent="services"]').click();
+  await page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]').click();
+  const storage = await page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage } }));
+  const status = await page.locator('#careNavigatorStatus').textContent();
+  const link = page.getByRole('link', { name: 'Build a printable resource page', exact: true });
+  await expect(link).toHaveAttribute('href', url);
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(link).toHaveAccessibleDescription(/Choose a topic, broad area.*supervisor/);
+  expect(await link.evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-care-pack__picker')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate(value => document.documentElement.setAttribute('data-theme', value), theme);
+    // 640px at a doubled root font exercises text zoom; 320px is the narrow reflow boundary.
+    for (const width of [1280, 320, 640]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.evaluate(value => { document.documentElement.style.fontSize = value; }, width === 640 ? '200%' : '');
+      await link.focus();
+      await expect(link).toBeFocused();
+      const metrics = await link.evaluate(el => {
+        const box = el.getBoundingClientRect(), style = getComputedStyle(el);
+        return { height: box.height, width: box.width, outline: style.outlineStyle,
+          outlineWidth: parseFloat(style.outlineWidth), fits: document.documentElement.scrollWidth <= innerWidth };
+      });
+      expect(metrics.height).toBeGreaterThanOrEqual(44);
+      expect(metrics.width).toBeGreaterThanOrEqual(44);
+      expect(metrics.outline).not.toBe('none');
+      expect(metrics.outlineWidth).toBeGreaterThan(0);
+      expect(metrics.fits).toBe(true);
+      await page.keyboard.press('Tab');
+      await expect(page.locator('.fd-care-pack__choice').first()).toBeFocused();
+    }
+  }
+  await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
+  for (let n = 0; n < 2; n++) {
+    await link.focus();
+    const popupPromise = page.waitForEvent('popup');
+    await page.keyboard.press('Enter');
+    const popup = await popupPromise;
+    await popup.waitForLoadState();
+    expect(popup.url()).toBe(url);
+    expect(await popup.evaluate(() => window.opener)).toBe(null);
+    await popup.close();
+    await expect(page.locator('.fd-care-pack__choice[aria-pressed="true"]')).toHaveCount(1);
+    await expect(page.locator('#careNavigatorStatus')).toHaveText(status);
+    expect(await page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage } }))).toEqual(storage);
+  }
+  expect(launches).toEqual([{ url, referer: undefined }, { url, referer: undefined }]);
+  await page.emulateMedia({ media: 'print' });
+  await expect(link).toBeHidden();
+  await expect(page.locator('.fd-care-pack__sheet')).toBeVisible();
+  await expect(page.locator('.fd-care-pack__sheet')).not.toContainText('Build a printable resource page');
+  await page.emulateMedia({ media: 'screen' });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.locator('[data-fd-care-share="resource-finder"]').first().click();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.fd-care-share')).toHaveCount(0);
+  await page.locator('.fd-tabs [data-fd-tab="library"]:visible').click();
+  await page.locator('.fd-tabs [data-fd-tab="care"]:visible').click();
+  await expect(link).toHaveAttribute('href', url);
+  await expect(page.locator('.fd-care-pack__choice[aria-pressed="true"]')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
 test('Care status clears on Home, browser history, and resource opening', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/?tab=care');
