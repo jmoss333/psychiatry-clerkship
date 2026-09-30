@@ -37,29 +37,61 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
 .revealbtn{border:1px solid var(--accent);background:var(--surface);color:var(--accent-dark);height:32px;padding:0 12px;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:700;font-family:inherit;flex:none}
 .revealbtn:hover{background:var(--hover)}
 .testbar-note{font-weight:700;color:var(--accent-dark);flex:none}
-.node.masked{cursor:pointer}
+.node.masked,.mnode.masked{cursor:pointer}
 .node.masked .sb{display:none}
 .node.masked:hover{box-shadow:0 6px 20px rgba(59,51,44,.18)}
-.node.masked:focus-visible,.testbtn:focus-visible,.revealbtn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.node.masked:focus-visible,.mnode.masked:focus-visible,.testbtn:focus-visible,.revealbtn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .row{display:flex;gap:40px;align-items:center;flex-wrap:wrap;justify-content:center}
-/* diagram */
-.diagram{width:100%;max-width:620px;flex:0 0 auto;position:relative;aspect-ratio:1/1}
-@media(max-width:680px){.diagram{max-width:100%}}
-.stage{position:absolute;top:0;left:0;width:700px;height:700px;transform-origin:top left}
-.stage svg.under{position:absolute;inset:0;width:700px;height:700px;overflow:visible}
+/* diagram — a 740px stage scaled to fit; cards sit on a 270px ring so neighbours never touch */
+.diagram{width:100%;max-width:680px;flex:0 0 auto;position:relative;aspect-ratio:1/1}
+.stage{position:absolute;top:0;left:0;width:740px;height:740px;transform-origin:top left}
+.stage svg.under{position:absolute;inset:0;width:740px;height:740px;overflow:visible}
 .ring{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:3 9;stroke-linecap:round;opacity:.55}
 .spoke{stroke:var(--accent);stroke-width:2;stroke-linecap:round;opacity:.4}
-.orbit{transform-origin:350px 350px}
+.orbit{transform-origin:370px 370px}
 .orbit .dot{fill:var(--accent)}
-.hub{position:absolute;left:350px;top:350px;transform:translate(-50%,-50%);width:172px;height:172px;border-radius:50%;background:var(--accent-light);border:2px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:var(--fd-shadow-card)}
-.hub b{font-family:"Source Serif 4",Georgia,serif;font-size:17px;font-weight:600;color:var(--accent-dark);line-height:1.05}
-.hub span{font-size:11px;color:var(--text-light);margin-top:5px;max-width:120px;line-height:1.25}
-.node{position:absolute;transform:translate(-50%,-50%);width:188px;display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--border);border-left-width:3px;border-radius:13px;padding:11px 13px;box-shadow:var(--fd-shadow-card)}
-.node .chip{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none}
-.node .chip svg{width:18px;height:18px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.node .tx{min-width:0}
-.node .tt{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.18}
-.node .sb{font-size:11px;color:var(--text-light);line-height:1.3;margin-top:2px}
+.hub{position:absolute;left:370px;top:370px;transform:translate(-50%,-50%);width:188px;height:188px;border-radius:50%;background:var(--accent-light);border:2px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;box-shadow:var(--fd-shadow-card)}
+.hub b{font-family:"Source Serif 4",Georgia,serif;font-size:21px;font-weight:600;color:var(--accent-dark);line-height:1.1}
+.hub span{font-size:13px;color:var(--text-mid);max-width:124px;line-height:1.3}
+/* domain card: icon + title on one row, subtitle as its own block beneath */
+.node{position:absolute;transform:translate(-50%,-50%);width:184px;display:flex;flex-direction:column;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px 13px;box-shadow:var(--fd-shadow-card)}
+.node .hd{display:flex;align-items:center;gap:10px}
+.node .chip{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none}
+.node .chip svg,.mnode .badge svg,.dlist .chip svg{width:17px;height:17px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.node .tt{display:block;min-width:0;font-size:14.5px;font-weight:700;color:var(--text);line-height:1.2}
+.node .sb{display:block;font-size:13px;color:var(--text-mid);line-height:1.4}
+/* phone: compact badge ring + a stacked list carrying the full titles */
+.miniwrap,.dlist{display:none}
+.miniwrap{width:100%;max-width:358px;margin:0 auto;position:relative;aspect-ratio:358/372}
+.ministage{position:absolute;top:0;left:0;width:358px;height:372px;transform-origin:top left}
+.ministage>svg{position:absolute;inset:0;width:358px;height:372px;overflow:visible}
+.minihub{position:absolute;left:179px;top:182px;transform:translate(-50%,-50%);width:112px;height:112px;border-radius:50%;background:var(--accent-light);border:2px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center}
+.minihub b{font-family:"Source Serif 4",Georgia,serif;font-size:16px;font-weight:600;color:var(--accent-dark);line-height:1.1}
+.minihub span{font-size:11px;color:var(--text-mid);line-height:1.25}
+.mnode{position:absolute;width:92px;transform:translate(-50%,-22px);display:flex;flex-direction:column;align-items:center;gap:5px;border-radius:10px}
+.mnode .badge{width:44px;height:44px;box-sizing:border-box;border-radius:50%;background:var(--surface);border:2px solid;display:flex;align-items:center;justify-content:center;box-shadow:var(--fd-shadow-card)}
+.mnode .badge svg{width:19px;height:19px}
+.mnode .ml{font-size:12px;font-weight:700;line-height:1.2;text-align:center;color:var(--text);background:var(--bg);padding:0 3px;border-radius:4px}
+.dlist{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.dlist .dh{padding:14px 16px 10px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mid)}
+.dlist .di{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-top:1px solid var(--border)}
+.dlist .chip{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none}
+.dlist .tt{display:block;font-size:16px;font-weight:700;line-height:1.25;color:var(--text);padding-top:1px}
+.dlist .sb{display:block;font-size:14px;line-height:1.4;color:var(--text-mid);margin-top:2px}
+.testing .dlist{display:none!important}
+@media(max-width:680px){
+  .wrap{padding:20px 16px 48px}
+  .topline{flex-wrap:wrap;row-gap:14px}
+  .topline>div:nth-child(2){flex:1 1 auto;min-width:0}
+  .topctrls{margin-left:0;width:100%}
+  .testbtn{flex:1 1 auto;height:44px;font-size:.95rem}
+  .thmbtn{width:44px;height:44px}
+  .row{gap:24px}
+  .diagram{display:none}
+  .miniwrap{display:block;flex:1 1 100%}
+  .dlist{display:block;flex:1 1 100%}
+  .rail{flex:1 1 100%;min-width:0;max-width:none}
+}
 /* rail */
 .rail{flex:1 1 380px;max-width:430px;min-width:300px}
 .rail h1{font-family:"Source Serif 4",Georgia,serif;font-size:1.5rem;line-height:1.15;margin:0 0 12px;color:var(--text)}
@@ -112,14 +144,20 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
   </div>
   <div class="row">
     <div class="diagram"><div class="stage" id="stage">
-      <svg class="under" viewBox="0 0 700 700" aria-hidden="true">
-        <circle class="ring" cx="350" cy="350" r="250"/>
+      <svg class="under" viewBox="0 0 740 740" aria-hidden="true">
+        <circle class="ring" cx="370" cy="370" r="270"/>
         <g id="spokes"></g>
-        <g class="orbit"><circle class="dot" cx="350" cy="100" r="8"/><circle cx="350" cy="100" r="8" fill="none" stroke="var(--accent)" stroke-opacity="0.18" stroke-width="5"/></g>
+        <g class="orbit"><circle class="dot" cx="370" cy="100" r="8"/><circle cx="370" cy="100" r="8" fill="none" stroke="var(--accent)" stroke-opacity="0.18" stroke-width="5"/></g>
       </svg>
       <div class="hub"><b>The<br>conversation</b><span>follow the affect in the room</span></div>
       <div id="nodes"></div>
     </div></div>
+    <div class="miniwrap"><div class="ministage" id="ministage">
+      <svg viewBox="0 0 358 372" aria-hidden="true"><circle class="ring" cx="179" cy="182" r="128"/></svg>
+      <div class="minihub"><b>The<br>conversation</b><span>follow the affect</span></div>
+      <div id="mnodes"></div>
+    </div></div>
+    <ul class="dlist" id="dlist" aria-label="The eight interview domains"></ul>
     <div class="rail">
       <h1>The interview is a circle, not a checklist.</h1>
       <p class="lede">You still gather every domain — the story, the histories, substances, family, social, mental status, safety. But you don't march through them in order. Open where the patient opens a door, gather that arc, then come back to the centre and <b>follow the conversation</b> to wherever it goes next.</p>
@@ -153,39 +191,48 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
  };
  // 8 domains, clockwise from top (i=0..7); angle = -90 + 45*i degrees
  var DOMAINS=[
-  {t:'Chief complaint & HPI', s:'The story, in their words', tone:'anchor', ic:'hpi'},
-  {t:'Psychiatric history', s:'Diagnoses, hospitalizations, meds tried', tone:'arc', ic:'psych'},
-  {t:'Substance use', s:'Alcohol, tobacco, drugs — patterns', tone:'arc', ic:'subs'},
-  {t:'Medical history & meds', s:'Conditions, current meds, allergies', tone:'arc', ic:'med'},
-  {t:'Family history', s:'Psychiatric & medical, in the family', tone:'arc', ic:'family'},
-  {t:'Social & developmental', s:'Relationships, trauma, supports, function', tone:'arc', ic:'social'},
-  {t:'Mental status exam', s:'Appearance, affect, thought, cognition', tone:'arc', ic:'mse'},
-  {t:'Safety & risk', s:'SI, HI, access to means', tone:'risk', ic:'safety'}
+  {t:'Chief complaint & HPI', m:'Chief complaint', s:'The story, in their words', tone:'anchor', ic:'hpi'},
+  {t:'Psychiatric history', m:'Psych history', s:'Diagnoses, hospitalizations, meds tried', tone:'arc', ic:'psych'},
+  {t:'Substance use', m:'Substances', s:'Alcohol, tobacco, drugs — patterns', tone:'arc', ic:'subs'},
+  {t:'Medical history & meds', m:'Medical', s:'Conditions, current meds, allergies', tone:'arc', ic:'med'},
+  {t:'Family history', m:'Family', s:'Psychiatric & medical, in the family', tone:'arc', ic:'family'},
+  {t:'Social & developmental', m:'Social', s:'Relationships, trauma, supports, function', tone:'arc', ic:'social'},
+  {t:'Mental status exam', m:'Mental status', s:'Appearance, affect, thought, cognition', tone:'arc', ic:'mse'},
+  {t:'Safety & risk', m:'Safety', s:'SI, HI, access to means', tone:'risk', ic:'safety'}
  ];
  var STEPS=[
   {h:'Start anywhere', b:'Follow what the patient brings first. Every domain on the ring is a valid door in.', tone:'anchor', ic:'<path d="M5 12h14M13 6l6 6-6 6"/>'},
   {h:'Return to centre', b:'After each thread, come back to the conversation and the affect in the room before you move on.', tone:'arc', ic:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'},
   {h:'Close the loop', b:'Before you finish, make sure every arc has been touched — never leave the circle without covering safety.', tone:'risk', ic:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 5-5"/>'}
  ];
- var C=350, R=250;
- function pos(i){ var th=(-90+45*i)*Math.PI/180; return {x:C+R*Math.cos(th), y:C+R*Math.sin(th), dx:Math.cos(th), dy:Math.sin(th)}; }
+ var C=370, R=270;
+ function pos(i,cx,cy,r){ var th=(-90+45*i)*Math.PI/180; return {x:cx+r*Math.cos(th), y:cy+r*Math.sin(th), dx:Math.cos(th), dy:Math.sin(th)}; }
 
  // spokes
  var sp='';
- for(var i=0;i<8;i++){ var p=pos(i); var x1=C+88*p.dx,y1=C+88*p.dy,x2=C+168*p.dx,y2=C+168*p.dy;
+ for(var i=0;i<8;i++){ var p=pos(i,C,C,R); var x1=C+96*p.dx,y1=C+96*p.dy,x2=C+160*p.dx,y2=C+160*p.dy;
    sp+='<line class="spoke" x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'"/>';
    sp+='<circle cx="'+x1.toFixed(1)+'" cy="'+y1.toFixed(1)+'" r="2.4" fill="var(--accent)" opacity="0.5"/>';
  }
  document.getElementById('spokes').innerHTML=sp;
 
  // nodes
- var nh='';
- for(var j=0;j<8;j++){ var d=DOMAINS[j], q=pos(j), tn=TONE[d.tone];
-   nh+='<div class="node" data-idx="'+j+'" style="left:'+q.x.toFixed(1)+'px;top:'+q.y.toFixed(1)+'px;border-left-color:'+tn.bar+'">'
-     +'<span class="chip" style="background:'+tn.bg+';color:'+tn.ink+'"><svg viewBox="0 0 24 24" stroke="currentColor">'+ICON[d.ic]+'</svg></span>'
-     +'<span class="tx"><span class="tt">'+d.t+'</span><span class="sb">'+d.s+'</span></span></div>';
+ // anchor and risk cards carry a tinted border; arcs keep the neutral one
+ function edge(tone){ return tone==='arc'?'':'border-color:color-mix(in srgb,'+TONE[tone].bar+' 35%,var(--border));'; }
+ function svgIc(k){ return '<svg viewBox="0 0 24 24" stroke="currentColor">'+ICON[k]+'</svg>'; }
+ var nh='', mh='', lh='<li class="dh" aria-hidden="true">Eight domains</li>';
+ for(var j=0;j<8;j++){ var d=DOMAINS[j], q=pos(j,C,C,R), m=pos(j,179,182,128), tn=TONE[d.tone];
+   nh+='<div class="node" data-idx="'+j+'" style="left:'+q.x.toFixed(1)+'px;top:'+q.y.toFixed(1)+'px;'+edge(d.tone)+'">'
+     +'<span class="hd"><span class="chip" style="background:'+tn.bg+';color:'+tn.ink+'">'+svgIc(d.ic)+'</span><span class="tt">'+d.t+'</span></span>'
+     +'<span class="sb">'+d.s+'</span></div>';
+   mh+='<div class="mnode" data-idx="'+j+'" style="left:'+m.x.toFixed(1)+'px;top:'+m.y.toFixed(1)+'px">'
+     +'<span class="badge" style="border-color:'+tn.bar+';color:'+tn.ink+'">'+svgIc(d.ic)+'</span><span class="ml">'+d.m+'</span></div>';
+   lh+='<li class="di"><span class="chip" style="background:'+tn.bg+';color:'+tn.ink+'">'+svgIc(d.ic)+'</span>'
+     +'<span><span class="tt">'+d.t+'</span><span class="sb">'+d.s+'</span></span></li>';
  }
  document.getElementById('nodes').innerHTML=nh;
+ document.getElementById('mnodes').innerHTML=mh;
+ document.getElementById('dlist').innerHTML=lh;
 
  // steps
  var sh='';
@@ -198,9 +245,14 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
  // responsive scaling of the 700x700 stage
  var diagram=document.querySelector('.diagram'), stage=document.getElementById('stage');
  function postSize(){ if(document.body.classList.contains('embed')){ try{ window.parent.postMessage({type:'ic-size',h:Math.ceil(document.body.scrollHeight)},'*'); }catch(_){ } } }
- function fit(){ var w=diagram.clientWidth; stage.style.transform='scale('+(w/700)+')'; postSize(); }
+ var miniwrap=document.querySelector('.miniwrap'), ministage=document.getElementById('ministage');
+ function fit(){
+   var w=diagram.clientWidth; if(w) stage.style.transform='scale('+(w/740)+')';
+   var mw=miniwrap.clientWidth; if(mw) ministage.style.transform='scale('+(mw/358)+')';
+   postSize();
+ }
  fit(); window.addEventListener('resize',fit);
- if(window.ResizeObserver){ new ResizeObserver(fit).observe(diagram); }
+ if(window.ResizeObserver){ var ro=new ResizeObserver(fit); ro.observe(diagram); ro.observe(miniwrap); }
  window.addEventListener('load',function(){ fit(); setTimeout(postSize,120); setTimeout(postSize,500); });
 
  // theme
@@ -211,7 +263,8 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
  window.addEventListener('message',function(ev){ var d=ev.data||{}; if(d.type==='theme'&&(d.mode==='dark'||d.mode==='light')){ document.documentElement.setAttribute('data-theme',d.mode); setIcon(); } });
 
  // test-yourself: blank-circle recall mode
- var nodesEl=document.getElementById('nodes');
+ var nodesEl=document.getElementById('nodes'), mnodesEl=document.getElementById('mnodes');
+ var rootEl=document.getElementById('root');
  var testToggle=document.getElementById('testToggle');
  var testHint=document.getElementById('testHint');
  var testbar=document.getElementById('testbar');
@@ -219,10 +272,13 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
  var testNote=document.getElementById('testNote');
  var testActive=false, individualCount=0, totalRevealed=0, roundComplete=false;
 
+ // Each domain appears twice — a card (wide screens) and a badge (phones); both mask together.
+ function slots(idx){ return rootEl.querySelectorAll('.node[data-idx="'+idx+'"],.mnode[data-idx="'+idx+'"]'); }
  function maskNode(node){
-   var tt=node.querySelector('.tt'), sb=node.querySelector('.sb');
+   var tt=node.querySelector('.tt'), sb=node.querySelector('.sb'), ml=node.querySelector('.ml');
    if(tt) tt.textContent='?';
    if(sb) sb.textContent='';
+   if(ml) ml.textContent='?';
    node.classList.add('masked');
    node.setAttribute('role','button');
    node.tabIndex=0;
@@ -230,15 +286,16 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
  }
  function revealNode(node){
    var idx=parseInt(node.getAttribute('data-idx'),10), d=DOMAINS[idx];
-   var tt=node.querySelector('.tt'), sb=node.querySelector('.sb');
-   if(d){ if(tt) tt.textContent=d.t; if(sb) sb.textContent=d.s; }
+   var tt=node.querySelector('.tt'), sb=node.querySelector('.sb'), ml=node.querySelector('.ml');
+   if(d){ if(tt) tt.textContent=d.t; if(sb) sb.textContent=d.s; if(ml) ml.textContent=d.m; }
    node.classList.remove('masked');
    node.removeAttribute('role');
    node.removeAttribute('tabindex');
    node.removeAttribute('aria-label');
  }
- function maskAll(){ var ns=nodesEl.querySelectorAll('.node'); for(var i=0;i<ns.length;i++) maskNode(ns[i]); }
- function restoreAll(){ var ns=nodesEl.querySelectorAll('.node'); for(var i=0;i<ns.length;i++) revealNode(ns[i]); }
+ function revealIdx(idx){ var ns=slots(idx); for(var i=0;i<ns.length;i++) revealNode(ns[i]); }
+ function maskAll(){ for(var i=0;i<8;i++){ var ns=slots(i); for(var j=0;j<ns.length;j++) maskNode(ns[j]); } rootEl.classList.add('testing'); }
+ function restoreAll(){ for(var i=0;i<8;i++) revealIdx(i); rootEl.classList.remove('testing'); }
 
  function persistLastTested(){ try{ localStorage.setItem('cw_circle_v1', JSON.stringify({v:1,lastTested:new Date().toISOString().slice(0,10)})); }catch(_){ } }
  function readLastTested(){
@@ -266,17 +323,19 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
  }
  function activateNode(node){
    if(!testActive||!node.classList.contains('masked')) return;
-   revealNode(node);
+   revealIdx(node.getAttribute('data-idx'));
    individualCount++; totalRevealed++;
    checkRoundComplete();
  }
 
- nodesEl.addEventListener('click',function(e){ var node=e.target&&e.target.closest?e.target.closest('.node'):null; if(node) activateNode(node); });
- nodesEl.addEventListener('keydown',function(e){
-   var node=e.target&&e.target.closest?e.target.closest('.node'):null;
-   if(!node) return;
-   var k=e.key;
-   if(k==='Enter'||k===' '||k==='Spacebar'||e.keyCode===13||e.keyCode===32){ e.preventDefault(); activateNode(node); }
+ [nodesEl,mnodesEl].forEach(function(el){
+   el.addEventListener('click',function(e){ var node=e.target&&e.target.closest?e.target.closest('.node,.mnode'):null; if(node) activateNode(node); });
+   el.addEventListener('keydown',function(e){
+     var node=e.target&&e.target.closest?e.target.closest('.node,.mnode'):null;
+     if(!node) return;
+     var k=e.key;
+     if(k==='Enter'||k===' '||k==='Spacebar'||e.keyCode===13||e.keyCode===32){ e.preventDefault(); activateNode(node); }
+   });
  });
 
  testToggle.addEventListener('click',function(){
@@ -295,7 +354,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Source Sans 3"
  revealAllBtn.addEventListener('click',function(){
    if(!testActive) return;
    var masked=nodesEl.querySelectorAll('.node.masked');
-   for(var i=0;i<masked.length;i++){ revealNode(masked[i]); totalRevealed++; }
+   for(var i=0;i<masked.length;i++){ revealIdx(masked[i].getAttribute('data-idx')); totalRevealed++; }
    checkRoundComplete();
  });
 
