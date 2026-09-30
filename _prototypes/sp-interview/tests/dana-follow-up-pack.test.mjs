@@ -170,6 +170,12 @@ test('the chart and the note agree: 13 fields, the scores make the total, the ba
     const r = x.revealedBy;
     if (r.gate) assert.ok(gates.has(r.gate), `${x.id}: gate ${r.gate}`);
     if (r.intents) r.intents.forEach((id) => assert.ok(intent(id), `${x.id}: intent ${id}`));
+    // A Live reply paraphrases the scripted lines, so a question-revealed field says how her reply
+    // states the fact in other words (visit-note.test.mjs pins what the patterns hear).
+    if (r.intents) {
+      assert.ok(Array.isArray(r.replyMatch) && r.replyMatch.length > 0, `${x.id}: patterns for her reply`);
+      r.replyMatch.forEach((p) => new RegExp(p, 'i'));
+    }
     if (r.chart) assert.ok(chart[r.chart], `${x.id}: chart ${r.chart}`);
     if (x.type === 'choice') {
       assert.ok(x.choices.some((c) => c[0] === x.answer), `${x.id}: answer is a choice`);

@@ -3959,6 +3959,11 @@
                   "intents": [
                     "med_sertraline",
                     "side_effects"
+                  ],
+                  "replyMatch": [
+                    "\\b(?:skip(?:s|ped|ping)?|miss(?:ed|ing)|didn'?t take it|did not take it|stopped(?: taking)?(?: it)?|took a break from it)\\b[^.?!;]{0,40}\\b(?:saturday|sunday|weekend|couple|two|three|few)\\b",
+                    "\\b(?:except|apart from|other than|besides|but not)\\b[^.?!;]{0,30}\\b(?:saturday|sunday|weekend|two days|couple of days|a couple)\\b",
+                    "\\b(?:saturday|sunday|weekend|couple of days|two days|day or two|few days)\\b[^.?!;]{0,40}\\b(?:skipped|missed|didn'?t take it|went without|took (?:it )?off|off it)\\b"
                   ]
                 },
                 "record": "Taking it, but she skipped two days for nausea.",
@@ -3991,6 +3996,11 @@
                 "revealedBy": {
                   "intents": [
                     "med_trazodone"
+                  ],
+                  "replyMatch": [
+                    "\\b(?:never|didn'?t|did not|haven'?t|have not|hasn'?t|not)\\b[^.?!;]{0,20}\\b(?:fill(?:ed)?|pick(?:ed)? (?:it |that |them )?up|get (?:it |that (?:one )?)?filled|got (?:it |that (?:one )?)?filled)\\b",
+                    "\\b(?:another|more|extra) (?:bottle|pills?)\\b[^.?!;]{0,30}\\b(?:house|home|around)\\b",
+                    "\\b(?:not|never) (?:been )?taking (?:it|that one|the trazodone|the sleep(?:ing)? (?:one|pill|med(?:ication|icine)?))\\b(?!\\s+(?:every|most|each|as|regularly|all the time))"
                   ]
                 },
                 "record": "Never filled — she did not want another bottle in the house.",
@@ -4004,6 +4014,11 @@
                 "revealedBy": {
                   "intents": [
                     "med_other"
+                  ],
+                  "replyMatch": [
+                    "st\\.?\\s*john",
+                    "\\bwort\\b",
+                    "hypericum"
                   ]
                 },
                 "expect": [
@@ -4203,6 +4218,12 @@
                 "revealedBy": {
                   "intents": [
                     "plan_review"
+                  ],
+                  "replyMatch": [
+                    "\\bI(?:'ve| have| did)? used? (?:it|the plan|my plan|my safety plan|that plan)\\b",
+                    "\\bmade (?:some |a cup of |myself (?:a cup of |some )?)?tea\\b",
+                    "\\b(?:ellie'?s (?:drawing|picture)|(?:drawing|picture) (?:that )?ellie (?:made|drew))\\b",
+                    "\\buntil it passed\\b"
                   ]
                 },
                 "record": "Yes — last night she went downstairs, made tea and looked at Ellie's drawing until it passed.",
@@ -4257,6 +4278,11 @@
                 "revealedBy": {
                   "intents": [
                     "firearms"
+                  ],
+                  "replyMatch": [
+                    "\\bno (?:guns?|firearms?|weapons?)\\b",
+                    "\\b(?:don'?t|do not|never|haven'?t|have not)(?: ever)? (?:have|own|keep|kept|had|got)\\b[^.?!;]{0,15}\\b(?:guns?|firearms?|weapons?)\\b",
+                    "\\bnever wanted (?:one|a gun|guns|any)\\b"
                   ]
                 },
                 "record": "None in the home.",
@@ -4285,6 +4311,10 @@
                 "revealedBy": {
                   "intents": [
                     "plan_contacts"
+                  ],
+                  "replyMatch": [
+                    "\\bI(?:'m not| am not|'d never| would never|'d not| wouldn'?t| would not| won'?t| will not| can'?t| cannot| couldn'?t| could not| don'?t| do not| never)\\b[^.?!,;]{0,25}\\b(?:call|calling|ring|ringing|text|texting|wake|waking|tell|telling)\\b[^.?!,;]{0,15}\\b(?:her|my sister)\\b",
+                    "\\bhaven'?t (?:even |yet )?told (?:her|my sister)\\b"
                   ]
                 },
                 "record": "Need revising — the only person listed is her sister, whom she has not told and would not call.",
