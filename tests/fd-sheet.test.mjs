@@ -458,13 +458,13 @@ test('an attested item preview shows the .fd-attested pill', () => {
 
 // ---- the item preview -------------------------------------------------------------------------
 
-test('the item preview renders chip, lead, source chip, primary open button and the close note', () => {
+test('the item preview renders chip, lead, primary open button and the close note — no file name', () => {
   const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'item:pg_suicide.md' });
   const item = REAL_INDEX.byRef['pg_suicide.md'];
   assert.match(html, /<span class="fd-sheet__title">Suicide Risk &amp; Safety Card<\/span>/);
   assert.match(html, /<span class="fd-chip">read<\/span>/);
   assert.match(html, new RegExp(`<p class="fd-sheet__lead">${F.fdEsc(item.summary).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</p>`));
-  assert.match(html, /<span class="fd-src">pg_suicide\.md<\/span>/);
+  assert.doesNotMatch(html, /Source:|fd-src/);
   assert.match(html, /class="fd-btn fd-btn--primary"[^>]*data-fd-open="pg_suicide\.md"/);
   assert.match(html, /<p class="fd-sheet__note">Or ✕ to close/);
 });

@@ -359,7 +359,10 @@ function fdReader(index, state, bodyHtml){
   if(item.attested) head+='<span class="fd-attested">✓ faculty-attested</span>';
   head+='</div>';
 
-  var article='<div class="fd-article">'+head+
+  /* The ref rides on the element (data-ref), not on screen: a learner has no use for a file name
+     under the article (2026-09-29, the owner's call -- same rule as the protocol sheet's "From:"
+     line), but the smoke crawler and faculty feedback still need to know which page is open. */
+  var article='<div class="fd-article" data-ref="'+fdEsc(item.ref)+'">'+head+
     '<h1 class="fd-article__h1">'+fdEsc(item.title)+'</h1>'+
     '<p class="fd-article__lead">'+fdEsc(item.summary)+'</p>';
   /* bodyHtml: verbatim, unescaped -- see header comment. Omitted entirely (no empty wrapper) when
@@ -368,8 +371,6 @@ function fdReader(index, state, bodyHtml){
     (isTool?' id="fd-tool-region"':'')+'>'+bodyHtml+'</div>';
   article+=fdReaderKeyPoints(item.points);
   article+=fdReaderTryNow(item, idx);
-  article+='<div class="fd-article__source"><span>Source:</span>'+
-    '<span class="fd-src">'+fdEsc(item.ref)+'</span></div>';
   if(!isTool&&st.readingPlaceEligible!==false){
     article+='<p class="fd-reading-place" data-fd-reading-status></p>'+
       '<button type="button" class="fd-reading-place__top" data-fd-reading-top hidden>Start at top</button>';

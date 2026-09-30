@@ -479,10 +479,8 @@
             }
           },
           "safetyLevel": {
-            "enum": [
-              "high",
-              "standard"
-            ]
+            "const": "high",
+            "description": "Every pharmacy card carries dosing and monitoring content, so it is always high-safety (charter C2, #898)."
           },
           "facultyReview": {
             "type": "object",

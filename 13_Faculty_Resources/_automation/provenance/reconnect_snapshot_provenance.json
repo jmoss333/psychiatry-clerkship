@@ -356,7 +356,7 @@
     },
     {
       "derivedPath": "pharmacy.json",
-      "dataset": "meds",
+      "dataset": "medications",
       "sourceRepository": "https://github.com/jmoss333/reconnect-psychiatry-system.git",
       "sourcePath": "databases/core/data_all.json",
       "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",

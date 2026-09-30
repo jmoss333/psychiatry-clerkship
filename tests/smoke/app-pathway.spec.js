@@ -197,7 +197,7 @@ test('canonical APP resource returns to On shift with governance intact', async 
 
   await page.locator('[data-fd-app-start="pg_interview.md"]').first().click();
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
-  await expect(page.locator('.fd-src')).toHaveText('pg_interview.md');
+  await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', 'pg_interview.md');
   await expect(page.locator('.fd-reader__back')).toContainText('On shift');
   await expect(page.locator('.governance-notice')).toHaveCount(1);
 

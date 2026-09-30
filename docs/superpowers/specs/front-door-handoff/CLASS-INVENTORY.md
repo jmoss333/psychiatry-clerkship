@@ -80,7 +80,7 @@ instead — see their surfaces.)
 | `.fd-tip` | `<p>` | 11.5px keyboard hint. |
 | `.fd-logo` | `<span>` | 30px terracotta ψ tile. |
 | `.fd-attested` | `<span>` | "✓ faculty-attested" pill. Reader + sheet item preview. |
-| `.fd-src` | `<span>` | Monospace source-path chip. Reader + sheet item preview. |
+| `.fd-src` | `<span>` | Monospace source-path chip. Not-found reader only ("Requested:") — the Reader's and sheet item preview's "Source:" chips were removed 2026-09-29; the ref rides on `.fd-article[data-ref]` instead. |
 | `.fd-btn` | `<button>` | Base. **Always pair with a modifier** — `.fd-btn` alone has no colour. |
 | `.fd-btn--primary` | + `.fd-btn` | Filled terracotta. |
 | `.fd-btn--ghost` | + `.fd-btn` | Outlined. |
@@ -647,8 +647,6 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
           .fd-keypoints__bullet
       .fd-trynow      <button>
         .fd-trynow__icon / .fd-trynow__title / .fd-trynow__sub
-      .fd-article__source
-        <span>Source:</span> .fd-src
       .fd-reading-place                    (read only; empty until a verified write or failure)
       .fd-reading-place__top <button hidden> (read only; shown after a valid restoration)
       .fd-article__actions                (≥1000px)
@@ -892,7 +890,6 @@ patient information, or an attestation, and it never turns a website action into
     ── item-preview variant ──
     .fd-chip / .fd-attested
     .fd-sheet__lead
-    .fd-src
     .fd-btn.fd-btn--primary
     .fd-sheet__note
     ── settings variant ──

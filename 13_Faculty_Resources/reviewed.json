@@ -1,23 +1,25 @@
 {
   "cotw_20260928_mania_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New Case of the Week (bipolar mania, MS3) added 2026-09-28; awaiting faculty attestation.",
     "at": "2026-09-28",
-    "by": "Pending faculty review"
+    "by": "Joshua Moss, MD",
+    "contentHash": "13598181c5471e4580b6eb1d9aa3f2a0f484f5f5",
+    "clinicalHash": "7637e6599e8e12b3bd4452772eec704c4807083b"
   },
   "cotw_20260928_mania_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New Case of the Week (bipolar mania, resident) added 2026-09-28; awaiting faculty attestation.",
     "at": "2026-09-28",
-    "by": "Pending faculty review"
+    "by": "Joshua Moss, MD",
+    "contentHash": "de3ba600f9f4c944a0cb3109c6b3a51f1febd1cd",
+    "clinicalHash": "c98161c28eb84ae5c69df7139f8fa4cd2bf51d39"
   },
   "cotw_20260923_agitation_ms3.md": {
     "status": "reviewed",
@@ -333,11 +335,11 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-28",
+    "at": "2026-09-30",
     "by": "Joshua Moss, MD",
     "note": "Re-attested 2026-09-17 (recorded on the owner's approval of #565, issue comment 2026-09-17): Dana's direct suicide question discloses at any rapport and an earlier flag never blocks it; the local draft overlay that carried that policy is retired into the reviewed pack; debrief states that asking early was right. Dana's pack facultyReview.lastReviewed advanced to 2026-09-17 in the same change. Prior: 2026-09-09 (WP-5m chain, F1-F5 / D16(2)).",
-    "contentHash": "ea2905b4018032e5f7a43e03b1ad2b81211d2551",
-    "clinicalHash": "e3b00e917a7b0602504906306d1ae9ee7436e68c"
+    "contentHash": "c27df93ea5e2619672a6a60ed2813d9934541303",
+    "clinicalHash": "fa87477c7a7e75455974e6ddffa7f15cb9fb39ff"
   },
   "welcome.md": {
     "status": "reviewed",
@@ -1174,8 +1176,8 @@
     },
     "at": "2026-09-28",
     "by": "Joshua Moss, MD",
-    "contentHash": "075a3b09efd4606e976f87f47a13d8ee259e381a",
-    "clinicalHash": "f209fd5ec2d609729cf5217a17c111a4595e65b1"
+    "contentHash": "cd6520e6a044270645cd7aa65216efcd54a0cfdd",
+    "clinicalHash": "3015b188b57c34eefd0463f6d652eeee317753cf"
   },
   "review.html": {
     "status": "reviewed",
@@ -1183,10 +1185,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-27",
+    "at": "2026-09-30",
     "by": "Joshua Moss, MD",
-    "contentHash": "ced12f78a11cfcdf7e3a3fa7123094d0d763103c",
-    "clinicalHash": "6b5e57fe6b9a0ee4e4f11426da8ab0c91cc633d6"
+    "contentHash": "4848e872ae1f3ee302bd3cf59245f41968501341",
+    "clinicalHash": "b77276e0151c768cb70f39c2755b4818e64d6d04"
   },
   "feedback.html": {
     "status": "reviewed",
@@ -1207,8 +1209,8 @@
     },
     "at": "2026-09-28",
     "by": "Joshua Moss, MD",
-    "contentHash": "5493a70552a9abccedd382582268ceb114e64836",
-    "clinicalHash": "295dad1a0bc2f2b5c0db07630439b65ab92f880d"
+    "contentHash": "dcd4ee550ff45165049da9150d72db9754ac8122",
+    "clinicalHash": "0d1f9d88893c4a452ab894108e0ec12943e4dfd4"
   },
   "qbank-attest.html": {
     "status": "reviewed",
@@ -1243,10 +1245,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-09-30",
     "by": "Joshua Moss, MD",
-    "contentHash": "1ab8080cb7f26e15fdc20a5c9120fc8fe564e3fd",
-    "clinicalHash": "13854a04aa4d774149edea34ab44a9bd3f764be8"
+    "contentHash": "45beac9c747ba9f45d26f3261e288f6429ad0dd1",
+    "clinicalHash": "8d006769d4aa9cce88b720101006b60cae437583"
   },
   "diagnostic-reasoning.html": {
     "status": "reviewed",

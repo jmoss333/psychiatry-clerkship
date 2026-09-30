@@ -5,9 +5,12 @@ The committed pharmacy.json must pass; then one mutation per check must fail wit
 check's own tag. A check that cannot be made to fail is not a check (SILENT_SHRINK §F).
 """
 
+import ast
 import copy
 import json
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -70,6 +73,40 @@ class ValidatePharmacyTest(unittest.TestCase):
         first(data)["provenance"]["carried"]["absolute_max_dose"] = "x"
         self.assertTagged(run(data), "AC13")
 
+    def test_denylisted_key_at_record_level_fails(self):  # #898: "top-level or nested"
+        data = self.mutate()
+        first(data)["starting_dose"] = "x"
+        self.assertTagged(run(data), "AC13")
+
+    def test_interaction_card_ids_resolve_against_the_interaction_cards_page(self):  # AC5
+        data = self.mutate()
+        first(data)["interactions"]["interactionCardIds"] = ["lithium"]
+        self.assertEqual(run(data), [])
+        first(data)["interactions"]["interactionCardIds"] = ["no-such-card"]
+        self.assertTagged(run(data), "AC5")
+
+    def test_oe_audio_ids_resolve_against_the_audio_manifest(self):  # AC5
+        data = self.mutate()
+        first(data)["oeAudioIds"] = ["03", "3"]  # leading zeros ignored, as in pairings.json
+        self.assertEqual(run(data), [])
+        first(data)["oeAudioIds"] = ["999"]
+        self.assertTagged(run(data), "AC5")
+
+    def test_off_card_ids_fail_when_their_target_cannot_be_read(self):  # AC5, fail closed
+        data = self.mutate()
+        first(data)["interactions"]["interactionCardIds"] = ["lithium"]
+        first(data)["oeAudioIds"] = ["03"]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for name in ("evidence_registry.json", "question_bank.json", "topic_meta.json"):
+                shutil.copy(vp.ROOT / name, root / name)
+            findings, _ = vp.check(data, RECEIPT, FIELDMAP, root=root)
+        self.assertEqual(
+            sorted(f.split(":")[1].strip().split(" ")[0] for f in findings
+                   if f.startswith("AC5 lithium") and ("interaction" in f or "audio" in f)),
+            ["audio", "interaction"],
+        )
+
     def test_unknown_evidence_id_fails(self):
         data = self.mutate()
         first(data)["evidenceIds"].append("no-such-source")
@@ -114,8 +151,21 @@ class ValidatePharmacyTest(unittest.TestCase):
         record["pearls"]["t1"][0] += " (edited)"
         self.assertTagged(run(data), "AC6")
 
-    def test_fieldmap_denylist_covers_the_sync_engine(self):
-        self.assertLessEqual(set(vp.ENGINE_DENYLIST), set(FIELDMAP["denylist"]))
+    def test_denylist_has_one_source_and_the_gate_never_imports_the_dev_only_sync(self):
+        # The field map is the one denylist; sync_from_reconnect.py reads the same file
+        # (pinned in test_sync_from_reconnect). A CI gate importing the dev-only sync would
+        # blur the build-isolation line (C4 / BR3), so the validator must not.
+        self.assertEqual(vp.FIELDMAP.name, "reconnect_meds_fieldmap.json")
+        tree = ast.parse(Path(vp.__file__).read_text(encoding="utf-8"))
+        imported = {alias.name for node in ast.walk(tree) if isinstance(node, ast.Import)
+                    for alias in node.names}
+        imported |= {node.module for node in ast.walk(tree)
+                     if isinstance(node, ast.ImportFrom) and node.module}
+        self.assertFalse({name for name in imported if "sync_from_reconnect" in name}, imported)
+        for key in ("starting_dose", "typical_dose_min", "typical_dose_max", "absolute_max_dose",
+                    "pregnancy_category", "goodrx_url", "cost_plus_price", "pharmacy_options",
+                    "MaineCare Status", "Walmart $4 List", "Prior Auth Usually Required"):
+            self.assertIn(key, FIELDMAP["denylist"])
 
     def test_l_field_edit_does_not_reopen_review(self):
         data = self.mutate()
