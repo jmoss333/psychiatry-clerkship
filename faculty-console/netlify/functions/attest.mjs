@@ -1092,6 +1092,9 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
       .sort();
     return {
       behindBy: comparison.ahead_by,
+      // The branch's own commits (the unmerged sign-offs). Zero means a press fast-forwards the
+      // branch to the base first (ensureBranchFresh), so nothing the base changed can be missed.
+      aheadBy: typeof comparison.behind_by === 'number' ? comparison.behind_by : null,
       commits,
       files,
       truncated: commits.length < comparison.ahead_by || files.length >= 300,
@@ -3323,6 +3326,156 @@ async function commitContentBatch({ repository, settings, body, attester }) {
   };
 }
 
+// ── The pre-press forecast (2026-09-30) ────────────────────────────────────────────────
+// "Will the review request pass its sign-off check after this press?" was answered after the
+// fact, by reading CI: #895 was refused by `bin/check_attestation_hashes.py --strict` because
+// two of its signatures were for text that had changed since, and the fix was one more press.
+// This gives the console the facts to say so before the click, by RUNNING that check's rule
+// rather than approximating it:
+//   · the rows the request changes are touched_slugs as the merge will see them: the branch's
+//     own changes since the split (status or contentHash) that main does not already hold;
+//   · a row fails when its signature does not bind the page's text at the merge. The request
+//     carries sign-off writes only (a content change in it fails governance separation L3), so
+//     the text at the merge is main's: each page is fingerprinted at main's head with the same
+//     functions a press signs with (digestForSlug, boundBy -- content hash, or the clinical
+//     fingerprint when only citations moved), and compared with its stored row;
+//   · a page re-signed on this press is bound to the BRANCH's copy, so it passes only when the
+//     branch's fingerprint equals main's.
+// Per page it returns { title, inRequest, okNow, resignOk } (true / false / null = could not
+// tell), plus the rows main also changed since the split (a merge conflict, not a pass). The
+// console combines them with the ticks (press-forecast.mjs). Read-only, page names and booleans
+// only (no hash leaves the server), bounded by FORECAST_BUDGET_MS, and every failed read is
+// `unknown`, never clean. The preview never fails because its forecast did.
+const FORECAST_BUDGET_MS = 5000;
+const forecastRowKey = row => (isRecord(row) ? `${row.status ?? ''}\u0000${row.contentHash ?? ''}` : null);
+
+/** The digest inputs at the base branch's head: listing, tree and topic_meta from ONE commit. */
+async function readBaseDigestInputs(repository, settings) {
+  const head = await repository.headOf(settings.baseBranch);
+  const [shippedFile, metaFile, listed] = await Promise.all([
+    repository.read(SHIPPED_PAGES_PATH, { ref: head }),
+    repository.read(TOPIC_META_PATH, { ref: head }),
+    repository.readTree(head),
+  ]);
+  if (!isRecord(shippedFile.json) || !isRecord(metaFile.json)) invalidRepositoryFile();
+  let tree = listed;
+  if (listed.has(QBANK_PATH) && shipsQuestionBank(shippedFile.json)) {
+    const bank = await repository.readRaw(QBANK_PATH, { maxBytes: MAX_BANK_BYTES, ref: head });
+    tree = new Map(listed);
+    tree.set(QBANK_PATH, sourceBlobSha(QBANK_PATH, bank.bytes));
+  }
+  return { tree, shipped: shippedFile.json, topicMeta: metaFile.json, head };
+}
+
+function titleIn(shipped, slug) {
+  const pages = isRecord(shipped) && Array.isArray(shipped.pages) ? shipped.pages : [];
+  const page = pages.find(entry => isRecord(entry) && entry.slug === slug && typeof entry.title === 'string');
+  return page ? page.title : '';
+}
+
+async function computePressForecast(repository, settings, { reviewed, digestInputs, candidates }) {
+  const baseBranch = settings.baseBranch;
+  const comparison = await repository.compareBranchToBase();
+  const behindBy = comparison.behindBy;
+  if (!Number.isInteger(behindBy)) return { reviewRequest: true, baseBranch, unknown: true };
+  // Nothing of its own: a press fast-forwards the branch to main first (ensureBranchFresh) and
+  // then signs whatever needs a signature THERE -- possibly pages this preview did not list.
+  if (comparison.aheadBy === 0) {
+    return { reviewRequest: true, baseBranch, behindBy, catchesUp: behindBy > 0, signedInRequest: [], conflicts: [], pages: {}, partial: false };
+  }
+  let partial = false;
+  const baseRows = (await repository.read(REVIEWED_PATH, { ref: baseBranch })).json;
+  if (!isRecord(baseRows)) return { reviewRequest: true, baseBranch, unknown: true };
+  let splitRows = behindBy ? null : baseRows;
+  if (!splitRows && comparison.mergeBaseSha) {
+    try {
+      const split = (await repository.read(REVIEWED_PATH, { ref: comparison.mergeBaseSha })).json;
+      if (isRecord(split)) splitRows = split;
+    } catch {
+      /* partial, below */
+    }
+  }
+  if (!splitRows) partial = true;
+  const rows = isRecord(reviewed) ? reviewed : {};
+  const signedInRequest = Object.keys(rows).filter((slug) => {
+    const key = forecastRowKey(rows[slug]);
+    if (key === null || key === forecastRowKey(baseRows[slug])) return false;
+    return splitRows ? key !== forecastRowKey(splitRows[slug]) : true;
+  }).sort();
+  // Main changed the same row since the split: git has to reconcile two versions of it.
+  const conflicts = splitRows
+    ? signedInRequest.filter(slug => forecastRowKey(baseRows[slug]) !== forecastRowKey(splitRows[slug]))
+    : [];
+
+  const base = await readBaseDigestInputs(repository, settings);
+  const inRequest = new Set(signedInRequest);
+  const scope = [...new Set([...signedInRequest, ...candidates])].sort();
+  const digests = new Map(scope.map(slug => [slug, {
+    main: safeDigestForSlug(slug, base),
+    branch: safeDigestForSlug(slug, digestInputs),
+    sources: sourcesForSlug(base.shipped, slug).length > 0,
+  }]));
+  // The clinical fingerprint only matters where the content hash does not settle it.
+  const clinicalScope = scope.filter((slug) => {
+    const { main, branch } = digests.get(slug);
+    const row = rows[slug];
+    return (main && branch && main !== branch)
+      || (isRecord(row) && row.status === 'reviewed' && hasClinicalHash(row) && row.contentHash !== main);
+  });
+  if (clinicalScope.length) {
+    await Promise.all([
+      loadClinicalShas(repository, base, clinicalScope),
+      loadClinicalShas(repository, digestInputs, clinicalScope),
+    ]);
+  }
+  const pages = {};
+  for (const slug of scope) {
+    const { main, branch, sources } = digests.get(slug);
+    const row = rows[slug];
+    let okNow = true;
+    if (isRecord(row) && row.status === 'reviewed') {
+      if (!sources) okNow = typeof row.contentHash === 'string' && row.contentHash ? null : true; // ledger-only legacy
+      else if (!main) okNow = null;
+      else if (boundBy(row, slug, base, main)) okNow = true;
+      else okNow = hasClinicalHash(row) && clinicalDigestForSlug(slug, base) === null ? null : false;
+    }
+    let resignOk = null;
+    if (main && branch) {
+      if (main === branch) resignOk = true;
+      else {
+        const clinicalMain = clinicalDigestForSlug(slug, base);
+        const clinicalBranch = clinicalDigestForSlug(slug, digestInputs);
+        resignOk = clinicalMain && clinicalBranch ? clinicalMain === clinicalBranch : null;
+      }
+    }
+    pages[slug] = {
+      title: titleIn(base.shipped, slug) || titleIn(digestInputs.shipped, slug) || slug,
+      inRequest: inRequest.has(slug),
+      okNow,
+      resignOk,
+    };
+  }
+  return { reviewRequest: true, baseBranch, behindBy, signedInRequest, conflicts, pages, partial };
+}
+
+async function buildPressForecast(repository, settings, facts) {
+  if (!settings.isolated || settings.ledger || settings.branch === settings.baseBranch) {
+    return { reviewRequest: false };
+  }
+  const unknown = { reviewRequest: true, baseBranch: settings.baseBranch, unknown: true };
+  let timer;
+  try {
+    return await Promise.race([
+      computePressForecast(repository, settings, facts),
+      new Promise((resolve) => { timer = setTimeout(() => resolve({ ...unknown, timedOut: true }), FORECAST_BUDGET_MS); }),
+    ]);
+  } catch {
+    return unknown;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** GET ?view=batch&mode=baseline|correction[&corrections=pr:1,pr:2][&exclude=a,b] — reads only. */
 async function buildBatchPreview(repository, settings, url) {
   const list = name => (url.searchParams.get(name) || '').split(',').map(value => value.trim()).filter(Boolean);
@@ -3353,6 +3506,11 @@ async function buildBatchPreview(repository, settings, url) {
       excluded: planned.excluded,
     };
   }
+  const forecast = await buildPressForecast(repository, settings, {
+    reviewed,
+    digestInputs,
+    candidates: [...plan.sign, ...plan.excluded].map(item => item.slug),
+  });
   return {
     view: 'batch',
     mode: request.mode,
@@ -3361,6 +3519,7 @@ async function buildBatchPreview(repository, settings, url) {
     sign: plan.sign.map(publicSign),
     excluded: plan.excluded,
     ...(questions ? { questions } : {}),
+    forecast,
   };
 }
 

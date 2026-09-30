@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 import {
@@ -4190,4 +4191,246 @@ test('?view=incoming needs the faculty key like every other view', async () => {
   const response = await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }, { key: null }));
   assert.equal(response.status, 401);
   assert.equal(mock.calls.length, 0, 'nothing is read for an unauthenticated request');
+});
+
+/* The pre-press forecast (2026-09-30): `?view=batch` also returns, per page, the facts the
+   console needs to say before the click whether the review request will pass
+   `check_attestation_hashes.py --strict`. The server RUNS that rule: the rows the request changes
+   are touched_slugs as the merge sees them (the parity test below runs the Python original), and
+   each signature is checked against the page's fingerprint at main's head -- where the merge's
+   text comes from -- with the same functions a press signs with, the clinical fingerprint
+   included. Pinned here: a signature drifted on the branch (tick to fix); a page main changed
+   after the request was made (no tick fixes it -- the #895 path); a citation-only change on main
+   (no false alarm); a ticked page main has a newer version of; a row main also changed (a merge
+   conflict); a branch with nothing of its own; every failed read `unknown`, never clean;
+   read-only, and no hash in the payload. */
+
+const MAIN_HEAD_SHA = 'f5'.repeat(20);
+const MOOD_V2 = Buffer.from('# Mood Disorders\n\nSynthetic page source, corrected.\n', 'utf8');
+const MOOD_V2_CITED = Buffer.from('# Mood Disorders\n\nSynthetic page source, corrected (Smith et al., 2020).\n', 'utf8');
+const MSE_V2 = Buffer.from('<!doctype html>\n<title>MSE, revised</title>\n', 'utf8');
+
+function forecastRow(status, extra = {}) {
+  return status === 'reviewed'
+    ? { status, at: '2026-09-29', by: 'Synthetic Reviewer', risk: { kind: 'clinical', level: 'high' }, ...extra }
+    : { status, at: '2026-07-02', by: 'Pending faculty review', risk: { kind: 'clinical', level: 'high' }, reason: 'Synthetic.', ...extra };
+}
+
+/* The branch at BRANCH_HEAD_SHA carries `branchSources`; main at MAIN_HEAD_SHA carries
+   `mainSources`. t_mood.md is signed in the request (main's row is pending) with `signedAgainst`'s
+   fingerprint. Everything else falls through to the shared mock. */
+function forecastMock({
+  comparison, baseRows, splitRows, splitUnreadable = false, compareFails = false, mainTreeFails = false,
+  branchSources = { ...defaultSources(), '01_Core/t_mood.md': MOOD_V2 },
+  mainSources = branchSources,
+  signedAgainst = defaultSources(),
+  clinicalAgainst = null,
+  mainMeta = null,
+  mainRawFails = false,
+  mainShipped = null,
+} = {}) {
+  const files = defaultFiles();
+  files[REVIEWED_PATH].json['t_mood.md'] = forecastRow('reviewed', {
+    contentHash: expectedDigest(files, signedAgainst, 't_mood.md'),
+    ...(clinicalAgainst ? { clinicalHash: expectedClinicalDigest(files, clinicalAgainst, 't_mood.md') } : {}),
+  });
+  const branchRows = files[REVIEWED_PATH].json;
+  const base = baseRows || { ...clone(branchRows), 't_mood.md': forecastRow('pending') };
+  const split = splitRows || base;
+  const serve = value => jsonResponse(200, contentsObject(`${JSON.stringify(value, null, 2)}\n`));
+  const mock = createGithubMock({
+    files,
+    sources: branchSources,
+    beforeRequest: (call) => {
+      if (call.method !== 'GET') return undefined;
+      if (call.git === `ref/heads/${ATTEST_BRANCH}`) return jsonResponse(200, { object: { type: 'commit', sha: BRANCH_HEAD_SHA } });
+      if (call.git === `ref/heads/${BASE_BRANCH}`) return jsonResponse(200, { object: { type: 'commit', sha: MAIN_HEAD_SHA } });
+      if (call.git === `trees/${MAIN_HEAD_SHA}`) {
+        if (mainTreeFails) return jsonResponse(500, { message: 'Synthetic tree failure.' });
+        return jsonResponse(200, {
+          sha: MAIN_HEAD_SHA,
+          truncated: false,
+          tree: Object.entries(mainSources).map(([path, bytes]) => ({ path, mode: '100644', type: 'blob', sha: blobShaOf(bytes), size: bytes.byteLength })),
+        });
+      }
+      const url = new URL(call.url);
+      if (url.pathname.includes('/compare/')) {
+        if (url.pathname !== INCOMING_COMPARE_PATH) return jsonResponse(404, { message: 'Wrong comparison.' });
+        if (compareFails) return jsonResponse(500, { message: 'Synthetic outage.' });
+        return jsonResponse(200, comparison || {
+          ahead_by: 0, behind_by: 1, merge_base_commit: { sha: SPLIT_SHA }, commits: [], files: [],
+        });
+      }
+      const ref = url.searchParams.get('ref');
+      const main = ref === MAIN_HEAD_SHA;
+      if (Object.hasOwn(branchSources, call.path) || Object.hasOwn(mainSources, call.path)) {
+        if (main && mainRawFails) return jsonResponse(500, { message: 'Synthetic read failure.' });
+        const bytes = main ? mainSources[call.path] : branchSources[call.path];
+        return bytes ? jsonResponse(200, contentsObject(bytes)) : jsonResponse(404, { message: 'Synthetic file not found.' });
+      }
+      if (call.path === REVIEWED_PATH && ref === BASE_BRANCH) return serve(base);
+      if (call.path === REVIEWED_PATH && ref === SPLIT_SHA) {
+        return splitUnreadable ? jsonResponse(404, { message: 'Synthetic file not found.' }) : serve(split);
+      }
+      if (call.path === TOPIC_META_PATH && main && mainMeta) return serve(mainMeta);
+      if (call.path === SHIPPED_PAGES_PATH && main && mainShipped) return serve(mainShipped);
+      return undefined;
+    },
+  });
+  return mock;
+}
+
+const BEHIND = {
+  ahead_by: 1,
+  behind_by: 2,
+  merge_base_commit: { sha: SPLIT_SHA },
+  commits: [{ sha: INCOMING_A_SHA, commit: { committer: { date: OLDEST_INCOMING } } }],
+  files: [{ filename: '01_Core/t_mood.md' }],
+};
+
+async function forecastOf(mock, env = ISOLATED_ENV) {
+  const response = await handlerWith(mock, env)(viewRequest({ view: 'batch', mode: 'baseline' }));
+  assert.equal(response.status, 200);
+  return response.json();
+}
+
+test('?view=batch: a signature drifted on the branch is refused as it stands, and re-signing it fixes it', async () => {
+  const mock = forecastMock();
+  const { forecast, sign } = await forecastOf(mock);
+  assert.deepEqual(forecast.signedInRequest, ['t_mood.md']);
+  assert.deepEqual(forecast.conflicts, []);
+  assert.equal(forecast.partial, false);
+  assert.deepEqual(forecast.pages['t_mood.md'], { title: 'Mood Disorders', inRequest: true, okNow: false, resignOk: true });
+  assert.deepEqual(forecast.pages['mse-tool'], { title: 'Mental Status Examination', inRequest: false, okNow: true, resignOk: true });
+  assert.deepEqual(sign.map(item => item.slug).sort(), ['mse-tool', 't_mood.md'], 'the forecast changes no plan');
+  assertReadOnly(mock);
+});
+
+test('THE #895 PATH: main changed a page after the request signed it -- no re-sign on the branch can fix it', async () => {
+  // Signed in the request against the branch's text, which is still current on the branch.
+  const mock = forecastMock({ comparison: BEHIND, signedAgainst: { ...defaultSources(), '01_Core/t_mood.md': MOOD_V2 },
+    mainSources: { ...defaultSources(), '01_Core/t_mood.md': Buffer.from('# Mood Disorders\n\nMain rewrote this.\n') } });
+  const { forecast } = await forecastOf(mock);
+  assert.deepEqual(forecast.pages['t_mood.md'], { title: 'Mood Disorders', inRequest: true, okNow: false, resignOk: false });
+});
+
+test('a citation-only change on main keeps a signature that carries the clinical fingerprint (no false alarm)', async () => {
+  const branchSources = { ...defaultSources(), '01_Core/t_mood.md': MOOD_V2 };
+  const mock = forecastMock({ comparison: BEHIND, branchSources, signedAgainst: branchSources, clinicalAgainst: branchSources,
+    mainSources: { ...defaultSources(), '01_Core/t_mood.md': MOOD_V2_CITED } });
+  const { forecast } = await forecastOf(mock);
+  assert.equal(forecast.pages['t_mood.md'].okNow, true, 'bound by its clinical fingerprint at main');
+  assert.equal(forecast.pages['t_mood.md'].resignOk, true, 're-signing the branch copy binds main\'s clinical text too');
+});
+
+test('a page never signed that main has a newer version of: signing the branch copy would be refused', async () => {
+  const mock = forecastMock({ comparison: BEHIND, mainSources: { ...defaultSources(), '01_Core/t_mood.md': MOOD_V2, '04_Assessment/mse.html': MSE_V2 } });
+  const { forecast } = await forecastOf(mock);
+  assert.deepEqual(forecast.pages['mse-tool'], { title: 'Mental Status Examination', inRequest: false, okNow: true, resignOk: false });
+});
+
+test('a row main also changed since the split is a merge conflict; a row only main changed is not the request\'s', async () => {
+  const files = defaultFiles();
+  const split = { ...clone(files[REVIEWED_PATH].json), 't_mood.md': forecastRow('pending') };
+  // shelf.md was signed before the split; main demoted it since (an honest content edit); the
+  // branch never touched it, so the merge takes main's row and the request does not sign it.
+  split['shelf.md'] = forecastRow('reviewed', { contentHash: 'a'.repeat(40) });
+  const base = { ...clone(split), 't_mood.md': forecastRow('pending', { reason: 'Main reworded the reason.' }),
+    'mse-tool': forecastRow('pending', { reason: 'Only main changed this.' }), 'shelf.md': forecastRow('pending') };
+  const mock = forecastMock({ comparison: BEHIND, baseRows: base, splitRows: split });
+  mock.files[REVIEWED_PATH].json['shelf.md'] = clone(split['shelf.md']);
+  const { forecast } = await forecastOf(mock);
+  assert.deepEqual(forecast.signedInRequest, ['t_mood.md'], 'mse-tool and shelf.md: the merge takes main\'s row');
+  assert.deepEqual(forecast.conflicts, [], 'a reason-only edit is not a status/contentHash change on main');
+  base['t_mood.md'] = forecastRow('reviewed', { contentHash: 'c'.repeat(40) });
+  const again = await forecastOf(forecastMock({ comparison: BEHIND, baseRows: base, splitRows: split }));
+  assert.deepEqual(again.forecast.conflicts, ['t_mood.md']);
+});
+
+test('a branch with nothing of its own says the press will catch up first, and reads nothing more', async () => {
+  const mock = forecastMock({ comparison: { ...BEHIND, behind_by: 0 } });
+  const { forecast } = await forecastOf(mock);
+  assert.equal(forecast.catchesUp, true);
+  assert.equal(forecast.behindBy, 1);
+  assert.deepEqual(forecast.pages, {});
+  assert.equal(mock.calls.some(call => call.git === `trees/${MAIN_HEAD_SHA}`), false);
+});
+
+test('every read the forecast could not finish makes it unknown or partial, never clean', async () => {
+  const lost = await forecastOf(forecastMock({ compareFails: true }));
+  assert.deepEqual(lost.forecast, { reviewRequest: true, baseBranch: BASE_BRANCH, unknown: true });
+  assert.ok(lost.sign.length > 0, 'a failed forecast never costs the preview');
+  const noTree = await forecastOf(forecastMock({ mainTreeFails: true }));
+  assert.equal(noTree.forecast.unknown, true, 'no fingerprint at main, no forecast');
+  const noSplit = await forecastOf(forecastMock({ comparison: BEHIND, splitUnreadable: true }));
+  assert.equal(noSplit.forecast.partial, true);
+  assert.deepEqual(noSplit.forecast.signedInRequest, ['t_mood.md'], 'falls back to the difference from main');
+  const gone = await forecastOf(forecastMock({ comparison: BEHIND, mainSources: { '04_Assessment/mse.html': defaultSources()['04_Assessment/mse.html'] } }));
+  assert.equal(gone.forecast.pages['t_mood.md'].okNow, null, 'a page main no longer has a source for cannot be checked');
+  assert.equal(gone.forecast.pages['t_mood.md'].resignOk, null);
+});
+
+test('with no isolated attestation branch there is no review request to forecast', async () => {
+  const mock = batchMock();
+  const payload = await (await handlerWith(mock)(viewRequest({ view: 'batch', mode: 'baseline' }))).json();
+  assert.deepEqual(payload.forecast, { reviewRequest: false });
+  assert.equal(mock.calls.some(call => new URL(call.url).pathname.includes('/compare/')), false);
+});
+
+test('the forecast sends page names and yes/no only: no hash reaches the browser', async () => {
+  const mock = forecastMock({ comparison: BEHIND });
+  const payload = await forecastOf(mock);
+  const stored = mock.files[REVIEWED_PATH].json['t_mood.md'].contentHash;
+  assert.equal(JSON.stringify(payload).includes(stored), false);
+  assert.equal(/[0-9a-f]{40}/.test(JSON.stringify(payload.forecast)), false);
+  assertReadOnly(mock);
+});
+
+test('the rows the forecast counts as the request\'s are exactly check_attestation_hashes.touched_slugs', async () => {
+  const mock = forecastMock();
+  const head = mock.files[REVIEWED_PATH].json;
+  head['a.md'] = forecastRow('reviewed', { contentHash: '1'.repeat(40) });
+  head['b.md'] = forecastRow('reviewed', { contentHash: '2'.repeat(40), clinicalHash: '3'.repeat(40) });
+  head['c.md'] = forecastRow('reviewed', { contentHash: '4'.repeat(40) });
+  head['d.md'] = forecastRow('pending');
+  const base = clone(head);
+  base['t_mood.md'] = forecastRow('pending');                          // status differs
+  base['a.md'] = { ...head['a.md'], contentHash: '9'.repeat(40) };     // hash differs
+  base['b.md'] = { ...head['b.md'], clinicalHash: '8'.repeat(40), at: '2026-01-01', by: 'Someone' }; // other fields only
+  delete base['c.md'];                                                  // new at head
+  base['d.md'] = forecastRow('pending', { reason: 'Different words.' }); // pending, reason only
+  const parity = forecastMock({ baseRows: base });
+  Object.assign(parity.files[REVIEWED_PATH].json, head);
+  const result = await forecastOf(parity);
+  const repoRoot = new URL('..', import.meta.url).pathname;
+  const python = spawnSync('python3', ['-c', [
+    'import json, sys',
+    "sys.path.insert(0, 'bin')",
+    'import check_attestation_hashes as check',
+    'd = json.load(sys.stdin)',
+    "print(json.dumps(check.touched_slugs(d['base'], d['head'])))",
+  ].join('\n')], { cwd: repoRoot, input: JSON.stringify({ base, head: parity.files[REVIEWED_PATH].json }), encoding: 'utf8' });
+  assert.equal(python.status, 0, python.stderr);
+  const touched = JSON.parse(python.stdout);
+  assert.deepEqual(result.forecast.signedInRequest, touched, 'the console and the CI check agree on which rows the request changes');
+  assert.deepEqual(touched, ['a.md', 'c.md', 't_mood.md'], 'the fixture exercises every rule');
+});
+
+test('a signature whose clinical fingerprint cannot be read at main is unknown, not stale', async () => {
+  const branchSources = { ...defaultSources(), '01_Core/t_mood.md': MOOD_V2 };
+  const mock = forecastMock({ comparison: BEHIND, branchSources, signedAgainst: branchSources, clinicalAgainst: branchSources,
+    // Bytes no earlier test has read: the clinical sha cache is per blob, across tests.
+    mainSources: { ...defaultSources(), '01_Core/t_mood.md': Buffer.from('# Mood Disorders\n\nSynthetic page source, corrected (Jones 2019).\n') },
+    mainRawFails: true });
+  const { forecast } = await forecastOf(mock);
+  assert.equal(forecast.pages['t_mood.md'].okNow, null, 'its citations may be all that moved: it cannot be called stale');
+  assert.equal(forecast.pages['t_mood.md'].resignOk, null);
+});
+
+test('a signed page main no longer lists is unknown, never fine', async () => {
+  const files = defaultFiles();
+  const shipped = clone(files[SHIPPED_PAGES_PATH].json);
+  shipped.pages = shipped.pages.filter(page => page.slug !== 't_mood.md');
+  const { forecast } = await forecastOf(forecastMock({ comparison: BEHIND, mainShipped: shipped }));
+  assert.equal(forecast.pages['t_mood.md'].okNow, null);
 });

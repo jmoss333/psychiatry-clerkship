@@ -5440,7 +5440,7 @@ const BASELINE_STATEMENT = 'I have reviewed this content and attest to it as it 
   + 'clinically accurate, supported by its cited evidence, original, and free of protected health '
   + 'information.';
 
-function baselineHarnessFetch({ pressFails = false } = {}) {
+function baselineHarnessFetch({ pressFails = false, forecast, rollingPr } = {}) {
   let items = [
     { slug: 'anx.md', title: 'Anxiety disorders', kind: 'page', status: 'unreviewed', reason: 'New page awaiting review.', sites: ['ms3'] },
     driftedItem('t_mood.md', 'Mood disorders'),
@@ -5458,7 +5458,12 @@ function baselineHarnessFetch({ pressFails = false } = {}) {
     excluded: [{ slug: 'mse-tool', title: 'MSE', kind: 'tool', was: 'pending',
       reason: 'Its own review label says "draft". Changing that label is a content change (ADR-003 §6), so it is not signed here.' }],
     questions: { sign: [{ id: 'qb_moo_900', category: 'mood', stem: 'A fictional inpatient reports sadness.' }], excluded: [] },
+    ...(forecast ? { forecast } : {}),
   };
+  const branchSync = rollingPr ? {
+    isolated: true, aheadBy: 1, behindBy: 0, rollingPr, rollingPrChecked: true,
+    branch: 'attest/pending', baseBranch: 'main', reasons: [], alarmed: false,
+  } : null;
   const calls = [];
   const fetchImpl = async (url, options = {}) => {
     const parsed = new URL(url, 'https://faculty.example');
@@ -5475,7 +5480,7 @@ function baselineHarnessFetch({ pressFails = false } = {}) {
         questions: { updated: 1, commit: 'https://github.example/commit/questions', signed: ['qb_moo_900'], excluded: [] } });
     }
     if (parsed.searchParams.get('view') === 'batch') return jsonResponse(preview);
-    return jsonResponse(serverState({ items, questions: [] }));
+    return jsonResponse({ ...serverState({ items, questions: [] }), ...(branchSync ? { branchSync } : {}) });
   };
   return { fetchImpl, calls };
 }
@@ -5515,6 +5520,51 @@ test('the baseline is lazy, lists what one press signs and leaves out, and sends
   const receipt = document.getElementById('many-page-receipt');
   assert.match(receipt.textContent, /Signed 1 page or tool\. Attested 1 question\. 1 left out, with the reason below\./);
   assert.ok(document.findAll('a').some(link => link.getAttribute('href') === 'https://github.example/commit/baseline'));
+});
+
+/* The forecast (2026-09-30): before the press, one line says what it leaves undone and whether
+   the review request will then pass its sign-off check -- and it follows the ticks. */
+test('before the press, one line says what it leaves undone and whether the review request will pass', async () => {
+  const forecast = {
+    reviewRequest: true, baseBranch: 'main', behindBy: 0, signedInRequest: ['t_mood.md'], conflicts: [], partial: false,
+    pages: {
+      'anx.md': { title: 'Anxiety disorders', inRequest: false, okNow: true, resignOk: true },
+      't_mood.md': { title: 'Mood disorders', inRequest: true, okNow: false, resignOk: true },
+    },
+  };
+  const { fetchImpl, calls } = baselineHarnessFetch({ forecast, rollingPr: 'https://github.com/jmoss333/psychiatry-clerkship/pull/895' });
+  const { document } = await startHarness({ fetchImpl });
+  await openDetails(document.getElementById('baseline'));
+  const line = () => document.getElementById('baseline-forecast');
+  assert.equal(line().getAttribute('data-request'), 'pass');
+  assert.equal(line().textContent, 'Before you press: Signing 2 pages and attesting 1 question leaves 1 tool still waiting '
+    + 'for you (1 left out; see Left out). Review request #895 should then pass its sign-off check.');
+  assert.equal(line().className, 'resign-progress');
+  assert.equal(document.getElementById('baseline-sign').getAttribute('aria-describedby'), 'baseline-forecast');
+
+  document.getElementById('baseline-include-t_mood-md').click();
+  await flushAsyncWork();
+  assert.equal(line().getAttribute('data-request'), 'refused', 'unticking a page signed in the request changes the forecast');
+  assert.match(line().textContent,
+    /Review request #895 would still be refused\. Mood disorders was signed in the request and has changed since: tick it to re-sign\.$/);
+  assert.equal(line().className, 'session-notice individual', 'a refusal is drawn as a notice that needs a decision');
+  assert.equal(calls.some(call => call.method === 'POST'), false, 'the forecast is not a press');
+
+  document.getElementById('baseline-include-t_mood-md').click();
+  await flushAsyncWork();
+  document.getElementById('baseline-include-anx-md').click();
+  await flushAsyncWork();
+  assert.equal(line().getAttribute('data-request'), 'pass', 'a page not signed in the request never refuses it');
+  assert.match(line().textContent, /leaves 1 page and 1 tool still waiting for you \(1 unticked, 1 left out; see Left out\)/);
+});
+
+test('an older server with no forecast gets an honest "could not be checked", never a pass', async () => {
+  const { fetchImpl } = baselineHarnessFetch();
+  const { document } = await startHarness({ fetchImpl });
+  await openDetails(document.getElementById('baseline'));
+  const line = document.getElementById('baseline-forecast');
+  assert.equal(line.getAttribute('data-request'), 'unknown');
+  assert.match(line.textContent, /Whether the review request will then pass its sign-off check could not be checked\.$/);
 });
 
 test('a baseline press the server did not answer says it may have finished, and reloads the queue', async () => {
