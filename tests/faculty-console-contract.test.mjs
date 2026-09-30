@@ -5526,10 +5526,10 @@ test('the baseline is lazy, lists what one press signs and leaves out, and sends
    the review request will then pass its sign-off check -- and it follows the ticks. */
 test('before the press, one line says what it leaves undone and whether the review request will pass', async () => {
   const forecast = {
-    reviewRequest: true, baseBranch: 'main', behindBy: 0, signedInRequest: ['t_mood.md'], conflicts: [], partial: false,
+    reviewRequest: true, baseBranch: 'main', behindBy: 0, signedInRequest: ['t_mood.md'], partial: false,
     pages: {
-      'anx.md': { title: 'Anxiety disorders', inRequest: false, okNow: true, resignOk: true },
-      't_mood.md': { title: 'Mood disorders', inRequest: true, okNow: false, resignOk: true },
+      'anx.md': { title: 'Anxiety disorders', inRequest: false, okNow: true, resignOk: true, rowChangedOnMain: false },
+      't_mood.md': { title: 'Mood disorders', inRequest: true, okNow: false, resignOk: true, rowChangedOnMain: false },
     },
   };
   const { fetchImpl, calls } = baselineHarnessFetch({ forecast, rollingPr: 'https://github.com/jmoss333/psychiatry-clerkship/pull/895' });
@@ -5537,7 +5537,7 @@ test('before the press, one line says what it leaves undone and whether the revi
   await openDetails(document.getElementById('baseline'));
   const line = () => document.getElementById('baseline-forecast');
   assert.equal(line().getAttribute('data-request'), 'pass');
-  assert.equal(line().textContent, 'Before you press: Signing 2 pages and attesting 1 question leaves 1 tool still waiting '
+  assert.equal(line().textContent, 'Before you press: Signing 2 pages (and attesting 1 question) leaves 1 tool still waiting '
     + 'for you (1 left out; see Left out). Review request #895 should then pass its sign-off check.');
   assert.equal(line().className, 'resign-progress');
   assert.equal(document.getElementById('baseline-sign').getAttribute('aria-describedby'), 'baseline-forecast');
@@ -5565,6 +5565,29 @@ test('an older server with no forecast gets an honest "could not be checked", ne
   const line = document.getElementById('baseline-forecast');
   assert.equal(line.getAttribute('data-request'), 'unknown');
   assert.match(line.textContent, /Whether the review request will then pass its sign-off check could not be checked\.$/);
+});
+
+test('the #895 path: main changed a signed page, so the line says update the branch first -- ticking cannot fix it', async () => {
+  const forecast = {
+    reviewRequest: true, baseBranch: 'main', behindBy: 2, signedInRequest: ['t_mood.md'], partial: false,
+    pages: {
+      'anx.md': { title: 'Anxiety disorders', inRequest: false, okNow: true, resignOk: true, rowChangedOnMain: false },
+      't_mood.md': { title: 'Mood disorders', inRequest: true, okNow: false, resignOk: false, rowChangedOnMain: false },
+    },
+  };
+  const { fetchImpl, calls } = baselineHarnessFetch({ forecast, rollingPr: 'https://github.com/jmoss333/psychiatry-clerkship/pull/895' });
+  const { document } = await startHarness({ fetchImpl });
+  await openDetails(document.getElementById('baseline'));
+  const line = document.getElementById('baseline-forecast');
+  assert.equal(line.getAttribute('data-request'), 'refused');
+  assert.match(line.textContent, /Review request #895 would still be refused\. Main has changed Mood disorders since the request was made, so its signature there no longer matches: update review request #895's branch, then press Check again here and re-sign it\.$/);
+  assert.equal(/Update branch/.test(line.textContent), false, 'no button this repository does not show');
+  document.getElementById('baseline-include-t_mood-md').click();
+  await flushAsyncWork();
+  const after = document.getElementById('baseline-forecast');
+  assert.equal(after.getAttribute('data-request'), 'refused', 'unticking it does not make the request pass');
+  assert.match(after.textContent, /update review request #895's branch, then press Check again here\.?/);
+  assert.equal(calls.some(call => call.method === 'POST'), false);
 });
 
 test('a baseline press the server did not answer says it may have finished, and reloads the queue', async () => {

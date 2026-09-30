@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import nodeFs, { readFileSync } from 'node:fs';
+import nodeOs from 'node:os';
+import nodePath from 'node:path';
 
 import {
   config,
@@ -4206,6 +4208,7 @@ test('?view=incoming needs the faculty key like every other view', async () => {
    read-only, and no hash in the payload. */
 
 const MAIN_HEAD_SHA = 'f5'.repeat(20);
+const OWN_COMPARE_PATH = `/repos/synthetic/faculty-console/compare/${BASE_BRANCH}...${encodeURIComponent(ATTEST_BRANCH)}`;
 const MOOD_V2 = Buffer.from('# Mood Disorders\n\nSynthetic page source, corrected.\n', 'utf8');
 const MOOD_V2_CITED = Buffer.from('# Mood Disorders\n\nSynthetic page source, corrected (Smith et al., 2020).\n', 'utf8');
 const MSE_V2 = Buffer.from('<!doctype html>\n<title>MSE, revised</title>\n', 'utf8');
@@ -4228,8 +4231,18 @@ function forecastMock({
   mainMeta = null,
   mainRawFails = false,
   mainShipped = null,
+  ownFiles = [REVIEWED_PATH],
+  branchMeta = null,
+  shipBank = false,
+  splitSources = null,
 } = {}) {
   const files = defaultFiles();
+  if (branchMeta) files[TOPIC_META_PATH].json = branchMeta;
+  if (shipBank) {
+    files[SHIPPED_PAGES_PATH].json.pages.push({ slug: 'qbank-tool', kind: 'tool', sites: ['ms3'], title: 'Question Bank',
+      source: '04_Assessment/qbank.html', extraSources: [QBANK_PATH], producer: 'site_manifest' });
+    files[REVIEWED_PATH].json['qbank-tool'] = forecastRow('pending');
+  }
   files[REVIEWED_PATH].json['t_mood.md'] = forecastRow('reviewed', {
     contentHash: expectedDigest(files, signedAgainst, 't_mood.md'),
     ...(clinicalAgainst ? { clinicalHash: expectedClinicalDigest(files, clinicalAgainst, 't_mood.md') } : {}),
@@ -4255,24 +4268,30 @@ function forecastMock({
       }
       const url = new URL(call.url);
       if (url.pathname.includes('/compare/')) {
-        if (url.pathname !== INCOMING_COMPARE_PATH) return jsonResponse(404, { message: 'Wrong comparison.' });
         if (compareFails) return jsonResponse(500, { message: 'Synthetic outage.' });
+        if (url.pathname === OWN_COMPARE_PATH) return jsonResponse(200, { files: ownFiles.map(filename => ({ filename })) });
+        if (url.pathname !== INCOMING_COMPARE_PATH) return jsonResponse(404, { message: 'Wrong comparison.' });
         return jsonResponse(200, comparison || {
           ahead_by: 0, behind_by: 1, merge_base_commit: { sha: SPLIT_SHA }, commits: [], files: [],
         });
       }
       const ref = url.searchParams.get('ref');
       const main = ref === MAIN_HEAD_SHA;
+      if (splitSources && ref === SPLIT_SHA && Object.hasOwn(splitSources, call.path)) {
+        return jsonResponse(200, contentsObject(splitSources[call.path]));
+      }
       if (Object.hasOwn(branchSources, call.path) || Object.hasOwn(mainSources, call.path)) {
         if (main && mainRawFails) return jsonResponse(500, { message: 'Synthetic read failure.' });
         const bytes = main ? mainSources[call.path] : branchSources[call.path];
         return bytes ? jsonResponse(200, contentsObject(bytes)) : jsonResponse(404, { message: 'Synthetic file not found.' });
       }
-      if (call.path === REVIEWED_PATH && ref === BASE_BRANCH) return serve(base);
+      if (call.path === REVIEWED_PATH && (ref === BASE_BRANCH || main)) return serve(base);
       if (call.path === REVIEWED_PATH && ref === SPLIT_SHA) {
         return splitUnreadable ? jsonResponse(404, { message: 'Synthetic file not found.' }) : serve(split);
       }
       if (call.path === TOPIC_META_PATH && main && mainMeta) return serve(mainMeta);
+      // `branchMeta` is the branch's own edit: the split and main still carry the original record.
+      if (call.path === TOPIC_META_PATH && branchMeta && (main || ref === SPLIT_SHA)) return serve(defaultFiles()[TOPIC_META_PATH].json);
       if (call.path === SHIPPED_PAGES_PATH && main && mainShipped) return serve(mainShipped);
       return undefined;
     },
@@ -4298,10 +4317,9 @@ test('?view=batch: a signature drifted on the branch is refused as it stands, an
   const mock = forecastMock();
   const { forecast, sign } = await forecastOf(mock);
   assert.deepEqual(forecast.signedInRequest, ['t_mood.md']);
-  assert.deepEqual(forecast.conflicts, []);
   assert.equal(forecast.partial, false);
-  assert.deepEqual(forecast.pages['t_mood.md'], { title: 'Mood Disorders', inRequest: true, okNow: false, resignOk: true });
-  assert.deepEqual(forecast.pages['mse-tool'], { title: 'Mental Status Examination', inRequest: false, okNow: true, resignOk: true });
+  assert.deepEqual(forecast.pages['t_mood.md'], { title: 'Mood Disorders', inRequest: true, okNow: false, resignOk: true, rowChangedOnMain: false });
+  assert.deepEqual(forecast.pages['mse-tool'], { title: 'Mental Status Examination', inRequest: false, okNow: true, resignOk: true, rowChangedOnMain: false });
   assert.deepEqual(sign.map(item => item.slug).sort(), ['mse-tool', 't_mood.md'], 'the forecast changes no plan');
   assertReadOnly(mock);
 });
@@ -4311,7 +4329,7 @@ test('THE #895 PATH: main changed a page after the request signed it -- no re-si
   const mock = forecastMock({ comparison: BEHIND, signedAgainst: { ...defaultSources(), '01_Core/t_mood.md': MOOD_V2 },
     mainSources: { ...defaultSources(), '01_Core/t_mood.md': Buffer.from('# Mood Disorders\n\nMain rewrote this.\n') } });
   const { forecast } = await forecastOf(mock);
-  assert.deepEqual(forecast.pages['t_mood.md'], { title: 'Mood Disorders', inRequest: true, okNow: false, resignOk: false });
+  assert.deepEqual(forecast.pages['t_mood.md'], { title: 'Mood Disorders', inRequest: true, okNow: false, resignOk: false, rowChangedOnMain: false });
 });
 
 test('a citation-only change on main keeps a signature that carries the clinical fingerprint (no false alarm)', async () => {
@@ -4326,7 +4344,7 @@ test('a citation-only change on main keeps a signature that carries the clinical
 test('a page never signed that main has a newer version of: signing the branch copy would be refused', async () => {
   const mock = forecastMock({ comparison: BEHIND, mainSources: { ...defaultSources(), '01_Core/t_mood.md': MOOD_V2, '04_Assessment/mse.html': MSE_V2 } });
   const { forecast } = await forecastOf(mock);
-  assert.deepEqual(forecast.pages['mse-tool'], { title: 'Mental Status Examination', inRequest: false, okNow: true, resignOk: false });
+  assert.deepEqual(forecast.pages['mse-tool'], { title: 'Mental Status Examination', inRequest: false, okNow: true, resignOk: false, rowChangedOnMain: false });
 });
 
 test('a row main also changed since the split is a merge conflict; a row only main changed is not the request\'s', async () => {
@@ -4341,10 +4359,33 @@ test('a row main also changed since the split is a merge conflict; a row only ma
   mock.files[REVIEWED_PATH].json['shelf.md'] = clone(split['shelf.md']);
   const { forecast } = await forecastOf(mock);
   assert.deepEqual(forecast.signedInRequest, ['t_mood.md'], 'mse-tool and shelf.md: the merge takes main\'s row');
-  assert.deepEqual(forecast.conflicts, [], 'a reason-only edit is not a status/contentHash change on main');
-  base['t_mood.md'] = forecastRow('reviewed', { contentHash: 'c'.repeat(40) });
-  const again = await forecastOf(forecastMock({ comparison: BEHIND, baseRows: base, splitRows: split }));
-  assert.deepEqual(again.forecast.conflicts, ['t_mood.md']);
+  // Whole rows, as git sees lines: main reworded t_mood.md's reason while the branch signed it,
+  // and main changed mse-tool's row, which this press would rewrite if ticked.
+  assert.equal(forecast.pages['t_mood.md'].rowChangedOnMain, true);
+  assert.equal(forecast.pages['mse-tool'].rowChangedOnMain, true);
+  const quiet = await forecastOf(forecastMock({ comparison: BEHIND, baseRows: split, splitRows: split }));
+  assert.equal(quiet.forecast.pages['t_mood.md'].rowChangedOnMain, false);
+});
+
+test('a branch identical to main is forecast normally (the press signs main\'s text)', async () => {
+  const { forecast } = await forecastOf(forecastMock({ comparison: { ahead_by: 0, behind_by: 0, merge_base_commit: { sha: SPLIT_SHA }, commits: [], files: [] } }));
+  assert.equal(forecast.catchesUp, undefined);
+  assert.equal(forecast.pages['mse-tool'].resignOk, true);
+});
+
+test('a page whose inputs the branch itself changed is unknown: the merge text is not main\'s', async () => {
+  const own = await forecastOf(forecastMock({ comparison: BEHIND, ownFiles: [REVIEWED_PATH, '01_Core/t_mood.md'] }));
+  assert.equal(own.forecast.pages['t_mood.md'].okNow, null);
+  assert.equal(own.forecast.pages['t_mood.md'].resignOk, null);
+  assert.equal(own.forecast.pages['mse-tool'].resignOk, true, 'a page the branch did not touch is still forecast');
+  const meta = clone(defaultFiles()[TOPIC_META_PATH].json);
+  meta['t_mood.md'].shelfBlueprint = ['branch-only-edit'];
+  const record = await forecastOf(forecastMock({ comparison: BEHIND, ownFiles: [REVIEWED_PATH, TOPIC_META_PATH], branchMeta: meta }));
+  assert.equal(record.forecast.pages['t_mood.md'].okNow, null, 'a record the branch rewrote beyond its sign-off');
+  const signOnly = clone(defaultFiles()[TOPIC_META_PATH].json);
+  signOnly['t_mood.md'].facultyReview = { status: 'reviewed', reviewer: 'Joshua Moss, MD', lastReviewed: '2026-09-30' };
+  const fine = await forecastOf(forecastMock({ comparison: BEHIND, ownFiles: [REVIEWED_PATH, TOPIC_META_PATH], branchMeta: signOnly }));
+  assert.equal(fine.forecast.pages['t_mood.md'].resignOk, true, 'a facultyReview line is a sign-off write, not content');
 });
 
 test('a branch with nothing of its own says the press will catch up first, and reads nothing more', async () => {
@@ -4368,6 +4409,36 @@ test('every read the forecast could not finish makes it unknown or partial, neve
   const gone = await forecastOf(forecastMock({ comparison: BEHIND, mainSources: { '04_Assessment/mse.html': defaultSources()['04_Assessment/mse.html'] } }));
   assert.equal(gone.forecast.pages['t_mood.md'].okNow, null, 'a page main no longer has a source for cannot be checked');
   assert.equal(gone.forecast.pages['t_mood.md'].resignOk, null);
+});
+
+test('the question bank: statuses the request attested are not content; a bank the branch rewrote is unknown', async () => {
+  const bankBytes = bank => Buffer.from(`${JSON.stringify(bank, null, 2)}\n`, 'utf8');
+  const original = makeBank([validItem(), validItem({ id: 'qb_moo_901', stem: stems[1] })]);
+  const attested = clone(original);
+  attested.items[0].status = 'attested';
+  const mainAdded = makeBank([...clone(original).items, validItem({ id: 'qb_moo_903', stem: stems[2] })]);
+  const withBank = bank => ({ ...defaultSources(), '01_Core/t_mood.md': MOOD_V2,
+    '04_Assessment/qbank.html': Buffer.from('<!doctype html>\n<title>Question bank</title>\n', 'utf8'), [QBANK_PATH]: bankBytes(bank) });
+  const run = branchBank => forecastOf(forecastMock({ comparison: BEHIND, shipBank: true, ownFiles: [REVIEWED_PATH, QBANK_PATH],
+    branchSources: withBank(branchBank), mainSources: withBank(mainAdded), splitSources: withBank(original) }));
+  // The request only attested a question (a status: governance, not content); main added one.
+  const statusOnly = await run(attested);
+  assert.ok(statusOnly.forecast.pages['qbank-tool'], 'the bank page is forecast');
+  assert.equal(statusOnly.forecast.pages['qbank-tool'].resignOk, false, 'main has a newer bank: said, not unknown');
+  // The branch itself rewrote a stem: the merge's bank is neither main's nor the branch's.
+  const rewritten = clone(attested);
+  rewritten.items[1].stem = stems[0];
+  const own = await run(rewritten);
+  assert.equal(own.forecast.pages['qbank-tool'].resignOk, null);
+  assert.equal(own.forecast.pages['qbank-tool'].okNow, null);
+  assert.equal(own.forecast.pages['mse-tool'].resignOk, true, 'pages without the bank are still forecast');
+});
+
+test("a cut-off list of the branch's own files makes the whole forecast unknown", async () => {
+  const many = [REVIEWED_PATH, ...Array.from({ length: 299 }, (_, index) => `zz/generated-${index}.txt`)];
+  const { forecast, sign } = await forecastOf(forecastMock({ comparison: BEHIND, ownFiles: many }));
+  assert.deepEqual(forecast, { reviewRequest: true, baseBranch: BASE_BRANCH, unknown: true });
+  assert.ok(sign.length > 0);
 });
 
 test('with no isolated attestation branch there is no review request to forecast', async () => {
@@ -4433,4 +4504,66 @@ test('a signed page main no longer lists is unknown, never fine', async () => {
   shipped.pages = shipped.pages.filter(page => page.slug !== 't_mood.md');
   const { forecast } = await forecastOf(forecastMock({ comparison: BEHIND, mainShipped: shipped }));
   assert.equal(forecast.pages['t_mood.md'].okNow, null);
+});
+
+test('okNow and resignOk agree with attestation_hash.ledger_hash_report, the rule --strict applies', async (t) => {
+  const files = defaultFiles();
+  const REWRITTEN = Buffer.from('# Mood Disorders\n\nMain rewrote this.\n', 'utf8');
+  const withMood = bytes => ({ ...defaultSources(), '01_Core/t_mood.md': bytes });
+  const cases = [
+    { name: 'drifted on the branch (tick fixes)', branch: withMood(MOOD_V2), main: withMood(MOOD_V2), signedAgainst: defaultSources() },
+    { name: 'the #895 path (main changed it)', branch: withMood(MOOD_V2), main: withMood(REWRITTEN), signedAgainst: withMood(MOOD_V2) },
+    { name: 'citation-only change on main', branch: withMood(MOOD_V2), main: withMood(MOOD_V2_CITED), signedAgainst: withMood(MOOD_V2), clinical: true },
+    { name: 'unbound: a clinical fingerprint but no content hash', branch: withMood(MOOD_V2), main: withMood(MOOD_V2), signedAgainst: withMood(MOOD_V2), clinical: true, unbound: true },
+  ];
+  const repoRoot = new URL('..', import.meta.url).pathname;
+  const temp = nodeFs.mkdtempSync(nodePath.join(nodeOs.tmpdir(), 'forecast-parity-'));
+  t.after(() => nodeFs.rmSync(temp, { recursive: true, force: true }));
+  const pythonCases = [];
+  const jsFacts = [];
+  for (const [index, entry] of cases.entries()) {
+    const mock = forecastMock({ comparison: BEHIND, branchSources: entry.branch, mainSources: entry.main,
+      signedAgainst: entry.signedAgainst, clinicalAgainst: entry.clinical ? entry.signedAgainst : null });
+    const row = clone(mock.files[REVIEWED_PATH].json['t_mood.md']);
+    if (entry.unbound) {
+      delete row.contentHash;
+      mock.files[REVIEWED_PATH].json['t_mood.md'] = clone(row);
+    }
+    const { forecast } = await forecastOf(mock);
+    jsFacts.push(forecast.pages['t_mood.md']);
+    const root = nodePath.join(temp, `case${index}`);
+    for (const [source, bytes] of Object.entries(entry.main)) {
+      nodeFs.mkdirSync(nodePath.dirname(nodePath.join(root, source)), { recursive: true });
+      nodeFs.writeFileSync(nodePath.join(root, source), bytes);
+    }
+    // What a press on the branch would store: the branch copy's content and clinical hashes.
+    const resign = { ...row, contentHash: expectedDigest(files, entry.branch, 't_mood.md'),
+      clinicalHash: expectedClinicalDigest(files, entry.branch, 't_mood.md') };
+    pythonCases.push({ root, row, resign });
+  }
+  const python = spawnSync('python3', ['-c', [
+    'import json, sys',
+    "sys.path.insert(0, 'bin')",
+    'import check_attestation_hashes as check',
+    'd = json.load(sys.stdin)',
+    'out = []',
+    "for c in d['cases']:",
+    "    def cls(entry):",
+    "        r = check.ledger_hash_report(c['root'], {'t_mood.md': entry}, d['shipped'], d['meta'])",
+    "        if 't_mood.md' in r['bound']: return True",
+    "        if 't_mood.md' in r['stale'] or 't_mood.md' in r['unbound'] or 't_mood.md' in r['malformed']: return False",
+    '        return None',
+    "    out.append([cls(c['row']), cls(c['resign'])])",
+    'print(json.dumps(out))',
+  ].join('\n')], {
+    cwd: repoRoot,
+    input: JSON.stringify({ cases: pythonCases, shipped: files[SHIPPED_PAGES_PATH].json, meta: files[TOPIC_META_PATH].json }),
+    encoding: 'utf8',
+  });
+  assert.equal(python.status, 0, python.stderr);
+  const verdicts = JSON.parse(python.stdout);
+  cases.forEach((entry, index) => {
+    assert.deepEqual([jsFacts[index].okNow, jsFacts[index].resignOk], verdicts[index], `${entry.name}: the console and the CI rule disagree`);
+  });
+  assert.deepEqual(verdicts, [[false, true], [false, false], [true, true], [false, true]], 'the fixtures exercise every outcome');
 });

@@ -58,7 +58,7 @@ test('THE #895 PATH: a page signed in the request that main has changed since is
   for (const chosen of [ALL, new Set()]) {
     const result = run({ chosen, forecast: forecastWith({}, pages) });
     assert.equal(result.request, 'refused');
-    assert.match(result.text, /Main has changed Question Bank since the request was made: on the request's GitHub page press "Update branch", then press Check again here\./);
+    assert.match(result.text, /Main has changed Question Bank since the request was made, so its signature there no longer matches: update review request #895's branch, then press Check again here and re-sign it\./);
   }
 });
 
@@ -88,10 +88,15 @@ test('a page signed in the request that this press cannot sign points to Left ou
   assert.match(result.text, /Daily Review was signed in the request and has changed since, but cannot be signed on this press; see Left out\.$/);
 });
 
-test('main also changed a row the request signs: a merge conflict, not a pass', () => {
-  const result = run({ forecast: forecastWith({ conflicts: ['shelf-mode.html'] }) });
+test('main also changed a row the request signs, or a ticked row: a merge conflict, not a pass', () => {
+  const pages = facts({ 'shelf-mode.html': { ...fact('Shelf Mode', true, true, true), rowChangedOnMain: true } });
+  const result = run({ forecast: forecastWith({}, pages) });
   assert.equal(result.request, 'refused');
-  assert.match(result.text, /Main has changed Shelf Mode since the request was made/);
+  assert.match(result.text, /Main also changed the sign-off record of Shelf Mode since the request was made, and the two versions have to be joined first: update review request #895's branch \(resolving the conflict if GitHub reports one\), then press Check again here\./);
+  const ticked = facts({ 'communication-practice.html': { ...fact('What Do You Say Next?', false, false, true), rowChangedOnMain: true } });
+  assert.equal(run({ forecast: forecastWith({}, ticked) }).request, 'refused', 'a ticked row main changed is rewritten by this press: a conflict too');
+  assert.equal(run({ chosen: new Set(['review.html', 'sp-interview.html']), forecast: forecastWith({}, ticked) }).request, 'pass',
+    'unticked and outside the request, main\'s change to its row is not the request\'s');
 });
 
 test('a signature made before fingerprints is refused anywhere until re-signed', () => {
@@ -99,7 +104,9 @@ test('a signature made before fingerprints is refused anywhere until re-signed',
   const pages = facts({ 'legacy.md': fact('Legacy Page', false, false, true) });
   const result = run({ sign, chosen: ALL, forecast: forecastWith({}, pages) });
   assert.equal(result.request, 'refused');
-  assert.match(result.text, /Legacy Page was signed before fingerprints existed, and the check refuses that anywhere until it is re-signed: tick it\./);
+  assert.match(result.text, /Legacy Page was signed before fingerprints existed, and the check refuses such a signature until it is re-signed: tick it\./);
+  const inRequest = run({ sign, chosen: ALL, forecast: forecastWith({}, facts({ 'legacy.md': fact('Legacy Page', true, false, true) })) });
+  assert.equal((inRequest.text.match(/Legacy Page/g) || []).length, 1, 'said once, not twice with two explanations');
   const ticked = run({ sign, chosen: new Set([...ALL, 'legacy.md']), forecast: forecastWith({}, pages) });
   assert.equal(ticked.request, 'pass');
 });
@@ -153,7 +160,7 @@ test('nouns follow each item\'s kind, and questions are counted', () => {
   const pages = { 'a.md': fact('A', false, true, true), 'b.md': fact('B', false, true, true), 't.html': fact('T', false, true, true) };
   const questions = { sign: [{ id: 'q1' }, { id: 'q2' }], excluded: [{ id: 'q3', reason: 'A warning.' }] };
   const result = pressForecast({ sign, excluded: [], chosen: new Set(['a.md', 't.html']), questions, forecast: forecastWith({}, pages), pullRequestUrl: PR });
-  assert.match(result.text, /^Signing 1 page and 1 tool and attesting 2 questions leaves 1 page and 1 question still waiting for you \(1 unticked, 1 left out; see Left out\)\./);
+  assert.match(result.text, /^Signing 1 page and 1 tool \(and attesting 2 questions\) leaves 1 page and 1 question still waiting for you \(1 unticked, 1 left out; see Left out\)\./);
   const onlyQuestions = pressForecast({ sign, excluded: [], chosen: new Set(), questions, forecast: forecastWith({}, pages), pullRequestUrl: PR });
   assert.match(onlyQuestions.text, /^Attesting 2 questions leaves 2 pages and 1 tool and 1 question still waiting for you/);
 });
@@ -172,4 +179,20 @@ test('names are joined in plain English and shortened past three; the request is
   assert.equal(reviewRequestName('https://github.com/o/r/pulls'), 'the review request');
   assert.equal(reviewRequestName(null), 'the review request');
   assert.match(pressForecast({ sign: SIGN, excluded: [], chosen: ALL, forecast: forecastWith() }).text, /The review request should then pass/);
+});
+
+test('facts that are missing or malformed are unknown, never a pass', () => {
+  const noFacts = run({ forecast: forecastWith({ signedInRequest: ['ghost.html'] }) });
+  assert.equal(noFacts.request, 'unknown', 'a page the request signs but the server sent no facts for');
+  assert.match(noFacts.text, /could not be checked for ghost\.html\.$/);
+  assert.equal(run({ forecast: { ...forecastWith(), signedInRequest: undefined } }).request, 'unknown');
+  const asItStands = pressForecast({ sign: SIGN, excluded: [], chosen: new Set(), forecast: { reviewRequest: true, unknown: true }, pullRequestUrl: PR });
+  assert.equal(asItStands.text, 'Nothing is ticked. Whether review request #895 passes its sign-off check as it stands could not be checked.');
+});
+
+test('a page signed in the request, outside both lists, whose re-sign would bind: unknown, not "see Left out"', () => {
+  const pages = facts({ 'orphan.html': fact('Orphan', true, false, true) });
+  const result = run({ forecast: forecastWith({}, pages) });
+  assert.equal(result.request, 'unknown');
+  assert.doesNotMatch(result.text, /Left out/);
 });

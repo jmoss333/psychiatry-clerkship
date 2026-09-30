@@ -9,14 +9,20 @@
    WHERE THE FACTS COME FROM. The server runs that check's own rule (attest.mjs,
    computePressForecast) and sends, per page, whether it is signed in the request, whether its
    signature still binds the text the merge will have (`okNow`), and whether a signature made on
-   this press would (`resignOk`) -- page names and yes/no/unknown only, never a hash. This file
-   only combines those facts with the ticks and says them in plain words:
+   this press would (`resignOk`), and whether main changed its sign-off row since the split
+   (`rowChangedOnMain`) -- page names and yes/no/unknown only, never a hash. This file only
+   combines those facts with the ticks and says them in plain words:
      * signed in the request, changed on the branch since   -> tick it to re-sign
-     * signed in the request, and main has changed it since -> update the branch first (no press
-                                                               here can fix it: a press signs
-                                                               the branch's copy)
+     * signed in the request, and main has changed it since -> update the request's branch first,
+                                                               then re-sign (no press here can
+                                                               fix it: a press signs the
+                                                               branch's copy)
+     * main also changed its sign-off row                   -> update the branch first (git has
+                                                               two versions of that row to join)
      * ticked, but main has a newer version                 -> untick it, or update first
-     * signed before fingerprints existed and not re-signed -> the check refuses those anywhere
+     * signed before fingerprints existed and not re-signed -> the check refuses that signature
+   The fix never says "press Update branch": that GitHub button is off in this repository
+   (allow_update_branch is false), so the line says what has to happen, not which button.
    HONESTY. An older server, a read that failed or ran out of time, or a page it could not
    fingerprint makes the line say it could not tell. It never reads as passing unless every page
    that matters was checked, and it forecasts only the sign-off check: the request's build and
@@ -30,6 +36,8 @@ const text = value => (typeof value === 'string' ? value : '');
 const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`;
 const cap = value => value.charAt(0).toUpperCase() + value.slice(1);
+
+const itThem = (names, one, many) => (names.length === 1 ? one : many);
 
 function joinNames(names) {
   const shown = names.slice(0, MAX_NAMED);
@@ -74,10 +82,10 @@ export function pressForecast({ sign, excluded, chosen, questions = null, foreca
   // ── what the press leaves waiting ──
   let first = 'Nothing is ticked.';
   if (anything) {
-    const what = [
-      pickedItems.length ? `signing ${itemNoun(pickedItems)}` : null,
-      questionCount ? `attesting ${plural(questionCount, 'question', 'questions')}` : null,
-    ].filter(Boolean).join(' and ');
+    const questionPart = questionCount ? `attesting ${plural(questionCount, 'question', 'questions')}` : null;
+    const what = pickedItems.length
+      ? `signing ${itemNoun(pickedItems)}${questionPart ? ` (and ${questionPart})` : ''}`
+      : questionPart;
     const unticked = signList.filter(item => !picked.has(item.slug));
     const leftQuestions = list(questions?.excluded).length;
     const waiting = [itemNoun([...unticked, ...leftList]), leftQuestions ? plural(leftQuestions, 'question', 'questions') : '']
@@ -96,8 +104,11 @@ export function pressForecast({ sign, excluded, chosen, questions = null, foreca
   const request = reviewRequestName(pullRequestUrl);
   const Request = cap(request);
   const base = text(forecast?.baseBranch) || 'main';
-  const unknown = detail => ({ request: 'unknown', text: `${first} Whether ${request} will then pass its sign-off check could not be checked${detail}.` });
-  if (!forecast || forecast.unknown === true || !isRecord(forecast.pages)) {
+  const unknown = detail => ({
+    request: 'unknown',
+    text: `${first} Whether ${request} ${anything ? 'will then pass' : 'passes'} its sign-off check${anything ? '' : ' as it stands'} could not be checked${detail}.`,
+  });
+  if (!forecast || forecast.unknown === true || !isRecord(forecast.pages) || !Array.isArray(forecast.signedInRequest)) {
     return unknown(forecast?.timedOut ? ' in time' : '');
   }
   if (forecast.catchesUp === true) {
@@ -114,11 +125,15 @@ export function pressForecast({ sign, excluded, chosen, questions = null, foreca
   const titleOf = slug => text(facts[slug]?.title) || titles.get(slug) || slug;
   const inList = new Set(signList.map(item => item.slug));
   const relevant = [...new Set([
+    ...forecast.signedInRequest.filter(slug => typeof slug === 'string'),
     ...Object.keys(facts).filter(slug => facts[slug]?.inRequest === true),
     ...picked,
   ])].sort();
+  const inLeft = new Set(leftList.map(item => item.slug));
+  const unboundSlugs = new Set([...signList, ...leftList].filter(item => item.was === 'unbound' && !picked.has(item.slug)).map(item => item.slug));
 
   const brokenByMain = [];
+  const rowConflicts = [];
   const tickToFix = [];
   const cannotSign = [];
   const untick = [];
@@ -126,6 +141,8 @@ export function pressForecast({ sign, excluded, chosen, questions = null, foreca
   for (const slug of relevant) {
     const fact = facts[slug];
     if (!isRecord(fact)) { unchecked.push(slug); continue; }
+    // Main changed this page's sign-off row too: git must join two versions of it first.
+    if (fact.rowChangedOnMain === true) { rowConflicts.push(slug); continue; }
     if (picked.has(slug)) {
       // Signed on this press: only whether a signature on the branch's copy binds main's text counts.
       if (fact.resignOk === null || fact.resignOk === undefined) unchecked.push(slug);
@@ -138,19 +155,25 @@ export function pressForecast({ sign, excluded, chosen, questions = null, foreca
     // Not signed now: its signature in the request stands or falls as it is.
     if (fact.okNow === null || fact.okNow === undefined) { unchecked.push(slug); continue; }
     if (fact.okNow === true) continue;
+    if (unboundSlugs.has(slug)) continue; // said once, below
     if (fact.resignOk === false) brokenByMain.push(slug);
     else if (inList.has(slug) && fact.resignOk === true) tickToFix.push(slug);
-    else if (!inList.has(slug) && fact.resignOk === true) cannotSign.push(slug);
+    else if (inLeft.has(slug) && fact.resignOk === true) cannotSign.push(slug);
     else unchecked.push(slug);
   }
-  const needsUpdate = [...new Set([...brokenByMain, ...list(forecast.conflicts)])].sort();
-  const unbound = [...signList, ...leftList].filter(item => item.was === 'unbound' && !picked.has(item.slug));
+  const unbound = [...signList, ...leftList].filter(item => unboundSlugs.has(item.slug));
 
-  const itThem = (names, one, many) => (names.length === 1 ? one : many);
+  const Base = base === 'main' ? 'Main' : cap(base);
   const reasons = [];
-  if (needsUpdate.length) {
-    reasons.push(`${base === 'main' ? 'Main' : cap(base)} has changed ${joinNames(needsUpdate.map(titleOf))} since the request was made: `
-      + 'on the request\'s GitHub page press "Update branch", then press Check again here.');
+  if (brokenByMain.length) {
+    reasons.push(`${Base} has changed ${joinNames(brokenByMain.map(titleOf))} since the request was made, so `
+      + `${itThem(brokenByMain, 'its signature there no longer matches', 'their signatures there no longer match')}: `
+      + `update ${request}'s branch, then press Check again here and re-sign ${itThem(brokenByMain, 'it', 'them')}.`);
+  }
+  if (rowConflicts.length) {
+    reasons.push(`${Base} also changed the sign-off ${itThem(rowConflicts, 'record', 'records')} of `
+      + `${joinNames(rowConflicts.map(titleOf))} since the request was made, and the two versions have to be joined first: `
+      + `update ${request}'s branch (resolving the conflict if GitHub reports one), then press Check again here.`);
   }
   if (tickToFix.length) {
     reasons.push(`${joinNames(tickToFix.map(titleOf))} ${itThem(tickToFix, 'was', 'were')} signed in the request and `
@@ -161,13 +184,13 @@ export function pressForecast({ sign, excluded, chosen, questions = null, foreca
       + `${itThem(cannotSign, 'has', 'have')} changed since, but cannot be signed on this press; see Left out.`);
   }
   if (untick.length) {
-    reasons.push(`${base === 'main' ? 'Main' : cap(base)} has a newer version of ${joinNames(untick.map(titleOf))}, so signing `
+    reasons.push(`${Base} has a newer version of ${joinNames(untick.map(titleOf))}, so signing `
       + `${itThem(untick, 'it', 'them')} here would be refused: untick ${itThem(untick, 'it', 'them')}, or update the branch first.`);
   }
   if (unbound.length) {
     const inPress = unbound.filter(item => inList.has(item.slug));
     reasons.push(`${joinNames(unbound.map(item => titleOf(item.slug)))} ${itThem(unbound, 'was', 'were')} signed before `
-      + `fingerprints existed, and the check refuses that anywhere until ${itThem(unbound, 'it is', 'they are')} re-signed`
+      + `fingerprints existed, and the check refuses such a signature until it is re-signed`
       + (inPress.length === unbound.length ? `: tick ${itThem(unbound, 'it', 'them')}.` : '; see Left out.'));
   }
 

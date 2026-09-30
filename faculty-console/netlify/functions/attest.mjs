@@ -1103,6 +1103,25 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
     };
   }
 
+  /**
+   * The files the attestation branch itself changed since it split from the base (the base's
+   * side of a three-dot compare, reversed). Read-only; the pre-press forecast uses it to prove
+   * the branch carries sign-off writes only.
+   */
+  async function branchOwnFiles() {
+    const response = await githubRequest(
+      fetchImpl,
+      `${GITHUB_API}/repos/${settings.repo}/compare/`
+        + `${encodeURIComponent(settings.baseBranch)}...${encodeURIComponent(settings.branch)}`,
+      { headers: githubHeaders(settings.token) },
+    );
+    const comparison = await githubJson(response);
+    if (!Array.isArray(comparison.files)) throw new GithubError('github_response_invalid', 502);
+    const files = comparison.files.filter(isRecord).map(file => file.filename)
+      .filter(name => typeof name === 'string' && name);
+    return { files, truncated: files.length >= 300 };
+  }
+
   /** The merged pull request into the base branch that brought `sha`, or null. Read-only. */
   async function pullRequestForCommit(sha) {
     const response = await githubRequest(
@@ -1130,7 +1149,7 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
 
   return {
     read, readRaw, readText, readTree, write, writeText, head, headOf, writeAtHead,
-    listCommits, gitCommit, compareBranchToBase, pullRequestForCommit,
+    listCommits, gitCommit, compareBranchToBase, branchOwnFiles, pullRequestForCommit,
     // Identity for per-deployment memo caches (the Re-sign by change diffs): the fetch
     // implementation, exactly as the tree cache is keyed.
     cacheIdentity: typeof fetchImpl === 'function' ? fetchImpl : null,
@@ -3331,27 +3350,31 @@ async function commitContentBatch({ repository, settings, body, attester }) {
 // fact, by reading CI: #895 was refused by `bin/check_attestation_hashes.py --strict` because
 // two of its signatures were for text that had changed since, and the fix was one more press.
 // This gives the console the facts to say so before the click, by RUNNING that check's rule
-// rather than approximating it:
+// (attestation_hash.ledger_hash_report + touched_slugs) rather than approximating it:
 //   · the rows the request changes are touched_slugs as the merge will see them: the branch's
 //     own changes since the split (status or contentHash) that main does not already hold;
-//   · a row fails when its signature does not bind the page's text at the merge. The request
-//     carries sign-off writes only (a content change in it fails governance separation L3), so
-//     the text at the merge is main's: each page is fingerprinted at main's head with the same
-//     functions a press signs with (digestForSlug, boundBy -- content hash, or the clinical
-//     fingerprint when only citations moved), and compared with its stored row;
-//   · a page re-signed on this press is bound to the BRANCH's copy, so it passes only when the
-//     branch's fingerprint equals main's.
-// Per page it returns { title, inRequest, okNow, resignOk } (true / false / null = could not
-// tell), plus the rows main also changed since the split (a merge conflict, not a pass). The
-// console combines them with the ticks (press-forecast.mjs). Read-only, page names and booleans
-// only (no hash leaves the server), bounded by FORECAST_BUDGET_MS, and every failed read is
-// `unknown`, never clean. The preview never fails because its forecast did.
+//   · a row fails when its signature does not bind the page's text at the merge. The merge's
+//     text is main's for every page whose inputs the branch did not itself change -- and that
+//     is CHECKED, not assumed (branchOwnFiles): a page the branch changed is reported unknown;
+//   · a row binds exactly as the Python report classifies it: no contentHash (unbound), a bad
+//     hash (malformed) or a bad clinicalHash fail; the content hash matches, or the clinical
+//     fingerprint does when only citations moved; a page main no longer lists is unknown here
+//     (the Python report fails it unless it is a named legacy row);
+//   · a page re-signed on this press is bound to the BRANCH's copy (content hash, plus its
+//     clinical fingerprint when that can be computed), so it passes only if that binds main's.
+// Per page { title, inRequest, okNow, resignOk, rowChangedOnMain } (true / false / null = could
+// not tell): rowChangedOnMain is main changing the page's sign-off ROW since the split, which
+// git has to reconcile with the branch's. Read-only, page names and yes/no only (no hash leaves
+// the server), bounded by FORECAST_BUDGET_MS, and every failed read is `unknown`, never clean.
+// The preview never fails because its forecast did. tests/faculty-console-handler.test.mjs runs
+// the Python rule on the same fixtures to pin the agreement.
 const FORECAST_BUDGET_MS = 5000;
+const HASH40 = /^[0-9a-f]{40}$/;
+const SIGN_OFF_FILES = new Set([REVIEWED_PATH, TOPIC_META_PATH, QBANK_PATH]);
 const forecastRowKey = row => (isRecord(row) ? `${row.status ?? ''}\u0000${row.contentHash ?? ''}` : null);
 
-/** The digest inputs at the base branch's head: listing, tree and topic_meta from ONE commit. */
-async function readBaseDigestInputs(repository, settings) {
-  const head = await repository.headOf(settings.baseBranch);
+/** The digest inputs at one commit of the base branch: listing, tree and topic_meta together. */
+async function readDigestInputsAt(repository, head) {
   const [shippedFile, metaFile, listed] = await Promise.all([
     repository.read(SHIPPED_PAGES_PATH, { ref: head }),
     repository.read(TOPIC_META_PATH, { ref: head }),
@@ -3373,54 +3396,108 @@ function titleIn(shipped, slug) {
   return page ? page.title : '';
 }
 
-async function computePressForecast(repository, settings, { reviewed, digestInputs, candidates }) {
+/** Does this stored row bind the text in `inputs`? Mirrors ledger_hash_report's classes. */
+function rowBindsAt(row, slug, inputs, digest) {
+  if (!isRecord(row) || row.status !== 'reviewed') return true; // pending claims nothing
+  if (!sourcesForSlug(inputs.shipped, slug).length) return null; // legacy, or unshipped: not decidable here
+  if (typeof row.contentHash !== 'string' || !HASH40.test(row.contentHash)) return false; // unbound / malformed
+  if (row.clinicalHash !== undefined && !hasClinicalHash(row)) return false; // malformed clinical
+  if (!digest) return null; // a source missing at that commit
+  if (row.contentHash === digest) return true;
+  if (!hasClinicalHash(row)) return false;
+  const clinical = clinicalDigestForSlug(slug, inputs);
+  return clinical === null ? null : clinical === row.clinicalHash;
+}
+
+async function computePressForecast(repository, settings, { reviewed, digestInputs, signable }) {
   const baseBranch = settings.baseBranch;
   const comparison = await repository.compareBranchToBase();
   const behindBy = comparison.behindBy;
   if (!Number.isInteger(behindBy)) return { reviewRequest: true, baseBranch, unknown: true };
-  // Nothing of its own: a press fast-forwards the branch to main first (ensureBranchFresh) and
-  // then signs whatever needs a signature THERE -- possibly pages this preview did not list.
-  if (comparison.aheadBy === 0) {
-    return { reviewRequest: true, baseBranch, behindBy, catchesUp: behindBy > 0, signedInRequest: [], conflicts: [], pages: {}, partial: false };
+  // Nothing of its own while main has moved: a press fast-forwards the branch first
+  // (ensureBranchFresh) and then signs whatever needs a signature THERE, which can include
+  // pages this preview never listed. Said, not forecast.
+  if (comparison.aheadBy === 0 && behindBy > 0) {
+    return { reviewRequest: true, baseBranch, behindBy, catchesUp: true, signedInRequest: [], pages: {}, partial: false };
   }
   let partial = false;
-  const baseRows = (await repository.read(REVIEWED_PATH, { ref: baseBranch })).json;
+  const mainHead = await repository.headOf(baseBranch);
+  const [baseFile, own, base] = await Promise.all([
+    repository.read(REVIEWED_PATH, { ref: mainHead }),
+    comparison.aheadBy === 0 ? { files: [], truncated: false } : repository.branchOwnFiles(),
+    readDigestInputsAt(repository, mainHead),
+  ]);
+  const baseRows = baseFile.json;
   if (!isRecord(baseRows)) return { reviewRequest: true, baseBranch, unknown: true };
-  let splitRows = behindBy ? null : baseRows;
-  if (!splitRows && comparison.mergeBaseSha) {
+  // A cut-off list of the branch's own files cannot prove any page's merge text is main's.
+  if (own.truncated) return { reviewRequest: true, baseBranch, unknown: true };
+
+  const splitSha = behindBy ? comparison.mergeBaseSha : '';
+  const readAtSplit = async (path) => {
+    if (!behindBy) return null;
+    if (!splitSha) return undefined;
     try {
-      const split = (await repository.read(REVIEWED_PATH, { ref: comparison.mergeBaseSha })).json;
-      if (isRecord(split)) splitRows = split;
+      return (await repository.read(path, { ref: splitSha })).json;
     } catch {
-      /* partial, below */
+      return undefined;
     }
+  };
+  let splitRows = behindBy ? await readAtSplit(REVIEWED_PATH) : baseRows;
+  if (!isRecord(splitRows)) {
+    splitRows = null;
+    partial = true;
   }
-  if (!splitRows) partial = true;
   const rows = isRecord(reviewed) ? reviewed : {};
   const signedInRequest = Object.keys(rows).filter((slug) => {
     const key = forecastRowKey(rows[slug]);
     if (key === null || key === forecastRowKey(baseRows[slug])) return false;
     return splitRows ? key !== forecastRowKey(splitRows[slug]) : true;
   }).sort();
-  // Main changed the same row since the split: git has to reconcile two versions of it.
-  const conflicts = splitRows
-    ? signedInRequest.filter(slug => forecastRowKey(baseRows[slug]) !== forecastRowKey(splitRows[slug]))
-    : [];
 
-  const base = await readBaseDigestInputs(repository, settings);
+  // What the branch changed itself, beyond sign-off writes, makes those pages' merge text
+  // something other than main's: unknown, never guessed.
+  const ownContent = new Set(own.files.filter(path => !SIGN_OFF_FILES.has(path)));
   const inRequest = new Set(signedInRequest);
-  const scope = [...new Set([...signedInRequest, ...candidates])].sort();
+  const scope = [...new Set([...signedInRequest, ...signable])].sort();
+  const branchChanged = new Set();
+  for (const slug of scope) {
+    if (sourcesForSlug(base.shipped, slug).some(path => ownContent.has(path))) branchChanged.add(slug);
+  }
+  if (own.files.includes(TOPIC_META_PATH)) {
+    const splitMeta = await readAtSplit(TOPIC_META_PATH);
+    if (!isRecord(splitMeta) && behindBy) partial = true;
+    const reference = isRecord(splitMeta) ? splitMeta : base.topicMeta;
+    for (const slug of scope) {
+      if (topicMetaRecordText(digestInputs.topicMeta, slug) !== topicMetaRecordText(reference, slug)) branchChanged.add(slug);
+    }
+  }
+  if (own.files.includes(QBANK_PATH) && digestInputs.tree.get(QBANK_PATH) !== base.tree.get(QBANK_PATH)) {
+    // The bank's fingerprint ignores statuses, so this is a content difference: whose?
+    let splitBank = null;
+    if (behindBy && splitSha) {
+      try {
+        const raw = await repository.readRaw(QBANK_PATH, { maxBytes: MAX_BANK_BYTES, ref: splitSha });
+        splitBank = sourceBlobSha(QBANK_PATH, raw.bytes);
+      } catch {
+        splitBank = null;
+      }
+    }
+    if (splitBank === null || splitBank !== digestInputs.tree.get(QBANK_PATH)) {
+      for (const slug of scope) if (sourcesForSlug(base.shipped, slug).includes(QBANK_PATH)) branchChanged.add(slug);
+    }
+  }
+
   const digests = new Map(scope.map(slug => [slug, {
     main: safeDigestForSlug(slug, base),
     branch: safeDigestForSlug(slug, digestInputs),
-    sources: sourcesForSlug(base.shipped, slug).length > 0,
   }]));
-  // The clinical fingerprint only matters where the content hash does not settle it.
+  // The clinical fingerprint only where the content hash does not settle what the console uses:
+  // okNow for rows in the request, resignOk for pages that can be ticked (or are in the request).
   const clinicalScope = scope.filter((slug) => {
     const { main, branch } = digests.get(slug);
     const row = rows[slug];
     return (main && branch && main !== branch)
-      || (isRecord(row) && row.status === 'reviewed' && hasClinicalHash(row) && row.contentHash !== main);
+      || (inRequest.has(slug) && isRecord(row) && hasClinicalHash(row) && row.contentHash !== main);
   });
   if (clinicalScope.length) {
     await Promise.all([
@@ -3430,15 +3507,8 @@ async function computePressForecast(repository, settings, { reviewed, digestInpu
   }
   const pages = {};
   for (const slug of scope) {
-    const { main, branch, sources } = digests.get(slug);
-    const row = rows[slug];
-    let okNow = true;
-    if (isRecord(row) && row.status === 'reviewed') {
-      if (!sources) okNow = typeof row.contentHash === 'string' && row.contentHash ? null : true; // ledger-only legacy
-      else if (!main) okNow = null;
-      else if (boundBy(row, slug, base, main)) okNow = true;
-      else okNow = hasClinicalHash(row) && clinicalDigestForSlug(slug, base) === null ? null : false;
-    }
+    const { main, branch } = digests.get(slug);
+    let okNow = rowBindsAt(rows[slug], slug, base, main);
     let resignOk = null;
     if (main && branch) {
       if (main === branch) resignOk = true;
@@ -3448,14 +3518,21 @@ async function computePressForecast(repository, settings, { reviewed, digestInpu
         resignOk = clinicalMain && clinicalBranch ? clinicalMain === clinicalBranch : null;
       }
     }
+    if (branchChanged.has(slug)) {
+      okNow = null;
+      resignOk = null;
+    }
+    let rowChangedOnMain = null;
+    if (splitRows) rowChangedOnMain = stableJson(baseRows[slug] ?? null) !== stableJson(splitRows[slug] ?? null);
     pages[slug] = {
       title: titleIn(base.shipped, slug) || titleIn(digestInputs.shipped, slug) || slug,
       inRequest: inRequest.has(slug),
       okNow,
       resignOk,
+      rowChangedOnMain,
     };
   }
-  return { reviewRequest: true, baseBranch, behindBy, signedInRequest, conflicts, pages, partial };
+  return { reviewRequest: true, baseBranch, behindBy, signedInRequest, pages, partial };
 }
 
 async function buildPressForecast(repository, settings, facts) {
@@ -3498,6 +3575,12 @@ async function buildBatchPreview(repository, settings, url) {
   }
   const changeView = request.mode === 'correction' ? await buildChangeView(repository, settings) : null;
   const plan = await planBatch({ repository, settings, request, reviewed, digestInputs, changeView });
+  // The forecast runs beside the question plan, never after it: it has its own budget.
+  const forecastPending = buildPressForecast(repository, settings, {
+    reviewed,
+    digestInputs,
+    signable: plan.sign.map(item => item.slug),
+  });
   let questions = null;
   if (request.mode === 'baseline') {
     const planned = await readyQuestionPlan(repository, settings);
@@ -3506,11 +3589,7 @@ async function buildBatchPreview(repository, settings, url) {
       excluded: planned.excluded,
     };
   }
-  const forecast = await buildPressForecast(repository, settings, {
-    reviewed,
-    digestInputs,
-    candidates: [...plan.sign, ...plan.excluded].map(item => item.slug),
-  });
+  const forecast = await forecastPending;
   return {
     view: 'batch',
     mode: request.mode,
