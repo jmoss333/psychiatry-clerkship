@@ -717,7 +717,10 @@ the container when the Bash 5 environment is part of the evidence.
   born `attested`, or an item attested on **both** sides **any** of whose fields changes — an
   attested item has no separately-attested field, the stem, options, rationale and evidence are
   all the text faculty signed, so the honest edit demotes to `draft` first (registration) and
-  re-attests afterwards. **A pack case's `facultyReview` block is not a promotion** (decision
+  re-attests afterwards. In **`pharmacy.json`** (records by `id`), a `facultyReview` block that
+  becomes `reviewed`, a record born reviewed, or a reviewed-on-both-sides block whose
+  `lastReviewed`, `reviewer` or `reviewedFieldsHash` changes (decision D2 at pharmacy gate G1).
+  **A pack case's `facultyReview` block is not a promotion** (decision
   `pack-case-review-is-registration`, 2026-09-26): `sp-interview.pack.json` is an `extraSources`
   entry of the `sp-interview.html` ledger row, so any case edit drifts that row to pending and
   the console's re-attestation is the claim of record; the attestation validator forbids a case
