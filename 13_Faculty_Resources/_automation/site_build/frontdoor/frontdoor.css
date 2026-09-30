@@ -776,8 +776,9 @@
   text-align:center;font:inherit;cursor:pointer;
 }
 .fd-pathroute .fd-timeline__row:nth-child(even){--fd-path-y:var(--fd-path-y-high)}
-.fd-pathroute .fd-timeline__row:hover{background:var(--fd-callout)}
-.fd-pathroute .fd-timeline__row.is-sel{background:var(--fd-selected)}
+/* Washes start below the road band so the road never visibly changes with hover or selection. */
+.fd-pathroute .fd-timeline__row:hover{background:linear-gradient(transparent var(--fd-path-band),var(--fd-callout) 0)}
+.fd-pathroute .fd-timeline__row.is-sel{background:linear-gradient(transparent var(--fd-path-band),var(--fd-selected) 0)}
 .fd-pathroute .fd-timeline__row.is-sel::after{content:"";position:absolute;left:50%;bottom:var(--fd-space-3);width:40px;height:3px;margin-left:-20px;border-radius:var(--fd-radius-pill);background:var(--fd-terracotta)}
 .fd-pathroute .fd-timeline__row:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
 .fd-pathroute .fd-timeline__gutter{position:absolute;top:calc(var(--fd-path-y) + 14px);left:calc(50% + 16px);z-index:2;display:block}
@@ -813,6 +814,18 @@
   margin:0;white-space:nowrap;border-color:var(--fd-terracotta);background:var(--fd-terracotta);color:var(--fd-on-accent);
 }
 .fd-pathroute .fd-timeline__count{margin-top:6px;padding:0;font-size:var(--fd-font-xs);font-weight:650;color:var(--fd-text-dim)}
+/* Below the lg breakpoint six columns are too tight for a nowrap flag above the node ("Complete · Current"
+ * is ~126px), so the flag drops into the label flow, as it does on the phone rail. */
+@media (max-width:999px){
+  .fd-pathroute .fd-timeline__row[aria-current="step"] .fd-timeline__status{position:static;transform:none;margin-top:6px;white-space:normal}
+}
+/* Windows High Contrast drops backgrounds and shadows: keep every node outlined and the
+ * selected week marked with system colours. Progress is still stated in the count words. */
+@media (forced-colors:active){
+  .fd-pathroute .fd-timeline__number{border:2px solid CanvasText;background:Canvas}
+  .fd-pathroute .fd-timeline__row.is-sel .fd-timeline__number{outline:3px solid Highlight;outline-offset:3px}
+  .fd-pathroute .fd-timeline__row.is-sel::after{background:Highlight}
+}
 
 .fd-timeline{display:flex;flex-direction:column;flex:1 1 230px;min-width:0}
 .fd-timeline__row{

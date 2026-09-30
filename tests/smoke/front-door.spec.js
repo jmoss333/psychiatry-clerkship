@@ -956,6 +956,40 @@ test('Path stops sit on the road, share one label baseline, and never overflow',
   await expectHealthy(page);
 });
 
+// "Complete · Current" is the widest flag the route draws. Finishing the current week is an
+// ordinary state, and at narrow desktop widths a nowrap flag positioned over the node spilled onto
+// the neighbouring stop (.fd-pathroute is overflow:hidden, so a scrollWidth check cannot see it).
+test('the current-week flag never covers another stop, even when that week is complete', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-tab="path"]:visible').click();
+  const current = page.locator('.fd-timeline__row[aria-current="step"]');
+  await current.click();
+  for (let k = 0; k < 30; k++) {
+    const open = page.locator('#fd-path-detail [data-fd-toggle][aria-pressed="false"]').first();
+    if (!(await open.count())) break;
+    await open.click();
+  }
+  await expect(current.locator('.fd-timeline__status')).toHaveText('Complete · Current');
+  for (const width of [1280, 900, 760, 700, 660]) {
+    await page.setViewportSize({ width, height: 900 });
+    const hits = await page.evaluate(() => {
+      const flag = document.querySelector('.fd-timeline__row[aria-current="step"] .fd-timeline__status').getBoundingClientRect();
+      const card = document.querySelector('.fd-pathroute').getBoundingClientRect();
+      const own = document.querySelector('.fd-timeline__row[aria-current="step"] .fd-timeline__number');
+      const overlaps = [...document.querySelectorAll('.fd-pathroute .fd-timeline__number')]
+        .filter((n) => n !== own)
+        .map((n) => n.getBoundingClientRect())
+        .filter((r) => flag.left < r.right && flag.right > r.left && flag.top < r.bottom && flag.bottom > r.top).length;
+      const clipped = flag.left < card.left || flag.right > card.right || flag.top < card.top;
+      return { overlaps, clipped };
+    });
+    expect(hits.overlaps, `flag covers another stop at ${width}px`).toBe(0);
+    expect(hits.clipped, `flag clipped by the route card at ${width}px`).toBe(false);
+  }
+  await expectHealthy(page);
+});
+
 // The 390px check above passed on macOS both before and after the .fd-row__title fix, because
 // macOS font metrics happened to land just under the floor a max-content-sized title imposed
 // (339px on res / 324px on ms3, against 362px available). Ubuntu's wider defaults did not, so CI

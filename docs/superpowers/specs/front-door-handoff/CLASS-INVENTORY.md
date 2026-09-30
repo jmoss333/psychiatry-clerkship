@@ -519,7 +519,7 @@ Omitting it collapses the rail underneath.
 | `.fd-timeline__number` | The stop's numeral inside a per-week progress ring: a conic-gradient driven by the inline `--fd-ring-pct` (that week's saved progress only, never week order). No `stroke-dasharray` anywhere on Path. |
 | `.fd-dot.is-done` | Filled success; on the desktop route it is the check badge at the node's lower right, and other dots are hidden there. |
 | `.fd-dot.is-current` | Phone rail only; the desktop route states current with the flag. |
-| `.fd-timeline__status` | Visible non-colour state text: Current, Complete, or Complete · Current. On `[aria-current=step]` it is the terracotta flag above the node (desktop), inline on the phone. |
+| `.fd-timeline__status` | Visible non-colour state text: Current, Complete, or Complete · Current. On `[aria-current=step]` it is the terracotta flag above the node at ≥1000px, inline below that. |
 | `.fd-timeline__theme` | Canonical curriculum theme; shown on every stop. |
 | `.fd-detail__here` | "you are here" pill. |
 | `.fd-feedback` | The learner's private supervisor-feedback notes for the viewed week (`cw_feedback_v1`, device only). Never progress, never exported, never an assessment. |
@@ -544,6 +544,12 @@ real endpoints, and the rebuilt selected control regains focus with `preventScro
 centres must stay at `(i+0.5)/n`: keep `.fd-pathroute__weeks` at `gap:0` and space rows with margin,
 never gap. Rows are never translated; only `.fd-timeline__number` moves, inside the fixed band, so
 every stop's labels share one baseline (`front-door.spec.js` measures both).
+Hover and `is-sel` washes are `linear-gradient(transparent var(--fd-path-band), …)` so they start
+below the road — an opaque row background would hide the road across that column and make it
+appear to change with selection. The current flag sits above the node only at ≥1000px; below
+the lg breakpoint it drops into the label flow (a nowrap "Complete · Current" covered the next
+stop at 660px). `@media (forced-colors:active)` outlines every node in `CanvasText` on `Canvas`
+and marks `is-sel` with `Highlight` — the ring is a background image and vanishes there.
 
 ⚠ At `max-width:640px` the SVG curve is hidden and `.fd-pathroute__weeks::before` becomes the
 vertical rail. The theme must remain inside its node—do not move it exclusively into the detail

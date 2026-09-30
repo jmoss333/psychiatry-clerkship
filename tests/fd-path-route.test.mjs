@@ -59,3 +59,16 @@ test('every stop shows its theme and its ring; current is a flag, not a side dot
 test('the desktop selected-tab bar does not follow the stop onto the phone rail', () => {
   assert.match(css, /@media \(max-width:640px\)\{[\s\S]*\.fd-pathroute \.fd-timeline__row\.is-sel::after\{display:none\}/);
 });
+
+test('forced-colors mode keeps every node outlined and the selected week marked', () => {
+  const fc = css.match(/@media \(forced-colors:active\)\{([\s\S]*?)\n\}/);
+  assert.ok(fc, 'a forced-colors block exists');
+  assert.match(fc[1], /\.fd-pathroute \.fd-timeline__number\{[^}]*border:2px solid CanvasText/);
+  assert.match(fc[1], /\.fd-pathroute \.fd-timeline__number\{[^}]*background:Canvas[;}]/, 'the road must not show through the node');
+  assert.match(fc[1], /\.fd-pathroute \.fd-timeline__row\.is-sel \.fd-timeline__number\{[^}]*outline:3px solid Highlight/);
+});
+
+test('the selected and hovered wash starts below the road band, so the road never breaks', () => {
+  assert.match(css, /\.fd-pathroute \.fd-timeline__row:hover\{background:linear-gradient\(transparent var\(--fd-path-band\),var\(--fd-callout\) 0\)\}/);
+  assert.match(css, /\.fd-pathroute \.fd-timeline__row\.is-sel\{background:linear-gradient\(transparent var\(--fd-path-band\),var\(--fd-selected\) 0\)\}/);
+});
