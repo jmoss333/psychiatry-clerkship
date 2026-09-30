@@ -197,6 +197,38 @@ export function branchLagNotice(server) {
   };
 }
 
+// Coming from main (2026-09-29). The lag notice above says the attestation branch trails the
+// base; this names what that hides — signed pages the base changed, grouped by PR — so the
+// reviewer knows what is coming before the branch catches up. Pure and exported so the words
+// a reviewer reads stay pinned by tests.
+export function incomingSummaryText(server, data) {
+  const base = text(server?.branchSync?.baseBranch) || 'main';
+  if (data && Array.isArray(data.groups)) {
+    const count = Object.keys(record(data.pages)).length;
+    if (count) {
+      return `Coming from ${base} · ${count} signed page${count === 1 ? '' : 's'} changed there `
+        + 'since this branch split off' + (data.partial ? ' (the check was incomplete)' : '');
+    }
+    return data.partial
+      ? `Coming from ${base} · the check was incomplete; open for what could not be checked`
+      : `Coming from ${base} · no page you signed changed there`;
+  }
+  return `Coming from ${base} · which signed pages it changed`;
+}
+
+export function incomingPageStatus(page) {
+  const waiting = record(page).inRollingPr;
+  if (waiting === true) {
+    return 'Signed in the open review request, so that signature lands outdated; re-sign after it merges';
+  }
+  if (waiting === false) {
+    return 'Needs your signature once the review request merges; main already counts it as pending, '
+      + 'and learners see that from the next release';
+  }
+  return 'Needs your signature once the review request merges; whether a signature for it is '
+    + 'waiting in that request could not be checked';
+}
+
 // The load could not check any page against its stored hash — the tree read failed, or the
 // queue came from the base branch while the text would have come from another ref. Every
 // reviewed item is then marked unverified rather than clean, and this says why once.
@@ -302,6 +334,9 @@ export function startFacultyConsole({
     openChangeGroups: new Set(),
     diffViews: new Map(),
     openDiffs: new Set(),
+    // Coming from main (read-only; see renderIncomingFromBase).
+    incomingView: null,
+    incomingOpen: false,
     resignGroupId: null,
     viewGeneration: 0,
     // One press, many pages (2026-09-26; see renderBaseline). The server's preview of a
@@ -2716,6 +2751,8 @@ export function startFacultyConsole({
   function resetChangeViews() {
     state.changeView = null;
     state.changeViewOpen = false;
+    state.incomingView = null;
+    state.incomingOpen = false;
     state.openChangeGroups = new Set();
     state.diffViews = new Map();
     state.openDiffs = new Set();
@@ -2768,6 +2805,145 @@ export function startFacultyConsole({
       throw new Error(stableResponseMessage(payload, fallback));
     }
     return payload;
+  }
+
+  async function loadIncomingView() {
+    if (state.incomingView?.status === 'loading') return;
+    const generation = state.viewGeneration;
+    const previous = state.incomingView?.data || null;
+    state.incomingView = { status: 'loading', data: previous };
+    refreshIncoming();
+    let next;
+    try {
+      const data = await viewRequest(
+        { view: 'incoming' },
+        'What main changed could not be loaded.',
+        'incoming',
+      );
+      if (!Array.isArray(data.groups)) throw new Error('The server returned an incomplete list of changes.');
+      next = { status: 'ready', data };
+    } catch (error) {
+      next = {
+        status: 'error',
+        data: previous,
+        message: error instanceof Error ? error.message : 'What main changed could not be loaded.',
+      };
+    }
+    if (generation !== state.viewGeneration || !state.server) return;
+    state.incomingView = next;
+    refreshIncoming();
+    announce(next.status === 'ready' ? incomingSummaryText(state.server, next.data) : next.message);
+  }
+
+  function renderIncomingGroup(group, data) {
+    const slugs = list(group.slugs);
+    return el('div', { id: `incoming-group-${domToken(text(group.id))}`, class: 'resign-group incoming-group' }, [
+      el('p', {}, [
+        el('strong', {}, [changeIdLabel(group.id)]),
+        ` ${text(group.title)} · ${pluralize(slugs.length, 'page')}`,
+      ]),
+      el('ul', { class: 'resign-pages' }, slugs.map(slug => {
+        const page = record(data.pages?.[slug]);
+        return el('li', { class: 'resign-page' }, [
+          el('div', { class: 'resign-page-line' }, [
+            el('span', {}, [text(page.title) || slug]),
+            el('span', { class: 'resign-page-status' }, [incomingPageStatus(page)]),
+          ]),
+        ]);
+      })),
+    ]);
+  }
+
+  function renderIncomingBody() {
+    const view = state.incomingView;
+    const data = view?.data;
+    const base = text(state.server?.branchSync?.baseBranch) || 'main';
+    const branch = text(state.server?.branchSync?.branch) || 'the sign-off branch';
+    const children = [el('p', { class: 'hint' }, [
+      `Pages you signed that ${base} changed after ${branch} split off from it. The queue reads `
+      + 'the sign-off branch, so it cannot show these changes yet; it catches up when the rolling '
+      + 'review request merges, and then these pages appear under Re-sign by change. Nothing here signs.',
+    ])];
+    if (!view || (view.status === 'loading' && !data)) {
+      children.push(el('p', { class: 'hint' }, [`Checking what ${base} changed…`]));
+      return children;
+    }
+    if (view.status === 'error') {
+      children.push(el('div', { class: 'session-notice individual' }, [
+        el('p', {}, [view.message]),
+        el('button', {
+          id: 'incoming-retry',
+          type: 'button',
+          class: 'quiet',
+          onClick: () => void loadIncomingView(),
+        }, ['Try again']),
+      ]));
+      if (!data) return children;
+    }
+    if (data.partial) {
+      const unchecked = list(data.unchecked);
+      children.push(el('p', { class: 'session-notice individual' }, [
+        'This list may be incomplete'
+        + (unchecked.length ? `; not checked this time: ${unchecked.join(', ')}.` : '.'),
+      ]));
+    }
+    const groups = list(data.groups).filter(group => group && Array.isArray(group.slugs));
+    const unattributed = list(data.unattributed);
+    if (!groups.length && !unattributed.length && !data.partial) {
+      children.push(el('p', { class: 'hint' }, [`${base} has not changed any page you signed.`]));
+    }
+    for (const group of groups) children.push(renderIncomingGroup(group, data));
+    if (unattributed.length) {
+      children.push(renderIncomingGroup({
+        id: 'unattributed',
+        title: `Changed on ${base}; the change could not be named`,
+        slugs: unattributed,
+      }, data));
+    }
+    const checkedAt = text(data.generatedAt);
+    children.push(el('div', { class: 'resign-footer' }, [
+      el('p', { class: 'hint' }, [
+        `${pluralize(Number(data.behindBy) || 0, 'commit')} on ${base} checked`
+        + (checkedAt ? ` at ${checkedAt.slice(11, 16)} UTC` : '')
+        + (view.status === 'loading' ? ' · checking again…' : '.'),
+      ]),
+      el('button', {
+        id: 'incoming-refresh',
+        type: 'button',
+        class: 'quiet',
+        disabled: view.status === 'loading',
+        onClick: () => void loadIncomingView(),
+      }, ['Check again']),
+    ]));
+    return children;
+  }
+
+  function renderIncomingFromBase() {
+    if (!(Number(state.server?.branchLag) > 0) || state.server?.ledger) return null;
+    return el('details', {
+      id: 'incoming-from-main',
+      class: 'resign-by-change incoming-from-main',
+      open: state.incomingOpen,
+      onToggle: event => {
+        state.incomingOpen = event.currentTarget.open;
+        if (state.incomingOpen && !state.incomingView) void loadIncomingView();
+      },
+    }, [
+      el('summary', {}, [el('span', { id: 'incoming-summary-text' }, [
+        incomingSummaryText(state.server, state.incomingView?.data),
+      ])]),
+      el('div', { id: 'incoming-body', class: 'resign-body' }, renderIncomingBody()),
+    ]);
+  }
+
+  // Redraws in place, like refreshResignByChange, so an answer that arrives while the
+  // reviewer reads never moves the rest of the page.
+  function refreshIncoming() {
+    const summary = document.getElementById('incoming-summary-text');
+    const body = document.getElementById('incoming-body');
+    if (!summary || !body) return;
+    summary.textContent = incomingSummaryText(state.server, state.incomingView?.data);
+    body.replaceChildren(...renderIncomingBody());
   }
 
   async function loadChangeView() {
@@ -3862,6 +4038,7 @@ export function startFacultyConsole({
           role: 'alert',
         }, [el('p', {}, [lagNotice.message])]);
       })(),
+      renderIncomingFromBase(),
       (() => {
         const staleness = freshnessNotice(state.server);
         if (!staleness) return null;
