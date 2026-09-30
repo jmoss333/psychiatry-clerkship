@@ -1084,12 +1084,19 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
       .map(file => file.filename)
       .filter(name => typeof name === 'string' && name);
     const split = isRecord(comparison.merge_base_commit) ? comparison.merge_base_commit : {};
+    // The oldest compared commit bounds every file history read below: a PR's content commits
+    // can predate the split, so the split's own date would be too late a bound.
+    const dates = commits
+      .map(commit => commit.commit?.committer?.date || commit.commit?.author?.date)
+      .filter(date => typeof date === 'string' && date)
+      .sort();
     return {
       behindBy: comparison.ahead_by,
       commits,
       files,
       truncated: commits.length < comparison.ahead_by || files.length >= 300,
       mergeBaseSha: typeof split.sha === 'string' ? split.sha : '',
+      oldestDate: dates.length ? dates[0] : '',
     };
   }
 
@@ -1114,6 +1121,7 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
       number: merged.number,
       title: typeof merged.title === 'string' ? merged.title : '',
       url: githubHttpsUrl(merged.html_url) || '',
+      mergedAt: typeof merged.merged_at === 'string' ? merged.merged_at : '',
     };
   }
 
@@ -2014,9 +2022,15 @@ async function buildDiffView(repository, settings, slug, sha) {
 // ───────────────────────────────────────────────────────────────────────────────────────
 
 const MAX_INCOMING_PR_LOOKUPS = 40;
+const HISTORY_PAGE = 100;
 
-function sameJson(left, right) {
-  return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+// Key-order-free equality for two ledger rows.
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (isRecord(value)) {
+    return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value ?? null);
 }
 
 function topicMetaRecordText(doc, slug) {
@@ -2033,7 +2047,7 @@ async function buildIncomingView(repository, settings) {
     behindBy: 0,
     partial: false,
     groups: [],
-    recordOnly: [],
+    unattributed: [],
     pages: {},
     unchecked: [],
   };
@@ -2057,12 +2071,14 @@ async function buildIncomingView(repository, settings) {
       splitRows = null;
     }
   }
-  // Sources as the next merge will see them: the base branch's derived listing.
+  // Sources as the next merge will see them: the base branch's derived listing. Falling back to
+  // the branch's listing is reported, because its sources can be older.
   let shipped;
   try {
     shipped = (await repository.read(SHIPPED_PAGES_PATH, { ref: settings.baseBranch })).json;
   } catch {
     shipped = (await readShippedPages(repository, settings)).file.json;
+    partial = true;
   }
   const described = new Map();
   for (const page of (isRecord(shipped) && Array.isArray(shipped.pages) ? shipped.pages : [])) {
@@ -2080,19 +2096,20 @@ async function buildIncomingView(repository, settings) {
       title: described.get(slug)?.title || slug,
       kind: described.get(slug)?.kind || '',
       sources: sourcesForSlug(shipped, slug),
-      inRollingPr: isRecord(splitRows) ? !sameJson(row, splitRows[slug]) : null,
+      inRollingPr: isRecord(splitRows) ? stableJson(row) !== stableJson(splitRows[slug]) : null,
     }));
 
-  // A page's quiz / key-points record is part of its fingerprint too.
+  // A page's quiz / key-points record is part of its fingerprint too. "What main changed" is
+  // the split point against main, so the record is read at the split, not at the branch head.
   const recordChanged = new Set();
   if (changed.has(TOPIC_META_PATH)) {
     try {
-      const [branchMeta, baseMeta] = await Promise.all([
-        repository.read(TOPIC_META_PATH),
+      const [splitMeta, baseMeta] = await Promise.all([
+        repository.read(TOPIC_META_PATH, { ref: comparison.mergeBaseSha || settings.branch }),
         repository.read(TOPIC_META_PATH, { ref: settings.baseBranch }),
       ]);
       for (const page of signed) {
-        if (topicMetaRecordText(branchMeta.json, page.slug) !== topicMetaRecordText(baseMeta.json, page.slug)) {
+        if (topicMetaRecordText(splitMeta.json, page.slug) !== topicMetaRecordText(baseMeta.json, page.slug)) {
           recordChanged.add(page.slug);
         }
       }
@@ -2101,9 +2118,9 @@ async function buildIncomingView(repository, settings) {
     }
   }
 
-  // One file history per changed path a signed page depends on, bounded like Re-sign by
-  // change. No `since`: a PR's commits can predate the split and still be new to the branch,
-  // so membership in the comparison decides, not the date.
+  // One file history per changed path a signed page depends on, bounded like Re-sign by change
+  // and dated from the oldest compared commit. Membership in the comparison decides what counts;
+  // a full page of history may have been cut short, so that path is reported unchecked.
   const needsFor = page => [
     ...page.sources.filter(path => changed.has(path)),
     ...(recordChanged.has(page.slug) ? [TOPIC_META_PATH] : []),
@@ -2113,7 +2130,10 @@ async function buildIncomingView(repository, settings) {
   const commitsByPath = {};
   await mapLimit(wanted.slice(0, MAX_CHANGE_QUERIES), CHANGE_QUERY_CONCURRENCY, async (path) => {
     try {
-      const commits = await repository.listCommits({ sha: settings.baseBranch, path });
+      const commits = await repository.listCommits({
+        sha: settings.baseBranch, path, since: comparison.oldestDate || '', perPage: HISTORY_PAGE,
+      });
+      if (commits.length >= HISTORY_PAGE) failed.add(path);
       commitsByPath[path] = commits.filter(commit => incoming.has(commit.sha)).map(commitSummary);
     } catch {
       failed.add(path);
@@ -2138,7 +2158,13 @@ async function buildIncomingView(repository, settings) {
     commitsByPath[path] = commitsByPath[path].map((summary) => {
       const pull = named.get(summary.sha);
       return pull
-        ? { ...summary, pr: pull.number, title: pull.title || summary.title, url: pull.url || summary.url }
+        ? {
+          ...summary,
+          pr: pull.number,
+          title: pull.title || summary.title,
+          url: pull.url || summary.url,
+          date: pull.mergedAt || summary.date,
+        }
         : summary;
     });
   }
@@ -2150,14 +2176,14 @@ async function buildIncomingView(repository, settings) {
     else checked.push(page);
   }
   const grouped = groupIncomingFromBase({
-    signed: checked, commitsByPath, recordChanged, recordPath: TOPIC_META_PATH,
+    signed: checked, commitsByPath, recordChanged, changedPaths: changed, recordPath: TOPIC_META_PATH,
   });
   return {
     ...empty,
     behindBy: comparison.behindBy,
     partial: partial || unchecked.length > 0,
     groups: grouped.groups,
-    recordOnly: grouped.recordOnly,
+    unattributed: grouped.unattributed,
     pages: grouped.pages,
     unchecked: unchecked.sort(),
   };

@@ -205,17 +205,28 @@ export function incomingSummaryText(server, data) {
   const base = text(server?.branchSync?.baseBranch) || 'main';
   if (data && Array.isArray(data.groups)) {
     const count = Object.keys(record(data.pages)).length;
-    return count
-      ? `Coming from ${base} · ${count} signed page${count === 1 ? '' : 's'} changed there, not yet in this queue`
+    if (count) {
+      return `Coming from ${base} · ${count} signed page${count === 1 ? '' : 's'} changed there `
+        + 'since this branch split off' + (data.partial ? ' (the check was incomplete)' : '');
+    }
+    return data.partial
+      ? `Coming from ${base} · the check was incomplete; open for what could not be checked`
       : `Coming from ${base} · no page you signed changed there`;
   }
   return `Coming from ${base} · which signed pages it changed`;
 }
 
 export function incomingPageStatus(page) {
-  return record(page).inRollingPr === true
-    ? 'Signed in the open review request, so that signature lands outdated; re-sign after it merges'
-    : 'Needs your signature once the review request merges; learners see it as pending now';
+  const waiting = record(page).inRollingPr;
+  if (waiting === true) {
+    return 'Signed in the open review request, so that signature lands outdated; re-sign after it merges';
+  }
+  if (waiting === false) {
+    return 'Needs your signature once the review request merges; main already counts it as pending, '
+      + 'and learners see that from the next release';
+  }
+  return 'Needs your signature once the review request merges; whether a signature for it is '
+    + 'waiting in that request could not be checked';
 }
 
 // The load could not check any page against its stored hash — the tree read failed, or the
@@ -2849,9 +2860,9 @@ export function startFacultyConsole({
     const base = text(state.server?.branchSync?.baseBranch) || 'main';
     const branch = text(state.server?.branchSync?.branch) || 'the sign-off branch';
     const children = [el('p', { class: 'hint' }, [
-      `Pages you signed that ${base} changed after ${branch} split off from it. They are not in `
-      + 'the queue yet, because the queue reads the sign-off branch, which catches up when the '
-      + 'rolling review request merges; then they appear under Re-sign by change. Nothing here signs.',
+      `Pages you signed that ${base} changed after ${branch} split off from it. The queue reads `
+      + 'the sign-off branch, so it cannot show these changes yet; it catches up when the rolling '
+      + 'review request merges, and then these pages appear under Re-sign by change. Nothing here signs.',
     ])];
     if (!view || (view.status === 'loading' && !data)) {
       children.push(el('p', { class: 'hint' }, [`Checking what ${base} changed…`]));
@@ -2877,13 +2888,17 @@ export function startFacultyConsole({
       ]));
     }
     const groups = list(data.groups).filter(group => group && Array.isArray(group.slugs));
-    const recordOnly = list(data.recordOnly);
-    if (!groups.length && !recordOnly.length) {
+    const unattributed = list(data.unattributed);
+    if (!groups.length && !unattributed.length && !data.partial) {
       children.push(el('p', { class: 'hint' }, [`${base} has not changed any page you signed.`]));
     }
     for (const group of groups) children.push(renderIncomingGroup(group, data));
-    if (recordOnly.length) {
-      children.push(renderIncomingGroup({ id: 'record-only', title: 'Quiz or key points changed', slugs: recordOnly }, data));
+    if (unattributed.length) {
+      children.push(renderIncomingGroup({
+        id: 'unattributed',
+        title: `Changed on ${base}; the change could not be named`,
+        slugs: unattributed,
+      }, data));
     }
     const checkedAt = text(data.generatedAt);
     children.push(el('div', { class: 'resign-footer' }, [

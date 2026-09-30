@@ -275,18 +275,18 @@ test('recordDiff shows changed record fields and never the signature itself', ()
   assert.deepEqual(recordDiff({ facultyReview: 1 }, { facultyReview: 2 }), []);
 });
 
-
 /* Coming from main (2026-09-29): signed pages the base branch changed since the attestation
    branch split off, grouped by the change that touched them. These pin that grouping never
-   drops an affected page, never invents an unaffected one, and carries the "signed in the open
-   review request" flag through exactly as the server computed it. */
+   drops an affected page (a changed source is listed even when no commit can be named), never
+   invents an unaffected one, and carries the "signed in the open review request" flag through
+   exactly as the server computed it. */
 import { groupIncomingFromBase } from '../faculty-console/change-history.mjs';
 
 function incomingSummary(sha, pr, date, title = `change ${pr}`) {
   return { sha, pr, title, date, url: '' };
 }
 
-test('groupIncomingFromBase lists only signed pages a base commit touched, grouped by PR', () => {
+test('groupIncomingFromBase lists only signed pages the base changed, grouped by PR', () => {
   const a = incomingSummary('a'.repeat(40), 892, '2026-09-29T23:53:00Z', 'Four communication cases');
   const b = incomingSummary('b'.repeat(40), 891, '2026-09-29T15:00:00Z', 'Five question warnings');
   const result = groupIncomingFromBase({
@@ -297,6 +297,7 @@ test('groupIncomingFromBase lists only signed pages a base commit touched, group
         sources: ['review.html', 'communication_cases.json', 'question_bank.json'], inRollingPr: true },
       { slug: 't_mood.md', title: 'Mood', kind: 'page', sources: ['t_mood.md'], inRollingPr: false },
     ],
+    changedPaths: ['communication_cases.json', 'question_bank.json'],
     commitsByPath: { 'communication_cases.json': [a], 'question_bank.json': [b] },
   });
   assert.deepEqual(result.groups.map(group => [group.id, group.slugs]), [
@@ -304,34 +305,43 @@ test('groupIncomingFromBase lists only signed pages a base commit touched, group
     ['pr:891', ['review.html']],
   ]);
   assert.deepEqual(Object.keys(result.pages).sort(), ['communication-practice.html', 'review.html'],
-    'a page no base commit touched is not listed');
+    'a page the base did not change is not listed');
   assert.equal(result.pages['review.html'].inRollingPr, true);
   assert.equal(result.pages['communication-practice.html'].inRollingPr, false);
-  assert.deepEqual(result.recordOnly, []);
+  assert.deepEqual(result.unattributed, []);
 });
 
-test('groupIncomingFromBase lets topic_meta commits explain a changed record, and says when none do', () => {
-  const meta = incomingSummary('c'.repeat(40), 700, '2026-09-29T10:00:00Z');
-  const withCommit = groupIncomingFromBase({
+test('groupIncomingFromBase never drops a changed page, even when no commit can be named', () => {
+  const result = groupIncomingFromBase({
     signed: [{ slug: 't_mood.md', title: 'Mood', kind: 'page', sources: ['t_mood.md'], inRollingPr: null }],
+    changedPaths: new Set(['t_mood.md']),
+    commitsByPath: {},
+  });
+  assert.deepEqual(result.groups, []);
+  assert.deepEqual(result.unattributed, ['t_mood.md']);
+  assert.deepEqual(result.pages['t_mood.md'], { title: 'Mood', kind: 'page', inRollingPr: null, recordChanged: false });
+});
+
+test('groupIncomingFromBase lets topic_meta commits explain a changed record, and lists one they do not', () => {
+  const meta = incomingSummary('c'.repeat(40), 700, '2026-09-29T10:00:00Z');
+  const explained = groupIncomingFromBase({
+    signed: [{ slug: 't_mood.md', title: 'Mood', kind: 'page', sources: ['t_mood.md'], inRollingPr: false }],
     commitsByPath: { 'topic_meta.json': [meta] },
     recordChanged: ['t_mood.md'],
   });
-  assert.deepEqual(withCommit.groups.map(group => [group.id, group.slugs]), [['pr:700', ['t_mood.md']]]);
-  assert.deepEqual(withCommit.pages['t_mood.md'], { title: 'Mood', kind: 'page', inRollingPr: null, recordChanged: true });
+  assert.deepEqual(explained.groups.map(group => [group.id, group.slugs]), [['pr:700', ['t_mood.md']]]);
+  assert.equal(explained.pages['t_mood.md'].recordChanged, true);
 
   const unexplained = groupIncomingFromBase({
     signed: [{ slug: 't_mood.md', sources: ['t_mood.md'] }],
-    commitsByPath: {},
     recordChanged: new Set(['t_mood.md']),
   });
-  assert.deepEqual(unexplained.groups, []);
-  assert.deepEqual(unexplained.recordOnly, ['t_mood.md'], 'a changed record is never silently dropped');
+  assert.deepEqual(unexplained.unattributed, ['t_mood.md'], 'a changed record is never silently dropped');
   assert.equal(unexplained.pages['t_mood.md'].title, 't_mood.md', 'a missing title falls back to the slug');
 });
 
 test('groupIncomingFromBase is total: empty and malformed input give an empty answer', () => {
   for (const input of [undefined, {}, { signed: null }, { signed: [null, { slug: '' }, { title: 'x' }] }]) {
-    assert.deepEqual(groupIncomingFromBase(input), { groups: [], recordOnly: [], pages: {} });
+    assert.deepEqual(groupIncomingFromBase(input), { groups: [], unattributed: [], pages: {} });
   }
 });

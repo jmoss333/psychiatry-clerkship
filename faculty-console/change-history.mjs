@@ -105,35 +105,40 @@ export function groupDriftedByChange(pages) {
  *
  * WHY THIS EXISTS. The queue, and Re-sign by change above, read the attestation branch. While
  * that branch carries unmerged sign-offs it cannot fast-forward, so a page the base changed
- * afterwards looks current here while learners already see it as pending. A signature waiting
- * in the rolling review request can even be outdated before it lands: on 2026-09-29 the
- * owner's press (#895) re-signed review.html at its text from before #892, which changed a file
- * the Daily Review fingerprints. This groups those pages by the change that touched them, so
- * the reviewer knows what is coming before the branch catches up. It signs nothing.
+ * afterwards looks current here although the base already counts it as pending (learners see
+ * that from the next release). A signature waiting in the rolling review request can even be
+ * outdated before it lands: on 2026-09-29 the owner's press (#895) re-signed review.html at its
+ * text from before #892, which changed a file the Daily Review fingerprints. This groups those
+ * pages by the change that touched them, so the reviewer knows what is coming before the branch
+ * catches up. It signs nothing.
  *
  * `signed`        [{ slug, title, kind, sources: [path], inRollingPr }]: pages signed on the
  *                 attestation branch. inRollingPr: the row differs from the row at the split
  *                 (true), matches it (false), or could not be compared (null).
+ * `changedPaths`  the files the base changed since the split (GitHub's comparison). A page with a
+ *                 source among them HAS changed, whether or not a commit can be named for it.
  * `commitsByPath` { path: [commitSummary] }: base commits the branch does not have, per path.
- * `recordChanged` slugs whose topic_meta record differs between the branches; `recordPath`
- *                 names topic_meta.json, whose commits then join those pages (a superset, as in
- *                 Re-sign by change, never an omission).
- * Returns { groups, recordOnly, pages }. groups: as groupDriftedByChange. recordOnly: pages whose
- * record changed but no listed commit explains it. pages: { slug: { title, kind, inRollingPr,
- * recordChanged } } for every affected page, and only those.
+ * `recordChanged` slugs whose topic_meta record differs between the split and the base;
+ *                 `recordPath` names topic_meta.json, whose commits then join those pages (a
+ *                 superset, as in Re-sign by change, never an omission).
+ * Returns { groups, unattributed, pages }. groups: as groupDriftedByChange. unattributed: pages
+ * that changed but whose change no listed commit names — listed, never dropped. pages: { slug:
+ * { title, kind, inRollingPr, recordChanged } } for every affected page, and only those.
  */
 export function groupIncomingFromBase({
-  signed, commitsByPath, recordChanged, recordPath = 'topic_meta.json',
+  signed, commitsByPath, recordChanged, changedPaths, recordPath = 'topic_meta.json',
 } = {}) {
   const byPath = commitsByPath && typeof commitsByPath === 'object' ? commitsByPath : {};
   const records = new Set(recordChanged || []);
+  const changed = new Set(changedPaths || []);
   const affected = [];
   const pages = {};
   for (const page of Array.isArray(signed) ? signed : []) {
     if (!page || typeof page.slug !== 'string' || !page.slug) continue;
-    const paths = Array.isArray(page.sources) ? [...page.sources] : [];
+    const sources = Array.isArray(page.sources) ? page.sources.filter(path => typeof path === 'string') : [];
     const recordHit = records.has(page.slug);
-    if (recordHit) paths.push(recordPath);
+    const sourceHit = sources.some(path => changed.has(path));
+    const paths = recordHit ? [...sources, recordPath] : sources;
     const seen = new Set();
     const commits = [];
     for (const path of paths) {
@@ -143,7 +148,7 @@ export function groupIncomingFromBase({
         commits.push(summary);
       }
     }
-    if (!commits.length && !recordHit) continue;
+    if (!commits.length && !recordHit && !sourceHit) continue;
     affected.push({ slug: page.slug, commits });
     pages[page.slug] = {
       title: typeof page.title === 'string' && page.title ? page.title : page.slug,
@@ -153,7 +158,7 @@ export function groupIncomingFromBase({
     };
   }
   const { groups, unexplained } = groupDriftedByChange(affected);
-  return { groups, recordOnly: unexplained, pages };
+  return { groups, unattributed: unexplained, pages };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────

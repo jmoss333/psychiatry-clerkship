@@ -3997,37 +3997,47 @@ test('a baseline does not offer a clinically bound page for signing again', asyn
   assert.equal(preview.excluded.some(item => item.slug === 't_mood.md'), false);
 });
 
-
 /* Coming from main (2026-09-29): `?view=incoming` names signed pages the base branch changed
    since the attestation branch split off. The queue reads the branch, so while it carries
-   unmerged sign-offs those pages look current here even though learners already see them as
-   pending, and a signature waiting in the review request can land outdated (#895 re-signed
-   review.html at its text from before #892). The rules pinned here: the view is read-only, only
-   commits the branch lacks count, a merge-commit PR is named by GitHub rather than guessed from
-   a commit message, and a comparison GitHub truncated is reported as partial. */
+   unmerged sign-offs those pages look current here although main already counts them pending,
+   and a signature waiting in the review request can land outdated (#895 re-signed review.html
+   at its text from before #892). Pinned here: the view is read-only; it compares the branch
+   AGAINST main (not the reverse), reads history on main and sources from main's listing; only
+   commits the branch lacks count; a merge-commit PR is named by the PR GitHub says merged it; a
+   changed page is never dropped; and anything GitHub could not fully answer is reported partial. */
 
 const INCOMING_A_SHA = 'a1'.repeat(20); // content commit of a merge-commit PR: no PR in its message
 const INCOMING_B_SHA = 'b2'.repeat(20); // squash commit naming its PR, touching topic_meta.json
 const PRE_SPLIT_SHA = 'c3'.repeat(20); // older history of the same file, already on the branch
 const SPLIT_SHA = 'd4'.repeat(20);
+const INCOMING_COMPARE_PATH = `/repos/synthetic/faculty-console/compare/${encodeURIComponent(ATTEST_BRANCH)}...${BASE_BRANCH}`;
+const OLDEST_INCOMING = '2026-09-28T16:00:00Z';
 
-function incomingMock({ splitRow, comparison } = {}) {
+function incomingMock({ splitRow, splitUnreadable = false, comparison, history } = {}) {
   const files = defaultFiles();
-  const baseMeta = clone(files[TOPIC_META_PATH].json);
-  baseMeta['t_mood.md'].shelfBlueprint = ['mood-disorders', 'bipolar'];
+  const changedMeta = clone(files[TOPIC_META_PATH].json);
+  changedMeta['t_mood.md'].shelfBlueprint = ['mood-disorders', 'bipolar'];
   const splitReviewed = clone(files[REVIEWED_PATH].json);
   if (splitRow) splitReviewed['t_mood.md'] = splitRow;
-  return createGithubMock({
+  // A listing read from anywhere but main maps t_mood.md to a file nothing changed.
+  const staleShipped = clone(files[SHIPPED_PAGES_PATH].json);
+  staleShipped.pages = staleShipped.pages.map(page => (page.slug === 't_mood.md' ? { ...page, source: 'elsewhere/t_mood.md' } : page));
+  const since = [];
+  const mock = createGithubMock({
     files,
     beforeRequest: (call) => {
       if (call.method !== 'GET') return undefined;
       const url = new URL(call.url);
       if (url.pathname.includes('/compare/')) {
+        if (url.pathname !== INCOMING_COMPARE_PATH) return jsonResponse(404, { message: 'Wrong comparison.' });
         return jsonResponse(200, comparison || {
           ahead_by: 2,
           behind_by: 1,
           merge_base_commit: { sha: SPLIT_SHA },
-          commits: [{ sha: INCOMING_A_SHA }, { sha: INCOMING_B_SHA }],
+          commits: [
+            { sha: INCOMING_A_SHA, commit: { committer: { date: OLDEST_INCOMING } } },
+            { sha: INCOMING_B_SHA, commit: { committer: { date: '2026-09-29T15:00:00Z' } } },
+          ],
           files: [{ filename: '01_Core/t_mood.md' }, { filename: TOPIC_META_PATH }, { filename: 'README.md' }],
         });
       }
@@ -4038,32 +4048,38 @@ function incomingMock({ splitRow, comparison } = {}) {
             html_url: 'https://github.com/synthetic/faculty-console/pull/892', base: { ref: BASE_BRANCH } },
         ]);
       }
-      if (url.pathname.endsWith('/pulls') && url.pathname.includes('/commits/')) {
-        return jsonResponse(200, []);
-      }
+      if (url.pathname.endsWith('/pulls') && url.pathname.includes('/commits/')) return jsonResponse(200, []);
       if (url.pathname === '/repos/synthetic/faculty-console/commits') {
+        if (url.searchParams.get('sha') !== BASE_BRANCH) return jsonResponse(200, []);
+        since.push(url.searchParams.get('since'));
         const path = url.searchParams.get('path');
-        if (path === '01_Core/t_mood.md') {
-          return jsonResponse(200, [
-            commitRecord(INCOMING_A_SHA, 'content(WP-I): four approved communication cases', '2026-09-28T16:00:00Z'),
+        const table = history || {
+          '01_Core/t_mood.md': [
+            commitRecord(INCOMING_A_SHA, 'content(WP-I): four approved communication cases', OLDEST_INCOMING),
             commitRecord(PRE_SPLIT_SHA, 'older wording', '2026-07-01T09:00:00Z'),
-          ]);
-        }
-        if (path === TOPIC_META_PATH) {
-          return jsonResponse(200, [commitRecord(INCOMING_B_SHA, 'qbank: five warnings (#891)', '2026-09-29T15:00:00Z')]);
-        }
-        return jsonResponse(200, []);
+          ],
+          [TOPIC_META_PATH]: [commitRecord(INCOMING_B_SHA, 'qbank: five warnings (#891)', '2026-09-29T15:00:00Z')],
+        };
+        return jsonResponse(200, table[path] || []);
       }
       const ref = url.searchParams.get('ref');
       if (call.path === REVIEWED_PATH && ref === SPLIT_SHA) {
+        if (splitUnreadable) return jsonResponse(404, { message: 'Synthetic file not found.' });
         return jsonResponse(200, contentsObject(`${JSON.stringify(splitReviewed, null, 2)}\n`));
       }
-      if (call.path === TOPIC_META_PATH && ref === BASE_BRANCH) {
-        return jsonResponse(200, contentsObject(`${JSON.stringify(baseMeta, null, 2)}\n`));
+      if (call.path === SHIPPED_PAGES_PATH && ref !== BASE_BRANCH) {
+        return jsonResponse(200, contentsObject(`${JSON.stringify(staleShipped, null, 2)}\n`));
+      }
+      // main AND the branch head carry the changed record; only the split carries the old one,
+      // so comparing the branch head with main would miss the change.
+      if (call.path === TOPIC_META_PATH && ref !== SPLIT_SHA) {
+        return jsonResponse(200, contentsObject(`${JSON.stringify(changedMeta, null, 2)}\n`));
       }
       return undefined;
     },
   });
+  mock.since = since;
+  return mock;
 }
 
 test('?view=incoming groups signed pages main changed since the split by the PR that changed them', async () => {
@@ -4077,18 +4093,21 @@ test('?view=incoming groups signed pages main changed since the split by the PR 
   assert.equal(payload.behindBy, 2);
   assert.equal(payload.partial, false);
   assert.deepEqual(payload.unchecked, []);
-  // Newest change first on a tie; the page is in both groups because both touched it.
+  assert.deepEqual(payload.unattributed, []);
+  // The PR's merge time orders the groups (newest first), not its commits' authoring time.
   assert.deepEqual(payload.groups.map(group => [group.id, group.slugs]), [
-    ['pr:891', ['t_mood.md']],
     ['pr:892', ['t_mood.md']],
+    ['pr:891', ['t_mood.md']],
   ]);
-  assert.equal(payload.groups.find(group => group.id === 'pr:892').title, 'Four communication cases',
+  assert.equal(payload.groups[0].title, 'Four communication cases',
     'a merge-commit PR is named by the PR GitHub says merged it, not by an unmerged one');
   assert.deepEqual(payload.pages['t_mood.md'],
     { title: 'Mood Disorders', kind: 'page', inRollingPr: false, recordChanged: true });
   assert.equal(payload.pages['mse-tool'], undefined, 'a page awaiting review is not a signed page');
   assert.equal(JSON.stringify(payload).includes(PRE_SPLIT_SHA), false,
     'history the branch already has never counts as coming');
+  assert.ok(mock.since.length > 0 && mock.since.every(value => value === OLDEST_INCOMING),
+    'every history read is bounded by the oldest compared commit');
   assertReadOnly(mock);
 });
 
@@ -4100,6 +4119,38 @@ test('?view=incoming says when a signature waiting in the review request is alre
   const payload = await (await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }))).json();
   assert.equal(payload.pages['t_mood.md'].inRollingPr, true);
   assertReadOnly(mock);
+});
+
+test('?view=incoming says it cannot tell, rather than guessing, when the split row is unreadable', async () => {
+  const mock = incomingMock({ splitUnreadable: true });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }))).json();
+  assert.equal(payload.pages['t_mood.md'].inRollingPr, null);
+});
+
+test('?view=incoming lists a changed page even when no commit can be named for it', async () => {
+  const mock = incomingMock({
+    comparison: {
+      ahead_by: 1,
+      merge_base_commit: { sha: SPLIT_SHA },
+      commits: [{ sha: INCOMING_A_SHA, commit: { committer: { date: OLDEST_INCOMING } } }],
+      files: [{ filename: '01_Core/t_mood.md' }],
+    },
+    history: {},
+  });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }))).json();
+  assert.deepEqual(payload.groups, []);
+  assert.deepEqual(payload.unattributed, ['t_mood.md'], 'changed on main, so listed, never dropped');
+  assert.ok(payload.pages['t_mood.md']);
+});
+
+test('?view=incoming reports a history GitHub may have cut short as unchecked, not clean', async () => {
+  const full = Array.from({ length: 100 }, (_, index) => commitRecord(
+    index.toString(16).padStart(2, '0').repeat(20), `edit ${index}`, '2026-09-29T00:00:00Z'));
+  const mock = incomingMock({ history: { '01_Core/t_mood.md': full } });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }))).json();
+  assert.equal(payload.partial, true);
+  assert.deepEqual(payload.unchecked, ['t_mood.md']);
+  assert.equal(payload.pages['t_mood.md'], undefined);
 });
 
 test('?view=incoming asks GitHub nothing when the console reads the base branch itself', async () => {
@@ -4125,7 +4176,7 @@ test('?view=incoming reports a comparison GitHub truncated as partial, never as 
     comparison: {
       ahead_by: 400,
       merge_base_commit: { sha: SPLIT_SHA },
-      commits: [{ sha: INCOMING_A_SHA }],
+      commits: [{ sha: INCOMING_A_SHA, commit: { committer: { date: OLDEST_INCOMING } } }],
       files: [{ filename: '01_Core/t_mood.md' }],
     },
   });
