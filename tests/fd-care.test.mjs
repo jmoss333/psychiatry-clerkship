@@ -284,3 +284,32 @@ test('the curriculum schema governs both care and external teaching resources', 
   assert.equal(curriculum.teachingResources[0].url,
     'https://family-therapy-seminar-companion.netlify.app/');
 });
+
+
+const expectedBuilder = {
+  id: 'supervised-resource-builder',
+  title: 'Build a printable resource page',
+  description: 'Choose a topic, broad area, and resource types, then review transparent ReConnect suggestions with a supervisor.',
+  url: 'https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html',
+};
+
+test('the governed builder launcher is required, fixed and separate from the local handout corpus', () => {
+  assert.deepEqual(curriculum.careBuilder, expectedBuilder);
+  assert.ok(schema.required.includes('careBuilder'));
+  const rule = schema.properties.careBuilder;
+  assert.equal(rule.type, 'object');
+  assert.equal(rule.additionalProperties, false);
+  assert.deepEqual(rule.required, ['id', 'title', 'description', 'url']);
+  assert.deepEqual(Object.keys(rule.properties), rule.required);
+  assert.equal(rule.properties.id.const, expectedBuilder.id);
+  for (const key of ['title', 'description', 'url']) assert.ok(rule.properties[key].minLength > 0);
+  const safe = new RegExp(rule.properties.url.pattern);
+  assert.ok(safe.test(expectedBuilder.url));
+  for (const url of ['http://example.test/', 'https://example.test/?topic=x',
+    'https://example.test/#area', 'https://example.test/ bad']) assert.ok(!safe.test(url), url);
+  assert.equal(curriculum.careResources.length, 5);
+  assert.ok(!curriculum.careResources.some(row => row.id === expectedBuilder.id));
+  for (const row of curriculum.careNavigator) {
+    assert.ok(![row.primaryResourceId, ...(row.alternativeResourceIds || [])].includes(expectedBuilder.id));
+  }
+});
