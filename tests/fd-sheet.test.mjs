@@ -69,7 +69,7 @@ const ATTESTED_META = {
   ...REAL_META,
   [ATTESTED_REF]: {
     ...REAL_META[ATTESTED_REF],
-    facultyReview: { ...REAL_META[ATTESTED_REF].facultyReview, status: 'reviewed' },
+    facultyReview: { lastReviewed: '2026-01-01', reviewer: 'Fixture reviewer', status: 'reviewed' },
   },
 };
 const ATTESTED_INDEX = F.fdBuildIndex(REAL_MS3_CUR, ATTESTED_META, REAL_TOOLS, REAL_MAN);

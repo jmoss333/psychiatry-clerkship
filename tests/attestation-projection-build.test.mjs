@@ -314,11 +314,12 @@ test('no stored contentHash reaches any built artifact', (t) => {
   // never trips it. But a ledger with NOTHING signed is a legitimate state too (a change that
   // reopens every page is registration, not a regression), and there the floor would go red for
   // being right -- tests/live-governance-state.test.mjs rehearses that state and caught it on
-  // 2026-09-30. So: signed rows with no hash is an unbacked ledger and fails; no signed rows at
-  // all has nothing to search for and skips, visibly.
+  // 2026-09-30. So: signed rows with no hash is an unbacked ledger and fails; no hash anywhere
+  // AND nothing signed has nothing to search for and skips, visibly; any stored hash, signed or
+  // not, is searched for.
   const signed = Object.values(LEDGER).filter((entry) => entry && entry.status === 'reviewed');
-  if (signed.length === 0) {
-    t.skip('reviewed.json holds no signed page, so no contentHash exists to search for');
+  if (hashes.length === 0 && signed.length === 0) {
+    t.skip('reviewed.json holds no signed page and no stored contentHash, so there is nothing to search for');
     return;
   }
   assert.ok(hashes.length > 0, `reviewed.json signs ${signed.length} page(s) but carries no contentHash to search for`);

@@ -366,8 +366,10 @@ test('every real library column item resolves', () => {
 // to be attested in the live topic_meta.json, which is the faculty's record, not the code's
 // behaviour: a content edit that honestly demoted one kit page would have turned it red
 // (CLAUDE.md, "a test may not depend on live governance state"). What stays pinned is that the
-// attested flag is exactly the page's own facultyReview, whatever that currently says.
-test('all five real kit items carry safety steps, and each one is attested exactly when its facultyReview says so', () => {
+// attested flag is exactly the page's own facultyReview, whatever that currently says. Whether
+// every safety-kit protocol MUST be attested is a policy question for the owner, not a test pin;
+// until it is decided, an unattested kit protocol is reported here as a diagnostic, never hidden.
+test('all five real kit items carry safety steps, and each one is attested exactly when its facultyReview says so', (t) => {
   const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
   assert.equal(idx.kit.length, 5);
   for (const k of idx.kit) {
@@ -375,6 +377,8 @@ test('all five real kit items carry safety steps, and each one is attested exact
       `${k.item.ref}: attested must follow its own facultyReview block`);
     assert.ok(META[k.item.ref].safetySteps.length >= 3, `${k.item.ref} needs safetySteps`);
   }
+  const unattested = idx.kit.filter((k) => !k.item.attested).map((k) => k.item.ref);
+  if (unattested.length) t.diagnostic(`safety-kit protocol(s) not faculty-attested in topic_meta.json: ${unattested.join(', ')}`);
 });
 
 // ---- libraryHints: the one-line "use this when…" a Library tool row carries ------------------
