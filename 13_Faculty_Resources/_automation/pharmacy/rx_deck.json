@@ -155,6 +155,156 @@
       ]
     },
     {
+      "drug": "haloperidol",
+      "generic": "haloperidol",
+      "group": "antipsychotic",
+      "id": "RX#haloperidol#boxed",
+      "kind": "default",
+      "prompt": "What does the boxed warning cover?",
+      "reveal": [
+        {
+          "label": "Boxed warning",
+          "from": "boxedWarning.summary",
+          "lines": [
+            "Increased mortality in elderly patients with dementia-related psychosis."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "haloperidol",
+      "generic": "haloperidol",
+      "group": "antipsychotic",
+      "id": "RX#haloperidol#baseline",
+      "kind": "default",
+      "prompt": "Name the baseline workup before the first dose.",
+      "reveal": [
+        {
+          "label": "Baseline",
+          "from": "monitoring.baseline",
+          "lines": [
+            "EKG (QTc)",
+            "Potassium and magnesium"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "haloperidol",
+      "generic": "haloperidol",
+      "group": "antipsychotic",
+      "id": "RX#haloperidol#ongoing",
+      "kind": "default",
+      "prompt": "What gets monitored once it is running?",
+      "reveal": [
+        {
+          "label": "Ongoing monitoring",
+          "from": "monitoring.ongoing",
+          "lines": [
+            "Repeat QTc with dose changes",
+            "EPS/akathisia checks",
+            "AIMS for tardive dyskinesia"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "haloperidol",
+      "generic": "haloperidol",
+      "group": "antipsychotic",
+      "id": "RX#haloperidol#danger",
+      "kind": "default",
+      "prompt": "Name the dangerous adverse effects, and how you would recognize each.",
+      "reveal": [
+        {
+          "label": "Dangerous adverse effects",
+          "from": "adverseEffects.dangerous",
+          "lines": [
+            "Neuroleptic malignant syndrome — Lead-pipe rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome. — Tell the senior now; stop the antipsychotic pending evaluation.",
+            "Torsades de pointes — QTc prolongation, highest with IV use or stacked QT-prolonging agents. — Baseline QTc; replete potassium and magnesium; check what else is on board.",
+            "Tardive dyskinesia — Late involuntary movements. — AIMS at baseline and on a schedule."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "haloperidol",
+      "generic": "haloperidol",
+      "group": "antipsychotic",
+      "id": "RX#haloperidol#traps",
+      "kind": "default",
+      "prompt": "Name the interaction traps.",
+      "reveal": [
+        {
+          "label": "Interaction traps",
+          "from": "interactions.keyTraps",
+          "lines": [
+            "Other QT-prolonging agents (methadone is often already on board)",
+            "Stacking anticholinergics to treat EPS"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "haloperidol",
+      "generic": "haloperidol",
+      "group": "antipsychotic",
+      "id": "RX#haloperidol#ask0",
+      "kind": "ask",
+      "prompt": "What is the baseline QTc, and what else is prolonging it?",
+      "reveal": [
+        {
+          "label": "Baseline",
+          "from": "monitoring.baseline",
+          "lines": [
+            "EKG (QTc)",
+            "Potassium and magnesium"
+          ]
+        },
+        {
+          "label": "Interaction traps",
+          "from": "interactions.keyTraps[0]",
+          "lines": [
+            "Other QT-prolonging agents (methadone is often already on board)"
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "haloperidol",
+      "generic": "haloperidol",
+      "group": "antipsychotic",
+      "id": "RX#haloperidol#ask1",
+      "kind": "ask",
+      "prompt": "How would you tell akathisia from worsening agitation?",
+      "reveal": [
+        {
+          "label": "Pearl (resident)",
+          "from": "pearls.t2[3]",
+          "lines": [
+            "Akathisia vs agitation: ask about an inner urge to move before labeling restlessness as anxiety or agitation. Akathisia is the great inpatient impostor — treat the cause, not with more dopamine blockade: reduce or switch the antipsychotic, then propranolol, then benztropine if parkinsonism co-exists, then a benzodiazepine adjunct."
+          ]
+        }
+      ]
+    },
+    {
+      "drug": "haloperidol",
+      "generic": "haloperidol",
+      "group": "antipsychotic",
+      "id": "RX#haloperidol#ask2",
+      "kind": "ask",
+      "prompt": "What distinguishes NMS from serotonin syndrome at the bedside?",
+      "reveal": [
+        {
+          "label": "Pearl (resident)",
+          "from": "pearls.t2[0]",
+          "lines": [
+            "Tempo plus reflexes triages the hyperthermic patient: hyporeflexic and slow-onset points to NMS; hyperreflexic with clonus points to serotonin syndrome."
+          ]
+        }
+      ]
+    },
+    {
       "drug": "lithium",
       "generic": "lithium carbonate",
       "group": "mood-stabilizer",
@@ -690,10 +840,6 @@
     },
     {
       "drug": "fluphenazine",
-      "reason": "J fields not reviewed (or changed since)"
-    },
-    {
-      "drug": "haloperidol",
       "reason": "J fields not reviewed (or changed since)"
     },
     {

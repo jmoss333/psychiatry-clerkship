@@ -154,7 +154,11 @@
       ],
       "safetyLevel": "high",
       "facultyReview": {
-        "status": "pending"
+        "status": "reviewed",
+        "reviewer": "Joshua Moss, MD",
+        "lastReviewed": "2026-09-29",
+        "reviewedFieldsHash": "b4a7591536f41be05e4d6a7d870f3b441da47eb7cbf7552135ecc989a7013d34",
+        "retrievalHash": "ff5a23cc707f15005b22197aab6d2164ac9a824a792f4d02b963af5f25904b04"
       },
       "provenance": {
         "fieldClasses": {
