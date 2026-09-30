@@ -3234,6 +3234,8 @@ test('Supervised Resource Builder opens context-free without changing Care Quick
     for (const width of [1280, 320, 640]) {
       await page.setViewportSize({ width, height: 900 });
       await page.evaluate(value => { document.documentElement.style.fontSize = value; }, width === 640 ? '200%' : '');
+      // Establish real keyboard modality before checking :focus-visible.
+      await page.keyboard.press('Tab');
       await link.focus();
       await expect(link).toBeFocused();
       const metrics = await link.evaluate(el => {
