@@ -5599,3 +5599,74 @@ test('no Re-sign by change surface appears when nothing drifted', async () => {
   assert.equal(document.getElementById('changes-since-signed'), null,
     'an unbound row has no change to show — only drift does');
 });
+
+
+/* Coming from main (2026-09-29): with the sign-off branch behind main, the console offers a
+   lazy disclosure naming the signed pages main changed, grouped by PR, and marks the ones whose
+   waiting signature will land outdated. It asks nothing until opened and signs nothing. */
+
+const INCOMING_VIEW = {
+  view: 'incoming',
+  branch: 'attest/pending',
+  baseBranch: 'main',
+  generatedAt: '2026-09-29T23:58:00.000Z',
+  behindBy: 3,
+  partial: false,
+  unchecked: [],
+  recordOnly: [],
+  groups: [{ id: 'pr:892', pr: 892, sha: '8'.repeat(40), title: 'Four communication cases',
+    date: '2026-09-29T23:53:00Z', url: '', slugs: ['communication-practice.html', 'review.html'] }],
+  pages: {
+    'communication-practice.html': { title: 'What Do You Say Next?', kind: 'tool', inRollingPr: false, recordChanged: false },
+    'review.html': { title: 'Daily Review', kind: 'tool', inRollingPr: true, recordChanged: false },
+  },
+};
+
+function laggingServerState(branchLag) {
+  return {
+    ...serverState({ questions: [] }),
+    branchLag,
+    freshness: 'verified',
+    branchSync: {
+      isolated: true, aheadBy: 1, behindBy: branchLag, rollingPr: 'https://github.example/pull/895',
+      rollingPrChecked: true, threshold: 5, reasons: [], alarmed: false,
+      branch: 'attest/pending', baseBranch: 'main',
+    },
+  };
+}
+
+test('Coming from main is lazy, groups what main changed by PR, and signs nothing', async () => {
+  const calls = [];
+  const fetchImpl = async (url, options = {}) => {
+    const parsed = new URL(url, 'https://faculty.example');
+    calls.push({ method: options.method || 'GET', view: parsed.searchParams.get('view') });
+    if (parsed.searchParams.get('view') === 'incoming') return jsonResponse(INCOMING_VIEW);
+    return jsonResponse(laggingServerState(3));
+  };
+  const { document } = await startHarness({ fetchImpl });
+
+  const section = document.getElementById('incoming-from-main');
+  assert.ok(section, 'a lagging sign-off branch offers the disclosure');
+  assert.equal(section.open, false);
+  assert.equal(document.getElementById('incoming-summary-text').textContent,
+    'Coming from main · which signed pages it changed');
+  assert.equal(calls.some(call => call.view), false, 'nothing is asked until it is opened');
+
+  await openDetails(section);
+  assert.equal(calls.filter(call => call.view === 'incoming').length, 1);
+  assert.equal(document.getElementById('incoming-summary-text').textContent,
+    'Coming from main · 2 signed pages changed there, not yet in this queue');
+  const group = document.getElementById('incoming-group-pr-892');
+  assert.ok(group);
+  assert.match(group.textContent, /#892 Four communication cases · 2 pages/);
+  assert.match(group.textContent, /Daily Review.*Signed in the open review request, so that signature lands outdated/);
+  assert.match(group.textContent, /What Do You Say Next\?.*Needs your signature once the review request merges/);
+  const buttons = document.elements().filter(element => element.tagName === 'BUTTON' && section.contains(element));
+  assert.deepEqual(buttons.map(button => button.getAttribute('id')), ['incoming-refresh']);
+  assert.equal(calls.some(call => call.method === 'POST'), false, 'nothing here signs');
+});
+
+test('Coming from main is absent when the sign-off branch is not behind', async () => {
+  const { document } = await startHarness({ fetchImpl: async () => jsonResponse(laggingServerState(0)) });
+  assert.equal(document.getElementById('incoming-from-main'), null);
+});

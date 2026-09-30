@@ -3996,3 +3996,147 @@ test('a baseline does not offer a clinically bound page for signing again', asyn
   assert.deepEqual(preview.sign.map(item => item.slug), ['mse-tool']);
   assert.equal(preview.excluded.some(item => item.slug === 't_mood.md'), false);
 });
+
+
+/* Coming from main (2026-09-29): `?view=incoming` names signed pages the base branch changed
+   since the attestation branch split off. The queue reads the branch, so while it carries
+   unmerged sign-offs those pages look current here even though learners already see them as
+   pending, and a signature waiting in the review request can land outdated (#895 re-signed
+   review.html at its text from before #892). The rules pinned here: the view is read-only, only
+   commits the branch lacks count, a merge-commit PR is named by GitHub rather than guessed from
+   a commit message, and a comparison GitHub truncated is reported as partial. */
+
+const INCOMING_A_SHA = 'a1'.repeat(20); // content commit of a merge-commit PR: no PR in its message
+const INCOMING_B_SHA = 'b2'.repeat(20); // squash commit naming its PR, touching topic_meta.json
+const PRE_SPLIT_SHA = 'c3'.repeat(20); // older history of the same file, already on the branch
+const SPLIT_SHA = 'd4'.repeat(20);
+
+function incomingMock({ splitRow, comparison } = {}) {
+  const files = defaultFiles();
+  const baseMeta = clone(files[TOPIC_META_PATH].json);
+  baseMeta['t_mood.md'].shelfBlueprint = ['mood-disorders', 'bipolar'];
+  const splitReviewed = clone(files[REVIEWED_PATH].json);
+  if (splitRow) splitReviewed['t_mood.md'] = splitRow;
+  return createGithubMock({
+    files,
+    beforeRequest: (call) => {
+      if (call.method !== 'GET') return undefined;
+      const url = new URL(call.url);
+      if (url.pathname.includes('/compare/')) {
+        return jsonResponse(200, comparison || {
+          ahead_by: 2,
+          behind_by: 1,
+          merge_base_commit: { sha: SPLIT_SHA },
+          commits: [{ sha: INCOMING_A_SHA }, { sha: INCOMING_B_SHA }],
+          files: [{ filename: '01_Core/t_mood.md' }, { filename: TOPIC_META_PATH }, { filename: 'README.md' }],
+        });
+      }
+      if (url.pathname === `/repos/synthetic/faculty-console/commits/${INCOMING_A_SHA}/pulls`) {
+        return jsonResponse(200, [
+          { number: 17, title: 'Unmerged draft', merged_at: null, base: { ref: BASE_BRANCH } },
+          { number: 892, title: 'Four communication cases', merged_at: '2026-09-29T23:53:23Z',
+            html_url: 'https://github.com/synthetic/faculty-console/pull/892', base: { ref: BASE_BRANCH } },
+        ]);
+      }
+      if (url.pathname.endsWith('/pulls') && url.pathname.includes('/commits/')) {
+        return jsonResponse(200, []);
+      }
+      if (url.pathname === '/repos/synthetic/faculty-console/commits') {
+        const path = url.searchParams.get('path');
+        if (path === '01_Core/t_mood.md') {
+          return jsonResponse(200, [
+            commitRecord(INCOMING_A_SHA, 'content(WP-I): four approved communication cases', '2026-09-28T16:00:00Z'),
+            commitRecord(PRE_SPLIT_SHA, 'older wording', '2026-07-01T09:00:00Z'),
+          ]);
+        }
+        if (path === TOPIC_META_PATH) {
+          return jsonResponse(200, [commitRecord(INCOMING_B_SHA, 'qbank: five warnings (#891)', '2026-09-29T15:00:00Z')]);
+        }
+        return jsonResponse(200, []);
+      }
+      const ref = url.searchParams.get('ref');
+      if (call.path === REVIEWED_PATH && ref === SPLIT_SHA) {
+        return jsonResponse(200, contentsObject(`${JSON.stringify(splitReviewed, null, 2)}\n`));
+      }
+      if (call.path === TOPIC_META_PATH && ref === BASE_BRANCH) {
+        return jsonResponse(200, contentsObject(`${JSON.stringify(baseMeta, null, 2)}\n`));
+      }
+      return undefined;
+    },
+  });
+}
+
+test('?view=incoming groups signed pages main changed since the split by the PR that changed them', async () => {
+  const mock = incomingMock();
+  const response = await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }));
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.view, 'incoming');
+  assert.equal(payload.branch, ATTEST_BRANCH);
+  assert.equal(payload.baseBranch, BASE_BRANCH);
+  assert.equal(payload.behindBy, 2);
+  assert.equal(payload.partial, false);
+  assert.deepEqual(payload.unchecked, []);
+  // Newest change first on a tie; the page is in both groups because both touched it.
+  assert.deepEqual(payload.groups.map(group => [group.id, group.slugs]), [
+    ['pr:891', ['t_mood.md']],
+    ['pr:892', ['t_mood.md']],
+  ]);
+  assert.equal(payload.groups.find(group => group.id === 'pr:892').title, 'Four communication cases',
+    'a merge-commit PR is named by the PR GitHub says merged it, not by an unmerged one');
+  assert.deepEqual(payload.pages['t_mood.md'],
+    { title: 'Mood Disorders', kind: 'page', inRollingPr: false, recordChanged: true });
+  assert.equal(payload.pages['mse-tool'], undefined, 'a page awaiting review is not a signed page');
+  assert.equal(JSON.stringify(payload).includes(PRE_SPLIT_SHA), false,
+    'history the branch already has never counts as coming');
+  assertReadOnly(mock);
+});
+
+test('?view=incoming says when a signature waiting in the review request is already outdated', async () => {
+  const mock = incomingMock({
+    splitRow: { status: 'pending', at: '2026-06-01', by: 'Pending faculty review',
+      risk: { kind: 'clinical', level: 'high' }, reason: 'Synthetic review is pending' },
+  });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }))).json();
+  assert.equal(payload.pages['t_mood.md'].inRollingPr, true);
+  assertReadOnly(mock);
+});
+
+test('?view=incoming asks GitHub nothing when the console reads the base branch itself', async () => {
+  const mock = incomingMock();
+  const payload = await (await handlerWith(mock)(viewRequest({ view: 'incoming' }))).json();
+  assert.equal(payload.behindBy, 0);
+  assert.deepEqual(payload.groups, []);
+  assert.deepEqual(payload.pages, {});
+  assert.equal(mock.calls.some(call => call.url.includes('/compare/')), false);
+});
+
+test('?view=incoming is empty, not an error, when the branch is not behind', async () => {
+  const mock = incomingMock({ comparison: { ahead_by: 0, behind_by: 1, commits: [], files: [] } });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }))).json();
+  assert.equal(payload.behindBy, 0);
+  assert.deepEqual(payload.groups, []);
+  assert.equal(mock.calls.some(call => new URL(call.url).pathname.endsWith('/commits')), false,
+    'no file history is read when nothing is coming');
+});
+
+test('?view=incoming reports a comparison GitHub truncated as partial, never as complete', async () => {
+  const mock = incomingMock({
+    comparison: {
+      ahead_by: 400,
+      merge_base_commit: { sha: SPLIT_SHA },
+      commits: [{ sha: INCOMING_A_SHA }],
+      files: [{ filename: '01_Core/t_mood.md' }],
+    },
+  });
+  const payload = await (await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }))).json();
+  assert.equal(payload.partial, true);
+  assert.deepEqual(payload.groups.map(group => group.id), ['pr:892']);
+});
+
+test('?view=incoming needs the faculty key like every other view', async () => {
+  const mock = incomingMock();
+  const response = await handlerWith(mock, ISOLATED_ENV)(viewRequest({ view: 'incoming' }, { key: null }));
+  assert.equal(response.status, 401);
+  assert.equal(mock.calls.length, 0, 'nothing is read for an unauthenticated request');
+});

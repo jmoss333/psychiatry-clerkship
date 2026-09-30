@@ -99,6 +99,63 @@ export function groupDriftedByChange(pages) {
   return { groups: ordered, unexplained: unexplained.sort() };
 }
 
+/**
+ * "Coming from main": signed pages the base branch has changed since the attestation branch
+ * split off from it.
+ *
+ * WHY THIS EXISTS. The queue, and Re-sign by change above, read the attestation branch. While
+ * that branch carries unmerged sign-offs it cannot fast-forward, so a page the base changed
+ * afterwards looks current here while learners already see it as pending. A signature waiting
+ * in the rolling review request can even be outdated before it lands: on 2026-09-29 the
+ * owner's press (#895) re-signed review.html at its text from before #892, which changed a file
+ * the Daily Review fingerprints. This groups those pages by the change that touched them, so
+ * the reviewer knows what is coming before the branch catches up. It signs nothing.
+ *
+ * `signed`        [{ slug, title, kind, sources: [path], inRollingPr }]: pages signed on the
+ *                 attestation branch. inRollingPr: the row differs from the row at the split
+ *                 (true), matches it (false), or could not be compared (null).
+ * `commitsByPath` { path: [commitSummary] }: base commits the branch does not have, per path.
+ * `recordChanged` slugs whose topic_meta record differs between the branches; `recordPath`
+ *                 names topic_meta.json, whose commits then join those pages (a superset, as in
+ *                 Re-sign by change, never an omission).
+ * Returns { groups, recordOnly, pages }. groups: as groupDriftedByChange. recordOnly: pages whose
+ * record changed but no listed commit explains it. pages: { slug: { title, kind, inRollingPr,
+ * recordChanged } } for every affected page, and only those.
+ */
+export function groupIncomingFromBase({
+  signed, commitsByPath, recordChanged, recordPath = 'topic_meta.json',
+} = {}) {
+  const byPath = commitsByPath && typeof commitsByPath === 'object' ? commitsByPath : {};
+  const records = new Set(recordChanged || []);
+  const affected = [];
+  const pages = {};
+  for (const page of Array.isArray(signed) ? signed : []) {
+    if (!page || typeof page.slug !== 'string' || !page.slug) continue;
+    const paths = Array.isArray(page.sources) ? [...page.sources] : [];
+    const recordHit = records.has(page.slug);
+    if (recordHit) paths.push(recordPath);
+    const seen = new Set();
+    const commits = [];
+    for (const path of paths) {
+      for (const summary of Array.isArray(byPath[path]) ? byPath[path] : []) {
+        if (!summary || typeof summary.sha !== 'string' || seen.has(summary.sha)) continue;
+        seen.add(summary.sha);
+        commits.push(summary);
+      }
+    }
+    if (!commits.length && !recordHit) continue;
+    affected.push({ slug: page.slug, commits });
+    pages[page.slug] = {
+      title: typeof page.title === 'string' && page.title ? page.title : page.slug,
+      kind: typeof page.kind === 'string' ? page.kind : '',
+      inRollingPr: page.inRollingPr === true ? true : page.inRollingPr === false ? false : null,
+      recordChanged: recordHit,
+    };
+  }
+  const { groups, unexplained } = groupDriftedByChange(affected);
+  return { groups, recordOnly: unexplained, pages };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────────────────
 // diff
 // ─────────────────────────────────────────────────────────────────────────────────────────

@@ -685,3 +685,25 @@ test('the base-lag alarm links the rolling pull request, https only', () => {
   const insecure = branchSyncNotice({ ...alarmed, rollingPr: 'http://github.example/pull/9' });
   assert.equal(insecure.href, null, 'a non-https PR URL must not become a link');
 });
+
+
+/* The words of the Coming from main disclosure (2026-09-29). */
+import { incomingPageStatus, incomingSummaryText } from '../faculty-console/app.mjs';
+
+test('incomingSummaryText counts affected pages and names the base branch', () => {
+  const server = { branchSync: { baseBranch: 'main' } };
+  assert.equal(incomingSummaryText(server, null), 'Coming from main · which signed pages it changed');
+  assert.equal(incomingSummaryText(server, { groups: [], pages: {} }),
+    'Coming from main · no page you signed changed there');
+  assert.equal(incomingSummaryText(server, { groups: [{}], pages: { 'a.md': {} } }),
+    'Coming from main · 1 signed page changed there, not yet in this queue');
+  assert.equal(incomingSummaryText({}, { groups: [{}], pages: { 'a.md': {}, 'b.md': {} } }),
+    'Coming from main · 2 signed pages changed there, not yet in this queue');
+});
+
+test('incomingPageStatus warns only when the waiting signature itself is outdated', () => {
+  assert.match(incomingPageStatus({ inRollingPr: true }), /signature lands outdated/);
+  assert.match(incomingPageStatus({ inRollingPr: false }), /learners see it as pending now/);
+  assert.match(incomingPageStatus({ inRollingPr: null }), /learners see it as pending now/);
+  assert.match(incomingPageStatus(null), /learners see it as pending now/);
+});

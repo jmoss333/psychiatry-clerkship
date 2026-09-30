@@ -16,6 +16,7 @@ import {
   commitSummary,
   groupDriftedByChange,
   groupId,
+  groupIncomingFromBase,
   lineDiffHunks,
   recordDiff,
 } from '../../change-history.mjs';
@@ -1061,9 +1062,64 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
     return { commit, revision };
   }
 
+  /**
+   * What the base branch has that the attestation branch does not (read-only; the Coming from
+   * main view). GitHub lists at most 250 commits and 300 files per comparison, so a longer
+   * divergence comes back `truncated` rather than silently shortened.
+   */
+  async function compareBranchToBase() {
+    const response = await githubRequest(
+      fetchImpl,
+      `${GITHUB_API}/repos/${settings.repo}/compare/`
+        + `${encodeURIComponent(settings.branch)}...${encodeURIComponent(settings.baseBranch)}`,
+      { headers: githubHeaders(settings.token) },
+    );
+    const comparison = await githubJson(response);
+    if (typeof comparison.ahead_by !== 'number' || !Array.isArray(comparison.commits)) {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    const commits = comparison.commits.filter(isRecord);
+    const files = (Array.isArray(comparison.files) ? comparison.files : [])
+      .filter(isRecord)
+      .map(file => file.filename)
+      .filter(name => typeof name === 'string' && name);
+    const split = isRecord(comparison.merge_base_commit) ? comparison.merge_base_commit : {};
+    return {
+      behindBy: comparison.ahead_by,
+      commits,
+      files,
+      truncated: commits.length < comparison.ahead_by || files.length >= 300,
+      mergeBaseSha: typeof split.sha === 'string' ? split.sha : '',
+    };
+  }
+
+  /** The merged pull request into the base branch that brought `sha`, or null. Read-only. */
+  async function pullRequestForCommit(sha) {
+    const response = await githubRequest(
+      fetchImpl,
+      `${GITHUB_API}/repos/${settings.repo}/commits/${normalizeGitObjectId(sha)}/pulls`,
+      { headers: githubHeaders(settings.token) },
+    );
+    let pulls;
+    try {
+      pulls = await response.json();
+    } catch {
+      return null;
+    }
+    if (!Array.isArray(pulls)) return null;
+    const merged = pulls.filter(isRecord)
+      .find(pull => pull.merged_at && isRecord(pull.base) && pull.base.ref === settings.baseBranch);
+    if (!merged || !Number.isSafeInteger(merged.number)) return null;
+    return {
+      number: merged.number,
+      title: typeof merged.title === 'string' ? merged.title : '',
+      url: githubHttpsUrl(merged.html_url) || '',
+    };
+  }
+
   return {
     read, readRaw, readText, readTree, write, writeText, head, headOf, writeAtHead,
-    listCommits, gitCommit,
+    listCommits, gitCommit, compareBranchToBase, pullRequestForCommit,
     // Identity for per-deployment memo caches (the Re-sign by change diffs): the fetch
     // implementation, exactly as the tree cache is keyed.
     cacheIdentity: typeof fetchImpl === 'function' ? fetchImpl : null,
@@ -1949,9 +2005,168 @@ async function buildDiffView(repository, settings, slug, sha) {
   return result;
 }
 
+// ───────────────────────────────────────────────────────────────────────────────────────
+// Coming from main (read-only). While the attestation branch carries unmerged sign-offs it
+// cannot fast-forward, and every page the base changed since is invisible to the queue, which
+// reads the branch. This view names those pages, grouped by the PR that changed them, and says
+// which of them were signed in the open review request (those signatures will land outdated).
+// Like the other views it never writes, never signs and never freshens a branch.
+// ───────────────────────────────────────────────────────────────────────────────────────
+
+const MAX_INCOMING_PR_LOOKUPS = 40;
+
+function sameJson(left, right) {
+  return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+}
+
+function topicMetaRecordText(doc, slug) {
+  const value = isRecord(doc) ? doc[slug] : null;
+  return isRecord(value) ? canonicalTopicMetaRecord(value).toString('utf8') : '';
+}
+
+async function buildIncomingView(repository, settings) {
+  const empty = {
+    view: 'incoming',
+    branch: settings.branch,
+    baseBranch: settings.baseBranch,
+    generatedAt: new Date().toISOString(),
+    behindBy: 0,
+    partial: false,
+    groups: [],
+    recordOnly: [],
+    pages: {},
+    unchecked: [],
+  };
+  // Only an isolated attestation branch can trail the base. In ledger mode the queue already
+  // reads the base branch, so nothing is "coming".
+  if (!settings.isolated || settings.ledger || settings.branch === settings.baseBranch) return empty;
+  const comparison = await repository.compareBranchToBase();
+  if (!comparison.behindBy) return empty;
+  const changed = new Set(comparison.files);
+  const incoming = new Set(comparison.commits.map(commit => commit.sha).filter(sha => typeof sha === 'string'));
+  let partial = comparison.truncated;
+
+  const reviewed = (await readRequired(repository, REVIEWED_PATH, settings.branch)).json;
+  // A signature still only on the attestation branch: its row differs from the row where the
+  // two branches split. Unknown (null) when that row cannot be read — never guessed.
+  let splitRows = null;
+  if (comparison.mergeBaseSha) {
+    try {
+      splitRows = (await repository.read(REVIEWED_PATH, { ref: comparison.mergeBaseSha })).json;
+    } catch {
+      splitRows = null;
+    }
+  }
+  // Sources as the next merge will see them: the base branch's derived listing.
+  let shipped;
+  try {
+    shipped = (await repository.read(SHIPPED_PAGES_PATH, { ref: settings.baseBranch })).json;
+  } catch {
+    shipped = (await readShippedPages(repository, settings)).file.json;
+  }
+  const described = new Map();
+  for (const page of (isRecord(shipped) && Array.isArray(shipped.pages) ? shipped.pages : [])) {
+    if (isRecord(page) && typeof page.slug === 'string' && !described.has(page.slug)) {
+      described.set(page.slug, {
+        title: typeof page.title === 'string' ? page.title : '',
+        kind: typeof page.kind === 'string' ? page.kind : '',
+      });
+    }
+  }
+  const signed = Object.entries(isRecord(reviewed) ? reviewed : {})
+    .filter(([, row]) => isRecord(row) && row.status === 'reviewed')
+    .map(([slug, row]) => ({
+      slug,
+      title: described.get(slug)?.title || slug,
+      kind: described.get(slug)?.kind || '',
+      sources: sourcesForSlug(shipped, slug),
+      inRollingPr: isRecord(splitRows) ? !sameJson(row, splitRows[slug]) : null,
+    }));
+
+  // A page's quiz / key-points record is part of its fingerprint too.
+  const recordChanged = new Set();
+  if (changed.has(TOPIC_META_PATH)) {
+    try {
+      const [branchMeta, baseMeta] = await Promise.all([
+        repository.read(TOPIC_META_PATH),
+        repository.read(TOPIC_META_PATH, { ref: settings.baseBranch }),
+      ]);
+      for (const page of signed) {
+        if (topicMetaRecordText(branchMeta.json, page.slug) !== topicMetaRecordText(baseMeta.json, page.slug)) {
+          recordChanged.add(page.slug);
+        }
+      }
+    } catch {
+      partial = true;
+    }
+  }
+
+  // One file history per changed path a signed page depends on, bounded like Re-sign by
+  // change. No `since`: a PR's commits can predate the split and still be new to the branch,
+  // so membership in the comparison decides, not the date.
+  const needsFor = page => [
+    ...page.sources.filter(path => changed.has(path)),
+    ...(recordChanged.has(page.slug) ? [TOPIC_META_PATH] : []),
+  ];
+  const wanted = [...new Set(signed.flatMap(needsFor))].sort();
+  const failed = new Set(wanted.slice(MAX_CHANGE_QUERIES));
+  const commitsByPath = {};
+  await mapLimit(wanted.slice(0, MAX_CHANGE_QUERIES), CHANGE_QUERY_CONCURRENCY, async (path) => {
+    try {
+      const commits = await repository.listCommits({ sha: settings.baseBranch, path });
+      commitsByPath[path] = commits.filter(commit => incoming.has(commit.sha)).map(commitSummary);
+    } catch {
+      failed.add(path);
+    }
+  });
+  // A commit names its PR only when it is a squash or the merge commit itself; the content
+  // commits of a merge-commit PR name none. Ask which merged PR brought each such commit
+  // (bounded, fail-soft: an unanswered commit keeps its own short sha as its group).
+  const unnamed = [...new Map(Object.values(commitsByPath).flat()
+    .filter(summary => !summary.pr && summary.sha)
+    .map(summary => [summary.sha, summary])).values()];
+  const named = new Map();
+  await mapLimit(unnamed.slice(0, MAX_INCOMING_PR_LOOKUPS), CHANGE_QUERY_CONCURRENCY, async (summary) => {
+    try {
+      const pull = await repository.pullRequestForCommit(summary.sha);
+      if (pull) named.set(summary.sha, pull);
+    } catch {
+      /* keep the commit's own identity */
+    }
+  });
+  for (const path of Object.keys(commitsByPath)) {
+    commitsByPath[path] = commitsByPath[path].map((summary) => {
+      const pull = named.get(summary.sha);
+      return pull
+        ? { ...summary, pr: pull.number, title: pull.title || summary.title, url: pull.url || summary.url }
+        : summary;
+    });
+  }
+
+  const unchecked = [];
+  const checked = [];
+  for (const page of signed) {
+    if (needsFor(page).some(path => failed.has(path))) unchecked.push(page.slug);
+    else checked.push(page);
+  }
+  const grouped = groupIncomingFromBase({
+    signed: checked, commitsByPath, recordChanged, recordPath: TOPIC_META_PATH,
+  });
+  return {
+    ...empty,
+    behindBy: comparison.behindBy,
+    partial: partial || unchecked.length > 0,
+    groups: grouped.groups,
+    recordOnly: grouped.recordOnly,
+    pages: grouped.pages,
+    unchecked: unchecked.sort(),
+  };
+}
+
 async function handleView(repository, settings, url) {
   const view = url.searchParams.get('view');
   if (view === 'changes') return buildChangeView(repository, settings);
+  if (view === 'incoming') return buildIncomingView(repository, settings);
   if (view === 'diff') {
     const sha = url.searchParams.get('sha') || '';
     if (sha && !/^[a-f0-9]{40}$/i.test(sha)) throw new HttpError('changes.invalid_commit', 400, 'That change id is not valid.');
