@@ -34,6 +34,28 @@
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
 
+/* Route geometry -- ONE source for the road and the stops. Stops alternate between two heights
+   inside a fixed band; frontdoor.css reads the same numbers as --fd-path-band / --fd-path-y-low /
+   --fd-path-y-high on .fd-pathroute (tests/fd-path-route.test.mjs pins that they agree). x is in
+   a 1000-wide viewBox stretched to the weeks grid (gap:0), so stop i of n sits at the centre of
+   column i at any width; y is 1:1 with CSS px. The road stays neutral (#743): it is geometry
+   only and never derives from week, viewWeek or progress. */
+var FD_PATH_BAND=190, FD_PATH_Y_LOW=118, FD_PATH_Y_HIGH=72, FD_PATH_VIEW_W=1000;
+
+function fdPathR2(v){ return Math.round(v*100)/100; }
+function fdPathStopX(i, n){ return fdPathR2(FD_PATH_VIEW_W*(i+0.5)/n); }
+function fdPathStopY(i){ return i%2===0?FD_PATH_Y_LOW:FD_PATH_Y_HIGH; }
+
+function fdPathConnectorD(n){
+  if(!(n>0)) return '';
+  var h=FD_PATH_VIEW_W/(2*n), d='M'+fdPathStopX(0,n)+' '+fdPathStopY(0), i, x0, y0, x1, y1;
+  for(i=1;i<n;i++){
+    x0=fdPathStopX(i-1,n); y0=fdPathStopY(i-1); x1=fdPathStopX(i,n); y1=fdPathStopY(i);
+    d+=' C'+fdPathR2(x0+h)+' '+y0+' '+fdPathR2(x1-h)+' '+y1+' '+x1+' '+y1;
+  }
+  return d;
+}
+
 function fdPathDotCls(isDone, isNow){
   if(isDone) return 'fd-dot is-done';
   if(isNow) return 'fd-dot is-current';
@@ -205,8 +227,8 @@ function fdPathRoute(index, state){
   var idx=index||{weeks:[]},weeks=idx.weeks||[];
   var count=fdPathWeekCount(idx),out='';
   out+='<nav class="fd-pathroute" aria-label="Explore the Path">';
-  out+='<svg class="fd-pathroute__curve" viewBox="0 0 1000 260" preserveAspectRatio="none" aria-hidden="true" focusable="false">';
-  out+='<path class="fd-pathroute__connector" d="M45 154 C145 54 235 62 323 156 S490 226 580 124 S755 58 842 145 S938 184 970 118"></path>';
+  out+='<svg class="fd-pathroute__curve" viewBox="0 0 '+FD_PATH_VIEW_W+' '+FD_PATH_BAND+'" preserveAspectRatio="none" aria-hidden="true" focusable="false">';
+  out+='<path class="fd-pathroute__connector" d="'+fdPathConnectorD(weeks.length)+'"></path>';
   out+='</svg>';
   out+='<div class="fd-pathroute__weeks fd-pathroute__weeks--'+fdEsc(count)+'" role="tablist" aria-label="Path weeks">';
   for(var i=0;i<weeks.length;i++){ out+=fdPathTimelineRow(idx,weeks[i],state); }

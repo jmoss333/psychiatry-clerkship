@@ -20,7 +20,9 @@ const make = new Function(`
   ${read('frontdoor/fd_today.js')}
   ${pathSrc}
   return { fdPath: fdPath, fdBuildIndex: fdBuildIndex, fdItemsForWeek: fdItemsForWeek,
-           fdTodayProgress: fdTodayProgress, fdPathMoveWeek: fdPathMoveWeek };
+           fdTodayProgress: fdTodayProgress, fdPathMoveWeek: fdPathMoveWeek,
+           fdPathConnectorD: fdPathConnectorD, fdPathStopX: fdPathStopX, fdPathStopY: fdPathStopY,
+           FD_PATH_BAND: FD_PATH_BAND };
 `);
 const F = make();
 
@@ -129,6 +131,47 @@ test('the production connector is neutral and does not imply ordered completion'
   assert.equal((html.match(/class="fd-pathroute__connector"/g) || []).length, 1);
   assert.doesNotMatch(html, /fd-pathroute__connector[^>]*(?:active|progress|selected|done)/i);
   assert.doesNotMatch(html, /stroke-dasharray|stroke-dashoffset|path-progress/);
+});
+
+// ---- route geometry: the road is generated from the stops --------------------------------
+
+function parseD(d) {
+  const nums = d.replace(/[MC]/g, ' ').trim().split(/\s+/).map(Number);
+  const start = [nums[0], nums[1]];
+  const segs = [];
+  for (let i = 2; i < nums.length; i += 6) segs.push(nums.slice(i, i + 6));
+  return { start, segs, cCount: (d.match(/C/g) || []).length };
+}
+
+for (const n of [4, 6]) {
+  test(`the connector for ${n} stops starts on stop 1, ends on stop ${n}, and passes through every stop`, () => {
+    const { start, segs, cCount } = parseD(F.fdPathConnectorD(n));
+    assert.equal(cCount, n - 1);
+    assert.deepEqual(start, [F.fdPathStopX(0, n), F.fdPathStopY(0)]);
+    segs.forEach((seg, k) => {
+      const i = k + 1;
+      assert.deepEqual([seg[4], seg[5]], [F.fdPathStopX(i, n), F.fdPathStopY(i)], `segment ${k} ends on stop ${i + 1}`);
+      assert.equal(seg[1], F.fdPathStopY(i - 1), 'horizontal tangent leaving the stop');
+      assert.equal(seg[3], F.fdPathStopY(i), 'horizontal tangent arriving at the stop');
+    });
+  });
+}
+
+test('stop x is the column centre and stops alternate low/high', () => {
+  assert.equal(F.fdPathStopX(0, 4), 125);
+  assert.equal(F.fdPathStopX(3, 4), 875);
+  assert.equal(F.fdPathStopY(0), 118);
+  assert.equal(F.fdPathStopY(1), 72);
+  assert.equal(F.fdPathConnectorD(1), 'M500 118');
+  assert.equal(F.fdPathConnectorD(0), '');
+});
+
+test('the rendered route uses the generated connector and the shared band height', () => {
+  const html = F.fdPath(IDX, s({}));
+  assert.match(html, /viewBox="0 0 1000 190"/);
+  assert.ok(html.includes('d="' + F.fdPathConnectorD(6) + '"'));
+  const four = F.fdPath(FOUR_INDEX, s({}));
+  assert.ok(four.includes('d="' + F.fdPathConnectorD(4) + '"'));
 });
 
 test('route nodes expose canonical themes plus independent selected, current, and complete text', () => {
