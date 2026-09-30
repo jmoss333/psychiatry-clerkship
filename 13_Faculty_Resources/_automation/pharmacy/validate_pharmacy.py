@@ -39,8 +39,6 @@ FIELDMAP = HERE / "reconnect_meds_fieldmap.json"
 DOSE_RE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg/kg)\b", re.I)
 FK_MAX = 8.0
 
-sys.path.insert(0, str(HERE.parent))
-from sync_from_reconnect import PHARMACY_DENYLIST as ENGINE_DENYLIST  # noqa: E402
 
 
 def norm(text):
@@ -136,9 +134,9 @@ def walk(value, trail=""):
 
 def check(pharmacy, receipt, fieldmap, root=ROOT):
     findings, notes = [], []
-    # The sync engine's PHARMACY_DENYLIST is the other statement of this rule (its docstring
-    # asks the validator to import it); enforce the union so neither can drift narrower.
-    denylist = set(fieldmap["denylist"]) | set(ENGINE_DENYLIST)
+    # The field map's denylist is the ONE statement of this rule: the dev-only sync engine
+    # reads the same file (test_sync_from_reconnect pins that), so nothing here imports it.
+    denylist = set(fieldmap["denylist"])
     evidence = {s["id"] for s in json.loads((root / "evidence_registry.json").read_text())["sources"]}
     qbank = {q["id"] for q in json.loads((root / "question_bank.json").read_text())["items"]}
     topics = set(json.loads((root / "topic_meta.json").read_text()))
