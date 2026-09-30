@@ -8,42 +8,47 @@ import { requestGetWithRetry } from './net-resilience.js';
 // This deliberately reverses the 2026-07-15 "serve drafts, marked" decision (see the node
 // suite tests/qbank-draft-visibility.test.mjs for the history) — unlike a04a848's silent
 // accidental gate, the exclusion is stated on the setup screen. These assert the shipped
-// site end-to-end: pool math in both toggle states, persistence, and per-question labels.
+// page end-to-end against a bank derived from the shipped one (see deriveTestBank): pool math
+// in both toggle states, persistence, and per-question labels.
 
 // Tests may not depend on live review state (the #729 rule). The shipped bank's make-up
 // changes every time faculty attest: on 2026-09-29 the rolling sign-off PR #895 attested the
 // last five live drafts, and the guards below ("the bank holds drafts") turned red for faculty
 // doing their job, which blocked the sign-offs from reaching learners. So each test serves the
-// page a bank DERIVED from the shipped one that is guaranteed to hold all three kinds. Every
-// item stays a real shipped item (same schema, same render paths); only `status` or `retired`
-// is flipped, deterministically, and only as far as the guarantee needs. When the shipped bank
-// already holds drafts and retired items, the derived bank is the shipped bank unchanged.
+// page a bank DERIVED from the shipped one that is guaranteed to hold what these tests need:
+// retired items, at least MIN_DRAFTS drafts, and a category that strictly leads on drafts while
+// still holding attested items (the label test walks exactly that category). Every item stays a
+// real shipped item (same schema, same render paths); only `status` or `retired` is flipped,
+// deterministically, and only as far as the guarantee needs.
 const MIN_DRAFTS = 3;
+const KEEP_ATTESTED = 2;
 
 function deriveTestBank(data) {
   const items = (data.items || data).map((it) => ({ ...it }));
   const live = () => items.filter((it) => !it.retired);
   const isDraft = (it) => !it.retired && it.status !== 'attested';
+  const draftsIn = (category) => live().filter((it) => it.category === category && isDraft(it)).length;
   // Retired: keep the shipped ones; only if there are none, retire one attested item.
   if (!items.some((it) => it.retired)) {
     const victim = [...items].reverse().find((it) => it.status === 'attested');
     if (victim) victim.retired = true;
   }
-  // Drafts: flip attested items back to draft inside ONE category (the one holding the most
-  // attested items, ties by name), always leaving two attested there, until the pool has
-  // MIN_DRAFTS drafts. One category, so the per-question label test finds both kinds in it.
-  let drafts = items.filter(isDraft).length;
-  if (drafts < MIN_DRAFTS) {
-    const counts = {};
-    for (const it of live()) if (it.status === 'attested') counts[it.category] = (counts[it.category] || 0) + 1;
-    const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
-    const category = ranked.length ? ranked[0][0] : null;
-    const pool = live().filter((it) => it.category === category && it.status === 'attested');
-    for (const it of pool.slice(0, Math.max(0, pool.length - 2))) {
-      if (drafts >= MIN_DRAFTS) break;
-      it.status = 'draft';
-      drafts += 1;
-    }
+  // The leading category: the one holding the most attested items (ties by name). It gets
+  // MIN_DRAFTS drafts while keeping KEEP_ATTESTED attested, then leads strictly: any other
+  // category with as many drafts has drafts turned back to attested until it has fewer.
+  const attestedBy = {};
+  for (const it of live()) if (it.status === 'attested') attestedBy[it.category] = (attestedBy[it.category] || 0) + 1;
+  const ranked = Object.entries(attestedBy).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+  if (!ranked.length || ranked[0][1] < MIN_DRAFTS + KEEP_ATTESTED) {
+    throw new Error(`question bank too small for this test: no category holds ${MIN_DRAFTS + KEEP_ATTESTED} attested items`);
+  }
+  const lead = ranked[0][0];
+  for (const it of live().filter((q) => q.category === lead && q.status === 'attested')) {
+    if (draftsIn(lead) >= MIN_DRAFTS) break;
+    it.status = 'draft';
+  }
+  for (const it of live()) {
+    if (it.category !== lead && isDraft(it) && draftsIn(it.category) >= draftsIn(lead)) it.status = 'attested';
   }
   return Array.isArray(data) ? items : { ...data, items };
 }
