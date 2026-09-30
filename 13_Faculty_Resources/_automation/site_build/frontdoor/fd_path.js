@@ -191,6 +191,14 @@ function fdPathFeedback(pathId, week, state){
   return out+'</div>';
 }
 
+/* The stop's count, in words. The ring on the number states the same fraction visually;
+   this text is what a screen reader and a colour-blind reader get. */
+function fdPathCountLabel(p){
+  if(!p.total) return '0 activities';
+  if(!p.done) return p.total+(p.total===1?' activity':' activities');
+  return p.done+' of '+p.total+' done';
+}
+
 /* One timeline row. .fd-timeline__line is emitted unconditionally on every row, including the
    last -- frontdoor.css hides it there via :last-child, and skipping it in markup instead
    would break the spine on any row the CSS selector does not happen to cover (CLASS-INVENTORY
@@ -214,12 +222,12 @@ function fdPathTimelineRow(index, w, state){
     '</span>'+
     '<span class="fd-timeline__body">'+
       '<span class="fd-timeline__n">'+nLabel+'</span>'+
-      '<span class="fd-timeline__number" aria-hidden="true">'+fdEsc(w.n)+'</span>'+
+      '<span class="fd-timeline__number" aria-hidden="true" style="--fd-ring-pct:'+fdEsc(progress.pct)+'%">'+fdEsc(w.n)+'</span>'+
       '<span class="fd-timeline__title">'+fdEsc(w.title)+'</span>'+
       '<span class="fd-timeline__theme">'+fdEsc(w.theme||'')+'</span>'+
       (status?'<span class="fd-timeline__status">'+status+'</span>':'')+
     '</span>'+
-    '<span class="fd-timeline__count">'+progress.done+'/'+progress.total+'</span>'+
+    '<span class="fd-timeline__count">'+fdEsc(fdPathCountLabel(progress))+'</span>'+
   '</button>';
 }
 

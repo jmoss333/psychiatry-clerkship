@@ -220,7 +220,23 @@ test('a week with zero items is never marked done', () => {
   const idx = F.fdBuildIndex(emptyCur, FIX_META, FIX_TOOLS, FIX_MAN);
   const html = F.fdPath(idx, s({ week: 2, viewWeek: 2, done: {} }));
   assert.match(rowFor(html, 6).body, /class="fd-dot"><\/span>/);
-  assert.match(rowFor(html, 6).body, /0\/0/);
+  assert.match(rowFor(html, 6).body, />0 activities</);
+});
+
+test('each stop carries its own week ring, independent of week order', () => {
+  const html = F.fdPath(IDX, s({ week: 2, viewWeek: 2, done: { 'w4a.md': true, 'w5a.md': true } }));
+  assert.match(rowFor(html, 4).body, /class="fd-timeline__number" aria-hidden="true" style="--fd-ring-pct:100%"/);
+  assert.match(rowFor(html, 5).body, /style="--fd-ring-pct:50%"/);
+  assert.match(rowFor(html, 3).body, /style="--fd-ring-pct:0%"/);
+  assert.match(rowFor(html, 4).body, /class="fd-timeline__status">Complete<\/span>/);
+});
+
+test('a zero-item week has an empty ring and is never complete', () => {
+  const emptyCur = buildCurriculum(WEEK_DEFS.map((w) => (w.n === 6 ? Object.assign({}, w, { refs: [] }) : w)));
+  const idx = F.fdBuildIndex(emptyCur, FIX_META, FIX_TOOLS, FIX_MAN);
+  const body = rowFor(F.fdPath(idx, s({})), 6).body;
+  assert.match(body, /--fd-ring-pct:0%/);
+  assert.doesNotMatch(body, /Complete/);
 });
 
 // ---- selection is viewWeek, not week ---------------------------------------------------
@@ -235,10 +251,10 @@ test('the selected (is-sel) row is viewWeek, not week', () => {
 
 // ---- per-week counts read d/t -----------------------------------------------------------
 
-test('per-week counts render as done/total', () => {
+test('per-week counts read as words', () => {
   const html = F.fdPath(IDX, s({ week: 2, viewWeek: 2, done: { 'w5a.md': true } }));
-  assert.match(rowFor(html, 5).body, /<span class="fd-timeline__count">1\/2<\/span>/);
-  assert.match(rowFor(html, 1).body, /<span class="fd-timeline__count">0\/1<\/span>/);
+  assert.match(rowFor(html, 5).body, /<span class="fd-timeline__count">1 of 2 done<\/span>/);
+  assert.match(rowFor(html, 1).body, /<span class="fd-timeline__count">1 activity<\/span>/);
 });
 
 test('repeated practice counters and selected detail read their own week from saved progress', () => {
@@ -247,8 +263,8 @@ test('repeated practice counters and selected detail read their own week from sa
   const html = F.fdPath(idx, s({ week: 1, viewWeek: 2, done: { 'practice.html': true },
     progressRaw: { 'practice.html': { done: true, practiceWeeks: { 1: { done: true, at: '2026-08-03' } } } },
   }));
-  assert.match(rowFor(html, 1).body, /class="fd-timeline__count">1\/1/);
-  for (let n = 2; n <= 6; n++) assert.match(rowFor(html, n).body, /class="fd-timeline__count">0\/1/);
+  assert.match(rowFor(html, 1).body, /class="fd-timeline__count">1 of 1 done/);
+  for (let n = 2; n <= 6; n++) assert.match(rowFor(html, n).body, /class="fd-timeline__count">1 activity/);
   assert.match(html, /data-fd-toggle="practice.html"[^>]*aria-pressed="false"/);
 });
 
