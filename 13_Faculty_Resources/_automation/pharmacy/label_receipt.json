@@ -1,0 +1,1559 @@
+{
+  "schemaVersion": 1,
+  "agents": {
+    "acamprosate": {
+      "rxnorm": {
+        "name": "acamprosate",
+        "rxcui": "82819",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "ACAMPROSATE CALCIUM"
+        ],
+        "labelsMatched": 7,
+        "labelsWithBoxedWarning": 0
+      },
+      "reference": {
+        "setId": "1cfe4675-766f-4f1a-b1a8-96bbdacfcfa5",
+        "effectiveDate": "2026-07-14",
+        "brand": "ACAMPROSATE CALCIUM",
+        "manufacturer": "Somerset Therapeutics, LLC",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "1 INDICATIONS AND USAGE Acamprosate calcium is indicated for the maintenance of abstinence from alcohol in patients with alcohol dependence who are abstinent at treatment initiation. Treatment with acamprosate calcium should be part of a comprehensive management program that includes psychosocial support. The efficacy of acamprosate calcium in promoting abstinence has not been demonstrated in subjects who have not undergone detoxification and not achieved alcohol abstinence prior to beginning acamprosate calcium treatment. The efficacy of acamprosate calcium in promoting abstinence from alcohol in polysubstance abusers has not been adequately assessed. Acamprosate calcium delayed-release tablets are indicated for the maintenance of abstinence from alcohol in patients with alcohol dependence who are abstinent at treatment initiation (1, 14). Treatment with acamprosate calcium delayed-release tablets should be part of a comprehensive management program that includes psychosocial support (1).",
+        "brandsSeen": [],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "aripiprazole": {
+      "rxnorm": {
+        "name": "aripiprazole",
+        "rxcui": "89013",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "ARIPIPRAZOLE"
+        ],
+        "labelsMatched": 116,
+        "labelsWithBoxedWarning": 115
+      },
+      "reference": {
+        "setId": "c040bd1d-45b7-49f2-93ea-aed7220b30ac",
+        "effectiveDate": "2025-01-29",
+        "brand": "ABILIFY",
+        "manufacturer": "Otsuka America Pharmaceutical, Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS and SUICIDAL THOUGHTS AND BEHAVIORS WITH ANTIDEPRESSANT DRUGS Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an incre",
+        "indicationsLead": "1 INDICATIONS AND USAGE ABILIFY (aripiprazole) Tablets are indicated for the treatment of: Schizophrenia Acute Treatment of Manic and Mixed Episodes associated with Bipolar I Disorder Adjunctive Treatment of Major Depressive Disorder Irritability Associated with Autistic Disorder Treatment of Tourette's Disorder ABILIFY is an atypical antipsychotic. ABILIFY is indicated for: Schizophrenia ( 14.1 ) Acute Treatment of Manic and Mixed Episodes associated with Bipolar I Disorder ( 14.2 ) Adjunctive Treatment of Major Depressive Disorder ( 14.3 ) Irritability Associated with Autistic Disorder ( 14.4 ) Treatment of Tourette's Disorder ( 14.5 )",
+        "brandsSeen": [
+          "ABILIFY",
+          "Abilify Asimtufii",
+          "ABILIFY MAINTENA",
+          "OPIPZA"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "benztropine": {
+      "rxnorm": {
+        "name": "benztropine",
+        "rxcui": "1424",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "BENZTROPINE MESYLATE"
+        ],
+        "labelsMatched": 34,
+        "labelsWithBoxedWarning": 0
+      },
+      "reference": {
+        "setId": "53c02a89-012c-e724-e063-6294a90acc75",
+        "effectiveDate": "2026-08-17",
+        "brand": "Benztropine Mesylate",
+        "manufacturer": "Unit Dose Solutions, Inc.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "INDICATIONS AND USAGE For use as an adjunct in the therapy of all forms of parkinsonism. Useful also in the control of extrapyramidal disorders (except tardive dyskinesia – see PRECAUTIONS ) due to neuroleptic drugs (e.g., phenothiazines).",
+        "brandsSeen": [],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "buprenorphine": {
+      "rxnorm": {
+        "name": "buprenorphine",
+        "rxcui": "1819",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "BUPRENORPHINE HYDROCHLORIDE AND NALOXONE HYDROCHLORIDE",
+          "BUPRENORPHINE AND NALOXONE",
+          "BUPRENORPHINE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 48,
+        "labelsWithBoxedWarning": 5
+      },
+      "reference": {
+        "setId": "8a5edcf9-828c-4f97-b671-268ab13a8ecd",
+        "effectiveDate": "2025-12-22",
+        "brand": "Suboxone",
+        "manufacturer": "INDIVIOR INC.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "1 INDICATIONS AND USAGE SUBOXONE sublingual film is indicated for treatment of opioid dependence. SUBOXONE sublingual film should be used as part of a complete treatment plan that includes counseling and psychosocial support. SUBOXONE® sublingual film contains buprenorphine, a partial‐opioid agonist, and naloxone, an opioid antagonist, and is indicated for treatment of opioid dependence. ( 1 ) SUBOXONE sublingual film should be used as part of a complete treatment plan that includes counseling and psychosocial support. ( 1 )",
+        "brandsSeen": [
+          "BELBUCA",
+          "Buprenorphine HCl and Naloxone HCl",
+          "Suboxone",
+          "Zubsolv"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "bupropion": {
+      "rxnorm": {
+        "name": "bupropion",
+        "rxcui": "42347",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "BUPROPION HYDROCHLORIDE"
+        ],
+        "labelsMatched": 235,
+        "labelsWithBoxedWarning": 234
+      },
+      "reference": {
+        "setId": "a435da9d-f6e8-4ddc-897d-8cd2bf777b21",
+        "effectiveDate": "2026-02-10",
+        "brand": "WELLBUTRIN XL",
+        "manufacturer": "Bausch Health US LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS SUICIDALITY AND ANTIDEPRESSANT DRUGS Antidepressants increased the risk of suicidal thoughts and behavior in children, adolescents, and young adults in short-term trials. These trials did not show an",
+        "indicationsLead": "1 INDICATIONS AND USAGE Wellbutrin XL is an aminoketone antidepressant, indicated for: • treatment of major depressive disorder (MDD) ( 1.1 ) • prevention of seasonal affective disorder (SAD) ( 1.2 ) 1.1 Major Depressive Disorder (MDD) Wellbutrin XL ® (bupropion hydrochloride extended-release) tablets is indicated for the treatment of major depressive disorder (MDD), as defined by the Diagnostic and Statistical Manual (DSM). The efficacy of the immediate-release formulation of bupropion was established in two 4-week controlled inpatient trials and one 6-week controlled outpatient trial of adult patients with MDD. The efficacy of the sustained-release formulation of bupropion in the maintenance treatment of MDD was established in a long-term (up to 44 weeks), placebo-controlled trial in patients who had responded to bupropion in an 8-week study of acute treatment [ see Clinical Studies (14.1) ]. 1.2 Seasonal Affective Disorder (SAD) Wellbutrin XL is indicated for the prevention of seasonal major depressive episodes in patients with a diagnosis of seasonal affective disorder (SAD). The efficacy of bupropion hydrochloride extended-release tablets in the prevention of seasonal major depressive episodes was established in 3 placebo-controlled trials in adult outpatients with a history of MDD with an autumn-winter seasonal pattern as defined in the DSM [ see Clinical Studies (14.2) ].",
+        "brandsSeen": [
+          "bupropion",
+          "Forfivo XL",
+          "WELLBUTRIN SR",
+          "WELLBUTRIN XL"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "carbamazepine": {
+      "rxnorm": {
+        "name": "carbamazepine",
+        "rxcui": "2002",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "CARBAMAZEPINE"
+        ],
+        "labelsMatched": 81,
+        "labelsWithBoxedWarning": 81
+      },
+      "reference": {
+        "setId": "8d409411-aa9f-4f3a-a52c-fbcb0c3ec053",
+        "effectiveDate": "2026-08-20",
+        "brand": "Tegretol",
+        "manufacturer": "Novartis Pharmaceuticals Corporation",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNINGS SERIOUS DERMATOLOGIC REACTIONS AND HLA-B*1502 ALLELE SERIOUS AND SOMETIMES FATAL DERMATOLOGIC REACTIONS, INCLUDING TOXIC EPIDERMAL NECROLYSIS (TEN) AND STEVENS-JOHNSON SYNDROME (SJS), HAVE BEEN REPORTED DURING TREATMENT WITH TEGRET",
+        "indicationsLead": "INDICATIONS AND USAGE Epilepsy Tegretol is indicated for use as an anticonvulsant drug. Evidence supporting efficacy of Tegretol as an anticonvulsant was derived from active drug-controlled studies that enrolled patients with the following seizure types: Partial seizures with complex symptomatology (psychomotor, temporal lobe). Patients with these seizures appear to show greater improvement than those with other types. Generalized tonic-clonic seizures (grand mal). Mixed seizure patterns which include the above, or other partial or generalized seizures. Absence seizures (petit mal) do not appear to be controlled by Tegretol (see PRECAUTIONS, General). Trigeminal Neuralgia Tegretol is indicated in the treatment of the pain associated with true trigeminal neuralgia. Beneficial results have also been reported in glossopharyngeal neuralgia. This drug is not a simple analgesic and should not be used for the relief of trivial aches or pains.",
+        "brandsSeen": [
+          "Carbamazepin",
+          "Carbatrol",
+          "EQUETRO",
+          "Tegretol",
+          "Tegretol XR"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "cariprazine": {
+      "rxnorm": {
+        "name": "cariprazine",
+        "rxcui": "1667655",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "CARIPRAZINE HYDROCHLORIDE",
+          "CARIPRAZINE"
+        ],
+        "labelsMatched": 1,
+        "labelsWithBoxedWarning": 1
+      },
+      "reference": {
+        "setId": "4b5f7c65-aa2d-452a-b3db-bc85c06ff12f",
+        "effectiveDate": "2025-12-18",
+        "brand": "Vraylar",
+        "manufacturer": "Allergan, Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS and SUICIDAL THOUGHTS AND BEHAVIORS Increased Mortality in Elderly Patients with Dementia-Related Psychosis Elderly patients with dementia-related psychosis tr",
+        "indicationsLead": "1 . INDICATIONS AND USAGE VRAYLAR ® is indicated for: • Treatment of schizophrenia in adult and pediatric patients 13 years of age and older [see Clinical Studies ( 14.1 )] • Acute treatment of manic or mixed episodes associated with bipolar I disorder in adult and pediatric patients 10 years of age and older [see Clinical Studies ( 14.2 )] • Treatment of depressive episodes associated with bipolar I disorder (bipolar depression) in adult patients [see Clinical Studies ( 14.3 )] • Adjunctive therapy to antidepressants for the treatment of major depressive disorder (MDD) in adult patients [see Clinical Studies ( 14.4 )] VRAYLAR is an atypical antipsychotic indicated for: Treatment of schizophrenia in adults and pediatric patients 13 years of age and older ( 1 ) Acute treatment of manic or mixed episodes associated with bipolar I disorder in adults and pediatric patients 10 years of age and older ( 1 ) Treatment of depressive episodes associated with bipolar I disorder (bipolar depression) in adults ( 1 ) Adjunctive therapy to antidepressants for the treatment of major depressive disorder (MDD) in adults ( 1 )",
+        "brandsSeen": [
+          "Vraylar"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "chlordiazepoxide": {
+      "rxnorm": {
+        "name": "chlordiazepoxide",
+        "rxcui": "2356",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "CHLORDIAZEPOXIDE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 17,
+        "labelsWithBoxedWarning": 17
+      },
+      "reference": {
+        "setId": "9aba3135-00ff-47ba-b926-55eb16b361bf",
+        "effectiveDate": "2026-07-10",
+        "brand": "Chlordiazepoxide Hydrochloride",
+        "manufacturer": "REMEDYREPACK INC.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: RISKS FROM CONCOMITANT USE WITH OPIOIDS; ABUSE, MISUSE, AND ADDICTION; and DEPENDENCE AND WITHDRAWAL REACTIONS Concomitant use of benzodiazepines and opioids may result in profound sedation, respiratory depression, coma, and death.",
+        "indicationsLead": "INDICATIONS AND USAGE Chlordiazepoxide HCl capsules are indicated for the management of anxiety disorders or for the short term relief of symptoms of anxiety, withdrawal symptoms of acute alcoholism, and preoperative apprehension and anxiety. Anxiety or tension associated with the stress of everyday life usually does not require treatment with an anxiolytic. The effectiveness of chlordiazepoxide HCl capsules in long term use, that is, more than 4 months, has not been assessed by systematic clinical studies. The physician should periodically reassess the usefulness of the drug for the individual patient.",
+        "brandsSeen": [],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "chlorpromazine": {
+      "rxnorm": {
+        "name": "chlorpromazine",
+        "rxcui": "2403",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "CHLORPROMAZINE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 38,
+        "labelsWithBoxedWarning": 36
+      },
+      "reference": {
+        "setId": "d1d8fd92-bba6-4521-8cea-3e1089ffd951",
+        "effectiveDate": "2026-09-03",
+        "brand": "Chlorpromazine Hydrochloride",
+        "manufacturer": "REMEDYREPACK INC.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "Warning Increased Mortality in Elderly Patients with Dementia-Related Psychosis Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. Analyses of seventeen placebo-controlled tr",
+        "indicationsLead": "INDICATIONS AND USAGE For the management of manifestations of psychotic disorders. For the treatment of schizophrenia. To control nausea and vomiting. For relief of restlessness and apprehension before surgery. For acute intermittent porphyria. As an adjunct in the treatment of tetanus. To control the manifestations of the manic type of manic-depressive illness. For relief of intractable hiccups. For the treatment of severe behavioral problems in children (1 to 12 years of age) marked by combativeness and/or explosive hyperexcitable behavior (out of proportion to immediate provocations), and in the short-term treatment of hyperactive children who show excessive motor activity with accompanying conduct disorders consisting of some or all of the following symptoms: impulsivity, difficulty sustaining attention, aggressivity, mood lability and poor frustration tolerance.",
+        "brandsSeen": [],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "citalopram": {
+      "rxnorm": {
+        "name": "citalopram",
+        "rxcui": "2556",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "CITALOPRAM HYDROBROMIDE",
+          "CITALOPRAM"
+        ],
+        "labelsMatched": 90,
+        "labelsWithBoxedWarning": 89
+      },
+      "reference": {
+        "setId": "4259d9b1-de34-43a4-85a8-41dd214e9177",
+        "effectiveDate": "2023-10-09",
+        "brand": "Celexa",
+        "manufacturer": "Allergan, Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients in short -term studies . Closely m onitor all antidepressant-treated patients for clinical ",
+        "indicationsLead": "1 INDICATIONS AND USAGE CELEXA is indicated for the treatment of major depressive disorder (MDD) in adults [see Clinical Studies ( 14 )] . CELEXA is a selective serotonin reuptake inhibitor (SSRI) indicated for the treatment of major depressive disorder (MDD) in adults ( 1 ).",
+        "brandsSeen": [
+          "Celexa"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "clonazepam": {
+      "rxnorm": {
+        "name": "clonazepam",
+        "rxcui": "2598",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "CLONAZEPAM"
+        ],
+        "labelsMatched": 95,
+        "labelsWithBoxedWarning": 73
+      },
+      "reference": {
+        "setId": "cfa0d79a-843c-4b88-95a1-e9511d649ca1",
+        "effectiveDate": "2025-12-01",
+        "brand": "Klonopin",
+        "manufacturer": "H2-Pharma, LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: RISKS FROM CONCOMITANT USE WITH OPIOIDS; ABUSE, MISUSE, AND ADDICTION; and DEPENDENCE AND WITHDRAWAL REACTIONS Concomitant use of benzodiazepines and opioids may result in profound sedation, respiratory depression, coma, and death.",
+        "indicationsLead": "INDICATIONS AND USAGE Seizure Disorders Klonopin is useful alone or as an adjunct in the treatment of the Lennox-Gastaut syndrome (petit mal variant), akinetic, and myoclonic seizures. In patients with absence seizures (petit mal) who have failed to respond to succinimides, Klonopin may be useful. Some loss of effect may occur during the course of clonazepam treatment (see PRECAUTIONS: Loss of Effect ). Panic Disorder Klonopin is indicated for the treatment of panic disorder, with or without agoraphobia, as defined in DSM-V. Panic disorder is characterized by the occurrence of unexpected panic attacks and associated concern about having additional attacks, worry about the implications or consequences of the attacks, and/or a significant change in behavior related to the attacks. The efficacy of Klonopin was established in two 6- to 9-week trials in panic disorder patients whose diagnoses corresponded to the DSM-IIIR category of panic disorder (see CLINICAL PHARMACOLOGY: Clinical Trials ). Panic disorder (DSM-V) is characterized by recurrent unexpected panic attacks, i.e., a discrete period of intense fear or discomfort in which four (or more) of the following symptoms develop abruptly and reach a peak within 10 minutes: (1) palpitations, pounding heart or accelerated heart rate; (2) sweating; (3) trembling or shaking; (4) sensations of shortness of breath or smothering; (5) feeling of choking; (6) chest pain or discomfort; (7) nausea or abdominal distress; (8) feeling dizzy, unsteady, lightheaded or faint; (9) derealization (feelings of unreality) or depersonalization (being detached from oneself); (10) fear of losing control; (11) fear of dying; (12) paresthesias (numbness or tingling sensations); (13) chills or hot flushes. The effectiveness of Klonopin in long-term use, that is, for more than 9 weeks, has not been systematically studied in controlled clinical trials. The physician who elects to use Klonopin for extended periods should periodically reevaluate the ",
+        "brandsSeen": [
+          "Klonopin"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "clonidine": {
+      "rxnorm": {
+        "name": "clonidine",
+        "rxcui": "2599",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "CLONIDINE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 115,
+        "labelsWithBoxedWarning": 1
+      },
+      "reference": {
+        "setId": "6d7cfb02-e580-4658-a2fe-2149b515d434",
+        "effectiveDate": "2026-09-09",
+        "brand": "Clonidine Hydrochloride",
+        "manufacturer": "REMEDYREPACK INC.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "INDICATIONS AND USAGE Clonidine hydrochloride tablets, USP are indicated in the treatment of hypertension. Clonidine hydrochloride tablets, USP may be employed alone or concomitantly with other antihypertensive agents.",
+        "brandsSeen": [
+          "Catapres-TTS-1",
+          "Catapres-TTS-2",
+          "Catapres-TTS-3",
+          "Duraclon",
+          "ONYDA XR",
+          "QLONILIK"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "clozapine": {
+      "rxnorm": {
+        "name": "clozapine",
+        "rxcui": "2626",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "CLOZAPINE"
+        ],
+        "labelsMatched": 16,
+        "labelsWithBoxedWarning": 16
+      },
+      "reference": {
+        "setId": "90876802-0e3a-44c9-9ff7-1754dfbe736a",
+        "effectiveDate": "2025-06-06",
+        "brand": "Clozaril",
+        "manufacturer": "HLS Therapeutics (USA), Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SEVERE NEUTROPENIA; ORTHOSTATIC HYPOTENSION, BRADYCARDIA, AND SYNCOPE; SEIZURE; MYOCARDITIS, PERICARDITIS AND CARDIOMYOPATHY; INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS Severe Neutropenia CLOZARIL has c",
+        "indicationsLead": "1 INDICATIONS AND USAGE CLOZARIL is an atypical antipsychotic indicated for: • Treatment of severely ill patients with schizophrenia who fail to respond adequately to standard antipsychotic treatment. Because of the risks of severe neutropenia and of seizure associated with its use, CLOZARIL should be used only in patients who have failed to respond adequately to standard antipsychotic treatment ( 1.1 ) • Reducing the risk of recurrent suicidal behavior in patients with schizophrenia or schizoaffective disorder who are judged to be at chronic risk for re-experiencing suicidal behavior. ( 1.2 ) 1.1 Treatment-Resistant Schizophrenia CLOZARIL is indicated for the treatment of severely ill patients with schizophrenia who fail to respond adequately to standard antipsychotic treatment. Because of the risks of severe neutropenia and of seizure associated with its use, CLOZARIL should be used only in patients who have failed to respond adequately to standard antipsychotic treatment [see Warnings and Precautions ( 5.1 , 5.4 )]. The effectiveness of CLOZARIL in treatment-resistant schizophrenia was demonstrated in a 6-week, randomized, double-blind, active-controlled study comparing CLOZARIL and chlorpromazine in patients who had failed other antipsychotics [see Clinical Studies ( 14.1 )] . 1.2 Reduction in the Risk of Recurrent Suicidal Behavior in Schizophrenia or Schizoaffective Disorder CLOZARIL is indicated for reducing the risk of recurrent suicidal behavior in patients with schizophrenia or schizoaffective disorder who are judged to be at chronic risk for re-experiencing suicidal behavior, based on history and recent clinical state. Suicidal behavior refers to actions by a patient that put him/herself at risk for death. The effectiveness of CLOZARIL in reducing the risk of recurrent suicidal behavior was demonstrated over a two-year treatment period in the InterSePT™ trial [see Clinical Studies ( 14.2 )] .",
+        "brandsSeen": [
+          "Clozaril",
+          "VERSACLOZ"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "diazepam": {
+      "rxnorm": {
+        "name": "diazepam",
+        "rxcui": "3322",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "DIAZEPAM"
+        ],
+        "labelsMatched": 87,
+        "labelsWithBoxedWarning": 84
+      },
+      "reference": {
+        "setId": "260e2041-2bb3-482f-850e-b5d47a7bdbe6",
+        "effectiveDate": "2026-08-11",
+        "brand": "Valium",
+        "manufacturer": "Waylis Therapuetics LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: RISKS FROM CONCOMITANT USE WITH OPIOIDS; ABUSE, MISUSE, AND ADDICTION; and DEPENDENCE AND WITHDRAWAL REACTIONS Concomitant use of benzodiazepines and opioids may result in profound sedation, respiratory depression, coma, and death.",
+        "indicationsLead": "INDICATIONS Valium is indicated for the management of anxiety disorders or for the short- term relief of the symptoms of anxiety. Anxiety or tension associated with the stress of everyday life usually does not require treatment with an anxiolytic. In acute alcohol withdrawal, Valium may be useful in the symptomatic relief of acute agitation, tremor, impending or acute delirium tremens and hallucinosis. Valium is a useful adjunct for the relief of skeletal muscle spasm due to reflex spasm to local pathology (such as inflammation of the muscles or joints, or secondary to trauma), spasticity caused by upper motor neuron disorders (such as cerebral palsy and paraplegia), athetosis, and stiff-man syndrome. Oral Valium may be used adjunctively in convulsive disorders, although it has not proved useful as the sole therapy. The effectiveness of Valium in long-term use, that is, more than 4 months, has not been assessed by systematic clinical studies. The physician should periodically reassess the usefulness of the drug for the individual patient.",
+        "brandsSeen": [
+          "Valium",
+          "Valtoco"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "diphenhydramine": {
+      "rxnorm": {
+        "name": "diphenhydramine",
+        "rxcui": "3498",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "DIPHENHYDRAMINE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 327,
+        "labelsWithBoxedWarning": 0
+      },
+      "reference": {
+        "setId": "303d7651-9c8f-4a14-9f2c-7181fa0f003e",
+        "effectiveDate": "2026-09-09",
+        "brand": "Nighttime Sleep Aid Berry Flavor",
+        "manufacturer": "Raritan Pharmaceuticals Inc",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "Uses ▪ for the relief of occasional sleeplessness ▪ reduces time to fall asleep if you have difficulty falling asleep",
+        "brandsSeen": [
+          "Adult Allergy Relief Dye Free",
+          "ADWE dye-free childrens allergy",
+          "allergy",
+          "Allergy Antihistamine",
+          "allergy childrens",
+          "Allergy Childrens Allergy",
+          "Allergy Relief",
+          "Allergy Relief Caplet",
+          "Allergy Relief Diphenhydramine HCl",
+          "Allergy Relief Diphenhydramine HCl 25mg SoftGel",
+          "Allergy Relief Dye-Free Softgel",
+          "AXIV - VroZzz",
+          "AXIV Allergy",
+          "AXIV Allergy Relief",
+          "BACTIMICINA CHILDRENS ALLERGY",
+          "basic care allergy relief",
+          "Benadryl",
+          "BENADRYL Allergy",
+          "Benadryl Allergy EXTRA STRENGTH",
+          "Benadryl Allergy Extra Strength Liqui-Gels",
+          "Benadryl Allergy Liqui-Gels",
+          "Benadryl Allergy Ultratab",
+          "Benadryl Extra Strength Itch Stopping",
+          "Benadryl Ultratabs",
+          "Berkley and Jensen Allergy Relief",
+          "Betr sleep aid",
+          "Cabinet Allergy Relief Refill Diphenhydramine HCI",
+          "CAREALL Allergy Relief",
+          "CAREALL Diphenhydramine",
+          "careone allergy relief",
+          "careone nighttime sleep aid",
+          "childrens allergy",
+          "childrens Allergy Dye Free Wal Dryl",
+          "childrens allergy relief",
+          "Childrens Benadryl ALLERGY",
+          "Childrens Benadryl Chewables",
+          "Childrens Benadryl DYE-FREE ALLERGY",
+          "Childrens Chewable Allergy Relief",
+          "Childrens Dye Free Allergy",
+          "Circle K Allergy Antihistamine",
+          "CVS Diphenhydramine Hydrochloride",
+          "CVS dye-free childrens allergy",
+          "CVS Health Childrens Allergy Relief",
+          "CVS Health Nighttime Sleep Aid",
+          "CVS Health Nighttime Sleep-Aid",
+          "dg health allergy childrens",
+          "DG Health Allergy Relief",
+          "dg health sleep aid",
+          "Dimetane",
+          "Dimetapp Cough and Allergy",
+          "Dimetapp Nighttime Cold and Cough",
+          "Diphenhydramine",
+          "Diphenhydramine HCl",
+          "Diphenhydramine HCl Oral Solution",
+          "Diphenhydramine Oral Liquid",
+          "Discount Drugmart Allergy Relief",
+          "DORMMY-LON",
+          "Dye Free Allergy childrens",
+          "Dye Free Childrens Allergy Relief",
+          "Dye Free Wal Dryl Allergy childrens",
+          "Dye Free Wal Sleep Z",
+          "equate allergy relief",
+          "equate nighttime sleep aid",
+          "equate NIGHTTIME Sleep-Aid",
+          "foster and thrive childrens allergy relief",
+          "Good Neighbor Allergy Relief",
+          "Good Neighbor Pharmacy allergy",
+          "Good Neighbor Pharmacy Childrens Allergy",
+          "GOOD REMEDIES Allergy Relief",
+          "GOOD REMEDIES Allergy Relief SOFTGEL",
+          "GOOD REMEDIES Nighttime Sleep Aid Caplets",
+          "good sense allergy relief",
+          "good sense nighttime sleep aid",
+          "Goodmeds Allergy Relief",
+          "Goodmeds Allergy Relief Diphenhydramine HCl",
+          "Harris Teeter Allergy Relief",
+          "HyVee Maximum Strength Nighttime Sleep-Aid SOFTGEL",
+          "InstaRelief Nighttime Sleep Aid",
+          "Itch Relief",
+          "Jet-Asleep Double Strength Night Time Sleep Aid",
+          "Kroger Allergy Relief",
+          "KROGER Dye Free Childrens Allergy Relief",
+          "Kroger Nighttime Sleep Aid CAPLET",
+          "KROGER Nighttime Sleep-Aid",
+          "LEADER Nighttime Sleep-Aid",
+          "M-Dryl",
+          "Medique Diphen",
+          "meijer Allergy Relief",
+          "meijer NIGHTTIME Sleep Aid CAPLET",
+          "Meijer Nighttime Sleep Aid Non Habit Forming",
+          "meijer NIGHTTIME Sleep Aid SOFTGEL",
+          "Meijer Nighttime Sleep-aid Berry Flavor",
+          "Nightime Sleep Aid",
+          "Nighttime Sleep Aid",
+          "Nighttime Sleep Aid Berry Flavor",
+          "Nighttime sleep aid Maximum Strength",
+          "Nighttime Sleep-Aid",
+          "Nighttime Sleep-Aid Softgel",
+          "Nighttime SleepAid",
+          "Nyt Time Sleep Caps",
+          "PhysiciansCare Allergy Antihistamine",
+          "Premier Value Nighttime Sleep-Aid Liquid Sleep-Aid",
+          "Quality Choice Allergy Relief",
+          "QUALITY CHOICE Childrens Allergy Relief DYE FREE",
+          "QUALITY CHOICE NIGHTTIME SLEEP AID",
+          "Quality Choice Nighttime Sleep-Aid",
+          "Rest Simply",
+          "RIGHT REMEDIES Allergy Relief",
+          "RIGHT REMEDIES Maximum Strength Nighttime Sleep-Aid Softgel",
+          "Rite Aid Nighttime Sleep Aid Non Habit Forming",
+          "Simply Sleep",
+          "Sleep Aid",
+          "Sleep Aid Nighttime",
+          "Sleep-Aid Diphenhydramine HCl",
+          "SleepAid Softgels",
+          "Sominex",
+          "Somnapure Clinical Strength",
+          "Target Dye Free Childrens Allergy Relief",
+          "Tecnu Calagel",
+          "TopCare Allergy Relief",
+          "Topcare childrens allergy",
+          "TopCare health NIGHTTIME MAXIMUM STRENGTH Sleep Aid",
+          "topcare sleep aid nighttime",
+          "Unisom SleepMelts Nighttime Sleep-Aid",
+          "Up and Up Nighttime Sleep Aid",
+          "ValuMeds Allergy Relief Antihistamine Diphenhydramine HCl",
+          "VICKS NyQuil Kids FREE OF ARTIFICIAL DYES AND SUGAR COLD and COUGH plus RUNNY NOSE",
+          "VICKS ZzzQuil FREE and CLEAR NIGHTTIME SLEEP-AID",
+          "Vicks ZzzQuil Nighttime Sleep-Aid",
+          "VICKS ZzzQuil NIGHTTIME SLEEP-AID Diphenhydramine HCl FREE OF",
+          "Wal Dryl Childrens Allergy",
+          "Walgreen Itch Relief Gel",
+          "welby allergy relief",
+          "Winco Foods Childrens Allergy Relief Dye Free",
+          "Xpect Extra Strength Itch Relief",
+          "ZzzQuil",
+          "ZzzQuil Nighttime Sleep-Aid"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "duloxetine": {
+      "rxnorm": {
+        "name": "duloxetine",
+        "rxcui": "72625",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "DULOXETINE HYDROCHLORIDE",
+          "DULOXETINE"
+        ],
+        "labelsMatched": 123,
+        "labelsWithBoxedWarning": 122
+      },
+      "reference": {
+        "setId": "2f7d4d67-10c1-4bf4-a7f2-c185fbad64ba",
+        "effectiveDate": "2025-07-21",
+        "brand": "Cymbalta",
+        "manufacturer": "Eli Lilly and Company",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behavior in children, adolescents, and young adults in short-term studies. These studies did not show an increase in the risk of suicidal t",
+        "indicationsLead": "1 INDICATIONS AND USAGE CYMBALTA ® is indicated for the treatment of: Major depressive disorder in adults Generalized anxiety disorder in adults and pediatric patients 7 years of age and older Diabetic peripheral neuropathic pain in adults Fibromyalgia in adults and pediatric patients 13 years of age and older Chronic musculoskeletal pain in adults CYMBALTA ® is a serotonin and norepinephrine reuptake inhibitor (SNRI) indicated for the treatment of the following conditions: Major depressive disorder (MDD) in adults ( 1 ) Generalized anxiety disorder (GAD) in adults and pediatric patients 7 years of age and older ( 1 ) Diabetic peripheral neuropathic pain (DPNP) in adults ( 1 ) Fibromyalgia (FM) in adults and pediatric patients 13 years of age and older ( 1 ) Chronic musculoskeletal pain in adults ( 1 )",
+        "brandsSeen": [
+          "Cymbalta",
+          "DRIZALMA SPRINKLE"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "escitalopram": {
+      "rxnorm": {
+        "name": "escitalopram",
+        "rxcui": "321988",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "ESCITALOPRAM OXALATE",
+          "ESCITALOPRAM"
+        ],
+        "labelsMatched": 111,
+        "labelsWithBoxedWarning": 111
+      },
+      "reference": {
+        "setId": "13bb8267-1cab-43e5-acae-55a4d957630a",
+        "effectiveDate": "2023-10-01",
+        "brand": "Lexapro",
+        "manufacturer": "Allergan, Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behavior s in pediatric and young adult patients in short-term studies . Closely monitor all antidepressant-treated patients for clinical w",
+        "indicationsLead": "1 INDICATIONS AND USAGE Lexapro is indicated for the treatment of: • major depressive disorder (MDD) in adults and pediatric patients 12 years of age and older. • generalized anxiety disorder (GAD) in adults and pediatric patients 7 years of age and older. Lexapro is a selective serotonin reuptake inhibitor (SSRI) indicated for the: treatment of major depressive disorder (MDD) in adults and pediatric patients 12 years of age and older ( 1 ) treatment of generalized anxiety disorder (GAD) in adults and pediatric patients 7 years and older ( 1 )",
+        "brandsSeen": [
+          "Lexapro"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "fluoxetine": {
+      "rxnorm": {
+        "name": "fluoxetine",
+        "rxcui": "4493",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "FLUOXETINE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 97,
+        "labelsWithBoxedWarning": 97
+      },
+      "reference": {
+        "setId": "c88f33ed-6dfb-4c5e-bc01-d8e36dd97299",
+        "effectiveDate": "2026-01-08",
+        "brand": "Prozac",
+        "manufacturer": "Dista Products Company",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behavior in children, adolescents, and young adults in short-term studies. These studies did not show an increase in the risk of suicidal t",
+        "indicationsLead": "1 INDICATIONS AND USAGE PROZAC ® is indicated for the treatment of: Acute and maintenance treatment of Major Depressive Disorder [see Clinical Studies ( 14.1 )] . Acute and maintenance treatment of obsessions and compulsions in patients with Obsessive Compulsive Disorder (OCD) [see Clinical Studies ( 14.2 )]. Acute and maintenance treatment of binge-eating and vomiting behaviors in patients with moderate to severe Bulimia Nervosa [see Clinical Studies ( 14.3 )] . Acute treatment of Panic Disorder, with or without agoraphobia [see Clinical Studies ( 14.4 )]. PROZAC and Olanzapine in Combination is indicated for the treatment of: Acute treatment of depressive episodes associated with Bipolar I Disorder. Treatment resistant depression (Major Depressive Disorder in patients, who do not respond to 2 separate trials of different antidepressants of adequate dose and duration in the current episode). PROZAC monotherapy is not indicated for the treatment of depressive episodes associated with Bipolar I Disorder or the treatment of treatment resistant depression. When using PROZAC and olanzapine in combination, also refer to the Clinical Studies section of the package insert for Symbyax ® . PROZAC ® is a selective serotonin reuptake inhibitor indicated for: Acute and maintenance treatment of Major Depressive Disorder (MDD) ( 1 ) Acute and maintenance treatment of Obsessive Compulsive Disorder (OCD) ( 1 ) Acute and maintenance treatment of Bulimia Nervosa ( 1 ) Acute treatment of Panic Disorder, with or without agoraphobia ( 1 ) PROZAC and olanzapine in combination for treatment of: Acute Depressive Episodes Associated with Bipolar I Disorder ( 1 ) Treatment Resistant Depression ( 1 )",
+        "brandsSeen": [
+          "Fluoxetine",
+          "Prozac"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "fluphenazine": {
+      "rxnorm": {
+        "name": "fluphenazine",
+        "rxcui": "4496",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "FLUPHENAZINE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 35,
+        "labelsWithBoxedWarning": 35
+      },
+      "reference": {
+        "setId": "91b85b8d-4c10-4395-915e-272b81ef3b12",
+        "effectiveDate": "2026-07-03",
+        "brand": "Fluphenazine Hydrochoride",
+        "manufacturer": "REMEDYREPACK INC.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING Incr eased Mortality in Elderly Patients with Dementia-Related Psychosis: Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. Analyses of seventeen placebo-controlled ",
+        "indicationsLead": "INDICATIONS & USAGE Fluphenazine hydrochloride tablets are indicated in the management of manifestations of psychotic disorders. Fluphenazine hydrochloride has not been shown effective in the management of behavioral complications in patients with mental retardation.",
+        "brandsSeen": [
+          "Fluphenazine Hydrochoride"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "haloperidol": {
+      "rxnorm": {
+        "name": "haloperidol",
+        "rxcui": "5093",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "HALOPERIDOL"
+        ],
+        "labelsMatched": 76,
+        "labelsWithBoxedWarning": 75
+      },
+      "reference": {
+        "setId": "a0751f2e-05ab-4ba9-9bae-7b791bf1a621",
+        "effectiveDate": "2026-08-31",
+        "brand": "Haloperidol",
+        "manufacturer": "REMEDYREPACK INC.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "BOXED WARNING WARNING Increased Mortality in Elderly Patients with Dementia-Related Psychosis Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. Analyses of seventeen placebo",
+        "indicationsLead": "INDICATIONS AND USAGE Haloperidol tablets are indicated for use in the management of manifestations of psychotic disorders. Haloperidol tablets are indicated for the control of tics and vocal utterances of Tourette's Disorder in children and adults. Haloperidol tablets are effective for the treatment of severe behavior problems in children of combative, explosive hyperexcitability (which cannot be accounted for by immediate provocation). Haloperidol tablets are also effective in the short-term treatment of hyperactive children who show excessive motor activity with accompanying conduct disorders consisting of some or all of the following symptoms: impulsivity, difficulty sustaining attention, aggressivity, mood lability, and poor frustration tolerance. Haloperidol tablets should be reserved for these two groups of children only after failure to respond to psychotherapy or medications other than antipsychotics.",
+        "brandsSeen": [],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "hydroxyzine": {
+      "rxnorm": {
+        "name": "hydroxyzine",
+        "rxcui": "5553",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "HYDROXYZINE HYDROCHLORIDE",
+          "HYDROXYZINE PAMOATE"
+        ],
+        "labelsMatched": 215,
+        "labelsWithBoxedWarning": 0
+      },
+      "reference": {
+        "setId": "58d99cf6-2319-410b-b8be-de9c304541b6",
+        "effectiveDate": "2026-09-08",
+        "brand": "HydrOXYzine Hydrochloride",
+        "manufacturer": "REMEDYREPACK INC.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "INDICATIONS AND USAGE For symptomatic relief of anxiety and tension associated with psychoneurosis and as an adjunct in organic disease states in which anxiety is manifested. Useful in the management of pruritus due to allergic conditions such as chronic urticaria and atopic and contact dermatoses and in histamine-mediated pruritus. As a sedative when used as a premedication and following general anesthesia, hydrOXYzine may potentiate meperidine and barbiturates , so their use in pre-anesthetic adjunctive therapy should be modified on an individual basis. Atropine and other belladonna alkaloids are not affected by the drug. HydrOXYzine is not known to interfere with the action of digitalis in any way and it may be used concurrently with this agent. The effectiveness of hydrOXYzine as an antianxiety agent for long term use, that is more than 4 months, has not been assessed by systematic clinical studies. The physician should reassess periodically the usefulness of the drug for the individual patient.",
+        "brandsSeen": [],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "lamotrigine": {
+      "rxnorm": {
+        "name": "lamotrigine",
+        "rxcui": "28439",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "LAMOTRIGINE"
+        ],
+        "labelsMatched": 98,
+        "labelsWithBoxedWarning": 97
+      },
+      "reference": {
+        "setId": "d7e3572d-56fe-4727-2bb4-013ccca22678",
+        "effectiveDate": "2025-10-10",
+        "brand": "LAMICTAL",
+        "manufacturer": "GlaxoSmithKline LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SERIOUS SKIN RASHES LAMICTAL can cause serious rashes requiring hospitalization and discontinuation of treatment. The incidence of these rashes, which have included Stevens-Johnson syndrome, is approximately 0.3% to 0.8% in pediatr",
+        "indicationsLead": "1 INDICATIONS AND USAGE LAMICTAL is indicated for: Epilepsy—adjunctive therapy in patients aged 2 years and older: • partial-onset seizures. • primary generalized tonic-clonic (PGTC) seizures. • generalized seizures of Lennox-Gastaut syndrome. ( 1.1 ) Epilepsy—monotherapy in patients aged 16 years and older: Conversion to monotherapy in patients with partial-onset seizures who are receiving treatment with carbamazepine, phenytoin, phenobarbital, primidone, or valproate as the single antiepileptic drug. ( 1.1 ) Bipolar disorder: Maintenance treatment of bipolar I disorder to delay the time to occurrence of mood episodes in patients treated for acute mood episodes with standard therapy. ( 1.2 ) Limitations of Use: Treatment of acute manic or mixed episodes is not recommended. Effectiveness of LAMICTAL in the acute treatment of mood episodes has not been established. 1.1 Epilepsy Adjunctive Therapy LAMICTAL is indicated as adjunctive therapy for the following seizure types in patients aged 2 years and older: • partial-onset seizures. • primary generalized tonic-clonic (PGTC) seizures. • generalized seizures of Lennox-Gastaut syndrome. Monotherapy LAMICTAL is indicated for conversion to monotherapy in adults (aged 16 years and older) with partial-onset seizures who are receiving treatment with carbamazepine, phenytoin, phenobarbital, primidone, or valproate as the single antiepileptic drug (AED). Safety and effectiveness of LAMICTAL have not been established (1) as initial monotherapy; (2) for conversion to monotherapy from AEDs other than carbamazepine, phenytoin, phenobarbital, primidone, or valproate; or (3) for simultaneous conversion to monotherapy from 2 or more concomitant AEDs. 1.2 Bipolar Disorder LAMICTAL is indicated for the maintenance treatment of bipolar I disorder to delay the time to occurrence of mood episodes (depression, mania, hypomania, mixed episodes) in patients treated for acute mood episodes with standard therapy [see Clinical Studies ( 14.2 )] ",
+        "brandsSeen": [
+          "LAMICTAL",
+          "LAMICTAL ODT",
+          "LAMICTAL XR",
+          "SUBVENITE"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "lithium": {
+      "rxnorm": {
+        "name": "lithium carbonate",
+        "rxcui": "42351",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "LITHIUM CARBONATE"
+        ],
+        "labelsMatched": 55,
+        "labelsWithBoxedWarning": 53
+      },
+      "reference": {
+        "setId": "f7f5b69a-c2a1-4586-a189-1475d41387c0",
+        "effectiveDate": "2026-08-24",
+        "brand": "LITHOBID",
+        "manufacturer": "ANI Pharmaceuticals, Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING Lithium toxicity is closely related to serum lithium levels, and can occur at doses close to therapeutic levels. Facilities for prompt and accurate serum lithium determinations should be available before initiating therapy (see DOSA",
+        "indicationsLead": "[from spl_unclassified_section] ronal metabolism of catecholamines, but the specific biochemical mechanism of lithium action in mania is unknown. INDICATIONS LITHOBID ® (lithium carbonate) is indicated in the treatment of manic episodes of Bipolar Disorder. Bipolar Disorder, Manic (DSM-IV) is equivalent to Manic Depressive illness, Manic, in the older DSM-II terminology. LITHOBID ® is also indicated as a maintenance treatment for individuals with a diagnosis of Bipolar Disorder. Maintenance therapy reduces the frequency of manic episodes and diminishes the intensity of those episodes which may occur. Typical symptoms of mania include pressure of speech, motor hyperactivity, reduced need for sleep, flight of ideas, grandiosity, elation, poor judgment, aggressiveness, and possibly hostility. When given to a patient experiencing a manic episode, lithium may produce a normalization of symptomatology within 1 to 3 weeks. PATIENT COUNSELING INFORMATION Information for Patients: A condition known as Brugada Syndrome may pre-exist and be unmasked by lithium therapy. Brugada Syndrome is a heart disorder characterized by abnormal electrocardiographic (ECG) findings and risk of sudden death. Patients should be advised to seek immediate emergency assistance if they experience fainting, light-headedness, abnormal heart beats, or shortness of breath because they may have a potentially life-threatening heart disorder known as Brugada Syndrome.",
+        "brandsSeen": [
+          "Lithium carbonicum",
+          "LITHOBID"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "lorazepam": {
+      "rxnorm": {
+        "name": "lorazepam",
+        "rxcui": "6470",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "LORAZEPAM"
+        ],
+        "labelsMatched": 104,
+        "labelsWithBoxedWarning": 96
+      },
+      "reference": {
+        "setId": "89057c93-8155-4040-acec-64e877bd2b4c",
+        "effectiveDate": "2025-07-09",
+        "brand": "Ativan",
+        "manufacturer": "Bausch Health US LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: RISKS FROM CONCOMITANT USE WITH OPIOIDS; ABUSE, MISUSE, AND ADDICTION; and DEPENDENCE AND WITHDRAWAL REACTIONS • Concomitant use of benzodiazepines and opioids may result in profound sedation, respiratory depression, coma, and deat",
+        "indicationsLead": "INDICATIONS AND USAGE Ativan (lorazepam) is indicated for the management of anxiety disorders or for the short-term relief of the symptoms of anxiety or anxiety associated with depressive symptoms. Anxiety or tension associated with the stress of everyday life usually does not require treatment with an anxiolytic. The effectiveness of Ativan (lorazepam) in long-term use, that is, more than 4 months, has not been assessed by systematic clinical studies. The physician should periodically reassess the usefulness of the drug for the individual patient.",
+        "brandsSeen": [
+          "Ativan",
+          "LOREEV XR"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "lurasidone": {
+      "rxnorm": {
+        "name": "lurasidone",
+        "rxcui": "1040028",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "LURASIDONE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 39,
+        "labelsWithBoxedWarning": 38
+      },
+      "reference": {
+        "setId": "afad3051-9df2-4c54-9684-e8262a133af8",
+        "effectiveDate": "2025-01-31",
+        "brand": "Latuda",
+        "manufacturer": "Sumitomo Pharma America, Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS; and SUICIDAL THOUGHTS AND BEHAVIORS WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS; and SUICIDAL THOUGHTS AND BEHAVIORS See ",
+        "indicationsLead": "1 INDICATIONS AND USAGE LATUDA is indicated for: Treatment of adult and adolescent patients (13 to 17 years) with schizophrenia [see Clinical Studies ( 14.1 )] . Monotherapy treatment of adult and pediatric patients (10 to 17 years) with major depressive episode associated with bipolar I disorder (bipolar depression) [see Clinical Studies ( 14.2 )] . Adjunctive treatment with lithium or valproate in adult patients with major depressive episode associated with bipolar I disorder (bipolar depression) [see Clinical Studies ( 14.2 )] . LATUDA is an atypical antipsychotic indicated for the treatment of: Schizophrenia in adults and adolescents (13 to 17 years) ( 1 , 14.1 ) Depressive episode associated with Bipolar I Disorder (bipolar depression) in adults and pediatric patients (10 to 17 years) as monotherapy ( 1 , 14.2 ) Depressive episode associated with Bipolar I Disorder (bipolar depression) in adults as adjunctive therapy with lithium or valproate ( 1 , 14.2 )",
+        "brandsSeen": [
+          "Latuda"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "methadone": {
+      "rxnorm": {
+        "name": "methadone",
+        "rxcui": "6813",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "METHADONE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 35,
+        "labelsWithBoxedWarning": 35
+      },
+      "reference": {
+        "setId": "808a9d0b-720b-4034-a862-5122ff514608",
+        "effectiveDate": "2026-04-27",
+        "brand": "METHADOSE",
+        "manufacturer": "SpecGx LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: LIFE-THREATENING RESPIRATORY DEPRESSION, LIFE-THREATENING QT PROLONGATION, ACCIDENTAL INGESTION, ABUSE POTENTIAL, INTERACTIONS WITH DRUGS AFFECTING CYTOCHROME P450 ISOENZYMES and TREATMENT FOR OPIOID ADDICTION Life-Threatening Resp",
+        "indicationsLead": "1 INDICATIONS AND USAGE METHADOSE contains methadone, an opioid agonist indicated for the: detoxification treatment of opioid addiction (heroin or other morphine-like drugs). maintenance treatment of opioid addiction (heroin or other morphine-like drugs), in conjunction with appropriate social and medical services. Limitations of Use Methadone products used for the treatment of opioid addiction in detoxification or maintenance programs are subject to the conditions for distribution and use required under 21 CFR, Title 42, Sec 8 [see Dosage and Administration ( 2.1 )] . METHADOSE is an opioid agonist indicated for the: Detoxification treatment of opioid addiction (heroin or other morphine-like drugs). ( 1 ) Maintenance treatment of opioid addiction (heroin or other morphine-like drugs), in conjunction with appropriate social and medical services. ( 1 ) Limitations of Use Methadone products used for the treatment of opioid addiction in detoxification or maintenance programs are subject to the conditions for distribution and use required under 21 CFR, Title 42, Sec. 8. ( 1 , 2.1 )",
+        "brandsSeen": [
+          "DISKETS",
+          "Methadone Hydrocloride dye-free, sugar-free, unflavored",
+          "METHADOSE",
+          "METHADOSE DISPERSIBLE",
+          "METHADOSE SUGAR-FREE"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "methylphenidate": {
+      "rxnorm": {
+        "name": "methylphenidate",
+        "rxcui": "6901",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "METHYLPHENIDATE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 74,
+        "labelsWithBoxedWarning": 72
+      },
+      "reference": {
+        "setId": "d6fb2750-cdab-4749-ba0d-7534840a5892",
+        "effectiveDate": "2025-02-05",
+        "brand": "Ritalin",
+        "manufacturer": "Sandoz Inc",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: ABUSE, MISUSE, AND ADDICTION Ritalin has a high potential for abuse and misuse, which can lead to the development of a substance use disorder, including addiction. Misuse and abuse of CNS stimulants, including Ritalin, can result i",
+        "indicationsLead": "1 INDICATIONS AND USAGE Ritalin is indicated for the treatment of: • Attention Deficit Hyperactivity Disorders (ADHD) in pediatric patients 6 years and older and adults • Narcolepsy Ritalin is a central nervous system (CNS) stimulant indicated for the treatment of Attention Deficit Hyperactivity Disorders (ADHD) and Narcolepsy ( 1 ).",
+        "brandsSeen": [
+          "CONCERTA",
+          "JORNAY PM Extended-Release",
+          "METADATE CD",
+          "Methylin",
+          "Methylphenidate",
+          "Quillivant XR",
+          "RELEXXII",
+          "Ritalin",
+          "Ritalin LA"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "mirtazapine": {
+      "rxnorm": {
+        "name": "mirtazapine",
+        "rxcui": "15996",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "MIRTAZAPINE"
+        ],
+        "labelsMatched": 92,
+        "labelsWithBoxedWarning": 90
+      },
+      "reference": {
+        "setId": "98ad1917-a094-44f5-a28f-a64a8cfcd887",
+        "effectiveDate": "2025-08-06",
+        "brand": "REMERONSOLTAB",
+        "manufacturer": "Organon LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical wor",
+        "indicationsLead": "1 INDICATIONS AND USAGE REMERON/REMERONSolTab are indicated for the treatment of major depressive disorder (MDD) in adults [see Clinical Studies (14) ] . REMERON/REMERONSolTab is indicated for the treatment of major depressive disorder (MDD) in adults. ( 1 )",
+        "brandsSeen": [
+          "REMERON",
+          "REMERONSOLTAB"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "naltrexone": {
+      "rxnorm": {
+        "name": "naltrexone",
+        "rxcui": "7243",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "NALTREXONE HYDROCHLORIDE",
+          "NALTREXONE"
+        ],
+        "labelsMatched": 46,
+        "labelsWithBoxedWarning": 0
+      },
+      "reference": {
+        "setId": "db911559-26f5-43a0-b61f-3425176c936f",
+        "effectiveDate": "2026-09-08",
+        "brand": "Naltrexone Hydrochloride",
+        "manufacturer": "REMEDYREPACK INC.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "INDICATIONS AND USAGE Naltrexone Hydrochloride Tablets USP are indicated in the treatment of alcohol dependence and for the blockade of the effects of exogenously administered opioids. Naltrexone Hydrochloride Tablets USP have not been shown to provide any therapeutic benefit except as part of an appropriate plan of management for the addictions.",
+        "brandsSeen": [
+          "VIVITROL"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "nicotine-replacement": {
+      "rxnorm": {
+        "name": "nicotine",
+        "rxcui": "7407",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "NICOTINE"
+        ],
+        "labelsMatched": 57,
+        "labelsWithBoxedWarning": 0
+      },
+      "reference": {
+        "setId": "e51d2c09-a20f-eb9b-e3e4-013f3e488ab3",
+        "effectiveDate": "2026-07-01",
+        "brand": "Nicotine Transdermal System step 3",
+        "manufacturer": "AmerisourceBergen Drug Corporation",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "Use reduces withdrawal symptoms, including nicotine craving, associated with quitting smoking",
+        "brandsSeen": [
+          "GUHIO Nicotine Patch",
+          "Kirkland Signature Nicotine",
+          "Medline",
+          "NICODERM CQ",
+          "Nicorette Fruit Chill nicotine polacrilex",
+          "Nicorette White Mint nicotine polacrilex",
+          "NICOTINUM",
+          "Nicotrol",
+          "NWRB Nicotine Transdermal Patch",
+          "quit smoking patches",
+          "QUIT SMOKING Proven Patches",
+          "RBUGR QUIT SMOKING Nicotine Patches",
+          "SEFUDUN QUIT SMOKING NICOTINE PATCHES",
+          "Sielkin QUIT SMOKING NICOTINE PATCHES",
+          "Sielkin QUIT SMOKING NICOTINE PATCHES 14mg",
+          "Sielkin QUIT SMOKING NICOTINE PATCHES 21mg",
+          "STPSMK QUIT SMOKING NICOTINE PATCHES"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "nortriptyline": {
+      "rxnorm": {
+        "name": "nortriptyline",
+        "rxcui": "7531",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "NORTRIPTYLINE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 55,
+        "labelsWithBoxedWarning": 55
+      },
+      "reference": {
+        "setId": "e17dc299-f52d-414d-ab6e-e809bd6f8acb",
+        "effectiveDate": "2024-12-04",
+        "brand": "PAMELOR",
+        "manufacturer": "SpecGx LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "Suicidality and Antidepressant Drugs Antidepressants increased the risk compared to placebo of suicidal thinking and behavior (suicidality) in children, adolescents, and young adults in short-term studies of major depressive disorder (MDD) ",
+        "indicationsLead": "INDICATIONS AND USAGE Pamelor™ (nortriptyline HCl) is indicated for the relief of symptoms of depression. Endogenous depressions are more likely to be alleviated than are other depressive states.",
+        "brandsSeen": [
+          "PAMELOR"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "olanzapine": {
+      "rxnorm": {
+        "name": "olanzapine",
+        "rxcui": "61381",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "OLANZAPINE"
+        ],
+        "labelsMatched": 97,
+        "labelsWithBoxedWarning": 97
+      },
+      "reference": {
+        "setId": "b418946a-1ab4-4d89-a012-d94fc361a3c4",
+        "effectiveDate": "2026-02-11",
+        "brand": "Zyprexa",
+        "manufacturer": "H2-Pharma LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. Analyses of seventeen placebo-controlled t",
+        "indicationsLead": "1 INDICATIONS AND USAGE ZYPREXA ® (olanzapine) is an atypical antipsychotic indicated: As oral formulation for the: Treatment of schizophrenia. ( 1.1 ) Adults: Efficacy was established in three clinical trials in patients with schizophrenia: two 6-week trials and one maintenance trial. ( 14.1 ) Adolescents (ages 13-17): Efficacy was established in one 6-week trial in patients with schizophrenia ( 14.1 ). The increased potential (in adolescents compared with adults) for weight gain and dyslipidemia may lead clinicians to consider prescribing other drugs first in adolescents. ( 1.1 ) Acute treatment of manic or mixed episodes associated with bipolar I disorder and maintenance treatment of bipolar I disorder. ( 1.2 ) Adults: Efficacy was established in three clinical trials in patients with manic or mixed episodes of bipolar I disorder: two 3- to 4-week trials and one maintenance trial. ( 14.2 ) Adolescents (ages 13-17): Efficacy was established in one 3-week trial in patients with manic or mixed episodes associated with bipolar I disorder ( 14.2 ). The increased potential (in adolescents compared with adults) for weight gain and dyslipidemia may lead clinicians to consider prescribing other drugs first in adolescents. ( 1.2 ) Medication therapy for pediatric patients with schizophrenia or bipolar I disorder should be undertaken only after a thorough diagnostic evaluation and with careful consideration of the potential risks. ( 1.3 ) Adjunct to valproate or lithium in the treatment of manic or mixed episodes associated with bipolar I disorder. ( 1.2 ) Efficacy was established in two 6-week clinical trials in adults ( 14.2 ). Maintenance efficacy has not been systematically evaluated. As ZYPREXA IntraMuscular for the: Treatment of acute agitation associated with schizophrenia and bipolar I mania. ( 1.4 ) Efficacy was established in three 1-day trials in adults. ( 14.3 ) As ZYPREXA and Fluoxetine in Combination for the: Treatment of depressive episodes associated with bi",
+        "brandsSeen": [
+          "Zyprexa",
+          "ZYPREXA Intramuscular",
+          "ZYPREXA Relprevv",
+          "ZYPREXA Zydis"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "paliperidone": {
+      "rxnorm": {
+        "name": "paliperidone",
+        "rxcui": "679314",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "PALIPERIDONE"
+        ],
+        "labelsMatched": 28,
+        "labelsWithBoxedWarning": 28
+      },
+      "reference": {
+        "setId": "7b8e5b26-b9e4-4704-921b-3c3c0d159916",
+        "effectiveDate": "2025-01-31",
+        "brand": "INVEGA",
+        "manufacturer": "Janssen Pharmaceuticals, Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. INVEGA is not approved for the treatment o",
+        "indicationsLead": "1 INDICATIONS AND USAGE INVEGA is an atypical antipsychotic agent indicated for Treatment of schizophrenia ( 1.1 ) Adults: Efficacy was established in three 6-week trials and one maintenance trial. ( 14.1 ) Adolescents (ages 12–17): Efficacy was established in one 6-week trial. ( 14.1 ) Treatment of schizoaffective disorder as monotherapy and as an adjunct to mood stabilizers and/or antidepressants. ( 1.2 ) Efficacy was established in two 6-week trials in adult patients. ( 14.2 ) 1.1 Schizophrenia INVEGA (paliperidone) Extended-Release Tablets are indicated for the treatment of schizophrenia [see Clinical Studies (14.1) ] . The efficacy of INVEGA in schizophrenia was established in three 6-week trials in adults and one 6-week trial in adolescents, as well as one maintenance trial in adults. 1.2 Schizoaffective Disorder INVEGA (paliperidone) Extended-Release Tablets are indicated for the treatment of schizoaffective disorder as monotherapy and an adjunct to mood stabilizers and/or antidepressant therapy [see Clinical Studies (14.2) ] . The efficacy of INVEGA in schizoaffective disorder was established in two 6-week trials in adults.",
+        "brandsSeen": [
+          "INVEGA",
+          "INVEGA HAFYERA",
+          "INVEGA SUSTENNA",
+          "INVEGA TRINZA"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "paroxetine": {
+      "rxnorm": {
+        "name": "paroxetine",
+        "rxcui": "32937",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "PAROXETINE HYDROCHLORIDE",
+          "PAROXETINE"
+        ],
+        "labelsMatched": 60,
+        "labelsWithBoxedWarning": 58
+      },
+      "reference": {
+        "setId": "598efb76-93ef-f7de-e063-6394a90a632e",
+        "effectiveDate": "2026-08-21",
+        "brand": "Paroxetine",
+        "manufacturer": "Coupler LLC",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "BOXED WARNING WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients fo",
+        "indicationsLead": "1 INDICATIONS AND USAGE Paroxetine tablets are indicated in adults for the treatment of: Major depressive disorder (MDD) Obsessive compulsive disorder (OCD) Panic disorder (PD) Social anxiety disorder (SAD) Generalized anxiety disorder (GAD) Posttraumatic stress disorder (PTSD) Paroxetine is a selective serotonin reuptake inhibitor (SSRI) indicated in adults for the treatment of ( 1 ): Major Depressive Disorder (MDD) Obsessive Compulsive Disorder (OCD) Panic Disorder (PD) Social Anxiety Disorder (SAD) Generalized Anxiety Disorder (GAD) Posttraumatic Stress Disorder (PTSD)",
+        "brandsSeen": [
+          "BRISDELLE"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "phenelzine": {
+      "rxnorm": {
+        "name": "phenelzine",
+        "rxcui": "8123",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "PHENELZINE SULFATE"
+        ],
+        "labelsMatched": 3,
+        "labelsWithBoxedWarning": 3
+      },
+      "reference": {
+        "setId": "513a41d0-37d4-4355-8a6d-a2c643bce6fa",
+        "effectiveDate": "2025-06-06",
+        "brand": "Nardil",
+        "manufacturer": "Parke-Davis Div of Pfizer Inc",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "Suicidality and Antidepressant Drugs Antidepressants increased the risk compared to placebo of suicidal thinking and behavior (suicidality) in children, adolescents, and young adults in short-term studies of major depressive disorder (MDD) ",
+        "indicationsLead": "INDICATIONS AND USAGE NARDIL has been found to be effective in depressed patients clinically characterized as \"atypical,\" \"nonendogenous,\" or \"neurotic.\" These patients often have mixed anxiety and depression and phobic or hypochondriacal features. There is less conclusive evidence of its usefulness with severely depressed patients with endogenous features. NARDIL should rarely be the first antidepressant drug used. Rather, it is more suitable for use with patients who have failed to respond to the drugs more commonly used for these conditions.",
+        "brandsSeen": [
+          "Nardil"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "prazosin": {
+      "rxnorm": {
+        "name": "prazosin",
+        "rxcui": "8629",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "PRAZOSIN HYDROCHLORIDE"
+        ],
+        "labelsMatched": 66,
+        "labelsWithBoxedWarning": 0
+      },
+      "reference": {
+        "setId": "e4852fc2-b763-40e2-b8bb-a3f6da5c72fe",
+        "effectiveDate": "2026-09-03",
+        "brand": "prazosin hydrochloride",
+        "manufacturer": "REMEDYREPACK INC.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "INDICATIONS AND USAGE Prazosin hydrochloride capsules are indicated for the treatment of hypertension, to lower blood pressure. Lowering blood pressure reduces the risk of fatal and nonfatal cardiovascular events, primarily strokes and myocardial infarctions. These benefits have been seen in controlled trials of antihypertensive drugs from a wide variety of pharmacologic classes, including this drug. Control of high blood pressure should be part of comprehensive cardiovascular risk management, including, as appropriate, lipid control, diabetes management, antithrombotic therapy, smoking cessation, exercise, and limited sodium intake. Many patients will require more than one drug to achieve blood pressure goals. For specific advice on goals and management, see published guidelines, such as those of the National High Blood Pressure Education Program's Joint National Committee on Prevention, Detection, Evaluation, and Treatment of High Blood Pressure (JNC). Numerous antihypertensive drugs, from a variety of pharmacologic classes and with different mechanisms of action, have been shown in randomized controlled trials to reduce cardiovascular morbidity and mortality, and it can be concluded that it is blood pressure reduction, and not some other pharmacologic property of the drugs, that is largely responsible for those benefits. The largest and most consistent cardiovascular outcome benefit has been a reduction in the risk of stroke, but reductions in myocardial infarction and cardiovascular mortality also have been seen regularly. Elevated systolic or diastolic pressure causes increased cardiovascular risk, and the absolute risk increase per mmHg is greater at higher blood pressures, so that even modest reductions of severe hypertension can provide substantial benefit. Relative risk reduction from blood pressure reduction is similar across populations with varying absolute risk, so the absolute benefit is greater in patients who are at higher risk independent of their h",
+        "brandsSeen": [],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "propranolol": {
+      "rxnorm": {
+        "name": "propranolol",
+        "rxcui": "8787",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "PROPRANOLOL HYDROCHLORIDE"
+        ],
+        "labelsMatched": 138,
+        "labelsWithBoxedWarning": 2
+      },
+      "reference": {
+        "setId": "5affa0ea-db84-86fd-e063-6294a90a4d16",
+        "effectiveDate": "2026-09-08",
+        "brand": "propranolol hydrochloride",
+        "manufacturer": "Golden State Medical Supply, Inc.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "INDICATIONS AND USAGE Hypertension Propranolol Hydrochloride Extended-Release Capsules, USP, are indicated in the management of hypertension. They may be used alone or used in combination with other antihypertensive agents, particularly a thiazide diuretic. Propranolol Hydrochloride Extended-Release Capsules, USP, are not indicated in the management of hypertensive emergencies. Angina Pectoris Due to Coronary Atherosclerosis Propranolol Hydrochloride Extended-Release Capsules, USP, are indicated to decrease angina frequency and increase exercise tolerance in patients with angina pectoris. Migraine Propranolol Hydrochloride Extended-Release Capsules, USP, are indicated for the prophylaxis of common migraine headache. The efficacy of propranolol in the treatment of a migraine attack that has started has not been established, and propranolol is not indicated for such use. Hypertrophic Subaortic Stenosis Propranolol Hydrochloride Extended-Release Capsules, USP, improve NYHA functional class in symptomatic patients with hypertrophic subaortic stenosis.",
+        "brandsSeen": [
+          "HEMANGEOL",
+          "INDERAL LA",
+          "Inderal XL",
+          "InnoPran XL",
+          "Propranolol"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "quetiapine": {
+      "rxnorm": {
+        "name": "quetiapine",
+        "rxcui": "51272",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "QUETIAPINE FUMARATE"
+        ],
+        "labelsMatched": 100,
+        "labelsWithBoxedWarning": 98
+      },
+      "reference": {
+        "setId": "8ae62aaf-f8c5-417f-baac-0098369ca322",
+        "effectiveDate": "2026-04-10",
+        "brand": "SEROQUEL",
+        "manufacturer": "H2-Pharma, LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS; and SUICIDAL THOUGHTS AND BEHAVIORS Increased Mortality in Elderly Patients with Dementia-Related Psychosis Elderly patients with dementia-related psychosis t",
+        "indicationsLead": "1 INDICATIONS AND USAGE SEROQUEL is an atypical antipsychotic indicated for the treatment of: • Schizophrenia ( 1.1 ) • Bipolar I disorder manic episodes (1.2) • Bipolar disorder, depressive episodes (1.2) 1.1 Schizophrenia SEROQUEL is indicated for the treatment of schizophrenia. The efficacy of SEROQUEL in schizophrenia was established in three 6-week trials in adults and one 6-week trial in adolescents (13-17 years). The effectiveness of SEROQUEL for the maintenance treatment of schizophrenia has not been systematically evaluated in controlled clinical trials [see Clinical Studies (14.1) ]. 1.2 Bipolar Disorder SEROQUEL is indicated for the acute treatment of manic episodes associated with bipolar I disorder, both as monotherapy and as an adjunct to lithium or divalproex. Efficacy was established in two 12-week monotherapy trials in adults, in one 3-week adjunctive trial in adults, and in one 3-week monotherapy trial in pediatric patients (10-17 years) [see Clinical Studies (14.2) ]. SEROQUEL is indicated as monotherapy for the acute treatment of depressive episodes associated with bipolar disorder. Efficacy was established in two 8-week monotherapy trials in adult patients with bipolar I and bipolar II disorder [see Clinical Studies (14.2) ]. SEROQUEL is indicated for the maintenance treatment of bipolar I disorder, as an adjunct to lithium or divalproex. Efficacy was established in two maintenance trials in adults. The effectiveness of SEROQUEL as monotherapy for the maintenance treatment of bipolar disorder has not been systematically evaluated in controlled clinical trials [see Clinical Studies (14.2) ]. 1.3 Special Considerations in Treating Pediatric Schizophrenia and Bipolar I Disorder Pediatric schizophrenia and bipolar I disorder are serious mental disorders, however, diagnosis can be challenging. For pediatric schizophrenia, symptom profiles can be variable, and for bipolar I disorder, patients may have variable patterns of periodicity of manic or mixed",
+        "brandsSeen": [
+          "SEROQUEL",
+          "SEROQUEL XR"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "risperidone": {
+      "rxnorm": {
+        "name": "risperidone",
+        "rxcui": "35636",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "RISPERIDONE"
+        ],
+        "labelsMatched": 71,
+        "labelsWithBoxedWarning": 70
+      },
+      "reference": {
+        "setId": "7e117c7e-02fc-4343-92a1-230061dfc5e0",
+        "effectiveDate": "2026-05-28",
+        "brand": "RISPERDAL",
+        "manufacturer": "Janssen Pharmaceuticals, Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. RISPERDAL is not approved for the treatmen",
+        "indicationsLead": "1 INDICATIONS AND USAGE RISPERDAL is an atypical antipsychotic indicated for: Treatment of schizophrenia ( 1.1 ) As monotherapy or adjunctive therapy with lithium or valproate, for the treatment of acute manic or mixed episodes associated with Bipolar I Disorder ( 1.2 ) Treatment of irritability associated with autistic disorder ( 1.3 ) 1.1 Schizophrenia RISPERDAL (risperidone) is indicated for the treatment of schizophrenia. Efficacy was established in 4 short-term trials in adults, 2 short-term trials in adolescents (ages 13 to 17 years), and one long-term maintenance trial in adults [see Clinical Studies (14.1) ] . 1.2 Bipolar Mania Monotherapy RISPERDAL is indicated for the treatment of acute manic or mixed episodes associated with Bipolar I Disorder. Efficacy was established in 2 short-term trials in adults and one short-term trial in children and adolescents (ages 10 to 17 years) [see Clinical Studies (14.2) ] . Adjunctive Therapy RISPERDAL adjunctive therapy with lithium or valproate is indicated for the treatment of acute manic or mixed episodes associated with Bipolar I Disorder. Efficacy was established in one short-term trial in adults [see Clinical Studies (14.3) ] . 1.3 Irritability Associated with Autistic Disorder RISPERDAL is indicated for the treatment of irritability associated with autistic disorder, including symptoms of aggression towards others, deliberate self-injuriousness, temper tantrums, and quickly changing moods. Efficacy was established in 3 short-term trials in children and adolescents (ages 5 to 17 years) [see Clinical Studies (14.4) ] .",
+        "brandsSeen": [
+          "RISPERDAL",
+          "RISPERDAL CONSTA",
+          "RISPERDAL M-TAB",
+          "Rykindo extended-release microspheres"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "sertraline": {
+      "rxnorm": {
+        "name": "sertraline",
+        "rxcui": "36437",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "SERTRALINE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 135,
+        "labelsWithBoxedWarning": 135
+      },
+      "reference": {
+        "setId": "fda754f6-d0f3-4dce-a17a-927d64f912f7",
+        "effectiveDate": "2023-08-08",
+        "brand": "Zoloft",
+        "manufacturer": "Viatris Specialty LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behavior in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical wors",
+        "indicationsLead": "1 INDICATIONS AND USAGE ZOLOFT is indicated for the treatment of the following [See Clinical Studies (14) ] : • Major depressive disorder (MDD) • Obsessive-compulsive disorder (OCD) • Panic disorder (PD) • Posttraumatic stress disorder (PTSD) • Social anxiety disorder (SAD) • Premenstrual dysphoric disorder (PMDD) ZOLOFT is a selective serotonin reuptake inhibitor (SSRI) indicated for the treatment of ( 1 ): • Major depressive disorder (MDD) • Obsessive-compulsive disorder (OCD) • Panic disorder (PD) • Posttraumatic stress disorder (PTSD) • Social anxiety disorder (SAD) • Premenstrual dysphoric disorder (PMDD)",
+        "brandsSeen": [
+          "SERTRALINE",
+          "Sertraline HCl",
+          "Zoloft"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "trazodone": {
+      "rxnorm": {
+        "name": "trazodone",
+        "rxcui": "10737",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "TRAZODONE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 101,
+        "labelsWithBoxedWarning": 100
+      },
+      "reference": {
+        "setId": "fa7afa93-b98c-4dc7-bbb8-ab6a058427b9",
+        "effectiveDate": "2026-09-08",
+        "brand": "Trazodone Hydrochloride",
+        "manufacturer": "REMEDYREPACK INC.",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical wor",
+        "indicationsLead": "1 INDICATIONS AND USAGE Trazodone hydrochloride tablets are indicated for the treatment of major depressive disorder (MDD) in adults. Trazodone hydrochloride tablets are a selective serotonin reuptake inhibitor indicated for the treatment of major depressive disorder (MDD) ( 1 ).",
+        "brandsSeen": [],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "valproate": {
+      "rxnorm": {
+        "name": "valproic acid",
+        "rxcui": "11118",
+        "tty": "PIN"
+      },
+      "openfda": {
+        "genericNames": [
+          "DIVALPROEX SODIUM"
+        ],
+        "labelsMatched": 124,
+        "labelsWithBoxedWarning": 120
+      },
+      "reference": {
+        "setId": "08a65cf4-7749-4ceb-6895-8f4805e2b01f",
+        "effectiveDate": "2026-03-31",
+        "brand": "Depakote",
+        "manufacturer": "AbbVie Inc.",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: LIFE THREATENING ADVERSE REACTIONS Hepatotoxicity General Population: Hepatic failure resulting in fatalities has occurred in patients receiving valproate and its derivatives. These incidents usually have occurred during the first ",
+        "indicationsLead": "1 INDICATIONS AND USAGE Depakote is an anti-epileptic drug indicated for: Treatment of manic episodes associated with bipolar disorder ( 1.1 ) Monotherapy and adjunctive therapy of complex partial seizures and simple and complex absence seizures; adjunctive therapy in patients with multiple seizure types that include absence seizures ( 1.2 ) Prophylaxis of migraine headaches ( 1.3 ) 1.1 Mania Depakote (divalproex sodium) is a valproate and is indicated for the treatment of the manic episodes associated with bipolar disorder. A manic episode is a distinct period of abnormally and persistently elevated, expansive, or irritable mood. Typical symptoms of mania include pressure of speech, motor hyperactivity, reduced need for sleep, flight of ideas, grandiosity, poor judgment, aggressiveness, and possible hostility. The efficacy of Depakote was established in 3-week trials with patients meeting DSM-III-R criteria for bipolar disorder who were hospitalized for acute mania [see Clinical Studies ( 14.1 ) ] . The safety and effectiveness of Depakote for long-term use in mania, i.e., more than 3 weeks, has not been demonstrated in controlled clinical trials. Therefore, healthcare providers who elect to use Depakote for extended periods should continually reevaluate the long-term usefulness of the drug for the individual patient. 1.2 Epilepsy Depakote is indicated as monotherapy and adjunctive therapy in the treatment of patients with complex partial seizures that occur either in isolation or in association with other types of seizures. Depakote is also indicated for use as sole and adjunctive therapy in the treatment of simple and complex absence seizures, and adjunctively in patients with multiple seizure types that include absence seizures. Simple absence is defined as very brief clouding of the sensorium or loss of consciousness accompanied by certain generalized epileptic discharges without other detectable clinical signs. Complex absence is the term used when other signs",
+        "brandsSeen": [
+          "Depakote",
+          "Depakote ER",
+          "Depakote Sprinkles"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "varenicline": {
+      "rxnorm": {
+        "name": "varenicline",
+        "rxcui": "591622",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "VARENICLINE TARTRATE",
+          "VARENICLINE"
+        ],
+        "labelsMatched": 39,
+        "labelsWithBoxedWarning": 1
+      },
+      "reference": {
+        "setId": "f0ff4f27-5185-4881-a749-c6b7a0ca5696",
+        "effectiveDate": "2026-01-23",
+        "brand": "CHANTIX",
+        "manufacturer": "Pfizer Laboratories Div Pfizer Inc",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": false,
+        "boxedWarningLead": "",
+        "indicationsLead": "1 INDICATIONS AND USAGE CHANTIX is indicated for use as an aid to smoking-cessation treatment. CHANTIX is a nicotinic receptor partial agonist indicated for use as an aid to smoking-cessation treatment. ( 1 and 2.1 )",
+        "brandsSeen": [
+          "CHANTIX",
+          "Tyrvaya"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "venlafaxine": {
+      "rxnorm": {
+        "name": "venlafaxine",
+        "rxcui": "39786",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "VENLAFAXINE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 130,
+        "labelsWithBoxedWarning": 127
+      },
+      "reference": {
+        "setId": "c848a5d8-ba94-4c84-80e3-0bf35fb8e32e",
+        "effectiveDate": "2023-08-15",
+        "brand": "Effexor XR",
+        "manufacturer": "Viatris Specialty LLC",
+        "chosenBy": "referenceBrand",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behavior in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical wors",
+        "indicationsLead": "1 INDICATIONS AND USAGE Effexor XR is indicated in adults for the treatment of: • Major Depressive Disorder (MDD) [see Clinical Studies (14.1) ] • Generalized Anxiety Disorder (GAD) [see Clinical Studies (14.2) ] • Social Anxiety Disorder (SAD) [see Clinical Studies (14.3) ] • Panic Disorder (PD) [see Clinical Studies (14.4) ] Effexor XR is a serotonin and norepinephrine reuptake inhibitor (SNRI) indicated for the treatment of adults with: • Major Depressive Disorder (MDD) ( 1 ) • Generalized Anxiety Disorder (GAD) ( 1 ) • Social Anxiety Disorder (SAD) ( 1 ) • Panic Disorder (PD) ( 1 )",
+        "brandsSeen": [
+          "Effexor XR",
+          "venlafaxine"
+        ],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    },
+    "ziprasidone": {
+      "rxnorm": {
+        "name": "ziprasidone",
+        "rxcui": "115698",
+        "tty": "IN"
+      },
+      "openfda": {
+        "genericNames": [
+          "ZIPRASIDONE HYDROCHLORIDE"
+        ],
+        "labelsMatched": 17,
+        "labelsWithBoxedWarning": 17
+      },
+      "reference": {
+        "setId": "5d576819-cd14-4a61-8a2f-6b90d8eac07e",
+        "effectiveDate": "2026-07-16",
+        "brand": "ziprasidone hydrochloride",
+        "manufacturer": "Bryant Ranch Prepack",
+        "chosenBy": "latest-oral",
+        "boxedWarningPresent": true,
+        "boxedWarningLead": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. Ziprasidone is not approved for the treatm",
+        "indicationsLead": "1 INDICATIONS AND USAGE Ziprasidone capsules are indicated for the treatment of schizophrenia, as monotherapy for the acute treatment of bipolar manic or mixed episodes, and as an adjunct to lithium or valproate for the maintenance treatment of bipolar disorder. When deciding among the alternative treatments available for the condition needing treatment, the prescriber should consider the finding of ziprasidone’s greater capacity to prolong the QT/QTc interval compared to several other antipsychotic drugs [see Warnings and Precautions ( 5.3 ) ]. Prolongation of the QTc interval is associated in some other drugs with the ability to cause torsade de pointes-type arrhythmia, a potentially fatal polymorphic ventricular tachycardia, and sudden death. In many cases this would lead to the conclusion that other drugs should be tried first. Whether ziprasidone will cause torsade de pointes or increase the rate of sudden death is not yet known [see Warnings and Precautions ( 5.3 ) ] Schizophrenia Ziprasidone capsules are indicated for the treatment of schizophrenia in adults [see Clinical Studies ( 14.1 ) ] Bipolar I Disorder (Acute Mixed or Manic Episodes and Maintenance Treatment as an Adjunct to Lithium or Valproate) Ziprasidone capsules are indicated as monotherapy for the acute treatment of adults with manic or mixed episodes associated with bipolar I disorder [see Clinical Studies ( 14.2 )]. Ziprasidone capsules are indicated as an adjunct to lithium or valproate for the maintenance treatment of bipolar I disorder in adults [see Clinical Studies ( 14.2 ) ]. Ziprasidone capsule is an atypical antipsychotic. In choosing among treatments, prescribers should be aware of the capacity of ziprasidone capsule to prolong the QT interval and may consider the use of other drugs first ( 1 ) Ziprasidone capsules are indicated for the: • treatment of schizophrenia in adults. ( 1 ) • acute treatment of adults as monotherapy of manic or mixed episodes associated with bipolar I disorder",
+        "brandsSeen": [],
+        "dailymedResolves": true
+      },
+      "problems": [],
+      "verifiedOn": "2026-09-29"
+    }
+  }
+}

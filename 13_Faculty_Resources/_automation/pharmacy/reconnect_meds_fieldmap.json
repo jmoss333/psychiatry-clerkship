@@ -1,0 +1,518 @@
+{
+  "schemaVersion": 1,
+  "description": "How ReConnect databases/core/data_all.json#medications maps onto pharmacy.json. Read by sync_from_reconnect.py --dataset meds. Every upstream key must appear in exactly one of fieldMap or denylist; an unclassified key is reported and fails the run (exit 1).",
+  "status": "approved at faculty gate G0 (2026-09-29). Post-G0 additions awaiting confirmation: rems_program (L, under the approved 'controlled_schedule/REMS' verify row), dea_registration (meta), _stale_reason (meta)",
+  "upstream": {
+    "path": "databases/core/data_all.json",
+    "field": "medications",
+    "keyField": "name"
+  },
+  "classes": {
+    "L": "label-verifiable by script",
+    "R": "ReConnect-inherited, hash-pinned",
+    "J-seed": "seed text for a faculty-judgment field; never shipped verbatim",
+    "meta": "provenance only, not carried as content"
+  },
+  "phase1Roster": [
+    {
+      "id": "haloperidol",
+      "reconnectNames": [
+        "Haloperidol"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "fluphenazine",
+      "reconnectNames": [
+        "Fluphenazine"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "chlorpromazine",
+      "reconnectNames": [
+        "Chlorpromazine"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "olanzapine",
+      "reconnectNames": [
+        "Olanzapine"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "risperidone",
+      "reconnectNames": [
+        "Risperidone"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "paliperidone",
+      "reconnectNames": [
+        "Paliperidone"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "quetiapine",
+      "reconnectNames": [
+        "Quetiapine"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "aripiprazole",
+      "reconnectNames": [
+        "Aripiprazole"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "ziprasidone",
+      "reconnectNames": [
+        "Ziprasidone"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "lurasidone",
+      "reconnectNames": [
+        "Lurasidone"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "cariprazine",
+      "reconnectNames": [
+        "Cariprazine"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "clozapine",
+      "reconnectNames": [
+        "Clozapine"
+      ],
+      "group": "antipsychotic"
+    },
+    {
+      "id": "lithium",
+      "reconnectNames": [
+        "Lithium"
+      ],
+      "group": "mood-stabilizer"
+    },
+    {
+      "id": "valproate",
+      "reconnectNames": [
+        "Valproate"
+      ],
+      "group": "mood-stabilizer"
+    },
+    {
+      "id": "carbamazepine",
+      "reconnectNames": [
+        "Carbamazepine"
+      ],
+      "group": "mood-stabilizer"
+    },
+    {
+      "id": "lamotrigine",
+      "reconnectNames": [
+        "Lamotrigine"
+      ],
+      "group": "mood-stabilizer"
+    },
+    {
+      "id": "sertraline",
+      "reconnectNames": [
+        "Sertraline"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "fluoxetine",
+      "reconnectNames": [
+        "Fluoxetine"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "escitalopram",
+      "reconnectNames": [
+        "Escitalopram"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "citalopram",
+      "reconnectNames": [
+        "Citalopram"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "paroxetine",
+      "reconnectNames": [
+        "Paroxetine"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "venlafaxine",
+      "reconnectNames": [
+        "Venlafaxine"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "duloxetine",
+      "reconnectNames": [
+        "Duloxetine"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "bupropion",
+      "reconnectNames": [
+        "Bupropion"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "mirtazapine",
+      "reconnectNames": [
+        "Mirtazapine"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "trazodone",
+      "reconnectNames": [
+        "Trazodone"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "nortriptyline",
+      "reconnectNames": [
+        "Nortriptyline"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "phenelzine",
+      "reconnectNames": [
+        "Phenelzine"
+      ],
+      "group": "antidepressant"
+    },
+    {
+      "id": "lorazepam",
+      "reconnectNames": [
+        "Lorazepam"
+      ],
+      "group": "anxiolytic-agitation"
+    },
+    {
+      "id": "clonazepam",
+      "reconnectNames": [
+        "Clonazepam"
+      ],
+      "group": "anxiolytic-agitation"
+    },
+    {
+      "id": "diazepam",
+      "reconnectNames": [
+        "Diazepam"
+      ],
+      "group": "anxiolytic-agitation"
+    },
+    {
+      "id": "chlordiazepoxide",
+      "reconnectNames": [],
+      "group": "anxiolytic-agitation"
+    },
+    {
+      "id": "hydroxyzine",
+      "reconnectNames": [
+        "Hydroxyzine"
+      ],
+      "group": "anxiolytic-agitation"
+    },
+    {
+      "id": "diphenhydramine",
+      "reconnectNames": [],
+      "group": "anxiolytic-agitation"
+    },
+    {
+      "id": "benztropine",
+      "reconnectNames": [],
+      "group": "anxiolytic-agitation"
+    },
+    {
+      "id": "propranolol",
+      "reconnectNames": [
+        "Propranolol"
+      ],
+      "group": "anxiolytic-agitation"
+    },
+    {
+      "id": "buprenorphine",
+      "reconnectNames": [
+        "Buprenorphine",
+        "Buprenorphine/Naloxone"
+      ],
+      "group": "sud"
+    },
+    {
+      "id": "methadone",
+      "reconnectNames": [
+        "Methadone"
+      ],
+      "group": "sud"
+    },
+    {
+      "id": "naltrexone",
+      "reconnectNames": [
+        "Naltrexone (oral)",
+        "Naltrexone XR (injectable)"
+      ],
+      "group": "sud"
+    },
+    {
+      "id": "acamprosate",
+      "reconnectNames": [
+        "Acamprosate"
+      ],
+      "group": "sud"
+    },
+    {
+      "id": "nicotine-replacement",
+      "reconnectNames": [
+        "Nicotine Replacement Therapy"
+      ],
+      "group": "sud"
+    },
+    {
+      "id": "varenicline",
+      "reconnectNames": [
+        "Varenicline"
+      ],
+      "group": "sud"
+    },
+    {
+      "id": "prazosin",
+      "reconnectNames": [
+        "Prazosin"
+      ],
+      "group": "other"
+    },
+    {
+      "id": "clonidine",
+      "reconnectNames": [],
+      "group": "other"
+    },
+    {
+      "id": "methylphenidate",
+      "reconnectNames": [
+        "Methylphenidate"
+      ],
+      "group": "other"
+    }
+  ],
+  "fieldMap": {
+    "name": {
+      "target": "generic",
+      "class": "L",
+      "note": "normalise to RxNorm ingredient; RxCUI verified by the label tool"
+    },
+    "generic_name": {
+      "target": "generic",
+      "class": "L"
+    },
+    "medication_name": {
+      "target": null,
+      "class": "meta",
+      "note": "duplicate of name upstream"
+    },
+    "brand_names": {
+      "target": "brands",
+      "class": "L"
+    },
+    "FDA Indications": {
+      "target": "fdaIndications",
+      "class": "L",
+      "note": "verify against current DailyMed label"
+    },
+    "black_box_warning": {
+      "target": "boxedWarning.present",
+      "class": "L",
+      "note": "presence verified against openFDA boxed_warning"
+    },
+    "controlled_schedule": {
+      "target": "controlledSchedule",
+      "class": "L"
+    },
+    "cyp_pathways": {
+      "target": "interactions.cyp",
+      "class": "L",
+      "note": "re-verify against label section 7 / 12.3"
+    },
+    "drug_class": {
+      "target": "class",
+      "class": "R",
+      "note": "mapped to a controlled vocabulary term"
+    },
+    "mechanism_of_action": {
+      "target": "mechanism.t1",
+      "class": "R"
+    },
+    "QTc Risk": {
+      "target": "flags.qtcRisk",
+      "class": "R"
+    },
+    "Weight Impact": {
+      "target": "flags.weightImpact",
+      "class": "R"
+    },
+    "Requires Blood Monitoring": {
+      "target": "flags.bloodMonitoring",
+      "class": "R"
+    },
+    "ekg_required": {
+      "target": "flags.ekgRequired",
+      "class": "R"
+    },
+    "baseline_workup": {
+      "target": "monitoring.baselineSeed",
+      "class": "R",
+      "note": "carried only where it agrees with the attested med_monitoring.md table"
+    },
+    "half_life_hours": {
+      "target": "pk.halfLifeHours",
+      "class": "R"
+    },
+    "time_to_effect": {
+      "target": "pk.timeToEffect",
+      "class": "R"
+    },
+    "counseling": {
+      "target": "familyExplainer.seed",
+      "class": "R"
+    },
+    "patient_counseling": {
+      "target": "familyExplainer.seed",
+      "class": "R",
+      "note": "usually identical to counseling upstream"
+    },
+    "family_psychoeducation": {
+      "target": "familyExplainer.text",
+      "class": "R",
+      "note": "present on a minority of records"
+    },
+    "family_handout_ref": {
+      "target": "familyExplainer.handoutRef",
+      "class": "R",
+      "note": "FH-MED## body location unconfirmed"
+    },
+    "common_side_effects": {
+      "target": "adverseEffects.common",
+      "class": "J-seed"
+    },
+    "serious_adverse_effects": {
+      "target": "adverseEffects.dangerous",
+      "class": "J-seed"
+    },
+    "off_label_uses": {
+      "target": "inpatientUses",
+      "class": "J-seed"
+    },
+    "best_for": {
+      "target": "pearls.seed",
+      "class": "J-seed"
+    },
+    "source": {
+      "target": null,
+      "class": "meta"
+    },
+    "source_confidence": {
+      "target": null,
+      "class": "meta"
+    },
+    "last_verified_date": {
+      "target": null,
+      "class": "meta"
+    },
+    "verification_note": {
+      "target": null,
+      "class": "meta"
+    },
+    "freshness_status": {
+      "target": null,
+      "class": "meta"
+    },
+    "_stale": {
+      "target": null,
+      "class": "meta"
+    },
+    "schema_version": {
+      "target": null,
+      "class": "meta"
+    },
+    "state": {
+      "target": null,
+      "class": "meta"
+    },
+    "content_type": {
+      "target": null,
+      "class": "meta"
+    },
+    "safety_tier": {
+      "target": null,
+      "class": "meta"
+    },
+    "evidence_level": {
+      "target": null,
+      "class": "meta"
+    },
+    "update_rationale": {
+      "target": null,
+      "class": "meta"
+    },
+    "rems_program": {
+      "target": "regulatory.rems",
+      "class": "L",
+      "note": "verify against the current label: upstream still flags Clozapine true, but the FDA eliminated the clozapine REMS in 2025 (the attested med_monitoring.md already says so) — record as an upstream discrepancy"
+    },
+    "dea_registration": {
+      "target": null,
+      "class": "meta",
+      "note": "boolean, redundant with controlled_schedule"
+    },
+    "_stale_reason": {
+      "target": null,
+      "class": "meta"
+    }
+  },
+  "denylist": {
+    "starting_dose": "Option A (dose-literal policy, spec 4a)",
+    "typical_dose_min": "Option A",
+    "typical_dose_max": "Option A",
+    "absolute_max_dose": "Option A",
+    "pregnancy_category": "letter categories retired by the FDA PLLR (2015)",
+    "MaineCare Status": "coverage/cost out of scope",
+    "Prior Auth Usually Required": "coverage/cost out of scope",
+    "Walmart $4 List": "coverage/cost out of scope",
+    "cost_plus_price": "coverage/cost out of scope",
+    "goodrx_url": "coverage/cost out of scope",
+    "pharmacy_options": "coverage/cost out of scope",
+    "symptom_cluster": "ReConnect-internal matching field",
+    "patient_profile": "ReConnect-internal matching field",
+    "target_audience": "ReConnect-internal",
+    "rss_layers": "ReConnect-internal"
+  }
+}
