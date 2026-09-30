@@ -685,3 +685,27 @@ test('the base-lag alarm links the rolling pull request, https only', () => {
   const insecure = branchSyncNotice({ ...alarmed, rollingPr: 'http://github.example/pull/9' });
   assert.equal(insecure.href, null, 'a non-https PR URL must not become a link');
 });
+
+/* The words of the Coming from main disclosure (2026-09-29). */
+import { incomingPageStatus, incomingSummaryText } from '../faculty-console/app.mjs';
+
+test('incomingSummaryText counts affected pages, names the base branch, and admits a partial check', () => {
+  const server = { branchSync: { baseBranch: 'main' } };
+  assert.equal(incomingSummaryText(server, null), 'Coming from main · which signed pages it changed');
+  assert.equal(incomingSummaryText(server, { groups: [], pages: {} }),
+    'Coming from main · no page you signed changed there');
+  assert.equal(incomingSummaryText(server, { groups: [], pages: {}, partial: true }),
+    'Coming from main · the check was incomplete; open for what could not be checked');
+  assert.equal(incomingSummaryText(server, { groups: [{}], pages: { 'a.md': {} } }),
+    'Coming from main · 1 signed page changed there since this branch split off');
+  assert.equal(incomingSummaryText({}, { groups: [{}], pages: { 'a.md': {}, 'b.md': {} }, partial: true }),
+    'Coming from main · 2 signed pages changed there since this branch split off (the check was incomplete)');
+});
+
+test('incomingPageStatus separates outdated-on-arrival, needs-signature, and could-not-tell', () => {
+  assert.match(incomingPageStatus({ inRollingPr: true }), /signature lands outdated/);
+  assert.match(incomingPageStatus({ inRollingPr: false }), /main already counts it as pending, and learners see that from the next release/);
+  assert.match(incomingPageStatus({ inRollingPr: null }), /could not be checked/);
+  assert.match(incomingPageStatus(null), /could not be checked/);
+  assert.doesNotMatch(incomingPageStatus({ inRollingPr: false }), /pending now/, 'learners see a change only after a release');
+});
