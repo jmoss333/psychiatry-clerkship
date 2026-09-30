@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "description": "Derived by build_rx_deck.py from pharmacy.json. Do not edit by hand.",
+  "cards": [],
+  "withheld": [
+    {
+      "drug": "acamprosate",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "aripiprazole",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "benztropine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "buprenorphine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "bupropion",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "carbamazepine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "cariprazine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "chlordiazepoxide",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "chlorpromazine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "citalopram",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "clonazepam",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "clonidine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "clozapine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "diazepam",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "diphenhydramine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "duloxetine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "escitalopram",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "fluoxetine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "fluphenazine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "haloperidol",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "hydroxyzine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "lamotrigine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "lithium",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "lorazepam",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "lurasidone",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "methadone",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "methylphenidate",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "mirtazapine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "naltrexone",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "nicotine-replacement",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "nortriptyline",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "olanzapine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "paliperidone",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "paroxetine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "phenelzine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "prazosin",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "propranolol",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "quetiapine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "risperidone",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "sertraline",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "trazodone",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "valproate",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "varenicline",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "venlafaxine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "ziprasidone",
+      "reason": "J fields not reviewed (or changed since)"
+    }
+  ],
+  "unmapped": []
+}
