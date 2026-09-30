@@ -51,6 +51,10 @@ THE RULE:
     PROMOTION, topic_meta.json: a facultyReview block whose status becomes reviewed/attested,
        or a block reviewed on BOTH sides whose lastReviewed or reviewer changes.
        (A demotion that deletes lastReviewed/reviewer is registration.)
+    PROMOTION, pharmacy.json (records identified by their `id`): a facultyReview block whose
+       status becomes reviewed/attested, a record born reviewed, or a block reviewed on BOTH
+       sides whose lastReviewed, reviewer or reviewedFieldsHash changes. (A J-field edit
+       without a new hash is caught by validate_pharmacy.py AC6, not here.)
     PROMOTION, question_bank.json (items identified by their `id`): an item whose status
        becomes attested, an item born attested, or an item attested on BOTH sides ANY of
        whose fields changes — the whole item is the attested text.
@@ -159,6 +163,7 @@ from attestation_hash import CONSOLE_IDENTITY  # noqa: E402
 LEDGER_REL = "13_Faculty_Resources/reviewed.json"
 TOPIC_META_REL = "topic_meta.json"
 QBANK_REL = "question_bank.json"
+PHARMACY_REL = "pharmacy.json"
 SHIPPED_REL = "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
 ATTEST_BRANCH = "attest/pending"
 
@@ -220,6 +225,11 @@ LEDGER_PROMOTION_KEYS = (
     "evidenceThrough",
 )
 TOPIC_META_PROMOTION_KEYS = ("lastReviewed", "reviewer")
+# pharmacy.json records (spec 02) carry a facultyReview block like topic_meta's, plus the hash
+# of the J (judgment) fields the review covered. validate_pharmacy.py's AC6 only proves that a
+# stored hash matches the text — a content PR that writes both is internally consistent — so
+# WHO may write the block is this gate's question, exactly as for the other three ledgers.
+PHARMACY_PROMOTION_KEYS = ("lastReviewed", "reviewer", "reviewedFieldsHash")
 # question_bank.json's `status` enum is draft/attested; only faculty attest tooling writes
 # `attested`, and what it vouches for is the WHOLE item — stem, options, rationale, evidence.
 QBANK_ATTESTED = "attested"
@@ -603,6 +613,46 @@ def qbank_promotions(base_doc, head_doc):
     return out
 
 
+def pharmacy_records(doc):
+    """{id: record} for pharmacy.json, or {} when the file is absent at that rev.
+
+    Same shape door as qbank_items: a document with no `records` list is exit 2, never {},
+    because {} at head reads as "every record deleted" — registration — over a diff that
+    could have promoted every one of them.
+    """
+    if doc is None:
+        return {}
+    if not isinstance(doc, dict):
+        raise InputError("%s is not an object" % PHARMACY_REL)
+    records = doc.get("records")
+    if not isinstance(records, list):
+        raise InputError("%s has no `records` list (found %s)"
+                         % (PHARMACY_REL, type(records).__name__))
+    return {r["id"]: r for r in records if isinstance(r, dict) and isinstance(r.get("id"), str)}
+
+
+def pharmacy_promotions(base_doc, head_doc):
+    """[(record id, what changed)] for every pharmacy.json facultyReview promotion."""
+    base = pharmacy_records(base_doc)
+    head = pharmacy_records(head_doc)
+    out = []
+    for rid in sorted(set(base) | set(head)):
+        after = _faculty_review(head.get(rid))
+        if after is None:
+            continue
+        before = _faculty_review(base.get(rid))
+        after_status = after.get("status")
+        before_status = before.get("status") if before is not None else None
+        if after_status not in PROMOTED_STATES:
+            continue  # pending, needs-review, or a demotion: registration
+        if before_status not in PROMOTED_STATES:
+            out.append((rid, "facultyReview %s→%s" % (before_status or "new", after_status)))
+            continue
+        for change in _changed_keys(before, after, PHARMACY_PROMOTION_KEYS):
+            out.append((rid, "facultyReview " + change))
+    return out
+
+
 # --------------------------------------------------------------------------------------
 # the four laws
 # --------------------------------------------------------------------------------------
@@ -680,7 +730,9 @@ def classify(root, base, head, head_branch, base_source=None):
     base_qbank = json_at(root, base, QBANK_REL)
     head_qbank = json_at(root, head, QBANK_REL)
     qbank = qbank_promotions(base_qbank, head_qbank)
-    promotions = bool(ledger) or bool(topic_meta) or bool(qbank)
+    pharmacy = pharmacy_promotions(json_at(root, base, PHARMACY_REL),
+                                   json_at(root, head, PHARMACY_REL))
+    promotions = bool(ledger) or bool(topic_meta) or bool(qbank) or bool(pharmacy)
     # A status-only question_bank.json diff is governance state, not content — see
     # qbank_text(). Said out loud in the report, never silently: a path leaving the content
     # set is precisely the shrink docs/SILENT_SHRINK_CHECKLIST.md is about.
@@ -719,6 +771,7 @@ def classify(root, base, head, head_branch, base_source=None):
         "changed": changed, "content": content, "governance": governance,
         "ledgerPromotions": ledger, "topicMetaPromotions": topic_meta,
         "qbankPromotions": qbank, "qbankStatusOnly": qbank_status_only,
+        "pharmacyPromotions": pharmacy,
         "commitOffenders": offenders, "staleBaseHint": stale_base, "failures": failures,
     }
 
@@ -742,6 +795,10 @@ def _promotion_lines(verdict, indent="    "):
         lines.append("%s%s:" % (indent, QBANK_REL))
         for item_id, change in verdict["qbankPromotions"]:
             lines.append("%s  qbank %s: %s" % (indent, item_id, change))
+    if verdict.get("pharmacyPromotions"):
+        lines.append("%s%s:" % (indent, PHARMACY_REL))
+        for rid, change in verdict["pharmacyPromotions"]:
+            lines.append("%s  pharmacy %s: %s" % (indent, rid, change))
     return lines
 
 
@@ -824,7 +881,7 @@ def run(root, base, head, head_branch, fmt="text", stream=None, base_source=None
         return 0
 
     promotions = (len(verdict["ledgerPromotions"]) + len(verdict["topicMetaPromotions"])
-                  + len(verdict["qbankPromotions"]))
+                  + len(verdict["qbankPromotions"]) + len(verdict["pharmacyPromotions"]))
     print("governance separation OK — %s; %d changed path(s), %d content, %d governance, "
           "%d promotion(s) on %s"
           % (where, len(verdict["changed"]), len(verdict["content"]),
@@ -1296,6 +1353,49 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
             _write(root, QBANK_REL, data)
         verdict("(p) attested→draft plus the edit is registration",
                 _case(root, "feature-qbank-demote", demote_then_edit), 0, [])
+
+        # (r)-(u) PHARMACY.JSON IS A LEDGER TOO (spec 02, decision D2 at G1, 2026-09-29). Its
+        # AC6 hash proves a review block matches the text, not who wrote the block — so a
+        # content PR could otherwise mint a reviewed card. L4 stays reviewed.json-only.
+        def _rx(status, **review):
+            block = dict({"status": status}, **review)
+            return {"schemaVersion": 1, "records": [
+                {"id": "lithium", "generic": "lithium carbonate", "facultyReview": block}]}
+        reviewed_block = {"reviewer": "R", "lastReviewed": "2026-09-29",
+                          "reviewedFieldsHash": "a" * 64}
+
+        def rx_born_reviewed():
+            _write(root, PHARMACY_REL, _rx("reviewed", **reviewed_block))
+        code, text = _case(root, "feature-rx-born", rx_born_reviewed)
+        check("(r) a pharmacy record born reviewed on a feature branch exits 1", code, 1)
+        check("(r) fires L2 only", _rules(text), ["L2"])
+        check("(r) names the record and the flip",
+              "pharmacy lithium: facultyReview new→reviewed" in text, True)
+
+        verdict("(s) a pending pharmacy record is registration",
+                _case(root, "feature-rx-pending", lambda: _write(root, PHARMACY_REL, _rx("pending"))),
+                0, [])
+
+        code, text = _case(root, "attest/pending-rx", rx_born_reviewed, email=CONSOLE_IDENTITY,
+                           head_branch=ATTEST_BRANCH)
+        check("(t) the same pharmacy promotion on attest/pending exits 0", code, 0)
+        check("(t) and the OK line counts it (a count that omits a ledger is a silent shrink)",
+              "1 promotion(s) on attest/pending" in text, True)
+
+        # Both sides reviewed needs a base that already carries the card, which _case's
+        # branch-from-main cannot seed; the rule itself is a pure function, so pin it there.
+        rehashed = pharmacy_promotions(
+            _rx("reviewed", **reviewed_block),
+            _rx("reviewed", **dict(reviewed_block, reviewedFieldsHash="b" * 64)))
+        check("(u) re-hashing a card reviewed on both sides is a promotion",
+              [rid for rid, _ in rehashed], ["lithium"])
+        check("(u) and a demotion is not",
+              pharmacy_promotions(_rx("reviewed", **reviewed_block), _rx("needs-review")), [])
+
+        def rx_bad_shape():
+            _write(root, PHARMACY_REL, {"records": {"lithium": {}}})
+        code, text = _case(root, "feature-rx-shape", rx_bad_shape)
+        check("(u2) a pharmacy.json with no records list is could-not-check", code, 2)
 
         verdict("(q) the same qbank promotion on attest/pending as the console",
                 _case(root, "attest/pending-qbank", attest_item, email=CONSOLE_IDENTITY,
