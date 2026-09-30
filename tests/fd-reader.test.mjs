@@ -88,7 +88,7 @@ test('ordinary reading has an empty device status and hidden Start at top, while
   const reading = F.fdReader(IDX, BASE_STATE, '<h2>Body</h2>');
   assert.match(reading, /class="fd-reading-place" data-fd-reading-status><\/p>/);
   assert.match(reading, /class="fd-reading-place__top" data-fd-reading-top hidden>Start at top<\/button>/);
-  assert.ok(reading.indexOf('data-fd-reading-status') > reading.indexOf('fd-article__source'));
+  assert.ok(reading.indexOf('data-fd-reading-status') > reading.indexOf('fd-article__body'));
   assert.ok(reading.indexOf('data-fd-reading-status') < reading.indexOf('fd-article__actions'));
   assert.doesNotMatch(F.fdReader(IDX, { ...BASE_STATE, ref: 'tool.html' }, '<iframe></iframe>'), /fd-reading-place/);
   assert.doesNotMatch(F.fdReader(IDX, { ...BASE_STATE, ref: 'a.md', readingPlaceEligible: false }, '<h2>Body</h2>'), /fd-reading-place/);
@@ -436,9 +436,10 @@ test('direct unindexed html routes still render as tools with the expansion cont
   }, '<p>Read</p>'), /data-fd-expand-tool|fd-reader--tool/);
 });
 
-test('the source chip shows the item\'s ref', () => {
-  assert.match(F.fdReader(IDX, s({ ref: 'a.md' }), ''),
-    /<span>Source:<\/span><span class="fd-src">a\.md<\/span>/);
+test('the item\'s ref rides on the article element, not on screen', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md' }), '');
+  assert.match(html, /<div class="fd-article" data-ref="a\.md">/);
+  assert.doesNotMatch(html, /Source:|fd-article__source|fd-src/);
 });
 
 // ---- doneLabel (primary button text) -----------------------------------------------------------

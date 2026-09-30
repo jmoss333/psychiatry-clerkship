@@ -61,10 +61,10 @@
                                     opens. Overloading data-fd-toggle with a bare index risks a
                                     numeric key colliding with the persisted progress map.
 
-   ---- Two borrowed classes, flagged for review ------------------------------------------------
-   frontdoor.css is frozen for this plan, so nothing here invents a class. Two spots in the item
-   preview need small dim label text that CLASS-INVENTORY's section-8 outline does not name a class
-   for -- the meta line ("4 min · Week 1") and the "Source:" label. Both reuse .fd-row__min, whose
+   ---- A borrowed class, flagged for review ---------------------------------------------------
+   frontdoor.css is frozen for this plan, so nothing here invents a class. The item preview's meta
+   line ("4 min · Week 1") needs small dim label text that CLASS-INVENTORY's section-8 outline does
+   not name a class for (the "Source:" label that shared it was removed 2026-09-29). It reuses .fd-row__min, whose
    rule is unscoped and whose Shared-Components entry is that exact treatment ("12 min", 12px dim).
    The alternative was inventing .fd-sheet__meta, which the freeze forbids. Flagged rather than
    passed over in silence: if the reviewer would rather have a dedicated class, it is a one-line
@@ -224,9 +224,9 @@ function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml, failureCop
      human-readable source ("Acute & Safety / Toxidromes"); the first implementation substituted
      item.ref and a learner read "From: pg_suicide.md · faculty-attested" — an internal slug on the
      most safety-critical surface in the product (2026-09-18 critique). The ref stays machine-
-     readable on the element (data-ref) for the smoke crawler and for faculty feedback; the
-     .fd-src chip in the item preview is unchanged, since that chip IS the file reference by
-     design and the route tests key on it. Titles are escaped like every interpolated value. */
+     readable on the element (data-ref) for the smoke crawler and for faculty feedback. The item
+     preview's "Source:" chip went the same way on 2026-09-29; the open button's data-fd-open
+     still carries the ref. Titles are escaped like every interpolated value. */
   var fromName=fdEsc(item.title||item.ref);
   if(protocol.kind==='reviewed'){
     out+='<div class="fd-sheet__attribution" data-ref="'+fdEsc(item.ref)+'">✓ From: '+fromName+' · faculty-attested</div>';
@@ -247,21 +247,15 @@ function fdSheetItemBody(item, index){
   var wk=fdSheetWeekOf(index, item.ref);
   if(wk!==null) metaText=metaText?(metaText+' · Week '+wk):('Week '+wk);
 
-  /* Bare grouping divs (structural inline styles only, no colour) for the chip row and the source
-     row -- CLASS-INVENTORY's section-8 outline names the chips and the .fd-src chip but no
-     container for either, same as fd_shell.js's grouping spans. */
+  /* A bare grouping div (structural inline styles only, no colour) for the chip row --
+     CLASS-INVENTORY's section-8 outline names the chips but no container for them, same as
+     fd_shell.js's grouping spans. */
   var out='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">';
   out+='<span class="'+typeCls+'">'+typeLabel+'</span>';
   if(metaText) out+='<span class="fd-row__min">'+fdEsc(metaText)+'</span>';
   if(item.attested) out+='<span class="fd-attested">✓ faculty-attested</span>';
   out+='</div>';
   out+='<p class="fd-sheet__lead">'+fdEsc(item.summary)+'</p>';
-  /* font-weight:600 on the label matches the prototype, which .fd-row__min does not carry. Inline
-     rather than a new class: the freeze bars inventing classes and emitting colour, not weight. */
-  out+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">'+
-    '<span class="fd-row__min" style="font-weight:600">Source:</span>'+
-    '<span class="fd-src">'+fdEsc(item.ref)+'</span>'+
-  '</div>';
   out+='<button type="button" class="fd-btn fd-btn--primary" data-fd-open="'+fdEsc(item.ref)+'">'+
     'Open the full page →</button>';
   out+='<p class="fd-sheet__note">Or ✕ to close — you’ll land exactly where you were.</p>';
