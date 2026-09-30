@@ -38,7 +38,7 @@ function fdBlockBudget(minutes){
    own session (startSession, question-bank-practice.html), so the block reaches them through
    its question step instead. `other` is absent because nothing writes it — an id landing there
    is an unrouted namespace, which is a bug in srsBucket, not a card to promise. */
-var FD_BLOCK_REVIEW_BUCKETS=['daily','landmark','fam','comm','reason'];
+var FD_BLOCK_REVIEW_BUCKETS=['daily','landmark','fam','comm','reason','rx'];
 
 function fdBlockDueTotal(breakdown){
   var b=breakdown||{}, total=0;

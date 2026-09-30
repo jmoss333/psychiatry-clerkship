@@ -12,6 +12,7 @@ from pathlib import Path
 import json
 import posixpath
 import re
+import sys
 from urllib.parse import unquote, urlsplit
 
 import site_extras
@@ -272,6 +273,29 @@ def discover(root, page, manifest, site, out_dir=None):
                         raise DependencyError("review_companions.json projection failed: " + str(error)) from error
                     if built.read_bytes() != expected:
                         raise DependencyError("review_companions.json differs from current reviewed source")
+                continue
+            if url == "pharmacy_public.json":
+                # Projected from pharmacy.json, which is governed per DRUG: each record carries its
+                # own faculty review hash over its J fields, and the projection admits a drug only
+                # while that hash still matches. Adding pharmacy.json to this page's attestation
+                # would re-open the page shell on every drug review, so no source is added here;
+                # instead a finished build must ship exactly the current projection.
+                if not (Path(root) / "pharmacy.json").is_file():
+                    raise DependencyError("missing teaching source pharmacy.json")
+                if out_dir is not None:
+                    pharmacy_dir = str(Path(root) / "13_Faculty_Resources" / "_automation" / "pharmacy")
+                    if pharmacy_dir not in sys.path:
+                        sys.path.insert(0, pharmacy_dir)
+                    import build_pharmacy_public
+                    built = Path(out_dir) / url
+                    if not built.is_file():
+                        raise DependencyError("pharmacy_public.json teaching asset not built")
+                    try:
+                        expected = build_pharmacy_public.feed_bytes(root)
+                    except ValueError as error:
+                        raise DependencyError("pharmacy_public.json projection failed: " + str(error)) from error
+                    if built.read_bytes() != expected:
+                        raise DependencyError("pharmacy_public.json differs from the current reviewed registry")
                 continue
             source = assets.get(url)
             if source is None:

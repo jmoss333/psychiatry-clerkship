@@ -212,12 +212,12 @@ const REAL_IDX = F.fdBuildIndex(REAL_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
 test('the count of rendered links equals 81 against the real curriculum.json', () => {
   const expected = (REAL_CUR.libraryColumns || []).reduce((n, c) => n + c.refs.length, 0);
   // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
-  // therapy_reading_room.md).
-  assert.equal(expected, 83, 'curriculum.json is expected to place 83 pages across the five columns');
+  // therapy_reading_room.md). 84 = 83 + pharmacy.html (2026-09-30, Interactive tools).
+  assert.equal(expected, 84, 'curriculum.json is expected to place 84 pages across the five columns');
   const html = F.fdLibrary(REAL_IDX);
   const links = html.match(/data-fd-open="/g) || [];
   assert.equal(links.length, expected, 'every column-placed page must render exactly one Library link');
-  assert.equal(links.length, 83);
+  assert.equal(links.length, 84);
 });
 
 test('the real header count matches the real link count', () => {
@@ -411,7 +411,7 @@ for site,key in [('ms3','ms3'),('res','resident')]:
 print(json.dumps(out))
 `], { cwd: PROJECT_ROOT, encoding: 'utf8' }));
 
-for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93]]) {
+for (const [site, expectedKit, expectedFull] of [['ms3', 30, 84], ['res', 35, 94]]) {
   test(`${site}: real Essentials renders ${expectedKit} reading and tool choices and links to all ${expectedFull} pages`, () => {
     const payload = projected[site];
     const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
