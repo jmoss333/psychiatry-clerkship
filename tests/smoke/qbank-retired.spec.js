@@ -10,10 +10,51 @@ import { requestGetWithRetry } from './net-resilience.js';
 // accidental gate, the exclusion is stated on the setup screen. These assert the shipped
 // site end-to-end: pool math in both toggle states, persistence, and per-question labels.
 
+// Tests may not depend on live review state (the #729 rule). The shipped bank's make-up
+// changes every time faculty attest: on 2026-09-29 the rolling sign-off PR #895 attested the
+// last five live drafts, and the guards below ("the bank holds drafts") turned red for faculty
+// doing their job, which blocked the sign-offs from reaching learners. So each test serves the
+// page a bank DERIVED from the shipped one that is guaranteed to hold all three kinds. Every
+// item stays a real shipped item (same schema, same render paths); only `status` or `retired`
+// is flipped, deterministically, and only as far as the guarantee needs. When the shipped bank
+// already holds drafts and retired items, the derived bank is the shipped bank unchanged.
+const MIN_DRAFTS = 3;
+
+function deriveTestBank(data) {
+  const items = (data.items || data).map((it) => ({ ...it }));
+  const live = () => items.filter((it) => !it.retired);
+  const isDraft = (it) => !it.retired && it.status !== 'attested';
+  // Retired: keep the shipped ones; only if there are none, retire one attested item.
+  if (!items.some((it) => it.retired)) {
+    const victim = [...items].reverse().find((it) => it.status === 'attested');
+    if (victim) victim.retired = true;
+  }
+  // Drafts: flip attested items back to draft inside ONE category (the one holding the most
+  // attested items, ties by name), always leaving two attested there, until the pool has
+  // MIN_DRAFTS drafts. One category, so the per-question label test finds both kinds in it.
+  let drafts = items.filter(isDraft).length;
+  if (drafts < MIN_DRAFTS) {
+    const counts = {};
+    for (const it of live()) if (it.status === 'attested') counts[it.category] = (counts[it.category] || 0) + 1;
+    const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+    const category = ranked.length ? ranked[0][0] : null;
+    const pool = live().filter((it) => it.category === category && it.status === 'attested');
+    for (const it of pool.slice(0, Math.max(0, pool.length - 2))) {
+      if (drafts >= MIN_DRAFTS) break;
+      it.status = 'draft';
+      drafts += 1;
+    }
+  }
+  return Array.isArray(data) ? items : { ...data, items };
+}
+
 async function bank(page, baseURL) {
   const res = await requestGetWithRetry(page.request, `${baseURL}/question_bank.json`);
   expect(res.ok()).toBeTruthy();
-  const data = await res.json();
+  const data = deriveTestBank(await res.json());
+  // The page reads ../question_bank.json; serve it the derived bank for this test, reloads
+  // included (service workers are blocked in playwright.config, so the route always applies).
+  await page.route('**/question_bank.json', (route) => route.fulfill({ json: data }));
   const items = data.items || data;
   return {
     items,
