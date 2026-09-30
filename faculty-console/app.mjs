@@ -30,7 +30,7 @@ import {
 } from './review-model.mjs';
 import { isDriftReason } from './change-history.mjs';
 import {
-  resignHeading, resignSchedule, staleSignoffLine, trainWeekLine,
+  publishWait, publishWaitText, resignHeading, resignSchedule, staleSignoffLine, trainWeekLine,
 } from './release-status.mjs';
 
 const API = '/api/attest';
@@ -272,6 +272,9 @@ export function startFacultyConsole({
     releaseStatus: null,
     releaseError: '',
     releaseGeneration: 0,
+    // { key, value } — publishWait() for the item whose preview said "not found", so a page
+    // that is merged but not yet published reads as that, with its publish time.
+    publishWait: null,
     externalReviewOpenedKey: null,
     contentMessage: '',
     contentCommitUrl: null,
@@ -660,6 +663,32 @@ export function startFacultyConsole({
   function refreshReleasePanel(focusId = null) {
     document.getElementById('release-status')?.replaceWith(renderReleaseStatus());
     if (focusId) document.getElementById(focusId)?.focus();
+  }
+
+  /* A preview that says "not found" may only mean "not published yet": ask the release status
+     (reusing the panel's copy when it is under a minute old) and, when it can tell, name the
+     publish time instead. Silent on any failure — the plain "Not found" then stands, which is
+     what the console said before, and the attestation rules never read this. */
+  const PUBLISH_WAIT_FRESH_MS = 60_000;
+
+  async function loadPublishWait(item) {
+    if (!item || !['page', 'tool'].includes(item.type)) return;
+    let status = state.releaseStatus;
+    const fetchedAt = Date.parse(status?.fetchedAt);
+    if (!status || !Number.isFinite(fetchedAt) || Date.now() - fetchedAt > PUBLISH_WAIT_FRESH_MS) {
+      try {
+        const response = await fetchImpl(RELEASE_STATUS_API, { headers: apiHeaders() });
+        const payload = await responseJson(response);
+        if (!response.ok || !validReleaseStatus(payload)) return;
+        status = payload;
+      } catch {
+        return;
+      }
+    }
+    if (currentReviewItem()?.key !== item.key || state.preview?.status !== 'not_found') return;
+    state.publishWait = { key: item.key, value: publishWait(status, item, Date.parse(status.fetchedAt)) };
+    if (state.publishWait.value) announce(publishWaitText(state.publishWait.value));
+    refreshPreviewChromeAndRail();
   }
 
   async function refreshReleaseStatus() {
@@ -1937,7 +1966,10 @@ export function startFacultyConsole({
         detail: ' The embedded learner page did not load reliably, or it changed or reloaded after verification.',
       },
     };
-    const meta = statuses[status] || statuses.frame_failure;
+    const wait = status === 'not_found' && state.publishWait?.key === item?.key ? state.publishWait.value : null;
+    const meta = wait
+      ? { symbol: '…', label: 'Not published yet', detail: ` ${publishWaitText(wait)}` }
+      : statuses[status] || statuses.frame_failure;
     const failed = PREVIEW_FAILURES.has(status) || !state.preview;
     const learnerSurfaceAvailable = item && ['page', 'tool'].includes(item.type);
     return el('div', { id: 'preview-status-slot', class: 'preview-status' }, [
@@ -5781,6 +5813,7 @@ export function startFacultyConsole({
     if (event.data.status !== 'ready') applyQuestionView('live');
     announce(`Deployed ${event.data.surface} preview: ${event.data.status.replace('_', ' ')}.`);
     refreshPreviewChromeAndRail('preview-status');
+    if (event.data.status === 'not_found') void loadPublishWait(currentReviewItem());
   }
 
   window.addEventListener('message', handlePreviewStatus);

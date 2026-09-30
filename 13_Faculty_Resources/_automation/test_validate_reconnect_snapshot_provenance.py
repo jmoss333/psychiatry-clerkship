@@ -48,6 +48,32 @@ def record(snapshot_path: str, value: bytes) -> dict:
     }
 
 
+
+def derived(derived_path: str = "pharmacy.json", **overrides) -> dict:
+    item = {
+        "derivedPath": derived_path,
+        "dataset": "medications",
+        "sourceRepository": SOURCE_REPOSITORY,
+        "sourcePath": "databases/core/data_all.json",
+        "sourceRevision": SOURCE_REVISION,
+        "sourceSha256": "a" * 64,
+        "sourceRecords": [0, 2],
+        "fieldMap": {"class": "drug_class", "clinicalFlags.qtcRisk": "QTc Risk"},
+        "relation": "derived",
+        "clinicalReviewRequired": True,
+        "syncPolicy": "manual-reviewed-only",
+    }
+    item.update(overrides)
+    return item
+
+
+def registry(*refs: str) -> bytes:
+    records = [
+        {"id": f"fixture-{index}", "familyExplainer": {"reconnectRecord": ref}}
+        for index, ref in enumerate(refs)
+    ]
+    return (json.dumps({"schemaVersion": 1, "records": records}, indent=2) + "\n").encode()
+
 def write_fixture(root: Path, records: list[dict], files: dict[str, bytes]) -> None:
     for relative, value in files.items():
         path = root / relative
@@ -258,6 +284,101 @@ class ReconnectSnapshotProvenanceTests(unittest.TestCase):
 
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("records must be sorted by unique snapshotPath", result.stdout)
+
+
+class DerivedProvenanceTests(unittest.TestCase):
+    """`relation: derived` (#899): a registry re-shaped from a pinned ReConnect dataset."""
+
+    def run_fixture(self, records, files):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_fixture(root, records, files)
+            return run_validator(root, forbid_socket=True)
+
+    def test_derived_record_passes_when_every_reference_is_pinned(self) -> None:
+        result = self.run_fixture(
+            [derived()], {"pharmacy.json": registry("medications[0]", "medications[2]")}
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(
+            "reconnect snapshot provenance OK — 0 exact-copy record(s), "
+            "1 derived record(s), manual review required",
+            result.stdout,
+        )
+
+    def test_exact_copy_and_derived_records_coexist_sorted_by_path(self) -> None:
+        value = b"Synthetic source bytes.\n"
+        relative = "synthetic/_source/fixture.md"
+        result = self.run_fixture(
+            [derived(), record(relative, value)],
+            {relative: value, "pharmacy.json": registry("medications[0]")},
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("1 exact-copy record(s), 1 derived record(s)", result.stdout)
+
+    def test_derived_record_requires_a_non_empty_field_map(self) -> None:  # BR5
+        missing = derived()
+        del missing["fieldMap"]
+        cases = {"empty fieldMap": derived(fieldMap={}), "missing fieldMap": missing}
+        for label, item in cases.items():
+            with self.subTest(label=label):
+                result = self.run_fixture([item], {"pharmacy.json": registry("medications[0]")})
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("reconnect_snapshot_provenance.json: INVALID", result.stdout)
+                self.assertIn("fieldMap", result.stdout)
+
+    def test_unpinned_reference_fails(self) -> None:  # BR4 / AC8
+        result = self.run_fixture(
+            [derived()], {"pharmacy.json": registry("medications[0]", "medications[5]")}
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "pharmacy.json: reconnectRecord 'medications[5]' is not pinned in sourceRecords",
+            result.stdout,
+        )
+
+    def test_reference_into_another_dataset_fails(self) -> None:
+        result = self.run_fixture([derived()], {"pharmacy.json": registry("crisis[0]")})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "pharmacy.json: reconnectRecord 'crisis[0]' does not reference medications[N]",
+            result.stdout,
+        )
+
+    def test_derived_record_cannot_claim_exact_copy(self) -> None:
+        result = self.run_fixture(
+            [derived(relation="exact-copy")], {"pharmacy.json": registry("medications[0]")}
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("reconnect_snapshot_provenance.json: INVALID", result.stdout)
+        self.assertIn("/relation", result.stdout)
+
+    def test_missing_or_unsorted_derived_inputs_fail_closed(self) -> None:
+        missing = self.run_fixture([derived()], {})
+        self.assertNotEqual(missing.returncode, 0)
+        self.assertIn("pharmacy.json: MISSING", missing.stdout)
+        unsorted = self.run_fixture(
+            [derived(sourceRecords=[2, 0])], {"pharmacy.json": registry("medications[0]")}
+        )
+        self.assertNotEqual(unsorted.returncode, 0)
+        self.assertIn("pharmacy.json: sourceRecords must be sorted ascending", unsorted.stdout)
+
+    def test_one_derived_record_per_source_dataset(self) -> None:
+        result = self.run_fixture(
+            [derived("a.json"), derived("b.json")],
+            {"a.json": registry("medications[0]"), "b.json": registry("medications[0]")},
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "b.json: another derived record already pins medications from "
+            "databases/core/data_all.json",
+            result.stdout,
+        )
+
+    def test_validator_never_imports_the_dev_only_sync(self) -> None:  # BR3
+        source = VALIDATOR.read_text(encoding="utf-8")
+        self.assertNotIn("import sync_from_reconnect", source)
+        self.assertNotIn("from sync_from_reconnect", source)
 
 
 if __name__ == "__main__":

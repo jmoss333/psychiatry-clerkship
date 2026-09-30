@@ -3507,3 +3507,85 @@ test('the phone console link is hidden on a desktop viewport', async ({ page }) 
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Use the phone console' })).toBeHidden();
 });
+
+// ── "Not found" that is only "not published yet" (2026-09-28 Case of the Week) ────────────
+// The learner shell reports not_found for nope.md (the local learner site has no such page).
+// The release status says whether the site serves it and whether merged work is waiting;
+// fetchedAt is the owner's 10:50 ET preview, so the next slot is 11:05 AM ET, in 15 min.
+const MISSING_PAGE = [{ slug: 'nope.md', title: 'Missing page', kind: 'page', site: 'ms3', status: 'pending', at: '', by: '' }];
+
+async function routeReleaseStatus(page, { servedMs3 }) {
+  const hits = { count: 0 };
+  await page.route('**/api/release-status', async route => {
+    hits.count += 1;
+    await fulfillJson(route, 200, {
+      state: 'complete',
+      fetchedAt: '2026-09-28T14:50:00.000Z',
+      main: 'c'.repeat(40),
+      release: 'b'.repeat(40),
+      live: 'b'.repeat(40),
+      liveBasis: 'published deploys',
+      sites: {},
+      sitesDisagree: false,
+      releaseUnserved: false,
+      mainChecks: { verdict: 'green', conclusions: {} },
+      waiting: {
+        status: 'waiting',
+        complete: true,
+        changes: [{ sha: 'c'.repeat(40), pr: 897, title: 'Case of the Week: mania', signoff: false, at: '2026-09-28T12:54:00Z' }],
+      },
+      signoffs: { items: [], unread: [], complete: true },
+      served: { ms3: servedMs3, res: ['t_mood.md'] },
+      train: {
+        workflowUrl: 'https://github.com/jmoss333/psychiatry-clerkship/actions/workflows/production-release-train.yml',
+        nextSlot: '2026-09-28T15:05:00.000Z',
+        lastRun: null,
+        failedRuns: [],
+        week: null,
+      },
+      ledgerMode: false,
+      gaps: [],
+      headline: { tone: 'waiting', text: '1 merged change is not live for learners yet.' },
+    });
+  });
+  return hits;
+}
+
+test.describe('not published yet instead of Not found', () => {
+  test('the phone names the publish time for a merged page the site does not serve yet', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank(), { contentState: MISSING_PAGE });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    await routeReleaseStatus(page, { servedMs3: ['t_mood.md'] });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Missing page/ }).click();
+    const status = page.getByRole('status');
+    await expect(status).toContainText('Not published yet', { timeout: 15_000 });
+    await expect(status).toContainText('Merged, but not on the learner site yet. It goes live at the 11:05 AM ET publish (in 15 min); preview it after that.');
+    // Information only: signing still takes the failed-preview path, unchanged.
+    await page.getByRole('button', { name: 'Attest' }).click();
+    await expect(page.getByRole('dialog', { name: /Sign Missing page/ })
+      .getByText('The learner page did not report ready. Press Retry once')).toBeVisible();
+  });
+
+  test('the phone keeps Not found when the learner site does serve the page', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank(), { contentState: MISSING_PAGE });
+    await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
+    const hits = await routeReleaseStatus(page, { servedMs3: ['nope.md', 't_mood.md'] });
+    await unlockPhone(page);
+    await page.getByRole('link', { name: /Missing page/ }).click();
+    await expect(page.getByRole('status')).toContainText('Not found', { timeout: 15_000 });
+    // The release status WAS asked (so this is not a pass over nothing) and still said served.
+    await expect.poll(() => hits.count).toBe(1);
+    await expect(page.getByRole('status')).toContainText('Not found on the learner site');
+    await expect(page.getByRole('status')).not.toContainText('Not published yet');
+  });
+
+  test('the desktop names the publish time in the preview status', async ({ page }) => {
+    await installRepositoryApi(page, workflowBank(), { contentState: MISSING_PAGE });
+    await routeReleaseStatus(page, { servedMs3: ['t_mood.md'] });
+    await unlock(page);
+    await page.locator('#review-item-selector').selectOption('page:nope.md');
+    await expect(page.locator('#preview-status-label')).toHaveText('Not published yet', { timeout: 15_000 });
+    await expect(page.locator('#preview-status')).toContainText('It goes live at the 11:05 AM ET publish (in 15 min)');
+  });
+});

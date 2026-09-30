@@ -310,6 +310,15 @@ REFERENCE_FILES = (
 # WP-3's set is folded in here rather than on the union's own lines, so parallel PRs that each
 # add a set do not collide on the same three lines.
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | PEER_REVIEW_WP3_2026_09_IDS
+# Added by curriculum fine-tuning WP-I (2026-09-28, plan FT-2): four communication-practice
+# cases approved by the owner; two cite sources new to the registry (teach-back closing and
+# repairing a rupture the student caused). Each enters with a stored abstract span. Folded in
+# here, away from the union's own lines and from open PR #880's hunk.
+COMMUNICATION_CASES_WPI_2026_09_IDS = {
+    "eubanks-2018-rupture-repair",
+    "talevski-2020-teach-back",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | COMMUNICATION_CASES_WPI_2026_09_IDS
 VALIDATE = Path(__file__).with_name("validate.py")
 REGISTRY_CLI = Path(__file__).with_name("registry.py")
 ZOTERO_CONFIG_PATH = Path(__file__).with_name("zotero_config.json")

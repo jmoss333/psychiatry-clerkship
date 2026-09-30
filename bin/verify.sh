@@ -305,6 +305,12 @@ step "editorial leaks in learner text"      python3 bin/check_editorial_leaks.py
 # item whose keyed option is the UNIQUELY longest rewards test-wiseness, not knowledge (WP-7,
 # target attested <= 35%). A rise fails; a rewrite batch lowers the pin with --update-baseline.
 step "qbank length cue (WP-7)"              python3 bin/check_qbank_length_cue.py
+# DECISION: qbank-drafts-phone-attestable (2026-09-29). Every live draft must pass the console's
+# own qbank-rules.mjs (gate = ready): the phone never offers Attest for a flagged question, and on
+# 2026-09-28 all five drafts had reached main flagged. `--fix` repairs the two mechanical warnings
+# (lead-in punctuation/phrasing, evidence citing a file name instead of the page slug).
+step "unit — qbank drafts phone-attestable"  node bin/check-qbank-drafts.mjs --self-test
+step "qbank drafts phone-attestable"         node bin/check-qbank-drafts.mjs
 step "twin parity (audience copies)"        python3 bin/check_twin_parity.py
 step "test_generate_evidence_drill"         python3 $A/test_generate_evidence_drill.py
 step "evidence drill is regenerated"        python3 $A/generate_evidence_drill.py --check
@@ -316,6 +322,7 @@ step "validate_rotation_edition_schema"     python3 $A/validate_rotation_edition
 step "test_validate_rotation_edition_catalog" python3 $A/test_validate_rotation_edition_catalog.py
 step "test_reconnect_snapshot_provenance"   python3 $A/test_validate_reconnect_snapshot_provenance.py
 step "validate_reconnect_snapshot_provenance" python3 $A/validate_reconnect_snapshot_provenance.py
+step "test_sync_from_reconnect"         python3 $A/test_sync_from_reconnect.py
 step "unit — surface governance"            python3 $A/test_surface_governance.py
 step "unit — tool governance"               python3 $A/test_validate_tool_governance.py
 step "validate_tool_governance"             python3 $A/validate_tool_governance.py

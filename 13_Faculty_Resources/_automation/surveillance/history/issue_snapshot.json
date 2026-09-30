@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-09-22T12:44:24+00:00",
+  "capturedAt": "2026-09-28T07:33:20+00:00",
   "issues": [
     {
       "number": 8,
@@ -1631,6 +1631,42 @@
       "labels": [
         "P1",
         "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 876,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/876",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "link:lcme.org::broken-link::6b13fd593531c1d3",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 878,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/878",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "statpearls-mcp-2026::identifier-unresolved::5b1f62495abbbc62",
+      "labels": [
+        "P1",
+        "source-integrity",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 879,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/879",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "samhsa-tip63-2021::identifier-unresolved::03c59203cc279601",
+      "labels": [
+        "P1",
+        "source-integrity",
         "surveillance"
       ]
     }

@@ -72,6 +72,12 @@ const ALLOWED_DIRECT_READERS = Object.freeze([
   // the review queue is derived; the manifest supplies the question bank's page anchors
   // and the qbank conflict revision
   'faculty-console/netlify/functions/attest.mjs',
+  // the one addition since ADR-002, for attest.mjs's reason exactly: the merge-time gate that
+  // every live draft is phone-attestable must judge each question against the SAME page anchors
+  // the console does (buildQbankPayload), or the gate and the phone could disagree. It asks
+  // nothing about what ships. It leaves this list when attest.mjs's anchors move.
+  // DECISION: qbank-drafts-phone-attestable
+  'bin/check-qbank-drafts.mjs',
   // the shipped set is derived; the manifest supplies each entry's SOURCE PATH, which the
   // per-entry source-banner, tool-metadata-header and case-pack checks open by hand
   '13_Faculty_Resources/_automation/validate_attestation_consistency.py',

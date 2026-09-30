@@ -238,6 +238,15 @@ the container when the Bash 5 environment is part of the evidence.
   are link-only overlays; content never forks (see README).
 - Root data + schemas: `question_bank.json`, `topic_meta.json`, `communication_cases.json`, etc. —
   each validates against its paired `*.schema.json`.
+- **Every live draft question must reach main attestable from the phone** (decision
+  `qbank-drafts-phone-attestable`, 2026-09-29). `node bin/check-qbank-drafts.mjs` (CI, verify.sh)
+  runs the console's own `faculty-console/qbank-rules.mjs` over every live, un-attested item and
+  fails unless each is `gate: ready` — the phone never offers Attest for a flagged question. When
+  you add or rewrite a question, run `node bin/check-qbank-drafts.mjs --fix` first (it repairs only
+  a statement-form final lead-in and evidence that cites a file name instead of the page slug, on
+  drafts only, never `status`), then rewrite whatever it still reports yourself. Never clear the
+  gate by listing a draft in `bin/qbank_desktop_only.json`: its cap is 0 and raising it is the
+  owner's call, in its own policy commit.
 - `sp-proxy/` — serverless LLM patient for The Interview Room. **API key stays server-side; the browser
   holds only a passcode.** Its live red-team checklist (`sp-proxy/REDTEAM_CHECKLIST.md`) and signed
   receipt are **optional, not a change gate** (decision `sp-redteam-signoff-retired`, 2026-09-27):
@@ -498,8 +507,12 @@ the container when the Bash 5 environment is part of the evidence.
   adding a surface: the learner must plausibly be *doing* risk work there (assessing, rehearsing,
   or planning disposition) — not merely reading a page that mentions suicide. Data is derived
   from the ReConnect crisis dataset and independently re-verified — refresh with
-  `_automation/sync_crisis_from_reconnect.py --reconnect <path>` (dev-only, report-only; never
-  runs on Netlify).
+  `_automation/sync_from_reconnect.py --dataset crisis --reconnect <path>` (dev-only, report-only;
+  never runs on Netlify; `sync_crisis_from_reconnect.py` is the same report under its old name).
+  The same engine diffs `--dataset meds` (`pharmacy.json`) and `--dataset evidence`; exit 1 means
+  drift. A registry reshaped from ReConnect declares `relation: derived` in the provenance
+  inventory (pinned `sourceRevision` + required `fieldMap`); the engine then also reports field
+  changes since that revision.
   **Opting a surface in has two non-obvious consequences, each of which has cost a cycle.**
   (1) **The Reader stops collapsing that page.** `makeCollapsible()` in `spa_index.html` returns
   early on any body containing `.crisis-block-hook`, so the contacts can never be stranded inside

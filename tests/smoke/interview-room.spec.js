@@ -55,7 +55,7 @@ async function installFakes(page, scenario = {}) {
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(reviewedPack(scenario)) });
   });
   await page.addInitScript(({
-    scenario: configured, opening, reply, secondReply, lateReply, caseId, caseTitle, realtimeModel, transcriptionModel, roomModeKey, consentKey, consentVersion,
+    scenario: configured, opening, reply, secondReply, lateReply, caseId, caseTitle, followUpId, followUpTitle, realtimeModel, transcriptionModel, roomModeKey, consentKey, consentVersion,
   }) => {
     window.__SP_PREVIEW__ = {
       providerMode: 'live',
@@ -423,7 +423,9 @@ async function installFakes(page, scenario = {}) {
             budgetBand: window.__voiceScenario.realtimeCapped ? 'capped' : 'ok',
             deadlineMinutes: 15,
             eagerness: ['low', 'medium'],
-            cases: window.__voiceScenario.danaVoiceless ? [] : [{ id: caseId, title: caseTitle, voice: 'marin' }],
+            // The proxy advertises every reviewed case with a voice; the follow-up joins by fixture.
+            cases: window.__voiceScenario.danaVoiceless ? [] : [{ id: caseId, title: caseTitle, voice: 'marin' }]
+              .concat(window.__voiceScenario.followUpSpoken ? [{ id: followUpId, title: followUpTitle, voice: 'marin' }] : []),
           });
         }
         const state = { intents: [], flags: [], rapport: 0, unlocked: [] };
@@ -542,6 +544,8 @@ async function installFakes(page, scenario = {}) {
     lateReply: LATE_REPLY,
     caseId: CASE_ID,
     caseTitle: sourcePack.cases.find((c) => c.id === CASE_ID).title,
+    followUpId: FOLLOW_UP_ID,
+    followUpTitle: sourcePack.cases.find((c) => c.id === FOLLOW_UP_ID).title,
     realtimeModel: REALTIME_MODEL,
     transcriptionModel: TRANSCRIPTION_MODEL,
     roomModeKey: ROOM_MODE_KEY,
@@ -1351,6 +1355,8 @@ test('the follow-up chart is on the door and in the room, and Escape returns foc
   await chartButton.click();
   const dialog = page.getByRole('dialog', { name: 'Chart — Dana' });
   await expect(dialog.getByText('Item scores in order, 1 to 9: 2 · 2 · 1 · 2 · 1 · 2 · 1 · 1 · 0.')).toBeVisible();
+  // The typed room answers only what is sent, so the patient does wait while the chart is open.
+  await expect.poll(async () => (await log(page)).announcements).toContain('Chart open. Dana waits.');
   // Focus starts on the heading, so the chart opens at its top; the only control is at its foot.
   const heading = dialog.getByRole('heading', { name: 'Chart — Dana' });
   await expect(heading).toBeFocused();
@@ -1433,4 +1439,68 @@ test('a Live reply that lands while the chart is open leaves focus in the chart,
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(chartButton).toBeFocused();
+});
+
+// Review of #880 (2026-09-29): at the turn limit the composer, Chart button and all, gives way to
+// "End encounter and reflect" while the chart can still be open, so closing it once dropped focus
+// to the page body — in both rooms.
+test('closing the chart at the typed turn limit returns focus to the route out, not the page', async ({ page }) => {
+  await openRoom(page, { slowActorMs: 900, roomMode: 'typed', followUpReviewed: true, maxTurns: 1 });
+  await page.getByLabel('Patient').selectOption(FOLLOW_UP_ID);
+  await beginTyped(page);
+  await sayTyped(page, 'How has the week been?');
+  await expect(page.locator('.audiostatus')).toContainText(/Dana is thinking/i);
+  await page.getByRole('button', { name: 'Chart', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Chart — Dana' });
+  await expect(chartHeading(page)).toBeFocused();
+  // The last allowed reply lands behind the dialog, and the Chart button leaves with the composer.
+  await expect(page.locator('.msg.pt').filter({ hasText: LATE_REPLY })).toHaveCount(1, { timeout: 5000 });
+  await expect(page.locator('.doorrow button', { hasText: /^Chart$/ })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'End encounter and reflect' })).toBeFocused();
+});
+
+async function openSpokenFollowUp(page, scenario = {}) {
+  await openRoom(page, { consented: true, followUpReviewed: true, followUpSpoken: true, ...scenario });
+  await page.getByLabel('Patient').selectOption(FOLLOW_UP_ID);
+  await enterSpokenRoom(page);
+}
+
+// openChart moves focus to the heading on a 30 ms timer; a key pressed before then lands outside
+// the dialog, so wait for it before pressing Escape.
+function chartHeading(page) {
+  return page.getByRole('dialog', { name: 'Chart — Dana' }).getByRole('heading', { name: 'Chart — Dana' });
+}
+
+test('closing the chart after the spoken room reaches its turn cap returns focus to the route out', async ({ page }) => {
+  await openSpokenFollowUp(page, { maxTurns: 1 });
+  await learnerSays(page, 'One final question?');
+  await expect(page.locator('.msg.pt').filter({ hasText: PATIENT_REPLY })).toBeVisible();
+  await page.getByRole('button', { name: 'Chart', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Chart — Dana' });
+  await expect(chartHeading(page)).toBeFocused();
+  // The microphone stays open behind the chart, so the next utterance reaches the cap and closes the room.
+  await learnerSays(page, 'And one more?');
+  await expect(page.getByText(/Turn limit reached/i)).toBeAttached();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'End encounter and reflect' })).toBeFocused();
+});
+
+test('the spoken chart says the room keeps listening behind it, and only a paused room waits', async ({ page }) => {
+  await openSpokenFollowUp(page);
+  const chartButton = page.getByRole('button', { name: 'Chart', exact: true });
+  await chartButton.click();
+  await expect.poll(async () => (await log(page)).announcements).toContain('Chart open. The room does not pause for it — your microphone stays on.');
+  await expect(chartHeading(page)).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(chartButton).toBeFocused();
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect(page.locator('.audiostatus')).toContainText(/Paused/i);
+  await chartButton.click();
+  await expect(chartHeading(page)).toBeFocused();
+  await expect.poll(async () => (await log(page)).announcements).toContain('Chart open. The room stays paused.');
+  expect((await log(page)).announcements.filter((text) => /waits/.test(text))).toEqual([]);
 });

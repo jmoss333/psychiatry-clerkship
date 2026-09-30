@@ -9,8 +9,10 @@ import {
   applyRows, contentEligibility, diffLines, groupQueue, nextAfterSign, phoneQueue,
   questionEligibility, questionEntry, reviewReason, timeoutStatus,
 } from './m-model.mjs';
+import { publishWait, publishWaitText } from '../release-status.mjs';
 
 const API = '/api/attest';
+const RELEASE_STATUS_API = '/api/release-status';
 const KEY_STORAGE = 'fac_key';                 // identical to the desktop: one key, one tab
 const PREVIEW_SANDBOX = 'allow-scripts allow-same-origin allow-forms';
 const PREVIEW_TIMEOUT_MS = 10_000;
@@ -36,6 +38,7 @@ const state = {
   refreshTimer: null,
   loadedAt: 0,         // Date.now() of the last successful GET (visibilitychange refresh)
   reauth: null,        // () => Promise, retried after re-entering the key
+  publishWait: null,   // { key, value }: publishWait() for an item whose preview said "not found"
 };
 
 // ---- tiny DOM helper ---------------------------------------------------------------------
@@ -335,6 +338,26 @@ function handlePreviewStatus(event) {
   preview.status = event.data.status;
   resetAcks(event.data.status);
   renderItem();
+  if (event.data.status === 'not_found') void loadPublishWait(selectedItem());
+}
+
+/* "Not found" may only mean "merged, not published yet" (2026-09-28: a Case of the Week that
+   missed the morning publish). Ask the release status once; when it can tell, name the publish
+   time. Any failure is silent and the plain "Not found" stands. Never changes eligibility. */
+async function loadPublishWait(item) {
+  if (!item || !['page', 'tool'].includes(item.type)) return;
+  let status;
+  try {
+    const response = await fetch(RELEASE_STATUS_API, { headers: headers() });
+    if (!response.ok) return;
+    status = await json(response);
+  } catch {
+    return;
+  }
+  if (state.selectedKey !== item.key || state.preview?.status !== 'not_found') return;
+  const fetchedAt = Date.parse(status?.fetchedAt);
+  state.publishWait = { key: item.key, value: publishWait(status, item, Number.isFinite(fetchedAt) ? fetchedAt : Date.now()) };
+  if (state.publishWait.value) renderItem();
 }
 
 const STATUS_LABEL = {
@@ -467,10 +490,12 @@ function refreshItem(item) {
   const preview = state.preview;
   const twin = item.type === 'page' ? twinOf(item, state.items) : null;
   const external = item.type === 'question' ? null : buildExternalReviewUrl({ studentBase: state.server.student, residentBase: residentBase(), item });
+  const wait = preview.status === 'not_found' && state.publishWait?.key === item.key ? state.publishWait.value : null;
   document.getElementById('item-status').replaceChildren(
-    h('span', { class: `pill ${preview.status === 'ready' ? 'ok' : ''}`, text: STATUS_LABEL[preview.status] || preview.status }),
+    h('span', { class: `pill ${preview.status === 'ready' ? 'ok' : ''}`, text: wait ? 'Not published yet' : STATUS_LABEL[preview.status] || preview.status }),
     h('span', { text: `${siteLabel(item)} · ${reviewReason(item)}` }),
     ...(previewFailed() ? [h('button', { type: 'button', class: 'pill', text: 'Retry', onClick: retryPreview })] : []),
+    ...(wait ? [h('p', { class: 'summary publish-wait', text: publishWaitText(wait) })] : []),
   );
   document.getElementById('item-twin').replaceChildren(...(twin ? [h('p', { class: 'summary' }, [
     `Twin: ${twin.title} · ${twin.completion === 'needs-review' ? 'needs review' : 'reviewed'} `,

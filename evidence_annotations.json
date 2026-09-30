@@ -2748,6 +2748,56 @@
           ]
         }
       ]
+    },
+    {
+      "sourceId": "talevski-2020-teach-back",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-28",
+        "pmid": "32287296",
+        "doi": "10.1371/journal.pone.0231350",
+        "sourceSpan": "Overall, 20 studies of moderate quality were included in this review (four rated high, nine rated moderate, seven rated weak). Studies were heterogeneous in terms of setting, population and outcomes. Use of teach-back proved effective in 19 of the 20 studies, ranging from learning-related outcomes (e.g. knowledge recall and retention) to objective health-related outcomes (e.g. hospital re-admissions, quality of life)."
+      },
+      "claims": [
+        {
+          "claimId": "teach-back-effective-19-of-20",
+          "claimText": "Across 20 studies of moderate quality that were heterogeneous in setting, population and outcomes, teach-back proved effective in 19 of the 20, from knowledge recall and retention to hospital re-admissions and quality of life.",
+          "claimTerms": [
+            "proved effective in 19 of the 20 studies",
+            "heterogeneous"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "communication-practice"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "eubanks-2018-rupture-repair",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-09-28",
+        "pmid": "30335462",
+        "doi": "10.1037/pst0000185",
+        "sourceSpan": "In the first meta-analysis, we examined 11 studies (1,314 patients) that examined the relation between rupture repair episodes and patient treatment outcomes. Results yielded an effect size of r = .29, d = .62, 95% confidence interval [.10, .47], p = .003, indicating a moderate relation between rupture resolution and positive patient outcome. Our second meta-analysis examined the impact of rupture resolution training or supervision on patient outcome. We examined 6 studies (276 trainees/supervisees) that compared the outcomes of trainees who received rupture resolution training with a comparison group. Results did not find a significant relation, r = .11, d = .22, 95% confidence interval [-.09, .30], p = .28."
+      },
+      "claims": [
+        {
+          "claimId": "repair-associated-training-not-significant",
+          "claimText": "Across 11 studies, rupture repair episodes were associated with better patient outcome (r = .29, d = .62), but across 6 studies rupture resolution training or supervision did not show a significant relation to patient outcome (d = .22, p = .28).",
+          "claimTerms": [
+            "moderate relation between rupture resolution and positive patient outcome",
+            "did not find a significant relation"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "communication-practice"
+          ]
+        }
+      ]
     }
   ]
 }

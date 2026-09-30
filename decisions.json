@@ -272,6 +272,20 @@
         "13_Faculty_Resources/_automation/maintenance/monthly_review.py",
         "13_Faculty_Resources/_automation/maintenance/rotation_readiness.py"
       ]
+    },
+    {
+      "id": "qbank-drafts-phone-attestable",
+      "title": "Every live draft question must reach main attestable from the phone: it must pass the faculty console's own question rules with no warning and no blocker",
+      "status": "active",
+      "decided": "2026-09-29",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/superpowers/specs/2026-09-29-qbank-drafts-phone-attestable.md (owner's instruction in a Cowork session 2026-09-29 choosing the merge-time gate over a console bot that would rewrite flagged questions; ratified by the owner's merge of the implementing PR)",
+      "note": "The phone console (faculty-console/m/) never offers Attest for a question that faculty-console/qbank-rules.mjs flags, so a flagged draft is desktop-only and a blocked one is unattestable anywhere. On 2026-09-28 all five live drafts had reached main flagged and nothing was red (fixed by #891). bin/check-qbank-drafts.mjs now runs in CI and bin/verify.sh: it imports the console's rules (never a copy) and fails unless every live, un-attested item is gate=ready. --fix repairs only the two warnings with one mechanical answer (a statement-form final lead-in; evidence naming a selected page by file name instead of slug), on drafts only, never status; weak or negative lead-ins, answer-length cues, cueing and near-duplicate stems need clinical judgment and are reported, not rewritten. REJECTED: a scheduled console function that opens fix PRs for flagged drafts -- half the warnings need clinical judgment, it would put an AI key and unattended clinical authoring on the attestation server, and it treats the symptom after merge. Deliberately desktop-only drafts may be listed in bin/qbank_desktop_only.json, but its cap (MAX_DESKTOP_ONLY in the script) is 0; raising it is an owner decision in its own policy commit. Attested items are out of scope (WP-7's length-cue ratchet owns that debt). Revisit if the phone client gains warning acknowledgement, or if the rules gain a warning faculty routinely accept.",
+      "governs": [
+        "bin/check-qbank-drafts.mjs",
+        "bin/verify.sh",
+        ".github/workflows/ci.yml"
+      ]
     }
   ]
 }

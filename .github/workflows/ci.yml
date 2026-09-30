@@ -191,6 +191,9 @@ jobs:
       - name: Validate — ReConnect snapshot provenance
         run: python3 13_Faculty_Resources/_automation/validate_reconnect_snapshot_provenance.py
 
+      - name: Test — ReConnect sync engine
+        run: python3 13_Faculty_Resources/_automation/test_sync_from_reconnect.py
+
       - name: Unit — surface governance
         run: python3 13_Faculty_Resources/_automation/test_surface_governance.py
 
@@ -254,6 +257,17 @@ jobs:
         run: |
           node --test faculty-console/*.test.mjs
           node faculty-console/check_pending_visible.mjs
+
+      # DECISION: qbank-drafts-phone-attestable (2026-09-29). The phone console never offers
+      # Attest for a question its rules flag, so a flagged draft on main is desktop-only and a
+      # blocked one is unattestable anywhere. On 2026-09-28 all five live drafts had reached
+      # main that way and nothing was red. This runs the console's OWN qbank-rules.mjs over
+      # every live draft; the self-test beside it plants flagged and blocked drafts and asserts
+      # they go red, so the gate cannot pass vacuously.
+      - name: Validate — question-bank drafts are attestable from the phone
+        run: |
+          node bin/check-qbank-drafts.mjs --self-test
+          node bin/check-qbank-drafts.mjs
 
       - name: Install — managed SP proxy dependencies
         run: npm --prefix sp-proxy ci
