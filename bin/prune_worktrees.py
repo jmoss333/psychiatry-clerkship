@@ -17,6 +17,10 @@ SAFE means ALL of these, and anything else is kept and listed with its reason:
               pull request (a squash merge leaves no ancestry, so the PR is the proof)
   idle        no git activity there for --min-idle-hours (default 12): a fresh worktree may belong
               to a session that is still running
+  not a nest  no other worktree or checkout lives inside it. Sessions sometimes make worktrees
+              inside their own worktree (.worktrees/, .claude/worktrees/), and those folders are
+              gitignored, so git would NOT refuse: removing the outer one would silently delete
+              the inner ones, unsaved work and all (found 2026-09-30: nine inside one worktree)
 Removal is `git worktree remove` WITHOUT --force, so git itself refuses a dirty worktree a second
 time. The main checkout, branches and remote branches are never touched.
 
@@ -67,7 +71,7 @@ def parse_worktrees(text):
     return items
 
 
-def classify(wt, *, inside, dirty, in_main, merged_pr, last_active, now, min_idle_hours):
+def classify(wt, *, inside, dirty, in_main, merged_pr, last_active, now, min_idle_hours, nests=False):
     """(safe, reason) for one worktree. Pure: every fact is passed in, so --self-test can prove
     each rule refuses on its own."""
     if not inside:
@@ -76,6 +80,8 @@ def classify(wt, *, inside, dirty, in_main, merged_pr, last_active, now, min_idl
         return False, 'its folder is already gone (git worktree prune tidies the record)'
     if wt.get('locked'):
         return False, 'locked'
+    if nests:
+        return False, 'other worktrees are nested inside it (removing it would delete them)'
     if dirty is None:
         return False, 'could not read its status'
     if dirty:
@@ -149,6 +155,21 @@ def last_activity(path):
     return max(stamps) if stamps else None
 
 
+def contains_other_checkout(path, registered):
+    """True when a registered worktree lives below `path`, or an unregistered checkout (a folder
+    with its own .git) sits in one of the ignored worktree folders inside it."""
+    here = Path(path).resolve()
+    if any(other != here and here in other.parents for other in registered):
+        return True
+    for nest in (here / '.worktrees', here / '.claude' / 'worktrees'):
+        try:
+            if any((child / '.git').exists() for child in nest.iterdir() if child.is_dir()):
+                return True
+        except OSError:
+            continue
+    return False
+
+
 def free_gb(repo):
     return shutil.disk_usage(repo).free / GB
 
@@ -179,8 +200,10 @@ def survey(repo, *, min_idle_hours, now=None, pr_heads=None):
     if listing.returncode != 0:
         raise RuntimeError(f'git worktree list failed: {listing.stderr.strip()}')
     root = (repo / WORKTREES_DIR).resolve()
+    worktrees = parse_worktrees(listing.stdout)
+    registered = [Path(wt['path']).resolve() for wt in worktrees if wt.get('path')]
     rows = []
-    for wt in parse_worktrees(listing.stdout):
+    for wt in worktrees:
         path = Path(wt.get('path', ''))
         if not wt.get('path') or path.resolve() == repo:
             continue                                   # the main checkout is never a candidate
@@ -188,13 +211,14 @@ def survey(repo, *, min_idle_hours, now=None, pr_heads=None):
         present = path.is_dir()
         head = wt.get('head', '')
         last_active = last_activity(path) if present else None      # read before any git call
+        nests = contains_other_checkout(path, registered) if present else False
         safe, reason = classify(
             wt, inside=inside,
             dirty=is_dirty(path) if inside and present and not wt.get('prunable') else None,
             in_main=in_main(repo, head),
             merged_pr=merged.get(head),
             last_active=last_active,
-            now=now, min_idle_hours=min_idle_hours)
+            now=now, min_idle_hours=min_idle_hours, nests=nests)
         rows.append({'path': str(path), 'name': path.name, 'branch': wt.get('branch') or '(detached)',
                      'safe': safe, 'reason': reason})
     return rows, notes
@@ -264,6 +288,7 @@ def self_test():
     check('commits in neither main nor a merged PR -> kept', judge(in_main=False, merged_pr=None), False)
     check('used 2 h ago -> kept', judge(last_active=now - 2 * 3600), False)
     check('last use unknown -> kept', judge(last_active=None), False)
+    check('other worktrees nested inside it -> kept', judge(nests=True), False)
     sample = ('worktree /r\nHEAD aaa\nbranch refs/heads/main\n\n'
               'worktree /r/.claude/worktrees/x\nHEAD bbb\nbranch refs/heads/claude/x\nlocked\n\n'
               'worktree /r/.claude/worktrees/y\nHEAD ccc\ndetached\nprunable gitdir file points to non-existent location\n')

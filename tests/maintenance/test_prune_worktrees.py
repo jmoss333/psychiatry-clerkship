@@ -55,10 +55,14 @@ class PruneWorktreesEndToEnd(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         base = Path(self.tmp.name)
         origin, self.repo = base / 'origin.git', base / 'repo'
+        self.origin = origin
         run('git', 'init', '-q', '--bare', '-b', 'main', str(origin), cwd=base)
         run('git', 'clone', '-q', str(origin), str(self.repo), cwd=base)
         (self.repo / 'a.txt').write_text('a\n')
-        run('git', 'add', 'a.txt', cwd=self.repo)
+        # As in the real repository: the folders sessions nest worktrees in are gitignored, so a
+        # nested worktree never makes the outer one look dirty.
+        (self.repo / '.gitignore').write_text('.worktrees/\n.claude/\n')
+        run('git', 'add', 'a.txt', '.gitignore', cwd=self.repo)
         run('git', 'commit', '-q', '-m', 'first', cwd=self.repo)
         run('git', 'push', '-q', 'origin', 'HEAD:main', cwd=self.repo)
         trees = self.repo / '.claude' / 'worktrees'
@@ -105,6 +109,25 @@ class PruneWorktreesEndToEnd(unittest.TestCase):
             self.assertEqual(path.exists(), name not in ('merged', 'squash'), name)
         self.assertEqual((self.paths['dirty'] / 'notes.txt').read_text(), 'unsaved work')
         self.assertTrue((self.repo / 'a.txt').exists())
+
+    def test_a_worktree_with_others_nested_inside_is_kept(self):
+        outer = self.paths['merged']
+        inner = outer / '.worktrees' / 'inner'
+        run('git', 'worktree', 'add', '-q', '-b', 'b-inner', str(inner), 'origin/main', cwd=self.repo)
+        (inner / 'unsaved.txt').write_text('work in progress')
+        stray = self.paths['squash'] / '.claude' / 'worktrees' / 'stray'
+        run('git', 'clone', '-q', str(self.origin), str(stray), cwd=self.repo)    # not registered
+        for path in (outer, inner, self.paths['squash']):
+            age(path, 48)
+        rows, _ = prune.survey(self.repo, min_idle_hours=12, pr_heads={self.squash_head: 42})
+        verdicts = {Path(row['path']).name: (row['safe'], row['reason']) for row in rows}
+        nested = 'other worktrees are nested inside it (removing it would delete them)'
+        self.assertEqual(verdicts['merged'], (False, nested))
+        self.assertEqual(verdicts['squash'], (False, nested))
+        prune.remove(self.repo, rows)
+        self.assertTrue(outer.exists())
+        self.assertEqual((inner / 'unsaved.txt').read_text(), 'work in progress')
+        self.assertTrue((stray / 'a.txt').exists())
 
     def test_reading_status_does_not_make_an_old_worktree_look_used(self):
         prune.is_dirty(self.paths['merged'])
