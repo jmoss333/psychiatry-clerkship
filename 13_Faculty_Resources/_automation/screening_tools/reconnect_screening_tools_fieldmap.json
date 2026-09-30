@@ -1,0 +1,459 @@
+{
+  "schemaVersion": 1,
+  "description": "How ReConnect databases/core/data_all.json#screening_tools maps onto screening_tools.json (the Scales & Screeners registry, crossover brainstorm v2 item #12). Read by sync_from_reconnect.py --dataset screening_tools and by the registry's build-time validator once one exists. Every upstream key must appear in exactly one of fieldMap or denylist; an unclassified key is reported and fails the run (exit 1). The registry carries administration facts, score bands, psychometrics and the custodian link — never item text, anchors or a fillable form (CLAUDE.md: the library teaches administration; it does not reproduce instruments).",
+  "status": "DRAFT — awaiting faculty gate G0-S (field triage) and roster ratification. Drafted 2026-09-30 from a direct read of the 67 upstream records (30 keys).",
+  "upstream": {
+    "path": "databases/core/data_all.json",
+    "field": "screening_tools",
+    "keyField": "name"
+  },
+  "classes": {
+    "V": "verifiable by script or by hand against the custodian's official page or the cited psychometric paper (the analogue of the pharmacy's label-verifiable L class)",
+    "R": "ReConnect-inherited, hash-pinned",
+    "J-seed": "seed text for a faculty-judgment field; never shipped verbatim",
+    "meta": "provenance only, not carried as content"
+  },
+  "phase1Roster": [
+    {
+      "id": "phq-9",
+      "reconnectNames": [
+        "PHQ-9"
+      ],
+      "group": "mood",
+      "rightsId": "phq9-gad7",
+      "note": "provisionally stays pending the permission-footer check (WP-02c)"
+    },
+    {
+      "id": "phq-2",
+      "reconnectNames": [
+        "PHQ-2"
+      ],
+      "group": "mood",
+      "rightsId": "phq9-gad7"
+    },
+    {
+      "id": "qids-sr16",
+      "reconnectNames": [
+        "QIDS-SR16"
+      ],
+      "group": "mood"
+    },
+    {
+      "id": "madrs",
+      "reconnectNames": [
+        "MADRS"
+      ],
+      "group": "mood",
+      "note": "expected missing upstream: clinician-rated depression scale used on the unit"
+    },
+    {
+      "id": "bdi-ii",
+      "reconnectNames": [
+        "BDI-II"
+      ],
+      "group": "mood",
+      "note": "Pearson-licensed: link-only, cutoffs and psychometrics as facts"
+    },
+    {
+      "id": "gds-15",
+      "reconnectNames": [
+        "GDS-15"
+      ],
+      "group": "mood"
+    },
+    {
+      "id": "epds",
+      "reconnectNames": [
+        "EPDS"
+      ],
+      "group": "mood"
+    },
+    {
+      "id": "gad-7",
+      "reconnectNames": [
+        "GAD-7"
+      ],
+      "group": "anxiety",
+      "rightsId": "phq9-gad7"
+    },
+    {
+      "id": "gad-2",
+      "reconnectNames": [
+        "GAD-2"
+      ],
+      "group": "anxiety",
+      "rightsId": "phq9-gad7"
+    },
+    {
+      "id": "pcl-5",
+      "reconnectNames": [
+        "PCL-5"
+      ],
+      "group": "trauma"
+    },
+    {
+      "id": "pc-ptsd-5",
+      "reconnectNames": [
+        "PC-PTSD-5"
+      ],
+      "group": "trauma"
+    },
+    {
+      "id": "audit",
+      "reconnectNames": [
+        "AUDIT"
+      ],
+      "group": "substance"
+    },
+    {
+      "id": "audit-c",
+      "reconnectNames": [
+        "AUDIT-C"
+      ],
+      "group": "substance"
+    },
+    {
+      "id": "cage",
+      "reconnectNames": [
+        "CAGE"
+      ],
+      "group": "substance"
+    },
+    {
+      "id": "dast-10",
+      "reconnectNames": [
+        "DAST-10"
+      ],
+      "group": "substance"
+    },
+    {
+      "id": "ciwa-ar",
+      "reconnectNames": [
+        "CIWA-Ar"
+      ],
+      "group": "substance",
+      "rightsId": "ciwa-ar",
+      "note": "RETIRED 2026-08-28 (rights unestablishable): link-only route via instrument_rights formUrl; expected missing upstream"
+    },
+    {
+      "id": "cows",
+      "reconnectNames": [
+        "COWS"
+      ],
+      "group": "substance",
+      "rightsId": "cows",
+      "note": "anchors retired 2026-09-10; item names and score values are facts; expected missing upstream"
+    },
+    {
+      "id": "c-ssrs",
+      "reconnectNames": [
+        "C-SSRS"
+      ],
+      "group": "suicide-risk",
+      "rightsId": "cssrs",
+      "note": "RETIRED (Option A): registry entry is administration guidance + custodian link only"
+    },
+    {
+      "id": "asq",
+      "reconnectNames": [
+        "ASQ"
+      ],
+      "group": "suicide-risk"
+    },
+    {
+      "id": "phq-9-item-9",
+      "reconnectNames": [
+        "PHQ-9 Item 9"
+      ],
+      "group": "suicide-risk",
+      "rightsId": "phq9-gad7"
+    },
+    {
+      "id": "mdq",
+      "reconnectNames": [
+        "MDQ"
+      ],
+      "group": "bipolar"
+    },
+    {
+      "id": "ymrs",
+      "reconnectNames": [
+        "YMRS"
+      ],
+      "group": "bipolar"
+    },
+    {
+      "id": "asrm",
+      "reconnectNames": [
+        "ASRM"
+      ],
+      "group": "bipolar"
+    },
+    {
+      "id": "bprs",
+      "reconnectNames": [
+        "BPRS"
+      ],
+      "group": "psychosis",
+      "note": "expected missing upstream"
+    },
+    {
+      "id": "aims",
+      "reconnectNames": [
+        "AIMS"
+      ],
+      "group": "movement",
+      "note": "expected missing upstream; pharmacy monitoring.baseline cites it for every antipsychotic"
+    },
+    {
+      "id": "bars",
+      "reconnectNames": [
+        "BARS",
+        "Barnes Akathisia Rating Scale"
+      ],
+      "group": "movement",
+      "note": "expected missing upstream; the haloperidol akathisia pearl needs it"
+    },
+    {
+      "id": "simpson-angus",
+      "reconnectNames": [
+        "SAS",
+        "Simpson-Angus Scale"
+      ],
+      "group": "movement",
+      "note": "expected missing upstream"
+    },
+    {
+      "id": "bfcrs",
+      "reconnectNames": [
+        "BFCRS",
+        "Bush-Francis Catatonia Rating Scale"
+      ],
+      "group": "catatonia",
+      "rightsId": "bfcrs",
+      "note": "RESTRICTED (URMC written consent): link-only; expected missing upstream"
+    },
+    {
+      "id": "moca",
+      "reconnectNames": [
+        "MoCA"
+      ],
+      "group": "cognition",
+      "note": "expected missing upstream; MoCA now requires certification — link-only"
+    },
+    {
+      "id": "mmse",
+      "reconnectNames": [
+        "MMSE"
+      ],
+      "group": "cognition",
+      "note": "expected missing upstream; PAR-licensed — link-only"
+    },
+    {
+      "id": "cam",
+      "reconnectNames": [
+        "CAM",
+        "Confusion Assessment Method"
+      ],
+      "group": "delirium",
+      "note": "expected missing upstream"
+    },
+    {
+      "id": "asrs-v1-1",
+      "reconnectNames": [
+        "ASRS v1.1"
+      ],
+      "group": "adhd"
+    },
+    {
+      "id": "msi-bpd",
+      "reconnectNames": [
+        "MSI-BPD"
+      ],
+      "group": "personality"
+    },
+    {
+      "id": "scoff",
+      "reconnectNames": [
+        "SCOFF"
+      ],
+      "group": "eating"
+    },
+    {
+      "id": "isi",
+      "reconnectNames": [
+        "ISI"
+      ],
+      "group": "sleep"
+    },
+    {
+      "id": "stop-bang",
+      "reconnectNames": [
+        "STOP-BANG"
+      ],
+      "group": "sleep"
+    },
+    {
+      "id": "ess",
+      "reconnectNames": [
+        "ESS"
+      ],
+      "group": "sleep"
+    },
+    {
+      "id": "cgi-s",
+      "reconnectNames": [
+        "CGI-S"
+      ],
+      "group": "global"
+    },
+    {
+      "id": "whodas-2-0",
+      "reconnectNames": [
+        "WHODAS 2.0"
+      ],
+      "group": "function"
+    }
+  ],
+  "fieldMap": {
+    "name": {
+      "target": "id",
+      "class": "V",
+      "note": "slug of the upstream name is the registry id; verified against the custodian page"
+    },
+    "tool_name": {
+      "target": "shortName",
+      "class": "V",
+      "note": "duplicate of name upstream; carried as the display abbreviation"
+    },
+    "description": {
+      "target": "fullName",
+      "class": "R",
+      "note": "the instrument's expanded name, e.g. 'Patient Health Questionnaire-9'"
+    },
+    "items": {
+      "target": "administration.itemCount",
+      "class": "V",
+      "note": "an item COUNT (e.g. '9'), never item text; the library teaches administration and does not reproduce instruments"
+    },
+    "time_to_complete": {
+      "target": "administration.timeToComplete",
+      "class": "V"
+    },
+    "cost": {
+      "target": "rights.costStatement",
+      "class": "V",
+      "note": "'Free / Public Domain' vs licensed; cross-check instrument_rights.json before any link-only decision"
+    },
+    "website": {
+      "target": "rights.custodianUrl",
+      "class": "V",
+      "note": "the official form/custodian page the registry links to instead of hosting the instrument"
+    },
+    "clinical_cutoffs": {
+      "target": "scoring.cutoffs",
+      "class": "V",
+      "note": "score bands as facts; verify against the cited source, never re-derive"
+    },
+    "sensitivity": {
+      "target": "psychometrics.sensitivity",
+      "class": "V",
+      "note": "carry the figure AND its cutoff/population qualifier; verify against the cited paper"
+    },
+    "specificity": {
+      "target": "psychometrics.specificity",
+      "class": "V",
+      "note": "as sensitivity"
+    },
+    "source": {
+      "target": "attribution.custodian",
+      "class": "R",
+      "note": "author/publisher attribution as ReConnect records it (e.g. 'APA/Pfizer')"
+    },
+    "evidence_level": {
+      "target": "attribution.evidenceLevel",
+      "class": "R",
+      "note": "ReConnect's I–IV grading; shown with its provenance, not re-graded"
+    },
+    "symptom_cluster": {
+      "target": "domain",
+      "class": "R",
+      "note": "ReConnect's cluster vocabulary (Mood, Anxiety, …); map to the library's topic slugs at record-authoring time"
+    },
+    "target_audience": {
+      "target": "audienceTier",
+      "class": "R",
+      "note": "['clinician'] etc.; feeds the MS3/resident tier toggle"
+    },
+    "safety_tier": {
+      "target": "safetyTier",
+      "class": "R",
+      "note": "ReConnect tiering; a suicide-risk instrument is safetyLevel high regardless"
+    },
+    "when_to_use": {
+      "target": "guidance.whenToUse",
+      "class": "J-seed",
+      "note": "clinical-use prose; re-authored under faculty review, quoted only from attested pages"
+    },
+    "frequency": {
+      "target": "guidance.cadence",
+      "class": "J-seed",
+      "note": "re-administration cadence is practice guidance, not a label fact"
+    },
+    "_stale": {
+      "target": null,
+      "class": "meta"
+    },
+    "audience": {
+      "target": null,
+      "class": "meta",
+      "note": "free-text duplicate of target_audience"
+    },
+    "content_type": {
+      "target": null,
+      "class": "meta",
+      "note": "always 'screening_instrument'"
+    },
+    "freshness_status": {
+      "target": null,
+      "class": "meta",
+      "note": "drives the STALE section of the report"
+    },
+    "last_verified_date": {
+      "target": null,
+      "class": "meta"
+    },
+    "schema_version": {
+      "target": null,
+      "class": "meta"
+    },
+    "source_confidence": {
+      "target": null,
+      "class": "meta"
+    },
+    "verification_note": {
+      "target": null,
+      "class": "meta"
+    },
+    "update_rationale": {
+      "target": null,
+      "class": "meta"
+    },
+    "state": {
+      "target": null,
+      "class": "meta",
+      "note": "'national' for every instrument"
+    },
+    "rss_layers": {
+      "target": null,
+      "class": "meta",
+      "note": "ReConnect RSSM layer tags; not clerkship vocabulary"
+    }
+  },
+  "denylist": {
+    "patient_profile": "ReConnect persona labels ('Anxious Achiever Burnout', …) are RSSM product vocabulary, not clinical facts; never shown to learners",
+    "item_stems": "instrument reproduction rule (CLAUDE.md): the library teaches administration and never ships item text — pre-denylisted so an upstream addition can never be carried",
+    "anchor_text": "instrument reproduction rule: anchor ladders are never carried (COWS anchors retired 2026-09-10, decision cows-anchors-retired)",
+    "scoring_form": "instrument reproduction rule: a fillable/scored copy of a copyrighted form is reproduction even when no text is copied (Stanley-Brown terms)"
+  }
+}

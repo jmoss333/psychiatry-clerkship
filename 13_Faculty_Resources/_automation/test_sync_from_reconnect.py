@@ -44,7 +44,10 @@ LOCAL_FOR = {
     "crisis": LOCAL / "crisis_resources.json",
     "meds": LOCAL / "pharmacy.json",
     "evidence": LOCAL / "evidence_registry.json",
+    "screening_tools": LOCAL / "screening_tools.json",  # absent on purpose: no registry yet
 }
+SCREENING_FIELDMAP = FIXTURES / "screening_tools_fieldmap.json"
+CHECKER = HERE / "reconnect_fieldmap.py"
 SOURCE_REPOSITORY = "https://github.com/jmoss333/reconnect-psychiatry-system.git"
 GIT = shutil.which("git")
 HERMETIC_ENV = {**os.environ, "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull}
@@ -171,6 +174,7 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(module.default_local("crisis"), ROOT / "crisis_resources.json")
         self.assertEqual(module.default_local("meds"), ROOT / "pharmacy.json")
         self.assertEqual(module.default_local("evidence"), ROOT / "evidence_registry.json")
+        self.assertEqual(module.default_local("screening_tools"), ROOT / "screening_tools.json")
         self.assertEqual(
             module.DEFAULT_INVENTORY,
             ROOT / "13_Faculty_Resources/_automation/provenance/reconnect_snapshot_provenance.json",
@@ -179,10 +183,21 @@ class ContractTests(unittest.TestCase):
             module.DEFAULT_FIELDMAP,
             ROOT / "13_Faculty_Resources/_automation/pharmacy/reconnect_meds_fieldmap.json",
         )
+        # --fieldmap defaults to "the dataset's own production map": None on the parser, the
+        # G0 meds map for meds, the screening map for screening_tools, nothing for the rest.
+        self.assertEqual(module.fieldmap_for("meds"), module.DEFAULT_FIELDMAP)
+        self.assertEqual(
+            module.fieldmap_for("screening_tools"),
+            ROOT / "13_Faculty_Resources/_automation/screening_tools/"
+                   "reconnect_screening_tools_fieldmap.json",
+        )
+        self.assertIsNone(module.fieldmap_for("crisis"))
+        self.assertIsNone(module.fieldmap_for("evidence"))
+        self.assertEqual(module.fieldmap_for("meds", "x.json"), Path("x.json"))
         args = module.build_parser().parse_args(["--dataset", "crisis", "--reconnect", "x"])
         self.assertIsNone(args.local)
         self.assertEqual(args.inventory, module.DEFAULT_INVENTORY)
-        self.assertEqual(args.fieldmap, module.DEFAULT_FIELDMAP)
+        self.assertIsNone(args.fieldmap)
         self.assertEqual(args.format, "md")
 
     def test_engine_and_build_validator_read_one_denylist(self):  # AC13 / BR6, single source
@@ -617,6 +632,206 @@ class GitBackedTests(unittest.TestCase):
         code, report = self.meds_report()
         self.assertEqual(code, 1)
         self.assertIn("pinned-revision-missing", [item["kind"] for item in report["conflicts"]])
+
+
+def load_checker_module():
+    spec = importlib.util.spec_from_file_location("reconnect_fieldmap", CHECKER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class FieldMapContractTests(unittest.TestCase):
+    """reconnect_fieldmap.py is the ONE statement of the field-map shape: every production map
+    must pass it, and each way a map can be malformed must be a named finding."""
+
+    def setUp(self):
+        self.checker = load_checker_module()
+        self.good = json.loads(SCREENING_FIELDMAP.read_text(encoding="utf-8"))
+
+    def findings(self, mutate, rights=None):
+        fieldmap = json.loads(json.dumps(self.good))
+        mutate(fieldmap)
+        return self.checker.check_fieldmap(fieldmap, rights=rights)
+
+    def test_every_production_map_passes_and_the_engine_reads_the_same_table(self):
+        result = run(CHECKER, "--check")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(result.stdout.count("OK    "), len(self.checker.PRODUCTION_FIELDMAPS))
+        engine = load_engine_module()
+        for dataset, path in self.checker.PRODUCTION_FIELDMAPS.items():
+            self.assertEqual(engine.DATASETS[dataset]["fieldmap"], path)
+            self.assertTrue(path.exists(), path)
+
+    def test_fixture_maps_pass(self):
+        for path in (FIELDMAP, SCREENING_FIELDMAP):
+            self.assertEqual(
+                self.checker.check_fieldmap(json.loads(path.read_text(encoding="utf-8"))), [], path)
+
+    def test_each_malformation_is_a_named_finding(self):
+        cases = {
+            "overlap": lambda m: m["denylist"].update({"name": "x"}),
+            "meta with target": lambda m: m["fieldMap"]["_stale"].update({"target": "x"}),
+            "undeclared class": lambda m: m["fieldMap"]["name"].update({"class": "Q"}),
+            "non-meta without target": lambda m: m["fieldMap"]["items"].update({"target": None}),
+            "reason-less denylist": lambda m: m["denylist"].update({"item_stems": ""}),
+            "duplicate roster id": lambda m: m["phase1Roster"].append(dict(m["phase1Roster"][0])),
+            "non-slug roster id": lambda m: m["phase1Roster"][0].update({"id": "Not A Slug"}),
+            "bad reconnectNames": lambda m: m["phase1Roster"][0].update({"reconnectNames": [""]}),
+            "unknown fieldMap key": lambda m: m["fieldMap"]["name"].update({"stray": 1}),
+            "empty denylist": lambda m: m.update({"denylist": {}}),
+            "wrong schemaVersion": lambda m: m.update({"schemaVersion": 2}),
+        }
+        for label, mutate in cases.items():
+            with self.subTest(label):
+                self.assertNotEqual(self.findings(mutate), [], label)
+        self.assertIn("missing top-level key 'classes'",
+                      self.findings(lambda m: m.pop("classes")))
+
+    def test_empty_reconnect_names_means_known_absent_and_is_allowed(self):
+        # The meds map records four agents that are not upstream this way; the ENGINE reports
+        # them as missing, the checker must not refuse them.
+        self.assertEqual(self.findings(lambda m: m["phase1Roster"][0].update({"reconnectNames": []})), [])
+
+    def test_rights_id_must_resolve_when_rights_are_given(self):
+        mutate = lambda m: m["phase1Roster"][0].update({"rightsId": "nope"})  # noqa: E731
+        self.assertEqual(self.findings(mutate), [])  # no rights file offered: not judged
+        self.assertEqual(len(self.findings(mutate, rights={"cssrs"})), 1)
+        self.assertEqual(self.findings(lambda m: m["phase1Roster"][0].update({"rightsId": "cssrs"}),
+                                       rights={"cssrs"}), [])
+
+    def test_production_rights_ids_resolve_against_instrument_rights(self):
+        rights = self.checker.rights_ids()
+        self.assertIsNotNone(rights, "instrument_rights.json must be readable")
+        for dataset, path in self.checker.PRODUCTION_FIELDMAPS.items():
+            fieldmap = json.loads(path.read_text(encoding="utf-8"))
+            for entry in fieldmap.get("phase1Roster", []):
+                if "rightsId" in entry:
+                    self.assertIn(entry["rightsId"], rights, "%s: %s" % (dataset, entry["id"]))
+
+    def test_unreadable_map_exits_2_and_a_bad_map_exits_1(self):
+        with tempfile.TemporaryDirectory() as directory:
+            bad = Path(directory) / "bad.json"
+            bad.write_text(json.dumps({**self.good, "denylist": {}}), encoding="utf-8")
+            self.assertEqual(run(CHECKER, "--check", bad).returncode, 1)
+            self.assertEqual(run(CHECKER, "--check", Path(directory) / "missing.json").returncode, 2)
+            self.assertEqual(run(CHECKER, "--check", bad, Path(directory) / "missing.json").returncode, 2)
+
+    def test_screening_production_map_never_carries_instrument_text(self):
+        production = json.loads(
+            self.checker.PRODUCTION_FIELDMAPS["screening_tools"].read_text(encoding="utf-8"))
+        for key in ("item_stems", "anchor_text", "scoring_form", "patient_profile"):
+            self.assertIn(key, production["denylist"])
+        self.assertEqual(production["fieldMap"]["items"]["target"], "administration.itemCount")
+        self.assertEqual(production["upstream"]["field"], "screening_tools")
+        roster_ids = [entry["id"] for entry in production["phase1Roster"]]
+        self.assertEqual(len(roster_ids), len(set(roster_ids)))
+        for rid in ("aims", "bars", "moca", "cam", "ciwa-ar", "cows", "bfcrs", "c-ssrs", "phq-9", "gad-7"):
+            self.assertIn(rid, roster_ids)
+
+
+class ScreeningToolsTests(unittest.TestCase):
+    """The generalized adapter: everything the meds report does, for a second dataset, with the
+    refs and identity keyed on that dataset."""
+
+    def setUp(self):
+        self._temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self._temporary.cleanup)
+        self.base = Path(self._temporary.name)
+        self.inventory = empty_inventory(self.base)
+        self.no_local = self.base / "absent-screening_tools.json"
+
+    def report(self, *, reconnect=UPSTREAM, local=None, fmt="json", fieldmap=SCREENING_FIELDMAP):
+        result = run_engine("screening_tools", self.inventory, reconnect=reconnect,
+                            local=local or self.no_local, fmt=fmt, fieldmap=fieldmap)
+        self.assertEqual(result.stderr, "")
+        return result.returncode, (json.loads(result.stdout) if fmt == "json" else result.stdout)
+
+    def write_registry(self, records):
+        path = self.base / "screening_tools.json"
+        path.write_text(json.dumps({"schemaVersion": 1, "records": records}), encoding="utf-8")
+        return path
+
+    def test_without_a_registry_every_upstream_scale_is_a_candidate(self):
+        code, report = self.report()
+        self.assertEqual(code, 0)
+        self.assertEqual([item["id"] for item in report["added"]],
+                         ["fixscale-9", "fixscale-7", "fixscale-l"])
+        self.assertEqual(report["roster"], {"size": 3, "covered": 2,
+                                            "missingUpstream": ["fixscale-x"],
+                                            "phase2Pool": ["Fixscale-L"]})
+        self.assertEqual([item["id"] for item in report["stale"]], ["fixscale-9"])
+        self.assertEqual(report["denylisted_upstream"], {"patient_profile": 3})
+        self.assertIn("mapped but absent upstream: item_stems", report["notes"])
+        self.assertEqual(report["conflicts"], [])
+        _, markdown = self.report(fmt="md")
+        self.assertIn("(3 screening_tools records)", markdown)
+        self.assertIn("missing upstream (facts from the custodian's own page or the cited "
+                      "psychometric paper): fixscale-x", markdown)
+        self.assertIn("CHANGED since carried / the pinned revision", markdown)
+
+    def test_name_keyed_carried_drift_uses_the_dataset_refs(self):
+        local = self.write_registry([{
+            "id": "fixscale-9",
+            "provenance": {"reconnectRecords": ["screening_tools[name=Fixscale-9]"],
+                           "carried": {"clinical_cutoffs": "stale bands", "items": "9"}},
+        }])
+        code, report = self.report(local=local)
+        self.assertEqual(code, 1)
+        self.assertEqual([item["id"] for item in report["added"]], ["fixscale-7", "fixscale-l"])
+        self.assertEqual(len(report["changed"]), 1)
+        self.assertEqual(report["changed"][0]["field"], "clinical_cutoffs")
+        self.assertEqual(report["changed"][0]["target"], "scoring.cutoffs")
+        self.assertEqual(report["changed"][0]["basis"], "carried")
+
+    def test_index_refs_are_checked_against_the_dataset_identity(self):
+        local = self.write_registry([
+            {"id": "fixscale-7", "provenance": {"reconnectRecords": ["screening_tools[0]"]}},
+            {"id": "fixscale-9", "provenance": {"reconnectRecords": ["medications[0]"]}},
+        ])
+        code, report = self.report(local=local)
+        self.assertEqual(code, 1)
+        kinds = sorted((item["kind"], item["id"]) for item in report["conflicts"])
+        self.assertEqual(kinds, [("index-shift", "fixscale-7"), ("unresolvable-ref", "fixscale-9")])
+        details = {item["id"]: item["detail"] for item in report["conflicts"]}
+        self.assertEqual(details["fixscale-7"], "screening_tools[0] is fixscale-9, not fixscale-7")
+        self.assertIn("not a screening_tools[N] or screening_tools[name=…] reference",
+                      details["fixscale-9"])
+
+    def test_a_carried_denylisted_key_is_named_but_never_printed(self):
+        local = self.write_registry([{
+            "id": "fixscale-9",
+            "provenance": {"reconnectRecords": ["screening_tools[name=Fixscale-9]"],
+                           "carried": {"patient_profile": "Fixture Persona"}},
+        }])
+        code, report = self.report(local=local, fmt="md")
+        self.assertEqual(code, 1)
+        self.assertIn("'patient_profile' is denylisted and must not be carried", report)
+        self.assertNotIn("Fixture Persona", report)
+
+    def test_unclassified_upstream_key_is_drift(self):
+        def mutate(data):
+            data["screening_tools"][0]["brand_new_field"] = "x"
+
+        code, report = self.report(reconnect=copy_upstream(self.base, mutate))
+        self.assertEqual(code, 1)
+        self.assertEqual([item["kind"] for item in report["conflicts"]], ["unclassified-upstream-key"])
+
+    def test_a_malformed_field_map_exits_2(self):
+        bad = self.base / "bad.json"
+        bad.write_text("[]", encoding="utf-8")
+        result = run_engine("screening_tools", self.inventory, local=self.no_local, fieldmap=bad)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("not a JSON object", result.stderr)
+
+    def test_meds_report_is_unchanged_by_the_generalization(self):
+        # The meds adapter is now a thin wrapper; its fixture report must not have moved.
+        result = run_engine("meds", self.inventory, local=LOCAL_FOR["meds"], fmt="json")
+        report = json.loads(result.stdout)
+        self.assertEqual([item["id"] for item in report["added"]], ["gammatrol"])
+        self.assertEqual(report["conflicts"][0]["detail"], "medications[2] is gammatrol, not betamol")
+        markdown = run_engine("meds", self.inventory, local=self.base / "absent.json").stdout
+        self.assertIn("missing upstream (L fields from the label): deltanol", markdown)
 
 
 if __name__ == "__main__":

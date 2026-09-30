@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "description": "Synthetic screening-tools field map for test_sync_from_reconnect.py. Same shape as 13_Faculty_Resources/_automation/screening_tools/reconnect_screening_tools_fieldmap.json; invented scales only.",
+  "status": "fixture",
+  "upstream": {
+    "path": "databases/core/data_all.json",
+    "field": "screening_tools",
+    "keyField": "name"
+  },
+  "classes": {
+    "V": "verifiable by script or by hand against the custodian's official page or the cited psychometric paper (the analogue of the pharmacy's label-verifiable L class)",
+    "R": "ReConnect-inherited, hash-pinned",
+    "J-seed": "seed text for a faculty-judgment field; never shipped verbatim",
+    "meta": "provenance only, not carried as content"
+  },
+  "phase1Roster": [
+    {
+      "id": "fixscale-9",
+      "reconnectNames": [
+        "Fixscale-9"
+      ],
+      "group": "fixture"
+    },
+    {
+      "id": "fixscale-7",
+      "reconnectNames": [
+        "Fixscale-7"
+      ],
+      "group": "fixture"
+    },
+    {
+      "id": "fixscale-x",
+      "reconnectNames": [
+        "Fixscale-X"
+      ],
+      "group": "fixture",
+      "note": "missing upstream on purpose"
+    }
+  ],
+  "fieldMap": {
+    "name": {
+      "target": "id",
+      "class": "V"
+    },
+    "tool_name": {
+      "target": "shortName",
+      "class": "V"
+    },
+    "description": {
+      "target": "fullName",
+      "class": "R"
+    },
+    "items": {
+      "target": "administration.itemCount",
+      "class": "V"
+    },
+    "time_to_complete": {
+      "target": "administration.timeToComplete",
+      "class": "V"
+    },
+    "cost": {
+      "target": "rights.costStatement",
+      "class": "V"
+    },
+    "website": {
+      "target": "rights.custodianUrl",
+      "class": "V"
+    },
+    "clinical_cutoffs": {
+      "target": "scoring.cutoffs",
+      "class": "V"
+    },
+    "sensitivity": {
+      "target": "psychometrics.sensitivity",
+      "class": "V"
+    },
+    "specificity": {
+      "target": "psychometrics.specificity",
+      "class": "V"
+    },
+    "source": {
+      "target": "attribution.custodian",
+      "class": "R"
+    },
+    "evidence_level": {
+      "target": "attribution.evidenceLevel",
+      "class": "R"
+    },
+    "symptom_cluster": {
+      "target": "domain",
+      "class": "R"
+    },
+    "target_audience": {
+      "target": "audienceTier",
+      "class": "R"
+    },
+    "safety_tier": {
+      "target": "safetyTier",
+      "class": "R"
+    },
+    "when_to_use": {
+      "target": "guidance.whenToUse",
+      "class": "J-seed"
+    },
+    "frequency": {
+      "target": "guidance.cadence",
+      "class": "J-seed"
+    },
+    "_stale": {
+      "target": null,
+      "class": "meta"
+    },
+    "audience": {
+      "target": null,
+      "class": "meta"
+    },
+    "content_type": {
+      "target": null,
+      "class": "meta"
+    },
+    "freshness_status": {
+      "target": null,
+      "class": "meta"
+    },
+    "last_verified_date": {
+      "target": null,
+      "class": "meta"
+    },
+    "schema_version": {
+      "target": null,
+      "class": "meta"
+    },
+    "source_confidence": {
+      "target": null,
+      "class": "meta"
+    },
+    "verification_note": {
+      "target": null,
+      "class": "meta"
+    },
+    "update_rationale": {
+      "target": null,
+      "class": "meta"
+    },
+    "state": {
+      "target": null,
+      "class": "meta"
+    },
+    "rss_layers": {
+      "target": null,
+      "class": "meta"
+    }
+  },
+  "denylist": {
+    "patient_profile": "fixture: persona labels never carried",
+    "item_stems": "fixture: instrument text never carried"
+  }
+}

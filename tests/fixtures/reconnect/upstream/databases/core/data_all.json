@@ -64,5 +64,112 @@
       "name": "Fixture Modality",
       "freshness_status": "green"
     }
+  ],
+  "screening_tools": [
+    {
+      "_stale": false,
+      "audience": "Clinicians",
+      "content_type": "screening_instrument",
+      "schema_version": "2",
+      "source_confidence": "high",
+      "state": "national",
+      "target_audience": [
+        "clinician"
+      ],
+      "rss_layers": [
+        "L1"
+      ],
+      "safety_tier": "tier_2",
+      "verification_note": "fixture",
+      "update_rationale": "",
+      "name": "Fixscale-9",
+      "tool_name": "Fixscale-9",
+      "description": "Fixture Scale, 9 items",
+      "items": "9",
+      "time_to_complete": "1-5 min",
+      "cost": "Free / Public Domain",
+      "website": "https://example.invalid/fixscale-9",
+      "clinical_cutoffs": "0-4 low; 5-9 mid; 10+ high",
+      "sensitivity": "88% at cutoff >=10",
+      "specificity": "88% at cutoff >=10",
+      "source": "Fixture Authors",
+      "evidence_level": "II",
+      "symptom_cluster": "Mood",
+      "when_to_use": "Fixture use.",
+      "frequency": "Baseline",
+      "freshness_status": "red",
+      "last_verified_date": "2026-03-20",
+      "patient_profile": "Fixture Persona"
+    },
+    {
+      "_stale": false,
+      "audience": "Clinicians",
+      "content_type": "screening_instrument",
+      "schema_version": "2",
+      "source_confidence": "high",
+      "state": "national",
+      "target_audience": [
+        "clinician"
+      ],
+      "rss_layers": [
+        "L1"
+      ],
+      "safety_tier": "tier_2",
+      "verification_note": "fixture",
+      "update_rationale": "",
+      "name": "Fixscale-7",
+      "tool_name": "Fixscale-7",
+      "description": "Fixture Scale, 7 items",
+      "items": "7",
+      "time_to_complete": "1-3 min",
+      "cost": "Free / Public Domain",
+      "website": "https://example.invalid/fixscale-7",
+      "clinical_cutoffs": "0-4 low; 5+ high",
+      "sensitivity": "89% at cutoff >=10",
+      "specificity": "82% at cutoff >=10",
+      "source": "Fixture Authors",
+      "evidence_level": "II",
+      "symptom_cluster": "Anxiety",
+      "when_to_use": "Fixture use.",
+      "frequency": "Baseline",
+      "freshness_status": "green",
+      "last_verified_date": "2026-09-01",
+      "patient_profile": "Fixture Persona"
+    },
+    {
+      "_stale": false,
+      "audience": "Clinicians",
+      "content_type": "screening_instrument",
+      "schema_version": "2",
+      "source_confidence": "high",
+      "state": "national",
+      "target_audience": [
+        "clinician"
+      ],
+      "rss_layers": [
+        "L1"
+      ],
+      "safety_tier": "tier_2",
+      "verification_note": "fixture",
+      "update_rationale": "",
+      "name": "Fixscale-L",
+      "tool_name": "Fixscale-L",
+      "description": "Fixture Licensed Scale",
+      "items": "21",
+      "time_to_complete": "5-10 min",
+      "cost": "Licensed",
+      "website": "https://example.invalid/fixscale-l",
+      "clinical_cutoffs": "0-13 minimal; 14+ raised",
+      "sensitivity": "n/a",
+      "specificity": "n/a",
+      "source": "Fixture Publisher",
+      "evidence_level": "II",
+      "symptom_cluster": "Mood",
+      "when_to_use": "Fixture use.",
+      "frequency": "Baseline",
+      "freshness_status": "green",
+      "last_verified_date": "2026-09-01",
+      "patient_profile": "Fixture Persona"
+    }
   ]
 }
