@@ -154,7 +154,11 @@
       ],
       "safetyLevel": "high",
       "facultyReview": {
-        "status": "pending"
+        "status": "reviewed",
+        "reviewer": "Joshua Moss, MD",
+        "lastReviewed": "2026-09-29",
+        "reviewedFieldsHash": "b4a7591536f41be05e4d6a7d870f3b441da47eb7cbf7552135ecc989a7013d34",
+        "retrievalHash": "ff5a23cc707f15005b22197aab6d2164ac9a824a792f4d02b963af5f25904b04"
       },
       "provenance": {
         "fieldClasses": {
@@ -1017,7 +1021,11 @@
       ],
       "safetyLevel": "high",
       "facultyReview": {
-        "status": "pending"
+        "status": "reviewed",
+        "reviewer": "Joshua Moss, MD",
+        "lastReviewed": "2026-09-29",
+        "reviewedFieldsHash": "0f92354539aeef447360808f50e16cf062b77ad5921cbf3c7057f8d7e550abfd",
+        "retrievalHash": "de789a72b6fbe7f9b1db10675bc905fc065d762626a43cbccfdee808f2c8356b"
       },
       "provenance": {
         "fieldClasses": {
@@ -3300,7 +3308,11 @@
       ],
       "safetyLevel": "high",
       "facultyReview": {
-        "status": "pending"
+        "status": "reviewed",
+        "reviewer": "Joshua Moss, MD",
+        "lastReviewed": "2026-09-29",
+        "reviewedFieldsHash": "cff3d645cbf5c3c3a93e84d94f6d77c82fd11f6b5caf8e59234b83e4e6c5427d",
+        "retrievalHash": "5f94b19a03f40caad07710b0967b28e9f57759a130744896c4a203f3ef548d29"
       },
       "provenance": {
         "fieldClasses": {
@@ -3614,7 +3626,11 @@
       ],
       "safetyLevel": "high",
       "facultyReview": {
-        "status": "pending"
+        "status": "reviewed",
+        "reviewer": "Joshua Moss, MD",
+        "lastReviewed": "2026-09-29",
+        "reviewedFieldsHash": "b08b7ad58543b8fdb50f8d9d4f276884936dd6b7e5b8dadbd2bbe460c8aa0851",
+        "retrievalHash": "d4a2aa2e829228ef7ab8043ea45305dea01dc8ca030d9e550e3d8433ca8085ca"
       },
       "provenance": {
         "fieldClasses": {
@@ -4839,7 +4855,11 @@
       ],
       "safetyLevel": "high",
       "facultyReview": {
-        "status": "pending"
+        "status": "reviewed",
+        "reviewer": "Joshua Moss, MD",
+        "lastReviewed": "2026-09-29",
+        "reviewedFieldsHash": "1ba5994d1def7316aa49d80c94184cea60aed065d7e2bd6a5b6dcef3ac9c969d",
+        "retrievalHash": "8bb2617a91c9d46c71f8db610680d7a873709c18aaae9ed15cb5e9425113f282"
       },
       "provenance": {
         "fieldClasses": {
