@@ -16,6 +16,8 @@ ReConnect issue instead of being edited here.
 Datasets:
   crisis    data_all.json "crisis"       vs crisis_resources.json   legacy report, byte-identical
   meds      data_all.json "medications"  vs pharmacy.json           keyed by generic name
+            (+ field-map coverage, Phase-1 roster, carried R-field drift; field map and
+             denylist come from _automation/pharmacy/reconnect_meds_fieldmap.json)
   evidence  staged-citations.json        vs evidence_registry.json  keyed by PMID / DOI
 
 When the provenance inventory has a `relation: derived` entry for a dataset, the report
@@ -42,21 +44,10 @@ DEFAULT_INVENTORY = HERE / "provenance" / "reconnect_snapshot_provenance.json"
 DATA_ALL = "databases/core/data_all.json"
 STAGED = "databases/evidence/staged-citations.json"
 
-# ReConnect keys that must never reach pharmacy.json (spec v0.3 AC13, bridge check BR6).
-# The pharmacy denylist validator should import this tuple rather than restate it.
-PHARMACY_DENYLIST = (
-    "starting_dose",
-    "typical_dose_min",
-    "typical_dose_max",
-    "absolute_max_dose",
-    "pregnancy_category",
-    "cost_plus_price",
-    "goodrx_url",
-    "pharmacy_options",
-    "MaineCare Status",
-    "Walmart $4 List",
-    "Prior Auth Usually Required",
-)
+# The G0-approved ReConnect -> pharmacy field map. Its `denylist` (spec v0.3 AC13, bridge
+# check BR6) is the ONE list of keys that must never reach pharmacy.json: this engine and the
+# build-time pharmacy/validate_pharmacy.py both read it; neither restates it.
+DEFAULT_FIELDMAP = HERE / "pharmacy" / "reconnect_meds_fieldmap.json"
 
 DATASETS = {
     "crisis": {"local": "crisis_resources.json", "source": DATA_ALL, "key": "crisis"},
@@ -66,6 +57,8 @@ DATASETS = {
 
 RECORD_REF = re.compile(r"^crisis\[(\d+)\]")
 MEDS_REF = re.compile(r"^medications\[(\d+)\]")
+# Phase 0 / G1 records cite upstream rows by key, which cannot silently shift like an index.
+MEDS_NAME_REF = re.compile(r"^medications\[name=([^\]]+)\]$")
 
 
 class InputError(Exception):
@@ -212,6 +205,7 @@ def pinned_diff(baseline, current, entry, key, identity, conflicts):
                         "target": target,
                         "before": before.get(field),
                         "after": after.get(field),
+                        "basis": "pinned",
                     })
     return changed, removed
 
@@ -268,12 +262,64 @@ def crisis_sections(upstream: list, local: dict) -> dict:
     }
 
 
-def meds_sections(upstream: list, local: dict) -> dict:
+def local_refs(record: dict) -> list:
+    """Every upstream reference a pharmacy record makes: Phase 0's provenance.reconnectRecords
+    (name-keyed) plus any reconnectRecord string anywhere (index-keyed, #901 style)."""
+    refs = set(refs_in(record))
+    listed = record.get("provenance", {}).get("reconnectRecords", [])
+    if isinstance(listed, list):
+        refs.update(ref for ref in listed if isinstance(ref, str))
+    return sorted(refs)
+
+
+def meds_sections(upstream: list, local: dict, fieldmap: dict) -> dict:
     records = local.get("records", [])
     local_ids = {record.get("id") for record in records}
-    added, conflicts, stale = [], [], []
+    added, conflicts, stale, changed, notes = [], [], [], [], []
+    field_map, denylist = fieldmap["fieldMap"], fieldmap["denylist"]
+    key_field = fieldmap["upstream"]["keyField"]
+
+    by_name, counts = {}, {}
     for index, record in enumerate(upstream):
-        if med_id(record) not in local_ids:
+        name = record.get(key_field)
+        counts[name] = counts.get(name, 0) + 1
+        by_name.setdefault(name, index)
+    for name, count in sorted(counts.items(), key=lambda item: str(item[0])):
+        if count > 1:
+            conflicts.append({"kind": "duplicate-upstream-name", "id": slug(name),
+                              "detail": "%r appears %d times upstream" % (name, count)})
+
+    # Field-map coverage: every upstream key must be classified (fieldMap or denylist).
+    upstream_keys = sorted({key for record in upstream for key in record})
+    for key in upstream_keys:
+        if key not in field_map and key not in denylist:
+            present = sum(1 for record in upstream if record.get(key) not in (None, "", [], {}))
+            conflicts.append({"kind": "unclassified-upstream-key",
+                              "detail": "%r (present on %d records) is in neither fieldMap nor "
+                                        "denylist" % (key, present)})
+    absent = sorted(key for key in list(field_map) + list(denylist) if key not in upstream_keys)
+    if absent:
+        notes.append("mapped but absent upstream: %s" % ", ".join(absent))
+
+    # Phase-1 roster coverage (listed, never drift).
+    missing, used = [], set()
+    for agent in fieldmap["phase1Roster"]:
+        found = [name for name in agent["reconnectNames"] if name in by_name]
+        used.update(found)
+        if not found:
+            missing.append(agent["id"])
+    roster = {
+        "size": len(fieldmap["phase1Roster"]),
+        "covered": len(fieldmap["phase1Roster"]) - len(missing),
+        "missingUpstream": missing,
+        "phase2Pool": sorted(str(name) for name in by_name if name not in used),
+    }
+    # A name-keyed ref covers its upstream row even when the local id differs from the upstream
+    # generic (Lithium's generic_name is "lithium carbonate/citrate"; the record id is lithium).
+    named = {match.group(1) for record in records for ref in local_refs(record)
+             for match in [MEDS_NAME_REF.match(ref)] if match}
+    for index, record in enumerate(upstream):
+        if med_id(record) not in local_ids and record.get(key_field) not in named:
             added.append({"record": index, "id": med_id(record), "name": record.get("name")})
         if record.get("freshness_status") == "red":
             stale.append({
@@ -281,13 +327,45 @@ def meds_sections(upstream: list, local: dict) -> dict:
                 "id": med_id(record),
                 "last_verified_date": record.get("last_verified_date"),
             })
+    targets = {name: spec["target"] for name, spec in field_map.items()}
     for record in sorted(records, key=lambda item: str(item.get("id"))):
         rid = record.get("id")
-        for ref in sorted(set(refs_in(record))):
+        for ref in local_refs(record):
+            named = MEDS_NAME_REF.match(ref)
+            if named:
+                if named.group(1) not in by_name:
+                    conflicts.append({"kind": "unresolvable-ref", "id": rid, "ref": ref,
+                                      "detail": "no upstream record named %r" % named.group(1)})
+                    continue
+                index = by_name[named.group(1)]
+                row = upstream[index]
+                carried = record.get("provenance", {}).get("carried", {})
+                # Every carried value is checked, whatever its class: R drift means the copy
+                # is stale, J-seed drift means the reviewed prose may need another look, and
+                # L drift is a label question (the label, not ReConnect, stays authoritative).
+                for field in sorted(carried):
+                    if field in denylist:
+                        # validate_pharmacy.py fails the build on this; the report names the
+                        # key but never prints either value (BR6 holds for the console too).
+                        conflicts.append({"kind": "denylisted-carried-field", "id": rid,
+                                          "detail": "%r is denylisted and must not be carried"
+                                                    % field})
+                    elif carried[field] != row.get(field):
+                        changed.append({
+                            "record": index,
+                            "id": rid,
+                            "field": field,
+                            "target": targets.get(field, "(unmapped)"),
+                            "before": carried[field],
+                            "after": row.get(field),
+                            "basis": "carried",
+                        })
+                continue
             match = MEDS_REF.match(ref)
             if not match:
                 conflicts.append({"kind": "unresolvable-ref", "id": rid, "ref": ref,
-                                  "detail": "%s is not a medications[N] reference" % ref})
+                                  "detail": "%s is not a medications[N] or medications[name=…] "
+                                            "reference" % ref})
             elif int(match.group(1)) >= len(upstream):
                 conflicts.append({"kind": "unresolvable-ref", "id": rid, "ref": ref,
                                   "detail": "medications has %d records" % len(upstream)})
@@ -300,13 +378,16 @@ def meds_sections(upstream: list, local: dict) -> dict:
                 })
     denylisted = {}
     for record in upstream:
-        for key in PHARMACY_DENYLIST:
+        for key in denylist:
             if key in record:
                 denylisted[key] = denylisted.get(key, 0) + 1
     return {
         "added": added,
+        "changed": changed,
         "conflicts": conflicts,
         "stale": stale,
+        "notes": notes,
+        "roster": roster,
         "denylisted_upstream": dict(sorted(denylisted.items())),
     }
 
@@ -360,11 +441,14 @@ def evidence_sections(staged: list, local: dict, reconnect: Path) -> dict:
 # --- report assembly ---
 
 
-def build_report(dataset: str, reconnect: Path, local_path: Path, inventory_path: Path) -> dict:
+def build_report(dataset: str, reconnect: Path, local_path: Path, inventory_path: Path,
+                 fieldmap_path: Path = DEFAULT_FIELDMAP) -> dict:
     spec = DATASETS[dataset]
     upstream_path = reconnect / spec["source"]
     upstream_doc = read_json(upstream_path, "upstream")
-    upstream = upstream_doc.get(spec["key"], [])
+    upstream = upstream_doc.get(spec["key"]) if isinstance(upstream_doc, dict) else None
+    if not isinstance(upstream, list) or not all(isinstance(item, dict) for item in upstream):
+        raise InputError("upstream %s has no %r list of records" % (upstream_path, spec["key"]))
 
     exists = local_path.exists()
     if exists:
@@ -382,18 +466,21 @@ def build_report(dataset: str, reconnect: Path, local_path: Path, inventory_path
     report = {
         "dataset": dataset,
         "upstream": {"path": str(upstream_path), "key": spec["key"], "records": len(upstream),
-                     "revision": revision, "modified": modified},
+                     "revision": revision, "modified": modified,
+                     "sha256": hashlib.sha256(upstream_path.read_bytes()).hexdigest()},
         "local": {"path": str(local_path), "name": local_path.name, "exists": exists,
                   "records": len(local.get("resources", local.get("records", local.get("sources", []))))},
         "pinned": None,
         "added": [], "changed": [], "removed": [], "stale": [], "conflicts": [],
-        "denylisted_upstream": {}, "known_discrepancies": [], "notes": [],
+        "denylisted_upstream": {}, "known_discrepancies": [], "notes": [], "roster": None,
     }
 
     if dataset == "crisis":
         report.update(crisis_sections(upstream, local))
     elif dataset == "meds":
-        report.update(meds_sections(upstream, local))
+        if not fieldmap_path.exists():
+            raise InputError("field map not found: %s" % fieldmap_path)
+        report.update(meds_sections(upstream, local, read_json(fieldmap_path, "field map")))
     else:
         report.update(evidence_sections(upstream, local, reconnect))
 
@@ -404,11 +491,14 @@ def build_report(dataset: str, reconnect: Path, local_path: Path, inventory_path
                             "fieldMap": entry.get("fieldMap", {})}
         baseline = pinned_records(reconnect, entry, spec["key"], report["conflicts"])
         if baseline is not None:
-            report["changed"], report["removed"] = pinned_diff(
+            changed, report["removed"] = pinned_diff(
                 baseline, upstream, entry, spec["key"], identity, report["conflicts"])
+            report["changed"] = report["changed"] + changed
 
     report["conflicts"].sort(key=lambda item: (item["kind"], str(item.get("id", "")),
                                                 str(item.get("detail", ""))))
+    report["changed"].sort(key=lambda item: (item["record"], str(item["id"]), item["field"],
+                                             item.get("basis", "")))
     report["drift"] = bool(report["changed"] or report["removed"] or report["conflicts"])
     return report
 
@@ -463,8 +553,9 @@ def describe(section: str, item, key: str) -> str:
     if section == "added":
         return "%s (%s[%d])" % (item["id"], key, item["record"])
     if section == "changed":
-        return "%s[%d] %s: %s → %s: %r → %r" % (key, item["record"], item["id"], item["field"],
-                                               item["target"], item["before"], item["after"])
+        return "%s[%d] %s: %s → %s: %r → %r (since %s)" % (
+            key, item["record"], item["id"], item["field"], item["target"], item["before"],
+            item["after"], "carried" if item.get("basis") == "carried" else "pinned revision")
     if section == "removed":
         return "%s[%d] %s" % (key, item["record"], item["id"])
     if section == "stale":
@@ -504,7 +595,8 @@ def render_generic(report: dict) -> str:
                         len(report["pinned"]["fieldMap"])))
     titles = (
         ("added", "ADDED upstream, not in local"),
-        ("changed", "CHANGED since the pinned revision"),
+        ("changed", "CHANGED since carried / the pinned revision" if report["dataset"] == "meds"
+         else "CHANGED since the pinned revision"),
         ("removed", "REMOVED since the pinned revision"),
         ("conflicts", "CONFLICTS"),
         ("stale", "STALE upstream (freshness red)"),
@@ -512,6 +604,14 @@ def render_generic(report: dict) -> str:
     for section, title in titles:
         lines.append("\n%s — %d" % (title, len(report[section])))
         lines.extend("  - " + describe(section, item, key) for item in report[section])
+    roster = report.get("roster")
+    if roster:
+        lines.append("\nPHASE-1 ROSTER — %d of %d covered upstream" % (roster["covered"], roster["size"]))
+        if roster["missingUpstream"]:
+            lines.append("  - missing upstream (L fields from the label): %s"
+                         % ", ".join(roster["missingUpstream"]))
+        lines.append("  - Phase-2 pool (%d): %s" % (len(roster["phase2Pool"]),
+                                                    ", ".join(roster["phase2Pool"]) or "none"))
     if report["denylisted_upstream"]:
         lines.append("\nDENYLISTED fields present upstream (never copied) — %d"
                      % len(report["denylisted_upstream"]))
@@ -539,6 +639,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="registry to compare (default: the dataset's registry at the repo root)")
     parser.add_argument("--inventory", type=Path, default=DEFAULT_INVENTORY,
                         help="provenance inventory (default: the production inventory)")
+    parser.add_argument("--fieldmap", type=Path, default=DEFAULT_FIELDMAP,
+                        help="meds field map (default: the G0-approved production map)")
     return parser
 
 
@@ -553,7 +655,8 @@ def main(argv=None) -> int:
         return 2
     try:
         report = build_report(args.dataset, reconnect,
-                              args.local or default_local(args.dataset), args.inventory)
+                              args.local or default_local(args.dataset), args.inventory,
+                              args.fieldmap)
     except InputError as error:
         print(error, file=sys.stderr)
         return 2
