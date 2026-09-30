@@ -712,11 +712,15 @@ test('a rehearsal that never reaches the test\'s read fails closed instead of pa
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'live-state-blind-'));
   try {
     const file = path.join(dir, 'blind.test.mjs');
+    /* The bank is read by `cat`, a process that is not node: no rehearsal hook can ever see
+       it, on any Node version. (A JSON import was the first choice, but Node 22's loader reads
+       through the patched fs and Node 25's does not, so it was blind on one and not the other.) */
     fs.writeFileSync(file, [
       "import assert from 'node:assert/strict';",
+      "import { execFileSync } from 'node:child_process';",
       "import test from 'node:test';",
-      `import bank from ${JSON.stringify(pathToFileURL(GOVERNED_FILES.qbank).href)} with { type: 'json' };`,
-      "test('reads the bank through a JSON import', () => assert.ok(Array.isArray(bank.items)));",
+      `const bank = JSON.parse(execFileSync('cat', [${JSON.stringify(GOVERNED_FILES.qbank)}], { encoding: 'utf8' }));`,
+      "test('reads the bank through a process the rehearsal cannot see', () => assert.ok(Array.isArray(bank.items)));",
     ].join('\n'));
     const result = await rehearse(file, 'qbank-drained');
     const problems = verdict(file, { kind: 'invariant' }, ['qbank'], 'qbank-drained', result);
