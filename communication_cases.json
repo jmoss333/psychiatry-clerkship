@@ -940,6 +940,36 @@
         "status": "draft",
         "reviewer": "",
         "lastReviewed": ""
+      },
+      "secondPass": {
+        "prompt": "Retry: he recalls the medication but says the appointment is \"sometime next month.\" Re-explain without shaming, then re-ask.",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Great. Do you understand everything?",
+            "quality": "missed",
+            "feedback": "A yes/no check does not show whether the patient now understands that the appointment is this Tuesday."
+          },
+          {
+            "id": "b",
+            "text": "Any questions before tomorrow?",
+            "quality": "partial",
+            "feedback": "Inviting questions still leaves the appointment misunderstanding uncorrected. Clarify the timing, then ask for it back in the patient's own words."
+          },
+          {
+            "id": "c",
+            "text": "I may not have explained the timing clearly. Your appointment is this Tuesday. Can you tell me in your own words when it is, what medication you’ll take, and what you’ll do if those thoughts come back?",
+            "quality": "best",
+            "feedback": "Best choice. You take responsibility for the unclear explanation, correct the appointment to this Tuesday, and ask for the plan back in the patient's own words, including the safety step."
+          },
+          {
+            "id": "d",
+            "text": "If you don't follow this plan, you'll probably end up back here.",
+            "quality": "harmful",
+            "feedback": "A threat does not correct the appointment misunderstanding. It adds shame rather than checking what the patient understood."
+          }
+        ],
+        "listenFor": "Did the patient describe the appointment timing accurately? What still needs clarification?"
       }
     },
     {

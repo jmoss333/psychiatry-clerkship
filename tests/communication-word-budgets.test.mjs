@@ -207,7 +207,7 @@ test('every first/second pick pair on the pilot case fits the second-pass budget
   const over = [];
   for (const c of pilots) {
     for (const first of c.choices) {
-      for (const second of c.choices) {
+      for (const second of c.secondPass.choices) {
         const n = retryFeedbackWords(first, second);
         if (n >= RETRY_FEEDBACK_BUDGET) over.push([n, `${c.id}/${first.id}->${second.id}`]);
       }

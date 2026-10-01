@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 //
 // The handoff that asked for this loop set three boundaries that a browser test can show
 // for one run but cannot pin as a contract: (1) the second pass reuses the variation the
-// case ALREADY carries, verbatim, so the change ships no new clinical wording; (2) the
+// case carries in canonical secondPass data, with owner-reviewed wording; (2) the
 // second pass is session-only — it never writes cw_comm_v1 or schedules a cw_srs_v1 card;
 // (3) the retry exists for the one pilot case only, and every other case keeps the
 // "Try the next related case" action the fast-rep design specified. These tests read the
@@ -53,15 +53,18 @@ test('the second-pass variation is the authored best-choice feedback, verbatim',
   const pilot = cases.find((c) => c.id === 'teach_back_closing_001');
   const best = pilot.choices.filter((ch) => ch.quality === 'best');
   assert.equal(best.length, 1, 'the pilot case has exactly one best choice');
-  const { variation } = RETRY_PILOT.teach_back_closing_001;
+  const variation = pilot.secondPass.prompt;
   assert.ok(typeof variation === 'string' && variation.length > 0);
   assert.ok(
     best[0].feedback.endsWith(variation),
-    `RETRY_PILOT.variation must be the trailing sentence of choice ${best[0].id}'s authored ` +
+    `secondPass.prompt must be the trailing sentence of choice ${best[0].id}'s authored ` +
       `feedback. If faculty rewrote that feedback, update the pilot text to match or retire ` +
       `the pilot — never author a new variation here without an exact-text review.`,
   );
   assert.match(variation, /^Retry: /, 'the variation keeps its authored "Retry:" lead-in');
+  assert.match(fn('retryPilot'), /RETRY_PILOT\[c\.id\]&&c\.secondPass/);
+  assert.match(fn('retryCompareHtml'), /retryPilot\(c\)\.choices\.map/);
+  assert.match(fn('choose'), /state\.phase===PHASE\.RETRY_COMPARE\?\(p\?p\.choices:\[\]\):\(c\.choices\|\|\[\]\)/);
 });
 
 test('the second pass never records or grades: saveAttempt is called once, on the first pass only', () => {
@@ -118,13 +121,13 @@ test('the second pass is honest about what it compares and what it keeps', () =>
   assert.match(fn('finishedHtml'), /The second pass was not saved\./);
   assert.doesNotMatch(fn('finishedHtml'), /Your first choice is in local history/);
   assert.match(fn('retrySpeakingHtml'), /Your browser does not listen or record\./);
-  // Coaching reuses the authored include/avoid lists and the existing huddle prompt — no new lists.
+  // Coaching reuses the authored include/avoid lists and the canonical second-pass huddle.
   const coaching = fn('retryCoachingHtml');
   assert.match(coaching, /Nothing from this second pass is saved\./);
   assert.doesNotMatch(coaching, /Your first choice remains in local history/);
   assert.match(coaching, /d\.mustInclude\.map/);
   assert.match(coaching, /d\.avoid\.map/);
-  assert.match(coaching, /supervisionPrompt\(c,second\)/);
+  assert.match(coaching, /retryPilot\(c\)\.listenFor/);
   assert.doesNotMatch(coaching, /<li>[A-Z][^<]{10,}<\/li>/, 'no hard-coded coaching bullets');
 });
 

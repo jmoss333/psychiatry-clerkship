@@ -1010,7 +1010,7 @@ test('reduced motion removes transitions', async ({ page }) => {
 // ---- Same-skill second pass (static pilot: teach_back_closing_001) -------------------------
 // The pilot replaces the feedback panel's "Try the next related case" action with "Retry the
 // same skill" on ONE case. The second pass reuses the authored variation sentence already in
-// that case's best-choice feedback, offers the same four authored lines, compares the two
+// that case's best-choice feedback, offers owner-reviewed second-pass lines, compares the two
 // picks by their authored quality, and persists nothing: cw_comm_v1 and cw_srs_v1 must be
 // byte-identical before and after. tests/communication-retry-pilot.test.mjs pins the source
 // contracts; these cases watch the behaviour in a real browser on both audience builds.
@@ -1071,7 +1071,7 @@ test('pilot second pass reuses the authored variation, compares two picks, and s
   await page.locator('[data-choice-id="b"]').click();
   const compared = await expectPhase(page, 'retry-feedback', 1);
   await expect(page.locator('#phase-heading')).toHaveText('Second pass: Partly useful');
-  await expect(compared.locator('[data-feedback]')).toContainText(caseData.choices.find((c) => c.id === 'b').feedback);
+  await expect(compared.locator('[data-feedback]')).toContainText(caseData.secondPass.choices.find((c) => c.id === 'b').feedback);
   await expect(compared.locator('[data-pass-compare]')).toHaveText('First pass: Best next line. Second pass: Partly useful.');
   await expect(compared).toContainText('This compares the two authored lines you chose, not your spoken words.');
   await expect(compared.locator('[data-retry-coaching]')).not.toHaveAttribute('open', '');
@@ -1101,18 +1101,18 @@ test('pilot second pass reuses the authored variation, compares two picks, and s
   expect(announcements).toEqual([
     'Second pass started. 20 seconds.',
     'Compare your sentence with the choices.',
-    caseData.choices.find((c) => c.id === 'b').feedback,
+    caseData.secondPass.choices.find((c) => c.id === 'b').feedback,
     'Practice loop complete.',
     'Second pass started. 20 seconds.',
     'Compare your sentence with the choices.',
-    caseData.choices.find((c) => c.id === 'd').feedback,
+    caseData.secondPass.choices.find((c) => c.id === 'd').feedback,
   ]);
   expect(errors).toEqual([]);
 });
 
 test('second-pass panels fit their word budgets for every pick', async ({ page }) => {
   const caseData = await (async () => { await openTool(page); return pilotCase(page); })();
-  for (const second of caseData.choices) {
+  for (const second of caseData.secondPass.choices) {
     await firstPass(page, 'c');
     expect(await visibleWordCount(page.locator('[data-rep-panel]')), `Feedback word budget for ${PILOT}/c`).toBeLessThan(55);
     await page.getByRole('button', { name: 'Retry the same skill' }).click();
@@ -1123,6 +1123,44 @@ test('second-pass panels fit their word budgets for every pick', async ({ page }
     await page.getByRole('button', { name: 'Finish practice' }).click();
     expect(await visibleWordCount(page.locator('[data-rep-panel]')), 'Finished word budget').toBeLessThan(60);
   }
+});
+
+test('second-pass choices, feedback and announcements use canonical authored data', async ({ page }) => {
+  await openTool(page);
+  const data = await pilotCase(page);
+  for (const second of data.secondPass.choices) {
+    await firstPass(page, 'c');
+    await expect(page.locator('[data-feedback]')).toContainText(data.choices.find(c => c.id === 'c').feedback);
+    const stored = await storageSnapshot(page);
+    await observeAnnouncements(page);
+    await page.locator('[data-second-pass]').click();
+    await page.locator('[data-finish-speaking]').click();
+    for (const choice of data.secondPass.choices) {
+      await expect(page.locator(`[data-choice-id="${choice.id}"]`)).toHaveText(choice.text);
+    }
+    await page.locator(`[data-choice-id="${second.id}"]`).click();
+    const feedback = await expectPhase(page, 'retry-feedback', 1);
+    await expect(feedback.locator('[data-feedback]')).toHaveText(second.feedback);
+    await expect(feedback.locator('[data-feedback]')).not.toContainText('Retry:');
+    await feedback.locator('[data-retry-coaching] summary').click();
+    await expect(feedback.locator('[data-retry-coaching]')).toContainText(data.secondPass.listenFor);
+    await expect(feedback.locator('[data-retry-coaching]')).toContainText(`First: ${data.choices.find(c => c.id === 'c').text}`);
+    await expect(feedback.locator('[data-retry-coaching]')).toContainText(`Second: ${second.text}`);
+    expect((await page.evaluate(() => window.__repAnnouncements)).at(-1)).toBe(second.feedback);
+    expect(await storageSnapshot(page)).toEqual(stored);
+  }
+});
+
+test('a pilot without optional second-pass data retains the original next-related action', async ({ page }) => {
+  await page.route('**/communication_cases.json', async route => {
+    const response = await routeFetchWithRetry(route);
+    const data = await response.json();
+    delete data.cases.find(c => c.id === PILOT).secondPass;
+    await route.fulfill({ response, json: data });
+  });
+  await firstPass(page, 'c');
+  await expect(page.locator('[data-second-pass]')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Try the next related case' })).toBeVisible();
 });
 
 test('second pass is interrupted honestly by the timer, a case change, a filter change, and reload', async ({ page }) => {

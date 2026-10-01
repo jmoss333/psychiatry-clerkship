@@ -1,138 +1,123 @@
-# Teach-back same-skill second pass — static pilot (design + exact-text review packet)
+# Teach-back same-skill retry pilot
 
-**Status:** NON-SHIPPED REVIEW PACKET · Draft PR only · Draft — clinician review required
-**Owner:** Joshua Moss, MD (decision owner) · **Executor:** Claude Code (Cowork session), claimed 2026-10-01 per `~/Documents/AI Handoffs/README.md`
-**Scope source:** `~/Documents/AI Handoffs/02-Teach-Back-Claude-Code.md`
-**Research baseline:** `fa8b2ed381361e5631566886f43252f851f37c08` · **Implemented against main:** `f25c3298c458b9f1e434b5c4d7666c4f45d345a9`
+This review/design packet accompanies the one-case static pilot in PR930. Clinical teaching
+content is canonical data in `communication_cases.json`; this document records its exact
+wording and scope. It is not a faculty attestation or a merge/publication instruction.
 
-This document is the neutral design record for the change and the review packet the handoff
-required for anything a learner will read that did not exist before. Nothing in it is learner-facing
-and nothing in it asserts clinical approval. `teach_back_closing_001` remains
-`facultyReview.status: "draft"` exactly as it was at the research baseline; this change does not
-promote, relabel, or hide that fact.
+## 1. Owner decisions and scope
 
-## 1. Audit (read-only, before any write)
+Joshua Moss approved the five-part teaching direction and the exact best-response/listen-for
+lines on 2026-10-01 at 22:21 UTC (user message `Sentinel_2e335eb817e88191953337d1e5dcc5db`,
+answering `Sentinel_283b3110de3c8191985cb4204ad62a0d`). He then approved all four exact feedback
+strings and the narrow secondPass schema/supporting-reader change at 23:36:54 UTC
+(user `Sentinel_da23b506937c81918d1c226d147fd096`, answering
+`Sentinel_7b28fc6d49608191986ba24153d29d92`: “Yes I do”).
 
-| Item | Finding |
-| --- | --- |
-| Current `main` vs research baseline | One commit ahead (`f25c329`, #925 Today purpose chooser). Every file in the handoff's source list is byte-identical to the baseline. |
-| Handoff path correction | `communication_cases.json` and `communication_cases.schema.json` live at the **repository root**, not under `02_Clinical_Skills/Communication_Practice/` as listed. The tool fetches `../communication_cases.json`. |
-| Collisions | Open PRs #914–#929 fetched by ref: none touches Communication Practice. #917/#918 touch `site_manifest.json`/`shipped_pages.json` only (not edited here). #929 (Eli, Milo/Codex) touches `08_Cases_and_Simulation/` only. #925 is merged and untouched. `bin/coordination_report.py --prs`: 0 overlaps. |
-| Routing contract | `?case=<id>` and `?filter=<f>` deep links; tool never writes history state. Preserved. |
-| Review provenance | `communication-practice.html` ledger row: `reviewed`, 2026-09-30, Joshua Moss, MD, `contentHash` + `clinicalHash` bound. **This edit drifts that row to pending and reopens the sign-off** (the tool is a non-Markdown source, so the v2 clinical fingerprint does not keep it). `communication_cases.json` is its `extraSources` entry and is **not** edited. |
-| Case governance | `teach_back_closing_001` `facultyReview.status` = `draft`, reviewer/lastReviewed empty. Unchanged. Already labelled "Draft · faculty review needed" on the orient panel; now also on the second-pass and finish panels. |
-| Existing variation | Already authored inside choice **c**'s feedback: *"Retry: he recalls the medication but says the appointment is "sometime next month." Re-explain without shaming, then re-ask."* Reused verbatim; no data field added (the schema is `additionalProperties:false` and schemas are governance). |
-| `moment_luis_teachback_001` | Separate `sp-preview` moment, reviewed 2026-09-09, with its own evidence-linked AI review and one terminal alternative. Not touched, duplicated, promoted, or audited. Its live semantic/microphone audition remains unreviewed and no paid audition was run. |
-| Word budgets | Feedback panel < 55 visible words (browser + static twin). Pilot best-choice feedback already renders at **52**. Therefore the retry action **replaces** "Try the next related case" on the pilot case (4 words vs 5) rather than joining it. |
-| Test impact | Root: `tests/communication-word-budgets.test.mjs` models the panel chrome and had to learn the per-case primary action; `tests/comm-reason-cards.test.mjs` pins the SRS write path (kept byte-identical). Smoke: `tests/smoke/communication-practice.spec.js` runs on both audiences. |
+These are owner content/scope approvals. No console re-attestation, faculty reviewer/date,
+case promotion, merge, ready, auto-merge or production release is implied. The parent case's
+existing facultyReview block is unchanged. The three technical fixes at 289acd6 remain intact.
 
-## 2. Design
+Only `teach_back_closing_001` can carry the optional `secondPass` object. Its required fields
+are `prompt`, `choices` (the existing authored choice format), and `listenFor`; unknown fields
+and use on other cases are rejected by the schema. Every first-pass field and all other
+cases remain unchanged. There is no new case/card, Daily Review expansion, timer setting,
+persistent state, runtime AI, free text, recording or generic retry framework.
 
-One case, one new loop, no new content. After the ordinary rep (Orient → Say it → Compare →
-Feedback, which still records `cw_comm_v1` and schedules the COMM# card exactly as before), the
-pilot case's feedback panel offers **Retry the same skill** as its sole primary action.
+## 2. Behavior and governance
 
-| Phase (`data-phase`) | What the learner sees | Primary action | Persists |
-| --- | --- | --- | --- |
-| `feedback` (pilot case only) | unchanged quality label, authored feedback, "Say it again" transfer line | **Retry the same skill** (replaces *Try the next related case*) | first pick, as before |
-| `retry-speaking` | "Second pass" pill + faculty-review badge; heading *Same skill, new reply*; the authored variation sentence verbatim; 20-second countdown | **Finish now** | nothing |
-| `retry-compare` | heading *Compare your second sentence*; same variation; the case's four authored lines | (choice group is the task) | nothing |
-| `retry-feedback` | heading *Second pass: <quality label>*; the chosen line's authored feedback; *First pass: <label>. Second pass: <label>.*; honesty line; collapsed *Keep, change, listen for* | **Finish practice** | nothing |
-| `finished` | setting pill + badge; heading *Practice loop complete*; honesty line | **Try the next related case** (+ secondary *Practice the second pass again*) | nothing |
+First pass: Orient →20-second speaking →comparison →authored feedback. Its selected choice
+alone retains the legacy cw_comm_v1 history and cw_srs_v1 COMM# scheduling behavior.
 
-Session-only is enforced in code, not by convention: `choose()` returns from the `RETRY_COMPARE`
-branch before `saveAttempt()` can run; no second-pass function references `saveAttempt`,
-`srsGradeCard`, or `localStorage`. Timer expiry advances either speaking phase to its comparison
-step. Changing the case, changing a filter during speaking, or reloading resets to Orient and
-clears the timer; a filter that still includes the current case can retain completed feedback.
-Native Back/Forward cache restoration resets an interrupted speaking phase to Orient as well,
-retaining persistent first-choice history without creating a grade. This also repairs the
-inherited first-pass timer freeze. Reload loses the second pass entirely.
+Pilot feedback offers Retry the same skill. The session-only loop is:
+retry-speaking →retry-compare →retry-feedback (first/second authored-choice comparison) →
+finished. Another second pass remains session-only. The retry branch selects from
+`secondPass.choices` and returns before saveAttempt; no second-pass function saves or grades.
 
-Honesty boundaries kept: feedback is about the authored line chosen; the tool states it compares
-"the two authored lines you chose, not your spoken words"; nothing claims to hear, grade speech,
-measure patient comprehension, or infer clinical success; no competence, readiness, streak, or
-ranking appears; the "Practiced well / Practiced / Retry / Review" navigator status still derives
-from the first pick only.
+The approved variation is retained verbatim. Second-pass c now corrects the Tuesday timing
+before re-asking. Its own authored feedback contains no repeated Retry instruction; visible
+feedback and its live announcement use the same selected second-pass record. First-pass c
+keeps its original complete feedback and Retry suffix. The exact new listen-for question
+is used for every second-pass choice; first-pass huddles remain unchanged.
 
-## 3. Exact-text review — every new learner-visible string
+Expiry advances either speaking phase to comparison. Case changes, filter changes during
+speaking, reload, and persisted native Back/Forward restore of interrupted speaking reset
+to Orient and clear timers/announcements. Filters retaining the current case can retain
+completed feedback; native cached completed feedback/finished states retain their state.
+Repeated pointer clicks cannot answer a newly rendered comparison; deliberate pointer
+and keyboard activation remain immediate. Both neutral storage strings remain truthful
+when first-pass persistence fails.
 
-The packet includes interface scaffolding and clinical/pedagogic presentation. The variation,
-choice text and feedback, include/avoid lists, and existing huddle prompt all render during the
-second pass. Verbatim reuse establishes provenance, not approval of their new teaching context.
-Josh owns the clinical/pedagogic decisions; no such wording is changed by the technical repairs.
+The tool's existing source manifest binds communication_cases.json in extraSources for both
+audiences. The data addition therefore affects the genuine content fingerprint; no review
+hash or attestation record is rewritten. Reopened warnings and live case badges remain visible.
+Validation checks both passes' unique choice IDs and exactly one best choice. Clinical review
+exports include both prompts, every option/rationale and listen-for text. Length-cue reporting
+also includes the second set, report-only with unchanged question-bank ratchets.
 
-| # | Where | Exact text | Note |
-| --- | --- | --- | --- |
-| 1 | feedback primary action (pilot only) | `Retry the same skill` | replaces `Try the next related case` on this case |
-| 2 | retry-speaking pill | `Second pass` | |
-| 3 | retry-speaking heading | `Same skill, new reply` | |
-| 4 | retry-speaking prompt | `Retry: he recalls the medication but says the appointment is "sometime next month." Re-explain without shaming, then re-ask.` | **authored, verbatim** (choice c feedback, trailing sentence); pinned by test |
-| 5 | retry-speaking task line | `Say one new first sentence aloud. Your browser does not listen or record.` | second sentence is the existing orient line |
-| 6 | retry-compare heading | `Compare your second sentence` | |
-| 7 | retry-compare legend | `Which line is closest to your second response?` | parallels existing legend |
-| 8 | retry-feedback heading | `Second pass: ` + existing quality label | |
-| 9 | retry-feedback comparison | `First pass: <label>. Second pass: <label>.` | labels are the existing four |
-| 10 | retry-feedback honesty line | `This compares the two authored lines you chose, not your spoken words.` | |
-| 11 | retry-feedback primary action | `Finish practice` | |
-| 12 | retry-feedback details summary | `Keep, change, listen for` | collapsed by default |
-| 13 | details headings | `Keep in your wording` / `Change in your wording` / `Listen for` / `Lines you chose` | bodies are the authored `rapidDrill.mustInclude`, `rapidDrill.avoid`, the existing tag-derived supervisor-huddle prompt, and the two chosen lines |
-| 14 | details closing line | `Nothing from this second pass is saved.` | technical correction: removes an unsupported first-history success claim when storage fails |
-| 15 | finished heading | `Practice loop complete` | |
-| 16 | finished body | `The second pass was not saved.` | technical correction: truthful even when first-pass storage fails |
-| 17 | finished secondary action | `Practice the second pass again` | not a primary action |
-| 18 | screen-reader announcements | `Second pass started. 20 seconds.` · `Practice loop complete.` | existing `Compare your sentence with the choices.` and the authored feedback are reused |
-| 19 | `[CLERKSHIP-META]` summary (head comment, not rendered) | `One pilot case (teach_back_closing_001) adds a session-only same-skill second pass that stores nothing.` | version 3.0 → 3.1 |
-| 20 | expanded chosen-line comparison | `First: ` / `Second: ` + the chosen authored text | previously omitted prefixes; clinical choice text remains unchanged |
-| 21 | expanded Listen for body | `After this line lands, what should I listen for next: safety, emotion, meaning, or alliance?` (best) / `If I revise this line, what should I listen for next: safety, emotion, meaning, or alliance?` (other qualities) | existing tag-derived huddle prompt; adequacy for this retry remains Josh's decision |
+## 3. Exact-text review
 
-**Known presentation wrinkle for Josh's call:** on the second pass, choosing line **c** again shows
-its authored feedback, which itself ends with the "Retry: …" sentence the learner has just acted on.
-The learner has already acted on that instruction, so repeating it next to Finish practice is a
-conflicting next instruction. No display correction is authorized yet. A narrower proposed
-alternative to new clinical feedback is documented below; the learner-facing feedback and its
-announcement still retain the full authored text.
+| # | Where | Exact text |
+| --- | --- | --- |
+| 1 | first-feedback pilot action | `Retry the same skill` |
+| 2 | retry-speaking pill | `Second pass` |
+| 3 | retry-speaking heading | `Same skill, new reply` |
+| 4 | retry-speaking prompt | `Retry: he recalls the medication but says the appointment is "sometime next month." Re-explain without shaming, then re-ask.` |
+| 5 | retry-speaking task | `Say one new first sentence aloud. Your browser does not listen or record.` |
+| 6 | retry-compare heading | `Compare your second sentence` |
+| 7 | retry-compare legend | `Which line is closest to your second response?` |
+| 8 | retry-feedback heading | `Second pass: ` + existing quality label |
+| 9 | selected-example comparison | `First pass: <label>. Second pass: <label>.` |
+| 10 | honesty line | `This compares the two authored lines you chose, not your spoken words.` |
+| 11 | retry-feedback action | `Finish practice` |
+| 12 | reflection summary | `Keep, change, listen for` |
+| 13 | reflection headings | `Keep in your wording` / `Change in your wording` / `Listen for` / `Lines you chose` |
+| 14 | reflection storage line | `Nothing from this second pass is saved.` |
+| 15 | finish heading | `Practice loop complete` |
+| 16 | finish body | `The second pass was not saved.` |
+| 17 | finish secondary action | `Practice the second pass again` |
+| 18 | announcements | `Second pass started. 20 seconds.` / `Practice loop complete.`; comparison announcement unchanged, feedback uses the exact selected rationale below |
+| 19 | non-rendered metadata summary | `One pilot case (teach_back_closing_001) adds a session-only same-skill second pass that stores nothing.` (version 3.2) |
+| 20 | selected-line prefixes | `First: ` / `Second: ` + actual authored selections |
+| 21 | second-pass listen-for | `Did the patient describe the appointment timing accurately? What still needs clarification?` |
 
-**NON-SHIPPED candidate — PENDING JOSH, not implemented:** in `retryFeedbackHtml()` and the
-retry branch's `choose()` announcement only, omit exactly the already-used variation suffix:
+The first prompt stays:
+> You just reviewed tomorrow's discharge plan: a new medication, a Tuesday follow-up appointment, and what to do if suicidal thoughts return. The patient says, "Yeah, yeah, I get it." What do you say next?
 
-`Retry: he recalls the medication but says the appointment is "sometime next month." Re-explain without shaming, then re-ask.`
+Second-pass authored choices and approved feedback:
 
-The exact remaining rationale would be:
+| ID / label | Exact response | Exact feedback |
+| --- | --- | --- |
+| a / Missed opportunity | Great. Do you understand everything? | A yes/no check does not show whether the patient now understands that the appointment is this Tuesday. |
+| b / Partly useful | Any questions before tomorrow? | Inviting questions still leaves the appointment misunderstanding uncorrected. Clarify the timing, then ask for it back in the patient's own words. |
+| c / Best next line | I may not have explained the timing clearly. Your appointment is this Tuesday. Can you tell me in your own words when it is, what medication you’ll take, and what you’ll do if those thoughts come back? | Best choice. You take responsibility for the unclear explanation, correct the appointment to this Tuesday, and ask for the plan back in the patient's own words, including the safety step. |
+| d / Avoid this line | If you don't follow this plan, you'll probably end up back here. | A threat does not correct the appointment misunderstanding. It adds shame rather than checking what the patient understood. |
 
-`Best choice. Teach-back tests your explanation, not the patient, and covers the safety step too.`
+Keep guidance stays exactly:
 
-Retain full first-pass feedback and the verbatim retry scenario. Canonical case JSON stays
-unchanged. If Josh approves this exact display change, pin both the suffix and prefix, visible
-feedback/announcement parity, and the word budgets. Until then, do not trim or ship the candidate.
+- Frame it as checking your explanation, not testing them
+- Ask for the plan back in their own words, including what they would do if the thoughts return
+- Re-explain any gap, then check again
 
-## 4. Open decisions (stop conditions honoured)
+Change guidance stays exactly:
 
-1. Review §3's interface wording and clinical/pedagogic presentation separately. Pending owner
-   decisions Q1–Q5 are: the variation in its new context; the same four original choices and
-   quality labels after the revealed appointment misunderstanding; the exact second-pass-only
-   suffix omission proposed above; the Keep/Change/Listen for guidance and headings; and the
-   adequacy of the exact generic huddle prompt. No answer or clinical approval is recorded.
-2. Whether the pilot should extend to other cases — requires an authored variation per case; none exists today, so none was invented.
-3. Re-attestation of `communication-practice.html` in the faculty console after merge (drift is expected and reported, never silent).
-4. Whether `teach_back_closing_001` itself moves out of `draft` — a separate review of the case text, not part of this change.
+- Yes/no checks such as 'Do you understand?' or a quizzing tone
 
-## 5. Validation performed / not performed
+The original first-pass c response/rationale remains unchanged in canonical data. The second
+best option is still uniquely longest (201 characters versus 36/30/64); this is an acknowledged
+practice-case teaching limitation, not a new assessment or an altered question-bank gate.
 
-Recorded in the PR body and the handoff README change-log entry: which checks passed, failed,
-were skipped, or were not run, with the exact commit. A green test is not clinical validation.
+## 4. Validation and delivery boundaries
 
-## 6. Three technical repairs (2026-10-01)
+Contract/schema/semantic/export tests cover data origin, exact approved strings, unchanged
+contrasts, invalid or foreign second-pass records, duplicate IDs/best-choice counts, complete
+review exports, and feedback budgets for all first/second choice pairs. Browser tests cover
+all second choices and visible/announced feedback parity, reflection, optional-data fallback,
+storage, keyboard, repeated clicks, expiry/interruptions, real native cache and unaffected cases.
 
-The pointer dispatcher ignores repeated choice clicks (`detail > 1`) so a double-click used to
-Finish cannot answer the newly rendered comparison. Keyboard activation (`detail: 0`) and a
-deliberate first pointer click remain immediate. Entries 14 and 16 remove unconditional claims
-that the first choice persisted; no persistence path or storage shape is changed. A persisted
-`pageshow` resets only interrupted first/retry speaking phases to Orient, clears the timer and
-announcement, and keeps existing first-choice history/SRS bytes. Completed feedback is retained.
+Native-cache tests use installed full Chromium with Playwright's cache-disabling flag removed
+and require persisted restoration; reload is not counted as cache coverage. Badge tests use
+controlled governance fixtures rather than depending on a live faculty queue. Desktop/mobile
+captures and both-audience/full verification supplement existing CI visual coverage.
 
-Regressions use a real pointer double-click, Enter/Space, quota and denied storage access, and
-native Back and Forward restores on both speaking phases. Native-cache tests launch the installed
-full Chromium with Playwright's cache-disabling flag removed, and require a real persisted
-pageshow rather than passing on a reload. The draft badge uses a controlled case fixture, so
-genuine faculty review cannot make the test fail. No browser dependency or visual baseline changed.
+The handoff records actual final head, passing/failing/skipped tests and CI results. A green
+test is not clinical validation, a renewed faculty signature or permission to merge.
