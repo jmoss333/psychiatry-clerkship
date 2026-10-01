@@ -45,8 +45,11 @@ LOCAL_FOR = {
     "meds": LOCAL / "pharmacy.json",
     "evidence": LOCAL / "evidence_registry.json",
     "screening_tools": LOCAL / "screening_tools.json",  # absent on purpose: no registry yet
+    "ebp": LOCAL / "therapies.json",  # absent on purpose: no registry yet
 }
 SCREENING_FIELDMAP = FIXTURES / "screening_tools_fieldmap.json"
+EBP_FIELDMAP = FIXTURES / "ebp_fieldmap.json"
+CUSTODIAN_SOURCES = HERE / "screening_tools" / "custodian_sources.json"
 CHECKER = HERE / "reconnect_fieldmap.py"
 SOURCE_REPOSITORY = "https://github.com/jmoss333/reconnect-psychiatry-system.git"
 GIT = shutil.which("git")
@@ -190,6 +193,11 @@ class ContractTests(unittest.TestCase):
             module.fieldmap_for("screening_tools"),
             ROOT / "13_Faculty_Resources/_automation/screening_tools/"
                    "reconnect_screening_tools_fieldmap.json",
+        )
+        self.assertEqual(module.default_local("ebp"), ROOT / "therapies.json")
+        self.assertEqual(
+            module.fieldmap_for("ebp"),
+            ROOT / "13_Faculty_Resources/_automation/therapies/reconnect_ebp_fieldmap.json",
         )
         self.assertIsNone(module.fieldmap_for("crisis"))
         self.assertIsNone(module.fieldmap_for("evidence"))
@@ -664,7 +672,7 @@ class FieldMapContractTests(unittest.TestCase):
             self.assertTrue(path.exists(), path)
 
     def test_fixture_maps_pass(self):
-        for path in (FIELDMAP, SCREENING_FIELDMAP):
+        for path in (FIELDMAP, SCREENING_FIELDMAP, EBP_FIELDMAP):
             self.assertEqual(
                 self.checker.check_fieldmap(json.loads(path.read_text(encoding="utf-8"))), [], path)
 
@@ -832,6 +840,105 @@ class ScreeningToolsTests(unittest.TestCase):
         self.assertEqual(report["conflicts"][0]["detail"], "medications[2] is gammatrol, not betamol")
         markdown = run_engine("meds", self.inventory, local=self.base / "absent.json").stdout
         self.assertIn("missing upstream (L fields from the label): deltanol", markdown)
+
+
+class EbpTests(unittest.TestCase):
+    """The third field-mapped dataset: the generalized adapter must need no engine change."""
+
+    def setUp(self):
+        self._temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self._temporary.cleanup)
+        self.base = Path(self._temporary.name)
+        self.inventory = empty_inventory(self.base)
+        self.no_local = self.base / "absent-therapies.json"
+
+    def report(self, *, reconnect=UPSTREAM, local=None, fmt="json"):
+        result = run_engine("ebp", self.inventory, reconnect=reconnect,
+                            local=local or self.no_local, fmt=fmt, fieldmap=EBP_FIELDMAP)
+        self.assertEqual(result.stderr, "")
+        return result.returncode, (json.loads(result.stdout) if fmt == "json" else result.stdout)
+
+    def test_without_a_registry_every_modality_is_a_candidate(self):
+        code, report = self.report()
+        self.assertEqual(code, 0)
+        self.assertEqual([item["id"] for item in report["added"]],
+                         ["fixture-modality", "fixtherapy-b", "fixtherapy-c"])
+        self.assertEqual(report["roster"], {"size": 3, "covered": 2,
+                                            "missingUpstream": ["fixtherapy-x"],
+                                            "phase2Pool": ["FixTherapy-C"]})
+        self.assertEqual([item["id"] for item in report["stale"]], ["fixtherapy-b"])
+        self.assertEqual(report["denylisted_upstream"],
+                         {"maine_availability": 3, "patient_profile": 3})
+        self.assertEqual(report["conflicts"], [])
+        _, markdown = self.report(fmt="md")
+        self.assertIn("(3 ebp_reference records)", markdown)
+        self.assertIn("missing upstream (facts from the cited guideline (NICE / APA / VA-DoD) "
+                      "or treatment manual): fixtherapy-x", markdown)
+
+    def test_carried_guideline_drift_is_reported(self):
+        local = self.base / "therapies.json"
+        local.write_text(json.dumps({"schemaVersion": 1, "records": [{
+            "id": "fixture-modality",
+            "provenance": {"reconnectRecords": ["ebp_reference[name=Fixture Modality]"],
+                           "carried": {"source": "OLD GUIDELINE", "evidence_level": "I"}},
+        }]}), encoding="utf-8")
+        code, report = self.report(local=local)
+        self.assertEqual(code, 1)
+        self.assertEqual([(c["field"], c["target"], c["after"]) for c in report["changed"]],
+                         [("source", "evidence.guideline", "FIXTURE GUIDELINE 1")])
+
+    def test_production_ebp_map_denylists_local_availability(self):
+        production = json.loads(
+            load_checker_module().PRODUCTION_FIELDMAPS["ebp"].read_text(encoding="utf-8"))
+        self.assertEqual(production["upstream"]["field"], "ebp_reference")
+        self.assertIn("maine_availability", production["denylist"])
+        self.assertIn("patient_profile", production["denylist"])
+        for key in ("key_components", "when_to_use", "contraindications_cautions"):
+            self.assertEqual(production["fieldMap"][key]["class"], "J-seed", key)
+        roster_ids = [entry["id"] for entry in production["phase1Roster"]]
+        self.assertEqual(len(roster_ids), len(set(roster_ids)))
+        for rid in ("cbt", "dbt", "fpe", "mi", "cbt-i", "supportive-psychotherapy",
+                    "safety-planning-intervention"):
+            self.assertIn(rid, roster_ids)
+
+
+class CustodianSourcesTests(unittest.TestCase):
+    """screening_tools/custodian_sources.json is where the scales' V-class facts get verified:
+    one entry per roster scale, PMIDs well-formed, nothing invented in place of a null."""
+
+    def setUp(self):
+        self.sources = json.loads(CUSTODIAN_SOURCES.read_text(encoding="utf-8"))
+        self.fieldmap = json.loads(
+            load_checker_module().PRODUCTION_FIELDMAPS["screening_tools"].read_text(encoding="utf-8"))
+
+    def test_one_entry_per_roster_scale_and_no_strays(self):
+        roster = {entry["id"] for entry in self.fieldmap["phase1Roster"]}
+        listed = [entry["id"] for entry in self.sources["entries"]]
+        self.assertEqual(len(listed), len(set(listed)), "duplicate source entries")
+        self.assertEqual(set(listed), roster)
+
+    def test_pmids_are_well_formed_and_citations_accompany_them(self):
+        for entry in self.sources["entries"]:
+            for key in ("primaryPmid", "cutoffPmid"):
+                pmid = entry.get(key)
+                self.assertTrue(pmid is None or (isinstance(pmid, str) and pmid.isdigit()),
+                                "%s %s=%r" % (entry["id"], key, pmid))
+            citation = entry.get("primaryCitation") or {}
+            if entry.get("primaryPmid"):
+                self.assertTrue(citation.get("firstAuthor") and citation.get("year") and citation.get("title"),
+                                "%s: a PMID needs its citation copied from PubMed" % entry["id"])
+            else:
+                self.assertTrue(entry.get("notes"), "%s: a null PMID must say why" % entry["id"])
+            self.assertIn(entry.get("urlStatus"), ("verified", "unverified"), entry["id"])
+            self.assertTrue(entry.get("custodianUrl", "").startswith("http"), entry["id"])
+
+    def test_rights_bound_scales_point_at_their_rights_entry(self):
+        rights = load_checker_module().rights_ids()
+        by_id = {entry["id"]: entry for entry in self.fieldmap["phase1Roster"]}
+        for entry in self.sources["entries"]:
+            rights_id = by_id[entry["id"]].get("rightsId")
+            if rights_id:
+                self.assertIn(rights_id, rights, entry["id"])
 
 
 if __name__ == "__main__":

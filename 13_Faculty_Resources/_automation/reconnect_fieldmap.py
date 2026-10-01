@@ -50,6 +50,7 @@ INSTRUMENT_RIGHTS = ROOT / "instrument_rights.json"
 PRODUCTION_FIELDMAPS = {
     "meds": HERE / "pharmacy" / "reconnect_meds_fieldmap.json",
     "screening_tools": HERE / "screening_tools" / "reconnect_screening_tools_fieldmap.json",
+    "ebp": HERE / "therapies" / "reconnect_ebp_fieldmap.json",
 }
 
 SCHEMA_VERSION = 1

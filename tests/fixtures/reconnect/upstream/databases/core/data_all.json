@@ -61,8 +61,97 @@
   ],
   "ebp_reference": [
     {
+      "_stale": false,
+      "audience": "Clinicians",
+      "content_type": "evidence_based_practice",
+      "schema_version": "2",
+      "source_confidence": "high",
+      "state": "national",
+      "target_audience": [
+        "clinician"
+      ],
+      "rss_layers": [
+        "L2"
+      ],
+      "safety_tier": "tier_2",
+      "verification_note": "fixture",
+      "update_rationale": "",
+      "patient_profile": "Fixture Persona",
+      "maine_availability": "Fixture availability",
       "name": "Fixture Modality",
-      "freshness_status": "green"
+      "title": "Fixture Modality Therapy",
+      "source": "FIXTURE GUIDELINE 1",
+      "evidence_level": "I",
+      "key_components": "Fixture components.",
+      "typical_sessions": "8-12",
+      "session_format": "Individual",
+      "when_to_use": "Fixture use.",
+      "contraindications_cautions": "Fixture caution.",
+      "symptom_cluster": "Mood",
+      "freshness_status": "green",
+      "last_verified_date": "2026-09-01"
+    },
+    {
+      "_stale": false,
+      "audience": "Clinicians",
+      "content_type": "evidence_based_practice",
+      "schema_version": "2",
+      "source_confidence": "high",
+      "state": "national",
+      "target_audience": [
+        "clinician"
+      ],
+      "rss_layers": [
+        "L2"
+      ],
+      "safety_tier": "tier_2",
+      "verification_note": "fixture",
+      "update_rationale": "",
+      "patient_profile": "Fixture Persona",
+      "maine_availability": "Fixture availability",
+      "name": "FixTherapy-B",
+      "title": "Fixture Therapy B",
+      "source": "FIXTURE GUIDELINE 1",
+      "evidence_level": "II",
+      "key_components": "Fixture components B.",
+      "typical_sessions": "12-20",
+      "session_format": "Individual, Group",
+      "when_to_use": "Fixture use B.",
+      "contraindications_cautions": "Fixture caution B.",
+      "symptom_cluster": "Anxiety",
+      "freshness_status": "red",
+      "last_verified_date": "2026-03-20"
+    },
+    {
+      "_stale": false,
+      "audience": "Clinicians",
+      "content_type": "evidence_based_practice",
+      "schema_version": "2",
+      "source_confidence": "high",
+      "state": "national",
+      "target_audience": [
+        "clinician"
+      ],
+      "rss_layers": [
+        "L2"
+      ],
+      "safety_tier": "tier_2",
+      "verification_note": "fixture",
+      "update_rationale": "",
+      "patient_profile": "Fixture Persona",
+      "maine_availability": "Fixture availability",
+      "name": "FixTherapy-C",
+      "title": "Fixture Therapy C",
+      "source": "FIXTURE GUIDELINE 2",
+      "evidence_level": "III",
+      "key_components": "Fixture components C.",
+      "typical_sessions": "6",
+      "session_format": "Group",
+      "when_to_use": "Fixture use C.",
+      "contraindications_cautions": "Fixture caution C.",
+      "symptom_cluster": "Substance",
+      "freshness_status": "green",
+      "last_verified_date": "2026-09-01"
     }
   ],
   "screening_tools": [

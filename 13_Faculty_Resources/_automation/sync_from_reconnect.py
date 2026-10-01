@@ -18,9 +18,10 @@ Datasets:
                                                                                byte-identical
   meds             data_all.json "medications"      vs pharmacy.json           keyed by generic
   screening_tools  data_all.json "screening_tools"  vs screening_tools.json    keyed by name
+  ebp              data_all.json "ebp_reference"    vs therapies.json          keyed by name
   evidence         staged-citations.json            vs evidence_registry.json  keyed by PMID/DOI
 
-A field-mapped dataset (meds, screening_tools) also reports field-map coverage, Phase-1 roster
+A field-mapped dataset (meds, screening_tools, ebp) also reports field-map coverage, Phase-1 roster
 coverage and carried-value drift. Its map and denylist come from the dataset's own
 reconnect_<dataset>_fieldmap.json (reconnect_fieldmap.PRODUCTION_FIELDMAPS), and the build-time
 validator for that registry reads the same file, so the denylist is stated once.
@@ -65,6 +66,8 @@ DATASETS = {
     "screening_tools": {"local": "screening_tools.json", "source": DATA_ALL,
                         "key": "screening_tools",
                         "fieldmap": PRODUCTION_FIELDMAPS["screening_tools"]},
+    "ebp": {"local": "therapies.json", "source": DATA_ALL, "key": "ebp_reference",
+            "fieldmap": PRODUCTION_FIELDMAPS["ebp"]},
     "evidence": {"local": "evidence_registry.json", "source": STAGED, "key": "staged"},
 }
 
@@ -125,12 +128,13 @@ def tool_id(record: dict) -> str:
 
 # How each dataset names an upstream record; None means the dataset is not keyed by row
 # (evidence is keyed by PMID / DOI) and gets no pinned-revision diff.
-IDENTITY = {"crisis": crisis_id, "meds": med_id, "screening_tools": tool_id}
+IDENTITY = {"crisis": crisis_id, "meds": med_id, "screening_tools": tool_id, "ebp": tool_id}
 
 # The roster's "missing upstream" line says where the missing records' facts come from instead.
 ROSTER_MISSING_MEANS = {
     "meds": "L fields from the label",
     "screening_tools": "facts from the custodian's own page or the cited psychometric paper",
+    "ebp": "facts from the cited guideline (NICE / APA / VA-DoD) or treatment manual",
 }
 
 
@@ -489,8 +493,8 @@ def evidence_sections(staged: list, local: dict, reconnect: Path) -> dict:
     data_all = reconnect / DATA_ALL
     if data_all.exists():
         modalities = read_json(data_all, "upstream").get("ebp_reference", [])
-        notes.append("ebp_reference: %d modality record(s) have no PMID/DOI and are not compared"
-                     % len(modalities))
+        notes.append("ebp_reference: %d modality record(s) have no PMID/DOI and are not compared "
+                     "here (see --dataset ebp)" % len(modalities))
     notes.append("pinned diff: not supported for evidence (keyed by PMID/DOI, not by index)")
     return {"added": sorted(added, key=lambda entry: (entry["pmid"], entry["doi"])),
             "conflicts": conflicts, "notes": notes}

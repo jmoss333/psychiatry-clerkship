@@ -1,0 +1,696 @@
+{
+  "schemaVersion": 1,
+  "description": "Where each Phase-1 roster scale's V-class facts get verified: the custodian / official form page and the PubMed-confirmed primary (development or validation) paper, plus a cutoff paper where one exists apart from it. The scales analogue of pharmacy/label_sources.json. Every primaryPmid was confirmed through PubMed on the generated date; a null PMID means the primary source is a manual or a paper PubMed does not index, never a guess. urlStatus 'unverified' and any rightsNote containing 'unverified' are human-review items before a registry record cites them. DRAFT until G0-S.",
+  "generated": "2026-09-30",
+  "entries": [
+    {
+      "id": "phq-9",
+      "name": "PHQ-9",
+      "custodianUrl": "https://www.phqscreeners.com/",
+      "urlStatus": "verified",
+      "primaryPmid": "11556941",
+      "primaryCitation": {
+        "firstAuthor": "Kroenke",
+        "year": 2001,
+        "title": "The PHQ-9: validity of a brief depression severity measure.",
+        "doi": "10.1046/j.1525-1497.2001.016009606.x"
+      },
+      "cutoffPmid": "22184363",
+      "cutoffCitation": {
+        "firstAuthor": "Manea",
+        "year": 2011,
+        "title": "Optimal cut-off score for diagnosing depression with the Patient Health Questionnaire (PHQ-9): a meta-analysis.",
+        "doi": "10.1503/cmaj.110829"
+      },
+      "rightsNote": "Free; Pfizer-copyrighted but no permission required to reproduce/translate/display (per phqscreeners.com). unverified wording on current site.",
+      "notes": "Cutoff >=10 is in the primary paper; Manea 2011 (CMAJ) meta-analysis supports 8-11 range."
+    },
+    {
+      "id": "phq-2",
+      "name": "PHQ-2",
+      "custodianUrl": "https://www.phqscreeners.com/",
+      "urlStatus": "verified",
+      "primaryPmid": "14583691",
+      "primaryCitation": {
+        "firstAuthor": "Kroenke",
+        "year": 2003,
+        "title": "The Patient Health Questionnaire-2: validity of a two-item depression screener.",
+        "doi": "10.1097/01.MLR.0000093487.78664.3C"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Free; same terms as PHQ-9 (Pfizer, no permission required). unverified wording on current site.",
+      "notes": "Cutoff >=3 established in primary paper."
+    },
+    {
+      "id": "qids-sr16",
+      "name": "QIDS-SR16",
+      "custodianUrl": "http://ids-qids.org/",
+      "urlStatus": "unverified",
+      "primaryPmid": "12946886",
+      "primaryCitation": {
+        "firstAuthor": "Rush",
+        "year": 2003,
+        "title": "The 16-Item Quick Inventory of Depressive Symptomatology (QIDS), clinician rating (QIDS-C), and self-report (QIDS-SR): a psychometric evaluation in patients with chronic major depression.",
+        "doi": "10.1016/s0006-3223(02)01866-8"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Public domain per ids-qids.org (UT Southwestern); QIDS-C also listed on Mapi ePROVIDE. unverified.",
+      "notes": "Site blocked by robots.txt; URL taken from web search."
+    },
+    {
+      "id": "madrs",
+      "name": "MADRS",
+      "custodianUrl": "https://eprovide.mapi-trust.org/instruments/montgomery-asberg-depression-rating-scale",
+      "urlStatus": "unverified",
+      "primaryPmid": "444788",
+      "primaryCitation": {
+        "firstAuthor": "Montgomery",
+        "year": 1979,
+        "title": "A new depression scale designed to be sensitive to change.",
+        "doi": "10.1192/bjp.134.4.382"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Published in Br J Psychiatry 1979 (RCPsych journal copyright); widely reproduced; licensed distribution via Mapi ePROVIDE for commercial use. unverified.",
+      "notes": "ePROVIDE page loaded but body not readable by fetcher."
+    },
+    {
+      "id": "bdi-ii",
+      "name": "BDI-II",
+      "custodianUrl": "https://www.pearsonassessments.com/store/usassessments/en/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Beck-Depression-Inventory/p/100000159.html",
+      "urlStatus": "verified",
+      "primaryPmid": "8991972",
+      "primaryCitation": {
+        "firstAuthor": "Beck",
+        "year": 1996,
+        "title": "Comparison of Beck Depression Inventories -IA and -II in psychiatric outpatients.",
+        "doi": "10.1207/s15327752jpa6703_13"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Licensed-commercial (Pearson); form may not be reproduced.",
+      "notes": "Primary source is the 1996 manual (no PMID); the 1996 J Pers Assess validation paper is recorded as nearest indexed development paper."
+    },
+    {
+      "id": "gds-15",
+      "name": "GDS-15",
+      "custodianUrl": "https://web.stanford.edu/~yesavage/GDS.html",
+      "urlStatus": "verified",
+      "primaryPmid": "7183759",
+      "primaryCitation": {
+        "firstAuthor": "Yesavage",
+        "year": 1982,
+        "title": "Development and validation of a geriatric depression screening scale: a preliminary report.",
+        "doi": "10.1016/0022-3956(82)90033-4"
+      },
+      "cutoffPmid": "10521885",
+      "cutoffCitation": {
+        "firstAuthor": "Almeida",
+        "year": 1999,
+        "title": "Short versions of the geriatric depression scale: a study of their validity for the diagnosis of a major depressive episode according to ICD-10 and DSM-IV.",
+        "doi": "10.1002/(sici)1099-1166(199910)14:10<858::aid-gps35>3.0.co;2-8"
+      },
+      "rightsNote": "Public domain (partly federally funded) per Yesavage Stanford page.",
+      "notes": "Sheikh & Yesavage 1986 (Clin Gerontol 5:165-173) describing the 15-item short form is NOT indexed in PubMed (search returned 0); recorded PMID is the 1982 GDS-30 parent paper. PubMed record lacks a publication-date year; 1982 taken from citation match (vol 17). Almeida 1999 validates GDS-15 cutoffs."
+    },
+    {
+      "id": "epds",
+      "name": "EPDS",
+      "custodianUrl": "https://doi.org/10.1192/bjp.150.6.782",
+      "urlStatus": "unverified",
+      "primaryPmid": "3651732",
+      "primaryCitation": {
+        "firstAuthor": "Cox",
+        "year": 1987,
+        "title": "Detection of postnatal depression. Development of the 10-item Edinburgh Postnatal Depression Scale.",
+        "doi": "10.1192/bjp.150.6.782"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Copyright Royal College of Psychiatrists (1987); may be reproduced without further permission if authors/title/source cited (per RCPsych notice on the scale). unverified.",
+      "notes": "No single canonical form page found; DOI of primary paper (Br J Psychiatry) used. RCPsych permissions page fetched but body unreadable. Cutoff (>=13; >=10 possible depression) in primary paper."
+    },
+    {
+      "id": "gad-7",
+      "name": "GAD-7",
+      "custodianUrl": "https://www.phqscreeners.com/",
+      "urlStatus": "verified",
+      "primaryPmid": "16717171",
+      "primaryCitation": {
+        "firstAuthor": "Spitzer",
+        "year": 2006,
+        "title": "A brief measure for assessing generalized anxiety disorder: the GAD-7.",
+        "doi": "10.1001/archinte.166.10.1092"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Free; Pfizer, no permission required (same as PHQ). unverified wording on current site.",
+      "notes": "Cutoff >=10 in primary paper."
+    },
+    {
+      "id": "gad-2",
+      "name": "GAD-2",
+      "custodianUrl": "https://www.phqscreeners.com/",
+      "urlStatus": "verified",
+      "primaryPmid": "17339617",
+      "primaryCitation": {
+        "firstAuthor": "Kroenke",
+        "year": 2007,
+        "title": "Anxiety disorders in primary care: prevalence, impairment, comorbidity, and detection.",
+        "doi": "10.7326/0003-4819-146-5-200703060-00004"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Free; same terms as GAD-7.",
+      "notes": "Primary paper is Kroenke 2007 Ann Intern Med (title does not name GAD-2 but introduces it); cutoff >=3."
+    },
+    {
+      "id": "pcl-5",
+      "name": "PCL-5",
+      "custodianUrl": "https://www.ptsd.va.gov/professional/assessment/adult-sr/ptsd-checklist.asp",
+      "urlStatus": "verified",
+      "primaryPmid": "26606250",
+      "primaryCitation": {
+        "firstAuthor": "Blevins",
+        "year": 2015,
+        "title": "The Posttraumatic Stress Disorder Checklist for DSM-5 (PCL-5): Development and Initial Psychometric Evaluation.",
+        "doi": "10.1002/jts.22059"
+      },
+      "cutoffPmid": "26653052",
+      "cutoffCitation": {
+        "firstAuthor": "Bovin",
+        "year": 2015,
+        "title": "Psychometric properties of the PTSD Checklist for Diagnostic and Statistical Manual of Mental Disorders-Fifth Edition (PCL-5) in veterans.",
+        "doi": "10.1037/pas0000254"
+      },
+      "rightsNote": "Public domain; developed by VA National Center for PTSD, not copyrighted (confirmed on page).",
+      "notes": "Bovin 2015/2016 Psychol Assess established cutoff 31-33 in veterans (PubMed year 2015 = epub)."
+    },
+    {
+      "id": "pc-ptsd-5",
+      "name": "PC-PTSD-5",
+      "custodianUrl": "https://www.ptsd.va.gov/professional/assessment/screens/pc-ptsd.asp",
+      "urlStatus": "verified",
+      "primaryPmid": "27170304",
+      "primaryCitation": {
+        "firstAuthor": "Prins",
+        "year": 2016,
+        "title": "The Primary Care PTSD Screen for DSM-5 (PC-PTSD-5): Development and Evaluation Within a Veteran Primary Care Sample.",
+        "doi": "10.1007/s11606-016-3703-5"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Public domain; VA National Center for PTSD, not copyrighted (confirmed on page).",
+      "notes": "Cutoff >=3 in primary paper."
+    },
+    {
+      "id": "audit",
+      "name": "AUDIT",
+      "custodianUrl": "https://www.who.int/publications/i/item/WHO-MSD-MSB-01.6a",
+      "urlStatus": "verified",
+      "primaryPmid": "8329970",
+      "primaryCitation": {
+        "firstAuthor": "Saunders",
+        "year": 1993,
+        "title": "Development of the Alcohol Use Disorders Identification Test (AUDIT): WHO Collaborative Project on Early Detection of Persons with Harmful Alcohol Consumption--II.",
+        "doi": "10.1111/j.1360-0443.1993.tb02093.x"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "WHO publication; free to use/reproduce for non-commercial purposes under WHO terms. unverified for commercial/EHR embedding.",
+      "notes": "Cutoff >=8 in primary paper / WHO manual."
+    },
+    {
+      "id": "audit-c",
+      "name": "AUDIT-C",
+      "custodianUrl": "https://www.ptsd.va.gov/professional/assessment/screens/audit-c.asp",
+      "urlStatus": "unverified",
+      "primaryPmid": "9738608",
+      "primaryCitation": {
+        "firstAuthor": "Bush",
+        "year": 1998,
+        "title": "The AUDIT alcohol consumption questions (AUDIT-C): an effective brief screening test for problem drinking. Ambulatory Care Quality Improvement Project (ACQUIP). Alcohol Use Disorders Identification Test.",
+        "doi": "10.1001/archinte.158.16.1789"
+      },
+      "cutoffPmid": "17451397",
+      "cutoffCitation": {
+        "firstAuthor": "Bradley",
+        "year": 2007,
+        "title": "AUDIT-C as a brief screen for alcohol misuse in primary care.",
+        "doi": "10.1111/j.1530-0277.2007.00403.x"
+      },
+      "rightsNote": "Derived from WHO AUDIT; VA-developed; freely reproducible. unverified.",
+      "notes": "Bradley 2007 established cutoffs (>=4 men, >=3 women). VA URL not fetched."
+    },
+    {
+      "id": "cage",
+      "name": "CAGE",
+      "custodianUrl": "https://www.uspreventiveservicestaskforce.org/Home/GetFileByID/838",
+      "urlStatus": "unverified",
+      "primaryPmid": "6471323",
+      "primaryCitation": {
+        "firstAuthor": "Ewing",
+        "year": 1984,
+        "title": "Detecting alcoholism. The CAGE questionnaire.",
+        "doi": "10.1001/jama.252.14.1905"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Copyright held by J.A. Ewing / UNC; widely reproduced with citation; permission requested for commercial use. unverified.",
+      "notes": "No official custodian page found; USPSTF-hosted copy used as public source. Cutoff >=2 in primary paper."
+    },
+    {
+      "id": "dast-10",
+      "name": "DAST-10",
+      "custodianUrl": "https://cde.nida.nih.gov/instrument/e9053390-ee9c-9140-e040-bb89ad433d69/module/e9053390-eea5-9140-e040-bb89ad433d69",
+      "urlStatus": "unverified",
+      "primaryPmid": "7183189",
+      "primaryCitation": {
+        "firstAuthor": "Skinner",
+        "year": 1982,
+        "title": "The drug abuse screening test.",
+        "doi": "10.1016/0306-4603(82)90005-3"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Copyright Harvey Skinner / CAMH; free for non-commercial clinical use with permission note; NIDA CTN hosts a copy. unverified.",
+      "notes": "NIDA CDE page not fetchable (DNS); URL from web search. Primary paper is the DAST-28 (1982); DAST-10 is a later abbreviation."
+    },
+    {
+      "id": "ciwa-ar",
+      "name": "CIWA-Ar",
+      "custodianUrl": "https://www.ci2i.research.va.gov/paws/pdfs/ciwa-ar.pdf",
+      "urlStatus": "verified",
+      "primaryPmid": "2597811",
+      "primaryCitation": {
+        "firstAuthor": "Sullivan",
+        "year": 1989,
+        "title": "Assessment of alcohol withdrawal: the revised clinical institute withdrawal assessment for alcohol scale (CIWA-Ar).",
+        "doi": "10.1111/j.1360-0443.1989.tb00737.x"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Not copyrighted; may be reproduced freely (statement on the form).",
+      "notes": "Severity bands (<10 / 10-18 / >18) are in the primary paper."
+    },
+    {
+      "id": "cows",
+      "name": "COWS",
+      "custodianUrl": "https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf",
+      "urlStatus": "unverified",
+      "primaryPmid": "12924748",
+      "primaryCitation": {
+        "firstAuthor": "Wesson",
+        "year": 2003,
+        "title": "The Clinical Opiate Withdrawal Scale (COWS).",
+        "doi": "10.1080/02791072.2003.10400007"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Free to reproduce; NIDA-hosted copy of Wesson & Ling form. unverified.",
+      "notes": "NIDA PDF not fetchable (robots); URL from web search. Severity bands in primary paper."
+    },
+    {
+      "id": "c-ssrs",
+      "name": "C-SSRS",
+      "custodianUrl": "https://cssrs.columbia.edu/",
+      "urlStatus": "verified",
+      "primaryPmid": "22193671",
+      "primaryCitation": {
+        "firstAuthor": "Posner",
+        "year": 2011,
+        "title": "The Columbia-Suicide Severity Rating Scale: initial validity and internal consistency findings from three multisite studies with adolescents and adults.",
+        "doi": "10.1176/appi.ajp.2011.10111704"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Free; copyright Research Foundation for Mental Hygiene; free training; permission form for use. unverified for EHR embedding.",
+      "notes": ""
+    },
+    {
+      "id": "asq",
+      "name": "ASQ",
+      "custodianUrl": "https://www.nimh.nih.gov/research/research-conducted-at-nimh/asq-toolkit-materials",
+      "urlStatus": "verified",
+      "primaryPmid": "23027429",
+      "primaryCitation": {
+        "firstAuthor": "Horowitz",
+        "year": 2012,
+        "title": "Ask Suicide-Screening Questions (ASQ): a brief instrument for the pediatric emergency department.",
+        "doi": "10.1001/archpediatrics.2012.1276"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Public domain (NIMH, US government work); free of charge (confirmed on page).",
+      "notes": ""
+    },
+    {
+      "id": "phq-9-item-9",
+      "name": "PHQ-9 item 9",
+      "custodianUrl": "https://www.phqscreeners.com/",
+      "urlStatus": "verified",
+      "primaryPmid": "11556941",
+      "primaryCitation": {
+        "firstAuthor": "Kroenke",
+        "year": 2001,
+        "title": "The PHQ-9: validity of a brief depression severity measure.",
+        "doi": "10.1046/j.1525-1497.2001.016009606.x"
+      },
+      "cutoffPmid": "24036589",
+      "cutoffCitation": {
+        "firstAuthor": "Simon",
+        "year": 2013,
+        "title": "Does response on the PHQ-9 Depression Questionnaire predict subsequent suicide attempt or suicide death?",
+        "doi": "10.1176/appi.ps.201200587"
+      },
+      "rightsNote": "Same as PHQ-9.",
+      "notes": "Not a standalone instrument; Simon 2013 (Psychiatr Serv) is the key paper on item-9 response predicting suicide attempt/death."
+    },
+    {
+      "id": "mdq",
+      "name": "MDQ",
+      "custodianUrl": "https://ibpf.org/wp-content/uploads/2016/11/MDQ.pdf",
+      "urlStatus": "unverified",
+      "primaryPmid": "11058490",
+      "primaryCitation": {
+        "firstAuthor": "Hirschfeld",
+        "year": 2000,
+        "title": "Development and validation of a screening instrument for bipolar spectrum disorder: the Mood Disorder Questionnaire.",
+        "doi": "10.1176/appi.ajp.157.11.1873"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Copyright Hirschfeld 2000; free to reproduce for clinical/educational use with citation. unverified.",
+      "notes": "No canonical custodian page found; IBPF-hosted copy used. Positive screen criteria (>=7 items + co-occurrence + moderate/serious problems) in primary paper."
+    },
+    {
+      "id": "ymrs",
+      "name": "YMRS",
+      "custodianUrl": "https://eprovide.mapi-trust.org/instruments/young-mania-rating-scale",
+      "urlStatus": "unverified",
+      "primaryPmid": "728692",
+      "primaryCitation": {
+        "firstAuthor": "Young",
+        "year": 1978,
+        "title": "A rating scale for mania: reliability, validity and sensitivity.",
+        "doi": "10.1192/bjp.133.5.429"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Published Br J Psychiatry 1978 (RCPsych journal); widely reproduced; licensed distribution via Mapi ePROVIDE. unverified.",
+      "notes": "ePROVIDE page body unreadable by fetcher."
+    },
+    {
+      "id": "asrm",
+      "name": "ASRM",
+      "custodianUrl": "https://doi.org/10.1016/S0006-3223(96)00548-3",
+      "urlStatus": "unverified",
+      "primaryPmid": "9359982",
+      "primaryCitation": {
+        "firstAuthor": "Altman",
+        "year": 1997,
+        "title": "The Altman Self-Rating Mania Scale.",
+        "doi": "10.1016/S0006-3223(96)00548-3"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Published in Biol Psychiatry 1997; author (Altman) generally permits free clinical use. unverified.",
+      "notes": "No custodian page found; DOI of primary paper used. Cutoff >=6 in primary paper."
+    },
+    {
+      "id": "bprs",
+      "name": "BPRS",
+      "custodianUrl": "https://eprovide.mapi-trust.org/instruments/brief-psychiatric-rating-scale",
+      "urlStatus": "unverified",
+      "primaryPmid": null,
+      "primaryCitation": null,
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Original 1962 scale widely treated as public domain; Mapi ePROVIDE lists an official BPRS. unverified.",
+      "notes": "Overall & Gorham 1962 (Psychol Rep 10:799-812) not indexed in PubMed (citation lookup NOT_FOUND; author search 0 hits). primaryPmid null."
+    },
+    {
+      "id": "aims",
+      "name": "AIMS",
+      "custodianUrl": "https://cde-fe.ninds.nih.gov/ninds/noc-report/F3001/Abnormal%20Involuntary%20Movement%20Scale%20(AIMS)",
+      "urlStatus": "unverified",
+      "primaryPmid": null,
+      "primaryCitation": null,
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Public domain (Guy 1976, ECDEU Assessment Manual, US DHEW/NIMH).",
+      "notes": "No PMID (ECDEU manual is not a journal article). NINDS CDE page is a JS app; could not confirm content. CMS URL tried returned 404."
+    },
+    {
+      "id": "bars",
+      "name": "BARS",
+      "custodianUrl": "https://eprovide.mapi-trust.org/instruments/barnes-akathisia-rating-scale",
+      "urlStatus": "unverified",
+      "primaryPmid": "2574607",
+      "primaryCitation": {
+        "firstAuthor": "Barnes",
+        "year": 1989,
+        "title": "A rating scale for drug-induced akathisia.",
+        "doi": "10.1192/bjp.154.5.672"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Published Br J Psychiatry 1989 (RCPsych journal); licensed via Mapi ePROVIDE; widely reproduced clinically. unverified.",
+      "notes": "ePROVIDE page body unreadable by fetcher."
+    },
+    {
+      "id": "simpson-angus",
+      "name": "Simpson-Angus Scale",
+      "custodianUrl": "https://doi.org/10.1111/j.1600-0447.1970.tb02066.x",
+      "urlStatus": "unverified",
+      "primaryPmid": "4917967",
+      "primaryCitation": {
+        "firstAuthor": "Simpson",
+        "year": 1970,
+        "title": "A rating scale for extrapyramidal side effects.",
+        "doi": "10.1111/j.1600-0447.1970.tb02066.x"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Published Acta Psychiatr Scand Suppl 1970; widely reproduced; copyright status unverified.",
+      "notes": "No custodian page found; DOI of primary paper used."
+    },
+    {
+      "id": "bfcrs",
+      "name": "BFCRS",
+      "custodianUrl": "https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale",
+      "urlStatus": "verified",
+      "primaryPmid": "8686483",
+      "primaryCitation": {
+        "firstAuthor": "Bush",
+        "year": 1996,
+        "title": "Catatonia. I. Rating scale and standardized examination.",
+        "doi": "10.1111/j.1600-0447.1996.tb09814.x"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Free; URMC hosts training manual, videos and calculator; scale published in Acta Psychiatr Scand 1996. unverified for reproduction rights.",
+      "notes": ""
+    },
+    {
+      "id": "moca",
+      "name": "MoCA",
+      "custodianUrl": "https://mocacognition.com/",
+      "urlStatus": "verified",
+      "primaryPmid": "15817019",
+      "primaryCitation": {
+        "firstAuthor": "Nasreddine",
+        "year": 2005,
+        "title": "The Montreal Cognitive Assessment, MoCA: a brief screening tool for mild cognitive impairment.",
+        "doi": "10.1111/j.1532-5415.2005.53221.x"
+      },
+      "cutoffPmid": "28731508",
+      "cutoffCitation": {
+        "firstAuthor": "Carson",
+        "year": 2017,
+        "title": "A re-examination of Montreal Cognitive Assessment (MoCA) cutoff scores.",
+        "doi": "10.1002/gps.4756"
+      },
+      "rightsNote": "Copyright Z. Nasreddine; certification/training required since 2019; licensing fees for some users (clinical use free with certification). unverified details.",
+      "notes": "Carson 2017/2018 meta-analysis proposes cutoff 23 vs original 26."
+    },
+    {
+      "id": "mmse",
+      "name": "MMSE",
+      "custodianUrl": "https://www.parinc.com/products/MMSE-2",
+      "urlStatus": "verified",
+      "primaryPmid": "1202204",
+      "primaryCitation": {
+        "firstAuthor": "Folstein",
+        "year": 1975,
+        "title": "\"Mini-mental state\". A practical method for grading the cognitive state of patients for the clinician.",
+        "doi": "10.1016/0022-3956(75)90026-6"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Licensed-commercial (PAR holds copyright to MMSE/MMSE-2); reproduction requires license.",
+      "notes": ""
+    },
+    {
+      "id": "cam",
+      "name": "CAM",
+      "custodianUrl": "https://help.agscocare.org/",
+      "urlStatus": "unverified",
+      "primaryPmid": "2240918",
+      "primaryCitation": {
+        "firstAuthor": "Inouye",
+        "year": 1990,
+        "title": "Clarifying confusion: the confusion assessment method. A new method for detection of delirium.",
+        "doi": "10.7326/0003-4819-113-12-941"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Copyright S.K. Inouye / Hospital Elder Life Program; free download after registration for clinical/non-commercial use; permission required for commercial use. unverified.",
+      "notes": "help.agscocare.org returned 403 to fetcher; hospitalelderlifeprogram.org page points there."
+    },
+    {
+      "id": "asrs-v1-1",
+      "name": "ASRS v1.1",
+      "custodianUrl": "https://www.hcp.med.harvard.edu/ncs/asrs.php",
+      "urlStatus": "verified",
+      "primaryPmid": "15841682",
+      "primaryCitation": {
+        "firstAuthor": "Kessler",
+        "year": 2005,
+        "title": "The World Health Organization Adult ADHD Self-Report Scale (ASRS): a short screening scale for use in the general population.",
+        "doi": "10.1017/s0033291704002892"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "6-item screener free, no formal permission needed (copyright WHO/NYU/Harvard; must cite Kessler 2005 and keep notice); 18-item and ASRS-5 require permission (confirmed on page).",
+      "notes": ""
+    },
+    {
+      "id": "msi-bpd",
+      "name": "MSI-BPD",
+      "custodianUrl": "https://doi.org/10.1521/pedi.17.6.568.25355",
+      "urlStatus": "unverified",
+      "primaryPmid": "14744082",
+      "primaryCitation": {
+        "firstAuthor": "Zanarini",
+        "year": 2003,
+        "title": "A screening measure for BPD: the McLean Screening Instrument for Borderline Personality Disorder (MSI-BPD).",
+        "doi": "10.1521/pedi.17.6.568.25355"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Copyright Zanarini / McLean Hospital; free for clinical and research use with citation. unverified.",
+      "notes": "No custodian page found; DOI of primary paper used. Cutoff >=7 in primary paper."
+    },
+    {
+      "id": "scoff",
+      "name": "SCOFF",
+      "custodianUrl": "https://doi.org/10.1136/bmj.319.7223.1467",
+      "urlStatus": "unverified",
+      "primaryPmid": "10582927",
+      "primaryCitation": {
+        "firstAuthor": "Morgan",
+        "year": 1999,
+        "title": "The SCOFF questionnaire: assessment of a new screening tool for eating disorders.",
+        "doi": "10.1136/bmj.319.7223.1467"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Published in BMJ 1999 (Morgan, Reid, Lacey); freely used with citation. unverified.",
+      "notes": "No custodian page found; DOI of primary paper used. Cutoff >=2 in primary paper."
+    },
+    {
+      "id": "isi",
+      "name": "ISI",
+      "custodianUrl": "https://eprovide.mapi-trust.org/isi-insomnia-severity-index/",
+      "urlStatus": "verified",
+      "primaryPmid": "11438246",
+      "primaryCitation": {
+        "firstAuthor": "Bastien",
+        "year": 2001,
+        "title": "Validation of the Insomnia Severity Index as an outcome measure for insomnia research.",
+        "doi": "10.1016/s1389-9457(00)00065-4"
+      },
+      "cutoffPmid": "21532953",
+      "cutoffCitation": {
+        "firstAuthor": "Morin",
+        "year": 2011,
+        "title": "The Insomnia Severity Index: psychometric indicators to detect insomnia cases and evaluate treatment response.",
+        "doi": "10.1093/sleep/34.5.601"
+      },
+      "rightsNote": "Copyright Charles Morin; distributed by Mapi Research Trust; free for academic/clinical use via ePROVIDE, licensed for commercial (confirmed on page).",
+      "notes": "Morin 2011 (Sleep) established severity cutoffs (>=10 community, >=11 clinical)."
+    },
+    {
+      "id": "stop-bang",
+      "name": "STOP-BANG",
+      "custodianUrl": "http://stopbang.ca/",
+      "urlStatus": "verified",
+      "primaryPmid": "18431116",
+      "primaryCitation": {
+        "firstAuthor": "Chung",
+        "year": 2008,
+        "title": "STOP questionnaire: a tool to screen patients for obstructive sleep apnea.",
+        "doi": "10.1097/ALN.0b013e31816d83e4"
+      },
+      "cutoffPmid": "22401881",
+      "cutoffCitation": {
+        "firstAuthor": "Chung",
+        "year": 2012,
+        "title": "High STOP-Bang score indicates a high probability of obstructive sleep apnoea.",
+        "doi": "10.1093/bja/aes022"
+      },
+      "rightsNote": "Copyright 2012 stopbang.ca (Chung, University Health Network); free for clinical/academic use, permission requested for commercial. unverified beyond footer.",
+      "notes": "Primary paper introduced STOP and STOP-Bang (Chung 2008 Anesthesiology); Chung 2012 BJA established >=5 high-probability threshold."
+    },
+    {
+      "id": "ess",
+      "name": "ESS",
+      "custodianUrl": "https://epworthsleepinessscale.com/",
+      "urlStatus": "verified",
+      "primaryPmid": "1798888",
+      "primaryCitation": {
+        "firstAuthor": "Johns",
+        "year": 1991,
+        "title": "A new method for measuring daytime sleepiness: the Epworth sleepiness scale.",
+        "doi": "10.1093/sleep/14.6.540"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Copyright Murray Johns; license required for all users, fees for some (confirmed on page); distributed via Mapi.",
+      "notes": "Cutoff >10 in primary paper."
+    },
+    {
+      "id": "cgi-s",
+      "name": "CGI-S",
+      "custodianUrl": "https://camcops.readthedocs.io/en/latest/tasks/cgi.html",
+      "urlStatus": "unverified",
+      "primaryPmid": null,
+      "primaryCitation": null,
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "Public domain (Guy 1976, ECDEU Assessment Manual for Psychopharmacology, US DHEW).",
+      "notes": "No PMID (ECDEU manual is not a journal article). No official custodian page; CamCOPS documentation page cited as a secondary reference. unverified."
+    },
+    {
+      "id": "whodas-2-0",
+      "name": "WHODAS 2.0",
+      "custodianUrl": "https://www.who.int/standards/classifications/international-classification-of-functioning-disability-and-health/who-disability-assessment-schedule",
+      "urlStatus": "verified",
+      "primaryPmid": "21076562",
+      "primaryCitation": {
+        "firstAuthor": "Ustün",
+        "year": 2010,
+        "title": "Developing the World Health Organization Disability Assessment Schedule 2.0.",
+        "doi": "10.2471/BLT.09.067231"
+      },
+      "cutoffPmid": null,
+      "cutoffCitation": null,
+      "rightsNote": "WHO copyright; licensing required for EHR/data-capture embedding or reproduction via WHO classifications licensing (confirmed on page).",
+      "notes": ""
+    }
+  ],
+  "status": "DRAFT — generated 2026-09-30; URL and rights review pending"
+}

@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "description": "Synthetic EBP field map for test_sync_from_reconnect.py. Same shape as 13_Faculty_Resources/_automation/therapies/reconnect_ebp_fieldmap.json; invented modalities only.",
+  "status": "fixture",
+  "upstream": {
+    "path": "databases/core/data_all.json",
+    "field": "ebp_reference",
+    "keyField": "name"
+  },
+  "classes": {
+    "V": "verifiable against the cited guideline (NICE / APA / VA-DoD) or the treatment manual (the analogue of the pharmacy's label-verifiable L class)",
+    "R": "ReConnect-inherited, hash-pinned",
+    "J-seed": "seed text for a faculty-judgment field; never shipped verbatim",
+    "meta": "provenance only, not carried as content"
+  },
+  "phase1Roster": [
+    {
+      "id": "fixture-modality",
+      "reconnectNames": [
+        "Fixture Modality"
+      ],
+      "group": "fixture"
+    },
+    {
+      "id": "fixtherapy-b",
+      "reconnectNames": [
+        "FixTherapy-B"
+      ],
+      "group": "fixture"
+    },
+    {
+      "id": "fixtherapy-x",
+      "reconnectNames": [
+        "FixTherapy-X"
+      ],
+      "group": "fixture",
+      "note": "missing upstream on purpose"
+    }
+  ],
+  "fieldMap": {
+    "name": {
+      "target": "id",
+      "class": "V"
+    },
+    "title": {
+      "target": "fullName",
+      "class": "V"
+    },
+    "source": {
+      "target": "evidence.guideline",
+      "class": "V"
+    },
+    "evidence_level": {
+      "target": "evidence.level",
+      "class": "V"
+    },
+    "typical_sessions": {
+      "target": "format.typicalSessions",
+      "class": "V"
+    },
+    "session_format": {
+      "target": "format.modalities",
+      "class": "V"
+    },
+    "symptom_cluster": {
+      "target": "domain",
+      "class": "R"
+    },
+    "target_audience": {
+      "target": "audienceTier",
+      "class": "R"
+    },
+    "safety_tier": {
+      "target": "safetyTier",
+      "class": "R"
+    },
+    "key_components": {
+      "target": "description.keyComponents",
+      "class": "J-seed"
+    },
+    "when_to_use": {
+      "target": "guidance.whenToUse",
+      "class": "J-seed"
+    },
+    "contraindications_cautions": {
+      "target": "guidance.cautions",
+      "class": "J-seed"
+    },
+    "_stale": {
+      "target": null,
+      "class": "meta"
+    },
+    "audience": {
+      "target": null,
+      "class": "meta"
+    },
+    "content_type": {
+      "target": null,
+      "class": "meta"
+    },
+    "freshness_status": {
+      "target": null,
+      "class": "meta"
+    },
+    "last_verified_date": {
+      "target": null,
+      "class": "meta"
+    },
+    "schema_version": {
+      "target": null,
+      "class": "meta"
+    },
+    "source_confidence": {
+      "target": null,
+      "class": "meta"
+    },
+    "verification_note": {
+      "target": null,
+      "class": "meta"
+    },
+    "update_rationale": {
+      "target": null,
+      "class": "meta"
+    },
+    "state": {
+      "target": null,
+      "class": "meta"
+    },
+    "rss_layers": {
+      "target": null,
+      "class": "meta"
+    }
+  },
+  "denylist": {
+    "patient_profile": "fixture: persona labels never carried",
+    "maine_availability": "fixture: local availability linked, never copied"
+  }
+}

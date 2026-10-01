@@ -1,0 +1,401 @@
+{
+  "schemaVersion": 1,
+  "description": "How ReConnect databases/core/data_all.json#ebp_reference maps onto therapies.json (the Psychotherapy & EBP registry, crossover brainstorm v2 item #13). Read by sync_from_reconnect.py --dataset ebp and by the registry's build-time validator once one exists. Every upstream key must appear in exactly one of fieldMap or denylist; an unclassified key is reported and fails the run (exit 1). The registry carries the modality, its guideline-graded evidence, format facts and re-authored guidance; local availability is linked, never copied.",
+  "status": "DRAFT — awaiting faculty gate G0-E (field triage) and roster ratification. Drafted 2026-09-30 from a direct read of the 56 upstream records (24 keys).",
+  "upstream": {
+    "path": "databases/core/data_all.json",
+    "field": "ebp_reference",
+    "keyField": "name"
+  },
+  "classes": {
+    "V": "verifiable against the cited guideline (NICE / APA / VA-DoD) or the treatment manual (the analogue of the pharmacy's label-verifiable L class)",
+    "R": "ReConnect-inherited, hash-pinned",
+    "J-seed": "seed text for a faculty-judgment field; never shipped verbatim",
+    "meta": "provenance only, not carried as content"
+  },
+  "phase1Roster": [
+    {
+      "id": "cbt",
+      "reconnectNames": [
+        "CBT"
+      ],
+      "group": "depression"
+    },
+    {
+      "id": "ipt",
+      "reconnectNames": [
+        "IPT"
+      ],
+      "group": "depression"
+    },
+    {
+      "id": "ba",
+      "reconnectNames": [
+        "BA"
+      ],
+      "group": "depression"
+    },
+    {
+      "id": "pst",
+      "reconnectNames": [
+        "PST"
+      ],
+      "group": "depression"
+    },
+    {
+      "id": "mbct",
+      "reconnectNames": [
+        "MBCT"
+      ],
+      "group": "depression"
+    },
+    {
+      "id": "cbasp",
+      "reconnectNames": [
+        "CBASP"
+      ],
+      "group": "depression"
+    },
+    {
+      "id": "ect",
+      "reconnectNames": [
+        "ECT"
+      ],
+      "group": "somatic",
+      "note": "somatic treatment carried here because ReConnect files it under ebp_reference; cross-link to the pharmacy's monitoring page"
+    },
+    {
+      "id": "cbt-gad",
+      "reconnectNames": [
+        "CBT-GAD"
+      ],
+      "group": "anxiety"
+    },
+    {
+      "id": "cbt-panic",
+      "reconnectNames": [
+        "CBT-Panic"
+      ],
+      "group": "anxiety"
+    },
+    {
+      "id": "exposure-therapy",
+      "reconnectNames": [
+        "Exposure Therapy"
+      ],
+      "group": "anxiety"
+    },
+    {
+      "id": "erp",
+      "reconnectNames": [
+        "ERP"
+      ],
+      "group": "ocd"
+    },
+    {
+      "id": "cpt",
+      "reconnectNames": [
+        "CPT"
+      ],
+      "group": "trauma"
+    },
+    {
+      "id": "pe",
+      "reconnectNames": [
+        "PE"
+      ],
+      "group": "trauma"
+    },
+    {
+      "id": "emdr",
+      "reconnectNames": [
+        "EMDR"
+      ],
+      "group": "trauma"
+    },
+    {
+      "id": "ipsrt",
+      "reconnectNames": [
+        "IPSRT"
+      ],
+      "group": "bipolar"
+    },
+    {
+      "id": "fft-bipolar",
+      "reconnectNames": [
+        "FFT-Bipolar"
+      ],
+      "group": "bipolar"
+    },
+    {
+      "id": "psychoeducation-bipolar",
+      "reconnectNames": [
+        "Psychoeducation-Bipolar"
+      ],
+      "group": "bipolar"
+    },
+    {
+      "id": "cbtp",
+      "reconnectNames": [
+        "CBTp"
+      ],
+      "group": "psychosis"
+    },
+    {
+      "id": "fpe",
+      "reconnectNames": [
+        "FPE"
+      ],
+      "group": "psychosis",
+      "note": "family psychoeducation: the modality the ReConnect thesis is built on"
+    },
+    {
+      "id": "navigate-csc",
+      "reconnectNames": [
+        "NAVIGATE/CSC"
+      ],
+      "group": "psychosis"
+    },
+    {
+      "id": "act-team",
+      "reconnectNames": [
+        "ACT-Team"
+      ],
+      "group": "psychosis"
+    },
+    {
+      "id": "mi",
+      "reconnectNames": [
+        "MI"
+      ],
+      "group": "substance"
+    },
+    {
+      "id": "cbt-sud",
+      "reconnectNames": [
+        "CBT-SUD"
+      ],
+      "group": "substance"
+    },
+    {
+      "id": "cm",
+      "reconnectNames": [
+        "CM"
+      ],
+      "group": "substance"
+    },
+    {
+      "id": "tsf",
+      "reconnectNames": [
+        "TSF"
+      ],
+      "group": "substance"
+    },
+    {
+      "id": "moud",
+      "reconnectNames": [
+        "MOUD"
+      ],
+      "group": "substance",
+      "note": "pharmacological; cross-link to buprenorphine / methadone / naltrexone pharmacy cards"
+    },
+    {
+      "id": "dbt",
+      "reconnectNames": [
+        "DBT"
+      ],
+      "group": "personality"
+    },
+    {
+      "id": "mbt",
+      "reconnectNames": [
+        "MBT"
+      ],
+      "group": "personality"
+    },
+    {
+      "id": "gpm",
+      "reconnectNames": [
+        "GPM"
+      ],
+      "group": "personality"
+    },
+    {
+      "id": "cbt-i",
+      "reconnectNames": [
+        "CBT-I"
+      ],
+      "group": "sleep"
+    },
+    {
+      "id": "fbt-maudsley",
+      "reconnectNames": [
+        "FBT/Maudsley"
+      ],
+      "group": "eating"
+    },
+    {
+      "id": "cbt-e",
+      "reconnectNames": [
+        "CBT-E"
+      ],
+      "group": "eating"
+    },
+    {
+      "id": "supportive-psychotherapy",
+      "reconnectNames": [
+        "Supportive Psychotherapy"
+      ],
+      "group": "inpatient-core",
+      "note": "expected missing upstream: the most-used inpatient modality"
+    },
+    {
+      "id": "brief-psychodynamic",
+      "reconnectNames": [
+        "Brief Psychodynamic Therapy",
+        "Psychodynamic Psychotherapy"
+      ],
+      "group": "inpatient-core",
+      "note": "expected missing upstream"
+    },
+    {
+      "id": "safety-planning-intervention",
+      "reconnectNames": [
+        "Safety Planning Intervention",
+        "Safety Plan"
+      ],
+      "group": "suicide-risk",
+      "rightsId": "stanley-brown",
+      "note": "expected missing upstream from ebp_reference (ReConnect files 'Safety Plan' under screening_tools); never programmed — rehearsal only (WP-06R-b)"
+    },
+    {
+      "id": "inpatient-group-therapy",
+      "reconnectNames": [
+        "Inpatient Group Therapy"
+      ],
+      "group": "inpatient-core",
+      "note": "expected missing upstream"
+    },
+    {
+      "id": "rtms",
+      "reconnectNames": [
+        "rTMS",
+        "TMS"
+      ],
+      "group": "somatic",
+      "note": "expected missing upstream"
+    }
+  ],
+  "fieldMap": {
+    "name": {
+      "target": "id",
+      "class": "V",
+      "note": "slug of the upstream short name is the registry id (cbt, dbt, navigate-csc)"
+    },
+    "title": {
+      "target": "fullName",
+      "class": "V",
+      "note": "the modality's expanded name"
+    },
+    "source": {
+      "target": "evidence.guideline",
+      "class": "V",
+      "note": "the guideline or registry the grade comes from (e.g. 'NICE NG222'); must resolve to a real, current document — the therapy analogue of the pharmacy's DailyMed label"
+    },
+    "evidence_level": {
+      "target": "evidence.level",
+      "class": "V",
+      "note": "ReConnect's I–IV grade, verified against the cited guideline's own recommendation strength; shown with the guideline named, never re-graded"
+    },
+    "typical_sessions": {
+      "target": "format.typicalSessions",
+      "class": "V",
+      "note": "a count or range as the manual/guideline states it"
+    },
+    "session_format": {
+      "target": "format.modalities",
+      "class": "V",
+      "note": "Individual / Group / Family / Telehealth as the manual states"
+    },
+    "symptom_cluster": {
+      "target": "domain",
+      "class": "R",
+      "note": "ReConnect cluster vocabulary; map to library topic slugs at authoring"
+    },
+    "target_audience": {
+      "target": "audienceTier",
+      "class": "R"
+    },
+    "safety_tier": {
+      "target": "safetyTier",
+      "class": "R"
+    },
+    "key_components": {
+      "target": "description.keyComponents",
+      "class": "J-seed",
+      "note": "the mechanism line; upstream text embeds outcome claims ('60-70% response') that need their own evidenceIds before shipping"
+    },
+    "when_to_use": {
+      "target": "guidance.whenToUse",
+      "class": "J-seed",
+      "note": "indication prose; re-authored under faculty review, quoted only from attested pages"
+    },
+    "contraindications_cautions": {
+      "target": "guidance.cautions",
+      "class": "J-seed",
+      "note": "safety-bearing prose: J under review, never carried verbatim"
+    },
+    "_stale": {
+      "target": null,
+      "class": "meta"
+    },
+    "audience": {
+      "target": null,
+      "class": "meta",
+      "note": "free-text duplicate of target_audience"
+    },
+    "content_type": {
+      "target": null,
+      "class": "meta",
+      "note": "always 'evidence_based_practice'"
+    },
+    "freshness_status": {
+      "target": null,
+      "class": "meta",
+      "note": "drives the STALE section"
+    },
+    "last_verified_date": {
+      "target": null,
+      "class": "meta"
+    },
+    "schema_version": {
+      "target": null,
+      "class": "meta"
+    },
+    "source_confidence": {
+      "target": null,
+      "class": "meta"
+    },
+    "verification_note": {
+      "target": null,
+      "class": "meta"
+    },
+    "update_rationale": {
+      "target": null,
+      "class": "meta"
+    },
+    "state": {
+      "target": null,
+      "class": "meta"
+    },
+    "rss_layers": {
+      "target": null,
+      "class": "meta",
+      "note": "ReConnect RSSM layer tags; not clerkship vocabulary"
+    }
+  },
+  "denylist": {
+    "patient_profile": "ReConnect persona labels are RSSM product vocabulary, not clinical facts; never shown to learners",
+    "maine_availability": "local availability is volatile and is a resource, not reference knowledge: local resources are linked, never copied (charter decision 2026-09-29, C5); the registry links to resource-finder instead"
+  }
+}
