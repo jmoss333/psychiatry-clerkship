@@ -292,7 +292,7 @@ test('the curriculum schema governs both care and external teaching resources', 
 
 const expectedBuilder = {
   id: 'supervised-resource-builder',
-  title: 'Build a printable resource page',
+  title: 'Build a specific resource handout',
   description: 'Choose a topic, broad area, and resource types, then review transparent ReConnect suggestions with a supervisor.',
   url: 'https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html',
 };
@@ -355,4 +355,15 @@ test('the builder cannot enter the three-item handout, QR drawer or copied links
   const sheet = html.slice(html.indexOf('<article'), html.indexOf('</article>'));
   assert.ok(!sheet.includes(expectedBuilder.url));
   assert.doesNotMatch(html, /data-fd-care-(?:pack|share)="supervised-resource-builder"/);
+});
+
+test('family preparation opens only the verified internal playbook when present', () => {
+  const index = F.fdBuildIndex(curriculum, {}, {}, {});
+  const html = F.fdCareNavigator(index, 'family-conversation');
+  assert.match(html, /data-fd-open="family_playbook.md"/);
+  assert.match(html, />Open Family Meeting Playbook<\/button>/);
+  assert.doesNotMatch(html, /Search.*family meeting/);
+  delete index.byRef['family_playbook.md'];
+  assert.doesNotMatch(F.fdCareNavigator(index, 'family-conversation'), /data-fd-open=/);
+  assert.doesNotMatch(F.fdCareNavigator(index, 'services'), /data-fd-open=/);
 });

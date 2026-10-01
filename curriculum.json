@@ -357,7 +357,7 @@
   ],
   "careBuilder": {
     "id": "supervised-resource-builder",
-    "title": "Build a printable resource page",
+    "title": "Build a specific resource handout",
     "description": "Choose a topic, broad area, and resource types, then review transparent ReConnect suggestions with a supervisor.",
     "url": "https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html"
   },
@@ -400,7 +400,7 @@
     {
       "id": "family-conversation",
       "label": "Prepare for a family conversation",
-      "explanation": "Plain-language material to share with the family. Preparing yourself? Search “family meeting” for the Family Meeting Playbook.",
+      "explanation": "Plain-language material to share with the family. For your own preparation, use the Family Meeting Playbook below.",
       "primaryResourceId": "education-library",
       "alternativeResourceIds": ["book-shelf", "podcast-navigator"]
     }
