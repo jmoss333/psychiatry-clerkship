@@ -200,6 +200,11 @@ def measure_cases(doc):
         cid = case.get("id") or "<case with no id>"
         if "choices" in case:
             sets.append(_choice_set(cid, case["choices"], "text", is_best))
+        if "secondPass" in case:
+            second = case["secondPass"]
+            sets.append(_choice_set(f"{cid}/secondPass",
+                                    second.get("choices") if isinstance(second, dict) else None,
+                                    "text", is_best))
         for step in case.get("steps") or []:
             if isinstance(step, dict) and "choices" in step:
                 label = f"{cid}/{step.get('id')}"
@@ -558,6 +563,17 @@ def self_test():
         r = measure_cases(cases)
         expect("case choice sets: 1 of 2 cue (choices and steps[].choices)",
                (r["flagged_n"], r["n"]) == (1, 2) and r["flagged"] == ["comm_1"])
+        cases["cases"][0]["secondPass"] = {"choices": [
+            {"id": "a", "text": "short", "quality": "missed"},
+            {"id": "b", "text": "the best, longest retry", "quality": "best"}]}
+        r = measure_cases(cases)
+        expect("second-pass choice sets are measured and labelled separately",
+               (r["flagged_n"], r["n"]) == (2, 3)
+               and r["flagged"] == ["comm_1", "comm_1/secondPass"])
+        cases["cases"][0]["secondPass"] = None
+        r = measure_cases(cases)
+        expect("malformed second pass is named unmeasurable, never silently skipped",
+               r["unmeasurable"] == ["comm_1/secondPass"])
     except Exception as e:
         expect(f"report-only measures run ({type(e).__name__}: {e})", False)
     rc, out = run(_FX, pinned, report=[("topic_meta.json quizzes", None, "unreadable: boom")])
