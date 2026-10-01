@@ -1,0 +1,842 @@
+{
+  "schemaVersion": 1,
+  "description": "Where each Phase-1 roster modality's V-class facts get verified: the guideline or manual ReConnect cites, resolved to a current document and URL, and ONE PubMed-confirmed key RCT, meta-analysis or Cochrane review for the modality's primary indication. The therapies analogue of pharmacy/label_sources.json and screening_tools/custodian_sources.json. Every keyEvidencePmid was confirmed through PubMed on the generated date; a null means PubMed does not index the paper, never a guess. evidenceType 'cohort-comparison' marks the one entry (Safety Planning Intervention, Stanley 2018) whose key evidence is not randomized. DRAFT until G0-E.",
+  "generated": "2026-09-30",
+  "entries": [
+    {
+      "id": "cbt",
+      "upstreamSource": "NICE NG222",
+      "guideline": {
+        "id": "NG222",
+        "title": "Depression in adults: treatment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng222",
+        "urlStatus": "verified",
+        "year": 2022
+      },
+      "keyEvidencePmid": "36640411",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Cuijpers",
+        "year": 2023,
+        "title": "Cognitive behavior therapy vs. control conditions, other psychotherapies, pharmacotherapies and combined treatment for depression: a comprehensive meta-analysis including 409 trials with 52,702 patients.",
+        "doi": "10.1002/wps.21069",
+        "journal": "World Psychiatry"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Substitution: hint was generic 'Cuijpers CBT meta'; used the 2023 World Psychiatry comprehensive meta-analysis (largest, most current). g=0.79 vs control."
+    },
+    {
+      "id": "ipt",
+      "upstreamSource": "NICE NG222",
+      "guideline": {
+        "id": "NG222",
+        "title": "Depression in adults: treatment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng222",
+        "urlStatus": "verified",
+        "year": 2022
+      },
+      "keyEvidencePmid": "21362740",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Cuijpers",
+        "year": 2011,
+        "title": "Interpersonal psychotherapy for depression: a meta-analysis.",
+        "doi": "10.1176/appi.ajp.2010.10101411",
+        "journal": "Am J Psychiatry"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Alternate (PubMed-confirmed): Cuijpers 2016 Am J Psychiatry comprehensive IPT meta-analysis, PMID 27032627."
+    },
+    {
+      "id": "ba",
+      "upstreamSource": "NICE NG222",
+      "guideline": {
+        "id": "NG222",
+        "title": "Depression in adults: treatment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng222",
+        "urlStatus": "verified",
+        "year": 2022
+      },
+      "keyEvidencePmid": "24936656",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Ekers",
+        "year": 2014,
+        "title": "Behavioural activation for depression; an update of meta-analysis of effectiveness and sub group analysis.",
+        "doi": "10.1371/journal.pone.0100100",
+        "journal": "PLoS One"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Substitution: hint was Cuijpers BA meta (2007); used Ekers 2014 updated meta-analysis (more current, PubMed-confirmed)."
+    },
+    {
+      "id": "pst",
+      "upstreamSource": "NICE NG222",
+      "guideline": {
+        "id": "NG222",
+        "title": "Depression in adults: treatment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng222",
+        "urlStatus": "verified",
+        "year": 2022
+      },
+      "keyEvidencePmid": "29331596",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Cuijpers",
+        "year": 2018,
+        "title": "Problem-solving therapy for adult depression: An updated meta-analysis.",
+        "doi": "10.1016/j.eurpsy.2017.11.006",
+        "journal": "Eur Psychiatry"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Matches hint (Cuijpers PST meta, updated 2018)."
+    },
+    {
+      "id": "mbct",
+      "upstreamSource": "NICE NG222",
+      "guideline": {
+        "id": "NG222",
+        "title": "Depression in adults: treatment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng222",
+        "urlStatus": "verified",
+        "year": 2022
+      },
+      "keyEvidencePmid": "27119968",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Kuyken",
+        "year": 2016,
+        "title": "Efficacy of Mindfulness-Based Cognitive Therapy in Prevention of Depressive Relapse: An Individual Patient Data Meta-analysis From Randomized Trials.",
+        "doi": "10.1001/jamapsychiatry.2016.0076",
+        "journal": "JAMA Psychiatry"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Matches hint. Primary indication = relapse prevention in recurrent depression."
+    },
+    {
+      "id": "cbasp",
+      "upstreamSource": "NICE NG222",
+      "guideline": {
+        "id": "NG222",
+        "title": "Depression in adults: treatment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng222",
+        "urlStatus": "verified",
+        "year": 2022
+      },
+      "keyEvidencePmid": "10816183",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Keller",
+        "year": 2000,
+        "title": "A comparison of nefazodone, the cognitive behavioral-analysis system of psychotherapy, and their combination for the treatment of chronic depression.",
+        "doi": "10.1056/NEJM200005183422001",
+        "journal": "N Engl J Med"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint. Chronic depression; combination > either monotherapy."
+    },
+    {
+      "id": "ect",
+      "upstreamSource": "NICE NG222 (also NICE TA59)",
+      "guideline": {
+        "id": "NG222",
+        "title": "Depression in adults: treatment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng222",
+        "urlStatus": "verified",
+        "year": 2022
+      },
+      "secondaryGuideline": {
+        "id": "TA59",
+        "title": "Guidance on the use of electroconvulsive therapy",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ta59",
+        "urlStatus": "verified",
+        "year": 2003
+      },
+      "keyEvidencePmid": "12642045",
+      "keyEvidenceCitation": {
+        "firstAuthor": "UK ECT Review Group",
+        "year": 2003,
+        "title": "Efficacy and safety of electroconvulsive therapy in depressive disorders: a systematic review and meta-analysis.",
+        "doi": "10.1016/S0140-6736(03)12705-5",
+        "journal": "Lancet"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Matches hint. PubMed record has a collective author (no individual first author); firstAuthor set to the group name."
+    },
+    {
+      "id": "cbt-gad",
+      "upstreamSource": "NICE CG113",
+      "guideline": {
+        "id": "CG113",
+        "title": "Generalised anxiety disorder and panic disorder in adults: management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/cg113",
+        "urlStatus": "verified",
+        "year": 2011
+      },
+      "keyEvidencePmid": "24487344",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Cuijpers",
+        "year": 2014,
+        "title": "Psychological treatment of generalized anxiety disorder: a meta-analysis.",
+        "doi": "10.1016/j.cpr.2014.01.002",
+        "journal": "Clin Psychol Rev"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Matches hint (Cuijpers GAD meta). CG113 page confirms 2011 guideline, last update 2020."
+    },
+    {
+      "id": "cbt-panic",
+      "upstreamSource": "NICE CG113",
+      "guideline": {
+        "id": "CG113",
+        "title": "Generalised anxiety disorder and panic disorder in adults: management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/cg113",
+        "urlStatus": "verified",
+        "year": 2011
+      },
+      "keyEvidencePmid": "27071857",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Pompoli",
+        "year": 2016,
+        "title": "Psychological therapies for panic disorder with or without agoraphobia in adults: a network meta-analysis.",
+        "doi": "10.1002/14651858.CD011004.pub2",
+        "journal": "Cochrane Database Syst Rev"
+      },
+      "evidenceType": "cochrane-review",
+      "notes": "Matches hint."
+    },
+    {
+      "id": "exposure-therapy",
+      "upstreamSource": "NICE CG113",
+      "guideline": {
+        "id": "CG113",
+        "title": "Generalised anxiety disorder and panic disorder in adults: management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/cg113",
+        "urlStatus": "verified",
+        "year": 2011
+      },
+      "keyEvidencePmid": "18410984",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Wolitzky-Taylor",
+        "year": 2008,
+        "title": "Psychological approaches in the treatment of specific phobias: a meta-analysis.",
+        "doi": "10.1016/j.cpr.2008.02.007",
+        "journal": "Clin Psychol Rev"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Matches hint. Caveat: CG113 covers GAD/panic, not specific phobia; NICE has no dedicated specific-phobia guideline, so upstream mapping is approximate."
+    },
+    {
+      "id": "erp",
+      "upstreamSource": "APA — Kozak & Foa (also NICE CG31)",
+      "guideline": {
+        "id": "SCP-ERP-OCD",
+        "title": "Exposure and Response Prevention for Obsessive-Compulsive Disorder",
+        "publisher": "APA Division 12 (Society of Clinical Psychology)",
+        "url": "https://societyofclinicalpsychology.org/psychological-treatments/exposure-and-response-prevention-for-obsessive-compulsive-disorder/",
+        "urlStatus": "verified",
+        "year": null
+      },
+      "secondaryGuideline": {
+        "id": "CG31",
+        "title": "Obsessive-compulsive disorder and body dysmorphic disorder: treatment",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/cg31",
+        "urlStatus": "verified",
+        "year": 2005
+      },
+      "keyEvidencePmid": "22999486",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Olatunji",
+        "year": 2013,
+        "title": "Cognitive-behavioral therapy for obsessive-compulsive disorder: a meta-analysis of treatment outcome and moderators.",
+        "doi": "10.1016/j.jpsychires.2012.08.020",
+        "journal": "J Psychiatr Res"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Source type: Div 12 Psychological Treatments page (div12.org/treatments now redirects to societyofclinicalpsychology.org). Epub 2012; vol 47(1) 2013. Alt RCT (PubMed-confirmed): Foa 2005 Am J Psychiatry ERP vs clomipramine, PMID 15625214, doi 10.1176/appi.ajp.162.1.151."
+    },
+    {
+      "id": "cpt",
+      "upstreamSource": "APA — Resick & Schnicke (also NICE NG116)",
+      "guideline": {
+        "id": "SCP-CPT-PTSD",
+        "title": "Cognitive Processing Therapy for Post-Traumatic Stress Disorder",
+        "publisher": "APA Division 12 (Society of Clinical Psychology)",
+        "url": "https://societyofclinicalpsychology.org/psychological-treatments/cognitive-processing-therapy-for-post-traumatic-stress-disorder/",
+        "urlStatus": "verified",
+        "year": null
+      },
+      "secondaryGuideline": {
+        "id": "NG116",
+        "title": "Post-traumatic stress disorder",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng116",
+        "urlStatus": "verified",
+        "year": 2018
+      },
+      "keyEvidencePmid": "12182270",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Resick",
+        "year": 2002,
+        "title": "A comparison of cognitive-processing therapy with prolonged exposure and a waiting condition for the treatment of chronic posttraumatic stress disorder in female rape victims.",
+        "doi": "10.1037//0022-006x.70.4.867",
+        "journal": "J Consult Clin Psychol"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint. Manual publisher page (Guilford, CPT for PTSD 2nd ed., Resick/Monson/Chard) verified: https://www.guilford.com/books/Cognitive-Processing-Therapy-for-PTSD/Resick-Monson-Chard/9781462554270"
+    },
+    {
+      "id": "pe",
+      "upstreamSource": "NICE NG116",
+      "guideline": {
+        "id": "NG116",
+        "title": "Post-traumatic stress disorder",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng116",
+        "urlStatus": "verified",
+        "year": 2018
+      },
+      "keyEvidencePmid": "20546985",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Powers",
+        "year": 2010,
+        "title": "A meta-analytic review of prolonged exposure for posttraumatic stress disorder.",
+        "doi": "10.1016/j.cpr.2010.04.007",
+        "journal": "Clin Psychol Rev"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Matches hint (Powers 2010). Div 12 PE page also exists (verified): https://societyofclinicalpsychology.org/psychological-treatments/prolonged-exposure-therapy-for-post-traumatic-stress-disorder/"
+    },
+    {
+      "id": "emdr",
+      "upstreamSource": "APA — Shapiro (also NICE NG116)",
+      "guideline": {
+        "id": "SCP-EMDR-PTSD",
+        "title": "Eye Movement Desensitization and Reprocessing for Post-Traumatic Stress Disorder",
+        "publisher": "APA Division 12 (Society of Clinical Psychology)",
+        "url": "https://societyofclinicalpsychology.org/psychological-treatments/eye-movement-desensitization-and-reprocessing-for-post-traumatic-stress-disorder/",
+        "urlStatus": "verified",
+        "year": null
+      },
+      "secondaryGuideline": {
+        "id": "NG116",
+        "title": "Post-traumatic stress disorder",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng116",
+        "urlStatus": "verified",
+        "year": 2018
+      },
+      "keyEvidencePmid": "24338345",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Bisson",
+        "year": 2013,
+        "title": "Psychological therapies for chronic post-traumatic stress disorder (PTSD) in adults.",
+        "doi": "10.1002/14651858.CD003388.pub4",
+        "journal": "Cochrane Database Syst Rev"
+      },
+      "evidenceType": "cochrane-review",
+      "notes": "Matches hint. Manual publisher page (Guilford, Shapiro EMDR 3rd ed.) verified: https://www.guilford.com/books/Eye-Movement-Desensitization-and-Reprocessing-EMDR-Therapy/Francine-Shapiro/9781462532766"
+    },
+    {
+      "id": "ipsrt",
+      "upstreamSource": "NICE CG185",
+      "guideline": {
+        "id": "CG185",
+        "title": "Bipolar disorder: assessment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/cg185",
+        "urlStatus": "verified",
+        "year": 2014
+      },
+      "keyEvidencePmid": "16143731",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Frank",
+        "year": 2005,
+        "title": "Two-year outcomes for interpersonal and social rhythm therapy in individuals with bipolar I disorder.",
+        "doi": "10.1001/archpsyc.62.9.996",
+        "journal": "Arch Gen Psychiatry"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint. CG185 page confirms update Feb 2016."
+    },
+    {
+      "id": "fft-bipolar",
+      "upstreamSource": "NICE CG185",
+      "guideline": {
+        "id": "CG185",
+        "title": "Bipolar disorder: assessment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/cg185",
+        "urlStatus": "verified",
+        "year": 2014
+      },
+      "keyEvidencePmid": "12963672",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Miklowitz",
+        "year": 2003,
+        "title": "A randomized study of family-focused psychoeducation and pharmacotherapy in the outpatient management of bipolar disorder.",
+        "doi": "10.1001/archpsyc.60.9.904",
+        "journal": "Arch Gen Psychiatry"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint (Miklowitz 2003; HR 0.38 for relapse). Rea 2003 JCCP FFT trial (PMID 12795572) is a separate RCT, not used."
+    },
+    {
+      "id": "psychoeducation-bipolar",
+      "upstreamSource": "NICE CG185",
+      "guideline": {
+        "id": "CG185",
+        "title": "Bipolar disorder: assessment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/cg185",
+        "urlStatus": "verified",
+        "year": 2014
+      },
+      "keyEvidencePmid": "12695318",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Colom",
+        "year": 2003,
+        "title": "A randomized trial on the efficacy of group psychoeducation in the prophylaxis of recurrences in bipolar patients whose disease is in remission.",
+        "doi": "10.1001/archpsyc.60.4.402",
+        "journal": "Arch Gen Psychiatry"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint."
+    },
+    {
+      "id": "cbtp",
+      "upstreamSource": "NICE CG178",
+      "guideline": {
+        "id": "CG178",
+        "title": "Psychosis and schizophrenia in adults: prevention and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/cg178",
+        "urlStatus": "verified",
+        "year": 2014
+      },
+      "keyEvidencePmid": "24385461",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Jauhar",
+        "year": 2014,
+        "title": "Cognitive-behavioural therapy for the symptoms of schizophrenia: systematic review and meta-analysis with examination of potential bias.",
+        "doi": "10.1192/bjp.bp.112.116285",
+        "journal": "Br J Psychiatry"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Matches hint (Jauhar 2014). Note: effect sizes small and attenuated by bias-adjustment; useful for teaching critical appraisal."
+    },
+    {
+      "id": "fpe",
+      "upstreamSource": "NICE CG178",
+      "guideline": {
+        "id": "CG178",
+        "title": "Psychosis and schizophrenia in adults: prevention and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/cg178",
+        "urlStatus": "verified",
+        "year": 2014
+      },
+      "keyEvidencePmid": "21154340",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Pharoah",
+        "year": 2010,
+        "title": "Family intervention for schizophrenia.",
+        "doi": "10.1002/14651858.CD000088.pub2",
+        "journal": "Cochrane Database Syst Rev"
+      },
+      "evidenceType": "cochrane-review",
+      "notes": "Substitution: hint listed McFarlane 2003; that paper (PMID 12728780, J Marital Fam Ther, doi 10.1111/j.1752-0606.2003.tb01202.x) is a narrative review, so Pharoah 2010 Cochrane is used as key quantitative evidence and McFarlane 2003 is kept here as the model's descriptive source."
+    },
+    {
+      "id": "navigate-csc",
+      "upstreamSource": "SAMHSA/NIMH — RAISE",
+      "guideline": {
+        "id": "NIMH-RAISE",
+        "title": "Recovery After an Initial Schizophrenia Episode (RAISE)",
+        "publisher": "NIMH",
+        "url": "https://www.nimh.nih.gov/health/topics/schizophrenia/raise",
+        "urlStatus": "verified",
+        "year": null
+      },
+      "keyEvidencePmid": "26481174",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Kane",
+        "year": 2016,
+        "title": "Comprehensive Versus Usual Community Care for First-Episode Psychosis: 2-Year Outcomes From the NIMH RAISE Early Treatment Program.",
+        "doi": "10.1176/appi.ajp.2015.15050632",
+        "journal": "Am J Psychiatry"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint. Cluster-randomized trial; epub Oct 2015, vol 173(4) 2016. NIMH page describes coordinated specialty care but does not use the term NAVIGATE on the overview page."
+    },
+    {
+      "id": "act-team",
+      "upstreamSource": "SAMHSA EBP Kit",
+      "guideline": {
+        "id": "SMA08-4344",
+        "title": "Assertive Community Treatment (ACT) Evidence-Based Practices (EBP) KIT",
+        "publisher": "SAMHSA",
+        "url": "https://library.samhsa.gov/product/assertive-community-treatment-act-evidence-based-practices-ebp-kit/sma08-4344",
+        "urlStatus": "verified",
+        "year": 2008
+      },
+      "keyEvidencePmid": "28067944",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Dieterich",
+        "year": 2017,
+        "title": "Intensive case management for severe mental illness.",
+        "doi": "10.1002/14651858.CD007906.pub3",
+        "journal": "Cochrane Database Syst Rev"
+      },
+      "evidenceType": "cochrane-review",
+      "notes": "Substitution: the Marshall & Lockwood ACT Cochrane review was superseded/merged into this ICM review (ACT + intensive case management); Dieterich 2017 is the current Cochrane evidence. store.samhsa.gov URLs now redirect to library.samhsa.gov."
+    },
+    {
+      "id": "mi",
+      "upstreamSource": "APA — Miller & Rollnick",
+      "guideline": {
+        "id": "Guilford-MI-4e",
+        "title": "Motivational Interviewing: Fourth Edition: Helping People Change and Grow",
+        "publisher": "Guilford Press (Miller & Rollnick)",
+        "url": "https://www.guilford.com/books/Motivational-Interviewing/Miller-Rollnick/9781462552795",
+        "urlStatus": "verified",
+        "year": 2023
+      },
+      "keyEvidencePmid": "24001658",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Lundahl",
+        "year": 2013,
+        "title": "Motivational interviewing in medical care settings: a systematic review and meta-analysis of randomized controlled trials.",
+        "doi": "10.1016/j.pec.2013.07.012",
+        "journal": "Patient Educ Couns"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Source type: manual publisher page (no Div 12 MI treatment page found on the current Society of Clinical Psychology site; several guessed slugs returned 404). Matches hint (Lundahl 2013)."
+    },
+    {
+      "id": "cbt-sud",
+      "upstreamSource": "APA — Carroll; NIDA",
+      "guideline": {
+        "id": "SCP-CBT-SUD",
+        "title": "Cognitive-Behavioral Therapy for Substance Use Disorders",
+        "publisher": "APA Division 12 (Society of Clinical Psychology)",
+        "url": "https://societyofclinicalpsychology.org/psychological-treatments/cognitive-behavioral-therapy-for-substance-use-disorders/",
+        "urlStatus": "verified",
+        "year": null
+      },
+      "keyEvidencePmid": "19515291",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Magill",
+        "year": 2009,
+        "title": "Cognitive-behavioral treatment with adult alcohol and illicit drug users: a meta-analysis of randomized controlled trials.",
+        "doi": "10.15288/jsad.2009.70.516",
+        "journal": "J Stud Alcohol Drugs"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Substitution: hint was 'Carroll' (manual author); used Magill & Ray 2009 meta-analysis (g=0.15 overall). NIDA Manual 1 (Carroll, A Cognitive-Behavioral Approach: Treating Cocaine Addiction) — nida.nih.gov PDF link now 404; OJP abstract page unverified: https://www.ojp.gov/ncjrs/virtual-library/abstracts/therapy-manuals-drug-addiction-manual-1-cognitive-behavioral"
+    },
+    {
+      "id": "cm",
+      "upstreamSource": "APA — Higgins et al.",
+      "guideline": {
+        "id": "SCP-CM-SUD",
+        "title": "Contingency Management for Substance Use Disorder",
+        "publisher": "APA Division 12 (Society of Clinical Psychology)",
+        "url": "https://societyofclinicalpsychology.org/psychological-treatments/contingency-management-for-substance-use-disorder/",
+        "urlStatus": "verified",
+        "year": null
+      },
+      "keyEvidencePmid": "24750232",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Benishek",
+        "year": 2014,
+        "title": "Prize-based contingency management for the treatment of substance abusers: a meta-analysis.",
+        "doi": "10.1111/add.12589",
+        "journal": "Addiction"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Matches hint (Benishek 2014; d=0.46 end of treatment, not sustained at 6 mo)."
+    },
+    {
+      "id": "tsf",
+      "upstreamSource": "APA — Nowinski et al.",
+      "guideline": {
+        "id": "NIAAA-MATCH-Vol1",
+        "title": "Twelve Step Facilitation Therapy Manual: A Clinical Research Guide for Therapists Treating Individuals With Alcohol Abuse and Dependence (Project MATCH Monograph Series, Vol. 1)",
+        "publisher": "NIAAA (Nowinski, Baker & Carroll)",
+        "url": "https://www.niaaa.nih.gov/sites/default/files/match01.pdf",
+        "urlStatus": "verified",
+        "year": 1992
+      },
+      "keyEvidencePmid": "8979210",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Project MATCH Research Group",
+        "year": 1997,
+        "title": "Matching Alcoholism Treatments to Client Heterogeneity: Project MATCH posttreatment drinking outcomes.",
+        "doi": null,
+        "journal": "J Stud Alcohol"
+      },
+      "evidenceType": "rct",
+      "notes": "Source type: manual (NIAAA PDF, 200 OK; listed on the NIAAA Project MATCH monograph page). No Div 12 TSF page found. PubMed record has collective author and no DOI. Year 1992 for the manual is from general knowledge, not from the fetched page — treat as unverified."
+    },
+    {
+      "id": "moud",
+      "upstreamSource": "SAMHSA TIP 63",
+      "guideline": {
+        "id": "TIP63",
+        "title": "TIP 63: Medications for Opioid Use Disorder",
+        "publisher": "SAMHSA",
+        "url": "https://library.samhsa.gov/product/tip-63-medications-opioid-use-disorder/pep21-02-01-002",
+        "urlStatus": "verified",
+        "year": 2021
+      },
+      "keyEvidencePmid": "24500948",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Mattick",
+        "year": 2014,
+        "title": "Buprenorphine maintenance versus placebo or methadone maintenance for opioid dependence.",
+        "doi": "10.1002/14651858.CD002207.pub4",
+        "journal": "Cochrane Database Syst Rev"
+      },
+      "evidenceType": "cochrane-review",
+      "notes": "Matches hint. Alt (PubMed-confirmed): Sordo 2017 BMJ mortality meta-analysis of cohorts, PMID 28446428, doi 10.1136/bmj.j1550. store.samhsa.gov redirects to library.samhsa.gov."
+    },
+    {
+      "id": "dbt",
+      "upstreamSource": "APA — Linehan",
+      "guideline": {
+        "id": "SCP-DBT-BPD",
+        "title": "Dialectical Behavior Therapy for Borderline Personality Disorder",
+        "publisher": "APA Division 12 (Society of Clinical Psychology)",
+        "url": "https://societyofclinicalpsychology.org/psychological-treatments/dialectical-behavior-therapy-for-borderline-personality-disorder/",
+        "urlStatus": "verified",
+        "year": null
+      },
+      "keyEvidencePmid": "16818865",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Linehan",
+        "year": 2006,
+        "title": "Two-year randomized controlled trial and follow-up of dialectical behavior therapy vs therapy by experts for suicidal behaviors and borderline personality disorder.",
+        "doi": "10.1001/archpsyc.63.7.757",
+        "journal": "Arch Gen Psychiatry"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint (Linehan 2006). Manual publisher page (Guilford, DBT Skills Training Manual) verified: https://www.guilford.com/books/Dialectical-Behavior-Therapy-Skills-Training-Manual/Marsha-Linehan/9781462516995. Kliem 2010 meta not looked up."
+    },
+    {
+      "id": "mbt",
+      "upstreamSource": "APA — Bateman & Fonagy",
+      "guideline": {
+        "id": "SCP-MBT-BPD",
+        "title": "Mentalization-Based Treatment for Borderline Personality Disorder",
+        "publisher": "APA Division 12 (Society of Clinical Psychology)",
+        "url": "https://societyofclinicalpsychology.org/psychological-treatments/mentalization-based-treatment-for-borderline-personality-disorder/",
+        "urlStatus": "verified",
+        "year": null
+      },
+      "keyEvidencePmid": "10518167",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Bateman",
+        "year": 1999,
+        "title": "Effectiveness of partial hospitalization in the treatment of borderline personality disorder: a randomized controlled trial.",
+        "doi": "10.1176/ajp.156.10.1563",
+        "journal": "Am J Psychiatry"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint (Bateman & Fonagy 1999, n=38). Bateman & Fonagy 2008/2009 outpatient MBT RCTs not looked up."
+    },
+    {
+      "id": "gpm",
+      "upstreamSource": "APA — Gunderson",
+      "guideline": {
+        "id": "APPI-GPM-Handbook",
+        "title": "Handbook of Good Psychiatric Management for Borderline Personality Disorder",
+        "publisher": "American Psychiatric Association Publishing (Gunderson & Links)",
+        "url": "https://www.appi.org/Products/Personality-Disorders/Handbook-of-Good-Psychiatric-Management-for-Border",
+        "urlStatus": "verified",
+        "year": 2014
+      },
+      "keyEvidencePmid": "19755574",
+      "keyEvidenceCitation": {
+        "firstAuthor": "McMain",
+        "year": 2009,
+        "title": "A randomized trial of dialectical behavior therapy versus general psychiatric management for borderline personality disorder.",
+        "doi": "10.1176/appi.ajp.2009.09010039",
+        "journal": "Am J Psychiatry"
+      },
+      "evidenceType": "rct",
+      "notes": "Source type: manual publisher page (no Div 12 GPM page). Matches hint (McMain 2009; DBT = GPM, n=180)."
+    },
+    {
+      "id": "cbt-i",
+      "upstreamSource": "APA — ACP guideline (Qaseem 2016)",
+      "guideline": {
+        "id": "ACP-Insomnia-2016",
+        "title": "Management of Chronic Insomnia Disorder in Adults: A Clinical Practice Guideline From the American College of Physicians",
+        "publisher": "American College of Physicians",
+        "url": "https://www.acpjournals.org/doi/10.7326/M15-2175",
+        "urlStatus": "verified",
+        "year": 2016,
+        "pmid": "27136449"
+      },
+      "keyEvidencePmid": "26054060",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Trauer",
+        "year": 2015,
+        "title": "Cognitive Behavioral Therapy for Chronic Insomnia: A Systematic Review and Meta-analysis.",
+        "doi": "10.7326/M14-2841",
+        "journal": "Ann Intern Med"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Matches hint. Guideline itself PubMed-confirmed (Qaseem 2016, PMID 27136449, doi 10.7326/M15-2175). Div 12 CBT-I page also verified: https://societyofclinicalpsychology.org/psychological-treatments/cognitive-behavioral-therapy-for-insomnia/"
+    },
+    {
+      "id": "fbt-maudsley",
+      "upstreamSource": "NICE NG69",
+      "guideline": {
+        "id": "NG69",
+        "title": "Eating disorders: recognition and treatment",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng69",
+        "urlStatus": "verified",
+        "year": 2017
+      },
+      "keyEvidencePmid": "20921118",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Lock",
+        "year": 2010,
+        "title": "Randomized clinical trial comparing family-based treatment with adolescent-focused individual therapy for adolescents with anorexia nervosa.",
+        "doi": "10.1001/archgenpsychiatry.2010.128",
+        "journal": "Arch Gen Psychiatry"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint. Div 12 FBT page also verified: https://societyofclinicalpsychology.org/psychological-treatments/family-based-treatment-for-anorexia-nervosa/"
+    },
+    {
+      "id": "cbt-e",
+      "upstreamSource": "NICE NG69",
+      "guideline": {
+        "id": "NG69",
+        "title": "Eating disorders: recognition and treatment",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng69",
+        "urlStatus": "verified",
+        "year": 2017
+      },
+      "keyEvidencePmid": "19074978",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Fairburn",
+        "year": 2009,
+        "title": "Transdiagnostic cognitive-behavioral therapy for patients with eating disorders: a two-site trial with 60-week follow-up.",
+        "doi": "10.1176/appi.ajp.2008.08040608",
+        "journal": "Am J Psychiatry"
+      },
+      "evidenceType": "rct",
+      "notes": "Matches hint (Fairburn 2009; epub Dec 2008, vol 166(3) 2009). Waitlist-controlled, non-underweight ED."
+    },
+    {
+      "id": "supportive-psychotherapy",
+      "upstreamSource": null,
+      "guideline": {
+        "id": "NG222",
+        "title": "Depression in adults: treatment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng222",
+        "urlStatus": "verified",
+        "year": 2022
+      },
+      "keyEvidencePmid": "22466509",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Cuijpers",
+        "year": 2012,
+        "title": "The efficacy of non-directive supportive therapy for adult depression: a meta-analysis.",
+        "doi": "10.1016/j.cpr.2012.01.003",
+        "journal": "Clin Psychol Rev"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Not upstream. Suggested guideline: NG222 (counselling / supportive options for less severe depression) — a suggestion, not an upstream mapping; review before adopting. Matches hint (Cuijpers 2012; g=0.58 vs control)."
+    },
+    {
+      "id": "brief-psychodynamic",
+      "upstreamSource": null,
+      "guideline": {
+        "id": "NG222",
+        "title": "Depression in adults: treatment and management",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ng222",
+        "urlStatus": "verified",
+        "year": 2022
+      },
+      "keyEvidencePmid": "24984083",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Abbass",
+        "year": 2014,
+        "title": "Short-term psychodynamic psychotherapies for common mental disorders.",
+        "doi": "10.1002/14651858.CD004687.pub4",
+        "journal": "Cochrane Database Syst Rev"
+      },
+      "evidenceType": "cochrane-review",
+      "notes": "Not upstream. Suggested guideline: NG222 (short-term psychodynamic psychotherapy is a listed option for less severe and more severe depression) — suggestion only. Matches hint (Abbass 2014)."
+    },
+    {
+      "id": "safety-planning-intervention",
+      "upstreamSource": null,
+      "guideline": {
+        "id": "VA-DoD-Suicide-2024",
+        "title": "Assessment and Management of Patients at Risk for Suicide (2024)",
+        "publisher": "VA/DoD",
+        "url": "https://www.healthquality.va.gov/guidelines/MH/srb/",
+        "urlStatus": "verified",
+        "year": 2024
+      },
+      "keyEvidencePmid": "29998307",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Stanley",
+        "year": 2018,
+        "title": "Comparison of the Safety Planning Intervention With Follow-up vs Usual Care of Suicidal Patients Treated in the Emergency Department.",
+        "doi": "10.1001/jamapsychiatry.2018.1776",
+        "journal": "JAMA Psychiatry"
+      },
+      "evidenceType": "cohort-comparison",
+      "notes": "Not upstream. FLAG: Stanley 2018 is a non-randomized cohort comparison (SPI+ at 5 VA EDs vs usual care at 4), NOT an RCT; evidenceType is outside the requested enum on purpose — do not relabel as 'rct'. VA/DoD page opened via curl (title matched); WebFetch hit a redirect loop."
+    },
+    {
+      "id": "inpatient-group-therapy",
+      "upstreamSource": null,
+      "guideline": null,
+      "keyEvidencePmid": null,
+      "keyEvidenceCitation": null,
+      "evidenceType": "guideline-only",
+      "notes": "Not upstream; no guideline expected. PMID null: the hinted meta-analysis (Kösters, Burlingame, Nachtigall & Strauss 2006, 'A meta-analytic review of the effectiveness of inpatient group psychotherapy', Group Dynamics: Theory, Research, and Practice 10(2):146-163) is not MEDLINE-indexed — PubMed searches by author, title and topic returned 0 hits. No other inpatient-group-specific meta-analysis found in PubMed. Consider citing via DOI 10.1037/1089-2699.10.2.146 (not tool-verified) or marking as expert-consensus."
+    },
+    {
+      "id": "rtms",
+      "upstreamSource": null,
+      "guideline": {
+        "id": "IPG542",
+        "title": "Repetitive transcranial magnetic stimulation for depression",
+        "publisher": "NICE",
+        "url": "https://www.nice.org.uk/guidance/ipg542",
+        "urlStatus": "verified",
+        "year": 2015
+      },
+      "keyEvidencePmid": "23507264",
+      "keyEvidenceCitation": {
+        "firstAuthor": "Berlim",
+        "year": 2014,
+        "title": "Response, remission and drop-out rates following high-frequency repetitive transcranial magnetic stimulation (rTMS) for treating major depression: a systematic review and meta-analysis of randomized, double-blind and sham-controlled trials.",
+        "doi": "10.1017/S0033291713000512",
+        "journal": "Psychol Med"
+      },
+      "evidenceType": "meta-analysis",
+      "notes": "Not upstream. Berlim meta chosen over O'Reardon 2007 pivotal RCT (PubMed-confirmed alt: PMID 17573044, doi 10.1016/j.biopsych.2007.01.018, Biol Psychiatry). Epub 2013, vol 44(2) 2014. NNT 6 (response), 8 (remission)."
+    }
+  ],
+  "status": "DRAFT — generated 2026-09-30; guideline URLs checked at generation; evidenceType review pending"
+}

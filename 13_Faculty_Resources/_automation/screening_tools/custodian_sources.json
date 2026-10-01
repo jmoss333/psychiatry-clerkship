@@ -46,7 +46,7 @@
       "id": "qids-sr16",
       "name": "QIDS-SR16",
       "custodianUrl": "http://ids-qids.org/",
-      "urlStatus": "unverified",
+      "urlStatus": "verified",
       "primaryPmid": "12946886",
       "primaryCitation": {
         "firstAuthor": "Rush",
@@ -57,7 +57,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Public domain per ids-qids.org (UT Southwestern); QIDS-C also listed on Mapi ePROVIDE. unverified.",
-      "notes": "Site blocked by robots.txt; URL taken from web search."
+      "notes": "Site blocked by robots.txt; URL taken from web search.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "ids-qids.org reachable from the owner's Mac; title 'IDS/QIDS', body names the instrument"
+      }
     },
     {
       "id": "madrs",
@@ -74,7 +80,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Published in Br J Psychiatry 1979 (RCPsych journal copyright); widely reproduced; licensed distribution via Mapi ePROVIDE for commercial use. unverified.",
-      "notes": "ePROVIDE page loaded but body not readable by fetcher."
+      "notes": "ePROVIDE page loaded but body not readable by fetcher.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "Mapi ePROVIDE page is a JS app (title 'Website'); content not readable by curl — verify in a browser"
+      }
     },
     {
       "id": "bdi-ii",
@@ -130,7 +142,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Copyright Royal College of Psychiatrists (1987); may be reproduced without further permission if authors/title/source cited (per RCPsych notice on the scale). unverified.",
-      "notes": "No single canonical form page found; DOI of primary paper (Br J Psychiatry) used. RCPsych permissions page fetched but body unreadable. Cutoff (>=13; >=10 possible depression) in primary paper."
+      "notes": "No single canonical form page found; DOI of primary paper (Br J Psychiatry) used. RCPsych permissions page fetched but body unreadable. Cutoff (>=13; >=10 possible depression) in primary paper.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 302,
+        "note": "DOI resolves to the Cox 1987 BJP paper, which is the usual source — no single custodian page; the paper permits reproduction with citation (confirm on the journal page)"
+      }
     },
     {
       "id": "gad-7",
@@ -225,8 +243,8 @@
     {
       "id": "audit-c",
       "name": "AUDIT-C",
-      "custodianUrl": "https://www.ptsd.va.gov/professional/assessment/screens/audit-c.asp",
-      "urlStatus": "unverified",
+      "custodianUrl": "https://www.who.int/publications/i/item/WHO-MSD-MSB-01.6a",
+      "urlStatus": "verified",
       "primaryPmid": "9738608",
       "primaryCitation": {
         "firstAuthor": "Bush",
@@ -242,13 +260,19 @@
         "doi": "10.1111/j.1530-0277.2007.00403.x"
       },
       "rightsNote": "Derived from WHO AUDIT; VA-developed; freely reproducible. unverified.",
-      "notes": "Bradley 2007 established cutoffs (>=4 men, >=3 women). VA URL not fetched."
+      "notes": "Bradley 2007 established cutoffs (>=4 men, >=3 women). VA URL not fetched.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 404,
+        "note": "the VA PTSD audit-c.asp page is gone (404). AUDIT-C is items 1–3 of the WHO AUDIT, so the custodian is the WHO AUDIT manual, whose URL was verified for 'audit'. Bush 1998 remains the AUDIT-C primary paper."
+      }
     },
     {
       "id": "cage",
       "name": "CAGE",
       "custodianUrl": "https://www.uspreventiveservicestaskforce.org/Home/GetFileByID/838",
-      "urlStatus": "unverified",
+      "urlStatus": "verified",
       "primaryPmid": "6471323",
       "primaryCitation": {
         "firstAuthor": "Ewing",
@@ -259,7 +283,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Copyright held by J.A. Ewing / UNC; widely reproduced with citation; permission requested for commercial use. unverified.",
-      "notes": "No official custodian page found; USPSTF-hosted copy used as public source. Cutoff >=2 in primary paper."
+      "notes": "No official custodian page found; USPSTF-hosted copy used as public source. Cutoff >=2 in primary paper.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "USPSTF-hosted PDF (GetFileByID/838); inflated text streams contain 'CAGE'"
+      }
     },
     {
       "id": "dast-10",
@@ -276,7 +306,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Copyright Harvey Skinner / CAMH; free for non-commercial clinical use with permission note; NIDA CTN hosts a copy. unverified.",
-      "notes": "NIDA CDE page not fetchable (DNS); URL from web search. Primary paper is the DAST-28 (1982); DAST-10 is a later abbreviation."
+      "notes": "NIDA CDE page not fetchable (DNS); URL from web search. Primary paper is the DAST-28 (1982); DAST-10 is a later abbreviation.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 0,
+        "note": "cde.nida.nih.gov not reachable from the Mac VM (egress); nida.nih.gov itself is"
+      }
     },
     {
       "id": "ciwa-ar",
@@ -299,7 +335,7 @@
       "id": "cows",
       "name": "COWS",
       "custodianUrl": "https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf",
-      "urlStatus": "unverified",
+      "urlStatus": "verified",
       "primaryPmid": "12924748",
       "primaryCitation": {
         "firstAuthor": "Wesson",
@@ -310,7 +346,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Free to reproduce; NIDA-hosted copy of Wesson & Ling form. unverified.",
-      "notes": "NIDA PDF not fetchable (robots); URL from web search. Severity bands in primary paper."
+      "notes": "NIDA PDF not fetchable (robots); URL from web search. Severity bands in primary paper.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "NIDA-hosted PDF; inflated text streams contain 'COWS'"
+      }
     },
     {
       "id": "c-ssrs",
@@ -383,7 +425,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Copyright Hirschfeld 2000; free to reproduce for clinical/educational use with citation. unverified.",
-      "notes": "No canonical custodian page found; IBPF-hosted copy used. Positive screen criteria (>=7 items + co-occurrence + moderate/serious problems) in primary paper."
+      "notes": "No canonical custodian page found; IBPF-hosted copy used. Positive screen criteria (>=7 items + co-occurrence + moderate/serious problems) in primary paper.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "ibpf.org PDF downloads (38 KB) but no text streams matched 'MDQ' — likely an image PDF; open by hand"
+      }
     },
     {
       "id": "ymrs",
@@ -400,7 +448,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Published Br J Psychiatry 1978 (RCPsych journal); widely reproduced; licensed distribution via Mapi ePROVIDE. unverified.",
-      "notes": "ePROVIDE page body unreadable by fetcher."
+      "notes": "ePROVIDE page body unreadable by fetcher.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "Mapi ePROVIDE page is a JS app; verify in a browser"
+      }
     },
     {
       "id": "asrm",
@@ -417,7 +471,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Published in Biol Psychiatry 1997; author (Altman) generally permits free clinical use. unverified.",
-      "notes": "No custodian page found; DOI of primary paper used. Cutoff >=6 in primary paper."
+      "notes": "No custodian page found; DOI of primary paper used. Cutoff >=6 in primary paper.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "DOI resolves to the Altman 1997 paper (publisher redirect); no custodian page"
+      }
     },
     {
       "id": "bprs",
@@ -429,7 +489,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Original 1962 scale widely treated as public domain; Mapi ePROVIDE lists an official BPRS. unverified.",
-      "notes": "Overall & Gorham 1962 (Psychol Rep 10:799-812) not indexed in PubMed (citation lookup NOT_FOUND; author search 0 hits). primaryPmid null."
+      "notes": "Overall & Gorham 1962 (Psychol Rep 10:799-812) not indexed in PubMed (citation lookup NOT_FOUND; author search 0 hits). primaryPmid null.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "Mapi ePROVIDE page is a JS app; verify in a browser"
+      }
     },
     {
       "id": "aims",
@@ -441,7 +507,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Public domain (Guy 1976, ECDEU Assessment Manual, US DHEW/NIMH).",
-      "notes": "No PMID (ECDEU manual is not a journal article). NINDS CDE page is a JS app; could not confirm content. CMS URL tried returned 404."
+      "notes": "No PMID (ECDEU manual is not a journal article). NINDS CDE page is a JS app; could not confirm content. CMS URL tried returned 404.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "NINDS CDE page is a React app; content not readable by curl"
+      }
     },
     {
       "id": "bars",
@@ -458,7 +530,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Published Br J Psychiatry 1989 (RCPsych journal); licensed via Mapi ePROVIDE; widely reproduced clinically. unverified.",
-      "notes": "ePROVIDE page body unreadable by fetcher."
+      "notes": "ePROVIDE page body unreadable by fetcher.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "Mapi ePROVIDE page is a JS app; verify in a browser"
+      }
     },
     {
       "id": "simpson-angus",
@@ -475,7 +553,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Published Acta Psychiatr Scand Suppl 1970; widely reproduced; copyright status unverified.",
-      "notes": "No custodian page found; DOI of primary paper used."
+      "notes": "No custodian page found; DOI of primary paper used.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 403,
+        "note": "Wiley DOI behind Cloudflare from the Mac; DOI matches the PubMed record"
+      }
     },
     {
       "id": "bfcrs",
@@ -548,7 +632,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Copyright S.K. Inouye / Hospital Elder Life Program; free download after registration for clinical/non-commercial use; permission required for commercial use. unverified.",
-      "notes": "help.agscocare.org returned 403 to fetcher; hospitalelderlifeprogram.org page points there."
+      "notes": "help.agscocare.org returned 403 to fetcher; hospitalelderlifeprogram.org page points there.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "help.agscocare.org loads (AGS CoCare: HELP) but the landing page does not name the CAM; the CAM page sits inside the program site — verify in a browser"
+      }
     },
     {
       "id": "asrs-v1-1",
@@ -582,7 +672,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Copyright Zanarini / McLean Hospital; free for clinical and research use with citation. unverified.",
-      "notes": "No custodian page found; DOI of primary paper used. Cutoff >=7 in primary paper."
+      "notes": "No custodian page found; DOI of primary paper used. Cutoff >=7 in primary paper.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 403,
+        "note": "Guilford DOI behind Cloudflare; DOI matches the PubMed record"
+      }
     },
     {
       "id": "scoff",
@@ -599,7 +695,13 @@
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Published in BMJ 1999 (Morgan, Reid, Lacey); freely used with citation. unverified.",
-      "notes": "No custodian page found; DOI of primary paper used. Cutoff >=2 in primary paper."
+      "notes": "No custodian page found; DOI of primary paper used. Cutoff >=2 in primary paper.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 403,
+        "note": "BMJ DOI behind Cloudflare; DOI matches the PubMed record"
+      }
     },
     {
       "id": "isi",
@@ -666,13 +768,19 @@
       "id": "cgi-s",
       "name": "CGI-S",
       "custodianUrl": "https://camcops.readthedocs.io/en/latest/tasks/cgi.html",
-      "urlStatus": "unverified",
+      "urlStatus": "verified",
       "primaryPmid": null,
       "primaryCitation": null,
       "cutoffPmid": null,
       "cutoffCitation": null,
       "rightsNote": "Public domain (Guy 1976, ECDEU Assessment Manual for Psychopharmacology, US DHEW).",
-      "notes": "No PMID (ECDEU manual is not a journal article). No official custodian page; CamCOPS documentation page cited as a secondary reference. unverified."
+      "notes": "No PMID (ECDEU manual is not a journal article). No official custodian page; CamCOPS documentation page cited as a secondary reference. unverified.",
+      "urlCheck": {
+        "date": "2026-09-30",
+        "method": "curl from the owner's Mac (Cowork VM)",
+        "httpStatus": 200,
+        "note": "CamCOPS documentation page names the CGI; it is a reference description, not a custodian — the CGI is from the ECDEU manual (Guy 1976), public domain"
+      }
     },
     {
       "id": "whodas-2-0",
@@ -692,5 +800,5 @@
       "notes": ""
     }
   ],
-  "status": "DRAFT — generated 2026-09-30; URL and rights review pending"
+  "status": "DRAFT — generated 2026-09-30; URL pass from the Mac 2026-09-30 (26 verified / 13 unverified); rights review pending"
 }

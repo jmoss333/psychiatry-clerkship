@@ -50,6 +50,8 @@ LOCAL_FOR = {
 SCREENING_FIELDMAP = FIXTURES / "screening_tools_fieldmap.json"
 EBP_FIELDMAP = FIXTURES / "ebp_fieldmap.json"
 CUSTODIAN_SOURCES = HERE / "screening_tools" / "custodian_sources.json"
+GUIDELINE_SOURCES = HERE / "therapies" / "guideline_sources.json"
+EVIDENCE_TYPES = {"meta-analysis", "rct", "cochrane-review", "cohort-comparison", "guideline-only"}
 CHECKER = HERE / "reconnect_fieldmap.py"
 SOURCE_REPOSITORY = "https://github.com/jmoss333/reconnect-psychiatry-system.git"
 GIT = shutil.which("git")
@@ -939,6 +941,55 @@ class CustodianSourcesTests(unittest.TestCase):
             rights_id = by_id[entry["id"]].get("rightsId")
             if rights_id:
                 self.assertIn(rights_id, rights, entry["id"])
+
+
+class GuidelineSourcesTests(unittest.TestCase):
+    """therapies/guideline_sources.json: one entry per roster modality, the cited guideline resolved
+    or explicitly absent, one PubMed-confirmed key paper or a stated reason for none."""
+
+    def setUp(self):
+        self.sources = json.loads(GUIDELINE_SOURCES.read_text(encoding="utf-8"))
+        self.fieldmap = json.loads(
+            load_checker_module().PRODUCTION_FIELDMAPS["ebp"].read_text(encoding="utf-8"))
+
+    def test_one_entry_per_roster_modality_and_no_strays(self):
+        roster = {entry["id"] for entry in self.fieldmap["phase1Roster"]}
+        listed = [entry["id"] for entry in self.sources["entries"]]
+        self.assertEqual(len(listed), len(set(listed)))
+        self.assertEqual(set(listed), roster)
+
+    def test_guideline_resolved_or_absence_explained(self):
+        for entry in self.sources["entries"]:
+            guideline = entry.get("guideline")
+            if guideline is None:
+                self.assertTrue(entry.get("notes"), "%s: no guideline needs a reason" % entry["id"])
+                continue
+            for key in ("id", "title", "publisher", "url"):
+                self.assertTrue(guideline.get(key), "%s: guideline.%s" % (entry["id"], key))
+            self.assertTrue(guideline["url"].startswith("https://"), entry["id"])
+            self.assertIn(guideline.get("urlStatus"), ("verified", "unverified"), entry["id"])
+
+    def test_key_evidence_is_confirmed_or_null_with_reason(self):
+        for entry in self.sources["entries"]:
+            pmid = entry.get("keyEvidencePmid")
+            self.assertTrue(pmid is None or (isinstance(pmid, str) and pmid.isdigit()), entry["id"])
+            self.assertIn(entry.get("evidenceType"), EVIDENCE_TYPES, entry["id"])
+            citation = entry.get("keyEvidenceCitation") or {}
+            if pmid:
+                self.assertTrue(citation.get("firstAuthor") and citation.get("year") and citation.get("title"),
+                                "%s: a PMID needs its citation copied from PubMed" % entry["id"])
+            else:
+                self.assertTrue(entry.get("notes"), "%s: a null PMID must say why" % entry["id"])
+                self.assertIn(entry["evidenceType"], ("guideline-only",), entry["id"])
+
+    def test_upstream_source_matches_the_roster_record(self):
+        # The cited source recorded here is the one ReConnect carries, so drift upstream shows up.
+        upstream = {entry["id"]: entry.get("upstreamSource") for entry in self.sources["entries"]}
+        for entry in self.fieldmap["phase1Roster"]:
+            if "expected missing upstream" in (entry.get("note") or ""):
+                self.assertIn(upstream[entry["id"]], (None, "", "(not upstream)"), entry["id"])
+            else:
+                self.assertTrue(upstream[entry["id"]], "%s: upstream source missing" % entry["id"])
 
 
 if __name__ == "__main__":
