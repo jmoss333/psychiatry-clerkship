@@ -4542,3 +4542,106 @@ test('Care Playbook returns to Care with its existing transient reset; offline l
   }
   await expectHealthy(page);
 });
+
+
+for (const blockedStorage of [false,true]) {
+  test(`formative placement is honest about length and interrupted answers (${blockedStorage?'placement storage unavailable':'device storage'})`, async ({ page }, info) => {
+    await seedApp(page,info);
+    await page.goto('/?page=__progress__');
+    await expect(page.locator('[data-pt="pretest"]')).toBeVisible();
+    if(blockedStorage) await page.evaluate(()=>{
+      const read=Storage.prototype.getItem,write=Storage.prototype.setItem;
+      Storage.prototype.getItem=function(key){if(this===localStorage)throw new DOMException('Blocked','SecurityError');return read.call(this,key);};
+      Storage.prototype.setItem=function(key,value){if(this===localStorage)throw new DOMException('Blocked','QuotaExceededError');return write.call(this,key,value);};
+    });
+    const launch=page.locator('[data-pt="pretest"]');
+    await expect(launch).toContainText('formative placement');
+    await expect(launch).not.toContainText('2-minute');
+    await launch.click();
+    const root=page.locator('#ptRoot');
+    await expect(root.getByRole('heading',{name:'12-question formative placement',exact:true})).toBeVisible();
+    await expect(root.locator('.pt-q')).toHaveCount(12);
+    await expect(root).toContainText('Optional, untimed practice');
+    await expect(root).toContainText('Unsubmitted answers are not saved');
+    const status=root.getByRole('status');
+    await expect(status).toHaveText('0 of 12 answered');
+    await expect(status).toHaveAttribute('aria-live','polite');
+    for(const width of [1280,320,640]){
+      await page.setViewportSize({width,height:900});
+      await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
+      const answer=root.locator('.pt-opt[data-qi="0"]').first();
+      await page.keyboard.press('Tab');await answer.focus();
+      expect(await answer.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
+      await page.keyboard.press('Enter');await page.keyboard.press('Enter');
+      await expect(answer).toHaveClass(/sel/);
+      await expect(status).toHaveText('1 of 12 answered');
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    }
+    await page.evaluate(()=>document.documentElement.style.fontSize='');
+    await page.locator('[data-progress-action="progress"]').click();
+    await page.locator('[data-pt="pretest"]').click();
+    await expect(page.locator('#ptCount')).toHaveText('0 of 12 answered');
+    await expect(root.locator('.pt-opt.sel')).toHaveCount(0);
+    if(blockedStorage){
+      await root.locator('.pt-opt[data-qi="0"]').first().click();
+      await page.locator('[data-pt="submit"]').click();
+      await expect(page.getByRole('heading',{name:'Your formative placement',exact:true})).toBeVisible();
+    }
+    await page.reload();
+    await expect(page.locator('[data-pt="pretest"]')).toBeVisible();
+    await expectHealthy(page);
+  });
+}
+
+test('formative placement keeps scoring and genuine practice precedence on retake',async({page},info)=>{
+  const response=await requestGetWithRetry(page.request,'/pretest_pool.json');
+  const pool=(await response.json()).items;
+  expect(pool).toHaveLength(12);
+  const first=pool[0];
+  const practice={correct:false,cat:first.cat,pages:first.pages,confidence:4,source:'practice'};
+  await seedApp(page,info,{storage:{cw_qb_v1:{[first.id]:practice}}});
+  await page.goto('/?page=__progress__');await page.locator('[data-pt="pretest"]').click();
+  for(let i=0;i<pool.length;i++){
+    const correct=pool[i].options.find(o=>o.c).key;
+    await page.locator(`.pt-opt[data-qi="${i}"][data-key="${correct}"]`).click();
+  }
+  await expect(page.locator('#ptCount')).toHaveText('12 of 12 answered');
+  await page.locator('[data-pt="submit"]').click();
+  await expect(page.getByRole('heading',{name:'Your formative placement',exact:true})).toBeVisible();
+  const stored=await page.evaluate(()=>({attempt:JSON.parse(localStorage.getItem('cw_pretest_v1')),bank:JSON.parse(localStorage.getItem('cw_qb_v1')),plan:JSON.parse(localStorage.getItem('cw_plan_v1'))}));
+  expect(stored.attempt.answers).toHaveLength(12);expect(stored.attempt.answers.every(x=>x.correct)).toBe(true);
+  expect(stored.bank[first.id]).toEqual(practice);expect(stored.plan.weeks).toHaveLength(audience(info).weekCount);
+  await page.locator('[data-pt="pretest"]').click();await expect(page.locator('#ptCount')).toHaveText('0 of 12 answered');
+  await expectHealthy(page);
+});
+
+
+test('formative placement delayed loading cannot erase a newer reopened attempt',async({page},info)=>{
+  await seedApp(page,info);
+  const reply=await requestGetWithRetry(page.request,'/pretest_pool.json');const pool=await reply.json();
+  let firstRoute=null,requests=0;
+  await page.route('**/pretest_pool.json',async route=>{
+    requests++;
+    if(requests===1){firstRoute=route;return;}
+    await route.fulfill({json:pool});
+  });
+  await page.goto('/?page=__progress__');await page.locator('[data-pt="pretest"]').click();
+  await expect.poll(()=>requests).toBe(1);
+  await page.locator('[data-progress-action="progress"]').click();
+  await page.locator('[data-pt="pretest"]').click();
+  await expect(page.locator('#ptCount')).toHaveText('0 of 12 answered');
+  const answer=page.locator('.pt-opt[data-qi="0"]').first();
+  await page.locator('[data-progress-action="progress"]').focus();await page.keyboard.press('Tab');
+  await expect(answer).toBeFocused();await page.keyboard.press('Enter');
+  await expect(page.locator('#ptCount')).toHaveText('1 of 12 answered');
+  const finished=page.waitForEvent('requestfinished',{predicate:request=>request.url().endsWith('/pretest_pool.json')});
+  await firstRoute.fulfill({json:pool});await finished;
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  await expect(page.locator('#ptCount')).toHaveText('1 of 12 answered');
+  await expect(answer).toHaveClass(/sel/);
+  await page.locator('[data-fd-tab="library"]:visible').click();
+  await page.goBack();
+  await expect(page.locator('[data-pt="pretest"]')).toBeVisible();
+  await page.goForward();await expect(page.locator('.fd-library:visible')).toBeVisible();
+  await expectHealthy(page);
+});
