@@ -2064,3 +2064,13 @@
 .cap-email-fallback label{display:block;font-size:var(--fd-font-sm);font-weight:700;margin-bottom:var(--fd-space-3)}
 .cap-email-fallback textarea{display:block;width:100%;box-sizing:border-box;resize:vertical;border:1px solid var(--border);border-radius:var(--fd-radius-md);padding:var(--fd-space-5);background:var(--bg);color:var(--text);font:inherit;font-size:var(--fd-font-sm)}
 .cap-email-sheet button:focus-visible,.cap-email-sheet input:focus-visible,.cap-email-sheet textarea:focus-visible{outline:2px solid var(--fd-focus);outline-offset:2px}
+
+/* Optional session purpose shortcuts; the regular Today priority remains unchanged. */
+.fd-purpose{margin:var(--fd-space-5) 0;padding:var(--fd-space-5);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+.fd-purpose__summary{min-height:var(--fd-target-touch);align-content:center;cursor:pointer;font-size:var(--fd-font-md);font-weight:700;color:var(--fd-text)}
+.fd-purpose__choices{display:flex;flex-wrap:wrap;gap:var(--fd-space-3)}
+.fd-purpose .fd-btn{min-height:var(--fd-target-touch)}
+.fd-purpose__choices button{white-space:normal;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.fd-purpose__choices button[aria-pressed="true"]{background:var(--fd-teal-wash);border-color:var(--fd-teal);color:var(--fd-teal-deep)}
+.fd-purpose__note,.fd-purpose__reason{font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid);overflow-wrap:anywhere}
+.fd-purpose>.fd-btn{white-space:normal;max-width:100%;overflow-wrap:anywhere}
