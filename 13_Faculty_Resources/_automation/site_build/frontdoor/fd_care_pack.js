@@ -165,8 +165,8 @@ function fdCarePack(index,ids,crisisHtml){
   for(i=0;i<resources.length;i++) byId[resources[i].id]=resources[i];
 
   out+='<section class="fd-care-pack'+(printReady?' is-print-ready':'')+'" aria-labelledby="fd-care-pack-title">'+
-    '<header class="fd-care-pack__head"><div><h2 id="fd-care-pack-title">Build a resource handout</h2>'+
-    '<p>Choose up to three resources. No patient details are collected or saved.</p></div>'+
+    '<header class="fd-care-pack__head"><div><h2 id="fd-care-pack-title">Share resource websites</h2>'+
+    '<p>Print or copy links to up to three resource websites. No patient details are collected or saved.</p></div>'+
     (hasCrisis?'<p class="fd-care-pack__included"><span aria-hidden="true">✓</span> Crisis resources are included automatically</p>':
       '<p class="fd-care-pack__crisis-failure" role="alert">This handout is unavailable because its crisis-resource block did not load.</p>')+'</header>'+fdCareBuilder(index)+
     '<div class="fd-care-pack__workbench"><section class="fd-care-pack__picker" aria-labelledby="fd-care-pack-picker-title">'+

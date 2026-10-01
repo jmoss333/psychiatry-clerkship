@@ -3040,6 +3040,8 @@ test('Patient care resources is a safe, responsive fourth destination and search
     await expect(choices.nth(index)).toBeFocused();
     await page.keyboard.press('Tab');
   }
+  await expect(page.getByRole('button', {name:'Open Family Meeting Playbook', exact:true})).toBeFocused();
+  await page.keyboard.press('Tab');
   await expect(page.locator('.fd-care-navigator__link').first()).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('.fd-care-navigator__alternatives .fd-care-navigator__link').first()).toBeFocused();
@@ -3296,7 +3298,7 @@ test('Supervised Resource Builder opens context-free without changing Care Quick
   await page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]').click();
   const storage = await page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage } }));
   const status = await page.locator('#careNavigatorStatus').textContent();
-  const link = page.getByRole('link', { name: 'Build a printable resource page', exact: true });
+  const link = page.getByRole('link', { name: 'Build a specific resource handout', exact: true });
   await expect(link).toHaveAttribute('href', url);
   await expect(link).toHaveAttribute('target', '_blank');
   await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
@@ -3344,7 +3346,7 @@ test('Supervised Resource Builder opens context-free without changing Care Quick
   await page.emulateMedia({ media: 'print' });
   await expect(link).toBeHidden();
   await expect(page.locator('.fd-care-pack__sheet')).toBeVisible();
-  await expect(page.locator('.fd-care-pack__sheet')).not.toContainText('Build a printable resource page');
+  await expect(page.locator('.fd-care-pack__sheet')).not.toContainText('Build a specific resource handout');
   await page.emulateMedia({ media: 'screen' });
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.locator('[data-fd-care-share="resource-finder"]').first().click();
@@ -4472,4 +4474,71 @@ test('Concepts shell stalled response becomes actionable unavailable',async({pag
   await page.route('**/tools/concepts.json',()=>new Promise(()=>{}));
   await page.goto('/');
   await expect(page.locator('[data-fd-concept-status]')).toContainText('unavailable. Review counts are incomplete. Open Daily Review to retry.',{timeout:15000});
+});
+
+// Cache availability and practice evidence are independent of clinical readiness.
+for (const practiced of [false, true]) {
+  test(`Progress separates unpracticed areas from measured weakness (${practiced ? 'missed answers' : 'first use'})`, async ({ page }, info) => {
+    const answers = practiced ? { 'ux-mood-miss': { correct: false, cat: 'mood', pages: ['t_mood.md'] } } : {};
+    await seedApp(page, info, {storage:{cw_qb_v1:answers}});
+    await page.goto('/?page=__progress__');
+    await expect(page.getByRole('heading', {name:'Try an unpracticed area', exact:true})).toBeVisible();
+    const start = page.locator('.hm-sec').filter({has:page.getByRole('heading', {name:'Try an unpracticed area', exact:true})});
+    await expect(start).toContainText('No practice answers yet');
+    await expect(start.locator('[data-practice]')).toHaveCount(1);
+    const weak = page.getByRole('heading', {name:'Practice your weakest areas', exact:true});
+    if (practiced) {
+      await expect(weak).toBeVisible();
+      await expect(page.locator('.hm-sec').filter({has:weak}).locator('[data-practice="mood"]')).toBeVisible();
+      await expect(start.locator('[data-practice="mood"]')).toHaveCount(0);
+    } else await expect(weak).toHaveCount(0);
+    await page.setViewportSize({width:320,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await expectHealthy(page);
+  });
+}
+
+test('Care Playbook returns to Care with its existing transient reset; offline labels reflow with large text', async ({ page }, info) => {
+  await seedApp(page, info);
+  await page.goto('/');
+  const availability = page.locator('[data-fd-offline-entry]');
+  await expect(availability).toHaveAttribute('aria-label','Offline availability');
+  await expect(availability).not.toContainText('Shift-ready');
+  for (const width of [1280,320,640]) {
+    await page.setViewportSize({width,height:900});
+    await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
+    expect(await availability.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+    await page.keyboard.press('Tab');
+    const control=availability.locator('[data-fd-offline-open]');
+    await control.focus();
+    await page.keyboard.press('Enter');
+    await expect(availability.locator('[data-fd-offline-card]')).toBeVisible();
+    await availability.locator('[data-fd-offline-close]').click();
+    await expect(control).toBeFocused();
+  }
+  await page.evaluate(()=>document.documentElement.style.fontSize='');
+  await page.setViewportSize({width:1280,height:900});
+  await page.locator('[data-fd-tab="care"]:visible').click();
+  await expect(page.getByRole('heading',{name:'Share resource websites',exact:true})).toBeVisible();
+  await expect(page.getByRole('link',{name:'Build a specific resource handout',exact:true})).toBeVisible();
+  for (const width of [1280,320,640]) {
+    await page.setViewportSize({width,height:900});
+    await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
+    await page.locator('[data-fd-care-intent="family-conversation"]').click();
+    await page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]').click();
+    const open=page.getByRole('button',{name:'Open Family Meeting Playbook',exact:true});
+    await page.keyboard.press('Tab'); await open.focus();
+    const paint=await open.evaluate(el=>({outline:getComputedStyle(el).outlineStyle, fits:document.documentElement.scrollWidth<=innerWidth,height:el.getBoundingClientRect().height}));
+    expect(paint.outline).not.toBe('none'); expect(paint.fits).toBe(true); expect(paint.height).toBeGreaterThanOrEqual(44);
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.fd-article')).toHaveAttribute('data-ref','family_playbook.md');
+    await expect(page.locator('.fd-article__h1')).toContainText('Family Meeting Playbook');
+    await page.locator('.fd-reader__back[data-fd-back]').click();
+    await expect(page.getByRole('heading',{name:'Patient care resources',exact:true,level:1})).toBeVisible();
+    await expect(open).toHaveCount(0);
+    await expect(page.locator('[data-fd-care-intent="family-conversation"]')).toHaveAttribute('aria-pressed','false');
+    await expect(page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]')).toHaveAttribute('aria-pressed','false');
+    await expect(page.locator('#careNavigatorStatus')).toHaveText('');
+  }
+  await expectHealthy(page);
 });

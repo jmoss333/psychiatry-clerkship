@@ -2214,10 +2214,12 @@
     else { h+='<button class="hm-li" data-pt="pretest"><span class="t">'+(LS('cw_pretest_v1')?'Retake':'Take')+' the 2-minute placement</span><span class="sec">Start →</span></button>'; }
     var weakCats=mbStarted.filter(function(x){return x.score<70&&x.miss>0;}).sort(function(a,b){return a.score-b.score;}).slice(0,3);
     var notStarted=mb.filter(function(x){return x.score==null;});
-    if(weakCats.length||notStarted.length){ h+='<div class="hm-sec"><h2>Practice your weakest areas</h2>';
+    if(weakCats.length){ h+='<div class="hm-sec"><h2>Practice your weakest areas</h2>';
       weakCats.forEach(function(x){ h+='<button class="hm-li" data-practice="'+x.c+'"><span class="t">'+esc(x.label)+'</span><span class="sec">'+x.score+'% · practice →</span></button>'; });
-      if(notStarted.length){ var ns=notStarted[0]; h+='<button class="hm-li" data-practice="'+ns.c+'"><span class="t">'+esc(ns.label)+'</span><span class="sec">not started · try it →</span></button>'; }
       h+='</div>'; }
+    if(notStarted.length){ var ns=notStarted[0];
+      h+='<div class="hm-sec"><h2>Try an unpracticed area</h2><p class="sub">No practice answers yet in this area — it is not a measured weakness.</p>';
+      h+='<button class="hm-li" data-practice="'+ns.c+'"><span class="t">'+esc(ns.label)+'</span><span class="sec">not started · try it →</span></button></div>'; }
     var weak=weakTopics();
     if(weak.length){ h+='<div class="hm-sec"><h2>Focus next · your weak spots</h2>'; weak.slice(0,5).forEach(function(x){ h+='<button class="hm-li" data-f="'+x.f+'"><span class="t">'+esc(x.t)+'</span><span class="sec">'+esc(x.reason)+'</span></button>'; }); h+='</div>'; }
     var covk=Object.keys(scan.cov); if(covk.length){ h+='<div class="hm-sec"><h2>Coverage by section <span style="font-weight:400;color:var(--text-light)">· '+pct+'% overall</span></h2><div class="hm-bars">'; covk.forEach(function(k){ var c=scan.cov[k]; var p=c.tot?Math.round(c.done/c.tot*100):0; h+='<div class="brow"><span class="lab">'+k+'</span><span class="track"><span class="fill" style="width:'+p+'%"></span></span><span class="pc">'+c.done+'/'+c.tot+'</span></div>'; }); h+='</div></div>'; }
