@@ -115,10 +115,13 @@ test('the pilot panels surface the case\'s faculty-review badge rather than hidi
 test('the second pass is honest about what it compares and what it keeps', () => {
   const feedback = fn('retryFeedbackHtml');
   assert.match(feedback, /This compares the two authored lines you chose, not your spoken words\./);
-  assert.match(fn('finishedHtml'), /Your first choice is in local history\. The second pass was not saved\./);
+  assert.match(fn('finishedHtml'), /The second pass was not saved\./);
+  assert.doesNotMatch(fn('finishedHtml'), /Your first choice is in local history/);
   assert.match(fn('retrySpeakingHtml'), /Your browser does not listen or record\./);
   // Coaching reuses the authored include/avoid lists and the existing huddle prompt — no new lists.
   const coaching = fn('retryCoachingHtml');
+  assert.match(coaching, /Nothing from this second pass is saved\./);
+  assert.doesNotMatch(coaching, /Your first choice remains in local history/);
   assert.match(coaching, /d\.mustInclude\.map/);
   assert.match(coaching, /d\.avoid\.map/);
   assert.match(coaching, /supervisionPrompt\(c,second\)/);

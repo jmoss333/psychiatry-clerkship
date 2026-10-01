@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, chromium } from '@playwright/test';
 import { routeFetchWithRetry } from './net-resilience.js';
 
 const TOOL = '/tools/communication-practice.html';
@@ -1037,6 +1037,14 @@ async function storageSnapshot(page) {
 
 test('pilot second pass reuses the authored variation, compares two picks, and stores nothing', async ({ page }) => {
   const errors = collectRuntimeErrors(page);
+  // Exercise the draft badge with a controlled fixture, independent of faculty's live queue.
+  await page.route('**/communication_cases.json', async (route) => {
+    const response = await routeFetchWithRetry(route);
+    const data = await response.json();
+    data.cases.find((item) => item.id === PILOT).facultyReview =
+      { status: 'draft', reviewer: '', lastReviewed: '' };
+    await route.fulfill({ response, json: data });
+  });
   await firstPass(page, 'c');
   const caseData = await pilotCase(page);
   const best = caseData.choices.find((choice) => choice.quality === 'best');
@@ -1211,3 +1219,158 @@ test('cases outside the pilot never show a second pass', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'Try the next related case' })).toBeVisible();
   }
 });
+
+for (const secondPass of [false, true]) {
+  test(`double-click Finish cannot select a ${secondPass ? 'second' : 'first'}-pass answer`, async ({ page }) => {
+    const errors = collectRuntimeErrors(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    if (secondPass) {
+      await firstPass(page, 'c');
+      await page.getByRole('button', { name: 'Retry the same skill' }).click();
+    } else {
+      await openTool(page, `?case=${PILOT}`);
+      await page.getByRole('button', { name: 'Start 20-second response' }).click();
+    }
+    const stored = await storageSnapshot(page);
+    await page.evaluate(() => {
+      window.__finishClicks = [];
+      document.addEventListener('click', (event) => {
+        const button = event.target.closest('button');
+        if (button) window.__finishClicks.push({ detail: event.detail,
+          finish: button.hasAttribute('data-finish-speaking'),
+          choice: button.getAttribute('data-choice-id') });
+      });
+    });
+    const box = await page.getByRole('button', { name: 'Finish now' }).boundingBox();
+    // Two real pointer activations at the same location, including any newly rendered button.
+    await page.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2);
+    await expectPhase(page, secondPass ? 'retry-compare' : 'compare', 0);
+    await expect(page.locator('[data-selected-choice]')).toHaveCount(0);
+    expect(await storageSnapshot(page)).toEqual(stored);
+    const clicks = await page.evaluate(() => window.__finishClicks);
+    expect(clicks[0]).toEqual({ detail: 1, finish: true, choice: null });
+    if (secondPass) {
+      // Pin the original collision: the repeated click really landed on answer a.
+      expect(clicks[1]).toEqual({ detail: 2, finish: false, choice: 'a' });
+    }
+    await page.locator('[data-choice-id="c"]').click();
+    await expectPhase(page, secondPass ? 'retry-feedback' : 'feedback', 1);
+    if (secondPass) expect(await storageSnapshot(page)).toEqual(stored);
+    else expect(JSON.parse((await storageSnapshot(page))[0])[PILOT].choiceId).toBe('c');
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const key of ['Enter', 'Space']) {
+  test(`repeated ${key} Finish activations leave the second choice deliberate`, async ({ page }) => {
+    await firstPass(page, 'c');
+    const stored = await storageSnapshot(page);
+    await page.getByRole('button', { name: 'Retry the same skill' }).focus();
+    await page.keyboard.press(key);
+    await page.getByRole('button', { name: 'Finish now' }).focus();
+    await page.keyboard.press(key);
+    await page.keyboard.press(key);
+    await page.keyboard.press(key);
+    await expectPhase(page, 'retry-compare', 0);
+    await expect(page.locator('#phase-heading')).toBeFocused();
+    await page.locator('[data-choice-id="c"]').focus();
+    await page.keyboard.press(key);
+    await expectPhase(page, 'retry-feedback', 1);
+    expect(await storageSnapshot(page)).toEqual(stored);
+  });
+}
+
+for (const failure of ['quota', 'access']) {
+  test(`second pass makes no saved-history claim with ${failure} storage failure`, async ({ page }) => {
+    const errors = collectRuntimeErrors(page);
+    await page.addInitScript((mode) => {
+      const storage = window.localStorage;
+      window.__actualPracticeStorage = () =>
+        [storage.getItem('cw_comm_v1'), storage.getItem('cw_srs_v1')];
+      if (mode === 'access') {
+        Object.defineProperty(window, 'localStorage', { get() {
+          throw new DOMException('Storage unavailable', 'SecurityError');
+        } });
+      } else {
+        const setItem = Storage.prototype.setItem;
+        Storage.prototype.setItem = function (name, value) {
+          if (name === 'cw_comm_v1' || name === 'cw_srs_v1') {
+            throw new DOMException('Storage full', 'QuotaExceededError');
+          }
+          return setItem.call(this, name, value);
+        };
+      }
+    }, failure);
+    await firstPass(page, 'c');
+    await page.getByRole('button', { name: 'Retry the same skill' }).click();
+    await page.getByRole('button', { name: 'Finish now' }).click();
+    await page.locator('[data-choice-id="c"]').click();
+    const feedback = await expectPhase(page, 'retry-feedback', 1);
+    await feedback.locator('[data-retry-coaching] summary').click();
+    await expect(feedback).toContainText('Nothing from this second pass is saved.');
+    await expect(feedback).not.toContainText('Your first choice remains in local history.');
+    await page.getByRole('button', { name: 'Finish practice' }).click();
+    const finished = await expectPhase(page, 'finished', 1);
+    await expect(finished.locator('.transfer')).toHaveText('The second pass was not saved.');
+    expect(await page.evaluate(() => window.__actualPracticeStorage())).toEqual([null, null]);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expectPhase(page, 'orient', 1);
+    await expect(page.locator('[data-desktop-navigator] .sidehead')).toHaveText(/^0 of \d+ practiced$/);
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const secondPass of [false, true]) {
+  for (const direction of ['Back', 'Forward']) {
+    test(`native ${direction} cache resets interrupted ${secondPass ? 'retry' : 'first'} speaking`, async ({ baseURL }) => {
+      // Playwright normally disables native Back cache; headless-shell also lacks this coverage.
+      // Use its installed full Chromium, without the disabling flag, in an isolated context.
+      const nativeBrowser = await chromium.launch({ channel: 'chromium', headless: true,
+        ignoreDefaultArgs: ['--disable-back-forward-cache'] });
+      try {
+        const context = await nativeBrowser.newContext({ baseURL,
+          viewport: { width: 1280, height: 900 }, serviceWorkers: 'block' });
+        await context.addInitScript(() => {
+          window.__nativeCacheRestores = 0;
+          window.addEventListener('pageshow', (event) => {
+            if (event.persisted) window.__nativeCacheRestores += 1;
+          });
+        });
+        const page = await context.newPage();
+        const errors = collectRuntimeErrors(page);
+        const away = `${TOOL}?case=discharge_demand_elicit_001`;
+        if (direction === 'Forward') await page.goto(away, { waitUntil: 'domcontentloaded' });
+        if (secondPass) {
+          await firstPass(page, 'c');
+          await page.getByRole('button', { name: 'Retry the same skill' }).click();
+        } else {
+          await openTool(page, `?case=${PILOT}`);
+          await page.getByRole('button', { name: 'Start 20-second response' }).click();
+        }
+        await expectPhase(page, secondPass ? 'retry-speaking' : 'speaking', 1);
+        const stored = await storageSnapshot(page);
+        if (direction === 'Back') await page.goto(away, { waitUntil: 'domcontentloaded' });
+        else await page.goBack({ waitUntil: 'commit' });
+        await expectPhase(page, 'orient', 1);
+        if (direction === 'Back') await page.goBack({ waitUntil: 'commit' });
+        else await page.goForward({ waitUntil: 'commit' });
+        await expect(page).toHaveURL(new URL(`${TOOL}?case=${PILOT}`, baseURL).href);
+        // Mandatory proof this was a native cached document, not a reload that conceals the bug.
+        await expect.poll(() => page.evaluate(() => window.__nativeCacheRestores)).toBe(1);
+        await expectPhase(page, 'orient', 1);
+        await expect(page.locator('[data-countdown]')).toHaveCount(0);
+        await expect(page.locator('#rep-status')).toHaveText('');
+        await expect(page.locator('#phase-heading')).toBeFocused();
+        expect(await storageSnapshot(page)).toEqual(stored);
+        // The recovered page accepts a fresh rep and has a working timer, without a grade.
+        await page.getByRole('button', { name: 'Start 20-second response' }).click();
+        await expectPhase(page, 'speaking', 1);
+        await expect(page.locator('[data-countdown]')).toHaveText('19 seconds', { timeout: 3000 });
+        expect(await storageSnapshot(page)).toEqual(stored);
+        expect(errors).toEqual([]);
+      } finally {
+        await nativeBrowser.close();
+      }
+    });
+  }
+}
