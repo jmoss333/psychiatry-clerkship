@@ -4645,3 +4645,119 @@ test('formative placement delayed loading cannot erase a newer reopened attempt'
   await page.goForward();await expect(page.locator('.fd-library:visible')).toBeVisible();
   await expectHealthy(page);
 });
+
+test('Today purpose is optional, session-only, and preserves the regular planner and private stores',async({page},info)=>{
+  await seedApp(page,info,{storage:{cw_feedback_v1:{v:1,items:[]},cw_private_reflection_v1:'synthetic private note'}});
+  await page.goto('/');await otfExpectOnePrimary(page);await otfExpectPrimaryIsFirstFocusable(page);
+  const chooser=page.locator('.fd-purpose'),toggle=chooser.locator('summary');
+  await expect(chooser).not.toHaveAttribute('open');
+  const initialURL=page.url();
+  const primary=await page.locator(OTF_PRIMARY).textContent();
+  const stores=await page.evaluate(()=>Object.fromEntries(['cw_frontdoor_v1','cw_block_v1','cw_feedback_v1','cw_private_reflection_v1'].map(key=>[key,localStorage.getItem(key)])));
+  await toggle.focus();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+  const first=chooser.locator('[data-today-purpose="rounds"]');await page.keyboard.press('Tab');await expect(first).toBeFocused();
+  for(const id of ['rounds','interview','family','study','interview']){
+    const choice=chooser.locator(`[data-today-purpose="${id}"]`);
+    await choice.click();await expect(choice).toBeFocused();await expect(choice).toHaveAttribute('aria-pressed','true');
+    await expect(chooser.getByRole('status')).toContainText('Suggested because you chose');
+    expect(page.url()).toBe(initialURL);expect(await page.locator(OTF_PRIMARY).textContent()).toBe(primary);
+    await otfExpectOnePrimary(page);
+  }
+  expect(await page.evaluate(()=>Object.fromEntries(['cw_frontdoor_v1','cw_block_v1','cw_feedback_v1','cw_private_reflection_v1'].map(key=>[key,localStorage.getItem(key)])))).toEqual(stores);
+  await chooser.locator('[data-today-purpose="study"]').click();
+  await page.locator('[data-block-minutes="20"]').click();
+  await chooser.locator('[data-today-planner]').click();
+  await expect(page.locator('[data-block-minutes="20"]')).toBeFocused();
+  await expect(page.locator('[data-block-minutes="20"]')).toHaveAttribute('aria-pressed','true');
+  expect(await page.evaluate(()=>localStorage.getItem('cw_block_v1'))).toBe(stores.cw_block_v1);
+  await chooser.locator('[data-today-purpose=""]').click();await expect(toggle).toBeFocused();await expect(chooser).not.toHaveAttribute('open');
+  await toggle.click();await chooser.locator('[data-today-purpose="family"]').click();
+  await page.locator('[data-fd-tab="library"]:visible').click();await page.goBack();
+  await expect(page.locator('[data-today-purpose="family"]')).toHaveAttribute('aria-pressed','true');
+  await page.goForward();await expect(page.locator('.fd-library:visible')).toBeVisible();
+  await page.goBack();await page.reload();await expect(chooser).not.toHaveAttribute('open');
+  await toggle.click();await expect(chooser.locator('[data-today-purpose=""]')).toHaveAttribute('aria-pressed','true');
+  await expectHealthy(page);
+});
+
+test('Today purpose uses published reader/tool routes with keyboard, mobile and large text',async({page},info)=>{
+  await seedApp(page,info);await page.goto('/');
+  const routes=[{id:'rounds',ref:'oral.html',tool:true},{id:'interview',ref:'pg_interview.md',tool:false},{id:'family',ref:'family_playbook.md',tool:false}];
+  for(let i=0;i<routes.length;i++){
+    const item=routes[i],width=[1280,320,640][i];await page.setViewportSize({width,height:900});
+    await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
+    const chooser=page.locator('.fd-purpose');
+    if(!await chooser.evaluate(el=>el.open))await chooser.locator('summary').click();
+    await chooser.locator(`[data-today-purpose="${item.id}"]`).click();
+    const open=chooser.locator(`[data-fd-open="${item.ref}"]`);await page.keyboard.press('Tab');await open.focus();
+    const paint=await open.evaluate(el=>({outline:getComputedStyle(el).outlineStyle,height:el.getBoundingClientRect().height,fits:document.documentElement.scrollWidth<=innerWidth}));
+    expect(paint.outline).not.toBe('none');expect(paint.height).toBeGreaterThanOrEqual(44);expect(paint.fits).toBe(true);
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(new RegExp((item.tool?'tool':'page')+'='+item.ref.replace('.','\\.')));
+    if(item.tool)await expect(page.locator('iframe.toolframe')).toBeVisible();
+    else await expect(page.locator('.fd-article')).toHaveAttribute('data-ref',item.ref);
+    expect(new URL(page.url()).searchParams.has('purpose')).toBe(false);
+    await page.goBack();await expect(page.locator(`[data-today-purpose="${item.id}"]`)).toHaveAttribute('aria-pressed','true');
+  }
+  await page.evaluate(()=>document.documentElement.style.fontSize='');await expectHealthy(page);
+});
+
+test('Today purpose does not replace interrupted work, due reviews or an existing study block',async({page},info)=>{
+  await seedApp(page,info,{storage:{cw_sess_v1:OTF.capsule,cw_block_v1:OTF.block,cw_srs_v1:OTF.srs}});
+  await page.goto('/');await otfExpectOnePrimary(page);
+  await expect(page.locator('.fd-primary .fd-resume__link')).toContainText('Resume question bank — 4 left');
+  const primary=await page.locator(OTF_PRIMARY).textContent();
+  const before=await page.evaluate(()=>({block:localStorage.getItem('cw_block_v1'),session:localStorage.getItem('cw_sess_v1'),dues:localStorage.getItem('cw_srs_v1')}));
+  await page.locator('.fd-purpose summary').click();
+  for(const id of ['rounds','study','family',''])await page.locator(`[data-today-purpose="${id}"]`).click();
+  expect(await page.locator(OTF_PRIMARY).textContent()).toBe(primary);
+  expect(await page.evaluate(()=>({block:localStorage.getItem('cw_block_v1'),session:localStorage.getItem('cw_sess_v1'),dues:localStorage.getItem('cw_srs_v1')}))).toEqual(before);
+  await page.locator('.fd-purpose summary').click();await page.locator('[data-today-purpose="study"]').click();
+  await page.locator('[data-today-planner]').click();await expect(page.locator('[data-block-continue]')).toBeFocused();
+  await expectHealthy(page);
+});
+
+test('Today purpose works when local storage becomes unavailable and rejects forged purposes',async({page},info)=>{
+  await seedApp(page,info);await page.goto('/');await expect(page.locator('.fd-purpose')).toBeVisible();
+  await page.evaluate(()=>{
+    const get=Storage.prototype.getItem,set=Storage.prototype.setItem;
+    Storage.prototype.getItem=function(k){if(this===localStorage)throw new DOMException('Blocked','SecurityError');return get.call(this,k);};
+    Storage.prototype.setItem=function(k,v){if(this===localStorage)throw new DOMException('Blocked','QuotaExceededError');return set.call(this,k,v);};
+  });
+  await page.locator('.fd-purpose summary').click();await page.locator('[data-today-purpose="interview"]').click();
+  await expect(page.locator('[data-today-purpose="interview"]')).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(()=>{const b=document.createElement('button');b.setAttribute('data-today-purpose','unknown-private-target');document.querySelector('.fd-purpose').appendChild(b);b.click();b.remove();});
+  await expect(page.locator('[data-today-purpose="interview"]')).toHaveAttribute('aria-pressed','true');
+  await page.locator('[data-today-purpose=""]').click();await expect(page.locator('.fd-purpose')).not.toHaveAttribute('open');
+  await expectHealthy(page);
+});
+
+
+test('Today purpose active text meets contrast in both themes and disclosure stays keyboard controlled',async({page},info)=>{
+  await seedApp(page,info);
+  for(const theme of ['light','dark']){
+    await page.addInitScript(value=>localStorage.setItem('cw_theme',value),theme);await page.goto('/');
+    const chooser=page.locator('.fd-purpose'),summary=chooser.locator('summary');
+    await summary.focus();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+    await chooser.locator('[data-today-purpose="study"]').click();
+    const ratios=await chooser.evaluate(root=>{
+      const rgb=value=>{
+        const parts=String(value).match(/[\d.]+/g);if(!parts)return null;
+        const scale=String(value).startsWith('color(srgb')?255:1;
+        return {c:parts.slice(0,3).map(Number).map(v=>v*scale),a:parts.length>3?Number(parts[3]):1};
+      };
+      const lum=color=>color.map(v=>{const s=v/255;return s<=0.03928?s/12.92:Math.pow((s+0.055)/1.055,2.4);}).reduce((a,v,i)=>a+v*[0.2126,0.7152,0.0722][i],0);
+      return [...root.querySelectorAll('summary,p,button')].filter(el=>el.getBoundingClientRect().height>0).map(el=>{
+        const ink=rgb(getComputedStyle(el).color);let node=el,ground=null;
+        while(node&&!ground){const bg=rgb(getComputedStyle(node).backgroundColor);if(bg&&bg.a>0.99)ground=bg.c;node=node.parentElement;}
+        if(!ink||!ground)throw new Error('Missing rendered color');
+        const a=lum(ink.c),b=lum(ground);return {text:el.textContent,ratio:(Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)};
+      });
+    });
+    expect(ratios.length).toBeGreaterThanOrEqual(8);for(const row of ratios)expect(row.ratio,row.text).toBeGreaterThanOrEqual(4.5);
+    await summary.focus();await page.keyboard.press('Enter');await expect(chooser).not.toHaveAttribute('open');
+    await expect(summary).toBeFocused();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+    expect(await summary.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
+  }
+  await expectHealthy(page);
+});

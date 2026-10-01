@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(526 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(531 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -1009,3 +1009,7 @@ dark value). `tests/fd-tokens.test.mjs` fails the build on any raw hex in `front
 The one custom property the markup owns is `--fd-ring-pct` on `.fd-ring`.
 
 Offline availability: `.fd-offline__open` wraps its label and cache status for small screens and large text; its status describes the current route cache, not clinical or shift readiness. The family-conversation result uses the existing `.fd-btn.fd-btn--ghost` internal Playbook control, only when the active audience index contains `family_playbook.md`.
+
+## Optional session purpose chooser (2026-10-01)
+
+`fd-purpose`, `fd-purpose__summary`, `fd-purpose__choices`, `fd-purpose__note`, `fd-purpose__reason` style the optional disclosure after Today’s existing device-store cards. Buttons reuse `fd-btn` tokens and pressed state uses an attribute selector. Purpose choices and open state are in-memory only; standard primary/due-review/planner rules remain unchanged.
