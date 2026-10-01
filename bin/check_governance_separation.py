@@ -164,6 +164,11 @@ LEDGER_REL = "13_Faculty_Resources/reviewed.json"
 TOPIC_META_REL = "topic_meta.json"
 QBANK_REL = "question_bank.json"
 PHARMACY_REL = "pharmacy.json"
+# Registries that share pharmacy.json's ledger shape (records by `id`, a facultyReview block,
+# a reviewedFieldsHash) and therefore the same promotion rule (decision D2 at G1). pharmacy.json
+# keeps its own verdict key and report lines (pinned below); the others report under
+# registryPromotions. Add a registry here the moment its validator binds a review hash.
+DERIVED_REGISTRY_RELS = ("screening_tools.json", "therapies.json")
 SHIPPED_REL = "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
 ATTEST_BRANCH = "attest/pending"
 
@@ -613,8 +618,8 @@ def qbank_promotions(base_doc, head_doc):
     return out
 
 
-def pharmacy_records(doc):
-    """{id: record} for pharmacy.json, or {} when the file is absent at that rev.
+def pharmacy_records(doc, rel=PHARMACY_REL):
+    """{id: record} for pharmacy.json (or another derived registry), or {} when absent at that rev.
 
     Same shape door as qbank_items: a document with no `records` list is exit 2, never {},
     because {} at head reads as "every record deleted" — registration — over a diff that
@@ -623,18 +628,18 @@ def pharmacy_records(doc):
     if doc is None:
         return {}
     if not isinstance(doc, dict):
-        raise InputError("%s is not an object" % PHARMACY_REL)
+        raise InputError("%s is not an object" % rel)
     records = doc.get("records")
     if not isinstance(records, list):
         raise InputError("%s has no `records` list (found %s)"
-                         % (PHARMACY_REL, type(records).__name__))
+                         % (rel, type(records).__name__))
     return {r["id"]: r for r in records if isinstance(r, dict) and isinstance(r.get("id"), str)}
 
 
-def pharmacy_promotions(base_doc, head_doc):
-    """[(record id, what changed)] for every pharmacy.json facultyReview promotion."""
-    base = pharmacy_records(base_doc)
-    head = pharmacy_records(head_doc)
+def pharmacy_promotions(base_doc, head_doc, rel=PHARMACY_REL):
+    """[(record id, what changed)] for every facultyReview promotion in a derived registry."""
+    base = pharmacy_records(base_doc, rel)
+    head = pharmacy_records(head_doc, rel)
     out = []
     for rid in sorted(set(base) | set(head)):
         after = _faculty_review(head.get(rid))
@@ -732,7 +737,11 @@ def classify(root, base, head, head_branch, base_source=None):
     qbank = qbank_promotions(base_qbank, head_qbank)
     pharmacy = pharmacy_promotions(json_at(root, base, PHARMACY_REL),
                                    json_at(root, head, PHARMACY_REL))
-    promotions = bool(ledger) or bool(topic_meta) or bool(qbank) or bool(pharmacy)
+    registries = {rel: pharmacy_promotions(json_at(root, base, rel), json_at(root, head, rel), rel)
+                  for rel in DERIVED_REGISTRY_RELS}
+    registries = {rel: found for rel, found in registries.items() if found}
+    promotions = (bool(ledger) or bool(topic_meta) or bool(qbank) or bool(pharmacy)
+                  or bool(registries))
     # A status-only question_bank.json diff is governance state, not content — see
     # qbank_text(). Said out loud in the report, never silently: a path leaving the content
     # set is precisely the shrink docs/SILENT_SHRINK_CHECKLIST.md is about.
@@ -771,7 +780,7 @@ def classify(root, base, head, head_branch, base_source=None):
         "changed": changed, "content": content, "governance": governance,
         "ledgerPromotions": ledger, "topicMetaPromotions": topic_meta,
         "qbankPromotions": qbank, "qbankStatusOnly": qbank_status_only,
-        "pharmacyPromotions": pharmacy,
+        "pharmacyPromotions": pharmacy, "registryPromotions": registries,
         "commitOffenders": offenders, "staleBaseHint": stale_base, "failures": failures,
     }
 
@@ -799,6 +808,10 @@ def _promotion_lines(verdict, indent="    "):
         lines.append("%s%s:" % (indent, PHARMACY_REL))
         for rid, change in verdict["pharmacyPromotions"]:
             lines.append("%s  pharmacy %s: %s" % (indent, rid, change))
+    for rel, found in sorted((verdict.get("registryPromotions") or {}).items()):
+        lines.append("%s%s:" % (indent, rel))
+        for rid, change in found:
+            lines.append("%s  registry %s: %s" % (indent, rid, change))
     return lines
 
 
@@ -881,7 +894,8 @@ def run(root, base, head, head_branch, fmt="text", stream=None, base_source=None
         return 0
 
     promotions = (len(verdict["ledgerPromotions"]) + len(verdict["topicMetaPromotions"])
-                  + len(verdict["qbankPromotions"]) + len(verdict["pharmacyPromotions"]))
+                  + len(verdict["qbankPromotions"]) + len(verdict["pharmacyPromotions"])
+                  + sum(len(found) for found in (verdict.get("registryPromotions") or {}).values()))
     print("governance separation OK — %s; %d changed path(s), %d content, %d governance, "
           "%d promotion(s) on %s"
           % (where, len(verdict["changed"]), len(verdict["content"]),
@@ -1375,6 +1389,27 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         verdict("(s) a pending pharmacy record is registration",
                 _case(root, "feature-rx-pending", lambda: _write(root, PHARMACY_REL, _rx("pending"))),
                 0, [])
+
+        # (s2) THE OTHER DERIVED REGISTRIES ARE LEDGERS TOO. screening_tools.json and
+        # therapies.json carry the same facultyReview block and reviewedFieldsHash (their
+        # validators bind it exactly as AC6 does), so a feature branch may register but never
+        # promote a scale or a therapy either. Absent at base (the common case until their
+        # first batch lands) reads as {} — every record is new.
+        for rel, rid in (("screening_tools.json", "phq-9"), ("therapies.json", "cbt")):
+            def _reg(status, _rid=rid, **review):
+                block = dict({"status": status}, **review)
+                return {"schemaVersion": 1, "records": [{"id": _rid, "facultyReview": block}]}
+
+            def reg_born_reviewed(_rel=rel, _reg=_reg):
+                _write(root, _rel, _reg("reviewed", **reviewed_block))
+            code, text = _case(root, "feature-%s-born" % rel.split(".")[0], reg_born_reviewed)
+            check("(s2) a %s record born reviewed on a feature branch exits 1" % rel, code, 1)
+            check("(s2) %s fires L2 only" % rel, _rules(text), ["L2"])
+            check("(s2) %s names the record and the flip" % rel,
+                  "registry %s: facultyReview new→reviewed" % rid in text, True)
+            verdict("(s2) a pending %s record is registration" % rel,
+                    _case(root, "feature-%s-pending" % rel.split(".")[0],
+                          lambda _rel=rel, _reg=_reg: _write(root, _rel, _reg("pending"))), 0, [])
 
         code, text = _case(root, "attest/pending-rx", rx_born_reviewed, email=CONSOLE_IDENTITY,
                            head_branch=ATTEST_BRANCH)

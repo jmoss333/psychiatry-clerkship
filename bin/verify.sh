@@ -328,6 +328,14 @@ step "test_validate_pharmacy"              python3 $A/pharmacy/test_validate_pha
 step "validate_pharmacy"                   python3 $A/pharmacy/validate_pharmacy.py
 step "test_build_rx_deck"                  python3 $A/pharmacy/test_build_rx_deck.py
 step "rx deck is regenerated"              python3 $A/pharmacy/build_rx_deck.py --check
+# Field-map contract (every ReConnect-derived registry) and the scales / therapies gates,
+# which share registry_checks.py with the pharmacy gate (parity pinned by its test).
+step "field maps pass the contract"        python3 $A/reconnect_fieldmap.py --check
+step "unit — registry checks parity"       python3 $A/test_registry_checks.py
+step "test_validate_screening_tools"       python3 $A/screening_tools/test_validate_screening_tools.py
+step "validate_screening_tools"            python3 $A/screening_tools/validate_screening_tools.py
+step "test_validate_therapies"             python3 $A/therapies/test_validate_therapies.py
+step "validate_therapies"                  python3 $A/therapies/validate_therapies.py
 step "unit — surface governance"            python3 $A/test_surface_governance.py
 step "unit — tool governance"               python3 $A/test_validate_tool_governance.py
 step "validate_tool_governance"             python3 $A/validate_tool_governance.py
