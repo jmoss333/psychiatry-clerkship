@@ -34,17 +34,42 @@ const specPath = path.join(repo, 'tests', 'smoke', 'communication-practice.spec.
 // Budgets, mirrored from the smoke spec. Verified against it below so they cannot drift.
 const ORIENT_BUDGET = 60;
 const FEEDBACK_BUDGET = 55;
+// The second-pass feedback panel (pilot case only) carries the retry pick's authored feedback
+// PLUS a two-pass comparison line and an honesty sentence, so it is budgeted separately.
+const RETRY_FEEDBACK_BUDGET = 90;
 
 // Fixed text the panel renders around the authored strings, transcribed from
 // communication-practice.html. visibleWordCount() strips .sr-only, [hidden], and the
 // non-summary children of a closed <details>, so the deeper-coaching block contributes
 // only its <summary>.
+//
+// The feedback panel's primary action differs by case: the one RETRY_PILOT case offers
+// "Retry the same skill" in place of "Try the next related case" (one word shorter — the
+// pilot's best-choice feedback already sits at 52/55, so the retry action had to REPLACE
+// the next-related action rather than join it).
 const PANEL_CHROME = {
   orient: ['Start 20-second response', 'Your browser does not listen or record.'],
-  feedbackCommon: ['Try the next related case', 'Deeper coaching'],
+  feedbackCommon: ['Deeper coaching'],
+  feedbackNext: 'Try the next related case',
+  feedbackRetry: 'Retry the same skill',
   transferBest: 'Say it again: Keep the stance in your own words.',
   transferOther: 'Say it again: Validate first, then ask one clear next question.',
+  retryFeedback: [
+    'Second pass:', // heading prefix before the quality label
+    'First pass:', 'Second pass:', // comparison line, each followed by a quality label
+    'This compares the two authored lines you chose, not your spoken words.',
+    'Finish practice',
+    'Keep, change, listen for', // closed <details> summary
+  ],
 };
+
+// The pilot table, read from the tool so this model follows the source rather than a copy.
+const toolHtml = fs.readFileSync(toolPath, 'utf8');
+const pilotLine = toolHtml.split('\n').find((line) => line.startsWith('var RETRY_PILOT='));
+assert.ok(pilotLine, 'communication-practice.html declares RETRY_PILOT on its own line');
+// eslint-disable-next-line no-new-func
+const RETRY_PILOT = new Function(`${pilotLine}; return RETRY_PILOT;`)();
+const isPilot = (c) => Boolean(c && RETRY_PILOT[c.id]);
 
 const QUALITY_LABEL = {
   best: 'Best next line',
@@ -77,7 +102,18 @@ const feedbackWords = (c, choice) =>
     qualityLabel(choice.quality),
     choice.feedback,
     choice.quality === 'best' ? PANEL_CHROME.transferBest : PANEL_CHROME.transferOther,
+    isPilot(c) ? PANEL_CHROME.feedbackRetry : PANEL_CHROME.feedbackNext,
     ...PANEL_CHROME.feedbackCommon,
+  );
+
+// Second-pass feedback: the retry pick's label + feedback, both passes' labels, the chrome.
+const retryFeedbackWords = (first, second) =>
+  sum(
+    qualityLabel(second.quality),
+    second.feedback,
+    qualityLabel(first.quality),
+    qualityLabel(second.quality),
+    ...PANEL_CHROME.retryFeedback,
   );
 
 const cases = JSON.parse(fs.readFileSync(casesPath, 'utf8')).cases;
@@ -114,15 +150,20 @@ test('budgets here match the smoke spec they mirror', () => {
     `The smoke spec's orient budget no longer reads ${ORIENT_BUDGET}; update ORIENT_BUDGET.`);
   assert.match(spec, new RegExp(`Feedback word budget[\\s\\S]{0,200}?toBeLessThan\\(${FEEDBACK_BUDGET}\\)`),
     `The smoke spec's feedback budget no longer reads ${FEEDBACK_BUDGET}; update FEEDBACK_BUDGET.`);
+  assert.match(spec, new RegExp(`Second-pass feedback word budget[\\s\\S]{0,200}?toBeLessThan\\(${RETRY_FEEDBACK_BUDGET}\\)`),
+    `The smoke spec's second-pass budget no longer reads ${RETRY_FEEDBACK_BUDGET}; update RETRY_FEEDBACK_BUDGET.`);
 });
 
 test('the chrome strings still exist in the tool', () => {
-  const html = fs.readFileSync(toolPath, 'utf8');
+  const html = toolHtml;
   const literals = [
     ...PANEL_CHROME.orient,
     ...PANEL_CHROME.feedbackCommon,
+    PANEL_CHROME.feedbackNext,
+    PANEL_CHROME.feedbackRetry,
     PANEL_CHROME.transferBest,
     PANEL_CHROME.transferOther,
+    ...PANEL_CHROME.retryFeedback,
     ...Object.values(QUALITY_LABEL),
     ...Object.values(REVIEW_BADGE),
   ];
@@ -158,4 +199,21 @@ test('every authored choice fits the feedback word budget', () => {
     `Feedback panel over budget (< ${FEEDBACK_BUDGET} words). The panel adds ~20 words of ` +
       `chrome around the feedback string, so the prose itself has ~34 words to work with.`,
   );
+});
+
+test('every first/second pick pair on the pilot case fits the second-pass budget', () => {
+  const pilots = cases.filter(isPilot);
+  assert.ok(pilots.length > 0, 'RETRY_PILOT names at least one authored case');
+  const over = [];
+  for (const c of pilots) {
+    for (const first of c.choices) {
+      for (const second of c.choices) {
+        const n = retryFeedbackWords(first, second);
+        if (n >= RETRY_FEEDBACK_BUDGET) over.push([n, `${c.id}/${first.id}->${second.id}`]);
+      }
+    }
+  }
+  assert.deepEqual(over, [],
+    `Second-pass feedback panel over budget (< ${RETRY_FEEDBACK_BUDGET} words). Shorten the ` +
+      `chrome in retryFeedbackHtml; the authored feedback is the faculty's text.`);
 });

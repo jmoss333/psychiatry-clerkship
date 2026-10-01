@@ -1006,3 +1006,208 @@ test('reduced motion removes transitions', async ({ page }) => {
   await expect(page.locator('[data-rep-panel]')).toHaveCSS('animation-name', 'none');
   await expect(page.locator('[data-rep-panel]')).toHaveCSS('transition-duration', '0s');
 });
+
+// ---- Same-skill second pass (static pilot: teach_back_closing_001) -------------------------
+// The pilot replaces the feedback panel's "Try the next related case" action with "Retry the
+// same skill" on ONE case. The second pass reuses the authored variation sentence already in
+// that case's best-choice feedback, offers the same four authored lines, compares the two
+// picks by their authored quality, and persists nothing: cw_comm_v1 and cw_srs_v1 must be
+// byte-identical before and after. tests/communication-retry-pilot.test.mjs pins the source
+// contracts; these cases watch the behaviour in a real browser on both audience builds.
+
+const PILOT = 'teach_back_closing_001';
+
+async function pilotCase(page) {
+  return page.evaluate(async (id) => {
+    const data = await fetch('../communication_cases.json').then((response) => response.json());
+    return data.cases.find((item) => item.id === id);
+  }, PILOT);
+}
+
+async function firstPass(page, choiceId) {
+  await openTool(page, `?case=${PILOT}`);
+  await startAndFinish(page);
+  await page.locator(`[data-choice-id="${choiceId}"]`).click();
+  await expectPhase(page, 'feedback', 1);
+}
+
+async function storageSnapshot(page) {
+  return page.evaluate(() => [localStorage.getItem('cw_comm_v1'), localStorage.getItem('cw_srs_v1')]);
+}
+
+test('pilot second pass reuses the authored variation, compares two picks, and stores nothing', async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await firstPass(page, 'c');
+  const caseData = await pilotCase(page);
+  const best = caseData.choices.find((choice) => choice.quality === 'best');
+  await expect(page.getByRole('button', { name: 'Try the next related case' })).toHaveCount(0);
+  const stored = await storageSnapshot(page);
+  expect(stored[0]).toContain(PILOT);
+
+  await observeAnnouncements(page);
+  await page.getByRole('button', { name: 'Retry the same skill' }).click();
+  const speaking = await expectPhase(page, 'retry-speaking', 1);
+  await expect(page.locator('#phase-heading')).toBeFocused();
+  await expect(speaking).toContainText('Draft · faculty review needed');
+  // The variation shown is the trailing sentence of the authored best-choice feedback, verbatim.
+  const variation = await speaking.locator('.prompt').innerText();
+  expect(best.feedback.endsWith(variation)).toBe(true);
+  await expect(speaking).toContainText('Your browser does not listen or record.');
+  await expect(page.locator('[data-choice-id]')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Finish now' }).click();
+  await expectPhase(page, 'retry-compare', 0);
+  await expect(page.getByRole('group', { name: 'Which line is closest to your second response?' })).toBeVisible();
+  await expect(page.locator('[data-choice-id]')).toHaveCount(caseData.choices.length);
+
+  await page.locator('[data-choice-id="b"]').click();
+  const compared = await expectPhase(page, 'retry-feedback', 1);
+  await expect(page.locator('#phase-heading')).toHaveText('Second pass: Partly useful');
+  await expect(compared.locator('[data-feedback]')).toContainText(caseData.choices.find((c) => c.id === 'b').feedback);
+  await expect(compared.locator('[data-pass-compare]')).toHaveText('First pass: Best next line. Second pass: Partly useful.');
+  await expect(compared).toContainText('This compares the two authored lines you chose, not your spoken words.');
+  await expect(compared.locator('[data-retry-coaching]')).not.toHaveAttribute('open', '');
+  await compared.locator('[data-retry-coaching] summary').click();
+  await expect(compared.locator('[data-retry-coaching]')).toContainText(caseData.rapidDrill.mustInclude[0]);
+  await expect(compared.locator('[data-retry-coaching]')).toContainText(caseData.rapidDrill.avoid[0]);
+  await expect(compared.locator('[data-retry-coaching]')).toContainText('Listen for');
+  await expect(compared.locator('[data-retry-coaching]')).toContainText(`First: ${best.text}`);
+
+  await page.getByRole('button', { name: 'Finish practice' }).click();
+  const finished = await expectPhase(page, 'finished', 1);
+  await expect(page.locator('#phase-heading')).toHaveText('Practice loop complete');
+  await expect(finished).toContainText('The second pass was not saved.');
+  await expect(finished).toContainText('Draft · faculty review needed');
+  await expect(page.getByRole('button', { name: 'Try the next related case' })).toBeVisible();
+
+  // Optional more practice stays inside the pilot and still writes nothing.
+  await page.getByRole('button', { name: 'Practice the second pass again' }).click();
+  await expectPhase(page, 'retry-speaking', 1);
+  await page.getByRole('button', { name: 'Finish now' }).click();
+  await page.locator('[data-choice-id="d"]').click();
+  await expect(page.locator('[data-pass-compare]')).toHaveText('First pass: Best next line. Second pass: Avoid this line.');
+
+  expect(await storageSnapshot(page)).toEqual(stored);
+  await expect(page.locator('[data-desktop-navigator] [data-case-select="teach_back_closing_001"] .case-status')).toHaveText('Practiced well');
+  const announcements = await page.evaluate(() => window.__repAnnouncements);
+  expect(announcements).toEqual([
+    'Second pass started. 20 seconds.',
+    'Compare your sentence with the choices.',
+    caseData.choices.find((c) => c.id === 'b').feedback,
+    'Practice loop complete.',
+    'Second pass started. 20 seconds.',
+    'Compare your sentence with the choices.',
+    caseData.choices.find((c) => c.id === 'd').feedback,
+  ]);
+  expect(errors).toEqual([]);
+});
+
+test('second-pass panels fit their word budgets for every pick', async ({ page }) => {
+  const caseData = await (async () => { await openTool(page); return pilotCase(page); })();
+  for (const second of caseData.choices) {
+    await firstPass(page, 'c');
+    expect(await visibleWordCount(page.locator('[data-rep-panel]')), `Feedback word budget for ${PILOT}/c`).toBeLessThan(55);
+    await page.getByRole('button', { name: 'Retry the same skill' }).click();
+    expect(await visibleWordCount(page.locator('[data-rep-panel]')), 'Second-pass speaking word budget').toBeLessThan(60);
+    await page.getByRole('button', { name: 'Finish now' }).click();
+    await page.locator(`[data-choice-id="${second.id}"]`).click();
+    expect(await visibleWordCount(page.locator('[data-rep-panel]')), `Second-pass feedback word budget for c->${second.id}`).toBeLessThan(90);
+    await page.getByRole('button', { name: 'Finish practice' }).click();
+    expect(await visibleWordCount(page.locator('[data-rep-panel]')), 'Finished word budget').toBeLessThan(60);
+  }
+});
+
+test('second pass is interrupted honestly by the timer, a case change, a filter change, and reload', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
+  const errors = collectRuntimeErrors(page);
+  await firstPass(page, 'a');
+  const stored = await storageSnapshot(page);
+
+  // Timer expiry advances the second pass to its compare step.
+  await page.getByRole('button', { name: 'Retry the same skill' }).click();
+  await expect(page.locator('[data-countdown]')).toHaveText('20 seconds');
+  await page.clock.fastForward(20_001);
+  await expectPhase(page, 'retry-compare', 0);
+
+  // A case change during the second pass lands on that case's orient with no countdown left.
+  await page.locator('[data-choice-id="c"]').click();
+  await expectPhase(page, 'retry-feedback', 1);
+  await page.getByRole('button', { name: 'Finish practice' }).click();
+  await page.getByRole('button', { name: 'Practice the second pass again' }).click();
+  await expectPhase(page, 'retry-speaking', 1);
+  await page.locator('[data-desktop-navigator] [data-case-select="discharge_demand_elicit_001"]').click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('[data-countdown]')).toHaveCount(0);
+  await page.clock.fastForward(21_000);
+  await expectPhase(page, 'orient', 1);
+
+  // A filter change during the second pass resets to orient too.
+  await page.locator('[data-desktop-navigator] [data-case-select="teach_back_closing_001"]').click();
+  await startAndFinish(page);
+  await page.locator('[data-choice-id="b"]').click();
+  await page.getByRole('button', { name: 'Retry the same skill' }).click();
+  await expectPhase(page, 'retry-speaking', 1);
+  await page.locator('[data-desktop-navigator] [data-filter="safety"]').click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('[data-countdown]')).toHaveCount(0);
+
+  // Reload mid-pass: the second pass is session-only, so the tool reopens at orient.
+  await startAndFinish(page);
+  await page.locator('[data-choice-id="c"]').click();
+  await page.getByRole('button', { name: 'Retry the same skill' }).click();
+  await page.getByRole('button', { name: 'Finish now' }).click();
+  await page.locator('[data-choice-id="d"]').click();
+  await expectPhase(page, 'retry-feedback', 1);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('[data-second-pass]')).toHaveCount(0);
+
+  // Only the ordinary first passes wrote history (b overwrote a, then c overwrote b), and the
+  // three second passes (c, then d twice) left no record of their own: one case record, one
+  // COMM# card, exactly as before the pilot existed.
+  const after = await storageSnapshot(page);
+  expect(stored[0]).not.toBeNull();
+  expect(JSON.parse(after[0])).toEqual({ [PILOT]: { choiceId: 'c', quality: 'best', at: expect.any(String) } });
+  const cards = Object.keys(JSON.parse(after[1]).cards).filter((id) => id.startsWith('COMM#'));
+  expect(cards).toEqual([`COMM#${PILOT}`]);
+  expect(errors).toEqual([]);
+});
+
+test('second pass is reachable by keyboard and never adds a second primary action', async ({ page }) => {
+  await firstPass(page, 'c');
+  const retry = page.getByRole('button', { name: 'Retry the same skill' });
+  await tabUntilFocused(page, retry);
+  await page.keyboard.press('Enter');
+  await expectPhase(page, 'retry-speaking', 1);
+  await expect(page.locator('#phase-heading')).toBeFocused();
+  const finish = page.getByRole('button', { name: 'Finish now' });
+  await tabUntilFocused(page, finish);
+  await page.keyboard.press('Enter');
+  await expectPhase(page, 'retry-compare', 0);
+  const choice = page.locator('[data-choice-id="c"]');
+  await tabUntilFocused(page, choice);
+  await page.keyboard.press('Enter');
+  await expectPhase(page, 'retry-feedback', 1);
+  const done = page.getByRole('button', { name: 'Finish practice' });
+  await tabUntilFocused(page, done);
+  await page.keyboard.press('Enter');
+  const finished = await expectPhase(page, 'finished', 1);
+  await expect(finished.locator('button')).toHaveCount(2);
+  await expect(finished.locator('[data-primary-action]')).toHaveCount(1);
+});
+
+test('cases outside the pilot never show a second pass', async ({ page }) => {
+  await openTool(page);
+  const ids = await page.evaluate(async () => {
+    const data = await fetch('../communication_cases.json').then((response) => response.json());
+    return data.cases.map((item) => item.id);
+  });
+  for (const id of ids.filter((item) => item !== PILOT)) {
+    await openTool(page, `?case=${id}`);
+    await startAndFinish(page);
+    await page.locator('[data-choice-id]').first().click();
+    await expectPhase(page, 'feedback', 1);
+    await expect(page.locator('[data-second-pass]')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Try the next related case' })).toBeVisible();
+  }
+});
