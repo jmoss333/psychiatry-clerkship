@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "description": "Psychotherapies and evidence-based practices (crossover v2 #13). Empty until faculty gate G0-E approves the field map; records land in reviewed batches.",
+  "provenance": {
+    "upstreamRepository": "https://github.com/jmoss333/reconnect-psychiatry-system.git",
+    "upstreamPath": "databases/core/data_all.json",
+    "upstreamField": "ebp_reference",
+    "relation": "derived",
+    "syncPolicy": "manual-reviewed-only",
+    "syncTool": "13_Faculty_Resources/_automation/sync_from_reconnect.py",
+    "fieldMapPath": "13_Faculty_Resources/_automation/therapies/reconnect_ebp_fieldmap.json",
+    "note": "Report-only sync. Nothing is copied automatically; each record is added by a reviewed edit."
+  },
+  "records": []
+}

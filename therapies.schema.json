@@ -1,0 +1,498 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Clerkship psychotherapies and evidence-based practices",
+  "description": "Modality records (crossover v2 #13). Derived in part from the ReConnect ebp_reference table via sync_from_reconnect.py (report-only) plus guideline-verified and faculty-authored fields. Local availability is never carried; the registry links to the resource finder instead.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "description",
+    "provenance",
+    "records"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upstreamRepository",
+        "upstreamPath",
+        "upstreamField",
+        "relation",
+        "syncPolicy",
+        "syncTool",
+        "fieldMapPath"
+      ],
+      "properties": {
+        "upstreamRepository": {
+          "const": "https://github.com/jmoss333/reconnect-psychiatry-system.git"
+        },
+        "upstreamPath": {
+          "const": "databases/core/data_all.json"
+        },
+        "upstreamField": {
+          "const": "ebp_reference"
+        },
+        "relation": {
+          "const": "derived"
+        },
+        "syncPolicy": {
+          "const": "manual-reviewed-only"
+        },
+        "syncTool": {
+          "const": "13_Faculty_Resources/_automation/sync_from_reconnect.py"
+        },
+        "fieldMapPath": {
+          "const": "13_Faculty_Resources/_automation/therapies/reconnect_ebp_fieldmap.json"
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "shortName",
+          "fullName",
+          "domain",
+          "safetyLevel",
+          "evidence",
+          "facultyReview",
+          "provenance"
+        ],
+        "properties": {
+          "shortName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fullName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "domain": {
+            "type": "string",
+            "minLength": 1
+          },
+          "audienceTier": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "enum": [
+                "ms3",
+                "resident",
+                "clinician",
+                "family",
+                "patient"
+              ]
+            }
+          },
+          "safetyTier": {
+            "type": "string",
+            "minLength": 1
+          },
+          "safetyLevel": {
+            "enum": [
+              "low",
+              "moderate",
+              "high"
+            ]
+          },
+          "pearls": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "t1": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "t2": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "attendingAsks": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "familyExplainer": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fkGrade": {
+                "type": "number",
+                "maximum": 8.0
+              },
+              "handoutRef": {
+                "type": "string",
+                "pattern": "^FH-MED[0-9]{2,}$"
+              }
+            }
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "qbankIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "relatedDrugIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "pharmacy.json ids this record cross-links to"
+          },
+          "standards": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "acgme": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "epa": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "facultyReview": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "pending",
+                  "reviewed",
+                  "needs-review"
+                ]
+              },
+              "reviewer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lastReviewed": {
+                "type": "string",
+                "format": "date"
+              },
+              "reviewedFieldsHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "retrievalHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          },
+          "retrieval": {
+            "type": "array",
+            "description": "Maps each attendingAsks item to the approved card fields that answer it, so an RX# flashcard can reveal only text faculty already attested. No clinical wording lives here. Reviewed separately from the J fields (facultyReview.retrievalHash).",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "askIndex",
+                "revealFrom"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^ask[0-9]+$"
+                },
+                "askIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2
+                },
+                "revealFrom": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9]+(?:\\.[A-Za-z0-9]+|\\[[0-9]+\\])*$"
+                  }
+                }
+              }
+            }
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "guideline",
+              "level"
+            ],
+            "properties": {
+              "guideline": {
+                "type": "string",
+                "minLength": 1,
+                "description": "the guideline or manual id as therapies/guideline_sources.json records it (e.g. 'NICE NG222')"
+              },
+              "level": {
+                "enum": [
+                  "I",
+                  "II",
+                  "III",
+                  "IV"
+                ]
+              },
+              "keyEvidenceIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "format": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "typicalSessions": {
+                "type": "string",
+                "minLength": 1
+              },
+              "modalities": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "enum": [
+                    "individual",
+                    "group",
+                    "family",
+                    "couples",
+                    "telehealth",
+                    "inpatient",
+                    "milieu",
+                    "procedural"
+                  ]
+                }
+              },
+              "settingNote": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "keyComponents": {
+                "type": "string",
+                "minLength": 1
+              },
+              "oneLiner": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "guidance": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "whenToUse": {
+                "type": "string",
+                "minLength": 1
+              },
+              "cautions": {
+                "type": "string",
+                "minLength": 1
+              },
+              "whatToTellTheFamily": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "relatedScaleIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "screening_tools.json ids used to track response"
+          },
+          "provenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fieldClasses"
+            ],
+            "properties": {
+              "reconnectRecords": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^ebp_reference\\[name=[^\\]]+\\]$"
+                }
+              },
+              "sourceRevision": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{40}$"
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "sourceVerifiedOn": {
+                "type": "string",
+                "format": "date",
+                "description": "when the V-class facts were last checked against the custodian / guideline source"
+              },
+              "fieldClasses": {
+                "type": "object",
+                "additionalProperties": {
+                  "enum": [
+                    "V",
+                    "R",
+                    "E",
+                    "J"
+                  ]
+                },
+                "description": "V = verifiable against the custodian or cited guideline (the analogue of the pharmacy's L); R = ReConnect-inherited; E = evidence-bearing; J = faculty judgment"
+              },
+              "carried": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "description": "Upstream values as carried at sourceRevision, keyed by upstream field name; sync_from_reconnect.py diffs these for drift."
+              },
+              "jSources": {
+                "type": "object",
+                "description": "Where each J or E field came from: field path -> one or more verbatim quotes. 'page' is a repo path to an attested learner page (the quote must appear in it verbatim, whitespace-normalised) or 'reconnect:<upstream field>' (the quote must equal provenance.carried[<field>]). validate_pharmacy.py checks every quote.",
+                "additionalProperties": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "page",
+                      "quote"
+                    ],
+                    "properties": {
+                      "page": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "quote": {
+                        "type": "string",
+                        "minLength": 12
+                      }
+                    }
+                  }
+                }
+              },
+              "authoredFields": {
+                "type": "array",
+                "description": "J field paths written new for the pharmacy, with no attested source to quote — the faculty reviewer's first stop.",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "upstreamDiscrepancies": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "field",
+                    "upstreamValue",
+                    "usedValue",
+                    "basis"
+                  ],
+                  "properties": {
+                    "field": {
+                      "type": "string"
+                    },
+                    "upstreamValue": {
+                      "type": [
+                        "string",
+                        "boolean",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "usedValue": {
+                      "type": [
+                        "string",
+                        "boolean",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "basis": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

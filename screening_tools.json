@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "description": "Scales and screeners (crossover v2 #12). Empty until faculty gate G0-S approves the field map; records land in reviewed batches.",
+  "provenance": {
+    "upstreamRepository": "https://github.com/jmoss333/reconnect-psychiatry-system.git",
+    "upstreamPath": "databases/core/data_all.json",
+    "upstreamField": "screening_tools",
+    "relation": "derived",
+    "syncPolicy": "manual-reviewed-only",
+    "syncTool": "13_Faculty_Resources/_automation/sync_from_reconnect.py",
+    "fieldMapPath": "13_Faculty_Resources/_automation/screening_tools/reconnect_screening_tools_fieldmap.json",
+    "note": "Report-only sync. Nothing is copied automatically; each record is added by a reviewed edit."
+  },
+  "records": []
+}
