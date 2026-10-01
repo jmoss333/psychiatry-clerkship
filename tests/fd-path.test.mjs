@@ -20,7 +20,9 @@ const make = new Function(`
   ${read('frontdoor/fd_today.js')}
   ${pathSrc}
   return { fdPath: fdPath, fdBuildIndex: fdBuildIndex, fdItemsForWeek: fdItemsForWeek,
-           fdTodayProgress: fdTodayProgress, fdPathMoveWeek: fdPathMoveWeek };
+           fdTodayProgress: fdTodayProgress, fdPathMoveWeek: fdPathMoveWeek,
+           fdPathConnectorD: fdPathConnectorD, fdPathStopX: fdPathStopX, fdPathStopY: fdPathStopY,
+           FD_PATH_BAND: FD_PATH_BAND };
 `);
 const F = make();
 
@@ -131,6 +133,47 @@ test('the production connector is neutral and does not imply ordered completion'
   assert.doesNotMatch(html, /stroke-dasharray|stroke-dashoffset|path-progress/);
 });
 
+// ---- route geometry: the road is generated from the stops --------------------------------
+
+function parseD(d) {
+  const nums = d.replace(/[MC]/g, ' ').trim().split(/\s+/).map(Number);
+  const start = [nums[0], nums[1]];
+  const segs = [];
+  for (let i = 2; i < nums.length; i += 6) segs.push(nums.slice(i, i + 6));
+  return { start, segs, cCount: (d.match(/C/g) || []).length };
+}
+
+for (const n of [4, 6]) {
+  test(`the connector for ${n} stops starts on stop 1, ends on stop ${n}, and passes through every stop`, () => {
+    const { start, segs, cCount } = parseD(F.fdPathConnectorD(n));
+    assert.equal(cCount, n - 1);
+    assert.deepEqual(start, [F.fdPathStopX(0, n), F.fdPathStopY(0)]);
+    segs.forEach((seg, k) => {
+      const i = k + 1;
+      assert.deepEqual([seg[4], seg[5]], [F.fdPathStopX(i, n), F.fdPathStopY(i)], `segment ${k} ends on stop ${i + 1}`);
+      assert.equal(seg[1], F.fdPathStopY(i - 1), 'horizontal tangent leaving the stop');
+      assert.equal(seg[3], F.fdPathStopY(i), 'horizontal tangent arriving at the stop');
+    });
+  });
+}
+
+test('stop x is the column centre and stops alternate low/high', () => {
+  assert.equal(F.fdPathStopX(0, 4), 125);
+  assert.equal(F.fdPathStopX(3, 4), 875);
+  assert.equal(F.fdPathStopY(0), 118);
+  assert.equal(F.fdPathStopY(1), 72);
+  assert.equal(F.fdPathConnectorD(1), 'M500 118');
+  assert.equal(F.fdPathConnectorD(0), '');
+});
+
+test('the rendered route uses the generated connector and the shared band height', () => {
+  const html = F.fdPath(IDX, s({}));
+  assert.match(html, /viewBox="0 0 1000 190"/);
+  assert.ok(html.includes('d="' + F.fdPathConnectorD(6) + '"'));
+  const four = F.fdPath(FOUR_INDEX, s({}));
+  assert.ok(four.includes('d="' + F.fdPathConnectorD(4) + '"'));
+});
+
 test('route nodes expose canonical themes plus independent selected, current, and complete text', () => {
   const html = F.fdPath(IDX, s({ week: 2, viewWeek: 5, done: { 'w4a.md': true } }));
   assert.match(rowFor(html, 2).body, /class="fd-timeline__status">Current<\/span>/);
@@ -177,7 +220,23 @@ test('a week with zero items is never marked done', () => {
   const idx = F.fdBuildIndex(emptyCur, FIX_META, FIX_TOOLS, FIX_MAN);
   const html = F.fdPath(idx, s({ week: 2, viewWeek: 2, done: {} }));
   assert.match(rowFor(html, 6).body, /class="fd-dot"><\/span>/);
-  assert.match(rowFor(html, 6).body, /0\/0/);
+  assert.match(rowFor(html, 6).body, />0 activities</);
+});
+
+test('each stop carries its own week ring, independent of week order', () => {
+  const html = F.fdPath(IDX, s({ week: 2, viewWeek: 2, done: { 'w4a.md': true, 'w5a.md': true } }));
+  assert.match(rowFor(html, 4).body, /class="fd-timeline__number" aria-hidden="true" style="--fd-ring-pct:100%"/);
+  assert.match(rowFor(html, 5).body, /style="--fd-ring-pct:50%"/);
+  assert.match(rowFor(html, 3).body, /style="--fd-ring-pct:0%"/);
+  assert.match(rowFor(html, 4).body, /class="fd-timeline__status">Complete<\/span>/);
+});
+
+test('a zero-item week has an empty ring and is never complete', () => {
+  const emptyCur = buildCurriculum(WEEK_DEFS.map((w) => (w.n === 6 ? Object.assign({}, w, { refs: [] }) : w)));
+  const idx = F.fdBuildIndex(emptyCur, FIX_META, FIX_TOOLS, FIX_MAN);
+  const body = rowFor(F.fdPath(idx, s({})), 6).body;
+  assert.match(body, /--fd-ring-pct:0%/);
+  assert.doesNotMatch(body, /Complete/);
 });
 
 // ---- selection is viewWeek, not week ---------------------------------------------------
@@ -192,10 +251,10 @@ test('the selected (is-sel) row is viewWeek, not week', () => {
 
 // ---- per-week counts read d/t -----------------------------------------------------------
 
-test('per-week counts render as done/total', () => {
+test('per-week counts read as words', () => {
   const html = F.fdPath(IDX, s({ week: 2, viewWeek: 2, done: { 'w5a.md': true } }));
-  assert.match(rowFor(html, 5).body, /<span class="fd-timeline__count">1\/2<\/span>/);
-  assert.match(rowFor(html, 1).body, /<span class="fd-timeline__count">0\/1<\/span>/);
+  assert.match(rowFor(html, 5).body, /<span class="fd-timeline__count">1 of 2 done<\/span>/);
+  assert.match(rowFor(html, 1).body, /<span class="fd-timeline__count">1 activity<\/span>/);
 });
 
 test('repeated practice counters and selected detail read their own week from saved progress', () => {
@@ -204,8 +263,8 @@ test('repeated practice counters and selected detail read their own week from sa
   const html = F.fdPath(idx, s({ week: 1, viewWeek: 2, done: { 'practice.html': true },
     progressRaw: { 'practice.html': { done: true, practiceWeeks: { 1: { done: true, at: '2026-08-03' } } } },
   }));
-  assert.match(rowFor(html, 1).body, /class="fd-timeline__count">1\/1/);
-  for (let n = 2; n <= 6; n++) assert.match(rowFor(html, n).body, /class="fd-timeline__count">0\/1/);
+  assert.match(rowFor(html, 1).body, /class="fd-timeline__count">1 of 1 done/);
+  for (let n = 2; n <= 6; n++) assert.match(rowFor(html, n).body, /class="fd-timeline__count">1 activity/);
   assert.match(html, /data-fd-toggle="practice.html"[^>]*aria-pressed="false"/);
 });
 
