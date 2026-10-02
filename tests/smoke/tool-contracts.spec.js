@@ -161,6 +161,18 @@ test('screeners official PHQ difficulty stays nonscored and resets with the inst
   await expect(page.locator('.disc')).toContainText('Scoring is a screen, not a diagnosis');
 });
 
+// A route left in browser-default blue can be readable in light mode yet fail in dark mode.
+// Measure the real shipped cascade in both themes, including all three precise source links.
+test('screeners official-source links respond to the theme and meet WCAG AA', async ({ page }) => {
+  await page.goto('/tools/screeners.html', { waitUntil: 'load' });
+  await expect(page.locator('.route p a')).toHaveCount(3);
+  await page.addScriptTag({ content: read('13_Faculty_Resources/_automation/site_build/theme_scan.js') });
+  const audit = await page.evaluate(() => window.cwThemeScan.install(document, window).measure());
+  expect(audit.frozen, 'screeners must not introduce colors that ignore the theme').toEqual({});
+  expect(audit.lowLight, 'screeners text must meet WCAG AA in light mode').toEqual({});
+  expect(audit.lowDark, 'screeners text must meet WCAG AA in dark mode').toEqual({});
+});
+
 // ------------------------------------------------------------------- "no PHI is stored"
 
 test('screeners.html stores nothing when used — its own no-PHI promise', async ({ page }) => {
