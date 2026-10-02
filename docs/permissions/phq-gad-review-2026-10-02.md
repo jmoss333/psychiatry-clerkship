@@ -18,8 +18,8 @@ The content PR must target the support branch while stacked, then be rechecked a
 after support lands. Neither draft is an attestation or a route around L1.
 
 `instrument_rights.json` is held for #932 coordination and remains unchanged in this draft.
-AGENTS/CLAUDE remain unchanged at the parent's explicit instruction. Their stale COWS
-paragraph is a separate policy-document correction, not a rule amended by this content fix.
+AGENTS/CLAUDE already record the 2026-09-10 COWS retirement on this main revision and
+remain unchanged at the parent's explicit instruction; this correction changes no policy file.
 Existing #932 route-verification and #915 policy-document work must be preserved.
 
 ## Official references and dated snapshots
