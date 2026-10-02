@@ -121,6 +121,46 @@ test('the family-visit door leaves the learner shell by the top window, not insi
   expect(page.context().pages(), 'same tab, no popup').toHaveLength(1);
 });
 
+// The restored official PHQ difficulty answer is separate from the symptom tally.
+// Drive both shipped audiences; no real patient data and no live faculty-count assumptions.
+test('screeners official PHQ difficulty stays nonscored and resets with the instrument', async ({ page }) => {
+  await page.goto('/tools/screeners.html', { waitUntil: 'load' });
+  await expect(page.locator('.lead').first()).toHaveText('Over the last 2 weeks, how often have you been bothered by any of the following problems?');
+  const questions = page.locator('div.q');
+  await expect(questions).toHaveCount(9);
+  await expect(questions.nth(6)).toContainText('reading the newspaper or watching television');
+  await expect(questions.nth(7)).toContainText('Or the opposite — being so fidgety or restless');
+  const difficulty = page.getByRole('group', { name: 'If you checked off any problems, how difficult' });
+  await expect(difficulty).toContainText('not scored');
+  await difficulty.getByRole('button', { name: 'Extremely difficult' }).click();
+  await expect(page.locator('.score')).toHaveText('0');
+  await expect(page.locator('.scorebar')).toContainText('0/9 answered');
+  for (let i = 0; i < 9; i++) await questions.nth(i).getByRole('button', { name: /Nearly every day/ }).click();
+  await expect(page.locator('.score')).toHaveText('27');
+  await expect(page.locator('.scorebar')).toContainText('complete');
+  for (const label of ['Not difficult at all', 'Somewhat difficult', 'Very difficult', 'Extremely difficult']) {
+    await difficulty.getByRole('button', { name: new RegExp(label) }).click();
+    await expect(page.locator('.score')).toHaveText('27');
+  }
+  await expect(page.locator('.flag')).toContainText('Move to a direct safety assessment now');
+  await page.getByRole('button', { name: 'Reset', exact: true }).click();
+  await expect(page.locator('.score')).toHaveText('0');
+  await expect(difficulty.locator('[aria-pressed="true"]')).toHaveCount(0);
+  await expect(page.locator('.flag')).toHaveCount(0);
+  await questions.nth(8).getByRole('button', { name: /Several days/ }).click();
+  await expect(page.locator('.flag')).toBeVisible();
+  await page.getByRole('button', { name: 'GAD-7 · Anxiety', exact: true }).click();
+  await expect(page.locator('.lead').first()).toHaveText('Over the last 2 weeks, how often have you been bothered by the following problems?');
+  await expect(page.locator('fieldset')).toHaveCount(0);
+  await expect(page.locator('div.q')).toHaveCount(7);
+  await expect(page.locator('.score')).toHaveText('0');
+  await expect(page.locator('.scorebar')).toContainText('0/7 answered');
+  for (let i = 0; i < 7; i++) await page.locator('div.q').nth(i).getByRole('button', { name: /Nearly every day/ }).click();
+  await expect(page.locator('.score')).toHaveText('21');
+  await expect(page.locator('.disc')).toContainText('No permission required to reproduce, translate, display or distribute.');
+  await expect(page.locator('.disc')).toContainText('Scoring is a screen, not a diagnosis');
+});
+
 // ------------------------------------------------------------------- "no PHI is stored"
 
 test('screeners.html stores nothing when used — its own no-PHI promise', async ({ page }) => {

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Screeners — PHQ-9 & GAD-7" version="1.1" built="2026-07-07" category="clinical-skills" audience="trainee,ms3" settings="inpatient,self-study" time="5min" summary="Interactive PHQ-9 and GAD-7 scoring practice with severity bands and item-9 safety escalation reminder. Educational; not diagnostic; no PHI." -->
+<!-- [CLERKSHIP-META v1] tool="Screeners — PHQ-9 & GAD-7" version="1.2" built="2026-10-02" category="clinical-skills" audience="trainee,ms3" settings="inpatient,self-study" time="5min" summary="Interactive PHQ-9 and GAD-7 scoring practice with severity bands and item-9 safety escalation reminder. Educational; not diagnostic; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -32,6 +32,7 @@
   .lead{font-size:.9rem;color:var(--text-mid);margin-bottom:12px}
   .q{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:10px}
   .qt{font-size:.96rem;margin-bottom:9px}
+  .q legend{padding:0;font-size:.96rem}
   .qt .n{color:var(--text-light);font-weight:700;margin-right:6px}
   .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
   @media(max-width:560px){.opts{grid-template-columns:repeat(2,1fr)}}
@@ -79,43 +80,56 @@ var PHQ=["Little interest or pleasure in doing things",
 "Feeling tired or having little energy",
 "Poor appetite or overeating",
 "Feeling bad about yourself — or that you are a failure or have let yourself or your family down",
-"Trouble concentrating on things, such as reading or watching television",
-"Moving or speaking so slowly that others could have noticed — or being so fidgety/restless that you move around a lot more than usual",
-"Thoughts that you would be better off dead, or of hurting yourself in some way"];
-var GAD=["Feeling nervous, anxious, or on edge",
+"Trouble concentrating on things, such as reading the newspaper or watching television",
+"Moving or speaking so slowly that other people could have noticed? Or the opposite — being so fidgety or restless that you have been moving around a lot more than usual",
+"Thoughts that you would be better off dead or of hurting yourself in some way"];
+var GAD=["Feeling nervous, anxious or on edge",
 "Not being able to stop or control worrying",
 "Worrying too much about different things",
 "Trouble relaxing",
 "Being so restless that it is hard to sit still",
 "Becoming easily annoyed or irritable",
-"Feeling afraid, as if something awful might happen"];
+"Feeling afraid as if something awful might happen"];
+var PHQ_LEAD="Over the last 2 weeks, how often have you been bothered by any of the following problems?";
+var GAD_LEAD="Over the last 2 weeks, how often have you been bothered by the following problems?";
+var DIFFICULTY_QUESTION="If you checked off any problems, how difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?";
+var DIFFICULTY_OPTIONS=["Not difficult at all","Somewhat difficult","Very difficult","Extremely difficult"];
+var FORM_NOTICE="Developed by Drs. Robert L. Spitzer, Janet B.W. Williams, Kurt Kroenke and colleagues, with an educational grant from Pfizer Inc. No permission required to reproduce, translate, display or distribute.";
 function phqBand(s){ if(s<=4)return["Minimal",0]; if(s<=9)return["Mild",1]; if(s<=14)return["Moderate",2]; if(s<=19)return["Moderately severe",3]; return["Severe",4]; }
 function gadBand(s){ if(s<=4)return["Minimal",0]; if(s<=9)return["Mild",1]; if(s<=14)return["Moderate",2]; return["Severe",4]; }
 
 function Scale(props){
   var items=props.items, band=props.band, name=props.name;
   var st=useState({}),ans=st[0],setAns=st[1];
+  var ds=useState(null),difficulty=ds[0],setDifficulty=ds[1];
   function set(i,v){ var x=Object.assign({},ans); x[i]=v; setAns(x); }
   var total=0,answered=0; items.forEach(function(_,i){ if(ans[i]!=null){total+=ans[i];answered++;} });
   var b=band(total), complete=answered===items.length;
   var phqRisk = (name==="PHQ-9" && ans[8]!=null && ans[8]>0);
   return e("div",null,
-    e("div",{className:"lead"},"Over the last 2 weeks, how often have you been bothered by the following?"),
+    e("div",{className:"lead"},props.lead),
+    e("div",{className:"lead"},"(Use “✔” to indicate your answer)"),
     items.map(function(t,i){
       return e("div",{className:"q",key:i},
         e("div",{className:"qt"}, e("span",{className:"n"},(i+1)+"."), t),
         e("div",{className:"opts"}, OPTS.map(function(o){
-          return e("button",{key:o[1],className:"opt"+(ans[i]===o[1]?" on":""),onClick:function(){set(i,o[1])}},
-            e("span",{className:"v"},o[1]), o[0]);
+          return e("button",{key:o[1],className:"opt"+(ans[i]===o[1]?" on":""),"aria-pressed":ans[i]===o[1],onClick:function(){set(i,o[1])}},
+            e("span",{className:"v"},o[1]), ans[i]===o[1]?"✔ ":"", o[0]);
         })));
     }),
+    name==="PHQ-9"? e("fieldset",{className:"q", "aria-describedby":"difficulty-note"},
+      e("legend",null,DIFFICULTY_QUESTION),
+      e("p",{id:"difficulty-note",className:"lead"},"Functional difficulty — not scored. This response does not change the PHQ-9 total."),
+      e("div",{className:"opts"},DIFFICULTY_OPTIONS.map(function(label){
+        return e("button",{key:label,type:"button",className:"opt"+(difficulty===label?" on":""),"aria-pressed":difficulty===label,onClick:function(){setDifficulty(label)}},difficulty===label?"✔ ":"",label);
+      }))) : null,
     phqRisk? e("div",{className:"flag"},"⚠ Item 9 (thoughts of being better off dead or self-harm) is endorsed. Move to a direct safety assessment now — open the ",
-      e("a",{href:"cssrs.html",target:"_blank",rel:"noopener"},"Columbia C-SSRS screener"),", and follow your team's safety protocol.") : null,
+      e("a",{href:"cssrs.html",target:"_blank",rel:"noopener"},"Columbia C-SSRS official form & training"),", and follow your team's safety protocol.") : null,
     e("div",{className:"scorebar"},
       e("div",null, e("span",{className:"score"}, total), e("span",{style:{color:"var(--text-light)"}}, " / "+(items.length*3)),
         e("span",{style:{marginLeft:"12px"}}, e("span",{className:"badge b"+b[1]}, b[0]))),
       e("div",null, e("span",{style:{fontSize:".82rem",color:"var(--text-light)",marginRight:"10px"}}, complete?"complete":(answered+"/"+items.length+" answered")),
-        e("button",{className:"btn",onClick:function(){setAns({})}},"Reset"))),
+        e("button",{className:"btn",onClick:function(){setAns({});setDifficulty(null)}},"Reset"))),
     e("div",{className:"visually-hidden","aria-live":"polite","aria-atomic":"true"},
       complete ? ("Score "+total+" of "+(items.length*3)+", "+b[0]) : ""),
     e("div",{className:"interp"}, props.interp)
@@ -132,14 +146,18 @@ function App(){
       e("button",{className:"tab"+(tab==="phq"?" on":""),onClick:function(){setTab("phq")}},"PHQ-9 · Depression"),
       e("button",{className:"tab"+(tab==="gad"?" on":""),onClick:function(){setTab("gad")}},"GAD-7 · Anxiety")),
     tab==="phq"
-      ? e(Scale,{name:"PHQ-9",items:PHQ,band:phqBand,interp:"PHQ-9 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–19 moderately severe · 20–27 severe. ≥10 has good sensitivity/specificity for major depression. Always review item 9 (self-harm) regardless of total."})
-      : e(Scale,{name:"GAD-7",items:GAD,band:gadBand,interp:"GAD-7 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–21 severe. ≥10 is the usual threshold for further evaluation of generalized anxiety; it also screens reasonably for panic, social anxiety, and PTSD."}),
+      ? e(Scale,{key:"phq",name:"PHQ-9",lead:PHQ_LEAD,items:PHQ,band:phqBand,interp:"PHQ-9 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–19 moderately severe · 20–27 severe. ≥10 has good sensitivity/specificity for major depression. Always review item 9 (self-harm) regardless of total."})
+      : e(Scale,{key:"gad",name:"GAD-7",lead:GAD_LEAD,items:GAD,band:gadBand,interp:"GAD-7 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–21 severe. ≥10 is the usual threshold for further evaluation of generalized anxiety; it also screens reasonably for panic, social anxiety, and PTSD."}),
     e("div",{className:"route"},
       e("h4",null,"Get the official forms"),
-      e("p",null,"The tally here is for learning the instruments. Pfizer publishes the whole PHQ family and the GAD-7 — the printable forms, the scoring instructions and translations in roughly 80 languages — which is what you hand a patient and document from."),
+      e("p",null,"The tally here is for learning the instruments. PHQ Screeners provides the official printable forms, scoring instructions and translations. Use your clinic’s approved form for patient care and documentation."),
       e("a",{className:"go",href:"https://www.phqscreeners.com/",target:"_blank",rel:"noopener noreferrer"},"PHQ-9 & GAD-7 at phqscreeners.com →"),
+      e("p",null,
+        e("a",{href:"https://www.phqscreeners.com/images/sites/g/files/g10060481/f/201412/PHQ-9_English.pdf",target:"_blank",rel:"noopener noreferrer"},"PHQ-9 · English")," · ",
+        e("a",{href:"https://www.phqscreeners.com/images/sites/g/files/g10060481/f/201412/GAD7_English%20for%20the%20USA_0.pdf",target:"_blank",rel:"noopener noreferrer"},"GAD-7 · English for the USA")," · ",
+        e("a",{href:"https://www.phqscreeners.com/images/sites/g/files/g10016261/f/201412/instructions.pdf",target:"_blank",rel:"noopener noreferrer"},"Official scoring instructions")),
       e("p",{className:"cost"},"Free, no registration; leaves this site for phqscreeners.com. Use your clinic’s current version where one is in the EHR — that is the copy your documentation refers to.")),
-    e("div",{className:"disc"},"Educational tool for clinical trainees. PHQ-9 and GAD-7 are published by Pfizer (Spitzer, Kroenke, Williams) and are the two instruments this library still reproduces; the official forms are linked above. Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. No PHI is stored. Joshua Moss, MD | Psychiatrist")
+    e("div",{className:"disc"},e("p",null,FORM_NOTICE),e("p",null,"Educational tool for clinical trainees. Scoring is a screen, not a diagnosis — confirm clinically and follow your team's protocols. A low score does not establish safety or readiness. No PHI is stored. Joshua Moss, MD | Psychiatrist"))
   );
 }
 ReactDOM.createRoot(document.getElementById("root")).render(e(App));
