@@ -349,10 +349,24 @@ def _browser_required_soft_failure(source, code):
     return code in (401, 403) or code is None
 
 
-def check_registry_sources(checked=None):
+def _environment_disposition(url, unreachable):
+    """Return the ci_unreachable_hosts.json record for `url`'s host, or None.
+
+    The same classification run_link_monitor.confirm() applies, for the registry-source
+    pass: a failure from a host recorded as answering a browser but not this runner is
+    `environment` -- still emitted, still in the digest with its evidence, never an
+    issue. Without it fda.gov filed two P1s (#721/#722) for pages serving 200 to any
+    browser, because this pass never read the file the link monitor already honoured.
+    """
+    from urllib.parse import urlparse
+    return (unreachable or {}).get(urlparse(url).netloc)
+
+
+def check_registry_sources(checked=None, unreachable=None):
     """Verify each registry source URL still resolves. Returns list of findings."""
     findings = []
     checked = checked if checked is not None else []
+    unreachable = L.load_ci_unreachable() if unreachable is None else unreachable
     reg = L.load_registry()
     for s in reg.get("sources", []):
         url = s.get("url")
@@ -383,6 +397,11 @@ def check_registry_sources(checked=None):
                 "`python3 bin/verify_findings_offrunner.py`.)" % cap_reason)
             f["severity_cap"] = sev
         f["severity"] = sev
+        host = _environment_disposition(url, unreachable)
+        if host is not None:
+            f["disposition"] = "environment"
+            f["evidence"]["ci_unreachable"] = {
+                "reason": host.get("reason"), "verifiedAt": host.get("verifiedAt")}
         findings.append(f)
     return findings
 
@@ -520,6 +539,34 @@ def self_test():
     assert _capped_severity({"severity_default": "P1", "link_check": "browser_required"}, 404) \
         == ("P1", None)
     # The two FDA sources are marked, so the P0 that has mis-fired weekly is now capped.
+    # An IP-blocked host recorded in ci_unreachable_hosts.json is `environment`, not
+    # an issue -- and only that host: a dead page anywhere else stays actionable.
+    _hosts = {"www.fda.gov": {"reason": "ip block", "verifiedAt": "2026-09-30"}}
+    assert _environment_disposition("https://www.fda.gov/drugs/x", _hosts)["verifiedAt"] == "2026-09-30"
+    assert _environment_disposition("https://www.nimh.nih.gov/x", _hosts) is None
+    assert _environment_disposition("https://www.fda.gov/x", {}) is None
+    # Production default: the real file still names fda.gov, so the two FDA sources
+    # (#721/#722) classify as environment when the scheduled job runs without a stub.
+    assert _environment_disposition(
+        "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications",
+        L.load_ci_unreachable()) is not None
+    # Drive the real pass with stubbed fetch + registry: the disposition must reach the
+    # finding, not only the helper (a helper-only test passes with the wiring deleted).
+    _mod = sys.modules[__name__]
+    _real = (_mod.classify, L.load_registry, _mod.THROTTLE_S)
+    try:
+        _mod.classify = lambda u: (False, "broken-link", 404, None, "http 404")
+        L.load_registry = lambda: {"sources": [
+            {"id": "fda-x", "name": "FDA", "url": "https://www.fda.gov/x",
+             "severity_default": "P1", "link_check": "browser_required"},
+            {"id": "dead-y", "name": "Dead", "url": "https://example.org/y", "severity_default": "P1"}]}
+        _mod.THROTTLE_S = 0
+        _by = {f["source_id"]: f for f in check_registry_sources([], unreachable=_hosts)}
+    finally:
+        _mod.classify, L.load_registry, _mod.THROTTLE_S = _real
+    assert _by["fda-x"].get("disposition") == "environment", _by["fda-x"]
+    assert _by["fda-x"]["evidence"]["ci_unreachable"]["verifiedAt"] == "2026-09-30"
+    assert "disposition" not in _by["dead-y"], "an unlisted host's 404 must stay actionable"
     _reg_by_id = {x["id"]: x for x in L.load_registry()["sources"]}
     assert _reg_by_id["fda-drug-safety"].get("link_check") == "browser_required"
     assert _reg_by_id["clozapine-rems"].get("link_check") == "browser_required"

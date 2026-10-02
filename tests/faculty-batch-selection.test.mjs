@@ -84,7 +84,7 @@ test('a same-key cohort of four is blocked; the re-keyed spread passes', () => {
   assert.deepEqual(spread.answerKeys, { A: 1, B: 1, C: 1, D: 1 });
 });
 
-test('the live bank: every per-category draft cohort of 4+ now passes assessBatch', () => {
+test('the live bank: every per-category draft cohort of 4+ now passes assessBatch', (t) => {
   // The 2026-08-04 design table showed six categories blocked (all-A). After the
   // salvaged re-key pass, batching by category — the natural review unit — must work.
   const path = new URL('../question_bank.json', import.meta.url);
@@ -92,10 +92,22 @@ test('the live bank: every per-category draft cohort of 4+ now passes assessBatc
   const drafts = bank.items.filter(item => item.status === 'draft' && !item.retired);
   const byCategory = {};
   for (const item of drafts) (byCategory[item.category] ??= []).push(item);
-  for (const [category, items] of Object.entries(byCategory)) {
-    if (items.length < 4) continue;
+  const cohorts = Object.entries(byCategory).filter(([, items]) => items.length >= 4);
+  // NEVER PASS OVER AN EMPTY SET (CLAUDE.md: "a test that passes only while a backlog exists
+  // retires itself silently when the backlog clears"). This reads the faculty's live queue, and
+  // attesting drafts empties it: on 2026-09-30 main held 5 live drafts in three categories
+  // (none with 4+), and rolling PR #895 attested all five. With no cohort to batch it says so
+  // and skips, visibly, instead of reporting a check that never ran. The balance rule itself is
+  // pinned by the fixture tests above whatever the queue holds.
+  if (cohorts.length === 0) {
+    const spread = Object.entries(byCategory).map(([category, items]) => `${category} ${items.length}`).join(', ');
+    t.skip(`no category holds 4+ live drafts (${drafts.length} draft(s)${spread ? `: ${spread}` : ''}) — nothing to batch`);
+    return;
+  }
+  for (const [category, items] of cohorts) {
     const check = assessBatch(items);
     assert.equal(check.ok, true,
       `${category} cohort (${items.length}) blocked: ${JSON.stringify(check.answerKeys)}`);
   }
+  t.diagnostic(`checked ${cohorts.length} cohort(s): ${cohorts.map(([category, items]) => `${category} ${items.length}`).join(', ')}`);
 });

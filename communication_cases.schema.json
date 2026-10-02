@@ -52,6 +52,28 @@
               "additionalProperties": false
             }
           },
+          "secondPass": {
+            "type": "object",
+            "required": [
+              "prompt",
+              "choices",
+              "listenFor"
+            ],
+            "properties": {
+              "prompt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "choices": {
+                "$ref": "#/properties/cases/items/properties/choices"
+              },
+              "listenFor": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          },
           "skillTags": { "type": "array", "items": { "type": "string" } },
           "linkedPages": { "type": "array", "items": { "type": "string" } },
           "evidenceIds": { "type": "array", "items": { "type": "string" } },
@@ -65,6 +87,22 @@
             }
           }
         },
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "secondPass"
+              ]
+            },
+            "then": {
+              "properties": {
+                "id": {
+                  "const": "teach_back_closing_001"
+                }
+              }
+            }
+          }
+        ],
         "additionalProperties": false
       }
     }

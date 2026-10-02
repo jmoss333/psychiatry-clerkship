@@ -19,7 +19,7 @@ test('the face is declared once, self-hosted, swap, and limited to weights 600-7
   assert.match(faces[0], /font-family:'Source Serif 4'/);
   assert.match(faces[0], /font-weight:600 700/);
   assert.match(faces[0], /font-display:swap/);
-  assert.match(faces[0], new RegExp(`src:url\\('fonts/${FONT.replace(/\./g, '\\.')}'\\) format\\('woff2'\\)`));
+  assert.ok(faces[0].includes(`src:url('fonts/${FONT}') format('woff2')`));
   assert.doesNotMatch(css, /fonts\.(googleapis|gstatic)\.com/, 'never a third-party font host');
 });
 
@@ -41,7 +41,7 @@ test('the font and its OFL licence are committed and the build copies both', () 
     const file = new URL(`fonts/${name}`, BUILD);
     assert.ok(existsSync(file), `${name} is committed`);
     assert.ok(statSync(file).size > 1000, `${name} is real content, not a stub`);
-    assert.match(deploy, new RegExp(name.replace(/\./g, '\\.')), `build_deploy.py copies ${name}`);
+    assert.ok(deploy.includes(name), `build_deploy.py copies ${name}`);
   }
   assert.match(readFileSync(new URL(`fonts/${LICENCE}`, BUILD), 'utf8'), /SIL Open Font License, Version 1\.1/);
   assert.equal(readFileSync(new URL(`fonts/${FONT}`, BUILD)).subarray(0, 4).toString('latin1'), 'wOF2');

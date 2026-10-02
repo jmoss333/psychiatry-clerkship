@@ -22,7 +22,15 @@ requires in exchange for accepting a web source as primary.
 
 Note the four verbs — **reproduce, translate, display, distribute**. They cover exactly what a
 public educational page does. They do **not** include *modify*, *adapt*, or *create derivative
-works*, which is the boundary recorded as finding f5.
+works*, which was the boundary inferred as finding f5 on 2026-09-10.
+
+**Interpretation corrected 2026-10-02:** the four verbs are the captured source wording;
+their omission of other verbs does not establish a blanket legal prohibition on all
+modifications. The linked official manual, page 8, also states that Table 1 measures are
+public domain. Faithful official wording is the proposed clinical-quality/governance choice,
+not a newly asserted legal ban. See [the dated comparison and source evidence](phq-gad-review-2026-10-02.md).
+The historical capture above and below is preserved; this correction supplies the additional
+primary evidence and qualifies the old inference.
 
 ## Surrounding context as captured
 

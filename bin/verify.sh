@@ -328,6 +328,7 @@ step "test_validate_pharmacy"              python3 $A/pharmacy/test_validate_pha
 step "validate_pharmacy"                   python3 $A/pharmacy/validate_pharmacy.py
 step "test_build_rx_deck"                  python3 $A/pharmacy/test_build_rx_deck.py
 step "rx deck is regenerated"              python3 $A/pharmacy/build_rx_deck.py --check
+step "test_build_pharmacy_public"          python3 $A/pharmacy/test_build_pharmacy_public.py
 step "unit — surface governance"            python3 $A/test_surface_governance.py
 step "unit — tool governance"               python3 $A/test_validate_tool_governance.py
 step "validate_tool_governance"             python3 $A/validate_tool_governance.py

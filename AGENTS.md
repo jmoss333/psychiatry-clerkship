@@ -437,6 +437,15 @@ the container when the Bash 5 environment is part of the evidence.
   `.worktrees/<topic>/` (in-repo), `.claude/worktrees/<name>/`, or a loose sibling checkout
   `~/Psychiatry-Clerkship-Library-<purpose>/`. Remove with `git worktree remove <path>` once
   the PR merges — deleting the directory by hand leaves the registration behind.
+- **Make a new worktree host-side with `python3 bin/lean_worktrees.py new <name> [--base REF]`.**
+  It always lands in `<main checkout>/.claude/worktrees/<name>` and fills the LFS media by
+  copy-on-write clones of git's own store, so a copy costs ~60 MB of disk instead of ~500 MB and
+  appears in 1–2 s (2026-09-30). **Never create a worktree inside another worktree** (a
+  `.worktrees/` or `.claude/worktrees/` below your own copy): those folders are gitignored, so
+  removing the outer copy silently deletes the inner one. A weekly Mac job
+  (`bin/install_worktree_prune.sh`, Sundays 09:00) removes copies that are clean, merged and idle
+  12 h+ (`bin/prune_worktrees.py`), then clones identical files in the rest
+  (`bin/lean_worktrees.py share`). A copy you must keep: `git worktree lock --reason "<why>" .`
 - **Never run `git worktree prune` from an agent sandbox.** Worktrees are registered at host
   paths (`/Users/jm/...`) that do not resolve inside a sandbox mount, so **every** worktree
   reports `prunable` there regardless of its real state — 26 of 26 did on 2026-09-17. Pruning
