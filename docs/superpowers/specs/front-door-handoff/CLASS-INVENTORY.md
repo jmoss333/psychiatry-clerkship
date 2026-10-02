@@ -1016,6 +1016,13 @@ Markup must not carry colour. Every colour is a `var(--fd-*)` token declared in
 dark value). `tests/fd-tokens.test.mjs` fails the build on any raw hex in `frontdoor.css`, and
 `tests/fd-contrast.test.mjs` enforces WCAG AA across both palettes.
 
+**Red means safety (2026-10-01).** `frontdoor.css` paints no `--fd-terracotta*` at all, and
+`--fd-danger*` only on safety and crisis surfaces (Safety button, Safety kit, crisis blocks and their
+failure notices), form errors and destructive controls. Teal is "act / you are here" (logo, primary
+buttons, the dock's forward action, selected and current markers); olive is review/recall and small
+labels; status notices are neutral (`.fd-offline.is-not-ready` reads `--fd-callout` with a
+`--fd-text-dim` rule). `tests/fd-tokens.test.mjs` fails on a new terracotta or an unlisted red.
+
 The one custom property the markup owns is `--fd-ring-pct` on Path's `.fd-timeline__number`.
 
 Offline availability: `.fd-offline__open` wraps its label and cache status for small screens and large text; its status describes the current route cache, not clinical or shift readiness. The family-conversation result uses the existing `.fd-btn.fd-btn--ghost` internal Playbook control, only when the active audience index contains `family_playbook.md`.
