@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, chromium } from '@playwright/test';
 import { routeFetchWithRetry } from './net-resilience.js';
 
 const TOOL = '/tools/communication-practice.html';
@@ -1006,3 +1006,409 @@ test('reduced motion removes transitions', async ({ page }) => {
   await expect(page.locator('[data-rep-panel]')).toHaveCSS('animation-name', 'none');
   await expect(page.locator('[data-rep-panel]')).toHaveCSS('transition-duration', '0s');
 });
+
+// ---- Same-skill second pass (static pilot: teach_back_closing_001) -------------------------
+// The pilot replaces the feedback panel's "Try the next related case" action with "Retry the
+// same skill" on ONE case. The second pass reuses the authored variation sentence already in
+// that case's best-choice feedback, offers owner-reviewed second-pass lines, compares the two
+// picks by their authored quality, and persists nothing: cw_comm_v1 and cw_srs_v1 must be
+// byte-identical before and after. tests/communication-retry-pilot.test.mjs pins the source
+// contracts; these cases watch the behaviour in a real browser on both audience builds.
+
+const PILOT = 'teach_back_closing_001';
+
+async function pilotCase(page) {
+  return page.evaluate(async (id) => {
+    const data = await fetch('../communication_cases.json').then((response) => response.json());
+    return data.cases.find((item) => item.id === id);
+  }, PILOT);
+}
+
+async function firstPass(page, choiceId) {
+  await openTool(page, `?case=${PILOT}`);
+  await startAndFinish(page);
+  await page.locator(`[data-choice-id="${choiceId}"]`).click();
+  await expectPhase(page, 'feedback', 1);
+}
+
+async function storageSnapshot(page) {
+  return page.evaluate(() => [localStorage.getItem('cw_comm_v1'), localStorage.getItem('cw_srs_v1')]);
+}
+
+test('pilot second pass reuses the authored variation, compares two picks, and stores nothing', async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  // Exercise the draft badge with a controlled fixture, independent of faculty's live queue.
+  await page.route('**/communication_cases.json', async (route) => {
+    const response = await routeFetchWithRetry(route);
+    const data = await response.json();
+    data.cases.find((item) => item.id === PILOT).facultyReview =
+      { status: 'draft', reviewer: '', lastReviewed: '' };
+    await route.fulfill({ response, json: data });
+  });
+  await firstPass(page, 'c');
+  const caseData = await pilotCase(page);
+  const best = caseData.choices.find((choice) => choice.quality === 'best');
+  await expect(page.getByRole('button', { name: 'Try the next related case' })).toHaveCount(0);
+  const stored = await storageSnapshot(page);
+  expect(stored[0]).toContain(PILOT);
+
+  await observeAnnouncements(page);
+  await page.getByRole('button', { name: 'Retry the same skill' }).click();
+  const speaking = await expectPhase(page, 'retry-speaking', 1);
+  await expect(page.locator('#phase-heading')).toBeFocused();
+  await expect(speaking).toContainText('Draft · faculty review needed');
+  // The variation shown is the trailing sentence of the authored best-choice feedback, verbatim.
+  const variation = await speaking.locator('.prompt').innerText();
+  expect(best.feedback.endsWith(variation)).toBe(true);
+  await expect(speaking).toContainText('Your browser does not listen or record.');
+  await expect(page.locator('[data-choice-id]')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Finish now' }).click();
+  await expectPhase(page, 'retry-compare', 0);
+  await expect(page.getByRole('group', { name: 'Which line is closest to your second response?' })).toBeVisible();
+  await expect(page.locator('[data-choice-id]')).toHaveCount(caseData.choices.length);
+
+  await page.locator('[data-choice-id="b"]').click();
+  const compared = await expectPhase(page, 'retry-feedback', 1);
+  await expect(page.locator('#phase-heading')).toHaveText('Second pass: Partly useful');
+  await expect(compared.locator('[data-feedback]')).toContainText(caseData.secondPass.choices.find((c) => c.id === 'b').feedback);
+  await expect(compared.locator('[data-pass-compare]')).toHaveText('First pass: Best next line. Second pass: Partly useful.');
+  await expect(compared).toContainText('This compares the two authored lines you chose, not your spoken words.');
+  await expect(compared.locator('[data-retry-coaching]')).not.toHaveAttribute('open', '');
+  await compared.locator('[data-retry-coaching] summary').click();
+  await expect(compared.locator('[data-retry-coaching]')).toContainText(caseData.rapidDrill.mustInclude[0]);
+  await expect(compared.locator('[data-retry-coaching]')).toContainText(caseData.rapidDrill.avoid[0]);
+  await expect(compared.locator('[data-retry-coaching]')).toContainText('Listen for');
+  await expect(compared.locator('[data-retry-coaching]')).toContainText(`First: ${best.text}`);
+
+  await page.getByRole('button', { name: 'Finish practice' }).click();
+  const finished = await expectPhase(page, 'finished', 1);
+  await expect(page.locator('#phase-heading')).toHaveText('Practice loop complete');
+  await expect(finished).toContainText('The second pass was not saved.');
+  await expect(finished).toContainText('Draft · faculty review needed');
+  await expect(page.getByRole('button', { name: 'Try the next related case' })).toBeVisible();
+
+  // Optional more practice stays inside the pilot and still writes nothing.
+  await page.getByRole('button', { name: 'Practice the second pass again' }).click();
+  await expectPhase(page, 'retry-speaking', 1);
+  await page.getByRole('button', { name: 'Finish now' }).click();
+  await page.locator('[data-choice-id="d"]').click();
+  await expect(page.locator('[data-pass-compare]')).toHaveText('First pass: Best next line. Second pass: Avoid this line.');
+
+  expect(await storageSnapshot(page)).toEqual(stored);
+  await expect(page.locator('[data-desktop-navigator] [data-case-select="teach_back_closing_001"] .case-status')).toHaveText('Practiced well');
+  const announcements = await page.evaluate(() => window.__repAnnouncements);
+  expect(announcements).toEqual([
+    'Second pass started. 20 seconds.',
+    'Compare your sentence with the choices.',
+    caseData.secondPass.choices.find((c) => c.id === 'b').feedback,
+    'Practice loop complete.',
+    'Second pass started. 20 seconds.',
+    'Compare your sentence with the choices.',
+    caseData.secondPass.choices.find((c) => c.id === 'd').feedback,
+  ]);
+  expect(errors).toEqual([]);
+});
+
+test('second-pass panels fit their word budgets for every pick', async ({ page }) => {
+  const caseData = await (async () => { await openTool(page); return pilotCase(page); })();
+  for (const second of caseData.secondPass.choices) {
+    await firstPass(page, 'c');
+    expect(await visibleWordCount(page.locator('[data-rep-panel]')), `Feedback word budget for ${PILOT}/c`).toBeLessThan(55);
+    await page.getByRole('button', { name: 'Retry the same skill' }).click();
+    expect(await visibleWordCount(page.locator('[data-rep-panel]')), 'Second-pass speaking word budget').toBeLessThan(60);
+    await page.getByRole('button', { name: 'Finish now' }).click();
+    await page.locator(`[data-choice-id="${second.id}"]`).click();
+    expect(await visibleWordCount(page.locator('[data-rep-panel]')), `Second-pass feedback word budget for c->${second.id}`).toBeLessThan(90);
+    await page.getByRole('button', { name: 'Finish practice' }).click();
+    expect(await visibleWordCount(page.locator('[data-rep-panel]')), 'Finished word budget').toBeLessThan(60);
+  }
+});
+
+test('second-pass choices, feedback and announcements use canonical authored data', async ({ page }) => {
+  await openTool(page);
+  const data = await pilotCase(page);
+  for (const second of data.secondPass.choices) {
+    await firstPass(page, 'c');
+    await expect(page.locator('[data-feedback]')).toContainText(data.choices.find(c => c.id === 'c').feedback);
+    const stored = await storageSnapshot(page);
+    await observeAnnouncements(page);
+    await page.locator('[data-second-pass]').click();
+    await page.locator('[data-finish-speaking]').click();
+    for (const choice of data.secondPass.choices) {
+      await expect(page.locator(`[data-choice-id="${choice.id}"]`)).toHaveText(choice.text);
+    }
+    await page.locator(`[data-choice-id="${second.id}"]`).click();
+    const feedback = await expectPhase(page, 'retry-feedback', 1);
+    await expect(feedback.locator('[data-feedback]')).toHaveText(second.feedback);
+    await expect(feedback.locator('[data-feedback]')).not.toContainText('Retry:');
+    await feedback.locator('[data-retry-coaching] summary').click();
+    await expect(feedback.locator('[data-retry-coaching]')).toContainText(data.secondPass.listenFor);
+    await expect(feedback.locator('[data-retry-coaching]')).toContainText(`First: ${data.choices.find(c => c.id === 'c').text}`);
+    await expect(feedback.locator('[data-retry-coaching]')).toContainText(`Second: ${second.text}`);
+    expect((await page.evaluate(() => window.__repAnnouncements)).at(-1)).toBe(second.feedback);
+    expect(await storageSnapshot(page)).toEqual(stored);
+  }
+});
+
+test('a pilot without optional second-pass data retains the original next-related action', async ({ page }) => {
+  await page.route('**/communication_cases.json', async route => {
+    const response = await routeFetchWithRetry(route);
+    const data = await response.json();
+    delete data.cases.find(c => c.id === PILOT).secondPass;
+    await route.fulfill({ response, json: data });
+  });
+  await firstPass(page, 'c');
+  await expect(page.locator('[data-second-pass]')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Try the next related case' })).toBeVisible();
+});
+
+test('second pass is interrupted honestly by the timer, a case change, a filter change, and reload', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-08-01T12:00:00Z') });
+  const errors = collectRuntimeErrors(page);
+  await firstPass(page, 'a');
+  const stored = await storageSnapshot(page);
+
+  // Timer expiry advances the second pass to its compare step.
+  await page.getByRole('button', { name: 'Retry the same skill' }).click();
+  await expect(page.locator('[data-countdown]')).toHaveText('20 seconds');
+  await page.clock.fastForward(20_001);
+  await expectPhase(page, 'retry-compare', 0);
+
+  // A case change during the second pass lands on that case's orient with no countdown left.
+  await page.locator('[data-choice-id="c"]').click();
+  await expectPhase(page, 'retry-feedback', 1);
+  await page.getByRole('button', { name: 'Finish practice' }).click();
+  await page.getByRole('button', { name: 'Practice the second pass again' }).click();
+  await expectPhase(page, 'retry-speaking', 1);
+  await page.locator('[data-desktop-navigator] [data-case-select="discharge_demand_elicit_001"]').click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('[data-countdown]')).toHaveCount(0);
+  await page.clock.fastForward(21_000);
+  await expectPhase(page, 'orient', 1);
+
+  // A filter change during the second pass resets to orient too.
+  await page.locator('[data-desktop-navigator] [data-case-select="teach_back_closing_001"]').click();
+  await startAndFinish(page);
+  await page.locator('[data-choice-id="b"]').click();
+  await page.getByRole('button', { name: 'Retry the same skill' }).click();
+  await expectPhase(page, 'retry-speaking', 1);
+  await page.locator('[data-desktop-navigator] [data-filter="safety"]').click();
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('[data-countdown]')).toHaveCount(0);
+
+  // Reload mid-pass: the second pass is session-only, so the tool reopens at orient.
+  await startAndFinish(page);
+  await page.locator('[data-choice-id="c"]').click();
+  await page.getByRole('button', { name: 'Retry the same skill' }).click();
+  await page.getByRole('button', { name: 'Finish now' }).click();
+  await page.locator('[data-choice-id="d"]').click();
+  await expectPhase(page, 'retry-feedback', 1);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expectPhase(page, 'orient', 1);
+  await expect(page.locator('[data-second-pass]')).toHaveCount(0);
+
+  // Only the ordinary first passes wrote history (b overwrote a, then c overwrote b), and the
+  // three second passes (c, then d twice) left no record of their own: one case record, one
+  // COMM# card, exactly as before the pilot existed.
+  const after = await storageSnapshot(page);
+  expect(stored[0]).not.toBeNull();
+  expect(JSON.parse(after[0])).toEqual({ [PILOT]: { choiceId: 'c', quality: 'best', at: expect.any(String) } });
+  const cards = Object.keys(JSON.parse(after[1]).cards).filter((id) => id.startsWith('COMM#'));
+  expect(cards).toEqual([`COMM#${PILOT}`]);
+  expect(errors).toEqual([]);
+});
+
+test('second pass is reachable by keyboard and never adds a second primary action', async ({ page }) => {
+  await firstPass(page, 'c');
+  const retry = page.getByRole('button', { name: 'Retry the same skill' });
+  await tabUntilFocused(page, retry);
+  await page.keyboard.press('Enter');
+  await expectPhase(page, 'retry-speaking', 1);
+  await expect(page.locator('#phase-heading')).toBeFocused();
+  const finish = page.getByRole('button', { name: 'Finish now' });
+  await tabUntilFocused(page, finish);
+  await page.keyboard.press('Enter');
+  await expectPhase(page, 'retry-compare', 0);
+  const choice = page.locator('[data-choice-id="c"]');
+  await tabUntilFocused(page, choice);
+  await page.keyboard.press('Enter');
+  await expectPhase(page, 'retry-feedback', 1);
+  const done = page.getByRole('button', { name: 'Finish practice' });
+  await tabUntilFocused(page, done);
+  await page.keyboard.press('Enter');
+  const finished = await expectPhase(page, 'finished', 1);
+  await expect(finished.locator('button')).toHaveCount(2);
+  await expect(finished.locator('[data-primary-action]')).toHaveCount(1);
+});
+
+test('cases outside the pilot never show a second pass', async ({ page }) => {
+  await openTool(page);
+  const ids = await page.evaluate(async () => {
+    const data = await fetch('../communication_cases.json').then((response) => response.json());
+    return data.cases.map((item) => item.id);
+  });
+  for (const id of ids.filter((item) => item !== PILOT)) {
+    await openTool(page, `?case=${id}`);
+    await startAndFinish(page);
+    await page.locator('[data-choice-id]').first().click();
+    await expectPhase(page, 'feedback', 1);
+    await expect(page.locator('[data-second-pass]')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Try the next related case' })).toBeVisible();
+  }
+});
+
+for (const secondPass of [false, true]) {
+  test(`double-click Finish cannot select a ${secondPass ? 'second' : 'first'}-pass answer`, async ({ page }) => {
+    const errors = collectRuntimeErrors(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    if (secondPass) {
+      await firstPass(page, 'c');
+      await page.getByRole('button', { name: 'Retry the same skill' }).click();
+    } else {
+      await openTool(page, `?case=${PILOT}`);
+      await page.getByRole('button', { name: 'Start 20-second response' }).click();
+    }
+    const stored = await storageSnapshot(page);
+    await page.evaluate(() => {
+      window.__finishClicks = [];
+      document.addEventListener('click', (event) => {
+        const button = event.target.closest('button');
+        if (button) window.__finishClicks.push({ detail: event.detail,
+          finish: button.hasAttribute('data-finish-speaking'),
+          choice: button.getAttribute('data-choice-id') });
+      });
+    });
+    const box = await page.getByRole('button', { name: 'Finish now' }).boundingBox();
+    // Two real pointer activations at the same location, including any newly rendered button.
+    await page.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2);
+    await expectPhase(page, secondPass ? 'retry-compare' : 'compare', 0);
+    await expect(page.locator('[data-selected-choice]')).toHaveCount(0);
+    expect(await storageSnapshot(page)).toEqual(stored);
+    const clicks = await page.evaluate(() => window.__finishClicks);
+    expect(clicks[0]).toEqual({ detail: 1, finish: true, choice: null });
+    if (secondPass) {
+      // Pin the original collision: the repeated click really landed on answer a.
+      expect(clicks[1]).toEqual({ detail: 2, finish: false, choice: 'a' });
+    }
+    await page.locator('[data-choice-id="c"]').click();
+    await expectPhase(page, secondPass ? 'retry-feedback' : 'feedback', 1);
+    if (secondPass) expect(await storageSnapshot(page)).toEqual(stored);
+    else expect(JSON.parse((await storageSnapshot(page))[0])[PILOT].choiceId).toBe('c');
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const key of ['Enter', 'Space']) {
+  test(`repeated ${key} Finish activations leave the second choice deliberate`, async ({ page }) => {
+    await firstPass(page, 'c');
+    const stored = await storageSnapshot(page);
+    await page.getByRole('button', { name: 'Retry the same skill' }).focus();
+    await page.keyboard.press(key);
+    await page.getByRole('button', { name: 'Finish now' }).focus();
+    await page.keyboard.press(key);
+    await page.keyboard.press(key);
+    await page.keyboard.press(key);
+    await expectPhase(page, 'retry-compare', 0);
+    await expect(page.locator('#phase-heading')).toBeFocused();
+    await page.locator('[data-choice-id="c"]').focus();
+    await page.keyboard.press(key);
+    await expectPhase(page, 'retry-feedback', 1);
+    expect(await storageSnapshot(page)).toEqual(stored);
+  });
+}
+
+for (const failure of ['quota', 'access']) {
+  test(`second pass makes no saved-history claim with ${failure} storage failure`, async ({ page }) => {
+    const errors = collectRuntimeErrors(page);
+    await page.addInitScript((mode) => {
+      const storage = window.localStorage;
+      window.__actualPracticeStorage = () =>
+        [storage.getItem('cw_comm_v1'), storage.getItem('cw_srs_v1')];
+      if (mode === 'access') {
+        Object.defineProperty(window, 'localStorage', { get() {
+          throw new DOMException('Storage unavailable', 'SecurityError');
+        } });
+      } else {
+        const setItem = Storage.prototype.setItem;
+        Storage.prototype.setItem = function (name, value) {
+          if (name === 'cw_comm_v1' || name === 'cw_srs_v1') {
+            throw new DOMException('Storage full', 'QuotaExceededError');
+          }
+          return setItem.call(this, name, value);
+        };
+      }
+    }, failure);
+    await firstPass(page, 'c');
+    await page.getByRole('button', { name: 'Retry the same skill' }).click();
+    await page.getByRole('button', { name: 'Finish now' }).click();
+    await page.locator('[data-choice-id="c"]').click();
+    const feedback = await expectPhase(page, 'retry-feedback', 1);
+    await feedback.locator('[data-retry-coaching] summary').click();
+    await expect(feedback).toContainText('Nothing from this second pass is saved.');
+    await expect(feedback).not.toContainText('Your first choice remains in local history.');
+    await page.getByRole('button', { name: 'Finish practice' }).click();
+    const finished = await expectPhase(page, 'finished', 1);
+    await expect(finished.locator('.transfer')).toHaveText('The second pass was not saved.');
+    expect(await page.evaluate(() => window.__actualPracticeStorage())).toEqual([null, null]);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expectPhase(page, 'orient', 1);
+    await expect(page.locator('[data-desktop-navigator] .sidehead')).toHaveText(/^0 of \d+ practiced$/);
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const secondPass of [false, true]) {
+  for (const direction of ['Back', 'Forward']) {
+    test(`native ${direction} cache resets interrupted ${secondPass ? 'retry' : 'first'} speaking`, async ({ baseURL }) => {
+      // Playwright normally disables native Back cache; headless-shell also lacks this coverage.
+      // Use its installed full Chromium, without the disabling flag, in an isolated context.
+      const nativeBrowser = await chromium.launch({ channel: 'chromium', headless: true,
+        ignoreDefaultArgs: ['--disable-back-forward-cache'] });
+      try {
+        const context = await nativeBrowser.newContext({ baseURL,
+          viewport: { width: 1280, height: 900 }, serviceWorkers: 'block' });
+        await context.addInitScript(() => {
+          window.__nativeCacheRestores = 0;
+          window.addEventListener('pageshow', (event) => {
+            if (event.persisted) window.__nativeCacheRestores += 1;
+          });
+        });
+        const page = await context.newPage();
+        const errors = collectRuntimeErrors(page);
+        const away = `${TOOL}?case=discharge_demand_elicit_001`;
+        if (direction === 'Forward') await page.goto(away, { waitUntil: 'domcontentloaded' });
+        if (secondPass) {
+          await firstPass(page, 'c');
+          await page.getByRole('button', { name: 'Retry the same skill' }).click();
+        } else {
+          await openTool(page, `?case=${PILOT}`);
+          await page.getByRole('button', { name: 'Start 20-second response' }).click();
+        }
+        await expectPhase(page, secondPass ? 'retry-speaking' : 'speaking', 1);
+        const stored = await storageSnapshot(page);
+        if (direction === 'Back') await page.goto(away, { waitUntil: 'domcontentloaded' });
+        else await page.goBack({ waitUntil: 'commit' });
+        await expectPhase(page, 'orient', 1);
+        if (direction === 'Back') await page.goBack({ waitUntil: 'commit' });
+        else await page.goForward({ waitUntil: 'commit' });
+        await expect(page).toHaveURL(new URL(`${TOOL}?case=${PILOT}`, baseURL).href);
+        // Mandatory proof this was a native cached document, not a reload that conceals the bug.
+        await expect.poll(() => page.evaluate(() => window.__nativeCacheRestores)).toBe(1);
+        await expectPhase(page, 'orient', 1);
+        await expect(page.locator('[data-countdown]')).toHaveCount(0);
+        await expect(page.locator('#rep-status')).toHaveText('');
+        await expect(page.locator('#phase-heading')).toBeFocused();
+        expect(await storageSnapshot(page)).toEqual(stored);
+        // The recovered page accepts a fresh rep and has a working timer, without a grade.
+        await page.getByRole('button', { name: 'Start 20-second response' }).click();
+        await expectPhase(page, 'speaking', 1);
+        await expect(page.locator('[data-countdown]')).toHaveText('19 seconds', { timeout: 3000 });
+        expect(await storageSnapshot(page)).toEqual(stored);
+        expect(errors).toEqual([]);
+      } finally {
+        await nativeBrowser.close();
+      }
+    });
+  }
+}
