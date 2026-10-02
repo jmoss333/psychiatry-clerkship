@@ -4474,13 +4474,14 @@ test('the rows the forecast counts as the request\'s are exactly check_attestati
   Object.assign(parity.files[REVIEWED_PATH].json, head);
   const result = await forecastOf(parity);
   const repoRoot = new URL('..', import.meta.url).pathname;
+  const fixturePayload = JSON.stringify({ base, head: parity.files[REVIEWED_PATH].json });
   const python = spawnSync('python3', ['-c', [
     'import json, sys',
     "sys.path.insert(0, 'bin')",
     'import check_attestation_hashes as check',
     'd = json.load(sys.stdin)',
     "print(json.dumps(check.touched_slugs(d['base'], d['head'])))",
-  ].join('\n')], { cwd: repoRoot, input: JSON.stringify({ base, head: parity.files[REVIEWED_PATH].json }), encoding: 'utf8' });
+  ].join('\n')], { cwd: repoRoot, input: fixturePayload, encoding: 'utf8' });
   assert.equal(python.status, 0, python.stderr);
   const touched = JSON.parse(python.stdout);
   assert.deepEqual(result.forecast.signedInRequest, touched, 'the console and the CI check agree on which rows the request changes');
