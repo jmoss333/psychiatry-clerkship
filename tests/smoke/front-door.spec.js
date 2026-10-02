@@ -41,6 +41,14 @@ async function readingReady(page, ref = READING_REF) {
   await expect(reader.locator('.fd-article__body h3')).toHaveCount(3);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveCount(1);
   await expect(reader).not.toHaveClass(/fd-reader--guide/);
+  // DOM readiness can precede the 8px entrance transform. Settle geometry
+  // before capturing a reading place or changing viewport; keep offset bounds.
+  await reader.evaluate(async el => {
+    await document.fonts.ready;
+    const animations = [];
+    for (let node = el; node; node = node.parentElement) animations.push(...node.getAnimations());
+    await Promise.all(animations.filter(a => Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a => a.finished.catch(() => null)));
+  });
   return reader;
 }
 
