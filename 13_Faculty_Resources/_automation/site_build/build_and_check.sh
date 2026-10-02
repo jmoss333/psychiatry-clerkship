@@ -23,7 +23,11 @@
 #   against tests/__panels__/<site>/. It runs HERE rather than in the node suite because it
 #   needs the build: the suite runs before build_deploy.py, so a build-dependent test there
 #   would skip in CI and wedge the build that repairs it. Running after the build also means
-#   a failure leaves _build/ current, so `node bin/render_panels.mjs --write` always fixes it.
+#   a failure leaves _build/ current, so the render stays re-runnable with no rebuild. Repair
+#   it with `node bin/render_panels.mjs --write --site <the site you just built>`: bare
+#   --write checks BOTH audiences and exits 2 when the other tree is absent or stale, which
+#   is the normal state after an ms3-only build. (Building res is the other route -- that
+#   builds both trees.)
 #
 # HARD findings (broken nav/search targets,
 # dose literals in rp-*/-trainer tools, invalid JSON, missing <title>/viewport,
