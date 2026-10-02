@@ -86,6 +86,8 @@ function fdCareNavigator(index,selectedIntentId){
     out+='<section class="fd-care-navigator__result" aria-labelledby="fd-care-navigator-result-title">'+
       '<div class="fd-care-navigator__result-head"><h3 id="fd-care-navigator-result-title">Your starting point</h3>'+
       '<p>'+fdEsc(selected.explanation)+'</p></div>'+
+      (selected.id==='family-conversation'&&index&&index.byRef&&index.byRef['family_playbook.md']
+        ?'<p><button type="button" class="fd-btn fd-btn--ghost" data-fd-open="family_playbook.md">Open Family Meeting Playbook</button></p>':'')+
       fdCareNavigatorLink(selected.primary,'Best starting point');
     if(selected.alternatives.length){
       out+='<div class="fd-care-navigator__alternatives" aria-label="Also useful">';

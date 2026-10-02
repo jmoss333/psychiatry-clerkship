@@ -1,4 +1,4 @@
-/** Browser proof of the emitted worker and Shift-ready check on both built sites. */
+/** Browser proof of the emitted worker and Offline availability on both built sites. */
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
@@ -133,7 +133,7 @@ async function install(page, info, url = '/') {
 async function openReady(page, expected) {
   await entry(page).locator('[data-fd-offline-open]').click();
   await expect(entry(page).locator('[data-fd-offline-card]')).toBeVisible();
-  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  await expect(status(page)).toHaveText('Current route cached', { timeout: 10_000 });
   const requested = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
   expectExactInventory(requested, expected);
   await expect(entry(page).locator('[data-fd-offline-card]'))
@@ -149,10 +149,10 @@ async function expectConnectionRequired(page) {
 test('offline readiness: Checking cannot become Ready before the active worker responds', async ({ page }, info) => {
   await observeMessages(page, true);
   await install(page, info);
-  await expect(status(page)).toHaveText('Checking');
+  await expect(status(page)).toHaveText('Checking cache');
   expect(await page.evaluate(() => window.__offlineHeld.length)).toBeGreaterThan(0);
   await page.evaluate(() => window.__offlineRelease());
-  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  await expect(status(page)).toHaveText('Current route cached', { timeout: 10_000 });
   await entry(page).locator('[data-fd-offline-open]').click();
   await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('Checked just now');
 });
@@ -223,11 +223,11 @@ test('offline readiness: first uncontrolled visit does not claim the installed c
   await page.locator('[data-fd-week="1"]:visible').click();
   await page.evaluate(() => navigator.serviceWorker.ready);
   expect(await page.evaluate(() => navigator.serviceWorker.controller)).toBeNull();
-  await expect(status(page)).toHaveText('Not ready');
+  await expect(status(page)).toHaveText('Not verified');
   await entry(page).locator('[data-fd-offline-open]').click();
   await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('not controlled');
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  await expect(status(page)).toHaveText('Current route cached', { timeout: 10_000 });
 });
 
 test('offline readiness: active worker verifies route and cached reading, tool, search and navigation survive offline', async ({ page, context, baseURL }, info) => {
@@ -277,7 +277,7 @@ test('offline readiness: active worker verifies route and cached reading, tool, 
     await page.goto(baseURL + '/', { waitUntil: 'domcontentloaded' });
     await page.locator('[data-fd-tab="today"]:visible').first().click();
     await expect(entry(page)).toBeVisible();
-    await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+    await expect(status(page)).toHaveText('Current route cached', { timeout: 10_000 });
     await entry(page).locator('[data-fd-offline-open]').click();
     await expectConnectionRequired(page);
     await page.locator('[data-fd-search]:visible').first().click();
@@ -308,7 +308,7 @@ test('offline readiness: deleting one exact requested cache file fails closed', 
   }, missing);
   expect(deleted).toBe(true);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(status(page)).toHaveText('Not ready', { timeout: 10_000 });
+  await expect(status(page)).toHaveText('Not verified', { timeout: 10_000 });
   await entry(page).locator('[data-fd-offline-open]').click();
   await expect(entry(page).locator('[data-fd-offline-card]')).toContainText(missing);
   await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('1 missing');
@@ -352,7 +352,7 @@ test('offline readiness: Refresh respects offline state, bounds a stalled update
     .toContainText('Update check complete', { timeout: 10_000 });
   expect(await page.evaluate(() => window.__refreshCalls)).toBe(2);
   expect(page.url()).toBe(url);
-  await expect(status(page)).toHaveText('Ready');
+  await expect(status(page)).toHaveText('Current route cached');
 });
 
 test('offline readiness: unsupported and timed-out checks never retain stale Ready', async ({ page, context }, info) => {
@@ -363,7 +363,7 @@ test('offline readiness: unsupported and timed-out checks never retain stale Rea
     Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: null });
   });
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(status(page)).toHaveText('Not ready', { timeout: 10_000 });
+  await expect(status(page)).toHaveText('Not verified', { timeout: 10_000 });
   await entry(page).locator('[data-fd-offline-open]').click();
   await expect(entry(page).locator('[data-fd-offline-card]')).not.toContainText('Checked just now');
 
@@ -375,7 +375,7 @@ test('offline readiness: unsupported and timed-out checks never retain stale Rea
       value: { controller: silentController, addEventListener() {}, removeEventListener() {} } });
   });
   await timeoutPage.goto('/');
-  await expect(status(timeoutPage)).toHaveText('Not ready', { timeout: 6_000 });
+  await expect(status(timeoutPage)).toHaveText('Not verified', { timeout: 6_000 });
   await entry(timeoutPage).locator('[data-fd-offline-open]').click();
   await expect(entry(timeoutPage).locator('[data-fd-offline-card]')).toContainText('timed out');
 });
@@ -439,7 +439,7 @@ test('offline readiness: waiting-worker callback updates the same Today mount wh
     previousCount: window.__offlineBeforeUpdate.count,
     previousPayload: window.__offlineBeforeUpdate.payload,
   }));
-  expect(after.sameEntry, 'waiting callback must preserve the exact mounted Shift-ready entry').toBe(true);
+  expect(after.sameEntry, 'waiting callback must preserve the exact mounted Offline availability entry').toBe(true);
   expect(after.originalConnected).toBe(true);
   expect(after.requestCount, 'waiting callback must not start a second verification').toBe(after.previousCount);
   expect(after.requestPayload, 'waiting callback must not change the verification request').toBe(after.previousPayload);
@@ -462,7 +462,7 @@ test('offline readiness: fresh week and APP PA/PMHNP route inventories never per
   await page.locator('[data-fd-change-week]').click();
   await page.locator('[data-fd-week="2"]:visible').click();
   await page.locator('[data-fd-tab="today"]:visible').first().click();
-  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  await expect(status(page)).toHaveText('Current route cached', { timeout: 10_000 });
   const second = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
   expectExactInventory(second, await canonicalOfflineInventory(page, { week: 2 }));
   expect(second).not.toEqual(first);
@@ -476,7 +476,7 @@ test('offline readiness: fresh week and APP PA/PMHNP route inventories never per
   const before = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role);
   await page.goto('/?audience=app');
   await expect(page.locator('.fd-app')).toBeVisible();
-  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  await expect(status(page)).toHaveText('Current route cached', { timeout: 10_000 });
   const pa = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
   expectExactInventory(pa, await canonicalOfflineInventory(page, { bridge: 'pa' }));
   expect(pa).not.toEqual(second);
@@ -485,7 +485,7 @@ test('offline readiness: fresh week and APP PA/PMHNP route inventories never per
   await expect(entry(page).locator('[data-fd-offline-card]'))
     .toContainText(pa.length + ' verified, 0 missing of ' + pa.length + ' eligible files.');
   await page.locator('[data-fd-app-bridge="pmhnp"]').click();
-  await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+  await expect(status(page)).toHaveText('Current route cached', { timeout: 10_000 });
   const pmhnp = await page.evaluate(() => window.__offlineRequests?.at(-1)?.urls);
   expectExactInventory(pmhnp, await canonicalOfflineInventory(page, { bridge: 'pmhnp' }));
   expect(pmhnp).not.toEqual(pa);
@@ -534,7 +534,7 @@ for (const bridge of ['pa', 'pmhnp']) {
       await expect(page.locator('#content iframe.toolframe')).toBeVisible();
 
       await returnToAppToday(page, bridge);
-      await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+      await expect(status(page)).toHaveText('Current route cached', { timeout: 10_000 });
       await entry(page).locator('[data-fd-offline-open]').click();
       await expectConnectionRequired(page);
       await page.locator('[data-fd-search]:visible').first().click();
@@ -546,7 +546,7 @@ for (const bridge of ['pa', 'pmhnp']) {
     }
 
     await returnToAppToday(page, bridge);
-    await expect(status(page)).toHaveText('Ready', { timeout: 10_000 });
+    await expect(status(page)).toHaveText('Current route cached', { timeout: 10_000 });
     const removed = await page.evaluate(async url => {
       const key = (await caches.keys()).find(value => value.startsWith('cw-precache-'));
       return (await caches.open(key)).delete(url);
@@ -554,7 +554,7 @@ for (const bridge of ['pa', 'pmhnp']) {
     expect(removed).toBe(true);
     await page.reload({ waitUntil: 'domcontentloaded' });
     if (bridge === 'pmhnp') await page.locator('[data-fd-app-bridge="pmhnp"]').click();
-    await expect(status(page)).toHaveText('Not ready', { timeout: 10_000 });
+    await expect(status(page)).toHaveText('Not verified', { timeout: 10_000 });
     await entry(page).locator('[data-fd-offline-open]').click();
     await expect(entry(page).locator('[data-fd-offline-card]')).toContainText(reading);
     await expect(entry(page).locator('[data-fd-offline-card]')).toContainText('1 missing');

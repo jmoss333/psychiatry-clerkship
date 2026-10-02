@@ -734,17 +734,17 @@ for site,key in [('ms3','ms3'),('resident','resident')]:
 print(json.dumps(out))
 `], { cwd: new URL('../', import.meta.url), encoding: 'utf8' }));
 
-test('the Care family-conversation explanation names a search that finds the Family Meeting Playbook first', () => {
+test('the Playbook remains discoverable on both audiences after Care gains direct navigation', () => {
   const intent = REAL_CUR.careNavigator.find((c) => c.id === 'family-conversation');
-  const quoted = /“([^”]+)”/.exec(intent.explanation);
-  assert.ok(quoted, 'the explanation must quote the search term it recommends');
+  assert.doesNotMatch(intent.explanation, /Search.*family meeting/);
+  const query = 'family meeting';
   assert.match(intent.explanation, /Family Meeting Playbook/);
   for (const site of ['ms3', 'resident']) {
     const projection = SITE_PROJECTIONS[site];
     const index = F.fdBuildIndex(projection.curriculum, REAL_META, REAL_TOOLS, projection.manifest);
     assert.ok(index.byRef['family_playbook.md'], `${site}: the Family Meeting Playbook must ship on this site`);
-    const top = F.fdSearchResults(index, quoted[1], projection.curriculum.synonyms, {})[0];
+    const top = F.fdSearchResults(index, query, projection.curriculum.synonyms, {})[0];
     assert.equal(top && top.item && top.item.ref, 'family_playbook.md',
-      `${site}: searching "${quoted[1]}" must put the Family Meeting Playbook first`);
+      `${site}: searching "${query}" must put the Family Meeting Playbook first`);
   }
 });

@@ -9,6 +9,21 @@ function fdCarePackSafeId(value){
     value!=='constructor'&&value!=='prototype';
 }
 
+/* A launch destination, never a selectable handout resource. Ignore all screen state. */
+function fdCareBuilder(index){
+  var item=index&&index.careBuilder;
+  if(!item||!fdCarePackSafeId(item.id)||item.id!=='supervised-resource-builder'||
+     typeof item.title!=='string'||!item.title||
+     typeof item.description!=='string'||!item.description||
+     typeof item.url!=='string'||!/^https:\/\/[^\s?#<>"']+$/.test(item.url)) return '';
+  return '<aside class="fd-care-builder" aria-labelledby="fd-care-builder-link">'+
+    '<div><p id="fd-care-builder-description">'+fdEsc(item.description)+'</p>'+
+    '<p>Opens ReConnect in a new tab. No patient information or choices from this screen are sent.</p></div>'+
+    '<a id="fd-care-builder-link" class="fd-care-builder__link" data-fd-care-builder="'+fdEsc(item.id)+
+    '" href="'+fdEsc(item.url)+'" target="_blank" rel="noopener noreferrer" '+
+    'aria-describedby="fd-care-builder-description">'+fdEsc(item.title)+'</a></aside>';
+}
+
 function fdCarePackResources(index){
   var rows=index&&Array.isArray(index.careResources)?index.careResources:[];
   var seen=Object.create(null),out=[],item;
@@ -150,10 +165,10 @@ function fdCarePack(index,ids,crisisHtml){
   for(i=0;i<resources.length;i++) byId[resources[i].id]=resources[i];
 
   out+='<section class="fd-care-pack'+(printReady?' is-print-ready':'')+'" aria-labelledby="fd-care-pack-title">'+
-    '<header class="fd-care-pack__head"><div><h2 id="fd-care-pack-title">Build a resource handout</h2>'+
-    '<p>Choose up to three resources. No patient details are collected or saved.</p></div>'+
+    '<header class="fd-care-pack__head"><div><h2 id="fd-care-pack-title">Share resource websites</h2>'+
+    '<p>Print or copy links to up to three resource websites. No patient details are collected or saved.</p></div>'+
     (hasCrisis?'<p class="fd-care-pack__included"><span aria-hidden="true">✓</span> Crisis resources are included automatically</p>':
-      '<p class="fd-care-pack__crisis-failure" role="alert">This handout is unavailable because its crisis-resource block did not load.</p>')+'</header>'+
+      '<p class="fd-care-pack__crisis-failure" role="alert">This handout is unavailable because its crisis-resource block did not load.</p>')+'</header>'+fdCareBuilder(index)+
     '<div class="fd-care-pack__workbench"><section class="fd-care-pack__picker" aria-labelledby="fd-care-pack-picker-title">'+
     '<h3 id="fd-care-pack-picker-title">Choose resources</h3><div class="fd-care-pack__choices">';
   for(i=0;i<resources.length;i++){

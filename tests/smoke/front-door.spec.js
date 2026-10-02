@@ -916,6 +916,80 @@ test('Path route keeps selection, current week, keyboard focus, and mobile rail 
   await expectHealthy(page);
 });
 
+// The road is drawn from the same numbers that place the stops (fd_path.js FD_PATH_* and the
+// --fd-path-* properties). This measures the RESULT: every stop centre within 4px of the rendered
+// connector, every "WEEK n" label on one baseline, and no horizontal overflow, at three widths.
+test('Path stops sit on the road, share one label baseline, and never overflow', async ({ page }, testInfo) => {
+  const site = audience(testInfo);
+  await seedApp(page, testInfo);
+  for (const width of [1280, 1024, 700]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    await page.locator('[data-fd-tab="path"]:visible').click();
+    // The Path fades up; measure only once every animation in it has finished (mid-fade
+    // boxes read fractional sizes).
+    await page.locator('.fd-path').evaluate((el) =>
+      Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
+    const geo = await page.evaluate(() => {
+      const p = document.querySelector('.fd-pathroute__connector');
+      const m = p.getScreenCTM();
+      const len = p.getTotalLength();
+      const pts = [];
+      for (let i = 0; i <= 600; i++) {
+        const q = p.getPointAtLength((len * i) / 600);
+        pts.push([m.a * q.x + m.c * q.y + m.e, m.b * q.x + m.d * q.y + m.f]);
+      }
+      const centres = [...document.querySelectorAll('.fd-pathroute .fd-timeline__number')].map((n) => {
+        const r = n.getBoundingClientRect();
+        return [r.left + r.width / 2, r.top + r.height / 2];
+      });
+      const miss = centres.map(([x, y]) => Math.min(...pts.map(([px, py]) => Math.hypot(px - x, py - y))));
+      const tops = [...document.querySelectorAll('.fd-pathroute .fd-timeline__n')].map((n) => n.getBoundingClientRect().top);
+      const path = document.querySelector('.fd-path');
+      return { miss, tops, count: centres.length, fits: path.scrollWidth <= path.clientWidth };
+    });
+    expect(geo.count).toBe(site.weekCount);
+    for (const d of geo.miss) expect(d, `stop centre off the road at ${width}px`).toBeLessThanOrEqual(4);
+    expect(Math.max(...geo.tops) - Math.min(...geo.tops), `labels off one baseline at ${width}px`).toBeLessThanOrEqual(1);
+    expect(geo.fits, `Path overflows at ${width}px`).toBe(true);
+  }
+  await expectHealthy(page);
+});
+
+// "Complete · Current" is the widest flag the route draws. Finishing the current week is an
+// ordinary state, and at narrow desktop widths a nowrap flag positioned over the node spilled onto
+// the neighbouring stop (.fd-pathroute is overflow:hidden, so a scrollWidth check cannot see it).
+test('the current-week flag never covers another stop, even when that week is complete', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await page.locator('[data-fd-tab="path"]:visible').click();
+  const current = page.locator('.fd-timeline__row[aria-current="step"]');
+  await current.click();
+  for (let k = 0; k < 30; k++) {
+    const open = page.locator('#fd-path-detail [data-fd-toggle][aria-pressed="false"]').first();
+    if (!(await open.count())) break;
+    await open.click();
+  }
+  await expect(current.locator('.fd-timeline__status')).toHaveText('Complete · Current');
+  for (const width of [1280, 900, 760, 700, 660]) {
+    await page.setViewportSize({ width, height: 900 });
+    const hits = await page.evaluate(() => {
+      const flag = document.querySelector('.fd-timeline__row[aria-current="step"] .fd-timeline__status').getBoundingClientRect();
+      const card = document.querySelector('.fd-pathroute').getBoundingClientRect();
+      const own = document.querySelector('.fd-timeline__row[aria-current="step"] .fd-timeline__number');
+      const overlaps = [...document.querySelectorAll('.fd-pathroute .fd-timeline__number')]
+        .filter((n) => n !== own)
+        .map((n) => n.getBoundingClientRect())
+        .filter((r) => flag.left < r.right && flag.right > r.left && flag.top < r.bottom && flag.bottom > r.top).length;
+      const clipped = flag.left < card.left || flag.right > card.right || flag.top < card.top;
+      return { overlaps, clipped };
+    });
+    expect(hits.overlaps, `flag covers another stop at ${width}px`).toBe(0);
+    expect(hits.clipped, `flag clipped by the route card at ${width}px`).toBe(false);
+  }
+  await expectHealthy(page);
+});
+
 // The 390px check above passed on macOS both before and after the .fd-row__title fix, because
 // macOS font metrics happened to land just under the floor a max-content-sized title imposed
 // (339px on res / 324px on ms3, against 362px available). Ubuntu's wider defaults did not, so CI
@@ -2966,6 +3040,8 @@ test('Patient care resources is a safe, responsive fourth destination and search
     await expect(choices.nth(index)).toBeFocused();
     await page.keyboard.press('Tab');
   }
+  await expect(page.getByRole('button', {name:'Open Family Meeting Playbook', exact:true})).toBeFocused();
+  await page.keyboard.press('Tab');
   await expect(page.locator('.fd-care-navigator__link').first()).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('.fd-care-navigator__alternatives .fd-care-navigator__link').first()).toBeFocused();
@@ -3206,6 +3282,80 @@ test('Care Quick Share keeps exact links transient, keyboard-safe, and usable at
   const drawerBox = await drawer.boundingBox();
   expect(drawerBox.x).toBeGreaterThanOrEqual(0);
   expect(drawerBox.x + drawerBox.width).toBeLessThanOrEqual(321);
+  await expectHealthy(page);
+});
+
+test('Supervised Resource Builder opens context-free without changing Care Quick Share', async ({ page }, testInfo) => {
+  const url = 'https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html';
+  const launches = [];
+  await page.context().route('https://reconnect-tools.netlify.app/**', async route => {
+    launches.push({ url: route.request().url(), referer: route.request().headers().referer });
+    await route.fulfill({ contentType: 'text/html', body: '<title>Builder destination fixture</title>' });
+  });
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=care');
+  await page.locator('[data-fd-care-intent="services"]').click();
+  await page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]').click();
+  const storage = await page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage } }));
+  const status = await page.locator('#careNavigatorStatus').textContent();
+  const link = page.getByRole('link', { name: 'Build a specific resource handout', exact: true });
+  await expect(link).toHaveAttribute('href', url);
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(link).toHaveAccessibleDescription(/Choose a topic, broad area.*supervisor/);
+  expect(await link.evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-care-pack__picker')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate(value => document.documentElement.setAttribute('data-theme', value), theme);
+    // 640px at a doubled root font exercises text zoom; 320px is the narrow reflow boundary.
+    for (const width of [1280, 320, 640]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.evaluate(value => { document.documentElement.style.fontSize = value; }, width === 640 ? '200%' : '');
+      // Establish real keyboard modality before checking :focus-visible.
+      await page.keyboard.press('Tab');
+      await link.focus();
+      await expect(link).toBeFocused();
+      const metrics = await link.evaluate(el => {
+        const box = el.getBoundingClientRect(), style = getComputedStyle(el);
+        return { height: box.height, width: box.width, outline: style.outlineStyle,
+          outlineWidth: parseFloat(style.outlineWidth), fits: document.documentElement.scrollWidth <= innerWidth };
+      });
+      expect(metrics.height).toBeGreaterThanOrEqual(44);
+      expect(metrics.width).toBeGreaterThanOrEqual(44);
+      expect(metrics.outline).not.toBe('none');
+      expect(metrics.outlineWidth).toBeGreaterThan(0);
+      expect(metrics.fits).toBe(true);
+      await page.keyboard.press('Tab');
+      await expect(page.locator('.fd-care-pack__choice').first()).toBeFocused();
+    }
+  }
+  await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
+  for (let n = 0; n < 2; n++) {
+    await link.focus();
+    const popupPromise = page.waitForEvent('popup');
+    await page.keyboard.press('Enter');
+    const popup = await popupPromise;
+    await popup.waitForLoadState();
+    expect(popup.url()).toBe(url);
+    expect(await popup.evaluate(() => window.opener)).toBe(null);
+    await popup.close();
+    await expect(page.locator('.fd-care-pack__choice[aria-pressed="true"]')).toHaveCount(1);
+    await expect(page.locator('#careNavigatorStatus')).toHaveText(status);
+    expect(await page.evaluate(() => ({ local: { ...localStorage }, session: { ...sessionStorage } }))).toEqual(storage);
+  }
+  expect(launches).toEqual([{ url, referer: undefined }, { url, referer: undefined }]);
+  await page.emulateMedia({ media: 'print' });
+  await expect(link).toBeHidden();
+  await expect(page.locator('.fd-care-pack__sheet')).toBeVisible();
+  await expect(page.locator('.fd-care-pack__sheet')).not.toContainText('Build a specific resource handout');
+  await page.emulateMedia({ media: 'screen' });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.locator('[data-fd-care-share="resource-finder"]').first().click();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.fd-care-share')).toHaveCount(0);
+  await page.locator('.fd-tabs [data-fd-tab="library"]:visible').click();
+  await page.locator('.fd-tabs [data-fd-tab="care"]:visible').click();
+  await expect(link).toHaveAttribute('href', url);
+  await expect(page.locator('.fd-care-pack__choice[aria-pressed="true"]')).toHaveCount(0);
   await expectHealthy(page);
 });
 
@@ -4324,4 +4474,290 @@ test('Concepts shell stalled response becomes actionable unavailable',async({pag
   await page.route('**/tools/concepts.json',()=>new Promise(()=>{}));
   await page.goto('/');
   await expect(page.locator('[data-fd-concept-status]')).toContainText('unavailable. Review counts are incomplete. Open Daily Review to retry.',{timeout:15000});
+});
+
+// Cache availability and practice evidence are independent of clinical readiness.
+for (const practiced of [false, true]) {
+  test(`Progress separates unpracticed areas from measured weakness (${practiced ? 'missed answers' : 'first use'})`, async ({ page }, info) => {
+    const answers = practiced ? { 'ux-mood-miss': { correct: false, cat: 'mood', pages: ['t_mood.md'] } } : {};
+    await seedApp(page, info, {storage:{cw_qb_v1:answers}});
+    await page.goto('/?page=__progress__');
+    await expect(page.getByRole('heading', {name:'Try an unpracticed area', exact:true})).toBeVisible();
+    const start = page.locator('.hm-sec').filter({has:page.getByRole('heading', {name:'Try an unpracticed area', exact:true})});
+    await expect(start).toContainText('No practice answers yet');
+    await expect(start.locator('[data-practice]')).toHaveCount(1);
+    const weak = page.getByRole('heading', {name:'Practice your weakest areas', exact:true});
+    if (practiced) {
+      await expect(weak).toBeVisible();
+      await expect(page.locator('.hm-sec').filter({has:weak}).locator('[data-practice="mood"]')).toBeVisible();
+      await expect(start.locator('[data-practice="mood"]')).toHaveCount(0);
+    } else await expect(weak).toHaveCount(0);
+    await page.setViewportSize({width:320,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await expectHealthy(page);
+  });
+}
+
+test('Care Playbook returns to Care with its existing transient reset; offline labels reflow with large text', async ({ page }, info) => {
+  await seedApp(page, info);
+  await page.goto('/');
+  const availability = page.locator('[data-fd-offline-entry]');
+  await expect(availability).toHaveAttribute('aria-label','Offline availability');
+  await expect(availability).not.toContainText('Shift-ready');
+  for (const width of [1280,320,640]) {
+    await page.setViewportSize({width,height:900});
+    await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
+    expect(await availability.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+    await page.keyboard.press('Tab');
+    const control=availability.locator('[data-fd-offline-open]');
+    await control.focus();
+    await page.keyboard.press('Enter');
+    await expect(availability.locator('[data-fd-offline-card]')).toBeVisible();
+    await availability.locator('[data-fd-offline-close]').click();
+    await expect(control).toBeFocused();
+  }
+  await page.evaluate(()=>document.documentElement.style.fontSize='');
+  await page.setViewportSize({width:1280,height:900});
+  await page.locator('[data-fd-tab="care"]:visible').click();
+  await expect(page.getByRole('heading',{name:'Share resource websites',exact:true})).toBeVisible();
+  await expect(page.getByRole('link',{name:'Build a specific resource handout',exact:true})).toBeVisible();
+  for (const width of [1280,320,640]) {
+    await page.setViewportSize({width,height:900});
+    await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
+    await page.locator('[data-fd-care-intent="family-conversation"]').click();
+    await page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]').click();
+    const open=page.getByRole('button',{name:'Open Family Meeting Playbook',exact:true});
+    await page.keyboard.press('Tab'); await open.focus();
+    const paint=await open.evaluate(el=>({outline:getComputedStyle(el).outlineStyle, fits:document.documentElement.scrollWidth<=innerWidth,height:el.getBoundingClientRect().height}));
+    expect(paint.outline).not.toBe('none'); expect(paint.fits).toBe(true); expect(paint.height).toBeGreaterThanOrEqual(44);
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.fd-article')).toHaveAttribute('data-ref','family_playbook.md');
+    await expect(page.locator('.fd-article__h1')).toContainText('Family Meeting Playbook');
+    await page.locator('.fd-reader__back[data-fd-back]').click();
+    await expect(page.getByRole('heading',{name:'Patient care resources',exact:true,level:1})).toBeVisible();
+    await expect(open).toHaveCount(0);
+    await expect(page.locator('[data-fd-care-intent="family-conversation"]')).toHaveAttribute('aria-pressed','false');
+    await expect(page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]')).toHaveAttribute('aria-pressed','false');
+    await expect(page.locator('#careNavigatorStatus')).toHaveText('');
+  }
+  await expectHealthy(page);
+});
+
+
+for (const blockedStorage of [false,true]) {
+  test(`formative placement is honest about length and interrupted answers (${blockedStorage?'placement storage unavailable':'device storage'})`, async ({ page }, info) => {
+    await seedApp(page,info);
+    await page.goto('/?page=__progress__');
+    await expect(page.locator('[data-pt="pretest"]')).toBeVisible();
+    if(blockedStorage) await page.evaluate(()=>{
+      const read=Storage.prototype.getItem,write=Storage.prototype.setItem;
+      Storage.prototype.getItem=function(key){if(this===localStorage)throw new DOMException('Blocked','SecurityError');return read.call(this,key);};
+      Storage.prototype.setItem=function(key,value){if(this===localStorage)throw new DOMException('Blocked','QuotaExceededError');return write.call(this,key,value);};
+    });
+    const launch=page.locator('[data-pt="pretest"]');
+    await expect(launch).toContainText('formative placement');
+    await expect(launch).not.toContainText('2-minute');
+    await launch.click();
+    const root=page.locator('#ptRoot');
+    await expect(root.getByRole('heading',{name:'12-question formative placement',exact:true})).toBeVisible();
+    await expect(root.locator('.pt-q')).toHaveCount(12);
+    await expect(root).toContainText('Optional, untimed practice');
+    await expect(root).toContainText('Unsubmitted answers are not saved');
+    const status=root.getByRole('status');
+    await expect(status).toHaveText('0 of 12 answered');
+    await expect(status).toHaveAttribute('aria-live','polite');
+    for(const width of [1280,320,640]){
+      await page.setViewportSize({width,height:900});
+      await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
+      const answer=root.locator('.pt-opt[data-qi="0"]').first();
+      await page.keyboard.press('Tab');await answer.focus();
+      expect(await answer.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
+      await page.keyboard.press('Enter');await page.keyboard.press('Enter');
+      await expect(answer).toHaveClass(/sel/);
+      await expect(status).toHaveText('1 of 12 answered');
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    }
+    await page.evaluate(()=>document.documentElement.style.fontSize='');
+    await page.locator('[data-progress-action="progress"]').click();
+    await page.locator('[data-pt="pretest"]').click();
+    await expect(page.locator('#ptCount')).toHaveText('0 of 12 answered');
+    await expect(root.locator('.pt-opt.sel')).toHaveCount(0);
+    if(blockedStorage){
+      await root.locator('.pt-opt[data-qi="0"]').first().click();
+      await page.locator('[data-pt="submit"]').click();
+      await expect(page.getByRole('heading',{name:'Your formative placement',exact:true})).toBeVisible();
+    }
+    await page.reload();
+    await expect(page.locator('[data-pt="pretest"]')).toBeVisible();
+    await expectHealthy(page);
+  });
+}
+
+test('formative placement keeps scoring and genuine practice precedence on retake',async({page},info)=>{
+  const response=await requestGetWithRetry(page.request,'/pretest_pool.json');
+  const pool=(await response.json()).items;
+  expect(pool).toHaveLength(12);
+  const first=pool[0];
+  const practice={correct:false,cat:first.cat,pages:first.pages,confidence:4,source:'practice'};
+  await seedApp(page,info,{storage:{cw_qb_v1:{[first.id]:practice}}});
+  await page.goto('/?page=__progress__');await page.locator('[data-pt="pretest"]').click();
+  for(let i=0;i<pool.length;i++){
+    const correct=pool[i].options.find(o=>o.c).key;
+    await page.locator(`.pt-opt[data-qi="${i}"][data-key="${correct}"]`).click();
+  }
+  await expect(page.locator('#ptCount')).toHaveText('12 of 12 answered');
+  await page.locator('[data-pt="submit"]').click();
+  await expect(page.getByRole('heading',{name:'Your formative placement',exact:true})).toBeVisible();
+  const stored=await page.evaluate(()=>({attempt:JSON.parse(localStorage.getItem('cw_pretest_v1')),bank:JSON.parse(localStorage.getItem('cw_qb_v1')),plan:JSON.parse(localStorage.getItem('cw_plan_v1'))}));
+  expect(stored.attempt.answers).toHaveLength(12);expect(stored.attempt.answers.every(x=>x.correct)).toBe(true);
+  expect(stored.bank[first.id]).toEqual(practice);expect(stored.plan.weeks).toHaveLength(audience(info).weekCount);
+  await page.locator('[data-pt="pretest"]').click();await expect(page.locator('#ptCount')).toHaveText('0 of 12 answered');
+  await expectHealthy(page);
+});
+
+
+test('formative placement delayed loading cannot erase a newer reopened attempt',async({page},info)=>{
+  await seedApp(page,info);
+  const reply=await requestGetWithRetry(page.request,'/pretest_pool.json');const pool=await reply.json();
+  let firstRoute=null,requests=0;
+  await page.route('**/pretest_pool.json',async route=>{
+    requests++;
+    if(requests===1){firstRoute=route;return;}
+    await route.fulfill({json:pool});
+  });
+  await page.goto('/?page=__progress__');await page.locator('[data-pt="pretest"]').click();
+  await expect.poll(()=>requests).toBe(1);
+  await page.locator('[data-progress-action="progress"]').click();
+  await page.locator('[data-pt="pretest"]').click();
+  await expect(page.locator('#ptCount')).toHaveText('0 of 12 answered');
+  const answer=page.locator('.pt-opt[data-qi="0"]').first();
+  await page.locator('[data-progress-action="progress"]').focus();await page.keyboard.press('Tab');
+  await expect(answer).toBeFocused();await page.keyboard.press('Enter');
+  await expect(page.locator('#ptCount')).toHaveText('1 of 12 answered');
+  const finished=page.waitForEvent('requestfinished',{predicate:request=>request.url().endsWith('/pretest_pool.json')});
+  await firstRoute.fulfill({json:pool});await finished;
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  await expect(page.locator('#ptCount')).toHaveText('1 of 12 answered');
+  await expect(answer).toHaveClass(/sel/);
+  await page.locator('[data-fd-tab="library"]:visible').click();
+  await page.goBack();
+  await expect(page.locator('[data-pt="pretest"]')).toBeVisible();
+  await page.goForward();await expect(page.locator('.fd-library:visible')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('Today purpose is optional, session-only, and preserves the regular planner and private stores',async({page},info)=>{
+  await seedApp(page,info,{storage:{cw_feedback_v1:{v:1,items:[]},cw_private_reflection_v1:'synthetic private note'}});
+  await page.goto('/');await otfExpectOnePrimary(page);await otfExpectPrimaryIsFirstFocusable(page);
+  const chooser=page.locator('.fd-purpose'),toggle=chooser.locator('summary');
+  await expect(chooser).not.toHaveAttribute('open');
+  const initialURL=page.url();
+  const primary=await page.locator(OTF_PRIMARY).textContent();
+  const stores=await page.evaluate(()=>Object.fromEntries(['cw_frontdoor_v1','cw_block_v1','cw_feedback_v1','cw_private_reflection_v1'].map(key=>[key,localStorage.getItem(key)])));
+  await toggle.focus();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+  const first=chooser.locator('[data-today-purpose="rounds"]');await page.keyboard.press('Tab');await expect(first).toBeFocused();
+  for(const id of ['rounds','interview','family','study','interview']){
+    const choice=chooser.locator(`[data-today-purpose="${id}"]`);
+    await choice.click();await expect(choice).toBeFocused();await expect(choice).toHaveAttribute('aria-pressed','true');
+    await expect(chooser.getByRole('status')).toContainText('Suggested because you chose');
+    expect(page.url()).toBe(initialURL);expect(await page.locator(OTF_PRIMARY).textContent()).toBe(primary);
+    await otfExpectOnePrimary(page);
+  }
+  expect(await page.evaluate(()=>Object.fromEntries(['cw_frontdoor_v1','cw_block_v1','cw_feedback_v1','cw_private_reflection_v1'].map(key=>[key,localStorage.getItem(key)])))).toEqual(stores);
+  await chooser.locator('[data-today-purpose="study"]').click();
+  await page.locator('[data-block-minutes="20"]').click();
+  await chooser.locator('[data-today-planner]').click();
+  await expect(page.locator('[data-block-minutes="20"]')).toBeFocused();
+  await expect(page.locator('[data-block-minutes="20"]')).toHaveAttribute('aria-pressed','true');
+  expect(await page.evaluate(()=>localStorage.getItem('cw_block_v1'))).toBe(stores.cw_block_v1);
+  await chooser.locator('[data-today-purpose=""]').click();await expect(toggle).toBeFocused();await expect(chooser).not.toHaveAttribute('open');
+  await toggle.click();await chooser.locator('[data-today-purpose="family"]').click();
+  await page.locator('[data-fd-tab="library"]:visible').click();await page.goBack();
+  await expect(page.locator('[data-today-purpose="family"]')).toHaveAttribute('aria-pressed','true');
+  await page.goForward();await expect(page.locator('.fd-library:visible')).toBeVisible();
+  await page.goBack();await page.reload();await expect(chooser).not.toHaveAttribute('open');
+  await toggle.click();await expect(chooser.locator('[data-today-purpose=""]')).toHaveAttribute('aria-pressed','true');
+  await expectHealthy(page);
+});
+
+test('Today purpose uses published reader/tool routes with keyboard, mobile and large text',async({page},info)=>{
+  await seedApp(page,info);await page.goto('/');
+  const routes=[{id:'rounds',ref:'oral.html',tool:true},{id:'interview',ref:'pg_interview.md',tool:false},{id:'family',ref:'family_playbook.md',tool:false}];
+  for(let i=0;i<routes.length;i++){
+    const item=routes[i],width=[1280,320,640][i];await page.setViewportSize({width,height:900});
+    await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
+    const chooser=page.locator('.fd-purpose');
+    if(!await chooser.evaluate(el=>el.open))await chooser.locator('summary').click();
+    await chooser.locator(`[data-today-purpose="${item.id}"]`).click();
+    const open=chooser.locator(`[data-fd-open="${item.ref}"]`);await page.keyboard.press('Tab');await open.focus();
+    const paint=await open.evaluate(el=>({outline:getComputedStyle(el).outlineStyle,height:el.getBoundingClientRect().height,fits:document.documentElement.scrollWidth<=innerWidth}));
+    expect(paint.outline).not.toBe('none');expect(paint.height).toBeGreaterThanOrEqual(44);expect(paint.fits).toBe(true);
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(new RegExp((item.tool?'tool':'page')+'='+item.ref.replace('.','\\.')));
+    if(item.tool)await expect(page.locator('iframe.toolframe')).toBeVisible();
+    else await expect(page.locator('.fd-article')).toHaveAttribute('data-ref',item.ref);
+    expect(new URL(page.url()).searchParams.has('purpose')).toBe(false);
+    await page.goBack();await expect(page.locator(`[data-today-purpose="${item.id}"]`)).toHaveAttribute('aria-pressed','true');
+  }
+  await page.evaluate(()=>document.documentElement.style.fontSize='');await expectHealthy(page);
+});
+
+test('Today purpose does not replace interrupted work, due reviews or an existing study block',async({page},info)=>{
+  await seedApp(page,info,{storage:{cw_sess_v1:OTF.capsule,cw_block_v1:OTF.block,cw_srs_v1:OTF.srs}});
+  await page.goto('/');await otfExpectOnePrimary(page);
+  await expect(page.locator('.fd-primary .fd-resume__link')).toContainText('Resume question bank — 4 left');
+  const primary=await page.locator(OTF_PRIMARY).textContent();
+  const before=await page.evaluate(()=>({block:localStorage.getItem('cw_block_v1'),session:localStorage.getItem('cw_sess_v1'),dues:localStorage.getItem('cw_srs_v1')}));
+  await page.locator('.fd-purpose summary').click();
+  for(const id of ['rounds','study','family',''])await page.locator(`[data-today-purpose="${id}"]`).click();
+  expect(await page.locator(OTF_PRIMARY).textContent()).toBe(primary);
+  expect(await page.evaluate(()=>({block:localStorage.getItem('cw_block_v1'),session:localStorage.getItem('cw_sess_v1'),dues:localStorage.getItem('cw_srs_v1')}))).toEqual(before);
+  await page.locator('.fd-purpose summary').click();await page.locator('[data-today-purpose="study"]').click();
+  await page.locator('[data-today-planner]').click();await expect(page.locator('[data-block-continue]')).toBeFocused();
+  await expectHealthy(page);
+});
+
+test('Today purpose works when local storage becomes unavailable and rejects forged purposes',async({page},info)=>{
+  await seedApp(page,info);await page.goto('/');await expect(page.locator('.fd-purpose')).toBeVisible();
+  await page.evaluate(()=>{
+    const get=Storage.prototype.getItem,set=Storage.prototype.setItem;
+    Storage.prototype.getItem=function(k){if(this===localStorage)throw new DOMException('Blocked','SecurityError');return get.call(this,k);};
+    Storage.prototype.setItem=function(k,v){if(this===localStorage)throw new DOMException('Blocked','QuotaExceededError');return set.call(this,k,v);};
+  });
+  await page.locator('.fd-purpose summary').click();await page.locator('[data-today-purpose="interview"]').click();
+  await expect(page.locator('[data-today-purpose="interview"]')).toHaveAttribute('aria-pressed','true');
+  await page.evaluate(()=>{const b=document.createElement('button');b.setAttribute('data-today-purpose','unknown-private-target');document.querySelector('.fd-purpose').appendChild(b);b.click();b.remove();});
+  await expect(page.locator('[data-today-purpose="interview"]')).toHaveAttribute('aria-pressed','true');
+  await page.locator('[data-today-purpose=""]').click();await expect(page.locator('.fd-purpose')).not.toHaveAttribute('open');
+  await expectHealthy(page);
+});
+
+
+test('Today purpose active text meets contrast in both themes and disclosure stays keyboard controlled',async({page},info)=>{
+  await seedApp(page,info);
+  for(const theme of ['light','dark']){
+    await page.addInitScript(value=>localStorage.setItem('cw_theme',value),theme);await page.goto('/');
+    const chooser=page.locator('.fd-purpose'),summary=chooser.locator('summary');
+    await summary.focus();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+    await chooser.locator('[data-today-purpose="study"]').click();
+    const ratios=await chooser.evaluate(root=>{
+      const rgb=value=>{
+        const parts=String(value).match(/[\d.]+/g);if(!parts)return null;
+        const scale=String(value).startsWith('color(srgb')?255:1;
+        return {c:parts.slice(0,3).map(Number).map(v=>v*scale),a:parts.length>3?Number(parts[3]):1};
+      };
+      const lum=color=>color.map(v=>{const s=v/255;return s<=0.03928?s/12.92:Math.pow((s+0.055)/1.055,2.4);}).reduce((a,v,i)=>a+v*[0.2126,0.7152,0.0722][i],0);
+      return [...root.querySelectorAll('summary,p,button')].filter(el=>el.getBoundingClientRect().height>0).map(el=>{
+        const ink=rgb(getComputedStyle(el).color);let node=el,ground=null;
+        while(node&&!ground){const bg=rgb(getComputedStyle(node).backgroundColor);if(bg&&bg.a>0.99)ground=bg.c;node=node.parentElement;}
+        if(!ink||!ground)throw new Error('Missing rendered color');
+        const a=lum(ink.c),b=lum(ground);return {text:el.textContent,ratio:(Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)};
+      });
+    });
+    expect(ratios.length).toBeGreaterThanOrEqual(8);for(const row of ratios)expect(row.ratio,row.text).toBeGreaterThanOrEqual(4.5);
+    await summary.focus();await page.keyboard.press('Enter');await expect(chooser).not.toHaveAttribute('open');
+    await expect(summary).toBeFocused();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+    expect(await summary.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
+  }
+  await expectHealthy(page);
 });

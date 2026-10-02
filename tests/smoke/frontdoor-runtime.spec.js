@@ -2593,7 +2593,7 @@ test('document title resets for tabs and updates for successful resources and in
   await page.goto('/?page=__progress__');
   await page.locator('[data-pt="plan"]').click();
   await page.locator('[data-pt="pretest"]').click();
-  await expect(page).toHaveTitle(/^2-minute placement — /);
+  await expect(page).toHaveTitle(/^formative placement — /);
   await page.locator('[data-progress-action="progress"]').click();
   await page.locator('[data-pt="plan"]').click();
   await expect(page).toHaveTitle(new RegExp(`^${planInfo.title} — `));
@@ -2613,7 +2613,7 @@ test('corrupt saved plan without placement opens placement and preserves progres
     document.querySelector('#fdApp').appendChild(button);
     button.click();
   });
-  await expect(page.locator('#ptRoot h1')).toHaveText('2-minute placement');
+  await expect(page.locator('#ptRoot h1')).toHaveText('12-question formative placement');
   expect(await page.evaluate(() => localStorage.getItem('cw_plan_v1'))).toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1')))).toEqual(progress);
 });

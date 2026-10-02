@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(524 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(531 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -253,7 +253,7 @@ ancestor; there is no modifier class for it.
           .fd-continue__count / .fd-continue__left
       .fd-setupcta    <button>         (alternative to .fd-continue when no week is set)
         .fd-setupcta__kicker / .fd-setupcta__title
-      .fd-offline     <section>        compact Shift-ready disclosure after the primary action
+      .fd-offline     <section>        compact Offline availability disclosure after the primary action
         .fd-offline__open <button>      status plus aria-expanded
         .fd-offline__details            in-flow, hidden until opened
           .fd-offline__inventory        response-only subtree
@@ -286,7 +286,7 @@ ancestor; there is no modifier class for it.
 | `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
 | `.fd-pilot` | Shared active-testing invitation (2026-09-21). Its `.fd-pilot__button` uses the existing `.pgfb-b` launcher and adds `data-fb-context="Today landing page"`; no second form or submission channel is introduced. |
 | `.fd-offline` | One in-flow cache receipt after Today's actual primary card, or immediately after the APP's marked primary resource inside its starting-route resources or selected task's Prepare links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
-| `.fd-today__exam` | Today's exam-date nudge, after the primary action (and the Shift-ready receipt when present), before the week list. Rendered only on the path that ends in an exam and only until a parseable date is stored (`fdExamDatePrompt`, `fd_state.js`). The date has exactly one home, the settings panel's Pacing field (`.fd-set__date`, `fd_sheet.js`) — this nudge carries no field of its own. `.fd-today__examcta` reopens Settings via the SAME `data-fd-settings` action the gear exposes: a second *trigger* for one action, not a second action. It does not disappear on its own — closing the field's `change` handler only sets `baseStale` (`fd_wire.js`); Today's base render, this nudge included, is rebuilt the next time `absorbStaleBase` finds that flag set, which is exactly when the panel closes (`data-fd-close-sheet` always touches `sheet`, a base-triggering settlement). That render destroys the CTA along with the rest of the stale Today markup, so `restoreInvoker` finds it disconnected and falls back to `equivalentControl` — any live control sharing the same action attribute and value, i.e. the gear — needing no bespoke focus-restore code of its own. (2026-09-26 — previously this duplicated the panel's own `<input type=date>` inline and deliberately avoided `data-fd-settings` for this same reason, before this settle-on-close path was confirmed to cover it.) |
+| `.fd-today__exam` | Today's exam-date nudge, after the primary action (and the offline availability receipt when present), before the week list. Rendered only on the path that ends in an exam and only until a parseable date is stored (`fdExamDatePrompt`, `fd_state.js`). The date has exactly one home, the settings panel's Pacing field (`.fd-set__date`, `fd_sheet.js`) — this nudge carries no field of its own. `.fd-today__examcta` reopens Settings via the SAME `data-fd-settings` action the gear exposes: a second *trigger* for one action, not a second action. It does not disappear on its own — closing the field's `change` handler only sets `baseStale` (`fd_wire.js`); Today's base render, this nudge included, is rebuilt the next time `absorbStaleBase` finds that flag set, which is exactly when the panel closes (`data-fd-close-sheet` always touches `sheet`, a base-triggering settlement). That render destroys the CTA along with the rest of the stale Today markup, so `restoreInvoker` finds it disconnected and falls back to `equivalentControl` — any live control sharing the same action attribute and value, i.e. the gear — needing no bespoke focus-restore code of its own. (2026-09-26 — previously this duplicated the panel's own `<input type=date>` inline and deliberately avoided `data-fd-settings` for this same reason, before this settle-on-close path was confirmed to cover it.) |
 | `.fd-offline__status`, `.fd-offline__detail`, `.fd-offline__scope`, `.fd-offline__checked` | Detailed state, reason, current route, and current-session verification timestamp. `Checked just now` is emitted only for a validated active-worker response. |
 | `.fd-offline__inventory` | Counts present and missing eligible reading, tool, shell/navigation, and search-data files. Device-only Reading place/Capture and connection-required media, live services, external links, and email delivery are always separate lines. Only this response subtree is replaced after a cache reply; focused controls are siblings outside it. |
 | `.fd-offline__refresh-status` | Stable live text for update-check success/failure or the offline explanation. The existing worker Refresh/Later prompt remains the sole reload decision. |
@@ -391,6 +391,8 @@ Omitting it collapses the rail underneath.
       h2 / p
       .fd-care-pack__included           valid governed crisis content only
       .fd-care-pack__crisis-failure      role="alert" in the header when crisis content is missing
+    .fd-care-builder <aside>             external launch only; excluded from print
+      div / p / .fd-care-builder__link <a>
     .fd-care-pack__workbench
       .fd-care-pack__picker
         .fd-care-pack__choices
@@ -451,6 +453,7 @@ Omitting it collapses the rail underneath.
 | `.vh-live` (`#careNavigatorStatus`) | Persistent, initially empty shell status beside `#routeStatus`, outside replaceable `#content`. The shell updates its polite, atomic text after a valid Care choice and clears it when the choice or Care surface ends. It keeps the same DOM node through Care re-renders. |
 | `.fd-care-navigator__alternatives` | Zero to two secondary links; shares the responsive one-column phone layout. |
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
+| `.fd-care-builder` / `.fd-care-builder__link` | Fixed context-free ReConnect launcher before the local picker, outside the handout sheet. Copy is linked by `aria-describedby`; new-tab link has `noopener noreferrer`, 44px minimum height, wrapping and visible focus. Flex stacks at ≤640px; `@media print` hides it in every state. No selection, QR, storage or analytics hook. |
 | `.fd-care-pack__workbench` | Transient two-column builder: a flat choice list beside a paper-like preview, stacking to one column at ≤640px. It accepts only canonical `careResources` records and has no patient fields, route state, storage, analytics, or network request. |
 | `.fd-care-pack__choice.is-selected` | The active choice pairs `.is-selected` with `aria-pressed="true"`; its visible check and inset rule keep selection non-color-only. A fourth unselected choice disables until one of the three is removed. |
 | `.fd-care-share__qr` / `.fd-care-share__qr-fallback` | The drawer renders the local SVG in the QR wrapper; the fallback replaces it with text when local QR generation is unavailable. Neither branch makes a network request. |
@@ -484,7 +487,7 @@ Omitting it collapses the rail underneath.
           .fd-timeline__line
         .fd-timeline__body
           .fd-timeline__n
-          .fd-timeline__number
+          .fd-timeline__number          (ring via inline --fd-ring-pct)
           .fd-timeline__title
           .fd-timeline__theme
           .fd-timeline__status        (current and/or complete only)
@@ -513,13 +516,14 @@ Omitting it collapses the rail underneath.
 
 | Class | Notes |
 |---|---|
-| `.fd-pathroute__connector` | One decorative, neutral stroke. It never gains selected, current, complete, or progress state. |
+| `.fd-pathroute__connector` | One decorative, neutral stroke, generated by `fdPathConnectorD(n)` so it passes through every stop centre; `vector-effect:non-scaling-stroke`. It never gains selected, current, complete, or progress state. |
 | `.fd-pathroute__weeks--4` / `--6` | Matches the audience-projected canonical week count. |
 | `.fd-timeline__row.is-sel` | Selected week: `--fd-selected` background, double-ring number, `aria-selected="true"`, and the only `tabindex="0"`. |
-| `.fd-dot.is-done` | Filled success. |
-| `.fd-dot.is-current` | Terracotta ring around the route marker. |
-| `.fd-timeline__status` | Visible non-colour state text: Current, Complete, or Complete · Current. |
-| `.fd-timeline__theme` | Canonical curriculum theme; shown for the selected node, including immediately on the phone rail. |
+| `.fd-timeline__number` | The stop's numeral inside a per-week progress ring: a conic-gradient driven by the inline `--fd-ring-pct` (that week's saved progress only, never week order). No `stroke-dasharray` anywhere on Path. |
+| `.fd-dot.is-done` | Filled success; on the desktop route it is the check badge at the node's lower right, and other dots are hidden there. |
+| `.fd-dot.is-current` | Phone rail only; the desktop route states current with the flag. |
+| `.fd-timeline__status` | Visible non-colour state text: Current, Complete, or Complete · Current. On `[aria-current=step]` it is the terracotta flag above the node at ≥1000px, inline below that. |
+| `.fd-timeline__theme` | Canonical curriculum theme; shown on every stop. |
 | `.fd-detail__here` | "you are here" pill. |
 | `.fd-feedback` | The learner's private supervisor-feedback notes for the viewed week (`cw_feedback_v1`, device only). Never progress, never exported, never an assessment. |
 | `.fd-feedback__text` | Type size is `max(var(--fd-font-base),1rem)`: iOS Safari zooms the page into any field under 16px when it takes focus. |
@@ -538,9 +542,21 @@ real endpoints, and the rebuilt selected control regains focus with `preventScro
 `aria-current="step"`, `.is-current`, and “Current” follow the actual `week`; `.is-done` and
 “Complete” follow the saved activity result. The neutral connector never derives from any of them.
 
+⚠ `--fd-path-band`, `--fd-path-y-low` and `--fd-path-y-high` on `.fd-pathroute` duplicate `FD_PATH_BAND` /
+`FD_PATH_Y_LOW` / `FD_PATH_Y_HIGH` in fd_path.js — change both (pinned by `fd-path-route.test.mjs`). Row
+centres must stay at `(i+0.5)/n`: keep `.fd-pathroute__weeks` at `gap:0` and space rows with margin,
+never gap. Rows are never translated; only `.fd-timeline__number` moves, inside the fixed band, so
+every stop's labels share one baseline (`front-door.spec.js` measures both).
+Hover and `is-sel` washes are `linear-gradient(transparent var(--fd-path-band), …)` so they start
+below the road — an opaque row background would hide the road across that column and make it
+appear to change with selection. The current flag sits above the node only at ≥1000px; below
+the lg breakpoint it drops into the label flow (a nowrap "Complete · Current" covered the next
+stop at 660px). `@media (forced-colors:active)` outlines every node in `CanvasText` on `Canvas`
+and marks `is-sel` with `Highlight` — the ring is a background image and vanishes there.
+
 ⚠ At `max-width:640px` the SVG curve is hidden and `.fd-pathroute__weeks::before` becomes the
-vertical rail. Every row's transform is reset. The selected theme must remain inside its node—do
-not move it exclusively into the detail panel.
+vertical rail. The theme must remain inside its node—do not move it exclusively into the detail
+panel.
 
 ⚠ `.fd-timeline__row:last-child .fd-timeline__line` is `display:none`. **Always emit
 `.fd-timeline__line` on every row**, including the last — do not conditionally omit it. The
@@ -991,3 +1007,9 @@ dark value). `tests/fd-tokens.test.mjs` fails the build on any raw hex in `front
 `tests/fd-contrast.test.mjs` enforces WCAG AA across both palettes.
 
 The one custom property the markup owns is `--fd-ring-pct` on `.fd-ring`.
+
+Offline availability: `.fd-offline__open` wraps its label and cache status for small screens and large text; its status describes the current route cache, not clinical or shift readiness. The family-conversation result uses the existing `.fd-btn.fd-btn--ghost` internal Playbook control, only when the active audience index contains `family_playbook.md`.
+
+## Optional session purpose chooser (2026-10-01)
+
+`fd-purpose`, `fd-purpose__summary`, `fd-purpose__choices`, `fd-purpose__note`, `fd-purpose__reason` style the optional disclosure after Today’s existing device-store cards. Buttons reuse `fd-btn` tokens and pressed state uses an attribute selector. Purpose choices and open state are in-memory only; standard primary/due-review/planner rules remain unchanged.

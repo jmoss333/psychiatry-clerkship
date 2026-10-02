@@ -213,6 +213,11 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     });
   }
 
+  var cb=cur.careBuilder,careBuilder=null;
+  if(cb&&typeof cb==='object'){
+    careBuilder={id:cb.id,title:cb.title,description:cb.description,url:cb.url};
+  }
+
   var careNavigator=[], cn=Array.isArray(cur.careNavigator)?cur.careNavigator:[];
   for(var cni=0;cni<cn.length;cni++){
     var navigatorIntent=cn[cni];
@@ -240,7 +245,7 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
 
   return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known,
     titles:titles, essentials:essentials, essentialsDropped:essentialsDropped,
-    careResources:careResources, careNavigator:careNavigator, teachingResources:teachingResources };
+    careResources:careResources, careBuilder:careBuilder, careNavigator:careNavigator, teachingResources:teachingResources };
 }
 
 /* The browser receives exactly one projected path. Treat that small object as untrusted at the
