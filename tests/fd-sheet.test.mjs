@@ -59,6 +59,20 @@ const REAL_MS3_CUR = {
 };
 const REAL_INDEX = F.fdBuildIndex(REAL_MS3_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
 const KIT_REFS = REAL_CUR.safetyKit.map((k) => k.ref);
+// The reviewed branch, pinned with a CONTROLLED review state over real content. CLAUDE.md: "a
+// test may not depend on live governance state". delirium.md keeps its real text and only its
+// facultyReview is fixed here, so a content edit that honestly demotes the page's source block
+// cannot turn the renderer's reviewed-branch tests red. tests/live-governance-state.test.mjs
+// rehearses exactly that demotion against this file.
+const ATTESTED_REF = 'delirium.md';
+const ATTESTED_META = {
+  ...REAL_META,
+  [ATTESTED_REF]: {
+    ...REAL_META[ATTESTED_REF],
+    facultyReview: { lastReviewed: '2026-01-01', reviewer: 'Fixture reviewer', status: 'reviewed' },
+  },
+};
+const ATTESTED_INDEX = F.fdBuildIndex(REAL_MS3_CUR, ATTESTED_META, REAL_TOOLS, REAL_MAN);
 
 // A fixture whose every string is hostile, for the escaping pass, plus the degraded cases the real
 // data cannot produce (a kit page with no safetySteps; a protocol that is not faculty-reviewed).
@@ -315,15 +329,16 @@ test('the ‹ kit back affordance appears only when the protocol was reached fro
 
 test('the live shell boundary renders a valid reviewed protocol without failure copy', () => {
   const crisisHtml = canonicalCrisisHtml();
-  const rendered = liveShellBoundary(REAL_INDEX, REAL_META, crisisHtml)({
+  const rendered = liveShellBoundary(ATTESTED_INDEX, ATTESTED_META, crisisHtml)({
     sheet: 'delirium.md', week: 1, done: {},
   });
   const html = rendered.html;
-  // Fixture premise, and a SOURCE-copy fact: the built topic_meta.json may read `pending` for
-  // this same slug once its attestation drifts (project_topic_meta_faculty_review), which is
-  // exactly the Front Door behaviour PR 1b adds. This assertion pins the renderer's reviewed
-  // branch, not what either site serves today.
-  assert.equal(REAL_META['delirium.md'].facultyReview.status, 'reviewed', 'fixture premise');
+  // Fixture premise: this pins the renderer's reviewed branch, not what either site serves
+  // today (the built topic_meta.json reads `pending` for a drifted page, and PR 1b's Front Door
+  // follows it). Until 2026-09-30 the premise was read from the live source record, so a content
+  // edit that honestly demoted delirium.md would have turned this renderer test red; the review
+  // state is now fixed by ATTESTED_META above.
+  assert.equal(ATTESTED_INDEX.byRef[ATTESTED_REF].attested, true, 'fixture premise');
   assert.equal(html.includes(rendered.copy), false,
     'valid reviewed data must not render the owner-approved failure copy');
   assert.doesNotMatch(html, /class="fd-sheet__failure"/);
@@ -452,7 +467,7 @@ test('an UNattested item preview omits the .fd-attested pill entirely', () => {
 });
 
 test('an attested item preview shows the .fd-attested pill', () => {
-  const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'item:delirium.md' });
+  const html = F.fdSheet(ATTESTED_INDEX, ATTESTED_META, { sheet: `item:${ATTESTED_REF}` });
   assert.match(html, /<span class="fd-attested">✓ faculty-attested<\/span>/);
 });
 
