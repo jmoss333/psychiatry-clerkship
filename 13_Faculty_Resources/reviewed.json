@@ -1163,10 +1163,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-10-01",
     "by": "Joshua Moss, MD",
-    "contentHash": "d262b3c231a5aa2c84f3c41ccd357188e3008155",
-    "clinicalHash": "09bd1ff0212d09c389c1a3a1b8e679408803ff8b"
+    "contentHash": "a7928f1b789a5506682c9ca667446b0510ad84e1",
+    "clinicalHash": "18604c85475035363405fb7353134067314d4b86"
   },
   "shelf-mode.html": {
     "status": "reviewed",
@@ -1390,11 +1390,11 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-27",
+    "at": "2026-10-01",
     "by": "Joshua Moss, MD",
     "note": "Fictional composite longitudinal simulation.",
-    "contentHash": "cda8fb566e31b9215b66a274487e66cf46c0be0d",
-    "clinicalHash": "fddd807b1cba94b579852e5ba2bbfba8f223d294"
+    "contentHash": "87fae80949dda985d3768459f8beb14cb4d0f6ae",
+    "clinicalHash": "ea2e069ff632887f99297204eb9ef60e04e2c484"
   },
   "anki.md": {
     "status": "reviewed",
@@ -1475,5 +1475,15 @@
     "by": "Joshua Moss, MD",
     "contentHash": "2492ec1251573fceca52bfd4419f8928c4d62a33",
     "clinicalHash": "c8a6e84c726f09aef88eb46b84fea6ff25f03185"
+  },
+  "pharmacy.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "formulary",
+      "level": "high"
+    },
+    "reason": "New tool added 2026-09-30. Each drug card carries its own faculty review stamp; the page itself awaits faculty attestation.",
+    "at": "2026-09-30",
+    "by": "Pending faculty review"
   }
 }

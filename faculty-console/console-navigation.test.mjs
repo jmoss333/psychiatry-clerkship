@@ -177,13 +177,17 @@ test('parseDeepLink returns null for anything that is not a loaded key', () => {
 
 test('parseDeepLink addresses every real item and nothing else', () => {
   const items = realItems();
-  // 69 shared pages + 22 shared tools + the MS3-only tools + the Case-of-the-Week twins
+  // shared pages + shared tools + the MS3-only tools + the Case-of-the-Week twins
   // + 6 resident-only pages + 4 resident-only tools. The CotW term is registry-derived
-  // (2026-09-24, at 13 weeks) and the MS3-only term listing-derived (2026-09-25) so
-  // content PRs stop editing this governance file for either. The fixed part was 102
+  // (2026-09-24, at 13 weeks), the MS3-only term listing-derived (2026-09-25), and the
+  // shared terms manifest-derived (2026-09-30; 69 + 22 that day) so content PRs stop
+  // editing this governance file for any of them. The fixed part was 102
   // (with one MS3-only tool) = 113 items before ADR-002 minus what only the resident
   // build ships; the extra 10 are what nothing enumerated back then.
-  assert.equal(items.length, 69 + 22 + MS3_TOOLS + 6 + 4 + 2 * WEEKS);
+  const MANIFEST = readJson('13_Faculty_Resources/_automation/site_build/site_manifest.json');
+  const SHARED = MANIFEST.md.length + MANIFEST.tools.length;
+  assert.ok(SHARED >= 80, 'the manifest was read, not emptied');
+  assert.equal(items.length, SHARED + MS3_TOOLS + 6 + 4 + 2 * WEEKS);
   for (const item of items) {
     assert.equal(parseDeepLink(`?item=${encodeURIComponent(item.key)}`, items)?.key, item.key);
   }

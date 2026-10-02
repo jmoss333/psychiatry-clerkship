@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [CLERKSHIP-META v1] tool="Psychiatric Pharmacy" version="1.0" built="2026-09-30" category="psychopharmacology" subcategory="Pharmacy" audience="trainee,ms3,resident" settings="inpatient,self-study,rounds-prep" time="5min" authorship="ai-drafted" status="pending" summary="Searchable drug cards for the psychiatric medications met on an inpatient unit: boxed warnings, what to check before and after starting, dangerous adverse effects and the first move for each, interaction traps, and the questions attendings ask, with practice cards that feed Daily Review. Only drugs whose faculty review is current are shown. No doses: confirm every dose with pharmacy and the current label." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Psychiatric Pharmacy</title>
+<meta name="description" content="Searchable, faculty-reviewed drug cards for inpatient psychiatry, with practice cards that feed Daily Review. No doses.">
+<style>
+:root{
+  --bg:#f6f3ee; --surface:#ffffff; --surface-2:#faf6f0; --border:#ddd3c6;
+  --primary:#bc573a; --primary-dark:#a84830; --primary-light:#f3ebe5;
+  --accent:#2a6b5e; --accent-dark:#1e5248; --accent-light:#edf4f2;
+  --text:#3b332c; --text-mid:#64574b; --text-light:#87786a;
+  --warning-dark:#7a6234; --warning-light:#f5efe2;
+  --danger-dark:#a34132; --danger-light:#fbece9;
+  --radius:12px; --radius-lg:18px;
+  --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  --shadow:0 1px 3px rgba(59,51,44,.07);
+}
+[data-theme="dark"]{
+  --bg:#1c1917; --surface:#26221f; --surface-2:#2e2a26; --border:#443c35;
+  --primary:#e08265; --primary-dark:#f0a184; --primary-light:#3a2a24;
+  --accent:#6bbfae; --accent-dark:#8fd6c6; --accent-light:#1e332e;
+  --text:#ece5dd; --text-mid:#c3b6a8; --text-light:#9c8d7e;
+  --warning-dark:#d8bd7e; --warning-light:#332c1d;
+  --danger-dark:#e79483; --danger-light:#3a2320;
+  --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.6}
+.shell{width:min(820px,100%);margin:0 auto;padding:28px 18px 56px}
+h1{font-family:var(--font-head);font-size:1.9rem;line-height:1.2;margin:0 0 6px;color:var(--primary-dark)}
+.kicker{text-transform:uppercase;letter-spacing:.13em;font-size:.7rem;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+.lede{color:var(--text-mid);margin:0 0 18px;max-width:62ch}
+a{color:var(--accent-dark)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* search + filters */
+.search{width:100%;border:2px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius);
+  padding:12px 14px;font:inherit}
+.search:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px;border-color:var(--accent)}
+.filters{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 6px}
+.fchip{border:1px solid var(--border);background:var(--surface);color:var(--text-mid);border-radius:999px;padding:6px 13px;
+  font:inherit;font-size:.85rem;cursor:pointer}
+.fchip[aria-pressed="true"]{border-color:var(--accent-dark);background:var(--accent-light);color:var(--text);font-weight:600}
+.fchip:focus-visible,.btn:focus-visible,.drug:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
+.status{font-size:.86rem;color:var(--text-light);margin:4px 0 16px}
+/* drug list */
+.list{display:grid;gap:9px;margin:0 0 20px;padding:0;list-style:none}
+.drug{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);
+  border:2px solid var(--border);border-radius:var(--radius);padding:12px 15px;font:inherit;color:var(--text);cursor:pointer}
+.drug:hover{border-color:var(--accent)}
+.drug[aria-expanded="true"]{border-color:var(--accent-dark);background:var(--accent-light)}
+.drug__name{font-family:var(--font-head);font-weight:700;font-size:1.08rem}
+.drug__meta{display:block;font-size:.82rem;color:var(--text-light)}
+.pill{flex:none;font-size:.74rem;font-weight:700;border-radius:999px;padding:3px 9px;background:var(--danger-light);color:var(--danger-dark);border:1px solid var(--border)}
+.pill--due{background:var(--accent-light);color:var(--accent-dark)}
+/* detail */
+.detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;margin:0 0 20px;box-shadow:var(--shadow)}
+.detail h2{font-family:var(--font-head);font-size:1.45rem;margin:0}
+.detail h2:focus{outline:none}
+.brands{color:var(--text-mid);margin:2px 0 10px}
+.stamp{display:inline-block;font-size:.8rem;color:var(--accent-dark);background:var(--accent-light);border-radius:999px;padding:3px 11px;margin:0 0 14px}
+.boxed{background:var(--danger-light);border-left:5px solid var(--danger-dark);border-radius:var(--radius);padding:12px 15px;margin:0 0 14px}
+.boxed strong{color:var(--danger-dark)}
+.sec{border-top:1px solid var(--border);padding:12px 0 4px}
+.sec h3{font-family:var(--font-head);font-size:1.02rem;margin:0 0 6px}
+.sec ul{margin:0 0 6px;padding-left:20px}
+.sec li{margin-bottom:4px}
+.sec p{margin:0 0 6px}
+.tag{font-size:.74rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-right:6px}
+.danger{border-left:4px solid var(--danger-dark);padding:4px 0 4px 11px;margin:0 0 9px}
+.facts{display:flex;flex-wrap:wrap;gap:7px;list-style:none;padding:0!important}
+.facts li{background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px 11px;font-size:.84rem;color:var(--text-mid)}
+.btn{border:none;border-radius:11px;padding:11px 17px;font:inherit;font-weight:600;cursor:pointer;background:var(--accent-dark);color:#fff}
+.btn--ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+/* quiz */
+.quiz{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:12px 0 4px}
+.quiz__q{font-family:var(--font-head);font-size:1.12rem;margin:4px 0 12px}
+.quiz__count{font-size:.8rem;color:var(--text-light)}
+.grades{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:12px}
+.grades .btn{padding:10px 4px;font-size:.9rem}
+.note{background:var(--warning-light);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;font-size:.9rem;color:var(--text-mid);margin:0 0 14px}
+.empty{color:var(--text-mid);font-style:italic}
+footer{margin-top:26px;padding-top:18px;border-top:1px solid var(--border);font-size:.82rem;color:var(--text-light)}
+@media(max-width:520px){.grades{grid-template-columns:repeat(2,minmax(0,1fr))}.detail{padding:16px}}
+@media print{.search,.filters,.btn,.quiz{display:none}body{background:#fff;font-size:12pt}.shell{padding:0;width:100%}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <p class="kicker">Psychopharmacology · Pharmacy</p>
+  <h1>Psychiatric Pharmacy</h1>
+  <p class="lede">Drug cards for the medicines you will meet on the unit: what the boxed warning covers, what to check
+  before and after starting, the dangerous adverse effects and your first move for each, and what your attending
+  will ask. Every card shown here has a current faculty review.</p>
+
+  <label class="sr" for="q">Search drugs</label>
+  <input id="q" class="search" type="search" placeholder="Search by name, brand, or class" autocomplete="off">
+  <div class="filters" id="filters" role="group" aria-label="Filter by drug group"></div>
+  <p class="status" id="status" role="status" aria-live="polite">Loading reviewed drug cards…</p>
+
+  <ul class="list" id="list"></ul>
+  <div id="detail"></div>
+
+  <div class="note">
+    <strong>What this is.</strong> A teaching reference for learners on an inpatient psychiatry rotation. It carries
+    <strong>no doses</strong>: confirm every dose with pharmacy and the current prescribing information, and follow
+    your attending and your hospital's protocols. Drugs appear here only while their faculty review is current;
+    a card edited after review disappears until it is reviewed again. Educational use only; nothing you type is stored.
+  </div>
+
+  <footer>
+    <p>Drug facts are drawn from FDA labeling (DailyMed) and the attested library pages they cite; teaching
+    content is AI-drafted and faculty-reviewed per drug, as stamped on each card. Joshua Moss, MD | Psychiatrist</p>
+  </footer>
+</main>
+
+<script>
+/*__SM2_APPLY_GRADE__*/
+/*__SRS_STORE__*/
+/*__RX_RETRIEVAL__*/
+
+/* ---- pharmacy page model ----
+   Pure: no DOM, no storage. tests/pharmacy-page.test.mjs executes this block as shipped.
+   The build already admits only drugs with a current faculty review (build_pharmacy_public.py);
+   every function here re-applies rxReviewStamped anyway, so a drug without a review stamp can
+   never reach the screen even if the feed were hand-edited. */
+var RX_GROUP_LABEL={'antipsychotic':'Antipsychotics','antidepressant':'Antidepressants',
+  'mood-stabilizer':'Mood stabilizers','anxiolytic-agitation':'Anxiolytics & agitation',
+  'sud':'Substance use','other':'Other'};
+var RX_GROUP_ORDER=['antipsychotic','antidepressant','mood-stabilizer','anxiolytic-agitation','sud','other'];
+
+function rxGroupLabel(g){return RX_GROUP_LABEL[g]||'Other';}
+
+function rxSearchText(a){
+  return [a.generic,a.id,(a.brands||[]).join(' '),(a['class']||[]).join(' '),rxGroupLabel(a.group)]
+    .join(' ').toLowerCase();
+}
+
+/* The drugs to list for a query and a group ('' = all), stamped only, A to Z. */
+function rxFilterAgents(data,query,group){
+  var q=String(query||'').toLowerCase().replace(/^\s+|\s+$/g,''),out=[],agents=(data&&data.agents)||[];
+  for(var i=0;i<agents.length;i++){
+    var a=agents[i];
+    if(!rxReviewStamped(a))continue;
+    if(group&&a.group!==group)continue;
+    if(q&&rxSearchText(a).indexOf(q)===-1)continue;
+    out.push(a);
+  }
+  out.sort(function(x,y){return String(x.generic).localeCompare(String(y.generic));});
+  return out;
+}
+
+function rxGroupsPresent(data){
+  var seen={},out=[],agents=(data&&data.agents)||[];
+  for(var i=0;i<agents.length;i++)if(rxReviewStamped(agents[i]))seen[agents[i].group]=true;
+  for(var j=0;j<RX_GROUP_ORDER.length;j++)if(seen[RX_GROUP_ORDER[j]])out.push(RX_GROUP_ORDER[j]);
+  return out;
+}
+
+/* One stamped drug as ordered sections of plain text. Nothing is rendered that is not in the
+   drug's reviewed fields. Each item: {text} or {label,text} or {danger:{name,recognize,firstMove}}. */
+function rxSections(a){
+  if(!rxReviewStamped(a))return [];
+  function list(v){return Object.prototype.toString.call(v)==='[object Array]'?v:[];}
+  function items(v){var o=[];list(v).forEach(function(x){if(typeof x==='string'&&x)o.push({text:x});});return o;}
+  function labelled(pairs){var o=[];pairs.forEach(function(p){if(typeof p[1]==='string'&&p[1])o.push({label:p[0],text:p[1]});});return o;}
+  var s=[],pe=a.pearls||{},mon=a.monitoring||{},ae=a.adverseEffects||{},ix=a.interactions||{},
+      pop=a.populations||{},fl=a.flags||{},pk=a.pk||{},dz=a.dosing||{};
+  var uses=[];list(a.inpatientUses).forEach(function(u){if(u&&u.use)uses.push({text:u.use+(u.offLabel?' (off-label)':'')});});
+  s.push({key:'uses',title:'What it is used for',items:items(a.fdaIndications).map(function(x){x.label='FDA';return x;}).concat(uses)});
+  s.push({key:'mechanism',title:'How it works',items:labelled([['',a.mechanism&&a.mechanism.t1]])});
+  s.push({key:'before',title:'Before the first dose',items:items(mon.baseline)});
+  s.push({key:'ongoing',title:'Once it is started',items:items(mon.ongoing)});
+  var dangers=[];list(ae.dangerous).forEach(function(d){if(d&&d.name)dangers.push({danger:{name:d.name,recognize:d.recognize||'',firstMove:d.firstMove||''}});});
+  s.push({key:'dangerous',title:'Dangerous adverse effects — and your first move',items:dangers});
+  s.push({key:'common',title:'Common adverse effects',items:items(ae.common)});
+  s.push({key:'traps',title:'Interaction traps',items:items(ix.keyTraps)});
+  s.push({key:'populations',title:'Special populations',items:labelled([['Pregnancy',pop.pregnancy],['Older adults',pop.geriatric],['Kidney',pop.renal],['Liver',pop.hepatic]])});
+  s.push({key:'starting',title:'Starting and titrating',items:labelled([['',dz.titration]]).concat(dz.forms&&dz.forms.length?[{label:'Forms',text:dz.forms.join(', ')}]:[])});
+  s.push({key:'facts',title:'At a glance',facts:true,items:labelled([['QTc risk',fl.qtcRisk],['Weight',fl.weightImpact],['Blood monitoring',fl.bloodMonitoring],['EKG',fl.ekgRequired],['Half-life (h)',pk.halfLifeHours],['Time to effect',pk.timeToEffect]])});
+  s.push({key:'ms3',title:'Pearls — student',items:items(pe.t1)});
+  s.push({key:'resident',title:'Pearls — resident',items:items(pe.t2)});
+  s.push({key:'asks',title:'What your attending will ask',items:items(a.attendingAsks)});
+  s.push({key:'family',title:'Explaining it to a family',items:labelled([['',a.familyExplainer&&a.familyExplainer.text]])});
+  return s.filter(function(x){return x.items.length>0;});
+}
+
+/* The only outbound links a card may carry: its DailyMed label and a library page it cites. */
+function rxLabelHref(a){
+  var h=a&&a.dosing&&a.dosing.labelLink;
+  return (typeof h==='string'&&h.indexOf('https://dailymed.nlm.nih.gov/')===0)?h:null;
+}
+/* ---- end pharmacy page model ---- */
+
+(function(){
+  var state={data:null,query:'',group:'',open:null,quiz:null};
+  var GRADES=['Again','Hard','Good','Easy'];
+  function $(id){return document.getElementById(id);}
+  function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
+  function button(cls,text,onClick){var b=el('button',cls,text);b.type='button';b.addEventListener('click',onClick);return b;}
+  function store(){try{return srsLoadStore();}catch(_){return {cards:{}};}}
+  function dueFor(id){
+    var cards=rxCardsFor(state.data,id),s=store().cards||{},now=Date.now(),n=0;
+    for(var i=0;i<cards.length;i++){var c=s[cards[i].id];if(c&&c.due<=now)n++;}
+    return n;
+  }
+
+  function renderFilters(){
+    var host=$('filters');host.textContent='';
+    [''].concat(rxGroupsPresent(state.data)).forEach(function(g){
+      var b=button('fchip',g?rxGroupLabel(g):'All',function(){state.group=g;renderFilters();renderList();});
+      b.setAttribute('aria-pressed',String(state.group===g));host.appendChild(b);
+    });
+  }
+
+  function renderList(){
+    var host=$('list'),shown=rxFilterAgents(state.data,state.query,state.group);host.textContent='';
+    shown.forEach(function(a){
+      var li=el('li'),b=el('button','drug');b.type='button';b.id='drug-'+a.id;
+      b.setAttribute('aria-expanded',String(state.open===a.id));b.setAttribute('aria-controls','detail');
+      var name=el('span');name.appendChild(el('span','drug__name',a.generic));
+      name.appendChild(el('span','drug__meta',[(a.brands||[]).join(', '),rxGroupLabel(a.group)].filter(Boolean).join(' · ')));
+      b.appendChild(name);
+      var due=dueFor(a.id);
+      if(due)b.appendChild(el('span','pill pill--due',due+' due'));
+      else if(a.boxedWarning&&a.boxedWarning.present)b.appendChild(el('span','pill','Boxed warning'));
+      b.addEventListener('click',function(){open(state.open===a.id?null:a.id);});
+      li.appendChild(b);host.appendChild(li);
+    });
+    var total=rxFilterAgents(state.data,'','').length,pend=state.data.pendingCount||0;
+    $('status').textContent=(shown.length===total?total+' faculty-reviewed drug'+(total===1?'':'s'):
+      shown.length+' of '+total+' shown')+(pend?' · '+pend+' more in faculty review':'');
+    if(!shown.length)host.appendChild(el('li','empty','No reviewed drug matches that search.'));
+  }
+
+  function renderDetail(){
+    var host=$('detail');host.textContent='';
+    var a=null,agents=rxFilterAgents(state.data,'','');
+    for(var i=0;i<agents.length;i++)if(agents[i].id===state.open)a=agents[i];
+    if(!a)return;
+    var box=el('section','detail');box.setAttribute('aria-labelledby','dname');
+    var h=el('h2',null,a.generic);h.id='dname';h.tabIndex=-1;box.appendChild(h);
+    box.appendChild(el('p','brands',[(a.brands||[]).join(', '),(a['class']||[]).join(', ')].filter(Boolean).join(' · ')));
+    box.appendChild(el('p','stamp','Faculty-reviewed by '+a.review.reviewer+' · '+a.review.lastReviewed));
+    if(a.boxedWarning&&a.boxedWarning.present&&a.boxedWarning.summary){
+      var bw=el('div','boxed');bw.appendChild(el('strong',null,'Boxed warning. '));
+      bw.appendChild(document.createTextNode(a.boxedWarning.summary));box.appendChild(bw);
+    }
+    if(a.regulatory&&a.regulatory.rems)box.appendChild(el('p','boxed','REMS program applies — check the current requirements before prescribing or dispensing.'));
+    var cards=rxCardsFor(state.data,a.id);
+    if(cards.length)box.appendChild(button('btn','Quiz me on '+a.generic+' ('+cards.length+' cards)',function(){startQuiz(a);}));
+    var quizHost=el('div');quizHost.id='quiz';box.appendChild(quizHost);
+    rxSections(a).forEach(function(sec){
+      var s=el('div','sec');s.appendChild(el('h3',null,sec.title));
+      var ul=el('ul',sec.facts?'facts':null);
+      sec.items.forEach(function(it){
+        var li=el('li');
+        if(it.danger){
+          li.className='danger';li.appendChild(el('strong',null,it.danger.name));
+          if(it.danger.recognize){li.appendChild(el('br'));li.appendChild(el('span','tag','Recognize'));li.appendChild(document.createTextNode(it.danger.recognize));}
+          if(it.danger.firstMove){li.appendChild(el('br'));li.appendChild(el('span','tag','First move'));li.appendChild(document.createTextNode(it.danger.firstMove));}
+        } else {
+          if(it.label)li.appendChild(el('span','tag',it.label));
+          li.appendChild(document.createTextNode(it.text));
+        }
+        ul.appendChild(li);
+      });
+      s.appendChild(ul);box.appendChild(s);
+    });
+    var links=el('p');
+    var label=rxLabelHref(a);
+    if(label){var l=el('a',null,'Prescribing information (DailyMed)');l.href=label;l.target='_blank';l.rel='noopener noreferrer';links.appendChild(l);}
+    if(a.monitoring&&typeof a.monitoring.sourcePage==='string'&&/^[\w.-]+\.md$/.test(a.monitoring.sourcePage)){
+      if(label)links.appendChild(document.createTextNode(' · '));
+      var m=el('a',null,'Monitoring & Labs page');m.href='../index.html?page='+encodeURIComponent(a.monitoring.sourcePage);links.appendChild(m);
+    }
+    if(links.childNodes.length)box.appendChild(links);
+    host.appendChild(box);
+  }
+
+  /* Quiz: due cards first, then the rest in deck order. Grading writes the shared cw_srs_v1
+     store under the card's RX# id, so the same card then comes back in Daily Review. */
+  function startQuiz(a){
+    var deck={cards:rxCardsFor(state.data,a.id)};
+    state.quiz={drug:a,queue:rxDue(deck,store(),Date.now()),pos:0,revealed:false,graded:0};
+    renderQuiz();
+  }
+  function renderQuiz(){
+    var host=$('quiz');if(!host)return;host.textContent='';
+    var z=state.quiz;if(!z)return;
+    var box=el('div','quiz');box.setAttribute('aria-live','polite');
+    if(z.pos>=z.queue.length){
+      box.appendChild(el('p','quiz__q','Done — '+z.graded+' card'+(z.graded===1?'':'s')+' scheduled.'));
+      var p=el('p',null,'They come back in Daily Review when they are due. ');
+      var r=el('a',null,'Open Daily Review');r.href='review.html';p.appendChild(r);box.appendChild(p);
+      box.appendChild(button('btn btn--ghost','Close',function(){state.quiz=null;renderQuiz();renderList();}));
+      host.appendChild(box);return;
+    }
+    var c=z.queue[z.pos];
+    box.appendChild(el('p','quiz__count','Card '+(z.pos+1)+' of '+z.queue.length));
+    box.appendChild(el('p','quiz__q',c.prompt));
+    if(!z.revealed){
+      box.appendChild(el('p',null,'Answer it out loud first, then check.'));
+      box.appendChild(button('btn','Show answer',function(){z.revealed=true;renderQuiz();}));
+    } else {
+      var ul=el('ul');rxRevealLines(c).forEach(function(line){ul.appendChild(el('li',null,line));});box.appendChild(ul);
+      var g=el('div','grades');g.setAttribute('role','group');g.setAttribute('aria-label','How well did you recall it?');
+      GRADES.forEach(function(name){
+        g.appendChild(button('btn'+(name==='Again'?' btn--ghost':''),name,function(){
+          try{srsGradeCard(c.id,name);}catch(_){}
+          z.graded++;z.pos++;z.revealed=false;renderQuiz();
+        }));
+      });
+      box.appendChild(g);
+    }
+    host.appendChild(box);
+  }
+
+  function open(id){
+    state.open=id;state.quiz=null;renderList();renderDetail();
+    try{history.replaceState(null,'',id?'#'+id:location.pathname+location.search);}catch(_){}
+    var h=$('dname');if(h)h.focus();
+  }
+
+  function fail(){
+    $('status').textContent='Reviewed drug cards could not be loaded. Nothing is shown rather than something unchecked. Reload to try again.';
+    $('list').textContent='';$('detail').textContent='';$('filters').textContent='';
+  }
+
+  function init(){
+    $('q').addEventListener('input',function(e){state.query=e.target.value;renderList();});
+    fetch('../pharmacy_public.json').then(function(r){if(!r.ok)throw Error('missing');return r.json();})
+      .then(rxVerifiedPublic).then(function(data){
+        state.data=data;renderFilters();renderList();
+        var want=(location.hash||'').slice(1);
+        if(want&&rxFilterAgents(data,'','').some(function(a){return a.id===want;}))open(want);
+      }).catch(fail);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+</body>
+</html>

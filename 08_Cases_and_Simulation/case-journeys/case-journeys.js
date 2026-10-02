@@ -82,20 +82,30 @@
 
   function chapterMarkup(data, w) {
     var number = data.weeks.indexOf(w) + 1;
+    var pilot = data.id === 'case_journey_eli_psychosis_draft_001' && number >= 1 && number <= 4;
     var language = w.checklist.map(function (item) {
-      return '<div class="opf-language"><p class="opf-note__prompt">' + escape(item.prompt) + '</p><blockquote>' + escape(item.example) + '</blockquote></div>';
+      return '<div class="opf-language"><p class="opf-note__prompt">' + escape(item.prompt) + '</p>' +
+        (pilot ? '<details class="opf-model"><summary>Model example · compare after your attempt</summary>' : '') +
+        '<blockquote>' + escape(item.example) + '</blockquote>' + (pilot ? '</details>' : '') + '</div>';
     }).join('');
+    function pilotResources(kind) {
+      var links = w.links.filter(function (link) { return link.kind === kind; });
+      if (!links.length) return '';
+      return '<nav class="opf-chapter-resources" aria-label="' + (kind === 'page' ? 'Read resources' : 'Separate practice tools') + '"><p>Opens in a new tab; this case chapter stays here.</p><ul>' + links.map(function (link) {
+        return '<li><a target="_blank" rel="noopener noreferrer" href="' + '../?' + link.kind + '=' + encodeURIComponent(link.target) + '">' + escape(link.label) + '</a></li>';
+      }).join('') + '</ul></nav>';
+    }
     var resources = w.links.map(function (link) {
       return '<li><a target="_parent" href="' + resourceHref(link) + '">' + escape(link.label) + '</a></li>';
     }).join('');
     return '<div class="opf-sheet__topline"><p class="opf-sheet__chapter">Case chapter ' + number + ' of 6</p><span class="opf-sheet__stamp">Fictional composite</span></div>' +
       '<h2 id="case-panel-title">' + escape(w.title) + '</h2>' +
       '<ul class="opf-focus" aria-label="Chapter focus">' + w.focus.map(function (f) { return '<li>' + escape(f) + '</li>'; }).join('') + '</ul>' +
-      '<div class="opf-grid"><section class="opf-note opf-note--story"><p class="opf-note__label">What changed in ' + escape(data.patient.displayName) + '’s story</p><p>' + escape(w.patientState) + '</p></section>' +
-      '<section class="opf-note opf-note--task"><p class="opf-note__label">Learner’s supervised task</p><p>' + escape(w.learnerTask) + '</p></section>' +
+      '<div class="opf-grid"><section class="opf-note opf-note--story"><p class="opf-note__label">' + (pilot ? 'Read · ' : '') + 'What changed in ' + escape(data.patient.displayName) + '’s story</p><p>' + escape(w.patientState) + '</p>' + (pilot ? pilotResources('page') : '') + '</section>' +
+      '<section class="opf-note opf-note--task"><p class="opf-note__label">' + (pilot ? 'Practice · learner’s supervised task' : 'Learner’s supervised task') + '</p><p>' + escape(w.learnerTask) + '</p>' + (pilot ? pilotResources('tool') : '') + '</section>' +
       '<section class="opf-note opf-note--language"><p class="opf-note__label">One way to say it</p>' + language + '</section>' +
-      '<section class="opf-note opf-note--rounds"><p class="opf-note__label">Carry it to rounds</p><p>' + escape(w.handoff) + '</p></section></div>' +
-      '<details class="opf-reflection"><summary>Reflect and explore</summary><p>' + escape(w.reflectionPrompt) + '</p><nav aria-label="Resources for this chapter"><ul>' + resources + '</ul></nav></details>';
+      '<section class="opf-note opf-note--rounds"><p class="opf-note__label">' + (pilot ? 'Discuss · carry it to rounds' : 'Carry it to rounds') + '</p><p>' + escape(w.handoff) + '</p>' + (pilot ? '<p>' + escape(w.reflectionPrompt) + '</p>' : '') + '</section></div>' +
+      (pilot ? '' : '<details class="opf-reflection"><summary>Reflect and explore</summary><p>' + escape(w.reflectionPrompt) + '</p><nav aria-label="Resources for this chapter"><ul>' + resources + '</ul></nav></details>');
   }
 
   function pageMarkup(cases, selected) {
@@ -108,7 +118,7 @@
       catalogMarkup(cases, selected.slug) + (selected.invalid ? '<p class="opf-selection-note" role="status">That case link is unavailable. Jordan is shown instead.</p>' : '') + '</section>' +
       '<section class="opf-shell opf-case-context" aria-label="Selected case context"><div class="opf-case-context__frame"><p class="opf-context-label">Case setting</p><p>' + escape(data.setting) + '</p></div>' +
       '<dl class="opf-case-facts"><div><dt>Clinical time</dt><dd>' + escape(timeFrame) + '</dd></div><div><dt>Learner audience</dt><dd>' + escape(audience) + '</dd></div></dl>' +
-      '<aside class="opf-source-boundary"><p class="opf-context-label">Simulation boundary</p><p>' + escape(data.disclaimer) + '</p><p class="opf-source-boundary__note">Navigation is unscored and is not saved.</p></aside></section>' +
+      '<aside class="opf-source-boundary"><p class="opf-context-label">Simulation boundary</p><p>' + escape(data.disclaimer) + '</p><p class="opf-source-boundary__note">Navigation is unscored and is not saved.</p>' + (selected.slug === 'eli' ? '<p class="opf-source-boundary__note">Chapters 1–4: Read → Practice → Discuss. Chapters 5–6: optional follow-through.</p>' : '') + '</aside></section>' +
       '<section class="opf-shell opf-workbench" aria-label="' + escape(data.patient.displayName) + '’s interactive case folio"><div class="opf-spine"><div class="opf-spine__heading"><span>' + escape(data.patient.displayName) + '’s case file</span><strong id="counter" aria-live="polite">' + String(selected.chapter).padStart(2, '0') + ' / 06</strong></div><div id="case-route">' + routeMarkup(data, selected.chapter) + '</div></div>' +
       '<div class="opf-folio"><div class="opf-folio__back" aria-hidden="true"></div><article class="opf-sheet" id="chapter-panel" role="tabpanel" tabindex="-1" aria-labelledby="chapter-tab-' + selected.chapter + '">' + chapterMarkup(data, w) + '</article>' +
       '<div class="opf-controls" aria-label="Case chapter controls"><button type="button" id="previous"' + (selected.chapter === 1 ? ' disabled' : '') + '>Previous chapter</button><p>Selection is not saved.</p><button type="button" id="next"' + (selected.chapter === 6 ? ' disabled' : '') + '>Next chapter</button></div></div></section></main>' +

@@ -81,7 +81,7 @@ test('the review step counts every bucket review.html serves, and only those', (
   assert.deepEqual(onlyQb.steps.map((s) => s.kind), ['page', 'qb'],
     'review.html cannot serve QB# cards, so they must not be promised as a review step');
 
-  assert.deepEqual(F.FD_BLOCK_REVIEW_BUCKETS, ['daily', 'landmark', 'fam', 'comm', 'reason'],
+  assert.deepEqual(F.FD_BLOCK_REVIEW_BUCKETS, ['daily', 'landmark', 'fam', 'comm', 'reason', 'rx'],
     'keep this list in step with the card sources in review.html');
 
   for (const bucket of F.FD_BLOCK_REVIEW_BUCKETS) {

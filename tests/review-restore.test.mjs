@@ -161,14 +161,15 @@ test('a coherent but shortened article feed cannot pass the build-bound source c
   }
 });
 
-test('source digest inventory is required and includes all five current feeds', () => {
-  const keys = ['articles', 'topics', 'family', 'communication', 'reasoning'];
+test('source digest inventory is required and includes all six current feeds', () => {
+  const keys = ['articles', 'topics', 'family', 'communication', 'reasoning', 'pharmacy'];
   const value = Object.fromEntries(keys.map(key => [key, 'a'.repeat(64)]));
   const doc = contents => ({getElementById: () => contents === null ? null : {textContent: JSON.stringify(contents)}});
   assert.deepEqual(restore.reviewSourceDigestsFromDocument(doc(value)), value);
   assert.throws(() => restore.reviewSourceDigestsFromDocument(doc(null)), Error);
   assert.throws(() => restore.reviewSourceDigestsFromDocument(doc({...value, articles: 'bad'})), Error);
   assert.throws(() => restore.reviewSourceDigestsFromDocument(doc({...value, reasoning: undefined})), Error);
+  assert.throws(() => restore.reviewSourceDigestsFromDocument(doc({...value, pharmacy: undefined})), Error);
 });
 
 test('preview makes no write; replace writes only cw_srs_v1, and a failed write retains old bytes', () => {
