@@ -228,6 +228,8 @@ export const PANEL_BUILD_INPUTS = [
   '13_Faculty_Resources/_automation/site_build/frontdoor/fd_data.js',
   '13_Faculty_Resources/_automation/site_build/build_deploy.py',
   '13_Faculty_Resources/_automation/site_build/resident_section.py',
+  '13_Faculty_Resources/_automation/site_build/welcome_compass.py',
+  '14_Tracks/Resident/resident_welcome.meta.json',
   '13_Faculty_Resources/_automation/site_build/frontdoor_catalog.py',
   '13_Faculty_Resources/_automation/site_build/cotw_meta.py',
   '13_Faculty_Resources/_automation/site_build/cotw_slug.py',
