@@ -297,12 +297,12 @@ function fdOfflineStatus(input){
   var response=fdOfflineResponse(fdOfflineOwn(state,'response')?state.response:null,
     fdOfflineOwn(state,'expected')?state.expected:null);
   var reason=fdOfflineOwn(state,'reason')?state.reason:null;
-  if(fdOfflineOwn(state,'checking')&&state.checking===true)return {kind:'checking',label:'Checking',
+  if(fdOfflineOwn(state,'checking')&&state.checking===true)return {kind:'checking',label:'Checking cache',
     detail:'Checking this device’s current offline copy.',missing:[]};
   if(response&&response.ready){
     if(fdOfflineOwn(state,'waiting')&&state.waiting===true)return {kind:'update',label:'Update available',
       detail:'The current copy is ready on this device. A newer copy is available.',missing:[]};
-    return {kind:'ready',label:'Ready',
+    return {kind:'ready',label:'Current route cached',
       detail:'Verified current-route files are available from the current device cache.',missing:[]};
   }
   var detail='Could not verify every resource in this device’s current offline copy.';
@@ -312,7 +312,7 @@ function fdOfflineStatus(input){
   else if(reason==='invalid-request')detail='This route cannot be verified from the current resource list.';
   else if(reason==='post-failed')detail='The offline check could not reach this device’s cache.';
   else if(response&&response.missing.length)detail='Some current-route resources are missing from this device cache.';
-  return {kind:'not-ready',label:'Not ready',detail:detail,
+  return {kind:'not-ready',label:'Not verified',detail:detail,
     missing:response?response.missing.slice():[]};
 }
 
@@ -358,9 +358,9 @@ function fdOfflineCard(state,routeLabel){
 
 function fdOfflineEntry(state,routeLabel,open){
   var status=fdOfflineStatus(state),expanded=open===true;
-  return '<section class="fd-offline is-'+status.kind+'" data-fd-offline-entry aria-label="Shift-ready check">'+
+  return '<section class="fd-offline is-'+status.kind+'" data-fd-offline-entry aria-label="Offline availability">'+
     '<button type="button" class="fd-offline__open" data-fd-offline-open aria-controls="fdOfflineDetails" aria-expanded="'+expanded+'">'+
-      '<span>Shift-ready check</span><strong data-fd-offline-label role="status">'+fdOfflineEsc(status.label)+'</strong></button>'+
+      '<span>Offline availability</span><strong data-fd-offline-label role="status">'+fdOfflineEsc(status.label)+'</strong></button>'+
     '<div class="fd-offline__details" id="fdOfflineDetails"'+(expanded?'':' hidden')+'>'+
       '<div data-fd-offline-card>'+fdOfflineCard(state,routeLabel)+'</div>'+
       '<div class="fd-offline__actions">'+

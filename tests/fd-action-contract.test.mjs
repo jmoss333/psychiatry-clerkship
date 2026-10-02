@@ -14,7 +14,7 @@ const make = new Function(`${wire}\nreturn {
   semantic: fdActionSemantic,
 };`);
 const F = make();
-const NON_ACTION_ATTRS = new Set(['data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-care-copy-status', 'data-fd-care-pack-origin', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status']);
+const NON_ACTION_ATTRS = new Set(['data-fd-care-builder', 'data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-care-copy-status', 'data-fd-care-pack-origin', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status']);
 const AUX_ACTION_ATTRS = new Set(['data-fd-local-toggle']);
 
 function emittedAttributes() {

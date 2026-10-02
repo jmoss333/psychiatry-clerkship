@@ -79,8 +79,9 @@ test('published renderer composes the approved patient-folio journey from real c
   assert.match(html, /class="opf-note opf-note--task"/);
   assert.match(html, /class="opf-note opf-note--language"/);
   assert.match(html, /class="opf-note opf-note--rounds"/);
-  assert.match(html, /<details class="opf-reflection"/);
+  assert.match(html, /<details class="opf-model"/);
   assert.ok(html.includes(api.escape(eli.title)));
+  assert.match(html, /Chapters 5–6: optional follow-through/);
 
   for (const text of [
     eli.patient.description,
@@ -135,6 +136,25 @@ with tempfile.TemporaryDirectory() as directory:
     for (const text of [chapter.patientState,chapter.learnerTask,chapter.handoff,chapter.reflectionPrompt,
       ...chapter.checklist.flatMap(item=>[item.prompt,item.example])]) {
       assert.equal(result.text.split(text).length-1,1,chapter.id);
+    }
+  }
+});
+
+
+test('Eli pilot exposes read/practice/discuss without changing later or other-case presentation', () => {
+  for (const [caseIndex, data] of cases.entries()) for (const [i, chapter] of data.weeks.entries()) {
+    const html = api.chapterMarkup(data, chapter);
+    const pilot = caseIndex === 1 && i < 4;
+    assert.equal(html.includes('Read · What changed'), pilot);
+    assert.equal(html.includes('Practice · learner’s supervised task'), pilot);
+    assert.equal(html.includes('Discuss · carry it to rounds'), pilot);
+    assert.equal(html.includes('<details class="opf-model">'), pilot);
+    assert.equal(html.includes('<details class="opf-reflection">'), !pilot);
+    if (pilot) {
+      assert.ok(html.includes(api.escape(chapter.reflectionPrompt)));
+      assert.equal((html.match(/target="_blank" rel="noopener noreferrer"/g) || []).length, chapter.links.length);
+      assert.doesNotMatch(html, /<details[^>]* open|<input|<textarea|facultyNotes/);
+      for (const link of chapter.links) assert.ok(html.includes('../?' + link.kind + '=' + encodeURIComponent(link.target)));
     }
   }
 });

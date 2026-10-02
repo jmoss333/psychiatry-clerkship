@@ -488,3 +488,40 @@ function fdToday(index, state){
   out+='</div></section>'; /* .fd-today__cols, .fd-today */
   return out;
 }
+
+
+/* Optional session purpose shortcuts. The shell owns transient selection/disclosure state;
+   this renderer neither stores the choice nor changes Today priority or the study plan. */
+var FD_TODAY_PURPOSES=[
+  {id:'rounds',label:'Before rounds',ref:'oral.html'},
+  {id:'interview',label:'Interview',ref:'pg_interview.md'},
+  {id:'family',label:'Family conversation',ref:'family_playbook.md'},
+  {id:'study',label:'Study',ref:null}
+];
+function fdTodayPurposeOptions(index){
+  var out=[], rows=(index&&index.byRef)||{};
+  for(var i=0;i<FD_TODAY_PURPOSES.length;i++){
+    var option=FD_TODAY_PURPOSES[i],item=option.ref?rows[option.ref]:null;
+    if(option.ref&&(!item||item.rights||item.searchOnly))continue;
+    out.push({id:option.id,label:option.label,ref:option.ref,title:item?item.title:'Use your study planner'});
+  }
+  return out;
+}
+function fdTodayPurpose(index,id,isOpen){
+  var options=fdTodayPurposeOptions(index),active=null,i;
+  for(i=0;i<options.length;i++){if(options[i].id===id)active=options[i];}
+  var h='<details class="fd-purpose"'+(isOpen?' open':'')+'>';
+  h+='<summary class="fd-purpose__summary" data-today-purpose-toggle>What am I preparing for?</summary>';
+  h+='<p class="fd-purpose__note">Optional. Your choice stays in this page session and resets on reload. Regular Today and your due-review plan stay unchanged.</p>';
+  h+='<div class="fd-purpose__choices" role="group" aria-label="Preparation purpose">';
+  for(i=0;i<options.length;i++){
+    var o=options[i];
+    h+='<button type="button" class="fd-btn fd-btn--ghost" data-today-purpose="'+o.id+'" aria-pressed="'+(active&&active.id===o.id?'true':'false')+'">'+fdEsc(o.label)+'</button>';
+  }
+  h+='<button type="button" class="fd-btn fd-btn--ghost" data-today-purpose="" aria-pressed="'+(!active?'true':'false')+'">Regular Today</button></div>';
+  if(active){
+    h+='<p class="fd-purpose__reason" role="status">Suggested because you chose '+fdEsc(active.label)+'.</p>';
+    h+='<button type="button" class="fd-btn fd-btn--accent" '+(active.ref?'data-fd-open="'+fdEsc(active.ref)+'"':'data-today-planner')+'>'+fdEsc(active.title)+'</button>';
+  }
+  return h+'</details>';
+}

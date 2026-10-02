@@ -75,7 +75,7 @@ test('builds a private three-resource handout with exact links, local QR codes, 
   const pack = page.locator('.fd-care-pack');
   const choices = pack.locator('[data-fd-care-pack]');
   const print = pack.locator('[data-fd-care-pack-print]');
-  await expect(pack.getByRole('heading', { name: 'Build a resource handout' })).toBeVisible();
+  await expect(pack.getByRole('heading', { name: 'Share resource websites' })).toBeVisible();
   await expect(choices).toHaveCount(5);
   await expect(pack.locator('#fd-care-pack-limit')).toHaveText('0 of 3 selected');
   await expect(print).toBeDisabled();

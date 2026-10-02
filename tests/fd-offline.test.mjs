@@ -238,21 +238,21 @@ test('status treats malformed and truthy values as not ready', () => {
 });
 
 test('card names current cache status and connection-required exceptions', () => {
-  assert.doesNotMatch(F.fdOfflineCard({ checking: true }), /fd-offline__status" role="status">Ready/);
+  assert.doesNotMatch(F.fdOfflineCard({ checking: true }), /fd-offline__status" role="status">Current route cached/);
   const ready = F.fdOfflineCard({ response: complete, expected: EXPECTED });
-  assert.match(ready, /Ready/);
+  assert.match(ready, /Current route cached/);
   assert.match(ready, /current device/i);
   for (const phrase of ['audio', 'video', 'live services', 'external links', 'email sending']) {
     assert.match(ready, new RegExp(phrase, 'i'));
   }
   assert.match(F.fdOfflineCard({ response: complete, expected: EXPECTED, waiting: true }), /Update available/);
-  assert.match(F.fdOfflineCard({ reason: 'timeout' }), /Not ready/);
+  assert.match(F.fdOfflineCard({ reason: 'timeout' }), /Not verified/);
 });
 
 test('detailed check counts only the active response and names every dependency', () => {
   const checking = F.fdOfflineCard({ checking: true, expected: EXPECTED }, 'Week 2');
   assert.match(checking, /Week 2/);
-  assert.doesNotMatch(checking, /Checked just now|>Ready</);
+  assert.doesNotMatch(checking, /Checked just now|>Current route cached</);
   const ready = F.fdOfflineCard({ response: complete, expected: EXPECTED }, 'Week 2');
   assert.match(ready, /Checked just now/);
   assert.match(ready, /1 reading/);
@@ -314,10 +314,10 @@ test('four readiness states have visible text and distinct CSS treatments', () =
     '../docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md', import.meta.url,
   ), 'utf8');
   const states = [
-    [{ checking: true, expected: EXPECTED }, 'Checking', 'is-checking'],
-    [{ response: complete, expected: EXPECTED }, 'Ready', 'is-ready'],
+    [{ checking: true, expected: EXPECTED }, 'Checking cache', 'is-checking'],
+    [{ response: complete, expected: EXPECTED }, 'Current route cached', 'is-ready'],
     [{ response: complete, expected: EXPECTED, waiting: true }, 'Update available', 'is-update'],
-    [{ reason: 'timeout', expected: EXPECTED }, 'Not ready', 'is-not-ready'],
+    [{ reason: 'timeout', expected: EXPECTED }, 'Not verified', 'is-not-ready'],
   ];
   for (const [state, label, cls] of states) {
     const entry = F.fdOfflineEntry(state, 'Week 2', false);
@@ -502,4 +502,13 @@ test('Daily Review selected pack requires every card feed and missing bytes cann
     assert.equal(F.fdOfflineResponse({...partial,ready:true},urls),null);
     assert.equal(F.fdOfflineStatus({response:partial,expected:urls}).kind,'not-ready');
   }
+});
+
+test('offline availability never presents cache evidence as clinical shift readiness', () => {
+  const entry = F.fdOfflineEntry({reason:'unsupported'}, 'Week 1', true);
+  assert.match(entry, /aria-label="Offline availability"/);
+  assert.match(entry, /<span>Offline availability<\/span>/);
+  assert.match(entry, /Not verified/);
+  assert.doesNotMatch(entry, /Shift-ready|Not ready/);
+  assert.match(entry, /does not support the offline check/);
 });
