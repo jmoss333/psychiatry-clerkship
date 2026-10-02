@@ -2522,7 +2522,8 @@ test('One Thing First A2: remove the capsule and the live block wins', async ({ 
   await expect(page.locator('.fd-primary .fd-block.is-live .fd-block__kicker')).toHaveText('Your 10-minute block');
   await expect(page.locator('.fd-primary [data-block-continue]')).toHaveClass(/fd-btn--primary/);
   await expect(page.locator('.fd-resume')).toHaveCount(0);
-  await otfExpectPrimaryIsFirstFocusable(page);
+  // The owner-directed purpose chooser precedes the primary timed block.
+  await expect(page.locator('.fd-today__main button').first()).toHaveAttribute('data-today-purpose','rounds');
   await otfExerciseVisitAndBack(page);
   await expect(page.locator('.fd-primary .fd-block.is-live')).toHaveCount(1);
   await expectHealthy(page);
@@ -2546,8 +2547,8 @@ test('One Thing First A2: clear the dues and Continue leads, with the rows below
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary')).toHaveCount(0);
   await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0]));
-  expect(order).toEqual(['fd-continue', 'fd-offline', 'fd-primary__why', 'fd-sectionhead', 'fd-block', 'fd-capture']);
+  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 7).map(el => el.className.split(' ')[0]));
+  expect(order).toEqual(['fd-continue', 'fd-offline', 'fd-primary__why', 'fd-sectionhead', 'fd-purpose', 'fd-block', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await otfExerciseVisitAndBack(page);
   await expectHealthy(page);
@@ -4650,11 +4651,12 @@ test('Today purpose is optional, session-only, and preserves the regular planner
   await seedApp(page,info,{storage:{cw_feedback_v1:{v:1,items:[]},cw_private_reflection_v1:'synthetic private note'}});
   await page.goto('/');await otfExpectOnePrimary(page);await otfExpectPrimaryIsFirstFocusable(page);
   const chooser=page.locator('.fd-purpose'),toggle=chooser.locator('summary');
-  await expect(chooser).not.toHaveAttribute('open');
+  await expect(chooser).toHaveAttribute('open','');
   const initialURL=page.url();
   const primary=await page.locator(OTF_PRIMARY).textContent();
   const stores=await page.evaluate(()=>Object.fromEntries(['cw_frontdoor_v1','cw_block_v1','cw_feedback_v1','cw_private_reflection_v1'].map(key=>[key,localStorage.getItem(key)])));
-  await toggle.focus();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+  await toggle.focus();await page.keyboard.press('Enter');await expect(chooser).not.toHaveAttribute('open');
+  await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
   const first=chooser.locator('[data-today-purpose="rounds"]');await page.keyboard.press('Tab');await expect(first).toBeFocused();
   for(const id of ['rounds','interview','family','study','interview']){
     const choice=chooser.locator(`[data-today-purpose="${id}"]`);
@@ -4675,8 +4677,8 @@ test('Today purpose is optional, session-only, and preserves the regular planner
   await page.locator('[data-fd-tab="library"]:visible').click();await page.goBack();
   await expect(page.locator('[data-today-purpose="family"]')).toHaveAttribute('aria-pressed','true');
   await page.goForward();await expect(page.locator('.fd-library:visible')).toBeVisible();
-  await page.goBack();await page.reload();await expect(chooser).not.toHaveAttribute('open');
-  await toggle.click();await expect(chooser.locator('[data-today-purpose=""]')).toHaveAttribute('aria-pressed','true');
+  await page.goBack();await page.reload();await expect(chooser).toHaveAttribute('open','');
+  await expect(chooser.locator('[data-today-purpose=""]')).toHaveAttribute('aria-pressed','true');
   await expectHealthy(page);
 });
 
@@ -4708,7 +4710,7 @@ test('Today purpose does not replace interrupted work, due reviews or an existin
   await expect(page.locator('.fd-primary .fd-resume__link')).toContainText('Resume question bank — 4 left');
   const primary=await page.locator(OTF_PRIMARY).textContent();
   const before=await page.evaluate(()=>({block:localStorage.getItem('cw_block_v1'),session:localStorage.getItem('cw_sess_v1'),dues:localStorage.getItem('cw_srs_v1')}));
-  await page.locator('.fd-purpose summary').click();
+  await expect(page.locator('.fd-purpose')).toHaveAttribute('open','');
   for(const id of ['rounds','study','family',''])await page.locator(`[data-today-purpose="${id}"]`).click();
   expect(await page.locator(OTF_PRIMARY).textContent()).toBe(primary);
   expect(await page.evaluate(()=>({block:localStorage.getItem('cw_block_v1'),session:localStorage.getItem('cw_sess_v1'),dues:localStorage.getItem('cw_srs_v1')}))).toEqual(before);
@@ -4724,7 +4726,7 @@ test('Today purpose works when local storage becomes unavailable and rejects for
     Storage.prototype.getItem=function(k){if(this===localStorage)throw new DOMException('Blocked','SecurityError');return get.call(this,k);};
     Storage.prototype.setItem=function(k,v){if(this===localStorage)throw new DOMException('Blocked','QuotaExceededError');return set.call(this,k,v);};
   });
-  await page.locator('.fd-purpose summary').click();await page.locator('[data-today-purpose="interview"]').click();
+  await expect(page.locator('.fd-purpose')).toHaveAttribute('open','');await page.locator('[data-today-purpose="interview"]').click();
   await expect(page.locator('[data-today-purpose="interview"]')).toHaveAttribute('aria-pressed','true');
   await page.evaluate(()=>{const b=document.createElement('button');b.setAttribute('data-today-purpose','unknown-private-target');document.querySelector('.fd-purpose').appendChild(b);b.click();b.remove();});
   await expect(page.locator('[data-today-purpose="interview"]')).toHaveAttribute('aria-pressed','true');
@@ -4738,7 +4740,7 @@ test('Today purpose active text meets contrast in both themes and disclosure sta
   for(const theme of ['light','dark']){
     await page.addInitScript(value=>localStorage.setItem('cw_theme',value),theme);await page.goto('/');
     const chooser=page.locator('.fd-purpose'),summary=chooser.locator('summary');
-    await summary.focus();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+    await expect(chooser).toHaveAttribute('open','');
     await chooser.locator('[data-today-purpose="study"]').click();
     const ratios=await chooser.evaluate(root=>{
       const rgb=value=>{
@@ -4760,4 +4762,58 @@ test('Today purpose active text meets contrast in both themes and disclosure sta
     expect(await summary.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
   }
   await expectHealthy(page);
+});
+
+for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
+  for (const theme of ['light', 'dark']) {
+    test(`Today purpose is initially reachable before study: ${viewport.width}px ${theme}`, async ({ page }, testInfo) => {
+      await page.setViewportSize(viewport);
+      await seedApp(page, testInfo, { storage: { cw_theme: theme } });
+      await page.goto('/');
+      const chooser = page.locator('.fd-purpose');
+      const block = page.locator('.fd-block');
+      await expect(chooser).toHaveAttribute('open', '');
+      await expect(chooser.getByRole('button', { name: 'Family conversation', exact: true })).toBeVisible();
+      await expect(block).toBeVisible();
+      expect(await chooser.evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-block')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      const studyBefore = await block.innerText();
+      const toggle = chooser.locator('summary');
+      await toggle.focus();
+      await page.keyboard.press('Enter');
+      await expect(chooser).not.toHaveAttribute('open', '');
+      await expect(toggle).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(chooser).toHaveAttribute('open', '');
+      await chooser.scrollIntoViewIfNeeded();
+      await page.screenshot({ path: testInfo.outputPath(`purpose-${viewport.width}-${theme}.png`) });
+      const family = chooser.getByRole('button', { name: 'Family conversation', exact: true });
+      await family.focus();
+      await page.keyboard.press('Enter');
+      await expect(family).toHaveAttribute('aria-pressed', 'true');
+      await expect(block).toHaveText(studyBefore, { useInnerText: true });
+      await chooser.getByRole('button', { name: 'Family Meeting Playbook (90-min)', exact: true }).click();
+      await expect(page.locator('.fd-article__h1')).toContainText('Family Meeting Playbook');
+      await page.goBack();
+      await expect(chooser).toHaveAttribute('open', '');
+      await expect(family).toHaveAttribute('aria-pressed', 'true');
+      await page.reload();
+      await expect(chooser).toHaveAttribute('open', '');
+      await expect(chooser.getByRole('button', { name: 'Regular Today', exact: true })).toHaveAttribute('aria-pressed', 'true');
+      await expect(chooser.locator('[data-fd-open]')).toHaveCount(0);
+    });
+  }
+}
+
+test('Today purpose precedes an unfinished primary study block', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo, { storage: { cw_block_v1: {
+    v: 1, minutes: 10, createdAt: FROZEN_NOW.getTime(),
+    steps: [{ kind: 'page', ref: 'pg_interview.md', title: 'Interview & MSE', min: 5 }],
+  } } });
+  await page.goto('/');
+  const block = page.locator('.fd-primary .fd-block');
+  await expect(block).toBeVisible();
+  await expect(page.locator('.fd-purpose')).toHaveAttribute('open', '');
+  expect(await page.locator('.fd-purpose').evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-primary .fd-block')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  await expect(block.locator('[data-block-continue]')).toHaveCount(1);
 });
