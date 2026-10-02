@@ -17,9 +17,9 @@ test('missing, rights and search-only targets are omitted rather than replaced',
  assert.deepEqual(F.options(missing).map(x=>x.id),['study']);
  assert.doesNotMatch(F.render(missing,'family',true),/data-fd-open|Suggested because/);
 });
-test('default is optional and closed; regular Today is the explicit escape',()=>{
- const html=F.render(index,'',false);
- assert.match(html,/<details class="fd-purpose">/);
+test('expanded chooser stays optional; regular Today is the explicit escape',()=>{
+ const html=F.render(index,'',true);
+ assert.match(html,/<details class="fd-purpose" open>/);
  assert.match(html,/data-today-purpose="" aria-pressed="true">Regular Today/);
  assert.doesNotMatch(html,/Suggested because|data-fd-open/);
  assert.match(html,/resets on reload/);
@@ -38,8 +38,8 @@ test('unrecognized purpose cannot inject a destination or change the default',()
  assert.match(html,/data-today-purpose="" aria-pressed="true"/);
 });
 test('session purpose is outside persisted state; shell owns guarded auxiliary actions',()=>{
- assert.match(shell,/var fdTodayPurposeId='',fdTodayPurposeOpen=false/);
- assert.match(shell,/if\(!facultyPreviewRequest\)also\+=fdTodayPurpose/);
+ assert.match(shell,/var fdTodayPurposeId='',fdTodayPurposeOpen=true/);
+ assert.match(shell,/var purposeHtml=facultyPreviewRequest\?'':fdTodayPurpose/);
  assert.match(shell,/if\(!purposeValid\)return/);
  assert.match(shell,/fdTodayPurposeId=purposeId;fdTodayPurposeOpen=purposeId!=='';specialRefresh\(\)/);
  const purposeHandlers=shell.slice(shell.indexOf("el=target.closest&&target.closest('[data-today-purpose-toggle]')"),shell.indexOf("el=target.closest&&target.closest('[data-block-minutes]')"));

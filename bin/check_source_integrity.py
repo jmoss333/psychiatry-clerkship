@@ -166,13 +166,22 @@ def parse_pubmed_xml(text: str) -> dict[str, dict]:
     except ET.ParseError as exc:
         raise IntegrityError(f"PubMed returned unparseable XML: {exc}") from exc
     out: dict[str, dict] = {}
-    for art in root.iter("PubmedArticle"):
-        pmid = (art.findtext("MedlineCitation/PMID") or "").strip()
+    # A journal article and an NCBI Bookshelf record (a StatPearls chapter, a SAMHSA TIP) come
+    # back in the same set under different roots. Reading only <PubmedArticle> made every book
+    # PMID look unknown to PubMed and filed a false P1 "pmid-unresolved" (#878, #879).
+    records = [(art.find("MedlineCitation"), "Article/PublicationTypeList/PublicationType")
+               for art in root.iter("PubmedArticle")]
+    records += [(art.find("BookDocument"), "PublicationType")
+                for art in root.iter("PubmedBookArticle")]
+    for doc, pub_type_path in records:
+        if doc is None:
+            continue
+        pmid = (doc.findtext("PMID") or "").strip()
         if not pmid:
             continue
-        pub_types = [p.text or "" for p in art.findall("MedlineCitation/Article/PublicationTypeList/PublicationType")]
+        pub_types = [p.text or "" for p in doc.findall(pub_type_path)]
         corrections = []
-        for cc in art.findall("MedlineCitation/CommentsCorrectionsList/CommentsCorrections"):
+        for cc in doc.findall("CommentsCorrectionsList/CommentsCorrections"):
             kind = PUBMED_REFTYPES.get(cc.get("RefType", ""))
             if kind:
                 corrections.append({
@@ -515,6 +524,10 @@ _RETRACTED_XML = """<?xml version="1.0"?>
  <PubmedArticle><MedlineCitation><PMID>1000004</PMID><Article>
   <PublicationTypeList><PublicationType>Journal Article</PublicationType><PublicationType>Retracted Publication</PublicationType></PublicationTypeList>
   </Article></MedlineCitation></PubmedArticle>
+ <PubmedBookArticle><BookDocument><PMID>1000005</PMID>
+  <ArticleIdList><ArticleId IdType="bookaccession">NBK000005</ArticleId></ArticleIdList>
+  <PublicationType>Study Guide</PublicationType>
+ </BookDocument><PubmedBookData><PublicationStatus>ppublish</PublicationStatus></PubmedBookData></PubmedBookArticle>
 </PubmedArticleSet>
 """
 
@@ -534,7 +547,9 @@ def self_test() -> int:
 
     # --- parsing ------------------------------------------------------------------------
     recs = parse_pubmed_xml(_RETRACTED_XML)
-    expect("parse: four articles", len(recs) == 4)
+    expect("parse: four articles and one Bookshelf record", len(recs) == 5)
+    expect("parse: a <PubmedBookArticle> PMID is a record, not unresolved (#878/#879)",
+           recs.get("1000005") == {"pubTypes": ["Study Guide"], "corrections": []})
     kinds1 = [c["kind"] for c in recs["1000001"]["corrections"]]
     expect("parse: RetractionIn kept, CommentIn dropped", kinds1 == ["retracted", "expression-of-concern"])
     expect("parse: RetractionIn carries its RefSource", recs["1000001"]["corrections"][0]["refSource"].startswith("Lancet. 2010"))
@@ -590,6 +605,8 @@ def self_test() -> int:
                           recs["1000003"], None, lic, True)
     expect("classify: erratum recorded as corrected and update recorded as supersededBy → clean",
            row["findings"] == [] and len(row["recordedSignals"]) == 2)
+    row = classify_source(_src("lic", pmid="1000005"), recs.get("1000005"), None, lic, True)
+    expect("classify: a Bookshelf PMID PubMed returned is clean, not pmid-unresolved", row["findings"] == [])
     row = classify_source(_src("lic", pmid="4040404"), None, None, lic, True)
     expect("classify: PMID PubMed does not know is a P1 finding",
            row["worst"] == "P1" and row["findings"][0]["kind"] == "pmid-unresolved")

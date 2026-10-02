@@ -72,10 +72,15 @@ if os.path.exists(communication_cases_path):
         communication_case_ids = set(communication_case_id_list)
         for case in cc.get("cases", []):
             cid = case.get("id")
-            choices = case.get("choices", []) if isinstance(case, dict) else []
-            if sum(1 for ch in choices if isinstance(ch, dict) and ch.get("quality") == "best") != 1:
-                print("communication_cases.json INVALID — %s must have exactly one best choice" % cid)
-                sys.exit(1)
+            choice_sets = [(cid, case.get("choices", []))]
+            if "secondPass" in case:
+                choice_sets.append((cid + "/secondPass", case["secondPass"].get("choices", [])))
+            for label, choices in choice_sets:
+                require_unique("communication_cases.json " + label,
+                               [ch.get("id") for ch in choices if isinstance(ch, dict)])
+                if sum(1 for ch in choices if isinstance(ch, dict) and ch.get("quality") == "best") != 1:
+                    print("communication_cases.json INVALID — %s must have exactly one best choice" % label)
+                    sys.exit(1)
             linked_pages = case.get("linkedPages", []) if isinstance(case, dict) else []
             if not (isinstance(linked_pages, list) and all(isinstance(x, str) for x in linked_pages)):
                 print("communication_cases.json INVALID — %s linkedPages must be a list of strings" % cid)
