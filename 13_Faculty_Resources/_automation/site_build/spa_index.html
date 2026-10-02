@@ -2547,8 +2547,6 @@
       :{checklist:{},resources:{}};
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
-    var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,fdProgressDoneMap(raw,FD_INDEX,out.week));
-    out.ringPct=progress.pct;
     return out;
   }
 
@@ -2625,7 +2623,7 @@
     }
     also+=captureHtml;
     if(!facultyPreviewRequest)also+=fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
-    var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
+    var rest='<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
     if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+offlineHtml+rest);
     return html.replace(FD_TODAY_LEAD_END,offlineHtml+rest);
   }

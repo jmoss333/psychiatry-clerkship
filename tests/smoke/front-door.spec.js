@@ -2416,7 +2416,6 @@ const OTF = {
   }, day: { lastDay: '', newToday: 0 }, stats: { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0 }, settings: { newPerDay: 12 } },
   capture: { v: 1, items: [{ id: 'otf-c1', text: 'Why hold the lithium tonight?', at: OTF_NOW - 10 * 60 * 1000, ctx: null, triaged: false }] },
 };
-const OTF_WHY = 'First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.';
 // The primary: a wrapped device-store row, or the lead card itself when nothing outranked it.
 const OTF_PRIMARY = '.fd-primary, .fd-continue:not(.is-secondary), .fd-setupcta';
 // Its control: the first focusable inside the wrapper, or the lead card (a button).
@@ -2425,7 +2424,8 @@ const OTF_PRIMARY_CONTROL = '.fd-primary button, .fd-primary a, .fd-continue:not
 async function otfExpectOnePrimary(page) {
   await expect(page.locator('.fd-today')).toBeVisible();
   await expect(page.locator(OTF_PRIMARY)).toHaveCount(1);
-  await expect(page.locator('.fd-primary__why')).toHaveText(OTF_WHY);
+  // 2026-10-01: the "First things first…" explanation line is retired (owner-directed design pass).
+  await expect(page.locator('.fd-primary__why')).toHaveCount(0);
   await expect(page.locator('h2.fd-also')).toHaveCount(1);
   await expect(page.locator('h2.fd-also')).toHaveText('Also today');
 }
@@ -2546,8 +2546,8 @@ test('One Thing First A2: clear the dues and Continue leads, with the rows below
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary')).toHaveCount(0);
   await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0]));
-  expect(order).toEqual(['fd-continue', 'fd-offline', 'fd-primary__why', 'fd-sectionhead', 'fd-block', 'fd-capture']);
+  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 5).map(el => el.className.split(' ')[0]));
+  expect(order).toEqual(['fd-continue', 'fd-offline', 'fd-sectionhead', 'fd-block', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await otfExerciseVisitAndBack(page);
   await expectHealthy(page);
@@ -2618,9 +2618,10 @@ test('One Thing First A2: cw_last names an undone week read that is not the Cont
     const rows = [...document.querySelectorAll('.fd-list .fd-row')];
     for (const row of rows) {
       const ref = row.querySelector('.fd-row__open')?.getAttribute('data-fd-open');
-      const chip = row.querySelector('.fd-chip')?.textContent;
+      // A reading carries no type chip (2026-10-01); only tools and references are labelled.
+      const isRead = !row.querySelector('.fd-chip');
       const done = row.querySelector('.fd-check')?.classList.contains('is-done');
-      if (ref && ref !== target && chip === 'read' && !done) return ref;
+      if (ref && ref !== target && isRead && !done) return ref;
     }
     return null;
   });
