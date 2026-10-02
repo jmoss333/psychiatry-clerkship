@@ -1001,6 +1001,14 @@ Namespaced `fd*` because this stylesheet shares a document with ~21 tools that s
 animations: `fdFadeUp`, `fdSheetIn`, `fdBackdropIn`, `fdPopIn`, `fdCheckPop`, `fdStrikeDraw`,
 `fdSlideR`, `fdSlideL` (`fdRingPulse` retired with `.fd-ring`, 2026-10-01). All are disabled under `prefers-reduced-motion: reduce`.
 
+## Display face
+
+Headings use **Source Serif 4** (2026-10-01), self-hosted at `fonts/source-serif-4-latin-opsz-wght600-700.woff2`
+beside `frontdoor.css` and precached by the service worker; its SIL OFL 1.1 licence ships as
+`fonts/source-serif-4-OFL.txt`. The face covers weights **600–700 only**, so it is named only by rules
+that set a weight of 600+ or by bold-by-default `h1`–`h3` rules, always with Georgia behind it.
+A lighter rule pointed at it would render semibold. `tests/fd-display-font.test.mjs` pins all of this.
+
 ## Colour
 
 Markup must not carry colour. Every colour is a `var(--fd-*)` token declared in
