@@ -2434,7 +2434,7 @@
      via the shared block store, and the weakest blueprint area is re-derived from mastery each
      render so the plan follows the learner's actual misses. */
   var fdBlockMinutes=10;
-  var fdTodayPurposeId='',fdTodayPurposeOpen=false;
+  var fdTodayPurposeId='',fdTodayPurposeOpen=true;
   function fdWeakestCategory(){
     try{
       var rows=masteryByBlueprint(), best=null;
@@ -2624,9 +2624,9 @@
       else also+=cards[order[i]];
     }
     also+=captureHtml;
-    if(!facultyPreviewRequest)also+=fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
-    var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
-    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+offlineHtml+rest);
+    var purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
+    var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+(primary.kind==='block'?'':purposeHtml)+also;
+    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+(primary.kind==='block'?purposeHtml:'')+lead+offlineHtml+rest);
     return html.replace(FD_TODAY_LEAD_END,offlineHtml+rest);
   }
 

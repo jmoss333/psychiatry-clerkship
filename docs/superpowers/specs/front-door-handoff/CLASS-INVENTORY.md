@@ -1012,4 +1012,4 @@ Offline availability: `.fd-offline__open` wraps its label and cache status for s
 
 ## Optional session purpose chooser (2026-10-01)
 
-`fd-purpose`, `fd-purpose__summary`, `fd-purpose__choices`, `fd-purpose__note`, `fd-purpose__reason` style the optional disclosure after Today’s existing device-store cards. Buttons reuse `fd-btn` tokens and pressed state uses an attribute selector. Purpose choices and open state are in-memory only; standard primary/due-review/planner rules remain unchanged.
+`fd-purpose`, `fd-purpose__summary`, `fd-purpose__choices`, `fd-purpose__note`, `fd-purpose__reason` style the optional disclosure before Today’s timed study block, including when an unfinished block is the primary action. The disclosure starts open on each fresh page load and remains learner-collapsible. Buttons reuse `fd-btn` tokens and pressed state uses an attribute selector. Purpose choices and open state are in-memory only; standard primary/due-review/planner rules remain unchanged.
