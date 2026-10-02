@@ -362,7 +362,7 @@
 
 .fd-continue{
   display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:var(--fd-space-7);row-gap:var(--fd-space-6);width:100%;text-align:left;
-  padding:22px 24px 20px;
+  padding:var(--fd-space-9) var(--fd-space-9) var(--fd-space-8);
   /* The prototype fades a 5%-alpha teal into the card surface over the top 42%. Expressed
    * against the tokens so the tint follows the theme instead of staying teal-on-white. */
   background:linear-gradient(180deg,color-mix(in srgb,var(--fd-teal) 6%,var(--fd-surface)) 0,var(--fd-surface) 60%);
@@ -376,7 +376,7 @@
 .fd-continue__title{display:block;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-size:var(--fd-font-2xl);font-weight:700;line-height:1.2;color:var(--fd-text);margin-top:var(--fd-space-2)}
 /* One segment per activity this week, filled from the left as they are done (2026-10-01). */
 .fd-continue__segs{flex:1 0 100%;display:flex;gap:var(--fd-space-2)}
-.fd-continue__seg{flex:1 1 0;height:6px;border-radius:var(--fd-radius-pill);background:var(--fd-ring-track)}
+.fd-continue__seg{flex:1 1 0;height:var(--fd-space-3);border-radius:var(--fd-radius-pill);background:var(--fd-ring-track)}
 .fd-continue__seg.is-done{background:var(--fd-teal)}
 .fd-continue__meta{text-align:right;flex:0 0 auto}
 .fd-continue__count{display:block;font-size:var(--fd-font-sm);font-weight:600;color:var(--fd-text-mid);white-space:nowrap}
@@ -557,10 +557,10 @@
 /* The rail is sticky, and the floating "Ask a question" button is fixed at the viewport's bottom
    right -- so on a short window the rail's last rows sat under the button for as long as the page
    scrolled (2026-10-01). The rail's height stops above the button's band and scrolls within itself
-   instead; the 3px pad and matching negative margin keep focus rings from being clipped by that
-   scroll box without moving the rail. */
+   instead; the 4px pad and matching negative margin keep focus rings from being clipped by that
+   scroll box without moving the rail. (4px: the ring's 2px outline at a 2px offset.) */
 .fd-rail{flex:1 1 250px;max-width:320px;min-width:0;position:sticky;top:106px;display:none;flex-direction:column;gap:var(--fd-space-9);
-  max-height:calc(100vh - 106px - var(--fd-target-touch) - var(--fd-space-8) * 2);overflow-y:auto;overscroll-behavior:contain;padding:3px;margin:-3px}
+  max-height:calc(100vh - 106px - var(--fd-target-touch) - var(--fd-space-8) * 2);overflow-y:auto;overscroll-behavior:contain;padding:var(--fd-space-2);margin:calc(-1 * var(--fd-space-2))}
 .fd-quicktool{
   display:flex;align-items:center;gap:var(--fd-space-4);width:100%;text-align:left;
   padding:10px 13px;border-radius:var(--fd-radius-md);border:1px solid var(--fd-line-strong);
@@ -762,7 +762,7 @@
 }
 .fd-kitcard{
   display:flex;align-items:center;gap:var(--fd-space-5);width:100%;text-align:left;
-  padding:9px 14px;background:transparent;border:0;cursor:pointer;
+  padding:var(--fd-space-4) var(--fd-space-7);background:transparent;border:0;cursor:pointer;
 }
 .fd-kitcard + .fd-kitcard{border-top:1px solid var(--fd-line)}
 .fd-kitcard:hover{background:var(--fd-danger-wash)}
@@ -1392,7 +1392,7 @@
    * longer guidance immediately after the learner opens it. */
   .fd-pilot__copy p{display:none}
   .fd-pilot{margin-bottom:var(--fd-space-6)}
-  .fd-continue{padding:16px 14px 14px;column-gap:var(--fd-space-5);row-gap:var(--fd-space-4)}
+  .fd-continue{padding:var(--fd-space-7) var(--fd-space-7) var(--fd-space-6);column-gap:var(--fd-space-5);row-gap:var(--fd-space-4)}
   .fd-continue__title{font-size:var(--fd-font-xl)}
   .fd-continue__meta{flex:1 0 100%;display:flex;gap:var(--fd-space-4);text-align:left}
   .fd-edition-card__summary{grid-template-columns:minmax(0,1fr);gap:var(--fd-space-1);padding:10px 11px}
@@ -2082,7 +2082,7 @@
 .fd-purpose__summary{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4);min-height:var(--fd-target-touch);list-style:none;cursor:pointer;font-size:var(--fd-font-md);font-weight:600;color:var(--fd-text-mid)}
 .fd-purpose__summary::-webkit-details-marker{display:none}
 /* The same drawn chevron the other disclosures use, rotating on open, instead of the browser's ▶. */
-.fd-purpose__summary::after{content:"";flex:0 0 auto;width:7px;height:7px;margin-right:var(--fd-space-2);border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .15s ease}
+.fd-purpose__summary::after{content:"";flex:0 0 auto;width:var(--fd-space-4);height:var(--fd-space-4);margin-right:var(--fd-space-2);border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .15s ease}
 .fd-purpose[open] .fd-purpose__summary::after{transform:rotate(-135deg)}
 .fd-purpose__summary:hover{color:var(--fd-text)}
 .fd-purpose__choices{display:flex;flex-wrap:wrap;gap:var(--fd-space-3)}
