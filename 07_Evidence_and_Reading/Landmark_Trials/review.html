@@ -167,6 +167,7 @@ var GRADE_NAMES=["Again","Hard","Good","Easy"]; // grade buttons stay 0-3; mappe
 /*__BLOCK_STORE__*/
 /*__SESSION_RECEIPT__*/
 /*__FAM_RETRIEVAL__*/
+/*__RX_RETRIEVAL__*/
 /*__CONCEPT_RECALL__*/
 
 /* Readable label for a content ref ("t_mood.md" -> "Mood"). Shared by the topic-card titles and
@@ -310,6 +311,9 @@ function reviewMissingDueIds(cards,stored,now){
     if(!state||!Number.isFinite(state.due)||state.due>now)return;
     /* These are the due namespaces Today promises this tool can serve. Concepts are
        checked against the released feed by the shell, so withdrawn IDs are excluded. */
+    /* RX# is deliberately absent: a drug card leaves the feed when its faculty review stops
+       being valid, and its scheduled cards must then go quiet, not fail the source. A feed
+       that did not load at all is already reported by missingPracticeSource. */
     if(!/^(?:TOPIC#|FAM#|COMM#|REASON#)/.test(id)&&!/^(?:AR|SP)-\d+#\d+$/.test(id))return;
     if(!loaded[id])missing.push(id);
   });
@@ -339,7 +343,7 @@ function reviewQbInventoryFromDocument(doc){
 function reviewSourceDigestsFromDocument(doc){
   var node=doc&&doc.getElementById('cw-review-source-digests'),value;
   try{value=JSON.parse(node&&node.textContent||'');}catch(_){throw Error('Current review source checks are unavailable. Reload and try again.');}
-  var keys=['articles','topics','family','communication','reasoning'];
+  var keys=['articles','topics','family','communication','reasoning','pharmacy'];
   if(!reviewRestoreObject(value)||Object.keys(value).length!==keys.length||keys.some(function(key){return !/^[0-9a-f]{64}$/.test(value[key]||'');}))
     throw Error('Current review source checks are incomplete. Reload and try again.');
   return value;
@@ -616,7 +620,10 @@ function App(){
       /* the res build overwrites this file with reasoning_cases_resident.json, so one path
          serves the right audience without the page knowing which site it is on */
       reviewFetchVerifiedSource(fetch("../reasoning_cases.json"),"reasoning").then(function(out){return reviewVerifiedCases(out,'reasoning');}).catch(function(){return missingPracticeSource({cases:[]});}),
-      fetch("review_companions.json").then(function(r){if(!r.ok)throw Error('companion feed unavailable');return r.json();}).then(reviewVerifiedCompanions).then(function(out){setCompanions(out);setCompanionStatus('ready');return out;}).catch(function(){setCompanionStatus('unavailable');return null;})
+      fetch("review_companions.json").then(function(r){if(!r.ok)throw Error('companion feed unavailable');return r.json();}).then(reviewVerifiedCompanions).then(function(out){setCompanions(out);setCompanionStatus('ready');return out;}).catch(function(){setCompanionStatus('unavailable');return null;}),
+      /* RX#: only drugs whose faculty review is valid are in this feed (build_pharmacy_public.py);
+         rxVerifiedPublic refuses the whole feed if any drug or card lacks that backing. */
+      reviewFetchVerifiedSource(fetch("../pharmacy_public.json"),"pharmacy").then(rxVerifiedPublic).catch(function(){return missingPracticeSource({agents:[],cards:[]});})
     ]).then(function(res){
       /* One builder per source, concatenated into the single queue. A source that fails to load
          contributes nothing to ordinary review; a timed block cannot start from partial data.
@@ -628,6 +635,7 @@ function App(){
       out=out.concat(famRecallCards(fam));
       out=out.concat(commChoiceCards(comm));
       out=out.concat(reasonChoiceCards(reason));
+      out=out.concat(rxRecallCards(res[7]||{}));
       if(!out.length){ setErr(true); return; }
       var currentStore=loadS(), checkedAt=Date.now();
       if(reviewReopenRevisedCards(out,currentStore,checkedAt)){

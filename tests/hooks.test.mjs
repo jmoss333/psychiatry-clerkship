@@ -355,6 +355,9 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
     // Its selected fields are pinned by the pair map, so the entire registry is
     // deliberately not an attestation input in shipped_pages.json.
     'evidence_registry.json',
+    // Same shape for the pharmacy: pharmacy_public.json is projected from pharmacy.json, which
+    // is attested per drug by its own review hashes, so it is not an attestation input either.
+    'pharmacy.json',
     ...toolInputs,
   ])) {
     const target = path.join(fixture, rel);

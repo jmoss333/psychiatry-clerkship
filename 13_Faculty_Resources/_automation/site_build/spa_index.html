@@ -2015,14 +2015,28 @@
     }).catch(function(){conceptDueState={status:'unavailable',releasedIds:null};})
       .then(function(){if(typeof specialRefresh==='function')specialRefresh();});
   }
+  /*__RX_RETRIEVAL__*/
+  /* RX# cards are released per drug: a drug leaves pharmacy_public.json the moment its faculty
+     review stops matching its text, and its scheduled cards must stop counting with it (the
+     "Due today counts cards nothing can serve" defect class). So an RX# card counts only once
+     the feed has loaded AND still carries it; until then, none do. */
+  var rxDueState={status:'checking',releasedIds:null};
+  function loadRxDue(){
+    rxDueState={status:'checking',releasedIds:null};
+    return fetch('pharmacy_public.json').then(function(r){if(!r.ok)throw Error('pharmacy feed unavailable');return r.json();})
+      .then(rxVerifiedPublic).then(function(data){
+        rxDueState={status:'ready',releasedIds:new Set(rxRecallCards(data).map(function(c){return c.id;}))};
+      }).catch(function(){rxDueState={status:'unavailable',releasedIds:null};})
+      .then(function(){if(typeof specialRefresh==='function')specialRefresh();});
+  }
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
   /* Daily Review's landmark-deck cards are `<deck id>#<question index>` and every deck id in
      quizzes.json is AR-<n> or SP-<n> (review.html builds the id; tests/srs-home-counters pins
      the shape against the real file). Until 2026-09-24 this matched a `deck#` prefix nothing
      writes, so every real deck card fell into `other` and vanished from timed blocks. */
   var SRS_DECK_CARD=/^(?:AR|SP)-\d+#\d+$/;
-  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(SRS_DECK_CARD.test(id))return 'landmark'; if(id.indexOf('CONCEPT#')===0||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
-  function dueBreakdown(releasedIds){ if(arguments.length===0)releasedIds=typeof conceptDueState!=='undefined'?conceptDueState.releasedIds:null; var eligible=releasedIds instanceof Set?Array.from(releasedIds).map(function(id){return {id:id};}):null; var s=srsState(),b={daily:{due:0,overdue:0},landmark:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},comm:{due:0,overdue:0},reason:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ if(id.indexOf('CONCEPT#')===0&&!conceptIdEligible(id,eligible))continue; var k=srsBucket(id); if(k==='qb'&&!qbRecordServable(id.slice(3)))continue; b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } b.conceptStatus=releasedIds instanceof Set?'ready':(typeof conceptDueState!=='undefined'&&conceptDueState.status==='unavailable'?'unavailable':'checking'); return b; }
+  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(id.indexOf('RX#')===0)return 'rx'; if(SRS_DECK_CARD.test(id))return 'landmark'; if(id.indexOf('CONCEPT#')===0||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
+  function dueBreakdown(releasedIds){ if(arguments.length===0)releasedIds=typeof conceptDueState!=='undefined'?conceptDueState.releasedIds:null; var eligible=releasedIds instanceof Set?Array.from(releasedIds).map(function(id){return {id:id};}):null; var s=srsState(),b={daily:{due:0,overdue:0},landmark:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},comm:{due:0,overdue:0},reason:{due:0,overdue:0},rx:{due:0,overdue:0},other:{due:0,overdue:0}}; var rxReleased=(typeof rxDueState!=='undefined'&&rxDueState.releasedIds instanceof Set)?rxDueState.releasedIds:null; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ if(id.indexOf('CONCEPT#')===0&&!conceptIdEligible(id,eligible))continue; var k=srsBucket(id); if(k==='rx'&&!(rxReleased&&rxReleased.has(id)))continue; if(k==='qb'&&!qbRecordServable(id.slice(3)))continue; b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } b.conceptStatus=releasedIds instanceof Set?'ready':(typeof conceptDueState!=='undefined'&&conceptDueState.status==='unavailable'?'unavailable':'checking'); return b; }
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due+b.landmark.due,overdue:b.daily.overdue+b.landmark.overdue}; }
   /* ---- end due breakdown ---- */
   function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}, hy=[],cov={}, cols=(typeof FD_INDEX!=='undefined'&&FD_INDEX.columns)||[]; for(var c=0;c<cols.length;c++){ var sec=cols[c].name||'', items=cols[c].items||[]; for(var i=0;i<items.length;i++){ var it=items[i]; if(!it)continue; if(it.kind==='read'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.ref]&&p[it.ref].done)cov[sec].done++; } if(meta[it.ref]&&meta[it.ref].hy&&!(p[it.ref]&&p[it.ref].done))hy.push({f:it.ref,t:it.title,sec:sec}); } } return {hy:hy,cov:cov}; }
@@ -3658,6 +3672,7 @@
   fdEditionBootState='started';
   fdSyncOfflineVisit(fdController.getState());
   loadConceptDue();
+  loadRxDue();
   return {ok:true,code:'STARTED'};
   }
 

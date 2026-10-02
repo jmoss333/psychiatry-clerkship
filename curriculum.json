@@ -203,7 +203,7 @@
         "family-systems.html", "one-patient-six-weeks.html", "capacity.html",
         "oral.html", "violence.html", "screeners.html",
         "withdrawal.html", "decision-aids.html", "interaction-cards.html",
-        "reflection.html", "shelf-mode.html", "review.html",
+        "pharmacy.html", "reflection.html", "shelf-mode.html", "review.html",
         "question-bank-practice.html"
       ]
     },
@@ -446,6 +446,7 @@
     "withdrawal.html": "Tally the COWS at the bedside; CIWA-Ar links to the official form and training.",
     "decision-aids.html": "Rule-out-first trees, the agitation ladder, NMS vs serotonin syndrome, and the withdrawal timeline.",
     "interaction-cards.html": "One action per card when a new medicine meets lithium, clozapine, or lamotrigine.",
+    "pharmacy.html": "Faculty-reviewed drug cards: boxed warnings, what to check, first moves, attending asks. No doses.",
     "reflection.html": "Weekly reflection prompts and a professional-identity set; private, with copy and print.",
     "shelf-mode.html": "Timed, blueprint-weighted vignette exam with per-question feedback and teaching points.",
     "review.html": "Today's due cards from what you have read and practiced; grade yourself to schedule the next look.",

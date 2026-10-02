@@ -125,6 +125,7 @@ process.exitCode = run(['--root',root,'--receipt',path.join(root,'receipt.json')
             'family': 'family_systems_scenarios.json',
             'communication': 'communication_cases.json',
             'reasoning': 'reasoning_cases.json',
+            'pharmacy': 'pharmacy_public.json',
         }
         for key, relative in sources.items():
             path = self.out / relative

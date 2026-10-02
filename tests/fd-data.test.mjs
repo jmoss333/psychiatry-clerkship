@@ -356,7 +356,8 @@ test('every real library column item resolves', () => {
   for (const c of idx.columns) placed += c.items.length;
   // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
   // therapy_reading_room.md) placed in the Clinical-skills and Evidence-&-exam columns.
-  assert.equal(placed, 83, 'expected the 83 pages curriculum.json places');
+  // 84 = 83 + pharmacy.html (2026-09-30, Interactive tools).
+  assert.equal(placed, 84, 'expected the 84 pages curriculum.json places');
 });
 
 // Source-copy premise: these five are attested in topic_meta.json. On a site whose build found
@@ -450,7 +451,7 @@ for site,key in [('ms3','ms3'),('res','resident')]:
 print(json.dumps(out))
 `], { cwd: ROOT, encoding: 'utf8' }));
 
-for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93]]) {
+for (const [site, expectedKit, expectedFull] of [['ms3', 30, 84], ['res', 35, 94]]) {
   test(`${site}: real projected Essentials resolves ${expectedKit} of ${expectedFull} Library pages`, () => {
     const payload = projections[site];
     const idx = F.fdBuildIndex(payload.curriculum, META, TOOLS, payload.manifest);

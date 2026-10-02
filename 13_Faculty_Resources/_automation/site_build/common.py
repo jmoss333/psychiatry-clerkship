@@ -835,6 +835,7 @@ SNIPPET_MARKERS = {
     "/*__SESSION_RECEIPT__*/": "session_receipt.js",
     "/*__SRS_STORE__*/": "srs_store.js",
     "/*__FAM_RETRIEVAL__*/": "fam_retrieval.js",
+    "/*__RX_RETRIEVAL__*/": "rx_retrieval.js",
     "/*__CONCEPT_RECALL__*/": "concept_recall.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
     "/*__FD_READING_PLACE__*/": "frontdoor/fd_reading_place.js",
@@ -1141,6 +1142,7 @@ def inject_review_source_digests(out_dir):
         "family": "family_systems_scenarios.json",
         "communication": "communication_cases.json",
         "reasoning": "reasoning_cases.json",
+        "pharmacy": "pharmacy_public.json",
     }
     digests = {}
     for key, relative in source_files.items():
