@@ -486,6 +486,8 @@ test('capture Schedule review and Done move focus to the stable editor after the
 });
 
 test.beforeEach(async ({ page }) => {
+  // Netlify's deploy-preview review drawer overlaps the mobile dock; it is not learner UI.
+  await page.route('**/.netlify/scripts/cdp', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   const errors = [];
   runtimeErrors.set(page, errors);
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
@@ -2547,8 +2549,8 @@ test('One Thing First A2: clear the dues and Continue leads, with the rows below
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary')).toHaveCount(0);
   await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 7).map(el => el.className.split(' ')[0]));
-  expect(order).toEqual(['fd-continue', 'fd-offline', 'fd-primary__why', 'fd-sectionhead', 'fd-purpose', 'fd-study-planner', 'fd-capture']);
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 7).map(el => el.className.split(' ')[0])))
+    .toEqual(['fd-continue', 'fd-offline', 'fd-primary__why', 'fd-sectionhead', 'fd-purpose', 'fd-study-planner', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await otfExerciseVisitAndBack(page);
   await expectHealthy(page);
@@ -4788,8 +4790,10 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
       await expect(toggle).toBeFocused();
       await page.keyboard.press('Enter');
       await expect(chooser).toHaveAttribute('open', '');
-      await chooser.scrollIntoViewIfNeeded();
-      await page.screenshot({ path: testInfo.outputPath(`purpose-${viewport.width}-${theme}.png`) });
+      // Hydration can replace Today while a remote screenshot scroll is settling.
+      // Retry only this read-only positioning step; interaction assertions remain unchanged.
+      await expect(async () => { await chooser.scrollIntoViewIfNeeded(); }).toPass({ timeout: 5000 });
+      await page.screenshot({ path: testInfo.outputPath(`purpose-${viewport.width}-${theme}.png`), animations: 'disabled' });
       const family = chooser.getByRole('button', { name: 'Family conversation', exact: true });
       await family.focus();
       await page.keyboard.press('Enter');
@@ -4832,8 +4836,8 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
       await expect(disclosure).not.toHaveAttribute('open');
       await expect(page.locator('[data-block-start]')).not.toBeVisible();
       await otfExpectOnePrimary(page);
-      await toggle.scrollIntoViewIfNeeded();
-      await page.screenshot({ path: info.outputPath(`planner-${viewport.width}-${theme}-closed.png`) });
+      await expect(async () => { await toggle.scrollIntoViewIfNeeded(); }).toPass({ timeout: 5000 });
+      await page.screenshot({ path: info.outputPath(`planner-${viewport.width}-${theme}-closed.png`), animations: 'disabled' });
       await toggle.focus(); await page.keyboard.press('Enter');
       await expect(disclosure).toHaveAttribute('open', '');
       await expect(toggle).toBeFocused();
@@ -4855,7 +4859,7 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
       await expect(disclosure).toHaveAttribute('open', '');
       await expect(page.locator('[data-block-minutes][aria-pressed="true"]')).toBeFocused();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: info.outputPath(`planner-${viewport.width}-${theme}-open.png`) });
+      await page.screenshot({ path: info.outputPath(`planner-${viewport.width}-${theme}-open.png`), animations: 'disabled' });
       await expectHealthy(page);
     });
   }
