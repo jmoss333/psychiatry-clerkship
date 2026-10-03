@@ -435,10 +435,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-10-02",
     "by": "Joshua Moss, MD",
-    "contentHash": "71cbd5c954ab002b701b6ef4470054678d806c23",
-    "clinicalHash": "478b5557ab03bdefa2da324c76eeeb52d62da1e0"
+    "contentHash": "18d7b8123585e8cb77d80864be8f35c11f088359",
+    "clinicalHash": "d81d60133dedef1f06ddf9f8ba23dea1302671fa"
   },
   "withdrawal.html": {
     "status": "reviewed",
@@ -1185,10 +1185,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-30",
+    "at": "2026-10-02",
     "by": "Joshua Moss, MD",
-    "contentHash": "4848e872ae1f3ee302bd3cf59245f41968501341",
-    "clinicalHash": "b77276e0151c768cb70f39c2755b4818e64d6d04"
+    "contentHash": "bacc79bd2b3a6b027e7e7abfae6ce11a96bd74db",
+    "clinicalHash": "203b19df7285800a4958dbca77f896d21680a689"
   },
   "feedback.html": {
     "status": "reviewed",
@@ -1245,10 +1245,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-30",
+    "at": "2026-10-02",
     "by": "Joshua Moss, MD",
-    "contentHash": "45beac9c747ba9f45d26f3261e288f6429ad0dd1",
-    "clinicalHash": "8d006769d4aa9cce88b720101006b60cae437583"
+    "contentHash": "c3b37e9db2e79a22d7fae7fc2624bc6694a90957",
+    "clinicalHash": "ccf093575a25962cd5ccea481dc4f13fd65ff7f2"
   },
   "diagnostic-reasoning.html": {
     "status": "reviewed",
@@ -1477,13 +1477,14 @@
     "clinicalHash": "c8a6e84c726f09aef88eb46b84fea6ff25f03185"
   },
   "pharmacy.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "formulary",
       "level": "high"
     },
-    "reason": "New tool added 2026-09-30. Each drug card carries its own faculty review stamp; the page itself awaits faculty attestation.",
-    "at": "2026-09-30",
-    "by": "Pending faculty review"
+    "at": "2026-10-03",
+    "by": "Joshua Moss, MD",
+    "contentHash": "a69badc209ab5350f63338ccc571589db40eba98",
+    "clinicalHash": "d08de012c973ab412d374e9fc6b8e5212096522b"
   }
 }
