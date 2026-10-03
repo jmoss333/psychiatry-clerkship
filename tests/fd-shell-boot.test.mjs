@@ -341,7 +341,7 @@ test('the learner dock follows each base render and refreshes after a completion
   assert.match(helper, /fdClone\(fdLiveState\(state\)\)/);
   assert.match(helper, /fdDock\(live\)/);
   const base = source.slice(source.indexOf('function fdRender(state,detail)'), source.indexOf('function fdPatchCompletion(state)'));
-  assert.ok(base.indexOf('contentEl.innerHTML=fdBaseMarkup(state)') < base.indexOf('fdRenderDock(state)'),
+  assert.ok(base.indexOf('contentEl.innerHTML=fdBaseMarkup(state)') < base.indexOf('fdRenderDock(state,!!hydrate)'),
     'dock reads the newly rendered source');
   const transient = source.slice(source.indexOf('function fdRenderTransient(state,detail)'), source.indexOf('function fdOpenProgress(state,opts)'));
   assert.match(transient, /if\(surfaces\.base\|\|surfaces\.completion\)fdRenderDock\(state,true\)/);
