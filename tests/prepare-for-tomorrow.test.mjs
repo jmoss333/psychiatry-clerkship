@@ -57,3 +57,11 @@ test('teaching strings are rendered as text',()=>{
   const rendered=P.render(modified,{...blank(),task:'note',minutes:5,step:'rehearse',exampleOpen:true});
   assert.doesNotMatch(rendered,/<img/); assert.match(rendered,/&lt;img/); assert.match(rendered,/&amp;/);
 });
+
+test('standalone presentation distinguishes published root, subdirectory and repository source preview',()=>{
+  const context=new Function(engine[1]+';return pftPresentationContext;')();
+  assert.deepEqual(context('/tools/prepare-for-tomorrow.html'),{sourcePreview:false,homePath:'/'});
+  assert.deepEqual(context('/student-site/tools/prepare-for-tomorrow.html'),{sourcePreview:false,homePath:'/student-site/'});
+  assert.deepEqual(context('/14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html'),{sourcePreview:true,homePath:'/_build/ms3/'});
+  assert.deepEqual(context('/other/prepare-for-tomorrow.html'),{sourcePreview:false,homePath:'/'});
+});

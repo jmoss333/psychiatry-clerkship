@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { pinVisualGovernance } from './governance-fixture.js';
 
 const REF='prepare-for-tomorrow.html';
@@ -218,4 +219,32 @@ for(const theme of ['light','dark'])test(`${theme} theme and print keep the tomo
   await page.emulateMedia({media:'print'});
   expect(await g.locator('.tomorrow').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(255, 255, 255)');
   expect(await contrast()).toBeGreaterThanOrEqual(4.5);
+});
+
+for(const sourcePreview of [false,true])test(`${sourcePreview?'repository source':'published'} standalone navigation opens resources and returns to Today`,async({page},info)=>{
+  test.skip(resident(info),'MS3-only standalone navigation.');
+  const sourcePath='/14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html';
+  const homePath=sourcePreview?'/_build/ms3/':'/';
+  if(sourcePreview){
+    const html=readFileSync(new URL('../..'+sourcePath,import.meta.url),'utf8');
+    await page.route('**'+sourcePath,route=>route.fulfill({contentType:'text/html',body:html}));
+    await page.route('**/_build/ms3/**',route=>route.fulfill({contentType:'text/html',body:'<h1>Local MS3 build</h1>'}));
+  }else{await seed(page);}
+  await page.goto(sourcePreview?sourcePath:'/tools/'+REF);
+  const instructions=page.getByText('Source preview: resource buttons open the local MS3 build in a new tab.',{exact:false});
+  if(sourcePreview)await expect(instructions).toBeVisible();else await expect(instructions).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Return to Today',exact:true})).toHaveAttribute('href',homePath+'?tab=today');
+  await page.getByRole('button',{name:TASKS.interview,exact:true}).click();
+  await page.getByRole('button',{name:'About 5 minutes',exact:true}).click();
+  await page.getByRole('button',{name:'Start preparation',exact:true}).click();
+  const popupPromise=page.waitForEvent('popup');
+  await page.getByRole('button',{name:'Open Interview & MSE guide',exact:true}).click();
+  const popup=await popupPromise;
+  await expect(popup).toHaveURL(url=>url.pathname===homePath&&url.searchParams.get('page')==='pg_interview.md');
+  if(sourcePreview)await expect(popup.getByRole('heading',{name:'Local MS3 build',exact:true})).toBeVisible();
+  else await expect(popup.locator('.fd-reader')).toBeVisible();
+  await popup.close();
+  await page.getByRole('link',{name:'Return to Today',exact:true}).click();
+  await expect(page).toHaveURL(url=>url.pathname===homePath&&url.searchParams.get('tab')==='today');
+  if(!sourcePreview)await expect(page.locator('.fd-today')).toBeVisible();
 });
