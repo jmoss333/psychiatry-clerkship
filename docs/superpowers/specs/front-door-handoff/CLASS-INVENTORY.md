@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(531 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(532 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -1013,3 +1013,13 @@ Offline availability: `.fd-offline__open` wraps its label and cache status for s
 ## Optional session purpose chooser (2026-10-01)
 
 `fd-purpose`, `fd-purpose__summary`, `fd-purpose__choices`, `fd-purpose__note`, `fd-purpose__reason` style the optional disclosure before Today’s timed study block, including when an unfinished block is the primary action. The disclosure starts open on each fresh page load and remains learner-collapsible. Buttons reuse `fd-btn` tokens and pressed state uses an attribute selector. Purpose choices and open state are in-memory only; standard primary/due-review/planner rules remain unchanged.
+
+### Optional study planning (phase one, 2026-10-03)
+
+`.fd-study-planner` is a native details disclosure around an **unstarted** Today
+study plan. Its summary (`data-today-planner-toggle`) names the 5/10/20-minute
+choices; the existing `.fd-block` is its child. It starts closed on reload, keeps
+its state through same-session navigation and rerenders, and the preparation
+chooser's Study action opens it before focusing the selected duration. Live
+blocks never enter the disclosure. The expanded purpose chooser stays before
+timed study; the primary picker and due-review routes are unchanged.
