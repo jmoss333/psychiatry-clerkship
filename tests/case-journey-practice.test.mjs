@@ -11,6 +11,7 @@ function definitions(){const match=html.match(/<script id="case-practice-data" t
 
 test('practice requires both explicit choices and rejects coercion or malformed teaching',()=>{
  const defs=definitions(),blank=api.practiceInitial();
+ assert.equal(api.validatePractice({...defs,version:true}),false);
  assert.equal(api.practiceReduce(defs,blank,{type:'start'}).step,'choose');
  for(const [task,minutes] of [['other',5],['note','15'],['note',10],[null,5]]){
   const state=api.practiceReduce(defs,{...blank,task,minutes},{type:'start'});assert.equal(state.step,'choose');assert.ok(state.error);
@@ -95,12 +96,13 @@ raw=Path('08_Cases_and_Simulation/one-patient-six-weeks.html').read_text()
 block=re.search(r'<script id="case-practice-data" type="application/json">([\\s\\S]*?)</script>',raw)
 data=json.loads(block.group(1));del data['tasks']['note']['routes']['15']['card']['ask']
 broken=raw[:block.start(1)]+json.dumps(data)+raw[block.end(1):]
+boolean_version=raw[:block.start(1)]+json.dumps({**json.loads(block.group(1)), 'version': True})+raw[block.end(1):]
 refused=[]
-for bad in [raw.replace('id="case-practice-data"','id="removed"'),raw+block.group(0),broken]:
+for bad in [raw.replace('id="case-practice-data"','id="removed"'),raw+block.group(0),broken,boolean_version]:
  try:render_case_journey_practice(Doc('cases.md','Cases'),bad)
  except ValueError:refused.append(True)
  else:refused.append(False)
 print(json.dumps(refused))
 `],{cwd:new URL('../',import.meta.url),encoding:'utf8'}));
- assert.deepEqual(result,[true,true,true]);
+ assert.deepEqual(result,[true,true,true,true]);
 });

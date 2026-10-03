@@ -435,7 +435,7 @@ def render_case_journey_practice(doc: Doc, raw: str) -> int:
         data = json.loads(blocks[0])
         required = ("boundary", "reading", "exampleBoundary", "finishText")
         nonempty = lambda value: isinstance(value, str) and bool(value.strip())
-        if data.get("version") != 1 or not all(nonempty(data.get(key)) for key in required):
+        if type(data.get("version")) is not int or data["version"] != 1 or not all(nonempty(data.get(key)) for key in required):
             raise ValueError("invalid Case Journeys practice boundaries")
         tasks = data.get("tasks")
         if not isinstance(tasks, dict) or set(tasks) != {"interview", "rounds", "note"}:

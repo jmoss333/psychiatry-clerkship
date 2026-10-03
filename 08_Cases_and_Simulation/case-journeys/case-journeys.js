@@ -141,7 +141,7 @@
       ['interview','rounds','note'].forEach(function (id) { out += '<button id="practice-task-' + id + '" data-practice-action="task" data-value="' + id + '" aria-pressed="' + (state.task === id) + '">' + e(defs.tasks[id].label) + '</button>'; });
       out += '</div><p>How much time do you have?</p><div class="opf-practice__choices" role="group" aria-label="Choose practice time">';
       [5,15].forEach(function (minutes) { out += '<button id="practice-minutes-' + minutes + '" data-practice-action="minutes" data-value="' + minutes + '" aria-pressed="' + (state.minutes === minutes) + '">About ' + minutes + ' minutes</button>'; });
-      return out + '</div><p class="opf-practice__error" role="alert">' + e(state.error) + '</p><button class="opf-practice__primary" data-practice-action="start">Start practice</button>';
+      return out + '</div><p class="opf-practice__error" role="alert">' + e(state.error) + '</p><button id="practice-start" class="opf-practice__primary" data-practice-action="start">Start practice</button>';
     }
     var task = defs.tasks[state.task], route = task.routes[state.minutes];
     out += '<p>' + e(task.label) + ' · About ' + state.minutes + ' minutes · At your pace</p>';
@@ -167,7 +167,7 @@
       '<dl class="opf-case-facts"><div><dt>Clinical time</dt><dd>' + escape(timeFrame) + '</dd></div><div><dt>Learner audience</dt><dd>' + escape(audience) + '</dd></div></dl>' +
       '<aside class="opf-source-boundary"><p class="opf-context-label">Simulation boundary</p><p>' + escape(data.disclaimer) + '</p><p class="opf-source-boundary__note">Navigation is unscored and is not saved.</p>' + (selected.slug === 'eli' ? '<p class="opf-source-boundary__note">Chapters 1–4: Read → Practice → Discuss. Chapters 5–6: optional follow-through.</p>' : '') + '</aside></section>' +
       '<section class="opf-shell opf-workbench" aria-label="' + escape(data.patient.displayName) + '’s interactive case folio"><div class="opf-spine"><div class="opf-spine__heading"><span>' + escape(data.patient.displayName) + '’s case file</span><strong id="counter" aria-live="polite">' + String(selected.chapter).padStart(2, '0') + ' / 06</strong></div><div id="case-route">' + routeMarkup(data, selected.chapter) + '</div></div>' +
-      '<div class="opf-folio"><div class="opf-folio__back" aria-hidden="true"></div><article class="opf-sheet" id="chapter-panel" role="tabpanel" tabindex="-1" aria-labelledby="chapter-tab-' + selected.chapter + '">' + chapterMarkup(data, w) + '</article>' +
+      '<div class="opf-folio"><div class="opf-folio__chapter"><div class="opf-folio__back" aria-hidden="true"></div><article class="opf-sheet" id="chapter-panel" role="tabpanel" tabindex="-1" aria-labelledby="chapter-tab-' + selected.chapter + '">' + chapterMarkup(data, w) + '</article></div>' +
       '<aside class="opf-practice" id="case-practice" aria-label="Practice with the selected patient"></aside><div class="opf-controls" aria-label="Case chapter controls"><button type="button" id="previous"' + (selected.chapter === 1 ? ' disabled' : '') + '>Previous chapter</button><p>Selection is not saved.</p><button type="button" id="next"' + (selected.chapter === 6 ? ' disabled' : '') + '>Next chapter</button></div></div></section></main>' +
       '<footer class="opf-shell opf-footer"><span>Fictional educational case</span><span>No patient entry · no saved case progress</span></footer>';
   }

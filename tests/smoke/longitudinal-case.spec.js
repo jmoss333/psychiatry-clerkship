@@ -178,6 +178,7 @@ for(const [index,slug] of names.entries())test(`${slug}: interview, rounds and n
  const saved=await page.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}));
  await practice.getByRole('button',{name:'Start practice',exact:true}).click();
  await expect(practice.getByRole('alert')).toHaveText('Choose a task and time to begin.');
+ await expect(practice.getByRole('button',{name:'Start practice',exact:true})).toBeFocused();
  for(const task of Object.keys(tasks))for(const minutes of [5,15]){
   await practice.getByRole('button',{name:tasks[task],exact:true}).click();
   await practice.getByRole('button',{name:'About '+minutes+' minutes',exact:true}).click();
