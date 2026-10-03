@@ -76,9 +76,9 @@ test('depth and family toggles preserve the current revealed quiz card and focus
     page.getByRole('button', { name: 'How would you explain this to a family?' })]) {
     await control.focus();
     await page.keyboard.press('Enter');
+    await expect(page.locator('#quiz')).toHaveText(quiz);
     await expect(control).toBeFocused();
     await expect(control).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('#quiz')).toHaveText(quiz);
     expect(await page.evaluate(() => localStorage.getItem('cw_srs_v1'))).toBe(saved);
     await page.keyboard.press('Space');
     await expect(control).toBeFocused();
