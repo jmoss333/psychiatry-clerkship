@@ -541,6 +541,11 @@ _ANALYTICS_MS3 = common.analytics_enabled_for("ms3")
 if _ANALYTICS_MS3:
     _copy_required(ANALYTICS_JS, OUT+"/analytics.js", _missing_req)   # usage analytics emitter (tag injected per page)
 _copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
+# The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
+# resident build derives from this tree, so this one copy serves both sites.
+os.makedirs(OUT+"/fonts", exist_ok=True)
+for _font in ("source-serif-4-latin-opsz-wght600-700.woff2", "source-serif-4-OFL.txt"):
+    _copy_required(os.path.join(HERE,"fonts",_font), OUT+"/fonts/"+_font, _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 
