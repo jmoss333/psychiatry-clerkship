@@ -941,6 +941,9 @@
 /* ═══ Library ════════════════════════════════════════════════════════════════ */
 
 .fd-library{animation:fdFadeUp .24s cubic-bezier(.2,.8,.2,1)}
+.fd-library__views{display:flex;gap:var(--fd-space-2);margin-bottom:18px;flex-wrap:wrap}
+.fd-library__views .fd-btn{min-height:44px}
+.fd-library__views .is-active{color:var(--fd-teal-deep);background:var(--fd-teal-wash);border-color:var(--fd-teal)}
 .fd-library__head{display:flex;align-items:baseline;gap:var(--fd-space-6);margin:0 0 18px;flex-wrap:wrap}
 .fd-library__h1{margin:0;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:700;font-size:var(--fd-font-2xl);letter-spacing:.2px;color:var(--fd-text)}
 .fd-library__count{font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
@@ -1491,7 +1494,7 @@
     color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-xs);font-weight:700;
   }
   .fd-dock__browse summary::-webkit-details-marker{display:none}
-  .fd-dock__browse[open] summary{color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+  .fd-dock__browse[open] summary,.fd-dock__browse summary[aria-current="page"]{color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
   /* display:none by default -- NOT just relying on the UA's details:not([open]) rule, which an
      unconditional display:flex here would outrank (author styles beat UA styles regardless of
      specificity). Without this, the menu stays part of the layout while closed: real, overflowing
