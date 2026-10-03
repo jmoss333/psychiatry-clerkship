@@ -41,6 +41,9 @@ import {
   prepareAttestation,
   prepareDraftSave,
 } from './qbank-actions.mjs';
+import {
+  PharmacyActionError, loadMedicationSnapshot, medicationView, commitMedicationApproval,
+} from './pharmacy-actions.mjs';
 
 const DEFAULT_REPO = 'jmoss333/psychiatry-clerkship';
 // Attestations land on their own branch and reach the base branch through one
@@ -200,7 +203,7 @@ function jsonResponse(context, status, payload) {
 }
 
 function errorDescriptor(error) {
-  if (error instanceof QbankActionError) {
+  if (error instanceof QbankActionError || error instanceof PharmacyActionError) {
     return {
       code: error.code,
       status: error.status,
@@ -2213,6 +2216,7 @@ async function buildIncomingView(repository, settings) {
 
 async function handleView(repository, settings, url) {
   const view = url.searchParams.get('view');
+  if (view === 'medications') return medicationView(await loadMedicationSnapshot(repository, settings), settings.attester);
   if (view === 'changes') return buildChangeView(repository, settings);
   if (view === 'incoming') return buildIncomingView(repository, settings);
   if (view === 'diff') {
@@ -3659,6 +3663,11 @@ async function readPostBody(request) {
 }
 
 async function handlePost({ repository, settings, body, attester }) {
+  // Medication approval is deliberately unsupported in ledger/direct-write modes.
+  // Check before the generic ledger router can interpret it as another action.
+  if (body.action === 'pharmacy.attest' && (settings.ledger || settings.branch !== 'attest/pending' || settings.baseBranch !== 'main' || !settings.isolated)) {
+    throw new PharmacyActionError('unsupported_mode', 'Medication review requires attest/pending delivery.', 409);
+  }
   if (body.target === 'qbank') {
     throw new HttpError(
       'legacy_qbank_action',
@@ -3680,7 +3689,9 @@ async function handlePost({ repository, settings, body, attester }) {
   }
 
   let mutate;
-  if (body.target === 'content' && body.mode !== undefined) {
+  if (body.action === 'pharmacy.attest') {
+    mutate = () => commitMedicationApproval({ repository, settings, body, attester, date: today() });
+  } else if (body.target === 'content' && body.mode !== undefined) {
     mutate = () => commitContentBatch({ repository, settings, body, attester });
   } else if (body.target === 'content') {
     mutate = () => commitContentMutation({ repository, settings, body, attester });

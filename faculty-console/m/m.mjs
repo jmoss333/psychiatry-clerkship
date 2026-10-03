@@ -169,6 +169,7 @@ function bar(title, { back = false } = {}) {
   return h('header', { class: 'bar' }, [
     back ? h('button', { type: 'button', text: 'Queue', onClick: () => { closeItem(); } }) : null,
     h('h1', { text: title }),
+    h('a', { href: '../medications.html', text: 'Meds', 'aria-label': 'Review individual medications' }),
     h('button', { type: 'button', text: 'Lock', 'aria-label': 'Lock the console', onClick: () => { clearKey(); state.server = null; renderGate(); } }),
   ]);
 }

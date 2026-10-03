@@ -411,6 +411,30 @@ Merge the rolling pull request with a **merge commit, not a squash**: the consol
 
 > **Do not** put the token or password in the repo, in `netlify.toml`, or in the HTML. Keep both required secrets only in Netlify environment variables.
 
+## Individual medication review
+
+`medications.html` is linked from both console views. It uses the existing faculty
+key and authenticated `/api/attest` endpoint. Load saved records, select one card,
+read its fields, committed label receipt, source notes and retrieval mappings,
+then explicitly confirm the review. Saving returns a commit receipt and reloads
+the saved state. Nothing is approved by merely opening the page.
+
+The server binds confirmation to one exact branch head, complete record and label
+receipt. Any intervening commit requires reload and a fresh confirmation; it does
+not retry an approval automatically. It derives reviewer/date and computes the
+existing `reviewedFieldsHash` (J-class fields) and `retrievalHash` (questions and
+mappings), writing only the selected record's `facultyReview` on `attest/pending`.
+These persisted hashes retain their existing scope, not a claim to hash all label
+or card fields. Ledger/direct-write modes are unsupported. Tool/page signatures
+remain separate; this action does not rewrite the tool attestation ledger.
+
+This UI reads committed evidence, not live label surveillance or a Mac-local drift
+ledger. Before combining it with a workflow that clears label-drift obligations
+using `lastReviewed`, reconcile which newer evidence the reviewer actually sees
+and acknowledges. A fresh date alone does not establish that an unseen updated
+label was reviewed. Clinical drafts still need their separate content delivery,
+real faculty confirmation and normal review/release process.
+
 ## Security notes
 
 - **Token scope is the blast radius.** A fine-grained PAT limited to this one repo with Contents-only access means a leaked token can, at worst, edit files in this repo — not touch your other repos or account.
