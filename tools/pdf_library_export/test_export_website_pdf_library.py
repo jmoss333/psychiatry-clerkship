@@ -26,6 +26,7 @@ from export_website_pdf_library import (
     section_for_entry,
     slugify,
 )
+from site_extras import MS3_EXTRA_TOOLS
 
 
 def _write_shipped_pages(root: Path, pages: list[dict]) -> Path:
@@ -288,8 +289,8 @@ def test_build_pdf_uses_manifest_title_when_markdown_has_no_h1():
 
 def test_shipped_page_sources_exist_in_repo():
     # More shipped surfaces than the site manifest alone lists: +2/week Case-of-the-Week
-    # pages, +6 resident-only pages, +4 resident-only tools (the MS3 orientation video tool
-    # was retired on 2026-09-25)
+    # pages, +6 resident-only pages, +4 resident-only tools, and the declared MS3-only
+    # tools (the MS3 orientation video tool was retired on 2026-09-25).
     # (ADR-002). The CotW term is derived from the registry (2026-09-24) so the weekly
     # content PR stops editing this pin; shipped_pages.py --check is what keeps the
     # listing honest, and this only asserts every source really exists.
@@ -311,7 +312,7 @@ def test_shipped_page_sources_exist_in_repo():
     assert len(manifest["md"]) >= 60 and len(manifest["tools"]) >= 20
 
     assert len(md_entries) == len(manifest["md"]) + cotw_pages + 6  # manifest md + CotW + resident
-    assert len(tool_entries) == len(manifest["tools"]) + 4  # manifest tools + 4 resident
+    assert len(tool_entries) == len(manifest["tools"]) + 4 + len(MS3_EXTRA_TOOLS)
 
 
 def test_resolve_cli_paths_expands_relative_paths():
