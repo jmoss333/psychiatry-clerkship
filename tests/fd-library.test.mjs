@@ -411,14 +411,14 @@ for site,key in [('ms3','ms3'),('res','resident')]:
 print(json.dumps(out))
 `], { cwd: PROJECT_ROOT, encoding: 'utf8' }));
 
-for (const [site, expectedKit, expectedFull] of [['ms3', 30, 84], ['res', 35, 94]]) {
+for (const [site, expectedKit, expectedFull] of [['ms3', 31, 85], ['res', 35, 94]]) {
   test(`${site}: real Essentials renders ${expectedKit} reading and tool choices and links to all ${expectedFull} pages`, () => {
     const payload = projected[site];
     const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
     const html = F.fdEssentials(idx);
     assert.equal((html.match(/class="fd-kit__reading"/g) || []).length+
       (html.match(/data-fd-kit-tool="/g) || []).length, expectedKit);
-    assert.match(html, new RegExp('fd-library__count\">' + (site==='ms3'?23:26) + ' readings · ' + (site==='ms3'?7:9) + ' tools'));
+    assert.match(html, new RegExp('fd-library__count\">' + (site==='ms3'?23:26) + ' readings · ' + (site==='ms3'?8:9) + ' tools'));
     assert.equal((html.match(/<details class=\"fd-kit__group/g)||[]).length,site==='ms3'?8:7);
     assert.equal((html.match(/data-fd-kit-section=/g)||[]).length,site==='ms3'?9:8);
     assert.doesNotMatch(html,/governance-badge/);

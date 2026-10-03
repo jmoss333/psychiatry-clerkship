@@ -15,6 +15,7 @@ sys.path.insert(0, HERE)
 
 import common  # noqa: E402
 from frontdoor_catalog import (  # noqa: E402
+    DATA_DEFAULTS,
     assert_catalog_resolver_injected,
     build_frontdoor_payload,
     inject_frontdoor_payload,
@@ -608,12 +609,19 @@ class FrontdoorCatalogTest(unittest.TestCase):
         refs = {
             ref for column in curriculum["libraryColumns"] for ref in column["refs"]
         }
-        refs.update(ref for addition in curriculum["siteLibrary"]["resident"]["additions"]
-                    for ref in addition["refs"])
+        refs.update(ref for site in ("ms3", "resident")
+                    for addition in curriculum["siteLibrary"][site]["additions"] for ref in addition["refs"])
         refs.update(week["landingRef"] for week in curriculum["learningPaths"]["ms3"]["weeks"])
-        catalog = _catalog(sorted(refs))
+        catalog = _catalog(sorted(refs), {"prepare-for-tomorrow.html": {"status": "pending", "riskKind": "clinical", "riskLevel": "moderate"}})
         ms3 = build_frontdoor_payload("ms3", curriculum, catalog, REVISION)
         resident = build_frontdoor_payload("resident", curriculum, catalog, REVISION)
+        prep = "prepare-for-tomorrow.html"
+        self.assertIn(prep, {r for c in ms3["curriculum"]["libraryColumns"] for r in c["refs"]})
+        self.assertIn(prep, {r for c in ms3["curriculum"]["essentials"] for r in c["refs"]})
+        self.assertNotIn(prep, {r for c in resident["curriculum"]["libraryColumns"] for r in c["refs"]})
+        self.assertNotIn(prep, {r for c in resident["curriculum"]["essentials"] for r in c["refs"]})
+        entry = next(i for i in ms3["manifest"]["tools"] if i[1] == prep)
+        self.assertEqual(entry[3]["status"], "pending")
         resident_placed = {
             ref for column in resident["curriculum"]["libraryColumns"]
             for ref in column["refs"]
@@ -631,11 +639,11 @@ class FrontdoorCatalogTest(unittest.TestCase):
         # until 2026-09-04 while the real file had 83/92 — the pin had drifted by two
         # on each site and nothing said so, because this whole suite ran in neither
         # ci.yml nor bin/verify.sh. Both now run it; that is the other half of this fix.
-        self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 84)  # +pharmacy.html 2026-09-30
+        self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 85)  # +pharmacy.html 2026-09-30
         # 93 as of 2026-09-04: +rp-post-event-huddle.html in the resident "Interactive tools" column.
         # 94 as of 2026-09-30: +pharmacy.html in both sites' "Interactive tools" column.
         self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 94)
-        for site, payload, count in (("ms3", ms3, 30), ("resident", resident, 35)):
+        for site, payload, count in (("ms3", ms3, 31), ("resident", resident, 35)):
             selection = payload["curriculum"]["essentials"]
             essential_refs = [ref for section in selection for ref in section["refs"]]
             placed_refs = {ref for column in payload["curriculum"]["libraryColumns"]
@@ -750,6 +758,22 @@ class FrontdoorCatalogTest(unittest.TestCase):
             self.assertEqual(resident.count("var EXPECTED_REVISION='%s';" % revisions[1]), 1)
             self.assertNotIn("var EXPECTED_REVISION='%s';" % revisions[0], resident)
 
+    def test_injected_tool_metadata_only_names_this_sites_tools(self):
+        payload = build_frontdoor_payload("resident", self.curriculum, self.resident_catalog, REVISION)
+        allowed = payload["manifest"]["tools"][0][1]
+        registry = {"_note": "Retain metadata", "tools": [
+            {"file": allowed, "title": "Shared tool"},
+            {"file": "prepare-for-tomorrow.html", "title": "MS3 only"},
+        ]}
+        with tempfile.NamedTemporaryFile(mode="w+", encoding="utf-8", suffix=".html") as page:
+            page.write("\n".join("var %s=%s;" % (name, default) for name, default in DATA_DEFAULTS.items()))
+            page.flush()
+            inject_frontdoor_payload(page.name, payload, {}, registry)
+            page.seek(0)
+            metadata = json.JSONDecoder().raw_decode(page.read().split("var FD_TOOL_REGISTRY=", 1)[1])[0]
+        self.assertEqual(metadata, {"_note": "Retain metadata", "tools": [registry["tools"][0]]})
+        self.assertEqual(len(registry["tools"]), 2, "projection must not mutate the shared registry")
+
     def test_real_curator_source_can_be_reinjected_without_ms3_payload_residue(self):
         repo = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
         source = os.path.join(
@@ -762,11 +786,12 @@ class FrontdoorCatalogTest(unittest.TestCase):
         }
         refs.update(
             ref
-            for addition in curriculum["siteLibrary"]["resident"]["additions"]
+            for audience in ("ms3", "resident")
+            for addition in curriculum["siteLibrary"][audience]["additions"]
             for ref in addition["refs"]
         )
         refs.update(week["landingRef"] for week in curriculum["learningPaths"]["ms3"]["weeks"])
-        catalog = _catalog(sorted(refs))
+        catalog = _catalog(sorted(refs), {"prepare-for-tomorrow.html": {"status": "pending", "riskKind": "clinical", "riskLevel": "moderate"}})
         ms3 = build_frontdoor_payload("ms3", curriculum, catalog, "a" * 40)
         resident = build_frontdoor_payload("resident", curriculum, catalog, "b" * 40)
 

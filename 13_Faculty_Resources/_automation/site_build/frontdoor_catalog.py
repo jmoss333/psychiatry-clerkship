@@ -304,10 +304,15 @@ def reachable_refs(payload):
 
 def inject_frontdoor_payload(path, payload, topic_meta, tool_registry):
     """Replace each unique source data needle or fail before a site can ship."""
+    allowed_tools = {row[1] for row in payload["manifest"].get("tools", [])}
+    projected_tools = copy.deepcopy(tool_registry)
+    if "tools" in projected_tools:
+        projected_tools["tools"] = [tool for tool in projected_tools["tools"]
+                                    if tool.get("file") in allowed_tools]
     values = {
         "FD_CURRICULUM": payload["curriculum"],
         "FD_TOPIC_META": topic_meta,
-        "FD_TOOL_REGISTRY": tool_registry,
+        "FD_TOOL_REGISTRY": projected_tools,
         "FD_SITE_MANIFEST": payload["manifest"],
         "FD_ROLES": payload["roles"],
         "FD_AUDIENCE": payload["audience"],

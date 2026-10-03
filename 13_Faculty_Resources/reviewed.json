@@ -1485,5 +1485,15 @@
     "reason": "New tool added 2026-09-30. Each drug card carries its own faculty review stamp; the page itself awaits faculty attestation.",
     "at": "2026-09-30",
     "by": "Pending faculty review"
+  },
+  "prepare-for-tomorrow.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New preparation guide, synthetic examples, and tomorrow cards await faculty review.",
+    "at": "2026-10-03",
+    "by": "Pending faculty review"
   }
 }
