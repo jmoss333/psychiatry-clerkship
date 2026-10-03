@@ -494,6 +494,8 @@ test('capture Schedule review and Done move focus to the stable editor after the
 });
 
 test.beforeEach(async ({ page }) => {
+  // Netlify's deploy-preview review drawer overlaps the mobile dock; it is not learner UI.
+  await page.route('**/.netlify/scripts/cdp', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   const errors = [];
   runtimeErrors.set(page, errors);
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
@@ -522,7 +524,7 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedC
   // Browse is a native <details> disclosure, not a button: closed, its two menu actions render
   // but are not :visible, which is why it is absent from the `items` count above.
   await expect(dock.locator('details.fd-dock__browse:visible')).toHaveCount(1);
-  await expect(dock.locator('details.fd-dock__browse summary')).toHaveText('Browse');
+  await expect(dock.locator('details.fd-dock__browse summary')).toHaveText('Library');
   const geometry = await page.evaluate(() => {
     const dock = document.querySelector('.fd-dock');
     const bar = dock.getBoundingClientRect();
@@ -2559,8 +2561,8 @@ test('One Thing First A2: clear the dues and Continue leads, with the rows below
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary')).toHaveCount(0);
   await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0]));
-  expect(order).toEqual(['fd-continue', 'fd-offline', 'fd-sectionhead', 'fd-purpose', 'fd-block', 'fd-capture']);
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0])))
+    .toEqual(['fd-continue', 'fd-offline', 'fd-sectionhead', 'fd-purpose', 'fd-study-planner', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await otfExerciseVisitAndBack(page);
   await expectHealthy(page);
@@ -2756,6 +2758,7 @@ async function otfAnswerOne(page) {
 }
 
 async function otfStartBlockFromToday(page) {
+  await page.locator('[data-today-planner-toggle]').click();
   const planner = page.locator('.fd-block:not(.is-live)');
   await expect(planner).toBeVisible();
   const steps = await planner.locator('.fd-block__step .fd-block__title').allTextContents();
@@ -2956,9 +2959,9 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await page.goto('/?tab=care');
 
   const tabs = page.locator('.fd-tab');
-  await expect(tabs).toHaveCount(5);
+  await expect(tabs).toHaveCount(4);
   expect(await tabs.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-tab'))))
-    .toEqual(['today', 'path', 'library', 'everything', 'care']);
+    .toEqual(['today', 'path', 'library', 'care']);
   const careTab = page.locator('.fd-tabs [data-fd-tab="care"]:visible');
   await expect(careTab).toHaveAttribute('aria-current', 'page');
   await expect(careTab).toHaveAccessibleName('Patient care resources');
@@ -3566,7 +3569,7 @@ test.describe('Essentials Phase 2', () => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
     await page.locator('[data-fd-tab="library"]:visible').click();
-    await expect(page.locator('[data-fd-tab="library"]:visible')).toHaveText('The Essentials');
+    await expect(page.locator('[data-fd-tab="library"]:visible')).toHaveText('Library');
     const student = audience(info).role === 'student';
     const rail = page.locator('.fd-kit__index');
     const sectionButtons = rail.locator('[data-fd-kit-section]');
@@ -4680,6 +4683,7 @@ test('Today purpose is optional, session-only, and preserves the regular planner
   }
   expect(await page.evaluate(()=>Object.fromEntries(['cw_frontdoor_v1','cw_block_v1','cw_feedback_v1','cw_private_reflection_v1'].map(key=>[key,localStorage.getItem(key)])))).toEqual(stores);
   await chooser.locator('[data-today-purpose="study"]').click();
+  await chooser.locator('[data-today-planner]').click();
   await page.locator('[data-block-minutes="20"]').click();
   await chooser.locator('[data-today-planner]').click();
   await expect(page.locator('[data-block-minutes="20"]')).toBeFocused();
@@ -4795,10 +4799,11 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
       const block = page.locator('.fd-block');
       await expect(chooser).toHaveAttribute('open', '');
       await expect(chooser.getByRole('button', { name: 'Family conversation', exact: true })).toBeVisible();
-      await expect(block).toBeVisible();
+      await expect(page.locator('[data-today-planner-toggle]')).toBeVisible();
+      await expect(block).not.toBeVisible();
       expect(await chooser.evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-block')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      const studyBefore = await block.innerText();
+      const studyBefore = await block.textContent();
       const toggle = chooser.locator('summary');
       await toggle.focus();
       await page.keyboard.press('Enter');
@@ -4806,13 +4811,15 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
       await expect(toggle).toBeFocused();
       await page.keyboard.press('Enter');
       await expect(chooser).toHaveAttribute('open', '');
-      await chooser.scrollIntoViewIfNeeded();
-      await page.screenshot({ path: testInfo.outputPath(`purpose-${viewport.width}-${theme}.png`) });
+      // Hydration can replace Today while a remote screenshot scroll is settling.
+      // Retry only this read-only positioning step; interaction assertions remain unchanged.
+      await expect(async () => { await chooser.scrollIntoViewIfNeeded(); }).toPass({ timeout: 5000 });
+      await page.screenshot({ path: testInfo.outputPath(`purpose-${viewport.width}-${theme}.png`), animations: 'disabled' });
       const family = chooser.getByRole('button', { name: 'Family conversation', exact: true });
       await family.focus();
       await page.keyboard.press('Enter');
       await expect(family).toHaveAttribute('aria-pressed', 'true');
-      await expect(block).toHaveText(studyBefore, { useInnerText: true });
+      await expect(block).toHaveText(studyBefore);
       await chooser.getByRole('button', { name: 'Family Meeting Playbook (90-min)', exact: true }).click();
       await expect(page.locator('.fd-article__h1')).toContainText('Family Meeting Playbook');
       await page.goBack();
@@ -4837,4 +4844,104 @@ test('Today purpose precedes an unfinished primary study block', async ({ page }
   await expect(page.locator('.fd-purpose')).toHaveAttribute('open', '');
   expect(await page.locator('.fd-purpose').evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-primary .fd-block')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
   await expect(block.locator('[data-block-continue]')).toHaveCount(1);
+});
+
+for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
+  for (const theme of ['light', 'dark']) {
+    test(`Study planner disclosure preserves navigation: ${viewport.width}px ${theme}`, async ({ page }, info) => {
+      await page.setViewportSize(viewport);
+      await seedApp(page, info, { storage: { cw_theme: theme } });
+      await page.goto('/');
+      const disclosure = page.locator('.fd-study-planner');
+      const toggle = disclosure.locator('summary');
+      await expect(disclosure).not.toHaveAttribute('open');
+      await expect(page.locator('[data-block-start]')).not.toBeVisible();
+      await otfExpectOnePrimary(page);
+      await expect(async () => { await toggle.scrollIntoViewIfNeeded(); }).toPass({ timeout: 5000 });
+      await page.screenshot({ path: info.outputPath(`planner-${viewport.width}-${theme}-closed.png`), animations: 'disabled' });
+      await toggle.focus(); await page.keyboard.press('Enter');
+      await expect(disclosure).toHaveAttribute('open', '');
+      await expect(toggle).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(page.locator('[data-block-minutes="5"]')).toBeFocused();
+      await page.locator('[data-block-minutes="20"]').click();
+      await expect(disclosure).toHaveAttribute('open', '');
+      await expect(page.locator('[data-block-start="20"]')).toBeVisible();
+      if (viewport.width < 1000) {
+        await page.locator('.fd-dock__browse summary').click();
+        await page.locator('[data-fd-dock-browse-go="essentials"]').click();
+      } else await page.locator('[data-fd-tab="library"]:visible').first().click();
+      await page.goBack(); await expect(disclosure).toHaveAttribute('open', '');
+      await page.goForward(); await expect(page.locator('.fd-library')).toBeVisible();
+      await page.goBack(); await page.reload();
+      await expect(disclosure).not.toHaveAttribute('open');
+      await page.locator('[data-today-purpose="study"]').click();
+      await page.locator('[data-today-planner]').click();
+      await expect(disclosure).toHaveAttribute('open', '');
+      await expect(page.locator('[data-block-minutes][aria-pressed="true"]')).toBeFocused();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({ path: info.outputPath(`planner-${viewport.width}-${theme}-open.png`), animations: 'disabled' });
+      await expectHealthy(page);
+    });
+  }
+}
+
+
+test('shared Library navigation: local views survive history and reload', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  const library = page.locator('.fd-tabs [data-fd-tab="library"]');
+  await expect(library).toHaveText('Library');
+  await library.click();
+  const views = page.getByRole('navigation', { name: 'Library views', exact: true });
+  await expect(views.getByRole('button', { name: 'Essentials', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await views.getByRole('button', { name: 'Everything', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-library__grid')).toBeVisible();
+  await expect(library).toHaveAttribute('aria-current', 'page');
+  await page.reload();
+  await expect(views.getByRole('button', { name: 'Everything', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.goBack();
+  await expect(page.locator('.fd-kit')).toBeVisible();
+  await page.goForward();
+  await expect(page.locator('.fd-library__grid')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('shared Library navigation: phone menu survives delayed hydration and Escape restores summary', async ({ page }, testInfo) => {
+  let releaseIndex;
+  const delayed = new Promise(resolve => { releaseIndex = resolve; });
+  await page.route('**/search-index.json', async route => { await delayed; await route.continue(); });
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const summary = page.locator('.fd-dock__browse summary');
+  await expect(summary).toHaveText('Library');
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  const choice = page.locator('[data-fd-dock-browse-go="full"]');
+  await choice.focus();
+  await choice.evaluate(el => { window.__libraryChoice = el; });
+  await page.evaluate(() => {
+    window.__libraryHydrated = false;
+    new MutationObserver((records, observer) => {
+      if (records.some(record => record.addedNodes.length)) { window.__libraryHydrated = true; observer.disconnect(); }
+    }).observe(document.querySelector('#fdDockMount'), { childList: true });
+  });
+  releaseIndex();
+  await page.waitForFunction(() => window.__libraryHydrated);
+  // The observed dock refresh proves hydration settled before checking identity and focus.
+  await expect.poll(() => choice.evaluate(el => el === window.__libraryChoice)).toBe(true);
+  await expect(choice).toBeFocused();
+  await choice.press('Escape');
+  await expect(summary).toBeFocused();
+  await expect(page.locator('.fd-dock__browse')).not.toHaveAttribute('open', '');
+  await summary.press('Enter');
+  await choice.click();
+  await expect(page.locator('.fd-library__grid')).toBeVisible();
+  await expect(summary).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-dock [data-fd-tab="library"]')).not.toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-dock__browse')).not.toHaveAttribute('open', '');
+  await expectHealthy(page);
 });

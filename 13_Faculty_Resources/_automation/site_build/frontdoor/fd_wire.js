@@ -675,7 +675,7 @@ function fdDispatch(attrs, context, state){
     };
   }
   /* The phone dock's Browse menu carries its own attribute rather than data-fd-library-view
-     directly: that value already marks the in-Library "Everything (N pages) -->" footer button,
+     directly: that value already marks the local Library view switch,
      present in the DOM (though not visible) even while this menu is closed, so reusing it here
      would leave two elements answering to the same selector. */
   if(fdOwn(a,'data-fd-dock-browse-go')){
@@ -2256,6 +2256,16 @@ function fdWire(root, initialState, opts){
       if(event.preventDefault) event.preventDefault();
       apply(fdDispatch({close:true},context(),state),event.target,false);
       return;
+    }
+    if(event.key==='Escape'&&root&&root.querySelector){
+      var libraryMenu=root.querySelector('.fd-dock__browse[open]');
+      if(libraryMenu){
+        libraryMenu.open=false;
+        var librarySummary=libraryMenu.querySelector('summary');
+        if(librarySummary)librarySummary.focus();
+        if(event.preventDefault)event.preventDefault();
+        return;
+      }
     }
     if(event.key==='Enter'&&state.searchOpen&&fdIsTypingTarget(event.target)){
       var searcher=o.searchResults||fdSearchResults;

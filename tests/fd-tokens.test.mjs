@@ -187,3 +187,16 @@ test('the class inventory documents the exact distinct front-door selector count
   assert.equal(Number(documented[1]), selectorNames.size,
     'CLASS-INVENTORY must stay synchronized with comment-stripped frontdoor.css selectors');
 });
+
+// 2026-10-01 RED MEANS SAFETY: the Front Door paints no terracotta at all -- it sat a few degrees
+// of hue from --fd-danger, so a terracotta button or status strip read as an alarm -- and paints
+// --fd-danger only on safety and crisis surfaces, plus form errors and destructive (delete/erase)
+// controls, where red is the convention. A new red needs a reason here.
+test('red means safety: no terracotta, and danger only on the allowlisted surfaces', () => {
+  const bare = fd.replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.doesNotMatch(bare, /--fd-terracotta/, 'frontdoor.css paints no terracotta');
+  const SAFETY = /fd-safetybtn|fd-kit|fd-railkit|crisis|fd-result__dot\.is-safety|fd-compass-safety|fd-sheet__failure|fd-feedback__hold|fd-app__error|fd-set__danger|fd-set__note--warn|fd-feedback__error|fd-feedback__delete/;
+  const offenders = [...bare.matchAll(/([^{}]+)\{([^{}]*--fd-danger[^{}]*)\}/g)]
+    .map((m) => m[1].replace(/\s+/g, ' ').trim()).filter((sel) => !SAFETY.test(sel));
+  assert.deepEqual(offenders, [], `danger painted outside a safety surface: ${offenders.join(' | ')}`);
+});
