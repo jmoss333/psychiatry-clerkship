@@ -2100,3 +2100,9 @@
 .fd-purpose__choices button[aria-pressed="true"]{background:var(--fd-teal-wash);border-color:var(--fd-teal);color:var(--fd-teal-deep)}
 .fd-purpose__note,.fd-purpose__reason{font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid);overflow-wrap:anywhere}
 .fd-purpose>.fd-btn{white-space:normal;max-width:100%;overflow-wrap:anywhere}
+
+/* Today: disclose new study planning while keeping unfinished work visible. */
+.fd-study-planner{margin:var(--fd-space-5) 0;border-bottom:1px solid var(--fd-line)}
+.fd-study-planner>summary{min-height:var(--fd-target-touch);align-content:center;cursor:pointer;font-size:var(--fd-font-md);font-weight:600;color:var(--fd-text)}
+.fd-study-planner>summary span{font-size:var(--fd-font-sm);font-weight:400;color:var(--fd-text-mid);white-space:nowrap}
+.fd-study-planner>summary:focus-visible{outline:2px solid var(--fd-focus);outline-offset:var(--fd-space-1)}
