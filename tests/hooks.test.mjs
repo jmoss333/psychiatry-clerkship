@@ -127,6 +127,28 @@ test('pre_edit_guard allows the same number inside crisis_resources.json and in 
   assert.equal(decision(runHook('pre_edit_guard.py', editCall('docs/superpowers/specs/x.md', `Deny ${lifelineDigits} in content.`))), 'allow');
 });
 
+// Handoff notes name the crisis contacts in prose and ship on neither site, so the crisis check
+// skips them -- but only there, and only while nothing under Handoffs/ ships.
+test('pre_edit_guard exempts faculty handoff notes from the crisis check, and nothing else', () => {
+  const handoff = '13_Faculty_Resources/Handoffs/some_handoff.md';
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall(handoff, `Surfaces carry ${lifelineDigits}.`))), 'allow');
+  // A sibling faculty folder is not exempt, and neither is a learner page that merely mentions Handoffs.
+  for (const file of ['13_Faculty_Resources/Feedback/feedback.html', '03_Core_Topics/Handoffs/x.md']) {
+    const r = runHook('pre_edit_guard.py', editCall(file, `Call ${lifelineDigits}.`));
+    assert.equal(decision(r), 'deny', file);
+    assert.match(reason(r), /crisis-contact/);
+  }
+});
+
+test('no shipped page is sourced from Handoffs/, which the crisis check exempts', () => {
+  const shipped = JSON.parse(fs.readFileSync(
+    path.join(repo, '13_Faculty_Resources/_automation/site_build/shipped_pages.json'), 'utf8'));
+  const sources = shipped.pages.flatMap((p) => [p.source, ...(p.extraSources ?? [])]).filter(Boolean);
+  assert.ok(sources.length > 100, `read ${sources.length} shipped sources -- expected the full listing`);
+  const exempt = sources.filter((s) => s.startsWith('13_Faculty_Resources/Handoffs/'));
+  assert.deepEqual(exempt, [], 'a Handoffs/ file now ships: drop it from CRISIS_EXEMPT_PREFIXES');
+});
+
 // A content digest is not prose. On 2026-09-28 three of reviewed.json's contentHash/clinicalHash
 // values held a short crisis code between two hex letters, and because the pre-commit gate scans a
 // staged file whole, every commit that staged the ledger was blocked (the weekly case run stopped

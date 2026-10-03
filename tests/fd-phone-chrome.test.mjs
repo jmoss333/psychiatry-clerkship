@@ -63,7 +63,7 @@ test('every dock item has a 44px target and a readable label', () => {
   // 2026-10-01: the primary action is marked by its fill, not raised out of the bar -- the raise
   // left it taller than the dock with its label sitting above the other four.
   const forward = rule(phone(), '.fd-dock__item--context[data-fd-dock-forward]');
-  assert.match(forward, /background:var\(--fd-terracotta\)/, 'only a real primary action is filled');
+  assert.match(forward, /background:var\(--fd-teal\)/, 'only a real primary action is filled -- teal, since red means safety');
   assert.doesNotMatch(forward, /transform:/, 'the primary action sits in the bar, level with the rest');
   assert.match(rule(phone(), '.fd-dock__item:disabled'), /opacity:/);
   assert.match(rule(phone(), '.fd-dock__item[aria-current="page"]'), /color:/);
