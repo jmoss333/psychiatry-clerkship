@@ -1645,3 +1645,47 @@ class GuidelinePdfSourceTests(unittest.TestCase):
                 run_guideline_surv.main()
             self.assertEqual(sorted(calls), [("apify", "h"), ("pdf", "p")])
             self.assertEqual(json.loads((Path(tmp) / "c.json").read_text()), ["h", "p"])
+
+
+class GuidelineSpacingChurnTests(unittest.TestCase):
+    """A re-extraction that only moves whitespace is not a change in guidance (#927).
+
+    Re-rendering the SPRAVATO REMS overview split and joined words ("S trategy" ->
+    "Strategy", "1 -855" -> "1-855"); normalize_text cannot undo a space inside a word, so
+    the hash moved and a P1 was filed against an unchanged document. Both directions are
+    pinned through evaluate() itself, with a real baseline file on disk.
+    """
+
+    SOURCE = {"id": "rems", "name": "REMS overview", "url": "https://example.org/rems.pdf",
+              "type": "pdf", "severity_default": "P1"}
+    OLD = "Risk Evaluation and Mitigation S trategy. Call 1 -855-382-6022 for questions."
+
+    def _evaluate(self, new_text, source=None, old=None):
+        source = source or self.SOURCE
+        with tempfile.TemporaryDirectory() as tmp:
+            norm = L.normalize_text(self.OLD if old is None else old)
+            prev = {"hash": L.sha_full(norm), "chars": len(norm), "checked_at": "2026-09-19"}
+            if source.get("modality") != "signal_only":
+                prev["text"] = norm
+            (Path(tmp) / f"{source['id']}.json").write_text(json.dumps(prev), encoding="utf-8")
+            return run_guideline_surv.evaluate(source, new_text, tmp)
+
+    def test_spacing_only_churn_files_nothing_and_refreshes_the_baseline(self):
+        finding, record = self._evaluate(
+            "Risk Evaluation and Mitigation Strategy.\nCall 1-855-382-6022 for questions.")
+        self.assertIsNone(finding)
+        self.assertIsNotNone(record, "the baseline must refresh, or the same churn re-fires next run")
+        self.assertIn("Strategy", record["text"])
+
+    def test_a_changed_word_still_files(self):
+        finding, record = self._evaluate(
+            "Risk Evaluation and Mitigation Strategy. Call 1-855-382-6023 for questions.")
+        self.assertIsNotNone(finding)
+        self.assertEqual(finding["change_type"], "modified")
+        self.assertIsNotNone(record)
+
+    def test_a_signal_only_source_has_no_text_to_compare_and_still_files(self):
+        source = dict(self.SOURCE, id="dsm", modality="signal_only")
+        finding, _ = self._evaluate("Risk Evaluation and Mitigation Strategy. Call 1-855-382-6022 for questions.",
+                                    source=source)
+        self.assertIsNotNone(finding)

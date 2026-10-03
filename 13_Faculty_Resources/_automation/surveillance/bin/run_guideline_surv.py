@@ -23,7 +23,7 @@ Usage:
   APIFY_TOKEN=*** python3 run_guideline_surv.py --out findings.json
   python3 run_guideline_surv.py --out f.json --fixture fake_texts.json --baseline-dir /tmp/bl
 """
-import os, sys, json, argparse, difflib, hashlib, io, subprocess
+import os, re, sys, json, argparse, difflib, hashlib, io, subprocess
 import urllib.request
 import lib_surveillance as L
 
@@ -38,6 +38,18 @@ def _excerpt(old_norm, new_norm, max_lines=40):
     diff = [ln for ln in difflib.unified_diff(old, new, lineterm="", n=1)
             if ln and ln[0] in "+-" and not ln.startswith(("+++", "---"))]
     return "\n".join(diff[:max_lines])
+
+
+def same_words(old_text, new_text):
+    """True when two extractions differ only in where whitespace falls.
+
+    normalize_text collapses runs of whitespace but cannot undo a space a PDF extractor
+    inserts INSIDE a word: re-rendering the Spravato REMS overview turned "S trategy" into
+    "Strategy" and "1 -855" into "1-855", and that alone filed P1 #927 against a document
+    whose every character was unchanged. Spacing never carries guidance, so it is compared
+    away; any added, removed or changed character still differs and still files.
+    """
+    return re.sub(r"\s+", "", old_text) == re.sub(r"\s+", "", new_text)
 
 
 def evaluate(source, raw_text, baseline_dir):
@@ -68,6 +80,8 @@ def evaluate(source, raw_text, baseline_dir):
         return None, record       # baseline established, nothing to report
     if prev.get("hash") == new_hash:
         return None, record       # unchanged
+    if not signal_only and prev.get("text") and same_words(prev["text"], norm):
+        return None, record       # only the spacing moved; refresh the baseline, file nothing
 
     ev = {"prev_hash": prev.get("hash"), "new_hash": new_hash,
           "prev_seen_at": prev.get("checked_at")}
