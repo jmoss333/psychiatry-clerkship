@@ -624,7 +624,7 @@
   },
   "roles": {
     "ms3": [
-      { "id": "student", "name": "Core rotation", "desc": "The six-week inpatient rotation", "hint": "most common" },
+      { "id": "student", "name": "Core rotation", "desc": "The six-week inpatient rotation", "hint": "Most common" },
       { "id": "subi", "name": "Sub-I / acting intern", "desc": "Acting intern on the unit", "hint": "" },
       { "id": "staff", "name": "Nursing · SW · family", "desc": "Unit staff and families", "hint": "" }
     ],

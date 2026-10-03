@@ -22,9 +22,9 @@ const make = new Function(`
   return { fdTodayProgress: fdTodayProgress, fdToday: fdToday, fdBuildIndex: fdBuildIndex,
            fdItemsForWeek: fdItemsForWeek, fdLibraryOnlyReads: fdLibraryOnlyReads,
            fdFindWeek: fdFindWeek, fdContinue: fdContinue, fdTodayPrimary: fdTodayPrimary,
-           fdTodayLastRead: fdTodayLastRead, fdTodayWhy: fdTodayWhy,
+           fdTodayLastRead: fdTodayLastRead, fdQuickToolLabel: fdQuickToolLabel,
            FD_TODAY_PRIMARY_ORDER: FD_TODAY_PRIMARY_ORDER, FD_TODAY_LEAD_END: FD_TODAY_LEAD_END,
-           FD_TODAY_WHY: FD_TODAY_WHY, fdQuickTools: fdQuickTools,
+           fdQuickTools: fdQuickTools,
            FD_QUICKTOOLS_PREFERRED: FD_QUICKTOOLS_PREFERRED };
 `);
 const F = make();
@@ -154,13 +154,17 @@ test('Today counts repeated practice for the current week even when another Path
   assert.match(html, /class="fd-continue" data-fd-open="t.html"/);
 });
 
-test('the greeting varies by time of day, derived from state.nowMs', () => {
-  const morning = new Date(2026, 7, 10, 9, 0, 0).getTime();
-  const afternoon = new Date(2026, 7, 10, 14, 0, 0).getTime();
-  const evening = new Date(2026, 7, 10, 20, 0, 0).getTime();
-  assert.match(F.fdToday(IDX, s({ nowMs: morning })), />Good morning<\/h1>/);
-  assert.match(F.fdToday(IDX, s({ nowMs: afternoon })), />Good afternoon<\/h1>/);
-  assert.match(F.fdToday(IDX, s({ nowMs: evening })), />Good evening<\/h1>/);
+// 2026-10-01: the heading is the week's theme, not a time-of-day greeting -- "Good evening" was
+// the largest text on the page and told the learner nothing. Without a week it is "Today".
+test('the heading names the week, and the subhead places it in the rotation and the day', () => {
+  const html = F.fdToday(IDX, s({}));
+  const wk = F.fdFindWeek(IDX, 1);
+  assert.equal(html.match(/<h1 class="fd-today__h1">([\s\S]*?)<\/h1>/)[1], wk.title);
+  assert.match(html, new RegExp(`<p class="fd-today__sub">Week 1 of ${IDX.weeks.length} · [A-Z][a-z]+day`));
+  for (const hour of [9, 14, 20]) {
+    assert.doesNotMatch(F.fdToday(IDX, s({ nowMs: new Date(2026, 7, 10, hour).getTime() })), /Good (morning|afternoon|evening)/);
+  }
+  assert.match(F.fdToday(IDX, s({ week: null })), /<h1 class="fd-today__h1">Today<\/h1>/);
 });
 
 test('Today visibly invites feedback while the shared site is in active testing', () => {
@@ -189,17 +193,16 @@ test('the 390px pilot keeps its concise action above the fold across font metric
 
 // ---- accessibility (Fresh Eyes Audit A2/A6) --------------------------------------------------
 
-test('the greeting ends with the role, not a dangling dash', () => {
+test('the heading carries no dash and no role label', () => {
   // "Evening, Core rotation —" first lost its dash from the accessible name (aria-hidden) and on
   // 2026-09-19 lost it altogether: after a role label it read as a truncated sentence, and at
   // 375px the dash wrapped onto a line of its own. The prototype's dash followed a NAME.
   const html = F.fdToday(IDX, s({}));
   const h1 = html.match(/<h1 class="fd-today__h1">([\s\S]*?)<\/h1>/);
-  assert.ok(h1, 'the greeting h1 renders');
+  assert.ok(h1, 'the heading h1 renders');
   assert.doesNotMatch(h1[1], /—|aria-hidden/, `no dash, decorative or otherwise: ${h1[1]}`);
   // 2026-09-26: no role label either. "Afternoon, Core rotation" named a rotation, not a person,
   // and wrapped to two lines on a phone.
-  assert.match(h1[1], /^Good (morning|afternoon|evening)$/);
   for (const role of ['Core rotation', 'PGY-1', 'APP / PA / NP']) {
     const withRole = F.fdToday(IDX, s({ role })).match(/<h1 class="fd-today__h1">([\s\S]*?)<\/h1>/)[1];
     assert.doesNotMatch(withRole, new RegExp(role.replace(/[/]/g, '\\/')), `the greeting does not name the role "${role}"`);
@@ -437,12 +440,12 @@ const RES_IDX = F.fdBuildIndex({ ...FIX_CUR, path: { id: 'resident-four-week', w
 
 test('the exam countdown joins onto the subhead with a separating space', () => {
   assert.equal(subOf(F.fdToday(MS3_IDX, s({ week: 5, nowMs: SUNDAY_W5 }))),
-    'Week 5 · W5 · Sunday · exam in ~5 days');
+    'Week 5 of 6 · Sunday · exam in ~5 days');
 });
 
 test('the countdown joins directly after the day name now that the streak clause is gone', () => {
   assert.equal(subOf(F.fdToday(MS3_IDX, s({ week: 5, streak: 3, activityDays: FOUR_OF_SEVEN, nowMs: SUNDAY_W5 }))),
-    'Week 5 · W5 · Sunday · exam in ~5 days');
+    'Week 5 of 6 · Sunday · exam in ~5 days');
 });
 
 // Residents have no end-of-block exam. Until 2026-09-24 the countdown fired in the final two
@@ -509,7 +512,7 @@ test('every nudge class Today emits has a rule in frontdoor.css', () => {
 
 test('a week with no countdown leaves no trailing space behind', () => {
   const sub = subOf(F.fdToday(IDX, s({})));
-  assert.equal(sub, 'Week 1 · Foundations · Monday');
+  assert.equal(sub, 'Week 1 of 6 · Monday');
   assert.doesNotMatch(sub, / $/, 'an unconditional join would strand a space on weeks 1-4');
 });
 
@@ -619,12 +622,11 @@ test('fdTodayLastRead resolves cw_last against THIS week only and carries done +
     { ref: 't.html', kind: 'tool', title: 'Tool T', minutes: null, done: true, isContinueTarget: false });
 });
 
-test('the explanation line is one paragraph with the approved copy, audience-neutral, and no due/capture markup', () => {
-  assert.equal(F.fdTodayWhy(),
-    '<p class="fd-primary__why">First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.</p>');
-  assert.equal(F.FD_TODAY_WHY, 'First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.');
-  assert.doesNotMatch(F.fdTodayWhy(), AUDIENCE_TOKEN_RE);
-  assert.doesNotMatch(F.fdTodayWhy(), /fd-due|fd-capture/i);
+// 2026-10-01 (owner-directed design pass): the "First things first…" explanation line under the
+// primary is retired -- the page order already says it. Pinned absent so it does not drift back.
+test('Today renders no explanation line under the primary', () => {
+  assert.doesNotMatch(F.fdToday(IDX, s({})), /fd-primary__why|First things first/);
+  assert.equal(typeof F.fdQuickToolLabel, 'function');
 });
 
 test('the lead-end marker is an HTML comment the shell can splice at', () => {
@@ -659,8 +661,9 @@ test('fdContinue: primary=false adds is-secondary and changes nothing else', () 
 });
 
 test('fdContinue names the kind of the next item with the same chip rule as the week rows', () => {
+  // 2026-10-01: a reading is the default kind and carries no chip; only the exceptions do.
   assert.match(F.fdContinue(IDX, s({}), WK1, PROG({})),
-    /<span class="fd-continue__title">Page A<span class="fd-chip">read<\/span> →<\/span>/);
+    /<span class="fd-continue__title">Page A →<\/span>/);
   assert.match(F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true })),
     /<span class="fd-continue__title">Tool T<span class="fd-chip is-tool">tool<\/span> →<\/span>/);
   // A rights reference reads "reference", never "tool" (fd_data.js: rights is a presentation flag).
@@ -719,8 +722,7 @@ test('the same primary kind renders the same lead treatment for both path ids', 
 test('every new string is audience-neutral', () => {
   const done = { 'a.md': true, 't.html': true };
   const all = F.fdContinue(IDX, s({}), WK1, PROG({}), false)
-    + F.fdContinue(IDX, s({ done }), WK1, PROG(done))
-    + F.fdTodayWhy();
+    + F.fdContinue(IDX, s({ done }), WK1, PROG(done));
   assert.doesNotMatch(all, AUDIENCE_TOKEN_RE);
 });
 
@@ -761,4 +763,35 @@ test('the quick-tool fallback leads with the on-shift list, skips what a site la
   const five = ['a1.html', 'a2.html', 'a3.html', 'a4.html', 'a5.html'].map((ref) => tool(ref));
   assert.deepEqual(F.fdQuickTools({ byRef }, five).map((t) => t.ref), five.map((t) => t.ref),
     'five week tools leave no room for the fallback');
+});
+
+// ---- 2026-10-01 design pass -------------------------------------------------------------
+
+test('a week row labels only tools and references; a reading carries no chip', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.doesNotMatch(html, /<span class="fd-chip">read<\/span>/);
+  assert.match(html, /<span class="fd-chip is-tool">tool<\/span>/);
+});
+
+test('Continue shows the week as one segment per activity, filled as they are done', () => {
+  const none = F.fdContinue(IDX, s({}), WK1, PROG({}));
+  assert.equal((none.match(/class="fd-continue__seg"/g) || []).length, 2);
+  assert.match(none, /<span class="fd-continue__segs" aria-hidden="true">/, 'decorative: the count is the text');
+  const half = F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true }));
+  assert.equal((half.match(/fd-continue__seg is-done/g) || []).length, 1);
+  assert.doesNotMatch(none, /fd-ring/, 'the percentage ring is retired');
+});
+
+test('a quick tool shows the title before its em-dash subtitle, keeping the full title as a tooltip', () => {
+  assert.equal(F.fdQuickToolLabel('The Interview Room — AI Standardized Patient'), 'The Interview Room');
+  assert.equal(F.fdQuickToolLabel('Mental Status Exam'), 'Mental Status Exam');
+  assert.equal(F.fdQuickToolLabel('— leading dash'), '— leading dash', 'never an empty label');
+});
+
+test('the Safety kit renders as one panel holding every kit row', () => {
+  const html = F.fdToday(IDX, s({}));
+  const panel = html.match(/<div class="fd-railkit">([\s\S]*?)<\/div><\/div>/);
+  assert.ok(panel, 'the rail kit panel renders');
+  assert.equal((panel[1].match(/class="fd-kitcard"/g) || []).length, IDX.kit.length);
+  assert.doesNotMatch(html, /fd-kitcard__dot/);
 });

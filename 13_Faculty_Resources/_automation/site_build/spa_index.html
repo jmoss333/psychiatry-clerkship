@@ -2434,7 +2434,7 @@
      via the shared block store, and the weakest blueprint area is re-derived from mastery each
      render so the plan follows the learner's actual misses. */
   var fdBlockMinutes=10;
-  var fdTodayPurposeId='',fdTodayPurposeOpen=false;
+  var fdTodayPurposeId='',fdTodayPurposeOpen=true,fdTodayPlannerOpen=false;
   function fdWeakestCategory(){
     try{
       var rows=masteryByBlueprint(), best=null;
@@ -2547,8 +2547,6 @@
       :{checklist:{},resources:{}};
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
-    var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,fdProgressDoneMap(raw,FD_INDEX,out.week));
-    out.ringPct=progress.pct;
     return out;
   }
 
@@ -2610,6 +2608,8 @@
     if(!facultyPreviewRequest){
       var blockResume=(blockStatus&&sess&&fdBlockResumeSearch(blockStatus.next,sess))?{left:fdCapsuleLeft(sess),n:blockStatus.next.n}:null;
       blockHtml=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done,{primary:primary.kind==='block',resume:blockResume});
+      /* Only an unstarted plan is optional; live work always stays exposed. */
+      if(!liveBlock)blockHtml='<details class="fd-study-planner"'+(fdTodayPlannerOpen?' open':'')+'><summary data-today-planner-toggle>Plan a study block <span>5, 10 or 20 minutes</span></summary>'+blockHtml+'</details>';
       captureHtml=fdCaptureTriage(fdCaptureRows());
     }
     var cards={
@@ -2624,9 +2624,9 @@
       else also+=cards[order[i]];
     }
     also+=captureHtml;
-    if(!facultyPreviewRequest)also+=fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
-    var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
-    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+offlineHtml+rest);
+    var purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
+    var rest='<h2 class="fd-sectionhead fd-also">Also today</h2>'+(primary.kind==='block'?'':purposeHtml)+also;
+    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+(primary.kind==='block'?purposeHtml:'')+lead+offlineHtml+rest);
     return html.replace(FD_TODAY_LEAD_END,offlineHtml+rest);
   }
 
@@ -3206,8 +3206,10 @@
       fdTodayPurposeId=purposeId;fdTodayPurposeOpen=purposeId!=='';specialRefresh();
       var purposeFocus=contentEl.querySelector(purposeId?'[data-today-purpose="'+purposeId+'"]':'[data-today-purpose-toggle]');if(purposeFocus)purposeFocus.focus();return;
     }
+    el=target.closest&&target.closest('[data-today-planner-toggle]');
+    if(el){event.preventDefault();if(facultyPreviewRequest)return;fdTodayPlannerOpen=!fdTodayPlannerOpen;specialRefresh();var plannerToggle=contentEl.querySelector('[data-today-planner-toggle]');if(plannerToggle)plannerToggle.focus();return;}
     el=target.closest&&target.closest('[data-today-planner]');
-    if(el){event.preventDefault();if(facultyPreviewRequest)return;var planner=contentEl.querySelector('.fd-block');var plannerFocus=planner&&(planner.querySelector('[data-block-minutes][aria-pressed="true"]')||planner.querySelector('[data-block-continue]')||planner.querySelector('button'));if(plannerFocus){plannerFocus.scrollIntoView({block:'center'});plannerFocus.focus();}return;}
+    if(el){event.preventDefault();if(facultyPreviewRequest)return;fdTodayPlannerOpen=true;specialRefresh();var planner=contentEl.querySelector('.fd-block');var plannerFocus=planner&&(planner.querySelector('[data-block-minutes][aria-pressed="true"]')||planner.querySelector('[data-block-continue]')||planner.querySelector('button'));if(plannerFocus){plannerFocus.scrollIntoView({block:'center'});plannerFocus.focus();}return;}
     el=target.closest&&target.closest('[data-block-minutes]');
     if(el){event.preventDefault();var bm=parseInt(el.getAttribute('data-block-minutes'),10);if(bm===5||bm===10||bm===20){fdBlockMinutes=bm;specialRefresh();}return;}
     el=target.closest&&target.closest('[data-block-start]');
