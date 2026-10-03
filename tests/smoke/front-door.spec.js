@@ -4842,7 +4842,10 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
       await page.locator('[data-block-minutes="20"]').click();
       await expect(disclosure).toHaveAttribute('open', '');
       await expect(page.locator('[data-block-start="20"]')).toBeVisible();
-      await page.locator('[data-fd-tab="library"]:visible').first().click();
+      if (viewport.width < 1000) {
+        await page.locator('.fd-dock__browse summary').click();
+        await page.locator('[data-fd-dock-browse-go="essentials"]').click();
+      } else await page.locator('[data-fd-tab="library"]:visible').first().click();
       await page.goBack(); await expect(disclosure).toHaveAttribute('open', '');
       await page.goForward(); await expect(page.locator('.fd-library')).toBeVisible();
       await page.goBack(); await page.reload();
