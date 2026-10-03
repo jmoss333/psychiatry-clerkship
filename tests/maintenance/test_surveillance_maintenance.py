@@ -1648,17 +1648,20 @@ class GuidelinePdfSourceTests(unittest.TestCase):
 
 
 class GuidelineSpacingChurnTests(unittest.TestCase):
-    """A re-extraction that only moves whitespace is not a change in guidance (#927).
+    """A PDF re-extraction that only moves whitespace is reported, not escalated (#927).
 
     Re-rendering the SPRAVATO REMS overview split and joined words ("S trategy" ->
     "Strategy", "1 -855" -> "1-855"); normalize_text cannot undo a space inside a word, so
-    the hash moved and a P1 was filed against an unchanged document. Both directions are
-    pinned through evaluate() itself, with a real baseline file on disk.
+    the hash moved and a P1 was filed against an unchanged document. Whitespace can still
+    carry meaning ("now here" / "nowhere"), so the case is never silenced: on a PDF it
+    becomes a capped P2 digest finding; on an HTML source nothing changes. Driven through
+    evaluate() and L.escalate() with a real baseline file on disk.
     """
 
     SOURCE = {"id": "rems", "name": "REMS overview", "url": "https://example.org/rems.pdf",
               "type": "pdf", "severity_default": "P1"}
     OLD = "Risk Evaluation and Mitigation S trategy. Call 1 -855-382-6022 for questions."
+    RESPACED = "Risk Evaluation and Mitigation Strategy.\nCall 1-855-382-6022 for questions."
 
     def _evaluate(self, new_text, source=None, old=None):
         source = source or self.SOURCE
@@ -1670,22 +1673,30 @@ class GuidelineSpacingChurnTests(unittest.TestCase):
             (Path(tmp) / f"{source['id']}.json").write_text(json.dumps(prev), encoding="utf-8")
             return run_guideline_surv.evaluate(source, new_text, tmp)
 
-    def test_spacing_only_churn_files_nothing_and_refreshes_the_baseline(self):
-        finding, record = self._evaluate(
-            "Risk Evaluation and Mitigation Strategy.\nCall 1-855-382-6022 for questions.")
-        self.assertIsNone(finding)
-        self.assertIsNotNone(record, "the baseline must refresh, or the same churn re-fires next run")
-        self.assertIn("Strategy", record["text"])
-
-    def test_a_changed_word_still_files(self):
-        finding, record = self._evaluate(
-            "Risk Evaluation and Mitigation Strategy. Call 1-855-382-6023 for questions.")
-        self.assertIsNotNone(finding)
-        self.assertEqual(finding["change_type"], "modified")
+    def test_pdf_spacing_churn_is_a_capped_p2_with_its_diff_not_silence(self):
+        finding, record = self._evaluate(self.RESPACED)
+        self.assertIsNotNone(finding, "spacing churn must still be reported, never dropped")
+        self.assertEqual((finding["severity"], finding["severity_cap"]), ("P2", "P2"))
+        self.assertTrue(finding["evidence"]["spacing_only"])
+        self.assertIn("diff_excerpt", finding["evidence"])
         self.assertIsNotNone(record)
+        # An acute-path citation cannot escalate it back into an issue.
+        finding["affects"] = [L.ACUTE_PREFIXES[0] + "x.md"]
+        self.assertEqual(L.escalate(finding), "P2")
 
-    def test_a_signal_only_source_has_no_text_to_compare_and_still_files(self):
+    def test_html_spacing_churn_keeps_the_registry_severity(self):
+        source = dict(self.SOURCE, id="fda", type="html")
+        finding, _ = self._evaluate("Treatment is nowhere.", source=source, old="Treatment is now here.")
+        self.assertEqual(finding["severity"], "P1")
+        self.assertNotIn("severity_cap", finding)
+
+    def test_a_changed_word_in_a_pdf_still_files_at_registry_severity(self):
+        finding, _ = self._evaluate(
+            "Risk Evaluation and Mitigation Strategy. Call 1-855-382-6023 for questions.")
+        self.assertEqual((finding["change_type"], finding["severity"]), ("modified", "P1"))
+        self.assertNotIn("spacing_only", finding["evidence"])
+
+    def test_a_signal_only_source_has_no_text_to_compare_and_keeps_its_severity(self):
         source = dict(self.SOURCE, id="dsm", modality="signal_only")
-        finding, _ = self._evaluate("Risk Evaluation and Mitigation Strategy. Call 1-855-382-6022 for questions.",
-                                    source=source)
-        self.assertIsNotNone(finding)
+        finding, _ = self._evaluate(self.RESPACED, source=source)
+        self.assertEqual(finding["severity"], "P1")
