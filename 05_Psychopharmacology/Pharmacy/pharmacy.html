@@ -473,8 +473,9 @@ function rxLabelHref(a){
       if(!rxScenarioAgents(state.data,sc,'').length)return;
       var b=button('fchip',sc.label,function(){
         state.scenario=state.scenario===sc.id?'':sc.id;state.query='';$('q').value='';
-        renderScenarios();renderList();
+        renderScenarios();renderList();$('scenario-'+sc.id).focus();
       });
+      b.id='scenario-'+sc.id;
       b.setAttribute('aria-pressed',String(state.scenario===sc.id));host.appendChild(b);
     });
     var sc=state.scenario?rxScenario(state.scenario):null;
@@ -491,7 +492,7 @@ function rxLabelHref(a){
     var i=compareIndex(id);
     if(i>=0)state.compare.splice(i,1);else if(state.compare.length<4)state.compare.push(id);
     if(state.compare.length<2)state.grid=false;
-    renderCompareBar();renderList();renderGrid();
+    renderCompareBar();renderList();renderGrid();$('compare-'+id).focus();
   }
   function compareAgents(){
     var all=rxFilterAgents(state.data,'',''),out=[];
@@ -505,8 +506,11 @@ function rxLabelHref(a){
     var names=compareAgents().map(function(a){return a.generic;});
     var t=el('span');t.appendChild(el('strong',null,'Compare: '));t.appendChild(document.createTextNode(names.join(', ')+(state.compare.length<2?' — mark one more':state.compare.length===4?' (max 4)':'')));
     bar.appendChild(t);
-    if(state.compare.length>=2)bar.appendChild(button('btn',state.grid?'Hide grid':'Show grid',function(){state.grid=!state.grid;renderCompareBar();renderGrid();}));
-    bar.appendChild(button('btn btn--ghost','Clear',function(){state.compare=[];state.grid=false;renderCompareBar();renderList();renderGrid();}));
+    if(state.compare.length>=2){
+      var gridToggle=button('btn',state.grid?'Hide grid':'Show grid',function(){state.grid=!state.grid;renderCompareBar();renderGrid();$(state.grid?'gridname':'grid-toggle').focus();});
+      gridToggle.id='grid-toggle';bar.appendChild(gridToggle);
+    }
+    bar.appendChild(button('btn btn--ghost','Clear',function(){var first=state.compare[0];state.compare=[];state.grid=false;renderCompareBar();renderList();renderGrid();($('compare-'+first)||$('q')).focus();}));
     host.appendChild(bar);
   }
   function renderGrid(){
@@ -535,7 +539,7 @@ function rxLabelHref(a){
     var scroll=el('div','grid__scroll');scroll.tabIndex=0;scroll.setAttribute('role','region');scroll.setAttribute('aria-label','Comparison table; scrolls sideways on a narrow screen');
     scroll.appendChild(table);box.appendChild(scroll);
     box.appendChild(el('p','practice','Every cell is the same reviewed field the drug card shows. No doses.'));
-    host.appendChild(box);h.focus();
+    host.appendChild(box);
   }
   function renderList(){
     var host=$('list'),shown=shownAgents();host.textContent='';
@@ -552,6 +556,7 @@ function rxLabelHref(a){
       li.appendChild(b);
       var on=compareIndex(a.id)>=0;
       var c=button('cmp__btn',on?'Comparing':'Compare',function(){toggleCompare(a.id);});
+      c.id='compare-'+a.id;
       c.setAttribute('aria-pressed',String(on));c.setAttribute('aria-label',(on?'Remove ':'Add ')+a.generic+(on?' from':' to')+' the comparison');
       if(!on&&state.compare.length>=4)c.disabled=true;
       var wrap=el('div','cmp');wrap.appendChild(c);li.appendChild(wrap);
@@ -588,12 +593,12 @@ function rxLabelHref(a){
       box.appendChild(st);
     }
     var tier=el('div','tier');tier.setAttribute('role','group');tier.setAttribute('aria-label','Card depth');
-    var tb=button('fchip',state.tier==='t2'?'Resident depth: on':'Resident depth: off',function(){state.tier=state.tier==='t2'?'t1':'t2';renderDetail();});
-    tb.setAttribute('aria-pressed',String(state.tier==='t2'));tier.appendChild(tb);
+    var tb=button('fchip',state.tier==='t2'?'Resident depth: on':'Resident depth: off',function(){state.tier=state.tier==='t2'?'t1':'t2';renderDetail();$('depth-toggle').focus();});
+    tb.id='depth-toggle';tb.setAttribute('aria-pressed',String(state.tier==='t2'));tier.appendChild(tb);
     var flip=rxFamilyFlip(a);
     if(flip){
-      var fb=button('fchip','How would you explain this to a family?',function(){state.family=!state.family;renderDetail();});
-      fb.setAttribute('aria-pressed',String(state.family));fb.setAttribute('aria-controls','family');tier.appendChild(fb);
+      var fb=button('fchip','How would you explain this to a family?',function(){state.family=!state.family;renderDetail();$('family-toggle').focus();});
+      fb.id='family-toggle';fb.setAttribute('aria-pressed',String(state.family));fb.setAttribute('aria-controls','family');tier.appendChild(fb);
     }
     box.appendChild(tier);
     if(flip&&state.family){
@@ -637,7 +642,7 @@ function rxLabelHref(a){
       var q=el('a',null,qb+' practice question'+(qb===1?'':'s')+' cover this drug');q.href='question-bank-practice.html';links.appendChild(q);
     }
     if(links.childNodes.length)box.appendChild(links);
-    host.appendChild(box);
+    host.appendChild(box);renderQuiz();
   }
   /* Quiz: due cards first, then the rest in deck order. Grading writes the shared cw_srs_v1
      store under the card's RX# id, so the same card then comes back in Daily Review. */
