@@ -2677,7 +2677,7 @@
       if(retained[k]&&replacement)replacement.parentNode.replaceChild(retained[k],replacement);
     }
     if(!state.openId){
-      var current=fdDockMount.querySelector('[data-fd-tab="'+state.tab+'"]');
+      var current=fdDockMount.querySelector(state.tab==='library'?'.fd-dock__browse summary':'[data-fd-tab="'+state.tab+'"]');
       if(current)current.setAttribute('aria-current','page');
     }
     var successor=focusSelector&&fdDockMount.querySelector(focusSelector);

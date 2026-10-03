@@ -1044,7 +1044,9 @@ timed study; the primary picker and due-review routes are unchanged.
 ### Shared Library navigation (2026-10-03)
 
 The desktop header has one **Library** destination, selected for both Essentials and
-Everything. The phone disclosure uses the same **Library** label and retains Search.
+Everything. The phone disclosure uses the same **Library** label and retains Search. Its summary
+marks the current Library destination, including the Everything view; the center
+Essential shortcut is not incorrectly marked current for Everything.
 `.fd-library__views` is a wrapping local view switch above either Library heading;
 its two `.fd-btn` controls have 44px minimum height and `aria-pressed` selection,
 with the existing teal action/location tokens. It replaces the distant Everything

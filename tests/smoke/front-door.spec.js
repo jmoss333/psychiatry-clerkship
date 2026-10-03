@@ -4940,6 +4940,8 @@ test('shared Library navigation: phone menu survives delayed hydration and Escap
   await summary.press('Enter');
   await choice.click();
   await expect(page.locator('.fd-library__grid')).toBeVisible();
+  await expect(summary).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-dock [data-fd-tab="library"]')).not.toHaveAttribute('aria-current', 'page');
   await expect(page.locator('.fd-dock__browse')).not.toHaveAttribute('open', '');
   await expectHealthy(page);
 });

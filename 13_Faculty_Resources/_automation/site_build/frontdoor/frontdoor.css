@@ -1494,7 +1494,7 @@
     color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-xs);font-weight:700;
   }
   .fd-dock__browse summary::-webkit-details-marker{display:none}
-  .fd-dock__browse[open] summary{color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
+  .fd-dock__browse[open] summary,.fd-dock__browse summary[aria-current="page"]{color:var(--fd-teal-deep);background:var(--fd-teal-wash)}
   /* display:none by default -- NOT just relying on the UA's details:not([open]) rule, which an
      unconditional display:flex here would outrank (author styles beat UA styles regardless of
      specificity). Without this, the menu stays part of the layout while closed: real, overflowing
