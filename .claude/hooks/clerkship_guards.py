@@ -83,6 +83,12 @@ CRISIS_EXEMPT = (
     TOOLING_PREFIX + "sync_crisis_from_reconnect.py",
     TOOLING_PREFIX + "validate_crisis_resources.py",
 )
+# Faculty handoff notes record what the crisis surfaces carry, so they name the contacts in
+# prose. They ship on neither site (tests/hooks.test.mjs pins that against shipped_pages.json),
+# and because the pre-commit gate scans a staged file whole, one existing mention blocked every
+# later edit to the file -- a one-line link fix included (#876). Crisis check only: the PHI,
+# dose and instrument guards still read these files.
+CRISIS_EXEMPT_PREFIXES = ("13_Faculty_Resources/Handoffs/",)
 # Every contact registered in crisis_resources.json is enforced, the emergency-services number
 # included: the rule is single-source injection, not "only the obscure numbers". Short codes
 # (three or four digits) match either contiguously or with ONE separator repeated between every
@@ -223,7 +229,7 @@ def mask_digests(text: str) -> str:
 
 
 def check_crisis(text: str, rel: str, root: Path) -> list[tuple[str, str, str]]:
-    if not is_learner_surface(rel) or rel in CRISIS_EXEMPT:
+    if not is_learner_surface(rel) or rel in CRISIS_EXEMPT or rel.startswith(CRISIS_EXEMPT_PREFIXES):
         return []
     text = mask_digests(text)
     hits = []
