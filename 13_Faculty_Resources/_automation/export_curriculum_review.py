@@ -426,6 +426,46 @@ def render_communication_case(doc: Doc, c: dict):
         doc.add("", f"**Listen for.** {second['listenFor']}", "")
 
 
+def render_case_journey_practice(doc: Doc, raw: str) -> int:
+    """Transcribe the canonical inline practice pack; incomplete coverage is an error."""
+    blocks = re.findall(r'<script id="case-practice-data" type="application/json">([\s\S]*?)</script>', raw)
+    if len(blocks) != 1:
+        raise ValueError("missing or duplicate Case Journeys practice teaching")
+    try:
+        data = json.loads(blocks[0])
+        required = ("boundary", "reading", "exampleBoundary", "finishText")
+        nonempty = lambda value: isinstance(value, str) and bool(value.strip())
+        if data.get("version") != 1 or not all(nonempty(data.get(key)) for key in required):
+            raise ValueError("invalid Case Journeys practice boundaries")
+        tasks = data.get("tasks")
+        if not isinstance(tasks, dict) or set(tasks) != {"interview", "rounds", "note"}:
+            raise ValueError("incomplete Case Journeys practice tasks")
+        for task in tasks.values():
+            if not nonempty(task.get("label")) or task.get("sourceRef") not in {"pg_interview.md", "doc_oral.md"}:
+                raise ValueError("invalid Case Journeys practice attribution")
+            if not isinstance(task.get("routes"), dict) or set(task["routes"]) != {"5", "15"}:
+                raise ValueError("incomplete Case Journeys practice durations")
+            for route in task["routes"].values():
+                if not all(nonempty(route.get(key)) for key in ("prompt", "example")) or not isinstance(route.get("card"), dict) or not all(nonempty(route["card"].get(key)) for key in ("try", "notice", "ask")):
+                    raise ValueError("incomplete Case Journeys practice route")
+    except (AttributeError, TypeError, json.JSONDecodeError) as error:
+        raise ValueError("malformed Case Journeys practice teaching") from error
+    doc.add("### Connected task practice — all four patients and 24 selected chapters", "",
+            "Built teaching source: `tools/one-patient-six-weeks.html#case-practice-data`", "")
+    for key in required:
+        doc.add(data[key], "")
+    for task in tasks.values():
+        doc.add(f"#### {task['label']}", "", f"Structure source: `{task['sourceRef']}`", "")
+        for minutes in ("5", "15"):
+            route = task["routes"][minutes]
+            doc.add(f"##### About {minutes} minutes", "", f"**Private rehearsal.** {route['prompt']}", "",
+                    f"**Optional outline.** {route['example']}", "")
+            for key, label in (("try", "Try"), ("notice", "Notice"), ("ask", "Ask your supervisor")):
+                doc.add(f"- **{label}.** {route['card'][key]}")
+            doc.add("")
+    return 6
+
+
 def render_case_journeys(doc: Doc, build: Path) -> dict[str, int]:
     """Transcribe cases from the built viewer's declared loaders, including future cases.
 
@@ -488,6 +528,7 @@ def render_case_journeys(doc: Doc, build: Path) -> dict[str, int]:
             for link in chapter.get("links", []):
                 doc.add(f"- Resource: {link['label']} (`{link['kind']}:{link['target']}`)")
             doc.add("")
+    render_case_journey_practice(doc, (build / page_url).read_text(encoding="utf-8"))
     return counts
 
 

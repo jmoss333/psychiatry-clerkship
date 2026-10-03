@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Case Journeys" version="2.1" built="2026-09-27" category="longitudinal-simulation" audience="ms3,resident" settings="inpatient,outpatient,self-study" time="10-20min" summary="Follow four fictional patients through six chapters of supervised psychiatric practice. Transient, unscored chapter navigation; no patient entry or saved case progress." -->
+<!-- [CLERKSHIP-META v1] tool="Case Journeys" version="2.2" built="2026-10-03" category="longitudinal-simulation" audience="ms3,resident" settings="inpatient,outpatient,self-study" time="5-20min" summary="Follow four fictional patients through six chapters of supervised psychiatric practice. Transient, unscored chapter navigation; no patient entry or saved case progress." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -65,11 +65,94 @@ button{font:inherit}button:focus-visible,a:focus-visible,summary:focus-visible,[
 @media(max-width:380px){.opf-case-catalog{grid-template-columns:1fr}.opf-case-card{min-height:0}.opf-hero h1{font-size:2.65rem}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}.opf-note--language,.opf-sheet__stamp,.opf-folio__back{transform:none}}
 @media print{body{background:#fff;color:#000}.opf-hero{padding:24px 0;color:#000;background:#fff;border-bottom:2px solid #000}.opf-hero h1,.opf-eyebrow,.opf-dek,.opf-boundary p,.opf-boundary__mark{color:#000}.opf-spine,.opf-controls,.opf-folio__back,.opf-case-catalog{display:none}.opf-workbench{display:block;padding-top:24px}.opf-sheet{min-height:0;box-shadow:none}.opf-reflection{display:block}}
+
+.opf-practice{margin-top:28px;padding:24px;border:1px solid var(--opf-line);border-top:4px solid var(--opf-teal);background:var(--opf-panel-solid)}.opf-practice h3{margin:0 0 12px;font:700 1.5rem/1.2 var(--opf-serif)}.opf-practice__context{color:var(--opf-thread-dark);font-weight:800}.opf-practice__boundary{padding:12px;border:1px solid var(--opf-line);color:var(--opf-muted);font-size:.85rem}.opf-practice__choices{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 20px}.opf-practice button{min-height:44px;padding:10px 14px;border:1px solid var(--opf-line);color:var(--opf-ink);background:var(--opf-sheet);cursor:pointer}.opf-practice button[aria-pressed="true"],.opf-practice button.opf-practice__primary{color:var(--opf-sheet);background:var(--opf-teal);border-color:var(--opf-teal)}.opf-practice a{color:var(--opf-teal);font-weight:800}.opf-practice__error{font-weight:800}.opf-practice__model{padding:14px;border:1px solid var(--opf-line);margin:16px 0}.opf-practice__model summary{min-height:44px;padding:10px 0;cursor:pointer;font-weight:800}.opf-practice__card{padding:16px;border:1px solid var(--opf-line);background:var(--opf-teal-pale)}.opf-practice__card p{margin:12px 0}.opf-practice__card strong{display:block}.opf-practice__actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}@media(max-width:620px){.opf-practice{padding:18px}.opf-practice__choices button{flex:1 1 180px}}@media print{.opf-practice button,.opf-practice__choices,.opf-practice__actions{display:none}.opf-practice,.opf-practice *{color:#000!important;background:#fff!important}.opf-practice__card{break-inside:avoid}}
 </style>
 </head>
 <body>
 <div id="app" aria-busy="true"><main class="opf-shell"><p>Loading case journeys…</p></main></div>
 <noscript><main class="opf-shell"><p>JavaScript is needed to explore these case journeys. Return to the library for the written Practice Cases.</p></main></noscript>
+<script id="case-practice-data" type="application/json">{
+  "version": 1,
+  "boundary": "New practice prompts · Pending faculty review. Use the selected chapter's supplied story as your fact source. Model examples illustrate language and do not add established findings. Follow this chapter's supervised task and any urgent escalation before routine practice. Rehearse privately away from this page; nothing is recorded or submitted.",
+  "reading": "Read the current story, supervised task, and simulation boundary above. Keep this chapter's time point. Earlier concerns are dated history unless the current story updates them; later chapters are not additional findings for this exercise.",
+  "exampleBoundary": "This is an outline to fill from the supplied story, not a completed patient assessment or a uniquely correct answer. Keep missing information explicit and discuss decisions with the supervising team.",
+  "finishText": "You have rehearsed one responsibility with this fictional patient. Finishing records no progress or score and makes no claim about readiness for independent care.",
+  "tasks": {
+    "interview": {
+      "label": "Interview this patient",
+      "sourceRef": "pg_interview.md",
+      "routes": {
+        "5": {
+          "prompt": "Privately rehearse an opening: explain your role and purpose, ask permission, and invite the person's priority from this chapter. Add one follow-up and name what you still need to clarify.",
+          "example": "I am a learner working with your team. I would like to understand what matters most to you today. Is it okay to begin? [Follow one concern supplied in this chapter, then identify unanswered questions.]",
+          "card": {
+            "try": "Explain your role, purpose, and permission before your first question.",
+            "notice": "Which supplied concern deserves a follow-up rather than an assumed answer.",
+            "ask": "Which part of this conversation should I clarify first?"
+          }
+        },
+        "15": {
+          "prompt": "Privately rehearse an opening, focused follow-ups, and a closing summary. Use the chapter's story and supervised task to choose priorities. Say what was supplied, what remains unknown, and what you will bring to your supervisor.",
+          "example": "Opening: [role, purpose, permission, and the person's priority]. Follow-up: [questions grounded in this chapter]. Summary: [supplied account, unanswered domains, and the next supervision question].",
+          "card": {
+            "try": "Close with a summary that separates the supplied account from unanswered questions.",
+            "notice": "Whether a model question or later chapter has slipped into your account as a fact.",
+            "ask": "Can we review my summary and the assessment I still need to complete?"
+          }
+        }
+      }
+    },
+    "rounds": {
+      "label": "Present on rounds",
+      "sourceRef": "doc_oral.md",
+      "routes": {
+        "5": {
+          "prompt": "Privately deliver a brief update from this chapter. Give the current context, one supplied change, the source of that information, and one question for supervision. Do not turn missing assessment into a reassuring finding.",
+          "example": "Context: [this chapter's setting and time]. Update: [supplied change and its source]. Still unknown: [information the story does not establish]. Question: [what you need from the supervising team].",
+          "card": {
+            "try": "Lead with this chapter's current context and the change that matters.",
+            "notice": "Which sentence needs its information source stated aloud.",
+            "ask": "What is the most useful missing fact for me to bring to this discussion?"
+          }
+        },
+        "15": {
+          "prompt": "Organize a concise update using the same chapter facts you would use in a note. Separate the person's report, other reports, observations, interpretation, and uncertainty. Rehearse a shorter second version that retains the missing information and supervision question.",
+          "example": "Current context → supplied events with sources → patient report → supplied observations → working interpretation and uncertainty → current safety information or gaps → supervision question. Each part must come from this chapter or remain explicitly unassessed.",
+          "card": {
+            "try": "Make a shorter second presentation without removing uncertainty.",
+            "notice": "Whether your interpretation is being presented as a supplied observation.",
+            "ask": "Which part of my reasoning or missing assessment should we review together?"
+          }
+        }
+      }
+    },
+    "note": {
+      "label": "Write a progress note",
+      "sourceRef": "doc_oral.md",
+      "routes": {
+        "5": {
+          "prompt": "Privately draft two short sections: current context or interval events, and the person's report. Use the same chapter information as your rounds update. Keep the source of each fact visible and list what still needs clarification.",
+          "example": "Context or interval events: [supplied information, time point, and source]. Patient report: [only supplied words or concerns]. To clarify: [information not established in this chapter].",
+          "card": {
+            "try": "Separate supplied events from the person's own report in your draft.",
+            "notice": "Which statement came from an illustrative example rather than the current story.",
+            "ask": "Can you check that these sections preserve the supplied facts and their sources?"
+          }
+        },
+        "15": {
+          "prompt": "Privately draft a student progress note from this chapter: context, interval events, patient report, supplied observations or MSE, formulation with uncertainty, current safety information or gaps, and the team's established decisions or supervision questions. Use the same facts as rounds; invent no diagnosis, finding, treatment, or disposition decision. Follow local documentation policy.",
+          "example": "Context: [setting and time point]. Events and patient report: [supplied facts with sources]. Observations or MSE: [only what is supplied; name gaps]. Formulation: [working interpretation and uncertainty]. Safety: [current supplied assessment or what remains missing]. Plan: [established team decisions and questions to review, kept distinct].",
+          "card": {
+            "try": "Check each asserted finding against this chapter before finalizing a real note with supervision.",
+            "notice": "Whether an earlier finding has been copied forward without a current update.",
+            "ask": "Which part of my draft needs clarification before it can represent today's assessment?"
+          }
+        }
+      }
+    }
+  }
+}</script>
 <script src="case-journeys.js"></script>
 <!-- crisis-block-html -->
 </body>

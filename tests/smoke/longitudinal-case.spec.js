@@ -165,3 +165,94 @@ test('Eli pilot remains on the same chapter when launched inside the learner she
   expect(await frame.locator('html').evaluate(el=>el.scrollWidth<=el.ownerDocument.defaultView.innerWidth)).toBe(true);
   await expect(frame.getByText('Discuss · carry it to rounds',{exact:true})).toBeVisible();
 });
+
+for(const [index,slug] of names.entries())test(`${slug}: interview, rounds and note practice share the selected chapter without saved responses`,async({page},info)=>{
+ const data=JSON.parse(fs.readFileSync(new URL(files[index],import.meta.url),'utf8'));
+ const tasks={interview:'Interview this patient',rounds:'Present on rounds',note:'Write a progress note'};
+ const errors=[],requests=[];page.on('pageerror',error=>errors.push(error.message));page.on('request',request=>requests.push(request.method()));
+ await page.addInitScript(()=>localStorage.setItem('cw_longitudinal_v1','preserved-case-progress'));
+ await page.goto(`/tools/one-patient-six-weeks.html?case=${slug}&chapter=2`);
+ const practice=page.locator('#case-practice');
+ await expect(practice.getByRole('heading',{name:'Practice with '+data.patient.displayName,exact:true})).toBeVisible();
+ await expect(practice.getByRole('button',{pressed:true})).toHaveCount(0);
+ const saved=await page.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}));
+ await practice.getByRole('button',{name:'Start practice',exact:true}).click();
+ await expect(practice.getByRole('alert')).toHaveText('Choose a task and time to begin.');
+ for(const task of Object.keys(tasks))for(const minutes of [5,15]){
+  await practice.getByRole('button',{name:tasks[task],exact:true}).click();
+  await practice.getByRole('button',{name:'About '+minutes+' minutes',exact:true}).click();
+  await practice.getByRole('button',{name:'Start practice',exact:true}).click();
+  await expect(practice.locator('#practice-heading')).toBeFocused();
+  await expect(practice.locator('.opf-practice__context')).toHaveText(data.patient.displayName+' · '+data.weeks[1].label);
+  await expect(page.getByRole('tabpanel').getByText(data.weeks[1].patientState,{exact:true})).toHaveCount(1);
+  await expect(practice.getByRole('link')).toHaveAttribute('href','#case-panel-title');
+  await practice.getByRole('button',{name:'Continue to rehearsal',exact:true}).click();
+  await expect(practice.locator('#practice-heading')).toBeFocused();
+  await expect(practice.locator('details')).not.toHaveAttribute('open','');
+  await practice.getByText('Compare an outline',{exact:true}).press('Enter');
+  await expect(practice.locator('details')).toHaveAttribute('open','');
+  await practice.getByRole('button',{name:'See tomorrow card',exact:true}).click();
+  await expect(practice.locator('.opf-practice__card')).toContainText('Ask your supervisor');
+  await practice.getByRole('button',{name:'Finish practice',exact:true}).click();
+  await expect(practice.getByRole('heading',{name:'Practice finished',exact:true})).toBeFocused();
+  await practice.getByRole('button',{name:'Choose another task or time',exact:true}).click();
+  await expect(practice.getByRole('button',{pressed:true})).toHaveCount(0);
+ }
+ await practice.getByRole('button',{name:tasks.interview,exact:true}).click();
+ await practice.getByRole('button',{name:'About 15 minutes',exact:true}).click();
+ await practice.getByRole('button',{name:'Start practice',exact:true}).click();
+ for(const name of ['rounds','the note']){
+  await practice.getByRole('button',{name:'Continue to rehearsal',exact:true}).click();
+  await expect(practice.locator('details')).not.toHaveAttribute('open','');
+  await practice.getByRole('button',{name:'See tomorrow card',exact:true}).click();
+  await practice.getByRole('button',{name:'Continue to '+name+' with '+data.patient.displayName,exact:true}).click();
+  await expect(practice.getByRole('heading',{name:'Read this chapter',exact:true})).toBeFocused();
+  await expect(practice.locator('.opf-practice__context')).toHaveText(data.patient.displayName+' · '+data.weeks[1].label);
+  await expect(practice).toContainText('About 15 minutes');
+ }
+ await page.getByRole('button',{name:'Next chapter',exact:true}).click();
+ await expect(practice.getByRole('button',{pressed:true})).toHaveCount(0);
+ await expect(practice.locator('.opf-practice__context')).toHaveText(data.patient.displayName+' · '+data.weeks[2].label);
+ await page.reload();await expect(practice.getByRole('button',{pressed:true})).toHaveCount(0);
+ expect(await page.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}))).toBe(saved);
+ expect(await page.evaluate(()=>localStorage.getItem('cw_longitudinal_v1'))).toBe('preserved-case-progress');
+ await expect(page.locator('input,textarea,[contenteditable="true"]')).toHaveCount(0);
+ expect(requests.every(method=>method==='GET')).toBe(true);expect(errors).toEqual([]);
+ if(slug==='leah')await practice.screenshot({path:info.outputPath('connected-practice-desktop.png')});
+});
+
+test('connected practice works in the shell and reflows on a phone in both themes',async({page},info)=>{
+ await page.addInitScript(role=>localStorage.setItem('cw_frontdoor_v1',JSON.stringify({role,tab:'today',viewWeek:1,autoAdvance:false})),info.project.name==='nav-res'?'pgy1':'student');
+ await page.goto('/?tool=one-patient-six-weeks.html&case=leah&chapter=3');
+ const frame=page.frameLocator('iframe.toolframe'),practice=frame.locator('#case-practice');
+ await expect(practice).toContainText('Leah · After medical stabilization · day 4');
+ for(const theme of ['light','dark'])for(const width of [320,390]){
+  await page.setViewportSize({width,height:844});
+  await frame.locator('html').evaluate((el,value)=>el.setAttribute('data-theme',value),theme);
+  expect(await frame.locator('html').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+ }
+ await practice.getByRole('button',{name:'Write a progress note',exact:true}).press('Enter');
+ await practice.getByRole('button',{name:'About 15 minutes',exact:true}).press('Enter');
+ await practice.getByRole('button',{name:'Start practice',exact:true}).press('Enter');
+ await practice.getByRole('button',{name:'Continue to rehearsal',exact:true}).press('Enter');
+ await practice.getByRole('button',{name:'See tomorrow card',exact:true}).press('Enter');
+ await expect(practice.getByRole('heading',{name:'Your tomorrow card',exact:true})).toBeFocused();
+ await frame.locator('html').evaluate(el=>el.style.fontSize='200%');
+ expect(await frame.locator('html').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+ await frame.locator('html').evaluate(el=>el.style.fontSize='');
+ await page.emulateMedia({media:'print'});
+ expect(await practice.locator('.opf-practice__card').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(255, 255, 255)');
+ await page.emulateMedia({media:'screen'});
+ await frame.locator('html').evaluate(el=>el.setAttribute('data-theme','light'));
+ await practice.screenshot({path:info.outputPath('connected-practice-mobile.png')});
+});
+
+test('missing new practice pack keeps existing Case Journeys readable',async({page})=>{
+ await page.route('**/tools/one-patient-six-weeks.html*',async route=>{
+  const response=await route.fetch();const body=(await response.text()).replace('id="case-practice-data"','id="missing-practice-data"');await route.fulfill({response,body});
+ });
+ await page.goto('/tools/one-patient-six-weeks.html?case=eli');
+ await expect(page.getByRole('heading',{name:'Practice is unavailable',exact:true})).toBeVisible();
+ await expect(page.getByRole('tab')).toHaveCount(6);await page.getByRole('tab').nth(2).click();
+ await expect(page.getByRole('tabpanel')).toContainText('When apparent agitation may be an adverse effect');
+});
