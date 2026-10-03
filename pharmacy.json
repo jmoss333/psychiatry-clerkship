@@ -68,7 +68,7 @@
       },
       "pk": {
         "halfLifeHours": "20",
-        "timeToEffect": "Hours for agitation; 2–4 weeks for psychosis"
+        "timeToEffect": "Hours for agitation; 2\u20134 weeks for psychosis"
       },
       "monitoring": {
         "baseline": [
@@ -91,7 +91,7 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Lead-pipe rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Lead-pipe rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
@@ -125,9 +125,9 @@
         ],
         "t2": [
           "Tempo plus reflexes triages the hyperthermic patient: hyporeflexic and slow-onset points to NMS; hyperreflexic with clonus points to serotonin syndrome.",
-          "IV haloperidol is on the QT-prolonging list — check what the patient is already taking before adding a second agent.",
+          "IV haloperidol is on the QT-prolonging list \u2014 check what the patient is already taking before adding a second agent.",
           "Haloperidol decanoate is a first-generation LAI option.",
-          "Akathisia vs agitation: ask about an inner urge to move before labeling restlessness as anxiety or agitation. Akathisia is the great inpatient impostor — treat the cause, not with more dopamine blockade: reduce or switch the antipsychotic, then propranolol, then benztropine if parkinsonism co-exists, then a benzodiazepine adjunct."
+          "Akathisia vs agitation: ask about an inner urge to move before labeling restlessness as anxiety or agitation. Akathisia is the great inpatient impostor \u2014 treat the cause, not with more dopamine blockade: reduce or switch the antipsychotic, then propranolol, then benztropine if parkinsonism co-exists, then a benzodiazepine adjunct."
         ]
       },
       "attendingAsks": [
@@ -215,7 +215,7 @@
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram \u2014 and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
@@ -225,7 +225,7 @@
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
@@ -245,7 +245,7 @@
             },
             {
               "page": "14_Tracks/Resident/adv_psychopharmacology.md",
-              "quote": "first-generation depots — haloperidol and fluphenazine decanoate"
+              "quote": "first-generation depots \u2014 haloperidol and fluphenazine decanoate"
             },
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
@@ -257,7 +257,7 @@
             },
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
             }
           ],
           "inpatientUses": [
@@ -293,7 +293,7 @@
             "field": "cyp_pathways",
             "upstreamValue": "2D6 Substrate; 3A4 Substrate; 1A2 Substrate",
             "usedValue": "2D6, 3A4",
-            "basis": "Label lists CYP3A4 and CYP2D6; 1A2 contribution is minor — reviewer to confirm."
+            "basis": "Label lists CYP3A4 and CYP2D6; 1A2 contribution is minor \u2014 reviewer to confirm."
           }
         ]
       },
@@ -394,7 +394,7 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
@@ -507,7 +507,7 @@
             },
             {
               "page": "14_Tracks/Resident/adv_psychopharmacology.md",
-              "quote": "first-generation depots — haloperidol and fluphenazine decanoate"
+              "quote": "first-generation depots \u2014 haloperidol and fluphenazine decanoate"
             }
           ],
           "monitoring": [
@@ -519,11 +519,11 @@
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
             },
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
             }
           ],
           "adverseEffects.common": [
@@ -570,7 +570,7 @@
             "field": "drug_class",
             "upstreamValue": "Typical Antipsychotic",
             "usedValue": "first-generation antipsychotic (high potency)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -611,7 +611,7 @@
       "dailymedSetId": "d1d8fd92-bba6-4521-8cea-3e1089ffd951",
       "labelVersionDate": "2026-09-03",
       "mechanism": {
-        "t1": "Low-potency D2 antagonist with strong antihistaminic, anticholinergic, and α1-blocking effects."
+        "t1": "Low-potency D2 antagonist with strong antihistaminic, anticholinergic, and \u03b11-blocking effects."
       },
       "fdaIndications": [
         "Psychotic disorders and schizophrenia",
@@ -673,7 +673,7 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
@@ -793,7 +793,7 @@
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
             },
             {
               "page": "04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md",
@@ -846,7 +846,7 @@
             "field": "drug_class",
             "upstreamValue": "Typical Antipsychotic",
             "usedValue": "first-generation antipsychotic (low potency)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -938,7 +938,7 @@
       },
       "pk": {
         "halfLifeHours": "30",
-        "timeToEffect": "1–2 weeks"
+        "timeToEffect": "1\u20132 weeks"
       },
       "monitoring": {
         "baseline": [
@@ -993,7 +993,7 @@
       },
       "pearls": {
         "t1": [
-          "Choose antipsychotics by side-effect profile, not recency — olanzapine sits at the heavy end for weight and glucose.",
+          "Choose antipsychotics by side-effect profile, not recency \u2014 olanzapine sits at the heavy end for weight and glucose.",
           "Baseline and ongoing metabolic monitoring is part of prescribing an antipsychotic, not optional."
         ],
         "t2": [
@@ -1088,7 +1088,7 @@
           "pearls": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "Choose antipsychotics by side-effect profile (CATIE), not by recency — 74% stopped their drug within 18 months"
+              "quote": "Choose antipsychotics by side-effect profile (CATIE), not by recency \u2014 74% stopped their drug within 18 months"
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
@@ -1129,7 +1129,7 @@
             "field": "cyp_pathways",
             "upstreamValue": "1A2 substrate; 2D6 substrate",
             "usedValue": "1A2",
-            "basis": "Label: primarily CYP1A2 (2D6 minor) — reviewer to confirm."
+            "basis": "Label: primarily CYP1A2 (2D6 minor) \u2014 reviewer to confirm."
           }
         ]
       },
@@ -1197,12 +1197,11 @@
         }
       ],
       "dosing": {
-        "titration": "Titrate over days; ODT, liquid, and several long-acting injectable forms exist. Confirm dose with pharmacy.",
+        "titration": "Selected label covers oral tablets, oral solution and orally disintegrating tablets. Titrate with response and tolerability; severe renal or hepatic impairment requires cautious starting and adjustment. LAI initiation and administration need the specific product label. Confirm the plan with pharmacy.",
         "forms": [
           "PO",
           "ODT",
-          "liquid",
-          "LAI"
+          "liquid"
         ],
         "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7e117c7e-02fc-4343-92a1-230061dfc5e0"
       },
@@ -1221,13 +1220,16 @@
           "Weight/BMI and waist",
           "Fasting glucose or A1c",
           "Lipids",
-          "Blood pressure"
+          "Blood pressure",
+          "Binary blood-test and ECG flags are not exemptions: metabolic assessment remains required; consider ECG/electrolytes with cardiac or QT risk",
+          "CBC monitoring when there is prior significant low WBC or drug-induced leukopenia"
         ],
         "ongoing": [
           "Glucose/lipids at ~12 weeks then annually",
           "Weight each visit",
           "AIMS for tardive dyskinesia",
-          "Prolactin if symptomatic"
+          "Prolactin if symptomatic",
+          "Orthostasis, falls and symptomatic prolactin elevation; review cardiac risk as circumstances change"
         ],
         "sourcePage": "med_monitoring.md"
       },
@@ -1242,7 +1244,7 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
@@ -1259,8 +1261,8 @@
           ]
         },
         "keyTraps": [
-          "Fluoxetine and paroxetine are potent CYP2D6 inhibitors; fluvoxamine is a potent CYP1A2 and CYP2C19 inhibitor.",
-          "CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline."
+          "Fluoxetine and paroxetine inhibit CYP2D6 and increase exposure; assess adjustment with pharmacy.",
+          "Carbamazepine and other enzyme inducers lower exposure; reassess when an inducer starts or stops."
         ]
       },
       "pearls": {
@@ -1356,16 +1358,10 @@
               "quote": "- Antipsychotics (risperidone, aripiprazole) treat autism-*associated* irritability, not the core social-communication features."
             }
           ],
-          "monitoring": [
-            {
-              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **Antipsychotics (metabolic)** | Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia |"
-            }
-          ],
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
             }
           ],
           "adverseEffects.common": [
@@ -1378,16 +1374,6 @@
             {
               "page": "reconnect:cyp_pathways",
               "quote": "2D6 substrate"
-            }
-          ],
-          "interactions.keyTraps": [
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Answer:** Fluoxetine and paroxetine are potent CYP2D6 inhibitors; fluvoxamine is a potent CYP1A2 and CYP2C19 inhibitor."
-            },
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Evidence:** CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline."
             }
           ],
           "pearls": [
@@ -1417,15 +1403,23 @@
           "familyExplainer.text",
           "inpatientUses[0]",
           "interactions.cyp",
+          "interactions.keyTraps",
           "mechanism.t1",
-          "pearls.t1[0]"
+          "monitoring",
+          "monitoring.baseline",
+          "monitoring.ongoing",
+          "pearls",
+          "pearls.t1[0]",
+          "populations",
+          "populations.hepatic",
+          "populations.renal"
         ],
         "upstreamDiscrepancies": [
           {
             "field": "drug_class",
             "upstreamValue": "Atypical Antipsychotic",
             "usedValue": "second-generation antipsychotic",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -1452,7 +1446,11 @@
             "monitoring.ongoing"
           ]
         }
-      ]
+      ],
+      "populations": {
+        "renal": "Severe renal impairment requires a lower starting exposure and careful titration under the selected oral label.",
+        "hepatic": "Severe hepatic impairment requires cautious starting and titration."
+      }
     },
     {
       "id": "paliperidone",
@@ -1533,12 +1531,12 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
             "name": "Accumulation in renal impairment",
-            "recognize": "Renal impairment: dose-reduce lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride — lithium is not recommended at CrCl <30 and paliperidone palmitate LAI at CrCl <50; paliperidone is heavily renally cleared.",
+            "recognize": "Renal impairment: dose-reduce lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride \u2014 lithium is not recommended at CrCl <30 and paliperidone palmitate LAI at CrCl <50; paliperidone is heavily renally cleared.",
             "firstMove": "Check creatinine clearance before starting or choosing the LAI."
           }
         ]
@@ -1554,7 +1552,7 @@
       },
       "pearls": {
         "t1": [
-          "Paliperidone is risperidone's active metabolite — the same prolactin and EPS profile, cleared by the kidney."
+          "Paliperidone is risperidone's active metabolite \u2014 the same prolactin and EPS profile, cleared by the kidney."
         ],
         "t2": [
           "Consider an LAI when nonadherence drives relapse; the inpatient stay is a natural place to start and bridge."
@@ -1649,11 +1647,11 @@
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
             },
             {
               "page": "14_Tracks/Resident/cl_reference.md",
-              "quote": "- **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride** — lithium is not recommended at CrCl <30 and paliperidone palmitate LAI at CrCl <50; paliperidone is heavily renally cleared."
+              "quote": "- **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride** \u2014 lithium is not recommended at CrCl <30 and paliperidone palmitate LAI at CrCl <50; paliperidone is heavily renally cleared."
             }
           ],
           "adverseEffects.common": [
@@ -1671,7 +1669,7 @@
           "populations": [
             {
               "page": "14_Tracks/Resident/cl_reference.md",
-              "quote": "- **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride** — lithium is not recommended at CrCl <30 and paliperidone palmitate LAI at CrCl <50; paliperidone is heavily renally cleared."
+              "quote": "- **Renal impairment:** dose-reduce **lithium, gabapentin/pregabalin, risperidone/paliperidone, amisulpride** \u2014 lithium is not recommended at CrCl <30 and paliperidone palmitate LAI at CrCl <50; paliperidone is heavily renally cleared."
             }
           ],
           "pearls": [
@@ -1708,7 +1706,7 @@
             "field": "drug_class",
             "upstreamValue": "Atypical Antipsychotic",
             "usedValue": "second-generation antipsychotic",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -1740,8 +1738,7 @@
       "id": "quetiapine",
       "generic": "quetiapine",
       "brands": [
-        "Seroquel",
-        "Seroquel XR"
+        "Seroquel"
       ],
       "group": "antipsychotic",
       "class": [
@@ -1751,13 +1748,13 @@
       "dailymedSetId": "8ae62aaf-f8c5-417f-baac-0098369ca322",
       "labelVersionDate": "2026-04-10",
       "mechanism": {
-        "t1": "Low D2 occupancy with strong H1 and α1 antagonism; its metabolite norquetiapine inhibits norepinephrine reuptake."
+        "t1": "Low D2 occupancy with strong H1 and \u03b11 antagonism; its metabolite norquetiapine inhibits norepinephrine reuptake."
       },
       "fdaIndications": [
         "Schizophrenia",
-        "Bipolar I: manic episodes",
-        "Bipolar depression",
-        "XR: adjunct in major depressive disorder"
+        "Bipolar I: acute manic episodes, alone or adjunct to lithium/divalproex",
+        "Acute depressive episodes associated with bipolar disorder",
+        "Bipolar I maintenance adjunct to lithium/divalproex (selected immediate-release product)"
       ],
       "boxedWarning": {
         "present": true,
@@ -1765,21 +1762,20 @@
       },
       "inpatientUses": [
         {
-          "use": "Bipolar depression and maintenance (prevents both poles)",
+          "use": "Acute bipolar depression (selected immediate-release product)",
           "offLabel": false,
           "evidenceIds": []
         },
         {
-          "use": "Switch option when akathisia or EPS limit another agent",
+          "use": "Bipolar I maintenance as adjunct to lithium or divalproex (selected immediate-release product)",
           "offLabel": false,
           "evidenceIds": []
         }
       ],
       "dosing": {
-        "titration": "Titrate over several days for sedation and orthostasis; IR and XR are not interchangeable one-for-one. Confirm dose with pharmacy.",
+        "titration": "Selected label: immediate-release oral tablets. Titrate cautiously for sedation and orthostasis; hepatic impairment and strong CYP3A4 inhibitors or inducers require product-specific adjustment. Do not infer an IR/XR conversion rule or adjunct-MDD indication from this label; XR requires separate sources and review. Confirm the plan with pharmacy.",
         "forms": [
-          "PO",
-          "ER"
+          "PO"
         ],
         "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8ae62aaf-f8c5-417f-baac-0098369ca322"
       },
@@ -1798,12 +1794,16 @@
           "Weight/BMI and waist",
           "Fasting glucose or A1c",
           "Lipids",
-          "Blood pressure"
+          "Blood pressure",
+          "Assess orthostasis, falls and cardiac/QT risk; binary ECG or blood-test flags do not waive risk-based or metabolic monitoring",
+          "CBC if prior significant low WBC or drug-induced leukopenia",
+          "Lens examination when starting treatment, as recommended by the selected label"
         ],
         "ongoing": [
           "Glucose/lipids at ~12 weeks then annually",
           "Weight each visit",
-          "AIMS for tardive dyskinesia"
+          "AIMS for tardive dyskinesia",
+          "Lens examinations at six-month intervals during chronic treatment under the selected label"
         ],
         "sourcePage": "med_monitoring.md"
       },
@@ -1818,7 +1818,7 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
@@ -1835,25 +1835,25 @@
           ]
         },
         "keyTraps": [
-          "Strong CYP3A4 inhibitors or inducers",
-          "Other sedating or QT-prolonging agents"
+          "Strong CYP3A4 inhibitors and inducers require label-specific adjustment; reassess when they start or stop.",
+          "Other sedating drugs increase falls and impairment. Review QT-prolonging drugs and electrolyte abnormalities."
         ]
       },
       "pearls": {
         "t1": [
-          "Match the mood stabilizer to the polarity — lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
+          "The selected immediate-release label supports acute bipolar depression and bipolar I maintenance as adjunct to lithium or divalproex; it does not establish XR adjunct-MDD scope."
         ],
         "t2": [
-          "Low-dose quetiapine for sleep carries the full metabolic and fall risk without an antipsychotic indication — question it at reconciliation."
+          "Use for sleep alone is not an indication in the selected label; review sedation, falls and metabolic risks before off-label use."
         ]
       },
       "attendingAsks": [
-        "Which mood stabilizers prevent both poles?",
-        "Why might you switch to quetiapine for akathisia?",
-        "What is the problem with quetiapine for sleep?"
+        "What bipolar uses does the selected immediate-release label support?",
+        "How is quetiapine used for bipolar I maintenance in this label?",
+        "What should you review before off-label use for sleep?"
       ],
       "familyExplainer": {
-        "text": "Quetiapine treats bipolar disorder, depression, and psychosis. It is very sedating and can make people dizzy when they stand. It can also cause weight gain and raise blood sugar. The team will check weight and blood tests.",
+        "text": "This form of quetiapine treats psychosis and bipolar mood episodes. It may be used with another drug to help keep bipolar symptoms from returning. It can make you sleepy or dizzy when you stand. The team will check weight, blood sugar and other blood tests.",
         "handoutRef": "FH-MED03"
       },
       "evidenceIds": [
@@ -1925,26 +1925,10 @@
               "quote": "D2 antagonist; 5-HT2A antagonist; H1 antagonist; alpha-1 antagonist"
             }
           ],
-          "inpatientUses": [
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** — lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
-            },
-            {
-              "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "First step: **reduce the antipsychotic dose or switch to a lower-dopamine-affinity agent** (e.g., quetiapine, which has lower D2 occupancy at clinical doses)"
-            }
-          ],
-          "monitoring": [
-            {
-              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **Antipsychotics (metabolic)** | Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia |"
-            }
-          ],
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
             }
           ],
           "adverseEffects.common": [
@@ -1958,18 +1942,6 @@
               "page": "reconnect:cyp_pathways",
               "quote": "3A4 substrate"
             }
-          ],
-          "pearls": [
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** — lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
-            }
-          ],
-          "familyExplainer.text": [
-            {
-              "page": "reconnect:counseling",
-              "quote": "Very sedating - take at bedtime. Causes weight gain. Monitor blood sugar. Report vision changes. XR for once daily dosing."
-            }
           ]
         },
         "authoredFields": [
@@ -1980,18 +1952,25 @@
           "dosing.forms",
           "dosing.titration",
           "familyExplainer.text",
+          "inpatientUses",
           "interactions.cyp",
+          "interactions.keyTraps",
           "interactions.keyTraps[0]",
           "interactions.keyTraps[1]",
           "mechanism.t1",
-          "pearls.t2[0]"
+          "monitoring",
+          "monitoring.baseline",
+          "pearls",
+          "pearls.t2[0]",
+          "populations",
+          "populations.hepatic"
         ],
         "upstreamDiscrepancies": [
           {
             "field": "drug_class",
             "upstreamValue": "Atypical Antipsychotic",
             "usedValue": "second-generation antipsychotic",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -2000,6 +1979,7 @@
           "id": "ask0",
           "askIndex": 0,
           "revealFrom": [
+            "fdaIndications",
             "pearls.t1[0]"
           ]
         },
@@ -2017,15 +1997,16 @@
             "pearls.t2[0]"
           ]
         }
-      ]
+      ],
+      "populations": {
+        "hepatic": "Hepatic impairment requires cautious starting and gradual titration under the selected immediate-release label."
+      }
     },
     {
       "id": "aripiprazole",
       "generic": "aripiprazole",
       "brands": [
-        "Abilify",
-        "Abilify Maintena",
-        "Abilify Asimtufii"
+        "Abilify"
       ],
       "group": "antipsychotic",
       "class": [
@@ -2061,12 +2042,9 @@
         }
       ],
       "dosing": {
-        "titration": "Long half-life: changes take about two weeks to reach steady state. LAIs require oral overlap or a loading strategy. Confirm with pharmacy.",
+        "titration": "Selected label: oral tablets. Allow time to assess response and tolerability; CYP2D6 poor-metabolizer status and CYP2D6/CYP3A4 inhibitors or strong CYP3A4 inducers can require adjustment. LAI, liquid and ODT products need separate labels and review. Confirm the plan with pharmacy.",
         "forms": [
-          "PO",
-          "ODT",
-          "liquid",
-          "LAI"
+          "PO"
         ],
         "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=c040bd1d-45b7-49f2-93ea-aed7220b30ac"
       },
@@ -2090,7 +2068,9 @@
         "ongoing": [
           "Glucose/lipids at ~12 weeks then annually",
           "Weight each visit",
-          "AIMS for tardive dyskinesia"
+          "AIMS for tardive dyskinesia",
+          "Akathisia and new compulsive urges",
+          "Orthostasis and falls; blood-test or ECG flags do not waive metabolic or risk-based assessment"
         ],
         "sourcePage": "med_monitoring.md"
       },
@@ -2105,18 +2085,18 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
             "name": "Akathisia",
-            "recognize": "Inner restlessness, often early — the most common reason it is stopped.",
-            "firstMove": "Reduce dose or switch before adding drugs."
+            "recognize": "New inner restlessness or inability to remain still; assess separately from worsening agitation.",
+            "firstMove": "Notify the treating team to assess symptoms and the medication plan."
           },
           {
-            "name": "Impulse-control problems",
-            "recognize": "New gambling, spending, or other compulsive urges.",
-            "firstMove": "Ask directly; report to the team."
+            "name": "Pathological gambling and compulsive behaviors",
+            "recognize": "New gambling, shopping, eating or sexual urges that are hard to control.",
+            "firstMove": "Ask the patient and caregivers directly; notify the prescriber to consider reduction or discontinuation."
           }
         ]
       },
@@ -2128,25 +2108,25 @@
           ]
         },
         "keyTraps": [
-          "CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline.",
-          "Strong CYP2D6 or 3A4 inhibitors raise levels"
+          "Strong CYP2D6 or CYP3A4 inhibitors raise exposure; CYP2D6 poor-metabolizer status affects adjustment.",
+          "Strong CYP3A4 inducers lower exposure; reassess when interacting drugs start or stop."
         ]
       },
       "pearls": {
         "t1": [
-          "If a patient gains >7% body weight on an antipsychotic, consider switching to a lower-risk agent (aripiprazole, ziprasidone, lurasidone) before adding metformin."
+          "Assess akathisia and compulsive urges directly. Weight gain and metabolic effects can still occur; do not treat this agent as metabolically risk-free."
         ],
         "t2": [
-          "Aripiprazole and lurasidone carry the lowest risk. (metabolic)"
+          "Comparative metabolic rankings and a switching-versus-metformin strategy require separate evidence and individualized review; the selected label does not establish them."
         ]
       },
       "attendingAsks": [
-        "What side effect most often limits aripiprazole early?",
-        "Where does aripiprazole sit on metabolic risk?",
-        "What would you do before adding metformin for weight gain?"
+        "How do you distinguish akathisia from worsening agitation?",
+        "What metabolic monitoring is still needed with aripiprazole?",
+        "Which compulsive behaviors should you ask about?"
       ],
       "familyExplainer": {
-        "text": "Aripiprazole treats psychosis, bipolar disorder, and depression. It causes less weight gain than many similar drugs. It can cause a strong restless feeling. Tell the team about restlessness. Also tell them about new urges to gamble or spend.",
+        "text": "This drug treats psychosis and mania. It can also be added to a drug for depression. It can cause weight gain or a strong restless feeling. Tell the team about restlessness or new urges to gamble, shop, eat or have sex.",
         "handoutRef": "FH-MED03"
       },
       "evidenceIds": [
@@ -2224,22 +2204,6 @@
               "quote": "- **Pearl:** If a patient gains >7% body weight on an antipsychotic, consider switching to a lower-risk agent (aripiprazole, ziprasidone, lurasidone) before adding metformin."
             }
           ],
-          "monitoring": [
-            {
-              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **Antipsychotics (metabolic)** | Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia |"
-            }
-          ],
-          "adverseEffects.dangerous": [
-            {
-              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
-            },
-            {
-              "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
-            }
-          ],
           "adverseEffects.common": [
             {
               "page": "reconnect:common_side_effects",
@@ -2251,31 +2215,10 @@
               "page": "reconnect:cyp_pathways",
               "quote": "2D6 substrate; 3A4 substrate"
             }
-          ],
-          "interactions.keyTraps": [
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Evidence:** CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline."
-            }
-          ],
-          "pearls": [
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** If a patient gains >7% body weight on an antipsychotic, consider switching to a lower-risk agent (aripiprazole, ziprasidone, lurasidone) before adding metformin."
-            },
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "Aripiprazole and lurasidone carry the lowest risk."
-            }
-          ],
-          "familyExplainer.text": [
-            {
-              "page": "reconnect:counseling",
-              "quote": "Weight-neutral antipsychotic. Watch for restlessness/akathisia. Report any compulsive behaviors (gambling, shopping). LAI available."
-            }
           ]
         },
         "authoredFields": [
+          "adverseEffects.dangerous",
           "adverseEffects.dangerous[0].firstMove",
           "adverseEffects.dangerous[1].firstMove",
           "adverseEffects.dangerous[1].recognize",
@@ -2287,15 +2230,21 @@
           "familyExplainer.text",
           "inpatientUses[1]",
           "interactions.cyp",
+          "interactions.keyTraps",
           "interactions.keyTraps[1]",
-          "mechanism.t1"
+          "mechanism.t1",
+          "monitoring",
+          "monitoring.ongoing",
+          "pearls",
+          "pearls.t1",
+          "pearls.t2"
         ],
         "upstreamDiscrepancies": [
           {
             "field": "drug_class",
             "upstreamValue": "Atypical Antipsychotic",
             "usedValue": "second-generation antipsychotic (D2 partial agonist)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -2311,14 +2260,14 @@
           "id": "ask1",
           "askIndex": 1,
           "revealFrom": [
-            "pearls.t2[0]"
+            "monitoring"
           ]
         },
         {
           "id": "ask2",
           "askIndex": 2,
           "revealFrom": [
-            "pearls.t1[0]"
+            "adverseEffects.dangerous[2]"
           ]
         }
       ]
@@ -2355,7 +2304,7 @@
         }
       ],
       "dosing": {
-        "titration": "Take with a meal — absorption roughly doubles with food. Confirm dose with pharmacy.",
+        "titration": "Take with a meal \u2014 absorption roughly doubles with food. Confirm dose with pharmacy.",
         "forms": [
           "PO",
           "IM"
@@ -2400,7 +2349,7 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
@@ -2514,7 +2463,7 @@
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram \u2014 and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
@@ -2524,11 +2473,11 @@
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram \u2014 and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
             }
           ],
           "adverseEffects.common": [
@@ -2546,7 +2495,7 @@
           "interactions.keyTraps": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram \u2014 and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
             }
           ],
           "pearls": [
@@ -2584,7 +2533,7 @@
             "field": "drug_class",
             "upstreamValue": "Atypical Antipsychotic",
             "usedValue": "second-generation antipsychotic",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           },
           {
             "field": "brands",
@@ -2692,7 +2641,7 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
@@ -2811,11 +2760,11 @@
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
             },
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
             }
           ],
           "adverseEffects.common": [
@@ -2861,7 +2810,7 @@
             "field": "drug_class",
             "upstreamValue": "Atypical Antipsychotic",
             "usedValue": "second-generation antipsychotic",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -2964,7 +2913,7 @@
         "dangerous": [
           {
             "name": "Neuroleptic malignant syndrome",
-            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome.",
+            "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
             "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
           },
           {
@@ -3081,11 +3030,11 @@
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker — slower and stiffer than serotonin syndrome."
+              "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
             },
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
             }
           ],
           "adverseEffects.common": [
@@ -3131,7 +3080,7 @@
             "field": "drug_class",
             "upstreamValue": "Atypical Antipsychotic",
             "usedValue": "second-generation antipsychotic (D3-preferring D2/D3 partial agonist)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -3191,7 +3140,7 @@
       },
       "inpatientUses": [
         {
-          "use": "Treatment-resistant schizophrenia (failure of two adequate antipsychotic trials) — the only agent with demonstrated superiority",
+          "use": "Treatment-resistant schizophrenia (failure of two adequate antipsychotic trials) \u2014 the only agent with demonstrated superiority",
           "offLabel": false,
           "evidenceIds": []
         },
@@ -3218,7 +3167,7 @@
       },
       "pk": {
         "halfLifeHours": "12",
-        "timeToEffect": "2–4 weeks; up to 6 months for full effect"
+        "timeToEffect": "2\u20134 weeks; up to 6 months for full effect"
       },
       "monitoring": {
         "baseline": [
@@ -3228,7 +3177,7 @@
           "Troponin/CRP (many protocols)"
         ],
         "ongoing": [
-          "ANC weekly × 6 months → every 2 weeks × 6 months → monthly (per the prescribing information; not REMS-enforced)",
+          "ANC weekly \u00d7 6 months \u2192 every 2 weeks \u00d7 6 months \u2192 monthly (per the prescribing information; not REMS-enforced)",
           "Troponin/CRP weekly for the first 4 weeks (many protocols)",
           "Metabolic monitoring"
         ],
@@ -3250,11 +3199,11 @@
           },
           {
             "name": "Myocarditis",
-            "recognize": "Early (mostly weeks 1–4): fever, tachycardia, chest pain, or flu-like illness.",
+            "recognize": "Early (mostly weeks 1\u20134): fever, tachycardia, chest pain, or flu-like illness.",
             "firstMove": "Urgent troponin/CRP and EKG; escalate."
           },
           {
-            "name": "Constipation → ileus",
+            "name": "Constipation \u2192 ileus",
             "recognize": "Constipation that can progress to ileus and be fatal.",
             "firstMove": "Bowel regimen is part of the prescription; ask about stools every day."
           },
@@ -3279,7 +3228,7 @@
       },
       "pearls": {
         "t1": [
-          "The clozapine ANC schedule (weekly → biweekly → monthly) is worth memorizing; myocarditis is the early killer beyond the count.",
+          "The clozapine ANC schedule (weekly \u2192 biweekly \u2192 monthly) is worth memorizing; myocarditis is the early killer beyond the count.",
           "Low ANC, myocarditis, ileus, or a seizure on clozapine is a 'tell someone now' finding."
         ],
         "t2": [
@@ -3371,7 +3320,7 @@
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "ANC weekly ×6 months → every 2 weeks ×6 months → monthly (per the prescribing information; not REMS-enforced); metabolic panel; EKG"
+              "quote": "ANC weekly \u00d76 months \u2192 every 2 weeks \u00d76 months \u2192 monthly (per the prescribing information; not REMS-enforced); metabolic panel; EKG"
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
@@ -3389,7 +3338,7 @@
             },
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Clozapine red flags:* agranulocytosis / low ANC, myocarditis, ileus, and lowered seizure threshold — any of these is a \"tell someone now\" finding."
+              "quote": "*Clozapine red flags:* agranulocytosis / low ANC, myocarditis, ileus, and lowered seizure threshold \u2014 any of these is a \"tell someone now\" finding."
             }
           ],
           "interactions.keyTraps": [
@@ -3401,7 +3350,7 @@
           "pearls": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "The clozapine ANC schedule (weekly → biweekly → monthly) is worth memorizing; myocarditis is the early killer beyond the count."
+              "quote": "The clozapine ANC schedule (weekly \u2192 biweekly \u2192 monthly) is worth memorizing; myocarditis is the early killer beyond the count."
             },
             {
               "page": "14_Tracks/Resident/adv_psychopharmacology.md",
@@ -3515,7 +3464,7 @@
       },
       "inpatientUses": [
         {
-          "use": "Acute mania and bipolar maintenance — the maintenance benchmark",
+          "use": "Acute mania and bipolar maintenance \u2014 the maintenance benchmark",
           "offLabel": false,
           "evidenceIds": [
             "nolen-2019-lithium-levels"
@@ -3539,14 +3488,14 @@
       },
       "pk": {
         "halfLifeHours": "24",
-        "timeToEffect": "1–2 weeks (mania); 6–8 weeks (full maintenance)"
+        "timeToEffect": "1\u20132 weeks (mania); 6\u20138 weeks (full maintenance)"
       },
       "monitoring": {
         "baseline": [
           "BMP (renal)",
           "TSH",
           "Calcium",
-          "β-hCG",
+          "\u03b2-hCG",
           "EKG if cardiac risk"
         ],
         "ongoing": [
@@ -3567,13 +3516,13 @@
         "dangerous": [
           {
             "name": "Lithium toxicity",
-            "recognize": "Tremor, ataxia, and confusion — often when something changed (dehydration, renal function, an interacting drug).",
+            "recognize": "Tremor, ataxia, and confusion \u2014 often when something changed (dehydration, renal function, an interacting drug).",
             "firstMove": "Tell the senior now; hold the next dose and send a stat level with a BMP. Severe toxicity is a nephrology conversation (extracorporeal removal)."
           },
           {
             "name": "Teratogenicity",
             "recognize": "Ebstein anomaly risk with first-trimester exposure.",
-            "firstMove": "β-hCG before starting; peripartum decisions are made collaboratively, not by default discontinuation."
+            "firstMove": "\u03b2-hCG before starting; peripartum decisions are made collaboratively, not by default discontinuation."
           }
         ]
       },
@@ -3587,15 +3536,15 @@
         ]
       },
       "populations": {
-        "pregnancy": "Teratogen (Ebstein anomaly): β-hCG before starting. Weigh treated illness against exposure with maternal-fetal medicine and pharmacy rather than defaulting to discontinuation.",
-        "geriatric": "Older adults usually run lower target levels — check the attested Monitoring & Labs table.",
+        "pregnancy": "Teratogen (Ebstein anomaly): \u03b2-hCG before starting. Weigh treated illness against exposure with maternal-fetal medicine and pharmacy rather than defaulting to discontinuation.",
+        "geriatric": "Older adults usually run lower target levels \u2014 check the attested Monitoring & Labs table.",
         "renal": "Renally eliminated: renal function gates both starting and continuing.",
         "perinatalSnapshotRef": "03_Core_Topics/Perinatal/_source/Medication_Safety_Pregnancy_Clinician_Notes_CLI.md"
       },
       "pearls": {
         "t1": [
           "Lithium level is a 12-hour trough, drawn ~5 days after any dose change.",
-          "Tremor, ataxia, and confusion on lithium means think toxicity — especially after a change in hydration, kidney function, or medications."
+          "Tremor, ataxia, and confusion on lithium means think toxicity \u2014 especially after a change in hydration, kidney function, or medications."
         ],
         "t2": [
           "NSAIDs, ACE inhibitors/ARBs, and thiazides raise levels toward toxicity.",
@@ -3686,7 +3635,7 @@
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **Lithium** | BMP (renal), TSH, calcium, β-hCG, EKG if cardiac risk |"
+              "quote": "| **Lithium** | BMP (renal), TSH, calcium, \u03b2-hCG, EKG if cardiac risk |"
             },
             {
               "page": "14_Tracks/Resident/adv_psychopharmacology.md",
@@ -3722,7 +3671,7 @@
           "populations": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "older adults usually 0.4–0.6"
+              "quote": "older adults usually 0.4\u20130.6"
             },
             {
               "page": "14_Tracks/Resident/adv_psychopharmacology.md",
@@ -3730,7 +3679,7 @@
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "Valproate and lithium are teratogenic — β-hCG before starting"
+              "quote": "Valproate and lithium are teratogenic \u2014 \u03b2-hCG before starting"
             }
           ],
           "pearls": [
@@ -3820,8 +3769,7 @@
       "id": "valproate",
       "generic": "divalproex sodium (valproate)",
       "brands": [
-        "Depakote",
-        "Depakote ER"
+        "Depakote"
       ],
       "group": "mood-stabilizer",
       "class": [
@@ -3844,7 +3792,7 @@
       },
       "inpatientUses": [
         {
-          "use": "Acute mania, including mixed and rapid-cycling presentations",
+          "use": "Treatment of acute manic episodes associated with bipolar disorder (selected delayed-release product)",
           "offLabel": false,
           "evidenceIds": [
             "canmat-isbd-bipolar-2018"
@@ -3852,12 +3800,9 @@
         }
       ],
       "dosing": {
-        "titration": "Titrated to a serum level; delayed- and extended-release forms are not interchangeable one-for-one. Confirm dose with pharmacy.",
+        "titration": "Selected label: oral delayed-release divalproex tablets, swallowed whole. Titrate with clinical response and serum levels; confirm the plan with pharmacy. Extended-release, liquid and IV products require separate labels and review.",
         "forms": [
-          "PO",
-          "ER",
-          "liquid",
-          "IV"
+          "PO"
         ],
         "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08a65cf4-7749-4ceb-6895-8f4805e2b01f"
       },
@@ -3875,12 +3820,16 @@
         "baseline": [
           "LFTs",
           "CBC with platelets",
-          "β-hCG"
+          "\u03b2-hCG",
+          "Coagulation tests and bleeding history",
+          "Assess pregnancy plans, contraception and POLG/urea-cycle disease history"
         ],
         "ongoing": [
           "Level",
           "LFTs and CBC periodically",
-          "Ammonia if the patient becomes confused"
+          "Ammonia if the patient becomes confused",
+          "Liver tests frequently early in treatment; do not rely on tests alone if symptoms develop",
+          "Platelet counts and coagulation tests periodically and before planned surgery; assess bruising or bleeding"
         ],
         "sourcePage": "med_monitoring.md"
       },
@@ -3895,18 +3844,23 @@
         "dangerous": [
           {
             "name": "Hyperammonemic encephalopathy",
-            "recognize": "Worsening confusion or delirium, even with normal LFTs.",
-            "firstMove": "Send an ammonia level, not just a hepatic panel; tell the senior."
+            "recognize": "New confusion, lethargy or vomiting, even with normal liver tests.",
+            "firstMove": "Obtain urgent senior assessment and an ammonia level; the team should assess holding treatment."
           },
           {
             "name": "Hepatotoxicity and pancreatitis",
-            "recognize": "Nausea, vomiting, abdominal pain, jaundice.",
-            "firstMove": "Check LFTs and lipase; hold and escalate."
+            "recognize": "New abdominal pain, vomiting, marked malaise or jaundice.",
+            "firstMove": "Hold treatment pending urgent senior assessment; evaluate liver injury and pancreatitis."
           },
           {
-            "name": "Teratogenicity",
-            "recognize": "Valproate is the most teratogenic (~9–10% MCM rate; neural tube defects, dose-dependent IQ reduction of 7–10 points).",
-            "firstMove": "β-hCG before starting; avoid in anyone who may become pregnant when alternatives exist."
+            "name": "Fetal harm",
+            "recognize": "Exposure in pregnancy can cause major birth defects and adverse neurodevelopment.",
+            "firstMove": "Review pregnancy status and plans before starting; urgently involve the prescriber if pregnancy occurs. Do not abruptly stop treatment without medical guidance."
+          },
+          {
+            "name": "Thrombocytopenia and bleeding",
+            "recognize": "New bruising, bleeding or abnormal platelet/coagulation results.",
+            "firstMove": "Notify the senior and assess blood counts, coagulation and the treatment plan."
           }
         ]
       },
@@ -3918,18 +3872,20 @@
           ]
         },
         "keyTraps": [
-          "Lamotrigine: valproate roughly doubles lamotrigine levels — adjust the titration",
-          "Carbamazepine and other enzyme inducers lower valproate levels"
+          "Lamotrigine: valproate roughly doubles lamotrigine levels \u2014 adjust the titration",
+          "Carbamazepine and other enzyme inducers lower valproate levels",
+          "Carbapenem antibiotics may markedly lower valproate concentrations and cause loss of seizure control; urgently review alternatives and monitoring with pharmacy.",
+          "Topiramate increases the risk of hyperammonemia and encephalopathy."
         ]
       },
       "populations": {
-        "pregnancy": "Most teratogenic mood stabilizer: β-hCG before starting; avoid in people who can become pregnant when alternatives exist.",
-        "hepatic": "Contraindicated in significant hepatic impairment."
+        "pregnancy": "For bipolar disorder, do not use in people who are pregnant, planning pregnancy or able to become pregnant unless alternatives have failed or are unacceptable. Counsel about fetal risks and effective contraception. Migraine prophylaxis is contraindicated in pregnancy and in people who could become pregnant without effective contraception.",
+        "hepatic": "Contraindicated in hepatic disease or significant hepatic dysfunction. Known POLG-related mitochondrial disorders and urea-cycle disorders are contraindications; assess relevant history before treatment."
       },
       "pearls": {
         "t1": [
           "Confusion on valproate: send an ammonia, even if the LFTs are normal.",
-          "Match the mood stabilizer to the polarity — lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
+          "Match the mood stabilizer to the polarity \u2014 lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
         ],
         "t2": [
           "The BALANCE trial showed lithium monotherapy and lithium + valproate were both superior to valproate monotherapy for relapse prevention."
@@ -3941,7 +3897,7 @@
         "What does BALANCE say about valproate maintenance?"
       ],
       "familyExplainer": {
-        "text": "Valproate helps control mania. It needs blood tests for levels, the liver, and blood counts. It can harm an unborn baby, so pregnancy must be avoided. Call the team for new confusion, belly pain, vomiting, or yellow skin.",
+        "text": "This drug helps control mania. It needs blood tests for the liver, blood counts and drug level. It can harm a baby during pregnancy. Talk with the team about birth control and pregnancy plans. Call for new confusion, belly pain, yellow skin or bleeding.",
         "handoutRef": "FH-MED02"
       },
       "evidenceIds": [
@@ -4014,36 +3970,6 @@
               "quote": "GABA enhancement; histone deacetylase inhibition; sodium channel blockade"
             }
           ],
-          "inpatientUses": [
-            {
-              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
-              "quote": "Valproate is effective, particularly for mixed/rapid-cycling presentations, but is teratogenic (neural tube defects) and associated with PCOS and weight gain — generally avoid in people who can become pregnant when alternatives exist."
-            }
-          ],
-          "monitoring": [
-            {
-              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **Valproate** | LFTs, CBC (platelets), β-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** — hyperammonaemic encephalopathy occurs with normal LFTs |"
-            }
-          ],
-          "adverseEffects.dangerous": [
-            {
-              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **Valproate** | LFTs, CBC (platelets), β-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** — hyperammonaemic encephalopathy occurs with normal LFTs |"
-            },
-            {
-              "page": "14_Tracks/Resident/cl_reference.md",
-              "quote": "valproate-induced **hyperammonaemic encephalopathy** presents as worsening delirium and can occur with normal LFTs, so send an **ammonia level**, not just a hepatic panel."
-            },
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Answer:** Valproate is the most teratogenic (~9–10% MCM rate; neural tube defects, dose-dependent IQ reduction of 7–10 points)."
-            },
-            {
-              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "- Valproate and lithium are teratogenic — β-hCG before starting, and avoid valproate in anyone who may become pregnant."
-            }
-          ],
           "adverseEffects.common": [
             {
               "page": "reconnect:common_side_effects",
@@ -4056,44 +3982,23 @@
               "quote": "2C9 inhibitor; 2C19 inhibitor; glucuronidation"
             }
           ],
-          "interactions.keyTraps": [
-            {
-              "page": "14_Tracks/Resident/adv_psychopharmacology.md",
-              "quote": "dosing must be adjusted when combined with valproate or estrogen-containing contraceptives"
-            }
-          ],
-          "populations": [
-            {
-              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "- Valproate and lithium are teratogenic — β-hCG before starting, and avoid valproate in anyone who may become pregnant."
-            },
-            {
-              "page": "14_Tracks/Resident/cl_reference.md",
-              "quote": "**Valproate is contraindicated in significant hepatic impairment**"
-            }
-          ],
           "pearls": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **Valproate** | LFTs, CBC (platelets), β-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** — hyperammonaemic encephalopathy occurs with normal LFTs |"
+              "quote": "| **Valproate** | LFTs, CBC (platelets), \u03b2-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** \u2014 hyperammonaemic encephalopathy occurs with normal LFTs |"
             },
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** — lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
+              "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** \u2014 lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
             },
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
               "quote": "- **Evidence:** The BALANCE trial showed lithium monotherapy and lithium + valproate were both superior to valproate monotherapy for relapse prevention."
             }
-          ],
-          "familyExplainer.text": [
-            {
-              "page": "reconnect:counseling",
-              "quote": "AVOID in women of childbearing potential (severe birth defects). Monitor LFTs and platelets. Report abdominal pain, bruising, or jaundice."
-            }
           ]
         },
         "authoredFields": [
+          "adverseEffects.dangerous",
           "adverseEffects.dangerous[0].firstMove",
           "adverseEffects.dangerous[0].recognize",
           "adverseEffects.dangerous[1].firstMove",
@@ -4103,18 +4008,27 @@
           "dosing.forms",
           "dosing.titration",
           "familyExplainer.text",
+          "inpatientUses",
           "interactions.cyp",
+          "interactions.keyTraps",
           "interactions.keyTraps[0]",
           "interactions.keyTraps[1]",
           "mechanism.t1",
-          "pearls.t1[0]"
+          "monitoring",
+          "monitoring.baseline",
+          "monitoring.ongoing",
+          "pearls",
+          "pearls.t1[0]",
+          "populations",
+          "populations.hepatic",
+          "populations.pregnancy"
         ],
         "upstreamDiscrepancies": [
           {
             "field": "drug_class",
             "upstreamValue": "Mood Stabilizer/Anticonvulsant",
             "usedValue": "mood stabilizer (anticonvulsant)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -4201,7 +4115,7 @@
           "CBC",
           "LFTs",
           "Sodium",
-          "β-hCG",
+          "\u03b2-hCG",
           "HLA-B*1502 in at-risk ancestry"
         ],
         "ongoing": [
@@ -4223,7 +4137,7 @@
         "dangerous": [
           {
             "name": "Stevens-Johnson syndrome / TEN",
-            "recognize": "Rash, mucosal involvement, fever — highest risk with HLA-B*1502.",
+            "recognize": "Rash, mucosal involvement, fever \u2014 highest risk with HLA-B*1502.",
             "firstMove": "Stop the drug and escalate for any serious rash."
           },
           {
@@ -4260,7 +4174,7 @@
       },
       "pearls": {
         "t1": [
-          "Carbamazepine induces its own metabolism — the level you got in week one will not hold."
+          "Carbamazepine induces its own metabolism \u2014 the level you got in week one will not hold."
         ],
         "t2": [
           "The VA/DoD recommends against valproate, carbamazepine, and topiramate in individuals of childbearing potential."
@@ -4342,13 +4256,13 @@
           "inpatientUses": [
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** — lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
+              "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** \u2014 lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
             }
           ],
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **Carbamazepine** | CBC, LFTs, sodium, level, β-hCG; HLA-B*1502 in at-risk ancestry | Level, CBC, LFTs, sodium |"
+              "quote": "| **Carbamazepine** | CBC, LFTs, sodium, level, \u03b2-hCG; HLA-B*1502 in at-risk ancestry | Level, CBC, LFTs, sodium |"
             }
           ],
           "adverseEffects.dangerous": [
@@ -4358,7 +4272,7 @@
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **Carbamazepine** | CBC, LFTs, sodium, level, β-hCG; HLA-B*1502 in at-risk ancestry | Level, CBC, LFTs, sodium |"
+              "quote": "| **Carbamazepine** | CBC, LFTs, sodium, level, \u03b2-hCG; HLA-B*1502 in at-risk ancestry | Level, CBC, LFTs, sodium |"
             }
           ],
           "adverseEffects.common": [
@@ -4420,7 +4334,7 @@
             "field": "drug_class",
             "upstreamValue": "Mood Stabilizer/Anticonvulsant",
             "usedValue": "mood stabilizer (anticonvulsant)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -4521,7 +4435,7 @@
         "dangerous": [
           {
             "name": "Stevens-Johnson syndrome",
-            "recognize": "If a patient develops any rash during lamotrigine titration, stop the drug immediately and evaluate for SJS — do not rechallenge without dermatology consultation.",
+            "recognize": "If a patient develops any rash during lamotrigine titration, stop the drug immediately and evaluate for SJS \u2014 do not rechallenge without dermatology consultation.",
             "firstMove": "Stop and escalate."
           }
         ]
@@ -4529,7 +4443,7 @@
       "interactions": {
         "cyp": {},
         "keyTraps": [
-          "Valproate raises lamotrigine levels — slower titration",
+          "Valproate raises lamotrigine levels \u2014 slower titration",
           "Estrogen-containing contraceptives lower levels",
           "Enzyme inducers (carbamazepine) lower levels"
         ]
@@ -4628,7 +4542,7 @@
           "adverseEffects.dangerous": [
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** If a patient develops **any rash** during lamotrigine titration, stop the drug immediately and evaluate for SJS — do not rechallenge without dermatology consultation."
+              "quote": "- **Pearl:** If a patient develops **any rash** during lamotrigine titration, stop the drug immediately and evaluate for SJS \u2014 do not rechallenge without dermatology consultation."
             }
           ],
           "adverseEffects.common": [
@@ -4652,7 +4566,7 @@
           "populations": [
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** **Lamotrigine is the safest mood stabilizer in pregnancy** — but requires slow titration due to Stevens-Johnson syndrome risk, and levels drop significantly during pregnancy due to increased glucuronidation."
+              "quote": "- **Pearl:** **Lamotrigine is the safest mood stabilizer in pregnancy** \u2014 but requires slow titration due to Stevens-Johnson syndrome risk, and levels drop significantly during pregnancy due to increased glucuronidation."
             }
           ],
           "pearls": [
@@ -4690,7 +4604,7 @@
             "field": "drug_class",
             "upstreamValue": "Mood Stabilizer/Anticonvulsant",
             "usedValue": "mood stabilizer (anticonvulsant)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -4771,7 +4685,7 @@
       },
       "pk": {
         "halfLifeHours": "26",
-        "timeToEffect": "2–4 weeks"
+        "timeToEffect": "2\u20134 weeks"
       },
       "monitoring": {
         "baseline": [
@@ -4819,7 +4733,7 @@
           ]
         },
         "keyTraps": [
-          "MAOIs: allow ≥2 weeks after stopping sertraline before an MAOI, and ≥2 weeks after an MAOI before sertraline",
+          "MAOIs: allow \u22652 weeks after stopping sertraline before an MAOI, and \u22652 weeks after an MAOI before sertraline",
           "Serotonergic stacking",
           "NSAIDs or anticoagulants (bleeding)"
         ]
@@ -4827,7 +4741,7 @@
       "pearls": {
         "t1": [
           "Don't start an SSRI without screening for bipolarity, and expect delayed onset.",
-          "The suicidality black box covers antidepressants through age 24 — monitor young adults closely early."
+          "The suicidality black box covers antidepressants through age 24 \u2014 monitor young adults closely early."
         ],
         "t2": [
           "Serotonin syndrome is rapid-onset with hyperreflexia and clonus; NMS is slower and stiffer.",
@@ -4915,7 +4829,7 @@
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
+              "quote": "| **SSRIs/SNRIs** | (Clinical) \u2014 no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
             }
           ],
           "adverseEffects.dangerous": [
@@ -4931,7 +4845,7 @@
           "interactions.keyTraps": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent"
+              "quote": "allow \u22652 weeks after stopping most SSRIs (\u22655 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and \u22652 weeks after stopping an MAOI before starting a serotonergic agent"
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
@@ -4941,7 +4855,7 @@
           "pearls": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 — monitor young adults closely early."
+              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
             },
             {
               "page": "14_Tracks/Resident/adv_psychopharmacology.md",
@@ -5108,12 +5022,12 @@
         },
         "keyTraps": [
           "Fluoxetine and paroxetine are potent CYP2D6 inhibitors; fluvoxamine is a potent CYP1A2 and CYP2C19 inhibitor.",
-          "allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent"
+          "allow \u22652 weeks after stopping most SSRIs (\u22655 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and \u22652 weeks after stopping an MAOI before starting a serotonergic agent"
         ]
       },
       "pearls": {
         "t1": [
-          "Fluoxetine has the longest half-life (parent + norfluoxetine = weeks), making it the least likely to cause discontinuation syndrome — and the most problematic for drug interactions after stopping."
+          "Fluoxetine has the longest half-life (parent + norfluoxetine = weeks), making it the least likely to cause discontinuation syndrome \u2014 and the most problematic for drug interactions after stopping."
         ],
         "t2": [
           "The \"5-week fluoxetine rule\" is one of the most commonly tested pharmacology facts on shelf exams."
@@ -5199,7 +5113,7 @@
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
+              "quote": "| **SSRIs/SNRIs** | (Clinical) \u2014 no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
             }
           ],
           "adverseEffects.dangerous": [
@@ -5209,7 +5123,7 @@
             },
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 — monitor young adults closely early."
+              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
             }
           ],
           "adverseEffects.common": [
@@ -5231,13 +5145,13 @@
             },
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent"
+              "quote": "allow \u22652 weeks after stopping most SSRIs (\u22655 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and \u22652 weeks after stopping an MAOI before starting a serotonergic agent"
             }
           ],
           "pearls": [
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** Fluoxetine has the longest half-life (parent + norfluoxetine = weeks), making it the least likely to cause discontinuation syndrome — and the most problematic for drug interactions after stopping."
+              "quote": "- **Pearl:** Fluoxetine has the longest half-life (parent + norfluoxetine = weeks), making it the least likely to cause discontinuation syndrome \u2014 and the most problematic for drug interactions after stopping."
             },
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
@@ -5245,7 +5159,7 @@
             },
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent"
+              "quote": "allow \u22652 weeks after stopping most SSRIs (\u22655 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and \u22652 weeks after stopping an MAOI before starting a serotonergic agent"
             }
           ],
           "familyExplainer.text": [
@@ -5326,7 +5240,7 @@
         }
       ],
       "dosing": {
-        "titration": "Start low and titrate; expect delayed onset. Taper rather than stopping abruptly. Confirm dose with pharmacy.",
+        "titration": "Selected Lexapro label covers tablets and oral solution; the solution is listed as not currently marketed. Confirm available product with pharmacy. Indicated ages differ for MDD and GAD. Adjust cautiously for hepatic impairment and older age; taper gradually and monitor withdrawal symptoms.",
         "forms": [
           "PO",
           "liquid"
@@ -5345,14 +5259,15 @@
       },
       "monitoring": {
         "baseline": [
-          "No routine labs required",
-          "Screen for bipolarity"
+          "Screen for bipolar disorder and suicide risk",
+          "Review cardiac/QT risks, electrolyte vulnerability, bleeding risks and interacting drugs; choose ECG or laboratory assessment according to risk rather than a universal exemption"
         ],
         "ongoing": [
           "Activation and suicidality under age 25",
           "Sodium in older adults",
           "Bleeding risk",
-          "Discontinuation symptoms"
+          "Discontinuation symptoms",
+          "Assess hyponatremia symptoms, especially with older age, diuretics or volume depletion; obtain sodium testing as indicated"
         ],
         "sourcePage": "med_monitoring.md"
       },
@@ -5385,20 +5300,21 @@
           ]
         },
         "keyTraps": [
-          "Citalopram, escitalopram, and sertraline have the fewest drug interactions.",
-          "Serotonergic stacking"
+          "Review serotonergic combinations and MAOI contraindications, including linezolid and intravenous methylene blue.",
+          "Contraindicated with pimozide; review QT-risk drugs and cardiac/electrolyte risk.",
+          "NSAIDs, antiplatelets and anticoagulants can increase bleeding risk."
         ]
       },
       "pearls": {
         "t1": [
-          "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 — monitor young adults closely early."
+          "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
         ],
         "t2": [
-          "If a patient is on multiple medications, escitalopram or sertraline are the safest SSRI choices from a drug-interaction standpoint."
+          "Choose an SSRI after checking the actual medication list and patient risks; no agent is universally the safest choice for interactions."
         ]
       },
       "attendingAsks": [
-        "Which SSRIs are cleanest on interactions?",
+        "How do you assess SSRI interaction risk without assuming one is universally safest?",
         "What do you screen for before the first dose?",
         "What monitoring matters in older adults?"
       ],
@@ -5480,12 +5396,6 @@
               "quote": "- **Pearl:** If a patient is on multiple medications, **escitalopram or sertraline** are the safest SSRI choices from a drug-interaction standpoint."
             }
           ],
-          "monitoring": [
-            {
-              "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
-            }
-          ],
           "adverseEffects.dangerous": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
@@ -5493,7 +5403,7 @@
             },
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 — monitor young adults closely early."
+              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
             }
           ],
           "adverseEffects.common": [
@@ -5507,22 +5417,6 @@
               "page": "reconnect:cyp_pathways",
               "quote": "2C19 substrate; 3A4 substrate"
             }
-          ],
-          "interactions.keyTraps": [
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "Citalopram, escitalopram, and sertraline have the fewest drug interactions."
-            }
-          ],
-          "pearls": [
-            {
-              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 — monitor young adults closely early."
-            },
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** If a patient is on multiple medications, **escitalopram or sertraline** are the safest SSRI choices from a drug-interaction standpoint."
-            }
           ]
         },
         "authoredFields": [
@@ -5534,8 +5428,14 @@
           "dosing.titration",
           "familyExplainer.text",
           "interactions.cyp",
+          "interactions.keyTraps",
           "interactions.keyTraps[1]",
-          "mechanism.t1"
+          "mechanism.t1",
+          "monitoring",
+          "monitoring.baseline",
+          "monitoring.ongoing",
+          "pearls",
+          "pearls.t2"
         ]
       },
       "retrieval": [
@@ -5661,7 +5561,7 @@
       },
       "pearls": {
         "t1": [
-          "Citalopram's QTc effect is dose-dependent — respect the ceiling."
+          "Citalopram's QTc effect is dose-dependent \u2014 respect the ceiling."
         ],
         "t2": [
           "respect citalopram dose ceilings; check what the patient is already taking before adding a second QT-prolonging agent"
@@ -5743,11 +5643,11 @@
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
+              "quote": "| **SSRIs/SNRIs** | (Clinical) \u2014 no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram \u2014 and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
             }
           ],
           "adverseEffects.dangerous": [
@@ -5757,7 +5657,7 @@
             },
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram \u2014 and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
             }
           ],
           "adverseEffects.common": [
@@ -5775,7 +5675,7 @@
           "interactions.keyTraps": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram \u2014 and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
             },
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
@@ -5864,7 +5764,7 @@
         }
       ],
       "dosing": {
-        "titration": "Short half-life: taper slowly — discontinuation symptoms are the most prominent of the SSRIs. Confirm dose with pharmacy.",
+        "titration": "Short half-life: taper slowly \u2014 discontinuation symptoms are the most prominent of the SSRIs. Confirm dose with pharmacy.",
         "forms": [
           "PO",
           "ER",
@@ -5932,7 +5832,7 @@
           "Highest risk with paroxetine and venlafaxine (short half-lives); lowest with fluoxetine. (discontinuation syndrome)"
         ],
         "t2": [
-          "The most anticholinergic SSRI and a potent 2D6 inhibitor — usually a poor choice in older or polymedicated patients."
+          "The most anticholinergic SSRI and a potent 2D6 inhibitor \u2014 usually a poor choice in older or polymedicated patients."
         ]
       },
       "attendingAsks": [
@@ -6021,7 +5921,7 @@
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
+              "quote": "| **SSRIs/SNRIs** | (Clinical) \u2014 no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
             }
           ],
           "adverseEffects.dangerous": [
@@ -6031,7 +5931,7 @@
             },
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 — monitor young adults closely early."
+              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
             }
           ],
           "adverseEffects.common": [
@@ -6206,7 +6106,7 @@
         },
         "keyTraps": [
           "Serotonergic stacking",
-          "allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent"
+          "allow \u22652 weeks after stopping most SSRIs (\u22655 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and \u22652 weeks after stopping an MAOI before starting a serotonergic agent"
         ]
       },
       "pearls": {
@@ -6297,13 +6197,13 @@
           "inpatientUses": [
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "When medication is used, the guideline recommends paroxetine, sertraline, or venlafaxine — only sertraline and paroxetine carry FDA approval for PTSD, so venlafaxine is guideline-recommended but off-label."
+              "quote": "When medication is used, the guideline recommends paroxetine, sertraline, or venlafaxine \u2014 only sertraline and paroxetine carry FDA approval for PTSD, so venlafaxine is guideline-recommended but off-label."
             }
           ],
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
+              "quote": "| **SSRIs/SNRIs** | (Clinical) \u2014 no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
             }
           ],
           "adverseEffects.dangerous": [
@@ -6313,7 +6213,7 @@
             },
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 — monitor young adults closely early."
+              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
             }
           ],
           "adverseEffects.common": [
@@ -6331,7 +6231,7 @@
           "interactions.keyTraps": [
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent"
+              "quote": "allow \u22652 weeks after stopping most SSRIs (\u22655 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and \u22652 weeks after stopping an MAOI before starting a serotonergic agent"
             }
           ],
           "pearls": [
@@ -6574,7 +6474,7 @@
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **SSRIs/SNRIs** | (Clinical) — no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
+              "quote": "| **SSRIs/SNRIs** | (Clinical) \u2014 no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
             }
           ],
           "adverseEffects.dangerous": [
@@ -6584,7 +6484,7 @@
             },
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 — monitor young adults closely early."
+              "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
             }
           ],
           "adverseEffects.common": [
@@ -6662,8 +6562,7 @@
       "id": "bupropion",
       "generic": "bupropion",
       "brands": [
-        "Wellbutrin XL",
-        "Wellbutrin SR"
+        "Wellbutrin XL"
       ],
       "group": "antidepressant",
       "class": [
@@ -6685,20 +6584,19 @@
       },
       "inpatientUses": [
         {
-          "use": "Depression when sexual side effects, weight gain, or sedation are the problem",
+          "use": "Major depressive disorder (selected extended-release product)",
           "offLabel": false,
           "evidenceIds": []
         },
         {
-          "use": "Smoking cessation (labeled for the SR product marketed for cessation)",
+          "use": "Prevention of seasonal major depressive episodes (selected extended-release product)",
           "offLabel": false,
           "evidenceIds": []
         }
       ],
       "dosing": {
-        "titration": "IR, SR, and XL are not interchangeable one-for-one; seizure risk is dose-related. Confirm dose with pharmacy.",
+        "titration": "Selected label: extended-release Wellbutrin XL tablets; swallow whole. Increase gradually because seizure risk is exposure-related. The label permits certain IR/SR-to-XL switches using the same total daily amount when possible; confirm the product and schedule with pharmacy rather than assuming tablet-for-tablet interchangeability. Renal or hepatic impairment may require adjustment.",
         "forms": [
-          "PO",
           "ER"
         ],
         "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a435da9d-f6e8-4ddc-897d-8cd2bf777b21"
@@ -6716,7 +6614,9 @@
       "monitoring": {
         "baseline": [
           "Seizure history, eating-disorder history, alcohol or sedative withdrawal risk",
-          "Blood pressure"
+          "Blood pressure",
+          "Screen for bipolar disorder, suicide risk and duplicate bupropion products",
+          "Review renal/hepatic function and drugs that lower seizure threshold"
         ],
         "ongoing": [
           "Blood pressure",
@@ -6735,7 +6635,7 @@
           {
             "name": "Seizures",
             "recognize": "Dose-related; higher risk with eating disorders, alcohol or sedative withdrawal, or other seizure-lowering drugs.",
-            "firstMove": "Avoid in those groups; escalate any seizure."
+            "firstMove": "Discontinue and obtain urgent medical assessment after a seizure; the selected label says not to restart treatment."
           }
         ]
       },
@@ -6746,13 +6646,14 @@
           ]
         },
         "keyTraps": [
-          "Contraindicated with bulimia/anorexia and during abrupt alcohol or benzodiazepine withdrawal",
-          "Strong 2D6 inhibitor: raises many antipsychotics and beta-blockers"
+          "Contraindicated with seizure disorder, current or prior bulimia/anorexia, or abrupt withdrawal from alcohol, benzodiazepines, barbiturates or antiepileptic drugs.",
+          "Avoid duplicate bupropion products and review MAOI contraindications and washout intervals.",
+          "CYP2D6 inhibition can raise concentrations of relevant antidepressants, antipsychotics, beta-blockers and antiarrhythmics."
         ]
       },
       "pearls": {
         "t1": [
-          "No sexual side effects or weight gain — but it lowers the seizure threshold."
+          "Do not promise absence of sexual adverse effects or weight gain. Assess individual tolerability; seizure risk and blood-pressure elevation remain important."
         ],
         "t2": [
           "Not an anxiolytic or a sleep aid; it can be activating."
@@ -6760,11 +6661,11 @@
       },
       "attendingAsks": [
         "Who should not get bupropion?",
-        "What is its advantage over SSRIs?",
+        "Why should you avoid promising no sexual adverse effects or weight gain?",
         "Which enzyme does it strongly inhibit?"
       ],
       "familyExplainer": {
-        "text": "Bupropion treats depression and helps people quit smoking. It does not cause weight gain or sexual side effects. It can rarely cause seizures, so tell the team about any eating disorder or heavy drinking.",
+        "text": "This form of bupropion treats depression and can help prevent winter depression. It may cause sleep loss or dry mouth. Side effects vary from person to person. Tell the team about seizures, eating disorders or a plan to stop heavy drinking. Do not crush the tablet.",
         "handoutRef": "FH-MED01"
       },
       "evidenceIds": [
@@ -6844,38 +6745,40 @@
               "page": "reconnect:cyp_pathways",
               "quote": "2B6 substrate; 2D6 inhibitor"
             }
-          ],
-          "familyExplainer.text": [
-            {
-              "page": "reconnect:counseling",
-              "quote": "Activating - take in morning. No sexual side effects. SEIZURE RISK - never exceed max dose. Avoid in eating disorders/seizure history."
-            }
           ]
         },
         "authoredFields": [
+          "adverseEffects.dangerous",
           "adverseEffects.dangerous[0].firstMove",
           "adverseEffects.dangerous[0].recognize",
           "attendingAsks",
           "dosing.forms",
           "dosing.titration",
           "familyExplainer.text",
+          "inpatientUses",
           "inpatientUses[0]",
           "inpatientUses[1]",
           "interactions.cyp",
+          "interactions.keyTraps",
           "interactions.keyTraps[0]",
           "interactions.keyTraps[1]",
           "mechanism.t1",
           "monitoring",
+          "monitoring.baseline",
           "pearls",
+          "pearls.t1",
           "pearls.t1[0]",
-          "pearls.t2[0]"
+          "pearls.t2[0]",
+          "populations",
+          "populations.hepatic",
+          "populations.renal"
         ],
         "upstreamDiscrepancies": [
           {
             "field": "drug_class",
             "upstreamValue": "Other",
             "usedValue": "NDRI (aminoketone)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -6899,10 +6802,14 @@
           "id": "ask2",
           "askIndex": 2,
           "revealFrom": [
-            "interactions.keyTraps[1]"
+            "interactions.keyTraps[2]"
           ]
         }
-      ]
+      ],
+      "populations": {
+        "renal": "Reduced renal function may require a lower exposure or less frequent administration; confirm with pharmacy.",
+        "hepatic": "Hepatic impairment requires product-specific adjustment and monitoring."
+      }
     },
     {
       "id": "mirtazapine",
@@ -6913,13 +6820,13 @@
       ],
       "group": "antidepressant",
       "class": [
-        "NaSSA (α2 antagonist)"
+        "NaSSA (\u03b12 antagonist)"
       ],
       "rxcui": "15996",
       "dailymedSetId": "98ad1917-a094-44f5-a28f-a64a8cfcd887",
       "labelVersionDate": "2025-08-06",
       "mechanism": {
-        "t1": "α2-adrenergic antagonist with 5-HT2 and 5-HT3 blockade and strong H1 antagonism."
+        "t1": "\u03b12-adrenergic antagonist with 5-HT2 and 5-HT3 blockade and strong H1 antagonism."
       },
       "fdaIndications": [
         "Major depressive disorder (adults)"
@@ -6938,7 +6845,7 @@
         }
       ],
       "dosing": {
-        "titration": "Sedation is often greatest at lower doses. ODT available. Confirm dose with pharmacy.",
+        "titration": "Selected label covers oral tablets and orally disintegrating tablets. Titrate with response and tolerability; the label does not establish a predictable inverse relationship between dose and sedation. Moderate to severe renal or hepatic impairment may require adjustment. Confirm the plan with pharmacy.",
         "forms": [
           "PO",
           "ODT"
@@ -6958,11 +6865,14 @@
       "monitoring": {
         "baseline": [
           "Weight",
-          "Screen for bipolarity"
+          "Screen for bipolarity",
+          "Assess renal/hepatic function and QT risks or interacting drugs"
         ],
         "ongoing": [
           "Weight and lipids",
-          "Activation and suicidality under age 25"
+          "Activation and suicidality under age 25",
+          "Sedation and impairment; assess QT/electrolyte risk when indicated",
+          "Fever, sore throat or infection: obtain medical assessment and CBC for possible neutropenia"
         ]
       },
       "adverseEffects": {
@@ -6975,14 +6885,19 @@
         ],
         "dangerous": [
           {
-            "name": "Agranulocytosis (rare)",
-            "recognize": "Fever or sore throat.",
-            "firstMove": "CBC now."
+            "name": "Agranulocytosis or severe neutropenia",
+            "recognize": "Fever, sore throat, mouth inflammation or other signs of infection.",
+            "firstMove": "Obtain prompt medical assessment and CBC; discontinue if infection signs occur with a low white blood cell count."
           },
           {
             "name": "Serotonin syndrome",
             "recognize": "Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased",
             "firstMove": "Tell the senior now; stop serotonergic agents pending evaluation."
+          },
+          {
+            "name": "QT prolongation and arrhythmia",
+            "recognize": "Syncope, palpitations or arrhythmia, especially with cardiac risk, interacting drugs or overdose.",
+            "firstMove": "Obtain urgent medical assessment and ECG; review electrolytes and interacting drugs."
           }
         ]
       },
@@ -6995,8 +6910,9 @@
           ]
         },
         "keyTraps": [
-          "Other sedating agents",
-          "Serotonergic stacking"
+          "Alcohol and benzodiazepines add impairment; avoid these combinations under the label.",
+          "Review serotonergic combinations and MAOI contraindications.",
+          "CYP3A inhibitors or inducers can require adjustment; QT-prolonging drugs increase risk."
         ]
       },
       "pearls": {
@@ -7082,12 +6998,6 @@
               "quote": "Alpha-2 antagonist; 5-HT2/5-HT3 antagonist; H1 antagonist"
             }
           ],
-          "adverseEffects.dangerous": [
-            {
-              "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "*Serotonin syndrome:* clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased"
-            }
-          ],
           "adverseEffects.common": [
             {
               "page": "reconnect:common_side_effects",
@@ -7108,6 +7018,7 @@
           ]
         },
         "authoredFields": [
+          "adverseEffects.dangerous",
           "adverseEffects.dangerous[0].firstMove",
           "adverseEffects.dangerous[0].recognize",
           "adverseEffects.dangerous[1].firstMove",
@@ -7117,20 +7028,26 @@
           "familyExplainer.text",
           "inpatientUses[0]",
           "interactions.cyp",
+          "interactions.keyTraps",
           "interactions.keyTraps[0]",
           "interactions.keyTraps[1]",
           "mechanism.t1",
           "monitoring",
+          "monitoring.baseline",
+          "monitoring.ongoing",
           "pearls",
           "pearls.t1[0]",
-          "pearls.t2[0]"
+          "pearls.t2[0]",
+          "populations",
+          "populations.hepatic",
+          "populations.renal"
         ],
         "upstreamDiscrepancies": [
           {
             "field": "drug_class",
             "upstreamValue": "Other",
-            "usedValue": "NaSSA (α2 antagonist)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "usedValue": "NaSSA (\u03b12 antagonist)",
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -7157,7 +7074,11 @@
             "adverseEffects.dangerous[0]"
           ]
         }
-      ]
+      ],
+      "populations": {
+        "renal": "Clearance is reduced in moderate to severe renal impairment; adjustment may be needed.",
+        "hepatic": "Clearance is reduced in hepatic impairment; adjustment may be needed."
+      }
     },
     {
       "id": "trazodone",
@@ -7171,7 +7092,7 @@
       "dailymedSetId": "fa7afa93-b98c-4dc7-bbb8-ab6a058427b9",
       "labelVersionDate": "2026-09-08",
       "mechanism": {
-        "t1": "5-HT2A antagonist and weak serotonin reuptake inhibitor with H1 and α1 blockade."
+        "t1": "5-HT2A antagonist and weak serotonin reuptake inhibitor with H1 and \u03b11 blockade."
       },
       "fdaIndications": [
         "Major depressive disorder (adults)"
@@ -7245,7 +7166,7 @@
       },
       "pearls": {
         "t1": [
-          "Trazodone is the most commonly prescribed sleep medication in the U.S. despite having less evidence than alternatives — know this for boards, but also know it's not guideline-recommended first-line."
+          "Trazodone is the most commonly prescribed sleep medication in the U.S. despite having less evidence than alternatives \u2014 know this for boards, but also know it's not guideline-recommended first-line."
         ],
         "t2": [
           "Warn every male patient about priapism."
@@ -7343,7 +7264,7 @@
           "pearls": [
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** **Trazodone** is the most commonly prescribed sleep medication in the U.S. despite having less evidence than alternatives — know this for boards, but also know it's not guideline-recommended first-line."
+              "quote": "- **Pearl:** **Trazodone** is the most commonly prescribed sleep medication in the U.S. despite having less evidence than alternatives \u2014 know this for boards, but also know it's not guideline-recommended first-line."
             }
           ]
         },
@@ -7368,7 +7289,7 @@
             "field": "drug_class",
             "upstreamValue": "Other",
             "usedValue": "SARI (serotonin antagonist and reuptake inhibitor)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -7464,7 +7385,7 @@
         "dangerous": [
           {
             "name": "Overdose: cardiotoxicity",
-            "recognize": "TCA overdose → wide QRS (sodium bicarbonate).",
+            "recognize": "TCA overdose \u2192 wide QRS (sodium bicarbonate).",
             "firstMove": "Emergency: EKG, poison control, escalate."
           },
           {
@@ -7487,7 +7408,7 @@
       },
       "pearls": {
         "t1": [
-          "Lethal in overdose — think about how many days you dispense to a suicidal patient."
+          "Lethal in overdose \u2014 think about how many days you dispense to a suicidal patient."
         ],
         "t2": [
           "The best-tolerated TCA in older adults because of less orthostasis, but still anticholinergic."
@@ -7573,7 +7494,7 @@
           "adverseEffects.dangerous": [
             {
               "page": "09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md",
-              "quote": "**TCA overdose → wide QRS** (sodium bicarbonate)."
+              "quote": "**TCA overdose \u2192 wide QRS** (sodium bicarbonate)."
             },
             {
               "page": "04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md",
@@ -7620,7 +7541,7 @@
             "field": "drug_class",
             "upstreamValue": "TCA",
             "usedValue": "tricyclic antidepressant (secondary amine)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -7728,12 +7649,12 @@
         "cyp": {},
         "keyTraps": [
           "Treat the combination of MAOI plus serotonergic or sympathomimetic agents (including many OTC cold remedies and meperidine) as contraindicated.",
-          "allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent"
+          "allow \u22652 weeks after stopping most SSRIs (\u22655 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and \u22652 weeks after stopping an MAOI before starting a serotonergic agent"
         ]
       },
       "pearls": {
         "t1": [
-          "Respect washout windows in both directions — a serotonergic washout before starting an MAOI (longer for fluoxetine given its long-lived metabolite) and a washout after stopping one before reintroducing serotonergic agents — to avoid serotonin syndrome."
+          "Respect washout windows in both directions \u2014 a serotonergic washout before starting an MAOI (longer for fluoxetine given its long-lived metabolite) and a washout after stopping one before reintroducing serotonergic agents \u2014 to avoid serotonin syndrome."
         ],
         "t2": [
           "Most dangerous combination: MAOI + SSRI/SNRI."
@@ -7848,13 +7769,13 @@
             },
             {
               "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
-              "quote": "allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent"
+              "quote": "allow \u22652 weeks after stopping most SSRIs (\u22655 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and \u22652 weeks after stopping an MAOI before starting a serotonergic agent"
             }
           ],
           "pearls": [
             {
               "page": "14_Tracks/Resident/adv_psychopharmacology.md",
-              "quote": "Respect washout windows in both directions — a serotonergic washout before starting an MAOI (longer for fluoxetine given its long-lived metabolite) and a washout after stopping one before reintroducing serotonergic agents — to avoid serotonin syndrome."
+              "quote": "Respect washout windows in both directions \u2014 a serotonergic washout before starting an MAOI (longer for fluoxetine given its long-lived metabolite) and a washout after stopping one before reintroducing serotonergic agents \u2014 to avoid serotonin syndrome."
             },
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
@@ -7885,7 +7806,7 @@
             "field": "drug_class",
             "upstreamValue": "MAOI",
             "usedValue": "MAOI (irreversible, nonselective)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -7960,12 +7881,9 @@
         }
       ],
       "dosing": {
-        "titration": "No active metabolites (glucuronidated). PO, SL, IM, and IV forms. Confirm dose with pharmacy.",
+        "titration": "Selected label: oral tablets for anxiety. Use the lowest effective exposure and reassess continued need; plan a gradual, individualized taper after regular use. Injectable and sublingual use require separate sources and review. Confirm the plan with pharmacy.",
         "forms": [
-          "PO",
-          "SL",
-          "IM",
-          "IV"
+          "PO"
         ],
         "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=89057c93-8155-4040-acec-64e877bd2b4c"
       },
@@ -7977,16 +7895,19 @@
       },
       "pk": {
         "halfLifeHours": "12",
-        "timeToEffect": "15-30 minutes (anxiety); 5 minutes (IV)"
+        "timeToEffect": "Selected oral label: peak plasma concentrations occur after oral administration; onset and clinical response vary. Injectable onset is outside this card scope."
       },
       "monitoring": {
         "baseline": [
           "Respiratory status",
-          "Opioid and alcohol use"
+          "Opioid and alcohol use",
+          "Assess misuse, dependence and withdrawal risk; document continued-use and taper plans",
+          "Assess hepatic insufficiency and encephalopathy"
         ],
         "ongoing": [
           "Sedation and respiratory rate",
-          "Falls"
+          "Falls",
+          "Reassess benefit, misuse and dependence; monitor withdrawal during an individualized taper"
         ]
       },
       "adverseEffects": {
@@ -8004,7 +7925,7 @@
           },
           {
             "name": "Withdrawal seizures after abrupt stop",
-            "recognize": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
+            "recognize": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly.",
             "firstMove": "Taper; never stop abruptly after regular use."
           }
         ]
@@ -8012,24 +7933,25 @@
       "interactions": {
         "cyp": {},
         "keyTraps": [
-          "Opioids, alcohol, and other sedatives",
-          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+          "Opioids, alcohol and other sedatives increase respiratory-depression risk.",
+          "Valproate and probenecid reduce lorazepam clearance; pharmacy must assess adjustment and monitoring.",
+          "Glucuronidation does not remove hepatic encephalopathy or severe hepatic insufficiency precautions."
         ]
       },
       "populations": {
-        "hepatic": "A 'LOT' drug: conjugated by glucuronidation, which is preserved in cirrhosis."
+        "hepatic": "Lorazepam is glucuronidated, but this does not establish safety in cirrhosis. It can worsen hepatic encephalopathy; use caution and careful adjustment in severe hepatic insufficiency or encephalopathy."
       },
       "pearls": {
         "t1": [
           "A positive lorazepam challenge both supports the diagnosis and begins treatment."
         ],
         "t2": [
-          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+          "Glucuronidation is not a guarantee of safety in cirrhosis; assess encephalopathy, respiratory status and sedation."
         ]
       },
       "attendingAsks": [
         "What does a positive lorazepam challenge tell you?",
-        "Which benzodiazepines are safer in cirrhosis, and why?",
+        "Why does glucuronidation not guarantee safety in severe liver disease?",
         "What combination causes respiratory depression?"
       ],
       "familyExplainer": {
@@ -8062,7 +7984,7 @@
           "class": "R",
           "mechanism.t1": "J",
           "flags": "R",
-          "pk": "R",
+          "pk": "J",
           "monitoring": "E",
           "inpatientUses": "J",
           "dosing.titration": "J",
@@ -8114,13 +8036,13 @@
             },
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
             }
           ],
           "adverseEffects.dangerous": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly."
+              "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly."
             }
           ],
           "adverseEffects.common": [
@@ -8133,28 +8055,6 @@
             {
               "page": "reconnect:cyp_pathways",
               "quote": "Glucuronidation (no CYP)"
-            }
-          ],
-          "interactions.keyTraps": [
-            {
-              "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
-            }
-          ],
-          "populations": [
-            {
-              "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
-            }
-          ],
-          "pearls": [
-            {
-              "page": "04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md",
-              "quote": "- A positive lorazepam challenge both supports the diagnosis and begins treatment."
-            },
-            {
-              "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
             }
           ],
           "familyExplainer.text": [
@@ -8174,16 +8074,24 @@
           "familyExplainer.text",
           "inpatientUses[2]",
           "interactions.cyp",
+          "interactions.keyTraps",
           "interactions.keyTraps[0]",
           "mechanism.t1",
-          "monitoring"
+          "monitoring",
+          "monitoring.baseline",
+          "monitoring.ongoing",
+          "pearls",
+          "pearls.t2",
+          "pk",
+          "populations",
+          "populations.hepatic"
         ],
         "upstreamDiscrepancies": [
           {
             "field": "drug_class",
             "upstreamValue": "Benzodiazepine",
             "usedValue": "benzodiazepine (intermediate-acting)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -8291,7 +8199,7 @@
           },
           {
             "name": "Withdrawal seizures after abrupt stop",
-            "recognize": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
+            "recognize": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly.",
             "firstMove": "Taper; never stop abruptly after regular use."
           }
         ]
@@ -8304,7 +8212,7 @@
         },
         "keyTraps": [
           "Opioids, alcohol, and other sedatives",
-          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
         ]
       },
       "pearls": {
@@ -8312,7 +8220,7 @@
           "SSRIs are first-line (SNRIs also for anxiety disorders, venlafaxine for PTSD, not OCD); benzodiazepines are a liability on the unit, not a maintenance plan."
         ],
         "t2": [
-          "Akathisia management hierarchy: reduce dose or switch the antipsychotic → propranolol (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+          "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 propranolol (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
         ]
       },
       "attendingAsks": [
@@ -8399,7 +8307,7 @@
           "adverseEffects.dangerous": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly."
+              "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly."
             }
           ],
           "adverseEffects.common": [
@@ -8417,7 +8325,7 @@
           "interactions.keyTraps": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
             }
           ],
           "pearls": [
@@ -8427,7 +8335,7 @@
             },
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
             }
           ],
           "familyExplainer.text": [
@@ -8456,7 +8364,7 @@
             "field": "drug_class",
             "upstreamValue": "Benzodiazepine",
             "usedValue": "benzodiazepine (long-acting)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -8563,7 +8471,7 @@
           },
           {
             "name": "Withdrawal seizures after abrupt stop",
-            "recognize": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
+            "recognize": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly.",
             "firstMove": "Taper; never stop abruptly after regular use."
           }
         ]
@@ -8577,18 +8485,18 @@
         },
         "keyTraps": [
           "Opioids, alcohol, and other sedatives",
-          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
         ]
       },
       "populations": {
-        "hepatic": "Oxidative CYP metabolism with long-lived metabolites that accumulate in cirrhosis — prefer a LOT drug."
+        "hepatic": "Oxidative CYP metabolism with long-lived metabolites that accumulate in cirrhosis \u2014 prefer a LOT drug."
       },
       "pearls": {
         "t1": [
           "Long-acting agents (diazepam, chlordiazepoxide) are preferred; lorazepam/oxazepam in liver disease."
         ],
         "t2": [
-          "Chlordiazepoxide and diazepam depend on oxidative CYP450 hepatic metabolism and produce long-lived active metabolites (desmethyldiazepam, also called nordiazepam) that accumulate when hepatic clearance is reduced — the result is progressive over-sedation, respiratory depression, and worsening hepatic encephalopathy."
+          "Chlordiazepoxide and diazepam depend on oxidative CYP450 hepatic metabolism and produce long-lived active metabolites (desmethyldiazepam, also called nordiazepam) that accumulate when hepatic clearance is reduced \u2014 the result is progressive over-sedation, respiratory depression, and worsening hepatic encephalopathy."
         ]
       },
       "attendingAsks": [
@@ -8677,7 +8585,7 @@
           "adverseEffects.dangerous": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly."
+              "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly."
             }
           ],
           "adverseEffects.common": [
@@ -8695,13 +8603,13 @@
           "interactions.keyTraps": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
             }
           ],
           "populations": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
             }
           ],
           "pearls": [
@@ -8711,7 +8619,7 @@
             },
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "Chlordiazepoxide and diazepam depend on **oxidative CYP450 hepatic metabolism** and produce long-lived active metabolites (desmethyldiazepam, also called nordiazepam) that accumulate when hepatic clearance is reduced — the result is progressive over-sedation, respiratory depression, and worsening hepatic encephalopathy."
+              "quote": "Chlordiazepoxide and diazepam depend on **oxidative CYP450 hepatic metabolism** and produce long-lived active metabolites (desmethyldiazepam, also called nordiazepam) that accumulate when hepatic clearance is reduced \u2014 the result is progressive over-sedation, respiratory depression, and worsening hepatic encephalopathy."
             }
           ],
           "familyExplainer.text": [
@@ -8739,7 +8647,7 @@
             "field": "drug_class",
             "upstreamValue": "Benzodiazepine",
             "usedValue": "benzodiazepine (long-acting)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -8830,7 +8738,7 @@
           },
           {
             "name": "Withdrawal seizures after abrupt stop",
-            "recognize": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
+            "recognize": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly.",
             "firstMove": "Taper; never stop abruptly after regular use."
           }
         ]
@@ -8843,18 +8751,18 @@
         },
         "keyTraps": [
           "Opioids, alcohol, and other sedatives",
-          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
         ]
       },
       "populations": {
-        "hepatic": "Oxidative CYP metabolism with long-lived metabolites that accumulate in cirrhosis — prefer a LOT drug."
+        "hepatic": "Oxidative CYP metabolism with long-lived metabolites that accumulate in cirrhosis \u2014 prefer a LOT drug."
       },
       "pearls": {
         "t1": [
           "Long-acting agents (diazepam, chlordiazepoxide) are preferred; lorazepam/oxazepam in liver disease."
         ],
         "t2": [
-          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+          "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
         ]
       },
       "attendingAsks": [
@@ -8911,19 +8819,19 @@
           "adverseEffects.dangerous": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly."
+              "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly."
             }
           ],
           "interactions.keyTraps": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
             }
           ],
           "populations": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
             }
           ],
           "pearls": [
@@ -8933,7 +8841,7 @@
             },
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+              "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
             }
           ]
         },
@@ -9061,7 +8969,7 @@
       },
       "pearls": {
         "t1": [
-          "No dependence or respiratory depression — a PRN option when a benzodiazepine is a poor idea."
+          "No dependence or respiratory depression \u2014 a PRN option when a benzodiazepine is a poor idea."
         ],
         "t2": [
           "Still anticholinergic: avoid in older adults and delirium."
@@ -9187,7 +9095,7 @@
             "field": "drug_class",
             "upstreamValue": "Other",
             "usedValue": "first-generation antihistamine",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -9280,7 +9188,7 @@
           },
           {
             "name": "Delirium and falls in older adults",
-            "recognize": "In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them.",
+            "recognize": "In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium \u2014 avoid them.",
             "firstMove": "Avoid; choose a non-anticholinergic option."
           }
         ]
@@ -9300,7 +9208,7 @@
       },
       "pearls": {
         "t1": [
-          "In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them."
+          "In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium \u2014 avoid them."
         ],
         "t2": [
           "Its real inpatient job is treating acute dystonia, not sleep."
@@ -9357,7 +9265,7 @@
             },
             {
               "page": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
-              "quote": "- In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them."
+              "quote": "- In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium \u2014 avoid them."
             }
           ],
           "interactions.keyTraps": [
@@ -9375,7 +9283,7 @@
           "pearls": [
             {
               "page": "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md",
-              "quote": "- In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium — avoid them."
+              "quote": "- In older inpatients, benzodiazepines and diphenhydramine cause falls and delirium \u2014 avoid them."
             }
           ]
         },
@@ -9491,7 +9399,7 @@
       },
       "pearls": {
         "t1": [
-          "Anticholinergics (benztropine) treat acute EPS but worsen tardive dyskinesia — a critical distinction."
+          "Anticholinergics (benztropine) treat acute EPS but worsen tardive dyskinesia \u2014 a critical distinction."
         ],
         "t2": [
           "If parkinsonism co-exists alongside the akathisia: add benztropine (anticholinergic agents target parkinsonism more reliably than pure akathisia)."
@@ -9556,7 +9464,7 @@
           "pearls": [
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** Anticholinergics (benztropine) treat **acute EPS** but **worsen tardive dyskinesia** — a critical distinction."
+              "quote": "- **Pearl:** Anticholinergics (benztropine) treat **acute EPS** but **worsen tardive dyskinesia** \u2014 a critical distinction."
             },
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
@@ -9617,7 +9525,7 @@
       "dailymedSetId": "5affa0ea-db84-86fd-e063-6294a90a4d16",
       "labelVersionDate": "2026-09-08",
       "mechanism": {
-        "t1": "Nonselective β-adrenergic antagonist that crosses the blood-brain barrier."
+        "t1": "Nonselective \u03b2-adrenergic antagonist that crosses the blood-brain barrier."
       },
       "fdaIndications": [
         "Hypertension",
@@ -9709,7 +9617,7 @@
       },
       "pearls": {
         "t1": [
-          "Akathisia management hierarchy: reduce dose or switch the antipsychotic → propranolol (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+          "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 propranolol (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
         ],
         "t2": [
           "Helps performance-only anxiety; it does not treat generalized anxiety or panic."
@@ -9779,7 +9687,7 @@
           "baseline_workup": "HR; BP; cardiac history",
           "half_life_hours": "4",
           "time_to_effect": "0 (anxiety), 2-4 (migraine)",
-          "counseling": "Helps with physical anxiety symptoms. Can mask low blood sugar. Don’t stop suddenly.",
+          "counseling": "Helps with physical anxiety symptoms. Can mask low blood sugar. Don\u2019t stop suddenly.",
           "common_side_effects": "Fatigue; Bradycardia; Cold Extremities; Vivid Dreams",
           "cyp_pathways": "1A2; 2D6; 2C19 Substrate"
         },
@@ -9793,7 +9701,7 @@
           "inpatientUses": [
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
             },
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
@@ -9821,13 +9729,13 @@
           "pearls": [
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic → **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
+              "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
             }
           ],
           "familyExplainer.text": [
             {
               "page": "reconnect:counseling",
-              "quote": "Helps with physical anxiety symptoms. Can mask low blood sugar. Don’t stop suddenly."
+              "quote": "Helps with physical anxiety symptoms. Can mask low blood sugar. Don\u2019t stop suddenly."
             }
           ]
         },
@@ -9853,7 +9761,7 @@
             "field": "drug_class",
             "upstreamValue": "Other",
             "usedValue": "nonselective beta-blocker (lipophilic)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           },
           {
             "field": "black_box_warning",
@@ -9889,20 +9797,19 @@
     },
     {
       "id": "buprenorphine",
-      "generic": "buprenorphine (± naloxone)",
+      "generic": "buprenorphine (\u00b1 naloxone)",
       "brands": [
-        "Suboxone",
-        "Zubsolv"
+        "Suboxone"
       ],
       "group": "sud",
       "class": [
-        "partial μ-opioid agonist"
+        "partial \u03bc-opioid agonist"
       ],
       "rxcui": "1819",
       "dailymedSetId": "8a5edcf9-828c-4f97-b671-268ab13a8ecd",
       "labelVersionDate": "2025-12-22",
       "mechanism": {
-        "t1": "High-affinity partial μ-opioid agonist; naloxone is added to deter injection."
+        "t1": "High-affinity partial \u03bc-opioid agonist; naloxone is added to deter injection."
       },
       "fdaIndications": [
         "Opioid dependence (sublingual buprenorphine/naloxone)"
@@ -9921,10 +9828,9 @@
         }
       ],
       "dosing": {
-        "titration": "Start once objective withdrawal is present; newer low-dose and high-dose inductions exist for fentanyl. Confirm the induction plan with pharmacy.",
+        "titration": "Selected label: buprenorphine/naloxone sublingual film; maintenance may also use the buccal route per label. Confirm opioid type, timing and clear objective withdrawal before standard induction. The selected label distinguishes induction after short-acting versus long-acting opioids. LAI products and alternative fentanyl induction protocols need separate sources and review; confirm the plan with the specialist and pharmacy.",
         "forms": [
-          "SL",
-          "LAI"
+          "SL"
         ],
         "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8a5edcf9-828c-4f97-b671-268ab13a8ecd"
       },
@@ -9947,7 +9853,10 @@
         ],
         "ongoing": [
           "Withdrawal and cravings",
-          "Naloxone kit at discharge"
+          "Naloxone kit at discharge",
+          "Respiratory rate and sedation, especially with CNS depressants",
+          "Liver tests during treatment and evaluation of suspected hepatic injury",
+          "Oral health and dental follow-up for transmucosal treatment"
         ]
       },
       "adverseEffects": {
@@ -9961,13 +9870,13 @@
         "dangerous": [
           {
             "name": "Precipitated withdrawal",
-            "recognize": "Buprenorphine is a partial agonist — it can precipitate withdrawal if given while full agonists are still present.",
-            "firstMove": "With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine."
+            "recognize": "New or abruptly worsening withdrawal after starting while full-agonist effects remain.",
+            "firstMove": "Obtain urgent senior or addiction-specialist assessment; manage under an established protocol. The selected label does not establish an alternative fentanyl rescue regimen."
           },
           {
-            "name": "Respiratory depression with benzodiazepines or alcohol",
-            "recognize": "Oversedation.",
-            "firstMove": "Review sedatives; do not withhold MOUD — coordinate."
+            "name": "Respiratory depression",
+            "recognize": "Marked sedation or slow breathing, especially with other CNS depressants.",
+            "firstMove": "Obtain emergency medical assessment for respiratory compromise. If sedated at administration, the team should evaluate delaying or omitting the dose; do not categorically deny ongoing MOUD because of CNS-depressant use."
           }
         ]
       },
@@ -9978,21 +9887,22 @@
           ]
         },
         "keyTraps": [
-          "Full-agonist opioids still on board at induction",
-          "Benzodiazepines and alcohol"
+          "Full-agonist opioids still active at induction can cause precipitated withdrawal.",
+          "Benzodiazepines, alcohol and other CNS depressants increase respiratory risk; do not categorically deny MOUD solely because they are present. Assess sedation and coordinate safe treatment.",
+          "CYP3A4 inhibitors or inducers may require adjustment and monitoring when started or stopped."
         ]
       },
       "pearls": {
         "t1": [
-          "COWS assesses objective signs (pupil size, pulse, gooseflesh, yawning) — it is more reliable than patient self-report for timing buprenorphine induction."
+          "COWS assesses objective signs (pupil size, pulse, gooseflesh, yawning) \u2014 it is more reliable than patient self-report for timing buprenorphine induction."
         ],
         "t2": [
-          "Arrange linkage to medication for opioid use disorder (MOUD) — buprenorphine or methadone — before the patient leaves, since the post-discharge window carries elevated overdose risk."
+          "Arrange linkage to medication for opioid use disorder (MOUD) \u2014 buprenorphine or methadone \u2014 before the patient leaves, since the post-discharge window carries elevated overdose risk."
         ]
       },
       "attendingAsks": [
         "How do you time buprenorphine induction?",
-        "What causes precipitated withdrawal, and what is the first treatment with fentanyl?",
+        "What causes precipitated withdrawal, and when do you obtain specialist assessment?",
         "What must happen before discharge?"
       ],
       "familyExplainer": {
@@ -10059,7 +9969,7 @@
           "baseline_workup": "Assess withdrawal (COWS) before first dose; UDS; LFTs (baseline); pregnancy test",
           "half_life_hours": "24-42",
           "time_to_effect": "30-60 minutes (relieves withdrawal)",
-          "counseling": "Wait until you are in mild–moderate withdrawal (COWS ~8-12) before the first dose, or it can trigger sudden withdrawal. Let it dissolve fully under the tongue — do not chew or swallow. Do NOT combine with benzodiazepines or alcohol. Keep secured away from children. (As of 2023 no X-waiver is required to prescribe.)",
+          "counseling": "Wait until you are in mild\u2013moderate withdrawal (COWS ~8-12) before the first dose, or it can trigger sudden withdrawal. Let it dissolve fully under the tongue \u2014 do not chew or swallow. Do NOT combine with benzodiazepines or alcohol. Keep secured away from children. (As of 2023 no X-waiver is required to prescribe.)",
           "family_psychoeducation": "",
           "family_handout_ref": null,
           "rems_program": "",
@@ -10076,17 +9986,7 @@
           "inpatientUses": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** — buprenorphine or methadone — before the patient leaves, since the post-discharge window carries elevated overdose risk."
-            }
-          ],
-          "adverseEffects.dangerous": [
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present."
-            },
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine."
+              "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** \u2014 buprenorphine or methadone \u2014 before the patient leaves, since the post-discharge window carries elevated overdose risk."
             }
           ],
           "adverseEffects.common": [
@@ -10104,21 +10004,22 @@
           "pearls": [
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** COWS assesses **objective** signs (pupil size, pulse, gooseflesh, yawning) — it is more reliable than patient self-report for timing buprenorphine induction."
+              "quote": "- **Pearl:** COWS assesses **objective** signs (pupil size, pulse, gooseflesh, yawning) \u2014 it is more reliable than patient self-report for timing buprenorphine induction."
             },
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** — buprenorphine or methadone — before the patient leaves, since the post-discharge window carries elevated overdose risk."
+              "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** \u2014 buprenorphine or methadone \u2014 before the patient leaves, since the post-discharge window carries elevated overdose risk."
             }
           ],
           "familyExplainer.text": [
             {
               "page": "reconnect:counseling",
-              "quote": "Wait until you are in mild–moderate withdrawal (COWS ~8-12) before the first dose, or it can trigger sudden withdrawal. Let it dissolve fully under the tongue — do not chew or swallow. Do NOT combine with benzodiazepines or alcohol. Keep secured away from children. (As of 2023 no X-waiver is required to prescribe.)"
+              "quote": "Wait until you are in mild\u2013moderate withdrawal (COWS ~8-12) before the first dose, or it can trigger sudden withdrawal. Let it dissolve fully under the tongue \u2014 do not chew or swallow. Do NOT combine with benzodiazepines or alcohol. Keep secured away from children. (As of 2023 no X-waiver is required to prescribe.)"
             }
           ]
         },
         "authoredFields": [
+          "adverseEffects.dangerous",
           "adverseEffects.dangerous[1].firstMove",
           "adverseEffects.dangerous[1].recognize",
           "attendingAsks",
@@ -10126,17 +10027,21 @@
           "dosing.titration",
           "familyExplainer.text",
           "interactions.cyp",
+          "interactions.keyTraps",
           "interactions.keyTraps[0]",
           "interactions.keyTraps[1]",
           "mechanism.t1",
-          "monitoring"
+          "monitoring",
+          "monitoring.ongoing",
+          "populations",
+          "populations.hepatic"
         ],
         "upstreamDiscrepancies": [
           {
             "field": "drug_class",
             "upstreamValue": "Opioid Partial Agonist (MOUD)",
-            "usedValue": "partial μ-opioid agonist",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "usedValue": "partial \u03bc-opioid agonist",
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           },
           {
             "field": "black_box_warning",
@@ -10151,7 +10056,7 @@
           "id": "ask0",
           "askIndex": 0,
           "revealFrom": [
-            "pearls.t1[0]"
+            "dosing.titration"
           ]
         },
         {
@@ -10168,7 +10073,10 @@
             "pearls.t2[0]"
           ]
         }
-      ]
+      ],
+      "populations": {
+        "hepatic": "Combination film is not recommended in severe hepatic impairment and may be inappropriate in moderate impairment; it is not recommended for induction in moderate impairment. Review the product-specific plan with the specialist."
+      }
     },
     {
       "id": "methadone",
@@ -10179,13 +10087,13 @@
       ],
       "group": "sud",
       "class": [
-        "full μ-opioid agonist"
+        "full \u03bc-opioid agonist"
       ],
       "rxcui": "6813",
       "dailymedSetId": "808a9d0b-720b-4034-a862-5122ff514608",
       "labelVersionDate": "2026-04-27",
       "mechanism": {
-        "t1": "Full μ-opioid agonist and NMDA antagonist; long, variable half-life."
+        "t1": "Full \u03bc-opioid agonist and NMDA antagonist; long, variable half-life."
       },
       "fdaIndications": [
         "Detoxification and maintenance treatment of opioid addiction (OTP-dispensed)",
@@ -10338,7 +10246,7 @@
           "ekg_required": "Yes",
           "half_life_hours": "8-59 (variable, long)",
           "time_to_effect": "Days (steady state ~5 days)",
-          "counseling": "For addiction, methadone is dispensed ONLY through a certified Opioid Treatment Program (OTP) — it cannot be prescribed in a regular office. The dose builds up over days, so overdose risk is highest in the first 1-2 weeks. Avoid benzodiazepines and alcohol. Many interactions affect heart rhythm.",
+          "counseling": "For addiction, methadone is dispensed ONLY through a certified Opioid Treatment Program (OTP) \u2014 it cannot be prescribed in a regular office. The dose builds up over days, so overdose risk is highest in the first 1-2 weeks. Avoid benzodiazepines and alcohol. Many interactions affect heart rhythm.",
           "family_psychoeducation": "",
           "family_handout_ref": null,
           "rems_program": "",
@@ -10355,13 +10263,13 @@
           "inpatientUses": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** — buprenorphine or methadone — before the patient leaves, since the post-discharge window carries elevated overdose risk."
+              "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** \u2014 buprenorphine or methadone \u2014 before the patient leaves, since the post-discharge window carries elevated overdose risk."
             }
           ],
           "monitoring": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram \u2014 and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
             }
           ],
           "adverseEffects.dangerous": [
@@ -10389,7 +10297,7 @@
           "interactions.keyTraps": [
             {
               "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
-              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram — and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
+              "quote": "| **QT-prolonging agents** (e.g., ziprasidone, IV haloperidol, droperidol, high-dose citalopram \u2014 and **methadone**, often already on board) | Baseline EKG (QTc); potassium, magnesium | Repeat QTc with dose changes; correct electrolytes |"
             }
           ],
           "pearls": [
@@ -10405,7 +10313,7 @@
           "familyExplainer.text": [
             {
               "page": "reconnect:counseling",
-              "quote": "For addiction, methadone is dispensed ONLY through a certified Opioid Treatment Program (OTP) — it cannot be prescribed in a regular office. The dose builds up over days, so overdose risk is highest in the first 1-2 weeks. Avoid benzodiazepines and alcohol. Many interactions affect heart rhythm."
+              "quote": "For addiction, methadone is dispensed ONLY through a certified Opioid Treatment Program (OTP) \u2014 it cannot be prescribed in a regular office. The dose builds up over days, so overdose risk is highest in the first 1-2 weeks. Avoid benzodiazepines and alcohol. Many interactions affect heart rhythm."
             }
           ]
         },
@@ -10425,8 +10333,8 @@
           {
             "field": "drug_class",
             "upstreamValue": "Opioid Full Agonist (MOUD)",
-            "usedValue": "full μ-opioid agonist",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "usedValue": "full \u03bc-opioid agonist",
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -10457,18 +10365,16 @@
     {
       "id": "naltrexone",
       "generic": "naltrexone",
-      "brands": [
-        "Vivitrol"
-      ],
+      "brands": [],
       "group": "sud",
       "class": [
-        "μ-opioid antagonist"
+        "\u03bc-opioid antagonist"
       ],
       "rxcui": "7243",
       "dailymedSetId": "db911559-26f5-43a0-b61f-3425176c936f",
       "labelVersionDate": "2026-09-08",
       "mechanism": {
-        "t1": "Competitive μ-opioid antagonist."
+        "t1": "Competitive \u03bc-opioid antagonist."
       },
       "fdaIndications": [
         "Alcohol dependence",
@@ -10479,21 +10385,20 @@
       },
       "inpatientUses": [
         {
-          "use": "Alcohol use disorder maintenance",
+          "use": "Alcohol dependence within a complete treatment plan (selected oral product)",
           "offLabel": false,
           "evidenceIds": []
         },
         {
-          "use": "Opioid use disorder (XR injection) after full detoxification",
+          "use": "Blockade of exogenous opioid effects after adequate detoxification (selected oral product)",
           "offLabel": false,
           "evidenceIds": []
         }
       ],
       "dosing": {
-        "titration": "Must be opioid-free first (typically 7–10 days for short-acting opioids, longer for methadone) to avoid precipitated withdrawal. Confirm with pharmacy.",
+        "titration": "Selected label: oral naltrexone tablets after an adequate opioid-free interval. Transition from buprenorphine or methadone can carry prolonged precipitated-withdrawal risk; negative screening or a challenge does not fully exclude it. Confirm the interval and plan with the specialist and pharmacy. Injectable naltrexone requires a separate label and review.",
         "forms": [
-          "PO",
-          "LAI"
+          "PO"
         ],
         "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=db911559-26f5-43a0-b61f-3425176c936f"
       },
@@ -10505,16 +10410,20 @@
       },
       "pk": {
         "halfLifeHours": "4 (active metabolite ~13)",
-        "timeToEffect": "1-2 hours (blockade); days–weeks for craving"
+        "timeToEffect": "1-2 hours (blockade); days\u2013weeks for craving"
       },
       "monitoring": {
         "baseline": [
           "LFTs",
-          "Urine toxicology for opioids"
+          "Urine toxicology for opioids",
+          "Assess dependence and withdrawal, including recent buprenorphine or methadone",
+          "Assess depression, suicidality and liver disease"
         ],
         "ongoing": [
           "LFTs",
-          "Cravings and drinking"
+          "Cravings and drinking",
+          "Hepatic symptoms, depression and suicidality",
+          "Counsel about overdose after discontinuation or attempts to overcome opioid blockade"
         ]
       },
       "adverseEffects": {
@@ -10528,26 +10437,32 @@
         "dangerous": [
           {
             "name": "Precipitated opioid withdrawal",
-            "recognize": "Naltrexone is a μ-opioid antagonist — it is contraindicated in patients currently using opioids (precipitates withdrawal) and in acute hepatitis.",
-            "firstMove": "Confirm opioid-free status before the first dose."
+            "recognize": "Abrupt severe withdrawal after exposure when opioid dependence remains; hospital or intensive-care treatment may be needed.",
+            "firstMove": "Obtain urgent medical assessment. Confirm a product-appropriate opioid-free interval before treatment; a negative test or challenge does not guarantee safety."
           },
           {
-            "name": "Overdose after stopping",
-            "recognize": "Loss of tolerance makes a return to opioids more dangerous.",
-            "firstMove": "Naloxone kit and counseling at discharge."
+            "name": "Overdose after stopping or overriding blockade",
+            "recognize": "Reduced tolerance makes return to opioids dangerous; attempts to overcome blockade can be fatal.",
+            "firstMove": "Provide overdose education and access to an opioid reversal agent; obtain emergency care for suspected overdose."
+          },
+          {
+            "name": "Hepatic injury",
+            "recognize": "New jaundice, dark urine or persistent abdominal symptoms.",
+            "firstMove": "Stop treatment and obtain prompt medical assessment for signs of acute hepatitis."
           }
         ]
       },
       "interactions": {
         "cyp": {},
         "keyTraps": [
-          "Any opioid analgesic (blocked; plan pain control)",
-          "Acute hepatitis"
+          "Opioid analgesia is blocked; coordinate an emergency pain plan and never attempt to override the blockade.",
+          "Contraindicated with current opioid analgesic use or dependence, acute opioid withdrawal, a positive opioid urine screen or failed naloxone challenge, and product hypersensitivity.",
+          "Assess liver disease and hepatotoxicity symptoms; the selected oral label warns about hepatic injury rather than listing acute hepatitis as a formal contraindication."
         ]
       },
       "pearls": {
         "t1": [
-          "Naltrexone reduces heavy drinking but cannot be used with opioids and requires liver-risk review; in compensated cirrhosis it may be considered with monitoring, while acute hepatitis or advanced decompensation pushes you away from it."
+          "Oral naltrexone treats alcohol dependence as part of a complete management plan. Exclude opioid dependence and review liver risk; injectable-product claims require a separate label."
         ],
         "t2": [
           "Naltrexone NNT = 11 for preventing return to heavy drinking; acamprosate NNT = 11 for preventing any drinking."
@@ -10612,10 +10527,10 @@
           "Weight Impact": "Neutral",
           "Requires Blood Monitoring": "Yes",
           "ekg_required": "No",
-          "baseline_workup": "LFTs (baseline + periodic); confirm opioid-free 7-10 days (UDS ± naloxone challenge); pregnancy test",
+          "baseline_workup": "LFTs (baseline + periodic); confirm opioid-free 7-10 days (UDS \u00b1 naloxone challenge); pregnancy test",
           "half_life_hours": "4 (active metabolite ~13)",
-          "time_to_effect": "1-2 hours (blockade); days–weeks for craving",
-          "counseling": "For opioids: you must be completely off all opioids for 7-10 days first, or it causes sudden withdrawal. It blocks opioid effects — if you relapse, your tolerance is lower and overdose risk is high. For alcohol: reduces craving and heavy drinking; you can start while still drinking.",
+          "time_to_effect": "1-2 hours (blockade); days\u2013weeks for craving",
+          "counseling": "For opioids: you must be completely off all opioids for 7-10 days first, or it causes sudden withdrawal. It blocks opioid effects \u2014 if you relapse, your tolerance is lower and overdose risk is high. For alcohol: reduces craving and heavy drinking; you can start while still drinking.",
           "family_psychoeducation": "",
           "family_handout_ref": null,
           "rems_program": "",
@@ -10629,42 +10544,21 @@
               "quote": "Mu-opioid receptor antagonist (blocks opioid effects; reduces alcohol reward/craving)"
             }
           ],
-          "inpatientUses": [
-            {
-              "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "**Alcohol use disorder pharmacotherapy anchor** — Naltrexone and acamprosate are first-line maintenance medications for alcohol use disorder when not contraindicated."
-            }
-          ],
-          "adverseEffects.dangerous": [
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** Naltrexone is a μ-opioid antagonist — it is **contraindicated** in patients currently using opioids (precipitates withdrawal) and in acute hepatitis."
-            }
-          ],
           "adverseEffects.common": [
             {
               "page": "reconnect:common_side_effects",
               "quote": "Nausea; Headache; Dizziness; Fatigue; Insomnia"
             }
           ],
-          "pearls": [
-            {
-              "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "Naltrexone reduces heavy drinking but cannot be used with opioids and requires liver-risk review; in compensated cirrhosis it may be considered with monitoring, while acute hepatitis or advanced decompensation pushes you away from it."
-            },
-            {
-              "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Evidence:** Naltrexone NNT = 11 for preventing return to heavy drinking; acamprosate NNT = 11 for preventing any drinking."
-            }
-          ],
           "familyExplainer.text": [
             {
               "page": "reconnect:counseling",
-              "quote": "For opioids: you must be completely off all opioids for 7-10 days first, or it causes sudden withdrawal. It blocks opioid effects — if you relapse, your tolerance is lower and overdose risk is high. For alcohol: reduces craving and heavy drinking; you can start while still drinking."
+              "quote": "For opioids: you must be completely off all opioids for 7-10 days first, or it causes sudden withdrawal. It blocks opioid effects \u2014 if you relapse, your tolerance is lower and overdose risk is high. For alcohol: reduces craving and heavy drinking; you can start while still drinking."
             }
           ]
         },
         "authoredFields": [
+          "adverseEffects.dangerous",
           "adverseEffects.dangerous[0].firstMove",
           "adverseEffects.dangerous[1].firstMove",
           "adverseEffects.dangerous[1].recognize",
@@ -10672,19 +10566,27 @@
           "dosing.forms",
           "dosing.titration",
           "familyExplainer.text",
+          "inpatientUses",
           "inpatientUses[1]",
           "interactions.cyp",
+          "interactions.keyTraps",
           "interactions.keyTraps[0]",
           "interactions.keyTraps[1]",
           "mechanism.t1",
-          "monitoring"
+          "monitoring",
+          "monitoring.baseline",
+          "monitoring.ongoing",
+          "pearls",
+          "pearls.t1",
+          "populations",
+          "populations.hepatic"
         ],
         "upstreamDiscrepancies": [
           {
             "field": "drug_class",
             "upstreamValue": "Opioid Antagonist (MOUD/AUD)",
-            "usedValue": "μ-opioid antagonist",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "usedValue": "\u03bc-opioid antagonist",
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           },
           {
             "field": "black_box_warning",
@@ -10699,6 +10601,7 @@
           "id": "ask0",
           "askIndex": 0,
           "revealFrom": [
+            "interactions.keyTraps[1]",
             "adverseEffects.dangerous[0]"
           ]
         },
@@ -10713,10 +10616,13 @@
           "id": "ask2",
           "askIndex": 2,
           "revealFrom": [
-            "pearls.t1[0]"
+            "populations.hepatic"
           ]
         }
-      ]
+      ],
+      "populations": {
+        "hepatic": "Exposure increases with cirrhosis. Assess liver disease and other causes of injury; discontinue and seek medical assessment if symptoms or signs of acute hepatitis develop."
+      }
     },
     {
       "id": "acamprosate",
@@ -10863,10 +10769,10 @@
           "Weight Impact": "Neutral",
           "Requires Blood Monitoring": "No",
           "ekg_required": "No",
-          "baseline_workup": "Renal function (eGFR/creatinine) — adjust if CrCl 30-50; contraindicated if CrCl <30; confirm abstinence",
+          "baseline_workup": "Renal function (eGFR/creatinine) \u2014 adjust if CrCl 30-50; contraindicated if CrCl <30; confirm abstinence",
           "half_life_hours": "20-33",
           "time_to_effect": "5-8 days",
-          "counseling": "Helps you stay abstinent after you have stopped drinking — start after detox. Take it three times a day even when you feel fine. The most common side effect is diarrhea. It is processed by the kidneys (not the liver), so it is a good option if you have liver problems.",
+          "counseling": "Helps you stay abstinent after you have stopped drinking \u2014 start after detox. Take it three times a day even when you feel fine. The most common side effect is diarrhea. It is processed by the kidneys (not the liver), so it is a good option if you have liver problems.",
           "family_psychoeducation": "",
           "family_handout_ref": null,
           "rems_program": "",
@@ -10883,7 +10789,7 @@
           "inpatientUses": [
             {
               "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
-              "quote": "**Alcohol use disorder pharmacotherapy anchor** — Naltrexone and acamprosate are first-line maintenance medications for alcohol use disorder when not contraindicated."
+              "quote": "**Alcohol use disorder pharmacotherapy anchor** \u2014 Naltrexone and acamprosate are first-line maintenance medications for alcohol use disorder when not contraindicated."
             }
           ],
           "adverseEffects.dangerous": [
@@ -10917,7 +10823,7 @@
           "familyExplainer.text": [
             {
               "page": "reconnect:counseling",
-              "quote": "Helps you stay abstinent after you have stopped drinking — start after detox. Take it three times a day even when you feel fine. The most common side effect is diarrhea. It is processed by the kidneys (not the liver), so it is a good option if you have liver problems."
+              "quote": "Helps you stay abstinent after you have stopped drinking \u2014 start after detox. Take it three times a day even when you feel fine. The most common side effect is diarrhea. It is processed by the kidneys (not the liver), so it is a good option if you have liver problems."
             }
           ]
         },
@@ -10937,7 +10843,7 @@
             "field": "drug_class",
             "upstreamValue": "AUD Pharmacotherapy",
             "usedValue": "glutamate modulator",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -11036,7 +10942,7 @@
           {
             "name": "Level changes of clozapine or olanzapine when smoking stops",
             "recognize": "Smoking cessation raises clozapine levels (CYP1A2)",
-            "firstMove": "It is the smoke, not the nicotine, that induces CYP1A2 — NRT does not prevent this; watch levels and sedation."
+            "firstMove": "It is the smoke, not the nicotine, that induces CYP1A2 \u2014 NRT does not prevent this; watch levels and sedation."
           }
         ]
       },
@@ -11051,7 +10957,7 @@
           "Combination NRT (patch plus a short-acting form) beats a single form."
         ],
         "t2": [
-          "181. Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 — Varenicline > bupropion > NRT > placebo; no excess NP AEs"
+          "181. Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 \u2014 Varenicline > bupropion > NRT > placebo; no excess NP AEs"
         ]
       },
       "attendingAsks": [
@@ -11148,7 +11054,7 @@
           "pearls": [
             {
               "page": "14_Tracks/Resident/canon_200.md",
-              "quote": "**181.** Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 — Varenicline > bupropion > NRT > placebo; no excess NP AEs"
+              "quote": "**181.** Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 \u2014 Varenicline > bupropion > NRT > placebo; no excess NP AEs"
             }
           ],
           "familyExplainer.text": [
@@ -11176,7 +11082,7 @@
             "field": "drug_class",
             "upstreamValue": "Tobacco Cessation",
             "usedValue": "nicotinic agonist (replacement)",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -11212,13 +11118,13 @@
       ],
       "group": "sud",
       "class": [
-        "α4β2 nicotinic partial agonist"
+        "\u03b14\u03b22 nicotinic partial agonist"
       ],
       "rxcui": "591622",
       "dailymedSetId": "f0ff4f27-5185-4881-a749-c6b7a0ca5696",
       "labelVersionDate": "2026-01-23",
       "mechanism": {
-        "t1": "Partial agonist at α4β2 nicotinic receptors."
+        "t1": "Partial agonist at \u03b14\u03b22 nicotinic receptors."
       },
       "fdaIndications": [
         "Aid to smoking cessation"
@@ -11270,7 +11176,7 @@
         "dangerous": [
           {
             "name": "Neuropsychiatric symptoms",
-            "recognize": "Mood change, agitation, or suicidal thinking — historically feared; EAGLES found no excess.",
+            "recognize": "Mood change, agitation, or suicidal thinking \u2014 historically feared; EAGLES found no excess.",
             "firstMove": "Monitor as for any patient; report changes."
           }
         ]
@@ -11283,7 +11189,7 @@
       },
       "pearls": {
         "t1": [
-          "181. Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 — Varenicline > bupropion > NRT > placebo; no excess NP AEs"
+          "181. Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 \u2014 Varenicline > bupropion > NRT > placebo; no excess NP AEs"
         ],
         "t2": [
           "The old boxed warning for neuropsychiatric events was removed after EAGLES."
@@ -11365,13 +11271,13 @@
           "inpatientUses": [
             {
               "page": "14_Tracks/Resident/canon_200.md",
-              "quote": "**181.** Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 — Varenicline > bupropion > NRT > placebo; no excess NP AEs"
+              "quote": "**181.** Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 \u2014 Varenicline > bupropion > NRT > placebo; no excess NP AEs"
             }
           ],
           "adverseEffects.dangerous": [
             {
               "page": "14_Tracks/Resident/canon_200.md",
-              "quote": "**181.** Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 — Varenicline > bupropion > NRT > placebo; no excess NP AEs"
+              "quote": "**181.** Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 \u2014 Varenicline > bupropion > NRT > placebo; no excess NP AEs"
             }
           ],
           "adverseEffects.common": [
@@ -11383,7 +11289,7 @@
           "pearls": [
             {
               "page": "14_Tracks/Resident/canon_200.md",
-              "quote": "**181.** Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 — Varenicline > bupropion > NRT > placebo; no excess NP AEs"
+              "quote": "**181.** Anthenelli et al., \"Neuropsychiatric Safety and Efficacy of Varenicline, Bupropion, and NRT (EAGLES),\" Lancet 2016 \u2014 Varenicline > bupropion > NRT > placebo; no excess NP AEs"
             }
           ],
           "familyExplainer.text": [
@@ -11410,8 +11316,8 @@
           {
             "field": "drug_class",
             "upstreamValue": "Tobacco Cessation",
-            "usedValue": "α4β2 nicotinic partial agonist",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "usedValue": "\u03b14\u03b22 nicotinic partial agonist",
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },
@@ -11445,13 +11351,13 @@
       "brands": [],
       "group": "other",
       "class": [
-        "α1-adrenergic antagonist"
+        "\u03b11-adrenergic antagonist"
       ],
       "rxcui": "8629",
       "dailymedSetId": "e4852fc2-b763-40e2-b8bb-a3f6da5c72fe",
       "labelVersionDate": "2026-09-03",
       "mechanism": {
-        "t1": "Central and peripheral α1-adrenergic antagonist."
+        "t1": "Central and peripheral \u03b11-adrenergic antagonist."
       },
       "fdaIndications": [
         "Hypertension"
@@ -11520,7 +11426,7 @@
           "Prazosin (alpha-1 adrenergic antagonist) is suggested for trauma-related nightmares."
         ],
         "t2": [
-          "116. Raskind et al., \"Trial of Prazosin for PTSD in Military Veterans (PACT),\" NEJM 2018 — Pivotal negative trial: prazosin no benefit over placebo"
+          "116. Raskind et al., \"Trial of Prazosin for PTSD in Military Veterans (PACT),\" NEJM 2018 \u2014 Pivotal negative trial: prazosin no benefit over placebo"
         ]
       },
       "attendingAsks": [
@@ -11620,7 +11526,7 @@
             },
             {
               "page": "14_Tracks/Resident/canon_200.md",
-              "quote": "**116.** Raskind et al., \"Trial of Prazosin for PTSD in Military Veterans (PACT),\" NEJM 2018 — Pivotal negative trial: prazosin no benefit over placebo"
+              "quote": "**116.** Raskind et al., \"Trial of Prazosin for PTSD in Military Veterans (PACT),\" NEJM 2018 \u2014 Pivotal negative trial: prazosin no benefit over placebo"
             }
           ],
           "familyExplainer.text": [
@@ -11646,8 +11552,8 @@
           {
             "field": "drug_class",
             "upstreamValue": "Other",
-            "usedValue": "α1-adrenergic antagonist",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "usedValue": "\u03b11-adrenergic antagonist",
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           },
           {
             "field": "brands",
@@ -11689,13 +11595,13 @@
       ],
       "group": "other",
       "class": [
-        "α2-adrenergic agonist"
+        "\u03b12-adrenergic agonist"
       ],
       "rxcui": "2599",
       "dailymedSetId": "6d7cfb02-e580-4658-a2fe-2149b515d434",
       "labelVersionDate": "2026-09-09",
       "mechanism": {
-        "t1": "Central α2-adrenergic agonist that reduces sympathetic outflow."
+        "t1": "Central \u03b12-adrenergic agonist that reduces sympathetic outflow."
       },
       "fdaIndications": [
         "Hypertension (immediate-release tablets; extended-release products carry an ADHD indication)"
@@ -11716,7 +11622,7 @@
         }
       ],
       "dosing": {
-        "titration": "Taper to stop — abrupt discontinuation causes rebound hypertension. Confirm dose with pharmacy.",
+        "titration": "Taper to stop \u2014 abrupt discontinuation causes rebound hypertension. Confirm dose with pharmacy.",
         "forms": [
           "PO",
           "ER",
@@ -11761,7 +11667,7 @@
       },
       "pearls": {
         "t1": [
-          "Treats the autonomic symptoms of opioid withdrawal — it is not a treatment for opioid use disorder."
+          "Treats the autonomic symptoms of opioid withdrawal \u2014 it is not a treatment for opioid use disorder."
         ],
         "t2": [
           "For ADHD, stimulants are first-line and effective, but do not start them during acute mania or psychosis, screen cardiovascular history and substance-misuse/diversion risk, and consider non-stimulants (atomoxetine, viloxazine, guanfacine/clonidine ER) when those are concerns."
@@ -11965,7 +11871,7 @@
           "For ADHD, stimulants are first-line and effective, but do not start them during acute mania or psychosis, screen cardiovascular history and substance-misuse/diversion risk, and consider non-stimulants (atomoxetine, viloxazine, guanfacine/clonidine ER) when those are concerns."
         ],
         "t2": [
-          "If a patient doesn't respond to methylphenidate, try an amphetamine (or vice versa) before concluding stimulants have failed — response is idiosyncratic between the two classes."
+          "If a patient doesn't respond to methylphenidate, try an amphetamine (or vice versa) before concluding stimulants have failed \u2014 response is idiosyncratic between the two classes."
         ]
       },
       "attendingAsks": [
@@ -12088,7 +11994,7 @@
             },
             {
               "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
-              "quote": "- **Pearl:** If a patient doesn't respond to methylphenidate, **try an amphetamine** (or vice versa) before concluding stimulants have failed — response is idiosyncratic between the two classes."
+              "quote": "- **Pearl:** If a patient doesn't respond to methylphenidate, **try an amphetamine** (or vice versa) before concluding stimulants have failed \u2014 response is idiosyncratic between the two classes."
             }
           ],
           "familyExplainer.text": [
@@ -12117,7 +12023,7 @@
             "field": "drug_class",
             "upstreamValue": "Stimulant",
             "usedValue": "CNS stimulant",
-            "basis": "Card uses a more specific class term — reviewer to confirm."
+            "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
           }
         ]
       },

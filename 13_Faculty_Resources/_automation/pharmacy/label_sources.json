@@ -239,7 +239,7 @@
         "NALTREXONE HYDROCHLORIDE",
         "NALTREXONE"
       ],
-      "referenceBrand": "VIVITROL"
+      "route": "ORAL"
     },
     "nicotine-replacement": {
       "rxnormName": "nicotine",
