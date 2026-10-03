@@ -1,11 +1,13 @@
 /* frontdoor.css — layout and component CSS for the seven front-door surfaces.
  *
- * Every dimension, radius, shadow, font size and animation curve here is transcribed from the
- * design handoff prototype's inline styles:
+ * SOURCE OF TRUTH (2026-10-03): this stylesheet and its class contract,
+ *   docs/superpowers/specs/front-door-handoff/CLASS-INVENTORY.md
+ * are normative. The design handoff prototype it was first ported from,
  *   docs/superpowers/specs/front-door-handoff/Front-Door-Hi-Fi-v2.dc.html
- * That file is normative for visual values; this stylesheet is a faithful port of it, not a
- * reinterpretation. Where a value below differs from the prototype it is because the prototype
- * expressed the same thing twice with a rounding difference, and the deviation is commented.
+ * is HISTORICAL: owner-directed design passes have since departed from it on purpose (the
+ * 2026-10-01 Today pass -- heading, Continue segments, Safety kit panel, sentence-case labels,
+ * Source Serif 4 -- and the red-means-safety colour roles). Do not "restore" a value to the prototype's;
+ * change it here and in the inventory together, or not at all.
  *
  * ROLE RULE (added 2026-09-10): --fd-terracotta, --fd-teal and --fd-olive are FILL/BORDER
  * tokens, gated at the 3:1 non-text bar. Their INK counterparts are --fd-terracotta-dark,
@@ -415,6 +417,12 @@
   background-size:100% 1.5px;
 }
 .fd-row__title.is-done.is-just-done{animation:fdStrikeDraw .35s ease}
+/* A phone keeps a week row's title before its em-dash subtitle ("The Interview Room") instead of
+   ellipsing mid-word; the subtitle stays in the accessibility tree and the textContent (fd_today.js
+   fdRowTitleMarkup), so it is clipped rather than display:none (2026-10-03). */
+@media (max-width:640px){
+  .fd-row__sub{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+}
 .fd-row__meta{margin-left:auto;display:inline-flex;align-items:center;gap:var(--fd-space-3);flex:0 0 auto}
 .fd-row__min{font-size:var(--fd-font-xs);color:var(--fd-text-dim);white-space:nowrap}
 .fd-edition-coremeta{display:flex;flex-wrap:wrap;gap:var(--fd-space-2) var(--fd-space-5);font-size:var(--fd-font-xs);line-height:1.35;color:var(--fd-text-dim)}

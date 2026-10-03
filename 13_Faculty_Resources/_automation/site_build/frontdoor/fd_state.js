@@ -246,15 +246,6 @@ function fdDailyPick(candidates, doneMap, nowMs){
   return pool[localDayIndex(nowMs)%pool.length];
 }
 
-/* Cubic ease-out, matching the 600ms ring sweep in the design. Callers drive elapsed from
-   rAF; keeping the easing pure is what makes the curve testable without a frame loop. */
-function fdRingStep(from, to, elapsed, duration){
-  var dur=duration||600;
-  var k=Math.min(1,Math.max(0,elapsed/dur));
-  var e=1-Math.pow(1-k,3);
-  return Math.round(from+(to-from)*e);
-}
-
 /* Seven-day activity strip -- the arithmetic behind Today's "Active N of the last 7 days" line.
    Reads the timestamps every tool already writes rather than adding a store: cw_srs_v1 card
    .last (ms) and stats.lastStudy (Y-M-D, unpadded), cw_qb_v1 .ts (ms), the cw_calib_v1 ledger
