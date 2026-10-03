@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11, Node node:test, existing Netlify functions and browser modules, GitHub Actions, Firecrawl API. No new model dependency.
 
-**Spec:** `output/firecrawl-faculty-review-design/DESIGN.md` (approved design plus the user's required consistency scan). Copy this artifact into `docs/superpowers/specs/2026-10-03-firecrawl-faculty-review-design.md` in the implementation checkout before committing; retain the explicit proposal/activation status.
+**Spec:** `docs/superpowers/specs/2026-10-03-firecrawl-faculty-review-design.md` (approved design plus the user's required consistency scan).
 
 ## Global Constraints
 
