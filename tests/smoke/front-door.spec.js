@@ -41,6 +41,14 @@ async function readingReady(page, ref = READING_REF) {
   await expect(reader.locator('.fd-article__body h3')).toHaveCount(3);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveCount(1);
   await expect(reader).not.toHaveClass(/fd-reader--guide/);
+  // DOM readiness can precede the 8px entrance transform. Settle geometry
+  // before capturing a reading place or changing viewport; keep offset bounds.
+  await reader.evaluate(async el => {
+    await document.fonts.ready;
+    const animations = [];
+    for (let node = el; node; node = node.parentElement) animations.push(...node.getAnimations());
+    await Promise.all(animations.filter(a => Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a => a.finished.catch(() => null)));
+  });
   return reader;
 }
 
@@ -486,6 +494,8 @@ test('capture Schedule review and Done move focus to the stable editor after the
 });
 
 test.beforeEach(async ({ page }) => {
+  // Netlify's deploy-preview review drawer overlaps the mobile dock; it is not learner UI.
+  await page.route('**/.netlify/scripts/cdp', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   const errors = [];
   runtimeErrors.set(page, errors);
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
@@ -990,12 +1000,8 @@ test('the current-week flag never covers another stop, even when that week is co
   await expectHealthy(page);
 });
 
-// The 390px check above passed on macOS both before and after the .fd-row__title fix, because
-// macOS font metrics happened to land just under the floor a max-content-sized title imposed
-// (339px on res / 324px on ms3, against 362px available). Ubuntu's wider defaults did not, so CI
-// caught what the workstation could not. Asserting at 320px removes the luck: an untruncated
-// title overflows there on every platform, so this fails without the fix rather than depending
-// on which fonts the runner happens to have.
+// A long title must clip inside the 320px pane instead of widening it.
+// The synthetic title below keeps that check independent of font metrics.
 test('Path detail titles truncate rather than set a horizontal floor at 320px', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 844 });
   await seedApp(page, testInfo);
@@ -1005,6 +1011,14 @@ test('Path detail titles truncate rather than set a horizontal floor at 320px', 
   await page.locator('[data-fd-tab="path"]:visible').click();
   await expect(page.locator('.fd-path')).toBeVisible();
 
+  await page.evaluate(() => document.fonts.ready);
+  expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
+
+  // Source Serif can fit the current title. Use a synthetic long title so this
+  // checks clipping across fonts and audiences without weakening the overflow guard.
+  const longTitle = 'Synthetic long Path detail title '.repeat(8);
+  await page.locator('.fd-row__title').first().evaluate((el, text) => { el.textContent = text; }, longTitle);
+  await expect(page.locator('.fd-row__title').first()).toHaveText(longTitle);
   expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
 
   // The row title must be the element that gives: it fills its column and clips, rather than
@@ -2416,7 +2430,6 @@ const OTF = {
   }, day: { lastDay: '', newToday: 0 }, stats: { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0 }, settings: { newPerDay: 12 } },
   capture: { v: 1, items: [{ id: 'otf-c1', text: 'Why hold the lithium tonight?', at: OTF_NOW - 10 * 60 * 1000, ctx: null, triaged: false }] },
 };
-const OTF_WHY = 'First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.';
 // The primary: a wrapped device-store row, or the lead card itself when nothing outranked it.
 const OTF_PRIMARY = '.fd-primary, .fd-continue:not(.is-secondary), .fd-setupcta';
 // Its control: the first focusable inside the wrapper, or the lead card (a button).
@@ -2425,7 +2438,8 @@ const OTF_PRIMARY_CONTROL = '.fd-primary button, .fd-primary a, .fd-continue:not
 async function otfExpectOnePrimary(page) {
   await expect(page.locator('.fd-today')).toBeVisible();
   await expect(page.locator(OTF_PRIMARY)).toHaveCount(1);
-  await expect(page.locator('.fd-primary__why')).toHaveText(OTF_WHY);
+  // 2026-10-01: the "First things first…" explanation line is retired (owner-directed design pass).
+  await expect(page.locator('.fd-primary__why')).toHaveCount(0);
   await expect(page.locator('h2.fd-also')).toHaveCount(1);
   await expect(page.locator('h2.fd-also')).toHaveText('Also today');
 }
@@ -2522,7 +2536,8 @@ test('One Thing First A2: remove the capsule and the live block wins', async ({ 
   await expect(page.locator('.fd-primary .fd-block.is-live .fd-block__kicker')).toHaveText('Your 10-minute block');
   await expect(page.locator('.fd-primary [data-block-continue]')).toHaveClass(/fd-btn--primary/);
   await expect(page.locator('.fd-resume')).toHaveCount(0);
-  await otfExpectPrimaryIsFirstFocusable(page);
+  // The owner-directed purpose chooser precedes the primary timed block.
+  await expect(page.locator('.fd-today__main button').first()).toHaveAttribute('data-today-purpose','rounds');
   await otfExerciseVisitAndBack(page);
   await expect(page.locator('.fd-primary .fd-block.is-live')).toHaveCount(1);
   await expectHealthy(page);
@@ -2546,8 +2561,8 @@ test('One Thing First A2: clear the dues and Continue leads, with the rows below
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary')).toHaveCount(0);
   await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-  const order = await page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0]));
-  expect(order).toEqual(['fd-continue', 'fd-offline', 'fd-primary__why', 'fd-sectionhead', 'fd-block', 'fd-capture']);
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0])))
+    .toEqual(['fd-continue', 'fd-offline', 'fd-sectionhead', 'fd-purpose', 'fd-study-planner', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await otfExerciseVisitAndBack(page);
   await expectHealthy(page);
@@ -2618,9 +2633,10 @@ test('One Thing First A2: cw_last names an undone week read that is not the Cont
     const rows = [...document.querySelectorAll('.fd-list .fd-row')];
     for (const row of rows) {
       const ref = row.querySelector('.fd-row__open')?.getAttribute('data-fd-open');
-      const chip = row.querySelector('.fd-chip')?.textContent;
+      // A reading carries no type chip (2026-10-01); only tools and references are labelled.
+      const isRead = !row.querySelector('.fd-chip');
       const done = row.querySelector('.fd-check')?.classList.contains('is-done');
-      if (ref && ref !== target && chip === 'read' && !done) return ref;
+      if (ref && ref !== target && isRead && !done) return ref;
     }
     return null;
   });
@@ -2742,6 +2758,7 @@ async function otfAnswerOne(page) {
 }
 
 async function otfStartBlockFromToday(page) {
+  await page.locator('[data-today-planner-toggle]').click();
   const planner = page.locator('.fd-block:not(.is-live)');
   await expect(planner).toBeVisible();
   const steps = await planner.locator('.fd-block__step .fd-block__title').allTextContents();
@@ -4650,11 +4667,12 @@ test('Today purpose is optional, session-only, and preserves the regular planner
   await seedApp(page,info,{storage:{cw_feedback_v1:{v:1,items:[]},cw_private_reflection_v1:'synthetic private note'}});
   await page.goto('/');await otfExpectOnePrimary(page);await otfExpectPrimaryIsFirstFocusable(page);
   const chooser=page.locator('.fd-purpose'),toggle=chooser.locator('summary');
-  await expect(chooser).not.toHaveAttribute('open');
+  await expect(chooser).toHaveAttribute('open','');
   const initialURL=page.url();
   const primary=await page.locator(OTF_PRIMARY).textContent();
   const stores=await page.evaluate(()=>Object.fromEntries(['cw_frontdoor_v1','cw_block_v1','cw_feedback_v1','cw_private_reflection_v1'].map(key=>[key,localStorage.getItem(key)])));
-  await toggle.focus();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+  await toggle.focus();await page.keyboard.press('Enter');await expect(chooser).not.toHaveAttribute('open');
+  await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
   const first=chooser.locator('[data-today-purpose="rounds"]');await page.keyboard.press('Tab');await expect(first).toBeFocused();
   for(const id of ['rounds','interview','family','study','interview']){
     const choice=chooser.locator(`[data-today-purpose="${id}"]`);
@@ -4665,6 +4683,7 @@ test('Today purpose is optional, session-only, and preserves the regular planner
   }
   expect(await page.evaluate(()=>Object.fromEntries(['cw_frontdoor_v1','cw_block_v1','cw_feedback_v1','cw_private_reflection_v1'].map(key=>[key,localStorage.getItem(key)])))).toEqual(stores);
   await chooser.locator('[data-today-purpose="study"]').click();
+  await chooser.locator('[data-today-planner]').click();
   await page.locator('[data-block-minutes="20"]').click();
   await chooser.locator('[data-today-planner]').click();
   await expect(page.locator('[data-block-minutes="20"]')).toBeFocused();
@@ -4675,8 +4694,8 @@ test('Today purpose is optional, session-only, and preserves the regular planner
   await page.locator('[data-fd-tab="library"]:visible').click();await page.goBack();
   await expect(page.locator('[data-today-purpose="family"]')).toHaveAttribute('aria-pressed','true');
   await page.goForward();await expect(page.locator('.fd-library:visible')).toBeVisible();
-  await page.goBack();await page.reload();await expect(chooser).not.toHaveAttribute('open');
-  await toggle.click();await expect(chooser.locator('[data-today-purpose=""]')).toHaveAttribute('aria-pressed','true');
+  await page.goBack();await page.reload();await expect(chooser).toHaveAttribute('open','');
+  await expect(chooser.locator('[data-today-purpose=""]')).toHaveAttribute('aria-pressed','true');
   await expectHealthy(page);
 });
 
@@ -4690,6 +4709,14 @@ test('Today purpose uses published reader/tool routes with keyboard, mobile and 
     if(!await chooser.evaluate(el=>el.open))await chooser.locator('summary').click();
     await chooser.locator(`[data-today-purpose="${item.id}"]`).click();
     const open=chooser.locator(`[data-fd-open="${item.ref}"]`);await page.keyboard.press('Tab');await open.focus();
+    // Measure the settled layout: an entrance transform can report 43.9999px
+    // for a 44px target. Keep the full bound rather than accepting a smaller target.
+    await open.evaluate(async el=>{
+      await document.fonts.ready;
+      const animations=[];
+      for(let node=el;node;node=node.parentElement)animations.push(...node.getAnimations());
+      await Promise.all(animations.filter(a=>Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a=>a.finished.catch(()=>null)));
+    });
     const paint=await open.evaluate(el=>({outline:getComputedStyle(el).outlineStyle,height:el.getBoundingClientRect().height,fits:document.documentElement.scrollWidth<=innerWidth}));
     expect(paint.outline).not.toBe('none');expect(paint.height).toBeGreaterThanOrEqual(44);expect(paint.fits).toBe(true);
     await page.keyboard.press('Enter');
@@ -4708,7 +4735,7 @@ test('Today purpose does not replace interrupted work, due reviews or an existin
   await expect(page.locator('.fd-primary .fd-resume__link')).toContainText('Resume question bank — 4 left');
   const primary=await page.locator(OTF_PRIMARY).textContent();
   const before=await page.evaluate(()=>({block:localStorage.getItem('cw_block_v1'),session:localStorage.getItem('cw_sess_v1'),dues:localStorage.getItem('cw_srs_v1')}));
-  await page.locator('.fd-purpose summary').click();
+  await expect(page.locator('.fd-purpose')).toHaveAttribute('open','');
   for(const id of ['rounds','study','family',''])await page.locator(`[data-today-purpose="${id}"]`).click();
   expect(await page.locator(OTF_PRIMARY).textContent()).toBe(primary);
   expect(await page.evaluate(()=>({block:localStorage.getItem('cw_block_v1'),session:localStorage.getItem('cw_sess_v1'),dues:localStorage.getItem('cw_srs_v1')}))).toEqual(before);
@@ -4724,7 +4751,7 @@ test('Today purpose works when local storage becomes unavailable and rejects for
     Storage.prototype.getItem=function(k){if(this===localStorage)throw new DOMException('Blocked','SecurityError');return get.call(this,k);};
     Storage.prototype.setItem=function(k,v){if(this===localStorage)throw new DOMException('Blocked','QuotaExceededError');return set.call(this,k,v);};
   });
-  await page.locator('.fd-purpose summary').click();await page.locator('[data-today-purpose="interview"]').click();
+  await expect(page.locator('.fd-purpose')).toHaveAttribute('open','');await page.locator('[data-today-purpose="interview"]').click();
   await expect(page.locator('[data-today-purpose="interview"]')).toHaveAttribute('aria-pressed','true');
   await page.evaluate(()=>{const b=document.createElement('button');b.setAttribute('data-today-purpose','unknown-private-target');document.querySelector('.fd-purpose').appendChild(b);b.click();b.remove();});
   await expect(page.locator('[data-today-purpose="interview"]')).toHaveAttribute('aria-pressed','true');
@@ -4738,7 +4765,7 @@ test('Today purpose active text meets contrast in both themes and disclosure sta
   for(const theme of ['light','dark']){
     await page.addInitScript(value=>localStorage.setItem('cw_theme',value),theme);await page.goto('/');
     const chooser=page.locator('.fd-purpose'),summary=chooser.locator('summary');
-    await summary.focus();await page.keyboard.press('Enter');await expect(chooser).toHaveAttribute('open','');
+    await expect(chooser).toHaveAttribute('open','');
     await chooser.locator('[data-today-purpose="study"]').click();
     const ratios=await chooser.evaluate(root=>{
       const rgb=value=>{
@@ -4761,3 +4788,100 @@ test('Today purpose active text meets contrast in both themes and disclosure sta
   }
   await expectHealthy(page);
 });
+
+for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
+  for (const theme of ['light', 'dark']) {
+    test(`Today purpose is initially reachable before study: ${viewport.width}px ${theme}`, async ({ page }, testInfo) => {
+      await page.setViewportSize(viewport);
+      await seedApp(page, testInfo, { storage: { cw_theme: theme } });
+      await page.goto('/');
+      const chooser = page.locator('.fd-purpose');
+      const block = page.locator('.fd-block');
+      await expect(chooser).toHaveAttribute('open', '');
+      await expect(chooser.getByRole('button', { name: 'Family conversation', exact: true })).toBeVisible();
+      await expect(page.locator('[data-today-planner-toggle]')).toBeVisible();
+      await expect(block).not.toBeVisible();
+      expect(await chooser.evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-block')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      const studyBefore = await block.textContent();
+      const toggle = chooser.locator('summary');
+      await toggle.focus();
+      await page.keyboard.press('Enter');
+      await expect(chooser).not.toHaveAttribute('open', '');
+      await expect(toggle).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(chooser).toHaveAttribute('open', '');
+      // Hydration can replace Today while a remote screenshot scroll is settling.
+      // Retry only this read-only positioning step; interaction assertions remain unchanged.
+      await expect(async () => { await chooser.scrollIntoViewIfNeeded(); }).toPass({ timeout: 5000 });
+      await page.screenshot({ path: testInfo.outputPath(`purpose-${viewport.width}-${theme}.png`), animations: 'disabled' });
+      const family = chooser.getByRole('button', { name: 'Family conversation', exact: true });
+      await family.focus();
+      await page.keyboard.press('Enter');
+      await expect(family).toHaveAttribute('aria-pressed', 'true');
+      await expect(block).toHaveText(studyBefore);
+      await chooser.getByRole('button', { name: 'Family Meeting Playbook (90-min)', exact: true }).click();
+      await expect(page.locator('.fd-article__h1')).toContainText('Family Meeting Playbook');
+      await page.goBack();
+      await expect(chooser).toHaveAttribute('open', '');
+      await expect(family).toHaveAttribute('aria-pressed', 'true');
+      await page.reload();
+      await expect(chooser).toHaveAttribute('open', '');
+      await expect(chooser.getByRole('button', { name: 'Regular Today', exact: true })).toHaveAttribute('aria-pressed', 'true');
+      await expect(chooser.locator('[data-fd-open]')).toHaveCount(0);
+    });
+  }
+}
+
+test('Today purpose precedes an unfinished primary study block', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo, { storage: { cw_block_v1: {
+    v: 1, minutes: 10, createdAt: FROZEN_NOW.getTime(),
+    steps: [{ kind: 'page', ref: 'pg_interview.md', title: 'Interview & MSE', min: 5 }],
+  } } });
+  await page.goto('/');
+  const block = page.locator('.fd-primary .fd-block');
+  await expect(block).toBeVisible();
+  await expect(page.locator('.fd-purpose')).toHaveAttribute('open', '');
+  expect(await page.locator('.fd-purpose').evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-primary .fd-block')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  await expect(block.locator('[data-block-continue]')).toHaveCount(1);
+});
+
+for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
+  for (const theme of ['light', 'dark']) {
+    test(`Study planner disclosure preserves navigation: ${viewport.width}px ${theme}`, async ({ page }, info) => {
+      await page.setViewportSize(viewport);
+      await seedApp(page, info, { storage: { cw_theme: theme } });
+      await page.goto('/');
+      const disclosure = page.locator('.fd-study-planner');
+      const toggle = disclosure.locator('summary');
+      await expect(disclosure).not.toHaveAttribute('open');
+      await expect(page.locator('[data-block-start]')).not.toBeVisible();
+      await otfExpectOnePrimary(page);
+      await expect(async () => { await toggle.scrollIntoViewIfNeeded(); }).toPass({ timeout: 5000 });
+      await page.screenshot({ path: info.outputPath(`planner-${viewport.width}-${theme}-closed.png`), animations: 'disabled' });
+      await toggle.focus(); await page.keyboard.press('Enter');
+      await expect(disclosure).toHaveAttribute('open', '');
+      await expect(toggle).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(page.locator('[data-block-minutes="5"]')).toBeFocused();
+      await page.locator('[data-block-minutes="20"]').click();
+      await expect(disclosure).toHaveAttribute('open', '');
+      await expect(page.locator('[data-block-start="20"]')).toBeVisible();
+      if (viewport.width < 1000) {
+        await page.locator('.fd-dock__browse summary').click();
+        await page.locator('[data-fd-dock-browse-go="essentials"]').click();
+      } else await page.locator('[data-fd-tab="library"]:visible').first().click();
+      await page.goBack(); await expect(disclosure).toHaveAttribute('open', '');
+      await page.goForward(); await expect(page.locator('.fd-library')).toBeVisible();
+      await page.goBack(); await page.reload();
+      await expect(disclosure).not.toHaveAttribute('open');
+      await page.locator('[data-today-purpose="study"]').click();
+      await page.locator('[data-today-planner]').click();
+      await expect(disclosure).toHaveAttribute('open', '');
+      await expect(page.locator('[data-block-minutes][aria-pressed="true"]')).toBeFocused();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({ path: info.outputPath(`planner-${viewport.width}-${theme}-open.png`), animations: 'disabled' });
+      await expectHealthy(page);
+    });
+  }
+}
