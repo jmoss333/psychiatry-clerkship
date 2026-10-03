@@ -3233,6 +3233,14 @@
 
   function fdAuxMessage(event){
     var data=event.data||{};
+    if(data.type==='prepare-selection'){
+      var selection=fdPrepareSelection(data);
+      var frame=contentEl&&contentEl.querySelector('.toolframe');
+      if(selection&&fdController&&!facultyPreviewRequest&&event.origin===location.origin&&
+          frame&&event.source===frame.contentWindow&&currentItem&&currentItem.f==='prepare-for-tomorrow.html'&&
+          fdController.getState().openId==='prepare-for-tomorrow.html')fdController.replacePrepareSelection(selection);
+      return;
+    }
     if(data.type==='cw:concept-week-request'){
       var reply=fdConceptWeekContext(event,location.origin,
         contentEl&&contentEl.querySelector('iframe.toolframe'),
