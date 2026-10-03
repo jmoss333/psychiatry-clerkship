@@ -22,8 +22,8 @@
         "formLabel": "Columbia Protocol forms for healthcare settings — assemble and download the screener, the full lifetime/recent scale, and SAFE-T with C-SSRS",
         "trainingUrl": "https://cssrs.columbia.edu/training/training-options/",
         "redistribution": "link-only",
-        "verified": "2026-09-03",
-        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "verified": "2026-10-01",
+        "verifiedVia": "live fetch, bin/check_instrument_links.py",
         "note": "Free for community, healthcare and nonprofit/federally-funded research use, and the training is free too — so the route costs the learner nothing. The custodian distributes; we link."
       },
       "pages": [
@@ -56,8 +56,8 @@
         "formLabel": "the BFCRS itself, its Training Manual & Coding Guide, and per-item scoring videos",
         "trainingUrl": "https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale",
         "redistribution": "link-only",
-        "verified": "2026-09-03",
-        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "verified": "2026-10-01",
+        "verifiedVia": "live fetch, bin/check_instrument_links.py",
         "note": "The same URMC terms that forced the removal (prior written consent to distribute) are exactly why the route is a link: URMC hands the learner the form, standardized-patient videos and the coding guide directly, which is more than the 23 anchors ever gave them."
       },
       "pages": [
@@ -88,8 +88,8 @@
         "formUrl": "https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf",
         "formLabel": "the full 11-item COWS as a one-page PDF, with the scoring bands",
         "redistribution": "link-only",
-        "verified": "2026-09-10",
-        "verifiedVia": "live fetch 2026-09-10 — the URL resolves to the complete 11-item form with its scoring bands, matching formLabel, and carries the same 'may be copied and used clinically' line as the source article. Supersedes the 2026-09-03 search-index verification, which the entry itself flagged for re-running from an unrestricted network.",
+        "verified": "2026-10-01",
+        "verifiedVia": "live fetch 2026-10-01, bin/check_instrument_links.py: HTTP 200, application/pdf, 621,028 bytes (transport only). Content last confirmed 2026-09-10: live fetch 2026-09-10 — the URL resolves to the complete 11-item form with its scoring bands, matching formLabel, and carries the same 'may be copied and used clinically' line as the source article. Supersedes the 2026-09-03 search-index verification, which the entry itself flagged for re-running from an unrestricted network.",
         "note": "NIDA publishes the COWS as a federal agency; this library links and never mirrors. The route now carries the weight it was recorded for: with the anchor text withdrawn, 'score from the real form, not from this page' is the page's only instruction, and this is the form."
       },
       "pages": [
@@ -117,8 +117,8 @@
         "formUrl": "https://www.csam-asam.org/ciwa-ar",
         "formLabel": "the 10-item CIWA-Ar with its scoring criteria, as posted by CSAM — a reference copy, while the form you score from is your unit's",
         "redistribution": "link-only",
-        "verified": "2026-09-03",
-        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "verified": "2026-10-01",
+        "verifiedVia": "live fetch, bin/check_instrument_links.py",
         "note": "The one instrument here with no rights-holder distribution point: the 1989 article is closed-access and the originating Addiction Research Foundation publishes no current form, which is why the rights could not be established and the descriptors came down (2026-08-28). CSAM is a professional society posting a copy, not a licensor — so the page must send the learner to the unit's protocol form first and offer this second. Linking to someone else's posting is not reproduction by this library, but it is also not permission: this route must not be read back as a rights finding."
       },
       "pages": [
@@ -147,8 +147,8 @@
         "formUrl": "https://www.phqscreeners.com/",
         "formLabel": "the PHQ-9, GAD-7 and the rest of the PHQ family, with translations in ~80 languages",
         "redistribution": "link-only",
-        "verified": "2026-09-03",
-        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "verified": "2026-10-01",
+        "verifiedVia": "live fetch, bin/check_instrument_links.py",
         "note": "EVIDENCE FOR WP-02c, NOT A RESOLUTION OF IT. Secondary sources consistently report that Pfizer released the PHQ family and GAD-7 with no copyright restriction on 2010-07-21 and that the current form footer reads 'No permission required to reproduce, translate, display or distribute'. That is what WP-02c asks about, but it is second-hand — the same shape of evidence that failed for CIWA-Ar, where every 'may be reproduced freely' notice turned out to be a reproducer's addition. Status stays 'provisional' until the author reads the footer on the current form at this URL. redistribution is recorded 'link-only' because that is this library's policy, not because the grant is doubted."
       },
       "pages": [
@@ -170,8 +170,8 @@
         "formLabel": "the Stanley-Brown Safety Plan form, plus the authors' training in the intervention",
         "trainingUrl": "https://suicidesafetyplan.com/",
         "redistribution": "link-only",
-        "verified": "2026-09-03",
-        "verifiedVia": "search index, 2026-09-03; live fetch blocked by sandbox egress policy — re-run bin/check_instrument_links.py from an unrestricted network",
+        "verified": "2026-10-01",
+        "verifiedVia": "live fetch, bin/check_instrument_links.py",
         "note": "The only entry with no page pin, because nothing was ever removed — the form was never programmed. The route is recorded now so WP-06R-b's rehearsal tool inherits it rather than inventing one: a rehearsal tool that teaches the six steps must send the learner to the authors for the form itself. Individual use of the form is permitted; the authors require written permission to alter it or to place it in an electronic medical record, which is the same term that makes programming it reproduction."
       },
       "signatures": [],
