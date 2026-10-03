@@ -25,7 +25,6 @@ does not resolve), 2 could not check (network or config).
 import argparse
 import datetime
 import json
-import re
 import sys
 import time
 import urllib.error
@@ -34,13 +33,15 @@ import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import validate_pharmacy as vp  # noqa: E402  (one AC4' rule: vp.mask_dose_literals)
+
 SOURCES = HERE / "label_sources.json"
 RECEIPT = HERE / "label_receipt.json"
 
 RXNAV = "https://rxnav.nlm.nih.gov/REST"
 OPENFDA = "https://api.fda.gov/drug/label.json"
 DAILYMED = "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/%s/history.json"
-DOSE_RE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg/kg)\b", re.I)
 PAGE = 100
 
 
@@ -71,7 +72,7 @@ def get_json(url, params=None, attempts=4):
 
 def lead(text, limit=240):
     clean = " ".join((text or "").split())
-    clean = DOSE_RE.sub("[dose]", clean)
+    clean = vp.mask_dose_literals(clean)
     return clean[:limit]
 
 
