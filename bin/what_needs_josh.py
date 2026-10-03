@@ -168,8 +168,9 @@ def measure_instrument_decisions():
     """Instruments still published under a provisional rights decision.
 
     An instrument is settled only once its status is recorded in the audit's decision
-    table. `provisional` is the COWS shape: permission real, scope wrong, published
-    under a recorded interim waiver. An agent must never narrow or lift that.
+    table. `provisional` means the recorded disposition is still awaiting an author
+    decision; it does not imply an interim waiver. COWS anchors retired under
+    cows-anchors-retired (2026-09-10); PHQ-9/GAD-7 is the remaining provisional entry.
     """
     instruments = json.loads(RIGHTS.read_text(encoding="utf-8"))["instruments"]
     provisional = [i for i in instruments if i.get("status") == "provisional"]
@@ -265,11 +266,11 @@ ROWS = [
         "title": "Settle the instruments still published provisionally",
         "needs": None,
         "measure": measure_instrument_decisions,
-        "unit": "instruments on a recorded interim waiver",
-        "why": "Scope is a governance decision, not an agent decision. COWS is published "
-               "under an interim waiver pending the Taylor & Francis letter, and that "
-               "waiver is the one thing still blocking Wave 4. An agent may not narrow "
-               "or lift it.",
+        "unit": "instruments with a provisional rights disposition",
+        "why": "A provisional status awaits the author's recorded disposition. Official "
+               "permission evidence can be verified without claiming that a final rights "
+               "decision or faculty review happened. A provisional entry is not an "
+               "interim waiver; retired instruments are not counted here.",
         "do": "record the outcome in the audit decision table "
               "(docs/superpowers/plans/2026-08-20-instrument-reproduction-audit.md)",
     },

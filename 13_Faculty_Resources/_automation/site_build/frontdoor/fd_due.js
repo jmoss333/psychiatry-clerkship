@@ -5,7 +5,7 @@
 var FD_CAPTURE_PURPOSE='Saved on this device. Nothing leaves unless you choose Copy or Email. No patient details.';
 
 function fdDueCount(breakdown){
-  var b=breakdown||{}, names=['daily','landmark','qb','fam','comm','reason','other'], total=0;
+  var b=breakdown||{}, names=['daily','landmark','qb','fam','comm','reason','rx','other'], total=0;
   for(var i=0;i<names.length;i++){
     var row=b[names[i]]||{};
     if(typeof row.due==='number'&&row.due>0) total+=row.due;
@@ -42,6 +42,7 @@ function fdDueRow(breakdown, primary){
   if(b.fam&&b.fam.due) parts.push(b.fam.due+' family');
   if(b.comm&&b.comm.due) parts.push(b.comm.due+' communication');
   if(b.reason&&b.reason.due) parts.push(b.reason.due+' reasoning');
+  if(b.rx&&b.rx.due) parts.push(b.rx.due+' pharmacy');
   if(b.other&&b.other.due) parts.push(b.other.due+' other');
   /* A ref-only Front Door action drops query parameters. Use a real link for the All due
      route so a learner with only landmark cards does not land in the default lane. */

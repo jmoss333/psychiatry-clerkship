@@ -94,7 +94,8 @@ test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ reque
   // res 100 → 101 on 2026-09-04: +rp-post-event-huddle.html (resident-only tool).
   // ms3 92 → 91 on 2026-09-25: -orientation-video.html (the MS3-only orientation tool retired
   // with the welcome and orientation videos).
-  expect(items).toHaveLength((isResidentProject(testInfo.project.name) ? 101 : 91) + COTW_WEEKS);
+  // +1 both on 2026-09-30: pharmacy.html (Make a Plan).
+  expect(items).toHaveLength((isResidentProject(testInfo.project.name) ? 102 : 92) + COTW_WEEKS);
   expect(items.filter(item => item.f === 'rotation-curator.html').map(({
     t, f, k, hidden,
   }) => ({ t, f, k, hidden }))).toEqual([{
@@ -162,7 +163,7 @@ test('Front Door Library exactly matches the projected placed refs', async ({ pa
   const rendered = await page.locator('.fd-collink[data-fd-open]').evaluateAll(controls => (
     controls.map(control => control.getAttribute('data-fd-open')).sort()
   ));
-  const expectedCount = isResidentProject(testInfo.project.name) ? 93 : 83;  // +2, WP-T3; res +1 rp-post-event-huddle.html (2026-09-04)
+  const expectedCount = isResidentProject(testInfo.project.name) ? 94 : 84;  // +2, WP-T3; res +1 rp-post-event-huddle.html (2026-09-04); +1 both pharmacy.html (2026-09-30)
 
   expect(new Set(expected).size).toBe(expectedCount);
   expect(new Set(rendered).size).toBe(expectedCount);
