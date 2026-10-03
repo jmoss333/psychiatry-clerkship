@@ -381,6 +381,17 @@ function fdPilotFeedback(){
   '</section>';
 }
 
+/* Optional preparation follows the primary work and only exists on a site shipping the tool. */
+function fdPrepareInvitation(index){
+  var item=index&&index.byRef&&index.byRef['prepare-for-tomorrow.html'];
+  if(!item||item.kind!=='tool') return '';
+  return '<section class="fd-prepare" aria-labelledby="fd-prepare-title">'+
+    '<h2 class="fd-prepare__title" id="fd-prepare-title">'+fdEsc(item.title)+'</h2>'+
+    '<p class="fd-prepare__copy">Choose a task and prepare in 5 or 15 minutes.</p>'+
+    governanceBadge(item.governance,{compact:true})+
+    '<button type="button" class="fd-btn fd-btn--ghost" data-fd-open="'+fdEsc(item.ref)+'">Choose tomorrow’s task</button></section>';
+}
+
 function fdToday(index, state){
   var st=state||{};
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
@@ -441,6 +452,7 @@ function fdToday(index, state){
   var leadPrimary=(pk===undefined||pk==='week'||pk==='ahead'||pk==='setup');
   out+=hasWeek?fdContinue(idx,st, wk, progress, leadPrimary):fdSetupCta(leadPrimary);
   out+=FD_TODAY_LEAD_END;
+  out+=fdPrepareInvitation(idx);
   if(st.offlineHtml)out+=st.offlineHtml;
 
   /* The exam-date nudge, BELOW the lead card: One Thing First keeps its single primary action, and
