@@ -2959,9 +2959,9 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await page.goto('/?tab=care');
 
   const tabs = page.locator('.fd-tab');
-  await expect(tabs).toHaveCount(5);
+  await expect(tabs).toHaveCount(4);
   expect(await tabs.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-tab'))))
-    .toEqual(['today', 'path', 'library', 'everything', 'care']);
+    .toEqual(['today', 'path', 'library', 'care']);
   const careTab = page.locator('.fd-tabs [data-fd-tab="care"]:visible');
   await expect(careTab).toHaveAttribute('aria-current', 'page');
   await expect(careTab).toHaveAccessibleName('Patient care resources');
