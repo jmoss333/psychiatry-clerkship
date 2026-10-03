@@ -21,6 +21,14 @@ reason. This tool closes the gap in two steps.
         fetch it, re-hash its sections, and report which sections changed, which card fields
         draw on them, and whether every pinned quote still appears in its section.
 
+    --record [--ledger PATH]
+        With the default mode: append every drift that needs review to a LOCAL ledger
+        (never the repository) that bin/what_needs_josh.py reads. Append-only and keyed by
+        (agent, new version), so a later clean run or a re-pin never erases an observed drift:
+        only the card's own facultyReview.lastReviewed moving past the day the drift was
+        observed retires it there. lastChecked advances only after a run over EVERY pinned
+        label -- an --only run records its drifts but never refreshes the date.
+
     --offline
         No network. The pins agree with the committed receipt: every receipt agent is pinned
         (or listed under "unpinned" with a reason), each pin names the receipt's set id and
@@ -36,6 +44,7 @@ import argparse
 import datetime
 import hashlib
 import json
+import os
 import re
 import sys
 import time
@@ -285,6 +294,52 @@ def latest_version(history_bytes, agent):
         raise CouldNotCheck("%s: unreadable DailyMed history (%s)" % (agent, error))
 
 
+LEDGER_NAME = "label_drift_ledger.json"
+
+
+def ledger_path():
+    """Where --record writes and what_needs_josh.py reads: per machine, outside the repo.
+
+    CLERKSHIP_LABEL_DRIFT_LEDGER overrides; else $XDG_STATE_HOME/clerkship/, else
+    ~/.local/state/clerkship/. State, not cache: the ledger is the only record that a drift
+    was ever seen, so it must survive a reboot and a cache purge.
+    """
+    override = os.environ.get("CLERKSHIP_LABEL_DRIFT_LEDGER")
+    if override:
+        return Path(override)
+    base = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
+    return Path(base) / "clerkship" / LEDGER_NAME
+
+
+def record(ledger_file, report, examined_all, today):
+    """Append this run's needs-review drifts to the ledger; returns how many were new."""
+    try:
+        ledger = json.loads(Path(ledger_file).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        ledger = {"schemaVersion": 1, "lastChecked": None, "drifts": []}
+    except ValueError as error:
+        raise CouldNotCheck("ledger %s is unreadable (%s); move it aside, never overwrite it"
+                            % (ledger_file, error))
+    seen = {(d["agent"], d["toVersion"]) for d in ledger.get("drifts", [])}
+    added = 0
+    for row in report:
+        if row.get("status") != "review" or (row["agent"], row["toVersion"]) in seen:
+            continue
+        ledger.setdefault("drifts", []).append({
+            "agent": row["agent"], "observedOn": today,
+            "fromVersion": row["fromVersion"], "toVersion": row["toVersion"],
+            "fromDate": row["fromDate"], "toDate": row["toDate"],
+            "sections": row["changed"] + row["added"] + row["removed"],
+            "fields": row["fields"], "quotesBroken": len(row["quotesBroken"]),
+        })
+        added += 1
+    if examined_all:
+        ledger["lastChecked"] = today
+    Path(ledger_file).parent.mkdir(parents=True, exist_ok=True)
+    Path(ledger_file).write_text(json.dumps(ledger, indent=1) + "\n", encoding="utf-8")
+    return added
+
+
 def load_json(path):
     try:
         return json.loads(Path(path).read_text(encoding="utf-8"))
@@ -403,6 +458,12 @@ def do_check(args, receipt, pins, get):
         time.sleep(args.pause)
     for line in findings:
         print("NOTE " + line)
+    if args.record:
+        examined_all = set(wanted) == set(pinned)
+        added = record(args.ledger, report, examined_all, datetime.date.today().isoformat())
+        print("recorded %d new drift(s) in %s%s" % (
+            added, args.ledger, "" if examined_all else " (partial run: lastChecked unchanged)"),
+            file=sys.stderr)
     if args.json:
         print(json.dumps({"examined": len(wanted), "needsReview": review, "agents": report}, indent=1))
     else:
@@ -436,6 +497,9 @@ def main(argv=None, get=fetch):
     parser.add_argument("--only", nargs="*", help="agent ids (default: all)")
     parser.add_argument("--quotes", type=Path, help="--pin: JSON {agent: [{section, text}]} to pin")
     parser.add_argument("--json", action="store_true", help="machine-readable report")
+    parser.add_argument("--record", action="store_true",
+                        help="append needs-review drifts to the local ledger what_needs_josh.py reads")
+    parser.add_argument("--ledger", type=Path, default=ledger_path(), help=argparse.SUPPRESS)
     parser.add_argument("--pause", type=float, default=0.3, help=argparse.SUPPRESS)
     parser.add_argument("--receipt", type=Path, default=RECEIPT, help=argparse.SUPPRESS)
     parser.add_argument("--pins", type=Path, default=PINS, help=argparse.SUPPRESS)
