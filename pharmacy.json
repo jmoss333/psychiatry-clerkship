@@ -12144,6 +12144,938 @@
           ]
         }
       ]
+    },
+    {
+      "id": "buspirone",
+      "generic": "buspirone",
+      "brands": [],
+      "group": "anxiolytic-agitation",
+      "class": [
+        "Azapirone anxiolytic"
+      ],
+      "rxcui": "1827",
+      "dailymedSetId": "fa4d5cac-f687-4440-99d2-8bb27cf2f4ed",
+      "labelVersionDate": "2026-09-04",
+      "mechanism": {
+        "t1": "The anxiolytic mechanism is not fully established; buspirone has high affinity for serotonin 5-HT1A receptors."
+      },
+      "fdaIndications": [
+        "Management of anxiety disorders or short-term relief of symptoms of anxiety"
+      ],
+      "boxedWarning": {
+        "present": false
+      },
+      "inpatientUses": [
+        {
+          "use": "Scheduled treatment of anxiety; not a rescue medication for acute agitation",
+          "offLabel": false,
+          "evidenceIds": []
+        }
+      ],
+      "dosing": {
+        "titration": "Use scheduled administration consistently with or without food. Adjust gradually with pharmacy; severe hepatic or renal impairment is not recommended in the label.",
+        "forms": [
+          "PO"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=fa4d5cac-f687-4440-99d2-8bb27cf2f4ed"
+      },
+      "monitoring": {
+        "baseline": [
+          "Review serotonergic drugs and MAOI exposure",
+          "Review renal and hepatic function"
+        ],
+        "ongoing": [
+          "Anxiety response and dizziness",
+          "Symptoms of serotonin syndrome"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Dizziness",
+          "Nausea",
+          "Headache",
+          "Nervousness"
+        ],
+        "dangerous": [
+          {
+            "name": "Serotonin syndrome",
+            "recognize": "New agitation, fever, tremor or rigidity with serotonergic combinations.",
+            "firstMove": "Urgently notify the senior and obtain medical assessment; stop suspected serotonergic agents pending evaluation."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {
+          "substrateOf": [
+            "3A4"
+          ]
+        },
+        "keyTraps": [
+          "MAOIs, including linezolid and intravenous methylene blue, can cause serotonin syndrome or elevated blood pressure; confirm label washout intervals.",
+          "Strong CYP3A4 inhibitors increase exposure; inducers decrease exposure. Review grapefruit intake and all interacting drugs with pharmacy."
+        ],
+        "interactionCardIds": []
+      },
+      "attendingAsks": [
+        "What is the labeled role of this medication?",
+        "Which interactions or contraindications need review?",
+        "What should you monitor during treatment?"
+      ],
+      "familyExplainer": {
+        "text": "This drug helps with anxiety. It is taken on a schedule. It will not stop a panic spell right away. It may make you dizzy or sick to your stomach. Tell the team about all other drugs you take.",
+        "fkGrade": 2.6
+      },
+      "evidenceIds": [],
+      "qbankIds": [],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "dosing.labelLink": "L",
+          "class": "J",
+          "mechanism.t1": "J",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "monitoring": "J",
+          "adverseEffects": "J",
+          "interactions": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J"
+        },
+        "labelVerifiedOn": "2026-10-02",
+        "labelReceipt": "buspirone",
+        "authoredFields": [
+          "class",
+          "mechanism.t1",
+          "inpatientUses",
+          "dosing.titration",
+          "dosing.forms",
+          "monitoring",
+          "adverseEffects",
+          "interactions",
+          "attendingAsks",
+          "familyExplainer.text"
+        ],
+        "jSources": {}
+      },
+      "retrieval": [
+        {
+          "id": "ask0",
+          "askIndex": 0,
+          "revealFrom": [
+            "fdaIndications"
+          ]
+        },
+        {
+          "id": "ask1",
+          "askIndex": 1,
+          "revealFrom": [
+            "interactions.keyTraps"
+          ]
+        },
+        {
+          "id": "ask2",
+          "askIndex": 2,
+          "revealFrom": [
+            "monitoring.ongoing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fluvoxamine",
+      "generic": "fluvoxamine",
+      "brands": [],
+      "group": "antidepressant",
+      "class": [
+        "SSRI"
+      ],
+      "rxcui": "42355",
+      "dailymedSetId": "d492230c-f56a-4759-ba86-7090b9f44063",
+      "labelVersionDate": "2026-06-24",
+      "mechanism": {
+        "t1": "Serotonin reuptake inhibition is thought to mediate the effect in OCD."
+      },
+      "fdaIndications": [
+        "Obsessive-compulsive disorder (selected extended-release label; adult efficacy established)"
+      ],
+      "boxedWarning": {
+        "present": true,
+        "summary": "Antidepressants increase the risk of suicidal thoughts and behavior in children, adolescents and young adults; monitor all patients for clinical worsening."
+      },
+      "inpatientUses": [
+        {
+          "use": "Treatment of OCD; verify the formulation and pair medication planning with exposure and response prevention",
+          "offLabel": false,
+          "evidenceIds": []
+        }
+      ],
+      "dosing": {
+        "titration": "Confirm immediate-release versus extended-release product before prescribing. Titrate gradually and taper when stopping; elderly patients and hepatic impairment need cautious adjustment.",
+        "forms": [
+          "PO",
+          "ER"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d492230c-f56a-4759-ba86-7090b9f44063"
+      },
+      "monitoring": {
+        "baseline": [
+          "Screen for bipolar disorder and suicide risk",
+          "Review the complete interaction list and formulation"
+        ],
+        "ongoing": [
+          "Clinical worsening, activation and suicidality",
+          "Serotonin syndrome, hyponatremia and bleeding",
+          "Levels or effects of interacting narrow-therapeutic-index drugs"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Nausea",
+          "Somnolence",
+          "Insomnia",
+          "Sexual adverse effects"
+        ],
+        "dangerous": [
+          {
+            "name": "Serotonin syndrome",
+            "recognize": "New clonus, fever, agitation or autonomic instability after serotonergic stacking.",
+            "firstMove": "Stop suspected serotonergic agents and obtain urgent senior assessment."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {
+          "inhibits": [
+            "1A2",
+            "2C19",
+            "2C9",
+            "3A4"
+          ]
+        },
+        "keyTraps": [
+          "Contraindicated with thioridazine, tizanidine, pimozide, alosetron and ramelteon; MAOI combinations and specified washout periods also matter.",
+          "Can raise clozapine and TCA concentrations. Pharmacy must review CYP1A2, CYP2C19, CYP2C9 and CYP3A4 interactions."
+        ],
+        "interactionCardIds": []
+      },
+      "attendingAsks": [
+        "What is the labeled role of this medication?",
+        "Which interactions or contraindications need review?",
+        "What should you monitor during treatment?"
+      ],
+      "familyExplainer": {
+        "text": "This drug can help with unwanted thoughts and repeated acts. It may take time to help. It can upset your stomach or change your sleep. Do not stop it all at once. Tell the team right away about new thoughts of self-harm.",
+        "fkGrade": 2.0
+      },
+      "evidenceIds": [],
+      "qbankIds": [
+        "qb_anx_014"
+      ],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "dosing.labelLink": "L",
+          "boxedWarning.summary": "L",
+          "class": "J",
+          "mechanism.t1": "J",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "monitoring": "J",
+          "adverseEffects": "J",
+          "interactions": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J"
+        },
+        "labelVerifiedOn": "2026-10-02",
+        "labelReceipt": "fluvoxamine",
+        "authoredFields": [
+          "class",
+          "mechanism.t1",
+          "inpatientUses",
+          "dosing.titration",
+          "dosing.forms",
+          "monitoring",
+          "adverseEffects",
+          "interactions",
+          "attendingAsks",
+          "familyExplainer.text"
+        ],
+        "jSources": {}
+      },
+      "retrieval": [
+        {
+          "id": "ask0",
+          "askIndex": 0,
+          "revealFrom": [
+            "fdaIndications"
+          ]
+        },
+        {
+          "id": "ask1",
+          "askIndex": 1,
+          "revealFrom": [
+            "interactions.keyTraps"
+          ]
+        },
+        {
+          "id": "ask2",
+          "askIndex": 2,
+          "revealFrom": [
+            "monitoring.ongoing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "clomipramine",
+      "generic": "clomipramine",
+      "brands": [
+        "ANAFRANIL"
+      ],
+      "group": "antidepressant",
+      "class": [
+        "Tricyclic antidepressant"
+      ],
+      "rxcui": "2597",
+      "dailymedSetId": "4074b555-7635-41a9-809d-fae3b3610059",
+      "labelVersionDate": "2024-11-26",
+      "mechanism": {
+        "t1": "The mechanism in OCD is uncertain; inhibition of serotonin reuptake is thought to be important."
+      },
+      "fdaIndications": [
+        "Obsessions and compulsions in obsessive-compulsive disorder"
+      ],
+      "boxedWarning": {
+        "present": true,
+        "summary": "Antidepressants increase the risk of suicidal thoughts and behavior in children, adolescents and young adults; monitor all patients for clinical worsening."
+      },
+      "inpatientUses": [
+        {
+          "use": "OCD treatment when a specialist judges the benefits to outweigh seizure, cardiac and overdose risks",
+          "offLabel": false,
+          "evidenceIds": []
+        }
+      ],
+      "dosing": {
+        "titration": "Start cautiously and increase gradually with the prescriber and pharmacy. Give with meals during initial titration. Limit quantities when overdose risk is present and taper when stopping.",
+        "forms": [
+          "PO"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=4074b555-7635-41a9-809d-fae3b3610059"
+      },
+      "monitoring": {
+        "baseline": [
+          "Assess suicide and overdose risk, bipolar history, seizures and cardiac disease",
+          "Review anticholinergic burden and interacting antidepressants"
+        ],
+        "ongoing": [
+          "Orthostasis, pulse and cardiac symptoms",
+          "Clinical worsening, suicidality and mania",
+          "Seizures and anticholinergic effects; consider TCA levels with interacting drugs"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Dry mouth",
+          "Constipation",
+          "Somnolence",
+          "Dizziness",
+          "Sexual adverse effects"
+        ],
+        "dangerous": [
+          {
+            "name": "Seizure or cardiac toxicity",
+            "recognize": "Seizure, syncope, arrhythmia or suspected overdose.",
+            "firstMove": "Obtain emergency medical assessment and notify the senior immediately."
+          },
+          {
+            "name": "Serotonin syndrome",
+            "recognize": "Fever, clonus and autonomic instability with serotonergic exposure.",
+            "firstMove": "Stop suspected serotonergic drugs and obtain urgent medical assessment."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {
+          "substrateOf": [
+            "2D6",
+            "1A2"
+          ]
+        },
+        "keyTraps": [
+          "Contraindicated with MAOIs and during acute recovery after myocardial infarction; confirm switch and washout intervals.",
+          "CYP2D6 inhibitors and fluvoxamine can raise TCA exposure. Review plasma-level monitoring with pharmacy.",
+          "Other anticholinergic or sedating drugs add adverse effects; overdose can be fatal."
+        ],
+        "interactionCardIds": []
+      },
+      "attendingAsks": [
+        "What is the labeled role of this medication?",
+        "Which interactions or contraindications need review?",
+        "What should you monitor during treatment?"
+      ],
+      "familyExplainer": {
+        "text": "This drug helps with unwanted thoughts and repeated acts. It may cause dry mouth, hard stools or sleepiness. Do not stop it all at once. Tell the team about fainting or new thoughts of self-harm. Taking too much can be very dangerous.",
+        "fkGrade": 3.1
+      },
+      "evidenceIds": [],
+      "qbankIds": [
+        "qb_anx_014"
+      ],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "dosing.labelLink": "L",
+          "boxedWarning.summary": "L",
+          "class": "J",
+          "mechanism.t1": "J",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "monitoring": "J",
+          "adverseEffects": "J",
+          "interactions": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J"
+        },
+        "labelVerifiedOn": "2026-10-02",
+        "labelReceipt": "clomipramine",
+        "authoredFields": [
+          "class",
+          "mechanism.t1",
+          "inpatientUses",
+          "dosing.titration",
+          "dosing.forms",
+          "monitoring",
+          "adverseEffects",
+          "interactions",
+          "attendingAsks",
+          "familyExplainer.text"
+        ],
+        "jSources": {}
+      },
+      "retrieval": [
+        {
+          "id": "ask0",
+          "askIndex": 0,
+          "revealFrom": [
+            "fdaIndications"
+          ]
+        },
+        {
+          "id": "ask1",
+          "askIndex": 1,
+          "revealFrom": [
+            "interactions.keyTraps"
+          ]
+        },
+        {
+          "id": "ask2",
+          "askIndex": 2,
+          "revealFrom": [
+            "monitoring.ongoing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "naloxone",
+      "generic": "naloxone",
+      "brands": [
+        "NARCAN"
+      ],
+      "group": "sud",
+      "class": [
+        "Opioid antagonist"
+      ],
+      "rxcui": "7242",
+      "dailymedSetId": "a0ebc83d-2892-40de-bc0a-775ce90b30db",
+      "labelVersionDate": "2026-08-17",
+      "mechanism": {
+        "t1": "Opioid receptor antagonism reverses opioid effects, including respiratory depression."
+      },
+      "fdaIndications": [
+        "Emergency treatment of known or suspected opioid overdose (selected nasal product)"
+      ],
+      "boxedWarning": {
+        "present": false
+      },
+      "inpatientUses": [
+        {
+          "use": "Opioid overdose rescue and discharge education for patients and families at opioid risk",
+          "offLabel": false,
+          "evidenceIds": []
+        }
+      ],
+      "dosing": {
+        "titration": "This card refers to the nasal rescue device. Follow its current instructions for use; each device is single-use. Do not test it before use. Emergency assessment is required even after awakening.",
+        "forms": [
+          "other"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a0ebc83d-2892-40de-bc0a-775ce90b30db"
+      },
+      "monitoring": {
+        "baseline": [
+          "Assess responsiveness and breathing in suspected overdose",
+          "Arrange emergency help and review the selected device instructions"
+        ],
+        "ongoing": [
+          "Breathing and responsiveness until emergency help arrives",
+          "Recurrent sedation and withdrawal symptoms"
+        ],
+        "sourcePage": "t_sud.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Opioid withdrawal symptoms, including shaking, sweating and nausea"
+        ],
+        "dangerous": [
+          {
+            "name": "Recurrent opioid toxicity",
+            "recognize": "The person becomes very sleepy again or is not breathing well.",
+            "firstMove": "Activate emergency response, support breathing under the emergency protocol and follow product instructions for further naloxone."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {},
+        "keyTraps": [
+          "Reversal may wear off before the opioid effect; remain with the person and follow the device instructions for additional treatment.",
+          "Naloxone does not replace emergency medical care or ongoing treatment of opioid use disorder."
+        ],
+        "interactionCardIds": []
+      },
+      "attendingAsks": [
+        "What is the labeled role of this medication?",
+        "Which interactions or contraindications need review?",
+        "What should you monitor during treatment?"
+      ],
+      "familyExplainer": {
+        "text": "This spray can save a life in an opioid overdose. Use it if the person will not wake up or is not breathing well. Get emergency help at once. Stay with the person. They may get sleepy again. Follow the spray box steps.",
+        "fkGrade": 2.3
+      },
+      "evidenceIds": [
+        "samhsa-tip63-2021",
+        "asam-oud-2020"
+      ],
+      "qbankIds": [
+        "qb_sud_008"
+      ],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "dosing.labelLink": "L",
+          "class": "J",
+          "mechanism.t1": "J",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "monitoring": "J",
+          "adverseEffects": "J",
+          "interactions": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J"
+        },
+        "labelVerifiedOn": "2026-10-02",
+        "labelReceipt": "naloxone",
+        "authoredFields": [
+          "class",
+          "mechanism.t1",
+          "inpatientUses",
+          "dosing.titration",
+          "dosing.forms",
+          "monitoring",
+          "adverseEffects",
+          "interactions",
+          "attendingAsks",
+          "familyExplainer.text"
+        ],
+        "jSources": {}
+      },
+      "retrieval": [
+        {
+          "id": "ask0",
+          "askIndex": 0,
+          "revealFrom": [
+            "fdaIndications"
+          ]
+        },
+        {
+          "id": "ask1",
+          "askIndex": 1,
+          "revealFrom": [
+            "interactions.keyTraps"
+          ]
+        },
+        {
+          "id": "ask2",
+          "askIndex": 2,
+          "revealFrom": [
+            "monitoring.ongoing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "valbenazine",
+      "generic": "valbenazine",
+      "brands": [
+        "INGREZZA"
+      ],
+      "group": "other",
+      "class": [
+        "VMAT2 inhibitor"
+      ],
+      "rxcui": "1918219",
+      "dailymedSetId": "4c970164-cafb-421f-9eb5-c226ef0a3417",
+      "labelVersionDate": "2026-04-17",
+      "mechanism": {
+        "t1": "Reversible VMAT2 inhibition is thought to mediate the effect; the exact mechanism in tardive dyskinesia and Huntington chorea is unclear."
+      },
+      "fdaIndications": [
+        "Tardive dyskinesia in adults",
+        "Chorea associated with Huntington disease in adults"
+      ],
+      "boxedWarning": {
+        "present": true,
+        "summary": "Increased risk of depression and suicidal thoughts and behavior in patients with Huntington disease."
+      },
+      "inpatientUses": [
+        {
+          "use": "Treatment of established tardive dyskinesia after confirming the movement-disorder diagnosis",
+          "offLabel": false,
+          "evidenceIds": []
+        }
+      ],
+      "dosing": {
+        "titration": "Confirm capsule versus sprinkle product instructions. Adjust with pharmacy for hepatic impairment and CYP interactions. Avoid use with congenital long QT syndrome or arrhythmias associated with prolonged QT.",
+        "forms": [
+          "PO"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=4c970164-cafb-421f-9eb5-c226ef0a3417"
+      },
+      "monitoring": {
+        "baseline": [
+          "Confirm tardive dyskinesia versus other movement disorders",
+          "Assess depression and suicide risk, especially in Huntington disease",
+          "Review QT risk and CYP interactions"
+        ],
+        "ongoing": [
+          "Movement symptoms, sedation, akathisia and parkinsonism",
+          "New or worsening depression or suicidality",
+          "Assess QT interval before increases in patients at increased QT risk"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Somnolence",
+          "Sedation"
+        ],
+        "dangerous": [
+          {
+            "name": "Neuroleptic malignant syndrome",
+            "recognize": "Fever, rigidity, altered mental status and autonomic instability.",
+            "firstMove": "Discontinue the drug and obtain emergency medical assessment."
+          },
+          {
+            "name": "Angioedema",
+            "recognize": "Face or throat swelling, especially with trouble breathing.",
+            "firstMove": "Discontinue the drug and obtain emergency care."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {
+          "substrateOf": [
+            "3A4"
+          ],
+          "inhibits": []
+        },
+        "keyTraps": [
+          "Avoid MAOI combinations; strong CYP3A4 inducers are not recommended.",
+          "Strong CYP3A4 or CYP2D6 inhibitors and CYP2D6 poor metabolizer status require label-specific adjustment; monitor digoxin concentrations when coadministered."
+        ],
+        "interactionCardIds": []
+      },
+      "attendingAsks": [
+        "What is the labeled role of this medication?",
+        "Which interactions or contraindications need review?",
+        "What should you monitor during treatment?"
+      ],
+      "familyExplainer": {
+        "text": "This drug can help with unwanted movements. It may make you sleepy or slow. Tell the team about stiff muscles, fever or trouble breathing. If you have Huntington disease, it may worsen mood. Tell the team right away about new thoughts of self-harm.",
+        "fkGrade": 4.2
+      },
+      "evidenceIds": [],
+      "qbankIds": [],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "dosing.labelLink": "L",
+          "boxedWarning.summary": "L",
+          "class": "J",
+          "mechanism.t1": "J",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "monitoring": "J",
+          "adverseEffects": "J",
+          "interactions": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J"
+        },
+        "labelVerifiedOn": "2026-10-02",
+        "labelReceipt": "valbenazine",
+        "authoredFields": [
+          "class",
+          "mechanism.t1",
+          "inpatientUses",
+          "dosing.titration",
+          "dosing.forms",
+          "monitoring",
+          "adverseEffects",
+          "interactions",
+          "attendingAsks",
+          "familyExplainer.text"
+        ],
+        "jSources": {}
+      },
+      "retrieval": [
+        {
+          "id": "ask0",
+          "askIndex": 0,
+          "revealFrom": [
+            "fdaIndications"
+          ]
+        },
+        {
+          "id": "ask1",
+          "askIndex": 1,
+          "revealFrom": [
+            "interactions.keyTraps"
+          ]
+        },
+        {
+          "id": "ask2",
+          "askIndex": 2,
+          "revealFrom": [
+            "monitoring.ongoing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deutetrabenazine",
+      "generic": "deutetrabenazine",
+      "brands": [
+        "Austedo"
+      ],
+      "group": "other",
+      "class": [
+        "VMAT2 inhibitor"
+      ],
+      "rxcui": "1876905",
+      "dailymedSetId": "7ea3c60a-45c7-44cc-afc2-d87fa53993c0",
+      "labelVersionDate": "2025-02-28",
+      "mechanism": {
+        "t1": "Active metabolites reversibly inhibit VMAT2; the exact mechanism for the therapeutic effect is unclear."
+      },
+      "fdaIndications": [
+        "Chorea associated with Huntington disease in adults",
+        "Tardive dyskinesia in adults"
+      ],
+      "boxedWarning": {
+        "present": true,
+        "summary": "Increased risk of depression and suicidal thoughts and behavior in patients with Huntington disease."
+      },
+      "inpatientUses": [
+        {
+          "use": "Treatment of established tardive dyskinesia after confirming the movement-disorder diagnosis",
+          "offLabel": false,
+          "evidenceIds": []
+        }
+      ],
+      "dosing": {
+        "titration": "Verify immediate-release versus extended-release formulation and food instructions. Titrate individually with pharmacy and use label-specific restrictions for CYP2D6 inhibitors or poor metabolizers; hepatic impairment is contraindicated.",
+        "forms": [
+          "PO",
+          "ER"
+        ],
+        "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7ea3c60a-45c7-44cc-afc2-d87fa53993c0"
+      },
+      "monitoring": {
+        "baseline": [
+          "Confirm movement-disorder diagnosis and hepatic status",
+          "Assess depression and suicide risk, especially in Huntington disease",
+          "Review interacting VMAT2 agents, MAOIs and CYP2D6 inhibitors"
+        ],
+        "ongoing": [
+          "Movement symptoms, mood and suicide risk",
+          "Sedation, akathisia and parkinsonism",
+          "Review QT risk when clinical factors or other drugs increase risk"
+        ],
+        "sourcePage": "med_monitoring.md"
+      },
+      "adverseEffects": {
+        "common": [
+          "Somnolence",
+          "Diarrhea",
+          "Dry mouth",
+          "Fatigue"
+        ],
+        "dangerous": [
+          {
+            "name": "Neuroleptic malignant syndrome",
+            "recognize": "Fever, rigidity, altered mental status and autonomic instability.",
+            "firstMove": "Discontinue the drug and obtain emergency medical assessment."
+          }
+        ]
+      },
+      "interactions": {
+        "cyp": {
+          "substrateOf": [
+            "2D6"
+          ]
+        },
+        "keyTraps": [
+          "Contraindicated with hepatic impairment, reserpine, MAOIs, tetrabenazine or valbenazine; confirm washout requirements in the label.",
+          "Contraindicated in Huntington disease with suicidality or untreated or inadequately treated depression.",
+          "Strong CYP2D6 inhibitors, including bupropion, increase active-metabolite exposure; alcohol and sedatives add sedation. Antipsychotics can increase parkinsonism, akathisia and NMS risk."
+        ],
+        "interactionCardIds": []
+      },
+      "attendingAsks": [
+        "What is the labeled role of this medication?",
+        "Which interactions or contraindications need review?",
+        "What should you monitor during treatment?"
+      ],
+      "familyExplainer": {
+        "text": "This drug can help with unwanted movements. It may make you tired or slow. Tell the team about stiff muscles or fever. If you have Huntington disease, it may worsen mood. Tell the team right away about new thoughts of self-harm.",
+        "fkGrade": 3.7
+      },
+      "evidenceIds": [],
+      "qbankIds": [],
+      "safetyLevel": "high",
+      "facultyReview": {
+        "status": "pending"
+      },
+      "provenance": {
+        "fieldClasses": {
+          "generic": "L",
+          "brands": "L",
+          "rxcui": "L",
+          "dailymedSetId": "L",
+          "labelVersionDate": "L",
+          "fdaIndications": "L",
+          "boxedWarning.present": "L",
+          "dosing.labelLink": "L",
+          "boxedWarning.summary": "L",
+          "class": "J",
+          "mechanism.t1": "J",
+          "inpatientUses": "J",
+          "dosing.titration": "J",
+          "dosing.forms": "J",
+          "monitoring": "J",
+          "adverseEffects": "J",
+          "interactions": "J",
+          "attendingAsks": "J",
+          "familyExplainer.text": "J"
+        },
+        "labelVerifiedOn": "2026-10-02",
+        "labelReceipt": "deutetrabenazine",
+        "authoredFields": [
+          "class",
+          "mechanism.t1",
+          "inpatientUses",
+          "dosing.titration",
+          "dosing.forms",
+          "monitoring",
+          "adverseEffects",
+          "interactions",
+          "attendingAsks",
+          "familyExplainer.text"
+        ],
+        "jSources": {}
+      },
+      "retrieval": [
+        {
+          "id": "ask0",
+          "askIndex": 0,
+          "revealFrom": [
+            "fdaIndications"
+          ]
+        },
+        {
+          "id": "ask1",
+          "askIndex": 1,
+          "revealFrom": [
+            "interactions.keyTraps"
+          ]
+        },
+        {
+          "id": "ask2",
+          "askIndex": 2,
+          "revealFrom": [
+            "monitoring.ongoing"
+          ]
+        }
+      ]
     }
   ]
 }
