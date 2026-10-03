@@ -109,6 +109,8 @@ def mask_dose_literals(text, mask="[dose]"):
         last = end
     out.append(text[last:])
     return "".join(out)
+
+
 FK_MAX = 8.0
 
 
