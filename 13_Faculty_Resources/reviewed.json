@@ -1477,13 +1477,14 @@
     "clinicalHash": "c8a6e84c726f09aef88eb46b84fea6ff25f03185"
   },
   "pharmacy.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "formulary",
       "level": "high"
     },
-    "reason": "New tool added 2026-09-30. Each drug card carries its own faculty review stamp; the page itself awaits faculty attestation.",
-    "at": "2026-09-30",
-    "by": "Pending faculty review"
+    "at": "2026-10-03",
+    "by": "Joshua Moss, MD",
+    "contentHash": "a69badc209ab5350f63338ccc571589db40eba98",
+    "clinicalHash": "d08de012c973ab412d374e9fc6b8e5212096522b"
   }
 }
