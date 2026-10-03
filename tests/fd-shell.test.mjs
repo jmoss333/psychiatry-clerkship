@@ -109,32 +109,19 @@ test('responsive tab labels render once even before navigation CSS loads', () =>
   assert.match(html, /class="[^"]*fd-tab--care[^"]*is-active[^"]*"[^>]*data-fd-tab="care"/);
   assert.match(html, /aria-label="Patient care resources"/);
   assert.match(html, /fd-tab__label" data-compact="Care">Patient care resources<\/span>/);
-  assert.match(html, /fd-tab__label" data-compact="Essentials">The Essentials<\/span>/);
-  assert.equal((visibleTextWithoutCss.match(/The Essentials/g) || []).length, 1);
+  assert.match(html, /data-fd-tab="library">Library<\/button>/);
+  assert.equal((visibleTextWithoutCss.match(/Library/g) || []).length, 1);
   assert.equal((visibleTextWithoutCss.match(/Patient care resources/g) || []).length, 1);
   assert.ok(html.indexOf('data-fd-tab="care"') > html.indexOf('data-fd-tab="library"'));
 });
 
-test('Everything sits between The Essentials and Care and opens the full Library, not a fifth app tab', () => {
-  const html = F.fdTabs('today');
-  assert.match(html, /class="fd-tab" data-fd-tab="everything">Everything<\/button>/);
-  const iLibrary = html.indexOf('data-fd-tab="library"');
-  const iEverything = html.indexOf('data-fd-tab="everything"');
-  const iCare = html.indexOf('data-fd-tab="care"');
-  assert.ok(iLibrary < iEverything && iEverything < iCare,
-    'Everything must render after The Essentials and before Care');
-});
-
-test('Everything and The Essentials are mutually exclusive is-active states of the same tab', () => {
-  const essentials = F.fdTabs('library', false, 'essentials');
-  assert.match(essentials, /class="fd-tab is-active" data-fd-tab="library"[^>]*aria-current="page"/);
-  assert.doesNotMatch(essentials, /data-fd-tab="everything"[^>]*is-active|is-active[^>]*data-fd-tab="everything"/);
-  assert.equal((essentials.match(/is-active/g) || []).length, 1);
-
-  const everything = F.fdTabs('library', false, 'full');
-  assert.match(everything, /class="fd-tab is-active" data-fd-tab="everything"[^>]*aria-current="page"/);
-  assert.doesNotMatch(everything, /data-fd-tab="library"[^>]*is-active|is-active[^>]*data-fd-tab="library"/);
-  assert.equal((everything.match(/is-active/g) || []).length, 1);
+test('both Library views share one selected app destination', () => {
+  for (const app of [false, true]) for (const view of ['essentials', 'full']) {
+    const html = F.fdTabs('library', app, view);
+    assert.match(html, /class="fd-tab is-active" data-fd-tab="library"[^>]*aria-current="page">Library/);
+    assert.doesNotMatch(html, /data-fd-tab="everything"/);
+    assert.equal((html.match(/is-active/g) || []).length, 1);
+  }
 });
 
 test('the header renders the safety button and the week pill', () => {
@@ -162,7 +149,7 @@ test('the header places a mobile Patient care resources shortcut directly after 
 test('the APP header replaces rotation chrome with an On shift workspace', () => {
   const html = F.fdHeader({ roleId: 'app', tab: 'today' });
   assert.match(html, /data-fd-tab="today"[^>]*>On shift</);
-  assert.match(html, /data-fd-tab="library"[^>]*>[\s\S]*?fd-tab__label" data-compact="Essentials">The Essentials</);
+  assert.match(html, /data-fd-tab="library"[^>]*>Library</);
   assert.match(html, /data-fd-tab="care"/);
   assert.doesNotMatch(html, /data-fd-tab="path"|data-fd-change-week|Set week|Week \d/);
   assert.match(html, /class="fd-weekpill[^>]*>APP</);
@@ -190,8 +177,8 @@ test('the header offers settings, not a bare theme toggle', () => {
 test('phone dock adapts slot two for APP without exposing Path', () => {
   const standard = F.fdDockModel({ tab: 'today', appMode: false, dockAction: null });
   const app = F.fdDockModel({ tab: 'today', appMode: true, dockAction: null });
-  assert.deepEqual(standard.items.map((x) => x.label), ['Today', 'Path', 'Browse', 'Capture']);
-  assert.deepEqual(app.items.map((x) => x.label), ['On shift', 'The Essentials', 'Browse', 'Capture']);
+  assert.deepEqual(standard.items.map((x) => x.label), ['Today', 'Path', 'Library', 'Capture']);
+  assert.deepEqual(app.items.map((x) => x.label), ['On shift', 'The Essentials', 'Library', 'Capture']);
   assert.equal(app.items.some((x) => x.value === 'path'), false);
 });
 
@@ -220,7 +207,7 @@ test('dock renders four buttons, one disclosure, and an escaped center action', 
 
 test('the Browse disclosure offers both Library destinations and Search via a thin alias of the tab-row action', () => {
   const html = F.fdDock({ appMode: false, dockAction: null });
-  assert.match(html, /<details class="fd-dock__item fd-dock__browse"><summary>Browse<\/summary>/);
+  assert.match(html, /<details class="fd-dock__item fd-dock__browse"><summary>Library<\/summary>/);
   assert.match(html, /<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">/);
   assert.match(html, /data-fd-dock-browse-go="essentials">The Essentials<\/button>/);
   assert.match(html, /data-fd-dock-browse-go="full">Everything<\/button>/);

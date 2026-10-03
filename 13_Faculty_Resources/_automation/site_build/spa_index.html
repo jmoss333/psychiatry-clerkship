@@ -2653,7 +2653,8 @@
        focus transitions. Match the old action, never an arbitrary button or a page control. */
     var active=document.activeElement, focusSelector=null;
     if(preserveFocus&&!state.searchOpen&&!state.sheet&&active&&fdDockMount.contains(active)){
-      var attrs=['data-fd-dock-forward','data-fd-tab','data-capture-open'];
+      if(active.matches('.fd-dock__browse summary'))focusSelector='.fd-dock__browse summary';
+      var attrs=['data-fd-dock-forward','data-fd-tab','data-capture-open','data-fd-dock-browse-go'];
       for(var i=0;i<attrs.length;i++){
         var value=active.getAttribute(attrs[i]);
         if(value!==null&&!/["\\]/.test(value)){focusSelector='['+attrs[i]+'="'+value+'"]';break;}
@@ -2663,11 +2664,12 @@
        Reuse the utility controls, including Capture's live expanded state, without focusing
        them while an overlay owns focus. The route/context controls still refresh normally. */
     var utilities=['[data-capture-open]'], retained=[];
-    /* The Browse menu's Search item opened the search dialog, so it is that dialog's opener:
+    /* Same-route hydration preserves the Library disclosure and its focused item.
+       Its Search item also remains the search dialog's opener:
        keep its whole open disclosure across hydration while search is open, exactly as the
        retired dock Search button was kept, so closing the dialog returns focus to a visible
        dock control instead of a re-rendered item hidden inside a closed <details>. */
-    if(state.searchOpen)utilities.push('.fd-dock__browse');
+    if(state.searchOpen||preserveFocus)utilities.push('.fd-dock__browse');
     for(var j=0;j<utilities.length;j++)retained[j]=fdDockMount.querySelector(utilities[j]);
     fdDockMount.innerHTML=fdDock(live);
     for(var k=0;k<utilities.length;k++){
@@ -2891,7 +2893,7 @@
     if(contentEl){ fdDisposeReadingPlace(); fdDisposeGuide(); contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
     fdPatchToolLayout(state);
     fdRenderCapture(state);
-    fdRenderDock(state);
+    fdRenderDock(state,!!hydrate);
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);

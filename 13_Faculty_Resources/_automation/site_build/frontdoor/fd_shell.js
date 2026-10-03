@@ -27,24 +27,17 @@ function fdAppMode(state){
 
 function fdTabs(tab, appMode, libraryView){
   var cur=(tab==='path'||tab==='library'||tab==='care')?tab:'today';
-  /* 'everything' is not a distinct app-level tab -- clicking it dispatches
-     data-fd-library-view="full" (see fd_wire.js), which keeps state.tab at 'library'. Its active
-     state is therefore derived from libraryView rather than from cur, and 'library' (The
-     Essentials) must stand down exactly when 'everything' lights up so the two are never both
-     is-active at once. */
-  var fullView=(cur==='library'&&libraryView==='full');
+  /* Both Library views share one app-level destination. */
   var defs=appMode
-    ?[{id:'today',label:'On shift'},{id:'library',label:'The Essentials',short:'Essentials'},
-      {id:'everything',label:'Everything'},
+    ?[{id:'today',label:'On shift'},{id:'library',label:'Library'},
       {id:'care',label:'Patient care resources',short:'Care'}]
     :[{id:'today',label:'Today'},{id:'path',label:'Path'},
-      {id:'library',label:'The Essentials',short:'Essentials'},
-      {id:'everything',label:'Everything'},
+      {id:'library',label:'Library'},
       {id:'care',label:'Patient care resources',short:'Care'}];
   var out='<nav class="fd-tabs">';
   for(var i=0;i<defs.length;i++){
     var t=defs[i];
-    var active=t.id==='everything'?fullView:t.id==='library'?(cur==='library'&&!fullView):(t.id===cur);
+    var active=t.id===cur;
     var cls='fd-tab'+(t.id==='care'?' fd-tab--care':'')+(active?' is-active':'');
     out+='<button type="button" class="'+cls+'" data-fd-tab="'+t.id+'"'+
       (active?' aria-current="page"':'')+(t.short?' aria-label="'+fdEsc(t.label)+'"':'')+'>'+
@@ -61,15 +54,15 @@ function fdTabs(tab, appMode, libraryView){
    away with the page, so the header's own [data-fd-search] bar is out of reach mid-page and
    Search must stay one tap from the dock (2026-09-26). Browse has no attr/value of its
    own: it is a native <details> disclosure (see fdDock), not a dispatched action, so opening and
-   closing it costs no new state and nothing to reset on unrelated navigation -- fdRenderDock
-   replaces the whole dock innerHTML on every refresh, which closes it for free. */
+   closing it costs no new state. fdRenderDock retains it during same-route refreshes
+   and replaces it on navigation, closing it when the destination changes. */
 function fdDockModel(state){
   var s=state||{}, app=fdAppMode(s);
   return {
     items:[
       {id:'today',label:app?'On shift':'Today',attr:'data-fd-tab',value:'today'},
       {id:'structure',label:app?'The Essentials':'Path',attr:'data-fd-tab',value:app?'library':'path'},
-      {id:'browse',label:'Browse'},
+      {id:'browse',label:'Library'},
       {id:'capture',label:'Capture',attr:'data-capture-open',value:''}
     ],
     context:s.dockAction&&s.dockAction.sourceId
@@ -84,7 +77,7 @@ function fdDockModel(state){
    need a disclosure, and the browser owns open/closed state for free rather than this app
    tracking yet another overlay flag. Its menu items dispatch data-fd-dock-browse-go (a thin
    alias fd_wire.js resolves onto the existing data-fd-library-view action) rather than that
-   attribute directly: the in-Library "Everything (N pages) -->" footer button (fd_library.js)
+   attribute directly: the local Library view switch (fd_library.js)
    already carries data-fd-library-view="full", present in the DOM even while this menu is
    closed, and reusing the same attribute value made every plain (non-:visible-scoped)
    [data-fd-library-view="full"] locator across the smoke suite resolve to two elements.
@@ -96,7 +89,7 @@ function fdDockModel(state){
    place) back to the top. */
 function fdDockBrowseItem(){
   return '<details class="fd-dock__item fd-dock__browse">'+
-    '<summary>Browse</summary>'+
+    '<summary>Library</summary>'+
     '<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">'+
     '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="essentials">The Essentials</button>'+
     '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="full">Everything</button>'+
