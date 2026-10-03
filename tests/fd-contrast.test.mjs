@@ -74,6 +74,10 @@ const PAIRS = [
   // 2026-10-01: the kit is one .fd-railkit panel on fd-surface-warm (covered by the SURFACES rows)
   // and the rose wash is the hover ground again -- where the row's title turns fd-danger-dark.
   ['fd-text-dim', 'fd-danger-wash', 4.5], ['fd-danger-dark', 'fd-danger-wash', 4.5],
+  // 2026-10-01 RED MEANS SAFETY: labels and current-state ink that were terracotta-dark moved to
+  // olive-deep / teal-deep, so they inherit the grounds terracotta-dark was gated against.
+  ['fd-olive-deep', 'fd-selected', 4.5], ['fd-olive-deep', 'fd-chip', 4.5], ['fd-olive-deep', 'fd-callout', 4.5],
+  ['fd-teal-deep', 'fd-selected', 4.5], ['fd-teal-deep', 'fd-chip', 4.5],
   // 2026-09-10 ROLE SPLIT: --fd-terracotta and --fd-olive are FILL/BORDER tokens and are
   // gated below at the 3:1 non-text bar. Every `color:` call site moved to the -dark / -deep
   // ink token, which is what these 4.5 rows now cover. frontdoor.css's ROLE RULE header and
