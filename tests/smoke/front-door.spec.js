@@ -371,7 +371,7 @@ function audience(testInfo) {
   const resident = isResidentProject(testInfo.project.name);
   return {
     role: resident ? 'pgy1' : 'student',
-    libraryCount: resident ? 94 : 84,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
+    libraryCount: resident ? 94 : 85,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
     residentRef: resident ? 'rp-agitation.html' : null,
     weekCount: resident ? 4 : 6,
     pathHeading: resident ? 'Your 4-week path' : 'Suggested learning plan',
@@ -3519,7 +3519,7 @@ test.describe('Essentials Phase 2', () => {
   const rows = page => page.locator('.fd-kit [data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
   const full = page => page.locator('[data-fd-library-view="full"]');
   const kit = page => page.locator('[data-fd-library-view="essentials"]');
-  const kitCount = info => audience(info).role === 'student' ? 30 : 35;
+  const kitCount = info => audience(info).role === 'student' ? 31 : 35;
   const curriculum = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8'));
   const expectedKit = info => curriculum.essentials[audience(info).role === 'student' ? 'ms3' : 'resident'].flatMap(column => column.refs);
   async function readyReader(page, ref) {
@@ -3732,7 +3732,7 @@ test.describe('Essentials Phase 2', () => {
     await page.locator('[data-fd-kit-section="tools"]').click();
     const tabs = page.locator('.fd-kit__tool-tabs [data-fd-kit-tool]');
     const panel = page.locator('.fd-kit__tool-preview[role="tabpanel"]');
-    await expect(tabs).toHaveCount(audience(info).role === 'student' ? 7 : 9);
+    await expect(tabs).toHaveCount(audience(info).role === 'student' ? 8 : 9);
     await expect(panel).toHaveCount(1);
     await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
     await expect(panel.locator('h3')).toHaveText((await tabs.first().innerText()).trim());

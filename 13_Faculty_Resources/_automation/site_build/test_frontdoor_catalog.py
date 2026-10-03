@@ -459,6 +459,8 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(entries["extra.html"][2], "Title for extra.html")
         self.assertEqual(entries["extra.html"][3], DEFAULT_GOVERNANCE)
         self.assertNotIn("ghost.html", entries)
+        excluded_refs = {row["ref"] for row in payload["curriculum"]["libraryExclude"]}
+        self.assertEqual(excluded_refs, {"extra.html"}, "only actually shipped exclusions may become known direct routes")
         placed_refs = {ref for column in payload["curriculum"]["libraryColumns"] for ref in column["refs"]}
         self.assertNotIn("extra.html", placed_refs, "a manifest entry is identity, not Library placement")
 

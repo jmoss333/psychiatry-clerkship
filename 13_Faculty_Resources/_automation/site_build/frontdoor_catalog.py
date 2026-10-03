@@ -214,7 +214,7 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
         raise ValueError("curriculum.libraryExclude must be a list")
     projected["libraryExclude"] = [
         entry for entry in library_exclude
-        if not isinstance(entry, dict) or entry.get("ref") not in placed
+        if not isinstance(entry, dict) or (entry.get("ref") in catalog_entries and entry.get("ref") not in placed)
     ]
     excluded_refs = {
         entry.get("ref") for entry in projected["libraryExclude"]
