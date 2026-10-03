@@ -7,7 +7,7 @@ An MS3 chooses one responsibility and either 5 or 15 minutes, reads a focused te
 ## Reviewable source and local preview
 
 - Source: `14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html`.
-- Built MS3 preview: <http://127.0.0.1:4200/?tool=prepare-for-tomorrow.html>.
+- Built MS3 preview: <http://localhost:4200/?tool=prepare-for-tomorrow.html>.
 - Source preview: <http://127.0.0.1:4300/14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html>.
 - Guide row: `prepare-for-tomorrow.html` in `13_Faculty_Resources/reviewed.json`; pending, clinical, moderate risk, no attested content hash or signature. Older ledger rows remain unchanged.
 
@@ -237,13 +237,32 @@ All six routes have attribution to named existing local sections, explicitly fic
 
 ## Validation and boundaries
 
-Local validation is green: the complete `bin/verify.sh` gate passed, including both audience builds and the design-system gate. All 311 focused contracts passed. The new browser suite passed all 20 applicable cases (the other 20 are deliberately audience-inapplicable). The existing navigation/governance/tool-frame suite covered 300 passing cases plus 10 visible skips: its first run passed 291, eight old MS3 count expectations were corrected to include the new guide, and those eight plus one bookmark-position check passed on the scoped rerun. The first bookmark measurement differed by fewer than 2 pixels; no bookmark code or assertion was changed. Final independent review is next. No CI run, pull request, merge, production deployment, served production revision, faculty approval, microphone test, or VoiceOver assessment is claimed. Browser coverage uses cached Chromium with service workers blocked. Mobile viewport is 390×844 and desktop is 1280×800. No visual image baselines are regenerated.
+Local validation is green on the committed product repair `1ace985`: the complete `bin/verify.sh` gate passed, including both audience builds and the design-system gate. All 312 focused contracts passed. The final new browser suite passed all 22 applicable cases (the other 22 are deliberately audience-inapplicable), including embedded journeys, published standalone navigation, and repository source-preview navigation. The controlled-governance fixture suite passed 20/20 after a test-only popup interception correction. The existing navigation/governance/tool-frame suite covered 300 passing cases plus 10 visible skips: its first run passed 291, eight old MS3 count expectations were corrected to include the new guide, and those eight plus one bookmark-position check passed on the scoped rerun. The first bookmark measurement differed by fewer than 2 pixels; no bookmark code or assertion was changed. All 135 preexisting faculty ledger records were compared with the base and preserved; only the new pending guide row was added.
+
+No CI run, pull request, merge, production deployment, served production revision, faculty approval, microphone test, or VoiceOver assessment is claimed. Browser coverage uses cached Chromium with service workers blocked. Mobile viewport is 390×844 and desktop is 1280×800. No visual image baselines were regenerated. The local feature and prerequisite branches and managed worktree are retained for review.
+
+Validation logs: `/private/tmp/pft-final-repair-verify.log`, `/private/tmp/pft-final-repair-focused.log`, `/private/tmp/pft-final-repair-browser.log`, `/private/tmp/pft-final-repair-fixture.log`. Earlier ordinary-browser results: `/private/tmp/pft-browser-regression.log` and `/private/tmp/pft-browser-rerun.log`.
+
+## Independent final review and repair
+
+A fresh independent `gpt-6-astra` reviewer examined `0d03cb7..1bc00dc` and independently passed 311 focused contracts. The reviewer found no Critical issue, one Important navigation issue, and three Minor suggestions. The Important issue was that a legitimate published standalone tool sent resource and Today links to the repository's local build path and displayed source-preview instructions.
+
+The root implementer fixed that issue in one test-driven pass. A new unit test failed before the helper existed, and the published browser test reproduced the incorrect source-preview instructions. The repaired tool distinguishes the canonical source path from the published `/tools/` route, supports a site mounted under a subdirectory, returns standalone users to the correct home, and preserves embedded messaging behavior. Unit and complete browser suites then passed. An initial standalone test setup incorrectly applied a shell-only governance fixture; a later source-popup fixture needed context-level interception of a new tab's first request. Both test setup issues were corrected without changing product behavior. No second code review was dispatched; the repair is verified by the recorded failing-then-passing tests and complete local gate.
+
+## Deferred minors
+
+- Reset clears the local chooser but retains the last complete task/time pair in the outer URL. Reloading may restore that prior pair. A future narrow clear-selection message could remove it.
+- Finish removes the tomorrow card; there is no direct View card return. Currently a learner repeats the route to reread or print it. A future return action could preserve access.
+- Pending-review wording inside the tool is static. Revisit it when actual faculty attestation changes, so it agrees with the authoritative shell status. The source preview must retain an honest draft boundary.
+
 
 ## Next step and future idea
 
 Next: review the exact teaching above and record faculty changes or attestation through the established process. After that review, one fictional patient could connect interviewing, rounds, and note writing so learners see how the same information moves between those responsibilities. That connected case is a future extension.
 
 ## Implementation decisions
+
+These decisions are preserved in execution order. Each records the reason and cost if wrong.
 
 - Ruling: Preserve current-main resident inventory 27 instead of the planning snapshot's 26 — a newer pharmacy tool landed before implementation — cost if wrong: incorrectly rejecting or admitting a resident tool; controlled inventory tests will pin the refreshed baseline.
 - Task 2: Ruling: preserve named interview source urgency as now and replace undocumented note-finalization instruction with local-policy/supervision boundaries, citing orientation.md — source comparison found attribution drift — cost if wrong: altered draft meaning; all wording still pending faculty review.
@@ -259,3 +278,12 @@ Next: review the exact teaching above and record faculty changes or attestation 
 - Task 6: Ruling: filter libraryExclude against the site's final published catalog during projection — shared MS3 exclusion otherwise made the resident index recognize a nonexistent guide and mount an empty iframe — cost if wrong: a valid direct route is omitted; controlled shipped/unshipped fixture and actual resident browser test cover both. Unpublished routes now get the existing not-found screen.
 - Task 6: Ruling: use canonical shipped tool count in the SP Interview builder integration test instead of its stale literal23 — the full gate found a further inventory pin omitted by plan — cost if wrong: count could mask shrinkage; the test independently compares every actual built tool ID, and the prerequisite validator retains its exact fixed baseline-plus-guide guard.
 - Task 6: Ruling: update the existing browser suite's MS3 full-Library/Essentials/tool-tab pins to85/31/8 — actual browser run failed its old84/30/7 expectations after canonical registration — cost if wrong: a count could mask a missing placement; complete expected-ref comparisons and the new entry/member tests independently protect membership. Resident pins unchanged.
+- Final: Ruling: clinical correctness, educational effectiveness and time estimates remain faculty/learner decisions — source attribution is verified, but clinical quality and realistic timing require human review — cost if wrong: ineffective or misleading draft teaching.
+- Final: Ruling: production availability, served revision, CI, merge and deployment are unverified — approved scope is a local preview, with no publication action — cost if wrong: mistaking local readiness for a live approved release.
+- Final: Ruling: full-gate verification is root-owned evidence — the reviewer did not inspect generated builds; committed full verify passed after the navigation repair — cost if wrong: overlooked build regression.
+- Final: Ruling: VoiceOver and other assistive technology remain untested — focus and semantic controls were inspected and browser-tested, but no live screen-reader assessment occurred — cost if wrong: an accessibility defect remains.
+- Final: Ruling: Safari, Firefox and physical devices remain untested — cached Chromium covers desktop and phone-sized viewports — cost if wrong: browser/device-specific behavior differs.
+- Final: Ruling: service-worker and offline behavior remain unverified — smoke tests block service workers; a fresh local origin avoids stale cached preview metadata — cost if wrong: stale or offline behavior differs.
+- Final: Ruling: existing general openPage/theme branches remain outside this change — the new selection bridge is separately guarded and tested; unrelated legacy routing is preserved — cost if wrong: a preexisting routing defect persists.
+- Final: Ruling: connected fictional case remains a future extension — the approved first version supplies three independent task paths — cost if wrong: less continuity across responsibilities.
+- Final: Ruling: retain the local feature/prerequisite branches and managed worktree — the approved deliverable is a local reviewable preview and faculty packet, so no additional integration decision is needed — cost if wrong: later publication needs refreshed coordination, rebase and release evidence.

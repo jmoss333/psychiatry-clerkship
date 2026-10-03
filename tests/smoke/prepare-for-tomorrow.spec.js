@@ -228,7 +228,7 @@ for(const sourcePreview of [false,true])test(`${sourcePreview?'repository source
   if(sourcePreview){
     const html=readFileSync(new URL('../..'+sourcePath,import.meta.url),'utf8');
     await page.route('**'+sourcePath,route=>route.fulfill({contentType:'text/html',body:html}));
-    await page.route('**/_build/ms3/**',route=>route.fulfill({contentType:'text/html',body:'<h1>Local MS3 build</h1>'}));
+    await page.context().route('**/_build/ms3/**',route=>route.fulfill({contentType:'text/html',body:'<h1>Local MS3 build</h1>'}));
   }else{await seed(page);}
   await page.goto(sourcePreview?sourcePath:'/tools/'+REF);
   const instructions=page.getByText('Source preview: resource buttons open the local MS3 build in a new tab.',{exact:false});
