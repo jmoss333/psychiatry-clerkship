@@ -4,15 +4,21 @@
   "hosts": {
     "www.fda.gov": {
       "reason": "Answers 404 to the GitHub Actions IP range while serving 200 to an ordinary browser. The drug-safety index and the clozapine REMS-removal communication both reproduce this.",
-      "verifiedAt": "2026-09-16",
-      "verifiedHow": "curl -A '<Chrome UA>' from a residential network: HTTP 200 on /drugs/drug-safety-and-availability/drug-safety-communications",
-      "issues": [665]
+      "verifiedAt": "2026-09-30",
+      "verifiedHow": "curl -A '<Chrome UA>' from a residential network: HTTP 200 on /drugs/drug-safety-and-availability/drug-safety-communications and on the clozapine REMS-removal communication; the same URLs answer 404 to a python-requests UA",
+      "issues": [
+        665,
+        721,
+        722
+      ]
     },
     "www.healthquality.va.gov": {
       "reason": "No response from the CI runner; serves 200 to an ordinary browser. Cited from evidence_registry.json, which lychee cannot crawl directly (it reads only *.md and *.html), so the generated review transcript is the only surface this URL appears on.",
       "verifiedAt": "2026-09-16",
       "verifiedHow": "curl -A '<Chrome UA>' from a residential network: HTTP 200 on /guidelines/mh/srb/",
-      "issues": [666]
+      "issues": [
+        666
+      ]
     }
   }
 }

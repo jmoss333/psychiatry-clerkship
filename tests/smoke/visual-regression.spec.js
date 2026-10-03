@@ -214,7 +214,7 @@ for (const site of ['ms3', 'res']) {
           await expect(page.locator('.governance-badge, .fd-kit__pending')).toHaveCount(0);
           if (view !== 'today') await expect(
             view === 'full' ? page.locator('.fd-collink') : essentialsResources(page),
-          ).toHaveCount(view === 'full' ? (site === 'ms3' ? 83 : 93) : (site === 'ms3' ? 30 : 35));
+          ).toHaveCount(view === 'full' ? (site === 'ms3' ? 84 : 94) : (site === 'ms3' ? 30 : 35)); // full +1 both: pharmacy.html (2026-09-30)
           await expect(page).toHaveScreenshot(`essentials-${site}-${view}-${viewport.label}.png`);
         });
       }

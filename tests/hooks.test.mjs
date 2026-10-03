@@ -355,6 +355,9 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
     // Its selected fields are pinned by the pair map, so the entire registry is
     // deliberately not an attestation input in shipped_pages.json.
     'evidence_registry.json',
+    // Same shape for the pharmacy: pharmacy_public.json is projected from pharmacy.json, which
+    // is attested per drug by its own review hashes, so it is not an attestation input either.
+    'pharmacy.json',
     ...toolInputs,
   ])) {
     const target = path.join(fixture, rel);
@@ -363,6 +366,7 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
   }
   const registry = path.join(fixture, '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json');
   const original = fs.readFileSync(registry, 'utf8');
+  const originalTimes = fs.statSync(registry);
   const document = JSON.parse(original);
   document.weeks = [...document.weeks, {
     date: '2099-01-01',
@@ -387,6 +391,13 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
     assert.match(r.reason, /cotw_20990101_synthetic_ms3\.md/);
   } finally {
     fs.writeFileSync(registry, original);
+    /* Restoring the BYTES is not enough. cotw_registry.json is a declared panel-freshness input
+       (PANEL_BUILD_INPUTS in tests/_panel_render.mjs), and staleBuildReason() compares MTIMES --
+       so a rewrite with today's timestamp makes every later `node bin/render_panels.mjs` in the
+       session exit 2 against a build that is actually current. build_and_check.sh happens to be
+       immune (it runs the node suite BEFORE build_deploy.py, so the build re-stamps afterwards),
+       which is exactly why this would otherwise be found by hand and not by a gate. */
+    fs.utimesSync(registry, originalTimes.atime, originalTimes.mtime);
   }
 });
 

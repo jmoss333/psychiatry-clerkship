@@ -301,9 +301,17 @@ def test_shipped_page_sources_exist_in_repo():
         .read_text(encoding="utf-8")
     )
     cotw_pages = 2 * len(registry["weeks"])
+    # The shared terms derive from site_manifest.json (2026-09-30, when they were 69 md and
+    # 23 tools), for the same reason as the CotW term: registering a shared page or tool is
+    # the content PR's job, and shipped_pages.py --check keeps the listing honest.
+    manifest = json.loads(
+        (repo_root / "13_Faculty_Resources/_automation/site_build/site_manifest.json")
+        .read_text(encoding="utf-8")
+    )
+    assert len(manifest["md"]) >= 60 and len(manifest["tools"]) >= 20
 
-    assert len(md_entries) == 69 + cotw_pages + 6  # manifest md + case-of-the-week + resident
-    assert len(tool_entries) == 26  # 22 manifest tools + 4 resident
+    assert len(md_entries) == len(manifest["md"]) + cotw_pages + 6  # manifest md + CotW + resident
+    assert len(tool_entries) == len(manifest["tools"]) + 4  # manifest tools + 4 resident
 
 
 def test_resolve_cli_paths_expands_relative_paths():

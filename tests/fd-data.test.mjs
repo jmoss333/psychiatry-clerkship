@@ -356,19 +356,30 @@ test('every real library column item resolves', () => {
   for (const c of idx.columns) placed += c.items.length;
   // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
   // therapy_reading_room.md) placed in the Clinical-skills and Evidence-&-exam columns.
-  assert.equal(placed, 83, 'expected the 83 pages curriculum.json places');
+  // 84 = 83 + pharmacy.html (2026-09-30, Interactive tools).
+  assert.equal(placed, 84, 'expected the 84 pages curriculum.json places');
 });
 
-// Source-copy premise: these five are attested in topic_meta.json. On a site whose build found
-// their sources drifted, the BUILT registry reads pending and the Front Door drops the attested
-// affordance -- that projection is pinned in tests/attestation-projection-build.test.mjs.
-test('all five real kit items are attested and carry safety steps', () => {
+// The kit is curriculum.json's safetyKit list, attested or not: fd_data.js never filters it by
+// review, and an unattested protocol simply loses the attested affordance. On a site whose build
+// found a source drifted, the BUILT registry reads pending -- that projection is pinned in
+// tests/attestation-projection-build.test.mjs. Until 2026-09-30 this test also required all five
+// to be attested in the live topic_meta.json, which is the faculty's record, not the code's
+// behaviour: a content edit that honestly demoted one kit page would have turned it red
+// (CLAUDE.md, "a test may not depend on live governance state"). What stays pinned is that the
+// attested flag is exactly the page's own facultyReview, whatever that currently says. Whether
+// every safety-kit protocol MUST be attested is a policy question for the owner, not a test pin;
+// until it is decided, an unattested kit protocol is reported here as a diagnostic, never hidden.
+test('all five real kit items carry safety steps, and each one is attested exactly when its facultyReview says so', (t) => {
   const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
   assert.equal(idx.kit.length, 5);
   for (const k of idx.kit) {
-    assert.equal(k.item.attested, true, `${k.item.ref} must be attested to appear in the kit`);
+    assert.equal(k.item.attested, META[k.item.ref]?.facultyReview?.status === 'reviewed',
+      `${k.item.ref}: attested must follow its own facultyReview block`);
     assert.ok(META[k.item.ref].safetySteps.length >= 3, `${k.item.ref} needs safetySteps`);
   }
+  const unattested = idx.kit.filter((k) => !k.item.attested).map((k) => k.item.ref);
+  if (unattested.length) t.diagnostic(`safety-kit protocol(s) not faculty-attested in topic_meta.json: ${unattested.join(', ')}`);
 });
 
 // ---- libraryHints: the one-line "use this when…" a Library tool row carries ------------------
@@ -450,7 +461,7 @@ for site,key in [('ms3','ms3'),('res','resident')]:
 print(json.dumps(out))
 `], { cwd: ROOT, encoding: 'utf8' }));
 
-for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93]]) {
+for (const [site, expectedKit, expectedFull] of [['ms3', 30, 84], ['res', 35, 94]]) {
   test(`${site}: real projected Essentials resolves ${expectedKit} of ${expectedFull} Library pages`, () => {
     const payload = projections[site];
     const idx = F.fdBuildIndex(payload.curriculum, META, TOOLS, payload.manifest);

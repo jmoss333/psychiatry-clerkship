@@ -113,8 +113,8 @@ test('both builders emit governance inventories matching their final tools', (t)
     });
     assert.equal(built.status, 0, built.stdout + built.stderr);
     // +rotation-curator.html (#377); standalone timeline is the governed Path tab; 23 -> 22 when the
-    // MS3-only orientation-video tool was retired (2026-09-25).
-    assertInventory(ms3, 22);
+    // MS3-only orientation-video tool was retired (2026-09-25); 22 -> 23 +pharmacy.html (2026-09-30).
+    assertInventory(ms3, 23);
     assert.match(
       fs.readFileSync(path.join(ms3, '_headers'), 'utf8'),
       /\/tool-governance\.json\n  Cache-Control: public, max-age=0, must-revalidate/,
@@ -125,7 +125,7 @@ test('both builders emit governance inventories matching their final tools', (t)
       timeout: 60_000,
     });
     assert.equal(residentBuilt.status, 0, residentBuilt.stdout + residentBuilt.stderr);
-    assertInventory(resident, 26); // +rotation-curator.html (#377); +rp-post-event-huddle.html (2026-09-04)
+    assertInventory(resident, 27); // +rotation-curator.html (#377); +rp-post-event-huddle.html (2026-09-04); +pharmacy.html (2026-09-30)
     const residentIndex = fs.readFileSync(path.join(resident, 'index.html'), 'utf8');
     for (const expected of [
       '<span class="fd-brand__name">MMC Psychiatry</span>',

@@ -223,6 +223,20 @@ for _jn, _fallback in [
     _jp=os.path.join(LIB,_jn)
     if os.path.exists(_jp): shutil.copy2(_jp, OUT+"/"+_jn)
     else: open(OUT+"/"+_jn,"w",encoding="utf-8").write(_fallback)
+# pharmacy.json is an internal registry (like reviewed.json) and never ships. The learner
+# projection is derived here, every build: only drugs whose faculty review hash matches their
+# text today, plus the RX# cards for them. The bytes written are re-read and re-verified
+# against the source, so a build can never publish a drug whose review is not valid.
+_pharmacy_dir=os.path.join(LIB,"13_Faculty_Resources","_automation","pharmacy")
+if _pharmacy_dir not in sys.path:
+    sys.path.insert(0,_pharmacy_dir)
+import build_pharmacy_public as _pp
+_pharmacy_src=json.load(open(os.path.join(LIB,"pharmacy.json"),encoding="utf-8"))
+with open(os.path.join(OUT,"pharmacy_public.json"),"wb") as _fh:
+    _fh.write(_pp.feed_bytes(LIB))
+_pp_problems=_pp.verify(json.load(open(os.path.join(OUT,"pharmacy_public.json"),encoding="utf-8")),_pharmacy_src)
+if _pp_problems:
+    raise SystemExit("pharmacy_public.json failed verification: "+"; ".join(_pp_problems))
 # question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
 _missing_req=[]
 _copy_required(LIB+"/question_bank.json", OUT+"/question_bank.json", _missing_req)
@@ -450,7 +464,7 @@ nav=[
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
  {"section":"Understand the Problem","items":[_md("Differential Dx Scaffolds","ddx.md"),_tool("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),_md("Formulation & DDx","pg_formulation.md"),_md("Case Formulation","case_formulation.md"),_md("Medical Workup & Mimics","medical_workup.md"),_md("Mood","t_mood.md"),_md("Psychosis","t_psychosis.md"),_md("Anxiety/Trauma/OCD","t_anxiety.md"),_md("Personality","t_personality.md"),_md("Substance Use","t_sud.md"),_md("Geriatric","t_geri.md"),_md("Perinatal","t_perinatal.md"),_md("Neurodevelopmental Disorders","t_neurodev.md"),_md("Eating Disorders","t_eating.md"),_md("Neurocognitive (Dementia)","t_neurocog.md"),_md("Somatic Symptom & Related","t_somatic.md"),_md("Sleep-Wake Disorders","t_sleep.md"),_md("Dissociative Disorders","t_dissociative.md"),_md("Sexual, Paraphilic & Gender","t_sexual.md"),_md("Impulse-Control & Conduct","t_impulse.md"),_md("Adjustment Disorders","t_adjustment.md"),_md("Culture, Disparities & Formulation","cultural_psychiatry.md")]},
  {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS — Official Form & Training"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: COWS Tool · CIWA-Ar Official Form & Training"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md")]},
- {"section":"Make a Plan","items":[_md("Psychopharmacology Primer","psychopharm_primer.md"),_md("Medication Monitoring & Labs","med_monitoring.md"),_md("Protocol Library","protocol_library.md"),_md("ECT & Neuromodulation","ect_neuromodulation.md"),_md("Treatment Basics","exp_tx.md"),_tool("decision-aids.html","Algorithms & Decision Aids"),_tool("interaction-cards.html","Interaction Cards — One Action"),_md("Nutrition & Metabolic Health","nutrition_metabolic.md"),_md("Osteopathic (OMM) Resources","omm_resources.md")]},
+ {"section":"Make a Plan","items":[_md("Psychopharmacology Primer","psychopharm_primer.md"),_md("Medication Monitoring & Labs","med_monitoring.md"),_md("Protocol Library","protocol_library.md"),_md("ECT & Neuromodulation","ect_neuromodulation.md"),_md("Treatment Basics","exp_tx.md"),_tool("decision-aids.html","Algorithms & Decision Aids"),_tool("interaction-cards.html","Interaction Cards — One Action"),_tool("pharmacy.html","Psychiatric Pharmacy"),_md("Nutrition & Metabolic Health","nutrition_metabolic.md"),_md("Osteopathic (OMM) Resources","omm_resources.md")]},
  {"section":"Communicate with Patients","items":[_tool("communication-practice.html","What Do You Say Next?"),_md("Psychotherapies at a Glance","psychotherapy.md"),_md("Motivational Interviewing","motivational_interviewing.md"),_md("Brief Psychotherapy on the Unit","brief_psychotherapy.md"),_md("Therapy on the Unit","therapy_on_the_unit.md"),_tool("reflection.html","Reflection & Identity")]},
  {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
@@ -527,6 +541,11 @@ _ANALYTICS_MS3 = common.analytics_enabled_for("ms3")
 if _ANALYTICS_MS3:
     _copy_required(ANALYTICS_JS, OUT+"/analytics.js", _missing_req)   # usage analytics emitter (tag injected per page)
 _copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
+# The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
+# resident build derives from this tree, so this one copy serves both sites.
+os.makedirs(OUT+"/fonts", exist_ok=True)
+for _font in ("source-serif-4-latin-opsz-wght600-700.woff2", "source-serif-4-OFL.txt"):
+    _copy_required(os.path.join(HERE,"fonts",_font), OUT+"/fonts/"+_font, _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 

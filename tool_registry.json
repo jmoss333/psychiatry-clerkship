@@ -241,6 +241,19 @@
         "psychopharm_primer.md",
         "cotw_index.md"
       ]
+    },
+    {
+      "file": "pharmacy.html",
+      "title": "Psychiatric Pharmacy",
+      "sourcePath": "05_Psychopharmacology/Pharmacy/pharmacy.html",
+      "category": "psychopharmacology",
+      "riskLevel": "high",
+      "disclaimerType": "teaching-reference-no-dosing",
+      "storageKeys": [
+        "cw_srs_v1"
+      ],
+      "evidenceIds": [],
+      "relatedPages": []
     }
   ]
 }
