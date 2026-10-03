@@ -2653,7 +2653,7 @@
        focus transitions. Match the old action, never an arbitrary button or a page control. */
     var active=document.activeElement, focusSelector=null;
     if(preserveFocus&&!state.searchOpen&&!state.sheet&&active&&fdDockMount.contains(active)){
-      if(active.matches('.fd-dock__browse summary'))focusSelector='.fd-dock__browse summary';
+      if(active.matches&&active.matches('.fd-dock__browse summary'))focusSelector='.fd-dock__browse summary';
       var attrs=['data-fd-dock-forward','data-fd-tab','data-capture-open','data-fd-dock-browse-go'];
       for(var i=0;i<attrs.length;i++){
         var value=active.getAttribute(attrs[i]);
