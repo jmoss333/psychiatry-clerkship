@@ -41,6 +41,14 @@ async function readingReady(page, ref = READING_REF) {
   await expect(reader.locator('.fd-article__body h3')).toHaveCount(3);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveCount(1);
   await expect(reader).not.toHaveClass(/fd-reader--guide/);
+  // DOM readiness can precede the 8px entrance transform. Settle geometry
+  // before capturing a reading place or changing viewport; keep offset bounds.
+  await reader.evaluate(async el => {
+    await document.fonts.ready;
+    const animations = [];
+    for (let node = el; node; node = node.parentElement) animations.push(...node.getAnimations());
+    await Promise.all(animations.filter(a => Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a => a.finished.catch(() => null)));
+  });
   return reader;
 }
 
@@ -992,12 +1000,8 @@ test('the current-week flag never covers another stop, even when that week is co
   await expectHealthy(page);
 });
 
-// The 390px check above passed on macOS both before and after the .fd-row__title fix, because
-// macOS font metrics happened to land just under the floor a max-content-sized title imposed
-// (339px on res / 324px on ms3, against 362px available). Ubuntu's wider defaults did not, so CI
-// caught what the workstation could not. Asserting at 320px removes the luck: an untruncated
-// title overflows there on every platform, so this fails without the fix rather than depending
-// on which fonts the runner happens to have.
+// A long title must clip inside the 320px pane instead of widening it.
+// The synthetic title below keeps that check independent of font metrics.
 test('Path detail titles truncate rather than set a horizontal floor at 320px', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 844 });
   await seedApp(page, testInfo);
@@ -1007,6 +1011,14 @@ test('Path detail titles truncate rather than set a horizontal floor at 320px', 
   await page.locator('[data-fd-tab="path"]:visible').click();
   await expect(page.locator('.fd-path')).toBeVisible();
 
+  await page.evaluate(() => document.fonts.ready);
+  expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
+
+  // Source Serif can fit the current title. Use a synthetic long title so this
+  // checks clipping across fonts and audiences without weakening the overflow guard.
+  const longTitle = 'Synthetic long Path detail title '.repeat(8);
+  await page.locator('.fd-row__title').first().evaluate((el, text) => { el.textContent = text; }, longTitle);
+  await expect(page.locator('.fd-row__title').first()).toHaveText(longTitle);
   expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
 
   // The row title must be the element that gives: it fills its column and clips, rather than
@@ -2418,7 +2430,6 @@ const OTF = {
   }, day: { lastDay: '', newToday: 0 }, stats: { streak: 0, lastStudy: '', totalReviews: 0, correct: 0, seen: 0 }, settings: { newPerDay: 12 } },
   capture: { v: 1, items: [{ id: 'otf-c1', text: 'Why hold the lithium tonight?', at: OTF_NOW - 10 * 60 * 1000, ctx: null, triaged: false }] },
 };
-const OTF_WHY = 'First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.';
 // The primary: a wrapped device-store row, or the lead card itself when nothing outranked it.
 const OTF_PRIMARY = '.fd-primary, .fd-continue:not(.is-secondary), .fd-setupcta';
 // Its control: the first focusable inside the wrapper, or the lead card (a button).
@@ -2427,7 +2438,8 @@ const OTF_PRIMARY_CONTROL = '.fd-primary button, .fd-primary a, .fd-continue:not
 async function otfExpectOnePrimary(page) {
   await expect(page.locator('.fd-today')).toBeVisible();
   await expect(page.locator(OTF_PRIMARY)).toHaveCount(1);
-  await expect(page.locator('.fd-primary__why')).toHaveText(OTF_WHY);
+  // 2026-10-01: the "First things first…" explanation line is retired (owner-directed design pass).
+  await expect(page.locator('.fd-primary__why')).toHaveCount(0);
   await expect(page.locator('h2.fd-also')).toHaveCount(1);
   await expect(page.locator('h2.fd-also')).toHaveText('Also today');
 }
@@ -2549,8 +2561,8 @@ test('One Thing First A2: clear the dues and Continue leads, with the rows below
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary')).toHaveCount(0);
   await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 7).map(el => el.className.split(' ')[0])))
-    .toEqual(['fd-continue', 'fd-offline', 'fd-primary__why', 'fd-sectionhead', 'fd-purpose', 'fd-study-planner', 'fd-capture']);
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0])))
+    .toEqual(['fd-continue', 'fd-offline', 'fd-sectionhead', 'fd-purpose', 'fd-study-planner', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await otfExerciseVisitAndBack(page);
   await expectHealthy(page);
@@ -2621,9 +2633,10 @@ test('One Thing First A2: cw_last names an undone week read that is not the Cont
     const rows = [...document.querySelectorAll('.fd-list .fd-row')];
     for (const row of rows) {
       const ref = row.querySelector('.fd-row__open')?.getAttribute('data-fd-open');
-      const chip = row.querySelector('.fd-chip')?.textContent;
+      // A reading carries no type chip (2026-10-01); only tools and references are labelled.
+      const isRead = !row.querySelector('.fd-chip');
       const done = row.querySelector('.fd-check')?.classList.contains('is-done');
-      if (ref && ref !== target && chip === 'read' && !done) return ref;
+      if (ref && ref !== target && isRead && !done) return ref;
     }
     return null;
   });
@@ -4696,6 +4709,14 @@ test('Today purpose uses published reader/tool routes with keyboard, mobile and 
     if(!await chooser.evaluate(el=>el.open))await chooser.locator('summary').click();
     await chooser.locator(`[data-today-purpose="${item.id}"]`).click();
     const open=chooser.locator(`[data-fd-open="${item.ref}"]`);await page.keyboard.press('Tab');await open.focus();
+    // Measure the settled layout: an entrance transform can report 43.9999px
+    // for a 44px target. Keep the full bound rather than accepting a smaller target.
+    await open.evaluate(async el=>{
+      await document.fonts.ready;
+      const animations=[];
+      for(let node=el;node;node=node.parentElement)animations.push(...node.getAnimations());
+      await Promise.all(animations.filter(a=>Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a=>a.finished.catch(()=>null)));
+    });
     const paint=await open.evaluate(el=>({outline:getComputedStyle(el).outlineStyle,height:el.getBoundingClientRect().height,fits:document.documentElement.scrollWidth<=innerWidth}));
     expect(paint.outline).not.toBe('none');expect(paint.height).toBeGreaterThanOrEqual(44);expect(paint.fits).toBe(true);
     await page.keyboard.press('Enter');
