@@ -229,7 +229,7 @@ TOPIC_META_PROMOTION_KEYS = ("lastReviewed", "reviewer")
 # of the J (judgment) fields the review covered. validate_pharmacy.py's AC6 only proves that a
 # stored hash matches the text — a content PR that writes both is internally consistent — so
 # WHO may write the block is this gate's question, exactly as for the other three ledgers.
-PHARMACY_PROMOTION_KEYS = ("lastReviewed", "reviewer", "reviewedFieldsHash")
+PHARMACY_PROMOTION_KEYS = ("lastReviewed", "reviewer", "reviewedFieldsHash", "retrievalHash")
 # question_bank.json's `status` enum is draft/attested; only faculty attest tooling writes
 # `attested`, and what it vouches for is the WHOLE item — stem, options, rationale, evidence.
 QBANK_ATTESTED = "attested"
@@ -1391,6 +1391,14 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
               [rid for rid, _ in rehashed], ["lithium"])
         check("(u) and a demotion is not",
               pharmacy_promotions(_rx("reviewed", **reviewed_block), _rx("needs-review")), [])
+        for value in ("c" * 64, None):
+            before = _rx("reviewed", **dict(reviewed_block, retrievalHash="a" * 64))
+            after = _rx("reviewed", **dict(reviewed_block, **({"retrievalHash": value} if value else {})))
+            check("(u) changing or removing a retrieval signature is a promotion",
+                  [rid for rid, _ in pharmacy_promotions(before, after)], ["lithium"])
+        check("(u) adding a retrieval signature is a promotion",
+              [rid for rid, _ in pharmacy_promotions(_rx("reviewed", **reviewed_block),
+                 _rx("reviewed", **dict(reviewed_block, retrievalHash="c" * 64)))], ["lithium"])
 
         def rx_bad_shape():
             _write(root, PHARMACY_REL, {"records": {"lithium": {}}})
