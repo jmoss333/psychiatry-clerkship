@@ -172,7 +172,7 @@ function fdRow(it, idx, doneMap, compact){
       'title="'+fdEsc(toggleName)+'" aria-pressed="'+(on?'true':'false')+'">'+
       '<span aria-hidden="true">✓</span></button>'+
     '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+
-      '<span class="fd-row__content"><span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+editionMeta+'</span>'+
+      '<span class="fd-row__content"><span class="'+titleCls+'">'+fdRowTitleMarkup(it.title)+'</span>'+editionMeta+'</span>'+
       '<span class="fd-row__meta">'+
         fdKindChip(it)+
         '<span class="fd-row__min">'+fdEsc(minLabel)+'</span>'+
@@ -271,6 +271,14 @@ function fdPick(item){
 function fdQuickToolLabel(title){
   var t=String(title||''), cut=t.indexOf(' — ');
   return cut>0?t.slice(0,cut):t;
+}
+
+/* The same split for a week row's title, kept in the markup rather than cut: the subtitle sits in
+   its own span that a phone hides visually (frontdoor.css, max-width 640px) but a screen reader
+   still reads, so the row's name and textContent are the full title at every width. */
+function fdRowTitleMarkup(title){
+  var t=String(title||''), short=fdQuickToolLabel(t);
+  return short===t?fdEsc(t):fdEsc(short)+'<span class="fd-row__sub">'+fdEsc(t.slice(short.length))+'</span>';
 }
 
 function fdQuickToolBtn(it){

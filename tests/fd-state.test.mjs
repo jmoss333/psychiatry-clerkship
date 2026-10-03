@@ -40,7 +40,6 @@ const make = new Function('localStorage', `
     fdPathExamCountdown: fdPathExamCountdown,
     fdExamDatePrompt: fdExamDatePrompt,
     fdDailyPick: fdDailyPick,
-    fdRingStep: fdRingStep,
     fdActivityDays: fdActivityDays,
     fdActivityDayIndex: fdActivityDayIndex,
   };
@@ -556,42 +555,6 @@ test('fdDailyPick cycles through every candidate over a full period', () => {
     seen.add(fdDailyPick(CANDIDATES, {}, new Date(2026, 7, 1 + d, 9, 0, 0).getTime()).ref);
   }
   assert.equal(seen.size, 3);
-});
-
-// ---- progress ring ------------------------------------------------------------------
-
-test('fdRingStep starts at the from value and ends at the to value', () => {
-  const { fdRingStep } = make(memStorage());
-  assert.equal(fdRingStep(0, 80, 0, 600), 0);
-  assert.equal(fdRingStep(0, 80, 600, 600), 80);
-});
-
-test('fdRingStep clamps past the duration rather than overshooting', () => {
-  const { fdRingStep } = make(memStorage());
-  assert.equal(fdRingStep(0, 80, 5000, 600), 80);
-});
-
-test('fdRingStep eases out — past halfway by the midpoint', () => {
-  const { fdRingStep } = make(memStorage());
-  assert.ok(fdRingStep(0, 100, 300, 600) > 50,
-    'cubic ease-out must be past halfway at the midpoint');
-});
-
-test('fdRingStep is monotonic and returns integers', () => {
-  const { fdRingStep } = make(memStorage());
-  let prev = -1;
-  for (let t = 0; t <= 600; t += 50) {
-    const v = fdRingStep(0, 97, t, 600);
-    assert.equal(v, Math.round(v), 'ring percent must be an integer');
-    assert.ok(v >= prev, `ring must not go backwards at t=${t}`);
-    prev = v;
-  }
-});
-
-test('fdRingStep animates downward too', () => {
-  const { fdRingStep } = make(memStorage());
-  assert.equal(fdRingStep(80, 20, 600, 600), 20);
-  assert.ok(fdRingStep(80, 20, 300, 600) < 50);
 });
 
 // ---- seven-day activity strip -----------------------------------------------------------

@@ -1,5 +1,12 @@
 # Front Door — design handoff reference
 
+> **Superseded for visual values (2026-10-03).** The prototype was normative while the Front Door
+> was being ported. It no longer is: owner-directed design passes have departed from it on purpose
+> (the 2026-10-01 Today pass, #938, and red-means-safety, #942). The source of truth for every
+> visual value is now `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css` together
+> with [`CLASS-INVENTORY.md`](CLASS-INVENTORY.md). Read the prototype as history: where it and the
+> stylesheet disagree, the stylesheet is right. The paragraph below is kept as the original record.
+
 Source: Claude Design project `9d05222d-1bec-4365-9202-6ef2affa6297`,
 file `Front Door - Hi-Fi v2.dc.html`. Fidelity is **high** — colors, typography, spacing, copy,
 and interactions in the prototype are final.

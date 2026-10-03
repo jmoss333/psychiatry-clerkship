@@ -99,7 +99,7 @@ const PAIRS = [
   ['fd-focus', 'fd-surface', 3], ['fd-focus', 'fd-bg', 3], ['fd-focus', 'fd-surface-warm', 3],
 ];
 
-// Inherited from the design prototype, which is normative for visual values. Each entry is a
+// Inherited from the design prototype (normative when ported; frontdoor.css is since 2026-10-03). Each entry is a
 // deliberate acceptance, not an oversight -- changing any of them is a palette-owner decision.
 // (--fd-line / --fd-line-strong are absent from PAIRS entirely: a 1px hairline cannot reach 3:1
 // in either theme without ceasing to be a hairline, and :focus-visible carries a11y instead.)
