@@ -172,8 +172,11 @@ test('reader body gives rendered long-form content a readable token-based type s
 
 test('portalled overlays retain a visible keyboard focus indicator', () => {
   const focus = rule(fd, '.fd-search :focus-visible,.fd-sheet :focus-visible,.fd-nudge :focus-visible');
-  assert.match(focus, /outline:\s*2px solid var\(--fd-focus\)/,
+  // 3px since 2026-10-04 (one-thread redesign: one focus ring, 3px --fd-focus at a 2px offset).
+  assert.match(focus, /outline:\s*3px solid var\(--fd-focus\)/,
     'overlays may mount outside .fd-shell and need their own visible outline');
+  assert.match(rule(fd, '.fd-shell :focus-visible'), /outline:\s*3px solid var\(--fd-focus\)/,
+    'the shell ring matches the overlay ring');
   assert.match(focus, /outline-offset:\s*2px/,
     'overlay focus needs separation from the control edge');
 });

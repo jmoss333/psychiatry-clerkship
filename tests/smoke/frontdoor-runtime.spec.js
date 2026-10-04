@@ -6,7 +6,8 @@ import { readFileSync } from 'node:fs';
 
 const DESKTOP = { width: 1280, height: 800 };
 const PHONE = { width: 390, height: 844 };
-const CAPTURE = '.fd-capture-launch--global[data-capture-open]';
+// The header's standing "＋ Ask a question" (one-thread redesign, 2026-10-04); the floating launcher is gone.
+const CAPTURE = '.fd-askbtn[data-capture-open]';
 let EDITION_KEY = 'cw_rotation_edition_ms3_v2';
 let LOCAL_EDITION_KEY = 'cw_rotation_local_progress_ms3_v2';
 const EDITION_WRITE_LOG = '__fd_edition_write_log';
@@ -2571,7 +2572,7 @@ test('document title resets for tabs and updates for successful resources and in
   });
   await page.goto('/');
   await expect(page).toHaveTitle(/^Today — /);
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page).toHaveTitle(/^Path — /);
   await page.locator('[data-fd-tab="library"]:visible').click();
   await expect(page).toHaveTitle(/^Library — /);

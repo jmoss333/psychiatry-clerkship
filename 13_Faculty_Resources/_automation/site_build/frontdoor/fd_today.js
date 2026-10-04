@@ -1,33 +1,45 @@
-/* Today -- heading, Continue card + ring, this-week list, daily pick, and the quick-tools /
-   safety-kit rail.
+/* Today -- "What should I do now?" (one-thread redesign, Phase 1, 2026-10-04).
 
-   Both the desktop rail (.fd-rail) and the mobile pill-chip row (.fd-quicktools--pills) for
-   quick tools are ALWAYS emitted, unconditionally, from the same quickTools list -- this file
-   does not branch on a device/viewport flag. frontdoor.css already ships the breakpoint that
-   picks between them (display:none / display:flex swap at 1000px: frontdoor.css:270, 281-283,
-   548-552), so letting CSS decide instead of JS means a single render is correct at any
-   viewport and a live resize or tablet rotation needs no re-render to stay correct. An earlier
-   version of this file branched on state.desk; that was wrong for exactly this reason (caught in
-   review) and state.desk has been removed from the state shape below since nothing here reads it
-   anymore -- a parameter a renderer ignores is a trap for whoever passes it.
+   Order, top to bottom (docs/superpowers/specs/one-thread-handoff/README.md, Screens §1):
+     0. the active-testing line (owner decision D1: one row -- title · Details · Share feedback)
+     1. place: eyebrow ("Week 2 of 6 · Thursday" + Change week), week-title H1, theme line
+     2. the six-week thread (.fd-thread) -- one node per week, each routing to that week on Path
+     3. the Now card (.fd-now) -- ONE shell for every primary kind
+     4. "Also today" -- the device-store rows that did not win, as flat rows with a status mark
+     5. the preparation chooser (fdTodayPurpose; the shell owns its open state)
+     6. "This week" -- the week's rows, with "N of M done" at the right
+     7. "On the unit this week" -- derived from longitudinal_case.json, only where the tool ships
+     8. the rail (desktop): Safety kit, Quick tools, Learning activity & review
+   Removed from Today: the seven-day activity strip (D2 -- fdConsistency still renders, inside
+   Learning activity & review), the daily pick (reachable from the Library), and the phone pills'
+   order:-1 hoist.
+
+   Both the desktop rail (.fd-rail) and the phone pill row (.fd-quicktools--pills) are ALWAYS
+   emitted from the same quickTools list -- this file does not branch on a device/viewport flag.
+   frontdoor.css ships the breakpoint that picks between them, so a single render is correct at
+   any viewport and a live resize or tablet rotation needs no re-render. The same holds for the
+   Learning activity & review link: once in the rail, once under the pills.
 
    Pure: no DOM, no browser storage, no reading the system clock directly. "Now" arrives as
    state.nowMs so the day name and the exam countdown are testable without depending on when the
-   test happens to run -- see tests/fd-today.test.mjs. Injected via
-   /*__FD_TODAY__*\/ once a later plan registers the marker (see SNIPPET_MARKERS in common.py) --
-   this task does not register it. ES5 only: var/function, no const/let/arrow functions/template
+   test happens to run -- see tests/fd-today.test.mjs. Injected via /*__FD_TODAY__*\/ (see
+   SNIPPET_MARKERS in common.py). ES5 only: var/function, no const/let/arrow functions/template
    literals -- matches the other frontdoor/ modules.
 
-   Scope note for whoever reads this next to the design doc: the due row (SRS due counts) and
-   capture triage (the ward-capture note list) are NOT rendered here even though the design
-   doc's decision table (Sec 1) marks both "Port, prominent". frontdoor.css has no styling rules
-   for either -- neither appears anywhere in Front-Door-Hi-Fi-v2.dc.html's Today section either,
-   so there was never a class contract or a prototype structure to build against. They also read
-   from runtime stores (the spaced-rotation review queue and the ward-note capture list) that sit
-   outside the curriculum/topic_meta item index every Plan 2 renderer (this one included) is a
-   pure function over. This is a scope correction made before this task was implemented, not an
-   omission: the existing shell markup for both moves across and gets restyled onto --fd-*
-   tokens during Plan 3's wiring, where those stores are actually readable.
+   ---- Composition: what the shell hands in ----------------------------------------------------
+   The device-store rows (the SRS due count, the question-bank capsule, the live timed block, the
+   last opened reading, the capture list) read runtime stores this pure renderer cannot see. Until
+   2026-10-04 the shell string-spliced them in at an HTML-comment marker after the lead card. That
+   marker is gone: the shell (spa_index.html fdTodayLive) now resolves every runtime face and
+   hands the RESULTS in on state, and this file composes the page in one place --
+     state.primaryKind  which kind won (fdTodayPrimary); undefined keeps the pre-picker render
+     state.nowHtml      the winning device-store face, when a device-store kind won
+     state.alsoRows     [{mark, count, share, html}] the faces that did not win, in order
+     state.purposeHtml  the preparation chooser (fdTodayPurpose, rendered by the shell)
+     state.offlineHtml  the offline-readiness receipt
+     state.caseWeek     fdWeekCaseStep(...) -- this week's step of the longitudinal case, or null
+   -- which is the same contract state.offlineHtml already used. Every field is optional, so a
+   fixture that passes none of them renders Today exactly as a learner with empty stores sees it.
 
    Copy rule: every string here ships to BOTH sites unrebranded -- audience-neutral, no
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. The exam countdown comes verbatim from
@@ -36,8 +48,8 @@
 
 var FD_TODAY_DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
-/* Pure progress arithmetic, split out because it is what the ring, the "X of Y done" label and the
-   week-complete state all read -- three surfaces that must never disagree. */
+/* Pure progress arithmetic, split out because it is what the Now card's meta line, the "N of M
+   done" label and the week-complete state all read -- three surfaces that must never disagree. */
 function fdTodayProgress(items, doneMap){
   var done=0, next=null, d=doneMap||{}, list=items||[];
   for(var i=0;i<list.length;i++){
@@ -62,14 +74,12 @@ function fdTodayProgress(items, doneMap){
    (cw_last names an undone read in this week that is not already the Continue target), due
    (reviews due), week (Continue the week), ahead (week complete: look ahead), setup (no week).
    The first three are one row in the learner-facing rule ("Pick up where you left off"); they
-   stay distinct here because each renders a different card. */
+   stay distinct here because each renders a different face inside the one Now-card shell. */
 var FD_TODAY_PRIMARY_ORDER=['resume','block','read','due','week','ahead','setup'];
 
-/* The shell splices the secondary section at this marker -- directly after the lead card
-   (Continue or the setup CTA) -- so a Continue card that won stays first in the column and one
-   that lost sits below the demoted device-store rows. An HTML comment is invisible to the
-   learner and to every selector; fdTodayLive removes or replaces it. */
-var FD_TODAY_LEAD_END='<!--fd-lead-end-->';
+/* The four kinds whose face the SHELL renders (fd_due.js / fd_block.js over runtime stores) and
+   hands in as state.nowHtml. The other three (week, ahead, setup) are this file's own lead card. */
+var FD_TODAY_DEVICE_KINDS=['resume','block','read','due'];
 
 function fdTodayPrimaryHolds(kind, inp){
   var wp=inp.weekProgress||{};
@@ -99,7 +109,7 @@ function fdTodayPrimary(inputs){
 /* Resolves the last opened ref against THIS week's items. Null when it is not a week item (a
    library read, a tool from the rail, nothing opened yet): the row is about picking the week
    back up, not a general history. done and isContinueTarget ride along so the picker's "read"
-   row and the shell's secondary list read one object. */
+   row and the shell's Also-today list read one object. */
 function fdTodayLastRead(ref, weekItems, progress, doneMap){
   if(typeof ref!=='string'||!ref) return null;
   var list=weekItems||[], d=doneMap||{}, it=null;
@@ -129,29 +139,26 @@ function fdKindChip(it){
    Emitting the character in both states is right visually and a lie when announced: a screen
    reader reads it regardless of colour, so an UNDONE row announced as "✓ Page A" tells the user
    an item is finished when it is not, and the only thing distinguishing the two states was
-   colour (frontdoor.css:231/233) -- WCAG 1.4.1 and 4.1.2 both. So the glyph is decoration
-   (aria-hidden="true") and the real state moves to aria-pressed on the button, which is the
-   toggle. The glyph gains a bare wrapper span purely to have something to hang aria-hidden on --
-   it carries no class, so no rule matches it; .fd-check is display:flex and the character was
-   already an anonymous flex item, which the span now simply names. The render is unchanged, and
-   the button keeps its accessible name from the title attribute it already had ("Mark done"),
-   which the ✓ text content used to override.
+   colour -- WCAG 1.4.1 and 4.1.2 both. So the glyph is decoration (aria-hidden="true") and the
+   real state moves to aria-pressed on the button, which is the toggle. The glyph gains a bare
+   wrapper span purely to have something to hang aria-hidden on -- it carries no class, so no rule
+   matches it; .fd-check is display:flex and the character was already an anonymous flex item,
+   which the span now simply names. The button keeps its accessible name from the title attribute
+   it already had ("Mark done"), which the ✓ text content used to override.
 
    fd_path.js's detail card renders through this same function (compact=true), so Path inherits
    the fix rather than needing its own; tests/fd-path.test.mjs pins that it did.
 
-   is-just-done is never applied here -- it is a
-   transient "the user just clicked this" flag with no field in this renderer's state shape, and
-   belongs to the DOM-side click handler, not this pure render. idx staggers the fade-in the
-   design specifies (35ms per row); frontdoor.css's .fd-row animation has no built-in stagger, so
-   the delay is the one non-colour inline style this row carries, same precedent as fd_shell.js's
-   grouping spans.
+   is-just-done is never applied here -- it is a transient "the user just clicked this" flag with
+   no field in this renderer's state shape, and belongs to the DOM-side click handler, not this
+   pure render. The row carries no per-row entrance delay any more (one-thread redesign: the
+   stagger is removed from Today, and under prefers-reduced-motion there is no animation at
+   all); idx stays in the signature so every caller and test is unchanged.
 
    compact is optional (falsy for every existing call site, so nothing else changes): fd_path.js's
    detail card uses the same row with the card treatment stripped (CLASS-INVENTORY's
    ".fd-row.is-compact"), and passes true rather than this file growing a second, drifting copy
-   of the row markup (found in Task 5 review -- fdRow and fd_path.js's old fdPathDetailRow were
-   identical but for this one class token). */
+   of the row markup. */
 function fdRow(it, idx, doneMap, compact){
   var on=(doneMap||{})[it.ref]===true;
   var titleCls=on?'fd-row__title is-done':'fd-row__title';
@@ -167,7 +174,7 @@ function fdRow(it, idx, doneMap, compact){
      distinct announcements ("Mark done: Interview & MSE") rather than "Mark done" nine times,
      and the name says what the NEXT press does rather than restating aria-pressed. */
   var toggleName=(on?'Mark undone: ':'Mark done: ')+it.title;
-  return '<div class="'+rowCls+'" style="animation-delay:'+(idx*35)+'ms">'+
+  return '<div class="'+rowCls+'">'+
     '<button type="button" class="'+checkCls+'" data-fd-toggle="'+fdEsc(it.ref)+'" '+
       'title="'+fdEsc(toggleName)+'" aria-pressed="'+(on?'true':'false')+'">'+
       '<span aria-hidden="true">✓</span></button>'+
@@ -185,7 +192,11 @@ function fdRow(it, idx, doneMap, compact){
    the button re-targets to a preview of next week instead of an item, so it carries data-fd-tab
    + data-fd-view-week rather than data-fd-open. The view attribute is intentionally distinct from
    setup-only data-fd-week, so the two actions cannot collide. The next target comes from the
-   projected path: its final week reviews itself rather than inventing another. */
+   projected path: its final week reviews itself rather than inventing another.
+
+   Inside the Now card the whole card is the control, so its "one button" is a SPAN styled as the
+   filled teal button (.fd-continue__cta) -- a <button> inside a <button> is invalid markup and the
+   controller would see one click twice. The count and minutes-left line is the card's meta. */
 function fdContinue(index, state, wk, progress, primary){
   /* primary===false demotes the card (a device-store row won Today's one primary slot);
      undefined means primary, so every caller and test that predates the picker renders exactly
@@ -195,7 +206,7 @@ function fdContinue(index, state, wk, progress, primary){
   var suggested=index.path&&index.path.id==='ms3-six-week';
   var kickerCls=isComplete?'fd-continue__kicker is-complete':'fd-continue__kicker';
   var kickerText=isComplete?('Week '+fdEsc(state.week)+(suggested?' activities complete':' complete')):('Continue · Week '+fdEsc(state.week));
-  var titleText, openAttrs, chip='', dockLabel='Continue';
+  var titleText, openAttrs, chip='', dockLabel='Continue', ctaText='Continue →';
   if(progress.next){
     titleText=progress.next.title;
     openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"'+
@@ -207,6 +218,7 @@ function fdContinue(index, state, wk, progress, primary){
     var target=nextWeek?nextWeek.n:state.week;
     titleText=(nextWeek?'Preview Week ':'Review Week ')+target;
     dockLabel=nextWeek?'Preview week':'Review week';
+    ctaText=dockLabel+' →';
     openAttrs=' data-fd-tab="path" data-fd-view-week="'+fdEsc(target)+'"';
   }
   var done=fdProgressForWeek(index,state,state.week), leftMin=0;
@@ -225,8 +237,9 @@ function fdContinue(index, state, wk, progress, primary){
     (isPrimary?' data-fd-dock-source="primary-'+(isComplete?'ahead':'week')+'" data-fd-dock-label="'+dockLabel+'"':'')+'>'+
     '<span class="fd-continue__body">'+
       '<span class="'+kickerCls+'">'+kickerText+'</span>'+
-      '<span class="fd-continue__title">'+fdEsc(titleText)+chip+' →</span>'+
+      '<span class="fd-continue__title">'+fdEsc(titleText)+chip+(isPrimary?'':' →')+'</span>'+
     '</span>'+
+    (isPrimary?'<span class="fd-continue__cta" aria-hidden="true">'+fdEsc(ctaText)+'</span>':'')+
     '<span class="fd-continue__meta">'+
       '<span class="fd-continue__count">'+progress.done+' of '+progress.total+(suggested?' activities done':' done')+'</span>'+
       '<span class="fd-continue__left">'+leftLabel+'</span>'+
@@ -242,6 +255,8 @@ function fdContinue(index, state, wk, progress, primary){
   return out;
 }
 
+/* The setup face of the Now card (no week set). Same kicker / title / button shape as every other
+   face; the button is a span for the same reason as fdContinue's. */
 function fdSetupCta(primary){
   return '<button type="button" class="fd-setupcta" data-fd-change-week'+
     (primary===false?'':' data-fd-dock-source="primary-setup" data-fd-dock-label="Set rotation week"')+'>'+
@@ -249,17 +264,7 @@ function fdSetupCta(primary){
       '<span class="fd-setupcta__kicker">30-second setup</span>'+
       '<span class="fd-setupcta__title">Set your rotation week → get a real Today</span>'+
     '</span>'+
-  '</button>';
-}
-
-function fdPick(item){
-  var min=(typeof item.minutes==='number')?item.minutes:0;
-  return '<button type="button" class="fd-pick" data-fd-open="'+fdEsc(item.ref)+'">'+
-    '<span class="fd-pick__dot"></span>'+
-    '<span style="flex:1;min-width:0">'+
-      '<span class="fd-pick__kicker">Daily pick · ~'+min+' min</span>'+
-      '<span class="fd-pick__title">'+fdEsc(item.title)+'</span>'+
-    '</span>'+
+    '<span class="fd-setupcta__cta" aria-hidden="true">Set rotation week</span>'+
   '</button>';
 }
 
@@ -302,6 +307,9 @@ function fdKitCard(k){
   '</button>';
 }
 
+/* The Learning activity & review link. Emitted twice by fdToday -- once in the rail and once under
+   the phone pills -- for the same CSS-decides reason as the quick tools; the two never render at
+   the same width. */
 function fdProgressAccess(){
   return '<button type="button" class="fd-progresscard" data-fd-progress>'+
     '<span class="fd-progresscard__title">Learning activity &amp; review</span>'+
@@ -351,7 +359,10 @@ function fdQuickTools(index, weekItems){
    sentence carries the meaning, so the wrapper is one image with the sentence as its name and
    the dot row is hidden from assistive tech (same treatment as the ✓ glyph in fdRow). Day
    letters are derived by walking back from nowMs with the local Date constructor, which keeps
-   DST transitions from shifting a label. */
+   DST transitions from shifting a label.
+   Owner decision D2 (2026-10-04): this no longer renders on Today. The shell mounts it at the top
+   of Learning activity & review (spa_index.html fdProgressMarkup) instead, which is where the
+   rest of the learner's own record already lives. */
 function fdConsistency(activityDays, nowMs){
   var days=Object.prototype.toString.call(activityDays)==='[object Array]'?activityDays:[];
   if(days.length!==7) return '';
@@ -375,29 +386,99 @@ function fdConsistency(activityDays, nowMs){
   '</div>';
 }
 
-/* Shared pilot invitation. The pgfb-b class deliberately routes through the shell's existing
-   private feedback launcher, while data-fb-context tells the form this came from Today rather
-   than from a specific learning page. */
+/* The active-testing line (owner decision D1, 2026-10-04): ONE row at the very top of Today --
+   the existing title, a "Details" disclosure that reveals the existing sentence verbatim, and the
+   existing "Share feedback" launcher. Copy and the no-PHI boundary are unchanged; nothing is
+   removed, only folded. The pgfb-b class deliberately routes through the shell's existing private
+   feedback launcher, while data-fb-context tells the form this came from Today rather than from
+   a specific learning page. */
 function fdPilotFeedback(){
   return '<section class="fd-pilot" aria-labelledby="fd-pilot-title">'+
-    '<span class="fd-pilot__eyebrow">Active testing</span>'+
-    '<div class="fd-pilot__copy">'+
-      '<h2 class="fd-pilot__title" id="fd-pilot-title">This learning site is in active testing</h2>'+
-      '<p>Use it alongside your official rotation materials and supervision. Tell us what helped, what was unclear, or what did not work.</p>'+
-    '</div>'+
-    '<button type="button" class="fd-btn fd-btn--ghost fd-pilot__button pgfb-b" data-fb-context="Today landing page">Share feedback</button>'+
+    '<h2 class="fd-pilot__title" id="fd-pilot-title">This learning site is in active testing</h2>'+
+    '<details class="fd-pilot__details"><summary class="fd-pilot__more">Details</summary>'+
+      '<div class="fd-pilot__copy"><p>Use it alongside your official rotation materials and supervision. Tell us what helped, what was unclear, or what did not work.</p></div>'+
+    '</details>'+
+    '<button type="button" class="fd-pilot__button pgfb-b" data-fb-context="Today landing page">Share feedback</button>'+
   '</section>';
 }
 
-/* Optional preparation follows the primary work and only exists on a site shipping the tool. */
-function fdPrepareInvitation(index){
-  var item=index&&index.byRef&&index.byRef['prepare-for-tomorrow.html'];
-  if(!item||item.kind!=='tool') return '';
-  return '<section class="fd-prepare" aria-labelledby="fd-prepare-title">'+
-    '<h2 class="fd-prepare__title" id="fd-prepare-title">'+fdEsc(item.title)+'</h2>'+
-    '<p class="fd-prepare__copy">Choose a task and prepare in 5 or 15 minutes.</p>'+
-    governanceBadge(item.governance,{compact:true})+
-    '<button type="button" class="fd-btn fd-btn--ghost" data-fd-open="'+fdEsc(item.ref)+'">Choose tomorrow’s task</button></section>';
+/* ---- The six-week thread ----------------------------------------------------------------
+   One node per projected week, in path order. A week is DONE only when every item in it is done
+   for that week (fdProgressForWeek -- week-scoped, #949), never merely because it is in the past:
+   the thread must not mark work complete that the learner has not done. The current week carries
+   aria-current="step"; the node is a button that previews that week on Path through the same
+   data-fd-tab + data-fd-view-week pair the completed Continue card already uses, so browsing the
+   thread never changes the learner's week. Labels are the week titles; a phone shows only the
+   current one (CSS). The connector after a done week is teal, otherwise the control line (CSS
+   reads .is-done on the step). Renders nothing without a valid projected path. */
+function fdThread(index, state){
+  var idx=index||{}, st=state||{};
+  if(!fdActivePathValid(idx)) return '';
+  var weeks=idx.weeks, cur=(typeof st.week==='number'&&!isNaN(st.week))?st.week:null;
+  var out='<nav class="fd-thread" aria-label="Six-week path"><ol class="fd-thread__list">';
+  for(var i=0;i<weeks.length;i++){
+    var w=weeks[i], items=fdItemsForWeek(idx,w.n);
+    var p=fdTodayProgress(items,fdProgressForWeek(idx,st,w.n));
+    var isDone=p.total>0&&p.done===p.total, isCur=cur===w.n;
+    var cls='fd-thread__step'+(isDone?' is-done':'')+(isCur?' is-current':'');
+    var name='Week '+w.n+': '+w.title+(isCur?' (current week)':(isDone?' (done)':''));
+    out+='<li class="'+cls+'">'+
+      '<button type="button" class="fd-thread__node" data-fd-tab="path" data-fd-view-week="'+fdEsc(w.n)+'"'+
+        (isCur?' aria-current="step"':'')+' aria-label="'+fdEsc(name)+'">'+
+        '<span class="fd-thread__mark" aria-hidden="true">'+(isDone?'✓':fdEsc(w.n))+'</span>'+
+        '<span class="fd-thread__label" aria-hidden="true">'+fdEsc(w.title)+'</span>'+
+      '</button></li>';
+  }
+  return out+'</ol></nav>';
+}
+
+/* ---- "On the unit this week" -----------------------------------------------------------------
+   Pure derivation over longitudinal_case.json (read-only; the shell fetches it and hands the parsed
+   object in). Returns this week's step of the longitudinal case, or null when the tool does not
+   ship for the site, the week has no matching entry, or the data is not what the tool itself
+   expects. Nothing here edits the case: the week title, learnerTask and handoff render verbatim,
+   and the deep link is the tool's existing ?week=N. */
+var FD_CASE_TOOL_REF='one-patient-six-weeks.html';
+
+function fdWeekCaseStep(index, caseData, week){
+  var tool=index&&index.byRef&&index.byRef[FD_CASE_TOOL_REF];
+  if(!tool||tool.kind!=='tool') return null;
+  if(typeof week!=='number'||isNaN(week)||week<1) return null;
+  var weeks=caseData&&caseData.weeks;
+  if(Object.prototype.toString.call(weeks)!=='[object Array]') return null;
+  var w=weeks[week-1];
+  if(!w||typeof w.title!=='string'||typeof w.learnerTask!=='string') return null;
+  return {n:week, title:w.title, learnerTask:w.learnerTask,
+    handoff:typeof w.handoff==='string'?w.handoff:'', ref:FD_CASE_TOOL_REF};
+}
+
+function fdUnitWeek(step){
+  if(!step) return '';
+  var n=fdEsc(step.n);
+  return '<section class="fd-unit" aria-labelledby="fd-unit-title">'+
+    '<span class="fd-unit__line" aria-hidden="true"></span>'+
+    '<div class="fd-unit__body">'+
+      '<span class="fd-unit__kicker">On the unit this week · Case Journeys, week '+n+'</span>'+
+      '<h2 class="fd-unit__title" id="fd-unit-title">'+fdEsc(step.title)+'</h2>'+
+      '<p class="fd-unit__task">'+fdEsc(step.learnerTask)+'</p>'+
+      (step.handoff?'<p class="fd-unit__handoff"><strong>Carry it to rounds:</strong> '+fdEsc(step.handoff)+'</p>':'')+
+      /* A real link, not a ref-only data-fd-open: the Front Door action drops query parameters,
+         and the tool's week lives in ?week=N (same precedent as fdDueRow's lane link). */
+      '<a class="fd-btn fd-btn--ghost fd-unit__open" href="?tool='+fdEsc(step.ref)+'&amp;week='+n+'">Open case week '+n+'</a>'+
+    '</div></section>';
+}
+
+/* ---- "Also today": the device-store rows that did not win --------------------------------------
+   Each row the shell hands in is wrapped with its status mark (spec "Status marks"): a due count in
+   an olive ring, a partly filled teal ring for work in progress (share = the fraction done, as a
+   custom property the CSS conic reads), a plain ring for not-started, "＋" for saved questions.
+   The wrapper carries the mark; the face inside keeps its own markup (fd_due.js / fd_block.js)
+   and frontdoor.css flattens it to a row under .fd-alsolist. */
+function fdAlsoRow(row){
+  var r=row||{}, mark=r.mark||'ring', attrs=' data-fd-mark="'+fdEsc(mark)+'"';
+  if(typeof r.count==='number') attrs+=' data-fd-count="'+fdEsc(r.count)+'"';
+  if(typeof r.share==='number') attrs+=' style="--mark-share:'+Math.max(0,Math.min(100,Math.round(r.share)))+'%"';
+  return '<div class="fd-also__row"'+attrs+'>'+(r.html||'')+'</div>';
 }
 
 function fdToday(index, state){
@@ -405,17 +486,6 @@ function fdToday(index, state){
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
   var nowMs=st.nowMs;
   var dayName=FD_TODAY_DAYNAMES[new Date(nowMs).getDay()];
-  /* No trailing em dash. The prototype's "Evening, Alex —" led into the line below with a dash
-     after a NAME; with a role label the same dash read as a truncated sentence ("Evening, Core
-     rotation —"), and at 375px it wrapped onto a line of its own (2026-09-18 critique). It had
-     already been made aria-hidden so a screen reader stopped announcing "dash"; now it is gone
-     for sighted readers too. The subhead below carries the week and the day. */
-  /* 2026-09-26: no role label either. "Afternoon, Core rotation" addressed the learner by the
-     name of a rotation and wrapped to two lines on a phone.
-     2026-10-01: no greeting at all. "Good evening" was the largest text on the page and told the
-     learner nothing; the week's theme is the most specific fact in their day, so it is the
-     heading, and the subhead places it ("Week 2 of 6 · Thursday"). Without a week the heading is
-     plainly "Today". */
 
   var wk=(typeof st.week==='number'&&!isNaN(st.week))?fdFindWeek(idx, st.week):null;
   var hasWeek=!!wk;
@@ -423,55 +493,80 @@ function fdToday(index, state){
   var done=fdProgressForWeek(idx,st,st.week);
   var progress=fdTodayProgress(wItems, done);
 
+  /* The heading is the week's theme-title, not a time-of-day greeting (2026-10-01): "Good evening"
+     was the largest text on the page and told the learner nothing. Without a week it is "Today". */
   var heading=hasWeek?fdEsc(wk.title):'Today';
   var weekCount=(idx.weeks&&idx.weeks.length)||0;
   var sub=hasWeek
     ?('Week '+fdEsc(st.week)+(weekCount>=st.week?' of '+weekCount:'')+' · '+dayName)
     :(dayName+' · browsing — no week set');
   /* fdExamCountdown returns a bare fragment -- its separator dot included, its leading space NOT
-     ('· exam in ~5 days'). The caller owns the join, so it must supply that space: concatenating the fragment
-     directly printed "Sunday· exam in ~5 days" through the final two path weeks, on the single most-read line
-     of the front door. Guarded rather than unconditional because the empty return is the common
-     case (every week outside the final two, and after the exam), and ' '+'' would leave a trailing space on
-     the subhead for all of them. tests/fd-state.test.mjs pins the fragment's shape at one end and
-     tests/fd-today.test.mjs pins this joined output at the other.
-
-     The subhead no longer carries the Daily-Review-only streak clause; the seven-day
-     activity strip rendered by fdConsistency directly below it replaced that clause (see
-     fdActivityDays in fd_state.js for why). */
-  /* fdPathExamCountdown is the audience gate in front of that arithmetic: no countdown on a path
-     that does not end in an exam unless the learner stored a date (fd_state.js says why). */
+     ('· exam in ~5 days'). The caller owns the join, so it must supply that space. Guarded rather
+     than unconditional because the empty return is the common case, and ' '+'' would leave a
+     trailing space on the eyebrow. fdPathExamCountdown is the audience gate in front of that
+     arithmetic: no countdown on a path that does not end in an exam unless the learner stored a
+     date (fd_state.js says why). */
   var countdown=fdPathExamCountdown(idx.path&&idx.path.id,st.week,idx.weeks,nowMs,st.rotationStart);
   if(countdown) sub+=' '+countdown;
 
   var out='<section class="fd-today">';
-  out+='<h1 class="fd-today__h1">'+heading+'</h1>';
-  out+='<p class="fd-today__sub">'+sub+'</p>';
+  /* 0. The active-testing line, at the very top on both sizes (D1). */
   out+=fdPilotFeedback();
-  out+=fdConsistency(st.activityDays, nowMs);
-  /* No in-flow Care row here any more (2026-09-26): the header .fd-carebtn reaches Care on phones
-     and the Care tab on wider screens, so this row was a duplicate. APP's On shift keeps its own. */
+  /* 1. Place. "Change week" reopens the existing week setup -- the same data-fd-change-week action
+     the retired header pill dispatched, so focus restoration and the setupFrom:'app' Back path are
+     unchanged. Only a learner WITH a week sees it; without one the Now card IS the setup action. */
+  out+='<div class="fd-today__place">';
+  /* No text space before the button: the eyebrow is a flex row and CSS owns the gap, so the text
+     node stays exactly the joined sentence tests/fd-today.test.mjs reads. */
+  out+='<p class="fd-today__sub">'+sub+
+    (hasWeek?'<button type="button" class="fd-today__changeweek" data-fd-change-week>Change week</button>':'')+'</p>';
+  out+='<h1 class="fd-today__h1">'+heading+'</h1>';
+  if(hasWeek&&wk.theme) out+='<p class="fd-today__theme">'+fdEsc(wk.theme)+'</p>';
+  out+='</div>';
+  /* 2. The six-week thread. */
+  out+=fdThread(idx,st);
+
   out+='<div class="fd-today__cols"><div class="fd-today__main">';
 
-  /* One Thing First: state.primaryKind arrives from the shell's picker. The lead card is
-     primary unless a device-store row won; undefined keeps the pre-picker render. The marker
-     that follows is where the shell splices the secondary section (see FD_TODAY_LEAD_END). */
+  /* 3. The Now card. One Thing First: state.primaryKind arrives from the shell's picker. The lead
+     card (Continue / setup) is primary unless a device-store row won; undefined keeps the
+     pre-picker render. Exactly one .fd-now renders, and it is the first thing in the column, so
+     the one filled teal button is first after the heading at every width. */
   var pk=st.primaryKind;
   var leadPrimary=(pk===undefined||pk==='week'||pk==='ahead'||pk==='setup');
-  out+=hasWeek?fdContinue(idx,st, wk, progress, leadPrimary):fdSetupCta(leadPrimary);
-  out+=FD_TODAY_LEAD_END;
-  out+=fdPrepareInvitation(idx);
+  var leadHtml=hasWeek?fdContinue(idx,st, wk, progress, leadPrimary):fdSetupCta(leadPrimary);
+  if(leadPrimary){
+    var leadKind=hasWeek?((progress.total>0&&progress.done===progress.total)?'ahead':'week'):'setup';
+    out+='<div class="fd-now fd-now--'+leadKind+'">'+leadHtml+'</div>';
+  } else if(typeof st.nowHtml==='string'&&st.nowHtml){
+    out+='<div class="fd-primary fd-now fd-now--'+fdEsc(pk)+'">'+st.nowHtml+'</div>';
+  }
   if(st.offlineHtml)out+=st.offlineHtml;
 
-  /* The exam-date nudge, BELOW the lead card: One Thing First keeps its single primary action, and
-     nothing here can push that card past the phone fold. It used to duplicate the settings panel's
-     own <input type=date> field inline; the date now has exactly one home, the panel's Pacing
-     section (fd_sheet.js), and this is only a nudge toward it. Its one control reopens Settings via
-     the SAME data-fd-settings action the gear already exposes -- a second TRIGGER for one action,
-     not a second action. fd_wire.js's equivalentControl already restores focus to the gear once an
-     invoker is gone (any live control sharing the same action attribute and value stands in for it),
-     so this element disappearing the instant the date is saved needs no new fallback code.
-     fdExamDatePrompt (fd_state.js) decides whether to ask and names the field. */
+  /* 4. Also today: the rows that did not win, in the shell's order, then -- when the lead lost --
+     the week's own Continue as a flat row with a partly filled mark. The heading always renders:
+     the preparation chooser sits under it even when no device-store row is waiting. */
+  var rows=[], r;
+  var shellRows=Object.prototype.toString.call(st.alsoRows)==='[object Array]'?st.alsoRows:[];
+  for(r=0;r<shellRows.length;r++){ if(shellRows[r]&&shellRows[r].html) rows.push(fdAlsoRow(shellRows[r])); }
+  if(!leadPrimary){
+    var weekRow=fdAlsoRow({mark:hasWeek?'progress':'ring',share:hasWeek?progress.pct:0,html:leadHtml});
+    /* Saved questions close the list (spec order: due · the week · saved questions), so the week
+       row goes before a trailing capture row and after everything else. */
+    var last=shellRows.length?shellRows[shellRows.length-1]:null;
+    if(last&&last.mark==='plus') rows.splice(rows.length-1,0,weekRow); else rows.push(weekRow);
+  }
+  out+='<h2 class="fd-sectionhead fd-also">Also today</h2>';
+  if(rows.length) out+='<div class="fd-alsolist">'+rows.join('')+'</div>';
+
+  /* 5. The preparation chooser, open state owned by the shell. */
+  if(st.purposeHtml) out+=st.purposeHtml;
+
+  /* The exam-date nudge, below the Now card and the Also rows: One Thing First keeps its single
+     primary action, and nothing here can push that card past the phone fold. The date has exactly
+     one home, the settings panel's Pacing section (fd_sheet.js); this only nudges toward it, via
+     the SAME data-fd-settings action the gear already exposes. fdExamDatePrompt (fd_state.js)
+     decides whether to ask and names the field. */
   var examLabel=hasWeek?fdExamDatePrompt(idx.path&&idx.path.id,nowMs):'';
   if(examLabel){
     out+='<div class="fd-today__exam">'+
@@ -479,33 +574,34 @@ function fdToday(index, state){
       '<button type="button" class="fd-today__examcta" data-fd-settings>Set exam date</button></div>';
   }
 
-
+  /* 6. This week, with "N of M done" at the right of the heading (the theme moved under the H1). */
   if(hasWeek){
     out+='<div class="fd-listhead"><h2 class="fd-sectionhead">'+(idx.path&&idx.path.id==='ms3-six-week'?'Suggested this week':'This week')+'</h2>'+
-      '<span class="fd-listhead__theme">'+fdEsc(wk.theme)+'</span></div>';
+      '<span class="fd-listhead__count">'+progress.done+' of '+progress.total+' done</span></div>';
     out+='<div class="fd-list">';
     for(var i=0;i<wItems.length;i++){ out+=fdRow(wItems[i], i, done); }
     out+='</div>';
   }
 
-  var daily=fdDailyPick(fdLibraryOnlyReads(idx), done, nowMs);
-  if(daily) out+=fdPick(daily);
-
-  out+=fdProgressAccess();
+  /* 7. On the unit this week -- only where the case tool ships and has this week. */
+  if(hasWeek) out+=fdUnitWeek(st.caseWeek);
 
   var quickTools=fdQuickTools(idx, wItems);
 
-  /* Mobile pill row and desktop rail are both always emitted -- see the header comment. Same
-     quickTools list feeds both, per the design's "both come from the same data". */
+  /* Phone pill row and desktop rail are both always emitted -- see the header comment. Same
+     quickTools list feeds both, per the design's "both come from the same data". The pills follow
+     the week (no order:-1 hoist any more), and the phone's Learning activity & review link sits
+     under them. */
   out+='<div class="fd-quicktools--pills">';
   for(var q=0;q<quickTools.length;q++){ out+=fdQuickToolBtn(quickTools[q]); }
   out+='</div>';
+  out+='<div class="fd-today__record">'+fdProgressAccess()+'</div>';
 
   out+='</div>'; /* .fd-today__main */
 
-  /* Safety kit first, Quick tools second: the rail order lines up with the header, where the red
-     Safety button outranks the gear/search/tab controls -- so the rail reads as an extension of
-     that button rather than a tools list with safety tacked on the end (2026-09-26). */
+  /* 8. The rail. Safety kit first, Quick tools second: the rail order lines up with the header,
+     where the red Safety button outranks the gear/search/tab controls -- so the rail reads as an
+     extension of that button rather than a tools list with safety tacked on the end. */
   out+='<aside class="fd-rail">';
   /* One panel, one red rule, quiet rows (2026-10-01 design pass): five separately bordered red
      cards competed with each other, so none of them read as the one to grab. */
@@ -515,6 +611,7 @@ function fdToday(index, state){
   out+='<div><h2 class="fd-sectionhead">Quick tools</h2>';
   for(var q2=0;q2<quickTools.length;q2++){ out+=fdQuickToolBtn(quickTools[q2]); }
   out+='</div>';
+  out+=fdProgressAccess();
   out+='</aside>';
 
   out+='</div></section>'; /* .fd-today__cols, .fd-today */
@@ -523,7 +620,10 @@ function fdToday(index, state){
 
 
 /* Optional session purpose shortcuts. The shell owns transient selection/disclosure state;
-   this renderer neither stores the choice nor changes Today priority or the study plan. */
+   this renderer neither stores the choice nor changes Today priority or the study plan. The
+   Prepare-for-tomorrow invitation lives inside this chooser (one-thread redesign) rather than as a
+   card of its own: it only exists on a site shipping the tool, and it is one more way of answering
+   "what am I preparing for?". */
 var FD_TODAY_PURPOSES=[
   {id:'rounds',label:'Before rounds',ref:'oral.html'},
   {id:'interview',label:'Interview',ref:'pg_interview.md'},
@@ -538,6 +638,14 @@ function fdTodayPurposeOptions(index){
     out.push({id:option.id,label:option.label,ref:option.ref,title:item?item.title:'Use your study planner'});
   }
   return out;
+}
+function fdPrepareInvitation(index){
+  var item=index&&index.byRef&&index.byRef['prepare-for-tomorrow.html'];
+  if(!item||item.kind!=='tool') return '';
+  return '<div class="fd-prepare">'+
+    '<p class="fd-prepare__copy"><strong class="fd-prepare__title">'+fdEsc(item.title)+'</strong> · Choose a task and prepare in 5 or 15 minutes.</p>'+
+    governanceBadge(item.governance,{compact:true})+
+    '<button type="button" class="fd-btn fd-btn--ghost" data-fd-open="'+fdEsc(item.ref)+'">Choose tomorrow’s task</button></div>';
 }
 function fdTodayPurpose(index,id,isOpen){
   var options=fdTodayPurposeOptions(index),active=null,i;
@@ -555,5 +663,6 @@ function fdTodayPurpose(index,id,isOpen){
     h+='<p class="fd-purpose__reason" role="status">Suggested because you chose '+fdEsc(active.label)+'.</p>';
     h+='<button type="button" class="fd-btn fd-btn--accent" '+(active.ref?'data-fd-open="'+fdEsc(active.ref)+'"':'data-today-planner')+'>'+fdEsc(active.title)+'</button>';
   }
+  h+=fdPrepareInvitation(index);
   return h+'</details>';
 }

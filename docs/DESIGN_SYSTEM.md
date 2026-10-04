@@ -66,7 +66,7 @@ Font **size** is `--fd-font-*`. These were briefly one namespace and the drift c
 flagged `--fd-text-dim` as "a dimension token with a dark value" — a collision worth keeping out of
 the vocabulary permanently.
 
-### 2.2 Type — 9 steps
+### 2.2 Type — 9 steps (11 since 2026-10-04)
 
 Derived from the observed distribution: each step is the modal value of a real cluster, so adopting
 it is a snap, not a redesign.
@@ -81,7 +81,14 @@ it is a snap, not a redesign.
 | `--fd-font-lg` | 17 | 16, 16.5, 17, 17.5 | lead paragraph, card title |
 | `--fd-font-xl` | 21 | 18, 21, 22 | block title |
 | `--fd-font-2xl` | 26 | 24, 26 | section title |
-| `--fd-font-3xl` | 30 | 29, 30, 31 | page title (`.fd-h1`) |
+| `--fd-font-3xl` | 30 | 29, 30, 31 | page title (`.fd-h1`); the learner page title on a phone |
+| `--fd-font-4xl` | 34 | 34 | learner page title (`.fd-today__h1`) — one-thread redesign, 2026-10-04 |
+| `--fd-font-section` | 19 | 19 | section heading on a learner page (`.fd-sectionhead`) — one-thread redesign, 2026-10-04 |
+
+The two 2026-10-04 steps sit outside the original nine on purpose: `4xl` because the redesign's
+learner page title is a full step above `.fd-h1`, and `section` because 19px lands between `lg`
+(17) and `xl` (21) and neither neighbour reads right for an in-page heading. The scale is now 11
+steps; the step-name caveat below still holds (`--fd-font-md` is 14, `--fd-font-lg` is 17).
 
 **11px is the floor.** Nothing learner-facing goes below it. Thirteen declarations were below it
 (`.fd-chip`, `.fd-kbd`, `.fd-attested`, `.fd-consistency__label`, the timeline and prev/next

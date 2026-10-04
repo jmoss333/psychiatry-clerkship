@@ -39,7 +39,8 @@ test('unrecognized purpose cannot inject a destination or change the default',()
 });
 test('session purpose is outside persisted state; shell owns guarded auxiliary actions',()=>{
  assert.match(shell,/var fdTodayPurposeId='',fdTodayPurposeOpen=true/);
- assert.match(shell,/var purposeHtml=facultyPreviewRequest\?'':fdTodayPurpose/);
+ // 2026-10-04: the chooser is handed to the pure renderer on state (fd_today.js composes Today).
+ assert.match(shell,/live\.purposeHtml=facultyPreviewRequest\?'':fdTodayPurpose/);
  assert.match(shell,/if\(!purposeValid\)return/);
  assert.match(shell,/fdTodayPurposeId=purposeId;fdTodayPurposeOpen=purposeId!=='';specialRefresh\(\)/);
  const purposeHandlers=shell.slice(shell.indexOf("el=target.closest&&target.closest('[data-today-purpose-toggle]')"),shell.indexOf("el=target.closest&&target.closest('[data-block-minutes]')"));

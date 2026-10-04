@@ -44,7 +44,13 @@
                                    * for migration step 6; value is the light --terracotta-soft
                                    * the five private-palette pages already shipped, so their
                                    * light rendering is unchanged. */
-  --fd-success:#357160;           /* done state */
+  --fd-success:#3a7d6e;           /* done state. Owner decision D6 (one-thread redesign,
+                                   * 2026-10-04): done is TEAL -- the same value as --fd-teal, so
+                                   * "done" and "act / you are here" are one colour and the
+                                   * palette has three status roles (teal, olive, red), not four.
+                                   * Written as the literal rather than var(--fd-teal) because
+                                   * tests/fd-contrast.test.mjs only parses #RRGGBB; if --fd-teal
+                                   * moves, move this with it. Was #357160. */
   --fd-danger:#a34132;            /* safety */
   --fd-danger-dark:#8f372a;       /* safety hover */
   --fd-danger-wash:#fbefec;       /* safety background */
@@ -133,8 +139,14 @@
   --fd-font-base:15px;  /* body */
   --fd-font-lg:17px;    /* lead paragraph, card title */
   --fd-font-xl:21px;    /* block title */
-  --fd-font-2xl:26px;   /* section title */
+  --fd-font-2xl:26px;   /* section title; the Now card's title */
   --fd-font-3xl:30px;   /* page title (.fd-h1) */
+  /* Two steps added by the one-thread redesign (docs/superpowers/specs/one-thread-handoff/README.md,
+   * "Type"): the learner page title grows to 34px and the in-page section heading ("Also today",
+   * "This week") sits at 19px, between -lg (17) and -xl (21). Both are pinned to
+   * docs/DESIGN_SYSTEM.md 2.2 by bin/check_design_drift.py's C9. */
+  --fd-font-4xl:34px;   /* learner page title (.fd-today__h1); phones step down to --fd-font-3xl */
+  --fd-font-section:19px; /* section heading on a learner page (.fd-sectionhead) */
 
   /* Glyph sizes. NOT the type scale: these are the em-box of a single character
    * centred inside a fixed-size circle or square — a check mark in a 20px dot, the
@@ -295,7 +307,7 @@
   --fd-teal-deep:#7fc0ae;
   --fd-teal-wash:#1d332e;
   --fd-terracotta-wash:#3a2b24;
-  --fd-success:#5aa48f;
+  --fd-success:#5fa392;           /* = dark --fd-teal (D6, 2026-10-04); was #5aa48f */
   --fd-danger:#d97a68;
   --fd-danger-dark:#e8917f;
   --fd-danger-wash:#3a231f;

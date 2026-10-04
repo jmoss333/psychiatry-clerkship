@@ -430,11 +430,10 @@
      stylesheet here would trip fd-shell-boot's single-reference count, which exists to keep this
      document from acquiring a second competing link to it.) */
   #fdChromeMount{display:contents}
-  #fdCaptureMount{position:fixed;right:calc(var(--fd-space-8) + var(--fd-target-touch) + var(--fd-space-9));bottom:var(--fd-space-8);z-index:28;display:flex;justify-content:flex-end}
+  /* #fdCaptureMount is kept as a stable mount but stays EMPTY: the floating "Ask a question"
+     launcher retired on 2026-10-04 (one-thread redesign) in favour of the header's standing
+     "＋ Ask a question" and the dock's "＋ Ask". Hidden while empty so it never occupies a line. */
   #fdCaptureMount:empty{display:none}
-  #fdCaptureMount .fd-capture-launch{width:auto;margin:0;box-shadow:var(--fd-shadow-lift);border-style:solid}
-  @media(max-width:1000px){#fdCaptureMount{right:var(--fd-space-6);bottom:calc(env(safe-area-inset-bottom,0px) + var(--fd-target-touch) + var(--fd-space-10) + var(--fd-space-2))}}
-  @media(max-width:640px){#fdCaptureMount{display:none}}
   .cap-disclose{font-size:var(--fd-font-xs);color:var(--text-light);margin:8px 0 0}
   .cap-starters{display:flex;align-items:center;gap:var(--fd-space-3);flex-wrap:wrap;margin:var(--fd-space-4) 0 0}
   .cap-starters span{font-size:var(--fd-font-xs);color:var(--text-light)}
@@ -672,6 +671,13 @@
   /* Metadata is also injected as FD_TOPIC_META. Keep the fetch for canonical quiz/SRS helpers,
      then refresh only the currently mounted Front Door surface. */
   fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ specialRefresh(); }catch(_){ } }).catch(function(){});
+  /* The longitudinal case (Case Journeys, "One Patient, Six Weeks"), READ-ONLY, for Today's "On the
+     unit this week" (one-thread redesign, Phase 1). Same shape as the topic_meta fetch above: the
+     build copies the file beside index.html (build_deploy.py), a missing or malformed file simply
+     renders no section (fdWeekCaseStep), and arrival refreshes only the mounted surface. Nothing
+     here writes to the file, the tool, or its attestation hash. */
+  var FD_CASE_ARC=null;
+  fetch('longitudinal_case.json').then(function(r){return r.ok?r.json():null}).then(function(d){ FD_CASE_ARC=(d&&typeof d==='object')?d:null; if(FD_CASE_ARC){ try{ specialRefresh(); }catch(_){ } } }).catch(function(){});
   var SEC_SEQ=0;
   function makeCollapsible(body){
     if(!body) return;
@@ -2602,59 +2608,81 @@
       lastRead:lastRead
     });
     live.primaryKind=primary.kind;
-    var offlineHtml=facultyPreviewRequest?'':fdOfflineEntry(
+    live.offlineHtml=facultyPreviewRequest?'':fdOfflineEntry(
       fdOfflineDisplayState(state),fdOfflineRouteLabel(state),state.offlineOpen===true);
-    var html=fdToday(FD_INDEX,live);
+    var captureSummary=null;
     if(!facultyPreviewRequest){
       var blockResume=(blockStatus&&sess&&fdBlockResumeSearch(blockStatus.next,sess))?{left:fdCapsuleLeft(sess),n:blockStatus.next.n}:null;
       blockHtml=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done,{primary:primary.kind==='block',resume:blockResume});
       /* Only an unstarted plan is optional; live work always stays exposed. */
       if(!liveBlock)blockHtml='<details class="fd-study-planner"'+(fdTodayPlannerOpen?' open':'')+'><summary data-today-planner-toggle>Plan a study block <span>5, 10 or 20 minutes</span></summary>'+blockHtml+'</details>';
+      captureSummary=fdCaptureSummary(fdCaptureRows());
       captureHtml=fdCaptureTriage(fdCaptureRows());
     }
-    var cards={
+    /* One-thread Today (Phase 1): the pure renderer composes the page; this function only resolves
+       the runtime faces and hands them in on state (fd_today.js, "Composition"). The winning
+       device-store face becomes the Now card; the rest become "Also today" rows, each with the
+       status mark the spec gives it -- a due count in an olive ring, a partly filled teal ring for
+       work in progress, a plain ring for not-started, "＋" for saved questions. */
+    var faces={
       block:blockHtml,
       due:fdDueRow(due,primary.kind==='due')+(due.conceptStatus==='ready'?'':'<p role="status" data-fd-concept-status>Concepts due: '+(due.conceptStatus==='checking'?'checking…':'unavailable. Review counts are incomplete. Open Daily Review to retry.')+'</p>'),
       resume:fdResumeCard(sess,primary.kind==='resume',blockStatus),
       read:fdLastReadRow(lastRead,primary.kind==='read')
     };
-    var order=['block','due','resume','read'], lead='', also='';
+    var marks={
+      block:{mark:blockStatus?'progress':'ring',share:blockStatus&&blockStatus.total?Math.round(blockStatus.done*100/blockStatus.total):0},
+      due:{mark:'due',count:fdDueCount(due)},
+      resume:{mark:'progress',share:fdCapsuleShare(sess)},
+      read:{mark:'ring'}
+    };
+    var order=['block','due','resume','read'], rows=[];
     for(var i=0;i<order.length;i++){
-      if(order[i]===primary.kind) lead='<div class="fd-primary">'+cards[order[i]]+'</div>';
-      else also+=cards[order[i]];
+      var kind=order[i];
+      if(kind===primary.kind) live.nowHtml=faces[kind];
+      else if(faces[kind]) rows.push({kind:kind,mark:marks[kind].mark,count:marks[kind].count,share:marks[kind].share,html:faces[kind]});
     }
-    also+=captureHtml;
-    var purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
-    var rest='<h2 class="fd-sectionhead fd-also">Also today</h2>'+(primary.kind==='block'?'':purposeHtml)+also;
-    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+(primary.kind==='block'?purposeHtml:'')+lead+offlineHtml+rest);
-    return html.replace(FD_TODAY_LEAD_END,offlineHtml+rest);
+    if(captureHtml) rows.push({kind:'capture',mark:'plus',count:captureSummary?captureSummary.total:undefined,html:captureHtml});
+    live.alsoRows=rows;
+    live.purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
+    live.caseWeek=fdWeekCaseStep(FD_INDEX,FD_CASE_ARC,weekN);
+    return fdToday(FD_INDEX,live);
   }
 
-  function fdRenderCapture(state){
+  /* The share of a question-bank capsule already answered, for the Also-today mark. Pure over the
+     same capsule shape fdCapsuleLeft reads; 0 for anything malformed. */
+  function fdCapsuleShare(capsule){
+    var c=capsule||{}, left=fdCapsuleLeft(c);
+    if(!left||!Array.isArray(c.queueIds)||!c.queueIds.length) return 0;
+    return Math.round((c.queueIds.length-left)*100/c.queueIds.length);
+  }
+
+  /* The floating global launcher is retired (one-thread redesign, Phase 1, 2026-10-04): "＋ Ask a
+     question" is a standing header control (fd_shell.js fdHeader) and "＋ Ask" is a fixed dock
+     slot, so a third, overlapping copy floating above the page had nothing left to reach that
+     those two do not. The mount element itself stays: #fdCaptureMount:empty{display:none} hides
+     it, the phone-chrome stylesheet rules and CLASS-INVENTORY's responsive-visibility table still
+     name it, and the capture DIALOG never lived here (capOpen appends its own sheet to the body).
+     Clearing rather than deleting also sweeps a launcher left behind by a cached older build. */
+  function fdRenderCapture(){
     if(!fdCaptureMount)return;
-    var show=state&&state.screen==='app'&&!facultyPreviewRequest;
-    var launchers=fdCaptureMount.querySelectorAll('.fd-capture-launch--global[data-capture-open]');
-    if(!show){ fdCaptureMount.innerHTML=''; return; }
-    if(launchers.length){
-      for(var i=1;i<launchers.length;i++)launchers[i].parentNode.removeChild(launchers[i]);
-      return;
-    }
-    fdCaptureMount.innerHTML='<button type="button" class="fd-capture-launch fd-capture-launch--global" data-capture-open aria-haspopup="dialog" aria-expanded="false"><span aria-hidden="true">＋</span> Ask a question</button>';
+    if(fdCaptureMount.innerHTML!=='')fdCaptureMount.innerHTML='';
   }
 
   function fdRenderDock(state,preserveFocus){
     if(!fdDockMount)return;
     var show=state&&state.screen==='app'&&!facultyPreviewRequest;
     if(!show){fdDockMount.innerHTML='';return;}
-    var source=fdDockSource(contentEl);
+    /* The dock no longer forwards the page's primary action into a centre slot: its slots have
+       fixed meanings (fd_shell.js fdDockModel). data-fd-dock-source / data-fd-dock-label stay on
+       the surfaces that emit them -- nothing in the dock renders from them, and this function
+       deliberately does not look at contentEl any more. */
     var live=fdClone(fdLiveState(state));
-    live.dockAction=source?{sourceId:source.id,label:source.label}:null;
     /* Only same-route refreshes may retain dock focus. Full navigation and dialogs own their
        focus transitions. Match the old action, never an arbitrary button or a page control. */
     var active=document.activeElement, focusSelector=null;
     if(preserveFocus&&!state.searchOpen&&!state.sheet&&active&&fdDockMount.contains(active)){
-      if(active.matches&&active.matches('.fd-dock__browse summary'))focusSelector='.fd-dock__browse summary';
-      var attrs=['data-fd-dock-forward','data-fd-tab','data-capture-open','data-fd-dock-browse-go'];
+      var attrs=['data-fd-tab','data-capture-open'];
       for(var i=0;i<attrs.length;i++){
         var value=active.getAttribute(attrs[i]);
         if(value!==null&&!/["\\]/.test(value)){focusSelector='['+attrs[i]+'="'+value+'"]';break;}
@@ -2662,32 +2690,35 @@
     }
     /* Dialog owners retain their opener objects across hydration and Capture mutations.
        Reuse the utility controls, including Capture's live expanded state, without focusing
-       them while an overlay owns focus. The route/context controls still refresh normally. */
+       them while an overlay owns focus. The route controls still refresh normally. */
     var utilities=['[data-capture-open]'], retained=[];
-    /* Same-route hydration preserves the Library disclosure and its focused item.
-       Its Search item also remains the search dialog's opener:
-       keep its whole open disclosure across hydration while search is open, exactly as the
-       retired dock Search button was kept, so closing the dialog returns focus to a visible
-       dock control instead of a re-rendered item hidden inside a closed <details>. */
-    if(state.searchOpen||preserveFocus)utilities.push('.fd-dock__browse');
     for(var j=0;j<utilities.length;j++)retained[j]=fdDockMount.querySelector(utilities[j]);
     fdDockMount.innerHTML=fdDock(live);
     for(var k=0;k<utilities.length;k++){
       var replacement=fdDockMount.querySelector(utilities[k]);
       if(retained[k]&&replacement)replacement.parentNode.replaceChild(retained[k],replacement);
     }
-    if(!state.openId){
-      var current=fdDockMount.querySelector(state.tab==='library'?'.fd-dock__browse summary':'[data-fd-tab="'+state.tab+'"]');
-      if(current)current.setAttribute('aria-current','page');
-    }
+    /* Focused learning (a reading or a tool) is a mode, not a destination: the origin tab stays
+       the current one in the dock exactly as it does in the header's tab row (fdTabs reads
+       state.tab, which an open resource leaves alone), so the four destinations never all read
+       as "not here" while a page is open. */
+    var tab=(state.tab==='path'||state.tab==='library'||state.tab==='care')?state.tab:'today';
+    var current=fdDockMount.querySelector('[data-fd-tab="'+tab+'"]');
+    if(current)current.setAttribute('aria-current','page');
     var successor=focusSelector&&fdDockMount.querySelector(focusSelector);
     if(successor&&!successor.disabled)successor.focus({preventScroll:true});
   }
 
   function fdProgressMarkup(state){
     var label=fdReaderBackLabel(state&&state.fromTab,state&&state.roleId,fdAppMode(state));
+    /* The seven-day activity strip moved here from Today (owner decision D2, one-thread redesign,
+       2026-10-04): it is the learner's own record, so it opens the record. Same derivation as
+       before -- fdActivityDays over the stores, nothing persisted -- read through fdLiveState so
+       this surface and Today's picker see one state. */
+    var live=fdLiveState(state||{});
     return '<article class="fd-reader fd-progress-reader">'+
       '<button type="button" class="fd-reader__back" data-fd-back>‹ '+fdEsc(label)+'</button>'+
+      fdConsistency(live.activityDays,live.nowMs)+
       fdSurface('progress',function(){ return window.renderProgress?window.renderProgress():'<div class="fd-fallback">Progress is unavailable.</div>'; })+
       '</article>';
   }
@@ -2885,11 +2916,25 @@
     if(status.textContent!==next)status.textContent=next;
   }
 
+  /* The header's "＋ Ask a question" (fd_shell.js .fd-askbtn) is the capture dialog's standing
+     opener above 640px, exactly as the retired floating launcher was. The dialog records its opener
+     OBJECT (for aria-expanded and for returning focus on close), so a header re-render must hand the
+     same button object back rather than a fresh copy -- the same retention fdRenderDock does for the
+     dock's "＋ Ask". Everything else in the header is replaced normally. */
+  function fdRenderChrome(state){
+    if(!fdChromeMount)return;
+    if(state.screen!=='app'){fdChromeMount.innerHTML='';return;}
+    var retained=fdChromeMount.querySelector('.fd-askbtn[data-capture-open]');
+    fdChromeMount.innerHTML=fdHeader(fdLiveState(state));
+    var replacement=fdChromeMount.querySelector('.fd-askbtn[data-capture-open]');
+    if(retained&&replacement)replacement.parentNode.replaceChild(retained,replacement);
+  }
+
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
     fdPrepareRoute(state,detail);
     fdAdoptSpecialContext(state);
-    if(!hydrate&&fdChromeMount)fdChromeMount.innerHTML=app?fdHeader(fdLiveState(state)):'';
+    if(!hydrate)fdRenderChrome(state);
     if(contentEl){ fdDisposeReadingPlace(); fdDisposeGuide(); contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
     fdPatchToolLayout(state);
     fdRenderCapture(state);
@@ -2945,7 +2990,7 @@
       if(frame&&frame.contentWindow)
         try{frame.contentWindow.postMessage({type:'theme',mode:themeAttr},'*');}catch(_){}
     }
-    if(surfaces.chrome&&fdChromeMount&&state.screen==='app')fdChromeMount.innerHTML=fdHeader(fdLiveState(state));
+    if(surfaces.chrome&&state.screen==='app')fdRenderChrome(state);
     if(d.preserveResource){
       if(surfaces.completion)fdPatchCompletion(state);
     } else if(surfaces.base||surfaces.completion){

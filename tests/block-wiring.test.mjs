@@ -62,17 +62,26 @@ test('a tool may name its full route through openPage, but only a short plain qu
   assert.match(shell, /fdOpenRef\(data\.f, searchOk\?data\.search:undefined\)/);
 });
 
-test('the shell picks exactly one primary, names the secondary heading once, and splices at the lead marker', () => {
-  const today = shell.slice(shell.indexOf('function fdTodayLive('), shell.indexOf('function fdRenderCapture('));
+test('the shell picks exactly one primary and hands the faces to the renderer on state, never by splicing', () => {
+  const today = shell.slice(shell.indexOf('function fdTodayLive('), shell.indexOf('function fdCapsuleShare('));
   assert.equal(today.split('fdTodayPrimary(').length - 1, 1, 'one picker call');
-  assert.equal(today.split('Also today').length - 1, 1, 'one heading');
   assert.match(today, /live\.primaryKind=primary\.kind;/, 'the pure renderer is told who won before it renders');
   assert.match(today, /fdBlockCard\([^;]*\{primary:primary\.kind==='block',resume:blockResume\}\)/, 'the block card is primary only when it won, and knows when its question set can be resumed');
   assert.match(today, /fdDueRow\(due,primary\.kind==='due'\)/);
   assert.match(today, /fdResumeCard\(sess,primary\.kind==='resume',blockStatus\)/, 'the Resume card learns where the block stands');
   assert.match(today, /fdLastReadRow\(lastRead,primary\.kind==='read'\)/);
-  assert.match(today, /'<div class="fd-primary">'/);
-  assert.match(today, /FD_TODAY_LEAD_END/, 'the marker fd_today.js emits is the splice point');
+  // 2026-10-04 (one-thread, Phase 1): the shell no longer string-splices at an HTML-comment marker
+  // or writes the "Also today" heading itself. The winning face goes in as state.nowHtml, the rest
+  // as state.alsoRows with their status marks, and fd_today.js composes the page (and owns the
+  // heading). The old marker and the bare .fd-primary wrapper must not come back.
+  assert.doesNotMatch(today.replace(/\/\*[\s\S]*?\*\//g, ''), /FD_TODAY_LEAD_END|fd-lead-end|'<div class="fd-primary">'|Also today|\.replace\(/);
+  assert.match(today, /if\(kind===primary\.kind\) live\.nowHtml=faces\[kind\];/);
+  assert.match(today, /live\.alsoRows=rows;/);
+  assert.match(today, /live\.purposeHtml=facultyPreviewRequest\?'':fdTodayPurpose\(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen\);/);
+  assert.match(today, /live\.caseWeek=fdWeekCaseStep\(FD_INDEX,FD_CASE_ARC,weekN\);/);
+  assert.match(today.replace(/\/\*[\s\S]*?\*\//g, ''), /return fdToday\(FD_INDEX,live\);\s*\}\s*$/, 'one render call, nothing patched after it');
+  for (const kind of ['block', 'due', 'resume', 'read']) assert.match(today, new RegExp(`${kind}:\\{mark:`), `${kind} carries a status mark`);
+  assert.match(today, /mark:'plus',count:captureSummary\?captureSummary\.total:undefined/);
   // 2026-10-01: the "First things first" explanation line is retired (owner-directed design pass).
   assert.doesNotMatch(today, /fdTodayWhy\(\)/);
 });

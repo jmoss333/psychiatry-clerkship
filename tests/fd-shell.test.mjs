@@ -124,26 +124,36 @@ test('both Library views share one selected app destination', () => {
   }
 });
 
-test('the header renders the safety button and the week pill', () => {
-  const html = F.fdHeader({ week: 4 });
-  assert.match(html, /data-fd-safety/);
-  assert.match(html, /Week 4/);
+// One-thread redesign, Phase 1 (owner decision D4, 2026-10-04): the week pill left the header. The
+// week is changed from Today ("Change week"), Path ("Set as my week") and first-run setup, never
+// from a control that sits on every screen. These two tests pin the ABSENCE as hard as the old
+// ones pinned the presence: a header that grows a week control again fails here.
+test('the header renders the safety button and no week control at any week', () => {
+  for (const week of [4, undefined, null]) {
+    const html = F.fdHeader({ week });
+    assert.match(html, /data-fd-safety/);
+    assert.doesNotMatch(html, /data-fd-change-week|Set week|Week \d|▾/, `week ${week}: no week pill`);
+  }
 });
 
-test('the header places a mobile Patient care resources shortcut directly after Safety', () => {
-  const inactive = F.fdHeader({ week: 4, tab: 'today' });
-  const safety = inactive.indexOf('data-fd-safety');
-  const care = inactive.indexOf('data-fd-tab="care"', safety);
-  const settings = inactive.indexOf('data-fd-settings', care);
-  assert.ok(safety > -1 && care > safety && settings > care,
-    'Safety, Care, and Settings must retain their visual and keyboard order');
-  assert.match(inactive,
-    /class="fd-carebtn"[^>]*data-fd-tab="care"[^>]*aria-label="Patient care resources"[^>]*>Care<\/button>/);
-  assert.doesNotMatch(inactive, /class="fd-carebtn is-active"|data-fd-tab="care"[^>]*aria-current/);
+test('the header carries "＋ Ask a question" as a standing capture opener, before Safety', () => {
+  const html = F.fdHeader({ week: 4, tab: 'today' });
+  const ask = html.indexOf('data-capture-open');
+  const safety = html.indexOf('data-fd-safety', ask);
+  const settings = html.indexOf('data-fd-settings', safety);
+  assert.ok(ask > -1 && safety > ask && settings > safety,
+    'Ask, Safety and Settings must keep their visual and keyboard order');
+  assert.match(html, /class="fd-askbtn" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">＋ Ask a question<\/button>/);
+  // The old phone-only Care shortcut is gone: Care is a tab above 640px and a dock slot below it.
+  assert.doesNotMatch(html, /fd-carebtn|aria-label="Patient care resources"[^>]*>Care</);
+  assert.equal((html.match(/data-fd-tab="care"/g) || []).length, 1, 'Care appears once, in the tab row');
+});
 
-  const active = F.fdHeader({ week: 4, tab: 'care' });
-  assert.match(active,
-    /class="fd-carebtn is-active"[^>]*data-fd-tab="care"[^>]*aria-label="Patient care resources"[^>]*aria-current="page"/);
+test('the search affordance keeps one accessible name across the phone and desktop spellings', () => {
+  const html = F.fdHeader({ week: 2 });
+  assert.match(html, /class="fd-searchbtn__long">Search a symptom, drug, or task…<\/span>/);
+  assert.match(html, /class="fd-searchbtn__short" aria-hidden="true">Search<\/span>/);
+  assert.equal((html.match(/data-fd-search/g) || []).length, 1, 'one search opener in the header');
 });
 
 test('the APP header replaces rotation chrome with an On shift workspace', () => {
@@ -174,61 +184,66 @@ test('the header offers settings, not a bare theme toggle', () => {
   assert.match(h, /aria-label="Settings"/);
 });
 
-test('phone dock adapts slot two for APP without exposing Path', () => {
-  const standard = F.fdDockModel({ tab: 'today', appMode: false, dockAction: null });
-  const app = F.fdDockModel({ tab: 'today', appMode: true, dockAction: null });
-  assert.deepEqual(standard.items.map((x) => x.label), ['Today', 'Path', 'Library', 'Capture']);
-  assert.deepEqual(app.items.map((x) => x.label), ['On shift', 'The Essentials', 'Library', 'Capture']);
+// ---- the phone dock: five FIXED slots (one-thread redesign, Phase 1, 2026-10-04) ------------------
+// Today · Path · Library · Care · ＋ Ask, the same four destinations as the tab row in the same
+// order, plus the capture opener. Nothing in it mirrors the page's primary action any more, and
+// the Browse <details> that duplicated Essentials / Everything / Search is gone. The tests below
+// pin that a dock given a dockAction, or any other state, still renders exactly these slots.
+test('the dock carries the four tab destinations in tab order, then ＋ Ask', () => {
+  const standard = F.fdDockModel({ tab: 'today', appMode: false });
+  assert.deepEqual(standard.items.map((x) => x.label), ['Today', 'Path', 'Library', 'Care', '＋ Ask']);
+  assert.deepEqual(standard.items.map((x) => x.value), ['today', 'path', 'library', 'care', '']);
+  assert.deepEqual(standard.items.map((x) => x.attr),
+    ['data-fd-tab', 'data-fd-tab', 'data-fd-tab', 'data-fd-tab', 'data-capture-open']);
+  // Same labels and order as the tab row's four destinations.
+  const tabs = [...F.fdTabs('today').matchAll(/data-fd-tab="([a-z]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(standard.items.slice(0, 4).map((x) => x.value), tabs);
+});
+
+test('APP gets four fixed slots: no Path, and Library only once', () => {
+  const app = F.fdDockModel({ tab: 'today', appMode: true });
+  assert.deepEqual(app.items.map((x) => x.label), ['On shift', 'Library', 'Care', '＋ Ask']);
   assert.equal(app.items.some((x) => x.value === 'path'), false);
+  assert.equal(app.items.filter((x) => x.value === 'library').length, 1);
+  assert.match(F.fdDock({ appMode: true }), /^<nav class="fd-dock fd-dock--four" aria-label="Learning actions">/);
 });
 
-test('dock context uses a source id or the audience Essentials fallback', () => {
-  assert.match(F.fdDock({ appMode: false, dockAction: { label: 'Continue', sourceId: 'primary-1' } }),
-    /data-fd-dock-forward="primary-1"[^>]*>.*Continue/s);
-  assert.match(F.fdDock({ appMode: true, dockAction: null }),
-    /data-fd-tab="library"[^>]*>.*Essentials/s);
-  // The idle centre fallback reads "Essential": the plural broke mid-word at 390px.
-  assert.match(F.fdDock({ appMode: false, dockAction: null }),
-    /class="fd-dock__item fd-dock__item--context" data-fd-tab="library">Essential<\/button>/);
-  assert.equal(F.fdDockModel({}).context.label, 'Essential');
+test('the dock has no context slot, no Browse disclosure and no forwarding, whatever the state says', () => {
+  for (const state of [
+    {},
+    { dockAction: { label: '<Continue>', sourceId: 'action&one' } },
+    { appMode: false, tab: 'library', openId: 'a.md' },
+  ]) {
+    const html = F.fdDock(state);
+    assert.match(html, /^<nav class="fd-dock" aria-label="Learning actions">/);
+    assert.equal((html.match(/<button\b/g) || []).length, 5, JSON.stringify(state));
+    assert.equal((html.match(/<details\b/g) || []).length, 0);
+    assert.doesNotMatch(html, /fd-dock__item--context|fd-dock__browse|data-fd-dock-forward|data-fd-dock-browse-go|Continue|Essential/);
+    assert.doesNotMatch(html, /data-fd-search/, 'Search is reached from the sticky header, never a dock slot');
+  }
 });
 
-test('dock renders four buttons, one disclosure, and an escaped center action', () => {
-  const html = F.fdDock({ dockAction: { label: '<Continue>', sourceId: 'action&one' } });
-  assert.match(html, /^<nav class="fd-dock" aria-label="Learning actions">/);
-  // Today, Path, the context button, Capture, plus the three actions nested inside Browse's popover.
-  assert.equal((html.match(/<button\b/g) || []).length, 7);
-  assert.equal((html.match(/<details\b/g) || []).length, 1);
-  assert.match(html, /data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Capture<\/button>/);
-  assert.match(html, /class="fd-dock__item fd-dock__item--context" data-fd-dock-forward="action&amp;one">&lt;Continue&gt;<\/button>/);
-  assert.equal(html.indexOf('fd-dock__item--context') > html.indexOf('Path'), true,
-    'the contextual action follows the two leading destinations');
+test('every dock slot is a plain button; Care carries its full name and ＋ Ask its dialog state', () => {
+  const html = F.fdDock({ appMode: false });
+  assert.match(html, /<button type="button" class="fd-dock__item" data-fd-tab="today">Today<\/button>/);
+  assert.match(html, /<button type="button" class="fd-dock__item" data-fd-tab="path">Path<\/button>/);
+  assert.match(html, /<button type="button" class="fd-dock__item" data-fd-tab="library">Library<\/button>/);
+  assert.match(html, /<button type="button" class="fd-dock__item" data-fd-tab="care" aria-label="Patient care resources">Care<\/button>/);
+  assert.match(html, /<button type="button" class="fd-dock__item" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">＋ Ask<\/button><\/nav>$/);
 });
 
-test('the Browse disclosure offers both Library destinations and Search via a thin alias of the tab-row action', () => {
-  const html = F.fdDock({ appMode: false, dockAction: null });
-  assert.match(html, /<details class="fd-dock__item fd-dock__browse"><summary>Library<\/summary>/);
-  assert.match(html, /<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">/);
-  assert.match(html, /data-fd-dock-browse-go="essentials">The Essentials<\/button>/);
-  assert.match(html, /data-fd-dock-browse-go="full">Everything<\/button>/);
-  // The phone header scrolls away with the page, so Search must stay reachable from the dock.
-  assert.match(html, /data-fd-dock-browse-go="search" aria-haspopup="dialog">Search<\/button>/);
-  // Never a bare data-fd-search: focus restore would resolve it to the off-screen header button.
-  assert.doesNotMatch(html, /data-fd-search/);
-  // data-fd-dock-browse-go, not data-fd-library-view directly: the in-Library "Everything (N
-  // pages) -->" footer button already carries data-fd-library-view="full" and stays in the DOM
-  // (just not :visible) while this menu is closed, so the dock needs its own attribute or a
-  // plain, unscoped [data-fd-library-view="full"] locator resolves to two elements.
-});
-
-test('the header carries three standing controls plus one phone-only Care shortcut', () => {
+test('the header carries three standing controls: Ask, Safety, Settings', () => {
   // Scoped to the actions container's own markup: everything after the marker also carries the
   // tab buttons fdHeader appends, which otherwise makes the count say nothing.
   const actions = F.fdHeader({ week: 3, tab: 'today' })
     .split('fd-header__actions')[1].split('</div>')[0];
   const buttons = actions.match(/<button/g) || [];
-  assert.equal(buttons.length, 4, 'week pill, safety, phone Care shortcut, settings');
-  assert.equal((actions.match(/class="fd-carebtn"/g) || []).length, 1);
+  assert.equal(buttons.length, 3, 'Ask a question, safety, settings');
+  assert.doesNotMatch(actions, /fd-weekpill|fd-carebtn/);
+  // APP adds its identity chip -- a span, not a control.
+  const app = F.fdHeader({ roleId: 'app', tab: 'today' }).split('fd-header__actions')[1].split('</div>')[0];
+  assert.equal((app.match(/<button/g) || []).length, 3);
+  assert.match(app, /<span class="fd-weekpill fd-weekpill--identity">APP<\/span>/);
 });
 
 test('the header says exam, never the site-specific word', () => {
@@ -279,7 +294,13 @@ test('the header renders for a guest with no role, without leaking an undefined 
   for (const state of [{}, { tab: 'today' }, { tab: 'library', week: undefined }]) {
     const html = F.fdHeader(state);
     assert.match(html, /data-fd-safety/, 'safety stays reachable');
-    assert.match(html, /fd-weekpill/, 'the week pill still renders');
+    assert.match(html, /fd-askbtn/, 'the capture opener still renders');
     assert.doesNotMatch(html, /undefined|null/, JSON.stringify(state));
   }
+});
+
+test('week setup no longer points at a top-bar control it does not have', () => {
+  const weeks = F.fdSetupWeek({ path: { id: 'fixture', weekCount: 1 }, weeks: [{ n: 1, title: 'Foundations', theme: 't', focusCategories: [] }] }, 'Student');
+  assert.doesNotMatch(weeks, /top bar/);
+  assert.match(weeks, /Change it anytime from Today or Path\./);
 });

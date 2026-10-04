@@ -68,7 +68,7 @@ function toolHost() {
   };
 }
 
-test('a mounted tool projects its real primary into the dock and completion preserves its frame', async () => {
+test('a mounted tool keeps its primary in the page -- never the dock -- and completion preserves its frame', async () => {
   const host = toolHost(), dock = toolHost();
   const document = { activeElement: null, createElement: toolHost, getElementById: () => null };
   const runtime = new Function('contentEl', 'fdDockMount', 'document', `
@@ -104,15 +104,24 @@ test('a mounted tool projects its real primary into the dock and completion pres
   assert.equal(frame.getAttribute('src'), 'tools/tool.html?resume=1&amp;governed=1');
   assert.match(host.innerHTML, /fd-reader__toolbar/);
   assert.match(host.innerHTML, /data-fd-back>‹ Today/);
+  // The tool's primary is still marked in the page (its label carries across the completion patch
+  // below); since 2026-10-04 the dock renders five fixed slots and reflects none of it.
   assert.equal(host.querySelectorAll('[data-fd-dock-source]').length, 1);
-  assert.match(dock.innerHTML, /data-fd-dock-forward="primary-reader">Mark done<\/button>/);
+  assert.equal(host.querySelector('[data-fd-dock-source]').getAttribute('data-fd-dock-label'), 'Mark done');
+  assert.doesNotMatch(dock.innerHTML, /data-fd-dock-forward|Mark done/);
+  // Five fixed slots (aria-current on the origin tab is pinned by fd-shell-boot's dock harness,
+  // whose host resolves attribute-value selectors; this narrow host does not).
+  assert.equal((dock.innerHTML.match(/<button\b/g) || []).length, 5);
+  assert.match(dock.innerHTML, /data-fd-tab="today">Today<\/button>.*data-fd-tab="path">Path<\/button>.*data-fd-tab="library">Library<\/button>.*data-fd-tab="care"[^>]*>Care<\/button>.*data-capture-open=""/);
   frame.session = { draft: 'unsaved tool input' };
   runtime.patch({ ...state, done: { 'tool.html': true } }, {
     preserveResource: true, surfaces: { completion: true },
   });
   assert.equal(host.querySelector('.toolframe'), frame, 'completion must not remount the tool');
   assert.deepEqual(frame.session, { draft: 'unsaved tool input' });
-  assert.match(dock.innerHTML, /data-fd-dock-forward="primary-reader">Back to Today<\/button>/);
+  assert.equal(host.querySelector('[data-fd-dock-source]').getAttribute('data-fd-dock-label'), 'Back to Today',
+    'the completion patch still carries the page primary\'s label');
+  assert.doesNotMatch(dock.innerHTML, /Back to Today|data-fd-dock-forward/);
 });
 
 // eslint-disable-next-line no-new-func

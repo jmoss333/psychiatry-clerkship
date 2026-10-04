@@ -47,78 +47,57 @@ function fdTabs(tab, appMode, libraryView){
   return out;
 }
 
-/* The five-slot phone dock is a pure projection of the current audience and primary action.
-   The center item can forward to an action owned by another surface; without one, it is the
-   stable Library browse route. Rendering stays here so every dynamic value is escaped once.
-   'browse' replaces the old Search slot and carries Search inside it: the phone header scrolls
-   away with the page, so the header's own [data-fd-search] bar is out of reach mid-page and
-   Search must stay one tap from the dock (2026-09-26). Browse has no attr/value of its
-   own: it is a native <details> disclosure (see fdDock), not a dispatched action, so opening and
-   closing it costs no new state. fdRenderDock retains it during same-route refreshes
-   and replaces it on navigation, closing it when the destination changes. */
+/* The five-slot phone dock is a pure projection of the current audience, and EVERY slot has a
+   fixed meaning (one-thread redesign, Phase 1, 2026-10-04): Today · Path · Library · Care · "＋ Ask".
+   Two slots that used to change meaning under the learner are gone: the centre slot that
+   mirrored the page's primary action (data-fd-dock-forward -- the same control the learner could
+   already see in the page), and the Browse <details> that duplicated Essentials / Everything /
+   Search (the Library tab reaches the first two and the header's own [data-fd-search] bar, which
+   is position:sticky at every width, reaches the third). The four destinations are the same four
+   the tab row carries, in the same order, so a learner moving between a phone and a desk finds
+   nothing rearranged. "＋ Ask" opens the existing capture dialog through the same
+   data-capture-open action the header's "＋ Ask a question" uses; the dock keeps its
+   aria-haspopup / aria-expanded pair for the Capture open/close handler to update.
+   data-fd-dock-source / data-fd-dock-label attributes stay on the surfaces that emit them --
+   nothing in the dock renders from them any more. Rendering stays here so every dynamic value
+   is escaped once. */
 function fdDockModel(state){
   var s=state||{}, app=fdAppMode(s);
-  return {
-    items:[
-      {id:'today',label:app?'On shift':'Today',attr:'data-fd-tab',value:'today'},
-      {id:'structure',label:app?'The Essentials':'Path',attr:'data-fd-tab',value:app?'library':'path'},
-      {id:'browse',label:'Library'},
-      {id:'capture',label:'Capture',attr:'data-capture-open',value:''}
-    ],
-    context:s.dockAction&&s.dockAction.sourceId
-      ?{label:s.dockAction.label,attr:'data-fd-dock-forward',value:s.dockAction.sourceId}
-      /* 'Essential', not 'Essentials': at 390px the plural split mid-word ("Essential"/"s") in
-         the centre slot, and the owner prefers the singular (2026-09-27). */
-      :{label:'Essential',attr:'data-fd-tab',value:'library'}
-  };
-}
-
-/* The Browse item renders as <details>/<summary> rather than a button: its three choices
-   need a disclosure, and the browser owns open/closed state for free rather than this app
-   tracking yet another overlay flag. Its menu items dispatch data-fd-dock-browse-go (a thin
-   alias fd_wire.js resolves onto the existing data-fd-library-view action) rather than that
-   attribute directly: the local Library view switch (fd_library.js)
-   already carries data-fd-library-view="full", present in the DOM even while this menu is
-   closed, and reusing the same attribute value made every plain (non-:visible-scoped)
-   [data-fd-library-view="full"] locator across the smoke suite resolve to two elements.
-   Search goes through the same alias ("search") rather than a bare data-fd-search for the
-   matching reason one layer down: when the search dialog closes and its opener has been
-   re-rendered, fd_wire.js's restoreInvoker looks up the first control carrying the opener's
-   attribute, and a bare data-fd-search would resolve to the header's .fd-searchbtn -- scrolled
-   off the top on a phone, so returning focus there would jump the page (and the saved reading
-   place) back to the top. */
-function fdDockBrowseItem(){
-  return '<details class="fd-dock__item fd-dock__browse">'+
-    '<summary>Library</summary>'+
-    '<div class="fd-dock__browsemenu" role="menu" aria-label="Browse the Library">'+
-    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="essentials">The Essentials</button>'+
-    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="full">Everything</button>'+
-    '<button type="button" class="fd-dock__browseitem" role="menuitem" data-fd-dock-browse-go="search" aria-haspopup="dialog">Search</button>'+
-    '</div></details>';
+  /* APP has no Path (fdTabs), so its dock has four slots, not a fifth that repeats Library. */
+  var items=[{id:'today',label:app?'On shift':'Today',attr:'data-fd-tab',value:'today'}];
+  if(!app) items.push({id:'path',label:'Path',attr:'data-fd-tab',value:'path'});
+  items.push({id:'library',label:'Library',attr:'data-fd-tab',value:'library'});
+  items.push({id:'care',label:'Care',attr:'data-fd-tab',value:'care'});
+  items.push({id:'capture',label:'＋ Ask',attr:'data-capture-open',value:''});
+  return {items:items};
 }
 
 function fdDock(state){
-  var model=fdDockModel(state), out='<nav class="fd-dock" aria-label="Learning actions">';
+  var model=fdDockModel(state);
+  var out='<nav class="fd-dock'+(model.items.length===4?' fd-dock--four':'')+'" aria-label="Learning actions">';
   for(var i=0;i<model.items.length;i++){
     var item=model.items[i];
-    out+=item.id==='browse'?fdDockBrowseItem():
-      '<button type="button" class="fd-dock__item" '+item.attr+'="'+
+    out+='<button type="button" class="fd-dock__item" '+item.attr+'="'+
       fdEsc(item.value)+'"'+(item.id==='capture'?' aria-haspopup="dialog" aria-expanded="false"':'')+
+      (item.id==='care'?' aria-label="Patient care resources"':'')+
       '>'+fdEsc(item.label)+'</button>';
-    if(i===1){
-      var context=model.context;
-      out+='<button type="button" class="fd-dock__item fd-dock__item--context" '+
-        context.attr+'="'+fdEsc(context.value)+'">'+fdEsc(context.label)+'</button>';
-    }
   }
   out+='</nav>';
   return out;
 }
 
+/* Header actions (one-thread redesign, Phase 1, owner decision D4): the week pill is gone. The
+   week is set from Today ("Change week" on the eyebrow), Path ("Set as my week") and first-run
+   setup -- never from a control that sat on every screen regardless of what the screen was about.
+   The APP identity chip is NOT a week control and stays; it reuses .fd-weekpill's chip recipe to
+   say which workspace is active. "＋ Ask a question" is a standing header control that opens the
+   existing capture dialog through the same data-capture-open action the dock's "＋ Ask" uses; it
+   replaces the floating .fd-capture-launch--global launcher (spa_index.html fdRenderCapture no
+   longer mounts one). .fd-carebtn is gone too: Care is a tab above 640px and a fixed dock slot
+   below it, so the header shortcut was a third copy of one destination on the same screen. */
 function fdHeader(state){
   var s=state||{};
   var appMode=fdAppMode(s);
-  var weekLabel=(typeof s.week==='number'&&!isNaN(s.week))?('Week '+fdEsc(s.week)):'Set week';
   var out='<header class="fd-header"><div class="fd-header__bar">';
   out+='<button type="button" class="fd-brand" data-fd-home>'+
     '<span class="fd-logo">ψ</span>'+
@@ -128,17 +107,18 @@ function fdHeader(state){
     '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" '+
     'stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>'+
     '<path d="M21 21l-4-4"></path></svg>'+
-    '<span class="fd-searchbtn__label">Search a symptom, drug, or task…</span>'+
+    /* Two spellings of one label: the sentence is the accessible name at every width; a phone
+       (≤640px, frontdoor.css) clips it visually and shows the aria-hidden "Search" instead, so
+       the one-row top bar fits 320px without the name changing underneath a screen reader. */
+    '<span class="fd-searchbtn__label"><span class="fd-searchbtn__long">Search a symptom, drug, or task…</span>'+
+    '<span class="fd-searchbtn__short" aria-hidden="true">Search</span></span>'+
     '<span class="fd-kbd">⌘K</span>'+
     '</button>';
   out+='<div class="fd-header__actions">'+
-    (appMode?'<span class="fd-weekpill fd-weekpill--identity">APP</span>':
-    '<button type="button" class="fd-weekpill" data-fd-change-week title="Change week">'+
-    weekLabel+' ▾</button>')+
+    (appMode?'<span class="fd-weekpill fd-weekpill--identity">APP</span>':'')+
+    '<button type="button" class="fd-askbtn" data-capture-open="" '+
+    'aria-haspopup="dialog" aria-expanded="false">＋ Ask a question</button>'+
     '<button type="button" class="fd-safetybtn" data-fd-safety>✚ Safety</button>'+
-    '<button type="button" class="fd-carebtn'+(s.tab==='care'?' is-active':'')+'" '+
-    'data-fd-tab="care" aria-label="Patient care resources"'+
-    (s.tab==='care'?' aria-current="page"':'')+'>Care</button>'+
     '<button type="button" class="fd-settingsbtn" data-fd-settings '+
     'aria-label="Settings">⚙</button>'+
     '</div>';
@@ -193,7 +173,9 @@ function fdSetupWeek(index, roleName){
     '<span class="fd-setup__done">'+fdEsc(roleName)+' ✓</span>'+
     '</div>';
   out+='<h1 class="fd-h1">Where in the rotation?</h1>';
-  out+='<p class="fd-sub">This sets your Today. Change it anytime from the top bar.</p>';
+  /* "...from the top bar" until 2026-10-04: the header week pill is gone (D4), so the sentence
+     now names the two places the week is actually changed from. */
+  out+='<p class="fd-sub">This sets your Today. Change it anytime from Today or Path.</p>';
   out+='<div class="fd-weekgrid">';
   for(var i=0;i<list.length;i++){
     var w=list[i]||{};

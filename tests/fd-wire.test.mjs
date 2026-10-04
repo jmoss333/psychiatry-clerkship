@@ -245,37 +245,28 @@ test('offline details move focus to Close and return it to the disclosure', () =
   h.controller.destroy();
 });
 
-test('dock forwards once to the current connected source and rejects a stale id', () => {
-  let clicks = 0;
-  const source = { isConnected: true, click() { clicks++; },
-    getAttribute(name) { return name === 'data-fd-dock-label' ? 'Continue' : 'primary-week'; } };
-  const root = { querySelector() { return source; }, querySelectorAll() { return [source]; } };
-  assert.deepEqual(F.fdDockSource(root), { id: 'primary-week', label: 'Continue' });
-  assert.equal(F.fdForwardDockAction(root, 'primary-week'), true);
-  assert.equal(clicks, 1);
-  assert.equal(F.fdForwardDockAction(root, 'stale-id'), false);
-  assert.equal(clicks, 1);
-  source.isConnected = false;
-  assert.equal(F.fdDockSource(root), null);
-  assert.equal(F.fdForwardDockAction(root, 'primary-week'), false);
-  assert.equal(clicks, 1);
+// One-thread redesign, Phase 1 (2026-10-04): the dock's slots are fixed, so the controller no longer
+// forwards a dock click into a marked page primary. The helpers are gone, and a stray
+// data-fd-dock-forward control -- say, from a cached older build -- must click the SOURCE zero
+// times and change nothing: a dead attribute, not a live alias.
+test('the dock-forward helpers are retired from the controller', () => {
+  assert.equal(F.fdDockSource, null);
+  assert.equal(F.fdForwardDockAction, null);
 });
 
-test('dock click forwards to the source; a removed source browses Library', () => {
+test('a leftover data-fd-dock-forward click forwards nothing and changes no state', () => {
   let clicks = 0;
   const source = actionTarget({ 'data-fd-dock-source': 'primary-week', 'data-fd-dock-label': 'Continue' },
     { click() { clicks++; } });
   const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today' }, {
     F, querySelectorAll: () => [source],
   });
+  const before = JSON.stringify(h.controller.getState());
   const dock = actionTarget({ 'data-fd-dock-forward': 'primary-week' });
   h.rootHandlers.click({ target: dock, preventDefault() {} });
-  assert.equal(clicks, 1);
+  assert.equal(clicks, 0, 'the page primary is never clicked on the dock\'s behalf');
+  assert.equal(JSON.stringify(h.controller.getState()), before, 'and nothing routes');
   assert.equal(h.controller.getState().tab, 'today');
-  source.isConnected = false;
-  h.rootHandlers.click({ target: dock, preventDefault() {} });
-  assert.equal(clicks, 1);
-  assert.equal(h.controller.getState().tab, 'library');
 });
 const FOUR_INDEX = { weeks: [1, 2, 3, 4].map((n) => ({ n, items: [] })) };
 const CARE_INDEX = {
@@ -4012,21 +4003,17 @@ test('the Everything tab is an alias for the full Library view, not a new tab st
   assert.equal(viaTab.patch.libraryView, 'full');
 });
 
-test('the dock Browse menu is an alias for data-fd-library-view, not a duplicate of its attribute', () => {
-  const initial = {...roleContext, tab:'today', libraryView:'essentials', openId:'a.md', sheet:'kit', searchOpen:true};
-  for (const view of ['essentials', 'full']) {
-    const viaDock = F.fdDispatch({'data-fd-dock-browse-go':view}, {}, initial);
-    const viaLibraryView = F.fdDispatch({'data-fd-library-view':view}, {}, initial);
-    assert.deepEqual(viaDock, viaLibraryView);
+test('the retired dock Browse alias is no longer an action: it dispatches to nothing', () => {
+  // 2026-10-04: the Browse <details> left the dock with the one-thread redesign. Its alias must not
+  // keep working from stale markup -- the Library tab and the sticky header's search own those routes.
+  const initial = {...roleContext, tab:'today', libraryView:'essentials', openId:'a.md', sheet:'kit', searchOpen:false};
+  for (const value of ['essentials', 'full', 'search']) {
+    const viaDock = F.fdDispatch({'data-fd-dock-browse-go':value}, {}, initial);
+    assert.deepEqual(viaDock, {patch:{},route:null,effect:null}, value);
   }
-});
-
-test('the dock Browse menu Search item is an alias for data-fd-search', () => {
-  const initial = {...roleContext, tab:'library', libraryView:'essentials', openId:'a.md', searchOpen:false};
-  const viaDock = F.fdDispatch({'data-fd-dock-browse-go':'search'}, {}, initial);
-  assert.deepEqual(viaDock, F.fdDispatch({'data-fd-search':''}, {}, initial));
-  assert.equal(viaDock.patch.searchOpen, true);
-  assert.equal(viaDock.route, null, 'opening search from the dock must not navigate');
+  // The destinations themselves are untouched.
+  assert.equal(F.fdDispatch({'data-fd-library-view':'full'}, {}, initial).patch.libraryView, 'full');
+  assert.equal(F.fdDispatch({'data-fd-search':''}, {}, initial).patch.searchOpen, true);
 });
 
 test('full Library resource route survives reload and Back while tool frame strips shell context', () => {

@@ -20,8 +20,10 @@ const ROUTES = [
 const PHONE = { width: 390, height: 844 };
 const NARROW = { width: 320, height: 844 };
 const DESKTOP = { width: 1280, height: 800 };
-const captureLauncher = (page) => page.locator('.fd-dock [data-capture-open]:visible, .fd-capture-launch--global[data-capture-open]:visible');
-const desktopLauncher = (page) => page.locator('.fd-capture-launch--global[data-capture-open]:visible');
+// One-thread redesign (2026-10-04): the standing capture opener is the header's "＋ Ask a question"
+// (.fd-askbtn, above 640px) and the dock's "＋ Ask" (≤640px). The floating launcher is gone.
+const captureLauncher = (page) => page.locator('.fd-dock [data-capture-open]:visible, .fd-askbtn[data-capture-open]:visible');
+const desktopLauncher = (page) => page.locator('.fd-askbtn[data-capture-open]:visible');
 const inbox = (page) => page.locator('.cap-sheet[role="dialog"]');
 const email = (page) => page.locator('.cap-email-sheet[role="dialog"]');
 
@@ -65,7 +67,7 @@ test.describe('capture affordance is route- and breakpoint-persistent', () => {
       const btn = captureLauncher(page);
       await expect(btn).toBeVisible();
       await expect(btn).toHaveCount(1);
-      await expect(page.locator('.fd-capture-launch--global:visible')).toHaveCount(0);
+      await expect(page.locator('.fd-askbtn:visible, .fd-capture-launch--global:visible')).toHaveCount(0);
       await expect(btn).toHaveAttribute('aria-expanded', 'false');
       await btn.click();
       await expect(page.locator('.cap-sheet')).toBeVisible();

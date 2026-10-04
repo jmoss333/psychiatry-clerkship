@@ -23,8 +23,10 @@ const make = (governanceBadge) => new Function('governanceBadge', `
            fdItemsForWeek: fdItemsForWeek, fdLibraryOnlyReads: fdLibraryOnlyReads,
            fdFindWeek: fdFindWeek, fdContinue: fdContinue, fdTodayPrimary: fdTodayPrimary,
            fdTodayLastRead: fdTodayLastRead, fdQuickToolLabel: fdQuickToolLabel,
-           FD_TODAY_PRIMARY_ORDER: FD_TODAY_PRIMARY_ORDER, FD_TODAY_LEAD_END: FD_TODAY_LEAD_END,
-           fdQuickTools: fdQuickTools,
+           FD_TODAY_PRIMARY_ORDER: FD_TODAY_PRIMARY_ORDER, FD_TODAY_DEVICE_KINDS: FD_TODAY_DEVICE_KINDS,
+           fdQuickTools: fdQuickTools, fdThread: fdThread, fdWeekCaseStep: fdWeekCaseStep,
+           fdUnitWeek: fdUnitWeek, fdAlsoRow: fdAlsoRow, fdPilotFeedback: fdPilotFeedback,
+           fdTodayPurpose: fdTodayPurpose, fdConsistency: fdConsistency, fdSetupCta: fdSetupCta,
            FD_QUICKTOOLS_PREFERRED: FD_QUICKTOOLS_PREFERRED };
 `)(governanceBadge || function(){return "";});
 const F = make();
@@ -182,13 +184,21 @@ test('the active-testing invitation is audience-neutral', () => {
   assert.doesNotMatch(banner[0], AUDIENCE_TOKEN_RE);
 });
 
-test('the 390px pilot keeps its concise action above the fold across font metrics', () => {
-  const phone = frontdoorCss.match(/@media \(max-width:390px\)\{([\s\S]*?)\n\}/);
-  assert.ok(phone, 'the exact 390px phone contract must exist');
-  assert.match(phone[1], /\.fd-pilot__copy p\s*\{\s*display:none\s*\}/,
-    'the optional explanatory sentence must not push the primary card below the phone fold');
-  assert.match(phone[1], /\.fd-pilot\s*\{\s*margin-bottom:var\(--fd-space-6\)\s*\}/,
-    'the compact pilot-to-primary gap must leave room for cross-platform font metrics');
+// Owner decision D1 (2026-10-04): the active-testing banner is ONE row at the very top -- title ·
+// "Details" disclosure · Share feedback -- with the explanatory sentence verbatim behind Details on
+// every width. Nothing is removed, only folded, so the 390px display:none rule the old banner needed
+// to stay above the fold is gone with it.
+test('the active-testing line is one row at the top, with its sentence folded behind Details', () => {
+  const html = F.fdToday(IDX, s({}));
+  const pilot = html.match(/<section class="fd-pilot" aria-labelledby="fd-pilot-title">([\s\S]*?)<\/section>/);
+  assert.ok(pilot, 'the invitation renders as one labelled section');
+  assert.ok(html.indexOf('<section class="fd-pilot"') < html.indexOf('<div class="fd-today__place">'), 'above the eyebrow, at the very top');
+  assert.match(pilot[1], /^<h2 class="fd-pilot__title" id="fd-pilot-title">This learning site is in active testing<\/h2><details class="fd-pilot__details"><summary class="fd-pilot__more">Details<\/summary>/);
+  assert.match(pilot[1], /<div class="fd-pilot__copy"><p>Use it alongside your official rotation materials and supervision\. Tell us what helped, what was unclear, or what did not work\.<\/p><\/div><\/details>/);
+  assert.match(pilot[1], /<button type="button" class="fd-pilot__button pgfb-b" data-fb-context="Today landing page">Share feedback<\/button>$/);
+  assert.doesNotMatch(pilot[1], /fd-pilot__eyebrow|<details[^>]*open/, 'no badge, and the sentence starts folded');
+  assert.equal(F.fdPilotFeedback(), '<section class="fd-pilot"' + html.slice(html.indexOf('<section class="fd-pilot"') + '<section class="fd-pilot"'.length, html.indexOf('</section>') + '</section>'.length));
+  assert.doesNotMatch(frontdoorCss, /\.fd-pilot__copy p\s*\{\s*display:none/, 'the sentence is folded, never hidden by a breakpoint');
 });
 
 // ---- accessibility (Fresh Eyes Audit A2/A6) --------------------------------------------------
@@ -297,12 +307,16 @@ test('aria-pressed tracks the done map in both directions', () => {
   assert.doesNotMatch(all, /aria-pressed="false"/);
 });
 
-test('the daily pick is omitted once every library-only read is done', () => {
-  const withPick = F.fdToday(IDX, s({ done: {} }));
-  assert.match(withPick, /fd-pick/);
-  assert.match(withPick, /Page B/);
-  const noPick = F.fdToday(IDX, s({ done: { 'b.md': true } }));
-  assert.doesNotMatch(noPick, /fd-pick/);
+// One-thread redesign (README §1.9): the daily pick left Today. The Library still reaches every
+// library-only read (fdLibraryOnlyReads is untouched); Today no longer suggests one.
+test('the daily pick is gone from Today, done or not', () => {
+  for (const done of [{}, { 'b.md': true }]) {
+    const html = F.fdToday(IDX, s({ done }));
+    assert.doesNotMatch(html, /fd-pick|Daily pick/);
+    assert.doesNotMatch(html, /Page B/, 'the library-only read is not surfaced on Today');
+  }
+  assert.doesNotMatch(todaySrc, /fdDailyPick|fdPick\(/);
+  assert.equal(F.fdLibraryOnlyReads(IDX).map((it) => it.ref).join(), 'b.md', 'the Library candidate list is unchanged');
 });
 
 // frontdoor.css already ships the display:none/flex breakpoint swap at 1000px
@@ -375,44 +389,45 @@ test('the streak clause is gone from the subhead for good', () => {
   assert.doesNotMatch(todaySrc, /days in a row/);
 });
 
+// Owner decision D2 (2026-10-04): the strip moved OFF Today and into Learning activity & review
+// (spa_index.html fdProgressMarkup calls fdConsistency). The renderer is unchanged and still
+// pinned here; Today must not render it even when handed the days.
 test('the strip is absent until the learner has been active on at least one day', () => {
-  assert.doesNotMatch(F.fdToday(IDX, s({})), /fd-consistency/, 'no activityDays at all');
-  assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: NONE })), /fd-consistency/,
+  assert.equal(F.fdConsistency(undefined, BASE_STATE.nowMs), '', 'no activityDays at all');
+  assert.equal(F.fdConsistency(NONE, BASE_STATE.nowMs), '',
     'a fresh device must not read "Active 0 of the last 7 days"');
-  assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: [true, true] })), /fd-consistency/,
+  assert.equal(F.fdConsistency([true, true], BASE_STATE.nowMs), '',
     'anything but seven entries is malformed and renders nothing');
 });
 
+test('Today never renders the strip, even when handed active days (D2: it lives in the learning record)', () => {
+  assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN })), /fd-consistency/);
+  assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN, week: null })), /fd-consistency/);
+});
+
 test('the strip counts active days and names itself for assistive tech', () => {
-  const html = F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN }));
-  assert.match(html, /<div class="fd-consistency" role="img" aria-label="Active 4 of the last 7 days">/);
+  const html = F.fdConsistency(FOUR_OF_SEVEN, BASE_STATE.nowMs);
+  assert.match(html, /^<div class="fd-consistency" role="img" aria-label="Active 4 of the last 7 days">/);
   assert.equal((html.match(/fd-consistency__dot is-on/g) || []).length, 4);
   assert.equal((html.match(/class="fd-consistency__dot(?: is-on)?"/g) || []).length, 7);
   assert.match(html, /<span class="fd-consistency__dots" aria-hidden="true">/);
   assert.match(html, /<span class="fd-consistency__text" aria-hidden="true">Active 4 of the last 7 days<\/span>/);
 });
 
-test('the strip sits directly under the subhead, before the columns', () => {
-  const html = F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN }));
-  const sub = html.indexOf('<p class="fd-today__sub">');
-  const strip = html.indexOf('<div class="fd-consistency"');
-  const cols = html.indexOf('<div class="fd-today__cols">');
-  assert.ok(sub > -1 && sub < strip && strip < cols);
-});
-
 test('day letters walk back from nowMs and end on today, oldest first', () => {
   // BASE_STATE.nowMs is Monday 2026-08-10, so the seven labels run Tue..Mon.
-  const html = F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN }));
+  const html = F.fdConsistency(FOUR_OF_SEVEN, BASE_STATE.nowMs);
   const letters = [...html.matchAll(/fd-consistency__label">([A-Z])</g)].map((m) => m[1]);
   assert.deepEqual(letters, ['T', 'W', 'T', 'F', 'S', 'S', 'M']);
 });
 
 test('an unusable nowMs drops the strip rather than throwing the whole Today render', () => {
+  assert.equal(F.fdConsistency(FOUR_OF_SEVEN, undefined), '');
   assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN, nowMs: undefined })), /fd-consistency/);
 });
 
 test('the strip copy is audience-neutral', () => {
-  assert.doesNotMatch(F.fdToday(IDX, s({ activityDays: FOUR_OF_SEVEN })), AUDIENCE_TOKEN_RE);
+  assert.doesNotMatch(F.fdConsistency(FOUR_OF_SEVEN, BASE_STATE.nowMs), AUDIENCE_TOKEN_RE);
 });
 
 // ---- the subhead, joined -- the front door's most-read line --------------------------
@@ -423,8 +438,10 @@ test('the strip copy is audience-neutral', () => {
 // pins the fragment; these pin the JOINED string, which is what a learner actually reads and
 // which no test covered before.
 
+// The eyebrow's TEXT node: everything before the "Change week" control that follows it when a week
+// is set (one-thread redesign; CSS owns the gap, so no text space precedes the button).
 function subOf(html) {
-  const m = html.match(/<p class="fd-today__sub">([^<]*)<\/p>/);
+  const m = html.match(/<p class="fd-today__sub">([^<]*)(?:<button type="button" class="fd-today__changeweek" data-fd-change-week>Change week<\/button>)?<\/p>/);
   assert.ok(m, 'no .fd-today__sub found');
   return m[1];
 }
@@ -629,8 +646,98 @@ test('Today renders no explanation line under the primary', () => {
   assert.equal(typeof F.fdQuickToolLabel, 'function');
 });
 
-test('the lead-end marker is an HTML comment the shell can splice at', () => {
-  assert.equal(F.FD_TODAY_LEAD_END, '<!--fd-lead-end-->');
+// ---- Composition: the shell hands runtime faces in on state; fdToday places them ------------------
+// Until 2026-10-04 the shell string-spliced the device-store rows at an HTML-comment marker. The
+// marker is gone: state.nowHtml / state.alsoRows / state.purposeHtml / state.offlineHtml /
+// state.caseWeek are the contract (fd_today.js header, "Composition"), and these tests pin where
+// each lands. A fixture passing none of them must render exactly a learner with empty stores.
+
+test('the lead-end marker is gone: nothing in the renderer is a splice point', () => {
+  assert.doesNotMatch(todaySrc, /fd-lead-end|FD_TODAY_LEAD_END/);
+  assert.equal(F.FD_TODAY_DEVICE_KINDS.join(), 'resume,block,read,due');
+});
+
+test('a winning device-store face renders as THE Now card, first in the column, inside one .fd-now', () => {
+  for (const kind of F.FD_TODAY_DEVICE_KINDS) {
+    const html = F.fdToday(IDX, s({ primaryKind: kind, nowHtml: '<a class="fd-due is-primary" href="#x">face</a>' }));
+    assert.equal((html.match(/ fd-now fd-now--/g) || []).length, 1, kind);
+    const main = html.indexOf('<div class="fd-today__main">');
+    const now = html.indexOf('<div class="fd-primary fd-now fd-now--' + kind + '">');
+    assert.ok(main > -1 && now === main + '<div class="fd-today__main">'.length, `${kind}: the Now card opens the column`);
+    assert.match(html, /class="fd-continue is-secondary"/, 'the week\'s own Continue is demoted');
+    assert.ok(html.indexOf('fd-continue is-secondary') > html.indexOf('fd-also'), 'and sits under "Also today"');
+  }
+  // Without a face to show, a device-store kind leaves no empty shell behind.
+  assert.doesNotMatch(F.fdToday(IDX, s({ primaryKind: 'due' })), /fd-now/);
+});
+
+test('the lead card is THE Now card for week, ahead and setup, with the kind on the shell', () => {
+  const week = F.fdToday(IDX, s({}));
+  assert.match(week, /<div class="fd-today__main"><div class="fd-now fd-now--week"><button type="button" class="fd-continue"/);
+  const ahead = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
+  assert.match(ahead, /<div class="fd-now fd-now--ahead"><button type="button" class="fd-continue"[^>]*data-fd-dock-source="primary-ahead"/);
+  assert.ok(ahead.indexOf('fd-freshset') < ahead.indexOf('</div><h2 class="fd-sectionhead fd-also">'), 'the fresh-set button stays inside the Now card');
+  const setup = F.fdToday(IDX, s({ week: null }));
+  assert.match(setup, /<div class="fd-now fd-now--setup"><button type="button" class="fd-setupcta"/);
+  for (const html of [week, ahead, setup]) {
+    assert.equal((html.match(/fd-now fd-now--/g) || []).length, 1, 'exactly one Now card');
+    assert.doesNotMatch(html, /fd-primary/);
+  }
+});
+
+// The thread needs a VALID projected path (fdActivePathValid, as fd_path.js requires): IDX alone has
+// no path id and its weeks carry no focusCategories, exactly like a partial cache response, which
+// must render no thread rather than invent one. PATH_IDX is the same fixture made valid.
+const PATH_IDX = Object.assign({}, IDX, { path: { id: 'six-week-fixture', weekCount: 6 },
+  weeks: IDX.weeks.map((w) => Object.assign({}, w, { focusCategories: [] })) });
+
+test('Also-today rows render in the shell\'s order with their status marks, the week row before saved questions', () => {
+  const rows = [
+    { kind: 'due', mark: 'due', count: 2, html: '<a class="fd-due" href="#d">due</a>' },
+    { kind: 'resume', mark: 'progress', share: 33.4, html: '<section class="fd-resume">r</section>' },
+    { kind: 'capture', mark: 'plus', count: 3, html: '<section class="fd-capture">c</section>' },
+  ];
+  const html = F.fdToday(IDX, s({ primaryKind: 'block', nowHtml: '<section class="fd-block">b</section>', alsoRows: rows }));
+  const list = html.match(/<div class="fd-alsolist">([\s\S]*?)<\/div><details|<div class="fd-alsolist">([\s\S]*?)<\/div><div class="fd-listhead">/);
+  assert.ok(list, 'the Also list renders between the heading and the week');
+  const body = list[1] || list[2];
+  const marks = [...body.matchAll(/<div class="fd-also__row" data-fd-mark="([a-z]+)"([^>]*)>/g)].map((m) => m[1] + m[2]);
+  assert.deepEqual(marks, [
+    'due data-fd-count="2"',
+    'progress style="--mark-share:33%"',
+    'progress style="--mark-share:0%"',
+    'plus data-fd-count="3"',
+  ], 'due · resume · the week (Continue, demoted) · saved questions');
+  assert.ok(body.indexOf('fd-continue is-secondary') < body.indexOf('fd-capture'), 'the week row precedes the capture row');
+  assert.match(html, /<h2 class="fd-sectionhead fd-also">Also today<\/h2><div class="fd-alsolist">/);
+});
+
+test('a row with no html is skipped, and the share is clamped to 0-100 and rounded', () => {
+  assert.equal(F.fdAlsoRow({ mark: 'progress', share: 150, html: 'x' }), '<div class="fd-also__row" data-fd-mark="progress" style="--mark-share:100%">x</div>');
+  assert.equal(F.fdAlsoRow({ mark: 'progress', share: -4, html: 'x' }), '<div class="fd-also__row" data-fd-mark="progress" style="--mark-share:0%">x</div>');
+  assert.equal(F.fdAlsoRow({ html: 'x' }), '<div class="fd-also__row" data-fd-mark="ring">x</div>');
+  assert.equal(F.fdAlsoRow({ mark: 'due', count: 7, html: '' }), '<div class="fd-also__row" data-fd-mark="due" data-fd-count="7"></div>');
+  const html = F.fdToday(IDX, s({ alsoRows: [{ mark: 'due', count: 1, html: '' }, null] }));
+  assert.doesNotMatch(html, /fd-alsolist/, 'rows without markup produce no list');
+  assert.match(html, /fd-also">Also today</, 'the heading still renders: the chooser sits under it');
+});
+
+test('the chooser, the offline receipt and the case step land where the spec puts them', () => {
+  const html = F.fdToday(PATH_IDX, s({
+    offlineHtml: '<aside class="fd-offline" data-test-offline></aside>',
+    purposeHtml: '<details class="fd-purpose" data-test-purpose></details>',
+    alsoRows: [{ mark: 'due', count: 1, html: '<a class="fd-due" href="#d">due</a>' }],
+    caseWeek: { n: 1, title: 'Admission', learnerTask: 'Open the interview.', handoff: 'Present the timeline.', ref: 'one-patient-six-weeks.html' },
+  }));
+  const at = (needle) => { const i = html.indexOf(needle); assert.ok(i > -1, needle); return i; };
+  const order = [
+    at('class="fd-pilot"'), at('class="fd-today__place"'), at('class="fd-thread"'),
+    at('class="fd-now fd-now--week"'), at('data-test-offline'), at('fd-also">Also today'),
+    at('class="fd-alsolist"'), at('data-test-purpose'), at('class="fd-listhead"'),
+    at('class="fd-unit"'), at('class="fd-quicktools--pills"'), at('class="fd-today__record"'), at('class="fd-rail"'),
+  ];
+  assert.deepEqual([...order].sort((a, b) => a - b), order, 'pilot · place · thread · Now · offline · Also · rows · chooser · week · unit · pills · record · rail');
+  assert.equal((html.match(/data-test-offline/g) || []).length, 1);
 });
 
 // ---- fdContinue: one lead card, demotable ------------------------------------------------
@@ -653,19 +760,33 @@ test('Continue marks only a reading open for one-shot restored-heading focus', (
   assert.doesNotMatch(tool, /data-fd-reading-resume/);
 });
 
-test('fdContinue: primary=false adds is-secondary and changes nothing else', () => {
+test('fdContinue: primary=false adds is-secondary, drops the Now-card button and arrows the title', () => {
   const secondary = F.fdContinue(IDX, s({}), WK1, PROG({}), false);
   assert.match(secondary, /^<button type="button" class="fd-continue is-secondary" data-fd-open="a\.md" data-fd-reading-resume="1">/);
-  assert.equal(secondary.replace(' is-secondary', '').replace(/(<button[^>]+)(>)/,
-    '$1 data-fd-dock-source="primary-week" data-fd-dock-label="Continue"$2'), F.fdContinue(IDX, s({}), WK1, PROG({})));
+  assert.doesNotMatch(secondary, /fd-continue__cta|data-fd-dock-source/, 'a demoted card has no filled button and no dock source');
+  assert.match(secondary, /<span class="fd-continue__title">Page A →<\/span>/, 'the arrow rides on the title instead');
+  // Everything else -- route, kicker, count, segments -- is byte-identical.
+  const primary = F.fdContinue(IDX, s({}), WK1, PROG({}));
+  const strip = (h) => h.replace(' is-secondary', '').replace(' data-fd-dock-source="primary-week" data-fd-dock-label="Continue"', '')
+    .replace(/<span class="fd-continue__cta" aria-hidden="true">Continue →<\/span>/, '').replace('Page A →', 'Page A');
+  assert.equal(strip(secondary), strip(primary));
+});
+
+test('the primary Continue carries one filled button as a span: the card is already the control', () => {
+  const html = F.fdContinue(IDX, s({}), WK1, PROG({}));
+  assert.match(html, /<\/span><span class="fd-continue__cta" aria-hidden="true">Continue →<\/span><span class="fd-continue__meta">/);
+  assert.equal((html.match(/<button/g) || []).length, 1, 'never a button inside the button');
+  assert.match(F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true, 't.html': true })), /fd-continue__cta" aria-hidden="true">Preview week →</);
+  const last = F.fdContinue(IDX, s({ week: 6 }), F.fdFindWeek(IDX, 6), F.fdTodayProgress([], {}));
+  assert.match(last, /fd-continue__cta" aria-hidden="true">Review week →</);
 });
 
 test('fdContinue names the kind of the next item with the same chip rule as the week rows', () => {
   // 2026-10-01: a reading is the default kind and carries no chip; only the exceptions do.
   assert.match(F.fdContinue(IDX, s({}), WK1, PROG({})),
-    /<span class="fd-continue__title">Page A →<\/span>/);
+    /<span class="fd-continue__title">Page A<\/span>/);
   assert.match(F.fdContinue(IDX, s({}), WK1, PROG({ 'a.md': true })),
-    /<span class="fd-continue__title">Tool T<span class="fd-chip is-tool">tool<\/span> →<\/span>/);
+    /<span class="fd-continue__title">Tool T<span class="fd-chip is-tool">tool<\/span><\/span>/);
   // A rights reference reads "reference", never "tool" (fd_data.js: rights is a presentation flag).
   const rights = JSON.parse(JSON.stringify(IDX));
   rights.weeks[0].items[1].rights = true;
@@ -696,19 +817,14 @@ test('fdToday demotes its own Continue card only when a device-store row won', (
   }
 });
 
-test('fdToday emits the lead-end marker exactly once, directly after the lead card', () => {
-  const html = F.fdToday(IDX, s({}));
-  assert.equal(html.split(F.FD_TODAY_LEAD_END).length - 1, 1);
-  const lead = html.indexOf('class="fd-continue"');
-  const mark = html.indexOf(F.FD_TODAY_LEAD_END);
-  const list = html.indexOf('<div class="fd-listhead">');
-  assert.ok(lead > -1 && lead < mark && mark < list, `lead ${lead} mark ${mark} list ${list}`);
-  const setup = F.fdToday(IDX, s({ week: null }));
-  assert.equal(setup.split(F.FD_TODAY_LEAD_END).length - 1, 1);
-  assert.ok(setup.indexOf('fd-setupcta') < setup.indexOf(F.FD_TODAY_LEAD_END));
-  const complete = F.fdToday(IDX, s({ done: { 'a.md': true, 't.html': true } }));
-  assert.ok(complete.indexOf('fd-freshset') < complete.indexOf(F.FD_TODAY_LEAD_END),
-    'the fresh-set button belongs to the lead, above the marker');
+test('the Now card precedes "Also today", which precedes the week list, for every lead kind', () => {
+  for (const state of [s({}), s({ week: null }), s({ done: { 'a.md': true, 't.html': true } })]) {
+    const html = F.fdToday(IDX, state);
+    const now = html.indexOf('class="fd-now ');
+    const also = html.indexOf('fd-also">Also today');
+    assert.ok(now > -1 && also > now, `Now ${now} before Also ${also}`);
+    if (state.week !== null) assert.ok(html.indexOf('<div class="fd-listhead">') > also, 'the week list follows Also today');
+  }
 });
 
 test('the same primary kind renders the same lead treatment for both path ids', () => {
@@ -726,24 +842,24 @@ test('every new string is audience-neutral', () => {
   assert.doesNotMatch(all, AUDIENCE_TOKEN_RE);
 });
 
-test('phone quick tools remain CSS-first while patient-care duplicates stay retired', () => {
+test('phone quick tools remain CSS-first, follow the week, and patient-care duplicates stay retired', () => {
   const css = read('frontdoor/frontdoor.css');
-  const phone = [...css.matchAll(/@media\s*\(max-width:640px\)\s*\{([\s\S]*?)\n\}/g)].find(m=>m[1].includes('.fd-today__main{'));
-  assert.ok(phone,'phone-only breakpoint exists');
-  assert.match(phone[1], /\.fd-today__main\{display:flex;flex-direction:column\}/);
-  assert.match(phone[1], /\.fd-today__main > \.fd-quicktools--pills\{order:-1;margin-bottom:var\(--fd-space-\d+\)\}/);
-  // 2026-09-26 fold probe: first but ONE row. Wrapped, the pills took 164-207px above the primary.
-  assert.match(phone[1], /\.fd-quicktools--pills\{flex-wrap:nowrap;overflow-x:auto;/);
-  assert.match(phone[1], /\.fd-quicktools--pills \.fd-quicktool\{flex:0 0 auto;/);
+  const phoneBlocks = [...css.matchAll(/@media\s*\(max-width:640px\)\s*\{([\s\S]*?)\n\}/g)].map(m => m[1]).join('\n');
+  // One-thread redesign (README §1.9): the order:-1 hoist that put the pills above the Now card is
+  // gone. The Now card is first after the heading at every width; the pills follow the week.
+  assert.doesNotMatch(phoneBlocks, /\.fd-quicktools--pills\{order:-1|order:-1;margin-bottom/);
+  assert.doesNotMatch(phoneBlocks, /\.fd-today__main\{display:flex;flex-direction:column\}/);
+  // 2026-09-26 fold probe: ONE sideways row, not a wrapped block.
+  assert.match(phoneBlocks, /\.fd-quicktools--pills\{flex-wrap:nowrap;overflow-x:auto;/);
+  assert.match(phoneBlocks, /\.fd-quicktools--pills \.fd-quicktool\{flex:0 0 auto;/);
   // Today no longer emits an in-flow Care row (see the Shift-ready test); APP's must stay visible.
   assert.doesNotMatch(css, /\.fd-app[^{]*\.fd-care-entry\{display:none\}/);
-  // The pilot banner is one row on phones: title beside a 44px button, eyebrow badge off.
-  const phoneBlocks = [...css.matchAll(/@media\s*\(max-width:640px\)\s*\{([\s\S]*?)\n\}/g)].map(m => m[1]).join('\n');
-  assert.match(phoneBlocks, /\.fd-pilot\{grid-template-columns:minmax\(0,1fr\) auto;/);
-  assert.match(phoneBlocks, /\.fd-pilot__eyebrow\{display:none\}/);
-  assert.match(phoneBlocks, /\.fd-pilot__button\{width:auto;min-height:44px\}/);
   assert.match(css, /@media \(min-width:1000px\)\{[\s\S]*?\.fd-quicktools--pills\{display:none\}/);
   assert.doesNotMatch(css, /fd-carelinks--mobile|fd-carelinks--rail|fd-kit__care/);
+  // The pills sit after the week list and the record link after the pills, in document order.
+  const html = F.fdToday(IDX, s({}));
+  assert.ok(html.indexOf('class="fd-listhead"') < html.indexOf('class="fd-quicktools--pills"'));
+  assert.ok(html.indexOf('class="fd-quicktools--pills"') < html.indexOf('class="fd-today__record"'));
 });
 
 test('the quick-tool fallback leads with the on-shift list, skips what a site lacks, then goes by ref', () => {
@@ -811,16 +927,130 @@ test('a week row keeps its full title in the markup, with the em-dash subtitle i
   assert.match(html, /<span class="fd-row__title">Page A<\/span>/, 'a title with no subtitle is unchanged');
 });
 
-test('preparation is a single optional Today action at every week, with honest fixture status',()=>{
+// One-thread redesign (README §1.5): the Prepare-for-tomorrow invitation belongs INSIDE the
+// preparation chooser, not as a card of its own. It renders through fdTodayPurpose -- the shell's
+// chooser -- so it is one optional action at every week, with the tool's honest review status.
+test('preparation is a single optional action inside the chooser at every week, with honest fixture status',()=>{
  const prep={ref:'prepare-for-tomorrow.html',kind:'tool',title:'Prepare for tomorrow',governance:{status:'pending',riskKind:'clinical',riskLevel:'moderate'}};
- for(const week of [null,1,6]) for(const status of ['pending','reviewed']) {
+ for(const week of [null,1,6]) for(const status of ['pending','reviewed']) for(const open of [true,false]) {
    const item={...prep,governance:{...prep.governance,status}}, idx={...IDX,byRef:{...IDX.byRef,[prep.ref]:item}};
    const G=make(g=>'<span class="fixture-badge">'+g.status+'</span>');
-   const html=G.fdToday(idx,s({week}));
+   const chooser=G.fdTodayPurpose(idx,'',open);
+   assert.equal((chooser.match(/class="fd-prepare"/g)||[]).length,1);
+   assert.match(chooser,/data-fd-open="prepare-for-tomorrow.html"/);assert.match(chooser,/Choose a task and prepare in 5 or 15 minutes/);assert.ok(chooser.includes(status));
+   assert.match(chooser,/<div class="fd-prepare">[\s\S]*<\/div><\/details>$/,'inside the disclosure, after the choices');
+   // The chooser is where it renders on Today; Today itself emits no second copy.
+   const html=G.fdToday(idx,s({week,purposeHtml:chooser}));
    assert.equal((html.match(/class="fd-prepare"/g)||[]).length,1);
-   assert.match(html,/data-fd-open="prepare-for-tomorrow.html"/);assert.match(html,/Choose a task and prepare in 5 or 15 minutes/);assert.ok(html.includes(status));
-   assert.ok(html.indexOf('class="fd-prepare"')>html.indexOf(F.FD_TODAY_LEAD_END));
+   assert.ok(html.indexOf('class="fd-prepare"')>html.indexOf('fd-also">Also today'));
+   assert.doesNotMatch(G.fdToday(idx,s({week})),/class="fd-prepare"/,'nothing but the chooser carries it');
    assert.deepEqual(G.FD_TODAY_PRIMARY_ORDER,F.FD_TODAY_PRIMARY_ORDER);
  }
- assert.doesNotMatch(F.fdToday(IDX,s({week:null})),/class="fd-prepare"/);
+ assert.doesNotMatch(F.fdTodayPurpose(IDX,'',true),/class="fd-prepare"/,'a site without the tool has no invitation');
+});
+
+// ---- the six-week thread (one-thread redesign, README §1.2) ---------------------------------------
+
+test('the thread has one node per projected week, marks done by real completion, and previews on Path', () => {
+  const html = F.fdThread(PATH_IDX, s({ week: 2 }));
+  assert.match(html, /^<nav class="fd-thread" aria-label="Six-week path"><ol class="fd-thread__list">/);
+  assert.equal((html.match(/<li class="fd-thread__step/g) || []).length, IDX.weeks.length);
+  assert.equal((html.match(/aria-current="step"/g) || []).length, 1);
+  assert.match(html, /<li class="fd-thread__step is-current"><button type="button" class="fd-thread__node" data-fd-tab="path" data-fd-view-week="2" aria-current="step" aria-label="Week 2: W2 \(current week\)">/);
+  // Week 1 is in the past but NOT done: it must not be marked done merely for being past.
+  assert.match(html, /<li class="fd-thread__step"><button type="button" class="fd-thread__node" data-fd-tab="path" data-fd-view-week="1" aria-label="Week 1: Foundations">/);
+  assert.doesNotMatch(html, /is-done/);
+  assert.doesNotMatch(html, /data-fd-setweek|data-fd-week=|data-fd-open/, 'a node previews a week; it never sets one or opens an item');
+  const done = F.fdThread(PATH_IDX, s({ week: 2, done: { 'a.md': true, 't.html': true } }));
+  assert.match(done, /<li class="fd-thread__step is-done"><button[^>]*data-fd-view-week="1" aria-label="Week 1: Foundations \(done\)"><span class="fd-thread__mark" aria-hidden="true">✓<\/span>/);
+  assert.match(html, /<span class="fd-thread__mark" aria-hidden="true">1<\/span><span class="fd-thread__label" aria-hidden="true">Foundations<\/span>/);
+});
+
+test('the thread renders without a current week while browsing, and not at all without a valid path', () => {
+  const browsing = F.fdThread(PATH_IDX, s({ week: null }));
+  assert.equal((browsing.match(/<li /g) || []).length, 6);
+  assert.doesNotMatch(browsing, /is-current|aria-current/);
+  assert.equal(F.fdThread({ weeks: [] }, s({})), '');
+  assert.equal(F.fdThread(IDX, s({})), '', 'no path id: a partial projection renders no thread');
+  assert.equal(F.fdThread({ path: { id: 'x', weekCount: 1 }, weeks: [{ n: 2, title: 'bad', focusCategories: [] }] }, s({})), '', 'a malformed projection renders nothing');
+  const today = F.fdToday(PATH_IDX, s({}));
+  assert.ok(today.indexOf('class="fd-thread"') > today.indexOf('</h1>') && today.indexOf('class="fd-thread"') < today.indexOf('fd-today__cols'), 'between the place block and the columns');
+  assert.doesNotMatch(F.fdToday(IDX, s({})), /fd-thread/);
+});
+
+// ---- "On the unit this week" (README §1.7): derived, read-only, only where the tool ships ---------
+
+const CASE = { weeks: [
+  { title: 'Admission: start with the person', learnerTask: 'Practice opening the interview.', handoff: 'Present the timeline first.' },
+  { title: 'Week two', learnerTask: 'Task two.' },
+] };
+
+test('fdWeekCaseStep returns the week\'s step only when the case tool ships and the week exists', () => {
+  const withTool = { byRef: { 'one-patient-six-weeks.html': { kind: 'tool' } } };
+  assert.deepEqual(F.fdWeekCaseStep(withTool, CASE, 1), { n: 1, title: 'Admission: start with the person',
+    learnerTask: 'Practice opening the interview.', handoff: 'Present the timeline first.', ref: 'one-patient-six-weeks.html' });
+  assert.equal(F.fdWeekCaseStep(withTool, CASE, 2).handoff, '', 'a missing handoff is an empty string, not undefined');
+  assert.equal(F.fdWeekCaseStep(withTool, CASE, 3), null, 'no matching week');
+  assert.equal(F.fdWeekCaseStep(withTool, CASE, 0), null);
+  assert.equal(F.fdWeekCaseStep(withTool, null, 1), null, 'no data yet');
+  assert.equal(F.fdWeekCaseStep(withTool, { weeks: 'nope' }, 1), null);
+  assert.equal(F.fdWeekCaseStep(IDX, CASE, 1), null, 'the fixture site does not ship the tool');
+  assert.equal(F.fdWeekCaseStep({ byRef: { 'one-patient-six-weeks.html': { kind: 'read' } } }, CASE, 1), null);
+});
+
+test('the unit section renders the case strings verbatim with a real ?week= link, escaped', () => {
+  const step = { n: 3, title: 'T <b>', learnerTask: 'L & M', handoff: 'H "q"', ref: 'one-patient-six-weeks.html' };
+  const html = F.fdUnitWeek(step);
+  assert.match(html, /^<section class="fd-unit" aria-labelledby="fd-unit-title"><span class="fd-unit__line" aria-hidden="true"><\/span><div class="fd-unit__body">/);
+  assert.match(html, /<span class="fd-unit__kicker">On the unit this week · Case Journeys, week 3<\/span>/);
+  assert.match(html, /<h2 class="fd-unit__title" id="fd-unit-title">T &lt;b&gt;<\/h2><p class="fd-unit__task">L &amp; M<\/p>/);
+  assert.match(html, /<p class="fd-unit__handoff"><strong>Carry it to rounds:<\/strong> H &quot;q&quot;<\/p>/);
+  assert.match(html, /<a class="fd-btn fd-btn--ghost fd-unit__open" href="\?tool=one-patient-six-weeks\.html&amp;week=3">Open case week 3<\/a><\/div><\/section>$/);
+  assert.doesNotMatch(html, /data-fd-open/, 'a ref-only action would drop ?week=');
+  assert.doesNotMatch(F.fdUnitWeek({ ...step, handoff: '' }), /fd-unit__handoff/);
+  assert.equal(F.fdUnitWeek(null), '');
+  // Today renders it after the week list, and never while browsing without a week.
+  const today = F.fdToday(IDX, s({ caseWeek: step }));
+  assert.ok(today.indexOf('class="fd-unit"') > today.indexOf('<div class="fd-list">'));
+  assert.doesNotMatch(F.fdToday(IDX, s({ week: null, caseWeek: step })), /fd-unit/);
+  assert.doesNotMatch(F.fdToday(IDX, s({})), /fd-unit/);
+});
+
+// ---- the place block and the week heading -----------------------------------------------------
+
+test('the place block carries the eyebrow with Change week, the title, and the theme line in order', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.match(html, /<div class="fd-today__place"><p class="fd-today__sub">Week 1 of 6 · Monday<button type="button" class="fd-today__changeweek" data-fd-change-week>Change week<\/button><\/p><h1 class="fd-today__h1">Foundations<\/h1><p class="fd-today__theme">Orientation<\/p><\/div>/);
+  const setup = F.fdToday(IDX, s({ week: null }));
+  assert.match(setup, /<p class="fd-today__sub">Monday · browsing — no week set<\/p><h1 class="fd-today__h1">Today<\/h1><\/div>/);
+  assert.doesNotMatch(setup, /data-fd-change-week>Change week/, 'without a week the setup Now card IS the week action');
+  assert.equal((F.fdToday(IDX, s({})).match(/data-fd-change-week/g) || []).length, 1, 'one week control on a set-up Today');
+});
+
+test('the week heading carries "N of M done" at its right and the theme no longer rides there', () => {
+  const html = F.fdToday(IDX, s({ done: { 'a.md': true } }));
+  assert.match(html, /<div class="fd-listhead"><h2 class="fd-sectionhead">This week<\/h2><span class="fd-listhead__count">1 of 2 done<\/span><\/div>/);
+  assert.doesNotMatch(html, /fd-listhead__theme/);
+  assert.match(F.fdToday(Object.assign({}, IDX, { path: { id: 'ms3-six-week' } }), s({})), /<h2 class="fd-sectionhead">Suggested this week<\/h2><span class="fd-listhead__count">0 of 2 done<\/span>/);
+});
+
+test('week rows carry no entrance stagger any more', () => {
+  assert.doesNotMatch(F.fdToday(IDX, s({})), /animation-delay/);
+  assert.doesNotMatch(todaySrc, /animation-delay/);
+});
+
+test('the setup face carries the kicker, the title and one button, in the one Now-card shape', () => {
+  const html = F.fdSetupCta();
+  assert.match(html, /^<button type="button" class="fd-setupcta" data-fd-change-week data-fd-dock-source="primary-setup" data-fd-dock-label="Set rotation week">/);
+  assert.match(html, /<span class="fd-setupcta__kicker">30-second setup<\/span><span class="fd-setupcta__title">Set your rotation week → get a real Today<\/span><\/span><span class="fd-setupcta__cta" aria-hidden="true">Set rotation week<\/span><\/button>$/);
+  assert.equal((html.match(/<button/g) || []).length, 1);
+  assert.doesNotMatch(F.fdSetupCta(false), /data-fd-dock-source/);
+});
+
+test('the rail ends with the learning-record link, and the phone column carries its own copy', () => {
+  const html = F.fdToday(IDX, s({}));
+  assert.equal((html.match(/class="fd-progresscard" data-fd-progress/g) || []).length, 2, 'one for the rail, one for the phone');
+  const rail = html.slice(html.indexOf('<aside class="fd-rail">'));
+  assert.match(rail, /Quick tools[\s\S]*<button type="button" class="fd-progresscard" data-fd-progress>[\s\S]*<\/aside>/);
+  assert.match(html, /<div class="fd-today__record"><button type="button" class="fd-progresscard" data-fd-progress>/);
 });
