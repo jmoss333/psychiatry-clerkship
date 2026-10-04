@@ -120,3 +120,17 @@ test('real block start serves scheduled due cards only, then applies its limit',
   assert.equal(block.queue[0].id,'CONCEPT#due:1@1');
   assert.equal(block.fromBlock,true);
 });
+
+test('actual preparation message branch rejects origin, frame, resource and payload mismatches',()=>{
+ const start=shell.indexOf('  function fdAuxMessage(event){'), end=shell.indexOf('\n\n  /* The root state',start);
+ assert.ok(start>=0&&end>start,'actual shell handler exists');
+ const handler=shell.slice(start,end);
+ const selection=new Function(read(`${BUILD}/frontdoor/fd_wire.js`)+';return fdPrepareSelection;')();
+ const frame={contentWindow:{}}, valid={type:'prepare-selection',task:'note',minutes:15};
+ for(const change of [{},{origin:'https://other.test'},{source:{}},{frame:null},{item:'oral.html'},{openId:'oral.html'},{preview:{}},{data:{...valid,answer:'private'}},{data:{...valid,minutes:'15'}},{data:{...valid,task:'other'}}]) {
+   const calls=[], contentEl={querySelector:()=>Object.hasOwn(change,'frame')?change.frame:frame}, fdController={getState:()=>({openId:change.openId||'prepare-for-tomorrow.html'}),replacePrepareSelection:v=>calls.push(v)};
+   const fn=new Function('contentEl','fdController','facultyPreviewRequest','currentItem','location','fdPrepareSelection',handler+';return fdAuxMessage;')(contentEl,fdController,change.preview||null,{f:change.item||'prepare-for-tomorrow.html'},{origin:'https://example.test'},selection);
+   fn({origin:change.origin||'https://example.test',source:change.source||frame.contentWindow,data:change.data||valid});
+   assert.deepEqual(calls,Object.keys(change).length?[]:[{task:'note',minutes:15}]);
+ }
+});

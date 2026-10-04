@@ -50,16 +50,18 @@ AUDIO_OE_MANIFEST = Path("12_Media/audio_oe/MANIFEST.csv")
 # mcg/mL", duloxetine "GFR <30 mL/min" — while the one real dose ("200 mg bid") is still
 # caught below. The exception is deliberately NARROW, because the same units also write
 # product strengths and rates, and those ARE doses:
-#   * mg|mcg per L or dL ............ lab value, always exempt (no product strength is per L/dL);
-#   * mL per min/minute ............. renal clearance (GFR, CrCl), always exempt;
+#   * mg|mcg per L or dL ............ exempt only with a named lab/level before the number;
+#   * mL per min/minute ............. exempt only with a renal-clearance cue (GFR, CrCl);
 #   * mg|mcg per mL ................. exempt ONLY when the same sentence names a level before the
-#                                     number ("serum", "trough", "level", "concentration", ...)
+#                                     number ("serum", "trough", "level", ...)
 #                                     AND names no product ("supplied", "vial", "solution",
 #                                     "injection", "available", "each mL", ...): "5 mg/mL" with no
 #                                     level cue, or "supplied at a concentration of 5 mg/mL", is a
 #                                     product strength and stays a dose literal — fail closed,
 #                                     reword to name the level;
 #   * anything else (mg/kg, mg/day, mg/min, mg/h, a bare "mg") stays a dose literal.
+# Product/administration cues on either side of the number veto every exception, within
+# the bounded current sentence. A generic "concentration" or "range" is not a lab cue.
 # Every caller goes through dose_literals() / has_dose_literal() / mask_dose_literals(); there
 # is deliberately no public regex, so no caller can silently keep the stricter or looser rule.
 _DOSE_CANDIDATE_RE = re.compile(r"\b\d+(?:\.\d+)?\s?(mg|mcg|mL|mg/kg)\b", re.I)
@@ -67,13 +69,20 @@ _PER_LAB_VOLUME_RE = re.compile(r"\s?/\s?d?L\b", re.I)
 _PER_MINUTE_RE = re.compile(r"\s?/\s?min(?:ute)?s?\b", re.I)
 _PER_ML_RE = re.compile(r"\s?/\s?mL\b", re.I)
 _LEVEL_CUE_RE = re.compile(
-    r"\b(?:levels?|concentrations?|troughs?|peaks?|serum|plasma|range|therapeutic)\b", re.I)
+    r"\b(?:levels?|troughs?|peaks?|serum|plasma|total valproate concentrations?|"
+    r"epilepsy range)\b", re.I)
+_LAB_CUE_RE = re.compile(
+    r"\b(?:CRP|C-reactive protein|glucose|creatinine|cholesterol|triglycerides?|"
+    r"blood urea nitrogen|BUN|mean difference)\b", re.I)
+_RENAL_CUE_RE = re.compile(r"\b(?:e?GFR|CrCl|creatinine clearance|renal clearance)\b", re.I)
 # A product cue vetoes a level cue (Codex P2 on #953): "concentration" and "range" also describe
-# what is in the vial.
+# what is in the vial. "Each" needs a product unit: "each week" describes monitoring instead.
 _PRODUCT_CUE_RE = re.compile(
     r"\b(?:supplied|available|vials?|ampoules?|ampules?|syringes?|injections?|injectables?|"
     r"solutions?|suspensions?|concentrates?|elixirs?|syrups?|drops|formulations?|strengths?|"
-    r"contains?|each)\b", re.I)
+    r"contains?|each\s+(?:mL|millilit(?:er|re)s?|L|tablets?|capsules?|doses?)|"
+    r"products?|infus\w*|inject\w*|administer\w*|administration|"
+    r"deliver\w*|pumps?|draw up)\b", re.I)
 _SENTENCE_BREAK_RE = re.compile(r"[.!?](?=\s)|\n")
 LEVEL_CUE_WINDOW = 160  # characters searched back from the number, never past a sentence break
 
@@ -89,13 +98,16 @@ def _sentence_before(text, start):
 def _is_lab_value(text, match):
     unit = match.group(1).lower()
     after = text[match.end():]
+    before = _sentence_before(text, match.start())
+    sentence_after = _SENTENCE_BREAK_RE.split(after[:LEVEL_CUE_WINDOW], maxsplit=1)[0]
+    if _PRODUCT_CUE_RE.search(before) or _PRODUCT_CUE_RE.search(sentence_after):
+        return False
     if unit in ("mg", "mcg") and _PER_LAB_VOLUME_RE.match(after):
-        return True
+        return bool(_LAB_CUE_RE.search(before) or _LEVEL_CUE_RE.search(before))
     if unit == "ml" and _PER_MINUTE_RE.match(after):
-        return True
+        return bool(_RENAL_CUE_RE.search(before))
     if unit in ("mg", "mcg") and _PER_ML_RE.match(after):
-        before = _sentence_before(text, match.start())
-        return bool(_LEVEL_CUE_RE.search(before)) and not _PRODUCT_CUE_RE.search(before)
+        return bool(_LEVEL_CUE_RE.search(before))
     return False
 
 

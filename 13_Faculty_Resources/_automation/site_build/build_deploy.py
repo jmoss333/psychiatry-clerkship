@@ -135,8 +135,7 @@ _abort_missing(_missing_req)
 # ---- MS3-only tools ----
 # The list lives in site_extras.py, not here: an MS3-only tool is shipped and attestable
 # but NOT in site_manifest.json, so shipped_pages.py has to be able to enumerate it without
-# executing this script. Empty since 2026-09-25, when the orientation video tool it held
-# was retired with the welcome and orientation videos.
+# executing this script. The preparation guide uses this audience-specific route.
 _missing_ms3_extra=[]
 for src,dst,_title in MS3_EXTRA_TOOLS:
     _copy_required(os.path.join(LIB,src),os.path.join(OUT,"tools",dst),_missing_ms3_extra)
@@ -468,7 +467,7 @@ nav=[
  {"section":"Communicate with Patients","items":[_tool("communication-practice.html","What Do You Say Next?"),_md("Psychotherapies at a Glance","psychotherapy.md"),_md("Motivational Interviewing","motivational_interviewing.md"),_md("Brief Psychotherapy on the Unit","brief_psychotherapy.md"),_md("Therapy on the Unit","therapy_on_the_unit.md"),_tool("reflection.html","Reflection & Identity")]},
  {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
- {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","Case Journeys"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
+ {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","Case Journeys"),_tool("prepare-for-tomorrow.html","Prepare for tomorrow"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
  {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
  {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("The Therapy Reading Room","therapy_reading_room.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
  {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback"),_tool("rotation-curator.html","Faculty: Curate a rotation edition",True)]},

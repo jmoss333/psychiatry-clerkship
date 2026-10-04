@@ -411,21 +411,22 @@ for site,key in [('ms3','ms3'),('res','resident')]:
 print(json.dumps(out))
 `], { cwd: PROJECT_ROOT, encoding: 'utf8' }));
 
-for (const [site, expectedKit, expectedFull] of [['ms3', 30, 84], ['res', 35, 94]]) {
+for (const [site, expectedKit, expectedFull] of [['ms3', 31, 85], ['res', 35, 94]]) {
   test(`${site}: real Essentials renders ${expectedKit} reading and tool choices and links to all ${expectedFull} pages`, () => {
     const payload = projected[site];
     const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
     const html = F.fdEssentials(idx);
     assert.equal((html.match(/class="fd-kit__reading"/g) || []).length+
       (html.match(/data-fd-kit-tool="/g) || []).length, expectedKit);
-    assert.match(html, new RegExp('fd-library__count\">' + (site==='ms3'?23:26) + ' readings · ' + (site==='ms3'?7:9) + ' tools'));
+    assert.match(html, new RegExp('fd-library__count\">' + (site==='ms3'?23:26) + ' readings · ' + (site==='ms3'?8:9) + ' tools'));
     assert.equal((html.match(/<details class=\"fd-kit__group/g)||[]).length,site==='ms3'?8:7);
     assert.equal((html.match(/data-fd-kit-section=/g)||[]).length,site==='ms3'?9:8);
     assert.doesNotMatch(html,/governance-badge/);
     const pending=idx.essentials.flatMap(c=>c.items).filter(i=>i.kind!=='tool'&&i.governance?.status==='pending').length;
     assert.match(html,new RegExp('— '+pending+' of '+(site==='ms3'?23:26)+' readings'));
     const compact=make((g,o)=>g?.status==='pending'&&o?.compact?'<span class=\"dot-test\"></span>':'').fdEssentials(idx);
-    assert.equal((compact.match(/dot-test/g)||[]).length,pending);
+    const selectedTool=idx.essentials.flatMap(c=>c.items).find(i=>i.kind==='tool');
+    assert.equal((compact.match(/dot-test/g)||[]).length,pending+(selectedTool?.governance?.status==='pending'?1:0));
     assert.match(html, /data-fd-library-view="full" aria-pressed="false">Everything/);
   });
 }
@@ -537,4 +538,17 @@ test('the live shell passes the actual week to Essentials rather than the browse
   const render = live => run(state,live,idx,(_name,paint)=>paint(),F.fdLibrary,F.fdEssentials);
   assert.deepEqual(renderedRefs(render({ week: 2, viewWeek: 1 })), ['m2.md']);
   assert.deepEqual(renderedRefs(render({ viewWeek: 1 })), renderedRefs(F.fdEssentials(idx)));
+});
+
+test('selected preparation preview shows its governed status and one launch destination',()=>{
+ const prep={ref:'prepare-for-tomorrow.html',kind:'tool',title:'Prepare for tomorrow',hint:'Choose a task and time.',governance:{status:'pending',riskKind:'clinical',riskLevel:'moderate'}};
+ const idx={...IDX,essentials:[{name:'Tools',accent:'tool',items:[prep]}]};
+ for(const status of ['pending','reviewed']) {
+   const item={...prep,governance:{...prep.governance,status}},fixture={...idx,essentials:[{name:'Tools',accent:'tool',items:[{ref:'other.html',title:'Other tool',kind:'tool',governance:{status:'reviewed'}},item]}]};
+   const G=make((g,o)=>o?.compact?'<span class="fixture-badge">'+g.status+'</span>':'');
+   const html=G.fdEssentials(fixture,{kitToolPreview:prep.ref});
+   assert.match(html,new RegExp('fixture-badge">'+status));
+   assert.equal((html.match(/data-fd-open="prepare-for-tomorrow.html"/g)||[]).length,1);
+   assert.match(html,/data-fd-kit-tool="prepare-for-tomorrow.html"[^>]*aria-selected="true"/);
+ }
 });

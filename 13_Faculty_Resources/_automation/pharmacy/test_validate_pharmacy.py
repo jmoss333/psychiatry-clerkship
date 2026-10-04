@@ -129,6 +129,48 @@ class ValidatePharmacyTest(unittest.TestCase):
             with self.subTest(tool=path.name):
                 self.assertNotIn("mg|mcg", path.read_text(encoding="utf-8"))
 
+    def test_formulations_and_administration_rates_are_caught_and_masked(self):
+        for text in (
+            "infuse at 2 mL/min", "product concentration 5 mg/L",
+            "solution contains 500 mg/L", "the vial contains 5 mg/dL",
+            "concentration 5 mg/mL", "therapeutic range 5 mg/mL",
+            "Serum levels guide selection of a 5 mg/mL solution.",
+            "Adjust for CrCl before using a 5 mL/min infusion.",
+            "Serum levels guide use of a 500 mg/L solution.",
+            "serum levels guide treatment; infuse at 5 mL/min",
+            "serum level guides the pump at 5 mg/L",
+            "serum level guides administration of 5 mcg/mL",
+            "serum level guides injecting 5 mcg/mL",
+            "5 mg/L", "5 mg/dL", "5 mL/min",
+        ):
+            with self.subTest(text=text):
+                self.assertTrue(vp.has_dose_literal(text))
+                self.assertIn("[dose]", vp.mask_dose_literals(text))
+                data = self.mutate()
+                first(data)["dosing"]["titration"] = text
+                self.assertTagged(run(data), "AC4'")
+
+    def test_merged_product_cues_keep_vetoing_level_cues(self):
+        for product in ("suspension", "ampule", "concentrate", "elixir", "syrup", "drops",
+                        "each mL", "each milliliter", "each tablet"):
+            text = product + " adjusted using serum levels: 5 mg/mL"
+            with self.subTest(text=text):
+                self.assertTrue(vp.has_dose_literal(text))
+                self.assertIn("[dose]", vp.mask_dose_literals(text))
+
+    def test_product_cues_do_not_leak_across_sentences_or_the_window(self):
+        for text in (
+            "serum level 5 mg/mL. The solution was stopped.",
+            "serum level 5 mg/mL\nThe solution was stopped.",
+            "serum level 5 mg/mL " + "x" * vp.LEVEL_CUE_WINDOW + " solution",
+            "CRP 5 mg/L", "CrCl 30 mL/min", "eGFR 30 mL/min",
+            "Measure serum valproate trough 100 mcg/mL each week.",
+            "Hold if CRP exceeds 100 mg/L; reassess each day.",
+        ):
+            with self.subTest(text=text):
+                self.assertEqual(vp.dose_literals(text), [])
+                self.assertEqual(vp.mask_dose_literals(text), text)
+
     def test_denylisted_key_fails(self):
         data = self.mutate()
         first(data)["provenance"]["carried"]["absolute_max_dose"] = "x"

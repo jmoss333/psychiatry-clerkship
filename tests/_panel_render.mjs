@@ -72,7 +72,17 @@ export const CURRICULUM = readJSON('curriculum.json');
 export const TOPIC_META = readJSON('topic_meta.json');
 export const TOOL_REGISTRY = readJSON('tool_registry.json');
 export const SITE_MANIFEST = readJSON('13_Faculty_Resources/_automation/site_build/site_manifest.json');
-export const FD_INDEX = fdCtx.fdBuildIndex(CURRICULUM, TOPIC_META, TOOL_REGISTRY, SITE_MANIFEST);
+// Tool titles must also include audience-only extras from the canonical shipped universe.
+for (const page of readJSON('13_Faculty_Resources/_automation/site_build/shipped_pages.json').pages) {
+  if (page.kind === 'tool' && page.sites.includes('ms3') && !SITE_MANIFEST.tools.some(row => row[1] === page.slug)) {
+    SITE_MANIFEST.tools.push([page.source, page.slug, page.title]);
+  }
+}
+const panelCurriculum = structuredClone(CURRICULUM);
+for (const addition of panelCurriculum.siteLibrary.ms3.additions) {
+  panelCurriculum.libraryColumns.find(column => column.name === addition.column).refs.push(...addition.refs);
+}
+export const FD_INDEX = fdCtx.fdBuildIndex(panelCurriculum, TOPIC_META, TOOL_REGISTRY, SITE_MANIFEST);
 
 export const RIGHTS_REFS = CURRICULUM.rightsReferences || [];
 export const manifestTitle = (slug) => {
