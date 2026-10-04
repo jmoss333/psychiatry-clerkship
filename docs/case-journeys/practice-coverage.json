@@ -1,0 +1,116 @@
+{
+  "status": "proposed-pending-faculty-review",
+  "proposedOn": "2026-10-04",
+  "scope": "Declares which connected-practice tasks (interview, rounds, note) each chapter is a fitting rehearsal for. Combined with each chapter's objectiveIds this yields an objective-by-task coverage matrix that tests/case-journeys.test.mjs gates and export_curriculum_review.py prints. It changes no learner-visible text and no practice wording; the practice pack itself stays generic. The renderer does not read this file in r2.",
+  "tasks": [
+    "interview",
+    "rounds",
+    "note"
+  ],
+  "rules": {
+    "everyChapterMapped": "each of the 18 chapters lists at least one task",
+    "everyObjectiveReachesEveryTask": "for each case, every learning objective reaches each task through at least one of its chapters, or the gap is listed under acceptedGaps with a reason",
+    "everyTaskAnchored": "for each case, each task is declared on at least one chapter"
+  },
+  "acceptedGaps": [
+    {
+      "case": "leah-depression-trauma",
+      "objective": 3,
+      "task": "note",
+      "reason": "Leah-02 is a recognition-and-escalation vignette by faculty design (snapshot teachingPoint); documentation of withdrawal management is not a learner task here."
+    },
+    {
+      "case": "marisol-delirium-capacity",
+      "objective": 1,
+      "task": "interview",
+      "reason": "Marisol-01 places medical urgency before an extended psychiatric interview by design; the interview task would contradict the chapter."
+    },
+    {
+      "case": "marisol-delirium-capacity",
+      "objective": 3,
+      "task": "interview",
+      "reason": "Marisol-03 teaches serial observation and reporting of hypoactive features; the skill is description across time, not interviewing."
+    }
+  ],
+  "chapters": {
+    "eli-01-arrival": [
+      "interview",
+      "rounds"
+    ],
+    "eli-02-timeline": [
+      "interview",
+      "rounds",
+      "note"
+    ],
+    "eli-03-restlessness": [
+      "interview",
+      "rounds",
+      "note"
+    ],
+    "eli-04-transition": [
+      "rounds",
+      "note"
+    ],
+    "eli-05-early-change": [
+      "interview",
+      "rounds"
+    ],
+    "eli-06-recovery": [
+      "rounds",
+      "note"
+    ],
+    "leah-01-safety": [
+      "interview",
+      "rounds"
+    ],
+    "leah-02-withdrawal": [
+      "interview",
+      "rounds"
+    ],
+    "leah-03-formulation": [
+      "interview",
+      "note"
+    ],
+    "leah-04-treatment": [
+      "interview",
+      "rounds"
+    ],
+    "leah-05-transition": [
+      "interview",
+      "rounds",
+      "note"
+    ],
+    "leah-06-follow-through": [
+      "interview",
+      "rounds",
+      "note"
+    ],
+    "marisol-01-acute-change": [
+      "rounds",
+      "note"
+    ],
+    "marisol-02-baseline": [
+      "interview",
+      "rounds",
+      "note"
+    ],
+    "marisol-03-quiet": [
+      "rounds",
+      "note"
+    ],
+    "marisol-04-decision": [
+      "interview",
+      "rounds",
+      "note"
+    ],
+    "marisol-05-transition": [
+      "rounds",
+      "note"
+    ],
+    "marisol-06-reassessment": [
+      "interview",
+      "rounds",
+      "note"
+    ]
+  }
+}

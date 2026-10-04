@@ -653,11 +653,60 @@ def render_case_journeys(doc: Doc, build: Path) -> dict[str, int]:
                 doc.add(f"**Prompt.** {item['prompt']}", "", f"**Model language.** {item['example']}", "")
             doc.add(f"**Reflection prompt.** {chapter['reflectionPrompt']}", "",
                     f"**Handoff.** {chapter['handoff']}", "")
+            for key, label in (("commonMisstep", "Common misstep"), ("residentExtension", "Resident extension"),
+                               ("localNote", "Local note")):
+                if chapter.get(key):
+                    doc.add(f"**{label}.** {chapter[key]}", "")
             for link in chapter.get("links", []):
-                doc.add(f"- Resource: {link['label']} (`{link['kind']}:{link['target']}`)")
+                anchor = f"#{link['anchor']}" if link.get("anchor") else ""
+                doc.add(f"- Resource: {link['label']} (`{link['kind']}:{link['target']}{anchor}`)")
+            sources = {s["id"]: s for s in case.get("sources", [])}
+            for sid in chapter.get("sourceIds", []):
+                if sid in sources:
+                    doc.add(f"- Source: {sources[sid]['title']} <{sources[sid]['url']}>")
             doc.add("")
     render_case_journey_practice(doc, (build / page_url).read_text(encoding="utf-8"))
+    render_case_journey_coverage(doc, cases)
     return counts
+
+
+def render_case_journey_coverage(doc, cases):
+    """Objective x practice-task coverage matrix from docs/case-journeys/practice-coverage.json.
+
+    The mapping is faculty-reviewable metadata (which tasks each chapter fits); the matrix is
+    derived: an objective reaches a task when any chapter carrying that objectiveId declares it.
+    Gaps not listed under acceptedGaps fail tests/case-journeys.test.mjs (AC11).
+    """
+    path = LIB / "docs" / "case-journeys" / "practice-coverage.json"
+    if not path.exists():
+        return
+    coverage = json.loads(path.read_text(encoding="utf-8"))
+    tasks = coverage["tasks"]
+    doc.add("## Objective × practice-task coverage", "",
+            f"Mapping status: `{coverage['status']}` (proposed {coverage.get('proposedOn', '')}). "
+            "Each cell lists the chapters through which an objective reaches a practice task; "
+            "`—` is a gap. Gaps are allowed only when listed below with a reason.", "")
+    for _, case in cases:
+        if not case.get("learningObjectives") or not all(w.get("objectiveIds") for w in case["weeks"]):
+            continue
+        reach = {i + 1: {t: [] for t in tasks} for i in range(len(case["learningObjectives"]))}
+        for chapter in case["weeks"]:
+            for task in coverage["chapters"].get(chapter["id"], []):
+                for objective in chapter.get("objectiveIds", []):
+                    reach[objective][task].append(chapter["id"].split("-", 1)[1][:2])
+        doc.add(f"### {case['id']}", "", "| # | Objective | " + " | ".join(tasks) + " |",
+                "|---|---|" + "|".join("---" for _ in tasks) + "|")
+        for number, objective in enumerate(case["learningObjectives"], start=1):
+            cells = [", ".join(reach[number][t]) or "—" for t in tasks]
+            doc.add(f"| {number} | {objective} | " + " | ".join(cells) + " |")
+        doc.add("")
+    gaps = coverage.get("acceptedGaps", [])
+    doc.add("### Accepted gaps", "")
+    if not gaps:
+        doc.add("None.", "")
+    for gap in gaps:
+        doc.add(f"- {gap['case']} · objective {gap['objective']} · {gap['task']}: {gap['reason']}")
+    doc.add("")
 
 
 def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:

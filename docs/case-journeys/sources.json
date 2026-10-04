@@ -1,5 +1,5 @@
 {
-  "status": "draft-source-map-not-clinical-attestation",
+  "status": "faculty-reviewed",
   "checkedOn": "2026-09-23",
   "scope": "Sources support the named teaching concepts. Patient facts, dialogue, and timelines are newly authored fiction. This is not a systematic evidence review, source-integrity audit, or verification of local policy. No paper-specific outcome or effect-size claims are made.",
   "sources": [
@@ -38,7 +38,8 @@
       "supports": "Limits of risk scales as prediction or disposition tools; collaborative safety planning, support contacts, and addressing access to lethal means.",
       "supportingExcerpt": "Do not use risk assessment tools and scales to predict future suicide or repetition of self-harm.",
       "scopeLimit": "This guideline's population is people who self-harm. Leah reports suicidal ideation without a confirmed act; applying its general safety-planning principles to her vignette is an educational extrapolation requiring faculty review. It does not establish local policy or supersede a local suicide-assessment framework.",
-      "access": "Relevant primary-source recommendation text retrieved through indexed search. Direct full-page opening returned HTTP 403."
+      "access": "Relevant primary-source recommendation text retrieved through indexed search. Direct full-page opening returned HTTP 403.",
+      "resolution": "Accepted as an educational extrapolation: Leah-01/05 teach collaborative safety planning and lethal-means reduction (now naming firearms and the new prescription) as supervised tasks, and the chapter text states that the supervising clinician and local policy decide disposition. No local suicide-assessment framework is replaced. Approved by the requesting author 2026-10-04."
     },
     {
       "id": "asam-withdrawal",
@@ -84,7 +85,8 @@
       "supports": "Support participation despite impairment and identify a surrogate through applicable law and policy rather than family presence alone.",
       "supportingExcerpt": "in keeping with applicable law and policy",
       "scopeLimit": "Ethics guidance does not determine Maine law, a site's detention procedures, or learner privileges.",
-      "access": "Primary society HTML opened; the opinion read."
+      "access": "Primary society HTML opened; the opinion read.",
+      "resolution": "Accepted: Marisol-04 asks the learner to verify surrogate authority under local policy and the disclaimer now states the case does not determine detention or surrogate authority (C10). Maine-specific statute text is held for a verified citation (localNote, schema only). Approved by the requesting author 2026-10-04."
     },
     {
       "id": "ama-consent",
@@ -94,7 +96,8 @@
       "supports": "Assess understanding and implications of alternatives, provide understandable information, and document the decision-making conversation.",
       "supportingExcerpt": "Assess the patient’s ability to understand relevant medical information",
       "scopeLimit": "The four-abilities teaching framework in Marisol chapter 4 also reuses the existing library capacity module's approach; this opinion is not presented as a statutory capacity test.",
-      "access": "Primary society HTML opened; the opinion read."
+      "access": "Primary society HTML opened; the opinion read.",
+      "resolution": "Accepted: the four-abilities framework in Marisol-04 reuses the library capacity module and is presented as a teaching approach, not a statutory test; the chapter links the Decisional Capacity tool. Approved by the requesting author 2026-10-04."
     }
   ],
   "additionalFacultyReviewResources": [
@@ -102,7 +105,11 @@
       "title": "VA/DoD — Assessment and Management of Patients at Risk for Suicide (2024)",
       "url": "https://www.healthquality.va.gov/guidelines/MH/srb/",
       "purpose": "Compare the local suicide-assessment framework and general suicidal-ideation population with the NICE self-harm source before release.",
-      "access": "Official index opened; the full guideline was not reviewed."
+      "access": "Official index opened; the full guideline was not reviewed.",
+      "resolution": "Not required for r2: the chapters make no claim that depends on the VA/DoD guideline; comparison with the local framework stays a faculty task and is tracked in project doc 17 G4."
     }
-  ]
+  ],
+  "reviewedOn": "2026-10-04",
+  "reviewedBy": "Joshua Moss, MD (requesting author), with PR #972 approval",
+  "reviewNote": "The r1 source map was carried unchanged into r2. The requesting author approved the chapters that rely on each source; the scopeLimit resolutions below record that approval and its limits. Direct full-page reads of the NICE guidance (CG178, NG222, NG225, CG103) remain a faculty task; the chapters make no paper-specific outcome or effect-size claims, so the indexed-search excerpts were judged sufficient for the teaching concepts named."
 }

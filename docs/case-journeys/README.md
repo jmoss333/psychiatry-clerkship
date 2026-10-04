@@ -1,5 +1,7 @@
 # Case Journeys release
 
+> **r2 was reviewed and authorized by the requesting author on 2026-10-04 (PR #972).** Before that, `release-review.json` carried `authorization: PENDING`; `tests/case-journeys.test.mjs` carries a merge-day human gate (AC3/AC4/AC10) that is red on GitHub Actions — and locally with `CASE_JOURNEYS_RELEASE_GATE=1` — until the authorization sentence, `reviewDate`, `sources.json` review status, and the risperidone card attestation are in place; elsewhere it is skipped with those items named so the pre-push hook does not block the review PR. r1 is preserved verbatim under `history/r1-2026-09-27/`.
+
 The requesting author reviewed these three synthetic cases and authorized publication on September 27, 2026. The shared MS3 and resident learner layer is under `08_Cases_and_Simulation/case-journeys/`. Jordan continues to use the existing root `longitudinal_case.json`.
 
 `reviewed-snapshot/` preserves the exact reviewed drafts, including faculty discussion notes. Its draft labels describe the historical snapshot. These files and `sources.json` do not ship to learner sites. `release-review.json` records original hashes and the publication authorization; it is not a faculty-console attestation.
@@ -23,3 +25,22 @@ The canonical teaching pack is `case-practice-data` inside `08_Cases_and_Simulat
 Only the current chapter's supplied story establishes facts for the exercise. Earlier findings remain dated history unless updated, later chapters are not current findings, and model examples illustrate language rather than add observations. Missing information is labeled as not supplied rather than presumed absent or reassuring. New practice prompts are visibly pending faculty review. Canonical case JSON, `sources.json`, `reviewed-snapshot/`, `release-review.json`, and the attestation ledger are unchanged; their historical approval does not approve the new prompts. Changed HTML and renderer bytes reopen effective review through the existing build governance.
 
 The faculty packet is [CASE_JOURNEY_PRACTICE_REVIEW.md](../../13_Faculty_Resources/Handoffs/CASE_JOURNEY_PRACTICE_REVIEW.md). Rollback is to revert the connected-practice commits; no learner data migration is required.
+## r2 (2026-10-03): resident layer, sources, objectives, and seven wording hunks
+
+**Source of truth and projection.** `reviewed-snapshot/*.json` are the faculty drafts (with `facultyNotes`). The learner files under `08_Cases_and_Simulation/case-journeys/` are generated, never hand-edited:
+
+```
+python3 13_Faculty_Resources/_automation/case_journeys/project_case_journeys.py --write   # regenerate
+python3 13_Faculty_Resources/_automation/case_journeys/project_case_journeys.py --check   # CI: shipped == projection
+python3 13_Faculty_Resources/_automation/case_journeys/project_case_journeys.py --hashes  # for release-review.json
+```
+
+**What the projection carries in r2** (`release-review.json → projectionChanges`): every chapter field except `facultyNotes.teachingPoint`; `advancedPrompt → residentExtension` (collapsed "Resident extension"); `pitfall → commonMisstep` (collapsed "Common misstep", all learners); `sourceIds` plus a top-level `sources` list (id, title, url) rendered as "Sources for this chapter"; `objectiveIds` (objective-to-chapter map); an optional `anchor` on tool links (`pharmacy.html#risperidone`); an optional `localNote` (schema only in r2 — no text ships until a verified Maine citation exists). Ids drop the `_draft` marker.
+
+**Wording changes since r1** are enumerated in `release-review.json → wordingChangesSinceR1` (C1 firearms/means, C2 Eli-01 opener, C3 thiamine, C5 CIWA-Ar, C6 risperidone, C8 spoken register, C10 Marisol-04 governance sentence → disclaimer). Every other string is byte-identical to r1; `git diff history/r1-2026-09-27/reviewed-snapshot reviewed-snapshot` is the complete review surface.
+
+**Acceptance tests** (`tests/case-journeys.test.mjs`, AC0–AC10): projection equality; sources cited and resolvable; audience label ↔ resident layer invariant; no draft ids; firearms in Leah-01/05; thiamine + CIWA-Ar in Leah-02 with no dose literal anywhere; risperidone named and linked; spoken register; readability regression guard (FK ≤ 17, to tighten to 12.5 with C9); objective coverage; and the human gate (AC3/AC4/AC10; strict on Actions or with `CASE_JOURNEYS_RELEASE_GATE=1`).
+
+**Merge-day gates:** authorization and `reviewDate` recorded 2026-10-04; `sources.json` is `faculty-reviewed` with a `resolution` on every `scopeLimit`; the two risperidone drug-card links stay in the reviewed snapshot but the projection ships them only once `pharmacy.json` marks the card `reviewed` (re-run `--write` then); faculty-console ledger rows for `one-patient-six-weeks.html` and the three case files are a separate `attest/pending` commit by the faculty identity after merge (governance separation L2–L4). Rollback: revert the r2 commit; `history/r1-2026-09-27/` is untouched.
+
+**Known uncertainty.** Whether the learner shell forwards `#risperidone` to the embedded pharmacy tool is not covered by a smoke test yet; the pharmacy page itself honours `location.hash` on load.
