@@ -37,6 +37,7 @@ EXPECTATIONS = {
     "maintenance-governance-digest.yml": 8 * 24,
     "surveillance-link-monitor.yml": 8 * 24,
     "surveillance-citations.yml": 8 * 24,
+    "surveillance-firecrawl.yml": 8 * 24,
     "maintenance-monthly-review.yml": 35 * 24,
     "surveillance-guideline.yml": 35 * 24,
 }
@@ -67,6 +68,7 @@ EXPECTED_CRONS = {
     "maintenance-governance-digest.yml": "30 12 * * 1",
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
+    "surveillance-firecrawl.yml": "30 6 * * 1",
     "maintenance-monthly-review.yml": "0 13 1 * *",
     "surveillance-guideline.yml": "0 6 1 * *",
 }

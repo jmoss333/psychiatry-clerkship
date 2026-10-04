@@ -107,7 +107,7 @@ class BuildDeckTest(unittest.TestCase):
 
     def test_deck_has_no_dose_literal(self):
         text = deck.render(deck.build({"records": [attested(r) for r in PHARMACY["records"]]}))
-        self.assertIsNone(vp.DOSE_RE.search(text))
+        self.assertEqual(vp.dose_literals(text), [])
 
 
 if __name__ == "__main__":

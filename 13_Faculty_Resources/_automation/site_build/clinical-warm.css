@@ -248,7 +248,24 @@
  *   carry no meaning alone; :focus-visible (--fd-focus) carries the a11y weight instead.
  *   These are deliberately absent from the PAIRS list, not allowlisted.
  */
-[data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--bg2:#211d1a;--surface:#2a2520;--surface2:#332e28;--hover:#3d3630;--border:#3d3630;--border2:#2f2a25;--text:#e8e2da;--text-mid:#b3a596;--mid:#b3a596;--text-light:#a09488;--light:#a09488;--primary:#d4896e;--primary-dark:#dd9277;--primary-d:#dd9277;--primary-light:rgba(212,137,110,.16);--primary-l:rgba(212,137,110,.16);--primary-ink:#e6a98f;--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-d:#6cbcaa;--accent-light:rgba(90,173,154,.16);--accent-l:rgba(90,173,154,.16);--accent-border:rgba(90,173,154,.38);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--success-l:rgba(90,173,142,.16);--good:#5aad8e;--good-bg:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--warning-l:rgba(196,164,92,.16);--warn:#c4a45c;--warn-bg:rgba(196,164,92,.16);--danger:#da7c6e;--danger-light:rgba(212,104,88,.16);--danger-l:rgba(212,104,88,.16);--bad:#da7c6e;--bad-bg:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--info-l:rgba(122,158,196,.16);--on-brand:#211d1a;--focus:#7aa2ff;--shadow:0 1px 3px rgba(0,0,0,.35);--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 2px 10px rgba(0,0,0,.4);--shadow-lg:0 8px 28px rgba(0,0,0,.45);
+/* ── Tools: red means safety (2026-10-03) ─────────────────────────────────────
+ * The single-file tools' brand accent, --primary, was an orange-red (#bc573a light, #d4896e
+ * dark) a few degrees of hue from --danger (#a34132), so every tool's primary button, active tab
+ * and highlight read as an alarm -- the same problem the Front Door fixed in #942. It is now the
+ * Front Door's action teal (--fd-teal / --fd-teal-deep). Tools set their light tokens inline, but
+ * this file is linked after each tool's own <style> (common.py), so this :root block overrides
+ * them without touching a tool's source -- and so without reopening any faculty attestation.
+ * The dark values are set in the dark block below. --danger and its family are untouched: red
+ * stays for safety, crisis and errors. Contrast (WCAG AA): white on #3a7d6e 4.84; #2c6356 text
+ * 5.9-6.9 on every light tool ground and its own wash; dark #211d1a ink on #5fa392 5.69.
+ * MUST stay above the dark block: same specificity, source order decides.
+ */
+:root{
+  --primary:#3a7d6e;--primary-dark:#2c6356;--primary-d:#2c6356;
+  --primary-light:#e8f2ef;--primary-l:#e8f2ef;--primary-ink:#2c6356;
+}
+
+[data-theme="dark"]{--bg:#1a1816;--bg-alt:#211d1a;--bg2:#211d1a;--surface:#2a2520;--surface2:#332e28;--hover:#3d3630;--border:#3d3630;--border2:#2f2a25;--text:#e8e2da;--text-mid:#b3a596;--mid:#b3a596;--text-light:#a09488;--light:#a09488;--primary:#5fa392;--primary-dark:#7fc0ae;--primary-d:#7fc0ae;--primary-light:rgba(95,163,146,.16);--primary-l:rgba(95,163,146,.16);--primary-ink:#8fd0be;--accent:#5aad9a;--accent-dark:#6cbcaa;--accent-d:#6cbcaa;--accent-light:rgba(90,173,154,.16);--accent-l:rgba(90,173,154,.16);--accent-border:rgba(90,173,154,.38);--success:#5aad8e;--success-light:rgba(90,173,142,.16);--success-l:rgba(90,173,142,.16);--good:#5aad8e;--good-bg:rgba(90,173,142,.16);--warning:#c4a45c;--warning-light:rgba(196,164,92,.16);--warning-l:rgba(196,164,92,.16);--warn:#c4a45c;--warn-bg:rgba(196,164,92,.16);--danger:#da7c6e;--danger-light:rgba(212,104,88,.16);--danger-l:rgba(212,104,88,.16);--bad:#da7c6e;--bad-bg:rgba(212,104,88,.16);--info:#7a9ec4;--info-light:rgba(122,158,196,.16);--info-l:rgba(122,158,196,.16);--on-brand:#211d1a;--focus:#7aa2ff;--shadow:0 1px 3px rgba(0,0,0,.35);--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 2px 10px rgba(0,0,0,.4);--shadow-lg:0 8px 28px rgba(0,0,0,.45);
   --fd-bg:#211d1a;
   --fd-surface:#2a2521;
   --fd-surface-warm:#2f2a25;

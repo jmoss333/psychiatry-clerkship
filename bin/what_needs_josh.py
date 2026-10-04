@@ -40,6 +40,10 @@ REVIEWED = ROOT / "13_Faculty_Resources/reviewed.json"
 TOPIC_META = ROOT / "topic_meta.json"
 RIGHTS = ROOT / "instrument_rights.json"
 PACK = ROOT / "_prototypes/sp-interview/sp-interview.pack.json"
+PHARMACY = ROOT / "pharmacy.json"
+PHARMACY_TOOLS = ROOT / "13_Faculty_Resources" / "_automation" / "pharmacy"
+# The weekly label check runs every 7 days; one missed run is tolerated, two are not.
+LABEL_DRIFT_MAX_AGE_DAYS = 14
 
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
@@ -177,6 +181,63 @@ def measure_instrument_decisions():
     return len(provisional), len(instruments)
 
 
+def _today():
+    import datetime as dt
+    stamp = os.environ.get("CLERKSHIP_TODAY", "")
+    try:
+        return dt.date.fromisoformat(stamp)
+    except ValueError:
+        return dt.date.today()
+
+
+def _label_drift_owed():
+    """Unresolved label transitions; share the packet's exact evidence predicate.
+
+    A later review date, demotion, removed card, or review of a different transition
+    cannot hide an obligation. Missing/stale coverage remains unknown, never zero.
+    """
+    import datetime as dt
+    sys.path.insert(0, str(PHARMACY_TOOLS))
+    import check_label_drift  # noqa: E402  (one definition of where the ledger lives)
+    path = check_label_drift.ledger_path()
+    if not path.is_file():
+        raise FileNotFoundError("never recorded here: run check_label_drift.py --record "
+                                "(ledger %s)" % path)
+    ledger = json.loads(path.read_text(encoding="utf-8"))
+    last = ledger.get("lastChecked")
+    if not last:
+        raise ValueError("label drift has never been checked over every pinned label")
+    age = (_today() - dt.date.fromisoformat(last)).days
+    if age > LABEL_DRIFT_MAX_AGE_DAYS:
+        raise ValueError("label drift last checked %s (%d days ago, limit %d)"
+                         % (last, age, LABEL_DRIFT_MAX_AGE_DAYS))
+    records = {r["id"]: r for r in json.loads(PHARMACY.read_text(encoding="utf-8"))["records"]}
+    reviewed = sorted(rid for rid, r in records.items()
+                      if (r.get("facultyReview") or {}).get("status") == "reviewed")
+    owed = {}
+    for drift in check_label_drift.unresolved_drifts(ledger, records, today=_today(), root=ROOT):
+        agent = drift["agent"]
+        owed[agent] = drift  # Group only AFTER filtering: a cleared latest row cannot hide an older one.
+    return [owed[a] for a in sorted(owed)], sorted(set(reviewed) | set(owed))
+
+
+def measure_label_drift():
+    """Pharmacy cards with any unresolved label transition."""
+    owed, reviewed = _label_drift_owed()
+    return len(owed), len(reviewed)
+
+
+def describe_label_drift():
+    owed, _ = _label_drift_owed()
+    named = ["%s (label v%s, %s: %s)" % (d["agent"], d["toVersion"], d["toDate"],
+                                         ", ".join(d.get("fields") or d.get("sections") or ["quotes"]))
+             for d in owed[:NAMED_LIMIT]]
+    text = "; ".join(named)
+    if len(owed) > NAMED_LIMIT:
+        text += " … and %d more" % (len(owed) - NAMED_LIMIT)
+    return "Re-review against the new label: %s" % text
+
+
 def _gh_json(args):
     out = subprocess.run(["gh", *args], capture_output=True, text=True, timeout=60)
     if out.returncode != 0:
@@ -260,6 +321,24 @@ ROWS = [
                "passes the validator but no surface offers it, so it counts here too.",
         "do": "read the case's lines, then a content PR sets its facultyReview.status to "
               "reviewed with the read recorded on the PR; the console re-attests the drifted row",
+    },
+    {
+        "key": "label-drift",
+        "title": "Re-review the pharmacy cards whose label changed after you signed them",
+        "needs": None,
+        "measure": measure_label_drift,
+        "detail": describe_label_drift,
+        "unit": "pharmacy cards with unresolved label changes",
+        "why": "A reviewed card is bound to the label it was checked against (receipt set id "
+               "and date, AC2), and nothing noticed when the manufacturer published a new "
+               "version: the card kept matching its receipt while the label said something "
+               "else (the buprenorphine draft missed a 2024 FDA change exactly this way). The "
+               "weekly check_label_drift.py --record run names the changed sections and the "
+               "card fields that draw on them. Only your review retires a row -- re-running "
+               "the check or re-pinning the label does not.",
+        "do": "check_label_drift.py --only <id> names the sections; update the card, "
+              "verify_pharmacy_labels.py --only <id>, review it, then check_label_drift.py "
+              "--pin --only <id>",
     },
     {
         "key": "instrument-rights",

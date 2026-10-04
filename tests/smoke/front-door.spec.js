@@ -371,7 +371,7 @@ function audience(testInfo) {
   const resident = isResidentProject(testInfo.project.name);
   return {
     role: resident ? 'pgy1' : 'student',
-    libraryCount: resident ? 94 : 84,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
+    libraryCount: resident ? 94 : 85,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
     residentRef: resident ? 'rp-agitation.html' : null,
     weekCount: resident ? 4 : 6,
     pathHeading: resident ? 'Your 4-week path' : 'Suggested learning plan',
@@ -524,7 +524,7 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedC
   // Browse is a native <details> disclosure, not a button: closed, its two menu actions render
   // but are not :visible, which is why it is absent from the `items` count above.
   await expect(dock.locator('details.fd-dock__browse:visible')).toHaveCount(1);
-  await expect(dock.locator('details.fd-dock__browse summary')).toHaveText('Browse');
+  await expect(dock.locator('details.fd-dock__browse summary')).toHaveText('Library');
   const geometry = await page.evaluate(() => {
     const dock = document.querySelector('.fd-dock');
     const bar = dock.getBoundingClientRect();
@@ -2959,9 +2959,9 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await page.goto('/?tab=care');
 
   const tabs = page.locator('.fd-tab');
-  await expect(tabs).toHaveCount(5);
+  await expect(tabs).toHaveCount(4);
   expect(await tabs.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-tab'))))
-    .toEqual(['today', 'path', 'library', 'everything', 'care']);
+    .toEqual(['today', 'path', 'library', 'care']);
   const careTab = page.locator('.fd-tabs [data-fd-tab="care"]:visible');
   await expect(careTab).toHaveAttribute('aria-current', 'page');
   await expect(careTab).toHaveAccessibleName('Patient care resources');
@@ -3522,7 +3522,7 @@ test.describe('Essentials Phase 2', () => {
   const rows = page => page.locator('.fd-kit [data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
   const full = page => page.locator('[data-fd-library-view="full"]');
   const kit = page => page.locator('[data-fd-library-view="essentials"]');
-  const kitCount = info => audience(info).role === 'student' ? 30 : 35;
+  const kitCount = info => audience(info).role === 'student' ? 31 : 35;
   const curriculum = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8'));
   const expectedKit = info => curriculum.essentials[audience(info).role === 'student' ? 'ms3' : 'resident'].flatMap(column => column.refs);
   async function readyReader(page, ref) {
@@ -3569,7 +3569,7 @@ test.describe('Essentials Phase 2', () => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
     await page.locator('[data-fd-tab="library"]:visible').click();
-    await expect(page.locator('[data-fd-tab="library"]:visible')).toHaveText('The Essentials');
+    await expect(page.locator('[data-fd-tab="library"]:visible')).toHaveText('Library');
     const student = audience(info).role === 'student';
     const rail = page.locator('.fd-kit__index');
     const sectionButtons = rail.locator('[data-fd-kit-section]');
@@ -3735,7 +3735,7 @@ test.describe('Essentials Phase 2', () => {
     await page.locator('[data-fd-kit-section="tools"]').click();
     const tabs = page.locator('.fd-kit__tool-tabs [data-fd-kit-tool]');
     const panel = page.locator('.fd-kit__tool-preview[role="tabpanel"]');
-    await expect(tabs).toHaveCount(audience(info).role === 'student' ? 7 : 9);
+    await expect(tabs).toHaveCount(audience(info).role === 'student' ? 8 : 9);
     await expect(panel).toHaveCount(1);
     await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
     await expect(panel.locator('h3')).toHaveText((await tabs.first().innerText()).trim());
@@ -4885,3 +4885,63 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
     });
   }
 }
+
+
+test('shared Library navigation: local views survive history and reload', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  const library = page.locator('.fd-tabs [data-fd-tab="library"]');
+  await expect(library).toHaveText('Library');
+  await library.click();
+  const views = page.getByRole('navigation', { name: 'Library views', exact: true });
+  await expect(views.getByRole('button', { name: 'Essentials', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await views.getByRole('button', { name: 'Everything', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-library__grid')).toBeVisible();
+  await expect(library).toHaveAttribute('aria-current', 'page');
+  await page.reload();
+  await expect(views.getByRole('button', { name: 'Everything', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.goBack();
+  await expect(page.locator('.fd-kit')).toBeVisible();
+  await page.goForward();
+  await expect(page.locator('.fd-library__grid')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('shared Library navigation: phone menu survives delayed hydration and Escape restores summary', async ({ page }, testInfo) => {
+  let releaseIndex;
+  const delayed = new Promise(resolve => { releaseIndex = resolve; });
+  await page.route('**/search-index.json', async route => { await delayed; await route.continue(); });
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const summary = page.locator('.fd-dock__browse summary');
+  await expect(summary).toHaveText('Library');
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  const choice = page.locator('[data-fd-dock-browse-go="full"]');
+  await choice.focus();
+  await choice.evaluate(el => { window.__libraryChoice = el; });
+  await page.evaluate(() => {
+    window.__libraryHydrated = false;
+    new MutationObserver((records, observer) => {
+      if (records.some(record => record.addedNodes.length)) { window.__libraryHydrated = true; observer.disconnect(); }
+    }).observe(document.querySelector('#fdDockMount'), { childList: true });
+  });
+  releaseIndex();
+  await page.waitForFunction(() => window.__libraryHydrated);
+  // The observed dock refresh proves hydration settled before checking identity and focus.
+  await expect.poll(() => choice.evaluate(el => el === window.__libraryChoice)).toBe(true);
+  await expect(choice).toBeFocused();
+  await choice.press('Escape');
+  await expect(summary).toBeFocused();
+  await expect(page.locator('.fd-dock__browse')).not.toHaveAttribute('open', '');
+  await summary.press('Enter');
+  await choice.click();
+  await expect(page.locator('.fd-library__grid')).toBeVisible();
+  await expect(summary).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-dock [data-fd-tab="library"]')).not.toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-dock__browse')).not.toHaveAttribute('open', '');
+  await expectHealthy(page);
+});

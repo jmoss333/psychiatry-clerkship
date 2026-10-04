@@ -1,3 +1,4 @@
+import { readEvidence, decideEvidence, EvidenceError } from './evidence-review.mjs';
 // Faculty attestation — authenticated commit-on-save (Netlify Functions v2, ESM).
 // Secrets remain server-side. The browser supplies only x-faculty-key.
 
@@ -41,6 +42,9 @@ import {
   prepareAttestation,
   prepareDraftSave,
 } from './qbank-actions.mjs';
+import {
+  PharmacyActionError, loadMedicationSnapshot, medicationView, commitMedicationApproval,
+} from './pharmacy-actions.mjs';
 
 const DEFAULT_REPO = 'jmoss333/psychiatry-clerkship';
 // Attestations land on their own branch and reach the base branch through one
@@ -200,7 +204,7 @@ function jsonResponse(context, status, payload) {
 }
 
 function errorDescriptor(error) {
-  if (error instanceof QbankActionError) {
+  if (error instanceof QbankActionError || error instanceof PharmacyActionError) {
     return {
       code: error.code,
       status: error.status,
@@ -917,6 +921,7 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
               + 'Each sign-off in the console appends a commit here. Merge when the '
               + 'review session is done; the console fast-forwards this branch from '
               + `\`${settings.baseBranch}\` once it has been merged.`,
+            ...(settings.reviewTitle ? {title: settings.reviewTitle, body: settings.reviewBody} : {}),
             maintainer_can_modify: true,
           }),
         },
@@ -2213,6 +2218,7 @@ async function buildIncomingView(repository, settings) {
 
 async function handleView(repository, settings, url) {
   const view = url.searchParams.get('view');
+  if (view === 'medications') return medicationView(await loadMedicationSnapshot(repository, settings), settings.attester);
   if (view === 'changes') return buildChangeView(repository, settings);
   if (view === 'incoming') return buildIncomingView(repository, settings);
   if (view === 'diff') {
@@ -3659,6 +3665,11 @@ async function readPostBody(request) {
 }
 
 async function handlePost({ repository, settings, body, attester }) {
+  // Medication approval is deliberately unsupported in ledger/direct-write modes.
+  // Check before the generic ledger router can interpret it as another action.
+  if (body.action === 'pharmacy.attest' && (settings.ledger || settings.branch !== 'attest/pending' || settings.baseBranch !== 'main' || !settings.isolated)) {
+    throw new PharmacyActionError('unsupported_mode', 'Medication review requires attest/pending delivery.', 409);
+  }
   if (body.target === 'qbank') {
     throw new HttpError(
       'legacy_qbank_action',
@@ -3680,7 +3691,9 @@ async function handlePost({ repository, settings, body, attester }) {
   }
 
   let mutate;
-  if (body.target === 'content' && body.mode !== undefined) {
+  if (body.action === 'pharmacy.attest') {
+    mutate = () => commitMedicationApproval({ repository, settings, body, attester, date: today() });
+  } else if (body.target === 'content' && body.mode !== undefined) {
     mutate = () => commitContentBatch({ repository, settings, body, attester });
   } else if (body.target === 'content') {
     mutate = () => commitContentMutation({ repository, settings, body, attester });
@@ -3747,6 +3760,24 @@ export function createHandler({
       const settings = requireServerSettings(env, fetchImpl, originPolicy);
 
       const repository = createRepositoryGateway({ settings, fetchImpl, treeCache });
+      // Evidence dispositions have their own branch in both ledger modes. Never write main.
+      const evidenceRequest = new URL(request.url).searchParams.get('view') === 'evidence';
+      if (evidenceRequest) {
+        const evidenceSettings = {...settings, branch: 'attest/evidence-review', isolated: true, ledger: null,
+          reviewTitle: 'evidence: faculty source-change dispositions',
+          reviewBody: 'Faculty decisions on source-change packets. These records are not clinical attestations.'};
+        const evidenceRepository = createRepositoryGateway({settings:evidenceSettings,fetchImpl,treeCache});
+        try {
+          await evidenceRepository.ensureBranchFresh();
+          if (request.method === 'GET') return jsonResponse(context,200,await readEvidence(evidenceRepository));
+          if (request.method === 'POST') return jsonResponse(context,200,await decideEvidence(evidenceRepository,await readPostBody(request),settings.attester));
+          throw new HttpError('method_not_allowed',405,'Method not allowed.');
+        } catch (error) {
+          if(error instanceof EvidenceError) throw new HttpError('evidence_review',error.status,error.message);
+          throw error;
+        }
+      }
+
       switch (request.method.toUpperCase()) {
         case 'GET': {
           // The read-only change views return before anything that could move a branch:

@@ -2109,6 +2109,7 @@ function memoryHistory(location) {
   return {
     entries,
     history: {
+      get state() { return position < 0 ? null : entries[position].state; },
       replaceState(state, _title, route) {
         applyUrl(route);
         if (position < 0) { entries.push({ state, route }); position = 0; }
@@ -4308,4 +4309,48 @@ test('Essentials tool focus is inert before startup and during faculty preview',
     h.rootHandlers.focusin({target:{closest(){inspected++;return null;}}});
     assert.equal(inspected,0);
   }
+});
+
+const prepHelpers = () => new Function(wire+`;return {
+ selection:typeof fdPrepareSelection==='function'?fdPrepareSelection:null,
+ route:typeof fdPrepareSelectionRoute==='function'?fdPrepareSelectionRoute:null,
+ frame:typeof fdPrepareFrameParams==='function'?fdPrepareFrameParams:null,
+ resource:fdResourceRequest, ref:fdRouteForRef, tab:fdRouteForTab};`)();
+test('preparation messages accept only exact task and numeric time selections',()=>{
+ const P=prepHelpers(), valid={type:'prepare-selection',task:'note',minutes:15};
+ assert.deepEqual(P.selection(valid),{task:'note',minutes:15});
+ for(const bad of [null,[],{...valid,answer:'private'},{...valid,minutes:'15'},{...valid,minutes:10},{...valid,task:'other'},{task:'note',minutes:15}]) assert.equal(P.selection(bad),null);
+});
+test('preparation routes and frame queries reject ambiguity and strip unrelated parameters',()=>{
+ const P=prepHelpers(), selection={task:'note',minutes:15};
+ assert.equal(P.route('?tool=prepare-for-tomorrow.html',selection),'?tool=prepare-for-tomorrow.html&prepareTask=note&prepareMinutes=15');
+ for(const q of ['?tool=oral.html','?tool=prepare-for-tomorrow.html&tool=oral.html','?tool=prepare-for-tomorrow.html&page=doc_oral.md']) assert.equal(P.route(q,selection),null);
+ const dirty='?tool=prepare-for-tomorrow.html&prepareTask=note&prepareMinutes=15&block=1&n=3&limit=4&cat=x&resume=1&case=unrelated';
+ assert.equal(P.frame(dirty),'prepareTask=note&prepareMinutes=15');
+ assert.equal(P.resource('prepare-for-tomorrow.html',dirty).frameSuffix,'?prepareTask=note&prepareMinutes=15&governed=1');
+ for(const q of ['?prepareTask=note','?prepareMinutes=15','?prepareTask=note&prepareTask=rounds&prepareMinutes=15','?prepareTask=note&prepareMinutes=015']) assert.equal(P.frame(q),'');
+ for(const dest of ['doc_oral.md','oral.html']) assert.doesNotMatch(P.ref(dest,dirty),/prepareTask|prepareMinutes|block=|resume=/);
+ assert.doesNotMatch(P.tab('today',dirty),/prepareTask|prepareMinutes/);
+ assert.equal(P.resource('oral.html','?tool=oral.html&block=1&n=3').frameSuffix,'?block=1&n=3&governed=1');
+});
+test('selection replaces only URL, keeps exact history snapshot, and survives reading then Back',()=>{
+ const ls=memStorage({cw_block_v1:'sentinel'}), LocalF=make(ls);
+ const location={href:'https://example.test/?tool=prepare-for-tomorrow.html',pathname:'/',search:'?tool=prepare-for-tomorrow.html'};
+ const memory=memoryHistory(location), mounts=[], renders=[];
+ const index={...FOUR_INDEX,byRef:{'prepare-for-tomorrow.html':{f:'prepare-for-tomorrow.html',k:'tool'},'doc_oral.md':{f:'doc_oral.md',k:'md'}}};
+ const h=fakeHarness({...roleContext,screen:'app',tab:'today',openId:'prepare-for-tomorrow.html',fromTab:'today'}, {F:LocalF,index,location,history:memory.history,openResource:(ref,opts)=>mounts.push({ref,opts}),render:s=>renders.push(s)});
+ memory.bind(h.windowHandlers.popstate);const snapshot=memory.history.state, before=ls.dump(), count=renders.length;
+ assert.equal(h.controller.replacePrepareSelection({task:'note',minutes:15}),true);
+ assert.equal(memory.entries.length,1);assert.equal(memory.history.state,snapshot);assert.equal(renders.length,count);assert.deepEqual(mounts,[]);assert.deepEqual(ls.dump(),before);
+ h.controller.dispatch({'data-fd-open':'doc_oral.md'});assert.equal(memory.entries.length,2);
+ memory.go(-1);assert.equal(h.controller.getState().openId,'prepare-for-tomorrow.html');assert.equal(mounts.at(-1).opts.fromHistory,true);assert.match(mounts.at(-1).opts.search,/prepareTask=note&prepareMinutes=15/);assert.equal(ls.dump().cw_block_v1,'sentinel');
+ h.controller.destroy();const url=location.href;assert.equal(h.controller.replacePrepareSelection({task:'rounds',minutes:5}),false);assert.equal(location.href,url);
+});
+test('selection replacement refuses uncommitted, faculty preview, wrong active resource and wrong outer route',()=>{
+ for(const options of [{commitStartup:false},{facultyPreview:{}},{other:true},{query:'?tool=oral.html'},{query:'?tool=prepare-for-tomorrow.html&tool=oral.html'},{query:'?tool=prepare-for-tomorrow.html&page=doc_oral.md'}]) {
+  const query=options.query||'?tool=prepare-for-tomorrow.html',location={href:'https://example.test/'+query,pathname:'/',search:query},memory=memoryHistory(location);
+  const h=fakeHarness({...roleContext,screen:'app',tab:'today',openId:options.other?'oral.html':'prepare-for-tomorrow.html'}, {F,location,history:memory.history,...options});
+  const before=location.href,snapshot=memory.history.state,len=memory.entries.length;
+  assert.equal(h.controller.replacePrepareSelection({task:'note',minutes:15}),false);assert.equal(location.href,before);assert.equal(memory.history.state,snapshot);assert.equal(memory.entries.length,len);
+ }
 });

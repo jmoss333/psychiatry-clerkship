@@ -1,0 +1,181 @@
+{
+  "description": "Independent selected-label FDA JSON and DailyMed SPL identity/date/boxed-warning checks. SHA256 digests are retrieval evidence, not faculty signatures. Full raw labels retained only in local /tmp to avoid publishing dose text.",
+  "records": [
+    {
+      "id": "aripiprazole",
+      "setId": "c040bd1d-45b7-49f2-93ea-aed7220b30ac",
+      "effectiveDate": "2025-01-29",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "4c35eade13c4f67d77f98a7897806bce63232adcdc2c65c9b22ded8e7c2068ab",
+      "openFdaJsonSha256": "1022333305ea09525c020659f4e2ec3a529a0d719133e62b536061bdc320888c",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/c040bd1d-45b7-49f2-93ea-aed7220b30ac.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:c040bd1d-45b7-49f2-93ea-aed7220b30ac&limit=1"
+    },
+    {
+      "id": "buprenorphine",
+      "setId": "8a5edcf9-828c-4f97-b671-268ab13a8ecd",
+      "effectiveDate": "2025-12-22",
+      "boxedWarningPresent": false,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "bdd2abc29afa2da019ffe0a1caac4f81ffa326adddf2d2a6ee2621133b9b3d28",
+      "openFdaJsonSha256": "991f8a1a59e4e4a6e8a3ce90533b4e8815bd9a2c8b8cafbc5c1004f2ed6523c6",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/8a5edcf9-828c-4f97-b671-268ab13a8ecd.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:8a5edcf9-828c-4f97-b671-268ab13a8ecd&limit=1"
+    },
+    {
+      "id": "bupropion",
+      "setId": "a435da9d-f6e8-4ddc-897d-8cd2bf777b21",
+      "effectiveDate": "2026-02-10",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "45e742a03aecff5995918e5b3b8e2d85c9151fc8ad866d428733eba05fd3192b",
+      "openFdaJsonSha256": "5dacca86e7f7243898b5ca7367d76189efcc711063e6255994da257ed6fddf3e",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/a435da9d-f6e8-4ddc-897d-8cd2bf777b21.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:a435da9d-f6e8-4ddc-897d-8cd2bf777b21&limit=1"
+    },
+    {
+      "id": "buspirone",
+      "setId": "fa4d5cac-f687-4440-99d2-8bb27cf2f4ed",
+      "effectiveDate": "2026-09-04",
+      "boxedWarningPresent": false,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "8208d1e33c2a19170959702a60fe875fe7369aed00ec671c98f34cc89558a351",
+      "openFdaJsonSha256": "fc3aa334f06b4178546c3873f1aab61dcc2c0e3774c024574c7e24cd40fd347a",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/fa4d5cac-f687-4440-99d2-8bb27cf2f4ed.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:fa4d5cac-f687-4440-99d2-8bb27cf2f4ed&limit=1"
+    },
+    {
+      "id": "clomipramine",
+      "setId": "4074b555-7635-41a9-809d-fae3b3610059",
+      "effectiveDate": "2024-11-26",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "da26f1b12ac3b9e55225d025aa6cfb26bef50e6ea7b658a48a5ffe2ed72fb760",
+      "openFdaJsonSha256": "ef68c2ce837a8d6618e6e4f40248c4e5dba096fd0f03ea4009e81913d946338e",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/4074b555-7635-41a9-809d-fae3b3610059.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:4074b555-7635-41a9-809d-fae3b3610059&limit=1"
+    },
+    {
+      "id": "deutetrabenazine",
+      "setId": "7ea3c60a-45c7-44cc-afc2-d87fa53993c0",
+      "effectiveDate": "2025-02-28",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "e4797c75988e4a51db6e342132a4c142abcae5f0dc418a664a70516095837ff4",
+      "openFdaJsonSha256": "b8bc4df43b62f2a0577a91eaa7e6a2610bc97c98a7fff9895da917f930577c1c",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/7ea3c60a-45c7-44cc-afc2-d87fa53993c0.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:7ea3c60a-45c7-44cc-afc2-d87fa53993c0&limit=1"
+    },
+    {
+      "id": "escitalopram",
+      "setId": "13bb8267-1cab-43e5-acae-55a4d957630a",
+      "effectiveDate": "2023-10-01",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "2d69be0abcf9db2b79813d7547f097e2475457267a4d2ba4cf1b02ce1537b14a",
+      "openFdaJsonSha256": "d96b7cc3bddd6f5b302f63d27eec934e07f6730151c53ac377cd326962ee8570",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/13bb8267-1cab-43e5-acae-55a4d957630a.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:13bb8267-1cab-43e5-acae-55a4d957630a&limit=1"
+    },
+    {
+      "id": "fluvoxamine",
+      "setId": "d492230c-f56a-4759-ba86-7090b9f44063",
+      "effectiveDate": "2026-06-24",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "e409eabf143b54a7c3ec22ab3f2c313a7a53eeba82e7435d23094a3cdc09ac86",
+      "openFdaJsonSha256": "536e7b418ad56e83e6fd18101ab1cca8f86975c83938498c642a9fe27f17624f",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/d492230c-f56a-4759-ba86-7090b9f44063.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:d492230c-f56a-4759-ba86-7090b9f44063&limit=1"
+    },
+    {
+      "id": "lorazepam",
+      "setId": "89057c93-8155-4040-acec-64e877bd2b4c",
+      "effectiveDate": "2025-07-09",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "650a0814b590319f566c6a0c368112189cdd04f110c5e076db743e0b05b71f17",
+      "openFdaJsonSha256": "2f8601677ce02435e05f1d802e7dda98f7cc98f17498ad0ce21cda5cb4313fbe",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/89057c93-8155-4040-acec-64e877bd2b4c.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:89057c93-8155-4040-acec-64e877bd2b4c&limit=1"
+    },
+    {
+      "id": "mirtazapine",
+      "setId": "98ad1917-a094-44f5-a28f-a64a8cfcd887",
+      "effectiveDate": "2025-08-06",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "60a26e877e5df9da75fdcff76fb3c66bcd89aea7fdaee511793226917c2d1406",
+      "openFdaJsonSha256": "4126ca44fe148daa5edec7b333b8b3777ab2a823a2c1a1ae918087c558209afb",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/98ad1917-a094-44f5-a28f-a64a8cfcd887.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:98ad1917-a094-44f5-a28f-a64a8cfcd887&limit=1"
+    },
+    {
+      "id": "naloxone",
+      "setId": "a0ebc83d-2892-40de-bc0a-775ce90b30db",
+      "effectiveDate": "2026-08-17",
+      "boxedWarningPresent": false,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "82b39ec9297dc37e891bb27dce3b2b0bc73a0b57c57a3523d0036da023889a95",
+      "openFdaJsonSha256": "2d46af1c589773d0276b0221fdc6e2d4f5c3a7bd6c136b74d1a465f2d783522b",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/a0ebc83d-2892-40de-bc0a-775ce90b30db.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:a0ebc83d-2892-40de-bc0a-775ce90b30db&limit=1"
+    },
+    {
+      "id": "naltrexone",
+      "setId": "db911559-26f5-43a0-b61f-3425176c936f",
+      "effectiveDate": "2026-09-08",
+      "boxedWarningPresent": false,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "5d2aa6353a46a064d4c305ec66d475d3b9b0752c377a4432427ded5573546674",
+      "openFdaJsonSha256": "f5396453ae5dad3c386a3864d799994a8c904dddbd77f89db59bc1b2bfc66d77",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/db911559-26f5-43a0-b61f-3425176c936f.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:db911559-26f5-43a0-b61f-3425176c936f&limit=1"
+    },
+    {
+      "id": "quetiapine",
+      "setId": "8ae62aaf-f8c5-417f-baac-0098369ca322",
+      "effectiveDate": "2026-04-10",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "91ea566eb196bd4241557ef7696f7883912934d590952ef7d70154519e89938a",
+      "openFdaJsonSha256": "58a83cff2cf40b421f7a6342f59582b4ea94864c4a1468809b4f805de8d48539",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/8ae62aaf-f8c5-417f-baac-0098369ca322.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:8ae62aaf-f8c5-417f-baac-0098369ca322&limit=1"
+    },
+    {
+      "id": "risperidone",
+      "setId": "7e117c7e-02fc-4343-92a1-230061dfc5e0",
+      "effectiveDate": "2026-05-28",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "ce819162ad5c1512dd4cc652dcf6c67e01b416458b33571fa7bc682efcc146dd",
+      "openFdaJsonSha256": "ed04ea069599668acc7f313edd0fcabd60bdb825deef27e4dc087450061d1c52",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/7e117c7e-02fc-4343-92a1-230061dfc5e0.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:7e117c7e-02fc-4343-92a1-230061dfc5e0&limit=1"
+    },
+    {
+      "id": "valbenazine",
+      "setId": "4c970164-cafb-421f-9eb5-c226ef0a3417",
+      "effectiveDate": "2026-04-17",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "f03399069fa7f9b035f7ec0ccf89929db1846a25d857a2314d49b86d20abc0c0",
+      "openFdaJsonSha256": "ea9a4bf7288d626b13b847d348c76bae8615ee3eeb9b9384b63eb19c011a9f86",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/4c970164-cafb-421f-9eb5-c226ef0a3417.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:4c970164-cafb-421f-9eb5-c226ef0a3417&limit=1"
+    },
+    {
+      "id": "valproate",
+      "setId": "08a65cf4-7749-4ceb-6895-8f4805e2b01f",
+      "effectiveDate": "2026-03-31",
+      "boxedWarningPresent": true,
+      "checkedOn": "2026-10-03",
+      "dailyMedXmlSha256": "284a94a955c798bd9c3a589b06969cf89c9a69889beb8517fa73db20a4b76806",
+      "openFdaJsonSha256": "53fec6a11f3dc538ed601401b78230ed48ec0d1bc047269da27b64eedd980f20",
+      "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/08a65cf4-7749-4ceb-6895-8f4805e2b01f.xml",
+      "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:08a65cf4-7749-4ceb-6895-8f4805e2b01f&limit=1"
+    }
+  ]
+}

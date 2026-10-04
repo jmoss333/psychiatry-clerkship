@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(533 distinct `fd-*` selector names, 28 `is-*` state classes). Every class below has a rule in that file unless
+(537 distinct `fd-*` selector names, 28 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -128,9 +128,8 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
       .fd-carebtn          <button>          (phone-only Patient care resources shortcut)
       .fd-settingsbtn      <button>          (compact settings-panel gear)
   .fd-tabs                 <nav>          (hidden ≤640px)
-    .fd-tab                <button> ×5 standard / ×4 APP
-      .fd-tab__label[data-compact]       (Essentials and Care labels only)
-    .fd-tab[data-fd-tab="everything"] <button> (sits between Essentials and Care; opens the full Library)
+    .fd-tab                <button> ×4 standard / ×3 APP
+      .fd-tab__label[data-compact]       (Care label only)
     .fd-tab.fd-tab--care   <button>      (far-right Patient care resources destination)
 #fdDockMount               <div>          (sibling of #fdChromeMount and .fd-main)
   .fd-dock                <nav aria-label="Learning actions"> (≤640px only)
@@ -174,9 +173,9 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-dock` | `<nav aria-label="Learning actions">`; fixed five-column phone grid under `#fdDockMount`. Its safe-area padding is the only phone bottom-edge action surface. Hidden above 640px. |
 | `.fd-dock__item` | `<button>` for four of the five slots, `<details>` for Browse (see below). Every phone target has at least 44×44 CSS pixels and visible text. Height is bounded to 60px with three visible lines so a long reader title cannot exceed the 84px content clearance; the full text remains the accessible name. `[aria-current="page"]` marks the active top-level destination; `:disabled` dims an unavailable item. |
 | `.fd-dock__item--context` | Modifier on the center button. A marked primary source forwards its existing click through `data-fd-dock-forward` and is marked by its terracotta fill, level with the other four (2026-10-01; it used to be raised out of the bar, which left its label above the rest); absent or stale source opens the Library (Essentials) as a flat **Essential** item (singular since 2026-09-27: at 390px the plural split mid-word, `Essential`/`s`). Renamed from **Browse** (2026-09-25) once the dedicated `.fd-dock__browse` item shipped beside it -- both landing on the same word read as a duplicate-label bug rather than two purposeful controls, since this fallback only appears when nothing is actively being read while the dedicated Browse item is always present. The reader's marked source stays in the hidden legacy action bar solely to own its behavior; Today sources remain visible in their cards. |
-| `.fd-dock__browse` | Replaces the dock's old Search button (2026-09-25) and carries Search as its third item (2026-09-26): the phone header is not pinned -- it scrolls away with the page -- so `.fd-searchbtn` is out of reach mid-page, and reaching it scrolls the reader (and its saved reading place) to the top. A native `<details>`/`<summary>` disclosure, not a dispatched action: opening/closing it is browser-owned, so it needs no state field and nothing to reset on unrelated navigation. `fdRenderDock` replaces the dock's entire innerHTML on every refresh, which closes an open disclosure for free -- except while search is open, when `fdRenderDock` retains the open disclosure because its Search item is the dialog's opener and must survive hydration to take focus back. Overrides `.fd-dock__item`'s `overflow:hidden`/line-clamp (built for a plain text label) with `overflow:visible`, since `.fd-dock__browsemenu` is an absolutely-positioned descendant that must escape this box to float above the dock. |
+| `.fd-dock__browse` | Replaces the dock's old Search button (2026-09-25) and carries Search as its third item (2026-09-26): the phone header is not pinned -- it scrolls away with the page -- so `.fd-searchbtn` is out of reach mid-page, and reaching it scrolls the reader (and its saved reading place) to the top. A native `<details>`/`<summary>` disclosure, not a dispatched action: opening/closing it is browser-owned, so it needs no state field and nothing to reset on unrelated navigation. `fdRenderDock` retains this disclosure during same-route refreshes and while Search is open, preserving its open state and focused control. Navigation closes it. Escape closes it and focuses its summary. Overrides `.fd-dock__item`'s `overflow:hidden`/line-clamp (built for a plain text label) with `overflow:visible`, since `.fd-dock__browsemenu` is an absolutely-positioned descendant that must escape this box to float above the dock. |
 | `.fd-dock__browsemenu` | The popover revealed by `.fd-dock__browse[open]`; `position:absolute;bottom:100%` anchors it above the dock. `role="menu"`. |
-| `.fd-dock__browseitem` | `<button role="menuitem" data-fd-dock-browse-go="essentials"\|"full"\|"search">` -- a thin alias fd_wire.js resolves onto `data-fd-library-view` (the exact action the desktop Essentials/Everything tabs use) or `data-fd-search`. Its own attribute, never the target's: a bare `data-fd-library-view="full"` would duplicate the Library footer button, and a bare `data-fd-search` would let focus restore land on the off-screen header `.fd-searchbtn`. |
+| `.fd-dock__browseitem` | `<button role="menuitem" data-fd-dock-browse-go="essentials"\|"full"\|"search">` -- a thin alias fd_wire.js resolves onto `data-fd-library-view` (the exact action the local Library view switch uses) or `data-fd-search`. Its own attribute, never the target's: a bare `data-fd-library-view="full"` would duplicate the Library footer button, and a bare `data-fd-search` would let focus restore land on the off-screen header `.fd-searchbtn`. |
 
 The renderer inserts the context button after the two leading destinations, making it the third
 of five items, with Browse fourth and Capture fifth. APP changes the first two labels and routes
@@ -256,6 +255,10 @@ ancestor; there is no modifier class for it.
           .fd-continue__seg(.is-done) ×N   one per activity, filled from the left
       .fd-setupcta    <button>         (alternative to .fd-continue when no week is set)
         .fd-setupcta__kicker / .fd-setupcta__title
+      .fd-prepare     <section>        optional MS3 tool invitation after the lead-end marker/runtime daily rows
+        .fd-prepare__title <h2>        canonical item title
+        .fd-prepare__copy <p>          task and 5/15-minute choice
+        governanceBadge(compact)       ordinary review status; one .fd-btn--ghost[data-fd-open]
       .fd-offline     <section>        compact Offline availability disclosure after the primary action
         .fd-offline__open <button>      status plus aria-expanded
         .fd-offline__details            in-flow, hidden until opened
@@ -290,6 +293,7 @@ ancestor; there is no modifier class for it.
 | `.fd-quicktool` (label) | `fdQuickToolLabel` shows the title before its ` — ` subtitle ("The Interview Room"), and the full title rides on the button as `title` (2026-10-01). |
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
 | `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
+| `.fd-prepare`, `.fd-prepare__title`, `.fd-prepare__copy` | Optional preparation invitation, emitted only for the resolved known tool item. Uses warm surface, neutral hairline and ordinary teal action; it stays below primary and runtime daily work, with one existing `data-fd-open` route. It introduces no primary rule, durable state or nested scrolling. |
 | `.fd-pilot` | Shared active-testing invitation (2026-09-21). Its `.fd-pilot__button` uses the existing `.pgfb-b` launcher and adds `data-fb-context="Today landing page"`; no second form or submission channel is introduced. |
 | `.fd-offline` | One in-flow cache receipt after Today's actual primary card, or immediately after the APP's marked primary resource inside its starting-route resources or selected task's Prepare links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
 | `.fd-today__exam` | Today's exam-date nudge, after the primary action (and the offline availability receipt when present), before the week list. Rendered only on the path that ends in an exam and only until a parseable date is stored (`fdExamDatePrompt`, `fd_state.js`). The date has exactly one home, the settings panel's Pacing field (`.fd-set__date`, `fd_sheet.js`) — this nudge carries no field of its own. `.fd-today__examcta` reopens Settings via the SAME `data-fd-settings` action the gear exposes: a second *trigger* for one action, not a second action. It does not disappear on its own — closing the field's `change` handler only sets `baseStale` (`fd_wire.js`); Today's base render, this nudge included, is rebuilt the next time `absorbStaleBase` finds that flag set, which is exactly when the panel closes (`data-fd-close-sheet` always touches `sheet`, a base-triggering settlement). That render destroys the CTA along with the rest of the stale Today markup, so `restoreInvoker` finds it disconnected and falls back to `equivalentControl` — any live control sharing the same action attribute and value, i.e. the gear — needing no bespoke focus-restore code of its own. (2026-09-26 — previously this duplicated the panel's own `<input type=date>` inline and deliberately avoided `data-fd-settings` for this same reason, before this settle-on-close path was confirmed to cover it.) |
@@ -613,13 +617,15 @@ this subtree:
           .fd-kit__tool-tabs [role=tablist]
             .fd-kit__tool-tab <button role=tab> ×N
           .fd-kit__tool-preview [role=tabpanel]
-            h3 / p / .fd-btn[data-fd-open]
+            h3 / p / governanceBadge(compact) / .fd-btn[data-fd-open]
       .fd-kit__teaching                  (external teaching companion)
         h3
         .fd-teachinglink <a>
           .fd-teachinglink__title / .fd-teachinglink__description
         .fd-teachinglink__note
 ```
+
+The selected `.fd-kit__tool-preview` includes the shared compact governance badge after its title/hint and before its single launch button. Its status follows the resolved item, including pending preparation content; tool selection remains transient.
 
 At 1000px and wider, `.fd-kit__layout` is a 3:1 readings/tool-rail grid. Below 1000px the
 readings and tools stack in document order: **readings first, at every width** (2026-09-26). The tool
@@ -1019,6 +1025,13 @@ Markup must not carry colour. Every colour is a `var(--fd-*)` token declared in
 dark value). `tests/fd-tokens.test.mjs` fails the build on any raw hex in `frontdoor.css`, and
 `tests/fd-contrast.test.mjs` enforces WCAG AA across both palettes.
 
+**Red means safety (2026-10-01).** `frontdoor.css` paints no `--fd-terracotta*` at all, and
+`--fd-danger*` only on safety and crisis surfaces (Safety button, Safety kit, crisis blocks and their
+failure notices), form errors and destructive controls. Teal is "act / you are here" (logo, primary
+buttons, the dock's forward action, selected and current markers); olive is review/recall and small
+labels; status notices are neutral (`.fd-offline.is-not-ready` reads `--fd-callout` with a
+`--fd-text-dim` rule). `tests/fd-tokens.test.mjs` fails on a new terracotta or an unlisted red.
+
 The one custom property the markup owns is `--fd-ring-pct` on Path's `.fd-timeline__number`.
 
 Offline availability: `.fd-offline__open` wraps its label and cache status for small screens and large text; its status describes the current route cache, not clinical or shift readiness. The family-conversation result uses the existing `.fd-btn.fd-btn--ghost` internal Playbook control, only when the active audience index contains `family_playbook.md`.
@@ -1036,3 +1049,17 @@ its state through same-session navigation and rerenders, and the preparation
 chooser's Study action opens it before focusing the selected duration. Live
 blocks never enter the disclosure. The expanded purpose chooser stays before
 timed study; the primary picker and due-review routes are unchanged.
+
+
+### Shared Library navigation (2026-10-03)
+
+The desktop header has one **Library** destination, selected for both Essentials and
+Everything. The phone disclosure uses the same **Library** label and retains Search. Its summary
+marks the current Library destination, including the Everything view; the center
+Essential shortcut is not incorrectly marked current for Everything.
+`.fd-library__views` is a wrapping local view switch above either Library heading;
+its two `.fd-btn` controls have 44px minimum height and `aria-pressed` selection,
+with the existing teal action/location tokens. It replaces the distant Everything
+footer and full-view return button. Existing Library routes remain unchanged.
+Same-route dock refreshes retain the disclosure and focused choice; route changes
+close it. Escape closes the disclosure and returns focus to its summary.
