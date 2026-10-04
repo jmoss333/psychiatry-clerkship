@@ -1,0 +1,4435 @@
+{
+  "description": "Pending authored revisions; source evidence and before/after text are not clinical approval.",
+  "previousHead": "5fee2fdeb6ca04f1036e6bbff3a7340ffdd6611a",
+  "records": [
+    {
+      "id": "valproate",
+      "source": {
+        "id": "valproate",
+        "setId": "08a65cf4-7749-4ceb-6895-8f4805e2b01f",
+        "effectiveDate": "2026-03-31",
+        "boxedWarningPresent": true,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "284a94a955c798bd9c3a589b06969cf89c9a69889beb8517fa73db20a4b76806",
+        "openFdaJsonSha256": "53fec6a11f3dc538ed601401b78230ed48ec0d1bc047269da27b64eedd980f20",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/08a65cf4-7749-4ceb-6895-8f4805e2b01f.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:08a65cf4-7749-4ceb-6895-8f4805e2b01f&limit=1"
+      },
+      "sections": "Indications; contraindications; warnings 5.1\u20135.6, 5.8\u20135.10; interactions; patient counseling",
+      "changes": [
+        {
+          "field": "brands",
+          "before": [
+            "Depakote",
+            "Depakote ER"
+          ],
+          "after": [
+            "Depakote"
+          ]
+        },
+        {
+          "field": "inpatientUses",
+          "before": [
+            {
+              "use": "Acute mania, including mixed and rapid-cycling presentations",
+              "offLabel": false,
+              "evidenceIds": [
+                "canmat-isbd-bipolar-2018"
+              ]
+            }
+          ],
+          "after": [
+            {
+              "use": "Treatment of acute manic episodes associated with bipolar disorder (selected delayed-release product)",
+              "offLabel": false,
+              "evidenceIds": [
+                "canmat-isbd-bipolar-2018"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "Titrated to a serum level; delayed- and extended-release forms are not interchangeable one-for-one. Confirm dose with pharmacy.",
+            "forms": [
+              "PO",
+              "ER",
+              "liquid",
+              "IV"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08a65cf4-7749-4ceb-6895-8f4805e2b01f"
+          },
+          "after": {
+            "titration": "Selected label: oral delayed-release divalproex tablets, swallowed whole. Titrate with clinical response and serum levels; confirm the plan with pharmacy. Extended-release, liquid and IV products require separate labels and review.",
+            "forms": [
+              "PO"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08a65cf4-7749-4ceb-6895-8f4805e2b01f"
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "LFTs",
+              "CBC with platelets",
+              "\u03b2-hCG"
+            ],
+            "ongoing": [
+              "Level",
+              "LFTs and CBC periodically",
+              "Ammonia if the patient becomes confused"
+            ],
+            "sourcePage": "med_monitoring.md"
+          },
+          "after": {
+            "baseline": [
+              "LFTs",
+              "CBC with platelets",
+              "\u03b2-hCG",
+              "Coagulation tests and bleeding history",
+              "Assess pregnancy plans, contraception and POLG/urea-cycle disease history"
+            ],
+            "ongoing": [
+              "Level",
+              "LFTs and CBC periodically",
+              "Ammonia if the patient becomes confused",
+              "Liver tests frequently early in treatment; do not rely on tests alone if symptoms develop",
+              "Platelet counts and coagulation tests periodically and before planned surgery; assess bruising or bleeding"
+            ],
+            "sourcePage": "med_monitoring.md"
+          }
+        },
+        {
+          "field": "adverseEffects",
+          "before": {
+            "common": [
+              "Nausea",
+              "Weight Gain",
+              "Tremor",
+              "Alopecia",
+              "Sedation"
+            ],
+            "dangerous": [
+              {
+                "name": "Hyperammonemic encephalopathy",
+                "recognize": "Worsening confusion or delirium, even with normal LFTs.",
+                "firstMove": "Send an ammonia level, not just a hepatic panel; tell the senior."
+              },
+              {
+                "name": "Hepatotoxicity and pancreatitis",
+                "recognize": "Nausea, vomiting, abdominal pain, jaundice.",
+                "firstMove": "Check LFTs and lipase; hold and escalate."
+              },
+              {
+                "name": "Teratogenicity",
+                "recognize": "Valproate is the most teratogenic (~9\u201310% MCM rate; neural tube defects, dose-dependent IQ reduction of 7\u201310 points).",
+                "firstMove": "\u03b2-hCG before starting; avoid in anyone who may become pregnant when alternatives exist."
+              }
+            ]
+          },
+          "after": {
+            "common": [
+              "Nausea",
+              "Weight Gain",
+              "Tremor",
+              "Alopecia",
+              "Sedation"
+            ],
+            "dangerous": [
+              {
+                "name": "Hyperammonemic encephalopathy",
+                "recognize": "New confusion, lethargy or vomiting, even with normal liver tests.",
+                "firstMove": "Obtain urgent senior assessment and an ammonia level; the team should assess holding treatment."
+              },
+              {
+                "name": "Hepatotoxicity and pancreatitis",
+                "recognize": "New abdominal pain, vomiting, marked malaise or jaundice.",
+                "firstMove": "Hold treatment pending urgent senior assessment; evaluate liver injury and pancreatitis."
+              },
+              {
+                "name": "Fetal harm",
+                "recognize": "Exposure in pregnancy can cause major birth defects and adverse neurodevelopment.",
+                "firstMove": "Review pregnancy status and plans before starting; urgently involve the prescriber if pregnancy occurs. Do not abruptly stop treatment without medical guidance."
+              },
+              {
+                "name": "Thrombocytopenia and bleeding",
+                "recognize": "New bruising, bleeding or abnormal platelet/coagulation results.",
+                "firstMove": "Notify the senior and assess blood counts, coagulation and the treatment plan."
+              }
+            ]
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {
+              "inhibits": [
+                "UGT (glucuronidation)",
+                "2C9"
+              ]
+            },
+            "keyTraps": [
+              "Lamotrigine: valproate roughly doubles lamotrigine levels \u2014 adjust the titration",
+              "Carbamazepine and other enzyme inducers lower valproate levels"
+            ]
+          },
+          "after": {
+            "cyp": {
+              "inhibits": [
+                "UGT (glucuronidation)",
+                "2C9"
+              ]
+            },
+            "keyTraps": [
+              "Lamotrigine: valproate roughly doubles lamotrigine levels \u2014 adjust the titration",
+              "Carbamazepine and other enzyme inducers lower valproate levels",
+              "Carbapenem antibiotics may markedly lower valproate concentrations and cause loss of seizure control; urgently review alternatives and monitoring with pharmacy.",
+              "Topiramate increases the risk of hyperammonemia and encephalopathy."
+            ]
+          }
+        },
+        {
+          "field": "populations",
+          "before": {
+            "pregnancy": "Most teratogenic mood stabilizer: \u03b2-hCG before starting; avoid in people who can become pregnant when alternatives exist.",
+            "hepatic": "Contraindicated in significant hepatic impairment."
+          },
+          "after": {
+            "pregnancy": "For bipolar disorder, do not use in people who are pregnant, planning pregnancy or able to become pregnant unless alternatives have failed or are unacceptable. Counsel about fetal risks and effective contraception. Migraine prophylaxis is contraindicated in pregnancy and in people who could become pregnant without effective contraception.",
+            "hepatic": "Contraindicated in hepatic disease or significant hepatic dysfunction. Known POLG-related mitochondrial disorders and urea-cycle disorders are contraindications; assess relevant history before treatment."
+          }
+        },
+        {
+          "field": "familyExplainer",
+          "before": {
+            "text": "Valproate helps control mania. It needs blood tests for levels, the liver, and blood counts. It can harm an unborn baby, so pregnancy must be avoided. Call the team for new confusion, belly pain, vomiting, or yellow skin.",
+            "handoutRef": "FH-MED02"
+          },
+          "after": {
+            "text": "This drug helps control mania. It needs blood tests for the liver, blood counts and drug level. It can harm a baby during pregnancy. Talk with the team about birth control and pregnancy plans. Call for new confusion, belly pain, yellow skin or bleeding.",
+            "handoutRef": "FH-MED02"
+          }
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "valproate",
+            "reconnectRecords": [
+              "medications[name=Valproate]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Mood Stabilizer/Anticonvulsant",
+              "mechanism_of_action": "GABA enhancement; histone deacetylase inhibition; sodium channel blockade",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Significant Gain",
+              "Requires Blood Monitoring": "Yes",
+              "ekg_required": "No",
+              "baseline_workup": "CBC; LFTs; pregnancy test",
+              "half_life_hours": "15",
+              "time_to_effect": "1-2 weeks",
+              "counseling": "AVOID in women of childbearing potential (severe birth defects). Monitor LFTs and platelets. Report abdominal pain, bruising, or jaundice.",
+              "family_handout_ref": "FH-MED02",
+              "common_side_effects": "Nausea; Weight Gain; Tremor; Alopecia; Sedation",
+              "cyp_pathways": "2C9 inhibitor; 2C19 inhibitor; glucuronidation"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "GABA enhancement; histone deacetylase inhibition; sodium channel blockade"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+                  "quote": "Valproate is effective, particularly for mixed/rapid-cycling presentations, but is teratogenic (neural tube defects) and associated with PCOS and weight gain \u2014 generally avoid in people who can become pregnant when alternatives exist."
+                }
+              ],
+              "monitoring": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "| **Valproate** | LFTs, CBC (platelets), \u03b2-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** \u2014 hyperammonaemic encephalopathy occurs with normal LFTs |"
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "| **Valproate** | LFTs, CBC (platelets), \u03b2-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** \u2014 hyperammonaemic encephalopathy occurs with normal LFTs |"
+                },
+                {
+                  "page": "14_Tracks/Resident/cl_reference.md",
+                  "quote": "valproate-induced **hyperammonaemic encephalopathy** presents as worsening delirium and can occur with normal LFTs, so send an **ammonia level**, not just a hepatic panel."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Answer:** Valproate is the most teratogenic (~9\u201310% MCM rate; neural tube defects, dose-dependent IQ reduction of 7\u201310 points)."
+                },
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "- Valproate and lithium are teratogenic \u2014 \u03b2-hCG before starting, and avoid valproate in anyone who may become pregnant."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Nausea; Weight Gain; Tremor; Alopecia; Sedation"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2C9 inhibitor; 2C19 inhibitor; glucuronidation"
+                }
+              ],
+              "interactions.keyTraps": [
+                {
+                  "page": "14_Tracks/Resident/adv_psychopharmacology.md",
+                  "quote": "dosing must be adjusted when combined with valproate or estrogen-containing contraceptives"
+                }
+              ],
+              "populations": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "- Valproate and lithium are teratogenic \u2014 \u03b2-hCG before starting, and avoid valproate in anyone who may become pregnant."
+                },
+                {
+                  "page": "14_Tracks/Resident/cl_reference.md",
+                  "quote": "**Valproate is contraindicated in significant hepatic impairment**"
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "| **Valproate** | LFTs, CBC (platelets), \u03b2-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** \u2014 hyperammonaemic encephalopathy occurs with normal LFTs |"
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** \u2014 lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Evidence:** The BALANCE trial showed lithium monotherapy and lithium + valproate were both superior to valproate monotherapy for relapse prevention."
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "AVOID in women of childbearing potential (severe birth defects). Monitor LFTs and platelets. Report abdominal pain, bruising, or jaundice."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[0].recognize",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "adverseEffects.dangerous[2].firstMove",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "interactions.cyp",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "pearls.t1[0]"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Mood Stabilizer/Anticonvulsant",
+                "usedValue": "mood stabilizer (anticonvulsant)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "valproate",
+            "reconnectRecords": [
+              "medications[name=Valproate]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Mood Stabilizer/Anticonvulsant",
+              "mechanism_of_action": "GABA enhancement; histone deacetylase inhibition; sodium channel blockade",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Significant Gain",
+              "Requires Blood Monitoring": "Yes",
+              "ekg_required": "No",
+              "baseline_workup": "CBC; LFTs; pregnancy test",
+              "half_life_hours": "15",
+              "time_to_effect": "1-2 weeks",
+              "counseling": "AVOID in women of childbearing potential (severe birth defects). Monitor LFTs and platelets. Report abdominal pain, bruising, or jaundice.",
+              "family_handout_ref": "FH-MED02",
+              "common_side_effects": "Nausea; Weight Gain; Tremor; Alopecia; Sedation",
+              "cyp_pathways": "2C9 inhibitor; 2C19 inhibitor; glucuronidation"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "GABA enhancement; histone deacetylase inhibition; sodium channel blockade"
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Nausea; Weight Gain; Tremor; Alopecia; Sedation"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2C9 inhibitor; 2C19 inhibitor; glucuronidation"
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "| **Valproate** | LFTs, CBC (platelets), \u03b2-hCG | Level; LFTs and CBC periodically; **send an ammonia level if the patient gets confused** \u2014 hyperammonaemic encephalopathy occurs with normal LFTs |"
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** \u2014 lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Evidence:** The BALANCE trial showed lithium monotherapy and lithium + valproate were both superior to valproate monotherapy for relapse prevention."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous",
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[0].recognize",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "adverseEffects.dangerous[2].firstMove",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.baseline",
+              "monitoring.ongoing",
+              "pearls",
+              "pearls.t1[0]",
+              "populations",
+              "populations.hepatic",
+              "populations.pregnancy"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Mood Stabilizer/Anticonvulsant",
+                "usedValue": "mood stabilizer (anticonvulsant)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "lorazepam",
+      "source": {
+        "id": "lorazepam",
+        "setId": "89057c93-8155-4040-acec-64e877bd2b4c",
+        "effectiveDate": "2025-07-09",
+        "boxedWarningPresent": true,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "650a0814b590319f566c6a0c368112189cdd04f110c5e076db743e0b05b71f17",
+        "openFdaJsonSha256": "2f8601677ce02435e05f1d802e7dda98f7cc98f17498ad0ce21cda5cb4313fbe",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/89057c93-8155-4040-acec-64e877bd2b4c.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:89057c93-8155-4040-acec-64e877bd2b4c&limit=1"
+      },
+      "sections": "Indications; boxed warning; precautions (hepatic encephalopathy); interactions; dependence/withdrawal; dosage/discontinuation",
+      "changes": [
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "No active metabolites (glucuronidated). PO, SL, IM, and IV forms. Confirm dose with pharmacy.",
+            "forms": [
+              "PO",
+              "SL",
+              "IM",
+              "IV"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=89057c93-8155-4040-acec-64e877bd2b4c"
+          },
+          "after": {
+            "titration": "Selected label: oral tablets for anxiety. Use the lowest effective exposure and reassess continued need; plan a gradual, individualized taper after regular use. Injectable and sublingual use require separate sources and review. Confirm the plan with pharmacy.",
+            "forms": [
+              "PO"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=89057c93-8155-4040-acec-64e877bd2b4c"
+          }
+        },
+        {
+          "field": "pk",
+          "before": {
+            "halfLifeHours": "12",
+            "timeToEffect": "15-30 minutes (anxiety); 5 minutes (IV)"
+          },
+          "after": {
+            "halfLifeHours": "12",
+            "timeToEffect": "Selected oral label: peak plasma concentrations occur after oral administration; onset and clinical response vary. Injectable onset is outside this card scope."
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "Respiratory status",
+              "Opioid and alcohol use"
+            ],
+            "ongoing": [
+              "Sedation and respiratory rate",
+              "Falls"
+            ]
+          },
+          "after": {
+            "baseline": [
+              "Respiratory status",
+              "Opioid and alcohol use",
+              "Assess misuse, dependence and withdrawal risk; document continued-use and taper plans",
+              "Assess hepatic insufficiency and encephalopathy"
+            ],
+            "ongoing": [
+              "Sedation and respiratory rate",
+              "Falls",
+              "Reassess benefit, misuse and dependence; monitor withdrawal during an individualized taper"
+            ]
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {},
+            "keyTraps": [
+              "Opioids, alcohol, and other sedatives",
+              "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+            ]
+          },
+          "after": {
+            "cyp": {},
+            "keyTraps": [
+              "Opioids, alcohol and other sedatives increase respiratory-depression risk.",
+              "Valproate and probenecid reduce lorazepam clearance; pharmacy must assess adjustment and monitoring.",
+              "Glucuronidation does not remove hepatic encephalopathy or severe hepatic insufficiency precautions."
+            ]
+          }
+        },
+        {
+          "field": "populations",
+          "before": {
+            "hepatic": "A 'LOT' drug: conjugated by glucuronidation, which is preserved in cirrhosis."
+          },
+          "after": {
+            "hepatic": "Lorazepam is glucuronidated, but this does not establish safety in cirrhosis. It can worsen hepatic encephalopathy; use caution and careful adjustment in severe hepatic insufficiency or encephalopathy."
+          }
+        },
+        {
+          "field": "pearls",
+          "before": {
+            "t1": [
+              "A positive lorazepam challenge both supports the diagnosis and begins treatment."
+            ],
+            "t2": [
+              "In hepatic impairment, reach for a LOT drug (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+            ]
+          },
+          "after": {
+            "t1": [
+              "A positive lorazepam challenge both supports the diagnosis and begins treatment."
+            ],
+            "t2": [
+              "Glucuronidation is not a guarantee of safety in cirrhosis; assess encephalopathy, respiratory status and sedation."
+            ]
+          }
+        },
+        {
+          "field": "attendingAsks",
+          "before": [
+            "What does a positive lorazepam challenge tell you?",
+            "Which benzodiazepines are safer in cirrhosis, and why?",
+            "What combination causes respiratory depression?"
+          ],
+          "after": [
+            "What does a positive lorazepam challenge tell you?",
+            "Why does glucuronidation not guarantee safety in severe liver disease?",
+            "What combination causes respiratory depression?"
+          ]
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "lorazepam",
+            "reconnectRecords": [
+              "medications[name=Lorazepam]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Benzodiazepine",
+              "mechanism_of_action": "GABA-A receptor positive allosteric modulator",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Neutral",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "None routinely required",
+              "half_life_hours": "12",
+              "time_to_effect": "15-30 minutes (anxiety); 5 minutes (IV)",
+              "counseling": "Fast-acting but habit-forming. Do not use with alcohol or opioids. Do not stop abruptly - seizure risk. No drug interactions via CYP.",
+              "family_handout_ref": "FH-MED05",
+              "common_side_effects": "Sedation; Dizziness; Weakness; Confusion",
+              "cyp_pathways": "Glucuronidation (no CYP)"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "GABA-A receptor positive allosteric modulator"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md",
+                  "quote": "**The lorazepam challenge.** A test dose of lorazepam (IV or IM) is both a diagnostic maneuver and the start of treatment."
+                },
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Sedation; Dizziness; Weakness; Confusion"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "Glucuronidation (no CYP)"
+                }
+              ],
+              "interactions.keyTraps": [
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+                }
+              ],
+              "populations": [
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md",
+                  "quote": "- A positive lorazepam challenge both supports the diagnosis and begins treatment."
+                },
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Fast-acting but habit-forming. Do not use with alcohol or opioids. Do not stop abruptly - seizure risk. No drug interactions via CYP."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[0].recognize",
+              "adverseEffects.dangerous[1].firstMove",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[2]",
+              "interactions.cyp",
+              "interactions.keyTraps[0]",
+              "mechanism.t1",
+              "monitoring"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Benzodiazepine",
+                "usedValue": "benzodiazepine (intermediate-acting)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "J",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "lorazepam",
+            "reconnectRecords": [
+              "medications[name=Lorazepam]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Benzodiazepine",
+              "mechanism_of_action": "GABA-A receptor positive allosteric modulator",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Neutral",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "None routinely required",
+              "half_life_hours": "12",
+              "time_to_effect": "15-30 minutes (anxiety); 5 minutes (IV)",
+              "counseling": "Fast-acting but habit-forming. Do not use with alcohol or opioids. Do not stop abruptly - seizure risk. No drug interactions via CYP.",
+              "family_handout_ref": "FH-MED05",
+              "common_side_effects": "Sedation; Dizziness; Weakness; Confusion",
+              "cyp_pathways": "Glucuronidation (no CYP)"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "GABA-A receptor positive allosteric modulator"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md",
+                  "quote": "**The lorazepam challenge.** A test dose of lorazepam (IV or IM) is both a diagnostic maneuver and the start of treatment."
+                },
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "- In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) \u2014 glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not."
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal \u2014 match your urgency accordingly."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Sedation; Dizziness; Weakness; Confusion"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "Glucuronidation (no CYP)"
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Fast-acting but habit-forming. Do not use with alcohol or opioids. Do not stop abruptly - seizure risk. No drug interactions via CYP."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[0].recognize",
+              "adverseEffects.dangerous[1].firstMove",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[2]",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "interactions.keyTraps[0]",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.baseline",
+              "monitoring.ongoing",
+              "pearls",
+              "pearls.t2",
+              "pk",
+              "populations",
+              "populations.hepatic"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Benzodiazepine",
+                "usedValue": "benzodiazepine (intermediate-acting)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "buprenorphine",
+      "source": {
+        "id": "buprenorphine",
+        "setId": "8a5edcf9-828c-4f97-b671-268ab13a8ecd",
+        "effectiveDate": "2025-12-22",
+        "boxedWarningPresent": false,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "bdd2abc29afa2da019ffe0a1caac4f81ffa326adddf2d2a6ee2621133b9b3d28",
+        "openFdaJsonSha256": "991f8a1a59e4e4a6e8a3ce90533b4e8815bd9a2c8b8cafbc5c1004f2ed6523c6",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/8a5edcf9-828c-4f97-b671-268ab13a8ecd.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:8a5edcf9-828c-4f97-b671-268ab13a8ecd&limit=1"
+      },
+      "sections": "Indications; administration/induction; warnings (CNS depressants, hepatic events, withdrawal, dental events); interactions; specific populations",
+      "changes": [
+        {
+          "field": "brands",
+          "before": [
+            "Suboxone",
+            "Zubsolv"
+          ],
+          "after": [
+            "Suboxone"
+          ]
+        },
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "Start once objective withdrawal is present; newer low-dose and high-dose inductions exist for fentanyl. Confirm the induction plan with pharmacy.",
+            "forms": [
+              "SL",
+              "LAI"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8a5edcf9-828c-4f97-b671-268ab13a8ecd"
+          },
+          "after": {
+            "titration": "Selected label: buprenorphine/naloxone sublingual film; maintenance may also use the buccal route per label. Confirm opioid type, timing and clear objective withdrawal before standard induction. The selected label distinguishes induction after short-acting versus long-acting opioids. LAI products and alternative fentanyl induction protocols need separate sources and review; confirm the plan with the specialist and pharmacy.",
+            "forms": [
+              "SL"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8a5edcf9-828c-4f97-b671-268ab13a8ecd"
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "COWS",
+              "Recent opioid type and last use",
+              "LFTs",
+              "Pregnancy test"
+            ],
+            "ongoing": [
+              "Withdrawal and cravings",
+              "Naloxone kit at discharge"
+            ]
+          },
+          "after": {
+            "baseline": [
+              "COWS",
+              "Recent opioid type and last use",
+              "LFTs",
+              "Pregnancy test"
+            ],
+            "ongoing": [
+              "Withdrawal and cravings",
+              "Naloxone kit at discharge",
+              "Respiratory rate and sedation, especially with CNS depressants",
+              "Liver tests during treatment and evaluation of suspected hepatic injury",
+              "Oral health and dental follow-up for transmucosal treatment"
+            ]
+          }
+        },
+        {
+          "field": "adverseEffects",
+          "before": {
+            "common": [
+              "Constipation",
+              "Headache",
+              "Sweating",
+              "Insomnia",
+              "Nausea"
+            ],
+            "dangerous": [
+              {
+                "name": "Precipitated withdrawal",
+                "recognize": "Buprenorphine is a partial agonist \u2014 it can precipitate withdrawal if given while full agonists are still present.",
+                "firstMove": "With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine."
+              },
+              {
+                "name": "Respiratory depression with benzodiazepines or alcohol",
+                "recognize": "Oversedation.",
+                "firstMove": "Review sedatives; do not withhold MOUD \u2014 coordinate."
+              }
+            ]
+          },
+          "after": {
+            "common": [
+              "Constipation",
+              "Headache",
+              "Sweating",
+              "Insomnia",
+              "Nausea"
+            ],
+            "dangerous": [
+              {
+                "name": "Precipitated withdrawal",
+                "recognize": "New or abruptly worsening withdrawal after starting while full-agonist effects remain.",
+                "firstMove": "Obtain urgent senior or addiction-specialist assessment; manage under an established protocol. The selected label does not establish an alternative fentanyl rescue regimen."
+              },
+              {
+                "name": "Respiratory depression",
+                "recognize": "Marked sedation or slow breathing, especially with other CNS depressants.",
+                "firstMove": "Obtain emergency medical assessment for respiratory compromise. If sedated at administration, the team should evaluate delaying or omitting the dose; do not categorically deny ongoing MOUD because of CNS-depressant use."
+              }
+            ]
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {
+              "substrateOf": [
+                "3A4"
+              ]
+            },
+            "keyTraps": [
+              "Full-agonist opioids still on board at induction",
+              "Benzodiazepines and alcohol"
+            ]
+          },
+          "after": {
+            "cyp": {
+              "substrateOf": [
+                "3A4"
+              ]
+            },
+            "keyTraps": [
+              "Full-agonist opioids still active at induction can cause precipitated withdrawal.",
+              "Benzodiazepines, alcohol and other CNS depressants increase respiratory risk; do not categorically deny MOUD solely because they are present. Assess sedation and coordinate safe treatment.",
+              "CYP3A4 inhibitors or inducers may require adjustment and monitoring when started or stopped."
+            ]
+          }
+        },
+        {
+          "field": "attendingAsks",
+          "before": [
+            "How do you time buprenorphine induction?",
+            "What causes precipitated withdrawal, and what is the first treatment with fentanyl?",
+            "What must happen before discharge?"
+          ],
+          "after": [
+            "How do you time buprenorphine induction?",
+            "What causes precipitated withdrawal, and when do you obtain specialist assessment?",
+            "What must happen before discharge?"
+          ]
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "buprenorphine",
+            "reconnectRecords": [
+              "medications[name=Buprenorphine]",
+              "medications[name=Buprenorphine/Naloxone]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Opioid Partial Agonist (MOUD)",
+              "mechanism_of_action": "Partial mu-opioid receptor agonist; kappa antagonist",
+              "QTc Risk": "Low",
+              "Weight Impact": "Neutral",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "Assess withdrawal (COWS) before first dose; UDS; LFTs (baseline); pregnancy test",
+              "half_life_hours": "24-42",
+              "time_to_effect": "30-60 minutes (relieves withdrawal)",
+              "counseling": "Wait until you are in mild\u2013moderate withdrawal (COWS ~8-12) before the first dose, or it can trigger sudden withdrawal. Let it dissolve fully under the tongue \u2014 do not chew or swallow. Do NOT combine with benzodiazepines or alcohol. Keep secured away from children. (As of 2023 no X-waiver is required to prescribe.)",
+              "family_psychoeducation": "",
+              "family_handout_ref": null,
+              "rems_program": "",
+              "common_side_effects": "Constipation; Headache; Sweating; Insomnia; Nausea",
+              "cyp_pathways": "3A4 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Partial mu-opioid receptor agonist; kappa antagonist"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** \u2014 buprenorphine or methadone \u2014 before the patient leaves, since the post-discharge window carries elevated overdose risk."
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** Buprenorphine is a **partial agonist** \u2014 it can precipitate withdrawal if given while full agonists are still present."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Constipation; Headache; Sweating; Insomnia; Nausea"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "3A4 substrate"
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** COWS assesses **objective** signs (pupil size, pulse, gooseflesh, yawning) \u2014 it is more reliable than patient self-report for timing buprenorphine induction."
+                },
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** \u2014 buprenorphine or methadone \u2014 before the patient leaves, since the post-discharge window carries elevated overdose risk."
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Wait until you are in mild\u2013moderate withdrawal (COWS ~8-12) before the first dose, or it can trigger sudden withdrawal. Let it dissolve fully under the tongue \u2014 do not chew or swallow. Do NOT combine with benzodiazepines or alcohol. Keep secured away from children. (As of 2023 no X-waiver is required to prescribe.)"
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "interactions.cyp",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Opioid Partial Agonist (MOUD)",
+                "usedValue": "partial \u03bc-opioid agonist",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              },
+              {
+                "field": "black_box_warning",
+                "upstreamValue": "Yes",
+                "usedValue": "No",
+                "basis": "Reference label (receipt) does not carry a boxed warning."
+              }
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "buprenorphine",
+            "reconnectRecords": [
+              "medications[name=Buprenorphine]",
+              "medications[name=Buprenorphine/Naloxone]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Opioid Partial Agonist (MOUD)",
+              "mechanism_of_action": "Partial mu-opioid receptor agonist; kappa antagonist",
+              "QTc Risk": "Low",
+              "Weight Impact": "Neutral",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "Assess withdrawal (COWS) before first dose; UDS; LFTs (baseline); pregnancy test",
+              "half_life_hours": "24-42",
+              "time_to_effect": "30-60 minutes (relieves withdrawal)",
+              "counseling": "Wait until you are in mild\u2013moderate withdrawal (COWS ~8-12) before the first dose, or it can trigger sudden withdrawal. Let it dissolve fully under the tongue \u2014 do not chew or swallow. Do NOT combine with benzodiazepines or alcohol. Keep secured away from children. (As of 2023 no X-waiver is required to prescribe.)",
+              "family_psychoeducation": "",
+              "family_handout_ref": null,
+              "rems_program": "",
+              "common_side_effects": "Constipation; Headache; Sweating; Insomnia; Nausea",
+              "cyp_pathways": "3A4 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Partial mu-opioid receptor agonist; kappa antagonist"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** \u2014 buprenorphine or methadone \u2014 before the patient leaves, since the post-discharge window carries elevated overdose risk."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Constipation; Headache; Sweating; Insomnia; Nausea"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "3A4 substrate"
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** COWS assesses **objective** signs (pupil size, pulse, gooseflesh, yawning) \u2014 it is more reliable than patient self-report for timing buprenorphine induction."
+                },
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "Arrange **linkage to medication for opioid use disorder (MOUD)** \u2014 buprenorphine or methadone \u2014 before the patient leaves, since the post-discharge window carries elevated overdose risk."
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Wait until you are in mild\u2013moderate withdrawal (COWS ~8-12) before the first dose, or it can trigger sudden withdrawal. Let it dissolve fully under the tongue \u2014 do not chew or swallow. Do NOT combine with benzodiazepines or alcohol. Keep secured away from children. (As of 2023 no X-waiver is required to prescribe.)"
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.ongoing",
+              "populations",
+              "populations.hepatic"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Opioid Partial Agonist (MOUD)",
+                "usedValue": "partial \u03bc-opioid agonist",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              },
+              {
+                "field": "black_box_warning",
+                "upstreamValue": "Yes",
+                "usedValue": "No",
+                "basis": "Reference label (receipt) does not carry a boxed warning."
+              }
+            ]
+          }
+        },
+        {
+          "field": "retrieval",
+          "before": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "pearls.t1[0]"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "adverseEffects.dangerous[0]"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "pearls.t2[0]"
+              ]
+            }
+          ],
+          "after": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "dosing.titration"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "adverseEffects.dangerous[0]"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "pearls.t2[0]"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "populations",
+          "before": null,
+          "after": {
+            "hepatic": "Combination film is not recommended in severe hepatic impairment and may be inappropriate in moderate impairment; it is not recommended for induction in moderate impairment. Review the product-specific plan with the specialist."
+          }
+        }
+      ]
+    },
+    {
+      "id": "naltrexone",
+      "source": {
+        "id": "naltrexone",
+        "setId": "db911559-26f5-43a0-b61f-3425176c936f",
+        "effectiveDate": "2026-09-08",
+        "boxedWarningPresent": false,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "5d2aa6353a46a064d4c305ec66d475d3b9b0752c377a4432427ded5573546674",
+        "openFdaJsonSha256": "f5396453ae5dad3c386a3864d799994a8c904dddbd77f89db59bc1b2bfc66d77",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/db911559-26f5-43a0-b61f-3425176c936f.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:db911559-26f5-43a0-b61f-3425176c936f&limit=1"
+      },
+      "sections": "Indications; contraindications; warnings (overdose, precipitated withdrawal, hepatotoxicity); precautions; administration",
+      "changes": [
+        {
+          "field": "brands",
+          "before": [
+            "Vivitrol"
+          ],
+          "after": []
+        },
+        {
+          "field": "inpatientUses",
+          "before": [
+            {
+              "use": "Alcohol use disorder maintenance",
+              "offLabel": false,
+              "evidenceIds": []
+            },
+            {
+              "use": "Opioid use disorder (XR injection) after full detoxification",
+              "offLabel": false,
+              "evidenceIds": []
+            }
+          ],
+          "after": [
+            {
+              "use": "Alcohol dependence within a complete treatment plan (selected oral product)",
+              "offLabel": false,
+              "evidenceIds": []
+            },
+            {
+              "use": "Blockade of exogenous opioid effects after adequate detoxification (selected oral product)",
+              "offLabel": false,
+              "evidenceIds": []
+            }
+          ]
+        },
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "Must be opioid-free first (typically 7\u201310 days for short-acting opioids, longer for methadone) to avoid precipitated withdrawal. Confirm with pharmacy.",
+            "forms": [
+              "PO",
+              "LAI"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=db911559-26f5-43a0-b61f-3425176c936f"
+          },
+          "after": {
+            "titration": "Selected label: oral naltrexone tablets after an adequate opioid-free interval. Transition from buprenorphine or methadone can carry prolonged precipitated-withdrawal risk; negative screening or a challenge does not fully exclude it. Confirm the interval and plan with the specialist and pharmacy. Injectable naltrexone requires a separate label and review.",
+            "forms": [
+              "PO"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=db911559-26f5-43a0-b61f-3425176c936f"
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "LFTs",
+              "Urine toxicology for opioids"
+            ],
+            "ongoing": [
+              "LFTs",
+              "Cravings and drinking"
+            ]
+          },
+          "after": {
+            "baseline": [
+              "LFTs",
+              "Urine toxicology for opioids",
+              "Assess dependence and withdrawal, including recent buprenorphine or methadone",
+              "Assess depression, suicidality and liver disease"
+            ],
+            "ongoing": [
+              "LFTs",
+              "Cravings and drinking",
+              "Hepatic symptoms, depression and suicidality",
+              "Counsel about overdose after discontinuation or attempts to overcome opioid blockade"
+            ]
+          }
+        },
+        {
+          "field": "adverseEffects",
+          "before": {
+            "common": [
+              "Nausea",
+              "Headache",
+              "Dizziness",
+              "Fatigue",
+              "Insomnia"
+            ],
+            "dangerous": [
+              {
+                "name": "Precipitated opioid withdrawal",
+                "recognize": "Naltrexone is a \u03bc-opioid antagonist \u2014 it is contraindicated in patients currently using opioids (precipitates withdrawal) and in acute hepatitis.",
+                "firstMove": "Confirm opioid-free status before the first dose."
+              },
+              {
+                "name": "Overdose after stopping",
+                "recognize": "Loss of tolerance makes a return to opioids more dangerous.",
+                "firstMove": "Naloxone kit and counseling at discharge."
+              }
+            ]
+          },
+          "after": {
+            "common": [
+              "Nausea",
+              "Headache",
+              "Dizziness",
+              "Fatigue",
+              "Insomnia"
+            ],
+            "dangerous": [
+              {
+                "name": "Precipitated opioid withdrawal",
+                "recognize": "Abrupt severe withdrawal after exposure when opioid dependence remains; hospital or intensive-care treatment may be needed.",
+                "firstMove": "Obtain urgent medical assessment. Confirm a product-appropriate opioid-free interval before treatment; a negative test or challenge does not guarantee safety."
+              },
+              {
+                "name": "Overdose after stopping or overriding blockade",
+                "recognize": "Reduced tolerance makes return to opioids dangerous; attempts to overcome blockade can be fatal.",
+                "firstMove": "Provide overdose education and access to an opioid reversal agent; obtain emergency care for suspected overdose."
+              },
+              {
+                "name": "Hepatic injury",
+                "recognize": "New jaundice, dark urine or persistent abdominal symptoms.",
+                "firstMove": "Stop treatment and obtain prompt medical assessment for signs of acute hepatitis."
+              }
+            ]
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {},
+            "keyTraps": [
+              "Any opioid analgesic (blocked; plan pain control)",
+              "Acute hepatitis"
+            ]
+          },
+          "after": {
+            "cyp": {},
+            "keyTraps": [
+              "Opioid analgesia is blocked; coordinate an emergency pain plan and never attempt to override the blockade.",
+              "Contraindicated with current opioid analgesic use or dependence, acute opioid withdrawal, a positive opioid urine screen or failed naloxone challenge, and product hypersensitivity.",
+              "Assess liver disease and hepatotoxicity symptoms; the selected oral label warns about hepatic injury rather than listing acute hepatitis as a formal contraindication."
+            ]
+          }
+        },
+        {
+          "field": "pearls",
+          "before": {
+            "t1": [
+              "Naltrexone reduces heavy drinking but cannot be used with opioids and requires liver-risk review; in compensated cirrhosis it may be considered with monitoring, while acute hepatitis or advanced decompensation pushes you away from it."
+            ],
+            "t2": [
+              "Naltrexone NNT = 11 for preventing return to heavy drinking; acamprosate NNT = 11 for preventing any drinking."
+            ]
+          },
+          "after": {
+            "t1": [
+              "Oral naltrexone treats alcohol dependence as part of a complete management plan. Exclude opioid dependence and review liver risk; injectable-product claims require a separate label."
+            ],
+            "t2": [
+              "Naltrexone NNT = 11 for preventing return to heavy drinking; acamprosate NNT = 11 for preventing any drinking."
+            ]
+          }
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "naltrexone",
+            "reconnectRecords": [
+              "medications[name=Naltrexone (oral)]",
+              "medications[name=Naltrexone XR (injectable)]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Opioid Antagonist (MOUD/AUD)",
+              "mechanism_of_action": "Mu-opioid receptor antagonist (blocks opioid effects; reduces alcohol reward/craving)",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Neutral",
+              "Requires Blood Monitoring": "Yes",
+              "ekg_required": "No",
+              "baseline_workup": "LFTs (baseline + periodic); confirm opioid-free 7-10 days (UDS \u00b1 naloxone challenge); pregnancy test",
+              "half_life_hours": "4 (active metabolite ~13)",
+              "time_to_effect": "1-2 hours (blockade); days\u2013weeks for craving",
+              "counseling": "For opioids: you must be completely off all opioids for 7-10 days first, or it causes sudden withdrawal. It blocks opioid effects \u2014 if you relapse, your tolerance is lower and overdose risk is high. For alcohol: reduces craving and heavy drinking; you can start while still drinking.",
+              "family_psychoeducation": "",
+              "family_handout_ref": null,
+              "rems_program": "",
+              "common_side_effects": "Nausea; Headache; Dizziness; Fatigue; Insomnia",
+              "cyp_pathways": ""
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Mu-opioid receptor antagonist (blocks opioid effects; reduces alcohol reward/craving)"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "**Alcohol use disorder pharmacotherapy anchor** \u2014 Naltrexone and acamprosate are first-line maintenance medications for alcohol use disorder when not contraindicated."
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** Naltrexone is a \u03bc-opioid antagonist \u2014 it is **contraindicated** in patients currently using opioids (precipitates withdrawal) and in acute hepatitis."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Nausea; Headache; Dizziness; Fatigue; Insomnia"
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+                  "quote": "Naltrexone reduces heavy drinking but cannot be used with opioids and requires liver-risk review; in compensated cirrhosis it may be considered with monitoring, while acute hepatitis or advanced decompensation pushes you away from it."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Evidence:** Naltrexone NNT = 11 for preventing return to heavy drinking; acamprosate NNT = 11 for preventing any drinking."
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "For opioids: you must be completely off all opioids for 7-10 days first, or it causes sudden withdrawal. It blocks opioid effects \u2014 if you relapse, your tolerance is lower and overdose risk is high. For alcohol: reduces craving and heavy drinking; you can start while still drinking."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[1]",
+              "interactions.cyp",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Opioid Antagonist (MOUD/AUD)",
+                "usedValue": "\u03bc-opioid antagonist",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              },
+              {
+                "field": "black_box_warning",
+                "upstreamValue": "Yes",
+                "usedValue": "No",
+                "basis": "Reference label (receipt) does not carry a boxed warning."
+              }
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "naltrexone",
+            "reconnectRecords": [
+              "medications[name=Naltrexone (oral)]",
+              "medications[name=Naltrexone XR (injectable)]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Opioid Antagonist (MOUD/AUD)",
+              "mechanism_of_action": "Mu-opioid receptor antagonist (blocks opioid effects; reduces alcohol reward/craving)",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Neutral",
+              "Requires Blood Monitoring": "Yes",
+              "ekg_required": "No",
+              "baseline_workup": "LFTs (baseline + periodic); confirm opioid-free 7-10 days (UDS \u00b1 naloxone challenge); pregnancy test",
+              "half_life_hours": "4 (active metabolite ~13)",
+              "time_to_effect": "1-2 hours (blockade); days\u2013weeks for craving",
+              "counseling": "For opioids: you must be completely off all opioids for 7-10 days first, or it causes sudden withdrawal. It blocks opioid effects \u2014 if you relapse, your tolerance is lower and overdose risk is high. For alcohol: reduces craving and heavy drinking; you can start while still drinking.",
+              "family_psychoeducation": "",
+              "family_handout_ref": null,
+              "rems_program": "",
+              "common_side_effects": "Nausea; Headache; Dizziness; Fatigue; Insomnia",
+              "cyp_pathways": ""
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Mu-opioid receptor antagonist (blocks opioid effects; reduces alcohol reward/craving)"
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Nausea; Headache; Dizziness; Fatigue; Insomnia"
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "For opioids: you must be completely off all opioids for 7-10 days first, or it causes sudden withdrawal. It blocks opioid effects \u2014 if you relapse, your tolerance is lower and overdose risk is high. For alcohol: reduces craving and heavy drinking; you can start while still drinking."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous",
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses",
+              "inpatientUses[1]",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.baseline",
+              "monitoring.ongoing",
+              "pearls",
+              "pearls.t1",
+              "populations",
+              "populations.hepatic"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Opioid Antagonist (MOUD/AUD)",
+                "usedValue": "\u03bc-opioid antagonist",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              },
+              {
+                "field": "black_box_warning",
+                "upstreamValue": "Yes",
+                "usedValue": "No",
+                "basis": "Reference label (receipt) does not carry a boxed warning."
+              }
+            ]
+          }
+        },
+        {
+          "field": "retrieval",
+          "before": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "adverseEffects.dangerous[0]"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "pearls.t2[0]"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "pearls.t1[0]"
+              ]
+            }
+          ],
+          "after": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "interactions.keyTraps[1]",
+                "adverseEffects.dangerous[0]"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "pearls.t2[0]"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "populations.hepatic"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "populations",
+          "before": null,
+          "after": {
+            "hepatic": "Exposure increases with cirrhosis. Assess liver disease and other causes of injury; discontinue and seek medical assessment if symptoms or signs of acute hepatitis develop."
+          }
+        }
+      ]
+    },
+    {
+      "id": "risperidone",
+      "source": {
+        "id": "risperidone",
+        "setId": "7e117c7e-02fc-4343-92a1-230061dfc5e0",
+        "effectiveDate": "2026-05-28",
+        "boxedWarningPresent": true,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "ce819162ad5c1512dd4cc652dcf6c67e01b416458b33571fa7bc682efcc146dd",
+        "openFdaJsonSha256": "ed04ea069599668acc7f313edd0fcabd60bdb825deef27e4dc087450061d1c52",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/7e117c7e-02fc-4343-92a1-230061dfc5e0.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:7e117c7e-02fc-4343-92a1-230061dfc5e0&limit=1"
+      },
+      "sections": "Dosage/forms; severe renal/hepatic impairment; warnings (metabolic, prolactin, leukopenia, orthostasis); interactions",
+      "changes": [
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "Titrate over days; ODT, liquid, and several long-acting injectable forms exist. Confirm dose with pharmacy.",
+            "forms": [
+              "PO",
+              "ODT",
+              "liquid",
+              "LAI"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7e117c7e-02fc-4343-92a1-230061dfc5e0"
+          },
+          "after": {
+            "titration": "Selected label covers oral tablets, oral solution and orally disintegrating tablets. Titrate with response and tolerability; severe renal or hepatic impairment requires cautious starting and adjustment. LAI initiation and administration need the specific product label. Confirm the plan with pharmacy.",
+            "forms": [
+              "PO",
+              "ODT",
+              "liquid"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7e117c7e-02fc-4343-92a1-230061dfc5e0"
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "Weight/BMI and waist",
+              "Fasting glucose or A1c",
+              "Lipids",
+              "Blood pressure"
+            ],
+            "ongoing": [
+              "Glucose/lipids at ~12 weeks then annually",
+              "Weight each visit",
+              "AIMS for tardive dyskinesia",
+              "Prolactin if symptomatic"
+            ],
+            "sourcePage": "med_monitoring.md"
+          },
+          "after": {
+            "baseline": [
+              "Weight/BMI and waist",
+              "Fasting glucose or A1c",
+              "Lipids",
+              "Blood pressure",
+              "Binary blood-test and ECG flags are not exemptions: metabolic assessment remains required; consider ECG/electrolytes with cardiac or QT risk",
+              "CBC monitoring when there is prior significant low WBC or drug-induced leukopenia"
+            ],
+            "ongoing": [
+              "Glucose/lipids at ~12 weeks then annually",
+              "Weight each visit",
+              "AIMS for tardive dyskinesia",
+              "Prolactin if symptomatic",
+              "Orthostasis, falls and symptomatic prolactin elevation; review cardiac risk as circumstances change"
+            ],
+            "sourcePage": "med_monitoring.md"
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {
+              "substrateOf": [
+                "2D6"
+              ]
+            },
+            "keyTraps": [
+              "Fluoxetine and paroxetine are potent CYP2D6 inhibitors; fluvoxamine is a potent CYP1A2 and CYP2C19 inhibitor.",
+              "CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline."
+            ]
+          },
+          "after": {
+            "cyp": {
+              "substrateOf": [
+                "2D6"
+              ]
+            },
+            "keyTraps": [
+              "Fluoxetine and paroxetine inhibit CYP2D6 and increase exposure; assess adjustment with pharmacy.",
+              "Carbamazepine and other enzyme inducers lower exposure; reassess when an inducer starts or stops."
+            ]
+          }
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "risperidone",
+            "reconnectRecords": [
+              "medications[name=Risperidone]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Atypical Antipsychotic",
+              "mechanism_of_action": "D2 antagonist; 5-HT2A antagonist",
+              "QTc Risk": "Low",
+              "Weight Impact": "Moderate Gain",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "Fasting glucose/lipids; weight; prolactin if symptoms",
+              "half_life_hours": "20",
+              "time_to_effect": "1-2 weeks",
+              "counseling": "Can cause movement problems and elevated prolactin. Women: report missed periods, breast discharge. LAI available.",
+              "family_psychoeducation": "For patients with schizophrenia or psychotic disorders, APA guidelines (Grade 1A) recommend family psychoeducation when the patient is in contact with family members. Ask your treatment team about family education sessions, which have been shown to reduce relapse and improve outcomes.",
+              "family_handout_ref": "FH-MED03",
+              "common_side_effects": "EPS; Hyperprolactinemia; Sedation; Weight Gain; Orthostatic Hypotension",
+              "cyp_pathways": "2D6 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "D2 antagonist; 5-HT2A antagonist"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+                  "quote": "- Antipsychotics (risperidone, aripiprazole) treat autism-*associated* irritability, not the core social-communication features."
+                }
+              ],
+              "monitoring": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "| **Antipsychotics (metabolic)** | Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia |"
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "EPS; Hyperprolactinemia; Sedation; Weight Gain; Orthostatic Hypotension"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2D6 substrate"
+                }
+              ],
+              "interactions.keyTraps": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Answer:** Fluoxetine and paroxetine are potent CYP2D6 inhibitors; fluvoxamine is a potent CYP1A2 and CYP2C19 inhibitor."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Evidence:** CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline."
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "Baseline and ongoing metabolic monitoring is part of prescribing an antipsychotic, not optional."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Evidence:** CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline."
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Can cause movement problems and elevated prolactin. Women: report missed periods, breast discharge. LAI available."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[0]",
+              "interactions.cyp",
+              "mechanism.t1",
+              "pearls.t1[0]"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Atypical Antipsychotic",
+                "usedValue": "second-generation antipsychotic",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "risperidone",
+            "reconnectRecords": [
+              "medications[name=Risperidone]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Atypical Antipsychotic",
+              "mechanism_of_action": "D2 antagonist; 5-HT2A antagonist",
+              "QTc Risk": "Low",
+              "Weight Impact": "Moderate Gain",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "Fasting glucose/lipids; weight; prolactin if symptoms",
+              "half_life_hours": "20",
+              "time_to_effect": "1-2 weeks",
+              "counseling": "Can cause movement problems and elevated prolactin. Women: report missed periods, breast discharge. LAI available.",
+              "family_psychoeducation": "For patients with schizophrenia or psychotic disorders, APA guidelines (Grade 1A) recommend family psychoeducation when the patient is in contact with family members. Ask your treatment team about family education sessions, which have been shown to reduce relapse and improve outcomes.",
+              "family_handout_ref": "FH-MED03",
+              "common_side_effects": "EPS; Hyperprolactinemia; Sedation; Weight Gain; Orthostatic Hypotension",
+              "cyp_pathways": "2D6 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "D2 antagonist; 5-HT2A antagonist"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md",
+                  "quote": "- Antipsychotics (risperidone, aripiprazole) treat autism-*associated* irritability, not the core social-communication features."
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "EPS; Hyperprolactinemia; Sedation; Weight Gain; Orthostatic Hypotension"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2D6 substrate"
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "Baseline and ongoing metabolic monitoring is part of prescribing an antipsychotic, not optional."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Evidence:** CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline."
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Can cause movement problems and elevated prolactin. Women: report missed periods, breast discharge. LAI available."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[0]",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.baseline",
+              "monitoring.ongoing",
+              "pearls",
+              "pearls.t1[0]",
+              "populations",
+              "populations.hepatic",
+              "populations.renal"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Atypical Antipsychotic",
+                "usedValue": "second-generation antipsychotic",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          }
+        },
+        {
+          "field": "populations",
+          "before": null,
+          "after": {
+            "renal": "Severe renal impairment requires a lower starting exposure and careful titration under the selected oral label.",
+            "hepatic": "Severe hepatic impairment requires cautious starting and titration."
+          }
+        }
+      ]
+    },
+    {
+      "id": "quetiapine",
+      "source": {
+        "id": "quetiapine",
+        "setId": "8ae62aaf-f8c5-417f-baac-0098369ca322",
+        "effectiveDate": "2026-04-10",
+        "boxedWarningPresent": true,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "91ea566eb196bd4241557ef7696f7883912934d590952ef7d70154519e89938a",
+        "openFdaJsonSha256": "58a83cff2cf40b421f7a6342f59582b4ea94864c4a1468809b4f805de8d48539",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/8ae62aaf-f8c5-417f-baac-0098369ca322.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:8ae62aaf-f8c5-417f-baac-0098369ca322&limit=1"
+      },
+      "sections": "Indications; dosage/forms; warnings (orthostasis/falls, QT, leukopenia, cataracts); interactions; hepatic impairment",
+      "changes": [
+        {
+          "field": "brands",
+          "before": [
+            "Seroquel",
+            "Seroquel XR"
+          ],
+          "after": [
+            "Seroquel"
+          ]
+        },
+        {
+          "field": "fdaIndications",
+          "before": [
+            "Schizophrenia",
+            "Bipolar I: manic episodes",
+            "Bipolar depression",
+            "XR: adjunct in major depressive disorder"
+          ],
+          "after": [
+            "Schizophrenia",
+            "Bipolar I: acute manic episodes, alone or adjunct to lithium/divalproex",
+            "Acute depressive episodes associated with bipolar disorder",
+            "Bipolar I maintenance adjunct to lithium/divalproex (selected immediate-release product)"
+          ]
+        },
+        {
+          "field": "inpatientUses",
+          "before": [
+            {
+              "use": "Bipolar depression and maintenance (prevents both poles)",
+              "offLabel": false,
+              "evidenceIds": []
+            },
+            {
+              "use": "Switch option when akathisia or EPS limit another agent",
+              "offLabel": false,
+              "evidenceIds": []
+            }
+          ],
+          "after": [
+            {
+              "use": "Acute bipolar depression (selected immediate-release product)",
+              "offLabel": false,
+              "evidenceIds": []
+            },
+            {
+              "use": "Bipolar I maintenance as adjunct to lithium or divalproex (selected immediate-release product)",
+              "offLabel": false,
+              "evidenceIds": []
+            }
+          ]
+        },
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "Titrate over several days for sedation and orthostasis; IR and XR are not interchangeable one-for-one. Confirm dose with pharmacy.",
+            "forms": [
+              "PO",
+              "ER"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8ae62aaf-f8c5-417f-baac-0098369ca322"
+          },
+          "after": {
+            "titration": "Selected label: immediate-release oral tablets. Titrate cautiously for sedation and orthostasis; hepatic impairment and strong CYP3A4 inhibitors or inducers require product-specific adjustment. Do not infer an IR/XR conversion rule or adjunct-MDD indication from this label; XR requires separate sources and review. Confirm the plan with pharmacy.",
+            "forms": [
+              "PO"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8ae62aaf-f8c5-417f-baac-0098369ca322"
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "Weight/BMI and waist",
+              "Fasting glucose or A1c",
+              "Lipids",
+              "Blood pressure"
+            ],
+            "ongoing": [
+              "Glucose/lipids at ~12 weeks then annually",
+              "Weight each visit",
+              "AIMS for tardive dyskinesia"
+            ],
+            "sourcePage": "med_monitoring.md"
+          },
+          "after": {
+            "baseline": [
+              "Weight/BMI and waist",
+              "Fasting glucose or A1c",
+              "Lipids",
+              "Blood pressure",
+              "Assess orthostasis, falls and cardiac/QT risk; binary ECG or blood-test flags do not waive risk-based or metabolic monitoring",
+              "CBC if prior significant low WBC or drug-induced leukopenia",
+              "Lens examination when starting treatment, as recommended by the selected label"
+            ],
+            "ongoing": [
+              "Glucose/lipids at ~12 weeks then annually",
+              "Weight each visit",
+              "AIMS for tardive dyskinesia",
+              "Lens examinations at six-month intervals during chronic treatment under the selected label"
+            ],
+            "sourcePage": "med_monitoring.md"
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {
+              "substrateOf": [
+                "3A4"
+              ]
+            },
+            "keyTraps": [
+              "Strong CYP3A4 inhibitors or inducers",
+              "Other sedating or QT-prolonging agents"
+            ]
+          },
+          "after": {
+            "cyp": {
+              "substrateOf": [
+                "3A4"
+              ]
+            },
+            "keyTraps": [
+              "Strong CYP3A4 inhibitors and inducers require label-specific adjustment; reassess when they start or stop.",
+              "Other sedating drugs increase falls and impairment. Review QT-prolonging drugs and electrolyte abnormalities."
+            ]
+          }
+        },
+        {
+          "field": "pearls",
+          "before": {
+            "t1": [
+              "Match the mood stabilizer to the polarity \u2014 lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
+            ],
+            "t2": [
+              "Low-dose quetiapine for sleep carries the full metabolic and fall risk without an antipsychotic indication \u2014 question it at reconciliation."
+            ]
+          },
+          "after": {
+            "t1": [
+              "The selected immediate-release label supports acute bipolar depression and bipolar I maintenance as adjunct to lithium or divalproex; it does not establish XR adjunct-MDD scope."
+            ],
+            "t2": [
+              "Use for sleep alone is not an indication in the selected label; review sedation, falls and metabolic risks before off-label use."
+            ]
+          }
+        },
+        {
+          "field": "attendingAsks",
+          "before": [
+            "Which mood stabilizers prevent both poles?",
+            "Why might you switch to quetiapine for akathisia?",
+            "What is the problem with quetiapine for sleep?"
+          ],
+          "after": [
+            "What bipolar uses does the selected immediate-release label support?",
+            "How is quetiapine used for bipolar I maintenance in this label?",
+            "What should you review before off-label use for sleep?"
+          ]
+        },
+        {
+          "field": "familyExplainer",
+          "before": {
+            "text": "Quetiapine treats bipolar disorder, depression, and psychosis. It is very sedating and can make people dizzy when they stand. It can also cause weight gain and raise blood sugar. The team will check weight and blood tests.",
+            "handoutRef": "FH-MED03"
+          },
+          "after": {
+            "text": "This form of quetiapine treats psychosis and bipolar mood episodes. It may be used with another drug to help keep bipolar symptoms from returning. It can make you sleepy or dizzy when you stand. The team will check weight, blood sugar and other blood tests.",
+            "handoutRef": "FH-MED03"
+          }
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "quetiapine",
+            "reconnectRecords": [
+              "medications[name=Quetiapine]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Atypical Antipsychotic",
+              "mechanism_of_action": "D2 antagonist; 5-HT2A antagonist; H1 antagonist; alpha-1 antagonist",
+              "QTc Risk": "Low",
+              "Weight Impact": "Moderate Gain",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "Fasting glucose/lipids; weight; eye exam",
+              "half_life_hours": "7",
+              "time_to_effect": "Days (sedation/sleep); 1-2 weeks (psychosis)",
+              "counseling": "Very sedating - take at bedtime. Causes weight gain. Monitor blood sugar. Report vision changes. XR for once daily dosing.",
+              "family_psychoeducation": "For patients with schizophrenia or psychotic disorders, APA guidelines (Grade 1A) recommend family psychoeducation when the patient is in contact with family members. Ask your treatment team about family education sessions, which have been shown to reduce relapse and improve outcomes.",
+              "family_handout_ref": "FH-MED03",
+              "common_side_effects": "Sedation; Orthostatic Hypotension; Weight Gain; Dry Mouth; Dizziness",
+              "cyp_pathways": "3A4 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "D2 antagonist; 5-HT2A antagonist; H1 antagonist; alpha-1 antagonist"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** \u2014 lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
+                },
+                {
+                  "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+                  "quote": "First step: **reduce the antipsychotic dose or switch to a lower-dopamine-affinity agent** (e.g., quetiapine, which has lower D2 occupancy at clinical doses)"
+                }
+              ],
+              "monitoring": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "| **Antipsychotics (metabolic)** | Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia |"
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Sedation; Orthostatic Hypotension; Weight Gain; Dry Mouth; Dizziness"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "3A4 substrate"
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** Match the mood stabilizer to the **polarity** \u2014 lithium and quetiapine prevent both poles; lamotrigine prevents depression; valproate and carbamazepine are better for mania."
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Very sedating - take at bedtime. Causes weight gain. Monitor blood sugar. Report vision changes. XR for once daily dosing."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "interactions.cyp",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "pearls.t2[0]"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Atypical Antipsychotic",
+                "usedValue": "second-generation antipsychotic",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "quetiapine",
+            "reconnectRecords": [
+              "medications[name=Quetiapine]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Atypical Antipsychotic",
+              "mechanism_of_action": "D2 antagonist; 5-HT2A antagonist; H1 antagonist; alpha-1 antagonist",
+              "QTc Risk": "Low",
+              "Weight Impact": "Moderate Gain",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "Fasting glucose/lipids; weight; eye exam",
+              "half_life_hours": "7",
+              "time_to_effect": "Days (sedation/sleep); 1-2 weeks (psychosis)",
+              "counseling": "Very sedating - take at bedtime. Causes weight gain. Monitor blood sugar. Report vision changes. XR for once daily dosing.",
+              "family_psychoeducation": "For patients with schizophrenia or psychotic disorders, APA guidelines (Grade 1A) recommend family psychoeducation when the patient is in contact with family members. Ask your treatment team about family education sessions, which have been shown to reduce relapse and improve outcomes.",
+              "family_handout_ref": "FH-MED03",
+              "common_side_effects": "Sedation; Orthostatic Hypotension; Weight Gain; Dry Mouth; Dizziness",
+              "cyp_pathways": "3A4 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "D2 antagonist; 5-HT2A antagonist; H1 antagonist; alpha-1 antagonist"
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Sedation; Orthostatic Hypotension; Weight Gain; Dry Mouth; Dizziness"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "3A4 substrate"
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.baseline",
+              "pearls",
+              "pearls.t2[0]",
+              "populations",
+              "populations.hepatic"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Atypical Antipsychotic",
+                "usedValue": "second-generation antipsychotic",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          }
+        },
+        {
+          "field": "retrieval",
+          "before": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "pearls.t1[0]"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "inpatientUses[1].use"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "pearls.t2[0]"
+              ]
+            }
+          ],
+          "after": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "fdaIndications",
+                "pearls.t1[0]"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "inpatientUses[1].use"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "pearls.t2[0]"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "populations",
+          "before": null,
+          "after": {
+            "hepatic": "Hepatic impairment requires cautious starting and gradual titration under the selected immediate-release label."
+          }
+        }
+      ]
+    },
+    {
+      "id": "aripiprazole",
+      "source": {
+        "id": "aripiprazole",
+        "setId": "c040bd1d-45b7-49f2-93ea-aed7220b30ac",
+        "effectiveDate": "2025-01-29",
+        "boxedWarningPresent": true,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "4c35eade13c4f67d77f98a7897806bce63232adcdc2c65c9b22ded8e7c2068ab",
+        "openFdaJsonSha256": "1022333305ea09525c020659f4e2ec3a529a0d719133e62b536061bdc320888c",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/c040bd1d-45b7-49f2-93ea-aed7220b30ac.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:c040bd1d-45b7-49f2-93ea-aed7220b30ac&limit=1"
+      },
+      "sections": "Dosage/forms and CYP adjustments; warnings (metabolic, pathological gambling/compulsive behaviors, orthostasis); adverse reactions",
+      "changes": [
+        {
+          "field": "brands",
+          "before": [
+            "Abilify",
+            "Abilify Maintena",
+            "Abilify Asimtufii"
+          ],
+          "after": [
+            "Abilify"
+          ]
+        },
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "Long half-life: changes take about two weeks to reach steady state. LAIs require oral overlap or a loading strategy. Confirm with pharmacy.",
+            "forms": [
+              "PO",
+              "ODT",
+              "liquid",
+              "LAI"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=c040bd1d-45b7-49f2-93ea-aed7220b30ac"
+          },
+          "after": {
+            "titration": "Selected label: oral tablets. Allow time to assess response and tolerability; CYP2D6 poor-metabolizer status and CYP2D6/CYP3A4 inhibitors or strong CYP3A4 inducers can require adjustment. LAI, liquid and ODT products need separate labels and review. Confirm the plan with pharmacy.",
+            "forms": [
+              "PO"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=c040bd1d-45b7-49f2-93ea-aed7220b30ac"
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "Weight/BMI and waist",
+              "Fasting glucose or A1c",
+              "Lipids",
+              "Blood pressure"
+            ],
+            "ongoing": [
+              "Glucose/lipids at ~12 weeks then annually",
+              "Weight each visit",
+              "AIMS for tardive dyskinesia"
+            ],
+            "sourcePage": "med_monitoring.md"
+          },
+          "after": {
+            "baseline": [
+              "Weight/BMI and waist",
+              "Fasting glucose or A1c",
+              "Lipids",
+              "Blood pressure"
+            ],
+            "ongoing": [
+              "Glucose/lipids at ~12 weeks then annually",
+              "Weight each visit",
+              "AIMS for tardive dyskinesia",
+              "Akathisia and new compulsive urges",
+              "Orthostasis and falls; blood-test or ECG flags do not waive metabolic or risk-based assessment"
+            ],
+            "sourcePage": "med_monitoring.md"
+          }
+        },
+        {
+          "field": "adverseEffects",
+          "before": {
+            "common": [
+              "Akathisia",
+              "Restlessness",
+              "Insomnia",
+              "Nausea",
+              "Headache"
+            ],
+            "dangerous": [
+              {
+                "name": "Neuroleptic malignant syndrome",
+                "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
+                "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
+              },
+              {
+                "name": "Akathisia",
+                "recognize": "Inner restlessness, often early \u2014 the most common reason it is stopped.",
+                "firstMove": "Reduce dose or switch before adding drugs."
+              },
+              {
+                "name": "Impulse-control problems",
+                "recognize": "New gambling, spending, or other compulsive urges.",
+                "firstMove": "Ask directly; report to the team."
+              }
+            ]
+          },
+          "after": {
+            "common": [
+              "Akathisia",
+              "Restlessness",
+              "Insomnia",
+              "Nausea",
+              "Headache"
+            ],
+            "dangerous": [
+              {
+                "name": "Neuroleptic malignant syndrome",
+                "recognize": "Neuroleptic malignant syndrome: \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome.",
+                "firstMove": "Tell the senior now; stop the antipsychotic pending evaluation."
+              },
+              {
+                "name": "Akathisia",
+                "recognize": "New inner restlessness or inability to remain still; assess separately from worsening agitation.",
+                "firstMove": "Notify the treating team to assess symptoms and the medication plan."
+              },
+              {
+                "name": "Pathological gambling and compulsive behaviors",
+                "recognize": "New gambling, shopping, eating or sexual urges that are hard to control.",
+                "firstMove": "Ask the patient and caregivers directly; notify the prescriber to consider reduction or discontinuation."
+              }
+            ]
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {
+              "substrateOf": [
+                "2D6",
+                "3A4"
+              ]
+            },
+            "keyTraps": [
+              "CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline.",
+              "Strong CYP2D6 or 3A4 inhibitors raise levels"
+            ]
+          },
+          "after": {
+            "cyp": {
+              "substrateOf": [
+                "2D6",
+                "3A4"
+              ]
+            },
+            "keyTraps": [
+              "Strong CYP2D6 or CYP3A4 inhibitors raise exposure; CYP2D6 poor-metabolizer status affects adjustment.",
+              "Strong CYP3A4 inducers lower exposure; reassess when interacting drugs start or stop."
+            ]
+          }
+        },
+        {
+          "field": "pearls",
+          "before": {
+            "t1": [
+              "If a patient gains >7% body weight on an antipsychotic, consider switching to a lower-risk agent (aripiprazole, ziprasidone, lurasidone) before adding metformin."
+            ],
+            "t2": [
+              "Aripiprazole and lurasidone carry the lowest risk. (metabolic)"
+            ]
+          },
+          "after": {
+            "t1": [
+              "Assess akathisia and compulsive urges directly. Weight gain and metabolic effects can still occur; do not treat this agent as metabolically risk-free."
+            ],
+            "t2": [
+              "Comparative metabolic rankings and a switching-versus-metformin strategy require separate evidence and individualized review; the selected label does not establish them."
+            ]
+          }
+        },
+        {
+          "field": "attendingAsks",
+          "before": [
+            "What side effect most often limits aripiprazole early?",
+            "Where does aripiprazole sit on metabolic risk?",
+            "What would you do before adding metformin for weight gain?"
+          ],
+          "after": [
+            "How do you distinguish akathisia from worsening agitation?",
+            "What metabolic monitoring is still needed with aripiprazole?",
+            "Which compulsive behaviors should you ask about?"
+          ]
+        },
+        {
+          "field": "familyExplainer",
+          "before": {
+            "text": "Aripiprazole treats psychosis, bipolar disorder, and depression. It causes less weight gain than many similar drugs. It can cause a strong restless feeling. Tell the team about restlessness. Also tell them about new urges to gamble or spend.",
+            "handoutRef": "FH-MED03"
+          },
+          "after": {
+            "text": "This drug treats psychosis and mania. It can also be added to a drug for depression. It can cause weight gain or a strong restless feeling. Tell the team about restlessness or new urges to gamble, shop, eat or have sex.",
+            "handoutRef": "FH-MED03"
+          }
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "aripiprazole",
+            "reconnectRecords": [
+              "medications[name=Aripiprazole]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Atypical Antipsychotic",
+              "mechanism_of_action": "Dopamine D2 partial agonist; 5-HT1A partial agonist; 5-HT2A antagonist",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Mild Gain",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "Fasting glucose/lipids; weight",
+              "half_life_hours": "75",
+              "time_to_effect": "1-2 weeks (psychosis); days-weeks (mood)",
+              "counseling": "Weight-neutral antipsychotic. Watch for restlessness/akathisia. Report any compulsive behaviors (gambling, shopping). LAI available.",
+              "family_psychoeducation": "For patients with schizophrenia or psychotic disorders, APA guidelines (Grade 1A) recommend family psychoeducation when the patient is in contact with family members. Ask your treatment team about family education sessions, which have been shown to reduce relapse and improve outcomes.",
+              "family_handout_ref": "FH-MED03",
+              "common_side_effects": "Akathisia; Restlessness; Insomnia; Nausea; Headache",
+              "cyp_pathways": "2D6 substrate; 3A4 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Dopamine D2 partial agonist; 5-HT1A partial agonist; 5-HT2A antagonist"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** If a patient gains >7% body weight on an antipsychotic, consider switching to a lower-risk agent (aripiprazole, ziprasidone, lurasidone) before adding metformin."
+                }
+              ],
+              "monitoring": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "| **Antipsychotics (metabolic)** | Weight/BMI, waist, fasting glucose/A1c, lipids, blood pressure | Glucose/lipids at ~12 weeks then annually; weight each visit; AIMS for tardive dyskinesia |"
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "*Neuroleptic malignant syndrome:* \"lead-pipe\" rigidity, hyperthermia, and elevated CK in someone on a dopamine blocker \u2014 slower and stiffer than serotonin syndrome."
+                },
+                {
+                  "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+                  "quote": "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 **propranolol** (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Akathisia; Restlessness; Insomnia; Nausea; Headache"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2D6 substrate; 3A4 substrate"
+                }
+              ],
+              "interactions.keyTraps": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Evidence:** CYP2D6 and CYP2C19 poor/intermediate metabolizer status significantly affects exposure to aripiprazole, haloperidol, risperidone, escitalopram, and sertraline."
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** If a patient gains >7% body weight on an antipsychotic, consider switching to a lower-risk agent (aripiprazole, ziprasidone, lurasidone) before adding metformin."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "Aripiprazole and lurasidone carry the lowest risk."
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Weight-neutral antipsychotic. Watch for restlessness/akathisia. Report any compulsive behaviors (gambling, shopping). LAI available."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "adverseEffects.dangerous[2].firstMove",
+              "adverseEffects.dangerous[2].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[1]",
+              "interactions.cyp",
+              "interactions.keyTraps[1]",
+              "mechanism.t1"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Atypical Antipsychotic",
+                "usedValue": "second-generation antipsychotic (D2 partial agonist)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "aripiprazole",
+            "reconnectRecords": [
+              "medications[name=Aripiprazole]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Atypical Antipsychotic",
+              "mechanism_of_action": "Dopamine D2 partial agonist; 5-HT1A partial agonist; 5-HT2A antagonist",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Mild Gain",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "Fasting glucose/lipids; weight",
+              "half_life_hours": "75",
+              "time_to_effect": "1-2 weeks (psychosis); days-weeks (mood)",
+              "counseling": "Weight-neutral antipsychotic. Watch for restlessness/akathisia. Report any compulsive behaviors (gambling, shopping). LAI available.",
+              "family_psychoeducation": "For patients with schizophrenia or psychotic disorders, APA guidelines (Grade 1A) recommend family psychoeducation when the patient is in contact with family members. Ask your treatment team about family education sessions, which have been shown to reduce relapse and improve outcomes.",
+              "family_handout_ref": "FH-MED03",
+              "common_side_effects": "Akathisia; Restlessness; Insomnia; Nausea; Headache",
+              "cyp_pathways": "2D6 substrate; 3A4 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Dopamine D2 partial agonist; 5-HT1A partial agonist; 5-HT2A antagonist"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** If a patient gains >7% body weight on an antipsychotic, consider switching to a lower-risk agent (aripiprazole, ziprasidone, lurasidone) before adding metformin."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Akathisia; Restlessness; Insomnia; Nausea; Headache"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2D6 substrate; 3A4 substrate"
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous",
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "adverseEffects.dangerous[2].firstMove",
+              "adverseEffects.dangerous[2].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[1]",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.ongoing",
+              "pearls",
+              "pearls.t1",
+              "pearls.t2"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Atypical Antipsychotic",
+                "usedValue": "second-generation antipsychotic (D2 partial agonist)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          }
+        },
+        {
+          "field": "retrieval",
+          "before": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "adverseEffects.dangerous[1]"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "pearls.t2[0]"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "pearls.t1[0]"
+              ]
+            }
+          ],
+          "after": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "adverseEffects.dangerous[1]"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "monitoring"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "adverseEffects.dangerous[2]"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bupropion",
+      "source": {
+        "id": "bupropion",
+        "setId": "a435da9d-f6e8-4ddc-897d-8cd2bf777b21",
+        "effectiveDate": "2026-02-10",
+        "boxedWarningPresent": true,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "45e742a03aecff5995918e5b3b8e2d85c9151fc8ad866d428733eba05fd3192b",
+        "openFdaJsonSha256": "5dacca86e7f7243898b5ca7367d76189efcc711063e6255994da257ed6fddf3e",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/a435da9d-f6e8-4ddc-897d-8cd2bf777b21.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:a435da9d-f6e8-4ddc-897d-8cd2bf777b21&limit=1"
+      },
+      "sections": "Indications; dosage/forms/switching; contraindications; warnings (seizures, hypertension, mania); interactions; renal/hepatic impairment",
+      "changes": [
+        {
+          "field": "brands",
+          "before": [
+            "Wellbutrin XL",
+            "Wellbutrin SR"
+          ],
+          "after": [
+            "Wellbutrin XL"
+          ]
+        },
+        {
+          "field": "inpatientUses",
+          "before": [
+            {
+              "use": "Depression when sexual side effects, weight gain, or sedation are the problem",
+              "offLabel": false,
+              "evidenceIds": []
+            },
+            {
+              "use": "Smoking cessation (labeled for the SR product marketed for cessation)",
+              "offLabel": false,
+              "evidenceIds": []
+            }
+          ],
+          "after": [
+            {
+              "use": "Major depressive disorder (selected extended-release product)",
+              "offLabel": false,
+              "evidenceIds": []
+            },
+            {
+              "use": "Prevention of seasonal major depressive episodes (selected extended-release product)",
+              "offLabel": false,
+              "evidenceIds": []
+            }
+          ]
+        },
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "IR, SR, and XL are not interchangeable one-for-one; seizure risk is dose-related. Confirm dose with pharmacy.",
+            "forms": [
+              "PO",
+              "ER"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a435da9d-f6e8-4ddc-897d-8cd2bf777b21"
+          },
+          "after": {
+            "titration": "Selected label: extended-release Wellbutrin XL tablets; swallow whole. Increase gradually because seizure risk is exposure-related. The label permits certain IR/SR-to-XL switches using the same total daily amount when possible; confirm the product and schedule with pharmacy rather than assuming tablet-for-tablet interchangeability. Renal or hepatic impairment may require adjustment.",
+            "forms": [
+              "ER"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a435da9d-f6e8-4ddc-897d-8cd2bf777b21"
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "Seizure history, eating-disorder history, alcohol or sedative withdrawal risk",
+              "Blood pressure"
+            ],
+            "ongoing": [
+              "Blood pressure",
+              "Activation and suicidality under age 25"
+            ]
+          },
+          "after": {
+            "baseline": [
+              "Seizure history, eating-disorder history, alcohol or sedative withdrawal risk",
+              "Blood pressure",
+              "Screen for bipolar disorder, suicide risk and duplicate bupropion products",
+              "Review renal/hepatic function and drugs that lower seizure threshold"
+            ],
+            "ongoing": [
+              "Blood pressure",
+              "Activation and suicidality under age 25"
+            ]
+          }
+        },
+        {
+          "field": "adverseEffects",
+          "before": {
+            "common": [
+              "Insomnia",
+              "Dry Mouth",
+              "Headache",
+              "Agitation",
+              "Nausea"
+            ],
+            "dangerous": [
+              {
+                "name": "Seizures",
+                "recognize": "Dose-related; higher risk with eating disorders, alcohol or sedative withdrawal, or other seizure-lowering drugs.",
+                "firstMove": "Avoid in those groups; escalate any seizure."
+              }
+            ]
+          },
+          "after": {
+            "common": [
+              "Insomnia",
+              "Dry Mouth",
+              "Headache",
+              "Agitation",
+              "Nausea"
+            ],
+            "dangerous": [
+              {
+                "name": "Seizures",
+                "recognize": "Dose-related; higher risk with eating disorders, alcohol or sedative withdrawal, or other seizure-lowering drugs.",
+                "firstMove": "Discontinue and obtain urgent medical assessment after a seizure; the selected label says not to restart treatment."
+              }
+            ]
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {
+              "inhibits": [
+                "2D6 (strong)"
+              ]
+            },
+            "keyTraps": [
+              "Contraindicated with bulimia/anorexia and during abrupt alcohol or benzodiazepine withdrawal",
+              "Strong 2D6 inhibitor: raises many antipsychotics and beta-blockers"
+            ]
+          },
+          "after": {
+            "cyp": {
+              "inhibits": [
+                "2D6 (strong)"
+              ]
+            },
+            "keyTraps": [
+              "Contraindicated with seizure disorder, current or prior bulimia/anorexia, or abrupt withdrawal from alcohol, benzodiazepines, barbiturates or antiepileptic drugs.",
+              "Avoid duplicate bupropion products and review MAOI contraindications and washout intervals.",
+              "CYP2D6 inhibition can raise concentrations of relevant antidepressants, antipsychotics, beta-blockers and antiarrhythmics."
+            ]
+          }
+        },
+        {
+          "field": "pearls",
+          "before": {
+            "t1": [
+              "No sexual side effects or weight gain \u2014 but it lowers the seizure threshold."
+            ],
+            "t2": [
+              "Not an anxiolytic or a sleep aid; it can be activating."
+            ]
+          },
+          "after": {
+            "t1": [
+              "Do not promise absence of sexual adverse effects or weight gain. Assess individual tolerability; seizure risk and blood-pressure elevation remain important."
+            ],
+            "t2": [
+              "Not an anxiolytic or a sleep aid; it can be activating."
+            ]
+          }
+        },
+        {
+          "field": "attendingAsks",
+          "before": [
+            "Who should not get bupropion?",
+            "What is its advantage over SSRIs?",
+            "Which enzyme does it strongly inhibit?"
+          ],
+          "after": [
+            "Who should not get bupropion?",
+            "Why should you avoid promising no sexual adverse effects or weight gain?",
+            "Which enzyme does it strongly inhibit?"
+          ]
+        },
+        {
+          "field": "familyExplainer",
+          "before": {
+            "text": "Bupropion treats depression and helps people quit smoking. It does not cause weight gain or sexual side effects. It can rarely cause seizures, so tell the team about any eating disorder or heavy drinking.",
+            "handoutRef": "FH-MED01"
+          },
+          "after": {
+            "text": "This form of bupropion treats depression and can help prevent winter depression. It may cause sleep loss or dry mouth. Side effects vary from person to person. Tell the team about seizures, eating disorders or a plan to stop heavy drinking. Do not crush the tablet.",
+            "handoutRef": "FH-MED01"
+          }
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "bupropion",
+            "reconnectRecords": [
+              "medications[name=Bupropion]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Other",
+              "mechanism_of_action": "Norepinephrine-dopamine reuptake inhibitor (NDRI)",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Loss",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "None routinely required",
+              "half_life_hours": "21",
+              "time_to_effect": "2-4 weeks",
+              "counseling": "Activating - take in morning. No sexual side effects. SEIZURE RISK - never exceed max dose. Avoid in eating disorders/seizure history.",
+              "family_handout_ref": "FH-MED01",
+              "common_side_effects": "Insomnia; Dry Mouth; Headache; Agitation; Nausea",
+              "cyp_pathways": "2B6 substrate; 2D6 inhibitor"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Norepinephrine-dopamine reuptake inhibitor (NDRI)"
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Insomnia; Dry Mouth; Headache; Agitation; Nausea"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2B6 substrate; 2D6 inhibitor"
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Activating - take in morning. No sexual side effects. SEIZURE RISK - never exceed max dose. Avoid in eating disorders/seizure history."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[0].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[0]",
+              "inpatientUses[1]",
+              "interactions.cyp",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "pearls",
+              "pearls.t1[0]",
+              "pearls.t2[0]"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Other",
+                "usedValue": "NDRI (aminoketone)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "bupropion",
+            "reconnectRecords": [
+              "medications[name=Bupropion]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Other",
+              "mechanism_of_action": "Norepinephrine-dopamine reuptake inhibitor (NDRI)",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Loss",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "None routinely required",
+              "half_life_hours": "21",
+              "time_to_effect": "2-4 weeks",
+              "counseling": "Activating - take in morning. No sexual side effects. SEIZURE RISK - never exceed max dose. Avoid in eating disorders/seizure history.",
+              "family_handout_ref": "FH-MED01",
+              "common_side_effects": "Insomnia; Dry Mouth; Headache; Agitation; Nausea",
+              "cyp_pathways": "2B6 substrate; 2D6 inhibitor"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Norepinephrine-dopamine reuptake inhibitor (NDRI)"
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Insomnia; Dry Mouth; Headache; Agitation; Nausea"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2B6 substrate; 2D6 inhibitor"
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous",
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[0].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses",
+              "inpatientUses[0]",
+              "inpatientUses[1]",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.baseline",
+              "pearls",
+              "pearls.t1",
+              "pearls.t1[0]",
+              "pearls.t2[0]",
+              "populations",
+              "populations.hepatic",
+              "populations.renal"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Other",
+                "usedValue": "NDRI (aminoketone)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          }
+        },
+        {
+          "field": "retrieval",
+          "before": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "interactions.keyTraps[0]",
+                "adverseEffects.dangerous[0]"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "pearls.t1[0]"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "interactions.keyTraps[1]"
+              ]
+            }
+          ],
+          "after": [
+            {
+              "id": "ask0",
+              "askIndex": 0,
+              "revealFrom": [
+                "interactions.keyTraps[0]",
+                "adverseEffects.dangerous[0]"
+              ]
+            },
+            {
+              "id": "ask1",
+              "askIndex": 1,
+              "revealFrom": [
+                "pearls.t1[0]"
+              ]
+            },
+            {
+              "id": "ask2",
+              "askIndex": 2,
+              "revealFrom": [
+                "interactions.keyTraps[2]"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "populations",
+          "before": null,
+          "after": {
+            "renal": "Reduced renal function may require a lower exposure or less frequent administration; confirm with pharmacy.",
+            "hepatic": "Hepatic impairment requires product-specific adjustment and monitoring."
+          }
+        }
+      ]
+    },
+    {
+      "id": "escitalopram",
+      "source": {
+        "id": "escitalopram",
+        "setId": "13bb8267-1cab-43e5-acae-55a4d957630a",
+        "effectiveDate": "2023-10-01",
+        "boxedWarningPresent": true,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "2d69be0abcf9db2b79813d7547f097e2475457267a4d2ba4cf1b02ce1537b14a",
+        "openFdaJsonSha256": "d96b7cc3bddd6f5b302f63d27eec934e07f6730151c53ac377cd326962ee8570",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/13bb8267-1cab-43e5-acae-55a4d957630a.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:13bb8267-1cab-43e5-acae-55a4d957630a&limit=1"
+      },
+      "sections": "Indications/age groups; dosage/forms; contraindications; warnings (hyponatremia, bleeding, mania); interactions; ECG pharmacology and specific populations",
+      "changes": [
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "Start low and titrate; expect delayed onset. Taper rather than stopping abruptly. Confirm dose with pharmacy.",
+            "forms": [
+              "PO",
+              "liquid"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=13bb8267-1cab-43e5-acae-55a4d957630a"
+          },
+          "after": {
+            "titration": "Selected Lexapro label covers tablets and oral solution; the solution is listed as not currently marketed. Confirm available product with pharmacy. Indicated ages differ for MDD and GAD. Adjust cautiously for hepatic impairment and older age; taper gradually and monitor withdrawal symptoms.",
+            "forms": [
+              "PO",
+              "liquid"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=13bb8267-1cab-43e5-acae-55a4d957630a"
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "No routine labs required",
+              "Screen for bipolarity"
+            ],
+            "ongoing": [
+              "Activation and suicidality under age 25",
+              "Sodium in older adults",
+              "Bleeding risk",
+              "Discontinuation symptoms"
+            ],
+            "sourcePage": "med_monitoring.md"
+          },
+          "after": {
+            "baseline": [
+              "Screen for bipolar disorder and suicide risk",
+              "Review cardiac/QT risks, electrolyte vulnerability, bleeding risks and interacting drugs; choose ECG or laboratory assessment according to risk rather than a universal exemption"
+            ],
+            "ongoing": [
+              "Activation and suicidality under age 25",
+              "Sodium in older adults",
+              "Bleeding risk",
+              "Discontinuation symptoms",
+              "Assess hyponatremia symptoms, especially with older age, diuretics or volume depletion; obtain sodium testing as indicated"
+            ],
+            "sourcePage": "med_monitoring.md"
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {
+              "substrateOf": [
+                "2C19",
+                "3A4"
+              ]
+            },
+            "keyTraps": [
+              "Citalopram, escitalopram, and sertraline have the fewest drug interactions.",
+              "Serotonergic stacking"
+            ]
+          },
+          "after": {
+            "cyp": {
+              "substrateOf": [
+                "2C19",
+                "3A4"
+              ]
+            },
+            "keyTraps": [
+              "Review serotonergic combinations and MAOI contraindications, including linezolid and intravenous methylene blue.",
+              "Contraindicated with pimozide; review QT-risk drugs and cardiac/electrolyte risk.",
+              "NSAIDs, antiplatelets and anticoagulants can increase bleeding risk."
+            ]
+          }
+        },
+        {
+          "field": "pearls",
+          "before": {
+            "t1": [
+              "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
+            ],
+            "t2": [
+              "If a patient is on multiple medications, escitalopram or sertraline are the safest SSRI choices from a drug-interaction standpoint."
+            ]
+          },
+          "after": {
+            "t1": [
+              "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
+            ],
+            "t2": [
+              "Choose an SSRI after checking the actual medication list and patient risks; no agent is universally the safest choice for interactions."
+            ]
+          }
+        },
+        {
+          "field": "attendingAsks",
+          "before": [
+            "Which SSRIs are cleanest on interactions?",
+            "What do you screen for before the first dose?",
+            "What monitoring matters in older adults?"
+          ],
+          "after": [
+            "How do you assess SSRI interaction risk without assuming one is universally safest?",
+            "What do you screen for before the first dose?",
+            "What monitoring matters in older adults?"
+          ]
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "escitalopram",
+            "reconnectRecords": [
+              "medications[name=Escitalopram]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "SSRI",
+              "mechanism_of_action": "Selective serotonin reuptake inhibitor (S-enantiomer of citalopram)",
+              "QTc Risk": "Moderate",
+              "Weight Impact": "Neutral",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "None routinely required",
+              "half_life_hours": "27",
+              "time_to_effect": "2-4 weeks",
+              "family_handout_ref": "FH-MED01",
+              "common_side_effects": "Nausea; Headache; Insomnia; Sexual Dysfunction; Fatigue",
+              "cyp_pathways": "2C19 substrate; 3A4 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Selective serotonin reuptake inhibitor (S-enantiomer of citalopram)"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** If a patient is on multiple medications, **escitalopram or sertraline** are the safest SSRI choices from a drug-interaction standpoint."
+                }
+              ],
+              "monitoring": [
+                {
+                  "page": "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md",
+                  "quote": "| **SSRIs/SNRIs** | (Clinical) \u2014 no routine labs required | Clinical monitoring | Hyponatremia (elderly), bleeding risk, activation and suicidality monitoring under age 25, discontinuation syndrome |"
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "*Serotonin syndrome:* clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased"
+                },
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Nausea; Headache; Insomnia; Sexual Dysfunction; Fatigue"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2C19 substrate; 3A4 substrate"
+                }
+              ],
+              "interactions.keyTraps": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "Citalopram, escitalopram, and sertraline have the fewest drug interactions."
+                }
+              ],
+              "pearls": [
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
+                },
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** If a patient is on multiple medications, **escitalopram or sertraline** are the safest SSRI choices from a drug-interaction standpoint."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "interactions.cyp",
+              "interactions.keyTraps[1]",
+              "mechanism.t1"
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "escitalopram",
+            "reconnectRecords": [
+              "medications[name=Escitalopram]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "SSRI",
+              "mechanism_of_action": "Selective serotonin reuptake inhibitor (S-enantiomer of citalopram)",
+              "QTc Risk": "Moderate",
+              "Weight Impact": "Neutral",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "None routinely required",
+              "half_life_hours": "27",
+              "time_to_effect": "2-4 weeks",
+              "family_handout_ref": "FH-MED01",
+              "common_side_effects": "Nausea; Headache; Insomnia; Sexual Dysfunction; Fatigue",
+              "cyp_pathways": "2C19 substrate; 3A4 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Selective serotonin reuptake inhibitor (S-enantiomer of citalopram)"
+                }
+              ],
+              "inpatientUses": [
+                {
+                  "page": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+                  "quote": "- **Pearl:** If a patient is on multiple medications, **escitalopram or sertraline** are the safest SSRI choices from a drug-interaction standpoint."
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "*Serotonin syndrome:* clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased"
+                },
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "Don't start an SSRI without screening for bipolarity, and expect delayed onset. The suicidality black-box covers antidepressants through age 24 \u2014 monitor young adults closely early."
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Nausea; Headache; Insomnia; Sexual Dysfunction; Fatigue"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "2C19 substrate; 3A4 substrate"
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[1].firstMove",
+              "adverseEffects.dangerous[1].recognize",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.baseline",
+              "monitoring.ongoing",
+              "pearls",
+              "pearls.t2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "mirtazapine",
+      "source": {
+        "id": "mirtazapine",
+        "setId": "98ad1917-a094-44f5-a28f-a64a8cfcd887",
+        "effectiveDate": "2025-08-06",
+        "boxedWarningPresent": true,
+        "checkedOn": "2026-10-03",
+        "dailyMedXmlSha256": "60a26e877e5df9da75fdcff76fb3c66bcd89aea7fdaee511793226917c2d1406",
+        "openFdaJsonSha256": "4126ca44fe148daa5edec7b333b8b3777ab2a823a2c1a1ae918087c558209afb",
+        "dailyMedUrl": "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/98ad1917-a094-44f5-a28f-a64a8cfcd887.xml",
+        "openFdaUrl": "https://api.fda.gov/drug/label.json?search=set_id:98ad1917-a094-44f5-a28f-a64a8cfcd887&limit=1"
+      },
+      "sections": "Dosage/forms; warnings (agranulocytosis, QT, sedation, weight/lipids); interactions; renal/hepatic impairment",
+      "changes": [
+        {
+          "field": "dosing",
+          "before": {
+            "titration": "Sedation is often greatest at lower doses. ODT available. Confirm dose with pharmacy.",
+            "forms": [
+              "PO",
+              "ODT"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=98ad1917-a094-44f5-a28f-a64a8cfcd887"
+          },
+          "after": {
+            "titration": "Selected label covers oral tablets and orally disintegrating tablets. Titrate with response and tolerability; the label does not establish a predictable inverse relationship between dose and sedation. Moderate to severe renal or hepatic impairment may require adjustment. Confirm the plan with pharmacy.",
+            "forms": [
+              "PO",
+              "ODT"
+            ],
+            "labelLink": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=98ad1917-a094-44f5-a28f-a64a8cfcd887"
+          }
+        },
+        {
+          "field": "monitoring",
+          "before": {
+            "baseline": [
+              "Weight",
+              "Screen for bipolarity"
+            ],
+            "ongoing": [
+              "Weight and lipids",
+              "Activation and suicidality under age 25"
+            ]
+          },
+          "after": {
+            "baseline": [
+              "Weight",
+              "Screen for bipolarity",
+              "Assess renal/hepatic function and QT risks or interacting drugs"
+            ],
+            "ongoing": [
+              "Weight and lipids",
+              "Activation and suicidality under age 25",
+              "Sedation and impairment; assess QT/electrolyte risk when indicated",
+              "Fever, sore throat or infection: obtain medical assessment and CBC for possible neutropenia"
+            ]
+          }
+        },
+        {
+          "field": "adverseEffects",
+          "before": {
+            "common": [
+              "Sedation",
+              "Weight Gain",
+              "Increased Appetite",
+              "Dry Mouth",
+              "Dizziness"
+            ],
+            "dangerous": [
+              {
+                "name": "Agranulocytosis (rare)",
+                "recognize": "Fever or sore throat.",
+                "firstMove": "CBC now."
+              },
+              {
+                "name": "Serotonin syndrome",
+                "recognize": "Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased",
+                "firstMove": "Tell the senior now; stop serotonergic agents pending evaluation."
+              }
+            ]
+          },
+          "after": {
+            "common": [
+              "Sedation",
+              "Weight Gain",
+              "Increased Appetite",
+              "Dry Mouth",
+              "Dizziness"
+            ],
+            "dangerous": [
+              {
+                "name": "Agranulocytosis or severe neutropenia",
+                "recognize": "Fever, sore throat, mouth inflammation or other signs of infection.",
+                "firstMove": "Obtain prompt medical assessment and CBC; discontinue if infection signs occur with a low white blood cell count."
+              },
+              {
+                "name": "Serotonin syndrome",
+                "recognize": "Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased",
+                "firstMove": "Tell the senior now; stop serotonergic agents pending evaluation."
+              },
+              {
+                "name": "QT prolongation and arrhythmia",
+                "recognize": "Syncope, palpitations or arrhythmia, especially with cardiac risk, interacting drugs or overdose.",
+                "firstMove": "Obtain urgent medical assessment and ECG; review electrolytes and interacting drugs."
+              }
+            ]
+          }
+        },
+        {
+          "field": "interactions",
+          "before": {
+            "cyp": {
+              "substrateOf": [
+                "3A4",
+                "2D6",
+                "1A2"
+              ]
+            },
+            "keyTraps": [
+              "Other sedating agents",
+              "Serotonergic stacking"
+            ]
+          },
+          "after": {
+            "cyp": {
+              "substrateOf": [
+                "3A4",
+                "2D6",
+                "1A2"
+              ]
+            },
+            "keyTraps": [
+              "Alcohol and benzodiazepines add impairment; avoid these combinations under the label.",
+              "Review serotonergic combinations and MAOI contraindications.",
+              "CYP3A inhibitors or inducers can require adjustment; QT-prolonging drugs increase risk."
+            ]
+          }
+        },
+        {
+          "field": "provenance",
+          "before": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "mirtazapine",
+            "reconnectRecords": [
+              "medications[name=Mirtazapine]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Other",
+              "mechanism_of_action": "Alpha-2 antagonist; 5-HT2/5-HT3 antagonist; H1 antagonist",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Significant Gain",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "CBC (monitor for rare agranulocytosis)",
+              "half_life_hours": "26",
+              "time_to_effect": "2-4 weeks",
+              "counseling": "Very sedating - take at bedtime. Causes significant weight gain. Paradoxically LESS sedating at higher doses. No sexual side effects.",
+              "family_handout_ref": "FH-MED01",
+              "common_side_effects": "Sedation; Weight Gain; Increased Appetite; Dry Mouth; Dizziness",
+              "cyp_pathways": "3A4 substrate; 2D6 substrate; 1A2 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Alpha-2 antagonist; 5-HT2/5-HT3 antagonist; H1 antagonist"
+                }
+              ],
+              "adverseEffects.dangerous": [
+                {
+                  "page": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+                  "quote": "*Serotonin syndrome:* clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased"
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Sedation; Weight Gain; Increased Appetite; Dry Mouth; Dizziness"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "3A4 substrate; 2D6 substrate; 1A2 substrate"
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Very sedating - take at bedtime. Causes significant weight gain. Paradoxically LESS sedating at higher doses. No sexual side effects."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[0].recognize",
+              "adverseEffects.dangerous[1].firstMove",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[0]",
+              "interactions.cyp",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "pearls",
+              "pearls.t1[0]",
+              "pearls.t2[0]"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Other",
+                "usedValue": "NaSSA (\u03b12 antagonist)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          },
+          "after": {
+            "fieldClasses": {
+              "generic": "L",
+              "brands": "L",
+              "rxcui": "L",
+              "dailymedSetId": "L",
+              "labelVersionDate": "L",
+              "fdaIndications": "L",
+              "boxedWarning.present": "L",
+              "boxedWarning.summary": "L",
+              "class": "R",
+              "mechanism.t1": "J",
+              "flags": "R",
+              "pk": "R",
+              "monitoring": "E",
+              "inpatientUses": "J",
+              "dosing.titration": "J",
+              "dosing.forms": "J",
+              "dosing.labelLink": "L",
+              "adverseEffects.common": "J",
+              "adverseEffects.dangerous": "J",
+              "interactions.cyp": "J",
+              "interactions.keyTraps": "J",
+              "populations": "J",
+              "pearls": "J",
+              "attendingAsks": "J",
+              "familyExplainer.text": "J",
+              "familyExplainer.handoutRef": "R"
+            },
+            "labelVerifiedOn": "2026-09-29",
+            "labelReceipt": "mirtazapine",
+            "reconnectRecords": [
+              "medications[name=Mirtazapine]"
+            ],
+            "sourceRevision": "dab9787035e46b1ee15f94e274dd328f50a1103e",
+            "sourceSha256": "614545dd1488b3b55e9f45426be0d42715687ec92faf5348e9446fa763236074",
+            "carried": {
+              "drug_class": "Other",
+              "mechanism_of_action": "Alpha-2 antagonist; 5-HT2/5-HT3 antagonist; H1 antagonist",
+              "QTc Risk": "Minimal",
+              "Weight Impact": "Significant Gain",
+              "Requires Blood Monitoring": "No",
+              "ekg_required": "No",
+              "baseline_workup": "CBC (monitor for rare agranulocytosis)",
+              "half_life_hours": "26",
+              "time_to_effect": "2-4 weeks",
+              "counseling": "Very sedating - take at bedtime. Causes significant weight gain. Paradoxically LESS sedating at higher doses. No sexual side effects.",
+              "family_handout_ref": "FH-MED01",
+              "common_side_effects": "Sedation; Weight Gain; Increased Appetite; Dry Mouth; Dizziness",
+              "cyp_pathways": "3A4 substrate; 2D6 substrate; 1A2 substrate"
+            },
+            "jSources": {
+              "mechanism.t1": [
+                {
+                  "page": "reconnect:mechanism_of_action",
+                  "quote": "Alpha-2 antagonist; 5-HT2/5-HT3 antagonist; H1 antagonist"
+                }
+              ],
+              "adverseEffects.common": [
+                {
+                  "page": "reconnect:common_side_effects",
+                  "quote": "Sedation; Weight Gain; Increased Appetite; Dry Mouth; Dizziness"
+                }
+              ],
+              "interactions.cyp": [
+                {
+                  "page": "reconnect:cyp_pathways",
+                  "quote": "3A4 substrate; 2D6 substrate; 1A2 substrate"
+                }
+              ],
+              "familyExplainer.text": [
+                {
+                  "page": "reconnect:counseling",
+                  "quote": "Very sedating - take at bedtime. Causes significant weight gain. Paradoxically LESS sedating at higher doses. No sexual side effects."
+                }
+              ]
+            },
+            "authoredFields": [
+              "adverseEffects.dangerous",
+              "adverseEffects.dangerous[0].firstMove",
+              "adverseEffects.dangerous[0].recognize",
+              "adverseEffects.dangerous[1].firstMove",
+              "attendingAsks",
+              "dosing.forms",
+              "dosing.titration",
+              "familyExplainer.text",
+              "inpatientUses[0]",
+              "interactions.cyp",
+              "interactions.keyTraps",
+              "interactions.keyTraps[0]",
+              "interactions.keyTraps[1]",
+              "mechanism.t1",
+              "monitoring",
+              "monitoring.baseline",
+              "monitoring.ongoing",
+              "pearls",
+              "pearls.t1[0]",
+              "pearls.t2[0]",
+              "populations",
+              "populations.hepatic",
+              "populations.renal"
+            ],
+            "upstreamDiscrepancies": [
+              {
+                "field": "drug_class",
+                "upstreamValue": "Other",
+                "usedValue": "NaSSA (\u03b12 antagonist)",
+                "basis": "Card uses a more specific class term \u2014 reviewer to confirm."
+              }
+            ]
+          }
+        },
+        {
+          "field": "populations",
+          "before": null,
+          "after": {
+            "renal": "Clearance is reduced in moderate to severe renal impairment; adjustment may be needed.",
+            "hepatic": "Clearance is reduced in hepatic impairment; adjustment may be needed."
+          }
+        }
+      ]
+    }
+  ]
+}

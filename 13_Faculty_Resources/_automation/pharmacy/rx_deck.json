@@ -791,6 +791,10 @@
       "reason": "J fields not reviewed (or changed since)"
     },
     {
+      "drug": "buspirone",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
       "drug": "carbamazepine",
       "reason": "J fields not reviewed (or changed since)"
     },
@@ -811,11 +815,19 @@
       "reason": "J fields not reviewed (or changed since)"
     },
     {
+      "drug": "clomipramine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
       "drug": "clonazepam",
       "reason": "J fields not reviewed (or changed since)"
     },
     {
       "drug": "clonidine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "deutetrabenazine",
       "reason": "J fields not reviewed (or changed since)"
     },
     {
@@ -840,6 +852,10 @@
     },
     {
       "drug": "fluphenazine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "fluvoxamine",
       "reason": "J fields not reviewed (or changed since)"
     },
     {
@@ -868,6 +884,10 @@
     },
     {
       "drug": "mirtazapine",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "naloxone",
       "reason": "J fields not reviewed (or changed since)"
     },
     {
@@ -912,6 +932,10 @@
     },
     {
       "drug": "trazodone",
+      "reason": "J fields not reviewed (or changed since)"
+    },
+    {
+      "drug": "valbenazine",
       "reason": "J fields not reviewed (or changed since)"
     },
     {
