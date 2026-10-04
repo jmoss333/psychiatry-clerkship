@@ -1,0 +1,307 @@
+#!/usr/bin/env python3
+"""Behavior tests for check_label_drift.py, offline: every network call is a fake.
+
+Each verdict is proved by producing it from a synthetic label pair, and the committed pins
+are held to the committed receipt (the step CI runs is `--offline`, pinned here too).
+"""
+
+import contextlib
+import copy
+import io
+import json
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import check_label_drift as drift  # noqa: E402
+
+SET_ID = "11111111-2222-3333-4444-555555555555"
+DOSING = "Titrate to response. Dosages above the usual range may be appropriate for some patients."
+
+
+def section(code, title, body, children="", excerpt=""):
+    return (
+        '<component><section><code code="%s" displayName="%s"/>%s%s<text><paragraph>%s</paragraph></text>%s</section></component>'
+        % (code, (title or "SECTION").upper(), "<title>%s</title>" % title if title is not None else "",
+           "<excerpt><highlight><text>%s</text></highlight></excerpt>" % excerpt if excerpt else "",
+           body, children))
+
+
+def spl(version, date, dosing=DOSING, warnings="Watch for sedation.", medguide="Read this guide.",
+        package="Carton 30 films", boxed=None):
+    sections = [
+        section("34066-1", "WARNING: RISK", boxed) if boxed else "",
+        section("34067-9", "1 INDICATIONS AND USAGE", "Indicated for opioid dependence."),
+        section("34068-7", "2 DOSAGE AND ADMINISTRATION", "",
+                children=section("42229-5", "2.4 Maintenance", dosing,
+                                 children=section("42229-5", None, "An untitled block folds in."))),
+        section("43685-7", "5 WARNINGS AND PRECAUTIONS", "",
+                children=section("42229-5", "5.1 Sedation", warnings), excerpt="Highlights text."),
+        section("43682-4", "12.3 Pharmacokinetics", "",
+                children=section("42229-5", "Absorption", "Absorbed sublingually.")),
+        section("42231-1", "MEDICATION GUIDE", medguide),
+        section("48780-1", None, "PRODUCT DATA"),
+        section("51945-4", "PACKAGE LABEL", package),
+    ]
+    return ('<?xml version="1.0"?><document xmlns="urn:hl7-org:v3"><setId root="%s"/>'
+            '<versionNumber value="%d"/><effectiveTime value="%s"/><component><structuredBody>%s'
+            '</structuredBody></component></document>'
+            % (SET_ID, version, date.replace("-", ""), "".join(sections))).encode("utf-8")
+
+
+def receipt(date="2026-01-01"):
+    return {"schemaVersion": 1, "agents": {"testdrug": {"reference": {"setId": SET_ID, "effectiveDate": date}}}}
+
+
+class FakeDailyMed:
+    """Serves one current SPL and its version history; records what was asked."""
+
+    def __init__(self, xml, fail=False):
+        self.xml, self.fail, self.calls = xml, fail, []
+
+    def __call__(self, url):
+        self.calls.append(url)
+        if self.fail:
+            raise drift.CouldNotCheck("network down")
+        if url.endswith("/history.json"):
+            version = drift.parse_spl(self.xml)["version"]
+            # the shape DailyMed serves (2026-10-03): newest first, versions as integers
+            rows = [{"spl_version": v, "published_date": "x"} for v in range(version, 0, -1)]
+            return json.dumps({"data": {"spl": {"setid": SET_ID}, "history": rows}}).encode()
+        return self.xml
+
+
+class Workspace:
+    def __init__(self, test, receipt_doc, pins_doc=None):
+        self.dir = tempfile.TemporaryDirectory()
+        test.addCleanup(self.dir.cleanup)
+        root = Path(self.dir.name)
+        self.receipt, self.pins = root / "receipt.json", root / "pins.json"
+        self.receipt.write_text(json.dumps(receipt_doc))
+        if pins_doc is not None:
+            self.pins.write_text(json.dumps(pins_doc))
+
+    def run(self, *argv, get):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = drift.main(list(argv) + ["--receipt", str(self.receipt), "--pins", str(self.pins),
+                                            "--pause", "0"], get=get)
+        return code, out.getvalue() + err.getvalue()
+
+    def pins_doc(self):
+        return json.loads(self.pins.read_text())
+
+
+class ParseTest(unittest.TestCase):
+    def test_sections_are_keyed_by_number_and_unkeyed_children_fold_in(self):
+        parsed = drift.parse_spl(spl(3, "2026-01-01", boxed="Serious risk."))
+        self.assertEqual(parsed["version"], 3)
+        self.assertEqual(parsed["effectiveDate"], "2026-01-01")
+        keys = set(parsed["sections"])
+        self.assertTrue({"BW", "1", "2", "2.4", "5", "5.1", "12.3", "MEDICATION GUIDE"} <= keys, keys)
+        self.assertIn("An untitled block folds in.", parsed["sections"]["2.4"]["text"])
+        self.assertIn("Absorbed sublingually.", parsed["sections"]["12.3"]["text"])
+        self.assertNotIn(DOSING, parsed["sections"]["2"]["text"])  # a keyed child reports alone
+
+    def test_highlights_product_data_and_package_panel_are_not_hashed(self):
+        parsed = drift.parse_spl(spl(3, "2026-01-01"))
+        text = " ".join(s["text"] for s in parsed["sections"].values())
+        for absent in ("Highlights text.", "PRODUCT DATA", "Carton 30 films"):
+            self.assertNotIn(absent, text)
+
+    def test_a_label_without_a_header_could_not_be_checked(self):
+        with self.assertRaises(drift.CouldNotCheck):
+            drift.parse_spl(b'<document xmlns="urn:hl7-org:v3"/>')
+        with self.assertRaises(drift.CouldNotCheck):
+            drift.parse_spl(b"not xml")
+
+
+class CompareTest(unittest.TestCase):
+    def pin(self, quotes=()):
+        entry, problems = drift.pin_entry(drift.parse_spl(spl(3, "2026-01-01")), list(quotes), "2026-10-03")
+        self.assertEqual(problems, [])
+        return entry
+
+    def test_unchanged_label_needs_nothing(self):
+        result = drift.compare(self.pin(), drift.parse_spl(spl(4, "2026-02-01")))
+        self.assertEqual((result["changed"], result["added"], result["removed"]), ([], [], []))
+        self.assertFalse(result["needsReview"])
+
+    def test_a_changed_dosing_subsection_flags_the_dosing_field(self):
+        new = drift.parse_spl(spl(4, "2026-02-01", dosing=DOSING + " Higher doses may be needed."))
+        result = drift.compare(self.pin(), new)
+        self.assertEqual(result["changed"], ["2.4"])
+        self.assertEqual(result["fields"], ["dosing"])
+        self.assertTrue(result["needsReview"])
+
+    def test_fields_are_limited_to_those_the_card_carries(self):
+        new = drift.parse_spl(spl(4, "2026-02-01", warnings="Watch for sedation and falls."))
+        self.assertEqual(drift.compare(self.pin(), new)["fields"], ["adverseEffects", "flags", "monitoring"])
+        card = {"flags": [], "dosing": {}}
+        self.assertEqual(drift.compare(self.pin(), new, card)["fields"], ["flags"])
+
+    def test_a_medication_guide_change_is_reported_but_needs_no_review(self):
+        new = drift.parse_spl(spl(4, "2026-02-01", medguide="Read this new guide."))
+        result = drift.compare(self.pin(), new)
+        self.assertEqual(result["unmapped"], ["MEDICATION GUIDE"])
+        self.assertFalse(result["needsReview"])
+
+    def test_a_package_panel_change_is_invisible(self):
+        result = drift.compare(self.pin(), drift.parse_spl(spl(4, "2026-02-01", package="Carton 90")))
+        self.assertEqual(result["changed"] + result["unmapped"], [])
+
+    def test_a_pinned_quote_is_dose_masked_and_must_survive_the_new_version(self):
+        quote = {"section": "5.1", "text": "Watch for   sedation."}
+        pin = self.pin([quote])
+        self.assertEqual(pin["quotes"], [{"section": "5.1", "text": "Watch for sedation."}])
+        intact = drift.compare(pin, drift.parse_spl(spl(4, "2026-02-01", medguide="New guide.")))
+        self.assertEqual(intact["quotesBroken"], [])
+        gone = drift.compare(pin, drift.parse_spl(spl(4, "2026-02-01", warnings="Monitor closely.")))
+        self.assertEqual(len(gone["quotesBroken"]), 1)
+        self.assertTrue(gone["needsReview"])
+
+    def test_a_quote_that_is_not_in_the_label_cannot_be_pinned(self):
+        parsed = drift.parse_spl(spl(3, "2026-01-01"))
+        _, problems = drift.pin_entry(parsed, [{"section": "5.1", "text": "Not in the label."}], "x")
+        self.assertTrue(problems)
+        _, problems = drift.pin_entry(parsed, [{"section": "9.9", "text": "Watch"}], "x")
+        self.assertTrue(problems)
+
+    def test_pinned_quotes_never_store_a_dose(self):
+        parsed = drift.parse_spl(spl(3, "2026-01-01", dosing="Do not exceed 24 mg daily."))
+        entry, problems = drift.pin_entry(parsed, [{"section": "2.4", "text": "Do not exceed 24 mg daily."}], "x")
+        self.assertEqual(problems, [])
+        self.assertEqual(entry["quotes"][0]["text"], "Do not exceed [dose] daily.")
+
+
+class MainTest(unittest.TestCase):
+    def test_pin_then_check_an_unchanged_label(self):
+        ws = Workspace(self, receipt())
+        code, out = ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 0, out)
+        self.assertEqual(ws.pins_doc()["agents"]["testdrug"]["version"], 3)
+        fake = FakeDailyMed(spl(3, "2026-01-01"))
+        code, out = ws.run(get=fake)
+        self.assertEqual(code, 0, out)
+        self.assertIn("examined 1/1", out)
+        self.assertTrue(all(url.endswith("/history.json") for url in fake.calls))  # no SPL download
+
+    def test_a_newer_label_that_changes_dosing_exits_1_and_names_the_field(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        code, out = ws.run(get=FakeDailyMed(spl(4, "2026-02-01", dosing="Rewritten dosing.")))
+        self.assertEqual(code, 1, out)
+        self.assertIn("REVIEW", out)
+        self.assertIn("2.4", out)
+        self.assertIn("re-review fields: dosing", out)
+
+    def test_a_version_bump_with_no_content_change_exits_0_and_asks_for_a_re_pin(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        code, out = ws.run(get=FakeDailyMed(spl(4, "2026-02-01", package="New carton")))
+        self.assertEqual(code, 0, out)
+        self.assertIn("re-pin", out)
+
+    def test_json_report(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        code, out = ws.run("--json", get=FakeDailyMed(spl(4, "2026-02-01", dosing="Rewritten.")))
+        report = json.loads(out[out.index("{"):])
+        self.assertEqual((code, report["examined"], report["needsReview"]), (1, 1, ["testdrug"]))
+
+    def test_pin_refuses_a_label_already_newer_than_the_receipt(self):
+        ws = Workspace(self, receipt(date="2025-06-01"))
+        code, out = ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 1, out)
+        pins = ws.pins_doc()
+        self.assertNotIn("testdrug", pins["agents"])
+        self.assertIn("verify_pharmacy_labels.py", pins["unpinned"]["testdrug"])
+        # ...and the unpinned agent is a finding everywhere, never a silent skip (Codex P1 #954).
+        code, out = ws.run("--offline", get=FakeDailyMed(b"", fail=True))
+        self.assertEqual(code, 1, out)
+        self.assertIn("testdrug: unpinned", out)
+        code, out = ws.run(get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 1, out)
+        self.assertIn("testdrug: unpinned", out)
+
+    def test_network_failure_could_not_check(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        code, out = ws.run(get=FakeDailyMed(b"", fail=True))
+        self.assertEqual(code, 2, out)
+
+    def test_a_receipt_agent_with_no_pin_could_not_check(self):  # never a pass over fewer labels
+        ws = Workspace(self, receipt(), pins_doc={"schemaVersion": 1, "agents": {}})
+        code, out = ws.run(get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 2, out)
+        self.assertIn("testdrug", out)
+        code, out = ws.run("--offline", get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 2, out)
+
+    def test_an_unreadable_history_could_not_check(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        for body in (b"{}", b'{"data": []}', b'{"data": {"history": []}}', b"<html>"):
+            with self.subTest(body=body):
+                code, out = ws.run(get=lambda url, body=body: body if url.endswith(".json") else b"")
+                self.assertEqual(code, 2, out)
+
+    def test_offline_never_touches_the_network(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        fake = FakeDailyMed(b"", fail=True)
+        code, out = ws.run("--offline", get=fake)
+        self.assertEqual((code, fake.calls), (0, []), out)
+
+    def test_offline_fails_a_pin_the_receipt_has_moved_past(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        ws.receipt.write_text(json.dumps(receipt(date="2026-02-01")))
+        code, out = ws.run("--offline", get=FakeDailyMed(b"", fail=True))
+        self.assertEqual(code, 1, out)
+        moved = receipt()
+        moved["agents"]["testdrug"]["reference"]["setId"] = "99999999-0000-0000-0000-000000000000"
+        ws.receipt.write_text(json.dumps(moved))
+        code, out = ws.run("--offline", get=FakeDailyMed(b"", fail=True))
+        self.assertEqual(code, 2, out)
+
+    def test_offline_fails_a_dose_in_a_pinned_quote(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        pins = ws.pins_doc()
+        pins["agents"]["testdrug"]["quotes"] = [{"section": "2.4", "text": "Give 10 mg."}]
+        ws.pins.write_text(json.dumps(pins))
+        code, out = ws.run("--offline", get=FakeDailyMed(b"", fail=True))
+        self.assertEqual(code, 1, out)
+
+
+class CommittedPinsTest(unittest.TestCase):
+    """The committed label_pins.json against the committed label_receipt.json (CI's step)."""
+
+    def test_production_defaults(self):
+        self.assertEqual(drift.PINS, HERE / "label_pins.json")
+        self.assertEqual(drift.RECEIPT, HERE / "label_receipt.json")
+        self.assertIs(drift.main.__defaults__[-1], drift.fetch)
+
+    def test_committed_pins_agree_with_the_receipt(self):
+        receipt_doc = json.loads(drift.RECEIPT.read_text(encoding="utf-8"))
+        pins_doc = json.loads(drift.PINS.read_text(encoding="utf-8"))
+        findings, missing = drift.offline_check(receipt_doc, pins_doc)
+        self.assertEqual((findings, missing), ([], []))
+
+    def test_committed_pins_are_not_vacuous(self):
+        receipt_doc = json.loads(drift.RECEIPT.read_text(encoding="utf-8"))
+        pins_doc = json.loads(drift.PINS.read_text(encoding="utf-8"))
+        pinned = pins_doc.get("agents", {})
+        self.assertEqual(set(pinned) | set(pins_doc.get("unpinned", {})), set(receipt_doc["agents"]))
+        self.assertGreaterEqual(len(pinned), 40)
+        for agent, entry in pinned.items():
+            with self.subTest(agent=agent):
+                self.assertGreaterEqual(len(entry["sections"]), 5)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

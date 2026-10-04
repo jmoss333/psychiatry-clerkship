@@ -227,6 +227,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Test — RX# retrieval deck builder"),
             ("name", "Validate — RX# deck is regenerated from pharmacy.json"),
             ("name", "Test — pharmacy page never ships an invalid review"),
+            ("name", "Test — pharmacy label drift checker"),
+            ("name", "Validate — pharmacy label pins agree with the receipt"),
             ("name", "Unit — surface governance"),
             ("name", "Unit — tool governance"),
             ("name", "Validate — tool governance"),
@@ -444,7 +446,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "6c338845ee1b55cfcc52143a90c3153cbd77bece5b039eeef7568adff0d73481"
     ),
-    "ci.yml": "f018d93706235bd832840ae741a024da6072dfa71ed601813f8d208ad87eddb4",
+    "ci.yml": "2dde7c5fe439c4651499356393818f3a9da6d5af24283cd9464133058ee3e645",
     "maintenance-governance-digest.yml": (
         "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),
