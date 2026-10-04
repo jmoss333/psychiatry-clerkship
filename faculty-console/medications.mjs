@@ -68,7 +68,7 @@ function lock() {
   try { sessionStorage.removeItem(KEY); } catch {} render();
 }
 function canApprove(item) {
-  return !state.busy && !state.snapshot.needsSync && !item.issues.length && state.checks.card && state.checks.sources && (!item.record.retrieval?.length || state.checks.retrieval);
+  return !state.busy && !state.snapshot.needsSync && !item.issues.length && state.checks.card && state.checks.labelEvidence && state.checks.sources && (!item.record.retrieval?.length || state.checks.retrieval);
 }
 async function approve(item) {
   if (!canApprove(item)) return;
@@ -120,11 +120,11 @@ function render() {
     if (['generic', 'facultyReview', 'retrieval', 'provenance'].includes(name)) continue;
     card.append(section(label(name), value, ['boxedWarning', 'dosing'].includes(name)));
   }
-  card.append(section('Label receipt and verification notes', item.receipt), section('Sources and field classifications', item.record.provenance), section('Retrieval questions and reveal mappings', { attendingAsks: item.record.attendingAsks, retrieval: item.record.retrieval ?? [] }), section('Existing review record', item.record.facultyReview));
+  card.append(section('Label receipt and verification notes', item.receipt), section('Exact committed label pin', item.pin), section('Sources and field classifications', item.record.provenance), section('Retrieval questions and reveal mappings', { attendingAsks: item.record.attendingAsks, retrieval: item.record.retrieval ?? [] }), section('Existing review record', item.record.facultyReview));
   confirm.append(el('h2', 'Confirm this medication'), el('p', 'Approval records the current judgment-field hash. Retrieval approval separately binds the questions and reveal mappings. It does not approve other cards or change clinical text.', { class: 'muted' }));
   if (item.issues.length) { const issues = el('ul', null, { role: 'alert' }); for (const issue of item.issues) issues.append(el('li', issue)); confirm.append(issues); }
   const approval = button('Approve this medication', () => void approve(item), { class: 'primary approve' });
-  for (const [name, text] of [['card', 'I reviewed this complete saved card, including formulation, claims, safety warnings and uncertainty.'], ['sources', 'I checked the selected label, cited evidence and source notes, and confirm this card is ready for learners.'], ...(item.record.retrieval?.length ? [['retrieval', 'I checked each retrieval question and its exact reveal mapping.']] : [])]) {
+  for (const [name, text] of [['card', 'I reviewed this complete saved card, including formulation, claims, safety warnings and uncertainty.'], ['sources', 'I checked the selected label, cited evidence and source notes, and confirm this card is ready for learners.'], ['labelEvidence', `I reviewed label version ${item.labelEvidence?.version ?? 'unavailable'}, dated ${item.labelEvidence?.effectiveDate ?? 'unavailable'}, for the displayed set ID and committed source evidence. This does not clear obligations for other label versions.`], ...(item.record.retrieval?.length ? [['retrieval', 'I checked each retrieval question and its exact reveal mapping.']] : [])]) {
     const row = el('label', null, { class: 'check' }), input = el('input', null, { type: 'checkbox', 'data-confirm': name }); input.checked = state.checks[name] === true; input.disabled = state.busy;
     input.addEventListener('change', () => { state.checks[name] = input.checked; approval.disabled = !canApprove(item); }); row.append(input, el('span', text)); confirm.append(row);
   }

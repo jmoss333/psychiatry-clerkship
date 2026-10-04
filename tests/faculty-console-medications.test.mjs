@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHandler } from '../faculty-console/netlify/functions/attest.mjs';
 import {
-  PHARMACY_PATH, LABEL_RECEIPT_PATH, assessMedication, reviewedFieldsHash, retrievalHash,
+  PHARMACY_PATH, LABEL_RECEIPT_PATH, LABEL_PINS_PATH, labelEvidence, assessMedication, reviewedFieldsHash, retrievalHash,
   loadMedicationSnapshot, medicationView, prepareMedicationApproval, commitMedicationApproval,
 } from '../faculty-console/netlify/functions/pharmacy-actions.mjs';
 
@@ -16,11 +16,12 @@ function record(id = 'synthetic-one') {
     provenance: { fieldClasses: { mechanism: 'J', optionalMissing: 'J', boxedWarning: 'L' } }, facultyReview: { status: 'pending' } };
 }
 function receipt() { return { rxnorm: { rxcui: '123' }, reference: { setId: 'synthetic-label', effectiveDate: '2026-01-01', boxedWarningPresent: false, dailymedResolves: true }, problems: [] }; }
-function snapshot() { return { head: HEAD, needsSync: false, registry: { sha: 'b'.repeat(40), json: { schemaVersion: 1, records: [record(), record('synthetic-two')] } }, receipt: { sha: 'c'.repeat(40), json: { agents: { 'synthetic-one': receipt(), 'synthetic-two': receipt() } } } }; }
-function body(s = snapshot()) { return { action: 'pharmacy.attest', id: 'synthetic-one', head: s.head, revision: medicationView(s, 'Synthetic Faculty').items[0].revision, confirmations: { card: true, sources: true, retrieval: true } }; }
+function pin() { return { setId: 'synthetic-label', version: 1, effectiveDate: '2026-01-01', sections: { '1': 'a'.repeat(16) } }; }
+function snapshot() { return { pins: { sha: 'd'.repeat(40), json: { agents: { 'synthetic-one': pin(), 'synthetic-two': pin() } } }, head: HEAD, needsSync: false, registry: { sha: 'b'.repeat(40), json: { schemaVersion: 1, records: [record(), record('synthetic-two')] } }, receipt: { sha: 'c'.repeat(40), json: { agents: { 'synthetic-one': receipt(), 'synthetic-two': receipt() } } } }; }
+function body(s = snapshot()) { return { action: 'pharmacy.attest', id: 'synthetic-one', head: s.head, revision: medicationView(s, 'Synthetic Faculty').items[0].revision, confirmations: { card: true, sources: true, retrieval: true, labelEvidence: true } }; }
 function repository(s = snapshot(), overrides = {}) {
   return { describeBranchSync: async () => ({ aheadBy: 0, behindBy: 0 }), headOf: async () => s.head, head: async () => s.head,
-    read: async path => path === PHARMACY_PATH ? s.registry : s.receipt,
+    read: async path => path === PHARMACY_PATH ? s.registry : path === LABEL_PINS_PATH ? s.pins : s.receipt,
     writeAtHead: async () => ({ commit: `https://github.com/synthetic/repo/commit/${NEXT}` }), ...overrides };
 }
 
@@ -57,14 +58,14 @@ test('approval writes only one facultyReview block, preserving clinical bytes an
   assert.deepEqual(next.registry.records[1], s.registry.json.records[1]);
   const clinical = r => { const copy = structuredClone(r); delete copy.facultyReview; return copy; };
   assert.deepEqual(clinical(next.registry.records[0]), clinical(s.registry.json.records[0]));
-  assert.deepEqual(next.review, { status: 'reviewed', reviewer: 'Synthetic Faculty', lastReviewed: '2026-01-02', reviewedFieldsHash: reviewedFieldsHash(record()), retrievalHash: retrievalHash(record()) });
+  assert.deepEqual(next.review, { status: 'reviewed', reviewer: 'Synthetic Faculty', lastReviewed: '2026-01-02', reviewedFieldsHash: reviewedFieldsHash(record()), retrievalHash: retrievalHash(record()), labelEvidence: labelEvidence(s, record()) });
 });
 
 test('all explicit confirmations are required; attribution, hashes and alternate actions cannot come from the browser', () => {
-  for (const key of ['card', 'sources', 'retrieval']) {
+  for (const key of ['card', 'sources', 'retrieval', 'labelEvidence']) {
     const b = body(); delete b.confirmations[key]; assert.throws(() => prepareMedicationApproval(snapshot(), b, 'S', '2026-01-02'), /Explicitly confirm/);
   }
-  for (const key of ['reviewer', 'lastReviewed', 'reviewedFieldsHash', 'retrievalHash', 'target', 'record', 'records']) {
+  for (const key of ['reviewer', 'lastReviewed', 'reviewedFieldsHash', 'retrievalHash', 'target', 'record', 'records', 'labelEvidence']) {
     assert.throws(() => prepareMedicationApproval(snapshot(), { ...body(), [key]: 'forged' }, 'S', '2026-01-02'), /Choose one saved/);
   }
 });
@@ -110,7 +111,7 @@ function gateway({ conflict = false } = {}) {
     if (path.includes('/compare/')) return response({ ahead_by: head === HEAD ? 0 : 1, behind_by: 0 });
     if (path.endsWith('/pulls')) return response([{ html_url: 'https://github.com/synthetic/repo/pull/1', head: { ref: 'attest/pending' }, base: { ref: 'main' } }]);
     if (path.includes('/contents/')) {
-      const name = path.split('/contents/')[1], file = name === PHARMACY_PATH ? s.registry : name === LABEL_RECEIPT_PATH ? s.receipt : null;
+      const name = path.split('/contents/')[1], file = name === PHARMACY_PATH ? s.registry : name === LABEL_RECEIPT_PATH ? s.receipt : name === LABEL_PINS_PATH ? s.pins : null;
       if (!file) return response({}, 404);
       const raw = JSON.stringify(file.json); return response({ sha: file.sha, size: Buffer.byteLength(raw), encoding: 'base64', content: Buffer.from(raw).toString('base64') });
     }
@@ -172,4 +173,49 @@ test('medication endpoint cannot reinterpret an evidence disposition', async () 
   }));
   assert.equal(response.status, 400);
   assert.equal(mock.writes.length, 0);
+});
+
+test('approval binds the exact committed label pin and receipt, never a client-supplied evidence claim', () => {
+  const s = snapshot();
+  s.pins = { json: { agents: { 'synthetic-one': { setId: 'synthetic-label', version: 2, effectiveDate: '2026-01-01', sections: { '1': 'a'.repeat(16) } } } } };
+  const b = body(s); b.confirmations.labelEvidence = true;
+  const saved = prepareMedicationApproval(s, b, 'Synthetic Faculty', '2026-02-02');
+  assert.equal(saved.review.labelEvidence.version, 2);
+  assert.equal(saved.review.labelEvidence.sourceRevision, HEAD);
+  assert.equal(saved.review.labelEvidence.effectiveDate, '2026-01-01');
+  assert.match(saved.review.labelEvidence.pinHash, /^[a-f0-9]{64}$/);
+  assert.match(saved.review.labelEvidence.receiptHash, /^[a-f0-9]{64}$/);
+  assert.throws(() => prepareMedicationApproval(s, { ...b, labelEvidence: saved.review.labelEvidence }, 'S', '2026-02-02'), /Choose one saved/);
+  s.pins.json.agents['synthetic-one'].sections['1'] = 'b'.repeat(16);
+  assert.throws(() => prepareMedicationApproval(s, b, 'S', '2026-02-02'), /changed/);
+});
+
+
+test('missing, stale, malformed and mismatched source pins block approval', async () => {
+  for (const edit of [s => { delete s.pins; }, s => { delete s.pins.json.agents['synthetic-one']; }, s => { s.pins.json.agents['synthetic-one'].version = 0; }, s => { s.pins.json.agents['synthetic-one'].effectiveDate = '2025-01-01'; }, s => { s.pins.json.agents['synthetic-one'].setId = 'wrong'; }, s => { s.pins.json.agents['synthetic-one'].sections = {}; }, s => { s.pins.json.agents['synthetic-one'].sections['1'] = 'invalid'; }]) {
+    const s = snapshot(); edit(s);
+    assert.throws(() => prepareMedicationApproval(s, body(s), 'S', '2026-02-02'), /validation problems/);
+    const view = medicationView(s, 'S'); assert.ok(view.items[0].issues.length);
+  }
+});
+
+test('a later review of an old source records only old evidence, never claims the newer observed version', () => {
+  const s = snapshot(); const saved = prepareMedicationApproval(s, body(s), 'S', '2026-03-01');
+  assert.equal(saved.review.lastReviewed, '2026-03-01');
+  assert.equal(saved.review.labelEvidence.version, 1);
+  assert.equal(saved.review.labelEvidence.effectiveDate, '2026-01-01');
+  assert.notEqual(saved.review.labelEvidence.version, 2);
+});
+
+
+test('authenticated handler refuses a mismatched pin before creating any commit', async () => {
+  const mock = gateway(); mock.snapshot.pins.json.agents['synthetic-one'].effectiveDate = '2025-01-01';
+  const result = await mock.handler(request('POST', body(mock.snapshot)));
+  assert.equal(result.status, 422); assert.equal(mock.writes.length, 0);
+});
+
+test('persisted evidence canonical hashes agree with Python', () => {
+  const s = snapshot(), evidence = labelEvidence(s, record());
+  const result = spawnSync('python3', ['-c', 'import hashlib,json,sys; print(json.dumps([hashlib.sha256(json.dumps(v,sort_keys=True,ensure_ascii=False,separators=(chr(44),chr(58))).encode()).hexdigest() for v in json.load(sys.stdin)]))'], { input: JSON.stringify([s.pins.json.agents['synthetic-one'],s.receipt.json.agents['synthetic-one']]), encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr); assert.deepEqual([evidence.pinHash,evidence.receiptHash],JSON.parse(result.stdout));
 });

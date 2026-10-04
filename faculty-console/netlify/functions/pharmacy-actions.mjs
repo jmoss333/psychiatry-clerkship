@@ -3,6 +3,7 @@
 import { createHash } from 'node:crypto';
 
 export const PHARMACY_PATH = 'pharmacy.json';
+export const LABEL_PINS_PATH = '13_Faculty_Resources/_automation/pharmacy/label_pins.json';
 export const LABEL_RECEIPT_PATH = '13_Faculty_Resources/_automation/pharmacy/label_receipt.json';
 const MAX_BYTES = 4 * 1024 * 1024;
 const HASH = /^[a-f0-9]{64}$/;
@@ -104,6 +105,23 @@ export function assessMedication(record, receipt) {
   return [...new Set(issues)];
 }
 
+// Bind the source evidence actually displayed during this authenticated review.
+// This is not proof of review of any uncommitted/newer external label.
+export function labelEvidence(snapshot, record) {
+  const pin = snapshot.pins?.json?.agents?.[record.id];
+  const receipt = snapshot.receipt.json.agents[record.id];
+  if (!object(pin) || !Number.isSafeInteger(pin.version) || pin.version < 1 ||
+      pin.setId !== record.dailymedSetId || pin.effectiveDate !== record.labelVersionDate ||
+      pin.setId !== receipt?.reference?.setId || pin.effectiveDate !== receipt?.reference?.effectiveDate ||
+      !object(pin.sections) || !Object.keys(pin.sections).length ||
+      !Object.values(pin.sections).every(value => typeof value === 'string' && /^[a-f0-9]{16}$/.test(value)) ||
+      typeof snapshot.head !== 'string' || !/^[a-f0-9]{40}$/.test(snapshot.head)) {
+    refuse('label_evidence', 'The committed label pin is missing or does not match this card and receipt. Resolve the source evidence before approving.', 422);
+  }
+  return { schemaVersion: 1, sourceRevision: snapshot.head, setId: pin.setId,
+    version: pin.version, effectiveDate: pin.effectiveDate, pinHash: hash(pin), receiptHash: hash(receipt) };
+}
+
 function requireMode(settings) {
   if (settings.ledger || settings.branch !== 'attest/pending' || settings.baseBranch !== 'main' || !settings.isolated) {
     refuse('unsupported_mode', 'Medication review requires the existing attest/pending delivery branch. Ledger and direct-write modes are not supported.', 409);
@@ -117,13 +135,14 @@ export async function loadMedicationSnapshot(repository, settings) {
   // A read-only view may read main when the empty rolling branch only needs a
   // fast-forward. The existing authenticated POST performs that normal freshen.
   const head = sync.aheadBy === 0 ? await repository.headOf(settings.baseBranch) : await repository.head();
-  const [registry, receipt] = await Promise.all([
+  const [registry, receipt, pins] = await Promise.all([
     repository.read(PHARMACY_PATH, { ref: head, maxBytes: MAX_BYTES }),
     repository.read(LABEL_RECEIPT_PATH, { ref: head, maxBytes: MAX_BYTES }),
+    repository.read(LABEL_PINS_PATH, { ref: head, maxBytes: MAX_BYTES }),
   ]);
   requireRegistry(registry.json);
   if (!object(receipt.json?.agents)) refuse('invalid_receipts', 'The committed label receipts cannot be read.', 502);
-  return { head, registry, receipt, needsSync: sync.aheadBy > 0 && sync.behindBy > 0 };
+  return { head, registry, receipt, pins, needsSync: sync.aheadBy > 0 && sync.behindBy > 0 };
 }
 
 export function medicationView(snapshot, attester) {
@@ -132,10 +151,13 @@ export function medicationView(snapshot, attester) {
     items: snapshot.registry.json.records.map(record => {
       const receipt = snapshot.receipt.json.agents[record.id] ?? null;
       const issues = assessMedication(record, receipt);
-      return { id: record.id, record, receipt, issues,
+      const pin = snapshot.pins?.json?.agents?.[record.id] ?? null;
+      let evidence = null;
+      try { evidence = labelEvidence(snapshot, record); } catch (error) { issues.push(error.message); }
+      return { id: record.id, record, receipt, pin, labelEvidence: evidence, issues,
         // This temporary server-only fingerprint may include decimal display metadata.
         // It is never persisted as a clinical hash; exact Git head binding also applies.
-        revision: createHash('sha256').update(JSON.stringify({ head: snapshot.head, record, receipt })).digest('hex'),
+        revision: createHash('sha256').update(JSON.stringify({ head: snapshot.head, record, receipt, pin })).digest('hex'),
         reviewCurrent: issues.length === 0 && record.facultyReview?.status === 'reviewed' && record.facultyReview.reviewedFieldsHash === reviewedFieldsHash(record),
         retrievalCurrent: issues.length === 0 && Boolean(record.retrieval?.length) && record.facultyReview?.retrievalHash === retrievalHash(record),
       };
@@ -151,10 +173,10 @@ export function prepareMedicationApproval(snapshot, body, attester, date) {
   if (!item || body.revision !== item.revision) refuse('conflict', 'The selected medication changed. Reload and review it again.', 409);
   if (item.issues.length) refuse('blocked', 'Resolve this medication’s validation problems before approving it.', 422);
   const checks = body.confirmations;
-  if (!object(checks) || Object.keys(checks).some(k => !['card', 'sources', 'retrieval'].includes(k)) || checks.card !== true || checks.sources !== true || (item.record.retrieval?.length && checks.retrieval !== true)) refuse('confirmations_required', 'Explicitly confirm the complete saved card, its label/evidence, and each retrieval mapping.');
+  if (!object(checks) || Object.keys(checks).some(k => !['card', 'sources', 'retrieval', 'labelEvidence'].includes(k)) || checks.card !== true || checks.sources !== true || checks.labelEvidence !== true || (item.record.retrieval?.length && checks.retrieval !== true)) refuse('confirmations_required', 'Explicitly confirm the complete saved card, its label/evidence, and each retrieval mapping.');
   const registry = structuredClone(snapshot.registry.json);
   const record = registry.records.find(row => row.id === body.id);
-  record.facultyReview = { ...record.facultyReview, status: 'reviewed', reviewer: attester, lastReviewed: date, reviewedFieldsHash: reviewedFieldsHash(record) };
+  record.facultyReview = { ...record.facultyReview, status: 'reviewed', reviewer: attester, lastReviewed: date, reviewedFieldsHash: reviewedFieldsHash(record), labelEvidence: labelEvidence(snapshot, record) };
   if (record.retrieval?.length) record.facultyReview.retrievalHash = retrievalHash(record);
   return { registry, id: record.id, review: record.facultyReview };
 }
