@@ -1057,7 +1057,8 @@ close it. Escape closes the disclosure and returns focus to its summary.
 ### Connected learning preview (2026-10-04)
 
 - `.fd-weekmap`: Today navigation below the existing primary/secondary actions. The `nav`
-  contains `.fd-weekmap__head` and a horizontally scrollable `.fd-weekmap__stops` row.
+  contains `.fd-weekmap__head` and `.fd-weekmap__stops` (a desktop row, wrapping to
+  three columns on phones so keyboard focus cannot land in a clipped stop).
   Each `.fd-weekmap__stop` uses `data-fd-view-week`, with a `.fd-weekmap__number` and
   `.fd-weekmap__title`. `is-current` and `aria-current="step"` indicate only the actual
   current week. These stops never imply completed work or set the rotation week.
@@ -1072,3 +1073,6 @@ close it. Escape closes the disclosure and returns focus to its summary.
 - Library tool tabs and preview retain their tablist/tabpanel relationships and keyboard
   contract. The preview uses the same teal action role as the shell; review and safety
   treatments retain their existing roles. All new colours reference Clinical Warm tokens.
+
+- `.fd-path__hint`: plain-language navigation guidance before the existing route, clarifying
+  that previewing a week does not change the current week. It carries no clinical instruction.

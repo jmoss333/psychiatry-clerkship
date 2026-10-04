@@ -4945,3 +4945,41 @@ test('shared Library navigation: phone menu survives delayed hydration and Escap
   await expect(page.locator('.fd-dock__browse')).not.toHaveAttribute('open', '');
   await expectHealthy(page);
 });
+
+for (const width of [390, 1280]) {
+  test(`connected learning at ${width}px: week preview, history and Library discovery retain real state`, async ({ page }, info) => {
+    await page.setViewportSize({width, height:900});
+    await seedApp(page, info);
+    await page.goto('/');
+    const map=page.locator('.fd-weekmap');
+    await expect(map.locator('[aria-current="step"]')).toHaveAttribute('data-fd-view-week','1');
+    await expect(map.locator('.fd-weekmap__stop')).toHaveCount(audience(info).weekCount);
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed','1'));
+    await map.locator('[data-fd-view-week="2"]').click();
+    await expect(page.locator('#fd-path-week-2')).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('#fd-path-week-2')).toBeFocused();
+    await expect(page.locator('#fd-path-week-1')).toHaveAttribute('aria-current','step');
+    await page.goBack();
+    await expect(map).toBeVisible();
+    await page.goForward();
+    await expect(page.locator('#fd-path-week-2')).toHaveAttribute('aria-selected','true');
+    await page.reload();
+    await expect(page.locator('#fd-path-week-2')).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('#fd-path-week-1')).toHaveAttribute('aria-current','step');
+    await page.goto('/?tab=library');
+    const search=page.locator('.fd-library__discover');
+    await search.click();
+    const input=page.locator('.fd-searchpanel__input');
+    await expect(input).toBeFocused();
+    await input.fill('Dissociative');
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open','t_dissociative.md');
+    await input.press('Escape');
+    await expect(search).toBeFocused();
+    await page.locator('[data-fd-kit-section="week"]').click();
+    await expect(page.locator('[data-fd-kit-section="week"]')).toHaveAttribute('aria-pressed','true');
+    await page.locator('[data-fd-library-view="full"]').click();
+    await expect(page.locator('.fd-collink')).toHaveCount(audience(info).libraryCount);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await expectHealthy(page);
+  });
+}

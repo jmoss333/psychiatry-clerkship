@@ -37,6 +37,7 @@ visual emphasis is on that path and the reading titles, not decorative metrics.
 
 - `frontdoor/fd_today.js`: compact actual-week preview map below existing primary/secondary actions.
 - `frontdoor/fd_library.js`: shared search entry; wrappers for responsive section/results layout.
+- `frontdoor/fd_path.js`: clarify preview versus current-week selection above the route.
 - `frontdoor/frontdoor.css`: quiet Today rows, responsive Library workspace, paired Path detail.
 - Targeted renderer/browser checks and CSS class inventory.
 

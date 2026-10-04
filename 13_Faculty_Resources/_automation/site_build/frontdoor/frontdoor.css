@@ -2112,7 +2112,7 @@
 
 /* Connected learning preview (2026-10-04). Quiet shared surfaces around the existing
  * actions and real curriculum data. Colour roles remain owned by Clinical Warm. */
-.fd-today__h1,.fd-library__h1,.fd-path__h1{font-size:clamp(var(--fd-font-2xl),3.2vw,calc(var(--fd-font-3xl) * 1.25));line-height:1.15;letter-spacing:-.02em}
+.fd-today__h1,.fd-library__h1,.fd-kit .fd-library__h1,.fd-path__h1{font-size:clamp(var(--fd-font-2xl),3.2vw,calc(var(--fd-font-3xl) * 1.25));line-height:1.15;letter-spacing:-.02em}
 .fd-today__sub{margin-top:var(--fd-space-3)}
 .fd-pilot{background:transparent;border:0;border-bottom:1px solid var(--fd-line);border-radius:0;padding:0 0 var(--fd-space-6);gap:var(--fd-space-5)}
 .fd-pilot__eyebrow{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
@@ -2169,7 +2169,8 @@
 }
 @media (max-width:640px){
   .fd-today__main>.fd-quicktools--pills{order:0;margin-top:var(--fd-space-6)}
-  .fd-weekmap__stop{flex-basis:76px}
+  .fd-weekmap__stops{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}
+  .fd-weekmap__stop{min-width:0}
   .fd-weekmap__head{align-items:baseline}
   .fd-weekmap__head button{font-size:var(--fd-font-xs)}
   .fd-library__discover{font-size:var(--fd-font-sm);margin-bottom:var(--fd-space-6)}
@@ -2179,3 +2180,5 @@
   .fd-today .fd-row__open,.fd-path .fd-row__open{align-items:flex-start;flex-direction:column;gap:var(--fd-space-2)}
   .fd-today .fd-row__meta,.fd-path .fd-row__meta{margin-left:0}
 }
+
+.fd-path__hint{max-width:70ch;margin:0 0 var(--fd-space-6);font-size:var(--fd-font-sm);color:var(--fd-text-mid);line-height:1.5}

@@ -282,6 +282,7 @@ function fdPath(index, state){
   var out='<section class="fd-path">';
   out+='<h1 class="fd-path__h1">'+(suggested?'Suggested learning plan':'Your '+fdEsc(fdPathWeekCount(idx))+'-week path')+'</h1>';
   if(suggested) out+='<p class="fd-path__intro">Six weeks of suggested practice. Confirm required work with your supervising team. Checkmarks record completed activities; your supervising team assesses clinical skills.</p>';
+  out+='<p class="fd-path__hint">Select a week to preview its activities. Your current week changes only when you choose “Set as my week”.</p>';
   out+=fdPathRoute(idx,st);
   out+='<div class="fd-path__cols">';
   out+=fdPathDetail(idx, st);
