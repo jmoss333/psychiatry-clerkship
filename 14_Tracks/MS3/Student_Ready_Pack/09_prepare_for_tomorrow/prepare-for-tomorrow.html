@@ -250,7 +250,7 @@ function pftRender(data,state){
     [5,15].forEach(function(m){out+='<button id="pft-minutes-'+m+'" data-action="minutes" data-value="'+m+'" aria-pressed="'+(state.minutes===m)+'">About '+m+' minutes</button>';});
     out+='</div><p class="error" role="alert">'+e(state.error)+'</p><button class="primary" data-action="start">Start preparation</button>';return out;
   }
-  out='<p>'+e(t.title)+' · About '+state.minutes+' minutes</p><p class="sequence">'+(state.minutes===5?'Orient 30 sec · Read 2 min · Rehearse 2 min · Card 30 sec':'Orient 1 min · Read 5 min · Rehearse 7 min · Card 2 min')+' · Estimates, at your pace</p>';
+  out='<p>'+e(t.title)+' · About '+e(state.minutes)+' minutes</p><p class="sequence">'+(state.minutes===5?'Orient 30 sec · Read 2 min · Rehearse 2 min · Card 30 sec':'Orient 1 min · Read 5 min · Rehearse 7 min · Card 2 min')+' · Estimates, at your pace</p>';
   if(state.step==='read'){
     out+='<h2 id="pft-heading" tabindex="-1">'+e(r.reading.heading)+'</h2><p>'+e(r.orientation)+'</p>';
     r.reading.paragraphs.forEach(function(p){out+='<p>'+e(p)+'</p>';});

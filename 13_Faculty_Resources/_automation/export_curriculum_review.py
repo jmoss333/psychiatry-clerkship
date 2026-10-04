@@ -158,8 +158,8 @@ def tool_text(path: Path, *, exclude_script_ids: tuple[str, ...] = ()) -> tuple[
     """
     raw = path.read_text(encoding="utf-8", errors="replace")
 
-    body = re.sub(r"<script[^>]*>.*?</script>", "", raw, flags=re.S)
-    body = re.sub(r"<style[^>]*>.*?</style>", "", body, flags=re.S)
+    body = re.sub(r"<script[^>]*>.*?</script>", "", raw, flags=re.S | re.I)
+    body = re.sub(r"<style[^>]*>.*?</style>", "", body, flags=re.S | re.I)
     body = re.sub(r"<!--.*?-->", "", body, flags=re.S)
     visible = []
     for chunk in re.split(r"<(?:/p|/h[1-6]|/li|br\s*/?|/div|/section)>", body, flags=re.I):
@@ -171,8 +171,9 @@ def tool_text(path: Path, *, exclude_script_ids: tuple[str, ...] = ()) -> tuple[
     seen: set[str] = set()
     script_raw = raw
     for script_id in exclude_script_ids:
-        script_raw = re.sub(r'<script id="' + re.escape(script_id) + r'" type="application/json">.*?</script>', "", script_raw, flags=re.S)
-    for script in re.findall(r"<script[^>]*>(.*?)</script>", script_raw, flags=re.S):
+        # HTML names ignore case; the script ID value remains case-sensitive.
+        script_raw = re.sub(r'(?i:<script id=")' + re.escape(script_id) + r'(?i:" type="application/json">).*?(?i:</script>)', "", script_raw, flags=re.S)
+    for script in re.findall(r"<script[^>]*>(.*?)</script>", script_raw, flags=re.S | re.I):
         for m in re.finditer(r'"((?:[^"\\]|\\.)*)"|\'((?:[^\'\\]|\\.)*)\'|`((?:[^`\\]|\\.)*)`', script):
             v = m.group(1) or m.group(2) or m.group(3) or ""
             v = v.replace("\\n", "\n").replace('\\"', '"').replace("\\'", "'").replace("\\`", "`")
