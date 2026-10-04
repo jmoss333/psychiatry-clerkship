@@ -76,7 +76,7 @@ SPL_HISTORY = "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/%s/history
 SPL_PAGE = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=%s"
 SPL_ARCHIVE = "https://dailymed.nlm.nih.gov/dailymed/getArchivalFile.cfm?archive_id=%s"
 DIFF_CONTEXT_WORDS = 12
-DIFF_HUNK_MAX_WORDS = 150
+DIFF_RUN_MAX_WORDS = 60
 NS = {"v3": "urn:hl7-org:v3"}
 HASH_CHARS = 16
 
@@ -344,25 +344,33 @@ def _md(word):
     return re.sub(r"([*_~|\[\]`])", r"\\\1", word)
 
 
-def word_diff(old, new, context=DIFF_CONTEXT_WORDS, limit=DIFF_HUNK_MAX_WORDS):
-    """Markdown hunks: ~~removed~~ and **added** words with `context` words either side."""
+def _marked(words, mark, limit):
+    """One removed or added run, delimiters always closed; a long run is cut INSIDE them."""
+    text = " ".join(_md(w) for w in words[:limit])
+    if len(words) > limit:
+        return "%s%s …%s (+%d words)" % (mark, text, mark, len(words) - limit)
+    return "%s%s%s" % (mark, text, mark)
+
+
+def word_diff(old, new, context=DIFF_CONTEXT_WORDS, limit=DIFF_RUN_MAX_WORDS):
+    """Markdown hunks: ~~removed~~ and **added** words with `context` words either side.
+
+    Each removed or added run is capped at `limit` words on its own (Codex P2 on #961): cutting
+    the formatted hunk could drop a closing ~~ or **, or the whole added half of a replacement.
+    """
     a, b = (old or "").split(), (new or "").split()
     hunks = []
     for group in difflib.SequenceMatcher(a=a, b=b, autojunk=False).get_grouped_opcodes(context):
-        parts, words = [], 0
+        parts = []
         for tag, i1, i2, j1, j2 in group:
             if tag == "equal":
                 parts.append(" ".join(_md(w) for w in a[i1:i2]))
                 continue
             if i2 > i1:
-                parts.append("~~%s~~" % " ".join(_md(w) for w in a[i1:i2]))
+                parts.append(_marked(a[i1:i2], "~~", limit))
             if j2 > j1:
-                parts.append("**%s**" % " ".join(_md(w) for w in b[j1:j2]))
-            words += (i2 - i1) + (j2 - j1)
-        hunk = " ".join(p for p in parts if p)
-        if words > limit:
-            hunk = " ".join(hunk.split()[:limit]) + " … (%d changed words; open the label)" % words
-        hunks.append(hunk)
+                parts.append(_marked(b[j1:j2], "**", limit))
+        hunks.append(" ".join(p for p in parts if p))
     return hunks
 
 

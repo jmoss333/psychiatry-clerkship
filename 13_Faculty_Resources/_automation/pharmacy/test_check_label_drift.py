@@ -433,7 +433,17 @@ class DiffTest(unittest.TestCase):
         self.assertNotIn("w10", " ".join(hunks))
         self.assertEqual(drift.word_diff("same words", "same   words"), [])
         long_add = drift.word_diff("a", "a " + "x " * 400, limit=20)[0]
-        self.assertIn("(400 changed words; open the label)", long_add)
+        self.assertIn("**" + " ".join(["x"] * 20) + " …** (+380 words)", long_add)
+
+    def test_a_long_replacement_keeps_both_halves_and_closes_every_delimiter(self):  # Codex P2 #961
+        old = " ".join("old%d" % i for i in range(300))
+        new = " ".join("new%d" % i for i in range(300))
+        (hunk,) = drift.word_diff(old, new, limit=10)
+        self.assertEqual(hunk.count("~~"), 2)
+        self.assertEqual(hunk.count("**"), 2)
+        self.assertIn("new0", hunk)                                  # the added half survives
+        self.assertIn("…~~ (+290 words)", hunk)
+        self.assertTrue(hunk.endswith("…** (+290 words)"))
 
     def test_record_stores_verified_texts_and_json_stays_slim(self):
         ws = Workspace(self, receipt())
