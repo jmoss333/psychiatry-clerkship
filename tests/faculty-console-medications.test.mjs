@@ -32,6 +32,25 @@ test('J and retrieval hashes match the existing Python canonical rules, includin
   assert.deepEqual(records.map(r => [reviewedFieldsHash(r), retrievalHash(r)]), JSON.parse(result.stdout));
 });
 
+test('decimal display metadata remains reviewable and revision-bound without changing persisted hash scope', () => {
+  const s = snapshot(), r = s.registry.json.records[0];
+  const originalHash = reviewedFieldsHash(r);
+  r.familyExplainer = { text: 'Synthetic explanation.', fkGrade: 2.6 };
+  const b = body(s);
+  assert.deepEqual(medicationView(s, 'S').items[0].issues, []);
+  assert.equal(prepareMedicationApproval(s, b, 'S', '2026-01-02').review.reviewedFieldsHash, originalHash);
+  r.familyExplainer.fkGrade = 3.1;
+  assert.throws(() => prepareMedicationApproval(s, b, 'S', '2026-01-02'), /changed/);
+});
+
+test('unsupported persisted hash values block only that card and never break the whole review list', () => {
+  const s = snapshot(); s.registry.json.records[0].mechanism.score = 2.6;
+  const view = medicationView(s, 'S');
+  assert.match(view.items[0].issues.join(' '), /unsupported hash value/);
+  assert.deepEqual(view.items[1].issues, []);
+  assert.throws(() => prepareMedicationApproval(s, body(s), 'S', '2026-01-02'), /validation problems/);
+});
+
 test('approval writes only one facultyReview block, preserving clinical bytes and all other records', () => {
   const s = snapshot(), before = structuredClone(s), next = prepareMedicationApproval(s, body(s), 'Synthetic Faculty', '2026-01-02');
   assert.deepEqual(s, before);

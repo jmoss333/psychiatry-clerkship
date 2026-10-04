@@ -100,7 +100,7 @@ export function assessMedication(record, receipt) {
   // Clinical source validation (including dose policy, citations and quote spans)
   // remains in the existing Python gates. This action cannot edit that source;
   // do not duplicate a changing clinical policy in a second runtime.
-  try { canonicalJson(record); } catch { issues.push('The saved record contains an unsupported hash value.'); }
+  try { reviewedFieldsHash(record); retrievalHash(record); } catch { issues.push('The saved record contains an unsupported hash value.'); }
   return [...new Set(issues)];
 }
 
@@ -133,7 +133,9 @@ export function medicationView(snapshot, attester) {
       const receipt = snapshot.receipt.json.agents[record.id] ?? null;
       const issues = assessMedication(record, receipt);
       return { id: record.id, record, receipt, issues,
-        revision: hash({ head: snapshot.head, record, receipt }),
+        // This temporary server-only fingerprint may include decimal display metadata.
+        // It is never persisted as a clinical hash; exact Git head binding also applies.
+        revision: createHash('sha256').update(JSON.stringify({ head: snapshot.head, record, receipt })).digest('hex'),
         reviewCurrent: issues.length === 0 && record.facultyReview?.status === 'reviewed' && record.facultyReview.reviewedFieldsHash === reviewedFieldsHash(record),
         retrievalCurrent: issues.length === 0 && Boolean(record.retrieval?.length) && record.facultyReview?.retrievalHash === retrievalHash(record),
       };
