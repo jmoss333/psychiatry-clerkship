@@ -7,12 +7,14 @@ are held to the committed receipt (the step CI runs is `--offline`, pinned here 
 
 import contextlib
 import copy
+import datetime
 import io
 import json
 import os
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -57,16 +59,41 @@ def receipt(date="2026-01-01"):
     return {"schemaVersion": 1, "agents": {"testdrug": {"reference": {"setId": SET_ID, "effectiveDate": date}}}}
 
 
-class FakeDailyMed:
-    """Serves one current SPL and its version history; records what was asked."""
+def label_page(versions):
+    """A DailyMed label page whose archive table lists the given versions (archive id 1000+v)."""
+    rows = "".join(
+        '<tr><td>Jan 1, 2026</td><td>\n %d %s\n</td><td><a download class="download-link" '
+        'href="/dailymed/getArchivalFile.cfm?archive_id=%d">download</a></td></tr>'
+        % (v, "(current)" if v == max(versions) else "", 1000 + v) for v in versions)
+    return ('<html><a href="/dailymed/getArchivalFile.cfm?archive_id=1">outside the modal</a>'
+            '<div id="modal-label-archives"><table class="modal"><tbody><tr><th>Published Date</th>'
+            '<th>Version</th><th>Files</th></tr>%s</tbody></table></div></html>' % rows).encode()
 
-    def __init__(self, xml, fail=False):
+
+def zipped(xml):
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as bundle:
+        bundle.writestr("image.jpg", b"not xml")
+        bundle.writestr("label.xml", xml)
+    return buffer.getvalue()
+
+
+class FakeDailyMed:
+    """Serves one current SPL, its version history and (optionally) archived versions."""
+
+    def __init__(self, xml, fail=False, archive=None):
         self.xml, self.fail, self.calls = xml, fail, []
+        self.archive = archive or {}
 
     def __call__(self, url):
         self.calls.append(url)
         if self.fail:
             raise drift.CouldNotCheck("network down")
+        if "drugInfo.cfm" in url:
+            return label_page(sorted(self.archive) or [1])
+        if "getArchivalFile.cfm" in url:
+            version = int(url.rsplit("=", 1)[1]) - 1000
+            return zipped(self.archive[version]) if version in self.archive else None
         if url.endswith("/history.json"):
             version = drift.parse_spl(self.xml)["version"]
             # the shape DailyMed serves (2026-10-03): newest first, versions as integers
@@ -357,6 +384,137 @@ class LedgerTest(unittest.TestCase):
                 os.environ.pop(key, None)
                 if value is not None:
                     os.environ[key] = value
+
+
+V3 = spl(3, "2026-01-01")
+V4_DOSING = spl(4, "2026-02-01", dosing="Titrate to response. Dosages above 24 mg daily may be appropriate.")
+
+
+class DiffTest(unittest.TestCase):
+    """The changed sections as a word diff against the exact text that was pinned."""
+
+    def pin(self):
+        entry, _ = drift.pin_entry(drift.parse_spl(V3), [], "2026-10-03")
+        return entry
+
+    def test_archive_ids_reads_only_the_archive_table(self):
+        self.assertEqual(drift.archive_ids(label_page([2, 3])), {2: "1002", 3: "1003"})
+        self.assertEqual(drift.archive_ids(b"<html>no archive table</html>"), {})
+        self.assertEqual(drift.archive_ids(None), {})
+
+    def test_archived_spl_returns_that_version_or_none(self):
+        fake = FakeDailyMed(V4_DOSING, archive={3: V3})
+        self.assertEqual(drift.archived_spl(SET_ID, 3, fake)["version"], 3)
+        self.assertIsNone(drift.archived_spl(SET_ID, 2, fake))           # not archived
+        broken = FakeDailyMed(V4_DOSING, archive={3: V3})
+        broken.archive = {3: b"x"}
+        broken.__class__ = type("Broken", (FakeDailyMed,), {"__call__": lambda self, url:
+                                b"not a zip" if "getArchivalFile" in url else FakeDailyMed.__call__(self, url)})
+        self.assertIsNone(drift.archived_spl(SET_ID, 3, broken))
+
+    def test_old_text_is_shown_only_when_it_hashes_to_the_pin(self):
+        new = drift.parse_spl(V4_DOSING)
+        texts = drift.section_texts(self.pin(), drift.parse_spl(V3), new, ["2.4"])
+        self.assertEqual(texts["2.4"]["oldStatus"], "verified")
+        self.assertIn(DOSING, texts["2.4"]["old"])
+        impostor = drift.parse_spl(spl(3, "2026-01-01", dosing="Some other text."))
+        texts = drift.section_texts(self.pin(), impostor, new, ["2.4"])
+        self.assertEqual((texts["2.4"]["oldStatus"], texts["2.4"]["old"]), ("mismatch", None))
+        self.assertEqual(drift.section_texts(self.pin(), None, new, ["2.4"])["2.4"]["oldStatus"], "unavailable")
+        added = drift.parse_spl(spl(4, "2026-02-01", boxed="New boxed warning."))
+        self.assertEqual(drift.section_texts(self.pin(), None, added, ["BW"])["BW"]["oldStatus"], "absent")
+
+    def test_word_diff_marks_changes_and_elides_far_context(self):
+        old = " ".join("w%d" % i for i in range(60))
+        new = old.replace("w30", "W30*").replace("w45 ", "")
+        hunks = drift.word_diff(old, new, context=3)
+        self.assertEqual(hunks, ["w27 w28 w29 ~~w30~~ **W30\\***  w31 w32 w33".replace("  ", " "),
+                                 "w42 w43 w44 ~~w45~~ w46 w47 w48"])
+        self.assertNotIn("w10", " ".join(hunks))
+        self.assertEqual(drift.word_diff("same words", "same   words"), [])
+        long_add = drift.word_diff("a", "a " + "x " * 400, limit=20)[0]
+        self.assertIn("(400 changed words; open the label)", long_add)
+
+    def test_record_stores_verified_texts_and_json_stays_slim(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(V3))
+        ledger = Path(ws.dir.name) / "ledger.json"
+        code, out = ws.run("--record", "--json", "--ledger", str(ledger),
+                           get=FakeDailyMed(V4_DOSING, archive={3: V3, 4: V4_DOSING}))
+        self.assertEqual(code, 1, out)
+        self.assertNotIn('"texts"', out)
+        stored = json.loads(ledger.read_text())["drifts"][0]["texts"]["2.4"]
+        self.assertEqual(stored["oldStatus"], "verified")
+        self.assertIn("24 mg daily", stored["new"])           # faculty-only and local: unmasked
+
+    def test_diff_cli(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(V3))
+        code, out = ws.run("--diff", "testdrug", get=FakeDailyMed(V3, archive={3: V3}))
+        self.assertEqual(code, 0, out)
+        self.assertIn("nothing has changed since the pin", out)
+        code, out = ws.run("--diff", "testdrug", get=FakeDailyMed(V4_DOSING, archive={3: V3, 4: V4_DOSING}))
+        self.assertEqual(code, 1, out)
+        self.assertIn("**§2.4**", out)
+        self.assertIn("~~the usual range~~", out)
+        self.assertIn("**24 mg daily**", out)
+        code, out = ws.run("--diff", "testdrug", get=FakeDailyMed(V4_DOSING, archive={4: V4_DOSING}))
+        self.assertIn("old text not archived by DailyMed", out)
+        code, out = ws.run("--diff", "nodrug", get=FakeDailyMed(V3))
+        self.assertEqual(code, 2, out)
+
+
+class PacketTest(unittest.TestCase):
+    """render_review_packet.py section 0: what moved since the card's review."""
+
+    @classmethod
+    def setUpClass(cls):
+        import render_review_packet as packet
+        cls.packet = packet
+        cls.pharmacy = json.loads(drift.PHARMACY.read_text(encoding="utf-8"))
+        cls.receipt = json.loads(drift.RECEIPT.read_text(encoding="utf-8"))
+
+    def card(self, last_reviewed):
+        record = copy.deepcopy(next(r for r in self.pharmacy["records"] if r["id"] == "lithium"))
+        record["facultyReview"] = ({"status": "reviewed", "lastReviewed": last_reviewed}
+                                   if last_reviewed else {"status": "pending"})
+        return record
+
+    def ledger(self, last_checked="2026-10-10"):
+        pin, _ = drift.pin_entry(drift.parse_spl(V3), [], "x")
+        texts = drift.section_texts(pin, drift.parse_spl(V3), drift.parse_spl(V4_DOSING), ["2.4"])
+        return {"schemaVersion": 1, "lastChecked": last_checked, "drifts": [{
+            "agent": "lithium", "observedOn": "2026-10-10", "fromVersion": 13, "toVersion": 14,
+            "fromDate": "2026-08-24", "toDate": "2026-10-06", "sections": ["2.4"],
+            "fields": ["dosing"], "quotesBroken": 0, "texts": texts}]}
+
+    def render(self, record, ledger, today="2026-10-12"):
+        return self.packet.render([record], self.receipt, ledger, datetime.date.fromisoformat(today))
+
+    def test_a_card_reviewed_before_the_drift_opens_with_the_diff(self):
+        text = self.render(self.card("2026-09-29"), self.ledger())
+        self.assertIn("### 0. Label changed since your review on 2026-09-29", text)
+        self.assertIn("Card fields to re-review: dosing", text)
+        self.assertIn("~~the usual range~~", text)
+        self.assertLess(text.index("### 0."), text.index("### 1. Decide"))
+
+    def test_a_review_after_the_observation_closes_it(self):
+        self.assertNotIn("### 0.", self.render(self.card("2026-10-10"), self.ledger()))
+
+    def test_a_pending_card_shows_changes_since_it_was_drafted(self):
+        self.assertIn("### 0. Label changed since this card was drafted",
+                      self.render(self.card(None), self.ledger()))
+
+    def test_a_missing_or_stale_ledger_is_said_out_loud(self):
+        self.assertIn("Label drift: not checked on this machine", self.render(self.card("2026-09-29"), None))
+        stale = self.render(self.card("2026-09-29"), self.ledger(last_checked="2026-09-01"))
+        self.assertIn("last full check 2026-09-01 (41 days ago)", stale)
+        self.assertIn("never checked over every pinned label",
+                      self.render(self.card("2026-09-29"), self.ledger(last_checked=None)))
+
+    def test_deterministic(self):
+        record, ledger = self.card("2026-09-29"), self.ledger()
+        self.assertEqual(self.render(record, ledger), self.render(record, ledger))
 
 
 class CommittedPinsTest(unittest.TestCase):
