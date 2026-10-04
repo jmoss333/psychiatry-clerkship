@@ -317,19 +317,19 @@ print(J.describe_label_drift() if status == "waiting" else "")`], {
 test('label-drift: a reviewed card whose label changed after the review is owed, and named', () => {
   const tmp = driftFixture({ drifts: [driftRow('lithium'), driftRow('quetiapine')] });
   const { summary, detail } = measureDrift(tmp);
-  assert.equal(summary, 'waiting 1 2', 'the pending card is not counted; the two reviewed ones are the total');
-  assert.equal(detail, 'Re-review against the new label: lithium (label v14, 2026-10-06: flags, monitoring)');
+  assert.equal(summary, 'waiting 2 3', 'pending cards keep recorded obligations until matching evidence is reviewed');
+  assert.equal(detail, 'Re-review against the new label: lithium (label v14, 2026-10-06: flags, monitoring); quetiapine (label v14, 2026-10-06: flags, monitoring)');
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-test('label-drift: only a review dated on or after the observation retires it', () => {
+test('label-drift: a later review date without matching evidence does not retire it', () => {
   // The predicate is the human act. A later clean check (lastChecked moves on, the drift stays
   // in the append-only ledger) must NOT retire it -- that is the isbn-verify trap.
   let tmp = driftFixture({ lastChecked: '2026-10-17', drifts: [driftRow('lithium')] });
   assert.equal(measureDrift(tmp, { today: '2026-10-18' }).summary, 'waiting 1 2');
   fs.rmSync(tmp, { recursive: true, force: true });
   tmp = driftFixture({ drifts: [driftRow('lithium')], lastReviewed: '2026-10-10' });
-  assert.equal(measureDrift(tmp).summary, 'done 0 2');
+  assert.equal(measureDrift(tmp).summary, 'waiting 1 2');
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
@@ -356,15 +356,15 @@ test('label-drift: a fresh full check with nothing owed retires the row', () => 
 test('label-drift: demoting a card to pending does not retire a drift it owed (Codex P1 #955)', () => {
   // The ledger records whether the card was reviewed WHEN the drift was observed. A content fix
   // that demotes the card -- keeping or dropping lastReviewed -- must leave the drift owed until
-  // a review dated on or after the observation.
+  // an evidence-bound review for the exact label transition.
   const owedRow = { ...driftRow('lithium'), cardReviewedOn: '2026-09-29' };
   for (const lastReviewed of ['2026-09-29', null]) {
     const tmp = driftFixture({ drifts: [owedRow], lithiumStatus: 'pending', lastReviewed });
     assert.equal(measureDrift(tmp).summary, 'waiting 1 2', `lastReviewed=${lastReviewed}`);
     fs.rmSync(tmp, { recursive: true, force: true });
   }
-  // A drift observed while the card was pending is that later review's business, not owed here.
+  // A drift observed while pending is still outstanding without matching review evidence.
   const tmp = driftFixture({ drifts: [{ ...driftRow('lithium'), cardReviewedOn: null }] });
-  assert.equal(measureDrift(tmp).summary, 'done 0 2');
+  assert.equal(measureDrift(tmp).summary, 'waiting 1 2');
   fs.rmSync(tmp, { recursive: true, force: true });
 });

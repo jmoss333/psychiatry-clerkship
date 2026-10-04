@@ -25,8 +25,8 @@ reason. This tool closes the gap in two steps.
         With the default mode: append every drift that needs review to a LOCAL ledger
         (never the repository) that bin/what_needs_josh.py reads. Append-only and keyed by
         (agent, new version), so a later clean run or a re-pin never erases an observed drift:
-        only the card's own facultyReview.lastReviewed moving past the day the drift was
-        observed retires it there. lastChecked advances only after a run over EVERY pinned
+        only a valid current faculty review bound to that exact label version and committed
+        source evidence retires it there. A later date alone does not. lastChecked advances only after a run over EVERY pinned
         label -- an --only run records its drifts but never refreshes the date.
 
     --diff ID
@@ -59,6 +59,7 @@ import json
 import os
 import re
 import sys
+import subprocess
 import tempfile
 import time
 import urllib.error
@@ -74,6 +75,7 @@ import validate_pharmacy as vp  # noqa: E402  (the one AC4' rule masks pinned qu
 RECEIPT = HERE / "label_receipt.json"
 PINS = HERE / "label_pins.json"
 PHARMACY = vp.PHARMACY
+ROOT = vp.ROOT
 SPL_XML = "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/%s.xml"
 SPL_HISTORY = "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/%s/history.json"
 SPL_PAGE = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=%s"
@@ -406,11 +408,172 @@ def _section_order(key):
     return (2, (key,))
 
 
+def _evidence_hash(value):
+    """The writer's canonical full-object hash; provenance, not authentication."""
+    def supported(item):
+        if item is None or isinstance(item, (str, bool)):
+            return True
+        if type(item) is int:
+            return abs(item) <= 9007199254740991
+        if isinstance(item, list):
+            return all(supported(child) for child in item)
+        if isinstance(item, dict):
+            return all(isinstance(key, str) and supported(child) for key, child in item.items())
+        return False
+    if not supported(value):
+        raise ValueError("source object is outside the writer's canonical JSON domain")
+    return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False,
+                                    separators=(",", ":"), allow_nan=False).encode("utf-8")).hexdigest()
+
+
+def _git_evidence(root, *args):
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    result = subprocess.run(["git", "--no-optional-locks", "-C", str(root), *args],
+                            env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            check=True, timeout=10)
+    if len(result.stdout) > 4 * 1024 * 1024:
+        raise ValueError("source object exceeds the writer's read limit")
+    return result.stdout.decode("utf-8")
+
+
+def _source_objects(revision, root, ancestor="HEAD"):
+    """Read one available ancestor commit, never working files or network fallbacks."""
+    def git(*args):
+        return _git_evidence(root, *args)
+    if git("cat-file", "-t", revision).strip() != "commit":
+        raise ValueError("sourceRevision is not a commit")
+    git("merge-base", "--is-ancestor", revision, ancestor)
+    paths = ("pharmacy.json", "13_Faculty_Resources/_automation/pharmacy/label_pins.json",
+             "13_Faculty_Resources/_automation/pharmacy/label_receipt.json")
+    return [json.loads(git("show", revision + ":" + path)) for path in paths]
+
+
+def review_clears_drift(card, obligation, *, today=None, root=None,
+                       ancestor="HEAD", source_cache=None):
+    """A valid current review must bind THIS transition's exact committed label evidence.
+
+    The source revision and hashes prove which bytes were bound, not who approved them.
+    Authentic-review attribution and promotion restrictions remain upstream governance
+    boundaries (including the existing shared-key limitation). No ledger is changed here.
+    """
+    try:
+        if not isinstance(card, dict) or not isinstance(obligation, dict):
+            return False
+        review = card.get("facultyReview") or {}
+        evidence = review.get("labelEvidence")
+        keys = {"schemaVersion", "sourceRevision", "setId", "version", "effectiveDate",
+                "pinHash", "receiptHash"}
+        if not isinstance(evidence, dict) or set(evidence) != keys:
+            return False
+        if (type(evidence["schemaVersion"]) is not int or evidence["schemaVersion"] != 1 or
+                type(evidence["version"]) is not int or not 0 < evidence["version"] <= 9007199254740991):
+            return False
+        for key, pattern in (("sourceRevision", r"[a-f0-9]{40}"),
+                             ("pinHash", r"[a-f0-9]{64}"), ("receiptHash", r"[a-f0-9]{64}")):
+            if not isinstance(evidence[key], str) or not re.fullmatch(pattern, evidence[key]):
+                return False
+        set_id = evidence["setId"]
+        if not isinstance(set_id, str) or not set_id.strip():
+            return False
+        if (not isinstance(card.get("id"), str) or not card["id"] or
+                obligation.get("agent") != card["id"] or obligation.get("setId") != set_id or
+                type(obligation.get("toVersion")) is not int or
+                obligation["toVersion"] != evidence["version"] or
+                obligation.get("toDate") != evidence["effectiveDate"]):
+            return False
+        dates = []
+        for value in (evidence["effectiveDate"], obligation.get("observedOn"), review.get("lastReviewed")):
+            if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                return False
+            dates.append(datetime.date.fromisoformat(value))
+        effective, observed, signed = dates
+        if not effective <= observed <= signed <= (today or datetime.date.today()):
+            return False
+        if (review.get("status") != "reviewed" or not isinstance(review.get("reviewer"), str) or
+                not review["reviewer"].strip() or review.get("reviewedFieldsHash") != vp.j_hash(card)):
+            return False
+        if card.get("retrieval") and review.get("retrievalHash") != vp.retrieval_hash(card):
+            return False
+        cache = source_cache if source_cache is not None else {}
+        key = (evidence["sourceRevision"], ancestor)
+        if key not in cache:
+            cache[key] = _source_objects(evidence["sourceRevision"], root or ROOT, ancestor)
+        registry, pins, receipts = cache[key]
+        source_cards = [row for row in registry["records"] if row.get("id") == card["id"]]
+        if len(source_cards) != 1:
+            return False
+        source_card = source_cards[0]
+        # The writer only changes facultyReview. Clinical or source edits since that
+        # snapshot require a new review; recomputing a J hash alone cannot clear drift.
+        clinical = lambda record: {key: value for key, value in record.items() if key != "facultyReview"}
+        if clinical(source_card) != clinical(card):
+            return False
+        pin, receipt = pins["agents"][card["id"]], receipts["agents"][card["id"]]
+        reference = receipt["reference"]
+        if (card.get("dailymedSetId") != set_id or pin.get("setId") != set_id or
+                reference.get("setId") != set_id or
+                card.get("labelVersionDate") != evidence["effectiveDate"] or
+                pin.get("effectiveDate") != evidence["effectiveDate"] or
+                reference.get("effectiveDate") != evidence["effectiveDate"] or
+                type(pin.get("version")) is not int or pin["version"] != evidence["version"]):
+            return False
+        sections = pin.get("sections")
+        if not isinstance(sections, dict) or not sections or not all(
+                isinstance(value, str) and re.fullmatch(r"[a-f0-9]{16}", value) for value in sections.values()):
+            return False
+        return (_evidence_hash(pin) == evidence["pinHash"] and
+                _evidence_hash(receipt) == evidence["receiptHash"])
+    except (KeyError, TypeError, ValueError, AttributeError, OSError, subprocess.SubprocessError):
+        # Missing/malformed/unavailable evidence never turns an obligation into zero.
+        return False
+
+
+def unresolved_drifts(ledger, records, *, today=None, root=None):
+    """Preserve verified prior resolutions without mutating the observation ledger.
+
+    History is bounded to 100 pharmacy evidence commits. Missing/older unavailable evidence
+    stays owed. A historical approval binds an ancestor of THAT approval, not a
+    later source. This is provenance only; it cannot infer intentional revocation.
+    """
+    root = root or ROOT
+    cache, history, owed = {}, None, []
+    for row in (ledger or {}).get("drifts", []):
+        agent = row["agent"]
+        if review_clears_drift(records.get(agent), row, today=today, root=root, source_cache=cache):
+            continue
+        if history is None:
+            history = []
+            try:
+                revisions = _git_evidence(
+                    root, "log", "-100", '--format=%H',
+                    '-G"(labelEvidence|sourceRevision)"', "HEAD", "--", "pharmacy.json").splitlines()
+                for revision in revisions:
+                    try:
+                        snapshot = json.loads(_git_evidence(root, "show", revision + ":pharmacy.json"))
+                        cards = snapshot["records"]
+                        if isinstance(cards, list):
+                            history.append((revision, cards))
+                    except (KeyError, TypeError, ValueError, OSError, subprocess.SubprocessError):
+                        continue
+            except (OSError, ValueError, subprocess.SubprocessError):
+                pass
+        resolved = False
+        for revision, cards in history:
+            candidates = [card for card in cards if isinstance(card, dict) and card.get("id") == agent]
+            if len(candidates) == 1 and review_clears_drift(
+                    candidates[0], row, today=today, root=root, ancestor=revision, source_cache=cache):
+                resolved = True
+                break
+        if not resolved:
+            owed.append(row)
+    return owed
+
+
 def drifts_since_review(ledger, record):
-    """Ledger drifts for this card observed after its last faculty review (all, if never)."""
-    signed = ((record or {}).get("facultyReview") or {}).get("lastReviewed") or ""
-    return [d for d in (ledger or {}).get("drifts", [])
-            if d["agent"] == (record or {}).get("id") and signed < d["observedOn"]]
+    """Every unresolved transition, including older ones not covered by any review."""
+    agent = (record or {}).get("id")
+    selected = {"drifts": [row for row in (ledger or {}).get("drifts", []) if row["agent"] == agent]}
+    return unresolved_drifts(selected, {agent: record})
 
 
 def compare(pin, spl, record=None):
@@ -429,6 +592,7 @@ def compare(pin, spl, record=None):
             broken.append(quote)
     moved = changed + removed + added
     return {
+        "setId": spl["setId"],
         "fromVersion": pin["version"], "toVersion": spl["version"],
         "fromDate": pin["effectiveDate"], "toDate": spl["effectiveDate"],
         "changed": changed, "removed": removed, "added": added,
@@ -481,13 +645,17 @@ def record(ledger_file, report, examined_all, today, records=None):
     except ValueError as error:
         raise CouldNotCheck("ledger %s is unreadable (%s); move it aside, never overwrite it"
                             % (ledger_file, error))
-    seen = {(d["agent"], d["toVersion"]) for d in ledger.get("drifts", [])}
+    def identity(row):
+        return (row["agent"], row.get("setId"), row["toVersion"], row.get("toDate"))
+    # Versions are scoped to a label set. Legacy rows retain their unknown identity
+    # and cannot suppress a new observation whose exact identity is now available.
+    seen = {identity(d) for d in ledger.get("drifts", [])}
     added = 0
     for row in report:
-        if row.get("status") != "review" or (row["agent"], row["toVersion"]) in seen:
+        if row.get("status") != "review" or identity(row) in seen:
             continue
         ledger.setdefault("drifts", []).append({
-            "agent": row["agent"], "observedOn": today,
+            "agent": row["agent"], "setId": row.get("setId"), "observedOn": today,
             "fromVersion": row["fromVersion"], "toVersion": row["toVersion"],
             "fromDate": row["fromDate"], "toDate": row["toDate"],
             "sections": row["changed"] + row["added"] + row["removed"],
@@ -495,6 +663,7 @@ def record(ledger_file, report, examined_all, today, records=None):
             "cardReviewedOn": _reviewed_on((records or {}).get(row["agent"])),
             "texts": row.get("texts", {}),
         })
+        seen.add(identity(row))
         added += 1
     if examined_all:
         ledger["lastChecked"] = today
