@@ -349,7 +349,7 @@ test('Essentials uses reading rows, open native groups, a section index rail and
   assert.match(html, /data-fd-open="tool.html"[^>]*aria-label="Open Tool &lt;one&gt;"/);
   assert.match(html, /Title &lt;one&gt;/); assert.match(html,/A &amp; B/); assert.match(html,/7 min/);
   assert.match(html, /Faculty re-review in progress — 1 of 1 readings changed since they were last attested ·/); assert.match(html, /<summary>What that means<\/summary>/);
-  assert.match(html, /Everything \(10 pages\) →/);
+  assert.match(html, /data-fd-library-view="full"[^>]*>Everything/);
   assert.doesNotMatch(html, /fd-kit__care|Patient care resources/);
   assert.match(html, /class="fd-kit__teaching"[^>]*aria-label="External teaching companion"/);
   assert.match(html, /href="https:\/\/family-therapy-seminar-companion\.netlify\.app\/"/);
@@ -382,7 +382,7 @@ test('zero resolved Essentials falls back exactly to full Library with no dead r
 
 test('full Library return control appears only for resolved Essentials', () => {
   const html=F.fdLibrary({...IDX,essentials:[{name:'One',items:[IDX.columns[0].items[0]]}]});
-  assert.match(html,/data-fd-library-view="essentials">← The Essentials<\/button>/);
+  assert.match(html,/data-fd-library-view="essentials" aria-pressed="false">Essentials<\/button>/);
 });
 
 test('fdEssentials is pure and does not mutate its index', () => {
@@ -426,7 +426,7 @@ for (const [site, expectedKit, expectedFull] of [['ms3', 30, 84], ['res', 35, 94
     assert.match(html,new RegExp('— '+pending+' of '+(site==='ms3'?23:26)+' readings'));
     const compact=make((g,o)=>g?.status==='pending'&&o?.compact?'<span class=\"dot-test\"></span>':'').fdEssentials(idx);
     assert.equal((compact.match(/dot-test/g)||[]).length,pending);
-    assert.match(html, new RegExp('data-fd-library-view="full">Everything \\(' + expectedFull + ' pages\\) →'));
+    assert.match(html, /data-fd-library-view="full" aria-pressed="false">Everything/);
   });
 }
 
@@ -484,7 +484,7 @@ test('This week counts only matching Essentials readings and preserves their sec
   assert.equal((filtered.match(/<details class="fd-kit__group" open>/g) || []).length, 2);
   assert.equal((filtered.match(/fd-kit__group-count">1 readings/g) || []).length, 2);
   assert.doesNotMatch(filtered, /fd-kit__tools/);
-  assert.match(filtered, /Everything \(10 pages\)/);
+  assert.match(filtered, /data-fd-library-view="full"[^>]*>Everything/);
   assert.equal(JSON.stringify(idx), before, 'weekly filtering cannot mutate Path or Essentials');
 });
 
