@@ -106,7 +106,7 @@ def verify(projection, pharmacy):
     for leaked in ("reviewedFieldsHash", "retrievalHash", "provenance", "fieldClasses"):
         if leaked in text:
             problems.append("internal field %s leaked into the projection" % leaked)
-    if vp.DOSE_RE.search(text):
+    if vp.has_dose_literal(text):
         problems.append("dose literal in the projection")
     return problems
 

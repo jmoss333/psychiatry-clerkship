@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "_note": "Proposed review-routing dependencies only; not faculty attestation or clinical approval. Bounded to two FDA paragraphs; not exhaustive clozapine coverage.",
+  "provenance": {
+    "retrieved_on": "2026-10-03",
+    "scrape_id": "01a101ee-11dc-73f6-86f4-ddec58e1c7e1",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine"
+  },
+  "links": [
+    {
+      "id": "clozapine-anc-monitoring",
+      "source_id": "clozapine-rems",
+      "source_url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+      "status": "proposed",
+      "heading": "What Is FDA Doing?",
+      "paragraph": 2,
+      "source_quote": "Severe neutropenia remains a serious, potentially fatal risk that is greatest in the first several months of clozapine treatment. ANC monitoring can help identify neutropenia early to allow for timely intervention. Therefore, FDA recommends that prescribers monitor patients’ ANC according to the monitoring frequencies described in the prescribing information.",
+      "questions": [
+        {
+          "id": "qb_pha_002",
+          "field": "/evidence",
+          "quote": "psychopharm_primer.md — Clozapine's power comes packaged with ongoing ANC monitoring (per prescribing information; the FDA eliminated the clozapine REMS in 2025) — and watch for myocarditis, severe constipation/ileus, and seizures.",
+          "reason": "The recorded question evidence explicitly depends on ongoing ANC monitoring."
+        },
+        {
+          "id": "qb_pha_011",
+          "field": "/evidence",
+          "quote": "psychopharm_primer.md — Clozapine is the agent for treatment-resistant schizophrenia, reserved precisely because it demands ongoing ANC monitoring for agranulocytosis per its prescribing information (the FDA eliminated the clozapine REMS in 2025).",
+          "reason": "The recorded question evidence explicitly depends on ongoing ANC monitoring."
+        },
+        {
+          "id": "qb_psy_007",
+          "field": "/evidence",
+          "quote": "t_psychosis.md — Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC (hematologic) monitoring per the prescribing information.",
+          "reason": "The recorded question evidence explicitly depends on ongoing ANC monitoring."
+        }
+      ],
+      "readings": [
+        {
+          "page": "psychopharm_primer.md",
+          "source": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+          "quote": "reserved precisely because it demands ongoing ANC monitoring for agranulocytosis per its prescribing information (the FDA eliminated the clozapine REMS in 2025)"
+        },
+        {
+          "page": "t_psychosis.md",
+          "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+          "quote": "with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025)."
+        }
+      ]
+    },
+    {
+      "id": "clozapine-rems-enrollment",
+      "source_id": "clozapine-rems",
+      "source_url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+      "status": "proposed",
+      "heading": "What Should Health Care Professionals Do?",
+      "paragraph": 0,
+      "source_quote": "Prescribers of clozapine no longer have to be enrolled in the REMS or to enroll their patients in it. They also do not have to submit absolute neutrophil count (ANC) results to the REMS program. Prescribers should continue to monitor their patients’ ANC before starting clozapine and during treatment according to the prescribing information and to counsel patients about the risk of severe neutropenia.",
+      "questions": [
+        {
+          "id": "qb_pha_002",
+          "field": "/evidence",
+          "quote": "psychopharm_primer.md — Clozapine's power comes packaged with ongoing ANC monitoring (per prescribing information; the FDA eliminated the clozapine REMS in 2025) — and watch for myocarditis, severe constipation/ileus, and seizures.",
+          "reason": "The recorded question evidence explicitly mentions removal of the clozapine REMS."
+        },
+        {
+          "id": "qb_pha_011",
+          "field": "/evidence",
+          "quote": "psychopharm_primer.md — Clozapine is the agent for treatment-resistant schizophrenia, reserved precisely because it demands ongoing ANC monitoring for agranulocytosis per its prescribing information (the FDA eliminated the clozapine REMS in 2025).",
+          "reason": "The recorded question evidence explicitly mentions removal of the clozapine REMS."
+        },
+        {
+          "id": "qb_anx_003",
+          "field": "/options/2/trap/note",
+          "quote": "it requires ANC monitoring enrollment",
+          "reason": "This distractor explanation mentions monitoring enrollment; review that wording against the FDA enrollment passage. This is a possible discrepancy, not an endorsement."
+        }
+      ],
+      "readings": [
+        {
+          "page": "psychopharm_primer.md",
+          "source": "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md",
+          "quote": "reserved precisely because it demands ongoing ANC monitoring for agranulocytosis per its prescribing information (the FDA eliminated the clozapine REMS in 2025)"
+        },
+        {
+          "page": "t_psychosis.md",
+          "source": "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md",
+          "quote": "with recommended ANC monitoring per the prescribing information (the FDA eliminated the clozapine REMS in 2025; ANC monitoring continues per the prescribing information — FDA, 2025)."
+        }
+      ]
+    }
+  ]
+}

@@ -7,8 +7,16 @@ Ordered for the reviewer's time, not the schema's: each drug opens with the deci
 faculty can make (upstream discrepancies, then authored fields with no attested source),
 then the label facts the script verified, then every J/E field beside the verbatim quote it
 was drawn from. Deterministic: the same inputs produce byte-identical output.
+
+When the label-drift ledger (check_label_drift.py --record) shows a drug's label moved after
+the card's last review, the drug opens with section 0: the changed label sections as a word
+diff against the exact text that was pinned. The packet also says when the ledger is missing
+or stale, so an absent section 0 is never read as "the label did not change". Label text is
+shown unmasked: this packet is faculty-only and never committed, and a dose change is often
+the change.
 """
 
+import datetime
 import json
 import sys
 from pathlib import Path
@@ -16,6 +24,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import validate_pharmacy as vp  # noqa: E402
+import check_label_drift as drift  # noqa: E402  (ledger, review predicate, diff rendering)
+
+LEDGER_STALE_DAYS = 14
 
 
 def cell(value):
@@ -32,12 +43,50 @@ def cell(value):
     return str(value).replace("|", "\\|")
 
 
-def render(records, receipt):
+def ledger_line(ledger, today):
+    """One honest line on whether label changes since review were checked at all."""
+    if ledger is None:
+        return ("**Label drift: not checked on this machine** (no ledger). Changes to a "
+                "drug's DailyMed label since its review are not shown below; run "
+                "`check_label_drift.py --record`.")
+    last = ledger.get("lastChecked")
+    if not last:
+        return "**Label drift: never checked over every pinned label.** Changes may be missing below."
+    age = (today - datetime.date.fromisoformat(last)).days
+    if age > LEDGER_STALE_DAYS:
+        return ("**Label drift: last full check %s (%d days ago).** Changes since then are "
+                "not shown below." % (last, age))
+    return "Label drift: last full check %s." % last
+
+
+def label_changes(record, ledger):
+    """Section 0: the label text that moved since this card's review, as a word diff."""
+    drifts = drift.drifts_since_review(ledger, record)
+    if not drifts:
+        return []
+    reviewed = (record.get("facultyReview") or {}).get("lastReviewed")
+    out = ["### 0. Label changed since %s" % ("your review on %s" % reviewed if reviewed
+                                              else "this card was drafted"), ""]
+    for row in drifts:
+        out.append("Label v%s (%s) → v%s (%s), observed %s. Card fields to re-review: %s." % (
+            row["fromVersion"], row["fromDate"], row["toVersion"], row["toDate"],
+            row["observedOn"], ", ".join(row.get("fields") or []) or "none mapped"))
+        out.append("")
+        if row.get("texts"):
+            out += drift.render_texts(row["texts"])
+        else:
+            out += ["Text not captured; `check_label_drift.py --diff %s` shows it." % row["agent"], ""]
+    return out
+
+
+def render(records, receipt, ledger=None, today=None):
     out = ["# Pharmacy review packet", ""]
     out.append("Records: %s. Every quote below was machine-checked verbatim against the cited "
                "attested page (`validate_pharmacy.py` SPAN), and every label fact against the "
                "label receipt (AC2/AC3). What is left for you is judgment." % ", ".join(
                    r["id"] for r in records))
+    out.append("")
+    out.append(ledger_line(ledger, today or datetime.date.today()))
     out.append("")
     for record in records:
         prov = record["provenance"]
@@ -47,6 +96,7 @@ def render(records, receipt):
         out.append("Safety level **%s** · review status **%s** · J-field hash `%s`" % (
             record["safetyLevel"], record["facultyReview"]["status"], vp.j_hash(record)[:12]))
         out.append("")
+        out += label_changes(record, ledger)
         out.append("### 1. Decide")
         out.append("")
         if prov.get("upstreamDiscrepancies"):
@@ -125,7 +175,11 @@ def main(argv=None):
     pharmacy = json.loads(vp.PHARMACY.read_text(encoding="utf-8"))
     receipt = json.loads(vp.RECEIPT.read_text(encoding="utf-8"))
     records = [r for r in pharmacy["records"] if not argv or r["id"] in argv]
-    sys.stdout.write(render(records, receipt))
+    try:
+        ledger = json.loads(drift.ledger_path().read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        ledger = None
+    sys.stdout.write(render(records, receipt, ledger))
     return 0
 
 

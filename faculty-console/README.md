@@ -411,6 +411,39 @@ Merge the rolling pull request with a **merge commit, not a squash**: the consol
 
 > **Do not** put the token or password in the repo, in `netlify.toml`, or in the HTML. Keep both required secrets only in Netlify environment variables.
 
+## Individual medication review
+
+`medications.html` is linked from both console views. It uses the existing faculty
+key and authenticated `/api/attest` endpoint. Load saved records, select one card,
+read its fields, committed label receipt and exact version pin, source notes and retrieval mappings,
+then explicitly confirm the review. Saving returns a commit receipt and reloads
+the saved state. Nothing is approved by merely opening the page.
+
+The server binds confirmation to one exact branch head, complete record and label
+receipt and pin. Missing or mismatched pins block approval. Any intervening commit requires reload and a fresh confirmation; it does
+not retry an approval automatically. It derives reviewer/date and computes the
+existing `reviewedFieldsHash` (J-class fields) and `retrievalHash` (questions and
+mappings), writing only the selected record's `facultyReview` on `attest/pending`.
+These persisted hashes retain their existing scope, not a claim to hash all label
+or card fields. Ledger/direct-write modes are unsupported. Tool/page signatures
+remain separate; this action does not rewrite the tool attestation ledger.
+
+The explicit label-evidence confirmation records server-derived `labelEvidence`:
+`schemaVersion: 1`, `sourceRevision` (the exact Git head), `setId`, `version`,
+`effectiveDate`, and SHA-256 `pinHash` / `receiptHash` of the entire selected
+committed pin and receipt using the existing Python-compatible canonical JSON.
+The request cannot supply this object. Changing the pin, receipt, card or head
+invalidates the loaded confirmation. Existing clinical/retrieval hashes retain
+their scope; no existing record is migrated or approved by this code change.
+
+This UI reads committed evidence, not live label surveillance or a Mac-local drift
+ledger. Drift consumers must require matching evidence for the relevant newer
+label; neither `lastReviewed` nor a receipt for an older version clears an
+obligation. Missing, legacy or stale evidence must keep the obligation outstanding.
+Deploy this writer together with the separately reviewed detector correction;
+the writer alone does not repair a date-only consumer. Clinical drafts still need
+separate content delivery, real faculty confirmation and normal review/release.
+
 ## Security notes
 
 - **Token scope is the blast radius.** A fine-grained PAT limited to this one repo with Contents-only access means a leaked token can, at worst, edit files in this repo — not touch your other repos or account.
@@ -426,3 +459,21 @@ Merge the rolling pull request with a **merge commit, not a squash**: the consol
 Once you've confirmed the console works end-to-end, the two attestation tools can be deleted from the student build (`review-attest.html`, `qbank-attest.html`) — remove them from `site_manifest.json` (`tools`), from the `nav` in `build_deploy.py`, and from the `_required`/copy lines. That change is intentionally **not** bundled here so the console can be verified first.
 
 *Joshua Moss, MD | Psychiatrist*
+
+### Evidence review
+
+`/evidence.html` uses the same faculty key and `/api/attest?view=evidence` authentication.
+It compares changed source passages with exact question explanations and distractor
+feedback. Lexical flags are possible contradictions, never clinical verdicts. The
+screen displays current main-branch teaching beside the scan's original wording.
+
+Decisions are separate from attestations. Each disposition binds to the immutable
+packet revision, source-report commit, and the current main-branch teaching revision, independently of the decision branch. An edit
+invalidates a previous disposition. `needs-edit` and `defer` remain pending; faculty
+use the ordinary console to edit and attest, then reassess whether current teaching
+needs further change. Incomplete scans cannot resolve a packet.
+
+Decision commits use `attest/evidence-review` and a rolling PR in both ledger modes;
+they never write `reviewed.json`, clinical content, or the attestation ledger.
+Attribution is server-controlled. If the report branch or required records cannot
+be read, the screen is unavailable rather than claiming an empty review queue.

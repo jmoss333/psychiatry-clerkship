@@ -408,7 +408,7 @@ test('every real column-placed tool carries a hint, and every hint names a place
     assert.ok(hint.length <= 110, `${ref}'s hint must stay one line (${hint.length} chars)`);
   }
   const placedEverywhere = new Set(placedTools);
-  for (const addition of (CUR.siteLibrary.resident.additions || [])) for (const ref of addition.refs) placedEverywhere.add(ref);
+  for (const site of Object.values(CUR.siteLibrary)) for (const addition of site.additions) for (const ref of addition.refs) placedEverywhere.add(ref);
   for (const ref of Object.keys(CUR.libraryHints || {})) {
     assert.ok(placedEverywhere.has(ref), `libraryHints names ${ref}, which no Library column places`);
   }
@@ -461,7 +461,7 @@ for site,key in [('ms3','ms3'),('res','resident')]:
 print(json.dumps(out))
 `], { cwd: ROOT, encoding: 'utf8' }));
 
-for (const [site, expectedKit, expectedFull] of [['ms3', 30, 84], ['res', 35, 94]]) {
+for (const [site, expectedKit, expectedFull] of [['ms3', 31, 85], ['res', 35, 94]]) {
   test(`${site}: real projected Essentials resolves ${expectedKit} of ${expectedFull} Library pages`, () => {
     const payload = projections[site];
     const idx = F.fdBuildIndex(payload.curriculum, META, TOOLS, payload.manifest);

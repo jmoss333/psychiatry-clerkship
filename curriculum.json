@@ -265,7 +265,7 @@
       {"name": "Medications",       "accent": "topic",  "refs": ["psychopharm_primer.md", "med_monitoring.md"]},
       {"name": "Family & discharge","accent": "topic",  "refs": ["exp_family.md", "collateral_workflow.md", "brief_psychotherapy.md"]},
       {"name": "Exam",              "accent": "topic",  "refs": ["shelf.md", "rapid_review.md"]},
-      {"name": "Tools",             "accent": "tool",   "refs": ["mse.html", "withdrawal.html", "capacity.html", "oral.html", "question-bank-practice.html", "review.html", "sp-interview.html"]}
+      {"name": "Tools",             "accent": "tool",   "refs": ["mse.html", "withdrawal.html", "capacity.html", "oral.html", "question-bank-practice.html", "review.html", "sp-interview.html", "prepare-for-tomorrow.html"]}
     ],
     "resident": [
       {"name": "Start here",        "accent": "topic",  "refs": ["rotation.md", "doc_oral.md"]},
@@ -278,6 +278,7 @@
     ]
   },
   "libraryExclude": [
+    { "ref": "prepare-for-tomorrow.html", "reason": "MS3-only preparation guide; placed by the MS3 overlay" },
     { "ref": "feedback.html", "reason": "a feedback form, not library content — reachable from the header" },
     { "ref": "rotation-curator.html", "reason": "faculty curation utility; not learner Library content" },
     { "ref": "week1.md", "reason": "surfaced by the Path tab, which is the week browse surface" },
@@ -416,7 +417,7 @@
   ],
   "siteLibrary": {
     "ms3": {
-      "additions": [],
+      "additions": [{ "column": "Interactive tools", "refs": ["prepare-for-tomorrow.html"] }],
       "exclusions": []
     },
     "resident": {
@@ -432,6 +433,7 @@
   "_rightsReferencesNote": "Shipped .html pages that are REFERENCES about an instrument this library does not reproduce. They must not present as interactive tools (Fresh Eyes Audit A3). Derived from instrument_rights.json — every page whose requiredDisclaimerType is 'instrument-not-reproduced' — and validate_curriculum.py fails if the two ever disagree, so this list cannot drift.",
   "rightsReferences": ["bfcrs.html", "cssrs.html"],
   "libraryHints": {
+    "prepare-for-tomorrow.html": "Choose tomorrow's task and prepare in 5 or 15 minutes.",
     "mse.html": "Domain-by-domain descriptor bank and a builder that drafts a written mental status exam.",
     "interview-circle.html": "Gather every history domain by following the patient's openings instead of marching a checklist.",
     "sp-interview.html": "Interview a fictional standardized patient by text and get feedback on the exchange.",

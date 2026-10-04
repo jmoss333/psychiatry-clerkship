@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Medication review — Faculty console</title>
+<style>
+  :root { color-scheme: light dark; --canvas:#f2f5f2; --surface:#fff; --ink:#172a20; --muted:#526359; --line:#b6c4bc; --accent:#205d42; --soft:#e2eee7; }
+  @media(prefers-color-scheme:dark) { :root { --canvas:#142019; --surface:#1e2d24; --ink:#edf4ef; --muted:#bdcdc2; --line:#62776a; --accent:#9cdbb5; --soft:#2b4435; } }
+  * { box-sizing:border-box; } body { margin:0; background:var(--canvas); color:var(--ink); font:1rem/1.55 system-ui,sans-serif; }
+  main,header { width:min(100% - 2rem,72rem); margin:auto; } header { padding:1rem 0; display:flex; flex-wrap:wrap; gap:1rem; align-items:center; }
+  header a { color:var(--accent); padding:.5rem 0; min-height:44px; } h1 { font-size:1.7rem; line-height:1.2; margin:.5rem 0; } h2 { font-size:1.3rem; } h3 { font-size:1rem; margin:.8rem 0 .3rem; }
+  button,input,select { font:inherit; } button,input[type=password],select { min-height:44px; border:1px solid var(--line); border-radius:.4rem; padding:.55rem .8rem; background:var(--surface); color:var(--ink); }
+  button { cursor:pointer; } button:disabled { opacity:.55; cursor:default; } button.primary { background:var(--accent); color:var(--surface); font-weight:650; }
+  :focus-visible { outline:3px solid var(--accent); outline-offset:3px; } a { color:var(--accent); overflow-wrap:anywhere; }
+  .panel { background:var(--surface); border:1px solid var(--line); border-radius:.65rem; padding:1.1rem; margin:1rem 0; min-width:0; }
+  .muted { color:var(--muted); } .notice { background:var(--soft); padding:.8rem 1rem; border-radius:.4rem; overflow-wrap:anywhere; }
+  .controls { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; } .controls label { flex:1 1 18rem; } select { width:100%; } label { display:block; }
+  .review-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(16rem,22rem); gap:1.1rem; align-items:start; }
+  .review-layout > .panel { margin-top:0; } .stamp { display:inline-block; background:var(--soft); border-radius:.3rem; padding:.15rem .5rem; }
+  details { border-top:1px solid var(--line); padding:.7rem 0; } summary { cursor:pointer; min-height:44px; padding:.4rem 0; font-weight:650; }
+  dl { margin:.3rem 0 1rem; } dt { font-weight:650; margin-top:.6rem; } dd { margin:.1rem 0 .5rem .8rem; overflow-wrap:anywhere; white-space:pre-wrap; }
+  ul,ol { padding-left:1.3rem; } .check { display:flex; gap:.7rem; align-items:flex-start; padding:.7rem 0; } .check input { margin-top:.3rem; min-width:22px; min-height:22px; }
+  .gate { max-width:30rem; } .gate input { width:100%; margin:.4rem 0 1rem; } .approve { width:100%; margin-top:.6rem; }
+  .skip { position:absolute; left:-9999px; } .skip:focus { position:static; display:block; padding:1rem; }
+  @media(max-width:760px) { .review-layout { display:block; } main,header { width:calc(100% - 1.4rem); } h1 { font-size:1.45rem; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#medication-review">Skip to medication review</a>
+<header><a href="./">Faculty console</a><a href="./m/">Phone console</a></header>
+<main id="medication-review"><h1>Medication review</h1><p>Loading the review controls…</p></main>
+<script type="module" src="./medications.mjs"></script>
+</body>
+</html>
