@@ -191,17 +191,10 @@ def _today():
 
 
 def _label_drift_owed():
-    """(owed drifts, the cards it can be measured against) -- from check_label_drift.py --record.
+    """Unresolved label transitions; share the packet's exact evidence predicate.
 
-    The predicate is the human act and nothing else. A drift is owed while the card was
-    reviewed when the drift was observed (cardReviewedOn in the ledger) and its
-    facultyReview.lastReviewed is still BEFORE the day the drift was observed -- whatever its
-    status is now, so demoting the card to pending does not retire it.
-    Re-running the check, re-verifying the receipt, or re-pinning the label never retires
-    one: the ledger is append-only and keyed by (agent, new version), so a later clean run
-    cannot erase it -- only your review, dated on or after the observation, can. A missing
-    ledger, or one whose last FULL run is older than LABEL_DRIFT_MAX_AGE_DAYS, is a failed
-    measurement (unknown), never zero: "no drift" from a check nobody ran is not no drift.
+    A later review date, demotion, removed card, or review of a different transition
+    cannot hide an obligation. Missing/stale coverage remains unknown, never zero.
     """
     import datetime as dt
     sys.path.insert(0, str(PHARMACY_TOOLS))
@@ -222,25 +215,14 @@ def _label_drift_owed():
     reviewed = sorted(rid for rid, r in records.items()
                       if (r.get("facultyReview") or {}).get("status") == "reviewed")
     owed = {}
-    for drift in ledger.get("drifts", []):
+    for drift in check_label_drift.unresolved_drifts(ledger, records, today=_today(), root=ROOT):
         agent = drift["agent"]
-        if agent not in records:
-            continue                          # a card that no longer exists has nothing to review
-        # Was the card reviewed WHEN the drift was observed? The ledger records it, so a later
-        # demotion to pending cannot hide the drift (Codex P1 on #955). Entries written before
-        # that field existed fall back to the card's status now.
-        was_reviewed = (drift["cardReviewedOn"] is not None) if "cardReviewedOn" in drift \
-            else agent in reviewed
-        if not was_reviewed:
-            continue
-        signed = (records[agent].get("facultyReview") or {}).get("lastReviewed") or ""
-        if signed < drift["observedOn"]:
-            owed[agent] = drift              # the newest observation per card wins
+        owed[agent] = drift  # Group only AFTER filtering: a cleared latest row cannot hide an older one.
     return [owed[a] for a in sorted(owed)], sorted(set(reviewed) | set(owed))
 
 
 def measure_label_drift():
-    """Reviewed pharmacy cards whose DailyMed label changed after the review."""
+    """Pharmacy cards with any unresolved label transition."""
     owed, reviewed = _label_drift_owed()
     return len(owed), len(reviewed)
 
@@ -346,7 +328,7 @@ ROWS = [
         "needs": None,
         "measure": measure_label_drift,
         "detail": describe_label_drift,
-        "unit": "reviewed pharmacy cards whose DailyMed label changed after your review",
+        "unit": "pharmacy cards with unresolved label changes",
         "why": "A reviewed card is bound to the label it was checked against (receipt set id "
                "and date, AC2), and nothing noticed when the manufacturer published a new "
                "version: the card kept matching its receipt while the label said something "
