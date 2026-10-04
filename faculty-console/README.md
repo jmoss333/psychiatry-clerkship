@@ -415,12 +415,12 @@ Merge the rolling pull request with a **merge commit, not a squash**: the consol
 
 `medications.html` is linked from both console views. It uses the existing faculty
 key and authenticated `/api/attest` endpoint. Load saved records, select one card,
-read its fields, committed label receipt, source notes and retrieval mappings,
+read its fields, committed label receipt and exact version pin, source notes and retrieval mappings,
 then explicitly confirm the review. Saving returns a commit receipt and reloads
 the saved state. Nothing is approved by merely opening the page.
 
 The server binds confirmation to one exact branch head, complete record and label
-receipt. Any intervening commit requires reload and a fresh confirmation; it does
+receipt and pin. Missing or mismatched pins block approval. Any intervening commit requires reload and a fresh confirmation; it does
 not retry an approval automatically. It derives reviewer/date and computes the
 existing `reviewedFieldsHash` (J-class fields) and `retrievalHash` (questions and
 mappings), writing only the selected record's `facultyReview` on `attest/pending`.
@@ -428,12 +428,21 @@ These persisted hashes retain their existing scope, not a claim to hash all labe
 or card fields. Ledger/direct-write modes are unsupported. Tool/page signatures
 remain separate; this action does not rewrite the tool attestation ledger.
 
+The explicit label-evidence confirmation records server-derived `labelEvidence`:
+`schemaVersion: 1`, `sourceRevision` (the exact Git head), `setId`, `version`,
+`effectiveDate`, and SHA-256 `pinHash` / `receiptHash` of the entire selected
+committed pin and receipt using the existing Python-compatible canonical JSON.
+The request cannot supply this object. Changing the pin, receipt, card or head
+invalidates the loaded confirmation. Existing clinical/retrieval hashes retain
+their scope; no existing record is migrated or approved by this code change.
+
 This UI reads committed evidence, not live label surveillance or a Mac-local drift
-ledger. Before combining it with a workflow that clears label-drift obligations
-using `lastReviewed`, reconcile which newer evidence the reviewer actually sees
-and acknowledges. A fresh date alone does not establish that an unseen updated
-label was reviewed. Clinical drafts still need their separate content delivery,
-real faculty confirmation and normal review/release process.
+ledger. Drift consumers must require matching evidence for the relevant newer
+label; neither `lastReviewed` nor a receipt for an older version clears an
+obligation. Missing, legacy or stale evidence must keep the obligation outstanding.
+Deploy this writer together with the separately reviewed detector correction;
+the writer alone does not repair a date-only consumer. Clinical drafts still need
+separate content delivery, real faculty confirmation and normal review/release.
 
 ## Security notes
 

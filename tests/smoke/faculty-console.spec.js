@@ -3616,7 +3616,7 @@ test.describe('individual medication review', () => {
     return { posts, snapshot: () => snapshot };
   }
   async function confirmMedication(page) {
-    for (const key of ['card', 'sources', 'retrieval']) await page.locator(`[data-confirm="${key}"]`).check();
+    for (const key of ['card', 'sources', 'retrieval', 'labelEvidence']) await page.locator(`[data-confirm="${key}"]`).check();
   }
   for (const width of [1280, 390]) for (const theme of ['light', 'dark']) {
     test(`${width}px ${theme}: explicit review saves only the selected card and shows a receipt`, async ({ page }) => {

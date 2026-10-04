@@ -728,7 +728,7 @@ the container when the Bash 5 environment is part of the evidence.
   all the text faculty signed, so the honest edit demotes to `draft` first (registration) and
   re-attests afterwards. In **`pharmacy.json`** (records by `id`), a `facultyReview` block that
   becomes `reviewed`, a record born reviewed, or a reviewed-on-both-sides block whose
-  `lastReviewed`, `reviewer`, `reviewedFieldsHash` or `retrievalHash` changes (decision D2 at pharmacy gate G1).
+  `lastReviewed`, `reviewer`, `reviewedFieldsHash`, `retrievalHash` or `labelEvidence` changes (decision D2 at pharmacy gate G1).
   **A pack case's `facultyReview` block is not a promotion** (decision
   `pack-case-review-is-registration`, 2026-09-26): `sp-interview.pack.json` is an `extraSources`
   entry of the `sp-interview.html` ledger row, so any case edit drifts that row to pending and
