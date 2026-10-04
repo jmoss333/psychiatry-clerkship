@@ -361,7 +361,7 @@ with tempfile.TemporaryDirectory() as directory:
 `], {cwd:new URL('../',import.meta.url),encoding:'utf8'});
   const coverage = read('docs/case-journeys/practice-coverage.json');
   assert.match(text, /Objective × practice-task coverage/);
-  assert.match(text, new RegExp(coverage.status.replace(/[-]/g, '\\-')));
+  assert.ok(text.includes('`' + coverage.status + '`'), 'mapping status printed verbatim');
   for (const g of coverage.acceptedGaps) assert.ok(text.includes(g.reason), 'accepted gap reason printed: ' + g.reason.slice(0, 40));
   for (const data of journeys) for (const [i] of data.learningObjectives.entries()) assert.match(text, new RegExp(`\\| ${i + 1} \\| `));
 });
