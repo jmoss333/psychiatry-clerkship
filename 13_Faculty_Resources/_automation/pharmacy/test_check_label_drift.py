@@ -9,6 +9,7 @@ import contextlib
 import copy
 import io
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -276,6 +277,118 @@ class MainTest(unittest.TestCase):
         ws.pins.write_text(json.dumps(pins))
         code, out = ws.run("--offline", get=FakeDailyMed(b"", fail=True))
         self.assertEqual(code, 1, out)
+
+
+class LedgerTest(unittest.TestCase):
+    """--record: the local, append-only record bin/what_needs_josh.py reads."""
+
+    def setUp(self):
+        self.ws = Workspace(self, receipt())
+        self.ledger = Path(self.ws.dir.name) / "state" / "ledger.json"
+        self.ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+
+    def ledger_doc(self):
+        return json.loads(self.ledger.read_text())
+
+    def test_a_drift_is_recorded_once_and_a_later_clean_run_never_erases_it(self):
+        moved = FakeDailyMed(spl(4, "2026-02-01", dosing="Rewritten dosing."))
+        code, out = self.ws.run("--record", "--ledger", str(self.ledger), get=moved)
+        self.assertEqual(code, 1, out)
+        doc = self.ledger_doc()
+        self.assertEqual(len(doc["drifts"]), 1)
+        drift_row = doc["drifts"][0]
+        self.assertEqual((drift_row["agent"], drift_row["toVersion"], drift_row["fields"]),
+                         ("testdrug", 4, ["dosing"]))
+        self.assertEqual(doc["lastChecked"], drift_row["observedOn"])
+        self.ws.run("--record", "--ledger", str(self.ledger), get=moved)       # same drift again
+        self.assertEqual(len(self.ledger_doc()["drifts"]), 1)
+        # Re-verify and re-pin to the new label: the next run is clean, the drift stays owed.
+        self.ws.receipt.write_text(json.dumps(receipt(date="2026-02-01")))
+        self.ws.run("--pin", get=moved)
+        code, out = self.ws.run("--record", "--ledger", str(self.ledger), get=moved)
+        self.assertEqual(code, 0, out)
+        self.assertEqual(len(self.ledger_doc()["drifts"]), 1)
+
+    def test_a_content_free_bump_is_not_recorded(self):
+        self.ws.run("--record", "--ledger", str(self.ledger),
+                    get=FakeDailyMed(spl(4, "2026-02-01", package="New carton")))
+        self.assertEqual(self.ledger_doc()["drifts"], [])
+        self.assertIsNotNone(self.ledger_doc()["lastChecked"])
+
+    def test_a_partial_run_never_refreshes_last_checked(self):  # SILENT_SHRINK: fewer labels
+        two = receipt()
+        two["agents"]["otherdrug"] = copy.deepcopy(two["agents"]["testdrug"])
+        self.ws.receipt.write_text(json.dumps(two))
+        self.ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        code, out = self.ws.run("--record", "--only", "testdrug", "--ledger", str(self.ledger),
+                                get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 0, out)
+        self.assertIsNone(self.ledger_doc()["lastChecked"])
+        self.assertIn("partial run", out)
+
+    def test_a_failed_check_records_nothing(self):
+        code, _ = self.ws.run("--record", "--ledger", str(self.ledger), get=FakeDailyMed(b"", fail=True))
+        self.assertEqual(code, 2)
+        self.assertFalse(self.ledger.exists())
+
+    def test_an_unreadable_ledger_could_not_check_and_is_left_alone(self):
+        self.ledger.parent.mkdir(parents=True)
+        self.ledger.write_text("{not json")
+        code, out = self.ws.run("--record", "--ledger", str(self.ledger),
+                                get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 2, out)
+        self.assertEqual(self.ledger.read_text(), "{not json")
+
+    def test_the_card_review_state_at_observation_is_recorded(self):  # Codex P1 on #955
+        row = {"agent": "lithium", "status": "review", "fromVersion": 13, "toVersion": 14,
+               "fromDate": "a", "toDate": "b", "changed": ["5.3"], "added": [], "removed": [],
+               "fields": ["flags"], "quotesBroken": []}
+        cards = {"lithium": {"facultyReview": {"status": "reviewed", "lastReviewed": "2026-09-29"}}}
+        drift.record(self.ledger, [row], True, "2026-10-10", cards)
+        self.assertEqual(self.ledger_doc()["drifts"][0]["cardReviewedOn"], "2026-09-29")
+        drift.record(self.ledger, [dict(row, agent="quetiapine")], True, "2026-10-10",
+                     {"quetiapine": {"facultyReview": {"status": "pending"}}})
+        self.assertIsNone(self.ledger_doc()["drifts"][1]["cardReviewedOn"])
+
+    def test_an_interrupted_write_leaves_the_ledger_whole(self):  # Codex P2 on #955
+        moved = FakeDailyMed(spl(4, "2026-02-01", dosing="Rewritten dosing."))
+        self.ws.run("--record", "--ledger", str(self.ledger), get=moved)
+        before = self.ledger.read_text()
+        original = drift.os.replace
+        drift.os.replace = lambda *a: (_ for _ in ()).throw(OSError("disk full"))
+        try:
+            with self.assertRaises(OSError):
+                drift.record(self.ledger, [], True, "2026-10-11")
+        finally:
+            drift.os.replace = original
+        self.assertEqual(self.ledger.read_text(), before)
+        self.assertEqual(sorted(p.name for p in self.ledger.parent.iterdir()), [self.ledger.name])
+
+    def test_the_ledger_lives_outside_the_repository_and_the_cli_defaults_to_it(self):
+        saved = {k: os.environ.pop(k, None) for k in ("CLERKSHIP_LABEL_DRIFT_LEDGER", "XDG_STATE_HOME")}
+        try:
+            default = drift.ledger_path()
+            self.assertEqual(default, Path.home() / ".local" / "state" / "clerkship" / drift.LEDGER_NAME)
+            repo = HERE.parents[2]
+            self.assertNotIn(repo, default.parents)
+            os.environ["XDG_STATE_HOME"] = "/x"
+            self.assertEqual(drift.ledger_path(), Path("/x/clerkship") / drift.LEDGER_NAME)
+            os.environ["CLERKSHIP_LABEL_DRIFT_LEDGER"] = "/y/l.json"
+            self.assertEqual(drift.ledger_path(), Path("/y/l.json"))
+            # Production passes no --ledger: the parser's default must BE ledger_path().
+            seen = {}
+            original = drift.record
+            drift.record = lambda path, *a: seen.setdefault("path", path) and 0
+            try:
+                self.ws.run("--record", get=FakeDailyMed(spl(3, "2026-01-01")))
+            finally:
+                drift.record = original
+            self.assertEqual(seen.get("path"), Path("/y/l.json"))
+        finally:
+            for key, value in saved.items():
+                os.environ.pop(key, None)
+                if value is not None:
+                    os.environ[key] = value
 
 
 class CommittedPinsTest(unittest.TestCase):
