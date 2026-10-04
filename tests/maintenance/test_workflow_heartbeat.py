@@ -332,6 +332,7 @@ class WorkflowHeartbeatTests(unittest.TestCase):
                 "maintenance-governance-digest.yml": 8 * 24,
                 "surveillance-link-monitor.yml": 8 * 24,
                 "surveillance-citations.yml": 8 * 24,
+                "surveillance-firecrawl.yml": 8 * 24,
                 "maintenance-monthly-review.yml": 35 * 24,
                 "surveillance-guideline.yml": 35 * 24,
             },
