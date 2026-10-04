@@ -1,8 +1,14 @@
 name: Surveillance — Firecrawl Faculty Review
+run-name: ${{ inputs.comparison_probe && 'Firecrawl comparison probe' || 'Firecrawl faculty collection' }}
 on:
   schedule:
     - cron: "30 6 * * 1"
   workflow_dispatch:
+    inputs:
+      comparison_probe:
+        description: Run a separate paired comparison (maximum ten requests; no inbox writes)
+        type: boolean
+        default: false
 permissions:
   contents: write
   pull-requests: write
@@ -11,6 +17,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   evidence-review:
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.comparison_probe }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -66,3 +73,32 @@ jobs:
             0|1) exit 0 ;;
             *) echo "Firecrawl examination incomplete; inspect review evidence."; exit 1 ;;
           esac
+  comparison-probe:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.comparison_probe }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          lfs: false
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+      - name: Run paired comparison probe
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/run_firecrawl_probe.py
+          --out-dir "$RUNNER_TEMP/firecrawl-probe"
+      - name: Upload comparison evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: firecrawl-comparison-probe-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/firecrawl-probe
+          if-no-files-found: error
+          retention-days: 90

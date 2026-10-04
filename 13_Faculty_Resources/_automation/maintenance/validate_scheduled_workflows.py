@@ -157,7 +157,7 @@ EXPECTED_CONCURRENCY = {
     },
 }
 EXPECTED_JOB_IDS = {
-    "surveillance-firecrawl.yml": {"evidence-review"},
+    "surveillance-firecrawl.yml": {"evidence-review", "comparison-probe"},
     "ci.yml": {"build-test-validate", "smoke-tests"},
     "maintenance-queue-runner.yml": {"queue-runner"},
     "maintenance-sp-health-monitor.yml": {"monitor"},
@@ -182,7 +182,9 @@ EXPECTED_STEP_INVENTORIES = {
                      ('name', 'Collect review packets'),
                      ('name', 'Publish rolling surveillance inbox'),
                      ('uses', 'actions/upload-artifact'),
-                     ('name', 'Require complete examination'))},
+                     ('name', 'Require complete examination')),
+        'comparison-probe': (('uses', 'actions/checkout'), ('uses', 'actions/setup-python'),
+                             ('name', 'Run paired comparison probe'), ('uses', 'actions/upload-artifact'))},
     "ci.yml": {
         "build-test-validate": (
             ("uses", "actions/checkout"),
@@ -442,9 +444,9 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "surveillance-firecrawl.yml": "1f71b4e757453c757d5055f597d35410f90bc5819fd8d972b5ef8254aacac421",
+    "surveillance-firecrawl.yml": "20429b9cff241cf0d00131252ba8876b995f8ba6324a248f0df1e08033f7a329",
     ESCALATION_FILE: (
-        "6c338845ee1b55cfcc52143a90c3153cbd77bece5b039eeef7568adff0d73481"
+        "6ff7000b1cae3ca2a1fe8b86c5f6faa83b6d0b59a6c54255f6d606ac15ab401c"
     ),
     "ci.yml": "2dde7c5fe439c4651499356393818f3a9da6d5af24283cd9464133058ee3e645",
     "maintenance-governance-digest.yml": (
@@ -1076,7 +1078,12 @@ def _validate_job_boundaries(name, workflow, errors):
             continue
         if "uses" in job:
             _error(errors, name, f"job-level uses is forbidden for {job_id!r}")
-        if "permissions" in job:
+        # The manual evidence probe has a strictly narrower read-only token.
+        readonly_probe = (name == "surveillance-firecrawl.yml" and job_id == "comparison-probe"
+                          and job.get("permissions") == {"contents": "read"})
+        if name == "surveillance-firecrawl.yml" and job_id == "comparison-probe" and not readonly_probe:
+            _error(errors, name, "comparison probe must have contents: read only")
+        if "permissions" in job and not readonly_probe:
             _error(
                 errors,
                 name,
@@ -1103,7 +1110,13 @@ def _validate_job_boundaries(name, workflow, errors):
                 name,
                 "runner context is unavailable in job-level env",
             )
-        if name in EXPECTED_CRONS and "if" in job:
+        firecrawl_condition = {
+            "evidence-review": "${{ github.event_name != 'workflow_dispatch' || !inputs.comparison_probe }}",
+            "comparison-probe": "${{ github.event_name == 'workflow_dispatch' && inputs.comparison_probe }}",
+        }.get(job_id) if name == "surveillance-firecrawl.yml" else None
+        if firecrawl_condition and job.get("if") != firecrawl_condition:
+            _error(errors, name, "Firecrawl manual probe and scheduled collection must be isolated")
+        if name in EXPECTED_CRONS and "if" in job and not firecrawl_condition:
             _error(
                 errors,
                 name,
