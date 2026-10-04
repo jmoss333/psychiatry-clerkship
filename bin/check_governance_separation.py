@@ -229,7 +229,7 @@ TOPIC_META_PROMOTION_KEYS = ("lastReviewed", "reviewer")
 # of the J (judgment) fields the review covered. validate_pharmacy.py's AC6 only proves that a
 # stored hash matches the text — a content PR that writes both is internally consistent — so
 # WHO may write the block is this gate's question, exactly as for the other three ledgers.
-PHARMACY_PROMOTION_KEYS = ("lastReviewed", "reviewer", "reviewedFieldsHash", "retrievalHash")
+PHARMACY_PROMOTION_KEYS = ("lastReviewed", "reviewer", "reviewedFieldsHash", "retrievalHash", "labelEvidence")
 # question_bank.json's `status` enum is draft/attested; only faculty attest tooling writes
 # `attested`, and what it vouches for is the WHOLE item — stem, options, rationale, evidence.
 QBANK_ATTESTED = "attested"
@@ -1403,6 +1403,12 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         def rx_bad_shape():
             _write(root, PHARMACY_REL, {"records": {"lithium": {}}})
         code, text = _case(root, "feature-rx-shape", rx_bad_shape)
+        for value in ({"version": 2}, None):
+            before = _rx("reviewed", **dict(reviewed_block, labelEvidence={"version": 1}))
+            after = _rx("reviewed", **dict(reviewed_block, **({"labelEvidence": value} if value else {})))
+            check("label evidence changes or deletion are promotions",
+                  [rid for rid, _ in pharmacy_promotions(before, after)], ["lithium"])
+
         check("(u2) a pharmacy.json with no records list is could-not-check", code, 2)
 
         verdict("(q) the same qbank promotion on attest/pending as the console",
