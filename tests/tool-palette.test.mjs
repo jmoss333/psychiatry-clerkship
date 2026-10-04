@@ -44,3 +44,21 @@ test('--primary is no longer red-adjacent, and --danger is untouched', () => {
   for (const [k, v] of Object.entries(pick(warmDark[1]))) assert.doesNotMatch(v, OLD_REDS, k);
   assert.match(warmDark[1], /--danger:#da7c6e/, 'safety red keeps its dark value');
 });
+
+// 2026-10-03: the crisis block's left rule is the safety red in every tool, in both themes. Three
+// places carry it: clinical-warm.css (linked tools and the shell), crisis_block.py's literal
+// fallback (tools that link no stylesheet), and TOOL_PALETTE_STYLE (The Interview Room declares
+// --cw-accent itself, so only a later rule can reach it).
+test('the crisis rule is the safety red everywhere it is defined', () => {
+  const light = warm.match(/:root\{[^}]*?--cw-accent:(#[0-9a-f]{6})/i);
+  const darkAccent = warm.match(/\[data-theme="dark"\]\{[^}]*?--cw-accent:(#[0-9a-f]{6})/i)
+    || warm.match(/--cw-surface:#2b2620;[\s\S]*?--cw-accent:(#[0-9a-f]{6})/i);
+  const danger = warm.match(/--fd-danger:(#[0-9a-f]{6})/i)[1];
+  const darkDanger = [...warm.matchAll(/--fd-danger:(#[0-9a-f]{6})/gi)].map((m) => m[1]).pop();
+  assert.equal(light[1].toLowerCase(), danger.toLowerCase(), 'light crisis rule = --fd-danger');
+  assert.equal(darkAccent[1].toLowerCase(), darkDanger.toLowerCase(), 'dark crisis rule = dark --fd-danger');
+  const crisis = readFileSync(new URL('crisis_block.py', BUILD), 'utf8');
+  assert.match(crisis, new RegExp(`border-left:4px solid var\\(--cw-accent,${danger}\\)`, 'i'), 'no-stylesheet fallback');
+  assert.match(injectedText, new RegExp(`:root\\{[^}]*--cw-accent:${danger}`, 'i'));
+  assert.match(injectedText, new RegExp(`\\[data-theme="dark"\\]\\{[^}]*--cw-accent:${darkDanger}`, 'i'));
+});

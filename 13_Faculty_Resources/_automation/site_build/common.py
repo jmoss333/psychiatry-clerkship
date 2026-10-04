@@ -427,15 +427,18 @@ _CLINICAL_CSS_LINK_RE = re.compile(r"<link[^>]+clinical-warm\.css", re.IGNORECAS
 # is never linked to clinical-warm.css (that would override its dark palette), so the teal
 # --primary override in that stylesheet cannot reach it. This style carries ONLY the --primary
 # family, with the SAME values as clinical-warm.css's "Tools: red means safety" block and its
-# dark block -- tests/tool-palette.test.mjs fails if the two drift. It is injected before
+# dark block -- tests/tool-palette.test.mjs fails if the two drift. It also carries --cw-accent,
+# the crisis block's left rule: The Interview Room declares that token itself (as its green
+# accent), and the crisis rule must be the safety red on every tool (2026-10-03). It is injected before
 # </head>, after the tool's own <style>, and its :root comes before its dark rule: equal
 # specificity, so source order is what makes each theme pick the right value.
 TOOL_PALETTE_STYLE = (
     '<style data-cw-palette="red-means-safety">'
     ':root{--primary:#3a7d6e;--primary-dark:#2c6356;--primary-d:#2c6356;'
-    '--primary-light:#e8f2ef;--primary-l:#e8f2ef;--primary-ink:#2c6356}'
+    '--primary-light:#e8f2ef;--primary-l:#e8f2ef;--primary-ink:#2c6356;--cw-accent:#a34132}'
     '[data-theme="dark"]{--primary:#5fa392;--primary-dark:#7fc0ae;--primary-d:#7fc0ae;'
-    '--primary-light:rgba(95,163,146,.16);--primary-l:rgba(95,163,146,.16);--primary-ink:#8fd0be}'
+    '--primary-light:rgba(95,163,146,.16);--primary-l:rgba(95,163,146,.16);--primary-ink:#8fd0be;'
+    '--cw-accent:#d97a68}'
     '</style>'
 )
 

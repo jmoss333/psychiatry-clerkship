@@ -101,7 +101,8 @@
   --cw-surface:#faf6f1;   /* block ground */
   --cw-text:#2c2622;      /* block ink — 13.87:1 on the ground */
   --cw-border:#d8cfc4;    /* hairline */
-  --cw-accent:#8c5a3b;    /* 4px left rule — 5.36:1, non-text */
+  --cw-accent:#a34132;    /* 4px left rule — the safety red, = --fd-danger (2026-10-03; was brown
+                           * #8c5a3b). 5.81:1 on the ground, non-text. */
 
   /* ── Dimension layer (theme-invariant) ─────────────────────────────────────
    * Added 2026-09-10. The colour layer above has had a single source of truth
@@ -325,6 +326,6 @@
   --cw-surface:#2b2620;   /* 11.99:1 under --cw-text */
   --cw-text:#ece5db;
   --cw-border:#3a332c;    /* hairline, same exemption as --fd-line */
-  --cw-accent:#e0a184;    /* 6.85:1 on the ground, non-text */
+  --cw-accent:#d97a68;    /* = dark --fd-danger (2026-10-03); 4.95:1 on the ground, non-text */
 }
 

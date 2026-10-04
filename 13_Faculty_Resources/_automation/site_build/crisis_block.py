@@ -109,7 +109,9 @@ def render_html(data):
             '<section class="crisis-block" aria-labelledby="crisis-block-heading"'
             ' style="margin:1.5rem 0;padding:1rem 1.25rem;'
             "border:1px solid var(--cw-border,#d8cfc4);"
-            "border-left:4px solid var(--cw-accent,#8c5a3b);"
+            # The left rule is the safety red (--fd-danger), the one colour that means safety
+            # everywhere (2026-10-03; was brown #8c5a3b). The literal is the no-stylesheet path.
+            "border-left:4px solid var(--cw-accent,#a34132);"
             "border-radius:6px;background:var(--cw-surface,#faf6f1);"
             'color:var(--cw-text,#2c2622);">',
             # color:inherit is load-bearing. The block is injected into HTML pages whose
