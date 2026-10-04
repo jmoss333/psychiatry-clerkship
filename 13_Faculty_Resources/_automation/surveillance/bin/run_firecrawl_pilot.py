@@ -142,10 +142,14 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def fetch(source, token):
+def fetch(source, token, *, tracking_tag=None):
     payload = {'url': source['url'], 'formats': ['markdown'],
                'onlyMainContent': True, 'maxAge': 0, 'timeout': 60000,
                'storeInCache': False}
+    if tracking_tag is not None:
+        if not re.fullmatch(r'[A-Za-z0-9_-]{1,100}', tracking_tag):
+            raise ValueError('Invalid tracking tag')
+        payload['formats'].append({'type': 'changeTracking', 'modes': ['git-diff'], 'tag': tracking_tag})
     req = urllib.request.Request('https://api.firecrawl.dev/v2/scrape',
         data=json.dumps(payload).encode(), headers={
             'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token})
