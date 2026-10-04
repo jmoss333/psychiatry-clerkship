@@ -22,9 +22,11 @@ reason. This tool closes the gap in two steps.
         draw on them, and whether every pinned quote still appears in its section.
 
     --offline
-        No network. The pins agree with the committed receipt: every receipt agent is pinned
-        (or listed under "unpinned" with a reason), each pin names the receipt's set id and
-        effective date, and no pinned quote carries a dose literal. CI runs this.
+        No network. The pins agree with the committed receipt: every receipt agent is pinned,
+        each pin names the receipt's set id and effective date, and no pinned quote carries a
+        dose literal. An agent listed under "unpinned" (its label moved past the receipt) is a
+        finding, never a skip: its card needs review before the pins can be committed. CI runs
+        this.
 
 Exit 0 nothing for a reviewer to do, 1 a card needs re-review (a content section changed, a
 quote is gone, or a pin was refused), 2 could not check (network, a receipt agent with no
@@ -306,6 +308,10 @@ def offline_check(receipt, pins):
     for agent, entry in sorted(receipt.get("agents", {}).items()):
         ref = entry.get("reference", {})
         if agent in unpinned:
+            # Never a pass (Codex P1 on #954): an unpinned agent is one whose label already
+            # moved past its receipt, i.e. a card known to need review. Skipping it would let
+            # --offline pass CI and drop it from every later network check.
+            findings.append("%s: unpinned -- %s" % (agent, unpinned[agent]))
             continue
         pin = pinned.get(agent)
         if pin is None:
