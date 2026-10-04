@@ -423,6 +423,23 @@ CLINICAL_CSS_LINK = '<link rel="stylesheet" href="/clinical-warm.css">'
 _CLINICAL_CSS_LINK_RE = re.compile(r"<link[^>]+clinical-warm\.css", re.IGNORECASE)
 
 
+# Red means safety in the tools (2026-10-03). A tool that ships its own [data-theme="dark"] block
+# is never linked to clinical-warm.css (that would override its dark palette), so the teal
+# --primary override in that stylesheet cannot reach it. This style carries ONLY the --primary
+# family, with the SAME values as clinical-warm.css's "Tools: red means safety" block and its
+# dark block -- tests/tool-palette.test.mjs fails if the two drift. It is injected before
+# </head>, after the tool's own <style>, and its :root comes before its dark rule: equal
+# specificity, so source order is what makes each theme pick the right value.
+TOOL_PALETTE_STYLE = (
+    '<style data-cw-palette="red-means-safety">'
+    ':root{--primary:#3a7d6e;--primary-dark:#2c6356;--primary-d:#2c6356;'
+    '--primary-light:#e8f2ef;--primary-l:#e8f2ef;--primary-ink:#2c6356}'
+    '[data-theme="dark"]{--primary:#5fa392;--primary-dark:#7fc0ae;--primary-d:#7fc0ae;'
+    '--primary-light:rgba(95,163,146,.16);--primary-l:rgba(95,163,146,.16);--primary-ink:#8fd0be}'
+    '</style>'
+)
+
+
 def _links_clinical_css(text):
     """True only when the shared dark-token stylesheet is linked as an ELEMENT.
 
@@ -786,6 +803,10 @@ def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None, injec
     # identically and so could not report it.
     if '[data-theme="dark"]' not in t and not _links_clinical_css(t) and "</head>" in t:
         t = t.replace("</head>", CLINICAL_CSS_LINK + "\n</head>", 1)
+    elif (not is_index and not _links_clinical_css(t) and "</head>" in t
+          and 'data-cw-palette="red-means-safety"' not in t):
+        # Self-themed tool: it keeps its own palette, minus the red-adjacent brand accent.
+        t = t.replace("</head>", TOOL_PALETTE_STYLE + "\n</head>", 1)
 
     # Usage analytics. Injected here so every polished page carries it from one
     # source; the emitter itself sends only allowlisted keys. The default site
