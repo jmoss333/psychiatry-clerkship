@@ -33,6 +33,7 @@ import re
 import subprocess
 import sys
 from datetime import date
+from html.parser import HTMLParser
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -149,6 +150,62 @@ def _slug_source_map(aud_key: str = "ms3") -> dict[str, str]:
 _CSSISH = re.compile(r"(px|rem|em|vh|vw|%)\s*[;}]|:\s*var\(|@media|font-family|@keyframes|translate|cubic-bezier")
 
 
+class _ToolHTMLParser(HTMLParser):
+    """Locate script/style spans while retaining the original markup and script text."""
+
+    def __init__(self, raw: str):
+        super().__init__(convert_charrefs=False)
+        self.raw = raw
+        self.line_offsets = [0]
+        for line in raw.split("\n")[:-1]:
+            self.line_offsets.append(self.line_offsets[-1] + len(line) + 1)
+        self.hidden: list[tuple[int, int]] = []
+        self.scripts: list[tuple[str | None, str]] = []
+        self.active: tuple[str, int, int, str | None] | None = None
+
+    def _offset(self) -> int:
+        line, column = self.getpos()
+        return self.line_offsets[line - 1] + column
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style"):
+            start = self._offset()
+            # HTMLParser normalizes HTML names but preserves attribute value case.
+            script_id = next((value for name, value in attrs if name == "id"), None)
+            self.active = (tag, start, start + len(self.get_starttag_text()), script_id)
+
+    def handle_startendtag(self, tag, attrs):
+        if tag in ("script", "style"):
+            start = self._offset()
+            self.hidden.append((start, start + len(self.get_starttag_text())))
+
+    def handle_endtag(self, tag):
+        if self.active is not None and tag == self.active[0]:
+            closing_start = self._offset()
+            self._finish_block(closing_start, self.raw.index(">", closing_start) + 1)
+
+    def _finish_block(self, content_end: int, block_end: int):
+        tag, start, content_start, script_id = self.active
+        self.hidden.append((start, block_end))
+        if tag == "script":
+            self.scripts.append((script_id, self.raw[content_start:content_end]))
+        self.active = None
+
+    def parts(self) -> tuple[str, list[tuple[str | None, str]]]:
+        self.feed(self.raw)
+        self.close()
+        if self.active is not None:
+            self._finish_block(len(self.raw), len(self.raw))
+        outside = []
+        cursor = 0
+        for start, end in self.hidden:
+            outside.append(self.raw[cursor:start])
+            cursor = end
+        outside.append(self.raw[cursor:])
+        # Raw slices leave entities intact for tool_text's existing one-pass unescape.
+        return "".join(outside), self.scripts
+
+
 def tool_text(path: Path, *, exclude_script_ids: tuple[str, ...] = ()) -> tuple[list[str], list[str]]:
     """(visible HTML text lines, clinical strings recovered from inline JS).
 
@@ -158,8 +215,7 @@ def tool_text(path: Path, *, exclude_script_ids: tuple[str, ...] = ()) -> tuple[
     """
     raw = path.read_text(encoding="utf-8", errors="replace")
 
-    body = re.sub(r"<script[^>]*>.*?</script>", "", raw, flags=re.S | re.I)
-    body = re.sub(r"<style[^>]*>.*?</style>", "", body, flags=re.S | re.I)
+    body, scripts = _ToolHTMLParser(raw).parts()
     body = re.sub(r"<!--.*?-->", "", body, flags=re.S)
     visible = []
     for chunk in re.split(r"<(?:/p|/h[1-6]|/li|br\s*/?|/div|/section)>", body, flags=re.I):
@@ -169,11 +225,9 @@ def tool_text(path: Path, *, exclude_script_ids: tuple[str, ...] = ()) -> tuple[
 
     js: list[str] = []
     seen: set[str] = set()
-    script_raw = raw
-    for script_id in exclude_script_ids:
-        # HTML names ignore case; the script ID value remains case-sensitive.
-        script_raw = re.sub(r'(?i:<script id=")' + re.escape(script_id) + r'(?i:" type="application/json">).*?(?i:</script>)', "", script_raw, flags=re.S)
-    for script in re.findall(r"<script[^>]*>(.*?)</script>", script_raw, flags=re.S | re.I):
+    for script_id, script in scripts:
+        if script_id in exclude_script_ids:
+            continue
         for m in re.finditer(r'"((?:[^"\\]|\\.)*)"|\'((?:[^\'\\]|\\.)*)\'|`((?:[^`\\]|\\.)*)`', script):
             v = m.group(1) or m.group(2) or m.group(3) or ""
             v = v.replace("\\n", "\n").replace('\\"', '"').replace("\\'", "'").replace("\\`", "`")

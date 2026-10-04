@@ -50,3 +50,46 @@ for (const tag of variants) {
     });
   });
 }
+
+test('valid whitespace before script and style end-tag brackets does not leak their contents', () => {
+  const raw = `<STYLE>.panel { content: "Style prose must stay outside visible text."; }</STYLE \t>
+<p>Visible shell text remains available.</p>
+<sCrIpT>const first = "${ordinary}"; const repeated = "${ordinary}";</ScRiPt \n>`;
+  assert.deepEqual(extract(raw), {
+    visible:['Visible shell text remains available.'],
+    prose:[ordinary],
+  });
+});
+
+for (const extra of ['', ' data-label="a > b"']) {
+  test(`excluded script IDs survive reordered single-quoted attributes${extra ? ' with quoted brackets' : ''} without folding ID values`, () => {
+    const raw = `<SCRIPT TYPE='application/json'${extra} ID='pft-data'>{"teaching":"${excluded}"}</SCRIPT>
+<p>Visible shell text remains available.</p>
+<script>const first = "${ordinary}"; const repeated = "${ordinary}";</script>
+<sCrIpT data-label='a > b' id='PFT-DATA' type='application/json'>{"teaching":"${differentId}"}</ScRiPt>`;
+    assert.deepEqual(extract(raw, ['pft-data']), {
+      visible:['Visible shell text remains available.'],
+      prose:[ordinary, differentId],
+    });
+  });
+}
+
+test('ordinary script prose survives a quoted bracket in a start-tag attribute', () => {
+  const raw = `<p>Visible shell text remains available.</p>
+<SCRIPT data-label="a > b" id="ordinary">const first = "${ordinary}";</SCRIPT>`;
+  assert.deepEqual(extract(raw), {
+    visible:['Visible shell text remains available.'],
+    prose:[ordinary],
+  });
+});
+
+test('escaped outside markup and raw script entities decode once while commented scripts stay ignored', () => {
+  const raw = `<!DOCTYPE html>
+<p>Visible &lt;script&gt; &amp;amp; shell text remains available.</p>
+<!-- <script>const fake = "Comment prose must not become authored script teaching.";</script> -->
+<script>const first = "Raw script content keeps &amp;amp; entities for prose decoding.";</script>`;
+  assert.deepEqual(extract(raw), {
+    visible:['Visible <script> &amp; shell text remains available.'],
+    prose:['Raw script content keeps &amp; entities for prose decoding.'],
+  });
+});
