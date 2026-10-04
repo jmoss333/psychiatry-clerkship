@@ -47,6 +47,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -311,8 +312,14 @@ def ledger_path():
     return Path(base) / "clerkship" / LEDGER_NAME
 
 
-def record(ledger_file, report, examined_all, today):
-    """Append this run's needs-review drifts to the ledger; returns how many were new."""
+def record(ledger_file, report, examined_all, today, records=None):
+    """Append this run's needs-review drifts to the ledger; returns how many were new.
+
+    Each entry keeps the card's review date AS OF the observation (cardReviewedOn), so a card
+    that was reviewed when its label moved stays owed even if a later content fix demotes it
+    to pending (Codex P1 on #955). The write is atomic: the ledger is the only record that a
+    drift was ever seen, so an interrupted run must leave the old file whole (Codex P2).
+    """
     try:
         ledger = json.loads(Path(ledger_file).read_text(encoding="utf-8"))
     except FileNotFoundError:
@@ -331,13 +338,33 @@ def record(ledger_file, report, examined_all, today):
             "fromDate": row["fromDate"], "toDate": row["toDate"],
             "sections": row["changed"] + row["added"] + row["removed"],
             "fields": row["fields"], "quotesBroken": len(row["quotesBroken"]),
+            "cardReviewedOn": _reviewed_on((records or {}).get(row["agent"])),
         })
         added += 1
     if examined_all:
         ledger["lastChecked"] = today
-    Path(ledger_file).parent.mkdir(parents=True, exist_ok=True)
-    Path(ledger_file).write_text(json.dumps(ledger, indent=1) + "\n", encoding="utf-8")
+    target = Path(ledger_file)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    handle, temporary = tempfile.mkstemp(prefix=target.name + ".", suffix=".tmp", dir=str(target.parent))
+    try:
+        with os.fdopen(handle, "w", encoding="utf-8") as stream:
+            stream.write(json.dumps(ledger, indent=1) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, target)
+    except BaseException:
+        try:
+            os.unlink(temporary)
+        except OSError:
+            pass
+        raise
     return added
+
+
+def _reviewed_on(card):
+    """The card's lastReviewed when it is reviewed now, else None (pending or unknown)."""
+    review = (card or {}).get("facultyReview") or {}
+    return review.get("lastReviewed") if review.get("status") == "reviewed" else None
 
 
 def load_json(path):
@@ -460,7 +487,7 @@ def do_check(args, receipt, pins, get):
         print("NOTE " + line)
     if args.record:
         examined_all = set(wanted) == set(pinned)
-        added = record(args.ledger, report, examined_all, datetime.date.today().isoformat())
+        added = record(args.ledger, report, examined_all, datetime.date.today().isoformat(), records)
         print("recorded %d new drift(s) in %s%s" % (
             added, args.ledger, "" if examined_all else " (partial run: lastChecked unchanged)"),
             file=sys.stderr)

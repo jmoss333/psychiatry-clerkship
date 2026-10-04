@@ -332,6 +332,31 @@ class LedgerTest(unittest.TestCase):
         self.assertEqual(code, 2, out)
         self.assertEqual(self.ledger.read_text(), "{not json")
 
+    def test_the_card_review_state_at_observation_is_recorded(self):  # Codex P1 on #955
+        row = {"agent": "lithium", "status": "review", "fromVersion": 13, "toVersion": 14,
+               "fromDate": "a", "toDate": "b", "changed": ["5.3"], "added": [], "removed": [],
+               "fields": ["flags"], "quotesBroken": []}
+        cards = {"lithium": {"facultyReview": {"status": "reviewed", "lastReviewed": "2026-09-29"}}}
+        drift.record(self.ledger, [row], True, "2026-10-10", cards)
+        self.assertEqual(self.ledger_doc()["drifts"][0]["cardReviewedOn"], "2026-09-29")
+        drift.record(self.ledger, [dict(row, agent="quetiapine")], True, "2026-10-10",
+                     {"quetiapine": {"facultyReview": {"status": "pending"}}})
+        self.assertIsNone(self.ledger_doc()["drifts"][1]["cardReviewedOn"])
+
+    def test_an_interrupted_write_leaves_the_ledger_whole(self):  # Codex P2 on #955
+        moved = FakeDailyMed(spl(4, "2026-02-01", dosing="Rewritten dosing."))
+        self.ws.run("--record", "--ledger", str(self.ledger), get=moved)
+        before = self.ledger.read_text()
+        original = drift.os.replace
+        drift.os.replace = lambda *a: (_ for _ in ()).throw(OSError("disk full"))
+        try:
+            with self.assertRaises(OSError):
+                drift.record(self.ledger, [], True, "2026-10-11")
+        finally:
+            drift.os.replace = original
+        self.assertEqual(self.ledger.read_text(), before)
+        self.assertEqual(sorted(p.name for p in self.ledger.parent.iterdir()), [self.ledger.name])
+
     def test_the_ledger_lives_outside_the_repository_and_the_cli_defaults_to_it(self):
         saved = {k: os.environ.pop(k, None) for k in ("CLERKSHIP_LABEL_DRIFT_LEDGER", "XDG_STATE_HOME")}
         try:
