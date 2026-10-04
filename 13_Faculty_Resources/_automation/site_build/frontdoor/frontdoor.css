@@ -2135,7 +2135,7 @@
 .fd-weekmap__number{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-circle);background:var(--fd-surface);color:var(--fd-text-mid);font-weight:700}
 .fd-weekmap__stop.is-current .fd-weekmap__number{background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent)}
 .fd-weekmap__stop.is-current .fd-weekmap__title{color:var(--fd-teal-deep);font-weight:700}
-.fd-weekmap__title{line-height:1.35;max-width:15ch;overflow-wrap:anywhere}
+.fd-weekmap__title{line-height:1.35;max-width:100%;overflow-wrap:anywhere}
 .fd-library__discover{display:flex;align-items:center;gap:var(--fd-space-5);width:100%;min-height:56px;margin:0 0 var(--fd-space-9);padding:var(--fd-space-5) var(--fd-space-6);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;text-align:left;cursor:pointer}
 .fd-library__discover:hover{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
 .fd-library__discover svg{flex-shrink:0;color:var(--fd-teal-deep)}
