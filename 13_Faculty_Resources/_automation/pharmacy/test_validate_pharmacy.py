@@ -74,6 +74,9 @@ class ValidatePharmacyTest(unittest.TestCase):
         "10 mg/kg", "300 mg/day", "2 mg/min IV push",
         "haloperidol decanoate 50 mg/mL",           # a product strength: no level is named
         "Levels were checked. Draw up 5 mg/mL",     # the cue sits in the PREVIOUS sentence
+        "supplied at a concentration of 5 mg/mL",   # a level cue, vetoed by a product cue
+        "available concentration range is 2-5 mg/mL",
+        "each mL of oral solution contains 20 mg/mL",
     )
     LAB_VALUES = (
         "CRP >100 mg/L and troponin",               # OE clozapine card, 2026-10-02

@@ -1,0 +1,68 @@
+name: Surveillance — Firecrawl Faculty Review
+on:
+  schedule:
+    - cron: "30 6 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: surveillance-inbox
+  cancel-in-progress: false
+jobs:
+  evidence-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+          ref: main
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install --quiet pyyaml jsonschema==4.26.0
+      - name: Prepare run directory
+        run: mkdir -p "$RUNNER_TEMP/firecrawl"
+      - name: Hydrate rolling surveillance inbox
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py hydrate
+          --state "$RUNNER_TEMP/firecrawl/report-branch-state.json"
+      - name: Collect review packets
+        id: collect
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+        run: |
+          code=0
+          python3 13_Faculty_Resources/_automation/surveillance/bin/run_firecrawl_review.py \
+            --out-dir "$RUNNER_TEMP/firecrawl/run" || code=$?
+          echo "result=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" -gt 2 ]; then exit "$code"; fi
+      - name: Publish rolling surveillance inbox
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py publish
+          --state "$RUNNER_TEMP/firecrawl/report-branch-state.json"
+      - name: Upload review evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: firecrawl-faculty-review-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/firecrawl
+            13_Faculty_Resources/_automation/surveillance/history/firecrawl
+          if-no-files-found: warn
+          retention-days: 90
+      - name: Require complete examination
+        env:
+          RESULT: ${{ steps.collect.outputs.result }}
+        run: |
+          case "$RESULT" in
+            0|1) exit 0 ;;
+            *) echo "Firecrawl examination incomplete; inspect review evidence."; exit 1 ;;
+          esac
