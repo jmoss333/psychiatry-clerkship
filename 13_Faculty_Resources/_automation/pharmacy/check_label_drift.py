@@ -29,6 +29,14 @@ reason. This tool closes the gap in two steps.
         observed retires it there. lastChecked advances only after a run over EVERY pinned
         label -- an --only run records its drifts but never refreshes the date.
 
+    --diff ID
+        Print, for one agent whose label moved, the changed sections as a word diff: removed
+        words ~~struck~~, added words **bold**, unchanged runs elided. The OLD side is the
+        version that was pinned, fetched from DailyMed's labeling archive and shown only when
+        its section hashes equal the pin -- the pin authenticates the archive, so the reviewer
+        sees exactly the text the card was checked against. --record stores the same texts in
+        the ledger, so render_review_packet.py can show the diff offline.
+
     --offline
         No network. The pins agree with the committed receipt: every receipt agent is pinned,
         each pin names the receipt's set id and effective date, and no pinned quote carries a
@@ -44,7 +52,9 @@ package label, a reformatted product table — exits 0 with a note to re-pin.
 
 import argparse
 import datetime
+import difflib
 import hashlib
+import io
 import json
 import os
 import re
@@ -54,6 +64,7 @@ import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
+import zipfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -65,6 +76,10 @@ PINS = HERE / "label_pins.json"
 PHARMACY = vp.PHARMACY
 SPL_XML = "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/%s.xml"
 SPL_HISTORY = "https://dailymed.nlm.nih.gov/dailymed/services/v2/spls/%s/history.json"
+SPL_PAGE = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=%s"
+SPL_ARCHIVE = "https://dailymed.nlm.nih.gov/dailymed/getArchivalFile.cfm?archive_id=%s"
+DIFF_CONTEXT_WORDS = 12
+DIFF_RUN_MAX_WORDS = 60
 NS = {"v3": "urn:hl7-org:v3"}
 HASH_CHARS = 16
 
@@ -261,6 +276,143 @@ def pin_entry(spl, quotes, today):
     return entry, problems
 
 
+def archive_ids(page_bytes):
+    """{version: archive_id} from a label page's "View Labeling Archives" table."""
+    text = (page_bytes or b"").decode("utf-8", "replace")
+    start = text.find('id="modal-label-archives"')
+    if start < 0:
+        return {}
+    block = text[start:]
+    end = block.find("</table>")
+    block = block[:end] if end >= 0 else block
+    found = {}
+    for row in re.findall(r"<tr>(.*?)</tr>", block, re.S):
+        cells = re.findall(r"<td[^>]*>(.*?)</td>", row, re.S)
+        link = re.search(r"getArchivalFile\.cfm\?archive_id=(\d+)", row)
+        version = re.search(r"\d+", re.sub(r"<[^>]+>", " ", cells[1])) if len(cells) >= 2 else None
+        if link and version:
+            found[int(version.group())] = link.group(1)
+    return found
+
+
+def archived_spl(set_id, version, get):
+    """One archived version's SPL, or None when DailyMed does not hold that version."""
+    ids = archive_ids(get(SPL_PAGE % set_id))
+    if version not in ids:
+        return None
+    raw = get(SPL_ARCHIVE % ids[version])
+    try:
+        bundle = zipfile.ZipFile(io.BytesIO(raw or b""))
+    except zipfile.BadZipFile:
+        return None
+    for name in bundle.namelist():
+        if not name.lower().endswith(".xml"):
+            continue
+        try:
+            spl = parse_spl(bundle.read(name))
+        except CouldNotCheck:
+            continue
+        if spl["setId"] == set_id and spl["version"] == version:
+            return spl
+    return None
+
+
+def section_texts(pin, old_spl, new_spl, keys):
+    """{key: {"old", "new", "oldStatus"}} for the given sections.
+
+    oldStatus: "verified" (the archived text hashes to the pin), "absent" (the section is new),
+    "unavailable" (DailyMed holds no archive of the pinned version) or "mismatch" (it does, but
+    the text is not what was pinned -- never shown, because it is not what the card was
+    checked against).
+    """
+    texts = {}
+    for key in keys:
+        new = new_spl["sections"].get(key)
+        entry = {"old": None, "new": new["text"] if new else None}
+        if key not in pin["sections"]:
+            entry["oldStatus"] = "absent"
+        elif old_spl is None:
+            entry["oldStatus"] = "unavailable"
+        else:
+            old = old_spl["sections"].get(key)
+            if old is not None and digest(old["text"]) == pin["sections"][key]:
+                entry.update(old=old["text"], oldStatus="verified")
+            else:
+                entry["oldStatus"] = "mismatch"
+        texts[key] = entry
+    return texts
+
+
+def _md(word):
+    return re.sub(r"([*_~|\[\]`])", r"\\\1", word)
+
+
+def _marked(words, mark, limit):
+    """One removed or added run, delimiters always closed; a long run is cut INSIDE them."""
+    text = " ".join(_md(w) for w in words[:limit])
+    if len(words) > limit:
+        return "%s%s …%s (+%d words)" % (mark, text, mark, len(words) - limit)
+    return "%s%s%s" % (mark, text, mark)
+
+
+def word_diff(old, new, context=DIFF_CONTEXT_WORDS, limit=DIFF_RUN_MAX_WORDS):
+    """Markdown hunks: ~~removed~~ and **added** words with `context` words either side.
+
+    Each removed or added run is capped at `limit` words on its own (Codex P2 on #961): cutting
+    the formatted hunk could drop a closing ~~ or **, or the whole added half of a replacement.
+    """
+    a, b = (old or "").split(), (new or "").split()
+    hunks = []
+    for group in difflib.SequenceMatcher(a=a, b=b, autojunk=False).get_grouped_opcodes(context):
+        parts = []
+        for tag, i1, i2, j1, j2 in group:
+            if tag == "equal":
+                parts.append(" ".join(_md(w) for w in a[i1:i2]))
+                continue
+            if i2 > i1:
+                parts.append(_marked(a[i1:i2], "~~", limit))
+            if j2 > j1:
+                parts.append(_marked(b[j1:j2], "**", limit))
+        hunks.append(" ".join(p for p in parts if p))
+    return hunks
+
+
+def render_texts(texts):
+    """Markdown lines for stored section texts (shared by --diff and the review packet)."""
+    lines = []
+    for key in sorted(texts, key=_section_order):
+        entry = texts[key]
+        lines.append("**§%s**%s" % (key, {
+            "verified": "", "absent": " (new section)",
+            "unavailable": " (old text not archived by DailyMed: showing the new text)",
+            "mismatch": " (archived text does not match the pin: showing the new text)",
+        }[entry["oldStatus"]]))
+        if entry["oldStatus"] == "verified":
+            hunks = word_diff(entry["old"], entry["new"])
+            lines += ["- %s" % h for h in hunks] or ["- (whitespace only)"]
+        elif entry["new"] is None:
+            lines.append("- section removed")
+        else:
+            lines += ["- %s" % h for h in word_diff("", entry["new"])]
+        lines.append("")
+    return lines
+
+
+def _section_order(key):
+    if key == BOXED:
+        return (0, ())
+    if key[0].isdigit():
+        return (1, tuple(int(p) for p in key.split("#")[0].split(".") if p.isdigit()))
+    return (2, (key,))
+
+
+def drifts_since_review(ledger, record):
+    """Ledger drifts for this card observed after its last faculty review (all, if never)."""
+    signed = ((record or {}).get("facultyReview") or {}).get("lastReviewed") or ""
+    return [d for d in (ledger or {}).get("drifts", [])
+            if d["agent"] == (record or {}).get("id") and signed < d["observedOn"]]
+
+
 def compare(pin, spl, record=None):
     """What moved between a pin and a newer SPL of the same set id."""
     before, after = pin["sections"], spl["sections"]
@@ -341,6 +493,7 @@ def record(ledger_file, report, examined_all, today, records=None):
             "sections": row["changed"] + row["added"] + row["removed"],
             "fields": row["fields"], "quotesBroken": len(row["quotesBroken"]),
             "cardReviewedOn": _reviewed_on((records or {}).get(row["agent"])),
+            "texts": row.get("texts", {}),
         })
         added += 1
     if examined_all:
@@ -485,6 +638,13 @@ def do_check(args, receipt, pins, get):
         spl = parse_spl(get(SPL_XML % pin["setId"]) or b"")
         result = compare(pin, spl, records.get(agent))
         result.update({"agent": agent, "status": "review" if result["needsReview"] else "moved"})
+        if result["needsReview"]:
+            try:
+                old_spl = archived_spl(pin["setId"], pin["version"], get)
+            except CouldNotCheck:
+                old_spl = None  # the diff is a convenience; the drift itself is already proven
+            result["texts"] = section_texts(pin, old_spl, spl,
+                                            result["changed"] + result["added"] + result["removed"])
         report.append(result)
         if result["needsReview"]:
             review.append(agent)
@@ -498,7 +658,8 @@ def do_check(args, receipt, pins, get):
             added, args.ledger, "" if examined_all else " (partial run: lastChecked unchanged)"),
             file=sys.stderr)
     if args.json:
-        print(json.dumps({"examined": len(wanted), "needsReview": review, "agents": report}, indent=1))
+        slim = [{k: v for k, v in row.items() if k != "texts"} for row in report]
+        print(json.dumps({"examined": len(wanted), "needsReview": review, "agents": slim}, indent=1))
     else:
         for row in report:
             if row["status"] == "current":
@@ -522,11 +683,40 @@ def do_check(args, receipt, pins, get):
     return 1 if review or findings else 0
 
 
+def do_diff(args, pins, get):
+    agent = args.diff
+    pin = pins.get("agents", {}).get(agent)
+    if pin is None:
+        raise CouldNotCheck("not pinned: %s" % agent)
+    history = get(SPL_HISTORY % pin["setId"])
+    if history is None:
+        raise CouldNotCheck("%s: DailyMed has no history for set id %s" % (agent, pin["setId"]))
+    if latest_version(history, agent) == pin["version"]:
+        print("%s: label current (v%d, %s); nothing has changed since the pin"
+              % (agent, pin["version"], pin["effectiveDate"]))
+        return 0
+    spl = parse_spl(get(SPL_XML % pin["setId"]) or b"")
+    result = compare(pin, spl, records_by_id().get(agent))
+    keys = result["changed"] + result["added"] + result["removed"]
+    print("## %s: label v%d (%s) -> v%d (%s)" % (agent, result["fromVersion"], result["fromDate"],
+                                                 result["toVersion"], result["toDate"]))
+    if not keys:
+        print("\nNo content section changed; re-pin with --pin --only %s" % agent)
+        return 0
+    if result["fields"]:
+        print("\nCard fields to re-review: %s" % ", ".join(result["fields"]))
+    print("")
+    print("\n".join(render_texts(section_texts(pin, archived_spl(pin["setId"], pin["version"], get),
+                                               spl, keys))))
+    return 1 if result["needsReview"] else 0
+
+
 def main(argv=None, get=fetch):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--pin", action="store_true", help="pin the current label of each agent")
     mode.add_argument("--offline", action="store_true", help="check pins against the receipt, no network")
+    mode.add_argument("--diff", metavar="ID", help="word diff of one agent's changed sections")
     parser.add_argument("--only", nargs="*", help="agent ids (default: all)")
     parser.add_argument("--quotes", type=Path, help="--pin: JSON {agent: [{section, text}]} to pin")
     parser.add_argument("--json", action="store_true", help="machine-readable report")
@@ -542,6 +732,8 @@ def main(argv=None, get=fetch):
         pins = load_json(args.pins) if args.pins.exists() else {"schemaVersion": 1, "agents": {}}
         if args.pin:
             return do_pin(args, receipt, pins, get)
+        if args.diff:
+            return do_diff(args, pins, get)
         if args.offline:
             findings, missing = offline_check(receipt, pins)
             for line in findings:
