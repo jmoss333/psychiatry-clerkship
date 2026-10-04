@@ -62,7 +62,7 @@ for(const size of [{width:390,height:844},{width:1280,height:800}]){
       await expect(g.getByRole('heading',{name:'Your tomorrow card',exact:true})).toBeFocused();
       for(const label of ['Try','Notice','Ask your supervisor'])await expect(g.locator('.tomorrow')).toContainText(label);
       await noOverflow(page);
-      if(size.width===390&&task==='note'&&minutes===15)await page.screenshot({path:'/private/tmp/pft-phone-card.png',fullPage:true});
+      if(size.width===390&&task==='note'&&minutes===15)await page.screenshot({path:info.outputPath('pft-phone-card.png'),fullPage:true});
       await page.emulateMedia({media:'print'});
       await expect(g.locator('.tomorrow')).toBeVisible();
       await expect(g.getByRole('button',{name:'Finish preparation',exact:true})).toBeHidden();
