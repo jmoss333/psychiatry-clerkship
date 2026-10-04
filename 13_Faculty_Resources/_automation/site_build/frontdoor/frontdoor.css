@@ -2168,7 +2168,7 @@
   .fd-path .fd-detail>.fd-btn{grid-column:1;justify-self:start;margin-top:var(--fd-space-5)}
 }
 @media (max-width:640px){
-  .fd-today__main>.fd-quicktools--pills{order:0;margin-top:var(--fd-space-6)}
+  .fd-today__main>.fd-quicktools--pills{order:-1;margin-top:0}
   .fd-weekmap__stops{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}
   .fd-weekmap__stop{min-width:0}
   .fd-weekmap__head{align-items:baseline}

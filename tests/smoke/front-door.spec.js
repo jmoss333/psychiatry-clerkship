@@ -609,7 +609,7 @@ test('adaptive mobile dock: standard audience routes, dialogs, reader forwarding
   await page.goto('/?tab=today');
   // The empty device stores leave the current week's next item as Today's primary.
   let dock = await expectAdaptiveDock(page, 'Today', 'Path', { label: 'Continue', sourceId: 'primary-week' });
-  await dock.locator('[data-fd-tab="path"]:visible').click();
+  await dock.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page.locator('.fd-path')).toBeVisible();
   dock = await expectAdaptiveDock(page, 'Today', 'Path');
   await expectDockDialogs(page, dock);
@@ -878,7 +878,7 @@ test('Path projects each audience duration without mobile overflow', async ({ pa
   const setupOverflow = await page.locator('.fd-setup').evaluate((el) => el.scrollWidth <= el.clientWidth);
   expect(setupOverflow).toBe(true);
   await page.locator('[data-fd-week="1"]').click();
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page.getByRole('heading', { name: site.pathHeading })).toBeVisible();
   await expect(page.locator('.fd-timeline__row')).toHaveCount(site.weekCount);
   expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
@@ -892,7 +892,7 @@ test('Path route keeps selection, current week, keyboard focus, and mobile rail 
   const site = audience(testInfo);
   await seedApp(page, testInfo);
   await page.goto('/');
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
 
   const tabs = page.getByRole('tab');
   await expect(tabs).toHaveCount(site.weekCount);
@@ -935,7 +935,7 @@ test('Path stops sit on the road, share one label baseline, and never overflow',
   for (const width of [1280, 1024, 700]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    await page.locator('[data-fd-tab="path"]:visible').click();
+    await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
     // The Path fades up; measure only once every animation in it has finished (mid-fade
     // boxes read fractional sizes).
     await page.locator('.fd-path').evaluate((el) =>
@@ -972,7 +972,7 @@ test('Path stops sit on the road, share one label baseline, and never overflow',
 test('the current-week flag never covers another stop, even when that week is complete', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   const current = page.locator('.fd-timeline__row[aria-current="step"]');
   await current.click();
   for (let k = 0; k < 30; k++) {
@@ -1000,34 +1000,34 @@ test('the current-week flag never covers another stop, even when that week is co
   await expectHealthy(page);
 });
 
-// A long title must clip inside the 320px pane instead of widening it.
+// A long title must wrap inside the 320px pane instead of widening it.
 // The synthetic title below keeps that check independent of font metrics.
-test('Path detail titles truncate rather than set a horizontal floor at 320px', async ({ page }, testInfo) => {
+test('Path detail titles wrap without setting a horizontal floor at 320px', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 844 });
   await seedApp(page, testInfo);
   await page.goto('/');
   await page.locator('[data-fd-change-week]').click();
   await page.locator('[data-fd-week="1"]').click();
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page.locator('.fd-path')).toBeVisible();
 
   await page.evaluate(() => document.fonts.ready);
   expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
 
   // Source Serif can fit the current title. Use a synthetic long title so this
-  // checks clipping across fonts and audiences without weakening the overflow guard.
+  // checks wrapping across fonts and audiences without weakening the overflow guard.
   const longTitle = 'Synthetic long Path detail title '.repeat(8);
   await page.locator('.fd-row__title').first().evaluate((el, text) => { el.textContent = text; }, longTitle);
   await expect(page.locator('.fd-row__title').first()).toHaveText(longTitle);
   expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
 
-  // The row title must be the element that gives: it fills its column and clips, rather than
-  // widening the pane. Without align-self:stretch its box equals its full text width, so
-  // scrollWidth === clientWidth here and the overflow is pushed up to .fd-path instead.
+  // The whole title stays readable across multiple lines without widening its column.
   const title = await page.locator('.fd-row__title').first().evaluate((el) => ({
     clientWidth: el.clientWidth, scrollWidth: el.scrollWidth,
+    height: el.getBoundingClientRect().height, lineHeight: parseFloat(getComputedStyle(el).lineHeight),
   }));
-  expect(title.scrollWidth).toBeGreaterThan(title.clientWidth);
+  expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
+  expect(title.height).toBeGreaterThan(title.lineHeight * 2);
   await expectHealthy(page);
 });
 
@@ -1047,7 +1047,7 @@ test('tab focus order is stable and Path preview does not change rotation until 
   await page.keyboard.press('Tab');
   await expect(page.locator('[data-fd-tab="today"]:visible')).toBeFocused();
 
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page.locator('.fd-path')).toBeVisible();
   await page.locator('[data-fd-view-week="3"]').click();
   await expect(page.locator('.fd-detail .fd-eyebrow')).toHaveText('Week 3');
@@ -2661,7 +2661,7 @@ test('One Thing First D2: the Today shortcuts are unchanged with a primary prese
   await page.goto('/');
   await otfExpectOnePrimary(page);
   await page.keyboard.press('2');
-  await expect(page.locator('[data-fd-tab="path"]:visible')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible')).toHaveAttribute('aria-current', 'page');
   await page.keyboard.press('1');
   await expect(page.locator('[data-fd-tab="today"]:visible')).toHaveAttribute('aria-current', 'page');
   await expect(page.locator(OTF_PRIMARY)).toHaveCount(1);
@@ -3770,7 +3770,11 @@ test.describe('Essentials Phase 2', () => {
         expect(first.y + first.height, 'the first reading is whole on the first phone screen, above the dock')
           .toBeLessThanOrEqual(dock.y);
       }
-      if (width >= 1000) expect(tools.x).toBeGreaterThanOrEqual(readings.x + readings.width);
+      if (width >= 1000) {
+        const sections = await page.locator('.fd-kit__index').boundingBox();
+        expect(sections.x + sections.width).toBeLessThanOrEqual(readings.x);
+        expect(tools.y).toBeGreaterThanOrEqual(readings.y + readings.height);
+      }
       for (const control of await page.locator('.fd-kit__reading, .fd-kit__tool-tab, .fd-kit__tool-preview [data-fd-open], .fd-kit__group > summary, [data-fd-kit-section]').all()) {
         await control.focus(); await expect(control).toBeFocused();
         const box = await control.boundingBox();
@@ -4103,7 +4107,7 @@ test('Path: a supervisor feedback note saves privately, survives reload, and scr
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   await page.goto('/');
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   const open = page.locator('[data-fd-feedback-open]');
   if (!resident) {
     await expect(page.locator('.fd-detail__practice')).toBeVisible();
@@ -4147,7 +4151,7 @@ test('Path: a supervisor feedback note saves privately, survives reload, and scr
   await expect(page.locator('.fd-feedback__note')).toHaveCount(0);
   await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
   await page.reload();
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await page.locator('[data-fd-view-week="1"]').click();
   await expect(page.locator('.fd-feedback__note')).toHaveCount(2);
 
