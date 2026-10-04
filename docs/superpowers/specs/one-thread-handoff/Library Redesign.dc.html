@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>@font-face{font-family:'Source Serif 4';font-style:normal;font-weight:600 700;font-display:swap;src:url('13_Faculty_Resources/_automation/site_build/fonts/source-serif-4-latin-opsz-wght600-700.woff2') format('woff2')}body{margin:0;background:#ebe6de;color:#3b332c;font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}a{color:#2c6356}a:hover{color:#3b332c}</style></helmet>
+<section id="top" data-screen-label="00 Cover" style="padding:72px 72px 56px;border-bottom:1px solid rgba(59,51,44,.12);background:#f6f3ee">
+  <div style="max-width:1080px">
+    <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#725b35">Psychiatry Clerkship Library · design proposal · 3 October 2026</p>
+    <h1 style="margin:0 0 16px;font-family:'Source Serif 4',Georgia,serif;font-size:56px;line-height:1.05;letter-spacing:-.02em;font-weight:700">One thread: a calmer Library for students and residents</h1>
+    <p style="margin:0 0 28px;font-size:21px;line-height:1.5;color:#64574b;max-width:62ch;text-wrap:pretty">Four destinations that look the same on every device, one primary action per screen, three status colours — and every page ends where it leads at the bedside.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin:0 0 32px">
+      <span style="padding:7px 14px;border-radius:999px;background:#3b332c;color:#fff;font-size:13px;font-weight:700">Decisions answered 4 Oct</span>
+      <span style="padding:7px 14px;border-radius:999px;border:1.5px solid #c8baa7;font-size:13px;font-weight:600">No application code, branches, settings or deploys touched</span>
+      <span style="padding:7px 14px;border-radius:999px;border:1.5px solid #c8baa7;font-size:13px;font-weight:600">Clinical text shown verbatim</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px 40px;font-size:14px;line-height:1.6;color:#64574b">
+      <div><h2 style="margin:0 0 6px;font-size:13px;font-weight:700;color:#3b332c">What I read</h2><p style="margin:0">CLAUDE.md, the Front Door on main as of today (fd_shell, fd_today, fd_library, frontdoor.css, clinical-warm.css, spa_index governance renderers), merged #950, open #941, #949 and #951, the 2 October Prepare-for-tomorrow spec, curriculum.json, pairings.json, longitudinal_case.json and the attestation ledger.</p></div>
+      <div><h2 style="margin:0 0 6px;font-size:13px;font-weight:700;color:#3b332c">What I saw</h2><p style="margin:0">The committed CI visual baselines (Ubuntu/Chromium, 1280×800 and 390×844) and the 26 September phone captures. Both live sites were unreachable from this environment, and the baselines predate main's 1 October design pass — so production may match neither. Each finding below says which source it rests on.</p></div>
+    </div>
+    <nav aria-label="Contents" style="margin-top:36px;display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;font-weight:600">
+      <a href="#audit">1 Audit</a><a href="#overlap">2 Overlapping work</a><a href="#direction">3 Direction</a><a href="#today">4 Today</a><a href="#library">5 Library</a><a href="#case">6 Case Journeys</a><a href="#journey">6b Path, Reader, Search</a><a href="#beforeafter">7 Before / after</a><a href="#flows">8 Navigation, search &amp; states</a><a href="#system">9 System</a><a href="#governance">10 Governance</a><a href="#rollout">11 Rollout</a><a href="#decisions">12 Decisions</a>
+    </nav>
+  </div>
+</section>
+
+<section id="audit" data-screen-label="01 Audit" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12)">
+  <div style="max-width:1400px">
+    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">1 · Audit</p>
+    <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">Five sources of cognitive load</h2>
+    <p style="margin:0 0 40px;max-width:72ch;font-size:16px;line-height:1.6;color:#64574b">The code already knows what matters — Today ranks exactly one primary action, governance drift renders as pending everywhere, the safety kit is one panel. The layout around that logic is what overloads learners.</p>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:28px 48px;align-items:start;padding:28px 0;border-top:1px solid rgba(59,51,44,.15)">
+      <div><p style="margin:0 0 4px;font-family:'Source Serif 4',Georgia,serif;font-size:30px;color:#2c6356">1</p><h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:24px;line-height:1.25">Navigation lives in four places and changes shape by device</h3>
+        <p style="margin:0 0 10px;font-size:15px;line-height:1.65;max-width:68ch">On a phone the header wraps to two rows of six controls; below the page sits a five-slot dock whose centre slot becomes whatever Today's primary action is ("Continue", "Start review", "Resume question bank", "Open →") or, by default, "Essential". The dock's Library item is a menu that repeats the Library page's own Essentials/Everything switch plus Search, and a floating "＋ Ask a question" button overlaps content. Care is a tab on desktop and a header button on phone.</p>
+        <p style="margin:0 0 12px;font-size:13px;color:#76695d">Source: fd_shell.js on main (fdHeader, fdDockModel, fdDockBrowseItem); 390×844 baselines.</p>
+        <p style="margin:0;padding:10px 14px;border-left:3px solid #3a7d6e;background:#edf4f2;font-size:14px;line-height:1.55"><strong>Fix:</strong> four fixed destinations — Today, Path, Library, Care — in the same order on every device; Search, Ask, Safety and Settings in one bar.</p></div>
+      <img src="tests/smoke/baseline/front-door-today-mobile.png" alt="Current phone Today: two-row header, banner, activity strip, tool pills, Continue card, five-slot dock" style="width:260px;justify-self:end;border-radius:14px;border:1px solid rgba(59,51,44,.2);box-shadow:0 8px 24px rgba(59,51,44,.12)">
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:28px 48px;align-items:start;padding:28px 0;border-top:1px solid rgba(59,51,44,.15)">
+      <div><p style="margin:0 0 4px;font-family:'Source Serif 4',Georgia,serif;font-size:30px;color:#2c6356">2</p><h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:24px;line-height:1.25">Today stacks ten modules around the one thing it wants you to do</h3>
+        <p style="margin:0 0 10px;font-size:15px;line-height:1.65;max-width:68ch">Active-testing banner, a seven-day activity strip, quick-tool pills, Continue, an "Also today" stack (block planner, preparation chooser, due reviews, resume, capture), an exam nudge, the week list, a daily pick, a learning-activity card and the safety rail. On the 26 September phone capture the resident's primary card starts about 650px down an 844px screen, below the banner, strip, a Care row and five tool pills. The activity strip ("Active 1 of the last 7 days") is a streak in all but name.</p>
+        <p style="margin:0 0 12px;font-size:13px;color:#76695d">Source: fd_today.js + spa_index.html "Also today" assembly on main; audit/shots/res-today-390x844-due.png.</p>
+        <p style="margin:0;padding:10px 14px;border-left:3px solid #3a7d6e;background:#edf4f2;font-size:14px;line-height:1.55"><strong>Fix:</strong> the existing One-Thing-First winner renders first as a "Now" card; everything else becomes one quiet list; the banner shrinks to one line at the top; the strip moves to the learning record.</p></div>
+      <img src="audit/shots/res-today-390x844-due.png" alt="Resident phone Today with primary card near the bottom of the first screen" style="width:260px;justify-self:end;border-radius:14px;border:1px solid rgba(59,51,44,.2);box-shadow:0 8px 24px rgba(59,51,44,.12)">
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:28px 48px;align-items:start;padding:28px 0;border-top:1px solid rgba(59,51,44,.15)">
+      <div><p style="margin:0 0 4px;font-family:'Source Serif 4',Georgia,serif;font-size:30px;color:#2c6356">3</p><h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:24px;line-height:1.25">Two catalogues, three vocabularies</h3>
+        <p style="margin:0 0 10px;font-size:15px;line-height:1.65;max-width:68ch">Essentials ("Core readings", ten index filters, serif summaries, a separate tools shelf) and Everything ("Everything, one screen", 83 dot-links in five columns) file the same pages under different headings, and both differ from the week themes and the case links. "Press / to filter" opens global search rather than filtering the page. #950 unified the destination; the two views still behave like two products.</p>
+        <p style="margin:0 0 12px;font-size:13px;color:#76695d">Source: fd_library.js on main; essentials-ms3-kit/full baselines.</p>
+        <p style="margin:0;padding:10px 14px;border-left:3px solid #3a7d6e;background:#edf4f2;font-size:14px;line-height:1.55"><strong>Fix:</strong> one page, one row component, one in-page filter and one section index for both views — and every row says where it is used.</p></div>
+      <div style="display:grid;gap:10px;justify-self:end;width:420px"><img src="tests/smoke/baseline/essentials-ms3-kit-desktop.png" alt="Current Essentials view" style="width:100%;border-radius:8px;border:1px solid rgba(59,51,44,.2)"><img src="tests/smoke/baseline/essentials-ms3-full-desktop.png" alt="Current Everything view" style="width:100%;border-radius:8px;border:1px solid rgba(59,51,44,.2)"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:28px 48px;align-items:start;padding:28px 0;border-top:1px solid rgba(59,51,44,.15)">
+      <div><p style="margin:0 0 4px;font-family:'Source Serif 4',Georgia,serif;font-size:30px;color:#2c6356">4</p><h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:24px;line-height:1.25">Everything carries the same weight</h3>
+        <p style="margin:0 0 10px;font-size:15px;line-height:1.65;max-width:68ch">Uppercase micro-labels head almost every block. Two greens mean different things — done (#357160) and action (#3a7d6e). Terracotta, the brand and until recently the primary fill, sits next to safety red (#951 now moves tools off it). A reading opens with five pieces of chrome before its first sentence: the attested chip, a "Reviewed by" pill saying the same thing, a WARD banner, a practice box and an eleven-item table of contents.</p>
+        <p style="margin:0 0 12px;font-size:13px;color:#76695d">Source: frontdoor.css + clinical-warm.css on main; front-door-reader-desktop baseline.</p>
+        <p style="margin:0;padding:10px 14px;border-left:3px solid #3a7d6e;background:#edf4f2;font-size:14px;line-height:1.55"><strong>Fix:</strong> sentence-case labels, three status hues only, one status line per page, one raised surface per screen.</p></div>
+      <img src="tests/smoke/baseline/front-door-reader-desktop.png" alt="Current Reader: chip, receipt, WARD banner, practice box and table of contents before the text" style="width:420px;border-radius:8px;border:1px solid rgba(59,51,44,.2)">
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:28px 48px;align-items:start;padding:28px 0;border-top:1px solid rgba(59,51,44,.15);border-bottom:1px solid rgba(59,51,44,.15)">
+      <div><p style="margin:0 0 4px;font-family:'Source Serif 4',Georgia,serif;font-size:30px;color:#2c6356">5</p><h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:24px;line-height:1.25">Workflows stop at the edge of each tool</h3>
+        <p style="margin:0 0 10px;font-size:15px;line-height:1.65;max-width:68ch">Case Journeys already follows one fictional patient from interview to differential, treatment conversation, family meeting, safety and handoff — with links out to the matching pages. Nothing in Today, Path or the Library points back into it, and each surface phrases "what next" differently. Four resume mechanisms (Continue, the question-bank capsule, last read, a live block) arrive as four card styles.</p>
+        <p style="margin:0 0 12px;font-size:13px;color:#76695d">Source: one-patient-six-weeks.html + longitudinal_case.json; fd_due.js, fd_block.js; curriculum remediation plan (24 Sept) proposing the case on all six weeks.</p>
+        <p style="margin:0;padding:10px 14px;border-left:3px solid #3a7d6e;background:#edf4f2;font-size:14px;line-height:1.55"><strong>Fix:</strong> "Next in this thread" on every page, this week's case step on Today, and a timeline inside the case.</p></div>
+      <img src="audit/shots/ms3-today-390x844-resume.png" alt="Student phone Today with a resume card" style="width:260px;justify-self:end;border-radius:14px;border:1px solid rgba(59,51,44,.2);box-shadow:0 8px 24px rgba(59,51,44,.12)">
+    </div>
+
+    <div style="margin-top:32px;max-width:1080px;padding:20px 24px;border-radius:12px;background:#f6f3ee;border:1px solid rgba(59,51,44,.12)">
+      <h3 style="margin:0 0 8px;font-size:15px;font-weight:700">Keep — already working</h3>
+      <p style="margin:0;font-size:14px;line-height:1.65;color:#64574b">The One-Thing-First priority order (resume › block › read › due › week › ahead › setup) · drift rendering as pending on every surface · the always-visible Safety button and single-panel kit · the week's title as Today's heading · content-height tool frames · the expanded "What am I preparing for?" chooser and its session-only choice · the readings-first Essentials · transient Library selection.</p>
+    </div>
+  </div>
+</section>
+
+<section id="overlap" data-screen-label="02 Overlap" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12);background:#f6f3ee">
+  <div style="max-width:1080px">
+    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">2 · Overlapping work</p>
+    <h2 style="margin:0 0 24px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">Build on what is merged, sequence behind what is open</h2>
+    <div style="display:grid;grid-template-columns:120px minmax(0,1fr) minmax(0,1fr);gap:0 24px;font-size:14px;line-height:1.55">
+      <div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.2);font-weight:700">Work</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.2);font-weight:700">What it changes</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.2);font-weight:700">How this proposal treats it</div>
+      <div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)"><strong>#950</strong><br><span style="color:#2c6356;font-weight:600">merged</span></div><div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)">One Library destination with an Essentials/Everything switch (fd_library, fd_shell, fd_wire, frontdoor.css, spa_index, CLASS-INVENTORY).</div><div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)">Foundation. Keep the single destination and the switch; drop the duplicate switch in the phone dock's Library menu.</div>
+      <div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)"><strong>#949</strong><br><span style="color:#725b35;font-weight:600">open</span></div><div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)">Today row titles, week-scoped completion (fd_state, fd_today), and a header declaring frontdoor.css plus the class contract the source of truth — the hi-fi prototype becomes historical.</div><div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)">Phase 1 rebases on it and makes no parallel Today edits. These concepts are a reference for the stylesheet, not a new normative prototype.</div>
+      <div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)"><strong>#951</strong><br><span style="color:#725b35;font-weight:600">open</span></div><div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)">"Red means safety in the tools": the tools' --primary family moves from terracotta to teal in clinical-warm.css and common.py; --danger untouched.</div><div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)">Adopt as written. It is the tool half of this colour system; land it before Phase 3.</div>
+      <div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)"><strong>#941</strong><br><span style="color:#725b35;font-weight:600">open</span></div><div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)">Search inside pharmacy.html — part of the medication workstream.</div><div style="padding:14px 0;border-bottom:1px solid rgba(59,51,44,.12)">Out of scope. The Library links to medication pages as it does today; no medication file, draft or approval workflow is touched.</div>
+      <div style="padding:14px 0"><strong>Spec</strong><br><span style="color:#76695d;font-weight:600">2 Oct, approved</span></div><div style="padding:14px 0">Prepare for tomorrow: a new MS3 tool with an invitation on Today and an entry in the Library.</div><div style="padding:14px 0">Its Today invitation lives inside "What am I preparing for?" instead of adding a card; its Library entry is an ordinary row.</div>
+    </div>
+  </div>
+</section>
+
+<section id="direction" data-screen-label="03 Direction" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12)">
+  <div style="max-width:1240px">
+    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">3 · Direction</p>
+    <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">One thread</h2>
+    <p style="margin:0 0 36px;max-width:70ch;font-size:17px;line-height:1.6;color:#64574b">Keep the information architecture learners already know, remove the duplicates, and add connective tissue made only from existing content. A single visual motif — a thin line of week and step marks — shows position in the rotation on Today, the route on Path, and the patient's course inside Case Journeys.</p>
+    <ol style="list-style:none;margin:0 0 44px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px">
+      <li style="padding:20px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><p style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-size:26px;color:#2c6356">1</p><h3 style="margin:0 0 6px;font-size:16px">One primary action</h3><p style="margin:0;font-size:14px;line-height:1.55;color:#64574b">Filled teal, first in reading order, on every screen. Everything else is a row or a link.</p></li>
+      <li style="padding:20px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><p style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-size:26px;color:#2c6356">2</p><h3 style="margin:0 0 6px;font-size:16px">Four destinations</h3><p style="margin:0;font-size:14px;line-height:1.55;color:#64574b">Today · Path · Library · Care, same order everywhere. Reading and tools are a focused mode that keeps your origin tab.</p></li>
+      <li style="padding:20px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><p style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-size:26px;color:#2c6356">3</p><h3 style="margin:0 0 6px;font-size:16px">Three status colours</h3><p style="margin:0;font-size:14px;line-height:1.55;color:#64574b"><span style="color:#2c6356;font-weight:700">Teal</span> action and progress · <span style="color:#725b35;font-weight:700">olive</span> review · <span style="color:#8f372a;font-weight:700">red</span> safety only.</p></li>
+      <li style="padding:20px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><p style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-size:26px;color:#2c6356">4</p><h3 style="margin:0 0 6px;font-size:16px">Every page ends somewhere</h3><p style="margin:0;font-size:14px;line-height:1.55;color:#64574b">"Next in this thread": the case week, the tool that practises it, the conversation it prepares.</p></li>
+      <li style="padding:20px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><p style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-size:26px;color:#2c6356">5</p><h3 style="margin:0 0 6px;font-size:16px">Quiet, never silent</h3><p style="margin:0;font-size:14px;line-height:1.55;color:#64574b">Secondary detail folds away. Safety, unfinished work and review status never do.</p></li>
+    </ol>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:32px 48px">
+      <div><h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:22px">Tradeoffs we accept</h3>
+        <ul style="margin:0;padding-left:20px;display:grid;gap:8px;font-size:14px;line-height:1.55;color:#64574b">
+          <li>The phone dock no longer mirrors the primary action, so on a long page it is a scroll up rather than always in reach. The Now card is first, and every reading ends with its own "Mark done" and next step.</li>
+          <li>The activity strip leaves Today. Learners who liked it find it in Learning activity &amp; review.</li>
+          <li>The week control leaves the global header; changing week takes one more tap from the Library.</li>
+          <li>Everything trades "one screen" scanning for a filter and section index; rows stay compact there.</li>
+          <li>Case Journeys' redesign edits attested tool HTML, so it waits for re-attestation (Phase 3).</li>
+        </ul></div>
+      <div><h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:22px">Directions considered</h3>
+        <ul style="margin:0;padding-left:20px;display:grid;gap:8px;font-size:14px;line-height:1.55;color:#64574b">
+          <li><strong style="color:#3b332c">Polish in place</strong> — tokens and spacing only. Cheapest, but leaves the duplicated navigation and the ten-module Today. Cosmetic.</li>
+          <li><strong style="color:#3b332c">Single feed</strong> — merge Today and Library into one personalised stream. Fewer tabs, but it mixes doing with finding and makes the catalogue unpredictable.</li>
+          <li><strong style="color:#3b332c">One thread</strong> (chosen) — same IA and data, duplicates removed, connections drawn from content that already exists.</li>
+        </ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="today" data-screen-label="04 Today" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12)">
+  <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">4 · Concept</p>
+  <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">Today — what should I do now?</h2>
+  <p style="margin:0 0 28px;max-width:80ch;font-size:15px;line-height:1.6;color:#64574b">MS3, week 2, Thursday. The learner left a 10-minute block half done, has two reviews due and two saved questions. Review states shown are fixtures, never the live ledger. Dashed blue line = first screen (1280×800 / 390×844).</p>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Desktop · light</figcaption><div style="position:relative;width:1280px;border-radius:12px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Today" theme="light" device="desktop" scenario="block" hint-size="1280px,1560px"></dc-import><div aria-hidden="true" style="position:absolute;left:0;right:0;top:800px;border-top:2px dashed #2f6fd0"></div></div></figure>
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Phone · light</figcaption><div style="position:relative;width:390px;border-radius:28px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Today" theme="light" device="mobile" scenario="block" hint-size="390px,2300px"></dc-import><div aria-hidden="true" style="position:absolute;left:0;right:0;top:844px;border-top:2px dashed #2f6fd0"></div></div></figure>
+    <ol style="flex:1 1 300px;max-width:380px;margin:0;padding:0 0 0 20px;display:grid;gap:12px;font-size:14px;line-height:1.55;color:#64574b">
+      <li><strong style="color:#3b332c">Place.</strong> Week and day, the week's title, and a six-week thread that replaces the header week pill. Each mark opens that week on Path.</li>
+      <li><strong style="color:#3b332c">Now card.</strong> Whatever the existing picker chooses — here the unfinished block, because block outranks due reviews. One teal button.</li>
+      <li><strong style="color:#3b332c">Also today.</strong> Due reviews (olive), the week, saved questions — rows, not cards.</li>
+      <li><strong style="color:#3b332c">Preparation chooser</strong> kept open with its existing copy and session-only choice; Prepare for tomorrow joins it here.</li>
+      <li><strong style="color:#3b332c">This week.</strong> One row style; "Pending review" shown verbatim where it applies.</li>
+      <li><strong style="color:#3b332c">On the unit this week.</strong> The matching Case Journeys step and its "Carry it to rounds" line — the bridge from reading to the patient.</li>
+      <li><strong style="color:#3b332c">Rail.</strong> Safety kit first, then quick tools and the learning record. On phones Safety stays in the top bar. The active-testing notice is one line at the top (D1).</li>
+    </ol>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;margin-top:48px">
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Desktop · dark</figcaption><div style="position:relative;width:1280px;border-radius:12px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Today" theme="dark" device="desktop" scenario="block" hint-size="1280px,1560px"></dc-import></div></figure>
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Phone · dark</figcaption><div style="position:relative;width:390px;border-radius:28px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Today" theme="dark" device="mobile" scenario="block" hint-size="390px,2300px"></dc-import></div></figure>
+  </div>
+</section>
+
+<section id="library" data-screen-label="05 Library" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12)">
+  <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">5 · Concept</p>
+  <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">Library — where can I find this?</h2>
+  <p style="margin:0 0 28px;max-width:80ch;font-size:15px;line-height:1.6;color:#64574b">One page, two views. Summaries, hints and counts come from today's MS3 build; the pending badge and the review banner are fixtures to show the honest state.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Desktop · Essentials · light</figcaption><div style="position:relative;width:1280px;border-radius:12px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Library" theme="light" device="desktop" view="essentials" state="default" hint-size="1280px,1500px"></dc-import><div aria-hidden="true" style="position:absolute;left:0;right:0;top:800px;border-top:2px dashed #2f6fd0"></div></div></figure>
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Phone · Essentials · light</figcaption><div style="position:relative;width:390px;border-radius:28px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Library" theme="light" device="mobile" view="essentials" state="default" hint-size="390px,1900px"></dc-import><div aria-hidden="true" style="position:absolute;left:0;right:0;top:844px;border-top:2px dashed #2f6fd0"></div></div></figure>
+    <ol style="flex:1 1 300px;max-width:380px;margin:0;padding:0 0 0 20px;display:grid;gap:12px;font-size:14px;line-height:1.55;color:#64574b">
+      <li><strong style="color:#3b332c">One switch</strong> from #950, now a segmented control with counts.</li>
+      <li><strong style="color:#3b332c">One filter</strong> for the current view; "/" focuses it and the existing status line announces "N of M".</li>
+      <li><strong style="color:#3b332c">One section index</strong> for both views — sidebar on desktop, chips on phone.</li>
+      <li><strong style="color:#3b332c">One row:</strong> title, the existing summary, then "Reading · 5 min · Week 1 · Case week 1".</li>
+      <li><strong style="color:#3b332c">Preview</strong> (desktop): where it is used, what to practise with (pairings.json), status, one "Open". Transient — not saved, not in the URL.</li>
+      <li><strong style="color:#3b332c">Review banner</strong> verbatim from today's Essentials.</li>
+    </ol>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;margin-top:48px">
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Desktop · Everything filtered “family” · dark</figcaption><div style="position:relative;width:1280px;border-radius:12px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Library" theme="dark" device="desktop" view="everything" state="filtered" hint-size="1280px,900px"></dc-import></div></figure>
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Phone · no match · dark</figcaption><div style="position:relative;width:390px;border-radius:28px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Library" theme="dark" device="mobile" view="everything" state="empty" hint-size="390px,844px"></dc-import></div></figure>
+  </div>
+</section>
+
+<section id="case" data-screen-label="06 Case Journeys" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12)">
+  <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">6 · Concept · representative learning tool</p>
+  <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">Case Journeys — how does this connect to patient care?</h2>
+  <p style="margin:0 0 28px;max-width:84ch;font-size:15px;line-height:1.6;color:#64574b">One Patient, Six Weeks, week 2. Every prompt, example, story beat, handoff and link is copied from longitudinal_case.json. The exercise changes order, not content: try first, then reveal "One way to say it", then mark it practised — the same three checklist items, stored exactly as today.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Desktop · practise · light</figcaption><div style="position:relative;width:1280px;border-radius:12px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Case" theme="light" device="desktop" mode="practice" hint-size="1280px,1720px"></dc-import><div aria-hidden="true" style="position:absolute;left:0;right:0;top:800px;border-top:2px dashed #2f6fd0"></div></div></figure>
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Phone · practise · light</figcaption><div style="position:relative;width:390px;border-radius:28px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Case" theme="light" device="mobile" mode="practice" hint-size="390px,2900px"></dc-import><div aria-hidden="true" style="position:absolute;left:0;right:0;top:844px;border-top:2px dashed #2f6fd0"></div></div></figure>
+    <ol style="flex:1 1 300px;max-width:380px;margin:0;padding:0 0 0 20px;display:grid;gap:12px;font-size:14px;line-height:1.55;color:#64574b">
+      <li><strong style="color:#3b332c">Case timeline.</strong> Six weeks with done, current and not-started marks; week 5 flagged as safety work. Same marks as Today's thread.</li>
+      <li><strong style="color:#3b332c">Try → Compare → Mark practised.</strong> The example is revealed only after the learner commits. Nothing typed, nothing recorded; storage stays cw_longitudinal_v1 checks c0–c2.</li>
+      <li><strong style="color:#3b332c">Next week</strong> stays locked by the existing rule and copy.</li>
+      <li><strong style="color:#3b332c">Practice this part of the story</strong> — the case's own links, opening in place; Back returns to the week.</li>
+      <li><strong style="color:#3b332c">Compare two weeks</strong> — two weeks of the story side by side. No new text.</li>
+      <li><strong style="color:#3b332c">Crisis block</strong> stays build-injected and is never folded away.</li>
+    </ol>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;margin-top:48px">
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Desktop · compare two weeks · dark</figcaption><div style="position:relative;width:1280px;border-radius:12px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Case" theme="dark" device="desktop" mode="compare" hint-size="1280px,1300px"></dc-import></div></figure>
+  </div>
+</section>
+
+<section id="journey" data-screen-label="06b Path Reader Search" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12)">
+  <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">6b · The rest of the journey</p>
+  <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">Path, reading and search use the same parts</h2>
+  <p style="margin:0 0 28px;max-width:84ch;font-size:15px;line-height:1.6;color:#64574b">The resident site's Path (four weeks, previewing week 4, items and prompts copied from the current build); a student reading in focused mode; global search on a phone. Week counts are fixtures.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Path · resident · desktop · light</figcaption><div style="position:relative;width:1280px;border-radius:12px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Path" theme="light" device="desktop" hint-size="1280px,1180px"></dc-import></div></figure>
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Path · resident · phone · dark</figcaption><div style="position:relative;width:390px;border-radius:28px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Path" theme="dark" device="mobile" hint-size="390px,1500px"></dc-import></div></figure>
+    <ul style="flex:1 1 280px;max-width:360px;margin:0;padding-left:20px;display:grid;gap:10px;font-size:14px;line-height:1.55;color:#64574b">
+      <li>The same week marks as Today's thread, larger: done, this week (partly filled), previewing (selected).</li>
+      <li>"Demonstrate this week" and "Ask your supervisor" stay together as the week's clinical frame.</li>
+      <li>One primary action — "Set as my week" — only when previewing another week.</li>
+    </ul>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;margin-top:48px">
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Reader · desktop · light</figcaption><div style="position:relative;width:1280px;border-radius:12px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Reader" theme="light" device="desktop" hint-size="1280px,1300px"></dc-import><div aria-hidden="true" style="position:absolute;left:0;right:0;top:800px;border-top:2px dashed #2f6fd0"></div></div></figure>
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Reader · phone · light</figcaption><div style="position:relative;width:390px;border-radius:28px;overflow:hidden;border:1px solid rgba(59,51,44,.18);box-shadow:0 12px 40px rgba(59,51,44,.14)"><dc-import name="Screen Reader" theme="light" device="mobile" hint-size="390px,1900px"></dc-import><div aria-hidden="true" style="position:absolute;left:0;right:0;top:844px;border-top:2px dashed #2f6fd0"></div></div></figure>
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">Search · phone · light / dark</figcaption><div style="display:flex;gap:20px"><div style="width:390px;border-radius:28px;overflow:hidden;border:1px solid rgba(59,51,44,.18)"><dc-import name="Screen Search" theme="light" hint-size="390px,844px"></dc-import></div><div style="width:390px;border-radius:28px;overflow:hidden;border:1px solid rgba(59,51,44,.18)"><dc-import name="Screen Search" theme="dark" hint-size="390px,844px"></dc-import></div></div></figure>
+  </div>
+  <ul style="margin:28px 0 0;max-width:1080px;padding-left:20px;display:grid;gap:10px;font-size:14px;line-height:1.55;color:#64574b">
+    <li><strong style="color:#3b332c">Reader:</strong> one status line ("✓ faculty-attested" and the existing receipt, strings unchanged); the practice panel folds to one row; sections fold as they do today except on crisis pages; the reading ends with "Mark done", the next item in the week, and "Next in this thread". Body text, headings and order are the page's own.</li>
+    <li><strong style="color:#3b332c">Search:</strong> safety protocols first with the kit's own one-line cues, then pages, then tools; Close and Esc return focus to the opener.</li>
+  </ul>
+</section>
+
+<section id="beforeafter" data-screen-label="07 Before after" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12);background:#f6f3ee">
+  <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">7 · Before / after</p>
+  <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">First screens, same size</h2>
+  <p style="margin:0 0 32px;max-width:84ch;font-size:15px;line-height:1.6;color:#64574b">"Before" is the committed CI baseline, which predates main's 1 October pass (main has since dropped the greeting, the ring and the shift-ready row). "After" is the concept cropped to the same viewport.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:28px 40px;align-items:flex-start;margin:0 0 48px">
+    <figure style="margin:0;display:grid;gap:8px"><figcaption style="font-size:13px;font-weight:700;color:#76695d">Before · phone Today</figcaption><img src="tests/smoke/baseline/front-door-today-mobile.png" alt="Before: phone Today baseline" style="width:390px;height:844px;border-radius:28px;border:1px solid rgba(59,51,44,.2)"></figure>
+    <figure style="margin:0;display:grid;gap:8px"><figcaption style="font-size:13px;font-weight:700;color:#2c6356">After · phone Today</figcaption><div style="width:390px;height:844px;overflow:hidden;border-radius:28px;border:1px solid rgba(59,51,44,.2)"><dc-import name="Screen Today" theme="light" device="mobile" scenario="block" hint-size="390px,844px"></dc-import></div></figure>
+    <ul style="flex:1 1 280px;max-width:380px;margin:0;padding-left:20px;display:grid;gap:10px;font-size:14px;line-height:1.55;color:#64574b">
+      <li>Header: 2 rows, 6 controls → 1 row, 4 controls; Safety unchanged in colour and reach.</li>
+      <li>Above the primary: banner, strip, 5 pills → place and the six-week thread.</li>
+      <li>Dock: a centre slot that changes meaning and a nested Library menu → five fixed items.</li>
+      <li>The primary action appears once, not twice (card and dock).</li>
+    </ul>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:28px 40px;align-items:flex-start;margin:0 0 48px">
+    <figure style="margin:0;display:grid;gap:8px"><figcaption style="font-size:13px;font-weight:700;color:#76695d">Before · desktop Today</figcaption><img src="tests/smoke/baseline/front-door-today-desktop.png" alt="Before: desktop Today baseline" style="width:1280px;height:800px;border-radius:12px;border:1px solid rgba(59,51,44,.2)"></figure>
+    <figure style="margin:0;display:grid;gap:8px"><figcaption style="font-size:13px;font-weight:700;color:#2c6356">After · desktop Today</figcaption><div style="width:1280px;height:800px;overflow:hidden;border-radius:12px;border:1px solid rgba(59,51,44,.2)"><dc-import name="Screen Today" theme="light" device="desktop" scenario="block" hint-size="1280px,800px"></dc-import></div></figure>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:28px 40px;align-items:flex-start">
+    <figure style="margin:0;display:grid;gap:8px"><figcaption style="font-size:13px;font-weight:700;color:#76695d">Before · desktop Essentials</figcaption><img src="tests/smoke/baseline/essentials-ms3-kit-desktop.png" alt="Before: Essentials baseline" style="width:1280px;height:800px;border-radius:12px;border:1px solid rgba(59,51,44,.2)"></figure>
+    <figure style="margin:0;display:grid;gap:8px"><figcaption style="font-size:13px;font-weight:700;color:#2c6356">After · desktop Library</figcaption><div style="width:1280px;height:800px;overflow:hidden;border-radius:12px;border:1px solid rgba(59,51,44,.2)"><dc-import name="Screen Library" theme="light" device="desktop" view="essentials" state="default" hint-size="1280px,800px"></dc-import></div></figure>
+  </div>
+</section>
+
+<section id="flows" data-screen-label="08 Flows" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12)">
+  <div style="max-width:1400px">
+    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">8 · Navigation, search, filtering, empty states, resume</p>
+    <h2 style="margin:0 0 28px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">How it fits together</h2>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:28px;margin:0 0 48px">
+      <div style="padding:24px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)">
+        <h3 style="margin:0 0 14px;font-family:'Source Serif 4',Georgia,serif;font-size:21px">Desktop</h3>
+        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#76695d">App bar</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;font-size:13px;font-weight:600"><span style="padding:6px 10px;border-radius:8px;background:#f1ece6">ψ Home</span><span style="padding:6px 10px;border-radius:8px;background:#f1ece6;flex:1">Search ⌘K /</span><span style="padding:6px 10px;border-radius:8px;background:#f1ece6">＋ Ask a question</span><span style="padding:6px 10px;border-radius:8px;background:#a34132;color:#fff">✚ Safety</span><span style="padding:6px 10px;border-radius:8px;background:#f1ece6">⚙</span></div>
+        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#76695d">Destinations (tabs)</p>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:13px;font-weight:700;text-align:center"><span style="padding:8px;border-radius:8px;background:#edf4f2;color:#2c6356">Today</span><span style="padding:8px;border-radius:8px;border:1px solid #ddd3c6">Path</span><span style="padding:8px;border-radius:8px;border:1px solid #ddd3c6">Library</span><span style="padding:8px;border-radius:8px;border:1px solid #ddd3c6">Care</span></div>
+      </div>
+      <div style="padding:24px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)">
+        <h3 style="margin:0 0 14px;font-family:'Source Serif 4',Georgia,serif;font-size:21px">Phone</h3>
+        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#76695d">Top bar</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;font-size:13px;font-weight:600"><span style="padding:6px 10px;border-radius:8px;background:#f1ece6">ψ</span><span style="padding:6px 10px;border-radius:8px;background:#f1ece6;flex:1">Search</span><span style="padding:6px 10px;border-radius:8px;background:#a34132;color:#fff">✚ Safety</span><span style="padding:6px 10px;border-radius:8px;background:#f1ece6">⚙</span></div>
+        <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#76695d">Bottom bar — fixed meanings</p>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;font-size:13px;font-weight:700;text-align:center"><span style="padding:8px 4px;border-radius:8px;background:#edf4f2;color:#2c6356">Today</span><span style="padding:8px 4px;border-radius:8px;border:1px solid #ddd3c6">Path</span><span style="padding:8px 4px;border-radius:8px;border:1px solid #ddd3c6">Library</span><span style="padding:8px 4px;border-radius:8px;border:1px solid #ddd3c6">Care</span><span style="padding:8px 4px;border-radius:8px;border:1px dashed #c8baa7">＋ Ask</span></div>
+      </div>
+      <div style="padding:24px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)">
+        <h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:21px">Focused learning is a mode</h3>
+        <p style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#64574b">A reading or tool keeps the tab you came from, shows "‹ Today" or "‹ Library", one status line, the content, then "Next in this thread". "Mark done" and the next step close every reading.</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:#76695d"><strong style="color:#3b332c">Removed:</strong> dock centre slot · dock Library menu · phone header Care button · floating Ask button · header week pill.</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:28px;margin:0 0 48px">
+      <div style="padding:24px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12);border-top:3px solid #3a7d6e">
+        <h3 style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-size:21px">Search — anywhere, everything</h3>
+        <ul style="margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px;line-height:1.55;color:#64574b"><li>App bar, ⌘K or "/" outside a text field; full text across pages and tools.</li><li>Results grouped: safety protocols first (red mark), then pages, then tools; pending badges inline.</li><li>Esc returns focus to whatever opened it; reading place is kept.</li></ul>
+      </div>
+      <div style="padding:24px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12);border-top:3px solid #8b7040">
+        <h3 style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-size:21px">Filter — this view, by title and topic</h3>
+        <ul style="margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px;line-height:1.55;color:#64574b"><li>Inside the Library only; narrows Essentials or Everything as you type.</li><li>Counts announced through the existing status line ("4 of 83 pages match…").</li><li>Zero results never dead-end: one button hands the same words to Search.</li></ul>
+      </div>
+    </div>
+
+    <h3 style="margin:0 0 16px;font-family:'Source Serif 4',Georgia,serif;font-size:24px">Empty and first-run states</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin:0 0 48px">
+      <figure style="margin:0;display:grid;gap:8px"><figcaption style="font-size:13px;font-weight:700">Today · no week set (existing setup copy)</figcaption><div style="width:390px;height:844px;overflow:hidden;border-radius:28px;border:1px solid rgba(59,51,44,.2)"><dc-import name="Screen Today" theme="light" device="mobile" scenario="setup" hint-size="390px,844px"></dc-import></div></figure>
+      <div style="flex:1 1 360px;max-width:560px;display:grid;gap:14px">
+        <div style="padding:18px 20px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#76695d">Library · filter has no match</p><p style="margin:0;font-size:14px;line-height:1.55;color:#64574b">Says what happened, why, and offers Search all content (primary) or Clear filter — shown in §5, phone, dark.</p></div>
+        <div style="padding:18px 20px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#76695d">Library · "This week" with no week set</p><p style="margin:0;font-size:14px;line-height:1.55;color:#64574b">The section is omitted, as today (weekCount 0). The Today setup card is the single route to setting a week.</p></div>
+        <div style="padding:18px 20px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#76695d">Case Journeys · first visit</p><p style="margin:0;font-size:14px;line-height:1.55;color:#64574b">Opens on week 1 with every later week visible but not started; the existing lock copy explains the rule. No progress bar or percentage.</p></div>
+        <div style="padding:18px 20px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#76695d">Search · nothing found</p><p style="margin:0;font-size:14px;line-height:1.55;color:#64574b">Keeps the query, suggests the Safety kit when the words look urgent (existing synonyms), and offers ＋ Ask a question.</p></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:40px">
+      <div>
+        <h3 style="margin:0 0 12px;font-family:'Source Serif 4',Georgia,serif;font-size:24px">Returning to unfinished work</h3>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);font-size:14px;line-height:1.5">
+          <div style="padding:9px 0;border-bottom:1px solid rgba(59,51,44,.25);font-weight:700">What is unfinished</div><div style="padding:9px 0;border-bottom:1px solid rgba(59,51,44,.25);font-weight:700">Where it comes back</div>
+          <div style="padding:10px 12px 10px 0;border-bottom:1px solid rgba(59,51,44,.12)">Question-bank capsule</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Now card, highest priority — unchanged</div>
+          <div style="padding:10px 12px 10px 0;border-bottom:1px solid rgba(59,51,44,.12)">Live study block</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Now card with its steps; survives reload</div>
+          <div style="padding:10px 12px 10px 0;border-bottom:1px solid rgba(59,51,44,.12)">A reading in this week</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Now card when it is not the Continue target; Reader restores the place</div>
+          <div style="padding:10px 12px 10px 0;border-bottom:1px solid rgba(59,51,44,.12)">Due reviews</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Olive row in Also today; Now card when nothing is unfinished</div>
+          <div style="padding:10px 12px 10px 0;border-bottom:1px solid rgba(59,51,44,.12)">Case week in progress</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">"On the unit this week" on Today; tool opens at ?week=N</div>
+          <div style="padding:10px 12px 10px 0">Preparation choice</div><div style="padding:10px 0;color:#64574b">Session only; resets on reload — unchanged</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin:0 0 12px;font-family:'Source Serif 4',Georgia,serif;font-size:24px">Back, Forward, reload, deep links</h3>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);font-size:14px;line-height:1.5">
+          <div style="padding:9px 0;border-bottom:1px solid rgba(59,51,44,.25);font-weight:700">State</div><div style="padding:9px 0;border-bottom:1px solid rgba(59,51,44,.25);font-weight:700">Behaviour</div>
+          <div style="padding:10px 12px 10px 0;border-bottom:1px solid rgba(59,51,44,.12)">Destination</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Existing tab routes; Back walks destinations in order</div>
+          <div style="padding:10px 12px 10px 0;border-bottom:1px solid rgba(59,51,44,.12)">Library view</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">As #950 routes it today</div>
+          <div style="padding:10px 12px 10px 0;border-bottom:1px solid rgba(59,51,44,.12)">Section, filter, preview</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Transient by contract. Restored on Back only if you approve D3 (history entry state — never URL or storage)</div>
+          <div style="padding:10px 12px 10px 0;border-bottom:1px solid rgba(59,51,44,.12)">?page= · ?tool= (&amp;week, &amp;case)</div><div style="padding:10px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Unchanged; Back returns to the origin and its scroll</div>
+          <div style="padding:10px 12px 10px 0">Reload</div><div style="padding:10px 0;color:#64574b">Same screen and view; device stores (block, capsule, case checks) intact</div>
+        </div>
+        <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#64574b"><strong style="color:#3b332c">Keys:</strong> 1–4 destinations · "/" or ⌘K search · Esc closes the top layer · ← → move within the Reader · a skip link to main content on every screen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="system" data-screen-label="09 System" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12);background:#f6f3ee">
+  <div style="max-width:1400px">
+    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">9 · Design system</p>
+    <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">Thread system v1 — roles on top of clinical-warm.css</h2>
+    <p style="margin:0 0 32px;max-width:80ch;font-size:15px;line-height:1.6;color:#64574b">No new colours. Every value below is an existing --fd-* token in both themes; the change is which job each one is allowed to do. Two type sizes and four spacing steps are added.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin:0 0 40px">
+      <div style="padding:18px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h3 style="margin:0 0 4px;font-size:15px">Action &amp; progress</h3><p style="margin:0 0 12px;font-size:13px;color:#76695d">Primary button, selection, done, current step</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;font-family:'SF Mono',Monaco,Consolas,monospace"><span style="padding:10px;border-radius:6px;background:#3a7d6e;color:#fff">--fd-teal #3a7d6e</span><span style="padding:10px;border-radius:6px;background:#5fa392;color:#211d1a">dark #5fa392</span><span style="padding:10px;border-radius:6px;background:#edf4f2;color:#2c6356">--fd-teal-deep #2c6356 ink</span><span style="padding:10px;border-radius:6px;background:#1d332e;color:#7fc0ae">dark #7fc0ae</span></div></div>
+      <div style="padding:18px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h3 style="margin:0 0 4px;font-size:15px">Review</h3><p style="margin:0 0 12px;font-size:13px;color:#76695d">Due reviews, "Pending review", boundary notes</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;font-family:'SF Mono',Monaco,Consolas,monospace"><span style="padding:10px;border-radius:6px;background:#8b7040;color:#fff">--fd-olive #8b7040</span><span style="padding:10px;border-radius:6px;background:#c0a06a;color:#211d1a">dark #c0a06a</span><span style="padding:10px;border-radius:6px;background:#f7f0e2;color:#725b35">--fd-olive-deep #725b35 ink</span><span style="padding:10px;border-radius:6px;background:#332a1c;color:#d8bb87">dark #d8bb87</span></div></div>
+      <div style="padding:18px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h3 style="margin:0 0 4px;font-size:15px">Safety only</h3><p style="margin:0 0 12px;font-size:13px;color:#76695d">Safety button, kit, crisis block, high-risk pending</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;font-family:'SF Mono',Monaco,Consolas,monospace"><span style="padding:10px;border-radius:6px;background:#a34132;color:#fff">--fd-danger #a34132</span><span style="padding:10px;border-radius:6px;background:#d97a68;color:#211d1a">dark #d97a68</span><span style="padding:10px;border-radius:6px;background:#fbefec;color:#8f372a">--fd-danger-dark #8f372a ink</span><span style="padding:10px;border-radius:6px;background:#3a231f;color:#e8917f">dark #e8917f</span></div></div>
+      <div style="padding:18px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h3 style="margin:0 0 4px;font-size:15px">Ink, paper, brand</h3><p style="margin:0 0 12px;font-size:13px;color:#76695d">Everything else. Terracotta = the ψ mark only.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11px;font-family:'SF Mono',Monaco,Consolas,monospace"><span style="padding:10px;border-radius:6px;background:#3b332c;color:#fff">text #3b332c</span><span style="padding:10px;border-radius:6px;background:#f6f3ee;color:#3b332c;border:1px solid #ddd3c6">bg #f6f3ee</span><span style="padding:10px;border-radius:6px;background:#a9634b;color:#fff">brand #a9634b</span><span style="padding:10px;border-radius:6px;background:#ece5db;color:#211d1a">dark #ece5db</span><span style="padding:10px;border-radius:6px;background:#211d1a;color:#ece5db">dark #211d1a</span><span style="padding:10px;border-radius:6px;background:#d08a6f;color:#211d1a">dark #d08a6f</span></div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:28px;margin:0 0 40px">
+      <div style="padding:22px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)">
+        <h3 style="margin:0 0 14px;font-size:15px">Type</h3>
+        <div style="display:grid;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-bottom:1px solid #ebe5da;padding-bottom:10px"><span style="font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:34px;line-height:1.15">Page title</span><span style="font-size:12px;color:#76695d;font-family:'SF Mono',Monaco,monospace">Serif 700 · 34/40 · phone 28 · new --fd-font-4xl</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-bottom:1px solid #ebe5da;padding-bottom:10px"><span style="font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:26px">Now card title</span><span style="font-size:12px;color:#76695d;font-family:'SF Mono',Monaco,monospace">Serif 700 · 26/32 · phone 22 · --fd-font-2xl</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-bottom:1px solid #ebe5da;padding-bottom:10px"><span style="font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:19px">Section title</span><span style="font-size:12px;color:#76695d;font-family:'SF Mono',Monaco,monospace">Serif 700 · 19/25 · new --fd-font-section</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-bottom:1px solid #ebe5da;padding-bottom:10px"><span style="font-size:15px;font-weight:600">Row title</span><span style="font-size:12px;color:#76695d;font-family:'SF Mono',Monaco,monospace">Inter 600 · 15/24 · --fd-font-base</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-bottom:1px solid #ebe5da;padding-bottom:10px"><span style="font-size:13px;color:#76695d">Meta · Reading · 5 min · Week 1</span><span style="font-size:12px;color:#76695d;font-family:'SF Mono',Monaco,monospace">Inter 400 · 13/18</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px"><span style="font-size:13px;font-weight:700;color:#2c6356">Label, sentence case</span><span style="font-size:12px;color:#76695d;font-family:'SF Mono',Monaco,monospace">Inter 700 · 13 · no uppercase tracking</span></div>
+        </div>
+        <p style="margin:14px 0 0;font-size:13px;line-height:1.55;color:#64574b">Reading body stays 17–18px at a 62ch measure. Minimum text 12px.</p>
+      </div>
+      <div style="padding:22px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12)">
+        <h3 style="margin:0 0 14px;font-size:15px">Space, shape, depth, motion, focus</h3>
+        <ul style="margin:0;padding-left:18px;display:grid;gap:8px;font-size:14px;line-height:1.55;color:#64574b">
+          <li><strong style="color:#3b332c">Space:</strong> existing 2–28px steps plus --fd-space-11 32, -12 40, -13 48, -14 64. Sections 32–40 apart; rows 12–14 vertical padding; page padding 40 desktop / 16 phone; main column ≤ 760.</li>
+          <li><strong style="color:#3b332c">Shape:</strong> radius 8 controls, 12 cards and sheets; pills only for status badges and chips.</li>
+          <li><strong style="color:#3b332c">Depth:</strong> one raised surface per screen (Now card, preview, sheet) on --fd-shadow-card; everything else hairlines.</li>
+          <li><strong style="color:#3b332c">Motion:</strong> 120ms colour, 180ms disclosure; no entrance stagger on rows; none at all under prefers-reduced-motion.</li>
+          <li><strong style="color:#3b332c">Focus:</strong> 3px --fd-focus ring, 2px offset, both themes; 44px touch targets, 24px minimum pointer targets.</li>
+          <li><strong style="color:#3b332c">Done:</strong> teal check; --fd-success becomes an alias of --fd-teal (D6).</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="margin:0 0 14px;font-family:'Source Serif 4',Georgia,serif;font-size:24px">Status marks</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:12px 28px;margin:0 0 40px;font-size:14px;align-items:center">
+      <span style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;border:1.5px solid #ddd3c6;box-sizing:border-box"></span>Not started</span>
+      <span style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;border:2px solid #3a7d6e;box-sizing:border-box;background:conic-gradient(#3a7d6e 0 50%,transparent 0)"></span>In progress</span>
+      <span style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;background:#3a7d6e;color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">✓</span>Done</span>
+      <span style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;border:2px solid #8b7040;color:#725b35;display:grid;place-items:center;font-size:11px;font-weight:800;box-sizing:border-box">2</span>Reviews due</span>
+      <span style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid #8b7040;color:#725b35;background:#f7f0e2">Pending review</span>Faculty review pending</span>
+      <span style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid #a34132;color:#8f372a;background:#fbefec">Pending review · High risk</span>High-risk pending</span>
+      <span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:#a34132"></span>Safety content</span>
+    </div>
+
+    <h3 style="margin:0 0 14px;font-family:'Source Serif 4',Georgia,serif;font-size:24px">Components</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;font-size:13px;line-height:1.55;color:#64574b">
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">App bar</h4><p style="margin:0">ψ home · search · Ask · Safety · Settings. Banner landmark; Safety present at every width. <span style="font-family:'SF Mono',Monaco,monospace;font-size:12px">.fd-header__bar</span></p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Destination nav</h4><p style="margin:0">Four items, aria-current="page", tabs ≥ 1000px, bottom bar below with ＋ Ask as fifth action. <span style="font-family:'SF Mono',Monaco,monospace;font-size:12px">.fd-tabs, .fd-dock (minus __item--context, __browse)</span></p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Now card</h4><p style="margin:0">Existing primary label as kicker · serif title · ≤ 3 step marks · one teal button · one meta line. One per screen. <span style="font-family:'SF Mono',Monaco,monospace;font-size:12px">.fd-continue + block/due/last-read primary faces</span></p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Row</h4><p style="margin:0">Mark · title · meta · trailing badge or action. Toggle keeps aria-pressed and "Mark done: title". <span style="font-family:'SF Mono',Monaco,monospace;font-size:12px">.fd-row, .fd-kit__reading, .fd-collink</span></p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Segmented control</h4><p style="margin:0">Two options with counts, aria-pressed, 44px. <span style="font-family:'SF Mono',Monaco,monospace;font-size:12px">.fd-library__views</span></p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Filter field + status line</h4><p style="margin:0">role="searchbox", "/" to focus, live "N of M" via the existing role="status" text; zero → Search. <span style="font-family:'SF Mono',Monaco,monospace;font-size:12px">new .fd-library__filter</span></p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Section index</h4><p style="margin:0">Sidebar or chips; counts in tabular figures; selection transient. <span style="font-family:'SF Mono',Monaco,monospace;font-size:12px">.fd-kit__index</span></p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Disclosure</h4><p style="margin:0">Native details/summary, 44px summary. Never wraps a crisis block or governance notice. <span style="font-family:'SF Mono',Monaco,monospace;font-size:12px">.fd-purpose, .fd-kit__group</span></p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Thread</h4><p style="margin:0">Marked steps on a line — six-week map (horizontal), case timeline (vertical). Ordered list, aria-current="step". <span style="font-family:'SF Mono',Monaco,monospace;font-size:12px">.fd-pathroute + new .fd-thread</span></p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Next in this thread</h4><p style="margin:0">2–4 rows: type, title, existing hint; opens in place; Back returns. Data from curriculum, pairings and case links only.</p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Try → Compare card</h4><p style="margin:0">Prompt · steps · reveal button (aria-expanded) · authored example · Mark practised. No free text.</p></div>
+      <div style="padding:16px;border-radius:10px;background:#fff;border:1px solid rgba(59,51,44,.12)"><h4 style="margin:0 0 4px;font-size:14px;color:#3b332c">Notices &amp; empty states</h4><p style="margin:0">Governance strings verbatim (pending-high stays first and role="alert"); pilot and boundary notes quiet; empty state = what happened, why, one primary and one secondary action.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="governance" data-screen-label="10 Governance" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12)">
+  <div style="max-width:1400px">
+    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">10 · Governance</p>
+    <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">What needs re-attestation</h2>
+    <p style="margin:0 0 28px;max-width:84ch;font-size:15px;line-height:1.6;color:#64574b">An attestation hash covers a page's shipped source file(s) and its topic_meta record. Shell code and build-injected CSS are outside it; tool HTML and topic summaries are inside it.</p>
+    <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr) 150px minmax(0,1.5fr);gap:0 20px;font-size:14px;line-height:1.5;margin:0 0 40px">
+      <div style="padding:9px 0;border-bottom:1px solid rgba(59,51,44,.25);font-weight:700">Change</div><div style="padding:9px 0;border-bottom:1px solid rgba(59,51,44,.25);font-weight:700">Files</div><div style="padding:9px 0;border-bottom:1px solid rgba(59,51,44,.25);font-weight:700">Re-attest?</div><div style="padding:9px 0;border-bottom:1px solid rgba(59,51,44,.25);font-weight:700">Notes</div>
+      <div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12)">Shell, navigation, Today and Library layout</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">fd_*.js, frontdoor.css, spa_index.html, CLASS-INVENTORY.md</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);font-weight:700;color:#2c6356">No</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Registration data, not governance. Inventory updated in the same PR; baselines via the workflow.</div>
+      <div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12)">Colour roles and tool palette</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">clinical-warm.css, common.py (via #951)</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);font-weight:700;color:#2c6356">No</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Build-injected; sources unchanged. Faculty visual spot-check suggested for safety tools.</div>
+      <div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12)">Rows showing summaries and hints</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">topic_meta.json, curriculum.json (read only)</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);font-weight:700;color:#2c6356">No, if verbatim</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Rewriting any summary edits the hashed record and turns the page pending. Not proposed.</div>
+      <div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12)">"Used in" and "Practice with"</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">curriculum.json, pairings.json, longitudinal_case.json</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);font-weight:700;color:#2c6356">No</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Derived placement. Which pairing represents a week stays Dr. Moss's curricular call.</div>
+      <div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12)">Case Journeys redesign</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">08_Cases_and_Simulation/one-patient-six-weeks.html</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);font-weight:800;color:#8f372a">Yes</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Reviewed 2026-09-21. Any edit drifts the hash; learners see the pending notice below until the console re-attests. longitudinal_case.json untouched; new microcopy listed for review.</div>
+      <div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12)">Reader status line</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">fd_reader.js, spa_index.html renderers</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);font-weight:700;color:#2c6356">No</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">"✓ faculty-attested" and "Reviewed by … · date" shown once, strings unchanged; pending-high stays first.</div>
+      <div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12)">Pilot banner, one line</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">fd_today.js</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);font-weight:700;color:#2c6356">No</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Stays at the top as one line; title, sentence (behind Details) and no-PHI boundary unchanged (D1).</div>
+      <div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12)">Crisis contacts, instrument rights</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">crisis_resources.json, markers, instrument_rights.json</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);font-weight:700;color:#76695d">Not touched</div><div style="padding:11px 0;border-bottom:1px solid rgba(59,51,44,.12);color:#64574b">Rights references keep the "reference" chip and official form links.</div>
+      <div style="padding:11px 0">Medication pages and approval workflow</div><div style="padding:11px 0;color:#64574b">05_Psychopharmacology/*, pharmacy.html, med drafts</div><div style="padding:11px 0;font-weight:700;color:#76695d">Not touched</div><div style="padding:11px 0;color:#64574b">#941 and the faculty medication-approval work proceed independently.</div>
+    </div>
+    <figure style="margin:0;display:grid;gap:10px"><figcaption style="font-size:13px;font-weight:700">What learners would see if Phase 3 shipped before re-attestation — existing pending-compact notice and stale reason, verbatim</figcaption><div style="width:1280px;height:430px;overflow:hidden;border-radius:12px;border:1px solid rgba(59,51,44,.18)"><dc-import name="Screen Case" theme="light" device="desktop" mode="pending" hint-size="1280px,430px"></dc-import></div></figure>
+  </div>
+</section>
+
+<section id="rollout" data-screen-label="11 Rollout" style="padding:64px 72px;border-bottom:1px solid rgba(59,51,44,.12);background:#f6f3ee">
+  <div style="max-width:1400px">
+    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">11 · Rollout</p>
+    <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">Three small phases, one journey</h2>
+    <p style="margin:0 0 28px;max-width:84ch;font-size:15px;line-height:1.6;color:#64574b">Each phase ships alone, reverts with one commit, migrates no stored data and passes bin/verify.sh plus both site gates. Phases 1–2 touch no content source.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:24px;align-items:start">
+      <article style="padding:24px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12);border-top:3px solid #3a7d6e">
+        <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#2c6356">Phase 1 · shell and Today</p>
+        <h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:22px">What should I do now?</h3>
+        <p style="margin:0 0 12px;font-size:14px;line-height:1.55;color:#64574b">App bar and four-destination nav on both sizes; remove the dock centre slot, dock Library menu, phone Care button, floating Ask and header week pill; Today order (place + thread, Now card, Also today, chooser, this week, on the unit, rail); token additions; one focus style. After #949 and #951.</p>
+        <ul style="margin:0;padding-left:18px;display:grid;gap:7px;font-size:13px;line-height:1.5">
+          <li>Exactly one filled teal button on Today for each primary kind — resume, block, read, due, week, ahead, setup — first after the heading and inside the first screen at 390×844 and 1280×800, using controlled fixtures.</li>
+          <li>FD_TODAY_PRIMARY_ORDER and its picker-table test unchanged; an interrupted block or capsule still leads after reload; due reviews still outrank Continue.</li>
+          <li>Preparation chooser keeps its open state, copy and session-only choice, and never changes the primary.</li>
+          <li>Same four destinations, labels and order at 320, 390, 768 and 1280px; Safety visible at all; Search one activation from every screen.</li>
+          <li>1–4, "/", ⌘K and Esc work; focus returns to the invoker; aria-current on the active destination; landmarks banner, nav, main, complementary.</li>
+          <li>axe: no serious or critical issues; text ≥ 4.5:1, controls and focus ring ≥ 3:1 in both themes.</li>
+          <li>200% text and 320px width: no horizontal scroll, nothing clipped; reduced motion: no animation.</li>
+          <li>Back, Forward and reload keep destination, Library view and reading place; every ?tab, ?page and ?tool link resolves.</li>
+          <li>check_governance_separation clean; zero new attestation drift; CLASS-INVENTORY updated in the same PR; baselines regenerated by the workflow.</li>
+        </ul>
+      </article>
+      <article style="padding:24px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12);border-top:3px solid #3a7d6e">
+        <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#2c6356">Phase 2 · Library</p>
+        <h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:22px">Where can I find this?</h3>
+        <p style="margin:0 0 12px;font-size:14px;line-height:1.55;color:#64574b">Segmented Essentials · Everything; in-page filter; one section index and one row for both views; transient desktop preview; "Used in" and "Practice with" from existing data; empty states; search results with safety first.</p>
+        <ul style="margin:0;padding-left:18px;display:grid;gap:7px;font-size:13px;line-height:1.5">
+          <li>Every shipped page appears in Everything once (essentials-inventory helper); counts match shipped_pages.json per site; Essentials stays a view of the Library.</li>
+          <li>Filter updates as you type on 83 items, announces "N of M" through the existing status line, and hands zero results to Search.</li>
+          <li>Section, filter and preview are not persisted and not in the URL unless D3 is approved.</li>
+          <li>Pending and high-risk badges on every row they apply to, verbatim; summaries byte-identical to topic_meta.</li>
+          <li>Open an item, press Back: same view, section and scroll.</li>
+          <li>Phase 1 accessibility, zoom, motion and history criteria hold.</li>
+        </ul>
+      </article>
+      <article style="padding:24px;border-radius:12px;background:#fff;border:1px solid rgba(59,51,44,.12);border-top:3px solid #8b7040">
+        <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#725b35">Phase 3 · focused learning · needs re-attestation</p>
+        <h3 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:22px">How does this connect to patient care?</h3>
+        <p style="margin:0 0 12px;font-size:14px;line-height:1.55;color:#64574b">Reader status line and "Next in this thread" (shell); Case Journeys timeline, Try → Compare and compare-weeks (tool HTML); optional "Bring to supervision" bridge into Ask, same-origin and allow-listed.</p>
+        <ul style="margin:0;padding-left:18px;display:grid;gap:7px;font-size:13px;line-height:1.5">
+          <li>Existing cw_longitudinal_v1 progress renders identically with no migration; ?week=N works.</li>
+          <li>Prompts, examples, reflection, handoff and links render verbatim from longitudinal_case.json; any new microcopy is listed in the PR for faculty review.</li>
+          <li>No learner free text, recording or new storage; reveal is a button with aria-expanded; the next-week lock is unchanged.</li>
+          <li>Crisis-block marker present; nothing collapses it.</li>
+          <li>The ledger row is registered pending in the same PR and shown honestly until the console re-attests; tests use governance fixtures.</li>
+          <li>From a linked page, Back restores the week and scroll.</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="decisions" data-screen-label="12 Decisions" style="padding:64px 72px 96px">
+  <div style="max-width:1080px">
+    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#725b35">12 · Decisions — answered 4 October</p>
+    <h2 style="margin:0 0 20px;font-family:'Source Serif 4',Georgia,serif;font-size:40px;line-height:1.1">Approved for implementation</h2>
+    <ol style="margin:0 0 28px;padding-left:22px;display:grid;gap:10px;font-size:15px;line-height:1.55">
+      <li><strong>D1</strong> Active-testing banner — <strong>kept at the top, one line</strong>; sentence verbatim behind Details.</li>
+      <li><strong>D2</strong> Activity strip — <strong>moved to Learning activity &amp; review</strong>.</li>
+      <li><strong>D3</strong> Library section and filter — <strong>restored on Back/Forward from history state</strong>; never URL or storage.</li>
+      <li><strong>D4</strong> Week control — <strong>Today, Path and Settings only</strong>; header pill removed.</li>
+      <li><strong>D5</strong> Case Journeys — <strong>Phase 3</strong>, pending notice until faculty re-attest.</li>
+      <li><strong>D6</strong> Done — <strong>teal</strong>; --fd-success aliased to --fd-teal.</li>
+    </ol>
+    <p style="margin:0;padding:16px 20px;border-radius:10px;background:#3b332c;color:#fff;font-size:15px;line-height:1.55">No application code has been changed, merged or deployed yet. Phase 1 is ready for Claude Code — see design_handoff_library_redesign/PROMPT.md.</p>
+  </div>
+</section></x-dc>
+</body>
+</html>

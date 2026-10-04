@@ -166,6 +166,19 @@
   --fd-space-8:20px;
   --fd-space-9:24px;
   --fd-space-10:28px;
+  /* Steps 11-14 are the "one thread" redesign's section rhythm
+   * (docs/superpowers/specs/one-thread-handoff/README.md, "Spacing, shape, elevation"). Coarse on
+   * purpose: 1-10 are 2-4px apart because dense controls need that, and the redesign's gaps
+   * between SECTIONS are 32-64px, which 1-10 could previously only reach by stacking two tokens
+   * or by a raw px value the drift ratchet refuses. Declared here ahead of the frontdoor.css
+   * rules that consume them so the token layer lands in one place rather than per surface;
+   * nothing references them yet, which is why they carry no doc-table row (only --fd-font-* and
+   * --fd-glyph-* are pinned to docs/DESIGN_SYSTEM.md by check_design_drift.py's C9).
+   * Dimension tokens: :root only, never a dark value (C3). */
+  --fd-space-11:32px;
+  --fd-space-12:40px;
+  --fd-space-13:48px;
+  --fd-space-14:64px;
 
   /* Radius */
   --fd-radius-2xs:4px;  /* focus-ring corner, inline code chip — a deliberately tight corner.

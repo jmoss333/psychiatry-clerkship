@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>@font-face{font-family:'Source Serif 4';font-style:normal;font-weight:600 700;font-display:swap;src:url('13_Faculty_Resources/_automation/site_build/fonts/source-serif-4-latin-opsz-wght600-700.woff2') format('woff2')}body{margin:0}a{color:#2c6356}a:hover{color:#3b332c}</style></helmet>
+<div style="{{ rootStyle }}">
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <header style="background:var(--fd-surface-warm);border-bottom:1px solid var(--fd-line)">
+      <div style="max-width:1200px;margin:0 auto;padding:12px 40px 0;display:flex;align-items:center;gap:16px">
+        <div style="display:flex;align-items:center;gap:10px;flex:none"><span style="width:30px;height:30px;border-radius:8px;background:var(--fd-terracotta);color:var(--fd-on-accent);display:grid;place-items:center;font-family:Georgia,serif;font-size:18px">ψ</span><span style="font-size:14px;font-weight:700">Inpatient Psychiatry</span></div>
+        <div style="flex:1;max-width:440px;margin-left:20px;display:flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid var(--fd-line-strong);border-radius:999px;background:var(--fd-surface);color:var(--fd-text-dim);font-size:13px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg><span style="flex:1">Search a symptom, drug, or task…</span><span style="font-size:11px;font-weight:600;border:1px solid var(--fd-line-strong);border-radius:6px;padding:1px 6px">⌘K</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <button type="button" style="min-height:36px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:13px;font-weight:600">＋ Ask a question</button>
+          <button type="button" style="min-height:36px;padding:7px 15px;border-radius:999px;border:1.5px solid var(--fd-danger);background:var(--fd-danger);color:var(--fd-on-accent);font:inherit;font-size:13px;font-weight:700">✚ Safety</button>
+          <button type="button" aria-label="Settings" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:15px">⚙</button>
+        </div>
+      </div>
+      <nav aria-label="Primary" style="max-width:1200px;margin:0 auto;padding:6px 40px 0;display:flex;gap:4px">
+        <span aria-current="page" style="padding:10px 16px;font-size:14px;font-weight:700;color:var(--fd-teal-deep);border-bottom:3px solid var(--fd-teal)">Today</span>
+        <span style="padding:10px 16px;font-size:14px;color:var(--fd-text-mid);border-bottom:3px solid transparent">Path</span>
+        <span style="padding:10px 16px;font-size:14px;color:var(--fd-text-mid);border-bottom:3px solid transparent">Library</span>
+        <span style="padding:10px 16px;font-size:14px;color:var(--fd-text-mid);border-bottom:3px solid transparent">Patient care resources</span>
+      </nav>
+    </header>
+  </sc-if>
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <header style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--fd-surface-warm);border-bottom:1px solid var(--fd-line)">
+      <span style="width:32px;height:32px;border-radius:8px;background:var(--fd-terracotta);color:var(--fd-on-accent);display:grid;place-items:center;font-family:Georgia,serif;font-size:18px;flex:none">ψ</span>
+      <div style="flex:1;min-width:0;min-height:44px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 14px;border:1.5px solid var(--fd-line-strong);border-radius:999px;background:var(--fd-surface);color:var(--fd-text-dim);font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg>Search</div>
+      <button type="button" style="min-height:44px;padding:0 14px;border-radius:999px;border:0;background:var(--fd-danger);color:var(--fd-on-accent);font:inherit;font-size:14px;font-weight:700;flex:none">✚ Safety</button>
+      <button type="button" aria-label="Settings" style="width:44px;height:44px;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:16px;flex:none">⚙</button>
+    </header>
+  </sc-if>
+
+  <main style="max-width:1200px;margin:0 auto;padding:var(--pad-top) var(--pad-x) 96px;box-sizing:border-box">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 18px">
+      <a href="#" style="display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:700;color:var(--fd-teal-deep);text-decoration:none">‹ Today</a>
+      <sc-if value="{{ isReviewed }}" hint-placeholder-val="{{ true }}">
+        <span style="display:inline-block;font-size:12px;font-weight:700;color:var(--fd-teal-deep);background:var(--fd-teal-wash);border:1px solid color-mix(in srgb,var(--fd-teal) 40%,transparent);border-radius:999px;padding:3px 11px">Reviewed by Faculty reviewer · 2026-09-21</span>
+      </sc-if>
+    </div>
+    <sc-if value="{{ isPending }}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="margin:0 0 22px;padding:10px 14px;border-radius:8px;border:1px solid var(--fd-olive);background:var(--fd-olive-wash);font-size:14px;line-height:1.45;color:var(--fd-text)"><strong style="display:block;font-weight:800">Pending faculty review</strong><span>Content changed since faculty review on 2026-09-21; awaiting re-attestation.</span></div>
+    </sc-if>
+
+    <div style="display:flex;flex-wrap:wrap;gap:16px 40px;align-items:flex-end;margin:0 0 28px">
+      <div style="flex:999 1 520px;min-width:0">
+        <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:var(--fd-teal-deep)">Longitudinal case arc</p>
+        <h1 style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:var(--h1);line-height:1.12;letter-spacing:-.01em">One Patient, Six Weeks</h1>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:var(--fd-text-mid);max-width:68ch">Follow one fictional inpatient across changing information, relationships, safety questions, treatment conversations, and the final handoff.</p>
+      </div>
+      <p style="flex:1 1 300px;max-width:400px;margin:0;padding:11px 14px;border-left:3px solid var(--fd-olive);background:var(--fd-olive-wash);border-radius:0 8px 8px 0;font-size:13px;line-height:1.5;color:var(--fd-text-mid)"><strong style="color:var(--fd-text)">Boundary:</strong> fictional composite only. Do not enter patient information. This is a learning simulation, not a clinical decision tool or substitute for supervision and local policy.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:var(--case-cols);gap:36px;align-items:start">
+      <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+        <nav aria-label="Six-week case timeline">
+          <p style="margin:0 0 2px;font-size:14px;font-weight:700">1 of 6 weeks completed</p>
+          <p style="margin:0 0 16px;font-size:12px;color:var(--fd-text-dim)">Checklist progress saved in this browser only</p>
+          <ol style="list-style:none;margin:0;padding:0">
+            <li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:0 12px"><span style="display:grid;grid-template-rows:28px 1fr;justify-items:center"><span style="width:26px;height:26px;border-radius:50%;background:var(--fd-teal);color:var(--fd-on-accent);display:grid;place-items:center;font-size:11px;font-weight:700">✓</span><span style="width:2px;background:var(--fd-teal)"></span></span><span style="padding:3px 0 18px;min-width:0"><span style="display:block;font-size:12px;font-weight:700;color:var(--fd-text-dim)">Week 1</span><span style="display:block;font-size:14px;font-weight:600;line-height:1.35;color:var(--fd-text-mid)">Admission: start with the person and the timeline</span></span></li>
+            <li aria-current="step" style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:0 12px"><span style="display:grid;grid-template-rows:28px 1fr;justify-items:center"><span style="width:26px;height:26px;box-sizing:border-box;border-radius:50%;border:2px solid var(--fd-teal);box-shadow:0 0 0 4px var(--fd-teal-wash);background:conic-gradient(var(--fd-teal) 0 33%,var(--fd-surface) 0)"></span><span style="width:2px;background:var(--fd-line-strong)"></span></span><span style="padding:3px 10px 18px;min-width:0;margin-left:-6px;border-radius:8px;background:var(--fd-teal-wash)"><span style="display:block;font-size:12px;font-weight:700;color:var(--fd-teal-deep)">Week 2 · 1 of 3 practiced</span><span style="display:block;font-size:14px;font-weight:700;line-height:1.35">Differential: hold more than one explanation</span></span></li>
+            <li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:0 12px"><span style="display:grid;grid-template-rows:28px 1fr;justify-items:center"><span style="width:26px;height:26px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface)"></span><span style="width:2px;background:var(--fd-line-strong)"></span></span><span style="padding:3px 0 18px;min-width:0"><span style="display:block;font-size:12px;font-weight:700;color:var(--fd-text-dim)">Week 3</span><span style="display:block;font-size:14px;line-height:1.35;color:var(--fd-text-mid)">Treatment: make room for ambivalence</span></span></li>
+            <li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:0 12px"><span style="display:grid;grid-template-rows:28px 1fr;justify-items:center"><span style="width:26px;height:26px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface)"></span><span style="width:2px;background:var(--fd-line-strong)"></span></span><span style="padding:3px 0 18px;min-width:0"><span style="display:block;font-size:12px;font-weight:700;color:var(--fd-text-dim)">Week 4</span><span style="display:block;font-size:14px;line-height:1.35;color:var(--fd-text-mid)">Family and systems: widen the frame</span></span></li>
+            <li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:0 12px"><span style="display:grid;grid-template-rows:28px 1fr;justify-items:center"><span style="width:26px;height:26px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface)"></span><span style="width:2px;background:var(--fd-line-strong)"></span></span><span style="padding:3px 0 18px;min-width:0"><span style="display:flex;gap:6px;align-items:center;font-size:12px;font-weight:700;color:var(--fd-text-dim)">Week 5 <span style="font-size:11px;font-weight:800;color:var(--fd-danger-dark)">✚ safety</span></span><span style="display:block;font-size:14px;line-height:1.35;color:var(--fd-text-mid)">Safety: respond directly without losing the relationship</span></span></li>
+            <li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:0 12px"><span style="display:grid;grid-template-rows:28px 1fr;justify-items:center"><span style="width:26px;height:26px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface)"></span></span><span style="padding:3px 0 6px;min-width:0"><span style="display:block;font-size:12px;font-weight:700;color:var(--fd-text-dim)">Week 6</span><span style="display:block;font-size:14px;line-height:1.35;color:var(--fd-text-mid)">Integration: tell the evolving story</span></span></li>
+          </ol>
+          <button type="button" style="{{ compareBtnStyle }}">{{ compareBtnLabel }}</button>
+        </nav>
+      </sc-if>
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <nav aria-label="Six-week case timeline">
+          <ol style="list-style:none;margin:0 0 8px;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr))">
+            <li style="position:relative;display:grid;justify-items:center"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-teal)"></span><span style="position:relative;width:28px;height:28px;border-radius:50%;background:var(--fd-teal);color:var(--fd-on-accent);display:grid;place-items:center;font-size:11px;font-weight:700">✓</span></li>
+            <li aria-current="step" style="position:relative;display:grid;justify-items:center"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-line-strong)"></span><span style="position:relative;width:28px;height:28px;box-sizing:border-box;border-radius:50%;border:2px solid var(--fd-teal);box-shadow:0 0 0 4px var(--fd-teal-wash);background:var(--fd-surface);color:var(--fd-teal-deep);display:grid;place-items:center;font-size:12px;font-weight:700">2</span></li>
+            <li style="position:relative;display:grid;justify-items:center"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-line-strong)"></span><span style="position:relative;width:28px;height:28px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-dim);display:grid;place-items:center;font-size:12px">3</span></li>
+            <li style="position:relative;display:grid;justify-items:center"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-line-strong)"></span><span style="position:relative;width:28px;height:28px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-dim);display:grid;place-items:center;font-size:12px">4</span></li>
+            <li style="position:relative;display:grid;justify-items:center"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-line-strong)"></span><span style="position:relative;width:28px;height:28px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--fd-danger);background:var(--fd-surface);color:var(--fd-danger-dark);display:grid;place-items:center;font-size:12px">5</span></li>
+            <li style="position:relative;display:grid;justify-items:center"><span style="position:relative;width:28px;height:28px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-dim);display:grid;place-items:center;font-size:12px">6</span></li>
+          </ol>
+          <p style="margin:0;font-size:12px;color:var(--fd-text-dim);text-align:center">1 of 6 weeks completed · week 5 includes safety work</p>
+        </nav>
+      </sc-if>
+
+      <div style="min-width:0">
+        <sc-if value="{{ isPractice }}" hint-placeholder-val="{{ true }}">
+          <article aria-labelledby="wk2" style="padding:var(--card-pad);border-radius:12px;background:var(--fd-surface);border:1px solid var(--fd-line);box-shadow:var(--fd-shadow-card)">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;font-size:13px;font-weight:700"><span style="color:var(--fd-teal-deep)">Week 2</span><span style="color:var(--fd-text-dim);font-weight:600">In progress · 1 of 3 practiced</span></div>
+            <h2 id="wk2" style="margin:6px 0 4px;font-family:'Source Serif 4',Georgia,serif;font-size:var(--h2);line-height:1.2">Differential: hold more than one explanation</h2>
+            <p style="margin:0 0 18px;font-size:13px;color:var(--fd-text-dim)">syndrome · differential · medical rule-out</p>
+            <div style="margin:0 0 16px;padding:14px 16px;border-left:3px solid var(--fd-line-hover);background:var(--fd-callout);border-radius:0 8px 8px 0"><p style="margin:0 0 4px;font-size:12px;font-weight:700;color:var(--fd-text-mid)">What changes in the story</p><p style="margin:0;font-size:16px;line-height:1.6">Jordan reports racing thoughts, unusual confidence, and feeling watched during the worst nights. A family member describes a previous period of reduced sleep, but the timing of substance exposure and medical contributors is still unclear.</p></div>
+            <p style="margin:0 0 26px;font-size:16px;line-height:1.6"><strong>Your learning task:</strong> Build a problem representation, keep primary, substance-related, and medical explanations visible, and identify the next collateral question.</p>
+
+            <h3 style="margin:0 0 4px;font-family:'Source Serif 4',Georgia,serif;font-size:19px">Before you move on</h3>
+            <p style="margin:0 0 14px;font-size:14px;line-height:1.5;color:var(--fd-text-mid)">Try each one first — aloud or on paper. Then compare with one way to say it. Nothing you think or say is stored.</p>
+            <ol style="list-style:none;margin:0;padding:0;display:grid;gap:10px">
+              <li style="padding:12px 14px;border-radius:10px;border:1px solid var(--fd-line)"><div style="display:flex;gap:12px;align-items:flex-start"><span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;background:var(--fd-teal);color:var(--fd-on-accent);display:grid;place-items:center;font-size:11px;font-weight:700;flex:none;margin-top:1px">✓</span><div style="flex:1;min-width:0"><p style="margin:0;font-size:15px;line-height:1.5;color:var(--fd-text-mid)">I can describe the syndrome without prematurely closing on a diagnosis.</p><p style="margin:6px 0 0;font-size:13px;color:var(--fd-text-dim)">Practiced · <span style="color:var(--fd-teal-deep);font-weight:700">Show example</span> · <span style="color:var(--fd-teal-deep);font-weight:700">Undo</span></p></div></div></li>
+              <li style="padding:14px;border-radius:10px;border:1.5px solid var(--fd-teal);background:var(--fd-surface)">
+                <div style="display:flex;gap:12px;align-items:flex-start"><span aria-hidden="true" style="width:22px;height:22px;box-sizing:border-box;border-radius:50%;border:2px solid var(--fd-teal);color:var(--fd-teal-deep);display:grid;place-items:center;font-size:11px;font-weight:800;flex:none;margin-top:1px">2</span><div style="flex:1;min-width:0">
+                  <p style="margin:0 0 10px;font-size:16px;font-weight:600;line-height:1.5">I can name the data that would increase or decrease confidence in each leading explanation.</p>
+                  <ol aria-label="Steps" style="list-style:none;margin:0 0 12px;padding:0;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;font-weight:700"><li style="color:var(--fd-teal-deep)">✓ Try</li><li style="color:var(--fd-teal-deep)">● Compare</li><li style="color:var(--fd-text-dim)">○ Mark practiced</li></ol>
+                  <div style="margin:0 0 14px;padding:12px 14px;border-left:3px solid var(--fd-teal);background:var(--fd-teal-wash);border-radius:0 8px 8px 0"><p style="margin:0 0 4px;font-size:12px;font-weight:700;color:var(--fd-teal-deep)">One way to say it</p><p style="margin:0;font-size:15px;line-height:1.6">A prior episode with the same symptoms in the absence of substance exposure would increase my confidence in a primary mood disorder. A tight timeline with an exposure or a new medical finding would shift that confidence.</p></div>
+                  <div style="display:flex;flex-wrap:wrap;gap:10px"><button type="button" style="min-height:44px;padding:0 18px;border-radius:8px;border:1px solid var(--fd-teal);background:var(--fd-teal);color:var(--fd-on-accent);font:inherit;font-size:15px;font-weight:600">Mark as practiced</button><button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:14px;font-weight:600">＋ Bring to supervision</button></div>
+                </div></div>
+              </li>
+              <li style="padding:12px 14px;border-radius:10px;border:1px solid var(--fd-line)"><div style="display:flex;gap:12px;align-items:flex-start"><span aria-hidden="true" style="width:22px;height:22px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--fd-line-strong);color:var(--fd-text-dim);display:grid;place-items:center;font-size:11px;font-weight:700;flex:none;margin-top:1px">3</span><div style="flex:1;min-width:0"><p style="margin:0 0 8px;font-size:15px;line-height:1.5">I can ask collateral questions that clarify baseline and longitudinal course.</p><button type="button" aria-expanded="false" style="min-height:40px;padding:0 14px;border-radius:8px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;font-size:14px;font-weight:700">Compare with one way to say it</button></div></div></li>
+            </ol>
+
+            <div style="margin:22px 0 0;display:flex;justify-content:space-between;align-items:center;min-height:48px;border-top:1px solid var(--fd-line);border-bottom:1px solid var(--fd-line);font-size:15px;font-weight:600"><span>Pause and reflect</span><span aria-hidden="true" style="color:var(--fd-text-dim)">⌄</span></div>
+            <div style="margin:18px 0 0;padding:12px 14px;border-left:3px solid var(--fd-teal);background:var(--fd-callout);border-radius:0 8px 8px 0;font-size:15px;line-height:1.55;color:var(--fd-text-mid)"><strong style="color:var(--fd-teal-deep)">Carry it to rounds:</strong> On rounds, label your leading diagnosis as a working hypothesis and state what would update it.</div>
+            <div style="margin:20px 0 0;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px">
+              <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:14px;font-weight:600">← Previous week</button>
+              <span style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;justify-content:flex-end"><span aria-live="polite" style="font-size:13px;color:var(--fd-text-dim)">Complete the checklist to unlock the next week.</span><button type="button" disabled="" style="min-height:44px;padding:0 16px;border-radius:8px;border:1.5px dashed var(--fd-line-strong);background:transparent;color:var(--fd-text-dim);font:inherit;font-size:14px;font-weight:600">Next week →</button></span>
+            </div>
+            <p style="margin:18px 0 0;font-size:12px;line-height:1.5;color:var(--fd-text-dim)">Stored locally: week number, checklist state, and date. No names, notes, or patient identifiers. · <span style="text-decoration:underline">Reset local journey</span></p>
+          </article>
+        </sc-if>
+
+        <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
+          <article aria-labelledby="cmp" style="padding:var(--card-pad);border-radius:12px;background:var(--fd-surface);border:1px solid var(--fd-line);box-shadow:var(--fd-shadow-card)">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px"><h2 id="cmp" style="margin:0;font-family:'Source Serif 4',Georgia,serif;font-size:var(--h2);line-height:1.2">How the story changed</h2><span style="font-size:14px;font-weight:700;color:var(--fd-teal-deep)">Close comparison</span></div>
+            <p style="margin:6px 0 18px;font-size:14px;color:var(--fd-text-mid)">Side by side, from the case itself. Nothing here is new teaching text.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 20px;margin:0 0 6px">
+              <span style="min-height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-radius:8px;border:1.5px solid var(--fd-line-strong);font-size:14px;font-weight:700">Week 1 — Admission<span aria-hidden="true">▾</span></span>
+              <span style="min-height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-radius:8px;border:1.5px solid var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-size:14px;font-weight:700">Week 2 — Differential<span aria-hidden="true">▾</span></span>
+            </div>
+            <h3 style="margin:18px 0 8px;font-size:12px;font-weight:700;color:var(--fd-text-mid)">Focus</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px 20px;font-size:14px;color:var(--fd-text-mid)"><p style="margin:0">alliance · timeline · MSE</p><p style="margin:0">syndrome · differential · medical rule-out</p></div>
+            <h3 style="margin:18px 0 8px;font-size:12px;font-weight:700;color:var(--fd-text-mid)">What changes in the story</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px 20px;font-size:15px;line-height:1.6"><p style="margin:0;padding:12px 14px;background:var(--fd-callout);border-left:3px solid var(--fd-line-hover);border-radius:0 8px 8px 0">Jordan arrives guarded and tired after several nights of very little sleep. The chart is brief, the reason for admission is contested, and Jordan asks whether the team has already decided what is wrong.</p><p style="margin:0;padding:12px 14px;background:var(--fd-callout);border-left:3px solid var(--fd-teal);border-radius:0 8px 8px 0">Jordan reports racing thoughts, unusual confidence, and feeling watched during the worst nights. A family member describes a previous period of reduced sleep, but the timing of substance exposure and medical contributors is still unclear.</p></div>
+            <h3 style="margin:18px 0 8px;font-size:12px;font-weight:700;color:var(--fd-text-mid)">Carry it to rounds</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px 20px;font-size:15px;line-height:1.6"><p style="margin:0;padding:12px 14px;background:var(--fd-callout);border-left:3px solid var(--fd-line-hover);border-radius:0 8px 8px 0">On rounds, present the timeline and MSE first, then state what remains uncertain.</p><p style="margin:0;padding:12px 14px;background:var(--fd-callout);border-left:3px solid var(--fd-teal);border-radius:0 8px 8px 0">On rounds, label your leading diagnosis as a working hypothesis and state what would update it.</p></div>
+            <p style="margin:20px 0 0;padding-top:14px;border-top:1px solid var(--fd-line);font-size:14px;line-height:1.55;color:var(--fd-text-mid)"><strong style="color:var(--fd-text)">Pause and reflect:</strong> Which new fact would most change your working formulation, and why?</p>
+          </article>
+        </sc-if>
+      </div>
+
+      <aside aria-labelledby="thread" style="{{ asideStyle }}">
+        <section>
+          <h2 id="thread" style="margin:0 0 6px;font-family:'Source Serif 4',Georgia,serif;font-size:17px">Practice this part of the story</h2>
+          <div style="display:grid;grid-template-columns:10px minmax(0,1fr);gap:10px;padding:11px 2px;border-top:1px solid var(--fd-line)"><span aria-hidden="true" style="width:8px;height:8px;margin-top:7px;border-radius:50%;border:1.5px solid var(--fd-text-dim);box-sizing:border-box"></span><span><span style="display:block;font-size:14px;font-weight:600">Differential Dx Scaffolds</span><span style="display:block;font-size:12px;color:var(--fd-text-dim)">Reading</span></span></div>
+          <div style="display:grid;grid-template-columns:10px minmax(0,1fr);gap:10px;padding:11px 2px;border-top:1px solid var(--fd-line)"><span aria-hidden="true" style="width:8px;height:8px;margin-top:7px;border-radius:50%;background:var(--fd-teal)"></span><span><span style="display:block;font-size:14px;font-weight:600">Diagnostic Reasoning Workbench</span><span style="display:block;font-size:12px;line-height:1.45;color:var(--fd-text-dim)">Tool · Turn bedside data into a problem representation, a differential, and a supervised next step.</span></span></div>
+          <div style="display:grid;grid-template-columns:10px minmax(0,1fr);gap:10px;padding:11px 2px;border-top:1px solid var(--fd-line);border-bottom:1px solid var(--fd-line)"><span aria-hidden="true" style="width:8px;height:8px;margin-top:7px;border-radius:50%;border:1.5px solid var(--fd-text-dim);box-sizing:border-box"></span><span><span style="display:block;font-size:14px;font-weight:600">Medical Workup and Mimics</span><span style="display:block;font-size:12px;color:var(--fd-text-dim)">Reading</span></span></div>
+          <p style="margin:8px 0 0;font-size:12px;color:var(--fd-text-dim)">Opens in place. Back returns to week 2.</p>
+        </section>
+        <section style="padding:14px 16px;border-radius:10px;background:var(--fd-callout);border:1px solid var(--fd-line)">
+          <h2 style="margin:0 0 4px;font-size:14px;font-weight:700">Next week on the thread</h2>
+          <p style="margin:0;font-size:13px;line-height:1.5;color:var(--fd-text-mid)">Week 3 · Treatment: make room for ambivalence. Opens when this week's three items are practiced.</p>
+        </section>
+      </aside>
+    </div>
+
+    <section aria-label="Crisis contacts" style="margin:32px 0 0;padding:14px 18px;border:1px dashed var(--fd-line-hover);border-left:4px solid var(--fd-danger);border-radius:6px;background:var(--fd-surface-warm);font-size:13px;line-height:1.5;color:var(--fd-text-mid)"><strong style="color:var(--fd-text)">Crisis contacts block</strong> — rendered unchanged at build time from crisis_resources.json via the page's existing crisis-block marker. Not restyled, not collapsible.</section>
+  </main>
+
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <nav aria-label="Primary" style="position:absolute;left:0;right:0;top:778px;height:66px;box-sizing:border-box;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:6px 6px 8px;background:var(--fd-surface-warm);border-top:1px solid var(--fd-line);box-shadow:0 -4px 16px rgba(59,51,44,.08)">
+      <span aria-current="page" style="display:grid;place-items:center;border-radius:10px;background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-size:13px;font-weight:700">Today</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">Path</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">Library</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">Care</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">＋ Ask</span>
+    </nav>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:1600},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;device&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;'desktop'|'mobile'&quot;},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;practice&quot;,&quot;compare&quot;,&quot;pending&quot;],&quot;default&quot;:&quot;practice&quot;,&quot;tsType&quot;:&quot;'practice'|'compare'|'pending'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.theme === 'dark';
+    const mobile = this.props.device === 'mobile';
+    const mode = this.props.mode || 'practice';
+    const L = {'--fd-bg':'#f6f3ee','--fd-surface':'#ffffff','--fd-surface-warm':'#fffdf9','--fd-line':'#ebe5da','--fd-line-strong':'#ddd3c6','--fd-line-hover':'#c8baa7','--fd-text':'#3b332c','--fd-text-mid':'#64574b','--fd-text-dim':'#76695d','--fd-terracotta':'#a9634b','--fd-teal':'#3a7d6e','--fd-teal-deep':'#2c6356','--fd-teal-wash':'#edf4f2','--fd-olive':'#8b7040','--fd-olive-deep':'#725b35','--fd-olive-wash':'#f7f0e2','--fd-danger':'#a34132','--fd-danger-dark':'#8f372a','--fd-danger-wash':'#fbefec','--fd-chip':'#f1ece6','--fd-callout':'#fbf8f3','--fd-on-accent':'#ffffff','--fd-focus':'#2f6fd0','--fd-shadow-card':'0 1px 2px rgba(59,51,44,.05),0 8px 24px rgba(59,51,44,.04)'};
+    const D = {'--fd-bg':'#211d1a','--fd-surface':'#2a2521','--fd-surface-warm':'#2f2a25','--fd-line':'#3a332c','--fd-line-strong':'#4a4139','--fd-line-hover':'#5d5248','--fd-text':'#ece5db','--fd-text-mid':'#bcb0a2','--fd-text-dim':'#a2968a','--fd-terracotta':'#d08a6f','--fd-teal':'#5fa392','--fd-teal-deep':'#7fc0ae','--fd-teal-wash':'#1d332e','--fd-olive':'#c0a06a','--fd-olive-deep':'#d8bb87','--fd-olive-wash':'#332a1c','--fd-danger':'#d97a68','--fd-danger-dark':'#e8917f','--fd-danger-wash':'#3a231f','--fd-chip':'#332c26','--fd-callout':'#2b2620','--fd-on-accent':'#211d1a','--fd-focus':'#7aa2ff','--fd-shadow-card':'0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3)'};
+    const layout = mobile
+      ? {'--pad-x':'16px','--pad-top':'12px','--h1':'26px','--h2':'22px','--card-pad':'18px 16px','--case-cols':'minmax(0,1fr)'}
+      : {'--pad-x':'40px','--pad-top':'20px','--h1':'34px','--h2':'28px','--card-pad':'26px 28px','--case-cols':'230px minmax(0,1fr) 270px'};
+    const compare = mode === 'compare';
+    if (compare && !mobile) layout['--case-cols'] = '230px minmax(0,1fr)';
+    return {
+      rootStyle: Object.assign({}, dark ? D : L, layout, {
+        position:'relative', width: mobile ? '390px' : '1280px', minHeight: mobile ? '844px' : '800px',
+        background:'var(--fd-bg)', color:'var(--fd-text)', colorScheme: dark ? 'dark' : 'light',
+        fontFamily:"'Inter',system-ui,-apple-system,'Segoe UI',sans-serif", lineHeight:1.55, WebkitFontSmoothing:'antialiased'
+      }),
+      isMobile: mobile, isDesktop: !mobile,
+      isPractice: !compare, isCompare: compare,
+      isReviewed: mode !== 'pending', isPending: mode === 'pending',
+      asideStyle: (compare && !mobile)
+        ? {minWidth:0,display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'22px',gridColumn:'2'}
+        : {minWidth:0,display:'grid',gap:'22px'},
+      compareBtnLabel: compare ? 'Comparing week 1 ↔ 2' : 'Compare two weeks',
+      compareBtnStyle: {marginTop:'14px',width:'100%',minHeight:'44px',borderRadius:'8px',font:'inherit',fontSize:'14px',fontWeight:700,cursor:'pointer',
+        border: compare ? '1.5px solid var(--fd-teal)' : '1.5px solid var(--fd-line-strong)',
+        background: compare ? 'var(--fd-teal-wash)' : 'var(--fd-surface)', color:'var(--fd-teal-deep)'}
+    };
+  }
+}
+</script>
+</body>
+</html>
