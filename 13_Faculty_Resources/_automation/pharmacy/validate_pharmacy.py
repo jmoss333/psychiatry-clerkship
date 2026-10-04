@@ -43,28 +43,24 @@ FIELDMAP = HERE / "reconnect_meds_fieldmap.json"
 INTERACTION_CARDS = Path("05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html")
 AUDIO_OE_MANIFEST = Path("12_Media/audio_oe/MANIFEST.csv")
 
-# AC4' (spec 4a, Option A): a number carrying a dose unit is a dose literal, with ONE class of
-# exception decided in revision 2 (2026-10-03, OE run log decision AC4'): a laboratory or
-# physiology value is not a dose. In the 25 OpenEvidence draft cards of 2026-10-02 the old bare
-# regex matched 15 times and 14 were lab values — CRP "100 mg/L", valproate trough "85-125
-# mcg/mL", duloxetine "GFR <30 mL/min" — while the one real dose ("200 mg bid") is still
-# caught below. The exception is deliberately NARROW, because the same units also write
-# product strengths and rates, and those ARE doses:
-#   * mg|mcg per L or dL ............ lab value, always exempt (no product strength is per L/dL);
-#   * mL per min/minute ............. renal clearance (GFR, CrCl), always exempt;
-#   * mg|mcg per mL ................. exempt ONLY when the same sentence names a level before the
-#                                     number ("serum", "trough", "level", "concentration", ...):
-#                                     "5 mg/mL" with no such cue is an injectable strength and
-#                                     stays a dose literal — fail closed, reword to name the level;
-#   * anything else (mg/kg, mg/day, mg/min, mg/h, a bare "mg") stays a dose literal.
-# Every caller goes through dose_literals() / has_dose_literal() / mask_dose_literals(); there
-# is deliberately no public regex, so no caller can silently keep the stricter or looser rule.
+# AC4': a concentration/rate unit alone cannot distinguish a lab from a formulation or
+# administration instruction. Exempt only an explicitly named measurement in this sentence;
+# product/administration wording wins over a nearby lab cue. Unknown context stays a dose.
+# All callers use these helpers, including receipt masking and the public projection check.
 _DOSE_CANDIDATE_RE = re.compile(r"\b\d+(?:\.\d+)?\s?(mg|mcg|mL|mg/kg)\b", re.I)
 _PER_LAB_VOLUME_RE = re.compile(r"\s?/\s?d?L\b", re.I)
 _PER_MINUTE_RE = re.compile(r"\s?/\s?min(?:ute)?s?\b", re.I)
 _PER_ML_RE = re.compile(r"\s?/\s?mL\b", re.I)
 _LEVEL_CUE_RE = re.compile(
-    r"\b(?:levels?|concentrations?|troughs?|peaks?|serum|plasma|range|therapeutic)\b", re.I)
+    r"\b(?:levels?|troughs?|peaks?|serum|plasma|"
+    r"total valproate concentrations?|epilepsy range)\b", re.I)
+_LAB_CUE_RE = re.compile(
+    r"\b(?:CRP|C-reactive protein|glucose|creatinine|cholesterol|triglycerides?|"
+    r"blood urea nitrogen|BUN|mean difference)\b", re.I)
+_RENAL_CUE_RE = re.compile(r"\b(?:e?GFR|CrCl|creatinine clearance|renal clearance)\b", re.I)
+_PRODUCT_CUE_RE = re.compile(
+    r"\b(?:supplied|available|formulations?|solutions?|vials?|ampoules?|syringes?|"
+    r"infus\w*|inject\w*|administer\w*|deliver\w*|pumps?|draw up)\b", re.I)
 _SENTENCE_BREAK_RE = re.compile(r"[.!?](?=\s)|\n")
 LEVEL_CUE_WINDOW = 160  # characters searched back from the number, never past a sentence break
 
@@ -80,12 +76,16 @@ def _sentence_before(text, start):
 def _is_lab_value(text, match):
     unit = match.group(1).lower()
     after = text[match.end():]
+    before = _sentence_before(text, match.start())
+    sentence_after = _SENTENCE_BREAK_RE.split(after[:LEVEL_CUE_WINDOW], maxsplit=1)[0]
+    if _PRODUCT_CUE_RE.search(before) or _PRODUCT_CUE_RE.search(sentence_after):
+        return False
     if unit in ("mg", "mcg") and _PER_LAB_VOLUME_RE.match(after):
-        return True
+        return bool(_LAB_CUE_RE.search(before) or _LEVEL_CUE_RE.search(before))
     if unit == "ml" and _PER_MINUTE_RE.match(after):
-        return True
+        return bool(_RENAL_CUE_RE.search(before))
     if unit in ("mg", "mcg") and _PER_ML_RE.match(after):
-        return bool(_LEVEL_CUE_RE.search(_sentence_before(text, match.start())))
+        return bool(_LEVEL_CUE_RE.search(before))
     return False
 
 

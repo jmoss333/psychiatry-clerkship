@@ -281,9 +281,14 @@ test('it carries no machine-specific paths', () => {
 
 function driftFixture({ lastChecked = '2026-10-10', drifts = [], lastReviewed = '2026-09-29' } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wnj-drift-'));
+  // Hash of the literal J-field payload {"inpatientUses":["Synthetic fixture"]}.
+  const reviewed = date => ({ status: 'reviewed', lastReviewed: date, reviewer: 'Synthetic reviewer',
+    reviewedFieldsHash: 'd1cd42471a329e8b1d20f114cef5bd4ac0a9786e9f4b1936c9cba2a3df8d7d90' });
+  const card = (id, date) => ({ id, inpatientUses: ['Synthetic fixture'],
+    provenance: { fieldClasses: { inpatientUses: 'J' } }, facultyReview: reviewed(date) });
   fs.writeFileSync(path.join(tmp, 'pharmacy.json'), JSON.stringify({ records: [
-    { id: 'lithium', facultyReview: { status: 'reviewed', lastReviewed } },
-    { id: 'clozapine', facultyReview: { status: 'reviewed', lastReviewed: '2026-09-29' } },
+    card('lithium', lastReviewed),
+    card('clozapine', '2026-09-29'),
     { id: 'quetiapine', facultyReview: { status: 'pending' } },
   ] }));
   fs.writeFileSync(path.join(tmp, 'ledger.json'), JSON.stringify({ schemaVersion: 1, lastChecked, drifts }));
@@ -314,8 +319,8 @@ print(J.describe_label_drift() if status == "waiting" else "")`], {
 test('label-drift: a reviewed card whose label changed after the review is owed, and named', () => {
   const tmp = driftFixture({ drifts: [driftRow('lithium'), driftRow('quetiapine')] });
   const { summary, detail } = measureDrift(tmp);
-  assert.equal(summary, 'waiting 1 2', 'the pending card is not counted; the two reviewed ones are the total');
-  assert.equal(detail, 'Re-review against the new label: lithium (label v14, 2026-10-06: flags, monitoring)');
+  assert.equal(summary, 'waiting 2 3', 'recorded drift survives pending status; total includes its obligation');
+  assert.equal(detail, 'Re-review against the new label: lithium (label v14, 2026-10-06: flags, monitoring); quetiapine (label v14, 2026-10-06: flags, monitoring)');
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
@@ -348,4 +353,38 @@ test('label-drift: a fresh full check with nothing owed retires the row', () => 
   const tmp = driftFixture();
   assert.equal(measureDrift(tmp).summary, 'done 0 2');
   fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+// A remediation edit cannot stand in for a faculty review of the observed label change.
+test('label-drift: pending demotion, missing date, or a removed card retains the obligation', () => {
+  for (const change of ['pending', 'no-date', 'removed']) {
+    const tmp = driftFixture({ drifts: [driftRow('lithium')] });
+    try {
+      const file = path.join(tmp, 'pharmacy.json');
+      const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+      if (change === 'removed') doc.records = doc.records.filter(r => r.id !== 'lithium');
+      else {
+        doc.records[0].facultyReview.status = 'pending';
+        if (change === 'no-date') delete doc.records[0].facultyReview.lastReviewed;
+      }
+      fs.writeFileSync(file, JSON.stringify(doc));
+      assert.match(measureDrift(tmp).summary, /^waiting 1 /, change);
+    } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
+  }
+});
+
+test('label-drift: a later date without a valid current faculty receipt cannot clear work', () => {
+  for (const invalid of ['pending', 'hash', 'reviewer']) {
+    const tmp = driftFixture({ drifts: [driftRow('lithium')], lastReviewed: '2026-10-11' });
+    try {
+      const file = path.join(tmp, 'pharmacy.json');
+      const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+      const review = doc.records[0].facultyReview;
+      if (invalid === 'pending') review.status = 'pending';
+      if (invalid === 'hash') review.reviewedFieldsHash = '0'.repeat(64);
+      if (invalid === 'reviewer') delete review.reviewer;
+      fs.writeFileSync(file, JSON.stringify(doc));
+      assert.match(measureDrift(tmp).summary, /^waiting 1 /, invalid);
+    } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
+  }
 });

@@ -13,6 +13,7 @@ import os
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -221,6 +222,51 @@ class MainTest(unittest.TestCase):
         self.assertNotIn("testdrug", pins["agents"])
         self.assertIn("verify_pharmacy_labels.py", pins["unpinned"]["testdrug"])
 
+    def test_refusal_preserves_the_last_pin_and_remains_a_finding(self):
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        old_pin = copy.deepcopy(ws.pins_doc()["agents"]["testdrug"])
+        newer = FakeDailyMed(spl(4, "2026-02-01", dosing="Rewritten dosing."))
+        self.assertEqual(ws.run("--pin", get=newer)[0], 1)
+        self.assertEqual(ws.pins_doc()["agents"].get("testdrug"), old_pin)
+        self.assertEqual(ws.run("--offline", get=newer)[0], 1)
+        ledger = Path(ws.dir.name) / "ledger.json"
+        code, out = ws.run("--record", "--ledger", str(ledger), get=newer)
+        self.assertEqual(code, 1, out)
+        self.assertIn("REVIEW", out)
+        doc = json.loads(ledger.read_text())
+        self.assertEqual(doc["drifts"][0]["toVersion"], 4)
+        self.assertIsNone(doc["lastChecked"], "a refused pin cannot refresh complete coverage")
+
+    def test_unpinned_receipt_agents_never_pass_an_empty_check(self):
+        ws = Workspace(self, receipt(), pins_doc={
+            "schemaVersion": 1, "agents": {}, "unpinned": {"testdrug": "newer label"}})
+        for mode in ((), ("--offline",)):
+            code, out = ws.run(*mode, get=FakeDailyMed(spl(3, "2026-01-01")))
+            self.assertEqual(code, 2, out)
+            self.assertIn("testdrug", out)
+
+    def test_six_draft_additions_require_real_pins_even_when_marked_unpinned(self):
+        # #944 compatibility: synthetic receipts only, never invent committed source pins.
+        additions = ("buspirone", "clomipramine", "deutetrabenazine",
+                     "fluvoxamine", "naloxone", "valbenazine")
+        expanded = receipt()
+        for agent in additions:
+            expanded["agents"][agent] = copy.deepcopy(expanded["agents"]["testdrug"])
+        ws = Workspace(self, receipt())
+        ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
+        ws.receipt.write_text(json.dumps(expanded))
+        pins = ws.pins_doc()
+        pins["unpinned"] = {a: "needs verification" for a in additions}
+        ws.pins.write_text(json.dumps(pins))
+        ledger = Path(ws.dir.name) / "ledger.json"
+        for mode in (("--offline",), ("--record", "--ledger", str(ledger))):
+            code, out = ws.run(*mode, get=FakeDailyMed(spl(3, "2026-01-01")))
+            self.assertEqual(code, 2, out)
+            for agent in additions:
+                self.assertIn(agent, out)
+        self.assertFalse(ledger.exists())
+
     def test_network_failure_could_not_check(self):
         ws = Workspace(self, receipt())
         ws.run("--pin", get=FakeDailyMed(spl(3, "2026-01-01")))
@@ -331,6 +377,35 @@ class LedgerTest(unittest.TestCase):
                                 get=FakeDailyMed(spl(3, "2026-01-01")))
         self.assertEqual(code, 2, out)
         self.assertEqual(self.ledger.read_text(), "{not json")
+
+    def test_failed_atomic_replace_preserves_existing_ledger_and_cleans_temporary_file(self):
+        self.ledger.parent.mkdir(parents=True)
+        original = '{"schemaVersion":1,"lastChecked":"2026-01-01","drifts":[],"extra":"kept"}\n'
+        self.ledger.write_text(original)
+        with mock.patch.object(drift.os, "replace", side_effect=OSError("disk failure")):
+            with self.assertRaises(drift.CouldNotCheck):
+                drift.record(self.ledger, [], True, "2026-02-01")
+        self.assertEqual(self.ledger.read_text(), original)
+        self.assertEqual(list(self.ledger.parent.iterdir()), [self.ledger])
+
+    def test_atomic_write_failure_before_replace_preserves_ledger(self):
+        self.ledger.parent.mkdir(parents=True)
+        original = '{"schemaVersion":1,"lastChecked":"2026-01-01","drifts":[]}\n'
+        self.ledger.write_text(original)
+        with mock.patch.object(drift.os, "fsync", side_effect=OSError("disk full")):
+            with self.assertRaises(drift.CouldNotCheck):
+                drift.record(self.ledger, [], True, "2026-02-01")
+        self.assertEqual(self.ledger.read_text(), original)
+        self.assertEqual(list(self.ledger.parent.iterdir()), [self.ledger])
+
+    def test_ledger_updates_preserve_unknown_fields_and_stored_diff_text(self):
+        self.ledger.parent.mkdir(parents=True)
+        old = {"agent": "testdrug", "toVersion": 4, "texts": {"2": {"old": "old", "new": "new"}}}
+        self.ledger.write_text(json.dumps({"schemaVersion": 1, "lastChecked": None,
+                                         "drifts": [old], "extension": "kept"}))
+        drift.record(self.ledger, [], True, "2026-02-01")
+        self.assertEqual(self.ledger_doc()["drifts"], [old])
+        self.assertEqual(self.ledger_doc()["extension"], "kept")
 
     def test_the_ledger_lives_outside_the_repository_and_the_cli_defaults_to_it(self):
         saved = {k: os.environ.pop(k, None) for k in ("CLERKSHIP_LABEL_DRIFT_LEDGER", "XDG_STATE_HOME")}

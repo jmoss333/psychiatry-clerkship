@@ -191,19 +191,16 @@ def _today():
 
 
 def _label_drift_owed():
-    """(owed drifts, reviewed card ids) -- read from the ledger check_label_drift.py --record writes.
+    """Recorded drift survives remediation, demotion and removal of the card.
 
-    The predicate is the human act and nothing else. A drift is owed while the card is
-    reviewed and its facultyReview.lastReviewed is BEFORE the day the drift was observed.
-    Re-running the check, re-verifying the receipt, or re-pinning the label never retires
-    one: the ledger is append-only and keyed by (agent, new version), so a later clean run
-    cannot erase it -- only your review, dated on or after the observation, can. A missing
-    ledger, or one whose last FULL run is older than LABEL_DRIFT_MAX_AGE_DAYS, is a failed
-    measurement (unknown), never zero: "no drift" from a check nobody ran is not no drift.
+    Only a current, hash-valid reviewed record with reviewer/date can supersede an
+    observation. The registry's existing faculty-review protections remain authoritative;
+    this reader never writes or manufactures an approval. Missing/stale coverage is unknown.
     """
     import datetime as dt
     sys.path.insert(0, str(PHARMACY_TOOLS))
     import check_label_drift  # noqa: E402  (one definition of where the ledger lives)
+    from build_rx_deck import j_review_valid  # existing current-J-field approval rule
     path = check_label_drift.ledger_path()
     if not path.is_file():
         raise FileNotFoundError("never recorded here: run check_label_drift.py --record "
@@ -217,21 +214,29 @@ def _label_drift_owed():
         raise ValueError("label drift last checked %s (%d days ago, limit %d)"
                          % (last, age, LABEL_DRIFT_MAX_AGE_DAYS))
     records = {r["id"]: r for r in json.loads(PHARMACY.read_text(encoding="utf-8"))["records"]}
-    reviewed = sorted(rid for rid, r in records.items()
-                      if (r.get("facultyReview") or {}).get("status") == "reviewed")
+    reviewed = {rid for rid, r in records.items()
+                if (r.get("facultyReview") or {}).get("status") == "reviewed"}
     owed = {}
     for drift in ledger.get("drifts", []):
         agent = drift["agent"]
-        if agent not in reviewed:
-            continue
-        signed = (records[agent].get("facultyReview") or {}).get("lastReviewed") or ""
-        if signed < drift["observedOn"]:
+        record = records.get(agent, {})
+        review = record.get("facultyReview") or {}
+        try:
+            signed = dt.date.fromisoformat(review.get("lastReviewed") or "")
+        except (TypeError, ValueError):
+            signed = None
+        observed = dt.date.fromisoformat(drift["observedOn"])
+        reviewer = review.get("reviewer")
+        superseded = (j_review_valid(record) and isinstance(reviewer, str) and reviewer.strip()
+                      and signed is not None and observed <= signed <= _today())
+        if not superseded:
             owed[agent] = drift              # the newest observation per card wins
-    return [owed[a] for a in sorted(owed)], reviewed
+    # Include pending/deleted obligations in the denominator; never report more owed than total.
+    return [owed[a] for a in sorted(owed)], sorted(reviewed | set(owed))
 
 
 def measure_label_drift():
-    """Reviewed pharmacy cards whose DailyMed label changed after the review."""
+    """Pharmacy cards with a recorded label change still awaiting a valid review."""
     owed, reviewed = _label_drift_owed()
     return len(owed), len(reviewed)
 
@@ -337,7 +342,7 @@ ROWS = [
         "needs": None,
         "measure": measure_label_drift,
         "detail": describe_label_drift,
-        "unit": "reviewed pharmacy cards whose DailyMed label changed after your review",
+        "unit": "pharmacy cards with unresolved label changes",
         "why": "A reviewed card is bound to the label it was checked against (receipt set id "
                "and date, AC2), and nothing noticed when the manufacturer published a new "
                "version: the card kept matching its receipt while the label said something "

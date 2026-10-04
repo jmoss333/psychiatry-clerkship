@@ -126,6 +126,24 @@ class ValidatePharmacyTest(unittest.TestCase):
             with self.subTest(tool=path.name):
                 self.assertNotIn("mg|mcg", path.read_text(encoding="utf-8"))
 
+    def test_product_strengths_and_administration_rates_are_caught_and_masked(self):
+        for text in (
+            "supplied at a concentration of 5 mg/mL",
+            "available concentration range is 2–5 mg/mL",
+            "serum levels guide treatment; infuse at 5 mL/min",
+            "infuse at 5 mL/min", "solution contains 500 mg/L",
+            "the vial contains 5 mg/dL", "therapeutic formulation 2 mcg/mL",
+            "Serum levels guide selection of a 5 mg/mL solution.",
+            "Adjust for CrCl before using a 5 mL/min infusion.",
+            "Serum levels guide use of a 500 mg/L solution.",
+        ):
+            with self.subTest(text=text):
+                self.assertTrue(vp.has_dose_literal(text))
+                self.assertIn("[dose]", vp.mask_dose_literals(text))
+                data = self.mutate()
+                first(data)["dosing"]["titration"] = text
+                self.assertTagged(run(data), "AC4'")
+
     def test_denylisted_key_fails(self):
         data = self.mutate()
         first(data)["provenance"]["carried"]["absolute_max_dose"] = "x"

@@ -31,7 +31,7 @@ reason. This tool closes the gap in two steps.
 
     --offline
         No network. The pins agree with the committed receipt: every receipt agent is pinned
-        (or listed under "unpinned" with a reason), each pin names the receipt's set id and
+        (an "unpinned" reason is a finding, not an exemption), each pin names the receipt's set id and
         effective date, and no pinned quote carries a dose literal. CI runs this.
 
 Exit 0 nothing for a reviewer to do, 1 a card needs re-review (a content section changed, a
@@ -47,6 +47,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -335,8 +336,24 @@ def record(ledger_file, report, examined_all, today):
         added += 1
     if examined_all:
         ledger["lastChecked"] = today
-    Path(ledger_file).parent.mkdir(parents=True, exist_ok=True)
-    Path(ledger_file).write_text(json.dumps(ledger, indent=1) + "\n", encoding="utf-8")
+    # Serialize before opening a file; preserve the last complete ledger on any failure.
+    payload = json.dumps(ledger, indent=1) + "\n"
+    target = Path(ledger_file)
+    temporary = None
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=target.parent,
+                                         prefix="." + target.name + ".", delete=False) as out:
+            temporary = Path(out.name)
+            out.write(payload)
+            out.flush()
+            os.fsync(out.fileno())
+        os.replace(temporary, target)
+    except OSError as error:
+        raise CouldNotCheck("could not persist ledger %s (%s)" % (target, error)) from error
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
     return added
 
 
@@ -358,10 +375,12 @@ def offline_check(receipt, pins):
     """(findings, could_not_check) — the pins agree with the receipt, no network."""
     findings, missing = [], []
     pinned, unpinned = pins.get("agents", {}), pins.get("unpinned", {})
+    if not receipt.get("agents"):
+        missing.append("empty label receipt")
     for agent, entry in sorted(receipt.get("agents", {}).items()):
         ref = entry.get("reference", {})
         if agent in unpinned:
-            continue
+            findings.append("%s: pin refused — %s" % (agent, unpinned[agent]))
         pin = pinned.get(agent)
         if pin is None:
             missing.append(agent)
@@ -402,7 +421,7 @@ def do_pin(args, receipt, pins, get):
                       "--only %s, review the card against the new label, then pin"
                       % (spl["effectiveDate"], ref.get("effectiveDate"), agent))
             pins.setdefault("unpinned", {})[agent] = reason
-            pins.get("agents", {}).pop(agent, None)
+            # Keep the last-known-good sections so normal checks can still detect drift.
             refused.append(agent)
             print("REFUSED %-16s %s" % (agent, reason))
             continue
@@ -459,7 +478,8 @@ def do_check(args, receipt, pins, get):
     for line in findings:
         print("NOTE " + line)
     if args.record:
-        examined_all = set(wanted) == set(pinned)
+        examined_all = (bool(wanted) and not findings
+                        and set(wanted) == set(receipt.get("agents", {})))
         added = record(args.ledger, report, examined_all, datetime.date.today().isoformat())
         print("recorded %d new drift(s) in %s%s" % (
             added, args.ledger, "" if examined_all else " (partial run: lastChecked unchanged)"),
