@@ -220,6 +220,13 @@ class MainTest(unittest.TestCase):
         pins = ws.pins_doc()
         self.assertNotIn("testdrug", pins["agents"])
         self.assertIn("verify_pharmacy_labels.py", pins["unpinned"]["testdrug"])
+        # ...and the unpinned agent is a finding everywhere, never a silent skip (Codex P1 #954).
+        code, out = ws.run("--offline", get=FakeDailyMed(b"", fail=True))
+        self.assertEqual(code, 1, out)
+        self.assertIn("testdrug: unpinned", out)
+        code, out = ws.run(get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 1, out)
+        self.assertIn("testdrug: unpinned", out)
 
     def test_network_failure_could_not_check(self):
         ws = Workspace(self, receipt())
