@@ -53,9 +53,12 @@ AUDIO_OE_MANIFEST = Path("12_Media/audio_oe/MANIFEST.csv")
 #   * mg|mcg per L or dL ............ lab value, always exempt (no product strength is per L/dL);
 #   * mL per min/minute ............. renal clearance (GFR, CrCl), always exempt;
 #   * mg|mcg per mL ................. exempt ONLY when the same sentence names a level before the
-#                                     number ("serum", "trough", "level", "concentration", ...):
-#                                     "5 mg/mL" with no such cue is an injectable strength and
-#                                     stays a dose literal — fail closed, reword to name the level;
+#                                     number ("serum", "trough", "level", "concentration", ...)
+#                                     AND names no product ("supplied", "vial", "solution",
+#                                     "injection", "available", "each mL", ...): "5 mg/mL" with no
+#                                     level cue, or "supplied at a concentration of 5 mg/mL", is a
+#                                     product strength and stays a dose literal — fail closed,
+#                                     reword to name the level;
 #   * anything else (mg/kg, mg/day, mg/min, mg/h, a bare "mg") stays a dose literal.
 # Every caller goes through dose_literals() / has_dose_literal() / mask_dose_literals(); there
 # is deliberately no public regex, so no caller can silently keep the stricter or looser rule.
@@ -65,6 +68,12 @@ _PER_MINUTE_RE = re.compile(r"\s?/\s?min(?:ute)?s?\b", re.I)
 _PER_ML_RE = re.compile(r"\s?/\s?mL\b", re.I)
 _LEVEL_CUE_RE = re.compile(
     r"\b(?:levels?|concentrations?|troughs?|peaks?|serum|plasma|range|therapeutic)\b", re.I)
+# A product cue vetoes a level cue (Codex P2 on #953): "concentration" and "range" also describe
+# what is in the vial.
+_PRODUCT_CUE_RE = re.compile(
+    r"\b(?:supplied|available|vials?|ampoules?|ampules?|syringes?|injections?|injectables?|"
+    r"solutions?|suspensions?|concentrates?|elixirs?|syrups?|drops|formulations?|strengths?|"
+    r"contains?|each)\b", re.I)
 _SENTENCE_BREAK_RE = re.compile(r"[.!?](?=\s)|\n")
 LEVEL_CUE_WINDOW = 160  # characters searched back from the number, never past a sentence break
 
@@ -85,7 +94,8 @@ def _is_lab_value(text, match):
     if unit == "ml" and _PER_MINUTE_RE.match(after):
         return True
     if unit in ("mg", "mcg") and _PER_ML_RE.match(after):
-        return bool(_LEVEL_CUE_RE.search(_sentence_before(text, match.start())))
+        before = _sentence_before(text, match.start())
+        return bool(_LEVEL_CUE_RE.search(before)) and not _PRODUCT_CUE_RE.search(before)
     return False
 
 
