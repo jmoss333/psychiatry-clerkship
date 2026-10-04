@@ -302,3 +302,58 @@ test('AC3/AC4/AC10 (merge-day human gate): release authorization, source review,
     assert.equal(card.facultyReview && card.facultyReview.status, 'reviewed', chapter.id + ': ' + link.anchor + ' card not attested; attest it or drop the link');
   }
 });
+
+// ---------------------------------------------------------------------------
+// Objective × practice-task coverage gate (docs/case-journeys/practice-coverage.json)
+// ---------------------------------------------------------------------------
+test('AC11: every learning objective reaches every connected-practice task, or the gap is an accepted gap with a reason', () => {
+  const coverage = read('docs/case-journeys/practice-coverage.json');
+  const html = fs.readFileSync(new URL('../08_Cases_and_Simulation/one-patient-six-weeks.html', import.meta.url), 'utf8');
+  const pack = JSON.parse(html.match(/<script[^>]*id="case-practice-data"[^>]*>([\s\S]*?)<\/script>/)[1]);
+  assert.deepEqual(coverage.tasks, Object.keys(pack.tasks), 'coverage tasks must be exactly the shipped practice tasks');
+  const byCase = name => journeys.find(d => /eli|leah|marisol/.exec(d.id)[0] === name.split('-')[0]);
+  const matrix = {};
+  for (const data of journeys) {
+    const slug = names.find(n => n.startsWith(/eli|leah|marisol/.exec(data.id)[0]));
+    const reach = Object.fromEntries(data.learningObjectives.map((_, i) => [i + 1, new Set()]));
+    const anchored = new Set();
+    for (const chapter of data.weeks) {
+      const tasks = coverage.chapters[chapter.id];
+      assert.ok(Array.isArray(tasks) && tasks.length, chapter.id + ': no practice tasks declared');
+      for (const t of tasks) { assert.ok(coverage.tasks.includes(t), chapter.id + ': unknown task ' + t); anchored.add(t); }
+      for (const o of chapter.objectiveIds) tasks.forEach(t => reach[o].add(t));
+    }
+    for (const t of coverage.tasks) assert.ok(anchored.has(t), slug + ': task ' + t + ' is anchored on no chapter');
+    const accepted = new Set(coverage.acceptedGaps.filter(g => g.case === slug).map(g => g.objective + ':' + g.task));
+    for (const g of coverage.acceptedGaps.filter(g => g.case === slug)) {
+      assert.ok(typeof g.reason === 'string' && g.reason.length > 20, slug + ': accepted gap without a reason');
+      assert.ok(!reach[g.objective].has(g.task), slug + `: accepted gap ${g.objective}:${g.task} is no longer a gap — remove it`);
+    }
+    for (const o of Object.keys(reach)) for (const t of coverage.tasks) {
+      assert.ok(reach[o].has(t) || accepted.has(o + ':' + t), slug + `: objective ${o} never reaches task ${t}`);
+    }
+    matrix[slug] = Object.fromEntries(Object.entries(reach).map(([o, s]) => [o, [...s].sort()]));
+  }
+  assert.equal(Object.keys(coverage.chapters).length, journeys.reduce((n, d) => n + d.weeks.length, 0), 'coverage must map exactly the shipped chapters');
+  assert.equal(Object.keys(matrix).length, 3);
+});
+
+test('AC11b: the faculty review export prints the objective × task matrix and the accepted gaps', () => {
+  const text = execFileSync('python3', ['-B', '-c', `
+import sys,tempfile,shutil
+from pathlib import Path
+sys.path.insert(0,'13_Faculty_Resources/_automation')
+from export_curriculum_review import Doc, render_case_journeys
+with tempfile.TemporaryDirectory() as directory:
+    build=Path(directory); (build/'tools').mkdir()
+    shutil.copyfile('08_Cases_and_Simulation/one-patient-six-weeks.html',build/'tools/one-patient-six-weeks.html')
+    shutil.copyfile('longitudinal_case.json',build/'longitudinal_case.json')
+    for source in Path('08_Cases_and_Simulation/case-journeys').iterdir(): shutil.copyfile(source,build/'tools'/source.name)
+    doc=Doc('cases.md','Cases'); render_case_journeys(doc,build); print(doc.text)
+`], {cwd:new URL('../',import.meta.url),encoding:'utf8'});
+  const coverage = read('docs/case-journeys/practice-coverage.json');
+  assert.match(text, /Objective × practice-task coverage/);
+  assert.match(text, new RegExp(coverage.status.replace(/[-]/g, '\\-')));
+  for (const g of coverage.acceptedGaps) assert.ok(text.includes(g.reason), 'accepted gap reason printed: ' + g.reason.slice(0, 40));
+  for (const data of journeys) for (const [i] of data.learningObjectives.entries()) assert.match(text, new RegExp(`\\| ${i + 1} \\| `));
+});
