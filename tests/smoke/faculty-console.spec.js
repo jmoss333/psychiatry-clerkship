@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { syntheticMedicationSnapshot } from '../fixtures/medication-review.mjs';
+import { medicationView, prepareMedicationApproval } from '../../faculty-console/netlify/functions/pharmacy-actions.mjs';
 
 import {
   assessBank,
@@ -3587,6 +3589,105 @@ test.describe('not published yet instead of Not found', () => {
     await page.locator('#review-item-selector').selectOption('page:nope.md');
     await expect(page.locator('#preview-status-label')).toHaveText('Not published yet', { timeout: 15_000 });
     await expect(page.locator('#preview-status')).toContainText('It goes live at the 11:05 AM ET publish (in 15 min)');
+  });
+});
+
+// All medication writes below terminate in a synthetic route fixture. Never use a
+// faculty credential or let an approval request reach the deployed service.
+test.describe('individual medication review', () => {
+  async function medicationFixture(page, { stale = false, needsSync = false, hostile = false } = {}) {
+    let snapshot = syntheticMedicationSnapshot(); snapshot.needsSync = needsSync;
+    if (hostile) snapshot.registry.json.records[0].generic = '<img src=x onerror=alert(1)>';
+    const posts = [];
+    await page.route('**/api/attest**', async route => {
+      if (route.request().method() !== 'POST') {
+        await route.fulfill({ json: medicationView(snapshot, 'Synthetic Faculty') }); return;
+      }
+      const body = route.request().postDataJSON(); posts.push(body);
+      if (stale) { await route.fulfill({ status: 409, json: { error: { message: 'The repository changed. Reload and review this medication again before approving.' } } }); return; }
+      const next = prepareMedicationApproval(snapshot, body, 'Synthetic Faculty', '2026-01-02');
+      snapshot = { ...snapshot, head: 'f'.repeat(40), registry: { ...snapshot.registry, json: next.registry } };
+      await route.fulfill({ json: { ok: true, updated: 1, id: body.id, commit: `https://github.com/synthetic/repo/commit/${'f'.repeat(40)}` } });
+    });
+    await page.goto('/medications.html');
+    await page.getByLabel('Faculty key', { exact: true }).fill('synthetic-key');
+    await page.getByRole('button', { name: 'Open medication reviews' }).click();
+    await expect(page.getByRole('combobox', { name: 'Medication', exact: true })).toBeVisible();
+    return { posts, snapshot: () => snapshot };
+  }
+  async function confirmMedication(page) {
+    for (const key of ['card', 'sources', 'retrieval']) await page.locator(`[data-confirm="${key}"]`).check();
+  }
+  for (const width of [1280, 390]) for (const theme of ['light', 'dark']) {
+    test(`${width}px ${theme}: explicit review saves only the selected card and shows a receipt`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 }); await page.emulateMedia({ colorScheme: theme });
+      const errors = []; page.on('pageerror', error => errors.push(error.message));
+      const fixture = await medicationFixture(page);
+      await expect(page).toHaveTitle('Medication review — Faculty console');
+      const approve = page.getByRole('button', { name: 'Approve this medication', exact: true });
+      await expect(approve).toBeDisabled();
+      await page.locator('[data-confirm="card"]').check(); await page.locator('[data-confirm="sources"]').check(); await expect(approve).toBeDisabled();
+      await page.getByRole('combobox', { name: 'Medication', exact: true }).selectOption('synthetic-two');
+      await expect(page.locator('[data-confirm="card"]')).not.toBeChecked();
+      await expect(page.locator('#medication-heading')).toBeFocused();
+      await page.getByText('Retrieval questions and reveal mappings', { exact: true }).click();
+      await expect(page.getByText('mechanism.t1', { exact: true })).toBeVisible();
+      await confirmMedication(page);
+      await expect(approve).toBeEnabled();
+      if (process.env.MEDICATION_QA_DIR) await page.screenshot({ path: `${process.env.MEDICATION_QA_DIR}/${width}-${theme}-before.png`, fullPage: true });
+      await approve.focus(); await page.keyboard.press('Enter');
+      await expect(page.getByRole('link', { name: 'Open commit receipt for Synthetic medication two' })).toBeVisible();
+      await expect(page.getByRole('status')).toContainText('Saved status reloaded');
+      await expect(approve).toBeDisabled();
+      expect(fixture.posts).toHaveLength(1); expect(fixture.posts[0].id).toBe('synthetic-two');
+      expect(fixture.snapshot().registry.json.records[0].facultyReview.status).toBe('pending');
+      expect(fixture.snapshot().registry.json.records[1].facultyReview.reviewer).toBe('Synthetic Faculty');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect(errors).toEqual([]);
+      if (process.env.MEDICATION_QA_DIR) await page.screenshot({ path: `${process.env.MEDICATION_QA_DIR}/${width}-${theme}-saved.png`, fullPage: true });
+    });
+  }
+  test('conflict requires reload and fresh confirmations; no success receipt is shown', async ({ page }) => {
+    const fixture = await medicationFixture(page, { stale: true }); await confirmMedication(page);
+    await page.getByRole('button', { name: 'Approve this medication' }).click();
+    await expect(page.getByRole('status')).toContainText('repository changed');
+    await expect(page.getByRole('link', { name: /Open commit receipt/ })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Reload saved medications' }).click();
+    await expect(page.locator('[data-confirm="card"]')).not.toBeChecked();
+    await expect(page.getByRole('button', { name: 'Approve this medication' })).toBeDisabled(); expect(fixture.posts).toHaveLength(1);
+  });
+  test('reload resets confirmations; locking removes the key and saved card', async ({ page }) => {
+    const fixture = await medicationFixture(page); await confirmMedication(page); await page.reload();
+    await expect(page.locator('[data-confirm="card"]')).not.toBeChecked();
+    await page.getByRole('button', { name: 'Lock console' }).click(); await expect(page.getByLabel('Faculty key', { exact: true })).toBeVisible();
+    await expect(page.locator('#medication-picker')).toHaveCount(0); expect(await page.evaluate(() => sessionStorage.getItem('fac_key'))).toBeNull(); expect(fixture.posts).toHaveLength(0);
+  });
+  test('a late unauthorized response cannot clear a newer unlocked session', async ({ page }) => {
+    let oldRequest;
+    await page.route('**/api/attest**', async route => {
+      if (route.request().headers()['x-faculty-key'] === 'old-key') { oldRequest = route; return; }
+      await route.fulfill({ json: medicationView(syntheticMedicationSnapshot(), 'Synthetic Faculty') });
+    });
+    await page.goto('/medications.html');
+    await page.getByLabel('Faculty key', { exact: true }).fill('old-key');
+    await page.getByRole('button', { name: 'Open medication reviews' }).click();
+    await expect.poll(() => Boolean(oldRequest)).toBe(true);
+    await page.getByRole('button', { name: 'Lock console' }).click();
+    await page.getByLabel('Faculty key', { exact: true }).fill('new-key');
+    await page.getByRole('button', { name: 'Open medication reviews' }).click();
+    await expect(page.getByRole('combobox', { name: 'Medication', exact: true })).toBeVisible();
+    const oldResponse = page.waitForResponse(response => response.status() === 401);
+    await oldRequest.fulfill({ status: 401, json: { error: { message: 'Old key expired' } } });
+    await oldResponse;
+    await page.getByRole('button', { name: 'Reload saved medications' }).click();
+    await expect(page.getByRole('combobox', { name: 'Medication', exact: true })).toBeVisible();
+    expect(await page.evaluate(() => sessionStorage.getItem('fac_key'))).toBe('new-key');
+  });
+  test('stale branch prevents approval and saved strings render as text, not markup', async ({ page }) => {
+    const fixture = await medicationFixture(page, { needsSync: true, hostile: true }); await confirmMedication(page);
+    await expect(page.getByRole('alert')).toContainText('behind main');
+    await expect(page.locator('#medication-heading')).toHaveText('<img src=x onerror=alert(1)>');
+    await expect(page.locator('img')).toHaveCount(0); await expect(page.getByRole('button', { name: 'Approve this medication' })).toBeDisabled(); expect(fixture.posts).toHaveLength(0);
   });
 });
 
