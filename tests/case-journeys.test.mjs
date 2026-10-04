@@ -26,7 +26,7 @@ test('all 24 chapters preserve the reviewed learner text and every model example
       const pharmacy = read('pharmacy.json');
       const attested = new Set(pharmacy.records.filter(r => (r.facultyReview || {}).status === 'reviewed').map(r => r.id));
       assert.deepEqual(
-        data.weeks.map(({residentExtension, commonMisstep, sourceIds, ...learner}) => learner),
+        data.weeks.map(({residentExtension, commonMisstep, sourceIds, practiceTasks, ...learner}) => learner),
         reviewed.weeks.map(({facultyNotes, ...learner}) => ({...learner,
           links: learner.links.filter(l => !l.anchor || attested.has(l.anchor))})));
       for (const [i, chapter] of data.weeks.entries()) {
@@ -364,4 +364,26 @@ with tempfile.TemporaryDirectory() as directory:
   assert.ok(text.includes('`' + coverage.status + '`'), 'mapping status printed verbatim');
   for (const g of coverage.acceptedGaps) assert.ok(text.includes(g.reason), 'accepted gap reason printed: ' + g.reason.slice(0, 40));
   for (const data of journeys) for (const [i] of data.learningObjectives.entries()) assert.match(text, new RegExp(`\\| ${i + 1} \\| `));
+});
+
+test('AC12: each chapter carries its reviewed practice tasks and the chooser marks exactly those as suggested, leaving all three available', () => {
+  const coverage = read('docs/case-journeys/practice-coverage.json');
+  assert.equal(coverage.status, 'faculty-reviewed', 'suggestions ship only from a reviewed mapping');
+  const html = fs.readFileSync(new URL('../08_Cases_and_Simulation/one-patient-six-weeks.html', import.meta.url), 'utf8');
+  const defs = JSON.parse(html.match(/<script[^>]*id="case-practice-data"[^>]*>([\s\S]*?)<\/script>/)[1]);
+  for (const data of journeys) for (const chapter of data.weeks) {
+    assert.deepEqual(chapter.practiceTasks, coverage.chapters[chapter.id], chapter.id + ': practiceTasks mirror the reviewed mapping');
+    const out = api.practiceMarkup(defs, data, chapter, api.practiceInitial());
+    const suggested = [...out.matchAll(/id="practice-task-(\w+)"[^>]*data-suggested="true"/g)].map(m => m[1]);
+    assert.deepEqual(suggested.sort(), [...chapter.practiceTasks].sort(), chapter.id + ': suggested buttons');
+    assert.equal((out.match(/id="practice-task-/g) || []).length, 3, chapter.id + ': all three tasks still offered');
+    assert.doesNotMatch(out, /practice-task-\w+"[^>]*\bdisabled\b/, chapter.id + ': no task is disabled');
+    assert.match(out, chapter.practiceTasks.length === 3 ? /All three tasks fit this chapter\./ : /Suggested for this chapter: .*Any task is available\./);
+    assert.equal((out.match(/<span class="opf-practice__tag">Suggested<\/span>/g) || []).length, chapter.practiceTasks.length === 3 ? 0 : chapter.practiceTasks.length);
+  }
+  const jordan = cases[0];
+  const out = api.practiceMarkup(defs, jordan, jordan.weeks[0], api.practiceInitial());
+  assert.doesNotMatch(out, /data-suggested|practice-suggested/, 'a case without practiceTasks renders the chooser unchanged');
+  const bad = JSON.parse(JSON.stringify(journeys[0])); bad.weeks[0].practiceTasks = ['interview', 'quiz'];
+  assert.throws(() => api.validate(bad), /practice tasks/i);
 });

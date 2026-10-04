@@ -40,6 +40,7 @@
       "title": "Ask directly and stay connected",
       "focus": ["suicide inquiry", "depressive syndrome", "supervision"],
       "objectiveIds": [1, 2],
+      "practiceTasks": ["interview", "rounds"],
       "patientState": "Leah comes with a friend after saying she has been considering using available medication to end her life. She reports no ingestion, but this has not yet been independently assessed. For six weeks she has lost interest in gardening, slept poorly, struggled to concentrate, and felt intense guilt. She has missed work and says, 'Everyone would be better off without me.' She drinks most nights, with her last drink the previous evening. She asks for reassurance that she can leave once she has talked. Her friend is supportive but cannot stay indefinitely.",
       "learnerTask": "Bring the supervising clinician into the assessment immediately. Ask directly about current thoughts, intent, plans, access to firearms, medications, and other lethal means, preparatory behavior, prior attempts, ingestion, intoxication, and what helps her stay safe. Attend to medical needs and involve the team in observation and disposition decisions. Explain the purpose of safety measures without promising discharge or relying on a promise not to self-harm.",
       "checklist": [
@@ -64,6 +65,7 @@
       "title": "Do not call every new symptom anxiety",
       "focus": ["alcohol withdrawal", "medical assessment", "parallel problems"],
       "objectiveIds": [3],
+      "practiceTasks": ["interview", "rounds"],
       "patientState": "During observation Leah becomes visibly tremulous and sweaty, with a rising pulse and nausea. She remains oriented. When asked privately about drinking, she describes daily use with heavier amounts over the past month and a prior episode of marked shaking after stopping. She has not previously volunteered that history. The depression began before this recent escalation in drinking. She asks whether the shaking means she is 'just panicking.' The team has not yet established whether there have been previous withdrawal seizures or delirium.",
       "learnerTask": "Report the change promptly for medical assessment and review of the required level of care. Clarify last use, pattern, prior complicated withdrawal, other substances, nutrition, and coexisting illness. Continue attention to suicide safety while the responsible clinicians assess and manage possible withdrawal using their local protocol. A CIWA-Ar score does not replace examination and vital signs.",
       "checklist": [
@@ -88,6 +90,7 @@
       "title": "Invite a wider story without demanding it",
       "focus": ["depression differential", "trauma-informed interview", "patient choice"],
       "objectiveIds": [2, 4],
+      "practiceTasks": ["interview", "note"],
       "patientState": "Following medical treatment and reassessment, Leah is participating in psychiatric care. The new autonomic symptoms have subsided, but anhedonia, guilt, and low mood remain. She describes months of nightmares, avoiding a particular part of town, and feeling constantly on guard after an assault. She does not want to describe the event in detail. She also reports a previous depressive episode during a period of little drinking. Careful inquiry has not identified sustained mood elevation or decreased need for sleep. She says alcohol sometimes helps her fall asleep but makes the following day harder.",
       "learnerTask": "With permission, clarify symptom clusters, duration, functional effects, and current safety without pressing for a detailed trauma account. Revisit bipolar-spectrum history and medical or medication contributors. Draft a formulation that considers a depressive disorder, possible PTSD, and alcohol use disorder together, while explaining which diagnoses require more assessment. Ask which problem Leah most wants help with first.",
       "checklist": [
@@ -112,6 +115,7 @@
       "title": "Treat the person across the diagnoses",
       "focus": ["shared treatment plan", "brief therapy", "addiction treatment"],
       "objectiveIds": [4],
+      "practiceTasks": ["interview", "rounds"],
       "patientState": "The supervising team has completed further assessment and is treating a depressive episode, PTSD, and alcohol use disorder. Leah says she wants fewer nightmares, a workable return to work, and less reliance on alcohol. The prescriber has discussed an antidepressant and its monitoring with her; therapy and addiction-treatment options are also being considered. Leah worries she will be told to become abstinent before anyone will address the trauma. She is interested in a small activity goal and agrees to explore gardening briefly with a friend after discharge. She still has intermittent thoughts that life is not worth living, without current stated intent in today's interview.",
       "learnerTask": "Practice a brief collaborative conversation about one feasible activity and one alcohol-use goal under supervision. Ask what Leah understood about medication benefits, possible adverse effects, and whom to contact if things worsen. Help the team coordinate depression, trauma, and addiction care. Reassess safety directly; do not treat improved engagement as proof that risk has disappeared.",
       "checklist": [
@@ -136,6 +140,7 @@
       "title": "Make the safety plan usable at home",
       "focus": ["collaborative safety planning", "means safety", "verified follow-up"],
       "objectiveIds": [1, 5],
+      "practiceTasks": ["interview", "rounds", "note"],
       "patientState": "Leah and the team are considering discharge after repeated assessments. She no longer reports current intent, but worries about evenings alone and a stressful work meeting. Her friend can check in at agreed times, not supervise continuously. The antidepressant started this week adds a new supply at home; the quantity dispensed, who holds it, and any firearms or other lethal means at home still need a collaborative safety discussion. The first outpatient visit is booked, but transportation is uncertain; trauma-therapy intake is pending. Leah can identify warning signs and a calming activity, but is unsure whom to contact outside office hours.",
       "learnerTask": "Under supervision, rehearse the safety plan in Leah's own words: warning signs, coping actions, chosen supports, professional and urgent contacts, and collaboratively reducing access to lethal means, including firearms and the new prescription. Verify the transport and bridge-care arrangements and ask Leah to show how she would use the plan during an evening crisis. Return unresolved items to the responsible clinician before the discharge decision.",
       "checklist": [
@@ -160,6 +165,7 @@
       "title": "Partial improvement still requires a plan",
       "focus": ["treatment review", "missed contact", "continuity"],
       "objectiveIds": [5],
+      "practiceTasks": ["interview", "rounds", "note"],
       "patientState": "Leah attended the first visit after transport was arranged. Eight weeks after presentation, she is back at work part time and gardens occasionally, but nightmares and avoidance persist. She missed a later therapy intake because the shift schedule changed. After several weeks without alcohol, she drank during a difficult weekend and felt ashamed to call. A subsequent conversation reveals fleeting wishes not to wake up, without a stated current plan or intent; a fuller reassessment is needed. She also reports a bothersome sexual adverse effect since starting medication and asks whether treatment is worth continuing.",
       "learnerTask": "Bring renewed suicidal thinking and the adverse-effect concern to the supervising clinician for timely reassessment. Review benefit, exposure, adherence barriers, side effects, trauma symptoms, and alcohol use together before calling treatment ineffective. Help re-establish therapy contact and a workable appointment schedule. Rehearse a nonjudgmental response to the return to drinking and revise the safety plan with the team.",
       "checklist": [

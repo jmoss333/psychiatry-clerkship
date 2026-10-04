@@ -33,6 +33,7 @@
       "title": "Start with the experience, not the label",
       "focus": ["psychosis assessment", "engagement", "immediate safety"],
       "objectiveIds": [1],
+      "practiceTasks": ["interview", "rounds"],
       "patientState": "Eli says classmates have been embedding messages about him in group chats. He sometimes hears a voice commenting on what he is doing when nobody is nearby. He has missed classes for two weeks and slept only a few hours on several nights, but says he feels exhausted rather than unusually energetic. He is guarded, watches the doorway, and can sustain a conversation. He reports using a high-potency cannabis vape most evenings. His sister says, 'He has never been like this.' Eli asks whether telling the truth will automatically mean he cannot leave. No complete safety or medical assessment has yet occurred.",
       "learnerTask": "With the supervising clinician, clarify onset, conviction, distress, thought organization, mood symptoms, substance and medication exposure, and functional change. Ask directly about self-harm, harm to others, command content, and ability to meet basic needs. Review vital signs and the medical assessment. Explain your role and confidentiality limits; do not promise a disposition before assessment.",
       "checklist": [
@@ -57,6 +58,7 @@
       "title": "Collateral changes the timeline",
       "focus": ["diagnostic uncertainty", "collateral", "cannabis"],
       "objectiveIds": [1, 2],
+      "practiceTasks": ["interview", "rounds", "note"],
       "patientState": "After assessment, Eli has agreed to inpatient care. With permission to speak to his sister, the team learns that withdrawal from friends and unusual suspicions began about two months ago; the switch to a stronger cannabis product happened three weeks ago. Eli recalls a few earlier voice-like experiences but cannot date them reliably. Urine testing detects cannabinoids. The initial examination and selected investigations have not identified an acute medical cause, although that does not exclude every cause. No sustained period of elevated mood or increased goal-directed activity has emerged from the history. Eli asks, 'Does the positive test explain all of this?'",
       "learnerTask": "Build one timeline that separates Eli's account, his sister's observations, and verified records. Compare primary psychosis, a substance-related syndrome, and a mood disorder with psychosis; retain medical alternatives when indicated. Identify what future observation would strengthen or weaken each explanation. Discuss the effects and purpose of cannabis use without confrontation.",
       "checklist": [
@@ -81,6 +83,7 @@
       "title": "When apparent agitation may be an adverse effect",
       "focus": ["akathisia", "medication monitoring", "reassessment"],
       "objectiveIds": [3],
+      "practiceTasks": ["interview", "rounds", "note"],
       "patientState": "The supervising prescriber started oral risperidone after discussing options and obtaining baseline assessments. Eli now sleeps longer and is less preoccupied with the messages. Since the dose was increased two days ago, however, he paces, repeatedly stands during interview, and describes an unbearable internal need to move. He says, 'The voices are quieter, but my body will not let me sit.' Nursing asks whether his illness is getting worse. There is no reported fever or rigidity; a fresh vital-sign review and examination are still needed. Eli is considering refusing the next dose.",
       "learnerTask": "Bring the new distress promptly to the supervisor. Establish its timing against medication changes and ask about subjective restlessness, sleep, anxiety, substance withdrawal, and safety. Review movement findings, vital signs, and other adverse effects. Discuss whether akathisia fits; the prescriber determines any regimen change. Do not translate pacing alone into a request for more antipsychotic medication.",
       "checklist": [
@@ -105,6 +108,7 @@
       "title": "A referral is not yet a connection",
       "focus": ["shared decisions", "early-psychosis care", "handoff ownership"],
       "objectiveIds": [4, 5],
+      "practiceTasks": ["rounds", "note"],
       "patientState": "After prescriber reassessment and a revised regimen, Eli reports less restlessness. He still occasionally hears the commentary but feels less frightened and participates in discharge planning. He wants help returning to class. His sister offers support, but Eli agrees only to sharing the practical plan and early warning signs. An early-psychosis referral has been sent; intake is not yet confirmed. His family assumes the first visit is already booked, and the proposed medication pickup has not been verified.",
       "learnerTask": "Present a transition plan for supervisor review that includes current safety findings, Eli's goals, medication access, tolerability, and physical-health monitoring. Confirm who will contact the receiving service and who retains responsibility until it accepts the handoff. Clarify permission for family involvement. Include support for education and substance-use goals, not just medication follow-up.",
       "checklist": [
@@ -129,6 +133,7 @@
       "title": "Reopen the plan when life intervenes",
       "focus": ["early deterioration", "tolerability", "access barriers"],
       "objectiveIds": [2, 4, 5],
+      "practiceTasks": ["interview", "rounds"],
       "patientState": "Eli attended the confirmed intake and has begun supported education work. This week he misses a visit. A phone conversation reveals that he has skipped several risperidone doses because of increased appetite and worries about weight. He has resumed cannabis use with friends and slept less over the last three nights. The group-chat messages feel significant again. He denies a current intention to harm himself or others but says he is becoming frightened. His sister has noticed changes, but the team has not yet heard her account.",
       "learnerTask": "Within the service's supervision and outreach process, report the evolving symptoms promptly and help arrange clinician reassessment. Revisit safety, sleep, functioning, medication effects and access, and the meaning of cannabis use. Ask permission for collateral. Help the team agree on the urgency of contact and an escalation plan rather than waiting for the next routine appointment.",
       "checklist": [
@@ -153,6 +158,7 @@
       "title": "Describe recovery in the patient's terms",
       "focus": ["longitudinal formulation", "function", "relapse planning"],
       "objectiveIds": [1, 4],
+      "practiceTasks": ["rounds", "note"],
       "patientState": "Following clinician reassessment, Eli and the team revised his medication and support plan. He is attending one class and a weekly therapy visit. Appetite concerns remain part of follow-up, and physical-health monitoring has an assigned clinician. He has reduced cannabis use and is considering a period without it. He occasionally hears the commentary during stress and knows how to report a change. Eli says, 'I am doing better, but I do not want every conversation to be about my illness.' The precise long-term diagnosis remains under review.",
       "learnerTask": "Give a longitudinal formulation that connects initial symptoms, collateral, substance exposure, treatment effects, and the response to the setback. Identify current goals, residual concerns, and unanswered diagnostic questions. Summarize the shared early-warning plan and monitoring ownership. Ask what Eli wants the next clinician to understand about his life beyond symptoms.",
       "checklist": [

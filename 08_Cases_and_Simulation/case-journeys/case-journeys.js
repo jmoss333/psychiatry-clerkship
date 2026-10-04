@@ -42,6 +42,9 @@
         if (key in w && !text(w[key])) throw new Error('Empty optional chapter text.');
       });
       if ('sourceIds' in w && !(Array.isArray(w.sourceIds) && w.sourceIds.every(function (id) { return sourceIds.has(id); }))) throw new Error('Unknown source id.');
+      if ('practiceTasks' in w && !(Array.isArray(w.practiceTasks) && w.practiceTasks.length && new Set(w.practiceTasks).size === w.practiceTasks.length && w.practiceTasks.every(function (t) {
+        return ['interview', 'rounds', 'note'].indexOf(t) >= 0;
+      }))) throw new Error('Invalid practice tasks.');
       if ('objectiveIds' in w && !(Array.isArray(w.objectiveIds) && w.objectiveIds.length && w.objectiveIds.every(function (n) {
         return Number.isInteger(n) && n >= 1 && n <= objectives;
       }))) throw new Error('Invalid objective id.');
@@ -157,8 +160,18 @@
     if (!validatePractice(defs)) return '<h3 id="practice-heading" tabindex="-1">Practice is unavailable</h3><p role="alert">The practice prompts could not load. The existing case chapter remains available.</p>';
     var e = escape, out = '<p class="opf-practice__context">' + e(data.patient.displayName) + ' · ' + e(chapter.label) + '</p><p class="opf-practice__boundary">' + e(defs.boundary) + '</p>';
     if (state.step === 'choose' || !practicePair(state.task, state.minutes)) {
-      out += '<h3 id="practice-heading" tabindex="-1">Practice with ' + e(data.patient.displayName) + '</h3><div class="opf-practice__choices" role="group" aria-label="Choose a practice task">';
-      ['interview','rounds','note'].forEach(function (id) { out += '<button id="practice-task-' + id + '" data-practice-action="task" data-value="' + id + '" aria-pressed="' + (state.task === id) + '">' + e(defs.tasks[id].label) + '</button>'; });
+      var suggested = Array.isArray(chapter.practiceTasks) ? chapter.practiceTasks : [];
+      out += '<h3 id="practice-heading" tabindex="-1">Practice with ' + e(data.patient.displayName) + '</h3>';
+      if (suggested.length && suggested.length < 3) {
+        out += '<p class="opf-practice__suggested" id="practice-suggested">Suggested for this chapter: ' + suggested.map(function (id) { return e(defs.tasks[id].label); }).join(' · ') + '. Any task is available.</p>';
+      } else if (suggested.length === 3) {
+        out += '<p class="opf-practice__suggested" id="practice-suggested">All three tasks fit this chapter.</p>';
+      }
+      out += '<div class="opf-practice__choices" role="group" aria-label="Choose a practice task"' + (suggested.length ? ' aria-describedby="practice-suggested"' : '') + '>';
+      ['interview','rounds','note'].forEach(function (id) {
+        var isSuggested = suggested.indexOf(id) >= 0;
+        out += '<button id="practice-task-' + id + '" data-practice-action="task" data-value="' + id + '" aria-pressed="' + (state.task === id) + '"' + (isSuggested ? ' data-suggested="true"' : '') + '>' + e(defs.tasks[id].label) + (isSuggested && suggested.length < 3 ? '<span class="opf-practice__tag">Suggested</span>' : '') + '</button>';
+      });
       out += '</div><p>How much time do you have?</p><div class="opf-practice__choices" role="group" aria-label="Choose practice time">';
       [5,15].forEach(function (minutes) { out += '<button id="practice-minutes-' + minutes + '" data-practice-action="minutes" data-value="' + minutes + '" aria-pressed="' + (state.minutes === minutes) + '">About ' + minutes + ' minutes</button>'; });
       return out + '</div><p class="opf-practice__error" role="alert">' + e(state.error) + '</p><button id="practice-start" class="opf-practice__primary" data-practice-action="start">Start practice</button>';
