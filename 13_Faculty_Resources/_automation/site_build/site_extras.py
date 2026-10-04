@@ -4,10 +4,7 @@ WHY THIS MODULE EXISTS: "what ships" is not one list. site_manifest.json carries
 the shared md/tools both learner sites publish, but more routes reach a built
 site without touching it:
 
-  1. MS3-only tools (MS3_EXTRA_TOOLS). Empty since 2026-09-25, when the MS3
-     orientation video tool (_prototypes/orientation-video/) was retired from
-     both sites along with the welcome and orientation videos; the route is
-     kept so a future MS3-only tool has one declared home.
+  1. MS3-only tools (MS3_EXTRA_TOOLS), including the preparation guide.
   2. resident_section.py copies resident-only markdown (RES_EXTRA).
   3. resident_section.py copies the resident-only role-play tools (PROTO_TOOLS).
 
@@ -40,9 +37,8 @@ __all__ = [
 
 # ---- MS3-only tools ---------------------------------------------------------------
 # Shipped, attestable tools the MS3 site serves and the resident build does not.
-# resident_section.py strips these from the resident build. Empty since 2026-09-25:
-# the orientation video tool it held was retired with the welcome/orientation videos.
-MS3_EXTRA_TOOLS = []
+# resident_section.py strips these from the resident build.
+MS3_EXTRA_TOOLS = [("14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html", "prepare-for-tomorrow.html", "Prepare for tomorrow")]
 
 # ---- resident-only markdown ---------------------------------------------------
 # Two of these deliberately reuse a slug the manifest already ships

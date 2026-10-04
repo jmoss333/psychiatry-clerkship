@@ -5801,5 +5801,18 @@
     "epa": [
       "EPA7"
     ]
+  },
+  "prepare-for-tomorrow.html": {
+    "tldr": "Choose tomorrow's task and prepare with a reading, rehearsal, and supervision question.",
+    "read": 5,
+    "points": [
+      "Interview a new patient",
+      "Present on rounds",
+      "Write a progress note"
+    ],
+    "safetyLevel": "moderate",
+    "facultyReview": {
+      "status": "pending"
+    }
   }
 }

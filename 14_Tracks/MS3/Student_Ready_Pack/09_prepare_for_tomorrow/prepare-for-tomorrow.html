@@ -1,0 +1,293 @@
+<!doctype html>
+<!-- [CLERKSHIP-META v1] tool="prepare-for-tomorrow" version="1.0" built="2026-10-02" category="foundations" audience="ms3" settings="self-study" time="5-15min" clinicalClaim="true" summary="Task-based preparation with synthetic rehearsal and supervision questions." -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prepare for tomorrow</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}body{margin:0;background:var(--fd-bg,#f7f3eb);color:var(--fd-text,#3b332c);font:1rem/1.6 system-ui,sans-serif}main{max-width:48rem;margin:auto;padding:1.5rem}h1{font:700 clamp(1.9rem,5vw,2.8rem)/1.15 Georgia,serif}h2{line-height:1.25}p{max-width:68ch}button,a,summary{touch-action:manipulation}button{font:inherit;cursor:pointer;border:1px solid var(--fd-line-strong,#ddd3c6);border-radius:.6rem;padding:.75rem 1rem;background:var(--fd-surface-warm,#fffdf9);color:var(--fd-text,#3b332c)}button[aria-pressed=true],.primary{background:var(--fd-teal,#3a7d6e);color:var(--fd-on-accent,#ffffff);border-color:var(--fd-teal,#3a7d6e)}button:hover{filter:brightness(.95)}:focus-visible{outline:3px solid var(--fd-focus,#2f6fd0);outline-offset:3px}a{color:var(--fd-teal-deep,#2c6356)}.choices{display:flex;flex-wrap:wrap;gap:.65rem;margin:.75rem 0 1.5rem}.tasks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.tasks button{text-align:left}.eyebrow{font-size:.8rem;letter-spacing:.09em;text-transform:uppercase}.boundary,.snapshot,.tomorrow{border:1px solid var(--fd-line-strong,#ddd3c6);border-radius:.8rem;padding:1rem;background:var(--fd-surface-warm,#fffdf9)}.boundary{font-size:.9rem}.sequence{font-size:.9rem}.actions{display:flex;flex-wrap:wrap;gap:.75rem;margin:1.5rem 0}.error{color:var(--fd-text,#3b332c);font-weight:600}.attribution{font-size:.85rem}.card-row{padding:.75rem 0;border-bottom:1px solid var(--fd-line-strong,#ddd3c6)}.card-row:last-child{border:0}.card-row strong{display:block}.resources{margin-top:2rem;border-top:1px solid var(--fd-line-strong,#ddd3c6);padding-top:1rem}details{border:1px solid var(--fd-line-strong,#ddd3c6);padding:1rem;border-radius:.6rem;margin:1rem 0}summary{cursor:pointer;font-weight:600}footer{margin-top:2rem} @media(max-width:540px){main{padding:1rem}.tasks{grid-template-columns:1fr}.tasks button{width:100%}}@media print{button,.choices,.actions,.resources,footer,.boundary{display:none}main{max-width:none;padding:0}details:not([open]){display:none}body{background:white!important;color:black!important}main,main *{color:black!important;background:transparent!important}.tomorrow{background:white!important;break-inside:avoid}}
+</style></head><body><main aria-labelledby="page-title"><p class="eyebrow">MS3 · A little preparation for your next day</p><h1 id="page-title">Prepare for tomorrow</h1><p>Choose a responsibility and the time you have. Read, rehearse privately, and leave with a question for your supervisor.</p><p class="boundary">Draft teaching guide · Pending faculty review. All practice situations are fictional. Rehearsal stays private: this page collects no spoken or written responses. Use your supervising team's guidance for patient care.</p><div id="pft-app"></div><footer><a id="pft-today" target="_top" href="/?tab=today">Return to Today</a></footer></main>
+<!-- crisis-block-html -->
+<script id="pft-data" type="application/json">{
+  "version": 1,
+  "tasks": {
+    "interview": {
+      "title": "Interview a new patient",
+      "resources": [
+        "pg_interview.md",
+        "interview-circle.html"
+      ],
+      "routes": {
+        "5": {
+          "orientation": "Prepare your opening and identify the coverage you will need. This rehearsal uses a fictional situation.",
+          "reading": {
+            "heading": "Frame the conversation",
+            "paragraphs": [
+              "Introduce your role, explain the purpose, agree on time, and ask permission to begin.",
+              "The interview guide treats domains as a coverage map, while the patient's story remains the center of the conversation. Gather safety information before closing; the resident or attending makes disposition decisions."
+            ],
+            "sourceRef": "pg_interview.md",
+            "sourceSection": "The Interview Frame; The interview as a circle; Safety Questions"
+          },
+          "rehearsal": {
+            "snapshot": "A fictional newly admitted adult says: I am tired of answering the same questions. The team has asked you to introduce yourself and learn what matters most to them.",
+            "prompt": "Say your introduction aloud privately. Explain your role and purpose, ask permission, and invite the person's priority.",
+            "example": "I am a medical student working with your psychiatry team. I would like to understand what brought you here and what matters most to you today. Can we agree on how much time to spend together? Is it okay to start with what feels most important to you?",
+            "reflection": [
+              "Did you explain your role?",
+              "Did you invite permission and the person's priority?",
+              "What still needs to be covered before you close?"
+            ]
+          },
+          "card": {
+            "try": "Introduce your role, purpose, and agreed time before your first question.",
+            "notice": "Which concern the person wants to start with.",
+            "ask": "Which parts of this interview would you like me to complete and bring back to you?"
+          }
+        },
+        "15": {
+          "orientation": "Rehearse an opening, a follow-up, and a closing summary. Keep the patient's story at the center while checking remaining coverage.",
+          "reading": {
+            "heading": "Use the coverage map",
+            "paragraphs": [
+              "Cover narrative, symptoms and timeline, safety, psychiatric history, substances, medical and medication contributors, trauma and development, family and social context, function and strengths, and a closing summary.",
+              "You can follow a thread and return to the story rather than asking every domain in a fixed order. Ask permission before sensitive topics and explain why you are asking.",
+              "Safety information belongs before the close. Positive safety answers go to the resident or attending now, rather than at the end of the day; disposition remains their responsibility."
+            ],
+            "sourceRef": "pg_interview.md",
+            "sourceSection": "The interview as a circle; Safety Questions; Trauma-Informed Moves"
+          },
+          "rehearsal": {
+            "snapshot": "In this fictional practice encounter, an adult says: I have barely slept, I am worried about missing work, and I do not want my family called yet. No other history, examination, or safety information is supplied.",
+            "prompt": "Privately rehearse an opening and one follow-up about their priorities. Then name the information still needed, including safety, and practice a closing summary that does not invent answers.",
+            "example": "I hear that sleep, work, and who we contact are important concerns. I would like to understand the timeline and what support you want. Before we finish, we also need to discuss safety and the other parts of your history. My summary so far is limited to what you have told me; I will bring the unanswered questions to my supervising team.",
+            "reflection": [
+              "Which supplied concern did you follow?",
+              "Which coverage domains remain unknown?",
+              "Did your summary distinguish known facts from unanswered questions?",
+              "Which concern needs supervision rather than an independent decision?"
+            ]
+          },
+          "card": {
+            "try": "Follow the person's first concern, then return to the remaining coverage map.",
+            "notice": "What has been reported, what you observed, and what remains unknown.",
+            "ask": "Can we review my interview summary and the information I still need to gather?"
+          }
+        }
+      }
+    },
+    "rounds": {
+      "title": "Present on rounds",
+      "resources": [
+        "doc_oral.md",
+        "oral.html"
+      ],
+      "routes": {
+        "5": {
+          "orientation": "Prepare one concise daily update, rather than retelling the whole admission.",
+          "reading": {
+            "heading": "Daily rounds structure",
+            "paragraphs": [
+              "The documentation guide organizes a daily update around hospital day and active problem; overnight events; one patient-reported point and one MSE point; a risk update; and a plan question.",
+              "Use supplied or verified information. Name information you have not assessed rather than turning an absent fact into a reassuring finding."
+            ],
+            "sourceRef": "doc_oral.md",
+            "sourceSection": "Daily Rounds Presentation Template; Common Student Pitfalls"
+          },
+          "rehearsal": {
+            "snapshot": "Fictional day 3 admission for depressed mood and reduced intake. Nursing reports 6 hours of sleep and attendance at one group. The person says: I feel less overwhelmed. No current MSE or safety assessment is supplied.",
+            "prompt": "Give a brief update using only these facts. Include the missing information and one supervision question.",
+            "example": "Hospital day 3 for depressed mood and reduced intake. Nursing reports 6 hours of sleep and attendance at one group. Today the person reports feeling less overwhelmed. I have not yet gathered the current MSE or safety assessment. My question is which information you would like me to clarify before completing the update.",
+            "reflection": [
+              "Did you lead with the active problem?",
+              "Did you identify the source of the overnight information?",
+              "Did you name the missing assessment without inferring a risk level?"
+            ]
+          },
+          "card": {
+            "try": "Lead with the active problem and what changed overnight.",
+            "notice": "Which facts belong in today's update instead of the full admission story.",
+            "ask": "What is the most useful question for me to bring to rounds today?"
+          }
+        },
+        "15": {
+          "orientation": "Organize a fictional interval snapshot, rehearse it privately, then compare its structure with an example.",
+          "reading": {
+            "heading": "Show your reasoning and uncertainty",
+            "paragraphs": [
+              "A concise daily presentation includes the active problem, overnight observations, one subjective point, one MSE point, current risk information, and a plan question.",
+              "The rubric values concision, organization, observable MSE language, formulation, and naming uncertainty. Avoid presenting an unanswered safety question as a completed assessment."
+            ],
+            "sourceRef": "doc_oral.md",
+            "sourceSection": "60-Second Rounds Update; Oral Case Presentation Rubric; Common Student Pitfalls"
+          },
+          "rehearsal": {
+            "snapshot": "Fictional day 3 admission for depressed mood and reduced intake. Nursing reports 6 hours of sleep, half of breakfast eaten, and attendance at one group. The person says: I feel less overwhelmed, but I am worried about where I will stay. During this practice conversation, speech is at a usual rate and responses follow the questions. Current safety, medication effects, and collateral information are not supplied.",
+            "prompt": "Prepare and privately deliver a concise update. Separate observations from interpretation and end with a supervision question. Rehearse a shorter second version after comparison.",
+            "example": "Hospital day 3 for depressed mood and reduced intake. Nursing reports 6 hours of sleep, half of breakfast eaten, and attendance at one group. The person feels less overwhelmed but is concerned about housing. In this encounter, speech was at a usual rate and responses followed the questions. Current safety, medication effects, and collateral remain to be clarified, so I cannot supply a completed risk update. My question is how you would like me to prioritize gathering those missing data and discussing the housing concern.",
+            "reflection": [
+              "Which details supported the active question?",
+              "Which observations did you keep separate from interpretation?",
+              "Which missing data did you name?",
+              "Can you make the second version shorter without losing the uncertainty?"
+            ]
+          },
+          "card": {
+            "try": "Finish your update with one clear supervision question.",
+            "notice": "Whether your presentation distinguishes a reported change from a completed assessment.",
+            "ask": "Which missing fact would most improve this presentation?"
+          }
+        }
+      }
+    },
+    "note": {
+      "title": "Write a progress note",
+      "resources": [
+        "doc_oral.md",
+        "mse.html"
+      ],
+      "routes": {
+        "5": {
+          "orientation": "Practice one note section privately using only a supplied fictional interval update.",
+          "reading": {
+            "heading": "Record what changed",
+            "paragraphs": [
+              "The note template separates interval events, the person's report, MSE, formulation update, risk, and plan.",
+              "Interval events can include sleep, medication or safety events, nursing observations, and collateral or discharge updates. Do not copy forward an assessment that ignores today's context."
+            ],
+            "sourceRef": "doc_oral.md",
+            "sourceSection": "Student Progress Note Template; Common Student Pitfalls"
+          },
+          "rehearsal": {
+            "snapshot": "In a fictional admission, nursing reports 6 hours of sleep and attendance at one group. The person says: I feel less overwhelmed. No other interval information is provided.",
+            "prompt": "Privately draft separate Interval Events and Subjective sections. Keep the source of each fact visible and avoid adding missing findings.",
+            "example": "Interval Events: Nursing reports 6 hours of sleep and attendance at one group. Other interval data were not supplied for this exercise. Subjective: The person reports feeling less overwhelmed. Additional subjective assessment is not supplied.",
+            "reflection": [
+              "Did you separate nursing observations from the person's report?",
+              "Did you avoid inventing medication, examination, or safety findings?",
+              "Which information would you clarify before completing a real note?"
+            ]
+          },
+          "card": {
+            "try": "Separate interval observations from the person's own report.",
+            "notice": "Which sentence is copied forward and needs a current update.",
+            "ask": "Can you review whether my note shows today's change clearly?"
+          }
+        },
+        "15": {
+          "orientation": "Draft a complete student note privately from a limited fictional encounter, making missing assessment information explicit.",
+          "reading": {
+            "heading": "Use the whole note structure",
+            "paragraphs": [
+              "The guide uses a one-liner, interval events, subjective report, MSE, formulation update, risk, and a plan organized by problem.",
+              "A formulation update explains today's change and its implications. Risk documentation must be current; a missing assessment cannot license a reassuring conclusion.",
+              "Follow local policy when drafting real notes and bring your suggestions to the supervising team. This exercise supplies no independent diagnosis, treatment change, or disposition decision."
+            ],
+            "sourceRef": "doc_oral.md; orientation.md",
+            "sourceSection": "Student Progress Note Template; Common Student Pitfalls; Orientation: Student Boundaries"
+          },
+          "rehearsal": {
+            "snapshot": "Fictional adult on day 3 of admission for depressed mood and reduced intake. Nursing reports 6 hours of sleep, half of breakfast eaten, and attendance at one group. The person reports feeling less overwhelmed and being worried about housing. In this conversation, speech is at a usual rate and responses follow the questions. Safety assessment, medication review, other MSE domains, and collateral are not supplied.",
+            "prompt": "Privately write each note section. Use only supplied facts, identify missing assessment, and distinguish questions for the supervisor from established plan decisions.",
+            "example": "One-liner: Fictional adult on day 3 of admission for depressed mood and reduced intake, with ongoing housing concerns. Interval Events: Nursing reports 6 hours of sleep, half of breakfast eaten, and attendance at one group. Other interval information is not supplied. Subjective: Reports feeling less overwhelmed and worried about housing. MSE: Speech at a usual rate; responses follow the questions. Other domains are not assessed in this exercise. Formulation Update: The person reports improvement in feeling overwhelmed, while housing remains a concern. The available data do not establish a complete current formulation. Risk: Current safety assessment is not supplied; a risk conclusion cannot be completed from this snapshot. Plan: Review missing safety, medication, MSE, and collateral information with the supervising team; discuss the housing concern and document the team's decisions once clarified. This exercise proposes no independent treatment or disposition change.",
+            "reflection": [
+              "Did every asserted finding come from the snapshot?",
+              "Where did you name incomplete assessment?",
+              "Did the formulation reflect today's supplied change?",
+              "Did you distinguish supervision questions from decisions already made?"
+            ]
+          },
+          "card": {
+            "try": "Update the formulation using today's verified information.",
+            "notice": "Which part of the assessment is incomplete or copied forward.",
+            "ask": "Which part of my formulation or plan needs clarification before the note is finalized?"
+          }
+        }
+      }
+    }
+  }
+}</script>
+<script id="pft-engine">
+function pftValidSelection(task,minutes){return(task==='interview'||task==='rounds'||task==='note')&&(minutes===5||minutes===15);}
+function pftParseSelection(search){var q=new URLSearchParams(search),t=q.getAll('prepareTask'),m=q.getAll('prepareMinutes');if(!t.length&&!m.length)return{task:null,minutes:null,error:''};if(t.length===1&&m.length===1&&(m[0]==='5'||m[0]==='15')&&pftValidSelection(t[0],Number(m[0])))return{task:t[0],minutes:Number(m[0]),error:''};return{task:null,minutes:null,error:'Choose a task and time to begin.'};}
+function pftEscape(text){return String(text).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function pftRoute(data,task,minutes){
+  var t=data&&data.tasks&&data.tasks[task],r=t&&t.routes&&t.routes[String(minutes)];
+  function text(v){return typeof v==='string'&&v.trim().length>0;}
+  function list(v){return Array.isArray(v)&&v.length>0&&v.every(text);}
+  if(!pftValidSelection(task,minutes)||!t||!text(t.title)||!list(t.resources)||!r||!text(r.orientation)||!r.reading||!text(r.reading.heading)||!list(r.reading.paragraphs)||!text(r.reading.sourceRef)||!text(r.reading.sourceSection)||!r.rehearsal||!text(r.rehearsal.snapshot)||!text(r.rehearsal.prompt)||!text(r.rehearsal.example)||!list(r.rehearsal.reflection)||!r.card||!text(r.card.try)||!text(r.card.notice)||!text(r.card.ask))return null;
+  return r;
+}
+function pftPresentationContext(pathname){
+  var source='/14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html',built='/tools/prepare-for-tomorrow.html';
+  if(typeof pathname==='string'&&pathname.slice(-source.length)===source)return{sourcePreview:true,homePath:'/_build/ms3/'};
+  if(typeof pathname==='string'&&pathname.slice(-built.length)===built)return{sourcePreview:false,homePath:pathname.slice(0,-built.length)+'/'};
+  return{sourcePreview:false,homePath:'/'};
+}
+function pftInitial(){return{task:null,minutes:null,step:'choose',exampleOpen:false,error:''};}
+function pftReduce(data,state,action){
+  var next={task:state.task,minutes:state.minutes,step:state.step,exampleOpen:state.exampleOpen,error:''};
+  if(action.type==='reset')return pftInitial();
+  if(action.type==='task'||action.type==='minutes'){
+    if(action.type==='task')next.task=['interview','rounds','note'].indexOf(action.value)>=0?action.value:null;
+    else next.minutes=action.value===5||action.value===15?action.value:null;
+    next.step='choose';next.exampleOpen=false;
+  }else if(action.type==='start'){
+    if(!pftValidSelection(next.task,next.minutes)){next.step='choose';next.error='Choose a task and time to begin.';}
+    else if(!pftRoute(data,next.task,next.minutes)){next.step='choose';next.error='This preparation session is unavailable. Please choose another task.';}
+    else {next.step='read';next.exampleOpen=false;}
+  }else if(action.type==='next'){
+    if(!pftRoute(data,next.task,next.minutes)){next.step='choose';next.error='This preparation session is unavailable. Please choose another task.';}
+    else {var steps=['read','rehearse','card','done'],i=steps.indexOf(next.step);if(i>=0&&i<steps.length-1)next.step=steps[i+1];next.exampleOpen=false;}
+  }else if(action.type==='example'&&next.step==='rehearse')next.exampleOpen=!next.exampleOpen;
+  return next;
+}
+function pftResourceTitle(ref){return {"pg_interview.md":"Interview & MSE guide","interview-circle.html":"The Interview Circle","doc_oral.md":"Documentation & Oral Presentation","oral.html":"Treatment Team Rounding Prep","mse.html":"Mental Status Exam","orientation.md":"MS3 Orientation"}[ref]||ref;}
+function pftRender(data,state){
+  var e=pftEscape,out='',t=data&&data.tasks&&data.tasks[state.task],r=pftRoute(data,state.task,state.minutes);
+  if(state.step==='choose'||!r){
+    out='<h2 id="pft-heading" tabindex="-1">What will you be doing tomorrow?</h2><div class="choices tasks" role="group" aria-label="Choose a task">';
+    ['interview','rounds','note'].forEach(function(id){var task=data&&data.tasks&&data.tasks[id];out+='<button id="pft-task-'+id+'" data-action="task" data-value="'+id+'" aria-pressed="'+(state.task===id)+'">'+e(task?task.title:id)+'</button>';});
+    out+='</div><h3>How much time do you have?</h3><div class="choices" role="group" aria-label="Choose a duration">';
+    [5,15].forEach(function(m){out+='<button id="pft-minutes-'+m+'" data-action="minutes" data-value="'+m+'" aria-pressed="'+(state.minutes===m)+'">About '+m+' minutes</button>';});
+    out+='</div><p class="error" role="alert">'+e(state.error)+'</p><button class="primary" data-action="start">Start preparation</button>';return out;
+  }
+  out='<p>'+e(t.title)+' · About '+e(state.minutes)+' minutes</p><p class="sequence">'+(state.minutes===5?'Orient 30 sec · Read 2 min · Rehearse 2 min · Card 30 sec':'Orient 1 min · Read 5 min · Rehearse 7 min · Card 2 min')+' · Estimates, at your pace</p>';
+  if(state.step==='read'){
+    out+='<h2 id="pft-heading" tabindex="-1">'+e(r.reading.heading)+'</h2><p>'+e(r.orientation)+'</p>';
+    r.reading.paragraphs.forEach(function(p){out+='<p>'+e(p)+'</p>';});
+    out+='<p class="attribution">Teaching summary based on '+e(r.reading.sourceRef.split("; ").map(pftResourceTitle).join("; "))+' · '+e(r.reading.sourceSection)+'. This new wording awaits faculty review.</p>';
+  }else if(state.step==='rehearse'){
+    out+='<h2 id="pft-heading" tabindex="-1">Rehearse privately</h2><p class="snapshot">'+e(r.rehearsal.snapshot)+'</p><p>'+e(r.rehearsal.prompt)+'</p><p>Say it aloud or write away from this page. Nothing is recorded or submitted here.</p><details data-example'+(state.exampleOpen?' open':'')+'><summary>Compare an example</summary><p>'+e(r.rehearsal.example)+'</p><p>An illustration to compare with your approach; it is not a grade.</p></details><h3>Reflect</h3><ul>';
+    r.rehearsal.reflection.forEach(function(p){out+='<li>'+e(p)+'</li>';});out+='</ul>';
+  }else if(state.step==='card'){
+    out+='<h2 id="pft-heading" tabindex="-1">Your tomorrow card</h2><div class="tomorrow">';
+    [['try','Try'],['notice','Notice'],['ask','Ask your supervisor']].forEach(function(pair){out+='<div class="card-row"><strong>'+pair[1]+'</strong>'+e(r.card[pair[0]])+'</div>';});out+='</div>';
+  }else out+='<h2 id="pft-heading" tabindex="-1">Preparation finished</h2><p>You have a starting point and a supervision question for tomorrow. This session is not a competence assessment.</p>';
+  out+='<div class="actions">';if(state.step!=='done')out+='<button class="primary" data-action="next">'+({read:'Continue to rehearsal',rehearse:'See tomorrow card',card:'Finish preparation'}[state.step])+'</button>';
+  out+='<button data-action="reset">Choose another task or time</button></div><aside class="resources" aria-label="Optional Library resources"><h3>Explore the full resources</h3><p>Optional reading. Your task and time are kept for browser Back; your rehearsal restarts.</p><div class="choices">';
+  t.resources.forEach(function(ref){out+='<button data-resource="'+e(ref)+'">Open '+e(pftResourceTitle(ref))+'</button>';});return out+'</div></aside>';
+}
+</script>
+<script id="pft-dom">
+(function(){
+  var data=JSON.parse(document.getElementById('pft-data').textContent),app=document.getElementById('pft-app'),parsed=pftParseSelection(location.search),state=pftInitial(),context=pftPresentationContext(location.pathname);
+  state.task=parsed.task;state.minutes=parsed.minutes;state.error=parsed.error;
+  var allowed={interview:['pg_interview.md','interview-circle.html'],rounds:['doc_oral.md','oral.html'],note:['doc_oral.md','mse.html']};
+  function tellSelection(){if(parent!==window&&location.protocol!=='file:'&&pftValidSelection(state.task,state.minutes))parent.postMessage({type:'prepare-selection',task:state.task,minutes:state.minutes},location.origin);}
+  function render(focusId){app.innerHTML=pftRender(data,state);if(focusId){var focus=document.getElementById(focusId);if(focus)focus.focus();}}
+  app.addEventListener('click',function(event){var button=event.target.closest('button');if(!button||!app.contains(button))return;
+    if(button.dataset.resource){var ref=button.dataset.resource;if(!allowed[state.task]||allowed[state.task].indexOf(ref)<0)return;
+      if(location.protocol==='file:'){state.error='Resource links require the local preview server.';var warning=document.createElement('p');warning.setAttribute('role','alert');warning.textContent=state.error;button.parentNode.appendChild(warning);return;}
+      var query='?'+(ref.slice(-5)==='.html'?'tool':'page')+'='+encodeURIComponent(ref);
+      if(parent!==window){tellSelection();parent.postMessage({type:'openPage',f:ref,search:query},location.origin);}
+      else window.open(context.homePath+query,'_blank','noopener');return;
+    }
+    var type=button.dataset.action,oldStep=state.step,value=button.dataset.value,id=button.id;
+    if(type==='minutes')value=Number(value);state=pftReduce(data,state,{type:type,value:value});render(oldStep!==state.step?'pft-heading':id);tellSelection();
+  });
+  app.addEventListener('toggle',function(event){if(event.target.matches('details[data-example]'))state.exampleOpen=event.target.open;},true);
+  document.getElementById('pft-today').href=context.homePath+'?tab=today';
+  if(parent!==window&&location.protocol!=='file:'){try{document.getElementById('pft-today').href=parent.location.pathname+'?tab=today';}catch(ignore){}}
+  if(parent===window&&context.sourcePreview){var note=document.createElement('p');note.className='attribution';note.textContent='Source preview: resource buttons open the local MS3 build in a new tab. Build the site first to use those resources.';app.before(note);}
+  render();tellSelection();
+})();
+</script></body></html>

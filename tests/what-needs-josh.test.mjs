@@ -274,3 +274,97 @@ test('it carries no machine-specific paths', () => {
   assert.doesNotMatch(source, /\/Users\//, 'derive paths from __file__, never hard-code a home');
   assert.doesNotMatch(source, /\/sessions\//);
 });
+
+// ── label-drift: a reviewed pharmacy card whose DailyMed label changed after the review ──────
+// Controlled fixtures only (never the live pharmacy.json or a real ledger): the ledger is
+// per-machine state written by check_label_drift.py --record, located by its ledger_path().
+
+function driftFixture({ lastChecked = '2026-10-10', drifts = [], lastReviewed = '2026-09-29',
+  lithiumStatus = 'reviewed' } = {}) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wnj-drift-'));
+  const lithiumReview = lastReviewed === null ? { status: lithiumStatus }
+    : { status: lithiumStatus, lastReviewed };
+  fs.writeFileSync(path.join(tmp, 'pharmacy.json'), JSON.stringify({ records: [
+    { id: 'lithium', facultyReview: lithiumReview },
+    { id: 'clozapine', facultyReview: { status: 'reviewed', lastReviewed: '2026-09-29' } },
+    { id: 'quetiapine', facultyReview: { status: 'pending' } },
+  ] }));
+  fs.writeFileSync(path.join(tmp, 'ledger.json'), JSON.stringify({ schemaVersion: 1, lastChecked, drifts }));
+  return tmp;
+}
+
+function driftRow(agent, observedOn = '2026-10-10') {
+  return { agent, observedOn, fromVersion: 13, toVersion: 14, fromDate: '2026-08-24',
+    toDate: '2026-10-06', sections: ['5.3'], fields: ['flags', 'monitoring'], quotesBroken: 0 };
+}
+
+function measureDrift(tmp, { ledger = path.join(tmp, 'ledger.json'), today = '2026-10-12' } = {}) {
+  const proc = spawnSync('python3', ['-c', `import sys, pathlib; sys.path.insert(0, "bin")
+import what_needs_josh as J
+J.PHARMACY = pathlib.Path(${JSON.stringify(path.join(tmp, 'pharmacy.json'))})
+status, remaining, total, note = J.evaluate({"measure": J.measure_label_drift})
+print(status, remaining, total)
+print(note)
+print(J.describe_label_drift() if status == "waiting" else "")`], {
+    cwd: repo, encoding: 'utf8', timeout: 120_000,
+    env: { ...process.env, CLERKSHIP_LABEL_DRIFT_LEDGER: ledger, CLERKSHIP_TODAY: today },
+  });
+  assert.equal(proc.status, 0, proc.stderr);
+  const [summary, note, detail] = proc.stdout.split('\n');
+  return { summary, note, detail };
+}
+
+test('label-drift: a reviewed card whose label changed after the review is owed, and named', () => {
+  const tmp = driftFixture({ drifts: [driftRow('lithium'), driftRow('quetiapine')] });
+  const { summary, detail } = measureDrift(tmp);
+  assert.equal(summary, 'waiting 2 3', 'pending cards keep recorded obligations until matching evidence is reviewed');
+  assert.equal(detail, 'Re-review against the new label: lithium (label v14, 2026-10-06: flags, monitoring); quetiapine (label v14, 2026-10-06: flags, monitoring)');
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('label-drift: a later review date without matching evidence does not retire it', () => {
+  // The predicate is the human act. A later clean check (lastChecked moves on, the drift stays
+  // in the append-only ledger) must NOT retire it -- that is the isbn-verify trap.
+  let tmp = driftFixture({ lastChecked: '2026-10-17', drifts: [driftRow('lithium')] });
+  assert.equal(measureDrift(tmp, { today: '2026-10-18' }).summary, 'waiting 1 2');
+  fs.rmSync(tmp, { recursive: true, force: true });
+  tmp = driftFixture({ drifts: [driftRow('lithium')], lastReviewed: '2026-10-10' });
+  assert.equal(measureDrift(tmp).summary, 'waiting 1 2');
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('label-drift: no ledger, a never-completed check, or a stale one is unknown, never zero', () => {
+  const tmp = driftFixture();
+  let out = measureDrift(tmp, { ledger: path.join(tmp, 'absent.json') });
+  assert.match(out.summary, /^unknown/);
+  assert.match(out.note, /never recorded here/);
+  fs.writeFileSync(path.join(tmp, 'ledger.json'), JSON.stringify({ schemaVersion: 1, lastChecked: null, drifts: [] }));
+  assert.match(measureDrift(tmp).summary, /^unknown/);
+  fs.writeFileSync(path.join(tmp, 'ledger.json'), JSON.stringify({ schemaVersion: 1, lastChecked: '2026-09-01', drifts: [] }));
+  out = measureDrift(tmp, { today: '2026-10-12' });
+  assert.match(out.summary, /^unknown/);
+  assert.match(out.note, /41 days ago, limit 14/);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('label-drift: a fresh full check with nothing owed retires the row', () => {
+  const tmp = driftFixture();
+  assert.equal(measureDrift(tmp).summary, 'done 0 2');
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('label-drift: demoting a card to pending does not retire a drift it owed (Codex P1 #955)', () => {
+  // The ledger records whether the card was reviewed WHEN the drift was observed. A content fix
+  // that demotes the card -- keeping or dropping lastReviewed -- must leave the drift owed until
+  // an evidence-bound review for the exact label transition.
+  const owedRow = { ...driftRow('lithium'), cardReviewedOn: '2026-09-29' };
+  for (const lastReviewed of ['2026-09-29', null]) {
+    const tmp = driftFixture({ drifts: [owedRow], lithiumStatus: 'pending', lastReviewed });
+    assert.equal(measureDrift(tmp).summary, 'waiting 1 2', `lastReviewed=${lastReviewed}`);
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+  // A drift observed while pending is still outstanding without matching review evidence.
+  const tmp = driftFixture({ drifts: [{ ...driftRow('lithium'), cardReviewedOn: null }] });
+  assert.equal(measureDrift(tmp).summary, 'waiting 1 2');
+  fs.rmSync(tmp, { recursive: true, force: true });
+});

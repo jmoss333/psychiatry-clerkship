@@ -38,6 +38,12 @@
       ],
       "referenceBrand": "WELLBUTRIN XL"
     },
+    "buspirone": {
+      "rxnormName": "buspirone",
+      "openfdaGenericNames": [
+        "BUSPIRONE HYDROCHLORIDE"
+      ]
+    },
     "carbamazepine": {
       "rxnormName": "carbamazepine",
       "openfdaGenericNames": [
@@ -73,6 +79,13 @@
       ],
       "referenceBrand": "CELEXA"
     },
+    "clomipramine": {
+      "rxnormName": "clomipramine",
+      "openfdaGenericNames": [
+        "CLOMIPRAMINE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "ANAFRANIL"
+    },
     "clonazepam": {
       "rxnormName": "clonazepam",
       "openfdaGenericNames": [
@@ -93,6 +106,13 @@
         "CLOZAPINE"
       ],
       "referenceBrand": "CLOZARIL"
+    },
+    "deutetrabenazine": {
+      "rxnormName": "deutetrabenazine",
+      "openfdaGenericNames": [
+        "DEUTETRABENAZINE"
+      ],
+      "referenceBrand": "AUSTEDO"
     },
     "diazepam": {
       "rxnormName": "diazepam",
@@ -135,6 +155,13 @@
       "openfdaGenericNames": [
         "FLUPHENAZINE HYDROCHLORIDE"
       ]
+    },
+    "fluvoxamine": {
+      "rxnormName": "fluvoxamine",
+      "openfdaGenericNames": [
+        "FLUVOXAMINE MALEATE"
+      ],
+      "referenceBrand": "LUVOX CR"
     },
     "haloperidol": {
       "rxnormName": "haloperidol",
@@ -198,13 +225,21 @@
       ],
       "referenceBrand": "REMERON"
     },
+    "naloxone": {
+      "rxnormName": "naloxone",
+      "openfdaGenericNames": [
+        "NALOXONE HYDROCHLORIDE"
+      ],
+      "referenceBrand": "NARCAN",
+      "route": "NASAL"
+    },
     "naltrexone": {
       "rxnormName": "naltrexone",
       "openfdaGenericNames": [
         "NALTREXONE HYDROCHLORIDE",
         "NALTREXONE"
       ],
-      "referenceBrand": "VIVITROL"
+      "route": "ORAL"
     },
     "nicotine-replacement": {
       "rxnormName": "nicotine",
@@ -288,6 +323,14 @@
       "openfdaGenericNames": [
         "TRAZODONE HYDROCHLORIDE"
       ]
+    },
+    "valbenazine": {
+      "rxnormName": "valbenazine",
+      "openfdaGenericNames": [
+        "VALBENAZINE",
+        "VALBENAZINE TOSYLATE"
+      ],
+      "referenceBrand": "INGREZZA"
     },
     "valproate": {
       "rxnormName": "valproic acid",

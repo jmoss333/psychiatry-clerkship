@@ -249,8 +249,8 @@ test('the audience-token guard actually rejects a "Shelf" planted in a concatena
 });
 
 
-test('The Essentials replaces the Library tab label without changing its identifier', () => {
+test('Library keeps its shared destination label and identifier', () => {
   const shell=fs.readFileSync(path.join(BUILD_DIR,'frontdoor','fd_shell.js'),'utf8');
-  assert.match(shell,/id:'library',label:'The Essentials'/);
+  assert.match(shell,/id:'library',label:'Library'/);
   assert.doesNotMatch(shell,/Your kit/);
 });

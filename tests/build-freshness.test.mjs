@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import {execFileSync} from 'node:child_process';
 
 import { staleBuildReason } from './_build_freshness.mjs';
 
@@ -102,4 +103,15 @@ test('the site argument selects which build tree is examined', (t) => {
   write(repo, '_build/ms3/index.html', NEW);
   assert.equal(staleBuildReason(repo, 'ms3', [src]), null);
   assert.match(staleBuildReason(repo, 'res', [src]), /_build\/res/);
+});
+
+// A simulated faculty edit changes file bytes and must also invalidate an earlier build.
+test('rehearsed source edits have a new mtime, so cached builds are not called current', () => {
+  const root = new URL('../', import.meta.url);
+  const source = new URL('../topic_meta.json', import.meta.url);
+  const before = fs.statSync(source).mtimeMs;
+  const result = JSON.parse(execFileSync(process.execPath, ['--import', './tests/_live_state_rehearsal.mjs', '-e',
+    "const fs=require('node:fs');console.log(JSON.stringify({mtime:fs.statSync('topic_meta.json').mtimeMs}));"],
+    {cwd:root,encoding:'utf8',env:{...process.env,LIVE_STATE_SCENARIO:'pages-signed'}}));
+  assert.ok(result.mtime > before, 'a rehearsed source edit must invalidate output built from its prior bytes');
 });

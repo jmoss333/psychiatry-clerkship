@@ -17,6 +17,7 @@ from yaml.nodes import MappingNode, ScalarNode, SequenceNode
 REPO_ROOT = Path(__file__).resolve().parents[3]
 WORKFLOW_DIR = Path(".github/workflows")
 EXPECTED_CRONS = {
+    "surveillance-firecrawl.yml": "30 6 * * 1",
     "ci.yml": "0 8 * * 0",
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
@@ -65,6 +66,7 @@ SCOPED_FILES = set(EXPECTED_CRONS) | {
     ESCALATION_FILE,
 }
 EXPECTED_PERMISSIONS = {
+    "surveillance-firecrawl.yml": {"contents": "write", "pull-requests": "write"},
     "ci.yml": {"contents": "read"},
     "maintenance-queue-runner.yml": {
         "contents": "write",
@@ -121,6 +123,7 @@ SP_STATUS_URL = "https://sp-interview-proxy.netlify.app/api/sp/health-status"
 MS3_URL = "https://une-ms3-psychiatry.netlify.app"
 RES_URL = "https://mmc-psychiatry-residents-sanford.netlify.app"
 EXPECTED_CONCURRENCY = {
+    "surveillance-firecrawl.yml": {"group": "surveillance-inbox", "cancel-in-progress": False},
     "ci.yml": {
         "group": "ci-${{ github.event_name }}-${{ github.ref }}",
         "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
@@ -154,6 +157,7 @@ EXPECTED_CONCURRENCY = {
     },
 }
 EXPECTED_JOB_IDS = {
+    "surveillance-firecrawl.yml": {"evidence-review"},
     "ci.yml": {"build-test-validate", "smoke-tests"},
     "maintenance-queue-runner.yml": {"queue-runner"},
     "maintenance-sp-health-monitor.yml": {"monitor"},
@@ -170,6 +174,15 @@ EXPECTED_JOB_IDS = {
     ESCALATION_FILE: {"escalate"},
 }
 EXPECTED_STEP_INVENTORIES = {
+    "surveillance-firecrawl.yml": {'evidence-review': (('uses', 'actions/checkout'),
+                     ('uses', 'actions/setup-python'),
+                     ('name', 'Install dependencies'),
+                     ('name', 'Prepare run directory'),
+                     ('name', 'Hydrate rolling surveillance inbox'),
+                     ('name', 'Collect review packets'),
+                     ('name', 'Publish rolling surveillance inbox'),
+                     ('uses', 'actions/upload-artifact'),
+                     ('name', 'Require complete examination'))},
     "ci.yml": {
         "build-test-validate": (
             ("uses", "actions/checkout"),
@@ -214,6 +227,8 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Test — RX# retrieval deck builder"),
             ("name", "Validate — RX# deck is regenerated from pharmacy.json"),
             ("name", "Test — pharmacy page never ships an invalid review"),
+            ("name", "Test — pharmacy label drift checker"),
+            ("name", "Validate — pharmacy label pins agree with the receipt"),
             ("name", "Unit — surface governance"),
             ("name", "Unit — tool governance"),
             ("name", "Validate — tool governance"),
@@ -427,10 +442,11 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
+    "surveillance-firecrawl.yml": "1f71b4e757453c757d5055f597d35410f90bc5819fd8d972b5ef8254aacac421",
     ESCALATION_FILE: (
-        "a8bebbaa3a154105d2491c0c0a468a5fe107e9db29d83ff844b7a23c7efda0d5"
+        "6c338845ee1b55cfcc52143a90c3153cbd77bece5b039eeef7568adff0d73481"
     ),
-    "ci.yml": "f018d93706235bd832840ae741a024da6072dfa71ed601813f8d208ad87eddb4",
+    "ci.yml": "2dde7c5fe439c4651499356393818f3a9da6d5af24283cd9464133058ee3e645",
     "maintenance-governance-digest.yml": (
         "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),

@@ -511,6 +511,49 @@
               "retrievalHash": {
                 "type": "string",
                 "pattern": "^[0-9a-f]{64}$"
+              },
+              "labelEvidence": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "schemaVersion",
+                  "sourceRevision",
+                  "setId",
+                  "version",
+                  "effectiveDate",
+                  "pinHash",
+                  "receiptHash"
+                ],
+                "properties": {
+                  "schemaVersion": {
+                    "const": 1
+                  },
+                  "sourceRevision": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{40}$"
+                  },
+                  "setId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "effectiveDate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "pinHash": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "receiptHash": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                },
+                "description": "Exact committed label evidence confirmed through the authenticated medication review; a review date alone does not clear label drift."
               }
             }
           },
@@ -591,7 +634,7 @@
               },
               "authoredFields": {
                 "type": "array",
-                "description": "J field paths written new for the pharmacy, with no attested source to quote — the faculty reviewer's first stop.",
+                "description": "J field paths written new for the pharmacy, with no attested source to quote \u2014 the faculty reviewer's first stop.",
                 "items": {
                   "type": "string",
                   "minLength": 1

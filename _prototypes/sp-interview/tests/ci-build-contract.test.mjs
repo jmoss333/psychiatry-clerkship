@@ -114,7 +114,10 @@ test('both builders emit governance inventories matching their final tools', (t)
     assert.equal(built.status, 0, built.stdout + built.stderr);
     // +rotation-curator.html (#377); standalone timeline is the governed Path tab; 23 -> 22 when the
     // MS3-only orientation-video tool was retired (2026-09-25); 22 -> 23 +pharmacy.html (2026-09-30).
-    assertInventory(ms3, 23);
+    const shipped = JSON.parse(fs.readFileSync(path.join(ROOT,
+      '13_Faculty_Resources/_automation/site_build/shipped_pages.json'), 'utf8'));
+    const ms3Tools = shipped.pages.filter(page => page.kind === 'tool' && page.sites.includes('ms3'));
+    assertInventory(ms3, ms3Tools.length);
     assert.match(
       fs.readFileSync(path.join(ms3, '_headers'), 'utf8'),
       /\/tool-governance\.json\n  Cache-Control: public, max-age=0, must-revalidate/,

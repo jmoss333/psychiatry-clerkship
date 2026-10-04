@@ -33,6 +33,7 @@ import re
 import subprocess
 import sys
 from datetime import date
+from html.parser import HTMLParser
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -149,7 +150,63 @@ def _slug_source_map(aud_key: str = "ms3") -> dict[str, str]:
 _CSSISH = re.compile(r"(px|rem|em|vh|vw|%)\s*[;}]|:\s*var\(|@media|font-family|@keyframes|translate|cubic-bezier")
 
 
-def tool_text(path: Path) -> tuple[list[str], list[str]]:
+class _ToolHTMLParser(HTMLParser):
+    """Locate script/style spans while retaining the original markup and script text."""
+
+    def __init__(self, raw: str):
+        super().__init__(convert_charrefs=False)
+        self.raw = raw
+        self.line_offsets = [0]
+        for line in raw.split("\n")[:-1]:
+            self.line_offsets.append(self.line_offsets[-1] + len(line) + 1)
+        self.hidden: list[tuple[int, int]] = []
+        self.scripts: list[tuple[str | None, str]] = []
+        self.active: tuple[str, int, int, str | None] | None = None
+
+    def _offset(self) -> int:
+        line, column = self.getpos()
+        return self.line_offsets[line - 1] + column
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style"):
+            start = self._offset()
+            # HTMLParser normalizes HTML names but preserves attribute value case.
+            script_id = next((value for name, value in attrs if name == "id"), None)
+            self.active = (tag, start, start + len(self.get_starttag_text()), script_id)
+
+    def handle_startendtag(self, tag, attrs):
+        if tag in ("script", "style"):
+            start = self._offset()
+            self.hidden.append((start, start + len(self.get_starttag_text())))
+
+    def handle_endtag(self, tag):
+        if self.active is not None and tag == self.active[0]:
+            closing_start = self._offset()
+            self._finish_block(closing_start, self.raw.index(">", closing_start) + 1)
+
+    def _finish_block(self, content_end: int, block_end: int):
+        tag, start, content_start, script_id = self.active
+        self.hidden.append((start, block_end))
+        if tag == "script":
+            self.scripts.append((script_id, self.raw[content_start:content_end]))
+        self.active = None
+
+    def parts(self) -> tuple[str, list[tuple[str | None, str]]]:
+        self.feed(self.raw)
+        self.close()
+        if self.active is not None:
+            self._finish_block(len(self.raw), len(self.raw))
+        outside = []
+        cursor = 0
+        for start, end in self.hidden:
+            outside.append(self.raw[cursor:start])
+            cursor = end
+        outside.append(self.raw[cursor:])
+        # Raw slices leave entities intact for tool_text's existing one-pass unescape.
+        return "".join(outside), self.scripts
+
+
+def tool_text(path: Path, *, exclude_script_ids: tuple[str, ...] = ()) -> tuple[list[str], list[str]]:
     """(visible HTML text lines, clinical strings recovered from inline JS).
 
     The clinical tools are single-file HTML that render everything from JS data literals,
@@ -158,8 +215,7 @@ def tool_text(path: Path) -> tuple[list[str], list[str]]:
     """
     raw = path.read_text(encoding="utf-8", errors="replace")
 
-    body = re.sub(r"<script[^>]*>.*?</script>", "", raw, flags=re.S)
-    body = re.sub(r"<style[^>]*>.*?</style>", "", body, flags=re.S)
+    body, scripts = _ToolHTMLParser(raw).parts()
     body = re.sub(r"<!--.*?-->", "", body, flags=re.S)
     visible = []
     for chunk in re.split(r"<(?:/p|/h[1-6]|/li|br\s*/?|/div|/section)>", body, flags=re.I):
@@ -169,7 +225,9 @@ def tool_text(path: Path) -> tuple[list[str], list[str]]:
 
     js: list[str] = []
     seen: set[str] = set()
-    for script in re.findall(r"<script[^>]*>(.*?)</script>", raw, flags=re.S):
+    for script_id, script in scripts:
+        if script_id in exclude_script_ids:
+            continue
         for m in re.finditer(r'"((?:[^"\\]|\\.)*)"|\'((?:[^\'\\]|\\.)*)\'|`((?:[^`\\]|\\.)*)`', script):
             v = m.group(1) or m.group(2) or m.group(3) or ""
             v = v.replace("\\n", "\n").replace('\\"', '"').replace("\\'", "'").replace("\\`", "`")
@@ -426,6 +484,116 @@ def render_communication_case(doc: Doc, c: dict):
         doc.add("", f"**Listen for.** {second['listenFor']}", "")
 
 
+def render_prepare_for_tomorrow(doc: Doc, raw: str) -> int:
+    """Transcribe every field in all six preparation routes without prose heuristics."""
+    blocks = re.findall(r'<script id="pft-data" type="application/json">([\s\S]*?)</script>', raw)
+    if len(blocks) != 1:
+        raise ValueError("missing or duplicate preparation teaching")
+
+    def fields(value, names, label):
+        if not isinstance(value, dict) or set(value) != set(names):
+            raise ValueError("incomplete or unhandled preparation " + label)
+
+    def text(value):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("empty preparation teaching")
+
+    def texts(value):
+        if not isinstance(value, list) or not value:
+            raise ValueError("empty preparation teaching list")
+        for item in value:
+            text(item)
+
+    try:
+        data = json.loads(blocks[0])
+    except json.JSONDecodeError as error:
+        raise ValueError("malformed preparation teaching") from error
+    fields(data, ("version", "tasks"), "pack")
+    if type(data["version"]) is not int or data["version"] != 1:
+        raise ValueError("invalid preparation teaching version")
+    tasks = data["tasks"]
+    fields(tasks, ("interview", "rounds", "note"), "tasks")
+    for task in tasks.values():
+        fields(task, ("title", "resources", "routes"), "task")
+        text(task["title"])
+        texts(task["resources"])
+        fields(task["routes"], ("5", "15"), "durations")
+        for route in task["routes"].values():
+            fields(route, ("orientation", "reading", "rehearsal", "card"), "route")
+            text(route["orientation"])
+            reading, rehearsal, card = route["reading"], route["rehearsal"], route["card"]
+            fields(reading, ("heading", "paragraphs", "sourceRef", "sourceSection"), "reading")
+            for key in ("heading", "sourceRef", "sourceSection"):
+                text(reading[key])
+            texts(reading["paragraphs"])
+            fields(rehearsal, ("snapshot", "prompt", "example", "reflection"), "rehearsal")
+            for key in ("snapshot", "prompt", "example"):
+                text(rehearsal[key])
+            texts(rehearsal["reflection"])
+            fields(card, ("try", "notice", "ask"), "tomorrow card")
+            for value in card.values():
+                text(value)
+
+    doc.add("#### Preparation teaching — all six task and duration routes", "",
+            "Built teaching source: `tools/prepare-for-tomorrow.html#pft-data`", "")
+    for task in tasks.values():
+        doc.add(f"##### {task['title']}", "", "Resources: " + ", ".join(f"`{r}`" for r in task["resources"]), "")
+        for minutes in ("5", "15"):
+            route = task["routes"][minutes]
+            reading, rehearsal = route["reading"], route["rehearsal"]
+            doc.add(f"###### About {minutes} minutes", "", f"**Orientation.** {route['orientation']}", "",
+                    f"**Focused reading: {reading['heading']}**", "", *reading["paragraphs"], "",
+                    f"Source: `{reading['sourceRef']}` · {reading['sourceSection']}", "",
+                    f"**Fictional snapshot.** {rehearsal['snapshot']}", "",
+                    f"**Private rehearsal.** {rehearsal['prompt']}", "",
+                    f"**Optional example.** {rehearsal['example']}", "", "**Reflection:**", "")
+            doc.add(*(f"- {item}" for item in rehearsal["reflection"]), "", "**Tomorrow card:**", "")
+            for key, label in (("try", "Try"), ("notice", "Notice"), ("ask", "Ask your supervisor")):
+                doc.add(f"- **{label}.** {route['card'][key]}")
+            doc.add("")
+    return 6
+
+
+def render_case_journey_practice(doc: Doc, raw: str) -> int:
+    """Transcribe the canonical inline practice pack; incomplete coverage is an error."""
+    blocks = re.findall(r'<script id="case-practice-data" type="application/json">([\s\S]*?)</script>', raw)
+    if len(blocks) != 1:
+        raise ValueError("missing or duplicate Case Journeys practice teaching")
+    try:
+        data = json.loads(blocks[0])
+        required = ("boundary", "reading", "exampleBoundary", "finishText")
+        nonempty = lambda value: isinstance(value, str) and bool(value.strip())
+        if type(data.get("version")) is not int or data["version"] != 1 or not all(nonempty(data.get(key)) for key in required):
+            raise ValueError("invalid Case Journeys practice boundaries")
+        tasks = data.get("tasks")
+        if not isinstance(tasks, dict) or set(tasks) != {"interview", "rounds", "note"}:
+            raise ValueError("incomplete Case Journeys practice tasks")
+        for task in tasks.values():
+            if not nonempty(task.get("label")) or task.get("sourceRef") not in {"pg_interview.md", "doc_oral.md"}:
+                raise ValueError("invalid Case Journeys practice attribution")
+            if not isinstance(task.get("routes"), dict) or set(task["routes"]) != {"5", "15"}:
+                raise ValueError("incomplete Case Journeys practice durations")
+            for route in task["routes"].values():
+                if not all(nonempty(route.get(key)) for key in ("prompt", "example")) or not isinstance(route.get("card"), dict) or not all(nonempty(route["card"].get(key)) for key in ("try", "notice", "ask")):
+                    raise ValueError("incomplete Case Journeys practice route")
+    except (AttributeError, TypeError, json.JSONDecodeError) as error:
+        raise ValueError("malformed Case Journeys practice teaching") from error
+    doc.add("### Connected task practice — all four patients and 24 selected chapters", "",
+            "Built teaching source: `tools/one-patient-six-weeks.html#case-practice-data`", "")
+    for key in required:
+        doc.add(data[key], "")
+    for task in tasks.values():
+        doc.add(f"#### {task['label']}", "", f"Structure source: `{task['sourceRef']}`", "")
+        for minutes in ("5", "15"):
+            route = task["routes"][minutes]
+            doc.add(f"##### About {minutes} minutes", "", f"**Private rehearsal.** {route['prompt']}", "",
+                    f"**Optional outline.** {route['example']}", "")
+            for key, label in (("try", "Try"), ("notice", "Notice"), ("ask", "Ask your supervisor")):
+                doc.add(f"- **{label}.** {route['card'][key]}")
+            doc.add("")
+    return 6
+
+
 def render_case_journeys(doc: Doc, build: Path) -> dict[str, int]:
     """Transcribe cases from the built viewer's declared loaders, including future cases.
 
@@ -488,6 +656,7 @@ def render_case_journeys(doc: Doc, build: Path) -> dict[str, int]:
             for link in chapter.get("links", []):
                 doc.add(f"- Resource: {link['label']} (`{link['kind']}:{link['target']}`)")
             doc.add("")
+    render_case_journey_practice(doc, (build / page_url).read_text(encoding="utf-8"))
     return counts
 
 
@@ -599,7 +768,8 @@ def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:
                     L += ["_Binary media asset — not transcribed here._", ""]
                     blocks.append((sec["section"], L))
                     continue
-                visible, js = tool_text(p_tool)
+                preparation = f == "prepare-for-tomorrow.html"
+                visible, js = tool_text(p_tool, exclude_script_ids=("pft-data",) if preparation else ())
                 L += ["#### Tool — clinical content", "",
                       "_These tools are single-file HTML that render from inline JS data, so the "
                       "clinical text below is recovered from the tool's own string literals. "
@@ -608,6 +778,10 @@ def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:
                     L += ["**Static shell text:**", ""]
                     L += [f"- {v}" for v in visible[:80]]
                     L.append("")
+                if preparation:
+                    teaching = Doc("preparation.md", "Preparation teaching")
+                    render_prepare_for_tomorrow(teaching, p_tool.read_text(encoding="utf-8"))
+                    L += teaching.lines
                 if js:
                     shown, omitted = js[:TOOL_STRING_CAP], max(0, len(js) - TOOL_STRING_CAP)
                     L.append(f"**Authored clinical strings ({len(js)}"
