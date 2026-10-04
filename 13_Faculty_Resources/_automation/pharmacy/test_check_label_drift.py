@@ -9,17 +9,24 @@ import contextlib
 import copy
 import datetime
 import io
+import hashlib
+import subprocess
 import json
 import os
 import sys
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import check_label_drift as drift  # noqa: E402
+sys.path.insert(0, str(HERE.parents[2] / "bin"))
+from _git_env import scrub_inherited_git_env
+scrub_inherited_git_env()
+import what_needs_josh as owner
 
 SET_ID = "11111111-2222-3333-4444-555555555555"
 DOSING = "Titrate to response. Dosages above the usual range may be appropriate for some patients."
@@ -540,8 +547,8 @@ class PacketTest(unittest.TestCase):
         self.assertIn("~~the usual range~~", text)
         self.assertLess(text.index("### 0."), text.index("### 1. Decide"))
 
-    def test_a_review_after_the_observation_closes_it(self):
-        self.assertNotIn("### 0.", self.render(self.card("2026-10-10"), self.ledger()))
+    def test_a_later_review_date_without_bound_evidence_does_not_close_it(self):
+        self.assertIn("### 0.", self.render(self.card("2026-10-10"), self.ledger()))
 
     def test_a_pending_card_shows_changes_since_it_was_drafted(self):
         self.assertIn("### 0. Label changed since this card was drafted",
@@ -582,6 +589,214 @@ class CommittedPinsTest(unittest.TestCase):
         for agent, entry in pinned.items():
             with self.subTest(agent=agent):
                 self.assertGreaterEqual(len(entry["sections"]), 5)
+
+
+# Synthetic committed-Git evidence contracts; all ledgers and approvals are fixtures.
+TOOLS = Path('13_Faculty_Resources/_automation/pharmacy')
+
+
+def canonical_hash(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False,
+                                    separators=(',', ':')).encode('utf-8')).hexdigest()
+
+
+class LabelEvidenceTest(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+        self.git('init', '-q')
+        self.git('config', 'user.name', 'Synthetic Fixture')
+        self.git('config', 'user.email', 'fixture@example.test')
+        self.today = datetime.date(2026, 3, 2)
+        self.ledger_path = self.root / 'ledger.json'
+        for patcher in (mock.patch.object(drift, 'ROOT', self.root, create=True),
+                        mock.patch.object(owner, 'ROOT', self.root),
+                        mock.patch.object(owner, 'PHARMACY', self.root / 'pharmacy.json'),
+                        mock.patch.object(owner, '_today', lambda: self.today),
+                        mock.patch.dict(os.environ, {'CLERKSHIP_LABEL_DRIFT_LEDGER': str(self.ledger_path)})):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        self.card = {'id': 'lithium', 'dailymedSetId': SET_ID, 'labelVersionDate': '2026-01-01',
+                     'mechanism': 'Synthetic café statement.',
+                     'provenance': {'fieldClasses': {'mechanism': 'J'}},
+                     'facultyReview': {'status': 'pending'}}
+        self.source(1, '2026-01-01')
+        self.obligation = {'agent': 'lithium', 'setId': SET_ID, 'observedOn': '2026-02-02',
+                           'fromVersion': 1, 'toVersion': 2, 'fromDate': '2026-01-01',
+                           'toDate': '2026-02-01', 'fields': ['mechanism']}
+
+    def git(self, *args):
+        return subprocess.check_output(['git', '-C', str(self.root), *args], env=self.env,
+                                       stderr=subprocess.PIPE, text=True).strip()
+
+    def source(self, version, date):
+        self.card['labelVersionDate'] = date
+        self.pin = {'setId': SET_ID, 'version': version, 'effectiveDate': date,
+                    'sections': {'1': 'a' * 16}, 'note': 'Synthetic café pin'}
+        self.receipt = {'reference': {'setId': SET_ID, 'effectiveDate': date}, 'notes': ['Synthetic café receipt']}
+        for path, document in [('pharmacy.json', {'records': [self.card]}),
+                               (TOOLS / 'label_pins.json', {'agents': {'lithium': self.pin}}),
+                               (TOOLS / 'label_receipt.json', {'agents': {'lithium': self.receipt}})]:
+            target = self.root / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps(document, ensure_ascii=False))
+        self.git('add', 'pharmacy.json', str(TOOLS))
+        self.git('commit', '-qm', 'Synthetic source version ' + str(version))
+        self.revision = self.git('rev-parse', 'HEAD')
+
+    def reviewed(self):
+        result = copy.deepcopy(self.card)
+        result['facultyReview'] = {'status': 'reviewed', 'reviewer': 'Synthetic Faculty',
+                                  'lastReviewed': '2026-03-01', 'reviewedFieldsHash': drift.vp.j_hash(result),
+                                  'labelEvidence': {'schemaVersion': 1, 'sourceRevision': self.revision,
+                                                    'setId': SET_ID, 'version': self.pin['version'],
+                                                    'effectiveDate': self.pin['effectiveDate'],
+                                                    'pinHash': canonical_hash(self.pin),
+                                                    'receiptHash': canonical_hash(self.receipt)}}
+        return result
+
+    def assert_consumers(self, card, rows, expected):
+        ledger = {'schemaVersion': 1, 'lastChecked': str(self.today), 'drifts': rows}
+        self.ledger_path.write_text(json.dumps(ledger))
+        (self.root / 'pharmacy.json').write_text(json.dumps({'records': [card]}))
+        before = self.ledger_path.read_bytes()
+        self.assertEqual(drift.drifts_since_review(ledger, card), expected)
+        owed, _ = owner._label_drift_owed()
+        # The owner queue counts cards; a card stays owed if ANY transition remains.
+        self.assertEqual(bool(owed), bool(expected))
+        if owed:
+            self.assertIn(owed[0], expected)
+        self.assertEqual(self.ledger_path.read_bytes(), before)
+
+    def test_authentic_later_review_of_old_source_does_not_clear_new_label(self):
+        self.assert_consumers(self.reviewed(), [self.obligation], [self.obligation])
+
+    def test_exact_committed_new_evidence_clears_only_matching_transition(self):
+        self.source(2, '2026-02-01')
+        self.assert_consumers(self.reviewed(), [self.obligation], [])
+
+    def test_missing_legacy_and_malformed_evidence_remain_owed(self):
+        self.source(2, '2026-02-01')
+        for evidence in (None, {}, [], {'schemaVersion': 1}):
+            with self.subTest(evidence=evidence):
+                card = self.reviewed()
+                card['facultyReview']['labelEvidence'] = evidence
+                self.assert_consumers(card, [self.obligation], [self.obligation])
+
+    def test_wrong_identity_version_date_hash_or_revision_remains_owed(self):
+        old_revision = self.revision
+        self.source(2, '2026-02-01')
+        for key, value in [('schemaVersion', 2), ('version', True), ('version', 1),
+                           ('setId', 'another-label'), ('effectiveDate', '2026-01-01'),
+                           ('pinHash', 'b' * 64), ('receiptHash', 'c' * 64),
+                           ('sourceRevision', 'f' * 40), ('sourceRevision', old_revision),
+                           ('sourceRevision', '--help'), ('pinHash', 'A' * 64)]:
+            with self.subTest(key=key, value=value):
+                card = self.reviewed()
+                card['facultyReview']['labelEvidence'][key] = value
+                self.assert_consumers(card, [self.obligation], [self.obligation])
+
+    def test_pending_bad_hash_missing_reviewer_or_future_date_remains_owed(self):
+        self.source(2, '2026-02-01')
+        for key, value in [('status', 'pending'), ('reviewedFieldsHash', 'b' * 64),
+                           ('reviewer', ''), ('lastReviewed', '2099-01-01'),
+                           ('lastReviewed', 'not-a-date')]:
+            with self.subTest(key=key):
+                card = self.reviewed()
+                card['facultyReview'][key] = value
+                self.assert_consumers(card, [self.obligation], [self.obligation])
+
+    def test_source_objects_must_match_record_and_have_section_hashes(self):
+        self.source(2, '2026-02-01')
+        card = self.reviewed()
+        card['mechanism'] = 'Changed synthetic clinical statement.'
+        card['facultyReview']['reviewedFieldsHash'] = drift.vp.j_hash(card)
+        self.assert_consumers(card, [self.obligation], [self.obligation])
+        self.pin['sections'] = {}
+        (self.root / TOOLS / 'label_pins.json').write_text(json.dumps({'agents': {'lithium': self.pin}}))
+        self.git('add', str(TOOLS)); self.git('commit', '-qm', 'Malformed synthetic pin')
+        self.revision = self.git('rev-parse', 'HEAD')
+        self.assert_consumers(self.reviewed(), [self.obligation], [self.obligation])
+
+    def test_working_tree_objects_do_not_substitute_for_committed_evidence(self):
+        self.source(2, '2026-02-01')
+        (self.root / TOOLS / 'label_pins.json').write_text('{}')
+        self.assert_consumers(self.reviewed(), [self.obligation], [])
+
+    def test_existing_nonancestor_source_is_not_accepted(self):
+        original = self.revision
+        self.source(2, '2026-02-01')
+        card = self.reviewed()
+        self.git('checkout', '--detach', original)
+        self.assert_consumers(card, [self.obligation], [self.obligation])
+
+    def test_committed_receipt_mismatch_is_not_fixed_by_rehashing(self):
+        self.source(2, '2026-02-01')
+        self.receipt['reference']['setId'] = 'different-synthetic-label'
+        (self.root / TOOLS / 'label_receipt.json').write_text(
+            json.dumps({'agents': {'lithium': self.receipt}}))
+        self.git('add', str(TOOLS))
+        self.git('commit', '-qm', 'Mismatched synthetic receipt')
+        self.revision = self.git('rev-parse', 'HEAD')
+        self.assert_consumers(self.reviewed(), [self.obligation], [self.obligation])
+
+    def test_newest_review_does_not_clear_older_unresolved_transition(self):
+        self.source(3, '2026-02-15')
+        newer = dict(self.obligation, fromVersion=2, toVersion=3, toDate='2026-02-15', observedOn='2026-02-16')
+        self.assert_consumers(self.reviewed(), [self.obligation, newer], [self.obligation])
+
+    def test_legacy_obligation_without_label_identity_is_not_assumed_matching(self):
+        self.source(2, '2026-02-01')
+        legacy = dict(self.obligation); del legacy['setId']
+        self.assert_consumers(self.reviewed(), [legacy], [legacy])
+
+    def test_writer_unsupported_numbers_cannot_clear_even_with_matching_hashes(self):
+        for number in (0.5, 9007199254740992):
+            with self.subTest(number=number):
+                self.source(2, '2026-02-01')
+                self.pin['extension'] = {'nested': [number]}
+                (self.root / TOOLS / 'label_pins.json').write_text(
+                    json.dumps({'agents': {'lithium': self.pin}}))
+                self.git('add', str(TOOLS))
+                self.git('commit', '-qm', 'Unsupported synthetic number')
+                self.revision = self.git('rev-parse', 'HEAD')
+                self.assert_consumers(self.reviewed(), [self.obligation], [self.obligation])
+
+    def test_committed_resolution_stays_resolved_after_next_review(self):
+        self.source(2, '2026-02-01')
+        card = self.reviewed()
+        self.assert_consumers(card, [self.obligation], [])
+        self.git('add', 'pharmacy.json')
+        self.git('commit', '-qm', 'Synthetic faculty approval of version 2')
+        self.source(3, '2026-02-15')
+        newer = dict(self.obligation, fromVersion=2, toVersion=3,
+                     toDate='2026-02-15', observedOn='2026-02-16')
+        self.assert_consumers(self.reviewed(), [self.obligation, newer], [])
+
+    def test_record_preserves_distinct_label_sets_dates_and_legacy_rows(self):
+        self.source(2, '2026-02-01')
+        approved = self.reviewed()
+        self.assert_consumers(approved, [self.obligation], [])
+        self.git('add', 'pharmacy.json')
+        self.git('commit', '-qm', 'Synthetic approval for first label set')
+        report = dict(self.obligation, status='review', setId='new-synthetic-label',
+                      changed=['1'], added=[], removed=[], quotesBroken=[])
+        self.assertEqual(drift.record(self.ledger_path, [report, report], True,
+                                      '2026-03-02', {'lithium': approved}), 1)
+        rows = json.loads(self.ledger_path.read_text())['drifts']
+        self.assert_consumers(approved, rows, [rows[1]])
+        # The same set/version with a different target date is also distinct.
+        report['toDate'] = '2026-02-03'
+        self.assertEqual(drift.record(self.ledger_path, [report], True, '2026-03-02'), 1)
+        # An old row lacking setId cannot suppress a newly identifiable observation.
+        legacy = dict(self.obligation)
+        del legacy['setId']
+        self.ledger_path.write_text(json.dumps({'drifts': [legacy]}))
+        report.update(setId=SET_ID, toDate='2026-02-01')
+        self.assertEqual(drift.record(self.ledger_path, [report], True, '2026-03-02'), 1)
+        self.assertEqual(json.loads(self.ledger_path.read_text())['drifts'][0], legacy)
 
 
 if __name__ == "__main__":
