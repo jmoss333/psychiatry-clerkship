@@ -59,7 +59,30 @@ def ledger_line(ledger, today):
     return "Label drift: last full check %s." % last
 
 
-def label_changes(record, ledger):
+def oe_lines(row, oe):
+    """What OpenEvidence said this label change does to the card's claims (oe_label_delta.py)."""
+    result = (oe or {}).get((row["agent"], row["toVersion"]))
+    if result is None:
+        return ["Which card lines does this contradict? `oe_label_delta.py prompt %s`, paste it "
+                "into OpenEvidence, then `oe_label_delta.py check %s answer.md --save`."
+                % (row["agent"], row["agent"]), ""]
+    status = "verified" if result.get("complete") else "INCOMPLETE -- %d problem(s)" % len(result.get("problems", []))
+    out = ["**OpenEvidence claim check (%s):**" % status, ""]
+    flagged = [v for v in result.get("verdicts", []) if v["verdict"] in ("CONTRADICTED", "NARROWED")]
+    for v in flagged:
+        out.append("- [ ] **%s** `%s`%s: %s" % (v["verdict"], v["claim"],
+                   "" if v.get("verified") else " (unverified quote)", v["text"]))
+        out.append("    - label: \"%s\"" % v["quote"])
+    if not flagged:
+        out.append("- No card claim contradicted or narrowed.")
+    counts = {}
+    for v in result.get("verdicts", []):
+        counts[v["verdict"]] = counts.get(v["verdict"], 0) + 1
+    out += ["", "Verdicts: %s." % ", ".join("%s %d" % (k, counts[k]) for k in sorted(counts)), ""]
+    return out
+
+
+def label_changes(record, ledger, oe=None):
     """Section 0: the label text that moved since this card's review, as a word diff."""
     drifts = drift.drifts_since_review(ledger, record)
     if not drifts:
@@ -74,12 +97,13 @@ def label_changes(record, ledger):
         out.append("")
         if row.get("texts"):
             out += drift.render_texts(row["texts"])
+            out += oe_lines(row, oe)
         else:
             out += ["Text not captured; `check_label_drift.py --diff %s` shows it." % row["agent"], ""]
     return out
 
 
-def render(records, receipt, ledger=None, today=None):
+def render(records, receipt, ledger=None, today=None, oe=None):
     out = ["# Pharmacy review packet", ""]
     out.append("Records: %s. Every quote below was machine-checked verbatim against the cited "
                "attested page (`validate_pharmacy.py` SPAN), and every label fact against the "
@@ -96,7 +120,7 @@ def render(records, receipt, ledger=None, today=None):
         out.append("Safety level **%s** · review status **%s** · J-field hash `%s`" % (
             record["safetyLevel"], record["facultyReview"]["status"], vp.j_hash(record)[:12]))
         out.append("")
-        out += label_changes(record, ledger)
+        out += label_changes(record, ledger, oe)
         out.append("### 1. Decide")
         out.append("")
         if prov.get("upstreamDiscrepancies"):
@@ -170,6 +194,19 @@ def render(records, receipt, ledger=None, today=None):
     return "\n".join(out) + "\n"
 
 
+def load_oe_results(ledger):
+    """{(agent, toVersion): saved oe_label_delta.py check result} for the ledger's drifts."""
+    import oe_label_delta  # noqa: E402  (one definition of where results live)
+    found = {}
+    for row in (ledger or {}).get("drifts", []):
+        path = oe_label_delta.results_path(drift.ledger_path(), row["agent"], row["toVersion"])
+        try:
+            found[(row["agent"], row["toVersion"])] = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+    return found
+
+
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
     pharmacy = json.loads(vp.PHARMACY.read_text(encoding="utf-8"))
@@ -179,7 +216,7 @@ def main(argv=None):
         ledger = json.loads(drift.ledger_path().read_text(encoding="utf-8"))
     except FileNotFoundError:
         ledger = None
-    sys.stdout.write(render(records, receipt, ledger))
+    sys.stdout.write(render(records, receipt, ledger, oe=load_oe_results(ledger)))
     return 0
 
 
