@@ -21,6 +21,7 @@ from maintenance.validate_scheduled_workflows import (  # noqa: E402
 
 
 EXPECTED = {
+    "surveillance-firecrawl.yml": "30 6 * * 1",
     "ci.yml": "0 8 * * 0",
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",

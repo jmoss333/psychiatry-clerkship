@@ -279,10 +279,13 @@ test('it carries no machine-specific paths', () => {
 // Controlled fixtures only (never the live pharmacy.json or a real ledger): the ledger is
 // per-machine state written by check_label_drift.py --record, located by its ledger_path().
 
-function driftFixture({ lastChecked = '2026-10-10', drifts = [], lastReviewed = '2026-09-29' } = {}) {
+function driftFixture({ lastChecked = '2026-10-10', drifts = [], lastReviewed = '2026-09-29',
+  lithiumStatus = 'reviewed' } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'wnj-drift-'));
+  const lithiumReview = lastReviewed === null ? { status: lithiumStatus }
+    : { status: lithiumStatus, lastReviewed };
   fs.writeFileSync(path.join(tmp, 'pharmacy.json'), JSON.stringify({ records: [
-    { id: 'lithium', facultyReview: { status: 'reviewed', lastReviewed } },
+    { id: 'lithium', facultyReview: lithiumReview },
     { id: 'clozapine', facultyReview: { status: 'reviewed', lastReviewed: '2026-09-29' } },
     { id: 'quetiapine', facultyReview: { status: 'pending' } },
   ] }));
@@ -346,6 +349,22 @@ test('label-drift: no ledger, a never-completed check, or a stale one is unknown
 
 test('label-drift: a fresh full check with nothing owed retires the row', () => {
   const tmp = driftFixture();
+  assert.equal(measureDrift(tmp).summary, 'done 0 2');
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('label-drift: demoting a card to pending does not retire a drift it owed (Codex P1 #955)', () => {
+  // The ledger records whether the card was reviewed WHEN the drift was observed. A content fix
+  // that demotes the card -- keeping or dropping lastReviewed -- must leave the drift owed until
+  // a review dated on or after the observation.
+  const owedRow = { ...driftRow('lithium'), cardReviewedOn: '2026-09-29' };
+  for (const lastReviewed of ['2026-09-29', null]) {
+    const tmp = driftFixture({ drifts: [owedRow], lithiumStatus: 'pending', lastReviewed });
+    assert.equal(measureDrift(tmp).summary, 'waiting 1 2', `lastReviewed=${lastReviewed}`);
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+  // A drift observed while the card was pending is that later review's business, not owed here.
+  const tmp = driftFixture({ drifts: [{ ...driftRow('lithium'), cardReviewedOn: null }] });
   assert.equal(measureDrift(tmp).summary, 'done 0 2');
   fs.rmSync(tmp, { recursive: true, force: true });
 });

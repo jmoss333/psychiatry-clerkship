@@ -426,3 +426,21 @@ Merge the rolling pull request with a **merge commit, not a squash**: the consol
 Once you've confirmed the console works end-to-end, the two attestation tools can be deleted from the student build (`review-attest.html`, `qbank-attest.html`) — remove them from `site_manifest.json` (`tools`), from the `nav` in `build_deploy.py`, and from the `_required`/copy lines. That change is intentionally **not** bundled here so the console can be verified first.
 
 *Joshua Moss, MD | Psychiatrist*
+
+### Evidence review
+
+`/evidence.html` uses the same faculty key and `/api/attest?view=evidence` authentication.
+It compares changed source passages with exact question explanations and distractor
+feedback. Lexical flags are possible contradictions, never clinical verdicts. The
+screen displays current main-branch teaching beside the scan's original wording.
+
+Decisions are separate from attestations. Each disposition binds to the immutable
+packet revision, source-report commit, and the current main-branch teaching revision, independently of the decision branch. An edit
+invalidates a previous disposition. `needs-edit` and `defer` remain pending; faculty
+use the ordinary console to edit and attest, then reassess whether current teaching
+needs further change. Incomplete scans cannot resolve a packet.
+
+Decision commits use `attest/evidence-review` and a rolling PR in both ledger modes;
+they never write `reviewed.json`, clinical content, or the attestation ledger.
+Attribution is server-controlled. If the report branch or required records cannot
+be read, the screen is unavailable rather than claiming an empty review queue.
