@@ -477,3 +477,9 @@ Decision commits use `attest/evidence-review` and a rolling PR in both ledger mo
 they never write `reviewed.json`, clinical content, or the attestation ledger.
 Attribution is server-controlled. If the report branch or required records cannot
 be read, the screen is unavailable rather than claiming an empty review queue.
+
+### Evidence inbox review order
+
+The evidence screen keeps every packet visible and derives ordering in the browser; it does not change packet revisions, clinical content, or saved faculty decisions. Incomplete scans, missing coverage, unavailable mappings, and changed/removed teaching come first. Next are possible contradictions whose quoted teaching contains a listed safety-related term, other possible contradictions, related changes, then resolved/superseded history. Distinct question IDs and reading paths determine reach (duplicate fields do not inflate it); ties use oldest observation then packet revision. Missing observation dates are flagged and sort first within equal priority/reach.
+
+`evidence-priority.mjs` contains the explicit keyword rules. These are workflow hints, not a validated clinical risk score: they can miss clinically important changes and flag contextual or historical language. Source titles and question stems alone cannot trigger the safety label. Faculty still checks the complete source and current teaching. Adding terms changes triage only, never clinical approval.
