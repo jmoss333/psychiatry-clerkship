@@ -2571,7 +2571,7 @@ test('document title resets for tabs and updates for successful resources and in
   });
   await page.goto('/');
   await expect(page).toHaveTitle(/^Today — /);
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page).toHaveTitle(/^Path — /);
   await page.locator('[data-fd-tab="library"]:visible').click();
   await expect(page).toHaveTitle(/^Library — /);
