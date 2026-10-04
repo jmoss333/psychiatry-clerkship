@@ -653,8 +653,17 @@ def render_case_journeys(doc: Doc, build: Path) -> dict[str, int]:
                 doc.add(f"**Prompt.** {item['prompt']}", "", f"**Model language.** {item['example']}", "")
             doc.add(f"**Reflection prompt.** {chapter['reflectionPrompt']}", "",
                     f"**Handoff.** {chapter['handoff']}", "")
+            for key, label in (("commonMisstep", "Common misstep"), ("residentExtension", "Resident extension"),
+                               ("localNote", "Local note")):
+                if chapter.get(key):
+                    doc.add(f"**{label}.** {chapter[key]}", "")
             for link in chapter.get("links", []):
-                doc.add(f"- Resource: {link['label']} (`{link['kind']}:{link['target']}`)")
+                anchor = f"#{link['anchor']}" if link.get("anchor") else ""
+                doc.add(f"- Resource: {link['label']} (`{link['kind']}:{link['target']}{anchor}`)")
+            sources = {s["id"]: s for s in case.get("sources", [])}
+            for sid in chapter.get("sourceIds", []):
+                if sid in sources:
+                    doc.add(f"- Source: {sources[sid]['title']} <{sources[sid]['url']}>")
             doc.add("")
     render_case_journey_practice(doc, (build / page_url).read_text(encoding="utf-8"))
     return counts

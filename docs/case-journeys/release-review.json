@@ -1,16 +1,40 @@
 {
-  "reviewDate": "2026-09-27",
-  "authorization": "The requesting author stated: I reviewed them, can we get these published!",
-  "scope": "Shared MS3/resident learner chapters; faculty notes excluded from shipped assets.",
-  "attestation": "This release record does not promote the faculty-console attestation ledger.",
+  "revision": "r2",
+  "reviewDate": null,
+  "authorization": "PENDING — Josh reviews PR hunks line by line; replace this string with the attestation sentence and set reviewDate on approval.",
+  "supersedes": "history/r1-2026-09-27/release-review.json",
+  "scope": "Shared MS3 and resident learner chapters; resident extensions and common missteps now ship; teachingPoint stays faculty-only.",
+  "attestation": "This release record does not promote the faculty-console attestation ledger. Ledger rows for one-patient-six-weeks.html and the three case files are a merge-day gate (doc 17 G3).",
+  "clinicalAuthorship": "AI-assisted synthetic draft; r1 reviewed and authorized for learner publication by the requesting author on 2026-09-27; r2 revision pending faculty review.",
+  "audienceLabel": "Shared MS3 and resident learner core; scope follows the learner’s actual supervision arrangements.",
   "sources": {
-    "eli-psychosis.json": "856e40f324f8cd7c0be2f661195a0ebaf568a4a0ca63cb69c56c4203fa7a5156",
-    "leah-depression-trauma.json": "4fa1abd69c07b12d64de7eea4d3cb361d951e33f9358bcc8201ca023c7471139",
-    "marisol-delirium-capacity.json": "db9b7bc1cd287f83797064bfd7862d70887a6e3dab5b36a1b8b96007640af4d9"
+    "eli-psychosis.json": "3ca5ac78fb902900e44e0ed765293673a05f679b72e936819b02a1942fac0109",
+    "leah-depression-trauma.json": "020411b271c01e537e5d1c4fd08a260b8c15d8639074a08aec67fe884d7b4f71",
+    "marisol-delirium-capacity.json": "86828b45c317686c899fa8a075a4ecf69e28497f7b5a0ef7af780050bd31293f"
   },
   "projectionChanges": [
-    "Remove facultyNotes from learner assets",
+    "Remove facultyNotes.teachingPoint from learner assets (faculty-only)",
+    "Carry facultyNotes.advancedPrompt as residentExtension and facultyNotes.pitfall as commonMisstep",
+    "Carry facultyNotes.sourceIds as sourceIds and add top-level sources (id, title, url) from sources.json",
+    "Carry objectiveIds (objective-to-chapter map) verbatim",
+    "Allow an optional anchor on tool links (pharmacy drug card deep link)",
     "Remove the historical draft prefix from disclaimers; retain clinical scope text",
-    "Update status, learnerRelease, authorship, and audience labels for the authorized learner release"
+    "Drop the _draft marker from ids",
+    "Update status, learnerRelease, releaseRevision, authorship, and audience labels for the authorized learner release"
+  ],
+  "wordingChangesSinceR1": {
+    "C1": "Leah-01 learnerTask and Leah-05 patientState/learnerTask/example: firearms and other lethal means; the new antidepressant as a supply at home",
+    "C2": "Eli-01 example: disconfirmation deferred, one question",
+    "C3": "Leah-02 handoff: thiamine before glucose/feeding; Wernicke features",
+    "C5": "Leah-02 learnerTask: CIWA-Ar score does not replace examination",
+    "C6": "Eli-03/05: risperidone named (no dose); dose increase timing; pharmacy drug-card links",
+    "C8": "Spoken register: Let's; in the hospital; who to call",
+    "C10": "Marisol-04 detention/surrogate sentence moved from learnerTask to disclaimer"
+  },
+  "mergeDayGates": [
+    "authorization replaced and reviewDate set",
+    "sources.json status faculty-reviewed with a resolution on every scopeLimit (doc 17 G4)",
+    "pharmacy.json risperidone facultyReview.status reviewed, or the two anchored links removed",
+    "faculty-console ledger rows for the page and three case files (doc 17 G3)"
   ]
 }

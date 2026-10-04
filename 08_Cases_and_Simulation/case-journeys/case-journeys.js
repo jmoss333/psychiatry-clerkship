@@ -22,6 +22,11 @@
     if (!data || !data.patient || !text(data.patient.displayName) || !text(data.title) || !Array.isArray(data.weeks) || data.weeks.length !== 6) throw new Error('A complete six-chapter case is required.');
     if ('learnerRelease' in data && data.learnerRelease !== true) throw new Error('Case is not released to learners.');
     var ids = new Set();
+    var objectives = Array.isArray(data.learningObjectives) ? data.learningObjectives.length : 0;
+    if ('sources' in data && !(Array.isArray(data.sources) && data.sources.every(function (s) {
+      return s && text(s.id) && text(s.title) && /^https:\/\//.test(s.url);
+    }))) throw new Error('Invalid source list.');
+    var sourceIds = new Set((data.sources || []).map(function (s) { return s.id; }));
     data.weeks.forEach(function (w) {
       if (!w || !text(w.id) || ids.has(w.id)) throw new Error('Missing or duplicate chapter.');
       ids.add(w.id);
@@ -30,8 +35,16 @@
       });
       if (!Array.isArray(w.focus) || !w.focus.every(text) || !Array.isArray(w.checklist) || !w.checklist.length || !w.checklist.every(function (item) { return text(item.prompt) && text(item.example); })) throw new Error('Missing model language.');
       if (!Array.isArray(w.links) || !w.links.every(function (link) {
-        return text(link.label) && /^(page|tool)$/.test(link.kind) && /^[a-z0-9_-]+\.(md|html)$/.test(link.target);
+        return text(link.label) && /^(page|tool)$/.test(link.kind) && /^[a-z0-9_-]+\.(md|html)$/.test(link.target) &&
+          (link.anchor === undefined || (link.kind === 'tool' && /^[a-z0-9-]+$/.test(link.anchor)));
       })) throw new Error('Invalid resource link.');
+      ['residentExtension', 'commonMisstep', 'localNote'].forEach(function (key) {
+        if (key in w && !text(w[key])) throw new Error('Empty optional chapter text.');
+      });
+      if ('sourceIds' in w && !(Array.isArray(w.sourceIds) && w.sourceIds.every(function (id) { return sourceIds.has(id); }))) throw new Error('Unknown source id.');
+      if ('objectiveIds' in w && !(Array.isArray(w.objectiveIds) && w.objectiveIds.length && w.objectiveIds.every(function (n) {
+        return Number.isInteger(n) && n >= 1 && n <= objectives;
+      }))) throw new Error('Invalid objective id.');
     });
     return true;
   }
@@ -76,13 +89,13 @@
     }).join('') + '</ol>';
   }
 
-  function resourceHref(link) {
-    return '../index.html?' + link.kind + '=' + encodeURIComponent(link.target);
+  function resourceHref(link, base) {
+    return (base || '../index.html') + '?' + link.kind + '=' + encodeURIComponent(link.target) + (link.anchor ? '#' + encodeURIComponent(link.anchor) : '');
   }
 
   function chapterMarkup(data, w) {
     var number = data.weeks.indexOf(w) + 1;
-    var pilot = data.id === 'case_journey_eli_psychosis_draft_001' && number >= 1 && number <= 4;
+    var pilot = /eli_psychosis/.test(String(data.id)) && number >= 1 && number <= 4;
     var language = w.checklist.map(function (item) {
       return '<div class="opf-language"><p class="opf-note__prompt">' + escape(item.prompt) + '</p>' +
         (pilot ? '<details class="opf-model"><summary>Model example · compare after your attempt</summary>' : '') +
@@ -92,20 +105,27 @@
       var links = w.links.filter(function (link) { return link.kind === kind; });
       if (!links.length) return '';
       return '<nav class="opf-chapter-resources" aria-label="' + (kind === 'page' ? 'Read resources' : 'Separate practice tools') + '"><p>Opens in a new tab; this case chapter stays here.</p><ul>' + links.map(function (link) {
-        return '<li><a target="_blank" rel="noopener noreferrer" href="' + '../?' + link.kind + '=' + encodeURIComponent(link.target) + '">' + escape(link.label) + '</a></li>';
+        return '<li><a target="_blank" rel="noopener noreferrer" href="' + resourceHref(link, '../') + '">' + escape(link.label) + '</a></li>';
       }).join('') + '</ul></nav>';
     }
     var resources = w.links.map(function (link) {
       return '<li><a target="_parent" href="' + resourceHref(link) + '">' + escape(link.label) + '</a></li>';
     }).join('');
+    var sourceList = (data.sources || []).filter(function (s) { return (w.sourceIds || []).indexOf(s.id) >= 0; });
+    var sourcesMarkup = sourceList.length ? '<nav class="opf-sources" aria-label="Sources for this chapter"><p class="opf-note__label">Sources for this chapter</p><ul>' + sourceList.map(function (s) {
+      return '<li><a target="_blank" rel="noopener noreferrer" href="' + escape(s.url) + '">' + escape(s.title) + '</a></li>';
+    }).join('') + '</ul><p class="opf-sources__note">Sources support the teaching concepts; patient facts, dialogue, and timelines are fiction.</p></nav>' : '';
+    var misstep = text(w.commonMisstep) ? '<details class="opf-misstep"><summary>Common misstep</summary><p>' + escape(w.commonMisstep) + '</p></details>' : '';
+    var resident = text(w.residentExtension) ? '<details class="opf-resident"><summary>Resident extension</summary><p>' + escape(w.residentExtension) + '</p></details>' : '';
+    var local = text(w.localNote) ? '<aside class="opf-local-note"><p class="opf-note__label">Local note</p><p>' + escape(w.localNote) + '</p></aside>' : '';
     return '<div class="opf-sheet__topline"><p class="opf-sheet__chapter">Case chapter ' + number + ' of 6</p><span class="opf-sheet__stamp">Fictional composite</span></div>' +
       '<h2 id="case-panel-title">' + escape(w.title) + '</h2>' +
       '<ul class="opf-focus" aria-label="Chapter focus">' + w.focus.map(function (f) { return '<li>' + escape(f) + '</li>'; }).join('') + '</ul>' +
       '<div class="opf-grid"><section class="opf-note opf-note--story"><p class="opf-note__label">' + (pilot ? 'Read · ' : '') + 'What changed in ' + escape(data.patient.displayName) + '’s story</p><p>' + escape(w.patientState) + '</p>' + (pilot ? pilotResources('page') : '') + '</section>' +
       '<section class="opf-note opf-note--task"><p class="opf-note__label">' + (pilot ? 'Practice · learner’s supervised task' : 'Learner’s supervised task') + '</p><p>' + escape(w.learnerTask) + '</p>' + (pilot ? pilotResources('tool') : '') + '</section>' +
       '<section class="opf-note opf-note--language"><p class="opf-note__label">One way to say it</p>' + language + '</section>' +
-      '<section class="opf-note opf-note--rounds"><p class="opf-note__label">' + (pilot ? 'Discuss · carry it to rounds' : 'Carry it to rounds') + '</p><p>' + escape(w.handoff) + '</p>' + (pilot ? '<p>' + escape(w.reflectionPrompt) + '</p>' : '') + '</section></div>' +
-      (pilot ? '' : '<details class="opf-reflection"><summary>Reflect and explore</summary><p>' + escape(w.reflectionPrompt) + '</p><nav aria-label="Resources for this chapter"><ul>' + resources + '</ul></nav></details>');
+      '<section class="opf-note opf-note--rounds"><p class="opf-note__label">' + (pilot ? 'Discuss · carry it to rounds' : 'Carry it to rounds') + '</p><p>' + escape(w.handoff) + '</p>' + (pilot ? '<p>' + escape(w.reflectionPrompt) + '</p>' : '') + misstep + resident + '</section></div>' + local +
+      (pilot ? sourcesMarkup : '<details class="opf-reflection"><summary>Reflect and explore</summary><p>' + escape(w.reflectionPrompt) + '</p><nav aria-label="Resources for this chapter"><ul>' + resources + '</ul></nav>' + sourcesMarkup + '</details>');
   }
 
   function validatePractice(defs) {
