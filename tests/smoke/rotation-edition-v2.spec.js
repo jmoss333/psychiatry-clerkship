@@ -746,7 +746,8 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   await expect(page.locator('.fd-library')).toBeVisible();
   // A4: the real Curator-generated edition opens the trainee Library at The Essentials.
   await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
-  await expect(essentialsResources(page)).toHaveCount(audience === 'ms3' ? 30 : 35);
+  // MS3 includes the preparation guide added on 2026-10-03; resident remains at 35.
+  await expect(essentialsResources(page)).toHaveCount(audience === 'ms3' ? 31 : 35);
   const essentials = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8')).essentials;
   expect((await essentialsResourceRefs(page)).sort())
     .toEqual(essentials[audience === 'ms3' ? 'ms3' : 'resident'].flatMap(column => column.refs).sort());

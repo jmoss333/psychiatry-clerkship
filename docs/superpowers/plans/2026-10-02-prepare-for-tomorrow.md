@@ -69,7 +69,7 @@ Paths under `_automation/` in this map mean `13_Faculty_Resources/_automation/`;
 - Produces: `expected_tool_count(root: Path, site: str) -> int`; `validate_expected_tool_count(site, item_count, *, root=ROOT) -> None`; `validate_built_tool_inventory(document, tools_directory, *, site=None, root=ROOT) -> None`.
 - Existing callers retain compatibility. Both source and built checks use the same repository root; default builders already operate on the real repository root.
 
-- [ ] **Step 1: Add controlled failing tests for the declared preparation addition.** Mock the canonical shipped document, independently of `_tool_entries`, and preserve the existing coordinated-source-drop test. Use this exact expected row:
+- [x] **Step 1: Add controlled failing tests for the declared preparation addition.** Mock the canonical shipped document, independently of `_tool_entries`, and preserve the existing coordinated-source-drop test. Use this exact expected row:
 
 ```python
 PREP_PAGE = {
@@ -85,7 +85,7 @@ with patch.object(governance, "load_shipped_pages", return_value={"pages": [PREP
 
 Add fixtures for no preparation row (23/26), duplicate preparation rows, wrong source, wrong kind, wrong sites, unknown site, and unreadable/malformed canonical data. With a valid addition, truncate source enumeration by one item and verify the expected count remains 24 and rejects the truncated inventory. Verify built HTML/governance ID mismatch still rejects missing and extra files. In this same prerequisite-only change, replace hard-coded real-repository output/count assertions with `expected_tool_count(ROOT, site)`; keep controlled baseline/addition assertions explicitly pinned at 23/24/26. The coordinated-source-drop test computes its expected message from the helper. This lets the prerequisite remain green before and after registration without a second governance change in the content lane.
 
-- [ ] **Step 2: Run the new Python tests and record their pre-fix failure.**
+- [x] **Step 2: Run the new Python tests and record their pre-fix failure.**
 
 ```bash
 python3 -m unittest discover -s 13_Faculty_Resources/_automation -p test_validate_tool_governance.py
@@ -93,7 +93,7 @@ python3 -m unittest discover -s 13_Faculty_Resources/_automation -p test_validat
 
 Expected: the new helper is missing. Existing baseline assertions remain unchanged at this prerequisite stage.
 
-- [ ] **Step 3: Implement the narrowly named conditional addition.**
+- [x] **Step 3: Implement the narrowly named conditional addition.**
 
 ```python
 def expected_tool_count(root: Path, site: str) -> int:
@@ -120,8 +120,8 @@ def expected_tool_count(root: Path, site: str) -> int:
 
 Keep the 23/26 baseline. Pass `root` into source validation and allow controlled built-validation roots. Update synthetic built-validation tests to pass their temporary root explicitly; otherwise their expected count would accidentally come from the live repository. Read the canonical document independently from source enumeration: deriving both expected and actual from the same truncated iterator defeats the source-drop check. Never accept an arbitrary set of counts `{23, 24}`.
 
-- [ ] **Step 4: Run the Python suite and full local gate on the prerequisite-only branch.** Expected: current 23/26 remains green; only the declared future addition admits 24. Prove source-drop and built-file mutations still fail. The feature's registration test in Task 3 will independently require the guide once its content lands.
-- [ ] **Step 5: Commit only this governance prerequisite and its tests/documentation.** Suggested message: `Allow the declared MS3 preparation tool in inventory checks`. Do not include the new HTML, curriculum, or ledger registration in this change.
+- [x] **Step 4: Run the Python suite and full local gate on the prerequisite-only branch.** Expected: current 23/26 remains green; only the declared future addition admits 24. Prove source-drop and built-file mutations still fail. The feature's registration test in Task 3 will independently require the guide once its content lands.
+- [x] **Step 5: Commit only this governance prerequisite and its tests/documentation.** Suggested message: `Allow the declared MS3 preparation tool in inventory checks`. Do not include the new HTML, curriculum, or ledger registration in this change.
 
 ### Task 2: Build the six-route preparation workspace and draft teaching pack
 
@@ -135,7 +135,7 @@ Keep the 23/26 baseline. Pass `root` into source validation and allow controlled
 - Actions: `task`, `minutes`, `start`, `next`, `example`, `reset`. Changing task/time resets to chooser and closes the example. `start` requires a valid pair and a complete route; `next` follows the ordered steps; `example` applies only during rehearsal; `reset` produces a fresh chooser.
 - Message output consumed in Task 4: `{type:"prepare-selection",task,minutes}`. Selection only; no progress or response fields.
 
-- [ ] **Step 1: Write a test harness and failing behavioral contracts.**
+- [x] **Step 1: Write a test harness and failing behavioral contracts.**
 
 ```js
 import assert from 'node:assert/strict';
@@ -165,13 +165,13 @@ test('duplicate and partial selections return to the chooser', () => {
 
 Add state-transition tests: no implicit default, start rejection until both choices exist, six complete routes, example closed until intentionally revealed, task/time changes clear disclosure, no response fields, and complete route failure when a required reading/example/card field is absent. An entirely empty query returns a clean chooser with `error:''`. Malicious teaching strings are escaped, never interpreted as markup.
 
-- [ ] **Step 2: Run the new test and record its missing-source failure.**
+- [x] **Step 2: Run the new test and record its missing-source failure.**
 
 ```bash
 node --test tests/prepare-for-tomorrow.test.mjs
 ```
 
-- [ ] **Step 3: Implement explicit selection parsing and pure state transitions.** The selection primitive is:
+- [x] **Step 3: Implement explicit selection parsing and pure state transitions.** The selection primitive is:
 
 ```js
 function pftValidSelection(task, minutes){
@@ -182,7 +182,7 @@ function pftValidSelection(task, minutes){
 
 `pftParseSelection` uses `URLSearchParams.getAll`, requires exactly one task and one duration, accepts only literal URL values `5` or `15`, and converts after validating. Build rendered strings with a single escaping helper for `& < > " '`. Return a scoped unavailable message for incomplete teaching data. The pure engine reads neither DOM, storage, clock, nor network. Put event listeners and focus movement in `pft-dom`, using button `aria-pressed`, explicit step headings, native example disclosure, and announced errors.
 
-- [ ] **Step 4: Copy this complete draft teaching pack into `pft-data` and check each passage against its named source section.** Every route contains `orientation`, `reading:{heading,paragraphs,sourceRef,sourceSection}`, `rehearsal:{snapshot,prompt,example,reflection}`, and `card:{try,notice,ask}`. All new wording remains pending for faculty review.
+- [x] **Step 4: Copy this complete draft teaching pack into `pft-data` and check each passage against its named source section.** Every route contains `orientation`, `reading:{heading,paragraphs,sourceRef,sourceSection}`, `rehearsal:{snapshot,prompt,example,reflection}`, and `card:{try,notice,ask}`. All new wording remains pending for faculty review.
 
 ```json
 {
@@ -256,7 +256,7 @@ Use canonical teaching sections rather than inventing clinical doctrine:
 
 Draft each tomorrow card around one task-specific action, observation, and supervision question. New excerpts, summaries, cases, examples, and cards remain pending for faculty review. Avoid new paper claims, dose literals, instrument item reproduction, and real-patient details. Because the guide includes interview coverage/risk preparation, include `<!-- crisis-block-html -->` and use the canonical injected block.
 
-- [ ] **Step 5: Complete DOM wiring and optional reading actions.** Render task/time selection, focused reading, rehearsal with reveal, tomorrow card, and neutral finish text. Use `aria-labelledby`, visible focus, readable phone layout, and CSS variables supplied by Clinical Warm with local token fallbacks for source-preview review. Use ordinary print CSS; no print service or export library. Do not add `cw-frame=viewport`.
+- [x] **Step 5: Complete DOM wiring and optional reading actions.** Render task/time selection, focused reading, rehearsal with reveal, tomorrow card, and neutral finish text. Use `aria-labelledby`, visible focus, readable phone layout, and CSS variables supplied by Clinical Warm with local token fallbacks for source-preview review. Use ordinary print CSS; no print service or export library. Do not add `cw-frame=viewport`.
 
 In the built shell, optional links send these messages in order from the same child window:
 
@@ -267,7 +267,7 @@ window.parent.postMessage({type:'openPage',f:ref,search:'?'+(ref.slice(-5)==='.h
 
 Allow `ref` only when it belongs to the selected task's fixed resource list. For the local source review, serve the worktree with `python3 -m http.server 4300 --bind 127.0.0.1 --directory .` and open the source at `/14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html`. When `parent===window`, canonical links open `/_build/ms3/?page=...` or `/_build/ms3/?tool=...` in a separate tab with `noopener`; label them as built resources and report if the local build is unavailable. For `file:` opens, show that resource links require the local preview server and send no messages. Completion sends no receipt or storage writes. The return-to-Today control targets the same-origin outer shell path with the fixed `?tab=today` query; use a normal top-level link rather than introducing a new unrestricted message type.
 
-- [ ] **Step 6: Run pure contracts and inspect the source preview.** Confirm six complete route definitions and no answer inputs, microphone, durable storage, automatic grades, readiness claims, or preparation-specific analytics calls. Commit source and tests on the content lane: `Add the MS3 preparation workspace and pending teaching examples`.
+- [x] **Step 6: Run pure contracts and inspect the source preview.** Confirm six complete route definitions and no answer inputs, microphone, durable storage, automatic grades, readiness claims, or preparation-specific analytics calls. Commit source and tests on the content lane: `Add the MS3 preparation workspace and pending teaching examples`.
 
 ### Task 3: Register the guide on MS3 and derive its governed inventory
 
@@ -283,7 +283,7 @@ Allow `ref` only when it belongs to the selected task's fixed resource list. For
 - Consumes: the completed HTML and Task 1's declared-inventory support.
 - Produces: exactly one canonical page row with slug `prepare-for-tomorrow.html`, `kind:tool`, `sites:["ms3"]`; a resolved MS3 `byRef` item; no resident item or artifact.
 
-- [ ] **Step 1: Add failing shipped-page and catalog tests using the existing orientation-extra fixture pattern.**
+- [x] **Step 1: Add failing shipped-page and catalog tests using the existing orientation-extra fixture pattern.**
 
 ```python
 doc = shipped_pages.derive(ROOT)
@@ -297,14 +297,14 @@ self.assertEqual(prep[0]["source"],
 
 Pin membership in both default MS3 Essentials and the full catalog, absence from both resident views, honest pending metadata, and exact source path. Update the catalog fixture to include MS3 additions as well as resident additions. Current reference counts move MS3 full/Essentials 83/30 to 84/31; resident remains 93/35. Membership is the primary assertion; refresh counts against the execution base rather than overwriting unrelated additions.
 
-- [ ] **Step 2: Run and observe registration failures.**
+- [x] **Step 2: Run and observe registration failures.**
 
 ```bash
 python3 -m unittest discover -s 13_Faculty_Resources/_automation/site_build -p test_shipped_pages.py
 python3 -m unittest discover -s 13_Faculty_Resources/_automation/site_build -p test_frontdoor_catalog.py
 ```
 
-- [ ] **Step 3: Register and copy the MS3 extra once.** Keep orientation assets in their existing package, then append the guide to the general extra-tool list:
+- [x] **Step 3: Register and copy the MS3 extra once.** Keep orientation assets in their existing package, then append the guide to the general extra-tool list:
 
 ```python
 MS3_EXTRA_TOOLS = [entry for entry in MS3_ORIENT_VIDEO if entry[1].endswith(".html")] + [
@@ -315,7 +315,7 @@ MS3_EXTRA_TOOLS = [entry for entry in MS3_ORIENT_VIDEO if entry[1].endswith(".ht
 
 In MS3 preflight/copy, process extra HTML not already copied with orientation assets using `_copy_required`; report missing source with the existing missing-assets collection. Remove all MS3-extra HTML from resident output after copying the MS3 tree, while retaining removal of orientation media. Add `_tool('prepare-for-tomorrow.html','Prepare for tomorrow')` to an appropriate MS3 skills nav section. Do not add it to shared `site_manifest.json` or resident nav. Existing `shipped_pages.derive()` already consumes this producer.
 
-- [ ] **Step 4: Add audience placement and pending registry records.** Use exact slug in `essentials.ms3` Tools, `siteLibrary.ms3.additions` under `Interactive tools`, a shared `libraryExclude` row with reason `MS3-only preparation guide; placed by the MS3 overlay`, and `libraryHints` with `Choose tomorrow's task and prepare in 5 or 15 minutes.`
+- [x] **Step 4: Add audience placement and pending registry records.** Use exact slug in `essentials.ms3` Tools, `siteLibrary.ms3.additions` under `Interactive tools`, a shared `libraryExclude` row with reason `MS3-only preparation guide; placed by the MS3 overlay`, and `libraryHints` with `Choose tomorrow's task and prepare in 5 or 15 minutes.`
 
 Follow `one-patient-six-weeks.html` in `tool_registry.json`, using this complete row without a schema change:
 
@@ -343,7 +343,7 @@ Register the new ledger row with the required pending identity and creation date
 
 Merge only this new row into the ledger; use the actual day of pending registration for `at` if execution occurs after the planning date. This is a pending-entry date, not a clinical review. Add no clinician signer or content hash, and never alter existing reviewed rows.
 
-- [ ] **Step 5: Regenerate derived files and run the focused validators.**
+- [x] **Step 5: Regenerate derived files and run the focused validators.**
 
 ```bash
 python3 13_Faculty_Resources/_automation/site_build/shipped_pages.py --write
@@ -356,7 +356,7 @@ python3 13_Faculty_Resources/_automation/validate_tool_governance.py
 
 Confirm this source adds only an MS3 page key to generated analytics data and no task/completion events. Task 1 already moved real-repository count assertions to its expected-count helper; this content task must not edit governance tests. Run governance separation against the correct parent base before declaring the content lane clean.
 
-- [ ] **Step 6: Build MS3 then residents and verify actual output.**
+- [x] **Step 6: Build MS3 then residents and verify actual output.**
 
 ```bash
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
@@ -377,7 +377,7 @@ Verify the guide exists in `_build/ms3/tools/`, its canonical row/nav/governance
 - Produces: `fdPrepareSelection(data) -> {task,minutes}|null`; `fdPrepareSelectionRoute(search, selection) -> string|null`; `fdPrepareFrameParams(search) -> string`; controller method `replacePrepareSelection(selection) -> boolean`.
 - `replacePrepareSelection` guards startup/destroy/wrong resource and uses replacement-only history. It returns success only after the valid route is replaced; it never renders or opens a resource.
 
-- [ ] **Step 1: Extend `memoryHistory` with a `state` getter and write failing pure/routing contracts.** Test exact own keys `minutes,task,type`, numeric duration, three fixed task IDs, and all malformed/duplicate/partial query cases. Tests for selection replacement must preserve the same snapshot object and mount count.
+- [x] **Step 1: Extend `memoryHistory` with a `state` getter and write failing pure/routing contracts.** Test exact own keys `minutes,task,type`, numeric duration, three fixed task IDs, and all malformed/duplicate/partial query cases. Tests for selection replacement must preserve the same snapshot object and mount count.
 
 ```js
 const valid = {type:'prepare-selection',task:'note',minutes:15};
@@ -392,13 +392,13 @@ assert.equal(F.fdPrepareSelectionRoute('?tool=prepare-for-tomorrow.html&page=doc
 
 Add a controlled controller test that selects task/time, opens `doc_oral.md`, then goes Back. Expect `openId==='prepare-for-tomorrow.html'`, `fromHistory:true`, restored selection query, unchanged saved block, and reset example disclosure after remount.
 
-- [ ] **Step 2: Run the new contracts and record missing-helper failures.**
+- [x] **Step 2: Run the new contracts and record missing-helper failures.**
 
 ```bash
 node --test tests/fd-wire.test.mjs tests/block-wiring.test.mjs tests/prepare-for-tomorrow.test.mjs
 ```
 
-- [ ] **Step 3: Implement scoped preparation parsing and route hygiene.** The exact message validator is:
+- [x] **Step 3: Implement scoped preparation parsing and route hygiene.** The exact message validator is:
 
 ```js
 function fdPrepareSelection(data){
@@ -413,7 +413,7 @@ function fdPrepareSelection(data){
 
 `fdPrepareSelectionRoute` requires exactly one preparation `tool` and no `page`; it strips previous preparation values and block keys `block,n,limit,cat,resume`, then sets the two selection values. `fdPrepareFrameParams` accepts only exactly one valid task/time pair and returns those two parameters; it rejects partial or duplicate values. Delete preparation keys in `fdParamsWithoutRoute` and selectively restore them only for the preparation destination. Its iframe receives only that validated pair and the existing `governed=1`; retain existing pass-through behavior for other tools.
 
-- [ ] **Step 4: Add a dedicated, origin/source-checked branch to the actual message handler.** Resolve the live frame from `contentEl.querySelector('.toolframe')`: the legacy `currentToolFrame` variable is not assigned by normal Front Door tool mounting. Require the current item, controller `openId`, outer route, same origin, exact event source, and no faculty preview. Then call replacement-only controller history logic:
+- [x] **Step 4: Add a dedicated, origin/source-checked branch to the actual message handler.** Resolve the live frame from `contentEl.querySelector('.toolframe')`: the legacy `currentToolFrame` variable is not assigned by normal Front Door tool mounting. Require the current item, controller `openId`, outer route, same origin, exact event source, and no faculty preview. Then call replacement-only controller history logic:
 
 ```js
 if(data.type==='prepare-selection'){
@@ -431,8 +431,8 @@ if(data.type==='prepare-selection'){
 
 Inside `replacePrepareSelection`, use existing history ownership, guard committed startup and disposal, require the active preparation route, and call `history.replaceState(history.state,'',nextURL)` preserving the exact current snapshot. No route dispatch, iframe remount, push entry, storage write, or selection persistence belongs here. Keep unrelated existing message behavior outside this new branch.
 
-- [ ] **Step 5: Test the real message-handler branch with a rejection table.** Wrong origin; different frame; removed frame; wrong current item; wrong outer route; controller not committed or destroyed; faculty preview; extra own field; nonnumeric duration; invalid task; duplicate tool; both page/tool. Each rejected input preserves URL, history state, entry count, active frame identity, resource mount count, and storage sentinels. Valid messages update only the selection query. Test message ordering before optional resource navigation and confirm clean resource queries contain neither preparation nor block parameters.
-- [ ] **Step 6: Run targeted contracts and commit navigation.** Suggested message: `Keep preparation choices through safe browser navigation`.
+- [x] **Step 5: Test the real message-handler branch with a rejection table.** Wrong origin; different frame; removed frame; wrong current item; wrong outer route; controller not committed or destroyed; faculty preview; extra own field; nonnumeric duration; invalid task; duplicate tool; both page/tool. Each rejected input preserves URL, history state, entry count, active frame identity, resource mount count, and storage sentinels. Valid messages update only the selection query. Test message ordering before optional resource navigation and confirm clean resource queries contain neither preparation nor block parameters.
+- [x] **Step 6: Run targeted contracts and commit navigation.** Suggested message: `Keep preparation choices through safe browser navigation`.
 
 ### Task 5: Add the Today invitation and discoverable governed Library entry
 
@@ -447,7 +447,7 @@ Inside `replacePrepareSelection`, use existing history ownership, guard committe
 - Consumes: `index.byRef['prepare-for-tomorrow.html']`, canonical title/governance, and existing `data-fd-open` routing.
 - Produces: one `.fd-prepare` secondary invitation, conditionally present only when that resolved item exists; selected Essentials preview includes its governance badge.
 
-- [ ] **Step 1: Add failing renderer fixtures.** Add the preparation item to a controlled MS3 index; compare a resident index without it and an unconfigured-week state. Test title, destination, visible pending/reviewed fixture behavior, and unchanged primary-rule table. Verify the Library tool shelf selects the preparation item and exposes one launch action with an ordinary governance badge.
+- [x] **Step 1: Add failing renderer fixtures.** Add the preparation item to a controlled MS3 index; compare a resident index without it and an unconfigured-week state. Test title, destination, visible pending/reviewed fixture behavior, and unchanged primary-rule table. Verify the Library tool shelf selects the preparation item and exposes one launch action with an ordinary governance badge.
 
 ```js
 const prep = {ref:'prepare-for-tomorrow.html',kind:'tool',title:'Prepare for tomorrow',
@@ -463,18 +463,18 @@ assert.doesNotMatch(F.fdToday(IDX,s({week:null})), /class="fd-prepare"/);
 
 Use the existing valid governance fixture shape when adding badge assertions; do not read the live ledger for expected counts or status.
 
-- [ ] **Step 2: Run renderer tests and record absence of the invitation.**
+- [x] **Step 2: Run renderer tests and record absence of the invitation.**
 
 ```bash
 node --test tests/fd-today.test.mjs tests/fd-library.test.mjs
 ```
 
-- [ ] **Step 3: Render the secondary invitation from actual item presence.** Add `fdPrepareInvitation(index)` next to Today helpers. Require the known tool item; render an accessible section with title `Prepare for tomorrow`, copy `Choose a task and prepare in 5 or 15 minutes.`, and one `data-fd-open` action. Place it after the lead-end marker, remaining below daily actions when `fdTodayLive` splices runtime rows. Never insert it into `FD_TODAY_PRIMARY_ORDER` or replace the lead card.
+- [x] **Step 3: Render the secondary invitation from actual item presence.** Add `fdPrepareInvitation(index)` next to Today helpers. Require the known tool item; render an accessible section with title `Prepare for tomorrow`, copy `Choose a task and prepare in 5 or 15 minutes.`, and one `data-fd-open` action. Place it after the lead-end marker, remaining below daily actions when `fdTodayLive` splices runtime rows. Never insert it into `FD_TODAY_PRIMARY_ORDER` or replace the lead card.
 
 In `fdKitToolShelf`, include `governanceBadge(selected.governance,{compact:true})` in the selected-tool pane. Scope pending/reviewed tests to controlled fixtures and retain the full catalog's existing badge. Registration supplies its selectable Essentials tab; no second preparation destination or separate catalog is created.
 
-- [ ] **Step 4: Style and document the new surface.** Use shared `.fd-*` tokens for spacing, typography, and focus; prefer the existing quiet secondary style. Coordinate PR #942 color changes: safety red belongs to safety, so this ordinary preparation invitation uses the existing ordinary action palette. Update class inventory with `.fd-prepare` and every introduced child class, plus the selected-preview governance placement. Mobile layout stays single-column with no new nested scroll surface.
-- [ ] **Step 5: Run renderer contracts and commit.** Suggested message: `Expose preparation from Today and both Library views`.
+- [x] **Step 4: Style and document the new surface.** Use shared `.fd-*` tokens for spacing, typography, and focus; prefer the existing quiet secondary style. Coordinate PR #942 color changes: safety red belongs to safety, so this ordinary preparation invitation uses the existing ordinary action palette. Update class inventory with `.fd-prepare` and every introduced child class, plus the selected-preview governance placement. Mobile layout stays single-column with no new nested scroll surface.
+- [x] **Step 5: Run renderer contracts and commit.** Suggested message: `Expose preparation from Today and both Library views`.
 
 ### Task 6: Verify real navigation and deliver a local review packet
 
@@ -488,7 +488,7 @@ In `fdKitToolShelf`, include `governanceBadge(selected.governance,{compact:true}
 - Consumes: the built MS3/resident sites and controlled governance fixtures.
 - Produces: local mechanical validation, an accessible preview, and a faculty review packet covering six pending teaching routes. These are distinct from deployed evidence or faculty attestation.
 
-- [ ] **Step 1: Add browser contracts before final integration.** Use controlled reviewed governance fixtures to exercise the complete UI, and pending/unavailable fixtures to exercise the real learner gate. Include reviewed status in both shell governance and tool-governance responses; interception must occur before navigation. Retain service workers blocked as the existing smoke configuration does. Never hand-edit the real ledger to make tests open the guide.
+- [x] **Step 1: Add browser contracts before final integration.** Use controlled reviewed governance fixtures to exercise the complete UI, and pending/unavailable fixtures to exercise the real learner gate. Include reviewed status in both shell governance and tool-governance responses; interception must occur before navigation. Retain service workers blocked as the existing smoke configuration does. Never hand-edit the real ledger to make tests open the guide.
 
 The happy-path assertion follows the real student interaction:
 
@@ -505,9 +505,9 @@ await expect(page).toHaveURL(/prepareMinutes=15/);
 
 Drive all six combinations through reading, rehearsal, example reveal, tomorrow card, and finish. Use 390×844 and 1280×800, plus keyboard-only chooser/start/disclosure/reset operation. Check no console errors, no horizontal overflow, visible focus, native disclosure state, and print-readable card structure.
 
-- [ ] **Step 2: Add the five failure-mode browser cases.** Start from Today and default Library; select the preparation tab and open its single destination. Seed a controlled unfinished study block and capsule; compare stored values before/after the guide and optional reading. Open a canonical resource, go Back, reload, and verify task/time recovery and disclosure reset. Dispatch rejection-table messages against the actual outer handler; no frame, snapshot, mount, or storage changes may occur. Simulate one missing resource and pending governance; assert honest labels and preserved available preparation content. On residents, assert absent Today/Library entry, absent artifact, and the ordinary not-found outcome for a direct route.
+- [x] **Step 2: Add the five failure-mode browser cases.** Start from Today and default Library; select the preparation tab and open its single destination. Seed a controlled unfinished study block and capsule; compare stored values before/after the guide and optional reading. Open a canonical resource, go Back, reload, and verify task/time recovery and disclosure reset. Dispatch rejection-table messages against the actual outer handler; no frame, snapshot, mount, or storage changes may occur. Simulate one missing resource and pending governance; assert honest labels and preserved available preparation content. On residents, assert absent Today/Library entry, absent artifact, and the ordinary not-found outcome for a direct route.
 
-- [ ] **Step 3: Run appropriate validation once the feature is assembled.**
+- [x] **Step 3: Run appropriate validation once the feature is assembled.**
 
 ```bash
 node --test tests/prepare-for-tomorrow.test.mjs tests/fd-wire.test.mjs tests/block-wiring.test.mjs tests/fd-today.test.mjs tests/fd-library.test.mjs
@@ -527,9 +527,9 @@ npx playwright test front-door.spec.js governance-warnings.spec.js tool-expand.s
 
 Do not modify canary scope or workflows and do not regenerate visual baselines locally. Broaden testing only for an unresolved failure or new edit after these checks.
 
-- [ ] **Step 4: Assemble the faculty review packet.** Include the source path; all six route labels; verbatim new snapshots, examples, selected teaching passages, and tomorrow cards; source sections; remaining clinical questions; and the guide's pending status. Give an authorized local source-preview route for reviewing new teaching content if the normal learner build correctly blocks the pending tool. Keep the ordinary learner gate intact. Distinguish design approval from clinical approval, local checks from CI, and local preview from deployment.
-- [ ] **Step 5: Perform independent final code review using the chosen execution method.** With Native execution, use a fresh reviewer on the most capable available model, as the writing-plans handoff specifies. Review the assembled patch for inventory shrinkage, origin/source checks, misleading completion/readiness language, orphaned routes, audience leakage, and clinical-content/attestation separation. Resolve actionable findings and repeat only affected checks.
-- [ ] **Step 6: Commit the browser checks and review packet and show the local preview.** Suggested message: `Verify preparation journeys and provide the faculty review packet`. Report confirmed results, skipped/unavailable evidence, and pending faculty decisions. Do not claim that the site is deployed or clinically approved.
+- [x] **Step 4: Assemble the faculty review packet.** Include the source path; all six route labels; verbatim new snapshots, examples, selected teaching passages, and tomorrow cards; source sections; remaining clinical questions; and the guide's pending status. Give an authorized local source-preview route for reviewing new teaching content if the normal learner build correctly blocks the pending tool. Keep the ordinary learner gate intact. Distinguish design approval from clinical approval, local checks from CI, and local preview from deployment.
+- [x] **Step 5: Perform independent final code review using the chosen execution method.** With Native execution, use a fresh reviewer on the most capable available model, as the writing-plans handoff specifies. Review the assembled patch for inventory shrinkage, origin/source checks, misleading completion/readiness language, orphaned routes, audience leakage, and clinical-content/attestation separation. Resolve actionable findings and repeat only affected checks.
+- [x] **Step 6: Commit the browser checks and review packet and show the local preview.** Suggested message: `Verify preparation journeys and provide the faculty review packet`. Report confirmed results, skipped/unavailable evidence, and pending faculty decisions. Do not claim that the site is deployed or clinically approved.
 
 ## Coverage map and handoff
 
@@ -547,3 +547,5 @@ Do not modify canary scope or workflows and do not regenerate visual baselines l
 Recommended execution: **Native**, with one implementer handling the closely linked tool, routing, and registration changes, followed by a fresh independent final reviewer. This minimizes shared-file conflicts and context overhead. **Subagent-driven** is also available: each task gets a fresh implementer and reviewer, with the task interfaces above carried into each dispatch. Parallelize only read-only research or work on genuinely disjoint files; the shared HTML, shell, generated outputs, and builds must remain sequential.
 
 The connected-fictional-patient idea stays a future extension after these six routes receive faculty feedback. The next decision is written-plan review and execution-method selection; implementation starts after that decision.
+
+Completion evidence (2026-10-03): fresh independent final review completed; its Important standalone-navigation finding was repaired in one RED-to-GREEN pass. Full local gate passed after committed product repair1ace985; 312 focused contracts, 22 applicable guide browser cases, and 20 controlled-governance contracts passed. The earlier ordinary browser suites covered300 passing cases with10 visible skips across the initial run and scoped rerun. Three Minor suggestions and all review limitations are preserved in `13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md`. Local preview remains open; feature/prerequisite branches and managed worktree are retained. Clinical teaching is pending faculty review, and no publication or attestation was performed.

@@ -229,6 +229,18 @@ function install(name) {
       return null;
     }
   };
+  // Rewritten bytes represent a source edit. Earlier real build output is consequently stale.
+  // Keeping the original mtime made build-output checks compare simulated new sign-offs
+  // against artifacts built before them, an impossible "current build" scenario.
+  const rehearsedAt = Date.now() + 1;
+  fs.statSync = function rehearsedStatSync(file, options) {
+    const stat = real.statSync.apply(this, arguments);
+    if (targetOf(file) && typeof stat.mtimeMs === 'number') {
+      stat.mtimeMs = Math.max(stat.mtimeMs + 1, rehearsedAt);
+      stat.mtime = new Date(stat.mtimeMs);
+    }
+    return stat;
+  };
   const encodingOf = (options) => (typeof options === 'string' ? options : options?.encoding) || null;
   const serve = (target, options) => {
     record(target.source);
