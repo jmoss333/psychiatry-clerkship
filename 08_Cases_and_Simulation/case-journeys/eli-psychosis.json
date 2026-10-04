@@ -4,7 +4,7 @@
   "status": "released",
   "learnerRelease": true,
   "releaseRevision": "r2",
-  "clinicalAuthorship": "AI-assisted synthetic draft; r1 reviewed and authorized for learner publication by the requesting author on 2026-09-27; r2 revision pending faculty review.",
+  "clinicalAuthorship": "AI-assisted synthetic draft; r1 reviewed and authorized for learner publication by the requesting author on 2026-09-27; r2 revision reviewed and authorized by the requesting author on 2026-10-04 (PR #972).",
   "setting": "Emergency assessment, inpatient psychiatry, and early-psychosis outpatient care",
   "disclaimer": "Entirely fictional; no real patient record was used. For supervised educational discussion only. This is not a treatment protocol or an assessment of learner competence. Medication, disposition, confidentiality, and escalation decisions require the supervising team and applicable local policy.",
   "audience": "Shared MS3 and resident learner core; scope follows the learner’s actual supervision arrangements.",
@@ -96,8 +96,7 @@
       "sourceIds": ["nice-psychosis"],
       "links": [
         {"label": "Medication monitoring", "kind": "page", "target": "med_monitoring.md"},
-        {"label": "Psychopharmacology primer", "kind": "page", "target": "psychopharm_primer.md"},
-        {"label": "Risperidone drug card", "kind": "tool", "target": "pharmacy.html", "anchor": "risperidone"}
+        {"label": "Psychopharmacology primer", "kind": "page", "target": "psychopharm_primer.md"}
       ]
     },
     {
@@ -145,8 +144,7 @@
       "sourceIds": ["nice-psychosis", "nimh-psychosis"],
       "links": [
         {"label": "Psychotic disorders", "kind": "page", "target": "t_psychosis.md"},
-        {"label": "Communication practice", "kind": "tool", "target": "communication-practice.html"},
-        {"label": "Risperidone drug card", "kind": "tool", "target": "pharmacy.html", "anchor": "risperidone"}
+        {"label": "Communication practice", "kind": "tool", "target": "communication-practice.html"}
       ]
     },
     {

@@ -4,7 +4,7 @@
   "status": "released",
   "learnerRelease": true,
   "releaseRevision": "r2",
-  "clinicalAuthorship": "AI-assisted synthetic draft; r1 reviewed and authorized for learner publication by the requesting author on 2026-09-27; r2 revision pending faculty review.",
+  "clinicalAuthorship": "AI-assisted synthetic draft; r1 reviewed and authorized for learner publication by the requesting author on 2026-09-27; r2 revision reviewed and authorized by the requesting author on 2026-10-04 (PR #972).",
   "setting": "Medical ward consultation, inpatient recovery, and follow-up after discharge",
   "disclaimer": "Entirely fictional; no real patient record was used. For supervised educational discussion only, not a medical-clearance tool, capacity determination, determination of detention or surrogate authority, treatment protocol, or assessment of learner competence. Responsible clinicians apply local emergency, consent, and discharge policies.",
   "audience": "Shared MS3 and resident learner core; scope follows the learner’s actual supervision arrangements.",

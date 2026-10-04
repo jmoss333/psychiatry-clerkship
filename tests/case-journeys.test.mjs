@@ -23,9 +23,12 @@ test('all 24 chapters preserve the reviewed learner text and every model example
     api.validate(data);
     if (index) {
       const reviewed = read('docs/case-journeys/reviewed-snapshot/' + names[index-1] + '.json');
+      const pharmacy = read('pharmacy.json');
+      const attested = new Set(pharmacy.records.filter(r => (r.facultyReview || {}).status === 'reviewed').map(r => r.id));
       assert.deepEqual(
         data.weeks.map(({residentExtension, commonMisstep, sourceIds, ...learner}) => learner),
-        reviewed.weeks.map(({facultyNotes, ...learner}) => learner));
+        reviewed.weeks.map(({facultyNotes, ...learner}) => ({...learner,
+          links: learner.links.filter(l => !l.anchor || attested.has(l.anchor))})));
       for (const [i, chapter] of data.weeks.entries()) {
         const notes = reviewed.weeks[i].facultyNotes;
         assert.equal(chapter.residentExtension, notes.advancedPrompt, chapter.id);
@@ -248,10 +251,15 @@ test('AC6c: Eli names risperidone without a dose and links its drug card from th
   const chapter = id => eli.weeks.find(w => w.id === id);
   assert.match(chapter('eli-03-restlessness').patientState, /risperidone/);
   assert.match(chapter('eli-05-early-change').patientState, /risperidone/);
+  const pharmacy = read('pharmacy.json');
+  const attested = (pharmacy.records.find(r => r.id === 'risperidone') || {}).facultyReview?.status === 'reviewed';
+  const snapshot = snapshotOf('eli-psychosis');
   for (const id of ['eli-03-restlessness', 'eli-05-early-change']) {
-    const link = chapter(id).links.find(l => l.anchor === 'risperidone');
-    assert.ok(link && link.kind === 'tool' && link.target === 'pharmacy.html', id);
-    assert.match(api.chapterMarkup(eli, chapter(id)), /pharmacy\.html#risperidone/);
+    const approved = snapshot.weeks.find(w => w.id === id).links.find(l => l.anchor === 'risperidone');
+    assert.ok(approved && approved.kind === 'tool' && approved.target === 'pharmacy.html', id + ': approved snapshot link');
+    const shipped = chapter(id).links.find(l => l.anchor === 'risperidone');
+    assert.equal(Boolean(shipped), attested, id + ': the drug-card link ships iff the risperidone card is attested (re-run project_case_journeys.py --write after attesting)');
+    assert.equal(/pharmacy\.html#risperidone/.test(api.chapterMarkup(eli, chapter(id))), attested, id);
   }
 });
 
@@ -299,7 +307,7 @@ test('AC3/AC4/AC10 (merge-day human gate): release authorization, source review,
   for (const data of journeys) for (const chapter of data.weeks) for (const link of chapter.links) if (link.anchor) {
     const card = pharmacy.records.find(r => r.id === link.anchor);
     assert.ok(card, chapter.id + ': no pharmacy card ' + link.anchor);
-    assert.equal(card.facultyReview && card.facultyReview.status, 'reviewed', chapter.id + ': ' + link.anchor + ' card not attested; attest it or drop the link');
+    assert.equal(card.facultyReview && card.facultyReview.status, 'reviewed', chapter.id + ': shipped link to unattested card ' + link.anchor + ' — the projection should have held it back');
   }
 });
 

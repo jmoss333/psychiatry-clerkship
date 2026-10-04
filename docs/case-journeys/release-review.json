@@ -1,11 +1,11 @@
 {
   "revision": "r2",
-  "reviewDate": null,
-  "authorization": "PENDING — Josh reviews PR hunks line by line; replace this string with the attestation sentence and set reviewDate on approval.",
+  "reviewDate": "2026-10-04",
+  "authorization": "The requesting author (Joshua Moss, MD) reviewed PR #972 — the snapshot diff against r1, the 36 resident-extension and common-misstep strings, the source map, and the practice-coverage mapping — and stated: \"reviewed and approved, merge\" (2026-10-04).",
   "supersedes": "history/r1-2026-09-27/release-review.json",
   "scope": "Shared MS3 and resident learner chapters; resident extensions and common missteps now ship; teachingPoint stays faculty-only.",
   "attestation": "This release record does not promote the faculty-console attestation ledger. Ledger rows for one-patient-six-weeks.html and the three case files are a merge-day gate (doc 17 G3).",
-  "clinicalAuthorship": "AI-assisted synthetic draft; r1 reviewed and authorized for learner publication by the requesting author on 2026-09-27; r2 revision pending faculty review.",
+  "clinicalAuthorship": "AI-assisted synthetic draft; r1 reviewed and authorized for learner publication by the requesting author on 2026-09-27; r2 revision reviewed and authorized by the requesting author on 2026-10-04 (PR #972).",
   "audienceLabel": "Shared MS3 and resident learner core; scope follows the learner’s actual supervision arrangements.",
   "sources": {
     "eli-psychosis.json": "3ca5ac78fb902900e44e0ed765293673a05f679b72e936819b02a1942fac0109",
@@ -32,9 +32,9 @@
     "C10": "Marisol-04 detention/surrogate sentence moved from learnerTask to disclaimer"
   },
   "mergeDayGates": [
-    "authorization replaced and reviewDate set",
-    "sources.json status faculty-reviewed with a resolution on every scopeLimit (doc 17 G4)",
-    "pharmacy.json risperidone facultyReview.status reviewed, or the two anchored links removed",
-    "faculty-console ledger rows for the page and three case files (doc 17 G3)"
+    "DONE 2026-10-04: authorization replaced and reviewDate set",
+    "DONE 2026-10-04: sources.json status faculty-reviewed with a resolution on every scopeLimit (doc 17 G4)",
+    "DEFERRED BY PROJECTION: anchored pharmacy links ship only once pharmacy.json risperidone facultyReview.status is reviewed; the snapshot keeps the approved links and project_case_journeys.py filters them (AC10)",
+    "POST-MERGE, JOSH: faculty-console ledger rows for one-patient-six-weeks.html and the three case files — a reviewed.json promotion must be its own commit on attest/pending by the faculty identity (bin/check_governance_separation.py L2–L4), so it cannot ride in this content PR"
   ]
 }

@@ -15,7 +15,10 @@ Rules (r2, see docs/case-journeys/README.md):
   * top-level `sources` is the subset of sources.json actually cited (id, title, url);
   * status/learnerRelease/authorship/audience/disclaimer come from release-review.json;
   * the historical "DRAFT - FACULTY REVIEW REQUIRED." prefix is removed from the disclaimer;
-  * ids drop the `_draft` marker.
+  * ids drop the `_draft` marker;
+  * a tool link carrying an `anchor` (a pharmacy drug card) ships only while that card's
+    facultyReview.status is `reviewed` in pharmacy.json; otherwise the link is held back and the
+    learner file carries the chapter without it. Re-run --write when the card is attested.
 The script never edits the snapshot. `--check` exits 1 if any learner file differs.
 """
 import argparse, hashlib, json, os, sys
@@ -27,6 +30,7 @@ SNAP = os.path.join(ROOT, 'docs', 'case-journeys', 'reviewed-snapshot')
 OUT = os.path.join(ROOT, '08_Cases_and_Simulation', 'case-journeys')
 SOURCES = os.path.join(ROOT, 'docs', 'case-journeys', 'sources.json')
 REVIEW = os.path.join(ROOT, 'docs', 'case-journeys', 'release-review.json')
+PHARMACY = os.path.join(ROOT, 'pharmacy.json')
 CASES = ['eli-psychosis', 'leah-depression-trauma', 'marisol-delirium-capacity']
 DRAFT_PREFIX = 'DRAFT — FACULTY REVIEW REQUIRED. '
 TOP_ORDER = ['id', 'title', 'status', 'learnerRelease', 'releaseRevision', 'clinicalAuthorship', 'setting',
@@ -50,9 +54,16 @@ def sha256(path):
         return hashlib.sha256(fh.read()).hexdigest()
 
 
-def project_week(week):
+def attested_cards():
+    if not os.path.exists(PHARMACY):
+        return set()
+    return {r['id'] for r in load(PHARMACY).get('records', []) if (r.get('facultyReview') or {}).get('status') == 'reviewed'}
+
+
+def project_week(week, cards):
     notes = week.get('facultyNotes') or {}
     out = {k: v for k, v in week.items() if k != 'facultyNotes'}
+    out['links'] = [l for l in week.get('links', []) if not l.get('anchor') or l['anchor'] in cards]
     out['residentExtension'] = notes.get('advancedPrompt', '')
     out['commonMisstep'] = notes.get('pitfall', '')
     out['sourceIds'] = list(notes.get('sourceIds', []))
@@ -79,7 +90,8 @@ def project(snapshot, sources, review):
         disclaimer = disclaimer[len(DRAFT_PREFIX):]
     out['disclaimer'] = disclaimer
     out['sources'] = [{'id': by_id[s]['id'], 'title': by_id[s]['title'], 'url': by_id[s]['url']} for s in cited]
-    out['weeks'] = [project_week(w) for w in snapshot['weeks']]
+    cards = attested_cards()
+    out['weeks'] = [project_week(w, cards) for w in snapshot['weeks']]
     return {k: out[k] for k in TOP_ORDER if k in out} | {k: v for k, v in out.items() if k not in TOP_ORDER}
 
 
