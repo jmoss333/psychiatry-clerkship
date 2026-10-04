@@ -1,7 +1,7 @@
 // Contract for the Today renderer. Evaluates the real snippet body via new Function, following
 // tests/fd-data.test.mjs and tests/fd-shell.test.mjs. Concatenated in the same dependency order
 // inject_shared_snippets() uses on the built page: phase_policy.js (localDayIndex) -> fd_state.js
-// (fdDailyPick/fdExamCountdown/fdRingStep, which call it) -> fd_data.js (the join layer) ->
+// (fdDailyPick/fdExamCountdown, which call it) -> fd_data.js (the join layer) ->
 // fd_today.js.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -794,6 +794,21 @@ test('the Safety kit renders as one panel holding every kit row', () => {
   assert.ok(panel, 'the rail kit panel renders');
   assert.equal((panel[1].match(/class="fd-kitcard"/g) || []).length, IDX.kit.length);
   assert.doesNotMatch(html, /fd-kitcard__dot/);
+});
+
+test('a week row keeps its full title in the markup, with the em-dash subtitle in its own span', () => {
+  // 2026-10-03: a phone clips .fd-row__sub visually, so the row reads "The Interview Room" rather
+  // than ellipsing mid-word; textContent (which several smoke specs read) stays the full title.
+  const idx = JSON.parse(JSON.stringify(IDX));
+  idx.byRef['t.html'].title = 'Tool T — With a subtitle';
+  idx.weeks[0].items[1].title = 'Tool T — With a subtitle';
+  const html = F.fdToday(idx, s({}));
+  const title = html.match(/<span class="fd-row__title">(Tool T[\s\S]*?)<\/span><\/span>/);
+  assert.ok(title, 'the subtitled row renders');
+  assert.equal(title[1], 'Tool T<span class="fd-row__sub"> — With a subtitle');
+  const [short, sub] = title[1].split('<span class="fd-row__sub">');
+  assert.equal(short + sub, 'Tool T — With a subtitle', 'the two parts are the full title');
+  assert.match(html, /<span class="fd-row__title">Page A<\/span>/, 'a title with no subtitle is unchanged');
 });
 
 test('preparation is a single optional Today action at every week, with honest fixture status',()=>{

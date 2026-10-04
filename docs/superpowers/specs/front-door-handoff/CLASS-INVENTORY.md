@@ -2,8 +2,10 @@
 
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
+**Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
+
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(536 distinct `fd-*` selector names, 28 `is-*` state classes). Every class below has a rule in that file unless
+(537 distinct `fd-*` selector names, 28 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -96,6 +98,7 @@ instead — see their surfaces.)
 | `.fd-row__title` | `<span>` | |
 | `.fd-row__title.is-done` | same element | Dim + strike-through. |
 | `.fd-row__title.is-done.is-just-done` | same element | **All three** classes needed to animate the strike. |
+| `.fd-row__sub` | `<span>` | Inside `.fd-row__title`: the part of an item title from its ` — ` subtitle on (`fdRowTitleMarkup`, `fd_today.js`). At ≤640px it is clipped visually (not `display:none`), so the row shows "The Interview Room" instead of a mid-word ellipsis while its accessible name and `textContent` stay the full title (2026-10-03). |
 | `.fd-row__meta` | `<span>` | Right-aligned group holding `.fd-chip` + `.fd-row__min`. |
 | `.fd-row__min` | `<span>` | "12 min". |
 
