@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "mode", "generatedAt", "packets", "latestValid", "failures"],
+  "properties": {
+    "version": {"const": 1},
+    "mode": {"enum": ["live", "fixture"]},
+    "generatedAt": {"type": "string", "minLength": 1},
+    "latestValid": {"type": "object", "additionalProperties": {"type": "object", "required": ["source_id", "source_url", "status", "hash"]}},
+    "failures": {"type": "array", "items": {"type": "object", "required": ["sourceId", "reason"], "properties": {"sourceId": {"type": "string"}, "reason": {"type": "string"}}}},
+    "packets": {"type": "array", "items": {
+      "type": "object",
+      "required": ["revision", "occurrence", "sourceId", "sourceUrl", "oldHash", "newHash", "scanStatus", "candidates", "readings", "coverage", "passages"],
+      "properties": {
+        "revision": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "occurrence": {"type": "integer", "minimum": 1},
+        "sourceId": {"type": "string", "minLength": 1},
+        "sourceUrl": {"type": "string", "pattern": "^https://"},
+        "scanStatus": {"enum": ["complete", "incomplete"]},
+        "candidates": {"type": "array", "items": {"type": "object", "required": ["questionId", "fieldPath", "quote", "itemRevision", "sourcePassageId", "kind"]}},
+        "readings": {"type": "array", "items": {"type": "object", "required": ["source", "revision"]}},
+        "coverage": {"type": "object"},
+        "passages": {"type": "array"},
+        "supersedes": {"type": "array", "items": {"type": "string"}}
+      }
+    }}
+  }
+}

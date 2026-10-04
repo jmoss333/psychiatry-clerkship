@@ -148,3 +148,34 @@ node --test tests/firecrawl-pilot.test.mjs tests/firecrawl-passages.test.mjs tes
 Before expanding or scheduling this pilot, a faculty reviewer should assess the
 proposed connections. Future maps can narrow dependencies to additional exact
 passages without treating this two-passage experiment as complete source coverage.
+
+## Automated faculty inbox
+
+The follow-up workflow `surveillance-firecrawl.yml` collects the five registered
+pilot sources each Monday at 06:30 UTC, or on manual dispatch. Set the repository
+Actions secret `FIRECRAWL_API_KEY` securely before expecting successful live runs.
+No key is read from the interactive connector. Missing credentials produce a failed
+examination with visible diagnostics, not a green unchanged report.
+
+`bin/run_firecrawl_review.py --out-dir <new-directory>` is the production entrypoint.
+It hydrates its prior `history/firecrawl/inbox.json` from the existing report branch,
+scans active question teaching fields, and appends review packets. Exit 0 means a
+complete quiet examination, 1 means new review packets, and 2 means incomplete.
+The workflow publishes diagnostics before converting 2 into an Actions failure.
+It makes at most five source requests per run and has a 15-minute job timeout.
+
+Old packets survive subsequent quiet scans. Packet decisions are held separately
+in the authenticated faculty console. Signals outside the two precise clozapine
+mappings remain broader review candidates. Explanations, evidence, pearls, correct
+answers, second-tier explanations, and distractor feedback are scanned. Incorrect
+answer choices alone are not asserted teaching. Lexical coverage is explicitly
+limited: no flags does not prove consistency, and age/setting/historical context
+must be judged by faculty. No clinical editing, promotion, cadence credit, or
+attestation is performed by this collector.
+
+For offline validation, `--responses` labels all evidence synthetic and requires a
+separate `--state` path. Synthetic and live state cannot be combined. The faculty
+endpoint refuses synthetic packets. Run `node --test tests/firecrawl-*.test.mjs`
+and the faculty evidence review suites before activation. Live activation requires
+a successful manual run and inspection of the authenticated inbox, separately from
+code merge and deployment. A state file exceeding 8 MB fails without truncation.
