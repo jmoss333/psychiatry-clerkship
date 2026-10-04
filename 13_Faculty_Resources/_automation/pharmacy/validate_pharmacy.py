@@ -4,7 +4,9 @@
 Checks, by acceptance-criterion id:
   AC2/AC3  label facts equal the committed label receipt (rxcui, DailyMed set id, label date,
            boxed-warning presence) — the receipt is written by verify_pharmacy_labels.py;
-  AC4'     no dose literal anywhere in pharmacy.json (spec 4a, Option A);
+  AC4'     no dose literal anywhere in pharmacy.json (spec 4a, Option A); a laboratory or
+           physiology value (CRP mg/L, glucose mg/dL, GFR mL/min, a drug LEVEL in mcg/mL)
+           is not a dose (revision 2, 2026-10-03) — see dose_literals();
   AC5      every evidenceIds / qbankIds / interactionCardIds (interaction-cards.html) /
            oeAudioIds (audio_oe MANIFEST.csv) / perinatalSnapshotRef / monitoring.sourcePage
            resolves, and dosing.labelLink points at the record's own DailyMed set id;
@@ -41,7 +43,84 @@ FIELDMAP = HERE / "reconnect_meds_fieldmap.json"
 INTERACTION_CARDS = Path("05_Psychopharmacology/Monitoring_and_Labs/interaction-cards.html")
 AUDIO_OE_MANIFEST = Path("12_Media/audio_oe/MANIFEST.csv")
 
-DOSE_RE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg/kg)\b", re.I)
+# AC4' (spec 4a, Option A): a number carrying a dose unit is a dose literal, with ONE class of
+# exception decided in revision 2 (2026-10-03, OE run log decision AC4'): a laboratory or
+# physiology value is not a dose. In the 25 OpenEvidence draft cards of 2026-10-02 the old bare
+# regex matched 15 times and 14 were lab values — CRP "100 mg/L", valproate trough "85-125
+# mcg/mL", duloxetine "GFR <30 mL/min" — while the one real dose ("200 mg bid") is still
+# caught below. The exception is deliberately NARROW, because the same units also write
+# product strengths and rates, and those ARE doses:
+#   * mg|mcg per L or dL ............ lab value, always exempt (no product strength is per L/dL);
+#   * mL per min/minute ............. renal clearance (GFR, CrCl), always exempt;
+#   * mg|mcg per mL ................. exempt ONLY when the same sentence names a level before the
+#                                     number ("serum", "trough", "level", "concentration", ...)
+#                                     AND names no product ("supplied", "vial", "solution",
+#                                     "injection", "available", "each mL", ...): "5 mg/mL" with no
+#                                     level cue, or "supplied at a concentration of 5 mg/mL", is a
+#                                     product strength and stays a dose literal — fail closed,
+#                                     reword to name the level;
+#   * anything else (mg/kg, mg/day, mg/min, mg/h, a bare "mg") stays a dose literal.
+# Every caller goes through dose_literals() / has_dose_literal() / mask_dose_literals(); there
+# is deliberately no public regex, so no caller can silently keep the stricter or looser rule.
+_DOSE_CANDIDATE_RE = re.compile(r"\b\d+(?:\.\d+)?\s?(mg|mcg|mL|mg/kg)\b", re.I)
+_PER_LAB_VOLUME_RE = re.compile(r"\s?/\s?d?L\b", re.I)
+_PER_MINUTE_RE = re.compile(r"\s?/\s?min(?:ute)?s?\b", re.I)
+_PER_ML_RE = re.compile(r"\s?/\s?mL\b", re.I)
+_LEVEL_CUE_RE = re.compile(
+    r"\b(?:levels?|concentrations?|troughs?|peaks?|serum|plasma|range|therapeutic)\b", re.I)
+# A product cue vetoes a level cue (Codex P2 on #953): "concentration" and "range" also describe
+# what is in the vial.
+_PRODUCT_CUE_RE = re.compile(
+    r"\b(?:supplied|available|vials?|ampoules?|ampules?|syringes?|injections?|injectables?|"
+    r"solutions?|suspensions?|concentrates?|elixirs?|syrups?|drops|formulations?|strengths?|"
+    r"contains?|each)\b", re.I)
+_SENTENCE_BREAK_RE = re.compile(r"[.!?](?=\s)|\n")
+LEVEL_CUE_WINDOW = 160  # characters searched back from the number, never past a sentence break
+
+
+def _sentence_before(text, start):
+    """The text from the start of the current sentence (bounded by LEVEL_CUE_WINDOW) to start."""
+    window_start = max(0, start - LEVEL_CUE_WINDOW)
+    window = text[window_start:start]
+    breaks = list(_SENTENCE_BREAK_RE.finditer(window))
+    return window[breaks[-1].end():] if breaks else window
+
+
+def _is_lab_value(text, match):
+    unit = match.group(1).lower()
+    after = text[match.end():]
+    if unit in ("mg", "mcg") and _PER_LAB_VOLUME_RE.match(after):
+        return True
+    if unit == "ml" and _PER_MINUTE_RE.match(after):
+        return True
+    if unit in ("mg", "mcg") and _PER_ML_RE.match(after):
+        before = _sentence_before(text, match.start())
+        return bool(_LEVEL_CUE_RE.search(before)) and not _PRODUCT_CUE_RE.search(before)
+    return False
+
+
+def dose_literals(text):
+    """Every dose literal in text, as (start, end, literal); lab/physiology values excluded."""
+    return [(m.start(), m.end(), m.group(0)) for m in _DOSE_CANDIDATE_RE.finditer(text or "")
+            if not _is_lab_value(text, m)]
+
+
+def has_dose_literal(text):
+    return bool(dose_literals(text))
+
+
+def mask_dose_literals(text, mask="[dose]"):
+    """text with every dose literal replaced by mask; lab/physiology values are left as written."""
+    text = text or ""
+    out, last = [], 0
+    for start, end, _ in dose_literals(text):
+        out.append(text[last:start])
+        out.append(mask)
+        last = end
+    out.append(text[last:])
+    return "".join(out)
+
+
 FK_MAX = 8.0
 
 
@@ -177,7 +256,7 @@ def check(pharmacy, receipt, fieldmap, root=ROOT):
     for path, key, child in walk(pharmacy):
         if key in denylist:
             findings.append("AC13 denylisted key at %s" % path)
-        if isinstance(child, str) and DOSE_RE.search(child):
+        if isinstance(child, str) and has_dose_literal(child):
             findings.append("AC4' dose literal at %s" % path)
 
     pending = 0
