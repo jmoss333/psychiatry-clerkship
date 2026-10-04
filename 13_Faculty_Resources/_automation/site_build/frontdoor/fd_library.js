@@ -73,6 +73,14 @@ function fdLibraryViews(view){
   return out+'</nav>';
 }
 
+/* A visible discovery entry shares the global search dialog, keyboard handling and focus
+   return. It does not introduce a second filter or change the route's Essentials selection. */
+function fdLibraryDiscovery(){
+  return '<button type="button" class="fd-library__discover" data-fd-search aria-haspopup="dialog">'+
+    '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m15 15 5 5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>'+
+    '<span>Find a reading, topic, or tool</span><span class="fd-kbd" aria-hidden="true">/</span></button>';
+}
+
 function fdLibrary(index){
   var idx=index||{columns:[]};
   var cols=idx.columns||[];
@@ -87,6 +95,7 @@ function fdLibrary(index){
   out+='<h1 class="fd-library__h1">Everything, one screen</h1>';
   out+='<span class="fd-library__count">'+count+' pages<span class="fd-library__shortcut"> · press <span class="fd-kbd">/</span> to filter</span></span>';
   out+='</div>';
+  out+=fdLibraryDiscovery();
   out+='<div class="fd-library__grid">';
   for(var i=0;i<cols.length;i++){ out+=fdLibraryCol(cols[i]); }
   out+='</div>';
@@ -167,6 +176,8 @@ function fdEssentials(index, opts){
   var out='<section class="fd-library fd-kit">'+fdLibraryViews('essentials');
   out+='<div class="fd-library__head"><h1 class="fd-library__h1">Core readings</h1>'+
     '<span class="fd-library__count">'+readings+' readings · '+tools.length+' tools</span></div>';
+  out+=fdLibraryDiscovery();
+  out+='<div class="fd-kit__workspace">';
   out+='<nav class="fd-kit__index" aria-label="Essentials sections"><div class="fd-kit__index-track">';
   out+=fdKitIndexButton('all','All',readings+tools.length,selected);
   if(weekCount) out+=fdKitIndexButton('week','This week',weekCount,selected);
@@ -181,6 +192,7 @@ function fdEssentials(index, opts){
   if(!resultLabel){
     for(var q=0;q<groups.length;q++) if(groups[q].key===selected) resultLabel='Showing '+groups[q].items.length+' readings in '+groups[q].name+'.';
   }
+  out+='<div class="fd-kit__results">';
   out+='<p class="fd-visually-hidden" role="status" aria-live="polite">'+fdEsc(resultLabel)+'</p>';
   if(pending) out+='<div class="fd-kit__review"><span>Faculty re-review in progress — '+pending+' of '+readings+' readings changed since they were last attested ·</span> '+
     '<details><summary>What that means</summary><p>These readings are marked pending review. Open a reading to see its full review notice.</p></details></div>';
@@ -203,6 +215,6 @@ function fdEssentials(index, opts){
     out+=fdEssentialsTeaching(idx.teachingResources);
     out+='</aside>';
   }
-  out+='</div></section>';
+  out+='</div></div></div></section>';
   return out;
 }

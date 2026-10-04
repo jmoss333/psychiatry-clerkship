@@ -24,7 +24,7 @@ const make = new Function(`
            fdFindWeek: fdFindWeek, fdContinue: fdContinue, fdTodayPrimary: fdTodayPrimary,
            fdTodayLastRead: fdTodayLastRead, fdQuickToolLabel: fdQuickToolLabel,
            FD_TODAY_PRIMARY_ORDER: FD_TODAY_PRIMARY_ORDER, FD_TODAY_LEAD_END: FD_TODAY_LEAD_END,
-           fdQuickTools: fdQuickTools,
+           fdQuickTools: fdQuickTools, fdTodayPathMap: fdTodayPathMap,
            FD_QUICKTOOLS_PREFERRED: FD_QUICKTOOLS_PREFERRED };
 `);
 const F = make();
@@ -794,4 +794,18 @@ test('the Safety kit renders as one panel holding every kit row', () => {
   assert.ok(panel, 'the rail kit panel renders');
   assert.equal((panel[1].match(/class="fd-kitcard"/g) || []).length, IDX.kit.length);
   assert.doesNotMatch(html, /fd-kitcard__dot/);
+});
+
+
+test('Today path map previews actual weeks without assigning progress or changing the current week', () => {
+  const pathIndex = {...IDX, path:{id:'six-week-fixture',weekCount:6},
+    weeks:IDX.weeks.map(w => ({...w,focusCategories:[]}))};
+  const html = F.fdTodayPathMap(pathIndex, s({week:2}));
+  assert.equal((html.match(/class="fd-weekmap__stop[ "]/g)||[]).length, IDX.weeks.length);
+  assert.equal((html.match(/aria-current="step"/g)||[]).length, 1);
+  assert.match(html, /data-fd-view-week="2"[^>]*aria-label="Preview Week 2:/);
+  assert.doesNotMatch(html, /data-fd-setweek|data-fd-week=|is-done|%|activities done/);
+  const browsing = F.fdTodayPathMap(pathIndex, s({week:null}));
+  assert.doesNotMatch(browsing, /aria-current|is-current/);
+  assert.equal(F.fdTodayPathMap({weeks:[]}, {}), '');
 });

@@ -381,6 +381,27 @@ function fdPilotFeedback(){
   '</section>';
 }
 
+/* A compact map of the actual projected path, not a second progress system. Each stop
+   previews a week through the existing dispatcher; it never sets the learner's current week.
+   No completion shading: activity completion remains in the existing Continue card and Path. */
+function fdTodayPathMap(index, state){
+  var weeks=index&&index.weeks||[];
+  if(!weeks.length||!fdActivePathValid(index)) return '';
+  var out='<nav class="fd-weekmap" aria-label="Explore your learning path">';
+  out+='<div class="fd-weekmap__head"><span>Explore your path</span>'+
+    '<button type="button" data-fd-tab="path">View learning plan</button></div>';
+  out+='<div class="fd-weekmap__stops">';
+  for(var i=0;i<weeks.length;i++){
+    var week=weeks[i],current=state&&state.week===week.n;
+    out+='<button type="button" class="fd-weekmap__stop'+(current?' is-current':'')+'" data-fd-view-week="'+fdEsc(week.n)+'"'+
+      ' aria-label="Preview Week '+fdEsc(week.n)+': '+fdEsc(week.title)+(current?' (current week)':'')+'"'+
+      (current?' aria-current="step"':'')+'>'+
+      '<span class="fd-weekmap__number" aria-hidden="true">'+fdEsc(week.n)+'</span>'+
+      '<span class="fd-weekmap__title">'+fdEsc(week.title)+'</span></button>';
+  }
+  return out+'</div></nav>';
+}
+
 function fdToday(index, state){
   var st=state||{};
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
@@ -459,6 +480,8 @@ function fdToday(index, state){
       '<button type="button" class="fd-today__examcta" data-fd-settings>Set exam date</button></div>';
   }
 
+
+  out+=fdTodayPathMap(idx,st);
 
   if(hasWeek){
     out+='<div class="fd-listhead"><h2 class="fd-sectionhead">'+(idx.path&&idx.path.id==='ms3-six-week'?'Suggested this week':'This week')+'</h2>'+

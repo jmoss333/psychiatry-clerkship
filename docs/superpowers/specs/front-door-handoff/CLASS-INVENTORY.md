@@ -1053,3 +1053,22 @@ with the existing teal action/location tokens. It replaces the distant Everythin
 footer and full-view return button. Existing Library routes remain unchanged.
 Same-route dock refreshes retain the disclosure and focused choice; route changes
 close it. Escape closes the disclosure and returns focus to its summary.
+
+### Connected learning preview (2026-10-04)
+
+- `.fd-weekmap`: Today navigation below the existing primary/secondary actions. The `nav`
+  contains `.fd-weekmap__head` and a horizontally scrollable `.fd-weekmap__stops` row.
+  Each `.fd-weekmap__stop` uses `data-fd-view-week`, with a `.fd-weekmap__number` and
+  `.fd-weekmap__title`. `is-current` and `aria-current="step"` indicate only the actual
+  current week. These stops never imply completed work or set the rotation week.
+- `.fd-library__discover`: a button opening the existing global search dialog, not an input
+  with a separate filtering model. Contains a decorative search SVG, text and keyboard hint.
+- `.fd-kit__workspace`: wraps the section index and `.fd-kit__results`. At desktop widths,
+  the existing index is a sticky vertical rail; below 1000px it remains a horizontal index.
+  `.fd-kit__results` contains the live result announcement, unchanged review notice and layout.
+- Today and Path activity rows share a continuous list treatment with wrapping titles.
+  Path's practice and activities form two columns at desktop widths; their DOM order and
+  keyboard order remain unchanged. The existing route geometry and progress calculation stay.
+- Library tool tabs and preview retain their tablist/tabpanel relationships and keyboard
+  contract. The preview uses the same teal action role as the shell; review and safety
+  treatments retain their existing roles. All new colours reference Clinical Warm tokens.

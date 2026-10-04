@@ -538,3 +538,13 @@ test('the live shell passes the actual week to Essentials rather than the browse
   assert.deepEqual(renderedRefs(render({ week: 2, viewWeek: 1 })), ['m2.md']);
   assert.deepEqual(renderedRefs(render({ viewWeek: 1 })), renderedRefs(F.fdEssentials(idx)));
 });
+
+
+test('Library discovery reuses search and keeps every existing page reachable', () => {
+  const html = F.fdLibrary(IDX);
+  assert.match(html, /class="fd-library__discover" data-fd-search aria-haspopup="dialog"/);
+  assert.doesNotMatch(html, /<input/);
+  for (const col of IDX.columns) for (const item of col.items) {
+    assert.ok(html.includes('data-fd-open="' + item.ref + '"'));
+  }
+});
