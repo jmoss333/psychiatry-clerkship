@@ -19,7 +19,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // +1 (2026-09-23): Fixed-choice Care navigator (fd_care_navigator.js).
 // +1 (2026-09-23): Patient resource pack renderer (fd_care_pack.js).
 // +1 (2026-09-23): Verified offline readiness model (fd_offline.js).
-const EXPECTED_MARKER_COUNT = 39;
+const EXPECTED_MARKER_COUNT = 40; // +1 2026-09-30: /*__RX_RETRIEVAL__*/
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(
@@ -38,6 +38,8 @@ test('qa-baseline.json matches the pinned ceilings exactly', () => {
   // now read localStorage[SRS_KEY] through the shared srs_store.js snippet rather than a
   // literal, the same indirection already accepted for family, question-bank, review and
   // shelf-mode. (res counts the resident-only tools too, hence its higher ceiling.)
+  // computed-key +1 each (2026-09-30): pharmacy.html grades RX# cards through the same
+  // shared srs_store.js snippet (srsLoadStore / srsGradeCard), the same accepted indirection.
   //
   // blueprint-gap 0 -> 6 (2026-09-18, PR 1b): §4a2 counts pages the BUILT governance.json
   // calls "reviewed", and the builds now render an attestation whose attested inputs have
@@ -47,8 +49,8 @@ test('qa-baseline.json matches the pinned ceilings exactly', () => {
   // lowers it, and the gate prints an invitation to lock the drop in. Do not fix a red
   // here by widening it — check what stopped being attested first.
   const expected = {
-    ms3: { metadata: 1, 'blueprint-gap': 6, 'computed-key': 7, 'legacy-metadata': 1 },
-    res: { metadata: 1, 'blueprint-gap': 6, 'computed-key': 10, 'legacy-metadata': 1 },
+    ms3: { metadata: 1, 'blueprint-gap': 6, 'computed-key': 8, 'legacy-metadata': 1 },
+    res: { metadata: 1, 'blueprint-gap': 6, 'computed-key': 11, 'legacy-metadata': 1 },
   };
   assert.deepEqual(actual, expected,
     'qa-baseline.json changed — a computed-key or soft-class ceiling moved; update this pin deliberately');

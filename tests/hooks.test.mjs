@@ -127,6 +127,28 @@ test('pre_edit_guard allows the same number inside crisis_resources.json and in 
   assert.equal(decision(runHook('pre_edit_guard.py', editCall('docs/superpowers/specs/x.md', `Deny ${lifelineDigits} in content.`))), 'allow');
 });
 
+// Handoff notes name the crisis contacts in prose and ship on neither site, so the crisis check
+// skips them -- but only there, and only while nothing under Handoffs/ ships.
+test('pre_edit_guard exempts faculty handoff notes from the crisis check, and nothing else', () => {
+  const handoff = '13_Faculty_Resources/Handoffs/some_handoff.md';
+  assert.equal(decision(runHook('pre_edit_guard.py', editCall(handoff, `Surfaces carry ${lifelineDigits}.`))), 'allow');
+  // A sibling faculty folder is not exempt, and neither is a learner page that merely mentions Handoffs.
+  for (const file of ['13_Faculty_Resources/Feedback/feedback.html', '03_Core_Topics/Handoffs/x.md']) {
+    const r = runHook('pre_edit_guard.py', editCall(file, `Call ${lifelineDigits}.`));
+    assert.equal(decision(r), 'deny', file);
+    assert.match(reason(r), /crisis-contact/);
+  }
+});
+
+test('no shipped page is sourced from Handoffs/, which the crisis check exempts', () => {
+  const shipped = JSON.parse(fs.readFileSync(
+    path.join(repo, '13_Faculty_Resources/_automation/site_build/shipped_pages.json'), 'utf8'));
+  const sources = shipped.pages.flatMap((p) => [p.source, ...(p.extraSources ?? [])]).filter(Boolean);
+  assert.ok(sources.length > 100, `read ${sources.length} shipped sources -- expected the full listing`);
+  const exempt = sources.filter((s) => s.startsWith('13_Faculty_Resources/Handoffs/'));
+  assert.deepEqual(exempt, [], 'a Handoffs/ file now ships: drop it from CRISIS_EXEMPT_PREFIXES');
+});
+
 // A content digest is not prose. On 2026-09-28 three of reviewed.json's contentHash/clinicalHash
 // values held a short crisis code between two hex letters, and because the pre-commit gate scans a
 // staged file whole, every commit that staged the ledger was blocked (the weekly case run stopped
@@ -355,6 +377,9 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
     // Its selected fields are pinned by the pair map, so the entire registry is
     // deliberately not an attestation input in shipped_pages.json.
     'evidence_registry.json',
+    // Same shape for the pharmacy: pharmacy_public.json is projected from pharmacy.json, which
+    // is attested per drug by its own review hashes, so it is not an attestation input either.
+    'pharmacy.json',
     ...toolInputs,
   ])) {
     const target = path.join(fixture, rel);
@@ -363,6 +388,7 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
   }
   const registry = path.join(fixture, '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json');
   const original = fs.readFileSync(registry, 'utf8');
+  const originalTimes = fs.statSync(registry);
   const document = JSON.parse(original);
   document.weeks = [...document.weeks, {
     date: '2099-01-01',
@@ -387,6 +413,13 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
     assert.match(r.reason, /cotw_20990101_synthetic_ms3\.md/);
   } finally {
     fs.writeFileSync(registry, original);
+    /* Restoring the BYTES is not enough. cotw_registry.json is a declared panel-freshness input
+       (PANEL_BUILD_INPUTS in tests/_panel_render.mjs), and staleBuildReason() compares MTIMES --
+       so a rewrite with today's timestamp makes every later `node bin/render_panels.mjs` in the
+       session exit 2 against a build that is actually current. build_and_check.sh happens to be
+       immune (it runs the node suite BEFORE build_deploy.py, so the build re-stamps afterwards),
+       which is exactly why this would otherwise be found by hand and not by a gate. */
+    fs.utimesSync(registry, originalTimes.atime, originalTimes.mtime);
   }
 });
 

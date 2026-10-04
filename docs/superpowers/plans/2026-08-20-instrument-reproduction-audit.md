@@ -1,5 +1,44 @@
 # Instrument Reproduction Audit
 
+## Current disposition — verified 2026-10-02; correction draft
+
+The inventory and dated resolutions below preserve the historical audit. They are not a
+current list of reproductions or outstanding waivers. Fresh `instrument_rights.json` on
+main `77297674a512ac8a5750e241e33a9308641d5184` has **one provisional entry,
+PHQ-9/GAD-7, and no `interimWaiver`**.
+
+| Instrument / work | Current recorded disposition |
+|---|---|
+| COWS anchors | **Retired 2026-09-10**, by Joshua Moss, MD, decision `cows-anchors-retired` in `decisions.json`, superseding `cows-interim-waiver`. The 45 verbatim anchors were withdrawn; item names, legal score values and in-house descriptors remain. No new reproduction permission is asserted. |
+| COWS / WP-21 | The former waiver is closed. A future permission letter could support a new decision, but the old waiver is no longer the current Wave 4 blocker. This correction does not reopen or approve WP-21. |
+| PHQ-9/GAD-7 / WP-02c | **Provisional**, confined to `screeners.html`. Primary-source permission verification is complete; final governance disposition remains proposed for Josh's review. |
+| CIWA-Ar, C-SSRS, BFCRS, Stanley-Brown | Their existing retired/restricted dispositions are unchanged. |
+
+Fresh primary evidence: [PHQ Screeners selector](https://www.phqscreeners.com/select-screener)
+says reproduction, translation, display and distribution need no permission. The linked
+[official manual](https://www.phqscreeners.com/images/sites/g/files/g10016261/f/201412/instructions.pdf),
+page 8, describes all Table 1 measures as public domain. See the dated capture and full
+comparison in [PHQ/GAD review packet](../../permissions/phq-gad-review-2026-10-02.md).
+The older permission capture remains preserved at
+[2026-09-10](../../permissions/phqscreeners-2026-09-10.md).
+
+**Proposed disposition, not a new grant or attestation:** retain PHQ-9/GAD-7, restore the
+selected official wording, and record the verified official reproduction evidence. Moving
+`phq9-gad7` to `cleared` requires Josh's recorded resolution; approval to prepare this draft
+is not that resolution. Faithful official wording is a clinical-quality/governance choice.
+Neither the omission of “modify” from four listed verbs nor generic website terms alone
+establishes a categorical legal ban on every modification; the manual's public-domain
+statement must also be considered. Pfizer is acknowledged as educational-grant supporter,
+not asserted to be the exclusive copyright owner.
+
+Josh authorized preparation on 2026-10-02 at 01:25 UTC (message
+`Sentinel_09d227d1a1f88191b1338216eae96497`, “1 yes 2 yes”; answer 2 refers to this correction).
+No clinical/faculty attestation or final disposition is attributed to that approval.
+Changing `screeners.html` requires genuine re-attestation through the faculty console;
+the draft does not rewrite the ledger or bind a new review hash.
+
+## Historical audit and dated resolutions
+
 Audit of all **22 shipped HTML tools** against the rule added to `CLAUDE.md` on 2026-08-20:
 
 > **THE LIBRARY TEACHES ADMINISTRATION; IT DOES NOT REPRODUCE INSTRUMENTS.**
@@ -65,9 +104,9 @@ ladders** — that is what "drop-in content spec" means. Under the new rule:
 > | **Stanley–Brown** | Never programmed. → **WP-06R-b** builds a rehearsal tool that reproduces nothing |
 > | **PHQ-9 / GAD-7** | Provisionally stay. Pfizer's standard form footer states no permission is required to reproduce, translate, display or distribute — **this must be verified against the current form before it is relied on.** → **WP-02c** |
 > | **BFCRS** | **RESTRICTED — resolved 2026-08-23 (WP-02d).** Published by URMC under site-wide Web Terms of Use: contents *"may not be distributed, modified, reproduced, or used, in whole or in part without the prior written consent of the University of Rochester Medical Center"*, with use granted only for *"personal non-commercial use."* No instrument-specific licence exists on any URMC BFCRS page or PDF, and absence of a copyright notice is not a licence (works published after 1 March 1989 need none). **All 23 items and anchor ladders removed from `bfcrs.html`; WP-22 blocked on written permission, not on an open question.** |
-> | **COWS** | **Permission real, scope wrong (WP-02d).** The published instrument carries, in Appendix 1, *"This version may be copied and used clinically."* That licenses clinical copying; it does not plainly reach verbatim reproduction on a public educational website — and WHO dropped the line when re-typesetting. **WP-02's 45 verbatim anchors in `withdrawal.html` are outside the grant on a conservative reading. Flagged, not reverted, pending the author's call.** |
-> | **CIWA-Ar** | **RETIRES — resolved 2026-08-28 (author's call, Joshua Moss, MD).** The WP-02d finding stands: "Not copyrighted and may be reproduced freely" circulates widely, but every located instance is a note added by a *reproducer*, in three different wordings, and the attribution to the 1989 article itself could not be verified (closed access). Rights that cannot be established are not rights. **The 10 abbreviated descriptors and the CIWA scoring surface are removed from `withdrawal.html`**, which now carries a stub on the `bfcrs.html` / `cssrs.html` pattern — attribution (PMID 2597811), the direction to score from the institution's approved form, and no items. Guarded by `tests/ciwa-retirement.test.mjs` and by five `instrument_rights.json` signatures (status `retired`), so a re-add hard-fails both builds. Administration teaching is authored separately and is not yet published, as with BFCRS. The ILL request is no longer blocking — it would now only reopen a closed question. **COWS is untouched on the same page under its own interim waiver.** |
-> | **WP-20 / WP-21 / WP-22** | WP-22 (BFCRS) is blocked on **written permission from URMC**, not on an open question. **WP-20 is now closed by the 2026-08-28 CIWA-Ar retirement** — it proposed adding the full verbatim CIWA-Ar ladder, which the disposition forecloses; reopening it needs a new rights finding, not an implementation decision. WP-21 stays blocked on COWS. Full evidence: `DECISION_BRIEF_2026-08-23.md` §2 |
+> | **COWS** | **Permission real, scope wrong (WP-02d).** The published instrument carries, in Appendix 1, *"This version may be copied and used clinically."* That licenses clinical copying; it does not plainly reach verbatim reproduction on a public educational website — and WHO dropped the line when re-typesetting. **At the 2026-08-23 resolution, the 45 anchors were flagged and retained under an interim waiver. Superseded 2026-09-10 by `cows-anchors-retired`: the anchors are withdrawn and the waiver closed.** |
+> | **CIWA-Ar** | **RETIRES — resolved 2026-08-28 (author's call, Joshua Moss, MD).** The WP-02d finding stands: "Not copyrighted and may be reproduced freely" circulates widely, but every located instance is a note added by a *reproducer*, in three different wordings, and the attribution to the 1989 article itself could not be verified (closed access). Rights that cannot be established are not rights. **The 10 abbreviated descriptors and the CIWA scoring surface are removed from `withdrawal.html`**, which now carries a stub on the `bfcrs.html` / `cssrs.html` pattern — attribution (PMID 2597811), the direction to score from the institution's approved form, and no items. Guarded by `tests/ciwa-retirement.test.mjs` and by five `instrument_rights.json` signatures (status `retired`), so a re-add hard-fails both builds. Administration teaching is authored separately and is not yet published, as with BFCRS. The ILL request is no longer blocking — it would now only reopen a closed question. **At that 2026-08-28 resolution, COWS was untouched under its own interim waiver; that waiver subsequently closed on 2026-09-10 under `cows-anchors-retired`.** |
+> | **WP-20 / WP-21 / WP-22** | WP-22 (BFCRS) is blocked on **written permission from URMC**, not on an open question. **WP-20 is now closed by the 2026-08-28 CIWA-Ar retirement** — it proposed adding the full verbatim CIWA-Ar ladder, which the disposition forecloses; reopening it needs a new rights finding, not an implementation decision. At this historical resolution WP-21 stayed blocked on COWS; the 2026-09-10 retirement subsequently closed the waiver, without approving WP-21. Full evidence: `DECISION_BRIEF_2026-08-23.md` §2 |
 > | **WP-02b** | Unblocked and **done** — attribution added to `withdrawal.html`; see below |
 >
 > Option A resolves the scope question. It does **not** license an agent to infer that any
@@ -165,7 +204,7 @@ unrelated to the links.
 only with a decision record. `tests/instrument-rights-gate.test.mjs` pins all six statuses so a
 future link fix cannot ride a status change in with it.
 
-Two things this change deliberately did **not** do, both author calls:
+Two things the **2026-09-03** change deliberately did **not** do, both author calls (historical):
 
 1. **WP-02c is not resolved.** Secondary sources consistently report that Pfizer released the PHQ
    family and GAD-7 with no copyright restriction on 2010-07-21, and that the current footer reads

@@ -386,6 +386,46 @@ class Doc:
         return sum(len(x) + 1 for x in self.lines)
 
 
+def render_communication_case(doc: Doc, c: dict):
+    """Transcribe both authored passes, including every response and rationale."""
+    doc.add(f"### {c['id']} — {c['title']}", "",
+             f"- Topic `{c.get('topic','')}` · Setting: {c.get('setting','')}",
+             f"- Learner goal: {c.get('learnerGoal','')}")
+    if c.get("skillTags"):
+        doc.add("- Skill tags: " + ", ".join(f"`{t}`" for t in c["skillTags"]))
+    if c.get("linkedPages"):
+        doc.add("- Linked pages: " + ", ".join(f"`{t}`" for t in c["linkedPages"]))
+    if c.get("evidenceIds"):
+        doc.add("- Evidence: " + ", ".join(f"`{t}`" for t in c["evidenceIds"]))
+    if c.get("facultyReview"):
+        doc.add("- Faculty review: " + json.dumps(c["facultyReview"], ensure_ascii=False))
+    doc.add("", f"**Prompt.** {c.get('prompt','')}", "")
+    rd = c.get("rapidDrill")
+    if isinstance(rd, dict):
+        doc.add(f"**Rapid drill** (target {rd.get('targetSeconds','?')} s).", "")
+        if rd.get("stance"):
+            doc.add(f"- *Stance:* {rd['stance']}")
+        if rd.get("starter"):
+            doc.add(f"- *Starter:* {rd['starter']}")
+        for k, lbl in (("mustInclude", "Must include"), ("avoid", "Avoid")):
+            if rd.get(k):
+                doc.add(f"- *{lbl}:*")
+                doc.add(*[f"  - {x}" for x in rd[k]])
+        doc.add("")
+    elif rd:
+        doc.add("**Rapid drill.** " + json.dumps(rd, ensure_ascii=False), "")
+    doc.add("**Response options (what the learner picks between):**", "")
+    doc.add(*render_choice_list(c.get("choices", [])))
+    doc.add("")
+    second = c.get("secondPass")
+    if second is not None:
+        doc.add("**Second pass — same-skill retry.**", "",
+                f"**Prompt.** {second['prompt']}", "",
+                "**Response options (what the learner picks between):**", "")
+        doc.add(*render_choice_list(second["choices"]))
+        doc.add("", f"**Listen for.** {second['listenFor']}", "")
+
+
 def render_case_journeys(doc: Doc, build: Path) -> dict[str, int]:
     """Transcribe cases from the built viewer's declared loaders, including future cases.
 
@@ -687,35 +727,7 @@ def build_audience(aud_key: str, out_root: Path, build_root: Path) -> dict:
     cc = _load(B / "communication_cases.json", {"cases": []})
     cdoc.add(f"## Communication cases — *What Do You Say Next?* ({len(cc['cases'])} cases)", "")
     for c in cc["cases"]:
-        cdoc.add(f"### {c['id']} — {c['title']}", "",
-                 f"- Topic `{c.get('topic','')}` · Setting: {c.get('setting','')}",
-                 f"- Learner goal: {c.get('learnerGoal','')}")
-        if c.get("skillTags"):
-            cdoc.add("- Skill tags: " + ", ".join(f"`{t}`" for t in c["skillTags"]))
-        if c.get("linkedPages"):
-            cdoc.add("- Linked pages: " + ", ".join(f"`{t}`" for t in c["linkedPages"]))
-        if c.get("evidenceIds"):
-            cdoc.add("- Evidence: " + ", ".join(f"`{t}`" for t in c["evidenceIds"]))
-        if c.get("facultyReview"):
-            cdoc.add("- Faculty review: " + json.dumps(c["facultyReview"], ensure_ascii=False))
-        cdoc.add("", f"**Prompt.** {c.get('prompt','')}", "")
-        rd = c.get("rapidDrill")
-        if isinstance(rd, dict):
-            cdoc.add(f"**Rapid drill** (target {rd.get('targetSeconds','?')} s).", "")
-            if rd.get("stance"):
-                cdoc.add(f"- *Stance:* {rd['stance']}")
-            if rd.get("starter"):
-                cdoc.add(f"- *Starter:* {rd['starter']}")
-            for k, lbl in (("mustInclude", "Must include"), ("avoid", "Avoid")):
-                if rd.get(k):
-                    cdoc.add(f"- *{lbl}:*")
-                    cdoc.add(*[f"  - {x}" for x in rd[k]])
-            cdoc.add("")
-        elif rd:
-            cdoc.add("**Rapid drill.** " + json.dumps(rd, ensure_ascii=False), "")
-        cdoc.add("**Response options (what the learner picks between):**", "")
-        cdoc.add(*render_choice_list(c.get("choices", [])))
-        cdoc.add("")
+        render_communication_case(cdoc, c)
 
     rc = _load(B / "reasoning_cases.json", {"cases": []})
     cdoc.add(f"## Diagnostic reasoning cases ({len(rc['cases'])} cases)", "")

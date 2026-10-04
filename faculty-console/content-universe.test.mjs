@@ -23,6 +23,7 @@ import {
   cotwTwinSlug,
   deriveContentUniverse,
   isCotwSlug,
+  shippedItemsWithSites,
 } from './content-universe.mjs';
 
 const ROOT = new URL('../', import.meta.url);
@@ -101,18 +102,23 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
   const tools = items.filter(item => item.kind === 'tool');
   const cotw = items.filter(item => isCotwSlug(item.slug));
 
-  // 69 shared pages + 22 shared tools + the MS3-only tools site_extras.py lists
+  // shared pages + shared tools (site_manifest.json) + the MS3-only tools site_extras.py lists
   // + 2×WEEKS Case-of-the-Week twins + 6 resident-only pages + 4 resident-only tools
   // (rp-post-event-huddle.html joined the three role-play tools on 2026-09-04; the CotW
   // term was registry-derived on 2026-09-24 — at 13 weeks — and the MS3-only tool term
   // derived from site_extras.py on 2026-09-25, so content PRs stop editing this
-  // governance file for either).
-  assert.equal(MANIFEST.md.length, 69);
-  assert.equal(MANIFEST.tools.length, 22);
+  // governance file for either). The shared terms derive from site_manifest.json for the
+  // same reason (2026-09-30): registering a shared page or tool is content a PR carries in
+  // the manifest, and a count hand-pinned here (69 pages / 22 tools that day) would
+  // deadlock it under L1. Not vacuous: the parity test below checks every manifest entry
+  // against shipped_pages.json slug by slug.
+  const SHARED_PAGES = MANIFEST.md.length;
+  const SHARED_TOOLS = MANIFEST.tools.length;
+  assert.ok(SHARED_PAGES >= 60 && SHARED_TOOLS >= 20, 'the manifest was read, not emptied');
   assert.ok(WEEKS >= 13, 'the CotW registry only ever grows');
-  assert.equal(items.length, 69 + 22 + MS3_TOOLS + 6 + 4 + 2 * WEEKS);
-  assert.equal(pages.length, 69 + 2 * WEEKS + 6);
-  assert.equal(tools.length, 22 + MS3_TOOLS + 4);
+  assert.equal(items.length, SHARED_PAGES + SHARED_TOOLS + MS3_TOOLS + 6 + 4 + 2 * WEEKS);
+  assert.equal(pages.length, SHARED_PAGES + 2 * WEEKS + 6);
+  assert.equal(tools.length, SHARED_TOOLS + MS3_TOOLS + 4);
   assert.equal(cotw.length, 2 * WEEKS);
 
   const byProducer = {};
@@ -121,7 +127,7 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
   }
   // A producer with nothing to ship emits no entry, so its key is absent, not zero.
   assert.deepEqual(byProducer, {
-    site_manifest: 91,
+    site_manifest: SHARED_PAGES + SHARED_TOOLS,
     ...(MS3_TOOLS ? { ms3_extra_tool: MS3_TOOLS } : {}),
     cotw_registry: 2 * WEEKS,
     resident_extra: 6,
@@ -382,4 +388,26 @@ test('the current universe exposes the former manifest-only reader\'s blind spot
   // …and no exclusion masks a live item. The list is empty; see content-universe.mjs.
   assert.deepEqual(NOT_REVIEWABLE_IN_CONSOLE.filter(slug => universe.has(slug)), []);
   assert.deepEqual([...NOT_REVIEWABLE_IN_CONSOLE], []);
+});
+
+test('shippedItemsWithSites keeps both sites on a page that ships to both', () => {
+  const shipped = {
+    version: 1,
+    pages: [
+      { slug: 'shared.md', title: 'Shared', kind: 'page', sites: ['ms3', 'res'] },
+      { slug: 'resonly.md', title: 'Res only', kind: 'page', sites: ['res'] },
+    ],
+  };
+  const rows = shippedItemsWithSites({ shipped });
+  assert.deepEqual(rows.map(r => r.sites), [['ms3', 'res'], ['res']]);
+
+  // deriveContentUniverse collapses the shared page to 'ms3', which is why this exists.
+  assert.deepEqual(deriveContentUniverse({ shipped }).map(r => r.site), ['ms3', 'res']);
+});
+
+test('shippedItemsWithSites rejects a malformed listing rather than shortening it', () => {
+  assert.throws(
+    () => shippedItemsWithSites({ shipped: { version: 1, pages: [{ slug: 'a.md', title: 'A', kind: 'page', sites: [] }] } }),
+    /invalid sites/,
+  );
 });

@@ -608,8 +608,9 @@ class RepositoryProducerTests(unittest.TestCase):
         ):
             diagnostics, documents = governance.validate_repository(ROOT)
 
-        self.assertEqual(len(documents["ms3"]["items"]), 22)
-        self.assertEqual(len(documents["resident"]["items"]), 26)
+        # +1 each 2026-09-30: pharmacy.html
+        self.assertEqual(len(documents["ms3"]["items"]), governance.expected_tool_count(ROOT, "ms3"))
+        self.assertEqual(len(documents["resident"]["items"]), governance.expected_tool_count(ROOT, "resident"))
         self.assertEqual(len(diagnostics), 1)
         self.assertTrue(diagnostics[0].startswith("legacy metadata warning: "))
 
@@ -688,7 +689,7 @@ class RepositoryProducerTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(
                 governance.GovernanceError,
-                r"tool-governance.json: ms3 item count must equal 22",
+                f"tool-governance.json: ms3 item count must equal {governance.expected_tool_count(ROOT, 'ms3')}",
             ):
                 governance.build_governance_document(
                     ROOT, "ms3", enforce_expected_count=True
@@ -714,7 +715,7 @@ class RepositoryProducerTests(unittest.TestCase):
                     governance.GovernanceError,
                     r"tool-governance.json: noncanonical HTML filename",
                 ):
-                    governance.validate_built_tool_inventory(document, tools, site="ms3")
+                    governance.validate_built_tool_inventory(document, tools, site="ms3", root=root)
 
     def test_cli_default_root_reports_ok_now_that_the_ledger_is_migrated(self) -> None:
         # 2026-08-12: the production reviewed.json was migrated to the
@@ -731,8 +732,8 @@ class RepositoryProducerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("tool governance OK", result.stdout)
-        self.assertIn("ms3: 22 item(s)", result.stdout)
-        self.assertIn("resident: 26 item(s)", result.stdout)
+        self.assertIn(f"ms3: {governance.expected_tool_count(ROOT, 'ms3')} item(s)", result.stdout)
+        self.assertIn(f"resident: {governance.expected_tool_count(ROOT, 'resident')} item(s)", result.stdout)
 
     def test_rotation_curator_envelope_agrees_with_the_effective_ledger(
         self,
@@ -915,6 +916,67 @@ class RepositoryProducerTests(unittest.TestCase):
             self.assertEqual(output.read_bytes(), b"stable-output\n")
             self.assertNotIn(sentinel, result.stdout + result.stderr)
 
+
+
+
+class PreparationInventoryTests(unittest.TestCase):
+    PREP = {
+        "slug": "prepare-for-tomorrow.html", "kind": "tool", "sites": ["ms3"],
+        "source": "14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html",
+    }
+
+    def test_baseline_without_preparation_retains_exact_current_counts(self):
+        with patch.object(governance, "load_shipped_pages", return_value={"pages": []}):
+            self.assertEqual(governance.expected_tool_count(ROOT, "ms3"), 23)
+            self.assertEqual(governance.expected_tool_count(ROOT, "resident"), 27)
+            for site, wrong in (("ms3", 24), ("ms3", 22), ("resident", 26), ("resident", 28)):
+                with self.subTest(site=site, wrong=wrong), self.assertRaises(governance.GovernanceError):
+                    governance.validate_expected_tool_count(site, wrong, root=ROOT)
+
+    def test_declared_preparation_adds_exactly_one_ms3_tool(self):
+        with patch.object(governance, "load_shipped_pages", return_value={"pages": [dict(self.PREP)]}):
+            self.assertEqual(governance.expected_tool_count(ROOT, "ms3"), 24)
+            self.assertEqual(governance.expected_tool_count(ROOT, "resident"), 27)
+            governance.validate_expected_tool_count("ms3", 24, root=ROOT)
+            for count in (23, 25):
+                with self.subTest(count=count), self.assertRaises(governance.GovernanceError):
+                    governance.validate_expected_tool_count("ms3", count, root=ROOT)
+
+    def test_malformed_preparation_registration_is_rejected(self):
+        invalid = [
+            [dict(self.PREP), dict(self.PREP)],
+            [{**self.PREP, "kind": "md"}],
+            [{**self.PREP, "sites": ["ms3", "res"]}],
+            [{**self.PREP, "sites": ["res"]}],
+            [{**self.PREP, "source": "wrong/source.html"}],
+            [None],
+        ]
+        for pages in invalid:
+            with self.subTest(pages=pages), patch.object(governance, "load_shipped_pages", return_value={"pages": pages}):
+                with self.assertRaises(governance.GovernanceError):
+                    governance.expected_tool_count(ROOT, "ms3")
+
+    def test_unknown_site_and_unavailable_canonical_inventory_fail_closed(self):
+        with self.assertRaises(governance.GovernanceError):
+            governance.expected_tool_count(ROOT, "unknown")
+        for document in ({}, {"pages": None}, {"pages": {}}):
+            with self.subTest(document=document), patch.object(governance, "load_shipped_pages", return_value=document):
+                with self.assertRaises(governance.GovernanceError):
+                    governance.expected_tool_count(ROOT, "ms3")
+        with patch.object(governance, "load_shipped_pages", side_effect=governance.ShippedPagesError("unavailable")):
+            with self.assertRaises(governance.GovernanceError):
+                governance.expected_tool_count(ROOT, "ms3")
+
+    def test_source_drop_cannot_change_independently_declared_preparation_count(self):
+        entries = governance._tool_entries(ROOT, "ms3")
+        ledger = synthetic_ledger_for_site_entries(ROOT)
+        document = governance.load_shipped_pages(ROOT)
+        document = {**document, "pages": [p for p in document["pages"] if p["slug"] != self.PREP["slug"]] + [dict(self.PREP)]}
+        with (patch.object(governance, "load_shipped_pages", return_value=document),
+              patch.object(governance, "_tool_entries", return_value=entries[:-1]),
+              patch.object(governance, "load_effective_ledger", return_value=(ledger, {"stale": {}}))):
+            with self.assertRaisesRegex(governance.GovernanceError, "item count must equal 24"):
+                governance.build_governance_document(ROOT, "ms3", enforce_expected_count=True)
 
 if __name__ == "__main__":
     unittest.main()

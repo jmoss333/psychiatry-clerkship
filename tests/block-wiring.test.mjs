@@ -73,7 +73,8 @@ test('the shell picks exactly one primary, names the secondary heading once, and
   assert.match(today, /fdLastReadRow\(lastRead,primary\.kind==='read'\)/);
   assert.match(today, /'<div class="fd-primary">'/);
   assert.match(today, /FD_TODAY_LEAD_END/, 'the marker fd_today.js emits is the splice point');
-  assert.match(today, /fdTodayWhy\(\)/);
+  // 2026-10-01: the "First things first" explanation line is retired (owner-directed design pass).
+  assert.doesNotMatch(today, /fdTodayWhy\(\)/);
 });
 
 test('an interrupted block session checkpoints its block identity and resumes as a block session', () => {

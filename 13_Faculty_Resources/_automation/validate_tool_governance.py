@@ -16,6 +16,7 @@ from jsonschema import Draft7Validator
 
 
 AUTOMATION_DIRECTORY = Path(__file__).resolve().parent
+ROOT = AUTOMATION_DIRECTORY.parents[1]
 if str(AUTOMATION_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(AUTOMATION_DIRECTORY))
 
@@ -46,7 +47,8 @@ EXPECTED_CONTRACT_DESCRIPTOR = {
 REVIEWED_RELATIVE = Path("13_Faculty_Resources/reviewed.json")
 
 # ms3 was 23 until 2026-09-25, when the MS3-only orientation-video tool was retired.
-EXPECTED_TOOL_COUNTS = {"ms3": 22, "resident": 26}
+# 2026-09-30: +1 on both sites for pharmacy.html (the Psychiatric Pharmacy).
+EXPECTED_TOOL_COUNTS = {"ms3": 23, "resident": 27}
 ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
 
@@ -354,11 +356,32 @@ def canonical_json_bytes(document: dict) -> bytes:
     return (json.dumps(document, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
-def validate_expected_tool_count(site: str, item_count: int) -> None:
-    """Require the fixed production inventory size for one learner site."""
-    expected_count = EXPECTED_TOOL_COUNTS.get(site)
-    if expected_count is None:
+def expected_tool_count(root: Path, site: str) -> int:
+    """Keep the fixed baseline and admit only the declared MS3 preparation tool."""
+    if site not in EXPECTED_TOOL_COUNTS:
         raise GovernanceError("site: unsupported value")
+    try:
+        pages = load_shipped_pages(root)["pages"]
+    except (ShippedPagesError, KeyError, TypeError) as error:
+        raise GovernanceError("shipped_pages.json: cannot determine tool count") from error
+    if not isinstance(pages, list):
+        raise GovernanceError("shipped_pages.json: invalid pages")
+    if any(not isinstance(page, dict) for page in pages):
+        raise GovernanceError("shipped_pages.json: invalid page")
+    additions = [page for page in pages if page.get("slug") == "prepare-for-tomorrow.html"]
+    if len(additions) > 1:
+        raise GovernanceError("shipped_pages.json: duplicate preparation tool")
+    if additions:
+        page = additions[0]
+        if (page.get("kind") != "tool" or page.get("sites") != ["ms3"] or
+                page.get("source") != "14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html"):
+            raise GovernanceError("shipped_pages.json: invalid preparation tool registration")
+    return EXPECTED_TOOL_COUNTS[site] + int(site == "ms3" and bool(additions))
+
+
+def validate_expected_tool_count(site: str, item_count: int, *, root: Path = ROOT) -> None:
+    """Require the independently declared production inventory size."""
+    expected_count = expected_tool_count(root, site)
     if item_count != expected_count:
         raise GovernanceError(
             f"tool-governance.json: {site} item count must equal {expected_count}"
@@ -413,7 +436,7 @@ def build_governance_document(
     if len(set(ids)) != len(ids):
         raise GovernanceError("tool-governance.json: duplicate item id")
     if enforce_expected_count:
-        validate_expected_tool_count(site, len(items))
+        validate_expected_tool_count(site, len(items), root=root)
     warnings = []
     if legacy_paths:
         warnings.append("legacy metadata warning: " + ", ".join(sorted(legacy_paths)))
@@ -445,7 +468,7 @@ def validate_repository(
 
 
 def validate_built_tool_inventory(
-    document: dict, tools_directory: Path, *, site: str | None = None
+    document: dict, tools_directory: Path, *, site: str | None = None, root: Path = ROOT
 ) -> None:
     """Require the final built HTML tool set to exactly match governance item IDs."""
     items = document.get("items") if isinstance(document, dict) else None
@@ -463,7 +486,7 @@ def validate_built_tool_inventory(
     if len(expected) != len(items):
         raise GovernanceError("tool-governance.json: invalid item ids")
     if site is not None:
-        validate_expected_tool_count(site, len(items))
+        validate_expected_tool_count(site, len(items), root=root)
     tools_directory = Path(tools_directory)
     try:
         html_names = [

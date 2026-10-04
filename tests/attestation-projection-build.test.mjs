@@ -311,8 +311,18 @@ test('no stored contentHash reaches any built artifact', (t) => {
     .map((entry) => entry.contentHash);
   // A vacuity guard with teeth: an unparsable or unbacked ledger would make every search below
   // trivially clean. PR 1a bound 108 rows; the floor is "some", not that number, so re-attesting
-  // never trips it.
-  assert.ok(hashes.length > 0, 'reviewed.json carries no contentHash to search for');
+  // never trips it. But a ledger with NOTHING signed is a legitimate state too (a change that
+  // reopens every page is registration, not a regression), and there the floor would go red for
+  // being right -- tests/live-governance-state.test.mjs rehearses that state and caught it on
+  // 2026-09-30. So: signed rows with no hash is an unbacked ledger and fails; no hash anywhere
+  // AND nothing signed has nothing to search for and skips, visibly; any stored hash, signed or
+  // not, is searched for.
+  const signed = Object.values(LEDGER).filter((entry) => entry && entry.status === 'reviewed');
+  if (hashes.length === 0 && signed.length === 0) {
+    t.skip('reviewed.json holds no signed page and no stored contentHash, so there is nothing to search for');
+    return;
+  }
+  assert.ok(hashes.length > 0, `reviewed.json signs ${signed.length} page(s) but carries no contentHash to search for`);
 
   forEachFreshSite(t, (site) => {
     for (const name of SERVED_JSON) {

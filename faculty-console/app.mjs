@@ -29,6 +29,7 @@ import {
   twinOf,
 } from './review-model.mjs';
 import { isDriftReason } from './change-history.mjs';
+import { pressForecast } from './press-forecast.mjs';
 import {
   publishWait, publishWaitText, resignHeading, resignSchedule, staleSignoffLine, trainWeekLine,
 } from './release-status.mjs';
@@ -3601,11 +3602,34 @@ export function startFacultyConsole({
       ]));
     }
     const total = chosen.length + questions.length;
+    // The forecast (2026-09-30): what this press leaves undone, and whether the review request
+    // will then pass its sign-off check -- said before the click, not learned from CI after it.
+    // It follows the ticks, because it is recomputed with every refreshBaseline(), and it is not
+    // shown over a preview that is being re-read: a forecast of a queue that may have moved is
+    // exactly the after-the-fact surprise it exists to prevent.
+    const forecast = view.status === 'ready' ? pressForecast({
+      sign: data.sign,
+      excluded: data.excluded,
+      chosen: new Set(chosen.map(item => text(item.slug))),
+      questions: data.questions || null,
+      forecast: data.forecast,
+      pullRequestUrl: state.server?.branchSync?.rollingPr || null,
+    }) : null;
+    if (forecast) {
+      // A refusal or an unknown is drawn like the other notices that need a decision.
+      const warns = forecast.request === 'refused' || forecast.request === 'unknown';
+      children.push(el('p', {
+        id: 'baseline-forecast',
+        class: warns ? 'session-notice individual' : 'resign-progress',
+        'data-request': forecast.request,
+      }, [el('strong', {}, ['Before you press: ']), forecast.text]));
+    }
     children.push(el('div', { class: 'resign-footer' }, [
       el('button', {
         id: 'baseline-sign',
         type: 'button',
         class: 'primary',
+        'aria-describedby': forecast ? 'baseline-forecast' : null,
         disabled: !total || state.pending || view.status === 'loading',
         onClick: () => void pressManyPages({
           mode: 'baseline',

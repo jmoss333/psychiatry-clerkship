@@ -212,12 +212,12 @@ const REAL_IDX = F.fdBuildIndex(REAL_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
 test('the count of rendered links equals 81 against the real curriculum.json', () => {
   const expected = (REAL_CUR.libraryColumns || []).reduce((n, c) => n + c.refs.length, 0);
   // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
-  // therapy_reading_room.md).
-  assert.equal(expected, 83, 'curriculum.json is expected to place 83 pages across the five columns');
+  // therapy_reading_room.md). 84 = 83 + pharmacy.html (2026-09-30, Interactive tools).
+  assert.equal(expected, 84, 'curriculum.json is expected to place 84 pages across the five columns');
   const html = F.fdLibrary(REAL_IDX);
   const links = html.match(/data-fd-open="/g) || [];
   assert.equal(links.length, expected, 'every column-placed page must render exactly one Library link');
-  assert.equal(links.length, 83);
+  assert.equal(links.length, 84);
 });
 
 test('the real header count matches the real link count', () => {
@@ -349,7 +349,7 @@ test('Essentials uses reading rows, open native groups, a section index rail and
   assert.match(html, /data-fd-open="tool.html"[^>]*aria-label="Open Tool &lt;one&gt;"/);
   assert.match(html, /Title &lt;one&gt;/); assert.match(html,/A &amp; B/); assert.match(html,/7 min/);
   assert.match(html, /Faculty re-review in progress — 1 of 1 readings changed since they were last attested ·/); assert.match(html, /<summary>What that means<\/summary>/);
-  assert.match(html, /Everything \(10 pages\) →/);
+  assert.match(html, /data-fd-library-view="full"[^>]*>Everything/);
   assert.doesNotMatch(html, /fd-kit__care|Patient care resources/);
   assert.match(html, /class="fd-kit__teaching"[^>]*aria-label="External teaching companion"/);
   assert.match(html, /href="https:\/\/family-therapy-seminar-companion\.netlify\.app\/"/);
@@ -382,7 +382,7 @@ test('zero resolved Essentials falls back exactly to full Library with no dead r
 
 test('full Library return control appears only for resolved Essentials', () => {
   const html=F.fdLibrary({...IDX,essentials:[{name:'One',items:[IDX.columns[0].items[0]]}]});
-  assert.match(html,/data-fd-library-view="essentials">← The Essentials<\/button>/);
+  assert.match(html,/data-fd-library-view="essentials" aria-pressed="false">Essentials<\/button>/);
 });
 
 test('fdEssentials is pure and does not mutate its index', () => {
@@ -411,7 +411,7 @@ for site,key in [('ms3','ms3'),('res','resident')]:
 print(json.dumps(out))
 `], { cwd: PROJECT_ROOT, encoding: 'utf8' }));
 
-for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93]]) {
+for (const [site, expectedKit, expectedFull] of [['ms3', 30, 84], ['res', 35, 94]]) {
   test(`${site}: real Essentials renders ${expectedKit} reading and tool choices and links to all ${expectedFull} pages`, () => {
     const payload = projected[site];
     const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
@@ -426,7 +426,7 @@ for (const [site, expectedKit, expectedFull] of [['ms3', 30, 83], ['res', 35, 93
     assert.match(html,new RegExp('— '+pending+' of '+(site==='ms3'?23:26)+' readings'));
     const compact=make((g,o)=>g?.status==='pending'&&o?.compact?'<span class=\"dot-test\"></span>':'').fdEssentials(idx);
     assert.equal((compact.match(/dot-test/g)||[]).length,pending);
-    assert.match(html, new RegExp('data-fd-library-view="full">Everything \\(' + expectedFull + ' pages\\) →'));
+    assert.match(html, /data-fd-library-view="full" aria-pressed="false">Everything/);
   });
 }
 
@@ -484,7 +484,7 @@ test('This week counts only matching Essentials readings and preserves their sec
   assert.equal((filtered.match(/<details class="fd-kit__group" open>/g) || []).length, 2);
   assert.equal((filtered.match(/fd-kit__group-count">1 readings/g) || []).length, 2);
   assert.doesNotMatch(filtered, /fd-kit__tools/);
-  assert.match(filtered, /Everything \(10 pages\)/);
+  assert.match(filtered, /data-fd-library-view="full"[^>]*>Everything/);
   assert.equal(JSON.stringify(idx), before, 'weekly filtering cannot mutate Path or Essentials');
 });
 

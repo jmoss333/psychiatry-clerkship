@@ -62,6 +62,17 @@ function fdLibraryCol(col){
   return out;
 }
 
+/* Local view controls keep the same routes on desktop and phone. */
+function fdLibraryViews(view){
+  var out='<nav class="fd-library__views" aria-label="Library views">';
+  var views=[{id:'essentials',label:'Essentials'},{id:'full',label:'Everything'}];
+  for(var i=0;i<views.length;i++){
+    var item=views[i], active=item.id===view;
+    out+='<button type="button" class="fd-btn fd-btn--ghost'+(active?' is-active':'')+'" data-fd-library-view="'+item.id+'" aria-pressed="'+(active?'true':'false')+'">'+item.label+'</button>';
+  }
+  return out+'</nav>';
+}
+
 function fdLibrary(index){
   var idx=index||{columns:[]};
   var cols=idx.columns||[];
@@ -69,10 +80,10 @@ function fdLibrary(index){
   for(var c=0;c<cols.length;c++){ count+=(cols[c].items||[]).length; }
 
   var out='<section class="fd-library">';
-  out+='<div class="fd-library__head">';
   var hasEssentials=false;
   for(var e=0;e<(idx.essentials||[]).length;e++){ if((idx.essentials[e].items||[]).length) hasEssentials=true; }
-  if(hasEssentials) out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="essentials">← The Essentials</button>';
+  if(hasEssentials)out+=fdLibraryViews('full');
+  out+='<div class="fd-library__head">';
   out+='<h1 class="fd-library__h1">Everything, one screen</h1>';
   out+='<span class="fd-library__count">'+count+' pages<span class="fd-library__shortcut"> · press <span class="fd-kbd">/</span> to filter</span></span>';
   out+='</div>';
@@ -130,7 +141,7 @@ function fdEssentialsTeaching(resources){
 }
 function fdEssentials(index, opts){
   var idx=index||{columns:[],essentials:[]}, cols=idx.essentials||[];
-  var groups=[], tools=[], readings=0, pending=0, fullCount=0, all=idx.columns||[];
+  var groups=[], tools=[], readings=0, pending=0;
   /* Use the active Path's assignments, keyed by ref so repeated placements count once.
      The caller supplies the actual rotation week, never the week being browsed in Path. */
   var week=fdFindWeek(idx,opts&&opts.week), weekRefs=Object.create(null), weekCount=0;
@@ -150,11 +161,10 @@ function fdEssentials(index, opts){
     if(reads.length) groups.push({key:String(c),name:cols[c].name,items:reads,weekItems:weekReads});
   }
   if(!readings&&!tools.length) return fdLibrary(idx);
-  for(var f=0;f<all.length;f++) fullCount+=(all[f].items||[]).length;
   var selected=String(opts&&opts.kitSection||'all'), valid=selected==='all'||(selected==='tools'&&tools.length>0)||(selected==='week'&&weekCount>0);
   for(var v=0;v<groups.length;v++) if(groups[v].key===selected) valid=true;
   if(!valid) selected='all';
-  var out='<section class="fd-library fd-kit">';
+  var out='<section class="fd-library fd-kit">'+fdLibraryViews('essentials');
   out+='<div class="fd-library__head"><h1 class="fd-library__h1">Core readings</h1>'+
     '<span class="fd-library__count">'+readings+' readings · '+tools.length+' tools</span></div>';
   out+='<nav class="fd-kit__index" aria-label="Essentials sections"><div class="fd-kit__index-track">';
@@ -193,6 +203,6 @@ function fdEssentials(index, opts){
     out+=fdEssentialsTeaching(idx.teachingResources);
     out+='</aside>';
   }
-  out+='</div><div class="fd-library__footer"><button type="button" class="fd-btn fd-btn--ghost" data-fd-library-view="full">Everything ('+fullCount+' pages) →</button></div></section>';
+  out+='</div></section>';
   return out;
 }

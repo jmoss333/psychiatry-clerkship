@@ -1,4 +1,4 @@
-/* Today -- greeting, Continue card + ring, this-week list, daily pick, and the quick-tools /
+/* Today -- heading, Continue card + ring, this-week list, daily pick, and the quick-tools /
    safety-kit rail.
 
    Both the desktop rail (.fd-rail) and the mobile pill-chip row (.fd-quicktools--pills) for
@@ -12,12 +12,8 @@
    anymore -- a parameter a renderer ignores is a trap for whoever passes it.
 
    Pure: no DOM, no browser storage, no reading the system clock directly. "Now" arrives as
-   state.nowMs so the greeting and the exam countdown are testable without depending on when the
-   test happens to run -- see tests/fd-today.test.mjs. state.role and state.ringPct both arrive
-   pre-resolved by the caller: role is already the short display label the greeting interpolates
-   (this file never touches curriculum.json's role list to derive one from a full name, e.g.
-   "Core rotation"), and ringPct is already the current animated percentage (this file never
-   computes it from progress -- that is fdRingStep in fd_state.js). Injected via
+   state.nowMs so the day name and the exam countdown are testable without depending on when the
+   test happens to run -- see tests/fd-today.test.mjs. Injected via
    /*__FD_TODAY__*\/ once a later plan registers the marker (see SNIPPET_MARKERS in common.py) --
    this task does not register it. ES5 only: var/function, no const/let/arrow functions/template
    literals -- matches the other frontdoor/ modules.
@@ -75,8 +71,6 @@ var FD_TODAY_PRIMARY_ORDER=['resume','block','read','due','week','ahead','setup'
    learner and to every selector; fdTodayLive removes or replaces it. */
 var FD_TODAY_LEAD_END='<!--fd-lead-end-->';
 
-var FD_TODAY_WHY='First things first: anything you left unfinished, then reviews due, then this week. The rest is just below.';
-
 function fdTodayPrimaryHolds(kind, inp){
   var wp=inp.weekProgress||{};
   if(kind==='resume') return typeof inp.capsuleLeft==='number'&&inp.capsuleLeft>0;
@@ -116,8 +110,13 @@ function fdTodayLastRead(ref, weekItems, progress, doneMap){
     done:d[it.ref]===true, isContinueTarget:target===it.ref};
 }
 
-function fdTodayWhy(){
-  return '<p class="fd-primary__why">'+FD_TODAY_WHY+'</p>';
+/* The type chip, shared by the row and the Continue card. A reading is the default kind, so it
+   carries no chip -- its minutes say enough, and a "read" pill on every row was noise (2026-10-01
+   design pass). Only the exceptions are labelled: a tool, and a rights reference, which is
+   kind 'tool' but reads "reference". */
+function fdKindChip(it){
+  if(!it||it.kind!=='tool') return '';
+  return '<span class="fd-chip is-tool">'+(it.rights?'reference':'tool')+'</span>';
 }
 
 /* Shared week-item row -- CLASS-INVENTORY's Shared Components section (.fd-row, .fd-check,
@@ -157,12 +156,10 @@ function fdRow(it, idx, doneMap, compact){
   var on=(doneMap||{})[it.ref]===true;
   var titleCls=on?'fd-row__title is-done':'fd-row__title';
   var checkCls=on?'fd-check is-done':'fd-check';
-  var typeCls=(it.kind==='tool')?'fd-chip is-tool':'fd-chip';
   /* A rights reference reads "reference": the page teaches administration and points at the
      official form. Calling it a tool is what sent a learner reaching for a scorer to a removal
      notice. The chip is the only thing that changes -- kind stays 'tool' so the page still loads
      from /tools/. */
-  var typeLabel=it.rights?'reference':((it.kind==='tool')?'tool':'read');
   var minLabel=(it.kind!=='tool'&&typeof it.minutes==='number')?(it.minutes+' min'):'';
   var rowCls=compact?'fd-row is-compact':'fd-row';
   var editionMeta=fdEditionCoreMetaMarkup(it);
@@ -177,7 +174,7 @@ function fdRow(it, idx, doneMap, compact){
     '<button type="button" class="fd-row__open" data-fd-open="'+fdEsc(it.ref)+'">'+
       '<span class="fd-row__content"><span class="'+titleCls+'">'+fdEsc(it.title)+'</span>'+editionMeta+'</span>'+
       '<span class="fd-row__meta">'+
-        '<span class="'+typeCls+'">'+typeLabel+'</span>'+
+        fdKindChip(it)+
         '<span class="fd-row__min">'+fdEsc(minLabel)+'</span>'+
       '</span>'+
     '</button>'+
@@ -198,16 +195,13 @@ function fdContinue(index, state, wk, progress, primary){
   var suggested=index.path&&index.path.id==='ms3-six-week';
   var kickerCls=isComplete?'fd-continue__kicker is-complete':'fd-continue__kicker';
   var kickerText=isComplete?('Week '+fdEsc(state.week)+(suggested?' activities complete':' complete')):('Continue · Week '+fdEsc(state.week));
-  var ringPct=(typeof state.ringPct==='number'&&!isNaN(state.ringPct))?state.ringPct:0;
   var titleText, openAttrs, chip='', dockLabel='Continue';
   if(progress.next){
     titleText=progress.next.title;
     openAttrs=' data-fd-open="'+fdEsc(progress.next.ref)+'"'+
       (progress.next.kind==='read'?' data-fd-reading-resume="1"':'');
     /* Same chip rule as fdRow: a rights reference reads "reference", never "tool". */
-    var nx=progress.next;
-    chip='<span class="'+((nx.kind==='tool')?'fd-chip is-tool':'fd-chip')+'">'+
-      (nx.rights?'reference':((nx.kind==='tool')?'tool':'read'))+'</span>';
+    chip=fdKindChip(progress.next);
   } else {
     var nextWeek=fdNextWeek(index,state.week);
     var target=nextWeek?nextWeek.n:state.week;
@@ -220,12 +214,16 @@ function fdContinue(index, state, wk, progress, primary){
     if(done[wk.items[i].ref]!==true&&typeof wk.items[i].minutes==='number') leftMin+=wk.items[i].minutes;
   }
   var leftLabel=leftMin>0?('~'+leftMin+' min left'):'';
+  /* The week as segments, one per activity, filled from the left as they are done (2026-10-01
+     design pass). It replaces the "0%" ring: a percentage of a short list told the learner less
+     than the list's own shape does. Decorative -- the count beside it is the accessible text. */
+  var segs='';
+  for(var s=0;s<progress.total;s++){
+    segs+='<span class="fd-continue__seg'+(s<progress.done?' is-done':'')+'"></span>';
+  }
   var out='<button type="button" class="'+(isPrimary?'fd-continue':'fd-continue is-secondary')+'"'+openAttrs+
     (isPrimary?' data-fd-dock-source="primary-'+(isComplete?'ahead':'week')+'" data-fd-dock-label="'+dockLabel+'"':'')+'>'+
-    '<span class="fd-ring" style="--fd-ring-pct:'+ringPct+'%">'+
-      '<span class="fd-ring__inner">'+ringPct+'%</span>'+
-    '</span>'+
-    '<span>'+
+    '<span class="fd-continue__body">'+
       '<span class="'+kickerCls+'">'+kickerText+'</span>'+
       '<span class="fd-continue__title">'+fdEsc(titleText)+chip+' →</span>'+
     '</span>'+
@@ -233,6 +231,7 @@ function fdContinue(index, state, wk, progress, primary){
       '<span class="fd-continue__count">'+progress.done+' of '+progress.total+(suggested?' activities done':' done')+'</span>'+
       '<span class="fd-continue__left">'+leftLabel+'</span>'+
     '</span>'+
+    (segs?'<span class="fd-continue__segs" aria-hidden="true">'+segs+'</span>':'')+
   '</button>';
   /* Week complete AND primary: the look-ahead card leads, and a learner with time left wants
      questions, not a preview. A sibling, never nested -- a button inside a button is invalid
@@ -266,10 +265,20 @@ function fdPick(item){
 
 /* .fd-quicktool is the same element in the rail and in the pill row (CLASS-INVENTORY's ⚠) --
    this is the one function that renders it, called from both branches in fdToday. */
+/* A rail is ~250px wide, so a title with a subtitle after an em dash ("The Interview Room — AI
+   Standardized Patient") always truncated mid-word. The rail shows the part before the dash; the
+   full title stays on the button as its tooltip (2026-10-01 design pass). */
+function fdQuickToolLabel(title){
+  var t=String(title||''), cut=t.indexOf(' — ');
+  return cut>0?t.slice(0,cut):t;
+}
+
 function fdQuickToolBtn(it){
-  return '<button type="button" class="fd-quicktool" data-fd-open="'+fdEsc(it.ref)+'">'+
+  var label=fdQuickToolLabel(it.title);
+  return '<button type="button" class="fd-quicktool" data-fd-open="'+fdEsc(it.ref)+'"'+
+    (label!==it.title?' title="'+fdEsc(it.title)+'"':'')+'>'+
     '<span class="fd-quicktool__dot"></span>'+
-    '<span class="fd-quicktool__label">'+fdEsc(it.title)+'</span>'+
+    '<span class="fd-quicktool__label">'+fdEsc(label)+'</span>'+
   '</button>';
 }
 
@@ -278,7 +287,6 @@ function fdQuickToolBtn(it){
    way it does on .fd-safetybtn -- same attribute, reused rather than inventing a second one. */
 function fdKitCard(k){
   return '<button type="button" class="fd-kitcard" data-fd-safety="'+fdEsc(k.item.ref)+'">'+
-    '<span class="fd-kitcard__dot"></span>'+
     '<span style="flex:1;min-width:0">'+
       '<span class="fd-kitcard__title">'+fdEsc(k.item.title)+'</span>'+
       '<span class="fd-kitcard__sub">'+fdEsc(k.sub)+'</span>'+
@@ -377,18 +385,18 @@ function fdToday(index, state){
   var st=state||{};
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
   var nowMs=st.nowMs;
-  var hour=new Date(nowMs).getHours();
   var dayName=FD_TODAY_DAYNAMES[new Date(nowMs).getDay()];
-  var period=hour<12?'Good morning':(hour<18?'Good afternoon':'Good evening');
   /* No trailing em dash. The prototype's "Evening, Alex —" led into the line below with a dash
      after a NAME; with a role label the same dash read as a truncated sentence ("Evening, Core
      rotation —"), and at 375px it wrapped onto a line of its own (2026-09-18 critique). It had
      already been made aria-hidden so a screen reader stopped announcing "dash"; now it is gone
      for sighted readers too. The subhead below carries the week and the day. */
   /* 2026-09-26: no role label either. "Afternoon, Core rotation" addressed the learner by the
-     name of a rotation and wrapped to two lines on a phone; "Good afternoon" reads as a greeting on
-     both sites, and the subhead still names the week and the day. */
-  var greeting=period;
+     name of a rotation and wrapped to two lines on a phone.
+     2026-10-01: no greeting at all. "Good evening" was the largest text on the page and told the
+     learner nothing; the week's theme is the most specific fact in their day, so it is the
+     heading, and the subhead places it ("Week 2 of 6 · Thursday"). Without a week the heading is
+     plainly "Today". */
 
   var wk=(typeof st.week==='number'&&!isNaN(st.week))?fdFindWeek(idx, st.week):null;
   var hasWeek=!!wk;
@@ -396,8 +404,10 @@ function fdToday(index, state){
   var done=fdProgressForWeek(idx,st,st.week);
   var progress=fdTodayProgress(wItems, done);
 
+  var heading=hasWeek?fdEsc(wk.title):'Today';
+  var weekCount=(idx.weeks&&idx.weeks.length)||0;
   var sub=hasWeek
-    ?('Week '+fdEsc(st.week)+' · '+fdEsc(wk.title)+' · '+dayName)
+    ?('Week '+fdEsc(st.week)+(weekCount>=st.week?' of '+weekCount:'')+' · '+dayName)
     :(dayName+' · browsing — no week set');
   /* fdExamCountdown returns a bare fragment -- its separator dot included, its leading space NOT
      ('· exam in ~5 days'). The caller owns the join, so it must supply that space: concatenating the fragment
@@ -416,7 +426,7 @@ function fdToday(index, state){
   if(countdown) sub+=' '+countdown;
 
   var out='<section class="fd-today">';
-  out+='<h1 class="fd-today__h1">'+greeting+'</h1>';
+  out+='<h1 class="fd-today__h1">'+heading+'</h1>';
   out+='<p class="fd-today__sub">'+sub+'</p>';
   out+=fdPilotFeedback();
   out+=fdConsistency(st.activityDays, nowMs);
@@ -477,9 +487,11 @@ function fdToday(index, state){
      Safety button outranks the gear/search/tab controls -- so the rail reads as an extension of
      that button rather than a tools list with safety tacked on the end (2026-09-26). */
   out+='<aside class="fd-rail">';
-  out+='<div><h2 class="fd-sectionhead">Safety kit</h2>';
+  /* One panel, one red rule, quiet rows (2026-10-01 design pass): five separately bordered red
+     cards competed with each other, so none of them read as the one to grab. */
+  out+='<div><h2 class="fd-sectionhead">Safety kit</h2><div class="fd-railkit">';
   for(var k=0;k<idx.kit.length;k++){ out+=fdKitCard(idx.kit[k]); }
-  out+='</div>';
+  out+='</div></div>';
   out+='<div><h2 class="fd-sectionhead">Quick tools</h2>';
   for(var q2=0;q2<quickTools.length;q2++){ out+=fdQuickToolBtn(quickTools[q2]); }
   out+='</div>';

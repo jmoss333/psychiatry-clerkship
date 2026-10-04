@@ -2015,14 +2015,28 @@
     }).catch(function(){conceptDueState={status:'unavailable',releasedIds:null};})
       .then(function(){if(typeof specialRefresh==='function')specialRefresh();});
   }
+  /*__RX_RETRIEVAL__*/
+  /* RX# cards are released per drug: a drug leaves pharmacy_public.json the moment its faculty
+     review stops matching its text, and its scheduled cards must stop counting with it (the
+     "Due today counts cards nothing can serve" defect class). So an RX# card counts only once
+     the feed has loaded AND still carries it; until then, none do. */
+  var rxDueState={status:'checking',releasedIds:null};
+  function loadRxDue(){
+    rxDueState={status:'checking',releasedIds:null};
+    return fetch('pharmacy_public.json').then(function(r){if(!r.ok)throw Error('pharmacy feed unavailable');return r.json();})
+      .then(rxVerifiedPublic).then(function(data){
+        rxDueState={status:'ready',releasedIds:new Set(rxRecallCards(data).map(function(c){return c.id;}))};
+      }).catch(function(){rxDueState={status:'unavailable',releasedIds:null};})
+      .then(function(){if(typeof specialRefresh==='function')specialRefresh();});
+  }
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
   /* Daily Review's landmark-deck cards are `<deck id>#<question index>` and every deck id in
      quizzes.json is AR-<n> or SP-<n> (review.html builds the id; tests/srs-home-counters pins
      the shape against the real file). Until 2026-09-24 this matched a `deck#` prefix nothing
      writes, so every real deck card fell into `other` and vanished from timed blocks. */
   var SRS_DECK_CARD=/^(?:AR|SP)-\d+#\d+$/;
-  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(SRS_DECK_CARD.test(id))return 'landmark'; if(id.indexOf('CONCEPT#')===0||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
-  function dueBreakdown(releasedIds){ if(arguments.length===0)releasedIds=typeof conceptDueState!=='undefined'?conceptDueState.releasedIds:null; var eligible=releasedIds instanceof Set?Array.from(releasedIds).map(function(id){return {id:id};}):null; var s=srsState(),b={daily:{due:0,overdue:0},landmark:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},comm:{due:0,overdue:0},reason:{due:0,overdue:0},other:{due:0,overdue:0}}; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ if(id.indexOf('CONCEPT#')===0&&!conceptIdEligible(id,eligible))continue; var k=srsBucket(id); if(k==='qb'&&!qbRecordServable(id.slice(3)))continue; b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } b.conceptStatus=releasedIds instanceof Set?'ready':(typeof conceptDueState!=='undefined'&&conceptDueState.status==='unavailable'?'unavailable':'checking'); return b; }
+  function srsBucket(id){ if(id.indexOf('QB#')===0)return 'qb'; if(id.indexOf('FAM#')===0)return 'fam'; if(id.indexOf('COMM#')===0)return 'comm'; if(id.indexOf('REASON#')===0)return 'reason'; if(id.indexOf('RX#')===0)return 'rx'; if(SRS_DECK_CARD.test(id))return 'landmark'; if(id.indexOf('CONCEPT#')===0||id.indexOf('TOPIC#')===0)return 'daily'; return 'other'; }
+  function dueBreakdown(releasedIds){ if(arguments.length===0)releasedIds=typeof conceptDueState!=='undefined'?conceptDueState.releasedIds:null; var eligible=releasedIds instanceof Set?Array.from(releasedIds).map(function(id){return {id:id};}):null; var s=srsState(),b={daily:{due:0,overdue:0},landmark:{due:0,overdue:0},qb:{due:0,overdue:0},fam:{due:0,overdue:0},comm:{due:0,overdue:0},reason:{due:0,overdue:0},rx:{due:0,overdue:0},other:{due:0,overdue:0}}; var rxReleased=(typeof rxDueState!=='undefined'&&rxDueState.releasedIds instanceof Set)?rxDueState.releasedIds:null; if(s&&s.cards){ var now=Date.now(),sod=new Date();sod.setHours(0,0,0,0); for(var id in s.cards){ var c=s.cards[id]; if(c&&c.due<=now){ if(id.indexOf('CONCEPT#')===0&&!conceptIdEligible(id,eligible))continue; var k=srsBucket(id); if(k==='rx'&&!(rxReleased&&rxReleased.has(id)))continue; if(k==='qb'&&!qbRecordServable(id.slice(3)))continue; b[k].due++; if(c.due<sod.getTime())b[k].overdue++; } } } b.conceptStatus=releasedIds instanceof Set?'ready':(typeof conceptDueState!=='undefined'&&conceptDueState.status==='unavailable'?'unavailable':'checking'); return b; }
   function dueCount(){ var b=dueBreakdown(); return {due:b.daily.due+b.landmark.due,overdue:b.daily.overdue+b.landmark.overdue}; }
   /* ---- end due breakdown ---- */
   function navScan(){ var p=(typeof progLoad==='function')?progLoad():{}, meta=(typeof TOPIC_META!=='undefined')?TOPIC_META:{}, hy=[],cov={}, cols=(typeof FD_INDEX!=='undefined'&&FD_INDEX.columns)||[]; for(var c=0;c<cols.length;c++){ var sec=cols[c].name||'', items=cols[c].items||[]; for(var i=0;i<items.length;i++){ var it=items[i]; if(!it)continue; if(it.kind==='read'){ if(!cov[sec])cov[sec]={done:0,tot:0}; cov[sec].tot++; if(p[it.ref]&&p[it.ref].done)cov[sec].done++; } if(meta[it.ref]&&meta[it.ref].hy&&!(p[it.ref]&&p[it.ref].done))hy.push({f:it.ref,t:it.title,sec:sec}); } } return {hy:hy,cov:cov}; }
@@ -2420,7 +2434,7 @@
      via the shared block store, and the weakest blueprint area is re-derived from mastery each
      render so the plan follows the learner's actual misses. */
   var fdBlockMinutes=10;
-  var fdTodayPurposeId='',fdTodayPurposeOpen=false;
+  var fdTodayPurposeId='',fdTodayPurposeOpen=true,fdTodayPlannerOpen=false;
   function fdWeakestCategory(){
     try{
       var rows=masteryByBlueprint(), best=null;
@@ -2533,8 +2547,6 @@
       :{checklist:{},resources:{}};
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
-    var wk=fdItemsForWeek(FD_INDEX,out.week), progress=fdTodayProgress(wk,fdProgressDoneMap(raw,FD_INDEX,out.week));
-    out.ringPct=progress.pct;
     return out;
   }
 
@@ -2596,6 +2608,8 @@
     if(!facultyPreviewRequest){
       var blockResume=(blockStatus&&sess&&fdBlockResumeSearch(blockStatus.next,sess))?{left:fdCapsuleLeft(sess),n:blockStatus.next.n}:null;
       blockHtml=fdBlockCard(liveBlock?null:fdBlockPlan(FD_INDEX,liveForBlock,fdBlockMinutes,fdBlockInputs()),fdBlockMinutes,liveBlock,liveForBlock.done,{primary:primary.kind==='block',resume:blockResume});
+      /* Only an unstarted plan is optional; live work always stays exposed. */
+      if(!liveBlock)blockHtml='<details class="fd-study-planner"'+(fdTodayPlannerOpen?' open':'')+'><summary data-today-planner-toggle>Plan a study block <span>5, 10 or 20 minutes</span></summary>'+blockHtml+'</details>';
       captureHtml=fdCaptureTriage(fdCaptureRows());
     }
     var cards={
@@ -2610,9 +2624,9 @@
       else also+=cards[order[i]];
     }
     also+=captureHtml;
-    if(!facultyPreviewRequest)also+=fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
-    var rest=fdTodayWhy()+'<h2 class="fd-sectionhead fd-also">Also today</h2>'+also;
-    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+lead+offlineHtml+rest);
+    var purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
+    var rest='<h2 class="fd-sectionhead fd-also">Also today</h2>'+(primary.kind==='block'?'':purposeHtml)+also;
+    if(lead) return html.replace(FD_TODAY_LEAD_END,'').replace('<div class="fd-today__main">','<div class="fd-today__main">'+(primary.kind==='block'?purposeHtml:'')+lead+offlineHtml+rest);
     return html.replace(FD_TODAY_LEAD_END,offlineHtml+rest);
   }
 
@@ -2639,7 +2653,8 @@
        focus transitions. Match the old action, never an arbitrary button or a page control. */
     var active=document.activeElement, focusSelector=null;
     if(preserveFocus&&!state.searchOpen&&!state.sheet&&active&&fdDockMount.contains(active)){
-      var attrs=['data-fd-dock-forward','data-fd-tab','data-capture-open'];
+      if(active.matches&&active.matches('.fd-dock__browse summary'))focusSelector='.fd-dock__browse summary';
+      var attrs=['data-fd-dock-forward','data-fd-tab','data-capture-open','data-fd-dock-browse-go'];
       for(var i=0;i<attrs.length;i++){
         var value=active.getAttribute(attrs[i]);
         if(value!==null&&!/["\\]/.test(value)){focusSelector='['+attrs[i]+'="'+value+'"]';break;}
@@ -2649,11 +2664,12 @@
        Reuse the utility controls, including Capture's live expanded state, without focusing
        them while an overlay owns focus. The route/context controls still refresh normally. */
     var utilities=['[data-capture-open]'], retained=[];
-    /* The Browse menu's Search item opened the search dialog, so it is that dialog's opener:
+    /* Same-route hydration preserves the Library disclosure and its focused item.
+       Its Search item also remains the search dialog's opener:
        keep its whole open disclosure across hydration while search is open, exactly as the
        retired dock Search button was kept, so closing the dialog returns focus to a visible
        dock control instead of a re-rendered item hidden inside a closed <details>. */
-    if(state.searchOpen)utilities.push('.fd-dock__browse');
+    if(state.searchOpen||preserveFocus)utilities.push('.fd-dock__browse');
     for(var j=0;j<utilities.length;j++)retained[j]=fdDockMount.querySelector(utilities[j]);
     fdDockMount.innerHTML=fdDock(live);
     for(var k=0;k<utilities.length;k++){
@@ -2661,7 +2677,7 @@
       if(retained[k]&&replacement)replacement.parentNode.replaceChild(retained[k],replacement);
     }
     if(!state.openId){
-      var current=fdDockMount.querySelector('[data-fd-tab="'+state.tab+'"]');
+      var current=fdDockMount.querySelector(state.tab==='library'?'.fd-dock__browse summary':'[data-fd-tab="'+state.tab+'"]');
       if(current)current.setAttribute('aria-current','page');
     }
     var successor=focusSelector&&fdDockMount.querySelector(focusSelector);
@@ -2877,7 +2893,7 @@
     if(contentEl){ fdDisposeReadingPlace(); fdDisposeGuide(); contentEl.className='fd-main'; contentEl.innerHTML=fdBaseMarkup(state); }
     fdPatchToolLayout(state);
     fdRenderCapture(state);
-    fdRenderDock(state);
+    fdRenderDock(state,!!hydrate);
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);
@@ -3192,8 +3208,10 @@
       fdTodayPurposeId=purposeId;fdTodayPurposeOpen=purposeId!=='';specialRefresh();
       var purposeFocus=contentEl.querySelector(purposeId?'[data-today-purpose="'+purposeId+'"]':'[data-today-purpose-toggle]');if(purposeFocus)purposeFocus.focus();return;
     }
+    el=target.closest&&target.closest('[data-today-planner-toggle]');
+    if(el){event.preventDefault();if(facultyPreviewRequest)return;fdTodayPlannerOpen=!fdTodayPlannerOpen;specialRefresh();var plannerToggle=contentEl.querySelector('[data-today-planner-toggle]');if(plannerToggle)plannerToggle.focus();return;}
     el=target.closest&&target.closest('[data-today-planner]');
-    if(el){event.preventDefault();if(facultyPreviewRequest)return;var planner=contentEl.querySelector('.fd-block');var plannerFocus=planner&&(planner.querySelector('[data-block-minutes][aria-pressed="true"]')||planner.querySelector('[data-block-continue]')||planner.querySelector('button'));if(plannerFocus){plannerFocus.scrollIntoView({block:'center'});plannerFocus.focus();}return;}
+    if(el){event.preventDefault();if(facultyPreviewRequest)return;fdTodayPlannerOpen=true;specialRefresh();var planner=contentEl.querySelector('.fd-block');var plannerFocus=planner&&(planner.querySelector('[data-block-minutes][aria-pressed="true"]')||planner.querySelector('[data-block-continue]')||planner.querySelector('button'));if(plannerFocus){plannerFocus.scrollIntoView({block:'center'});plannerFocus.focus();}return;}
     el=target.closest&&target.closest('[data-block-minutes]');
     if(el){event.preventDefault();var bm=parseInt(el.getAttribute('data-block-minutes'),10);if(bm===5||bm===10||bm===20){fdBlockMinutes=bm;specialRefresh();}return;}
     el=target.closest&&target.closest('[data-block-start]');
@@ -3658,6 +3676,7 @@
   fdEditionBootState='started';
   fdSyncOfflineVisit(fdController.getState());
   loadConceptDue();
+  loadRxDue();
   return {ok:true,code:'STARTED'};
   }
 
