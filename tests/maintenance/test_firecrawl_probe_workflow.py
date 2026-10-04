@@ -48,12 +48,31 @@ class ProbeWorkflow(unittest.TestCase):
 
     def test_probe_cannot_recover_or_raise_production_escalation(self):
         probe, _ = V._load(ROOT, 'surveillance-firecrawl.yml', [])
-        self.assertEqual(probe['run-name'], "${{ inputs.comparison_probe && 'Firecrawl comparison probe' || 'Firecrawl faculty collection' }}")
+        self.assertEqual(probe['run-name'], "${{ inputs.comparison_probe && 'Firecrawl comparison probe' || 'Surveillance — Firecrawl Faculty Review' }}")
         escalation, _ = V._load(ROOT, 'automation-failure-escalation.yml', [])
         condition = escalation['jobs']['escalate']['if']
         self.assertIn("github.event.workflow_run.name == 'Surveillance — Firecrawl Faculty Review'", condition)
         self.assertIn("github.event.workflow_run.display_title == 'Firecrawl comparison probe'", condition)
         self.assertIn("&& !(", condition)
+
+    def test_live_event_name_is_excluded_but_regular_collector_is_not(self):
+        escalation, _ = V._load(ROOT, 'automation-failure-escalation.yml', [])
+        condition = escalation['jobs']['escalate']['if']
+        def permitted(name, title, conclusion):
+            expression = condition
+            for field, value in {'name': name, 'display_title': title, 'conclusion': conclusion}.items():
+                expression = expression.replace('github.event.workflow_run.' + field, repr(value))
+            expression = expression.replace('&&', ' and ').replace('||', ' or ').replace('!(', 'not (')
+            return eval(expression, {'__builtins__': {}}, {})
+        regular = 'Surveillance — Firecrawl Faculty Review'
+        probe = 'Firecrawl comparison probe'
+        for conclusion in ('success', 'failure'):
+            # Observed workflow_run payload for live run 37243735436.
+            self.assertFalse(permitted(probe, probe, conclusion))
+            self.assertFalse(permitted(regular, probe, conclusion))
+            self.assertTrue(permitted(regular, regular, conclusion))
+            self.assertTrue(permitted('Other workflow', 'Other workflow', conclusion))
+        self.assertFalse(permitted(regular, regular, 'cancelled'))
 
 if __name__ == '__main__':
     unittest.main()
