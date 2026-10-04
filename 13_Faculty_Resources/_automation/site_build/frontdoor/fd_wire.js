@@ -219,6 +219,30 @@ function fdResolveState(url, stored, options){
   return out;
 }
 
+/* Preparation choices are visit context, never answers or durable learning state. */
+function fdPrepareSelection(data){
+  if(!data||typeof data!=='object'||Array.isArray(data))return null;
+  if(Object.keys(data).sort().join(',')!=='minutes,task,type'||data.type!=='prepare-selection')return null;
+  if(data.task!=='interview'&&data.task!=='rounds'&&data.task!=='note')return null;
+  if(data.minutes!==5&&data.minutes!==15)return null;
+  return {task:data.task,minutes:data.minutes};
+}
+function fdPrepareSelectionRoute(search,selection){
+  if(!selection||Object.keys(selection).sort().join(',')!=='minutes,task'||
+      !fdPrepareSelection({type:'prepare-selection',task:selection.task,minutes:selection.minutes}))return null;
+  var params=new URLSearchParams(String(search||'').replace(/^\?/,'')),tools=params.getAll('tool');
+  if(tools.length!==1||tools[0]!=='prepare-for-tomorrow.html'||params.has('page'))return null;
+  ['prepareTask','prepareMinutes','block','n','limit','cat','resume'].forEach(function(key){params.delete(key);});
+  params.set('prepareTask',selection.task);params.set('prepareMinutes',String(selection.minutes));
+  return '?'+params.toString();
+}
+function fdPrepareFrameParams(search){
+  var params=new URLSearchParams(String(search||'').replace(/^\?/,'')),task=params.getAll('prepareTask'),minutes=params.getAll('prepareMinutes');
+  if(task.length!==1||minutes.length!==1||(minutes[0]!=='5'&&minutes[0]!=='15'))return '';
+  if(!fdPrepareSelection({type:'prepare-selection',task:task[0],minutes:Number(minutes[0])}))return '';
+  return 'prepareTask='+task[0]+'&prepareMinutes='+minutes[0];
+}
+
 function fdParamsWithoutRoute(search){
   var params;
   try{ params=new URLSearchParams(String(search||'').replace(/^\?/,'')); }
@@ -230,6 +254,7 @@ function fdParamsWithoutRoute(search){
   /* Passage context belongs to the current reading, never the next activity iframe. */
   params.delete('guideFind');
   params.delete('guideSection');
+  params.delete('prepareTask');params.delete('prepareMinutes');
   return params;
 }
 
@@ -246,7 +271,7 @@ function fdSearchOutsideBlock(search){
   params.delete('lane');
   params.delete('focus');
   if(params.has('block')){
-    params.delete('block'); params.delete('n'); params.delete('limit'); params.delete('cat');
+    params.delete('block'); params.delete('n'); params.delete('limit'); params.delete('cat'); params.delete('resume');
   }
   return params.toString();
 }
@@ -263,6 +288,10 @@ function fdRouteForRef(ref, search, blockNavigation, origin, reviewNavigation){
   var key=/\.html$/.test(String(ref||''))?'tool':'page';
   var params=fdParamsWithoutRoute(blockNavigation===true?search:fdSearchOutsideBlock(search));
   var previous=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  if(ref==='prepare-for-tomorrow.html'){
+    var preparation=new URLSearchParams(fdPrepareFrameParams(search));
+    preparation.forEach(function(value,key){params.set(key,value);});
+  }
   /* A deliberate Review deep link carries its lane and companion focus. Other Front Door
      navigation clears them, so a later ordinary visit starts in the default Review lane. */
   if(ref==='review.html'&&reviewNavigation===true){
@@ -837,7 +866,7 @@ function fdClearDeviceData(store){
 
 function fdResourceRequest(ref, search){
   var r=String(ref||''), kind=/\.html$/.test(r)?'tool':'read';
-  var params=fdParamsWithoutRoute(search);
+  var params=ref==='prepare-for-tomorrow.html'?new URLSearchParams(fdPrepareFrameParams(search)):fdParamsWithoutRoute(search);
   var toolExtra='';
   if(kind==='tool'){
     if(typeof toolExtraFromParams==='function') toolExtra=toolExtraFromParams(params);
@@ -1406,6 +1435,13 @@ function fdWire(root, initialState, opts){
   function historyValue(){
     try{ return JSON.stringify(historySnapshot().state); }
     catch(_){ return ''; }
+  }
+  function replacePrepareSelection(selection){
+    if(destroyed||!startupCommitted||previewActive()||state.openId!=='prepare-for-tomorrow.html'||!win||!win.location||!win.history||!win.history.replaceState)return false;
+    var query=fdPrepareSelectionRoute(win.location.search,selection);
+    if(!query)return false;
+    try{win.history.replaceState(win.history.state,'',(win.location.pathname||'/')+query);return true;}
+    catch(ignorePrepareHistory){return false;}
   }
   function replaceHistorySnapshot(){
     if(!win||!win.history||!win.history.replaceState) return false;
@@ -2434,6 +2470,7 @@ function fdWire(root, initialState, opts){
     return {
       ok:ok===true,
       getState:function(){ return state; },
+      replacePrepareSelection:replacePrepareSelection,
       dispatch:function(attrs,c){
         if(destroyed||!startupCommitted) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);

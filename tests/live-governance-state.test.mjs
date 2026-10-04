@@ -185,6 +185,11 @@ const REGISTRY = Object.freeze({
     why: 'Derives a test bank guaranteed to hold attested, draft and retired items from the shipped one and '
       + 'serves it with page.route (#903). Playwright, so not rehearsed here.',
   },
+  'tests/smoke/prepare-for-tomorrow.spec.js': {
+    kind: 'fixture',
+    why: 'Reads the served ledger, then serves controlled pending/reviewed states or aborts the request; '
+      + 'no assertion depends on the faculty queue. Playwright, so not rehearsed here.',
+  },
   'tests/smoke/governance-warnings.spec.js': {
     kind: 'skips-visibly',
     detected: false,

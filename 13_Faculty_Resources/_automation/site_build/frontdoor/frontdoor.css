@@ -2104,6 +2104,12 @@
 .fd-purpose__note,.fd-purpose__reason{font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid);overflow-wrap:anywhere}
 .fd-purpose>.fd-btn{white-space:normal;max-width:100%;overflow-wrap:anywhere}
 
+/* Optional preparation: ordinary action, below the primary work. */
+.fd-prepare{margin-block:var(--fd-space-6);padding:var(--fd-space-6);border:1px solid var(--fd-line);border-radius:var(--fd-radius-md);background:var(--fd-surface-warm)}
+.fd-prepare__title{margin:0 0 var(--fd-space-2);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-lg);color:var(--fd-text)}
+.fd-prepare__copy{margin:0 0 var(--fd-space-4);color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5}
+.fd-prepare .fd-btn{color:var(--fd-teal-deep);margin:0}
+
 /* Today: disclose new study planning while keeping unfinished work visible. */
 .fd-study-planner{margin:var(--fd-space-5) 0;border-bottom:1px solid var(--fd-line)}
 .fd-study-planner>summary{min-height:var(--fd-target-touch);align-content:center;cursor:pointer;font-size:var(--fd-font-md);font-weight:600;color:var(--fd-text)}

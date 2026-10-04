@@ -314,6 +314,13 @@ class DeriveTests(unittest.TestCase):
             # Retired with the welcome/orientation videos on 2026-09-25.
             self.assertNotIn("orientation-video.html", pages)
 
+    def test_preparation_is_declared_once_for_ms3(self):
+        pages = [p for p in shipped_pages.derive(ROOT)["pages"] if p["slug"] == "prepare-for-tomorrow.html"]
+        self.assertEqual(len(pages), 1)
+        self.assertEqual(pages[0]["kind"], "tool")
+        self.assertEqual(pages[0]["sites"], ["ms3"])
+        self.assertEqual(pages[0]["source"], "14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html")
+
     def test_an_ms3_only_extra_derives_as_an_ms3_only_tool(self):
         # MS3_EXTRA_TOOLS is empty today, so inject one: the producer must still place an
         # MS3-only tool on the MS3 site alone, under its own producer name.

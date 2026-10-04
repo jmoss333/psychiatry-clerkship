@@ -1303,7 +1303,7 @@ class EssentialsTest(unittest.TestCase):
             result = _run(cpath, ROOT, os.path.join(ROOT, "topic_meta.json"),
                           os.path.join(ROOT, "evidence_registry.json"))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        for site, count in (("ms3", 30), ("resident", 35)):
+        for site, count in (("ms3", 31), ("resident", 35)):
             refs = [ref for section in curriculum["essentials"][site]
                     for ref in section["refs"]]
             placed = {ref for column in curriculum["libraryColumns"] for ref in column["refs"]}

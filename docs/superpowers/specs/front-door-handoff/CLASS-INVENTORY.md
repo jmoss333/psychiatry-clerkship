@@ -3,7 +3,7 @@
 The complete contract between `frontdoor.css` and the markup that tasks 3–9 emit.
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(543 distinct `fd-*` selector names, 28 `is-*` state classes). Every class below has a rule in that file unless
+(546 distinct `fd-*` selector names, 28 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
@@ -252,6 +252,10 @@ ancestor; there is no modifier class for it.
           .fd-continue__seg(.is-done) ×N   one per activity, filled from the left
       .fd-setupcta    <button>         (alternative to .fd-continue when no week is set)
         .fd-setupcta__kicker / .fd-setupcta__title
+      .fd-prepare     <section>        optional MS3 tool invitation after the lead-end marker/runtime daily rows
+        .fd-prepare__title <h2>        canonical item title
+        .fd-prepare__copy <p>          task and 5/15-minute choice
+        governanceBadge(compact)       ordinary review status; one .fd-btn--ghost[data-fd-open]
       .fd-offline     <section>        compact Offline availability disclosure after the primary action
         .fd-offline__open <button>      status plus aria-expanded
         .fd-offline__details            in-flow, hidden until opened
@@ -286,6 +290,7 @@ ancestor; there is no modifier class for it.
 | `.fd-quicktool` (label) | `fdQuickToolLabel` shows the title before its ` — ` subtitle ("The Interview Room"), and the full title rides on the button as `title` (2026-10-01). |
 | `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
 | `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
+| `.fd-prepare`, `.fd-prepare__title`, `.fd-prepare__copy` | Optional preparation invitation, emitted only for the resolved known tool item. Uses warm surface, neutral hairline and ordinary teal action; it stays below primary and runtime daily work, with one existing `data-fd-open` route. It introduces no primary rule, durable state or nested scrolling. |
 | `.fd-pilot` | Shared active-testing invitation (2026-09-21). Its `.fd-pilot__button` uses the existing `.pgfb-b` launcher and adds `data-fb-context="Today landing page"`; no second form or submission channel is introduced. |
 | `.fd-offline` | One in-flow cache receipt after Today's actual primary card, or immediately after the APP's marked primary resource inside its starting-route resources or selected task's Prepare links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
 | `.fd-today__exam` | Today's exam-date nudge, after the primary action (and the offline availability receipt when present), before the week list. Rendered only on the path that ends in an exam and only until a parseable date is stored (`fdExamDatePrompt`, `fd_state.js`). The date has exactly one home, the settings panel's Pacing field (`.fd-set__date`, `fd_sheet.js`) — this nudge carries no field of its own. `.fd-today__examcta` reopens Settings via the SAME `data-fd-settings` action the gear exposes: a second *trigger* for one action, not a second action. It does not disappear on its own — closing the field's `change` handler only sets `baseStale` (`fd_wire.js`); Today's base render, this nudge included, is rebuilt the next time `absorbStaleBase` finds that flag set, which is exactly when the panel closes (`data-fd-close-sheet` always touches `sheet`, a base-triggering settlement). That render destroys the CTA along with the rest of the stale Today markup, so `restoreInvoker` finds it disconnected and falls back to `equivalentControl` — any live control sharing the same action attribute and value, i.e. the gear — needing no bespoke focus-restore code of its own. (2026-09-26 — previously this duplicated the panel's own `<input type=date>` inline and deliberately avoided `data-fd-settings` for this same reason, before this settle-on-close path was confirmed to cover it.) |
@@ -609,13 +614,15 @@ this subtree:
           .fd-kit__tool-tabs [role=tablist]
             .fd-kit__tool-tab <button role=tab> ×N
           .fd-kit__tool-preview [role=tabpanel]
-            h3 / p / .fd-btn[data-fd-open]
+            h3 / p / governanceBadge(compact) / .fd-btn[data-fd-open]
       .fd-kit__teaching                  (external teaching companion)
         h3
         .fd-teachinglink <a>
           .fd-teachinglink__title / .fd-teachinglink__description
         .fd-teachinglink__note
 ```
+
+The selected `.fd-kit__tool-preview` includes the shared compact governance badge after its title/hint and before its single launch button. Its status follows the resolved item, including pending preparation content; tool selection remains transient.
 
 At 1000px and wider, `.fd-kit__layout` is a 3:1 readings/tool-rail grid. Below 1000px the
 readings and tools stack in document order: **readings first, at every width** (2026-09-26). The tool

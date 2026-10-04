@@ -1,6 +1,7 @@
 # Connected learning preview
 
-Base inspected: `66785d0` (main, 2026-10-04 UTC). Preview only; no production publish.
+Initial base inspected: `66785d0` (main, 2026-10-04 UTC). Synchronized with `d6ae706`
+after preparation #958 and dose-guard #965 merged. Preview only; no production publish.
 
 The learning workspace connects Today, Library and the existing Path while retaining the
 current primary-action priority, routing, preparation disclosure and device-local state.
@@ -43,7 +44,7 @@ visual emphasis is on that path and the reading titles, not decorative metrics.
 
 Inspected overlapping work: #941 pharmacy page (excluded); #949 mobile title cleanup and
 historical prototype; #951 single-file tool colors (excluded); #958 preparation/Case Journeys
-(excluded; no unmerged code imported). Original checkout and its dirty files remain untouched.
+(subsequently merged into main and preserved during synchronization; no unmerged code imported). Original checkout and its dirty files remain untouched.
 No clinical text, signatures, governance hashes, rights notices, registry or policy changes.
 
 ## Validation plan

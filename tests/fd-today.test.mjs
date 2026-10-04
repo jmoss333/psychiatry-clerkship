@@ -13,7 +13,7 @@ const todaySrc = read('frontdoor/fd_today.js');
 const frontdoorCss = read('frontdoor/frontdoor.css');
 
 // eslint-disable-next-line no-new-func
-const make = new Function(`
+const make = (governanceBadge) => new Function('governanceBadge', `
   ${read('phase_policy.js')}
   ${read('frontdoor/fd_state.js')}
   ${read('frontdoor/fd_data.js')}
@@ -26,7 +26,7 @@ const make = new Function(`
            FD_TODAY_PRIMARY_ORDER: FD_TODAY_PRIMARY_ORDER, FD_TODAY_LEAD_END: FD_TODAY_LEAD_END,
            fdQuickTools: fdQuickTools, fdTodayPathMap: fdTodayPathMap,
            FD_QUICKTOOLS_PREFERRED: FD_QUICKTOOLS_PREFERRED };
-`);
+`)(governanceBadge || function(){return "";});
 const F = make();
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
@@ -808,4 +808,18 @@ test('Today path map previews actual weeks without assigning progress or changin
   const browsing = F.fdTodayPathMap(pathIndex, s({week:null}));
   assert.doesNotMatch(browsing, /aria-current|is-current/);
   assert.equal(F.fdTodayPathMap({weeks:[]}, {}), '');
+});
+
+test('preparation is a single optional Today action at every week, with honest fixture status',()=>{
+ const prep={ref:'prepare-for-tomorrow.html',kind:'tool',title:'Prepare for tomorrow',governance:{status:'pending',riskKind:'clinical',riskLevel:'moderate'}};
+ for(const week of [null,1,6]) for(const status of ['pending','reviewed']) {
+   const item={...prep,governance:{...prep.governance,status}}, idx={...IDX,byRef:{...IDX.byRef,[prep.ref]:item}};
+   const G=make(g=>'<span class="fixture-badge">'+g.status+'</span>');
+   const html=G.fdToday(idx,s({week}));
+   assert.equal((html.match(/class="fd-prepare"/g)||[]).length,1);
+   assert.match(html,/data-fd-open="prepare-for-tomorrow.html"/);assert.match(html,/Choose a task and prepare in 5 or 15 minutes/);assert.ok(html.includes(status));
+   assert.ok(html.indexOf('class="fd-prepare"')>html.indexOf(F.FD_TODAY_LEAD_END));
+   assert.deepEqual(G.FD_TODAY_PRIMARY_ORDER,F.FD_TODAY_PRIMARY_ORDER);
+ }
+ assert.doesNotMatch(F.fdToday(IDX,s({week:null})),/class="fd-prepare"/);
 });

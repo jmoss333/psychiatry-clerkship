@@ -254,6 +254,20 @@
       ],
       "evidenceIds": [],
       "relatedPages": []
+    },
+    {
+      "file": "prepare-for-tomorrow.html",
+      "title": "Prepare for tomorrow",
+      "sourcePath": "14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html",
+      "category": "foundations",
+      "riskLevel": "moderate",
+      "disclaimerType": "fictional-simulation-supervision",
+      "storageKeys": [],
+      "evidenceIds": [],
+      "relatedPages": [
+        "pg_interview.md",
+        "doc_oral.md"
+      ]
     }
   ]
 }

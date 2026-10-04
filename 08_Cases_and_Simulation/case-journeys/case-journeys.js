@@ -108,6 +108,53 @@
       (pilot ? '' : '<details class="opf-reflection"><summary>Reflect and explore</summary><p>' + escape(w.reflectionPrompt) + '</p><nav aria-label="Resources for this chapter"><ul>' + resources + '</ul></nav></details>');
   }
 
+  function validatePractice(defs) {
+    if (!defs || defs.version !== 1 || !['boundary','reading','exampleBoundary','finishText'].every(function (key) { return text(defs[key]); }) || !defs.tasks || Object.keys(defs.tasks).sort().join(',') !== 'interview,note,rounds') return false;
+    return ['interview','rounds','note'].every(function (id) {
+      var task = defs.tasks[id];
+      return task && text(task.label) && ['pg_interview.md','doc_oral.md'].indexOf(task.sourceRef) >= 0 && task.routes && Object.keys(task.routes).sort().join(',') === '15,5' && [5,15].every(function (minutes) {
+        var route = task.routes[minutes];
+        return route && text(route.prompt) && text(route.example) && route.card && ['try','notice','ask'].every(function (key) { return text(route.card[key]); });
+      });
+    });
+  }
+
+  function practiceInitial() { return {task:null,minutes:null,step:'choose',exampleOpen:false,error:''}; }
+  function practicePair(task, minutes) { return ['interview','rounds','note'].indexOf(task) >= 0 && (minutes === 5 || minutes === 15); }
+  function practiceReduce(defs, state, action) {
+    var next = Object.assign({}, state), valid = validatePractice(defs) && practicePair(state.task, state.minutes);
+    if (action.type === 'reset') return practiceInitial();
+    if (action.type === 'task') { next.task = ['interview','rounds','note'].indexOf(action.value) >= 0 ? action.value : null; next.step = 'choose'; next.exampleOpen = false; next.error = ''; }
+    else if (action.type === 'minutes') { next.minutes = action.value === 5 || action.value === 15 ? action.value : null; next.step = 'choose'; next.exampleOpen = false; next.error = ''; }
+    else if (action.type === 'start') { if (valid) { next.step = 'read'; next.error = ''; } else next.error = 'Choose a task and time to begin.'; }
+    else if (action.type === 'next' && valid) { var steps = ['read','rehearse','card','done'], index = steps.indexOf(next.step); if (index >= 0 && index < 3) next.step = steps[index + 1]; next.exampleOpen = false; }
+    else if (action.type === 'example' && next.step === 'rehearse') next.exampleOpen = !next.exampleOpen;
+    else if (action.type === 'follow' && valid && (state.step === 'card' || state.step === 'done')) { var task = {interview:'rounds',rounds:'note'}[state.task]; if (task) { next.task = task; next.step = 'read'; next.exampleOpen = false; next.error = ''; } }
+    return next;
+  }
+
+  function practiceMarkup(defs, data, chapter, state) {
+    if (!validatePractice(defs)) return '<h3 id="practice-heading" tabindex="-1">Practice is unavailable</h3><p role="alert">The practice prompts could not load. The existing case chapter remains available.</p>';
+    var e = escape, out = '<p class="opf-practice__context">' + e(data.patient.displayName) + ' · ' + e(chapter.label) + '</p><p class="opf-practice__boundary">' + e(defs.boundary) + '</p>';
+    if (state.step === 'choose' || !practicePair(state.task, state.minutes)) {
+      out += '<h3 id="practice-heading" tabindex="-1">Practice with ' + e(data.patient.displayName) + '</h3><div class="opf-practice__choices" role="group" aria-label="Choose a practice task">';
+      ['interview','rounds','note'].forEach(function (id) { out += '<button id="practice-task-' + id + '" data-practice-action="task" data-value="' + id + '" aria-pressed="' + (state.task === id) + '">' + e(defs.tasks[id].label) + '</button>'; });
+      out += '</div><p>How much time do you have?</p><div class="opf-practice__choices" role="group" aria-label="Choose practice time">';
+      [5,15].forEach(function (minutes) { out += '<button id="practice-minutes-' + minutes + '" data-practice-action="minutes" data-value="' + minutes + '" aria-pressed="' + (state.minutes === minutes) + '">About ' + minutes + ' minutes</button>'; });
+      return out + '</div><p class="opf-practice__error" role="alert">' + e(state.error) + '</p><button id="practice-start" class="opf-practice__primary" data-practice-action="start">Start practice</button>';
+    }
+    var task = defs.tasks[state.task], route = task.routes[state.minutes];
+    out += '<p>' + e(task.label) + ' · About ' + state.minutes + ' minutes · At your pace</p>';
+    if (state.step === 'read') out += '<h3 id="practice-heading" tabindex="-1">Read this chapter</h3><p>' + e(defs.reading) + '</p><p><a href="#case-panel-title">Return to ' + e(data.patient.displayName) + '’s chapter story</a></p>';
+    else if (state.step === 'rehearse') out += '<h3 id="practice-heading" tabindex="-1">Rehearse privately</h3><p>' + e(route.prompt) + '</p><details class="opf-practice__model" data-practice-example' + (state.exampleOpen ? ' open' : '') + '><summary>Compare an outline</summary><p>' + e(route.example) + '</p><p>' + e(defs.exampleBoundary) + '</p></details><p>Practice structure: ' + (task.sourceRef === 'pg_interview.md' ? 'Interviewing guide' : 'Documentation and oral presentations guide') + '. New wording awaits faculty review.</p>';
+    else if (state.step === 'card') { out += '<h3 id="practice-heading" tabindex="-1">Your tomorrow card</h3><div class="opf-practice__card">'; [['try','Try'],['notice','Notice'],['ask','Ask your supervisor']].forEach(function (pair) { out += '<p><strong>' + pair[1] + '</strong>' + e(route.card[pair[0]]) + '</p>'; }); out += '</div>'; }
+    else out += '<h3 id="practice-heading" tabindex="-1">Practice finished</h3><p>' + e(defs.finishText) + '</p>';
+    out += '<div class="opf-practice__actions">';
+    if (state.step !== 'done') out += '<button class="opf-practice__primary" data-practice-action="next">' + {read:'Continue to rehearsal',rehearse:'See tomorrow card',card:'Finish practice'}[state.step] + '</button>';
+    if ((state.step === 'card' || state.step === 'done') && state.task !== 'note') out += '<button data-practice-action="follow">Continue to ' + (state.task === 'interview' ? 'rounds' : 'the note') + ' with ' + e(data.patient.displayName) + '</button>';
+    return out + '<button data-practice-action="reset">Choose another task or time</button></div>';
+  }
+
   function pageMarkup(cases, selected) {
     var index = slugs.indexOf(selected.slug), data = cases[index], w = data.weeks[selected.chapter - 1];
     var timeFrame = data.timeFrame || '6 ordered chapters';
@@ -120,8 +167,8 @@
       '<dl class="opf-case-facts"><div><dt>Clinical time</dt><dd>' + escape(timeFrame) + '</dd></div><div><dt>Learner audience</dt><dd>' + escape(audience) + '</dd></div></dl>' +
       '<aside class="opf-source-boundary"><p class="opf-context-label">Simulation boundary</p><p>' + escape(data.disclaimer) + '</p><p class="opf-source-boundary__note">Navigation is unscored and is not saved.</p>' + (selected.slug === 'eli' ? '<p class="opf-source-boundary__note">Chapters 1–4: Read → Practice → Discuss. Chapters 5–6: optional follow-through.</p>' : '') + '</aside></section>' +
       '<section class="opf-shell opf-workbench" aria-label="' + escape(data.patient.displayName) + '’s interactive case folio"><div class="opf-spine"><div class="opf-spine__heading"><span>' + escape(data.patient.displayName) + '’s case file</span><strong id="counter" aria-live="polite">' + String(selected.chapter).padStart(2, '0') + ' / 06</strong></div><div id="case-route">' + routeMarkup(data, selected.chapter) + '</div></div>' +
-      '<div class="opf-folio"><div class="opf-folio__back" aria-hidden="true"></div><article class="opf-sheet" id="chapter-panel" role="tabpanel" tabindex="-1" aria-labelledby="chapter-tab-' + selected.chapter + '">' + chapterMarkup(data, w) + '</article>' +
-      '<div class="opf-controls" aria-label="Case chapter controls"><button type="button" id="previous"' + (selected.chapter === 1 ? ' disabled' : '') + '>Previous chapter</button><p>Selection is not saved.</p><button type="button" id="next"' + (selected.chapter === 6 ? ' disabled' : '') + '>Next chapter</button></div></div></section></main>' +
+      '<div class="opf-folio"><div class="opf-folio__chapter"><div class="opf-folio__back" aria-hidden="true"></div><article class="opf-sheet" id="chapter-panel" role="tabpanel" tabindex="-1" aria-labelledby="chapter-tab-' + selected.chapter + '">' + chapterMarkup(data, w) + '</article></div>' +
+      '<aside class="opf-practice" id="case-practice" aria-label="Practice with the selected patient"></aside><div class="opf-controls" aria-label="Case chapter controls"><button type="button" id="previous"' + (selected.chapter === 1 ? ' disabled' : '') + '>Previous chapter</button><p>Selection is not saved.</p><button type="button" id="next"' + (selected.chapter === 6 ? ' disabled' : '') + '>Next chapter</button></div></div></section></main>' +
       '<footer class="opf-shell opf-footer"><span>Fictional educational case</span><span>No patient entry · no saved case progress</span></footer>';
   }
 
@@ -142,8 +189,24 @@
       app.innerHTML = pageMarkup(cases, selected);
       var panel = doc.getElementById('chapter-panel'), route = doc.getElementById('case-route');
       var previous = doc.getElementById('previous'), next = doc.getElementById('next');
+      var practiceHost = doc.getElementById('case-practice'), practice = practiceInitial(), practiceDefs = null;
+      try { practiceDefs = JSON.parse(doc.getElementById('case-practice-data').textContent); } catch (ignore) {}
+      function renderPractice(focusId) {
+        practiceHost.innerHTML = practiceMarkup(practiceDefs, data, data.weeks[selected.chapter - 1], practice);
+        if (focusId) { var target = doc.getElementById(focusId); if (target) target.focus(); }
+      }
+      practiceHost.addEventListener('click', function (event) {
+        var button = event.target.closest('button[data-practice-action]');
+        if (!button || !practiceHost.contains(button)) return;
+        var oldStep = practice.step, action = {type:button.dataset.practiceAction,value:button.dataset.value};
+        if (action.type === 'minutes') action.value = Number(action.value);
+        practice = practiceReduce(practiceDefs, practice, action);
+        renderPractice(oldStep !== practice.step || action.type === 'follow' || action.type === 'reset' ? 'practice-heading' : button.id);
+      });
+      practiceHost.addEventListener('toggle', function (event) { if (event.target.matches('details[data-practice-example]')) practice.exampleOpen = event.target.open; }, true);
 
       function render(focus) {
+        practice = practiceInitial(); renderPractice();
         route.innerHTML = routeMarkup(data, selected.chapter);
         panel.innerHTML = chapterMarkup(data, data.weeks[selected.chapter - 1]);
         panel.setAttribute('aria-labelledby', 'chapter-tab-' + selected.chapter);
@@ -172,5 +235,5 @@
     }
   }
 
-  return {escape:escape, validate:validate, selection:selection, moveChapter:moveChapter, accentFor:accentFor, catalogMarkup:catalogMarkup, routeMarkup:routeMarkup, chapterMarkup:chapterMarkup, pageMarkup:pageMarkup, start:start};
+  return {escape:escape, validate:validate, selection:selection, moveChapter:moveChapter, accentFor:accentFor, catalogMarkup:catalogMarkup, routeMarkup:routeMarkup, chapterMarkup:chapterMarkup, pageMarkup:pageMarkup, validatePractice:validatePractice, practiceInitial:practiceInitial, practiceReduce:practiceReduce, practiceMarkup:practiceMarkup, start:start};
 }));

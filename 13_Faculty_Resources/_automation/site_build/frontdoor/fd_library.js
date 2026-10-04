@@ -132,6 +132,7 @@ function fdKitToolShelf(tools, requested){
   out+='</div><section id="fd-kit-tool-preview" class="fd-kit__tool-preview" role="tabpanel" aria-labelledby="fd-kit-tool-tab-'+selectedIndex+'">'+
     '<h3>'+fdEsc(selected.title)+'</h3>'+
     (selected.hint?'<p>'+fdEsc(selected.hint)+'</p>':'')+
+    governanceBadge(selected.governance,{compact:true})+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-open="'+fdEsc(selected.ref)+'" aria-label="Open '+fdEsc(selected.title)+'">Open tool</button></section></div>';
   return out;
 }
