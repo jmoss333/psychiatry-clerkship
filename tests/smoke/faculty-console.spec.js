@@ -3690,3 +3690,23 @@ test.describe('individual medication review', () => {
     await expect(page.locator('img')).toHaveCount(0); await expect(page.getByRole('button', { name: 'Approve this medication' })).toBeDisabled(); expect(fixture.posts).toHaveLength(0);
   });
 });
+
+test('evidence review shows source and distractor feedback, preserves rationale on stale response', async ({page}) => {
+ const state={reportCommit:'r',decisionRevision:'d',failures:[{sourceId:'s2',reason:'Retrieval incomplete'}],packets:[{revision:'p',sourceId:'s',sourceName:'Synthetic source',sourceUrl:'https://example.org',status:'pending',observedAt:'2026-10-03',scanStatus:'complete',coverage:{scanned:1,active:1,fields:1},passages:[{old:'Old synthetic guidance.',new:'New synthetic guidance.'}],candidates:[{questionId:'q1',fieldPath:'/options/0/trap/note',quote:'Synthetic distractor explanation.',kind:'possible-contradiction',reason:'Verify context.',context:'Fictional teaching scenario.'}],readings:[],targets:[{itemKey:'question:q1',revision:'qrev',current:{stem:'Current child scenario',options:[{t:'Current option',trap:{note:'Current feedback'}}]}}]}]};
+ await page.route('**/api/attest?view=evidence',route=>route.fulfill({status:route.request().method()==='POST'?409:200,contentType:'application/json',body:JSON.stringify(route.request().method()==='POST'?{error:{message:'Evidence changed. Reload before deciding.'}}:state)}));
+ await page.goto('/evidence.html');
+ await page.getByLabel('Faculty key').fill(FACULTY_KEY);
+ await page.getByRole('button',{name:'Open evidence inbox'}).click();
+ await expect(page.getByText('Possible contradiction',{exact:true})).toBeVisible();
+ await expect(page.getByText('Current child scenario',{exact:true})).toBeVisible();
+ await expect(page.getByText('Question changed since the scan',{exact:true})).toBeVisible();
+ await expect(page.getByText('Synthetic distractor explanation.',{exact:true})).toBeVisible();
+ await expect(page.getByText(/Retrieval incomplete/)).toBeVisible();
+ await page.getByLabel('Rationale').fill('Keep this note while I reload.');
+ await page.getByRole('button',{name:'Save disposition'}).click();
+ await expect(page.getByRole('status')).toContainText('Evidence changed');
+ await expect(page.getByLabel('Rationale')).toHaveValue('Keep this note while I reload.');
+ await expect(page.getByRole('button',{name:'Attest all'})).toHaveCount(0);
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

@@ -1,3 +1,4 @@
+import { readEvidence, decideEvidence, EvidenceError } from './evidence-review.mjs';
 // Faculty attestation — authenticated commit-on-save (Netlify Functions v2, ESM).
 // Secrets remain server-side. The browser supplies only x-faculty-key.
 
@@ -920,6 +921,7 @@ function createRepositoryGateway({ settings, fetchImpl, treeCache }) {
               + 'Each sign-off in the console appends a commit here. Merge when the '
               + 'review session is done; the console fast-forwards this branch from '
               + `\`${settings.baseBranch}\` once it has been merged.`,
+            ...(settings.reviewTitle ? {title: settings.reviewTitle, body: settings.reviewBody} : {}),
             maintainer_can_modify: true,
           }),
         },
@@ -3758,6 +3760,24 @@ export function createHandler({
       const settings = requireServerSettings(env, fetchImpl, originPolicy);
 
       const repository = createRepositoryGateway({ settings, fetchImpl, treeCache });
+      // Evidence dispositions have their own branch in both ledger modes. Never write main.
+      const evidenceRequest = new URL(request.url).searchParams.get('view') === 'evidence';
+      if (evidenceRequest) {
+        const evidenceSettings = {...settings, branch: 'attest/evidence-review', isolated: true, ledger: null,
+          reviewTitle: 'evidence: faculty source-change dispositions',
+          reviewBody: 'Faculty decisions on source-change packets. These records are not clinical attestations.'};
+        const evidenceRepository = createRepositoryGateway({settings:evidenceSettings,fetchImpl,treeCache});
+        try {
+          await evidenceRepository.ensureBranchFresh();
+          if (request.method === 'GET') return jsonResponse(context,200,await readEvidence(evidenceRepository));
+          if (request.method === 'POST') return jsonResponse(context,200,await decideEvidence(evidenceRepository,await readPostBody(request),settings.attester));
+          throw new HttpError('method_not_allowed',405,'Method not allowed.');
+        } catch (error) {
+          if(error instanceof EvidenceError) throw new HttpError('evidence_review',error.status,error.message);
+          throw error;
+        }
+      }
+
       switch (request.method.toUpperCase()) {
         case 'GET': {
           // The read-only change views return before anything that could move a branch:

@@ -149,3 +149,27 @@ test('real handler rejects extra content target and forged stamps without writin
 test('real handler conflict produces no successful receipt and no retry', async () => {
   const mock = gateway({ conflict: true }); const result = await mock.handler(request('POST', body())); assert.equal(result.status, 409); assert.equal(mock.writes.filter(w => w.kind === 'ref').length, 1);
 });
+
+
+test('evidence query cannot reinterpret a medication approval or write either review record', async () => {
+  const mock = gateway();
+  const original = request('POST', body());
+  const response = await mock.handler(new Request('https://faculty.example/api/attest?view=evidence', {
+    method: 'POST', headers: original.headers, body: JSON.stringify(body()),
+  }));
+  assert.equal(response.status, 400);
+  assert.equal(mock.writes.length, 0);
+  assert.ok(mock.calls.some(call => call.path.endsWith('/git/ref/heads/attest/evidence-review')));
+  assert.equal(mock.calls.filter(call => call.method !== 'GET').length, 0);
+});
+
+test('medication endpoint cannot reinterpret an evidence disposition', async () => {
+  const mock = gateway();
+  const response = await mock.handler(request('POST', {
+    action: 'evidence.decide', packetRevision: 'synthetic-packet',
+    expectedReportCommit: HEAD, expectedDecisionRevision: HEAD,
+    dispositions: [{ itemKey: 'question:synthetic', itemRevision: HEAD, outcome: 'defer', rationale: 'Synthetic test' }],
+  }));
+  assert.equal(response.status, 400);
+  assert.equal(mock.writes.length, 0);
+});

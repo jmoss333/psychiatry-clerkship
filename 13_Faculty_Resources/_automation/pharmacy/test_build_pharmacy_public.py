@@ -122,7 +122,7 @@ class ProjectionSelfCheck(unittest.TestCase):
         text = json.dumps(pub.project({"records": [signed(record(r["id"])) for r in SOURCE["records"]]}))
         for leaked in ("reviewedFieldsHash", "retrievalHash", "provenance", "fieldClasses"):
             self.assertNotIn(leaked, text)
-        self.assertIsNone(vp.DOSE_RE.search(text))
+        self.assertEqual(vp.dose_literals(text), [])
 
     def test_review_stamp_is_shown(self):
         agent = pub.project({"records": [signed(record("lithium"))]})["agents"][0]

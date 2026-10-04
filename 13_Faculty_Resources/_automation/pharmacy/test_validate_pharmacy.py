@@ -68,6 +68,67 @@ class ValidatePharmacyTest(unittest.TestCase):
         first(data)["dosing"]["titration"] = "start at 300 mg"
         self.assertTagged(run(data), "AC4'")
 
+    # AC4' revision 2 (2026-10-03): a lab or physiology value is not a dose; a dose still is.
+    STILL_DOSES = (
+        "start at 300 mg", "200 mg bid", "0.5 mg at bedtime", "25 mcg", "5 mL",
+        "10 mg/kg", "300 mg/day", "2 mg/min IV push",
+        "haloperidol decanoate 50 mg/mL",           # a product strength: no level is named
+        "Levels were checked. Draw up 5 mg/mL",     # the cue sits in the PREVIOUS sentence
+        "supplied at a concentration of 5 mg/mL",   # a level cue, vetoed by a product cue
+        "available concentration range is 2-5 mg/mL",
+        "each mL of oral solution contains 20 mg/mL",
+    )
+    LAB_VALUES = (
+        "CRP >100 mg/L and troponin",               # OE clozapine card, 2026-10-02
+        "mean difference, -43.98 mg/L",             # OE valproate card
+        "fasting glucose 126 mg/dL",
+        "avoid if GFR <30 mL/min",                  # OE duloxetine card
+        "severe renal impairment, GFR <30 mL/minute",
+        "trough plasma concentrations between 85 and 125 mcg/mL",
+        "total valproate concentrations of 110 mcg/mL",
+        "the epilepsy range of 50-100 mcg/mL",
+        "serum level 0.5 mg / dL",
+    )
+
+    def test_doses_are_still_dose_literals(self):
+        for text in self.STILL_DOSES:
+            with self.subTest(text=text):
+                self.assertTrue(vp.has_dose_literal(text))
+
+    def test_lab_and_physiology_values_are_not_dose_literals(self):
+        for text in self.LAB_VALUES:
+            with self.subTest(text=text):
+                self.assertEqual(vp.dose_literals(text), [])
+
+    def test_a_dose_beside_a_lab_value_is_still_caught_and_masked(self):
+        text = "If CRP >100 mg/L, hold; restart at 12.5 mg."
+        self.assertEqual([literal for _, _, literal in vp.dose_literals(text)], ["12.5 mg"])
+        self.assertEqual(vp.mask_dose_literals(text), "If CRP >100 mg/L, hold; restart at [dose].")
+
+    def test_the_level_cue_window_is_bounded(self):
+        self.assertFalse(vp.has_dose_literal("serum level 5 mg/mL"))
+        self.assertTrue(vp.has_dose_literal("serum " + "x" * vp.LEVEL_CUE_WINDOW + " 5 mg/mL"))
+
+    def test_check_passes_a_lab_value_and_fails_a_product_strength(self):  # AC4' through check()
+        data = self.mutate()
+        first(data)["dosing"]["titration"] = "hold if CRP >100 mg/L or GFR <30 mL/min"
+        self.assertFalse([f for f in run(data) if f.startswith("AC4'")])
+        first(data)["dosing"]["titration"] = "the vial is 5 mg/mL"
+        self.assertTagged(run(data), "AC4'")
+
+    def test_one_ac4_rule_for_every_pharmacy_tool(self):
+        # The receipt writer masks with the validator's rule, so a lab value a card may carry
+        # is not hidden from the reviewer and a dose is never written into the receipt.
+        import verify_pharmacy_labels as labels
+        self.assertEqual(labels.lead("Give 10 mg. Keep GFR >30 mL/min."),
+                         "Give [dose]. Keep GFR >30 mL/min.")
+        # ...and no other tool here carries its own copy of the unit regex to drift from it.
+        for path in sorted(HERE.glob("*.py")):
+            if path.name == "validate_pharmacy.py" or path.name.startswith("test_"):
+                continue
+            with self.subTest(tool=path.name):
+                self.assertNotIn("mg|mcg", path.read_text(encoding="utf-8"))
+
     def test_denylisted_key_fails(self):
         data = self.mutate()
         first(data)["provenance"]["carried"]["absolute_max_dose"] = "x"
