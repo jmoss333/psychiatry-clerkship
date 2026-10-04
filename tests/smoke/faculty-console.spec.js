@@ -3714,7 +3714,7 @@ test('evidence review shows source and distractor feedback, preserves rationale 
 test('evidence review prioritizes transparently without hiding packets or changing dispositions',async({page})=>{
  const base={sourceUrl:'https://example.org',status:'pending',observedAt:'2026-10-04',scanStatus:'complete',coverage:{active:1,scanned:1,errors:[]},passages:[],candidates:[],readings:[],targets:[]};
  const safety={questionId:'q1',fieldPath:'/why',quote:'Synthetic overdose teaching.',context:'Synthetic fixture',kind:'possible-contradiction',itemRevision:'qrev',reason:'Verify context.'};
- const packets=[{...base,revision:'routine',sourceName:'Routine source'}, {...base,revision:'safety',sourceName:'Safety source',candidates:[safety,safety],targets:[{itemKey:'question:q1',revision:'qrev',current:{stem:'Synthetic stem',why:safety.quote},decision:{outcome:'needs-edit',actor:'Faculty',rationale:'Review remains open'}}]}, {...base,revision:'incomplete',sourceName:'Incomplete source',scanStatus:'incomplete'}, {...base,revision:'history',sourceName:'Resolved source',status:'resolved'}];
+ const packets=[{...base,revision:'routine',sourceName:'Routine source',replacementRevision:'safety'}, {...base,revision:'safety',sourceName:'Safety source',candidates:[safety,safety],targets:[{itemKey:'question:q1',revision:'qrev',current:{stem:'Synthetic stem',why:safety.quote},decision:{outcome:'needs-edit',actor:'Faculty',rationale:'Review remains open'}}]}, {...base,revision:'incomplete',sourceName:'Incomplete source',scanStatus:'incomplete'}, {...base,revision:'history',sourceName:'Resolved source',status:'resolved'}];
  await page.route('**/api/attest?view=evidence',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({failures:[],packets})}));
  await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();
  await expect(page.locator('article h2')).toHaveText(['Incomplete source','Safety source','Routine source','Resolved source']);
@@ -3724,5 +3724,6 @@ test('evidence review prioritizes transparently without hiding packets or changi
  await expect(page.getByLabel('Disposition')).toHaveValue('needs-edit');
  await expect(page.getByText('Faculty: Review remains open')).toBeVisible();
  await expect(page.locator('article')).toHaveCount(4);
+ await expect(page.getByText('A restored mapping has a newer review packet. Review that replacement to complete this examination.',{exact:true})).toBeVisible();
  await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
