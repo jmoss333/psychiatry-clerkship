@@ -183,14 +183,15 @@ def load_pin(root):
     return validate_pin(_read_json(root, PIN))
 
 
-def validate_pin(pin):
-    decks = pin.get("decks") if isinstance(pin, dict) else None
-    rekeys = pin.get("rekeys") if isinstance(pin, dict) else None
+def validate_pin(payload):
+    """Validate a public card-fingerprint snapshot (not a credential)."""
+    decks = payload.get("decks") if isinstance(payload, dict) else None
+    rekeys = payload.get("rekeys") if isinstance(payload, dict) else None
     if (not isinstance(decks, dict) or not isinstance(rekeys, list)
             or any(not isinstance(v, list) or any(not isinstance(h, str) for h in v) for v in decks.values())):
         raise CheckError(f"{PIN} is not the shape this tool writes (decks: {{id: [hex...]}}, rekeys: [...]); "
                          f"regenerate with `{UPDATE_HINT}`")
-    return pin
+    return payload
 
 
 def _git(root, *args):
@@ -230,11 +231,11 @@ def shift_ids(drift):
             for cls, did, idx, _ in drift if cls in REKEY_CLASSES]
 
 
-def history_findings(base_pin, pin, live):
-    old = base_pin["rekeys"]
-    if pin["rekeys"][:len(old)] != old:
+def history_findings(base_snapshot, snapshot, live):
+    old = base_snapshot["rekeys"]
+    if snapshot["rekeys"][:len(old)] != old:
         return ["re-key history must preserve the trusted base's append-only prefix"], []
-    added = pin["rekeys"][len(old):]
+    added = snapshot["rekeys"][len(old):]
     for entry in added:
         if (not isinstance(entry, dict) or not isinstance(entry.get("reason"), str)
                 or not entry["reason"].strip() or not isinstance(entry.get("date"), str)
@@ -246,7 +247,7 @@ def history_findings(base_pin, pin, live):
         except ValueError:
             return ["new re-key acknowledgement needs an ISO date"], []
     covered = {slot for entry in added for slot in entry["shifts"]}
-    missing = [slot for slot in shift_ids(diff_pin(base_pin["decks"], live)) if slot not in covered]
+    missing = [slot for slot in shift_ids(diff_pin(base_snapshot["decks"], live)) if slot not in covered]
     return [], missing
 
 
