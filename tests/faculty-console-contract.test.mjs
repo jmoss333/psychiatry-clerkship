@@ -15,6 +15,7 @@ import {
   isValidReopenReason,
   normalizeReviewItems,
 } from '../faculty-console/review-model.mjs';
+import { describeBankFile } from '../faculty-console/bank-review.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(path.join(repo, 'faculty-console/index.html'), 'utf8');
@@ -5759,4 +5760,114 @@ test('Coming from main never calls an incomplete check "no change"', async () =>
 test('Coming from main is absent when the sign-off branch is not behind', async () => {
   const { document } = await startHarness({ fetchImpl: async () => jsonResponse(laggingServerState(0)) });
   assert.equal(document.getElementById('incoming-from-main'), null);
+});
+
+// ── Review bank contents (2026-10-05) ───────────────────────────────────────────────────
+// A bank-bearing tool's signature covers its bank files. The desktop shows them in a read-only
+// view, and the tool's sign control stays disabled — with an explicit count — until every
+// section has been OPENED (expanded and on screen; this fake window has no IntersectionObserver,
+// so expanding is what counts). The press then carries the bank revision it was opened at.
+const BANK_FIXTURE_PATH = 'family_systems_scenarios.json';
+const BANK_FIXTURE_REVISION = 'c'.repeat(40);
+
+function bankFixtureView() {
+  const file = describeBankFile(BANK_FIXTURE_PATH, JSON.stringify({
+    _note: 'Synthetic scenarios.',
+    scenarios: [
+      { id: 'fam_one', title: 'First synthetic scenario', opening: 'A fictional parent asks for an update.' },
+      { id: 'fam_two', title: 'Second synthetic scenario', opening: 'A fictional sibling disagrees with the plan.' },
+    ],
+  }));
+  return {
+    view: 'bank',
+    slug: 'family-systems.html',
+    title: 'Family systems practice',
+    kind: 'tool',
+    branch: 'attest/pending',
+    head: 'd'.repeat(40),
+    bankRevision: BANK_FIXTURE_REVISION,
+    verified: true,
+    primarySources: ['06_Family_and_Relational/family-systems-practice.html'],
+    files: [{ ...file, revision: 'e'.repeat(40), sections: file.sections.map((section, index) => ({ ...section, key: String(index + 1).repeat(40) })) }],
+  };
+}
+
+function bankHarnessFetch() {
+  const posts = [];
+  const views = [];
+  const fetchImpl = async (url, options = {}) => {
+    const parsed = new URL(url, 'https://faculty.example');
+    if ((options.method || 'GET') === 'POST') {
+      posts.push(JSON.parse(options.body));
+      return jsonResponse({ ok: true, target: 'content', updated: 1, commit: 'https://github.example/commit/1' });
+    }
+    if (parsed.searchParams.get('view') === 'bank') {
+      views.push(parsed.searchParams.get('slug'));
+      return jsonResponse(bankFixtureView());
+    }
+    return jsonResponse(serverState({
+      items: [{
+        slug: 'family-systems.html', title: 'Family systems practice', kind: 'tool',
+        status: posts.length ? 'reviewed' : 'unreviewed',
+        risk: { kind: 'clinical', level: 'moderate' },
+        bankFiles: [BANK_FIXTURE_PATH],
+      }],
+      questions: [],
+    }));
+  };
+  return { fetchImpl, posts, views };
+}
+
+function bankSectionElements(document) {
+  return document.findAll('details').filter(element => element.className.split(' ').includes('bank-section'));
+}
+
+test('a bank-bearing tool stays unsignable until every bank section has been opened, then signs with its bank receipt', async () => {
+  const { fetchImpl, posts, views } = bankHarnessFetch();
+  const harness = await startHarness({ fetchImpl });
+  const { document } = harness;
+  assert.equal(harness.controller.state.selectedKey, 'tool:family-systems.html');
+  await completeCurrentContentReview(harness);
+  // Preview ready and both content checks ticked: everything but the bank is done.
+  assert.equal(document.getElementById('attest-current-item').disabled, true, 'no bank view opened yet');
+  assert.match(document.getElementById('rail-bank-status').textContent, /also covers 1 bank file/);
+  assert.equal(views.length, 0, 'the bank is fetched only when its view is opened');
+
+  await document.getElementById('view-bank').dispatch('click');
+  await flushAsyncWork();
+  assert.deepEqual(views, ['family-systems.html']);
+  const sections = bankSectionElements(document);
+  assert.equal(sections.length, 2, 'one section per scenario');
+  assert.match(document.getElementById('bank-progress').textContent, /2 of 2 scenarios not yet opened/);
+
+  await openDetails(sections[0]);
+  assert.match(document.getElementById('rail-bank-status').textContent, /1 of 2 scenarios not yet opened/);
+  assert.match(document.getElementById('rail-step-confirm').textContent, /Signing is off: 1 of 2 scenarios not yet opened/);
+  assert.equal(document.getElementById('attest-current-item').disabled, true, 'one section still unopened');
+
+  // Collapsing an opened section does not un-open it; opening the last one enables signing.
+  sections[0].open = false;
+  await sections[0].dispatch('toggle');
+  await openDetails(sections[1]);
+  assert.match(document.getElementById('rail-bank-status').textContent, /Every section opened: 2 scenarios/);
+  const button = document.getElementById('attest-current-item');
+  assert.equal(button.disabled, false);
+  await button.dispatch('click');
+  await flushAsyncWork();
+  assert.equal(posts.length, 1);
+  assert.deepEqual(posts[0].changes, { 'family-systems.html': true });
+  assert.deepEqual(posts[0].bankReviews, { 'family-systems.html': BANK_FIXTURE_REVISION });
+});
+
+test('a tool without bank files is unaffected by the bank gate', async () => {
+  const harness = await startHarness({
+    fetchImpl: async () => jsonResponse(serverState({
+      items: [{ slug: 'mse.html', title: 'Mental Status Exam', kind: 'tool', status: 'unreviewed' }],
+      questions: [],
+    })),
+  });
+  await completeCurrentContentReview(harness);
+  assert.equal(harness.document.getElementById('view-bank'), null);
+  assert.equal(harness.document.getElementById('rail-bank-status'), null);
+  assert.equal(harness.document.getElementById('attest-current-item').disabled, false);
 });

@@ -107,9 +107,11 @@ test('normalizes all review surfaces with collision-proof keys', () => {
     'needs-review', 'complete', 'needs-review',
   ]);
   assert.deepEqual(Object.keys(items[0]), [
-    'key', 'type', 'identity', 'site', 'sites', 'title', 'savedStatus', 'completion',
+    'key', 'type', 'identity', 'site', 'sites', 'bankFiles', 'title', 'savedStatus', 'completion',
     'revision', 'gate', 'risk', 'essential', 'essentialSites', 'searchText', 'record',
   ]);
+  // No bank files in this payload: nothing here is bank-bearing (2026-10-05 bank review).
+  assert.deepEqual(items.map(item => item.bankFiles), [[], [], []]);
   // `site` names the learner deployment that serves the item. Absent (an older server
   // payload) means the MS3 site, where every manifest page and tool has always lived.
   assert.deepEqual(items.map(item => item.site), ['ms3', 'ms3', 'ms3']);

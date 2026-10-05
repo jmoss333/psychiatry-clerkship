@@ -2,8 +2,11 @@ import { readEvidence, decideEvidence, EvidenceError } from './evidence-review.m
 // Faculty attestation — authenticated commit-on-save (Netlify Functions v2, ESM).
 // Secrets remain server-side. The browser supplies only x-faculty-key.
 
+import { createHash } from 'node:crypto';
+
 import {
   STALE_REASON,
+  canonicalJson,
   canonicalTopicMetaRecord,
   clinicalManifestForSlug,
   clinicalSourceSha,
@@ -21,6 +24,7 @@ import {
   lineDiffHunks,
   recordDiff,
 } from '../../change-history.mjs';
+import { describeBankFile } from '../../bank-review.mjs';
 import { deriveContentUniverse } from '../../content-universe.mjs';
 import {
   KEYS_PATH,
@@ -1536,6 +1540,153 @@ function shipsQuestionBank(shipped) {
       || (Array.isArray(page.extraSources) && page.extraSources.includes(QBANK_PATH))));
 }
 
+// ── Bank contents (2026-10-05) ──────────────────────────────────────────────────────────
+// A signature covers the slug's `source` AND every `extraSources` file. For a tool those extra
+// files are its banks (decks, cases, scenarios), and until today no console surface displayed
+// them: a signature could be made over 437 deck cards that the reviewer had never been shown.
+// A slug is BANK-BEARING when the hash's own path list (sourcesForSlug — the JS twin of
+// attestation_hash.sources_for_slug, parity-pinned) names any file beyond the slug's own
+// source. Deliberately derived, never listed by hand: a tool that gains an extraSource is
+// bank-bearing on the next load, with nothing here to remember.
+
+/** The files a slug's signature covers beyond its own source(s): its banks. [] when none. */
+function bankFilesForSlug(shipped, slug) {
+  const pages = isRecord(shipped) && Array.isArray(shipped.pages) ? shipped.pages : [];
+  const primary = new Set(pages
+    .filter(page => isRecord(page) && page.slug === slug && typeof page.source === 'string')
+    .map(page => page.source));
+  return sourcesForSlug(shipped, slug).filter(path => !primary.has(path));
+}
+
+/**
+ * The revision of a slug's banks at one tree: a sha1 over `path <fingerprint line>` for every
+ * bank file, sorted. It is the receipt a single-slug signature must carry (requireBankReceipts):
+ * the bank the reviewer opened is the bank being signed. It uses the SAME per-file value as the
+ * content hash (the tree's blob sha; the question bank's canonical sha), so a question's status
+ * flip moves neither. Null when a bank file is missing from the tree.
+ */
+function bankRevisionFor(slug, inputs) {
+  const files = bankFilesForSlug(inputs.shipped, slug);
+  if (!files.length) return null;
+  const lines = [];
+  for (const path of [...files].sort()) {
+    const value = inputs.tree.get(path);
+    if (!value) return null;
+    lines.push(`${path} ${value}`);
+  }
+  return createHash('sha1').update(`${lines.join('\n')}\n`, 'utf8').digest('hex');
+}
+
+const BANK_RECEIPT = /^[a-f0-9]{40}$/;
+const MAX_BANK_VIEW_FILE_BYTES = 4 * 1024 * 1024;
+
+/**
+ * A single-slug signature of a bank-bearing item must name the bank revision the reviewer
+ * opened in Review bank contents, and it must be the revision being signed. The browser sends
+ * it only once every section has been opened on screen; the server cannot see that, so what it
+ * enforces is the part it can: no bank-bearing signature without the view, and none over a
+ * bank that changed after the view was read. Not a claim that anything was read.
+ */
+function requireBankReceipts(body, slugs, inputs) {
+  const receipts = isRecord(body.bankReviews) ? body.bankReviews : {};
+  for (const slug of slugs) {
+    const files = bankFilesForSlug(inputs.shipped, slug);
+    if (!files.length) continue;
+    const supplied = Object.hasOwn(receipts, slug) ? receipts[slug] : undefined;
+    if (typeof supplied !== 'string' || !BANK_RECEIPT.test(supplied)) {
+      throw new HttpError('content.bank_review_required', 400,
+        `\`${slug}\` is signed together with ${files.length} bank file${files.length === 1 ? '' : 's'} `
+          + `(${files.join(', ')}). Open every section of Review bank contents on the desktop `
+          + 'console, then sign it there.');
+    }
+    if (supplied !== bankRevisionFor(slug, inputs)) {
+      throw new HttpError('content.bank_changed', 409,
+        `The bank contents of \`${slug}\` changed after you opened them. Reload Review bank `
+          + 'contents, open the sections that changed, then sign.');
+    }
+  }
+}
+
+function sectionKey(path, section) {
+  const content = typeof section.text === 'string'
+    ? section.text
+    : canonicalJson(Object.hasOwn(section, 'record') ? section.record
+      : Object.hasOwn(section, 'records') ? section.records : section.value);
+  return createHash('sha1').update(`${path}\u0000${section.unit}\u0000${content}`, 'utf8').digest('hex');
+}
+
+/**
+ * GET ?view=bank&slug=<slug> — read-only. Every bank file the slug's signature covers, read at
+ * the attestation branch's head (the same ref and the same tree a signature binds), each one
+ * checked against that tree before it is shown: its bytes must be the blob the tree names AND
+ * must re-derive the exact fingerprint line the content hash uses. Then the whole signature is
+ * re-derived from those bytes, so `verified` says "what you see is what a signature here binds".
+ */
+async function buildBankView(repository, settings, slug) {
+  if (!VIEW_SLUG.test(slug)) throw new HttpError('bank.invalid_slug', 400, 'Choose a page or tool.');
+  const inputs = await readMutationDigestInputs(repository, settings.branch);
+  const files = bankFilesForSlug(inputs.shipped, slug);
+  if (!files.length) {
+    throw new HttpError('bank.none', 404,
+      `\`${slug}\` is signed over its own source only; it carries no bank contents.`);
+  }
+  const listed = await repository.readTree(inputs.head);
+  const read = await mapLimit(files, SOURCE_CHECK_CONCURRENCY, async (path) => {
+    if (!listed.has(path)) {
+      throw new HttpError('bank.missing_file', 502, `\`${path}\` is missing from the attestation branch.`);
+    }
+    const raw = await repository.readRaw(path, { ref: inputs.head, maxBytes: MAX_BANK_VIEW_FILE_BYTES });
+    const bytes = Buffer.from(raw.bytes);
+    // The bytes must be the blob the tree names, and they must produce the very line the
+    // content hash carries for this path (canonicalised for the question bank). Anything else
+    // would show the reviewer text other than the text a signature binds.
+    const line = sourceBlobSha(path, bytes);
+    if (raw.sha !== listed.get(path) || line !== inputs.tree.get(path)) {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    let text;
+    try {
+      text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch {
+      throw new GithubError('repository_file_invalid', 502);
+    }
+    const described = describeBankFile(path, text);
+    return {
+      line,
+      file: {
+        ...described,
+        revision: listed.get(path),
+        sections: described.sections.map(section => ({ ...section, key: sectionKey(path, section) })),
+      },
+    };
+  });
+  // Re-derive the signature's fingerprint from the bytes just read (the bank files) and the
+  // tree (the slug's own source, which the live preview shows, and its topic_meta record): it
+  // must equal the digest a signature pressed now would bind.
+  const values = {};
+  for (const path of sourcesForSlug(inputs.shipped, slug)) values[path] = inputs.tree.get(path);
+  files.forEach((path, index) => { values[path] = read[index].line; });
+  const record = isRecord(inputs.topicMeta) && Object.hasOwn(inputs.topicMeta, slug) ? inputs.topicMeta[slug] : null;
+  const digest = digestForSlug(slug, inputs);
+  const verified = Boolean(digest) && Object.values(values).every(Boolean)
+    && digestFromManifest(manifestForSlug(slug, values, record)) === digest;
+  const page = (isRecord(inputs.shipped) && Array.isArray(inputs.shipped.pages) ? inputs.shipped.pages : [])
+    .find(entry => isRecord(entry) && entry.slug === slug) || {};
+  return {
+    view: 'bank',
+    slug,
+    title: typeof page.title === 'string' ? page.title : slug,
+    kind: typeof page.kind === 'string' ? page.kind : '',
+    branch: settings.branch,
+    head: inputs.head,
+    bankRevision: bankRevisionFor(slug, inputs),
+    verified,
+    // The slug's own source(s): what the live preview shows, and the rest of the signature.
+    primarySources: sourcesForSlug(inputs.shipped, slug).filter(path => !files.includes(path)),
+    files: read.map(entry => entry.file),
+  };
+}
+
 /**
  * What a reviewed row can still be told about the text it attested, or null when it is clean.
  *
@@ -1597,10 +1748,14 @@ function buildContentItems(reviewed, shipped, verification, essentials = null) {
     const essentialSites = essentials
       ? ['ms3', 'res'].filter(candidate => essentials[candidate].has(slug))
       : [];
+    // The files its signature covers beyond its own source (bankFilesForSlug): present only on
+    // a bank-bearing item, which the console signs one at a time after Review bank contents.
+    const bankFiles = bankFilesForSlug(shipped, slug);
     return {
       slug,
       title,
       kind,
+      ...(bankFiles.length ? { bankFiles } : {}),
       essentialSites,
       // Which learner deployment serves this item, so the console previews the resident
       // half of a Case-of-the-Week pair against the resident site.
@@ -2227,6 +2382,7 @@ async function handleView(repository, settings, url) {
     return buildDiffView(repository, settings, url.searchParams.get('slug') || '', sha);
   }
   if (view === 'batch') return buildBatchPreview(repository, settings, url);
+  if (view === 'bank') return buildBankView(repository, settings, url.searchParams.get('slug') || '');
   throw new HttpError('unknown_view', 400, 'Choose a supported view.');
 }
 
@@ -2381,6 +2537,8 @@ async function commitContentMutation({ repository, settings, body, attester }) {
     // Fingerprint v2: every page being signed gets its clinical text read, so the signature
     // can also bind to it. Best-effort; a page that cannot be read is signed v1-only.
     const signing = effectiveChanges.filter(([, selected]) => selected).map(([slug]) => slug);
+    // A bank-bearing item is signed only with the receipt of the bank view, at this revision.
+    if (signing.length) requireBankReceipts(body, signing, digestInputs);
     if (signing.length) await loadClinicalShas(repository, digestInputs, signing);
 
     // Per-record preserve pattern (Task 1 ledger contract), applied per batch entry:
@@ -2747,6 +2905,8 @@ async function commitContentLedger({ repository, settings, body, attester }) {
       return current.contentHash !== digestOf(slug);
     });
     if (!effectiveChanges.length) return { ok: true, target: 'content', updated: 0, commit: null };
+    const signing = effectiveChanges.filter(([, selected]) => selected).map(([slug]) => slug);
+    if (signing.length) requireBankReceipts(body, signing, digestInputs);
 
     const base = digestInputs ? digestInputs.head : await repository.head();
     const drafts = [];
@@ -2993,6 +3153,16 @@ async function planBatch({ repository, settings, request, reviewed, digestInputs
     }
     if (was === 'unrecorded') {
       leave('It has no usable row in reviewed.json, so there is nothing here to sign.');
+      continue;
+    }
+    // Never in the baseline (2026-10-05): its signature covers bank files the baseline list
+    // never displays (decks, cases, scenarios). It is signed on its own, after every section of
+    // Review bank contents has been opened — which is where the receipt it needs comes from.
+    const bankFiles = request.mode === 'baseline' ? bankFilesForSlug(digestInputs.shipped, slug) : [];
+    if (bankFiles.length) {
+      leave(`Its signature also covers ${bankFiles.length} bank file${bankFiles.length === 1 ? '' : 's'} `
+        + `(${bankFiles.join(', ')}) that this list does not show. Sign it on its own: select it, `
+        + 'open every section of Review bank contents, then sign.');
       continue;
     }
     if (request.exclude.has(slug)) {

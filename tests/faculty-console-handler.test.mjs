@@ -2922,8 +2922,19 @@ test('a two-source slug hashes both of its sources', async () => {
     '14_Tracks/Resident/resident_welcome.md': Buffer.from('Resident welcome.\n', 'utf8'),
   };
   const mock = createGithubMock({ files, sources });
-  const response = await handlerWith(mock)(apiRequest('POST', {
+  // The resident half is an extraSource, so the slug is bank-bearing (2026-10-05): a single-slug
+  // signature carries the revision of the Review bank contents it was opened at — a sha1 over
+  // `path <blob sha>` per bank file, re-derived here rather than taken from the console.
+  const bankPath = '14_Tracks/Resident/resident_welcome.md';
+  const bankRevision = createHash('sha1')
+    .update(`${bankPath} ${blobShaOf(sources[bankPath])}\n`, 'utf8').digest('hex');
+  const refused = await handlerWith(createGithubMock({ files: clone(files), sources }))(apiRequest('POST', {
     body: { target: 'content', changes: { 'welcome.md': true } },
+  }));
+  assert.equal(refused.status, 400, 'no bank receipt, no signature');
+  assert.equal((await refused.json()).error.code, 'content.bank_review_required');
+  const response = await handlerWith(mock)(apiRequest('POST', {
+    body: { target: 'content', changes: { 'welcome.md': true }, bankReviews: { 'welcome.md': bankRevision } },
   }));
 
   assert.equal(response.status, 200);
@@ -4241,14 +4252,20 @@ function forecastMock({
   if (shipBank) {
     files[SHIPPED_PAGES_PATH].json.pages.push({ slug: 'qbank-tool', kind: 'tool', sites: ['ms3'], title: 'Question Bank',
       source: '04_Assessment/qbank.html', extraSources: [QBANK_PATH], producer: 'site_manifest' });
-    files[REVIEWED_PATH].json['qbank-tool'] = forecastRow('pending');
+    // Signed in the open request (pending on main). A bank-bearing tool is never in a baseline
+    // press (2026-10-05, bank review), so it reaches the forecast as a row the request carries.
+    files[REVIEWED_PATH].json['qbank-tool'] = forecastRow('reviewed', { contentHash: 'e'.repeat(40) });
   }
   files[REVIEWED_PATH].json['t_mood.md'] = forecastRow('reviewed', {
     contentHash: expectedDigest(files, signedAgainst, 't_mood.md'),
     ...(clinicalAgainst ? { clinicalHash: expectedClinicalDigest(files, clinicalAgainst, 't_mood.md') } : {}),
   });
   const branchRows = files[REVIEWED_PATH].json;
-  const base = baseRows || { ...clone(branchRows), 't_mood.md': forecastRow('pending') };
+  const base = baseRows || {
+    ...clone(branchRows),
+    't_mood.md': forecastRow('pending'),
+    ...(shipBank ? { 'qbank-tool': forecastRow('pending') } : {}),
+  };
   const split = splitRows || base;
   const serve = value => jsonResponse(200, contentsObject(`${JSON.stringify(value, null, 2)}\n`));
   const mock = createGithubMock({
