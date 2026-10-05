@@ -1482,10 +1482,10 @@
       "kind": "formulary",
       "level": "high"
     },
-    "at": "2026-10-03",
+    "at": "2026-10-05",
     "by": "Joshua Moss, MD",
-    "contentHash": "1f14e3a12909a5c9277f50045e52d446e959181c",
-    "clinicalHash": "2f22b016eeeb6c9e378ec53285fa79edc1fac4cb"
+    "contentHash": "821c7e7c4f3c30483fc3433e9176406f5c247caa",
+    "clinicalHash": "0470c99156f34a04bad0cc81292f93fa024d6e01"
   },
   "prepare-for-tomorrow.html": {
     "status": "reviewed",
