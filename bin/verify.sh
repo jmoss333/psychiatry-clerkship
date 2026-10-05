@@ -105,7 +105,12 @@ step "git config health (before the run)"   python3 bin/check_git_config_health.
 step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
 
 # --- contract: this script still mirrors ci.yml's gate (it silently drifted before) ---
-step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
+# Two directions since 2026-10-04. Mirroring (ci.yml → here) only asks whether the two gate
+# files agree with each other; a bin/check_* on NEITHER agreed perfectly and was invisible —
+# two of 29 were, one for a month. The reverse direction fails on any checker named by
+# neither file, with a capped shrink-only UNGATED list for the deliberate exceptions.
+step "unit — gate coverage"                 python3 bin/check-verify-coverage.py --self-test
+step "gate coverage vs ci.yml + ungated"    python3 bin/check-verify-coverage.py
 # The sibling contract. check-verify-coverage.py asks whether every CI step has a local
 # equivalent; this asks whether every falsification is RUN BY ANYTHING. Both exist because a
 # gate nobody executes looks exactly like a gate.
