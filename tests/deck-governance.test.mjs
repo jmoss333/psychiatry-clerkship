@@ -25,6 +25,10 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Fixtures must never inherit the caller's repository (including from a git hook).
+scrubInheritedGitEnv();
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const QUIZZES = '07_Evidence_and_Reading/Landmark_Trials/quizzes.json';
