@@ -1457,10 +1457,10 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   ));
   expect(renderedWeeks).toEqual(expectedWeeks);
 
-  const pending = page.locator('.fd-article__body > .governance-notice.pending-compact[role="status"]');
+  const pending = page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-compact[role="status"]');
   await expect(pending).toHaveCount(1);
   await expect(pending.locator('.governance-title')).toHaveText('Pending faculty review');
-  await expect(page.locator('.fd-article__body > .governance-notice.reviewed-receipt')).toHaveCount(0);
+  await expect(page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.reviewed-receipt')).toHaveCount(0);
 
   const weekLinks = compassRoot.locator('[data-fd-compass-link]');
   await weekLinks.first().focus();
@@ -2131,7 +2131,7 @@ test.describe('Clinical field guide', () => {
     await page.route('**/governance.json', route => route.fulfill({ json: ledger }));
     await seedApp(page, testInfo, { state: { tab: 'library' } });
     await page.goto(`${GUIDE_URL}&guideFind=behavioral%20activation`);
-    const warning = page.locator('.fd-article__body > .governance-notice.pending-high');
+    const warning = page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-high');
     await expect(page.locator('.fd-reader--guide')).toBeVisible();
     await expect(warning).toHaveCount(1);
     await expect(warning).toContainText('Pending faculty review');
@@ -3601,6 +3601,29 @@ test('phone chrome: one dock stays at the bottom and the first screen belongs to
   await expect(page.locator('#pgRoot')).toBeVisible();
   await expect(page.locator('.fd-reader__back[data-fd-back]')).toBeVisible();
   await expect(dock).toHaveCount(1);
+  await expectHealthy(page);
+});
+
+test('one-thread Phase 3 reader: one status line, folded practice row, Next in this thread', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await seedApp(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  const head = page.locator('.fd-article__head');
+  await expect(head.locator('.fd-eyebrow')).toHaveText('Reading');
+  const headBox = await head.boundingBox();
+  expect(headBox.height, 'the status line is one row at desktop width').toBeLessThanOrEqual(40);
+  await expect(page.locator('.fd-article__body > .governance-notice')).toHaveCount(0);
+  const summary = page.locator('details.practice-panel:not([open]) > .practice-summary');
+  await expect(summary).toBeVisible();
+  const box = await summary.boundingBox();
+  expect(box.height).toBeGreaterThanOrEqual(52);
+  expect(box.height, 'folded to one row').toBeLessThanOrEqual(64);
+  await expect(summary.locator('.practice-hint')).toBeHidden();
+  const thread = page.getByRole('navigation', { name: 'Next in this thread' });
+  await expect(thread).toBeVisible();
+  expect(await thread.locator('.fd-nextthread__row').count()).toBeGreaterThanOrEqual(1);
+  expect(await thread.locator('.fd-nextthread__row').count()).toBeLessThanOrEqual(3);
   await expectHealthy(page);
 });
 
