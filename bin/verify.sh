@@ -111,6 +111,13 @@ step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
 # neither file, with a capped shrink-only UNGATED list for the deliberate exceptions.
 step "unit — gate coverage"                 python3 bin/check-verify-coverage.py --self-test
 step "gate coverage vs ci.yml + ungated"    python3 bin/check-verify-coverage.py
+# ADVISORY, local only (CI is always a fresh checkout). On 2026-10-04 the primary checkout sat
+# on a branch 11 days / 580 commits behind main, and from there the citation gate looked
+# "missing": not in bin/, not in this file, nothing said why. This prints a NOTICE past 7 days
+# (CLERKSHIP_FRESHNESS_MAX_DAYS, --max-days, --max-commits) and never fails the run — a feature
+# branch is supposed to be behind main. No fetch, no network; it reads the local origin/main.
+step "unit — checkout freshness"            python3 bin/check_primary_checkout_freshness.py --self-test
+step "checkout freshness (advisory)"        python3 bin/check_primary_checkout_freshness.py
 # The sibling contract. check-verify-coverage.py asks whether every CI step has a local
 # equivalent; this asks whether every falsification is RUN BY ANYTHING. Both exist because a
 # gate nobody executes looks exactly like a gate.
