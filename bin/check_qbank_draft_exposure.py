@@ -206,7 +206,7 @@ ALLOWLIST_NOTE = (
     "in a governance PR (bin/ is a governance path): when a content PR clears an item's flag, its entry "
     "goes stale and the gate WARNS until a follow-up governance PR deletes it. Never add an entry to "
     "absorb a new open flag -- the caps live in the script (CAPS) and are policy. DECK ids are "
-    "positional (deck#index), see bin/quizzes.fingerprints.json. See docs/RATCHETS.md.")
+    "positional (deck#index), see quizzes.fingerprints.json. See docs/RATCHETS.md.")
 
 
 def allowlist_payload(open_by_bank):

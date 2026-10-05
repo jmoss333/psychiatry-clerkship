@@ -33,7 +33,7 @@ const COPIED = [
   'quizzes.schema.json',
   QUIZZES,
   SNAPSHOT,
-  'bin/quizzes.fingerprints.json',
+  'quizzes.fingerprints.json',
   'bin/qbank_draft_exposure_allowlist.json',
   'question_bank.json',
   'communication_cases.json',
@@ -119,24 +119,52 @@ test('stability: swapping two real questions fails naming the deck and both indi
     assert.doesNotMatch(logged.stdout, /[0-9]+ re-keyed/);
     assert.equal(fs.readFileSync(scheduleFile, 'utf8'), schedule);
     for (const [rel, bytes] of beforeOverride) {
-      if (rel !== 'bin/quizzes.fingerprints.json') {
+      if (rel !== 'quizzes.fingerprints.json') {
         assert.equal(fs.readFileSync(path.join(root, rel), 'utf8'), bytes, `${rel} is unchanged by acknowledgment`);
       }
     }
-    const pin = readJson(root, 'bin/quizzes.fingerprints.json');
+    const pin = readJson(root, 'quizzes.fingerprints.json');
     assert.deepEqual(pin.rekeys.map(e => e.shifts), [['AR-24#1', 'AR-24#4']]);
     assert.equal(pin.rekeys[0].reason, 'test: deliberate swap');
   });
 });
 
 test('stability: the committed pin agrees with the live file (437 cards, 79 decks, no re-key yet)', () => {
-  const pin = readJson(repo, 'bin/quizzes.fingerprints.json');
+  const pin = readJson(repo, 'quizzes.fingerprints.json');
   const live = readJson(repo, QUIZZES);
   assert.equal(pin.cardCount, 437);
   assert.equal(pin.deckCount, 79);
   assert.deepEqual(Object.keys(pin.decks).sort(), live.decks.map(d => d.id).sort());
   for (const deck of live.decks) assert.equal(pin.decks[deck.id].length, deck.questions.length, deck.id);
   assert.deepEqual(pin.rekeys, []);
+});
+
+test('stability: the pin lives where it can ride in the same PR as the deck edit it pins', () => {
+  // 2026-10-05: under bin/ the pin was governance to check_governance_separation.py L1 and the
+  // deck is content, so an in-place card edit and its required refresh could not share a PR and
+  // neither could land alone. The pin must be neither governance nor content to L1 (governance
+  // would re-create the deadlock; content would forbid a governance PR from ever touching it),
+  // and content to the policy/content check, like every other gate's data.
+  const snippet = [
+    'import json, sys; sys.path.insert(0, "bin")',
+    'import check_deck_card_stability as S',
+    'import check_governance_separation as L1',
+    'import check_policy_content_separation as PC',
+    'src = L1.shipped_sources(json.load(open(L1.SHIPPED_REL, encoding="utf-8")))',
+    'print(json.dumps({"pin": S.PIN, "l1Gov": L1.is_governance(S.PIN),',
+    '  "l1Content": L1.is_content(S.PIN, src), "deckIsContent": L1.is_content(S.SOURCE, src),',
+    '  "policy": PC.is_policy(S.PIN), "neutral": PC.is_neutral(S.PIN)}))',
+  ].join('\n');
+  const proc = spawnSync('python3', ['-c', snippet], { cwd: repo, encoding: 'utf8', timeout: 120_000 });
+  assert.equal(proc.status, 0, proc.stderr);
+  const got = JSON.parse(proc.stdout);
+  assert.equal(got.pin, 'quizzes.fingerprints.json');
+  assert.ok(fs.existsSync(path.join(repo, got.pin)), 'the pin is committed at the path the gate reads');
+  assert.ok(!fs.existsSync(path.join(repo, 'bin/quizzes.fingerprints.json')), 'no stale copy left in bin/');
+  assert.deepEqual(
+    { l1Gov: got.l1Gov, l1Content: got.l1Content, deckIsContent: got.deckIsContent, policy: got.policy, neutral: got.neutral },
+    { l1Gov: false, l1Content: false, deckIsContent: true, policy: false, neutral: false },
+  );
 });
 
 test('exposure: the live tree is green, and the per-bank numbers are the ones on record', () => {
