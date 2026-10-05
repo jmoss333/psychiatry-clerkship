@@ -1053,10 +1053,10 @@
       "kind": "general",
       "level": "low"
     },
-    "at": "2026-09-21",
+    "at": "2026-10-05",
     "by": "Joshua Moss, MD",
-    "contentHash": "d8dad5f2c8bcc3cb1213acb827af8b3bdfdcf7cd",
-    "clinicalHash": "02a1abc06aedc6219303398fd156f788dd61a156"
+    "contentHash": "1cdafe9a3da8276f1385ea6aa0944464d0d04a3a",
+    "clinicalHash": "847b66807abbbfd8665b25c3edc0b7967b1e1203"
   },
   "landmark_trials.md": {
     "status": "reviewed",
