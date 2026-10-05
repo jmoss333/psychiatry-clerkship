@@ -3,12 +3,17 @@
  * the live tree so no registry is ever edited.
  *
  *   bin/check_deck_card_stability.py   quizzes.schema.json + the positional-id pin
- *   bin/check_qbank_draft_exposure.py  un-attested items shipping, per bank, capped + named
+ *   bin/check_qbank_draft_exposure.py  items whose ITEM-LEVEL review flag is open (draft/pending/
+ *                                      missing), per bank, capped + named. Item metadata only:
+ *                                      the tool-level signatures that hash these bank files whole
+ *                                      are bin/check_attestation_hashes.py's, not read here.
  *
  * Both tools carry a --self-test over synthetic fixtures; what this file adds is the proof on
  * the REAL data shape: a malformed entry in a copy of quizzes.json fails the schema; swapping two
- * real questions fails naming the deck and both indices; flipping one real case to draft fails
- * the exposure cap; a cap below reality fails the other way. Every copy lives in a mkdtemp that is
+ * real questions fails naming the deck and both indices; a new open flag fails (unlisted, and over
+ * the cap); a swap fails; clearing a listed case's flag leaves a stale entry that WARNS and exits 0
+ * (the follow-up is a governance PR, because bin/ and the banks may not share a diff); reality
+ * below the cap WARNS and exits 0. Every copy lives in a mkdtemp that is
  * removed in `finally` — bin/verify.sh counts anything left in a step's TMPDIR as a failure.
  *
  * Nothing here touches the network and nothing writes outside the temp copy.
@@ -144,11 +149,12 @@ test('exposure: the live tree is green, and the per-bank numbers are the ones on
     assert.match(r.stdout, /REASON-RES\s+5\s+0\s+5\s+0\s+0\s+0\s+0\s+5\s+5\s+5/);
     assert.match(r.stdout, /DECK\s+437\s+0\s+0\s+0\s+437\s+0\s+0\s+437\s+437\s+437/);
     assert.match(r.stdout, /QB\s+192\s+189\s+0\s+0\s+0\s+0\s+0\s+0\s+0\s+0\s+\(3 retired QB draft\(s\) not shipping\)/);
-    assert.match(r.stdout, /OK -- 470 un-attested item\(s\) ship across 6 banks/);
+    assert.match(r.stdout, /OK -- 470 item\(s\) across 6 banks have an open item-level review flag, every one named and within cap \(item metadata only; tool-level signatures are bin\/check_attestation_hashes\.py's\)\./);
+    assert.doesNotMatch(r.stdout, /WARN/, 'the live tree carries no stale entry and no slack under a cap');
   });
 });
 
-test('exposure: one more draft than the cap fails, named, and the tool changes nothing', () => {
+test('exposure: RED — a new open flag (unlisted, and one over the cap) fails, named, and the tool changes nothing', () => {
   withCopy(root => {
     const bank = readJson(root, 'question_bank.json');
     const live = bank.items.find(i => i.status === 'attested' && i.retired !== true);
@@ -157,13 +163,30 @@ test('exposure: one more draft than the cap fails, named, and the tool changes n
     const before = fs.readFileSync(path.join(root, 'question_bank.json'), 'utf8');
     const r = run('check_qbank_draft_exposure.py', root);
     assert.equal(r.status, 1, r.stdout);
-    assert.match(r.stdout, new RegExp(`FAIL  QB: ${live.id} ships draft and is not on the allowlist`));
-    assert.match(r.stdout, /FAIL  QB: 1 exposed, cap is 0/);
+    assert.match(r.stdout, new RegExp(`FAIL  QB: ${live.id} has item-level flag \`draft\` and is not on the allowlist`));
+    assert.match(r.stdout, /FAIL  QB: 1 open, cap is 0/);
     assert.equal(fs.readFileSync(path.join(root, 'question_bank.json'), 'utf8'), before, 'report-only');
   });
 });
 
-test('exposure: a cap below reality fails the other way (stale cap), with the allowlist intact', () => {
+test('exposure: RED — a swap (one listed case cleared, one new open case added) fails on the new id', () => {
+  withCopy(root => {
+    const bank = readJson(root, 'communication_cases.json');
+    const cleared = bank.cases[0].id;
+    bank.cases[0].facultyReview = { status: 'reviewed', reviewer: 'Faculty', lastReviewed: '2026-10-05' };
+    const added = { ...structuredClone(bank.cases[1]), id: 'zz_new_open_case_001' };
+    added.facultyReview = { status: 'draft', reviewer: '', lastReviewed: '' };
+    bank.cases.push(added);
+    writeJson(root, 'communication_cases.json', bank);
+    const r = run('check_qbank_draft_exposure.py', root);
+    assert.equal(r.status, 1, r.stdout);
+    assert.match(r.stdout, /FAIL  COMM: zz_new_open_case_001 has item-level flag `draft` and is not on the allowlist/);
+    assert.doesNotMatch(r.stdout, /FAIL  COMM: \d+ open, cap is/, 'the count did not rise; only the name catches it');
+    assert.match(r.stdout, new RegExp(`WARN  COMM: ${cleared} is listed but is no longer open`));
+  });
+});
+
+test('exposure: RED — open items above the cap fail (the ratchet only turns down), with the allowlist intact', () => {
   withCopy(root => {
     // The caps live in the script; the fixture door is the allowlist, so lower the policy the
     // only way a copy can: import the module and call the gate with a cap under the real count.
@@ -180,25 +203,46 @@ test('exposure: a cap below reality fails the other way (stale cap), with the al
     assert.equal(proc.status, 0, proc.stderr);
     const { rc, out } = JSON.parse(proc.stdout);
     assert.equal(rc, 1);
-    assert.match(out, /FAIL  FAM: 8 exposed, cap is 7/);
+    assert.match(out, /FAIL  FAM: 8 open, cap is 7/);
     assert.match(out, /FAIL  FAM: allowlist has 8 entries, cap is 7/);
   });
 });
 
-test('exposure: attesting a listed case leaves a stale entry, which fails until deleted', () => {
+test('exposure: WARN — clearing a listed case\'s flag (a content PR) leaves a stale entry that warns and exits 0', () => {
+  // The deadlock this proves gone: the allowlist is in bin/ (governance) and the bank is content,
+  // and L1 forbids both in one diff. A content PR that clears a flag cannot delete the entry, so
+  // it must pass; the deletion is a follow-up governance PR.
   withCopy(root => {
     const bank = readJson(root, 'communication_cases.json');
-    bank.cases[0].facultyReview = { status: 'reviewed', reviewer: 'Faculty', lastReviewed: '2026-10-04' };
+    const id = bank.cases[0].id;
+    bank.cases[0].facultyReview = { status: 'reviewed', reviewer: 'Faculty', lastReviewed: '2026-10-05' };
     writeJson(root, 'communication_cases.json', bank);
+    const allowBefore = fs.readFileSync(path.join(root, 'bin/qbank_draft_exposure_allowlist.json'), 'utf8');
     const r = run('check_qbank_draft_exposure.py', root);
-    assert.equal(r.status, 1, r.stdout);
-    assert.match(r.stdout, new RegExp(`FAIL  COMM: ${bank.cases[0].id} is listed but is clear -- stale entry`));
+    assert.equal(r.status, 0, r.stdout);
+    assert.doesNotMatch(r.stdout, /FAIL/);
+    assert.match(r.stdout, new RegExp(`WARN  COMM: ${id} is listed but is no longer open \\(its item-level flag is now reviewed/attested\\) -- stale entry; delete it from bin/qbank_draft_exposure_allowlist\\.json in a follow-up governance PR`));
+    assert.match(r.stdout, /WARN  COMM: 15 open under a cap of 16 -- lower CAPS\['COMM'\] to 15 in a follow-up governance PR, after deleting its 1 stale entry/);
+    assert.match(r.stdout, /OK -- 469 item\(s\) .* 2 warnings above, for a follow-up governance PR\./);
+    assert.equal(fs.readFileSync(path.join(root, 'bin/qbank_draft_exposure_allowlist.json'), 'utf8'), allowBefore, 'report-only');
+  });
+});
+
+test('exposure: WARN — reality below the cap (entry already deleted) warns that the cap can be lowered, exit 0', () => {
+  // The follow-up governance PR's first commit: the stale entry is gone, the cap is not lowered yet.
+  withCopy(root => {
+    const bank = readJson(root, 'family_systems_scenarios.json');
+    const id = bank.scenarios[0].id;
+    bank.scenarios[0].facultyReview = { status: 'reviewed', reviewer: 'Faculty', lastReviewed: '2026-10-05' };
+    writeJson(root, 'family_systems_scenarios.json', bank);
     const allow = readJson(root, 'bin/qbank_draft_exposure_allowlist.json');
-    allow.banks.COMM = allow.banks.COMM.filter(id => id !== bank.cases[0].id);
+    allow.banks.FAM = allow.banks.FAM.filter(x => x !== id);
     writeJson(root, 'bin/qbank_draft_exposure_allowlist.json', allow);
-    const green = run('check_qbank_draft_exposure.py', root);
-    assert.equal(green.status, 0, green.stdout);
-    assert.match(green.stdout, /note  COMM: 15 listed under a cap of 16 -- lower CAPS\['COMM'\] to 15/);
+    const r = run('check_qbank_draft_exposure.py', root);
+    assert.equal(r.status, 0, r.stdout);
+    assert.doesNotMatch(r.stdout, /FAIL|stale/);
+    assert.match(r.stdout, /WARN  FAM: 7 open under a cap of 8 -- lower CAPS\['FAM'\] to 7 in a follow-up governance PR\n/);
+    assert.match(r.stdout, /OK -- 469 item\(s\) .* 1 warning above, for a follow-up governance PR\./);
   });
 });
 

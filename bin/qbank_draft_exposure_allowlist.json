@@ -1,5 +1,5 @@
 {
-  "_note": "Named allowlist for bin/check_qbank_draft_exposure.py: every un-attested item that ships today, per bank. SHRINK ONLY. Delete an entry when the item is attested (the gate fails on a stale one); never add an entry to absorb new un-attested content -- the caps live in the script (CAPS) and are policy. DECK ids are positional (deck#index), see bin/quizzes.fingerprints.json. See docs/RATCHETS.md.",
+  "_note": "Named allowlist for bin/check_qbank_draft_exposure.py: every item whose ITEM-LEVEL review flag (QB `status`; elsewhere `facultyReview.status`) was open -- draft, pending or missing -- when the list was written, per bank. Item metadata only: the five non-QB bank files are also hashed whole into their host tools' tool-level signatures, which this gate does not read. SHRINK ONLY, and only in a governance PR (bin/ is a governance path): when a content PR clears an item's flag, its entry goes stale and the gate WARNS until a follow-up governance PR deletes it. Never add an entry to absorb a new open flag -- the caps live in the script (CAPS) and are policy. DECK ids are positional (deck#index), see bin/quizzes.fingerprints.json. See docs/RATCHETS.md.",
   "banks": {
     "QB": [],
     "COMM": [

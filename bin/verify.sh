@@ -352,12 +352,15 @@ step "production rotation edition locked"   python3 bin/check-rotation-edition-l
 # This acknowledgment does not migrate, clear or repair learner schedules.
 step "unit — deck card stability"           python3 bin/check_deck_card_stability.py --self-test
 step "quizzes schema + card ids pinned"     python3 bin/check_deck_card_stability.py
-# The attestation gate existed on ONE of six question banks, at runtime only; the other five
-# shipped every draft. This names every un-attested item that ships, per bank, in
-# bin/qbank_draft_exposure_allowlist.json against caps in the script (CAPS = today's counts:
-# COMM 16, FAM 8, REASON 4, REASON-RES 5, DECK 437 with no review block, QB 0 live). A new draft,
-# a cap below reality and a stale entry all fail; the list only shrinks. Report-only: it never
-# changes an item's status — attesting is the console's job.
+# Item-level review flags (QB `status`; elsewhere `facultyReview.status`) were enforced on ONE
+# of six question banks and counted on none. This names every item whose item-level flag is
+# open (draft/pending/missing), per bank, in bin/qbank_draft_exposure_allowlist.json against
+# caps in the script (CAPS = the 2026-10-04 counts: COMM 16, FAM 8, REASON 4, REASON-RES 5,
+# DECK 437 with no block, QB 0). Item metadata only: the five non-QB bank files are hashed whole
+# into their host tools' tool-level signatures, which "attestation hashes" above checks and this
+# does not. FAIL: an open item not on the list, or more open items than the cap. WARN, exit 0: a
+# stale entry or a cap above reality — the content PR that clears a flag cannot edit bin/ (L1),
+# so the cleanup is a follow-up governance PR. Report-only: it never changes an item's flag.
 step "unit — qbank draft exposure"          python3 bin/check_qbank_draft_exposure.py --self-test
 step "qbank draft exposure (ratchet)"       python3 bin/check_qbank_draft_exposure.py
 
