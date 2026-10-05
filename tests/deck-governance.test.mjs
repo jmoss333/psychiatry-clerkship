@@ -97,14 +97,27 @@ test('stability: swapping two real questions fails naming the deck and both indi
     assert.doesNotMatch(r.stdout, /AR-24#5/, 'the companion-cited card did not move and is not named');
     assert.doesNotMatch(r.stdout, /AR-23|AR-25|SP-/, 'no other deck is named');
     assert.match(r.stdout, /FAIL -- 2 positional id\(s\) would shift/);
-    assert.match(r.stdout, /--rekey-learner-schedules/);
+    assert.match(r.stdout, /--acknowledge-positional-id-breakage/);
 
-    // The refresh refuses; the logged re-key is the only door, and the log lands in the pin.
+    // The refresh refuses; an explicit breakage acknowledgment only changes the pin.
+    const beforeOverride = new Map(COPIED.map(rel => [rel, fs.readFileSync(path.join(root, rel), 'utf8')]));
+    const scheduleFile = path.join(root, 'synthetic-learner-schedule.json');
+    const schedule = JSON.stringify({ cards: { 'AR-24#1': { ivl: 21, reps: 4 } } });
+    fs.writeFileSync(scheduleFile, schedule);
     const refused = run('check_deck_card_stability.py', root, ['--update-fingerprints']);
     assert.equal(refused.status, 1);
     assert.match(refused.stdout, /REFUSED -- 2 shift\(s\)/);
-    const logged = run('check_deck_card_stability.py', root, ['--update-fingerprints', '--rekey-learner-schedules', 'test: deliberate swap']);
+    const logged = run('check_deck_card_stability.py', root, ['--update-fingerprints', '--acknowledge-positional-id-breakage', 'test: deliberate swap']);
     assert.equal(logged.status, 0, logged.stdout);
+    assert.match(logged.stdout, /OVERRIDE LOGGED/);
+    assert.match(logged.stdout, /learner schedules were NOT migrated/);
+    assert.doesNotMatch(logged.stdout, /[0-9]+ re-keyed/);
+    assert.equal(fs.readFileSync(scheduleFile, 'utf8'), schedule);
+    for (const [rel, bytes] of beforeOverride) {
+      if (rel !== 'bin/quizzes.fingerprints.json') {
+        assert.equal(fs.readFileSync(path.join(root, rel), 'utf8'), bytes, `${rel} is unchanged by acknowledgment`);
+      }
+    }
     const pin = readJson(root, 'bin/quizzes.fingerprints.json');
     assert.deepEqual(pin.rekeys.map(e => e.shifts), [['AR-24#1', 'AR-24#4']]);
     assert.equal(pin.rekeys[0].reason, 'test: deliberate swap');
@@ -194,4 +207,14 @@ test('both tools: --self-test exits 0 so the falsifications stay wired', () => {
     const r = spawnSync('python3', [path.join(repo, 'bin', tool), '--self-test'], { cwd: repo, encoding: 'utf8', timeout: 120_000 });
     assert.equal(r.status, 0, `${tool}: ${r.stdout}${r.stderr}`);
   }
+});
+
+test('stability: CLI names an acknowledgment, explicitly disclaims migration, and rejects the old action name', () => {
+  const help = run('check_deck_card_stability.py', repo, ['--help']);
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /--acknowledge-positional-id-breakage/);
+  assert.match(help.stdout, /does NOT\s+migrate learner schedules/);
+  const obsolete = run('check_deck_card_stability.py', repo, ['--rekey-learner-schedules', 'not a migration']);
+  assert.equal(obsolete.status, 2);
+  assert.match(obsolete.stderr, /unrecognized arguments/);
 });
