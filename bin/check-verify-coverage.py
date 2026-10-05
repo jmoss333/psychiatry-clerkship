@@ -106,7 +106,7 @@ def invoked_scripts(text):
             continue
         # A trailing operator continues a compound across newlines without a
         # backslash. Its next command remains conditional/pipelined, not a gate.
-        shell_continuation = line.endswith("\\") or bool(re.search(r"(?:&&|\|\||\|)\s*$", line))
+        shell_continuation = line.endswith("\\") or bool(re.search(r"(?:&&|\|\||\|)\s*(?:#.*)?$", line))
         if continued:
             continued = shell_continuation
             continue
@@ -386,6 +386,7 @@ def self_test():
         "dead assignment": "if false; then\nA=bin\nfi\npython3 $A/check_a.py",
         "masked": "python3 " + target + " || true",
         "newline and": "false &&\npython3 " + target,
+        "newline commented and": "false && # no run\npython3 " + target,
         "newline or": "true ||\npython3 " + target,
         "newline pipe": "printf text |\npython3 " + target,
         "newline chain": "false &&\ntrue &&\n# comment\npython3 " + target,
