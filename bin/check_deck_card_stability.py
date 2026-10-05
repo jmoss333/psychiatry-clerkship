@@ -362,16 +362,16 @@ def check(root, out=print, update=False, rekey_reason=None, base=None):
     try:
         trusted = load_history_snapshot(root, base)
         # Deletion is recoverable, but regeneration still compares to trusted history.
-        pin = trusted if update and not pin_path.exists() else load_pin(root)
+        snapshot = trusted if update and not pin_path.exists() else load_pin(root)
     except CheckError as exc:
         out(f"deck card stability: COULD NOT CHECK -- {exc}")
         return 2
-    errors, missing = history_findings(trusted, pin, live)
+    errors, missing = history_findings(trusted, snapshot, live)
     if errors:
         out("FAIL -- " + "; ".join(errors))
         return 1
 
-    drift = diff_pin(pin["decks"], live)
+    drift = diff_pin(snapshot["decks"], live)
     rekey = [d for d in drift if d[0] in REKEY_CLASSES]
     refresh = [d for d in drift if d[0] in REFRESH_CLASSES]
     for cls, did, idx, detail in drift:
@@ -384,7 +384,7 @@ def check(root, out=print, update=False, rekey_reason=None, base=None):
             out(f"REFUSED -- {len(required)} shift(s) above would re-key learner schedules. Regenerate ONLY if you "
                 f"intend to re-key them: {REKEY_HINT}")
             return 1
-        rekeys = list(pin["rekeys"])
+        rekeys = list(snapshot["rekeys"])
         if required:
             rekeys.append({
                 "date": _dt.date.today().isoformat(),
@@ -408,7 +408,7 @@ def check(root, out=print, update=False, rekey_reason=None, base=None):
             f"carries it: {UPDATE_HINT}")
         return 1
     out(f"OK -- {cards} cards in {len(live)} decks match {PIN}; schema + semantics hold on {len(datasets)} files "
-        f"({len(pin['rekeys'])} logged re-key(s) in history).")
+        f"({len(snapshot['rekeys'])} logged re-key(s) in history).")
     return 0
 
 
@@ -501,10 +501,10 @@ def self_test():
         expect("--update-fingerprints REFUSES to absorb a shift without the re-key flag",
                rc == 1 and "REFUSED" in out and "--acknowledge-positional-id-breakage" in out)
         rc, out = run(root, update=True, rekey_reason="self-test: deliberate swap")
-        pin = json.loads((root / PIN).read_text(encoding="utf-8"))
+        snapshot = json.loads((root / PIN).read_text(encoding="utf-8"))
         expect("with the flag the pin is rewritten and the re-key is logged with reason and ids",
-               rc == 0 and len(pin["rekeys"]) == 1 and pin["rekeys"][0]["reason"] == "self-test: deliberate swap"
-               and pin["rekeys"][0]["shifts"] == ["AR-01#0", "AR-01#2"])
+               rc == 0 and len(snapshot["rekeys"]) == 1 and snapshot["rekeys"][0]["reason"] == "self-test: deliberate swap"
+               and snapshot["rekeys"][0]["shifts"] == ["AR-01#0", "AR-01#2"])
         rc, out = run(root)
         expect("after the logged re-key the swapped tree is clean and the log count is reported",
                rc == 0 and "1 logged re-key" in out)
