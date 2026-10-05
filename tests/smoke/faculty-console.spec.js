@@ -12,6 +12,9 @@ import {
 } from '../../faculty-console/netlify/functions/qbank-actions.mjs';
 
 const MS3_URL = process.env.MS3_BASE_URL || 'http://localhost:4200';
+// Below 640px the Library destination is a dock item and the tab row is hidden; both carry
+// data-fd-tab (one-thread, 2026-10-04), so pin the one that is actually on screen.
+const libraryTab = '[data-fd-tab="library"]:is(.fd-tab,.fd-dock__item):visible';
 // The resident deployment. Case-of-the-Week ships an MS3 page and a resident twin from
 // one registry week, and the resident half exists only here — previewing it against the
 // MS3 site would report not_found for a page that is live.
@@ -1944,7 +1947,7 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await page.locator('#review-item-selector').selectOption('page:t_mood.md');
     await expect(page.locator('#preview-status-label')).toHaveText('Ready');
     const lockedSrc = await page.locator('#learner-preview-frame').getAttribute('src');
-    await page.frameLocator('#learner-preview-frame').locator('[data-fd-tab="library"]').click();
+    await page.frameLocator('#learner-preview-frame').locator(libraryTab).click();
     await expect(page.frameLocator('#learner-preview-frame').locator('#content h1')).toHaveText(
       'Mood Disorders on the Inpatient Unit',
     );
@@ -2159,10 +2162,10 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await fullPage.goto(`${MS3_URL}/?page=t_mood.md`);
     await expect(fullPage.locator('#faculty-preview-lock-notice')).toHaveCount(0);
     await expect(fullPage.locator('.fd-article__h1')).toHaveText('Mood');
-    await fullPage.locator('[data-fd-tab="library"]').click();
+    await fullPage.locator(libraryTab).click();
     await fullPage.locator('.fd-kit__reading[data-fd-open="t_anxiety.md"]').click();
     await expect(fullPage.locator('.fd-article__h1')).toContainText('Anxiety');
-    await fullPage.locator('[data-fd-tab="library"]').click();
+    await fullPage.locator(libraryTab).click();
     await fullPage.locator('.fd-kit__reading[data-fd-open="t_mood.md"]').click();
     const externalPromise = fullPage.waitForEvent('popup');
     await fullPage.locator('#content').getByRole('link', {
@@ -2173,7 +2176,9 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await externalTool.close();
     // The study-export surface lives in the internal Progress Reader reached from Today.
     await fullPage.locator('[data-fd-home]').first().click();
-    await fullPage.locator('[data-fd-progress]').click();
+    // Today carries the progress link twice since 2026-10-04 (the rail, and a phone copy under the
+    // pills); only one is painted at any width.
+    await fullPage.locator('[data-fd-progress]:visible').click();
     await expect(fullPage.locator('[data-act="studyexport"]')).toBeVisible();
     const [download] = await Promise.all([
       fullPage.waitForEvent('download', { timeout: 5_000 }),
