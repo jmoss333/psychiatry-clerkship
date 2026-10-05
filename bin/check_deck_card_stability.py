@@ -360,13 +360,13 @@ def check(root, out=print, update=False, rekey_reason=None, base=None):
     cards = sum(len(v) for v in live.values())
     pin_path = Path(root) / PIN
     try:
-        trusted = load_history_snapshot(root, base)
+        base_snapshot = load_history_snapshot(root, base)
         # Deletion is recoverable, but regeneration still compares to trusted history.
-        snapshot = trusted if update and not pin_path.exists() else load_pin(root)
+        snapshot = base_snapshot if update and not pin_path.exists() else load_pin(root)
     except CheckError as exc:
         out(f"deck card stability: COULD NOT CHECK -- {exc}")
         return 2
-    errors, missing = history_findings(trusted, snapshot, live)
+    errors, missing = history_findings(base_snapshot, snapshot, live)
     if errors:
         out("FAIL -- " + "; ".join(errors))
         return 1
