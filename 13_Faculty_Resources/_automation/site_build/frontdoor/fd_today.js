@@ -3,7 +3,7 @@
    Order, top to bottom (docs/superpowers/specs/one-thread-handoff/README.md, Screens §1):
      0. the active-testing line (owner decision D1: one row -- title · Details · Share feedback)
      1. place: eyebrow ("Week 2 of 6 · Thursday" + Change week), week-title H1, theme line
-     2. the six-week thread (.fd-thread) -- one node per week, each routing to that week on Path
+     2. the projected-week thread (.fd-thread) -- one node per week, each routing to that week on Path
      3. the Now card (.fd-now) -- ONE shell for every primary kind
      4. "Also today" -- the device-store rows that did not win, as flat rows with a status mark
      5. the preparation chooser (fdTodayPurpose; the shell owns its open state)
@@ -403,7 +403,7 @@ function fdPilotFeedback(){
   '</section>';
 }
 
-/* ---- The six-week thread ----------------------------------------------------------------
+/* ---- The projected-week thread ----------------------------------------------------------------
    One node per projected week, in path order. A week is DONE only when every item in it is done
    for that week (fdProgressForWeek -- week-scoped, #949), never merely because it is in the past:
    the thread must not mark work complete that the learner has not done. The current week carries
@@ -416,7 +416,7 @@ function fdThread(index, state){
   var idx=index||{}, st=state||{};
   if(!fdActivePathValid(idx)) return '';
   var weeks=idx.weeks, cur=(typeof st.week==='number'&&!isNaN(st.week))?st.week:null;
-  var out='<nav class="fd-thread" aria-label="Six-week path"><ol class="fd-thread__list">';
+  var out='<nav class="fd-thread" aria-label="Rotation weeks"><ol class="fd-thread__list">';
   for(var i=0;i<weeks.length;i++){
     var w=weeks[i], items=fdItemsForWeek(idx,w.n);
     var p=fdTodayProgress(items,fdProgressForWeek(idx,st,w.n));
@@ -451,7 +451,7 @@ function fdWeekCaseStep(index, caseData, week){
   var w=weeks[week-1];
   if(!w||typeof w.title!=='string'||typeof w.learnerTask!=='string') return null;
   return {n:week, title:w.title, learnerTask:w.learnerTask,
-    handoff:typeof w.handoff==='string'?w.handoff:'', ref:FD_CASE_TOOL_REF};
+    handoff:typeof w.handoff==='string'?w.handoff:'', ref:FD_CASE_TOOL_REF, governance:tool.governance};
 }
 
 function fdUnitWeek(step){
@@ -462,6 +462,7 @@ function fdUnitWeek(step){
     '<div class="fd-unit__body">'+
       '<span class="fd-unit__kicker">On the unit this week · Case Journeys, week '+n+'</span>'+
       '<h2 class="fd-unit__title" id="fd-unit-title">'+fdEsc(step.title)+'</h2>'+
+      governanceBadge(step.governance,{compact:true})+
       '<p class="fd-unit__task">'+fdEsc(step.learnerTask)+'</p>'+
       (step.handoff?'<p class="fd-unit__handoff"><strong>Carry it to rounds:</strong> '+fdEsc(step.handoff)+'</p>':'')+
       /* A real link, not a ref-only data-fd-open: the Front Door action drops query parameters,
@@ -525,7 +526,7 @@ function fdToday(index, state){
   out+='<h1 class="fd-today__h1">'+heading+'</h1>';
   if(hasWeek&&wk.theme) out+='<p class="fd-today__theme">'+fdEsc(wk.theme)+'</p>';
   out+='</div>';
-  /* 2. The six-week thread. */
+  /* 2. The projected-week thread. */
   out+=fdThread(idx,st);
 
   out+='<div class="fd-today__cols"><div class="fd-today__main">';

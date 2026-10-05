@@ -1725,7 +1725,10 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
       }
       expect.soft(geometry.searchAccessibleText, 'the search name is the sentence at every width').toContain('Search a symptom, drug, or task');
       expect.soft(geometry.searchIconWidth).toBeGreaterThan(0);
-      expect.soft(geometry.searchLabelWidth).toBeGreaterThanOrEqual(44);
+      // The label is text inside the Search button, not a separate touch target.
+      // The button's 44px target and collision-free bounds are asserted above.
+      expect.soft(geometry.searchLabelWidth, 'Search text remains visible').toBeGreaterThan(0);
+      await expect(page.locator('.fd-searchbtn')).toHaveAccessibleName(/Search a symptom, drug, or task/);
       // The ⌘K chip is a ≥1000px affordance now (it yields its width to "＋ Ask a question" below that).
       expect.soft(geometry.shortcutDisplay).toBe('none');
       expect.soft(geometry.headerBottom).toBeLessThanOrEqual(geometry.mainTop + 0.5);
@@ -1763,7 +1766,8 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
       };
     });
     expect.soft(browseHeader.collisions).toBe(false);
-    expect.soft(browseHeader.labelWidth).toBeGreaterThanOrEqual(44);
+    expect.soft(browseHeader.labelWidth, 'Search text remains visible while browsing').toBeGreaterThan(0);
+    await expect(page.locator('.fd-searchbtn')).toHaveAccessibleName(/Search a symptom, drug, or task/);
     expect.soft(browseHeader.shortcutDisplay).toBe('none');
     expect.soft(browseHeader.scrollWidth).toBeLessThanOrEqual(browseHeader.viewportWidth);
     await expectHealthy(page);

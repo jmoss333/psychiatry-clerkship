@@ -957,7 +957,7 @@ test('preparation is a single optional action inside the chooser at every week, 
 
 test('the thread has one node per projected week, marks done by real completion, and previews on Path', () => {
   const html = F.fdThread(PATH_IDX, s({ week: 2 }));
-  assert.match(html, /^<nav class="fd-thread" aria-label="Six-week path"><ol class="fd-thread__list">/);
+  assert.match(html, /^<nav class="fd-thread" aria-label="Rotation weeks"><ol class="fd-thread__list">/);
   assert.equal((html.match(/<li class="fd-thread__step/g) || []).length, IDX.weeks.length);
   assert.equal((html.match(/aria-current="step"/g) || []).length, 1);
   assert.match(html, /<li class="fd-thread__step is-current"><button type="button" class="fd-thread__node" data-fd-tab="path" data-fd-view-week="2" aria-current="step" aria-label="Week 2: W2 \(current week\)">/);
@@ -992,7 +992,7 @@ const CASE = { weeks: [
 test('fdWeekCaseStep returns the week\'s step only when the case tool ships and the week exists', () => {
   const withTool = { byRef: { 'one-patient-six-weeks.html': { kind: 'tool' } } };
   assert.deepEqual(F.fdWeekCaseStep(withTool, CASE, 1), { n: 1, title: 'Admission: start with the person',
-    learnerTask: 'Practice opening the interview.', handoff: 'Present the timeline first.', ref: 'one-patient-six-weeks.html' });
+    learnerTask: 'Practice opening the interview.', handoff: 'Present the timeline first.', ref: 'one-patient-six-weeks.html', governance: undefined });
   assert.equal(F.fdWeekCaseStep(withTool, CASE, 2).handoff, '', 'a missing handoff is an empty string, not undefined');
   assert.equal(F.fdWeekCaseStep(withTool, CASE, 3), null, 'no matching week');
   assert.equal(F.fdWeekCaseStep(withTool, CASE, 0), null);
@@ -1057,4 +1057,30 @@ test('the rail ends with the learning-record link, and the phone column carries 
   const rail = html.slice(html.indexOf('<aside class="fd-rail">'));
   assert.match(rail, /Quick tools[\s\S]*<button type="button" class="fd-progresscard" data-fd-progress>[\s\S]*<\/aside>/);
   assert.match(html, /<div class="fd-today__record"><button type="button" class="fd-progresscard" data-fd-progress>/);
+});
+
+
+test('resident thread uses the projected four weeks without a six-week label', () => {
+  const idx = {...PATH_IDX, path: {...PATH_IDX.path, weekCount: 4}, weeks: PATH_IDX.weeks.slice(0, 4)};
+  const html = F.fdThread(idx, s({week: 2}));
+  assert.equal((html.match(/class="fd-thread__step/g) || []).length, 4);
+  assert.match(html, /aria-label="Rotation weeks"/);
+  assert.doesNotMatch(html, /Six-week|data-fd-view-week="[56]"/);
+});
+
+test('Today case excerpt preserves the source tool review badge', () => {
+  for (const status of ['pending', 'stale', 'reviewed']) {
+    const governance = {status, riskKind: 'clinical', riskLevel: 'moderate'};
+    const idx = {byRef: {'one-patient-six-weeks.html': {kind: 'tool', governance}}};
+    const G = make((g, options) => {
+      assert.equal(g, governance);
+      assert.equal(options.compact, true);
+      return '<span class="fixture-badge">' + g.status + '</span>';
+    });
+    const step = G.fdWeekCaseStep(idx, CASE, 1);
+    assert.equal(step.governance, governance);
+    assert.ok(G.fdUnitWeek(step).includes('<span class="fixture-badge">' + status + '</span>'));
+    assert.equal(step.learnerTask, CASE.weeks[0].learnerTask);
+    assert.equal(step.handoff, CASE.weeks[0].handoff);
+  }
 });

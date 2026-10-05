@@ -280,7 +280,7 @@
  * teal-deep number; future = control-line ring, dim number. The connector after a done week is
  * teal. Labels are week titles, 12/1.3, 14ch max; a phone keeps only the current one. */
 .fd-thread{margin:0 0 var(--fd-space-10)}
-.fd-thread__list{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));margin:0;padding:0;list-style:none}
+.fd-thread__list{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin:0;padding:0;list-style:none}
 .fd-thread__step{position:relative;min-width:0}
 .fd-thread__step:not(:last-child)::after{
   content:"";position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-line-strong);pointer-events:none;
