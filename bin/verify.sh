@@ -365,8 +365,10 @@ step "production rotation edition locked"   python3 bin/check-rotation-edition-l
 # first step validates both deck copies against quizzes.schema.json (repo root — a schema is a
 # governance path, 07_*/ is content), checks what Draft-07 cannot (counts agree, exactly one
 # keyed option), then compares every card's fingerprint to the committed pin
-# bin/quizzes.fingerprints.json. In-place edits refresh the pin (--update-fingerprints); a
-# reorder, deletion or removed deck may only be written with --acknowledge-positional-id-breakage "<why>",
+# quizzes.fingerprints.json (repo root: gate data that must ride in the same PR as the deck
+# edit, which L1 forbids for anything under bin/). In-place edits refresh the pin
+# (--update-fingerprints); a reorder, deletion or removed deck may only be written with
+# --acknowledge-positional-id-breakage "<why>",
 # which logs the shifted ids and the reason INSIDE the pin, so the decision is in the diff.
 # This acknowledgment does not migrate, clear or repair learner schedules.
 step "unit — deck card stability"           python3 bin/check_deck_card_stability.py --self-test

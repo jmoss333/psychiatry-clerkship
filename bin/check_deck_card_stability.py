@@ -19,8 +19,9 @@ WHAT THIS DOES, in order, and the whole thing is exit 1 on the first class that 
                deckCount == len(decks), questionCount == sum(len(questions)), deck.n ==
                len(questions), deck ids unique, exactly ONE keyed option per question.
   3. PIN.      Every card's content fingerprint, per deck and per index, is pinned in
-               bin/quizzes.fingerprints.json (generated, committed). The live tree is compared
-               to the pin and every divergence is named as deck#index with its class:
+               quizzes.fingerprints.json (generated, committed; repo root beside the schema —
+               see WHERE THE PIN LIVES below). The live tree is compared to the pin and every
+               divergence is named as deck#index with its class:
 
                  MOVED      the card at index i was pinned at a different index  -> re-key
                  DELETED    the deck is shorter than its pin (orphans schedules) -> re-key
@@ -56,6 +57,18 @@ rewording feedback does not change which question a learner is scheduled on. Rew
 or an option does change the card's content and is reported as EDITED — a refresh, not a
 re-key, because the id still points at the same slot in the same deck.
 
+WHERE THE PIN LIVES, and why not bin/. The pin is gate DATA, and an EDITED or APPENDED card must
+refresh it in the SAME PR as the deck edit — this gate FAILS until it does, by design, so the
+diff carries the change. It first lived in bin/, which bin/check_governance_separation.py L1
+treats as governance in full, and 07_*/ is content: the refresh and the edit could not share a
+PR, and neither could land alone, so no in-place card edit could ever merge (found 2026-10-05
+on the leaked-answer split). At the repo root it is neither a G path nor a CONTENT path to L1,
+and it is content to bin/check_policy_content_separation.py like every other gate's data — so
+the edit and the refresh ride one PR in separate commits. What stays governance is everything
+that decides what the pin means: this script (the algorithm, the classes, the re-key rule) and
+quizzes.schema.json. A re-key still cannot be written without the logged acknowledgment, and
+that log is inside the pin, in the PR diff.
+
 Exit 0 clean (schema valid, semantics hold, pin matches) · 1 a finding (schema violation,
 semantic break, any drift from the pin, a refused re-key) · 2 could not check (a deck file,
 the schema or the pin missing or unparsable; jsonschema not installed).
@@ -88,7 +101,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = "07_Evidence_and_Reading/Landmark_Trials/quizzes.json"      # what both shipped pages read
 SNAPSHOT = "_prototypes/canon-quiz/quizzes.json"                      # resident Canon Quiz copy
 SCHEMA = "quizzes.schema.json"
-PIN = "bin/quizzes.fingerprints.json"
+PIN = "quizzes.fingerprints.json"                                     # gate data, not bin/
 SCHEMA_TARGETS = (SOURCE, SNAPSHOT)
 REKEY_CLASSES = ("MOVED", "DELETED", "DECK GONE")
 REFRESH_CLASSES = ("EDITED", "APPENDED", "NEW DECK")
@@ -343,7 +356,7 @@ def _fixture(td):
         p = root / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(json.dumps(data), encoding="utf-8")
-    (root / "bin").mkdir(exist_ok=True)
+    (root / PIN).parent.mkdir(parents=True, exist_ok=True)
     write_pin(root / PIN, pin_payload(data, []))
     return root, data
 
