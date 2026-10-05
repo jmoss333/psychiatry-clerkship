@@ -285,6 +285,13 @@ step "unit — netlify preview gate"          python3 bin/check_preview_gate.py 
 # committed under bin/data/), so it runs for real: a retiring F-code fires BEFORE October 1.
 step "unit — source integrity"              python3 bin/check_source_integrity.py --self-test
 step "unit — review cadence"                python3 bin/check_review_cadence.py --self-test
+# Same posture for the instrument-route sweep (INV-IR2's online half): the real run probes
+# every custodian site and is dev-only by its own docstring — flaky by nature, and Netlify
+# egress and the sandbox block those hosts. Only the SELF-TEST runs here, against a loopback
+# stub: a dead route exits 1, HEAD-refused-but-GET-served is not a false alarm, an empty
+# registry is exit 2 not a pass, and --stamp dates only an instrument whose every route passed.
+# Until 2026-10-04 this file had no falsification at all and sat on no gate.
+step "unit — instrument link sweep"         python3 bin/check_instrument_links.py --self-test
 step "unit — icd-10-cm codes"               python3 bin/check_icd_codes.py --self-test
 step "icd-10-cm codes in force"             python3 bin/check_icd_codes.py
 # Only the SELF-TEST runs here: the real comparison fetches a newer abstract from Europe PMC
