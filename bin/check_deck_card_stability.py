@@ -204,7 +204,7 @@ def _git(root, *args):
     return result.stdout.strip()
 
 
-def history_pin(root, base=None):
+def load_history_snapshot(root, base=None):
     """Anchor to the PR base in CI; locally use the established stacked-PR convention.
 
     Never infer first generation from a missing working pin. Even a base without a pin
@@ -360,7 +360,7 @@ def check(root, out=print, update=False, rekey_reason=None, base=None):
     cards = sum(len(v) for v in live.values())
     pin_path = Path(root) / PIN
     try:
-        trusted = history_pin(root, base)
+        trusted = load_history_snapshot(root, base)
         # Deletion is recoverable, but regeneration still compares to trusted history.
         pin = trusted if update and not pin_path.exists() else load_pin(root)
     except CheckError as exc:
