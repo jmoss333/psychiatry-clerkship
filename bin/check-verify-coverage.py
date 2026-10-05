@@ -15,8 +15,9 @@ WHY (direction 2, bin/check_* → anywhere): mirroring only asks whether the two
 agree with EACH OTHER. A checker present in NEITHER agrees perfectly and is invisible — it
 looks like coverage, it is named after the contract it protects, and nothing runs it. On
 2026-10-04 two of 29 `bin/check_*.py` were in that state, one of them for a month. So this
-also enumerates every `bin/check_*.py` and `bin/check-*.py` and fails when one is named by
-neither verify.sh nor ci.yml. Deliberate exemptions live in UNGATED with a reason, capped,
+also enumerates every `bin/check_*.py` and `bin/check-*.py` and fails when neither
+verify.sh nor ci.yml carries a supported unconditional invocation. This is conservative
+static wiring evidence, not proof of execution; unsupported shell forms earn no coverage. Deliberate exemptions live in UNGATED with a reason, capped,
 and the cap only ratchets DOWN: an entry for a script that is now wired, or no longer exists,
 is a finding, so the list cannot carry stale permissions.
 
@@ -25,6 +26,7 @@ is a finding, so the list cannot carry stale permissions.
 """
 
 import re
+import shlex
 import sys
 from pathlib import Path
 
@@ -66,12 +68,8 @@ CHECKER_GLOBS = ("check_*.py", "check-*.py")
 
 
 def gate_texts(root):
-    """(verify.sh text with its $VAR= assignments expanded, ci.yml raw text)."""
+    """Raw gate sources; invocation extraction expands only top-level assignments."""
     verify = (root / "bin" / "verify.sh").read_text(encoding="utf-8")
-    # verify.sh abbreviates the long automation dir as $A for readability, so expand
-    # its simple `NAME=value` assignments before matching or every path looks absent.
-    for var, value in re.findall(r"^([A-Z]\w*)=([\w./-]+)$", verify, re.MULTILINE):
-        verify = verify.replace(f"${var}/", f"{value}/")
     ci = (root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     return verify, ci
 
@@ -86,11 +84,117 @@ def checkers(root):
     return sorted(found)
 
 
+def invoked_scripts(text):
+    """Conservative static coverage, not a general shell evaluator.
+
+    Accept simple, unconditional interpreter commands and verify.sh's `step` wrapper.
+    Compound commands, functions, heredocs, continuations and shell operators earn no
+    coverage. This intentionally under-counts unsupported forms: wire a simple gate
+    invocation instead of treating a mention or uncertain execution as proof.
+    """
+    found, variables = set(), {}
+    blocks = []
+    heredoc = None
+    continued = False
+    for raw in text.splitlines():
+        line = raw.strip()
+        if heredoc is not None:
+            if line == heredoc:
+                heredoc = None
+            continue
+        if not line or line.startswith("#"):
+            continue
+        if continued:
+            continued = line.endswith("\\")
+            continue
+        if line.endswith("\\"):
+            continued = True
+            continue
+        # Never let data inside a heredoc be mistaken for commands.
+        hd = re.search(r"<<-?\s*['\"]?([A-Za-z_][A-Za-z0-9_]*)", line)
+        if hd:
+            heredoc = hd.group(1)
+            continue
+        try:
+            words = shlex.split(line, comments=True)
+        except ValueError as exc:
+            raise ValueError(f"cannot parse gate line: {line[:100]}") from exc
+        if not words:
+            continue
+        first = words[0]
+        closing = {"fi": "fi", "done": "done", "esac": "esac", "}": "}", ")": ")"}
+        if first.rstrip(";") in closing:
+            if blocks and blocks[-1] == first.rstrip(";"):
+                blocks.pop()
+            continue
+        end = None
+        if first in ("if", "for", "while", "until", "select", "case"):
+            end = "fi" if first == "if" else "esac" if first == "case" else "done"
+        elif re.match(r"^(?:function\s+)?[A-Za-z_]\w*\s*\(\s*\)\s*\{", line) or re.match(r"^function\s+[A-Za-z_]\w*\s*\{", line) or first == "{":
+            end = "}"
+        elif first == "(":
+            end = ")"
+        if end:
+            if not re.search(r"(?:^|[;\s])" + re.escape(end) + r";?\s*$", line):
+                blocks.append(end)
+            continue
+        if blocks:
+            continue
+        # Reject operators even inside quoted shell commands. No shell is executed here.
+        if any(c in line for c in (";", "|", "&", "<", ">", "`")) or "$(" in line:
+            continue
+        assignment = re.fullmatch(r"([A-Z]\w*)=([\w./-]+)", line)
+        if assignment:
+            variables[assignment[1]] = assignment[2]
+            continue
+        if words[0] == "step" and len(words) >= 3:
+            words = words[2:]
+        if len(words) < 2 or words[0] not in ("python", "python3", "node"):
+            continue
+        path = words[1]
+        for name, value in variables.items():
+            path = path.replace("${" + name + "}/", value + "/").replace("$" + name + "/", value + "/")
+        if re.fullmatch(r"[\w./-]+\.(?:py|mjs)", path):
+            found.add(path.removeprefix("./"))
+    if blocks or heredoc is not None or continued:
+        raise ValueError("unterminated compound, heredoc or continuation in gate text")
+    return found
+
+
+def ci_invoked_scripts(text):
+    """Only enabled, failure-enforcing YAML run steps can establish coverage.
+
+    Conditional jobs/steps are conservatively excluded, except literal true. The
+    checker need only run on either gate; conditional CI checks have local equivalents.
+    """
+    if not text.strip():
+        return set()
+    workflow = V.yaml.load(text, Loader=V._UniqueKeyActionsLoader)
+    if not isinstance(workflow, dict) or not isinstance(workflow.get("jobs"), dict):
+        raise ValueError("CI gate must be a workflow mapping with jobs")
+    def enabled(item):
+        condition = item.get("if", True)
+        hard = item.get("continue-on-error", False)
+        return condition in (True, "true", "${{ true }}") and hard in (False, "false")
+    found = set()
+    for job in workflow["jobs"].values():
+        if not isinstance(job, dict):
+            raise ValueError("CI job must be a mapping")
+        if not enabled(job):
+            continue
+        for step in job.get("steps", []):
+            if not isinstance(step, dict):
+                raise ValueError("CI step must be a mapping")
+            if enabled(step) and isinstance(step.get("run"), str):
+                found |= invoked_scripts(step["run"])
+    return found
+
+
 def ungated_findings(scripts, verify, ci, allowed, cap):
     """Direction 2 as a pure function. Returns (findings, ungated_count, exempt_count)."""
     findings = []
     present = set(scripts)
-    wired = {s for s in scripts if s in verify or s in ci}
+    wired = present & (invoked_scripts(verify) | ci_invoked_scripts(ci))
     for script in scripts:
         if script in wired:
             if script in allowed:
@@ -98,7 +202,7 @@ def ungated_findings(scripts, verify, ci, allowed, cap):
                                          "entry and lower UNGATED_CAP"))
             continue
         if script not in allowed:
-            findings.append((script, "named by neither bin/verify.sh nor ci.yml — wire it (at "
+            findings.append((script, "no supported unconditional invocation in bin/verify.sh or ci.yml — wire it (at "
                                      "least its --self-test), or add it to UNGATED with a reason"))
     for script in sorted(allowed):
         if script not in present:
@@ -113,6 +217,10 @@ def ungated_findings(scripts, verify, ci, allowed, cap):
 
 def mirror_findings(workflow, verify, allowed):
     """Direction 1. Returns (missing, mirrored, exempt)."""
+    # verify.sh abbreviates the long automation dir as $A for readability, so expand
+    # its simple `NAME=value` assignments before matching or every path looks absent.
+    for var, value in re.findall(r"^([A-Z]\w*)=([\w./-]+)$", verify, re.MULTILINE):
+        verify = verify.replace(f"${var}/", f"{value}/")
     steps = workflow["jobs"][JOB]["steps"]
     mirrored = exempt = 0
     missing = []
@@ -207,7 +315,7 @@ def self_test():
 
     scripts = ["bin/check_a.py", "bin/check-b.py", "bin/check_c.py"]
     verify = "A=13_Faculty_Resources/_automation\nstep x python3 bin/check_a.py --self-test\n"
-    ci = "      - run: python3 bin/check-b.py\n"
+    ci = "jobs:\n  gate:\n    steps:\n      - run: python3 bin/check-b.py\n"
 
     # 1. The falsification: a checker in neither file is a finding, by name.
     f, wired, exempt = ungated_findings(scripts, verify, ci, {}, 0)
@@ -260,6 +368,52 @@ def self_test():
     missing, mirrored, _ = mirror_findings(wf, "python3 bin/thing.py\n# inline\n", ALLOWED)
     check("present script + echoed label are mirrored", (missing, mirrored), ([], 2))
 
+    # Regression: mentions, inert code and swallowed failures cannot count as gates.
+    target = "bin/check_a.py"
+    non_gates = {
+        "comment": "# python3 " + target,
+        "echo": 'echo "python3 ' + target + '"',
+        "label": 'step "python3 ' + target + '" echo okay',
+        "dead one-line": "if false; then python3 " + target + "; fi",
+        "dead multiline": "if false; then\npython3 " + target + "\nfi",
+        "unknown condition": "if test -f missing; then\npython3 " + target + "\nfi",
+        "function": "unused() {\npython3 " + target + "\n}",
+        "function keyword": "function unused {\npython3 " + target + "\n}",
+        "subshell": "(\npython3 " + target + "\n)",
+        "dead assignment": "if false; then\nA=bin\nfi\npython3 $A/check_a.py",
+        "masked": "python3 " + target + " || true",
+        "suffix": "python3 " + target + ".disabled",
+        "heredoc": "cat <<'END'\npython3 " + target + "\nEND",
+        "continued echo": "echo \\\npython3 " + target,
+    }
+    for name, text in non_gates.items():
+        findings, count, _ = ungated_findings([target], text, "", {}, 0)
+        check("inert " + name, (len(findings), count), (1, 0))
+    for text in ('python3 "' + target + '" --self-test',
+                 'step "check" python3 ' + target + ' --self-test',
+                 'A=bin\nstep "check" python3 ${A}/check_a.py'):
+        check("real exact invocation " + text, ungated_findings([target], text, "", {}, 0),
+              ([], 1, 0))
+    for job_flags, step_flags, run in (
+        ("", "", "echo python3 " + target),
+        ("    if: false\n", "", "python3 " + target),
+        ("", "        if: false\n", "python3 " + target),
+        ("", "        if: ${{ false }}\n", "python3 " + target),
+        ("    continue-on-error: true\n", "", "python3 " + target),
+        ("", "        continue-on-error: true\n", "python3 " + target),
+    ):
+        text = ("# " + target + "\njobs:\n  gate:\n" + job_flags +
+                "    steps:\n      - name: " + target + "\n" + step_flags +
+                "        env:\n          EXAMPLE: " + target + "\n        run: " + run + "\n")
+        check("CI inert " + repr((job_flags, step_flags, run)),
+              ungated_findings([target], "", text, {}, 0)[1], 0)
+    check("comment does not stale exemption",
+          ungated_findings([target], "# " + target, "", {target: "reason"}, 1), ([], 0, 1))
+    # A live gate after a closed block remains visible; skipping one compound must not
+    # consume the rest of the file and manufacture orphans.
+    check("after compound", ungated_findings([target],
+          "if false; then\necho no\nfi\npython3 " + target, "", {}, 0), ([], 1, 0))
+
     # 9. The glob sees both spellings in the live tree and the live list is not vacuous.
     live = checkers(ROOT)
     check("live glob finds check_*.py", any(s.startswith("bin/check_") for s in live), True)
@@ -279,4 +433,8 @@ def self_test():
 if __name__ == "__main__":
     if "--self-test" in sys.argv[1:]:
         raise SystemExit(self_test())
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except (ValueError, V.yaml.YAMLError) as exc:
+        print(f"cannot determine gate coverage: {exc}", file=sys.stderr)
+        raise SystemExit(2)
