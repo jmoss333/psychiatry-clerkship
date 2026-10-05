@@ -1,7 +1,9 @@
 {
-  "status": "proposed-pending-faculty-review",
+  "status": "faculty-reviewed",
+  "reviewedOn": "2026-10-04",
+  "reviewedBy": "Joshua Moss, MD (requesting author), with PR #972 approval",
   "proposedOn": "2026-10-04",
-  "scope": "Declares which connected-practice tasks (interview, rounds, note) each chapter is a fitting rehearsal for. Combined with each chapter's objectiveIds this yields an objective-by-task coverage matrix that tests/case-journeys.test.mjs gates and export_curriculum_review.py prints. It changes no learner-visible text and no practice wording; the practice pack itself stays generic. The renderer does not read this file in r2.",
+  "scope": "Declares which connected-practice tasks (interview, rounds, note) each chapter is a fitting rehearsal for. Combined with each chapter's objectiveIds this yields an objective-by-task coverage matrix that tests/case-journeys.test.mjs gates and export_curriculum_review.py prints. It changes no learner-visible text and no practice wording; the practice pack itself stays generic. The projection carries each chapter's tasks into the learner JSON as `practiceTasks`; the renderer marks them as suggested on the practice chooser. All three tasks stay available.",
   "tasks": [
     "interview",
     "rounds",
