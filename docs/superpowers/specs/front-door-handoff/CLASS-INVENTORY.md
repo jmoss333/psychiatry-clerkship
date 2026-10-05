@@ -719,6 +719,7 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
 |---|---|
 | `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
+| `html:has(.fd-reader--tool)` | `scroll-padding-top` = the sticky header's height (68px ≤640px, 112px above) while a tool is open. The frame is content-height, so the page is its only scroll surface and the tool cannot see the header: without this, focus or `scrollIntoView` inside the frame parks a control under the bar, where a tap lands on ✚ Safety (2026-10-04). In-page readers keep their own `scroll-margin-top`. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
 | `.fd-reading-place` | Under `.fd-article` after Source, before actions. Ordinary readings only; initially empty. Runtime writes the exact device-only success copy after a successful store write, or the failure copy when storage is disallowed or fails. No live region or status badge. Tools, Progress, not-found, setup, faculty preview, and enhanced guides do not retain it. |
