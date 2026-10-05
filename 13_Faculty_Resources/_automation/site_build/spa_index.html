@@ -679,6 +679,11 @@
      malformed file injects null and fdWeekCaseStep renders no section. Nothing here writes to the
      file, the tool, or its attestation hash. */
   var FD_CASE_ARC=null;
+  /* The pairings registry (pairings.json), READ-ONLY, for the Library preview's "Practice with"
+     (one-thread redesign, Phase 2). Same verified-needle injection as FD_CASE_ARC, for the same
+     reason: the Library renders at first paint from what is already on the page. Nothing here
+     writes to the file; the week pages' pairing blocks are built from it separately. */
+  var FD_PAIRINGS=null;
   var SEC_SEQ=0;
   function makeCollapsible(body){
     if(!body) return;
@@ -2748,7 +2753,11 @@
       });
     }
     if(state.tab==='path') return fdSurface('path',function(){ return fdPath(FD_INDEX,live); });
-    if(state.tab==='library') return fdSurface('library',function(){ return state.libraryView==='full'?fdLibrary(FD_INDEX):fdEssentials(FD_INDEX,{kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,week:live.week}); });
+    /* Both Library views render through one shell (one-thread redesign, Phase 2). Section, preview
+       and filter are the controller's visit-only memory; the case arc and pairings are the
+       build-injected READ-ONLY registries behind "Case week N", "Where it is used" and "Practice
+       with"; the audience keeps pairings scoped to one site inside it. */
+    if(state.tab==='library') return fdSurface('library',function(){ var libOpts={kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,filter:state.libraryFilter,week:live.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE}; return state.libraryView==='full'?fdLibrary(FD_INDEX,libOpts):fdEssentials(FD_INDEX,libOpts); });
     if(state.tab==='care') return fdSurface('care',function(){
       return fdCare(FD_INDEX,state.careIntentId||'',state.carePackIds||[],fdCrisisHtml);
     });
