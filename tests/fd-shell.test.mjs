@@ -149,6 +149,14 @@ test('the header carries "＋ Ask a question" as a standing capture opener, befo
   assert.equal((html.match(/data-fd-tab="care"/g) || []).length, 1, 'Care appears once, in the tab row');
 });
 
+test('a faculty exact-revision preview renders no capture opener in the header', () => {
+  const preview = F.fdHeader({ week: 2, tab: 'today', facultyPreview: true });
+  assert.doesNotMatch(preview, /fd-askbtn|data-capture-open/);
+  assert.match(preview, /data-fd-safety/, 'Safety and Settings stay');
+  assert.match(preview, /data-fd-settings/);
+  assert.match(F.fdHeader({ week: 2, tab: 'today', facultyPreview: false }), /fd-askbtn/);
+});
+
 test('the search affordance keeps one accessible name across the phone and desktop spellings', () => {
   const html = F.fdHeader({ week: 2 });
   assert.match(html, /class="fd-searchbtn__long">Search a symptom, drug, or task…<\/span>/);

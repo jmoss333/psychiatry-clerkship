@@ -114,10 +114,13 @@ function fdHeader(state){
     '<span class="fd-searchbtn__short" aria-hidden="true">Search</span></span>'+
     '<span class="fd-kbd">⌘K</span>'+
     '</button>';
+  /* A faculty exact-revision preview has no learner to ask for: the capture launcher never
+     rendered there (spa_index.html fdRenderCapture, now retired), and the header's Ask keeps that
+     rule. state.facultyPreview is set by the shell's chrome render (fdRenderChrome). */
   out+='<div class="fd-header__actions">'+
     (appMode?'<span class="fd-weekpill fd-weekpill--identity">APP</span>':'')+
-    '<button type="button" class="fd-askbtn" data-capture-open="" '+
-    'aria-haspopup="dialog" aria-expanded="false">＋ Ask a question</button>'+
+    (s.facultyPreview===true?'':'<button type="button" class="fd-askbtn" data-capture-open="" '+
+    'aria-haspopup="dialog" aria-expanded="false">＋ Ask a question</button>')+
     '<button type="button" class="fd-safetybtn" data-fd-safety>✚ Safety</button>'+
     '<button type="button" class="fd-settingsbtn" data-fd-settings '+
     'aria-label="Settings">⚙</button>'+

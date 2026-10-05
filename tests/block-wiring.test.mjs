@@ -67,7 +67,12 @@ test('the shell picks exactly one primary and hands the faces to the renderer on
   assert.equal(today.split('fdTodayPrimary(').length - 1, 1, 'one picker call');
   assert.match(today, /live\.primaryKind=primary\.kind;/, 'the pure renderer is told who won before it renders');
   assert.match(today, /fdBlockCard\([^;]*\{primary:primary\.kind==='block',resume:blockResume\}\)/, 'the block card is primary only when it won, and knows when its question set can be resumed');
-  assert.match(today, /fdDueRow\(due,primary\.kind==='due'\)/);
+  assert.match(today, /var dueRow=fdDueRow\(due,primary\.kind==='due'\);/);
+  // The transient concept-count status never becomes an empty marked row: with a due row it rides
+  // inside that face; without one it is a bare status line (state.statusHtml), so the DOM is
+  // byte-identical across the fetch window apart from that one <p>.
+  assert.match(today, /due:dueRow\?dueRow\+conceptStatus:'',/);
+  assert.match(today, /live\.statusHtml=dueRow\?'':conceptStatus;/);
   assert.match(today, /fdResumeCard\(sess,primary\.kind==='resume',blockStatus\)/, 'the Resume card learns where the block stands');
   assert.match(today, /fdLastReadRow\(lastRead,primary\.kind==='read'\)/);
   // 2026-10-04 (one-thread, Phase 1): the shell no longer string-splices at an HTML-comment marker
@@ -79,6 +84,13 @@ test('the shell picks exactly one primary and hands the faces to the renderer on
   assert.match(today, /live\.alsoRows=rows;/);
   assert.match(today, /live\.purposeHtml=facultyPreviewRequest\?'':fdTodayPurpose\(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen\);/);
   assert.match(today, /live\.caseWeek=fdWeekCaseStep\(FD_INDEX,FD_CASE_ARC,weekN\);/);
+  // The case arc is build-injected (build_deploy.py replaces this exact needle), never fetched at
+  // runtime: a fetch made Today's DOM churn after boot and two loads disagree on their render signature.
+  once(shell, 'var FD_CASE_ARC=null;', 'spa_index.html');
+  assert.doesNotMatch(shell, /fetch\(['"]longitudinal_case\.json/, 'no runtime fetch of the case arc');
+  const build = read(`${BUILD}/build_deploy.py`);
+  assert.match(build, /_case_needle="var FD_CASE_ARC=null;"/);
+  assert.match(build, /frontdoor_catalog\._inline_json\(_case_arc\)/);
   assert.match(today.replace(/\/\*[\s\S]*?\*\//g, ''), /return fdToday\(FD_INDEX,live\);\s*\}\s*$/, 'one render call, nothing patched after it');
   for (const kind of ['block', 'due', 'resume', 'read']) assert.match(today, new RegExp(`${kind}:\\{mark:`), `${kind} carries a status mark`);
   assert.match(today, /mark:'plus',count:captureSummary\?captureSummary\.total:undefined/);

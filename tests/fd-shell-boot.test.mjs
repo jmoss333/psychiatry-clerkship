@@ -570,6 +570,7 @@ test('fdRender guards every live surface independently', () => {
   // must hand the same button back (as fdRenderDock does for the dock's), never a fresh copy.
   const chrome = source.slice(source.indexOf('function fdRenderChrome('), source.indexOf('function fdRender(state,detail)'));
   assert.match(chrome, /var retained=fdChromeMount\.querySelector\('\.fd-askbtn\[data-capture-open\]'\);/);
+  assert.match(chrome, /live\.facultyPreview=!!facultyPreviewRequest;/, 'a faculty preview renders no Ask');
   assert.match(chrome, /replacement\.parentNode\.replaceChild\(retained,replacement\)/);
   assert.match(source, /if\(surfaces\.chrome&&state\.screen==='app'\)fdRenderChrome\(state\);/);
 });

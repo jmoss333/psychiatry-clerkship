@@ -672,12 +672,13 @@
      then refresh only the currently mounted Front Door surface. */
   fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ specialRefresh(); }catch(_){ } }).catch(function(){});
   /* The longitudinal case (Case Journeys, "One Patient, Six Weeks"), READ-ONLY, for Today's "On the
-     unit this week" (one-thread redesign, Phase 1). Same shape as the topic_meta fetch above: the
-     build copies the file beside index.html (build_deploy.py), a missing or malformed file simply
-     renders no section (fdWeekCaseStep), and arrival refreshes only the mounted surface. Nothing
-     here writes to the file, the tool, or its attestation hash. */
+     unit this week" (one-thread redesign, Phase 1). Build-injected by build_deploy.py through the
+     same verified-needle mechanism as RETIRED_QB_IDS (the resident build inherits it), so the
+     section is there at FIRST render and Today's DOM never churns after boot -- a runtime fetch
+     made the core render signature differ between two loads of the same page. A missing or
+     malformed file injects null and fdWeekCaseStep renders no section. Nothing here writes to the
+     file, the tool, or its attestation hash. */
   var FD_CASE_ARC=null;
-  fetch('longitudinal_case.json').then(function(r){return r.ok?r.json():null}).then(function(d){ FD_CASE_ARC=(d&&typeof d==='object')?d:null; if(FD_CASE_ARC){ try{ specialRefresh(); }catch(_){ } } }).catch(function(){});
   var SEC_SEQ=0;
   function makeCollapsible(body){
     if(!body) return;
@@ -2624,12 +2625,19 @@
        device-store face becomes the Now card; the rest become "Also today" rows, each with the
        status mark the spec gives it -- a due count in an olive ring, a partly filled teal ring for
        work in progress, a plain ring for not-started, "＋" for saved questions. */
+    /* The transient concept-count status ("checking…" / "unavailable") rides with the due face when
+       there is one; with nothing due it is a bare status line after the Also rows (state.statusHtml),
+       never an empty marked row -- it comes and goes with the fetch, and the DOM must otherwise be
+       byte-identical across that window (rotation-edition-v2.spec.js compares renders). */
+    var dueRow=fdDueRow(due,primary.kind==='due');
+    var conceptStatus=due.conceptStatus==='ready'?'':'<p role="status" data-fd-concept-status>Concepts due: '+(due.conceptStatus==='checking'?'checking…':'unavailable. Review counts are incomplete. Open Daily Review to retry.')+'</p>';
     var faces={
       block:blockHtml,
-      due:fdDueRow(due,primary.kind==='due')+(due.conceptStatus==='ready'?'':'<p role="status" data-fd-concept-status>Concepts due: '+(due.conceptStatus==='checking'?'checking…':'unavailable. Review counts are incomplete. Open Daily Review to retry.')+'</p>'),
+      due:dueRow?dueRow+conceptStatus:'',
       resume:fdResumeCard(sess,primary.kind==='resume',blockStatus),
       read:fdLastReadRow(lastRead,primary.kind==='read')
     };
+    live.statusHtml=dueRow?'':conceptStatus;
     var marks={
       block:{mark:blockStatus?'progress':'ring',share:blockStatus&&blockStatus.total?Math.round(blockStatus.done*100/blockStatus.total):0},
       due:{mark:'due',count:fdDueCount(due)},
@@ -2925,7 +2933,10 @@
     if(!fdChromeMount)return;
     if(state.screen!=='app'){fdChromeMount.innerHTML='';return;}
     var retained=fdChromeMount.querySelector('.fd-askbtn[data-capture-open]');
-    fdChromeMount.innerHTML=fdHeader(fdLiveState(state));
+    var live=fdLiveState(state);
+    /* No learner capture in a faculty exact-revision preview (same rule the dock follows). */
+    live.facultyPreview=!!facultyPreviewRequest;
+    fdChromeMount.innerHTML=fdHeader(live);
     var replacement=fdChromeMount.querySelector('.fd-askbtn[data-capture-open]');
     if(retained&&replacement)replacement.parentNode.replaceChild(retained,replacement);
   }

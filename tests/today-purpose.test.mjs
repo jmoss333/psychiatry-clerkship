@@ -20,6 +20,9 @@ test('missing, rights and search-only targets are omitted rather than replaced',
 test('expanded chooser stays optional; regular Today is the explicit escape',()=>{
  const html=F.render(index,'',true);
  assert.match(html,/<details class="fd-purpose" open>/);
+ // The chooser's copy is part of the Phase 1 acceptance ("keeps its open state, copy and session-only choice").
+ assert.match(html,/<summary class="fd-purpose__summary" data-today-purpose-toggle>What am I preparing for\?<\/summary>/);
+ assert.match(html,/<p class="fd-purpose__note">Optional\. Your choice stays in this page session and resets on reload\. Regular Today and your due-review plan stay unchanged\.<\/p>/);
  assert.match(html,/data-today-purpose="" aria-pressed="true">Regular Today/);
  assert.doesNotMatch(html,/Suggested because|data-fd-open/);
  assert.match(html,/resets on reload/);

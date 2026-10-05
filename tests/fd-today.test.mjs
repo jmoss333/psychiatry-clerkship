@@ -720,6 +720,10 @@ test('a row with no html is skipped, and the share is clamped to 0-100 and round
   const html = F.fdToday(IDX, s({ alsoRows: [{ mark: 'due', count: 1, html: '' }, null] }));
   assert.doesNotMatch(html, /fd-alsolist/, 'rows without markup produce no list');
   assert.match(html, /fd-also">Also today</, 'the heading still renders: the chooser sits under it');
+  // A bare status line (the transient concept count with nothing due) follows the heading unwrapped.
+  const status = F.fdToday(IDX, s({ statusHtml: '<p role="status" data-fd-concept-status>Concepts due: checking…</p>' }));
+  assert.match(status, /fd-also">Also today<\/h2><p role="status" data-fd-concept-status>Concepts due: checking…<\/p>/);
+  assert.doesNotMatch(status, /fd-also__row/);
 });
 
 test('the chooser, the offline receipt and the case step land where the spec puts them', () => {

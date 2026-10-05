@@ -593,7 +593,9 @@ test('T10: the phone dock adds no horizontal overflow and replaces the Reader ac
   expect(widths.scroll).toBeLessThanOrEqual(widths.client);
 });
 
-test('the visible Capture launcher stays fixed, reachable, and inside the viewport', async ({ page }) => {
+// The opener lives in the fixed dock ≤640px and in the sticky header above it (one-thread,
+// 2026-10-04): either way it is on screen at every scroll position, which is what this pins.
+test('the visible Capture launcher stays pinned on screen, reachable, and inside the viewport', async ({ page }) => {
   const cases = [
     { label: 'Today', url: '/', ready: '.fd-today' },
     { label: 'Reader', url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body' },
@@ -604,9 +606,10 @@ test('the visible Capture launcher stays fixed, reachable, and inside the viewpo
       await page.goto(surface.url);
       await expect(page.locator(surface.ready)).toBeVisible();
       await expect(captureLauncher(page)).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       const geometry = await page.evaluate(() => {
         const mount = window.innerWidth <= 640
-          ? document.querySelector('.fd-dock') : document.querySelector('#fdCaptureMount');
+          ? document.querySelector('.fd-dock') : document.querySelector('.fd-header');
         const button = mount.querySelector('[data-capture-open]');
         const mountBox = mount.getBoundingClientRect();
         const buttonBox = button.getBoundingClientRect();
@@ -623,13 +626,16 @@ test('the visible Capture launcher stays fixed, reachable, and inside the viewpo
           viewportHeight: window.innerHeight,
         };
       });
-      expect(geometry.position, `${viewport.width}px ${surface.label} mount position`).toBe('fixed');
+      expect(geometry.position, `${viewport.width}px ${surface.label} mount position`).toBe(viewport.width <= 640 ? 'fixed' : 'sticky');
       expect(geometry.mountTop).toBeGreaterThanOrEqual(0);
       expect(geometry.mountBottom).toBeLessThanOrEqual(geometry.viewportHeight);
       expect(geometry.buttonTop).toBeGreaterThanOrEqual(0);
       expect(geometry.buttonBottom).toBeLessThanOrEqual(geometry.viewportHeight);
-      expect(geometry.buttonWidth).toBeGreaterThanOrEqual(44);
-      expect(geometry.buttonHeight).toBeGreaterThanOrEqual(44);
+      // Touch floor (44px) through 999px; the desktop app bar's controls are 36px pills by spec
+      // (pointer input), the same height as ✚ Safety and the Settings circle beside it.
+      const minTarget = viewport.width <= 999 ? 44 : 36;
+      expect(geometry.buttonWidth, `${viewport.width}px ${surface.label} launcher width`).toBeGreaterThanOrEqual(44);
+      expect(geometry.buttonHeight, `${viewport.width}px ${surface.label} launcher height`).toBeGreaterThanOrEqual(minTarget);
       expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth);
     }
   }

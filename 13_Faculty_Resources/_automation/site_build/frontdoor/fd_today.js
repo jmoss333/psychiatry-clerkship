@@ -37,6 +37,7 @@
      state.alsoRows     [{mark, count, share, html}] the faces that did not win, in order
      state.purposeHtml  the preparation chooser (fdTodayPurpose, rendered by the shell)
      state.offlineHtml  the offline-readiness receipt
+     state.statusHtml   a bare status line after the Also rows (the concept-count status, no due row)
      state.caseWeek     fdWeekCaseStep(...) -- this week's step of the longitudinal case, or null
    -- which is the same contract state.offlineHtml already used. Every field is optional, so a
    fixture that passes none of them renders Today exactly as a learner with empty stores sees it.
@@ -433,11 +434,12 @@ function fdThread(index, state){
 }
 
 /* ---- "On the unit this week" -----------------------------------------------------------------
-   Pure derivation over longitudinal_case.json (read-only; the shell fetches it and hands the parsed
-   object in). Returns this week's step of the longitudinal case, or null when the tool does not
-   ship for the site, the week has no matching entry, or the data is not what the tool itself
-   expects. Nothing here edits the case: the week title, learnerTask and handoff render verbatim,
-   and the deep link is the tool's existing ?week=N. */
+   Pure derivation over longitudinal_case.json (read-only; the build inlines it as FD_CASE_ARC and
+   the shell hands the parsed object in, so the section exists at first render). Returns this
+   week's step of the longitudinal case, or null when the tool does not ship for the site, the week
+   has no matching entry, or the data is not what the tool itself expects. Nothing here edits the
+   case: the week title, learnerTask and handoff render verbatim, and the deep link is the tool's
+   existing ?week=N. */
 var FD_CASE_TOOL_REF='one-patient-six-weeks.html';
 
 function fdWeekCaseStep(index, caseData, week){
@@ -558,6 +560,9 @@ function fdToday(index, state){
   }
   out+='<h2 class="fd-sectionhead fd-also">Also today</h2>';
   if(rows.length) out+='<div class="fd-alsolist">'+rows.join('')+'</div>';
+  /* A bare status line the shell may hand in (the transient concept-count status when nothing is
+     due); no row, no mark -- it comes and goes with a fetch. */
+  if(st.statusHtml) out+=st.statusHtml;
 
   /* 5. The preparation chooser, open state owned by the shell. */
   if(st.purposeHtml) out+=st.purposeHtml;

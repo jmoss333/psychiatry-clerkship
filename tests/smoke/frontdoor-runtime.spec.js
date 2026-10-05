@@ -2452,7 +2452,8 @@ test('fd-main and Reader rail styles survive Today, Reader, Progress, placement,
   await page.goto('/');
   const main = page.locator('main#content');
   await expect(main).toHaveClass(/\bfd-main\b/);
-  expect(await main.evaluate((node) => getComputedStyle(node).paddingLeft)).toBe('20px');
+  // 40px sides at ≥1000px (one-thread page container, 2026-10-04; was 20px).
+  expect(await main.evaluate((node) => getComputedStyle(node).paddingLeft)).toBe('40px');
 
   await page.goto('/?page=welcome.md');
   await expect(page.locator('.fd-article')).toBeVisible();

@@ -140,6 +140,16 @@ test('the desktop breakpoint is 1000px, as the design specifies', () => {
 test('animations are disabled under prefers-reduced-motion', () => {
   assert.match(fd, /@media\s*\(prefers-reduced-motion:\s*reduce\)/,
     'the source prototype ships no reduced-motion handling; this repo requires it');
+  // One-thread acceptance: "with reduced motion there is no animation" -- the block must zero BOTH
+  // animation and transition for everything in the shell, not merely exist.
+  const reduced = fd.slice(fd.indexOf('/* ═══ Reduced motion'));
+  const block = reduced.match(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{([\s\S]*?)\n\}/);
+  assert.ok(block, 'the reduced-motion block is where the keyframes section says it is');
+  assert.match(block[1], /\.fd-shell \*,[\s\S]*?\{[^}]*animation:none !important/);
+  assert.match(block[1], /\.fd-shell \*,[\s\S]*?\{[^}]*transition:none !important/);
+  // And Today itself no longer animates in at all (the entrance stagger is gone).
+  assert.match(rule(fd, '.fd-today'), /animation:none/);
+  assert.doesNotMatch(rule(fd, '.fd-row'), /animation:/);
 });
 
 test('reader body gives rendered long-form content a readable token-based type scale', () => {

@@ -1462,6 +1462,9 @@
      641px the bar holds brand, search, Ask, Safety and Settings with 20px sides, and the chip was
      what pushed the search pill under the actions. A tablet rarely has the key anyway. */
   .fd-searchbtn .fd-kbd{display:none}
+  /* The desktop bar's 20px search offset belongs to its 40px rhythm; at 641px it is the 8px that
+     left the clipped placeholder a 42px label. 12px keeps that label a 44px target to 999px. */
+  .fd-searchbtn{margin-left:var(--fd-space-6)}
   .fd-brand,.fd-btn--primary,.fd-safetybtn,.fd-askbtn,.fd-weekpill,.fd-searchbtn,.fd-weekgrid__browse{min-height:44px}
   .fd-searchbtn,.fd-actionbar .fd-btn--ghost{min-width:44px}
   .fd-role,.fd-weektile,.fd-kitrow,.fd-step,.fd-setupcta,.fd-today__changeweek,.fd-pilot__more,.fd-pilot__button{min-height:44px}
@@ -1523,7 +1526,7 @@
   /* The desktop placeholder sentence does not fit a phone row: the sentence is clipped (never
    * display:none, so it stays the accessible name) and the aria-hidden "Search" shows instead. */
   .fd-searchbtn__long{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
-  .fd-searchbtn__short{display:inline}
+  .fd-searchbtn__short{display:inline-block;min-width:44px}
   /* Scoped to the search button on purpose. .fd-kbd has two call sites (fd_shell.js's header ⌘K
    * and fd_library.js's "press / to filter"), and hiding the class outright reached the second
    * one too -- the Library header read "81 pages · press to filter", a sentence with its verb's
@@ -1567,6 +1570,13 @@
   .fd-reader>.fd-reader__back{display:inline-flex}
   .fd-reader__toolbar{display:flex}
   .fd-article{padding:var(--fd-space-6) var(--fd-space-8)}
+}
+/* 320px: ψ 44 · Search · ✚ Safety · ⚙ 44 with 14px bar sides leaves the search pill its icon plus
+ * a 42px label. 12px sides and 12px pill padding give the "Search" label its 44px back. After the
+ * phone block on purpose: same specificity, so order decides. */
+@media (max-width:390px){
+  .fd-header__bar{padding-left:12px;padding-right:12px}
+  .fd-searchbtn{padding-left:12px;padding-right:12px}
 }
 
 /* ═══ Keyframes ══════════════════════════════════════════════════════════════
