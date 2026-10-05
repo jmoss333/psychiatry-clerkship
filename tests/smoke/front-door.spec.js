@@ -5149,8 +5149,18 @@ for (const width of [320, 390, 768, 1280]) {
     await expect(page.locator('.fd-header [data-fd-change-week], .fd-carebtn, .fd-weekpill[data-fd-change-week]')).toHaveCount(0);
 
     const thread = page.locator('.fd-thread');
-    await expect(thread).toHaveAttribute('aria-label', 'Six-week path');
+    await expect(thread).toHaveAttribute('aria-label', 'Rotation weeks');
     await expect(thread.locator('.fd-thread__node')).toHaveCount(audience(info).weekCount);
+    const weekGrid = await thread.locator('.fd-thread__list').evaluate(list => {
+      const cells = [...list.children].map(node => node.getBoundingClientRect());
+      const box = list.getBoundingClientRect();
+      return {count: cells.length, width: box.width, lastRight: cells.at(-1).right, right: box.right,
+        cellWidths: cells.map(cell => cell.width)};
+    });
+    expect(Math.abs(weekGrid.lastRight - weekGrid.right), 'actual weeks fill the thread').toBeLessThan(1);
+    for (const cellWidth of weekGrid.cellWidths) {
+      expect(Math.abs(cellWidth - weekGrid.width / weekGrid.count)).toBeLessThan(1);
+    }
     await expect(thread.locator('[aria-current="step"]')).toHaveAttribute('data-fd-view-week', '1');
     await expect(thread.locator('[aria-current="step"]')).toHaveAccessibleName(/^Week 1: .+ \(current week\)$/);
     // Phone: only the current label is shown; every node is still a 44px target with its name.
