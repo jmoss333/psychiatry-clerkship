@@ -444,9 +444,9 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "surveillance-firecrawl.yml": "20429b9cff241cf0d00131252ba8876b995f8ba6324a248f0df1e08033f7a329",
+    "surveillance-firecrawl.yml": "493fa98a5cff2d2b24bd259dfd64a368bf6a28f0ab76267016bb7c9973b5e950",
     ESCALATION_FILE: (
-        "6ff7000b1cae3ca2a1fe8b86c5f6faa83b6d0b59a6c54255f6d606ac15ab401c"
+        "5c11d5859d727ef0ea51fee37bbb51938df6ad5f1d0b7f77032c82a102a8edb4"
     ),
     "ci.yml": "2dde7c5fe439c4651499356393818f3a9da6d5af24283cd9464133058ee3e645",
     "maintenance-governance-digest.yml": (
