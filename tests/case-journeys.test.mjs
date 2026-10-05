@@ -91,7 +91,9 @@ test('published renderer composes the approved patient-folio journey from real c
   assert.match(html, /class="opf-note opf-note--task"/);
   assert.match(html, /class="opf-note opf-note--language"/);
   assert.match(html, /class="opf-note opf-note--rounds"/);
-  assert.match(html, /<details class="opf-model"/);
+  assert.match(html, /<button type="button" class="opf-compare-example" data-compare-example aria-expanded="false"/);
+  assert.match(html, /<button type="button" class="opf-compare-open" id="compare-open" aria-expanded="false" aria-controls="case-compare">Compare two chapters<\/button>/);
+  assert.match(html, /<section class="opf-compare" id="case-compare" aria-labelledby="case-compare-title" hidden><\/section>/);
   assert.ok(html.includes(api.escape(eli.title)));
   assert.match(html, /Chapters 5–6: optional follow-through/);
 
@@ -161,7 +163,9 @@ test('Eli pilot exposes read/practice/discuss without changing later or other-ca
     assert.equal(html.includes('Read · What changed'), pilot);
     assert.equal(html.includes('Practice · learner’s supervised task'), pilot);
     assert.equal(html.includes('Discuss · carry it to rounds'), pilot);
-    assert.equal(html.includes('<details class="opf-model">'), pilot);
+    // Phase 3: the pilot's "compare after your attempt" <details> became the Try → Compare button
+    // every chapter of every case now uses (pinned in the next test).
+    assert.equal(html.includes('<details class="opf-model">'), false);
     assert.equal(html.includes('<details class="opf-reflection">'), !pilot);
     if (pilot) {
       assert.ok(html.includes(api.escape(chapter.reflectionPrompt)));
@@ -171,6 +175,74 @@ test('Eli pilot exposes read/practice/discuss without changing later or other-ca
       for (const link of chapter.links) assert.ok(html.includes('../?' + link.kind + '=' + encodeURIComponent(link.target)));
     }
   }
+});
+
+// ---------------------------------------------------------------------------
+// One-thread redesign, Phase 3 acceptance (docs/superpowers/specs/one-thread-handoff/README.md)
+// ---------------------------------------------------------------------------
+test('Phase 3: every checklist item is Try → Compare — prompt first, a button with aria-expanded, the example verbatim and hidden', () => {
+  for (const data of cases) for (const [i, chapter] of data.weeks.entries()) {
+    const html = api.chapterMarkup(data, chapter);
+    assert.equal(html.split(api.escape(api.TRY_LINE)).length - 1, 1, chapter.id + ': instruction line once');
+    for (const [j, item] of chapter.checklist.entries()) {
+      const id = `chapter-${i + 1}-example-${j + 1}`;
+      const prompt = `<p class="opf-note__prompt" id="${id}-prompt">${api.escape(item.prompt)}</p>`;
+      const button = `<button type="button" class="opf-compare-example" data-compare-example aria-expanded="false" aria-controls="${id}" aria-describedby="${id}-prompt">Compare with one way to say it</button>`;
+      const example = `<blockquote class="opf-example" id="${id}" hidden>${api.escape(item.example)}</blockquote>`;
+      assert.ok(html.includes(prompt + button + example), `${chapter.id} item ${j + 1}: prompt → button → hidden verbatim example`);
+    }
+    assert.equal((html.match(/data-compare-example/g) || []).length, chapter.checklist.length);
+    assert.doesNotMatch(html, /<input|<textarea|contenteditable/);
+  }
+});
+
+test('Phase 3: compare two chapters shows each chapter\'s own text side by side, verbatim', () => {
+  for (const data of cases) {
+    const html = api.compareMarkup(data, { a: 2, b: 5 }, 3);
+    for (const n of [2, 5]) {
+      const w = data.weeks[n - 1];
+      for (const text of [w.title, w.patientState, w.handoff, w.reflectionPrompt, ...w.focus]) {
+        assert.ok(html.includes(api.escape(text)), `${data.id} chapter ${n}: ${text.slice(0, 30)}`);
+      }
+    }
+    assert.match(html, /<select data-compare-pick="a" id="compare-pick-a">/);
+    assert.match(html, /<option value="2" selected>/);
+    assert.match(html, /<option value="5" selected>/);
+    assert.match(html, /data-compare-close>Back to chapter 3<\/button>/);
+    assert.doesNotMatch(html, /<input|<textarea|contenteditable/);
+  }
+  assert.deepEqual(api.compareDefault(6), { a: 6, b: 5 });
+  assert.deepEqual(api.compareDefault(2), { a: 2, b: 3 });
+  assert.equal(api.comparePair({ a: 0, b: 3 }), false);
+  assert.match(api.compareMarkup(cases[0], { a: 9, b: 1 }, 4), /<option value="4" selected>[\s\S]*<option value="5" selected>/,
+    'an invalid pair falls back to this chapter and the next');
+});
+
+test('Phase 3: Back support sends only {type, case, chapter} and rewrites only the address, never storage', () => {
+  assert.deepEqual(api.selectionMessage({ slug: 'leah', chapter: 3, invalid: false }), { type: 'case-selection', case: 'leah', chapter: 3 });
+  assert.equal(api.selectionSearch('?week=4&governed=1', { slug: 'jordan', chapter: 5 }), '?governed=1&case=jordan&chapter=5');
+  assert.deepEqual(api.selection(api.selectionSearch('?governed=1', { slug: 'marisol', chapter: 6 })), { slug: 'marisol', chapter: 6, invalid: false });
+  const js = fs.readFileSync(new URL('../08_Cases_and_Simulation/case-journeys/case-journeys.js', import.meta.url), 'utf8');
+  assert.equal((js.match(/postMessage\(/g) || []).length, 1, 'one message, the selection');
+  assert.match(js, /postMessage\(selectionMessage\(selected\), browser\.location\.origin\)/, 'same-origin target only');
+  assert.doesNotMatch(js, /localStorage|sessionStorage|indexedDB|document\.cookie/);
+});
+
+test('Phase 3: chapter navigation lock is unchanged — Next is disabled only on the last chapter, never by reveals', () => {
+  for (const data of cases) for (let chapter = 1; chapter <= 6; chapter++) {
+    const html = api.pageMarkup(cases, { slug: ['jordan', 'eli', 'leah', 'marisol'][cases.indexOf(data)], chapter, invalid: false });
+    const next = html.match(/<button type="button" id="next"([^>]*)>Next chapter<\/button>/);
+    assert.ok(next, 'Next chapter control present');
+    assert.equal(/disabled/.test(next[1]), chapter === 6, `${data.id} chapter ${chapter}`);
+    const prev = html.match(/<button type="button" id="previous"([^>]*)>Previous chapter<\/button>/);
+    assert.equal(/disabled/.test(prev[1]), chapter === 1);
+  }
+});
+
+test('Phase 3: the crisis-block marker is still present in the case tool', () => {
+  const html = fs.readFileSync(new URL('../08_Cases_and_Simulation/one-patient-six-weeks.html', import.meta.url), 'utf8');
+  assert.equal(html.split('<!-- crisis-block-html -->').length - 1, 1);
+  assert.match(html, /<!-- crisis-block-html -->\s*<\/body>/, 'outside every disclosure, at the end of the body');
 });
 
 // ---------------------------------------------------------------------------
