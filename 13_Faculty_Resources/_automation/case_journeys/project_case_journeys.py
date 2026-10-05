@@ -18,7 +18,9 @@ Rules (r2, see docs/case-journeys/README.md):
   * ids drop the `_draft` marker;
   * a tool link carrying an `anchor` (a pharmacy drug card) ships only while that card's
     facultyReview.status is `reviewed` in pharmacy.json; otherwise the link is held back and the
-    learner file carries the chapter without it. Re-run --write when the card is attested.
+    learner file carries the chapter without it. Re-run --write when the card is attested;
+  * each chapter carries `practiceTasks` (which connected-practice tasks fit it) from
+    docs/case-journeys/practice-coverage.json so the renderer can mark them as suggested.
 The script never edits the snapshot. `--check` exits 1 if any learner file differs.
 """
 import argparse, hashlib, json, os, sys
@@ -31,12 +33,13 @@ OUT = os.path.join(ROOT, '08_Cases_and_Simulation', 'case-journeys')
 SOURCES = os.path.join(ROOT, 'docs', 'case-journeys', 'sources.json')
 REVIEW = os.path.join(ROOT, 'docs', 'case-journeys', 'release-review.json')
 PHARMACY = os.path.join(ROOT, 'pharmacy.json')
+COVERAGE = os.path.join(ROOT, 'docs', 'case-journeys', 'practice-coverage.json')
 CASES = ['eli-psychosis', 'leah-depression-trauma', 'marisol-delirium-capacity']
 DRAFT_PREFIX = 'DRAFT — FACULTY REVIEW REQUIRED. '
 TOP_ORDER = ['id', 'title', 'status', 'learnerRelease', 'releaseRevision', 'clinicalAuthorship', 'setting',
              'disclaimer', 'audience', 'timeFrame', 'suggestedAccent', 'patient', 'learningObjectives',
              'sources', 'weeks']
-WEEK_ORDER = ['id', 'label', 'title', 'focus', 'objectiveIds', 'patientState', 'learnerTask', 'checklist',
+WEEK_ORDER = ['id', 'label', 'title', 'focus', 'objectiveIds', 'practiceTasks', 'patientState', 'learnerTask', 'checklist',
               'handoff', 'reflectionPrompt', 'residentExtension', 'commonMisstep', 'localNote', 'sourceIds', 'links']
 
 
@@ -60,9 +63,17 @@ def attested_cards():
     return {r['id'] for r in load(PHARMACY).get('records', []) if (r.get('facultyReview') or {}).get('status') == 'reviewed'}
 
 
-def project_week(week, cards):
+def coverage_tasks():
+    if not os.path.exists(COVERAGE):
+        return {}
+    return load(COVERAGE).get('chapters', {})
+
+
+def project_week(week, cards, coverage):
     notes = week.get('facultyNotes') or {}
     out = {k: v for k, v in week.items() if k != 'facultyNotes'}
+    if week['id'] in coverage:
+        out['practiceTasks'] = list(coverage[week['id']])
     out['links'] = [l for l in week.get('links', []) if not l.get('anchor') or l['anchor'] in cards]
     out['residentExtension'] = notes.get('advancedPrompt', '')
     out['commonMisstep'] = notes.get('pitfall', '')
@@ -91,7 +102,8 @@ def project(snapshot, sources, review):
     out['disclaimer'] = disclaimer
     out['sources'] = [{'id': by_id[s]['id'], 'title': by_id[s]['title'], 'url': by_id[s]['url']} for s in cited]
     cards = attested_cards()
-    out['weeks'] = [project_week(w, cards) for w in snapshot['weeks']]
+    coverage = coverage_tasks()
+    out['weeks'] = [project_week(w, cards, coverage) for w in snapshot['weeks']]
     return {k: out[k] for k in TOP_ORDER if k in out} | {k: v for k, v in out.items() if k not in TOP_ORDER}
 
 

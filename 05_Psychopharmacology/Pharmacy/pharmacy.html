@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Psychiatric Pharmacy" version="1.0" built="2026-09-30" category="psychopharmacology" subcategory="Pharmacy" audience="trainee,ms3,resident" settings="inpatient,self-study,rounds-prep" time="5min" authorship="ai-drafted" summary="Searchable drug cards for the psychiatric medications met on an inpatient unit: boxed warnings, what to check before and after starting, dangerous adverse effects and the first move for each, interaction traps, and the questions attendings ask, with practice cards that feed Daily Review. Only drugs whose faculty review is current are shown. No doses: confirm every dose with pharmacy and the current label." -->
+<!-- [CLERKSHIP-META v1] tool="Psychiatric Pharmacy" version="2.0" built="2026-10-02" category="psychopharmacology" subcategory="Pharmacy" audience="trainee,ms3,resident" settings="inpatient,self-study,rounds-prep" time="5min" authorship="ai-drafted" summary="Searchable drug cards for the psychiatric medications met on an inpatient unit. Search by name, brand, class, indication, adverse effect, or need (QTc, needs a level, EKG); scenario entry points for the unit's common moments; a before-rounds strip with one thing to check, one danger, and one attending question; student and resident depth on every card; a family-explainer flip; a side-by-side compare grid built from the same data; and practice cards that feed Daily Review. Only drugs whose faculty review is current are shown. No doses: confirm every dose with pharmacy and the current label." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -49,6 +49,8 @@ a{color:var(--accent-dark)}
 .status{font-size:.86rem;color:var(--text-light);margin:4px 0 16px}
 /* drug list */
 .list{display:grid;gap:9px;margin:0 0 20px;padding:0;list-style:none}
+.list li{display:flex;gap:8px;align-items:stretch}
+.list li .drug{flex:1 1 auto;min-width:0}
 .drug{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);
   border:2px solid var(--border);border-radius:var(--radius);padding:12px 15px;font:inherit;color:var(--text);cursor:pointer}
 .drug:hover{border-color:var(--accent)}
@@ -57,6 +59,39 @@ a{color:var(--accent-dark)}
 .drug__meta{display:block;font-size:.82rem;color:var(--text-light)}
 .pill{flex:none;font-size:.74rem;font-weight:700;border-radius:999px;padding:3px 9px;background:var(--danger-light);color:var(--danger-dark);border:1px solid var(--border)}
 .pill--due{background:var(--accent-light);color:var(--accent-dark)}
+/* scenarios */
+.scen{margin:0 0 6px}
+.scen__label{font-size:.74rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin:0 0 6px}
+.scen__row{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 8px}
+.scen__links{font-size:.86rem;color:var(--text-mid);margin:0 0 10px}
+/* compare */
+.cmpbar{display:flex;flex-wrap:wrap;align-items:center;gap:9px;background:var(--accent-light);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin:0 0 14px;font-size:.92rem}
+.cmpbar strong{color:var(--accent-dark)}
+.cmp{display:flex;align-items:center;flex:none}
+.cmp__btn{border:1px solid var(--border);background:var(--surface);color:var(--text-mid);border-radius:999px;padding:4px 10px;font:inherit;font-size:.78rem;cursor:pointer;flex:none}
+.cmp__btn[aria-pressed="true"]{border-color:var(--accent-dark);background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+.grid{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin:0 0 20px;box-shadow:var(--shadow)}
+.grid__scroll{overflow-x:auto}
+.grid__scroll:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
+.grid h2{font-family:var(--font-head);font-size:1.3rem;margin:0 0 10px}
+.grid table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:420px}
+.grid th,.grid td{text-align:left;vertical-align:top;padding:8px 10px;border-top:1px solid var(--border)}
+.grid thead th{border-top:none;font-family:var(--font-head);font-size:1rem}
+.grid tbody th{font-weight:600;color:var(--text-mid);white-space:nowrap;width:1%}
+.grid ul{margin:0;padding-left:16px}
+/* before-rounds strip */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0 0 14px}
+.strip__cell{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:.92rem}
+.strip__cell--danger{border-left:4px solid var(--danger-dark)}
+.strip__cell .tag{display:block;margin:0 0 3px}
+@media(max-width:620px){.strip{grid-template-columns:1fr}}
+/* tier + family flip */
+.tier{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.flip{background:var(--primary-light);border:1px solid var(--border);border-left:5px solid var(--primary);border-radius:var(--radius);padding:12px 15px;margin:0 0 14px}
+.flip h3{font-family:var(--font-head);font-size:1.02rem;margin:0 0 6px}
+.flip p{margin:0 0 6px}
+.flip small{color:var(--text-light)}
+.practice{font-size:.88rem;color:var(--text-mid);margin:8px 0 0}
 /* detail */
 .detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;margin:0 0 20px;box-shadow:var(--shadow)}
 .detail h2{font-family:var(--font-head);font-size:1.45rem;margin:0}
@@ -86,7 +121,7 @@ a{color:var(--accent-dark)}
 .empty{color:var(--text-mid);font-style:italic}
 footer{margin-top:26px;padding-top:18px;border-top:1px solid var(--border);font-size:.82rem;color:var(--text-light)}
 @media(max-width:520px){.grades{grid-template-columns:repeat(2,minmax(0,1fr))}.detail{padding:16px}}
-@media print{.search,.filters,.btn,.quiz{display:none}body{background:#fff;font-size:12pt}.shell{padding:0;width:100%}}
+@media print{.search,.filters,.btn,.quiz,.scen,.cmpbar,.cmp,.tier{display:none}body{background:#fff;font-size:12pt}.shell{padding:0;width:100%}}
 </style>
 </head>
 <body>
@@ -95,14 +130,22 @@ footer{margin-top:26px;padding-top:18px;border-top:1px solid var(--border);font-
   <h1>Psychiatric Pharmacy</h1>
   <p class="lede">Drug cards for the medicines you will meet on the unit: what the boxed warning covers, what to check
   before and after starting, the dangerous adverse effects and your first move for each, and what your attending
-  will ask. Every card shown here has a current faculty review.</p>
+  will ask. Search by name, brand, class, indication, adverse effect, or need ("QTc", "needs level"); pick a
+  moment below; or mark drugs to compare side by side. Every card shown here has a current faculty review.</p>
 
   <label class="sr" for="q">Search drugs</label>
-  <input id="q" class="search" type="search" placeholder="Search by name, brand, or class" autocomplete="off">
+  <input id="q" class="search" type="search" placeholder="Search: seroquel, SSRI, agitation, QTc, needs level…" autocomplete="off">
   <div class="filters" id="filters" role="group" aria-label="Filter by drug group"></div>
+  <div class="scen" id="scen">
+    <p class="scen__label">Moments on the unit</p>
+    <div class="scen__row" id="scenarios" role="group" aria-label="Scenario entry points"></div>
+    <p class="scen__links" id="scenlinks"></p>
+  </div>
+  <div id="cmpbar"></div>
   <p class="status" id="status" role="status" aria-live="polite">Loading reviewed drug cards…</p>
 
   <ul class="list" id="list"></ul>
+  <div id="grid"></div>
   <div id="detail"></div>
 
   <div class="note">
@@ -124,52 +167,216 @@ footer{margin-top:26px;padding-top:18px;border-top:1px solid var(--border);font-
 /*__RX_RETRIEVAL__*/
 
 /* ---- pharmacy page model ----
-   Pure: no DOM, no storage. tests/pharmacy-page.test.mjs executes this block as shipped.
+   Pure: no DOM, no storage. tests/pharmacy-page.test.mjs and tests/pharmacy-search.test.mjs
+   execute this block as shipped.
    The build already admits only drugs with a current faculty review (build_pharmacy_public.py);
    every function here re-applies rxReviewStamped anyway, so a drug without a review stamp can
-   never reach the screen even if the feed were hand-edited. */
+   never reach the screen even if the feed were hand-edited. Nothing below invents content:
+   every string a learner sees is a reviewed field, a label for one, or interface text. */
 var RX_GROUP_LABEL={'antipsychotic':'Antipsychotics','antidepressant':'Antidepressants',
   'mood-stabilizer':'Mood stabilizers','anxiolytic-agitation':'Anxiolytics & agitation',
   'sud':'Substance use','other':'Other'};
 var RX_GROUP_ORDER=['antipsychotic','antidepressant','mood-stabilizer','anxiolytic-agitation','sud','other'];
-
 function rxGroupLabel(g){return RX_GROUP_LABEL[g]||'Other';}
-
-function rxSearchText(a){
-  return [a.generic,a.id,(a.brands||[]).join(' '),(a['class']||[]).join(' '),rxGroupLabel(a.group)]
-    .join(' ').toLowerCase();
+function rxList(v){return Object.prototype.toString.call(v)==='[object Array]'?v:[];}
+function rxNorm(s){
+  s=String(s==null?'':s).toLowerCase();
+  try{s=s.normalize('NFD').replace(/[̀-ͯ]/g,'');}catch(_){}
+  return s.replace(/[^a-z0-9+/ -]+/g,' ').replace(/\s+/g,' ').replace(/^\s+|\s+$/g,'');
 }
-
-/* The drugs to list for a query and a group ('' = all), stamped only, A to Z. */
+/* Need words a learner types that the structured flags answer ("QTc", "needs level", "EKG").
+   Derived only from the drug's own flag values; a flag of No/None/Minimal yields nothing. */
+function rxFlagTerms(a){
+  var fl=a.flags||{},out=[];
+  function yes(v){v=rxNorm(v);return !!v&&v!=='no'&&v!=='none'&&v!=='minimal'&&v!=='neutral'&&v!=='low';}
+  function grade(v){v=rxNorm(v);return /high|significant/.test(v)?1:/moderate/.test(v)?.8:.6;}
+  if(yes(fl.qtcRisk))out.push({t:'qtc qt prolongation torsades ekg',g:grade(fl.qtcRisk)});
+  if(/gain/i.test(String(fl.weightImpact||'')))out.push({t:'weight gain metabolic',g:grade(fl.weightImpact)});
+  if(/loss/i.test(String(fl.weightImpact||'')))out.push({t:'weight loss',g:1});
+  if(yes(fl.bloodMonitoring))out.push({t:'needs level blood monitoring labs level',g:1});
+  if(yes(fl.ekgRequired))out.push({t:'ekg ecg',g:1});
+  if(a.boxedWarning&&a.boxedWarning.present)out.push({t:'boxed warning black box',g:1});
+  if(a.regulatory&&a.regulatory.rems)out.push({t:'rems',g:1});
+  return out;
+}
+/* Unit shorthand that the reviewed text spells out. Each entry maps a typed word to the words
+   the fields use; the search tries both. Vocabulary only, never a clinical claim. */
+var RX_SYNONYMS={'nms':['neuroleptic malignant'],'ss':['serotonin syndrome'],'sjs':['stevens johnson','rash'],
+  'eps':['extrapyramidal','dystonia','akathisia','parkinsonism'],'td':['tardive'],'lai':['long acting injectable','lais'],
+  'lais':['lai'],'injectable':['lai'],'ocd':['obsessive compulsive'],'mdd':['major depressive'],'gad':['generalized anxiety'],
+  'ptsd':['posttraumatic'],'oud':['opioid use'],'aud':['alcohol use'],'ecg':['ekg'],'qt':['qtc'],'bzd':['benzodiazepine'],
+  'benzo':['benzodiazepine'],'bp':['blood pressure'],'level':['needs level'],'levels':['needs level'],'tox':['toxicity'],
+  'sga':['second generation'],'fga':['first generation'],'aims':['tardive dyskinesia'],'agranulocytosis':['neutropenia'],
+  'anc':['neutropenia'],'manic':['mania'],'mania':['manic'],'psychotic':['psychosis'],'depressed':['depression'],
+  'anxious':['anxiety'],'sleep':['insomnia'],'detox':['withdrawal'],'overdose':['toxicity']};
+var RX_PHRASES=[['long acting injectable','lai'],['long acting','lai'],['black box','boxed warning'],['blood level','needs level'],
+  ['drug level','needs level'],['serum level','needs level'],['serotonin syndrome','serotonin'],['treatment resistant','resistant']];
+/* Every reading of a query: the words as typed, plus one reading per synonym alternative,
+   with unit phrases folded to the word the fields use first. */
+function rxExpand(query){
+  var q=rxNorm(query);
+  RX_PHRASES.forEach(function(p){if(q.indexOf(p[0])!==-1)q=q.split(p[0]).join(p[1]);});
+  var words=q.split(' ').filter(Boolean),forms=[words.join(' ')];
+  if(!words.length)return forms;
+  for(var i=0;i<words.length;i++){
+    var alts=RX_SYNONYMS[words[i]];if(!alts)continue;
+    for(var k=0;k<alts.length;k++){var f=words.slice();f[i]=alts[k];forms.push(f.join(' '));}
+  }
+  return forms;
+}
+/* The searchable text of one drug, grouped by what kind of match it is. Field order sets rank. */
+function rxSearchIndex(a){
+  var ae=a.adverseEffects||{},ix=a.interactions||{},mon=a.monitoring||{};
+  var dangers=[];rxList(ae.dangerous).forEach(function(d){if(d&&d.name)dangers.push(d.name);});
+  var uses=[];rxList(a.inpatientUses).forEach(function(u){if(u&&u.use)uses.push(u.use);});
+  return [
+    {kind:'name',w:100,terms:[a.generic,a.id].concat(rxList(a.brands))},
+    {kind:'class',w:40,terms:rxList(a['class'])},
+    {kind:'group',w:12,terms:[rxGroupLabel(a.group)]},
+    {kind:'flag',w:35,terms:rxFlagTerms(a).map(function(f){return f.t;}),grades:rxFlagTerms(a).map(function(f){return f.g;})},
+    {kind:'indication',w:30,terms:rxList(a.fdaIndications).concat(uses)},
+    {kind:'adverse',w:25,terms:dangers.concat(rxList(ae.common))},
+    {kind:'trap',w:20,terms:rxList(ix.keyTraps)},
+    {kind:'monitoring',w:15,terms:rxList(mon.baseline).concat(rxList(mon.ongoing))},
+    {kind:'ask',w:10,terms:rxList(a.attendingAsks)}
+  ];
+}
+function rxSearchText(a){
+  var out=[];rxSearchIndex(a).forEach(function(g){g.terms.forEach(function(t){out.push(rxNorm(t));});});
+  return out.join(' ');
+}
+/* Damerau-Levenshtein with a cap, for "seroquil", "lithum", "halperidol". */
+function rxEditDistance(x,y,cap){
+  if(x===y)return 0;if(Math.abs(x.length-y.length)>cap)return cap+1;
+  var prev=[],cur=[],prev2=null,i,j;
+  for(j=0;j<=y.length;j++)prev[j]=j;
+  for(i=1;i<=x.length;i++){
+    cur=[i];var best=cap+1;
+    for(j=1;j<=y.length;j++){
+      var cost=x.charAt(i-1)===y.charAt(j-1)?0:1;
+      var v=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+cost);
+      if(prev2&&i>1&&j>1&&x.charAt(i-1)===y.charAt(j-2)&&x.charAt(i-2)===y.charAt(j-1))v=Math.min(v,prev2[j-2]+1);
+      cur[j]=v;if(v<best)best=v;
+    }
+    if(best>cap)return cap+1;
+    prev2=prev;prev=cur;
+  }
+  return prev[y.length];
+}
+/* How well one query word matches one indexed term: 1 exact word, .9 word prefix, .7 close
+   misspelling (one edit for 5–7 letters, two for longer), .5 substring inside a long word. */
+function rxWordMatch(word,term){
+  var words=term.split(' '),best=0,i;
+  for(i=0;i<words.length;i++){
+    var t=words[i];if(!t)continue;
+    if(t===word)return 1;
+    if(t.indexOf(word)===0&&word.length>=3)best=Math.max(best,.9);
+    if(word.length>=5){
+      var cap=word.length>=8?2:1;
+      if(rxEditDistance(word,t,cap)<=cap)best=Math.max(best,.7);
+      else if(t.length>=6&&t.indexOf(word)>0)best=Math.max(best,.5);
+    }
+  }
+  return best;
+}
+/* A ranking score for one drug against a query, 0 when any query word fails to match every
+   reading of it. Per word: the best field match, weighted by field kind (a name beats a flag
+   beats an indication beats an adverse effect), plus a small bonus for each further kind of
+   field that also matches, so a drug the word runs through outranks one it merely touches. */
+function rxScoreWords(a,words){
+  var index=rxSearchIndex(a),total=0,w,g,t,m,best,bestW,kinds;
+  for(w=0;w<words.length;w++){
+    best=0;bestW=0;kinds=0;
+    for(g=0;g<index.length;g++){
+      var top=0;
+      for(t=0;t<index[g].terms.length;t++){
+        m=rxWordMatch(words[w],rxNorm(index[g].terms[t]));
+        if(index[g].grades)m*=index[g].grades[t];
+        if(m>top)top=m;
+      }
+      if(top>0){kinds++;if(top*index[g].w>best*bestW){best=top;bestW=index[g].w;}}
+    }
+    if(!best)return 0;
+    total+=best*bestW+(kinds-1)*3;
+  }
+  return total;
+}
+function rxScore(a,query){
+  var forms=rxExpand(query),best=0;
+  if(!forms[0])return 1;
+  forms.forEach(function(f){var sc=rxScoreWords(a,f.split(' '));if(sc>best)best=sc;});
+  return best;
+}
+/* The drugs to list for a query and a group ('' = all), stamped only, best match first, then A to Z. */
 function rxFilterAgents(data,query,group){
-  var q=String(query||'').toLowerCase().replace(/^\s+|\s+$/g,''),out=[],agents=(data&&data.agents)||[];
+  var out=[],agents=(data&&data.agents)||[];
   for(var i=0;i<agents.length;i++){
     var a=agents[i];
     if(!rxReviewStamped(a))continue;
     if(group&&a.group!==group)continue;
-    if(q&&rxSearchText(a).indexOf(q)===-1)continue;
-    out.push(a);
+    var sc=rxScore(a,query);
+    if(!sc)continue;
+    out.push({a:a,sc:sc});
   }
-  out.sort(function(x,y){return String(x.generic).localeCompare(String(y.generic));});
-  return out;
+  out.sort(function(x,y){return y.sc-x.sc||String(x.a.generic).localeCompare(String(y.a.generic));});
+  return out.map(function(x){return x.a;});
 }
-
 function rxGroupsPresent(data){
   var seen={},out=[],agents=(data&&data.agents)||[];
   for(var i=0;i<agents.length;i++)if(rxReviewStamped(agents[i]))seen[agents[i].group]=true;
   for(var j=0;j<RX_GROUP_ORDER.length;j++)if(seen[RX_GROUP_ORDER[j]])out.push(RX_GROUP_ORDER[j]);
   return out;
 }
-
-/* One stamped drug as ordered sections of plain text. Nothing is rendered that is not in the
-   drug's reviewed fields. Each item: {text} or {label,text} or {danger:{name,recognize,firstMove}}. */
+/* Scenario entry points: the unit's common moments, each a set of searches over the reviewed
+   feed plus the library pages that teach the moment. Interface text only; the drugs they show
+   come from the same reviewed fields the search reads. Pages are the built slugs. */
+var RX_SCENARIOS=[
+  {id:'agitation',label:'Acute agitation',queries:['agitation'],
+   links:[{text:'Protocol Library',href:'../index.html?page=protocol_library.md'},{text:'Interaction Cards',href:'interaction-cards.html'}]},
+  {id:'clozapine',label:'Starting clozapine',queries:['clozapine'],
+   links:[{text:'Monitoring & Labs',href:'../index.html?page=med_monitoring.md'}]},
+  {id:'level',label:'Needs a level',queries:['needs level'],
+   links:[{text:'Monitoring & Labs',href:'../index.html?page=med_monitoring.md'}]},
+  {id:'qtc',label:'QTc on the EKG',queries:['qtc'],
+   links:[{text:'Interaction Cards',href:'interaction-cards.html'}]},
+  {id:'nms-ss',label:'NMS vs serotonin syndrome',queries:['neuroleptic malignant','serotonin syndrome'],
+   links:[{text:'Interaction Cards',href:'interaction-cards.html'},{text:'Protocol Library',href:'../index.html?page=protocol_library.md'}]},
+  {id:'withdrawal',label:'Alcohol withdrawal',queries:['withdrawal','benzodiazepine'],
+   links:[{text:'Withdrawal: CIWA-Ar / COWS',href:'withdrawal.html'},{text:'Protocol Library',href:'../index.html?page=protocol_library.md'}]},
+  {id:'pregnancy',label:'Pregnant, or might be',queries:['pregnancy','teratogenicity'],
+   links:[{text:'Monitoring & Labs',href:'../index.html?page=med_monitoring.md'}]}
+];
+function rxScenario(id){for(var i=0;i<RX_SCENARIOS.length;i++)if(RX_SCENARIOS[i].id===id)return RX_SCENARIOS[i];return null;}
+/* The union of a scenario's searches, best match first, stamped only. */
+function rxScenarioAgents(data,scenario,group){
+  var seen={},out=[];if(!scenario)return out;
+  rxList(scenario.queries).forEach(function(q){
+    rxFilterAgents(data,q,group).forEach(function(a){if(!seen[a.id]){seen[a.id]=true;out.push(a);}});
+  });
+  return out;
+}
+/* The before-rounds strip: the first item of three reviewed lists, which the card author ordered
+   by yield. One thing to check, one danger with its first move, one question to expect. */
+function rxBeforeRounds(a){
+  if(!rxReviewStamped(a))return null;
+  var mon=a.monitoring||{},ae=a.adverseEffects||{};
+  var check=rxList(mon.baseline)[0]||rxList(mon.ongoing)[0]||'';
+  var d=rxList(ae.dangerous)[0]||{};
+  var ask=rxList(a.attendingAsks)[0]||'';
+  if(!check&&!d.name&&!ask)return null;
+  return {check:typeof check==='string'?check:'',danger:{name:d.name||'',firstMove:d.firstMove||'',recognize:d.recognize||''},ask:typeof ask==='string'?ask:''};
+}
+/* One stamped drug as ordered sections of plain text, each tagged t1 (student, the default
+   view) or t2 (resident depth). Nothing is rendered that is not in the drug's reviewed fields.
+   Each item: {text} or {label,text} or {danger:{name,recognize,firstMove}}. */
+var RX_T1={uses:1,before:1,dangerous:1,traps:1,ms3:1,asks:1,family:1};
 function rxSections(a){
   if(!rxReviewStamped(a))return [];
-  function list(v){return Object.prototype.toString.call(v)==='[object Array]'?v:[];}
+  function list(v){return rxList(v);}
   function items(v){var o=[];list(v).forEach(function(x){if(typeof x==='string'&&x)o.push({text:x});});return o;}
   function labelled(pairs){var o=[];pairs.forEach(function(p){if(typeof p[1]==='string'&&p[1])o.push({label:p[0],text:p[1]});});return o;}
   var s=[],pe=a.pearls||{},mon=a.monitoring||{},ae=a.adverseEffects||{},ix=a.interactions||{},
-      pop=a.populations||{},fl=a.flags||{},pk=a.pk||{},dz=a.dosing||{};
+      pop=a.populations||{},fl=a.flags||{},pk=a.pk||{},dz=a.dosing||{},cyp=ix.cyp||{};
   var uses=[];list(a.inpatientUses).forEach(function(u){if(u&&u.use)uses.push({text:u.use+(u.offLabel?' (off-label)':'')});});
   s.push({key:'uses',title:'What it is used for',items:items(a.fdaIndications).map(function(x){x.label='FDA';return x;}).concat(uses)});
   s.push({key:'mechanism',title:'How it works',items:labelled([['',a.mechanism&&a.mechanism.t1]])});
@@ -179,16 +386,57 @@ function rxSections(a){
   s.push({key:'dangerous',title:'Dangerous adverse effects — and your first move',items:dangers});
   s.push({key:'common',title:'Common adverse effects',items:items(ae.common)});
   s.push({key:'traps',title:'Interaction traps',items:items(ix.keyTraps)});
-  s.push({key:'populations',title:'Special populations',items:labelled([['Pregnancy',pop.pregnancy],['Older adults',pop.geriatric],['Kidney',pop.renal],['Liver',pop.hepatic]])});
+  s.push({key:'cyp',title:'CYP pathways',items:labelled([['Substrate of',list(cyp.substrateOf).join(', ')],['Inhibits',list(cyp.inhibits).join(', ')],['Induces',list(cyp.induces).join(', ')]])});
+  s.push({key:'populations',title:'Special populations',items:labelled([['Pregnancy',pop.pregnancy],['Lactation',pop.lactation],['Older adults',pop.geriatric],['Kidney',pop.renal],['Liver',pop.hepatic]])});
   s.push({key:'starting',title:'Starting and titrating',items:labelled([['',dz.titration]]).concat(dz.forms&&dz.forms.length?[{label:'Forms',text:dz.forms.join(', ')}]:[])});
   s.push({key:'facts',title:'At a glance',facts:true,items:labelled([['QTc risk',fl.qtcRisk],['Weight',fl.weightImpact],['Blood monitoring',fl.bloodMonitoring],['EKG',fl.ekgRequired],['Half-life (h)',pk.halfLifeHours],['Time to effect',pk.timeToEffect]])});
   s.push({key:'ms3',title:'Pearls — student',items:items(pe.t1)});
   s.push({key:'resident',title:'Pearls — resident',items:items(pe.t2)});
   s.push({key:'asks',title:'What your attending will ask',items:items(a.attendingAsks)});
   s.push({key:'family',title:'Explaining it to a family',items:labelled([['',a.familyExplainer&&a.familyExplainer.text]])});
+  s.forEach(function(x){x.tier=RX_T1[x.key]?'t1':'t2';});
   return s.filter(function(x){return x.items.length>0;});
 }
-
+/* The sections for one view: 't1' is the student card; 't2' is everything. */
+function rxTierSections(a,tier){
+  return rxSections(a).filter(function(s){return tier==='t2'||s.tier==='t1';});
+}
+/* The family-explainer flip: the reviewed family text plus the ReConnect handout it cites, as text. */
+function rxFamilyFlip(a){
+  if(!rxReviewStamped(a))return null;
+  var fe=a.familyExplainer||{};
+  if(typeof fe.text!=='string'||!fe.text)return null;
+  return {text:fe.text,handoutRef:typeof fe.handoutRef==='string'?fe.handoutRef:''};
+}
+/* The compare grid: 2–4 stamped drugs as rows of the same reviewed fields the cards show.
+   A row reads '—' where a drug has no value; a list cell is an array. No row is computed. */
+function rxCompareRows(agents){
+  var cols=[];rxList(agents).forEach(function(a){if(rxReviewStamped(a)&&cols.length<4)cols.push(a);});
+  if(cols.length<2)return {agents:cols,rows:[]};
+  function str(v){return typeof v==='string'&&v?v:(typeof v==='number'?String(v):'—');}
+  function arr(v){var o=[];rxList(v).forEach(function(x){if(typeof x==='string'&&x)o.push(x);});return o.length?o:['—'];}
+  function names(v){var o=[];rxList(v).forEach(function(d){if(d&&d.name)o.push(d.name);});return o.length?o:['—'];}
+  function cyp(ix){var c=(ix&&ix.cyp)||{},o=[];
+    if(rxList(c.substrateOf).length)o.push('Substrate: '+c.substrateOf.join(', '));
+    if(rxList(c.inhibits).length)o.push('Inhibits: '+c.inhibits.join(', '));
+    if(rxList(c.induces).length)o.push('Induces: '+c.induces.join(', '));
+    return o.length?o:['—'];}
+  var rows=[
+    {label:'Boxed warning',values:cols.map(function(a){return a.boxedWarning&&a.boxedWarning.present?'Yes':'No';})},
+    {label:'QTc risk',values:cols.map(function(a){return str((a.flags||{}).qtcRisk);})},
+    {label:'Weight',values:cols.map(function(a){return str((a.flags||{}).weightImpact);})},
+    {label:'Blood monitoring',values:cols.map(function(a){return str((a.flags||{}).bloodMonitoring);})},
+    {label:'EKG',values:cols.map(function(a){return str((a.flags||{}).ekgRequired);})},
+    {label:'Half-life (h)',values:cols.map(function(a){return str((a.pk||{}).halfLifeHours);})},
+    {label:'Time to effect',values:cols.map(function(a){return str((a.pk||{}).timeToEffect);})},
+    {label:'CYP',values:cols.map(function(a){return cyp(a.interactions);})},
+    {label:'Before the first dose',values:cols.map(function(a){return arr((a.monitoring||{}).baseline);})},
+    {label:'Dangerous adverse effects',values:cols.map(function(a){return names((a.adverseEffects||{}).dangerous);})},
+    {label:'Common adverse effects',values:cols.map(function(a){return arr((a.adverseEffects||{}).common);})},
+    {label:'Interaction traps',values:cols.map(function(a){return arr((a.interactions||{}).keyTraps);})}
+  ];
+  return {agents:cols,rows:rows};
+}
 /* The only outbound links a card may carry: its DailyMed label and a library page it cites. */
 function rxLabelHref(a){
   var h=a&&a.dosing&&a.dosing.labelLink;
@@ -197,7 +445,7 @@ function rxLabelHref(a){
 /* ---- end pharmacy page model ---- */
 
 (function(){
-  var state={data:null,query:'',group:'',open:null,quiz:null};
+  var state={data:null,query:'',group:'',scenario:'',open:null,quiz:null,tier:'t1',family:false,compare:[],grid:false};
   var GRADES=['Again','Hard','Good','Easy'];
   function $(id){return document.getElementById(id);}
   function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
@@ -208,7 +456,10 @@ function rxLabelHref(a){
     for(var i=0;i<cards.length;i++){var c=s[cards[i].id];if(c&&c.due<=now)n++;}
     return n;
   }
-
+  function shownAgents(){
+    var sc=state.scenario?rxScenario(state.scenario):null;
+    return sc?rxScenarioAgents(state.data,sc,state.group):rxFilterAgents(state.data,state.query,state.group);
+  }
   function renderFilters(){
     var host=$('filters');host.textContent='';
     [''].concat(rxGroupsPresent(state.data)).forEach(function(g){
@@ -216,9 +467,82 @@ function rxLabelHref(a){
       b.setAttribute('aria-pressed',String(state.group===g));host.appendChild(b);
     });
   }
-
+  function renderScenarios(){
+    var host=$('scenarios'),links=$('scenlinks');host.textContent='';links.textContent='';
+    RX_SCENARIOS.forEach(function(sc){
+      if(!rxScenarioAgents(state.data,sc,'').length)return;
+      var b=button('fchip',sc.label,function(){
+        state.scenario=state.scenario===sc.id?'':sc.id;state.query='';$('q').value='';
+        renderScenarios();renderList();$('scenario-'+sc.id).focus();
+      });
+      b.id='scenario-'+sc.id;
+      b.setAttribute('aria-pressed',String(state.scenario===sc.id));host.appendChild(b);
+    });
+    var sc=state.scenario?rxScenario(state.scenario):null;
+    if(sc&&sc.links.length){
+      links.appendChild(document.createTextNode(sc.label+' — read: '));
+      sc.links.forEach(function(l,i){
+        if(i)links.appendChild(document.createTextNode(' · '));
+        var a=el('a',null,l.text);a.href=l.href;links.appendChild(a);
+      });
+    }
+  }
+  function compareIndex(id){for(var i=0;i<state.compare.length;i++)if(state.compare[i]===id)return i;return -1;}
+  function toggleCompare(id){
+    var i=compareIndex(id);
+    if(i>=0)state.compare.splice(i,1);else if(state.compare.length<4)state.compare.push(id);
+    if(state.compare.length<2)state.grid=false;
+    renderCompareBar();renderList();renderGrid();$('compare-'+id).focus();
+  }
+  function compareAgents(){
+    var all=rxFilterAgents(state.data,'',''),out=[];
+    state.compare.forEach(function(id){for(var i=0;i<all.length;i++)if(all[i].id===id)out.push(all[i]);});
+    return out;
+  }
+  function renderCompareBar(){
+    var host=$('cmpbar');host.textContent='';
+    if(!state.compare.length)return;
+    var bar=el('div','cmpbar');bar.setAttribute('role','status');bar.setAttribute('aria-live','polite');
+    var names=compareAgents().map(function(a){return a.generic;});
+    var t=el('span');t.appendChild(el('strong',null,'Compare: '));t.appendChild(document.createTextNode(names.join(', ')+(state.compare.length<2?' — mark one more':state.compare.length===4?' (max 4)':'')));
+    bar.appendChild(t);
+    if(state.compare.length>=2){
+      var gridToggle=button('btn',state.grid?'Hide grid':'Show grid',function(){state.grid=!state.grid;renderCompareBar();renderGrid();$(state.grid?'gridname':'grid-toggle').focus();});
+      gridToggle.id='grid-toggle';bar.appendChild(gridToggle);
+    }
+    bar.appendChild(button('btn btn--ghost','Clear',function(){var first=state.compare[0];state.compare=[];state.grid=false;renderCompareBar();renderList();renderGrid();($('compare-'+first)||$('q')).focus();}));
+    host.appendChild(bar);
+  }
+  function renderGrid(){
+    var host=$('grid');host.textContent='';
+    if(!state.grid)return;
+    var cmp=rxCompareRows(compareAgents());
+    if(cmp.rows.length<1)return;
+    var box=el('section','grid');box.setAttribute('aria-labelledby','gridname');
+    var h=el('h2',null,'Side by side');h.id='gridname';h.tabIndex=-1;box.appendChild(h);
+    var table=el('table'),thead=el('thead'),tr=el('tr');
+    tr.appendChild(el('th','',''));
+    cmp.agents.forEach(function(a){var th=el('th',null,a.generic);th.scope='col';tr.appendChild(th);});
+    thead.appendChild(tr);table.appendChild(thead);
+    var tbody=el('tbody');
+    cmp.rows.forEach(function(row){
+      var r=el('tr'),th=el('th',null,row.label);th.scope='row';r.appendChild(th);
+      row.values.forEach(function(v){
+        var td=el('td');
+        if(Object.prototype.toString.call(v)==='[object Array]'){var ul=el('ul');v.forEach(function(x){ul.appendChild(el('li',null,x));});td.appendChild(ul);}
+        else td.textContent=v;
+        r.appendChild(td);
+      });
+      tbody.appendChild(r);
+    });
+    table.appendChild(tbody);
+    var scroll=el('div','grid__scroll');scroll.tabIndex=0;scroll.setAttribute('role','region');scroll.setAttribute('aria-label','Comparison table; scrolls sideways on a narrow screen');
+    scroll.appendChild(table);box.appendChild(scroll);
+    box.appendChild(el('p','practice','Every cell is the same reviewed field the drug card shows. No doses.'));
+    host.appendChild(box);
+  }
   function renderList(){
-    var host=$('list'),shown=rxFilterAgents(state.data,state.query,state.group);host.textContent='';
+    var host=$('list'),shown=shownAgents();host.textContent='';
     shown.forEach(function(a){
       var li=el('li'),b=el('button','drug');b.type='button';b.id='drug-'+a.id;
       b.setAttribute('aria-expanded',String(state.open===a.id));b.setAttribute('aria-controls','detail');
@@ -229,14 +553,22 @@ function rxLabelHref(a){
       if(due)b.appendChild(el('span','pill pill--due',due+' due'));
       else if(a.boxedWarning&&a.boxedWarning.present)b.appendChild(el('span','pill','Boxed warning'));
       b.addEventListener('click',function(){open(state.open===a.id?null:a.id);});
-      li.appendChild(b);host.appendChild(li);
+      li.appendChild(b);
+      var on=compareIndex(a.id)>=0;
+      var c=button('cmp__btn',on?'Comparing':'Compare',function(){toggleCompare(a.id);});
+      c.id='compare-'+a.id;
+      c.setAttribute('aria-pressed',String(on));c.setAttribute('aria-label',(on?'Remove ':'Add ')+a.generic+(on?' from':' to')+' the comparison');
+      if(!on&&state.compare.length>=4)c.disabled=true;
+      var wrap=el('div','cmp');wrap.appendChild(c);li.appendChild(wrap);
+      host.appendChild(li);
     });
     var total=rxFilterAgents(state.data,'','').length,pend=state.data.pendingCount||0;
-    $('status').textContent=(shown.length===total?total+' faculty-reviewed drug'+(total===1?'':'s'):
-      shown.length+' of '+total+' shown')+(pend?' · '+pend+' more in faculty review':'');
+    var sc=state.scenario?rxScenario(state.scenario):null;
+    $('status').textContent=(sc?shown.length+' of '+total+' for '+sc.label:
+      shown.length===total?total+' faculty-reviewed drug'+(total===1?'':'s'):shown.length+' of '+total+' shown')
+      +(pend?' · '+pend+' more in faculty review':'');
     if(!shown.length)host.appendChild(el('li','empty','No reviewed drug matches that search.'));
   }
-
   function renderDetail(){
     var host=$('detail');host.textContent='';
     var a=null,agents=rxFilterAgents(state.data,'','');
@@ -251,10 +583,35 @@ function rxLabelHref(a){
       bw.appendChild(document.createTextNode(a.boxedWarning.summary));box.appendChild(bw);
     }
     if(a.regulatory&&a.regulatory.rems)box.appendChild(el('p','boxed','REMS program applies — check the current requirements before prescribing or dispensing.'));
+    var strip=rxBeforeRounds(a);
+    if(strip){
+      var st=el('div','strip');st.setAttribute('aria-label','Before rounds');
+      function cell(cls,tag,text){var c=el('div','strip__cell'+(cls?' '+cls:''));c.appendChild(el('span','tag',tag));c.appendChild(document.createTextNode(text));return c;}
+      if(strip.check)st.appendChild(cell('','Check',strip.check));
+      if(strip.danger.name)st.appendChild(cell('strip__cell--danger','Danger',strip.danger.name+(strip.danger.firstMove?' — '+strip.danger.firstMove:'')));
+      if(strip.ask)st.appendChild(cell('','Expect',strip.ask));
+      box.appendChild(st);
+    }
+    var tier=el('div','tier');tier.setAttribute('role','group');tier.setAttribute('aria-label','Card depth');
+    var tb=button('fchip',state.tier==='t2'?'Resident depth: on':'Resident depth: off',function(){state.tier=state.tier==='t2'?'t1':'t2';renderDetail();$('depth-toggle').focus();});
+    tb.id='depth-toggle';tb.setAttribute('aria-pressed',String(state.tier==='t2'));tier.appendChild(tb);
+    var flip=rxFamilyFlip(a);
+    if(flip){
+      var fb=button('fchip','How would you explain this to a family?',function(){state.family=!state.family;renderDetail();$('family-toggle').focus();});
+      fb.id='family-toggle';fb.setAttribute('aria-pressed',String(state.family));fb.setAttribute('aria-controls','family');tier.appendChild(fb);
+    }
+    box.appendChild(tier);
+    if(flip&&state.family){
+      var fp=el('div','flip');fp.id='family';fp.setAttribute('role','region');fp.setAttribute('aria-label','Explaining it to a family');
+      fp.appendChild(el('h3',null,'Explaining it to a family'));fp.appendChild(el('p',null,flip.text));
+      if(flip.handoutRef)fp.appendChild(el('small',null,'ReConnect family handout: '+flip.handoutRef));
+      box.appendChild(fp);
+    }
     var cards=rxCardsFor(state.data,a.id);
     if(cards.length)box.appendChild(button('btn','Quiz me on '+a.generic+' ('+cards.length+' cards)',function(){startQuiz(a);}));
     var quizHost=el('div');quizHost.id='quiz';box.appendChild(quizHost);
-    rxSections(a).forEach(function(sec){
+    rxTierSections(a,state.tier).forEach(function(sec){
+      if(sec.key==='family'&&flip&&state.family)return;
       var s=el('div','sec');s.appendChild(el('h3',null,sec.title));
       var ul=el('ul',sec.facts?'facts':null);
       sec.items.forEach(function(it){
@@ -271,6 +628,7 @@ function rxLabelHref(a){
       });
       s.appendChild(ul);box.appendChild(s);
     });
+    if(state.tier==='t1')box.appendChild(el('p','practice','Student view. Turn on resident depth for mechanism, ongoing monitoring, common adverse effects, CYP, special populations, titration, and resident pearls.'));
     var links=el('p');
     var label=rxLabelHref(a);
     if(label){var l=el('a',null,'Prescribing information (DailyMed)');l.href=label;l.target='_blank';l.rel='noopener noreferrer';links.appendChild(l);}
@@ -278,10 +636,14 @@ function rxLabelHref(a){
       if(label)links.appendChild(document.createTextNode(' · '));
       var m=el('a',null,'Monitoring & Labs page');m.href='../index.html?page='+encodeURIComponent(a.monitoring.sourcePage);links.appendChild(m);
     }
+    var qb=(a.qbankIds||[]).length;
+    if(qb){
+      if(links.childNodes.length)links.appendChild(document.createTextNode(' · '));
+      var q=el('a',null,qb+' practice question'+(qb===1?'':'s')+' cover this drug');q.href='question-bank-practice.html';links.appendChild(q);
+    }
     if(links.childNodes.length)box.appendChild(links);
-    host.appendChild(box);
+    host.appendChild(box);renderQuiz();
   }
-
   /* Quiz: due cards first, then the rest in deck order. Grading writes the shared cw_srs_v1
      store under the card's RX# id, so the same card then comes back in Daily Review. */
   function startQuiz(a){
@@ -319,23 +681,20 @@ function rxLabelHref(a){
     }
     host.appendChild(box);
   }
-
   function open(id){
-    state.open=id;state.quiz=null;renderList();renderDetail();
+    state.open=id;state.quiz=null;state.family=false;renderList();renderDetail();
     try{history.replaceState(null,'',id?'#'+id:location.pathname+location.search);}catch(_){}
     var h=$('dname');if(h)h.focus();
   }
-
   function fail(){
     $('status').textContent='Reviewed drug cards could not be loaded. Nothing is shown rather than something unchecked. Reload to try again.';
-    $('list').textContent='';$('detail').textContent='';$('filters').textContent='';
+    $('list').textContent='';$('detail').textContent='';$('filters').textContent='';$('scenarios').textContent='';$('scenlinks').textContent='';$('cmpbar').textContent='';$('grid').textContent='';
   }
-
   function init(){
-    $('q').addEventListener('input',function(e){state.query=e.target.value;renderList();});
+    $('q').addEventListener('input',function(e){state.query=e.target.value;if(state.scenario){state.scenario='';renderScenarios();}renderList();});
     fetch('../pharmacy_public.json').then(function(r){if(!r.ok)throw Error('missing');return r.json();})
       .then(rxVerifiedPublic).then(function(data){
-        state.data=data;renderFilters();renderList();
+        state.data=data;renderFilters();renderScenarios();renderList();
         var want=(location.hash||'').slice(1);
         if(want&&rxFilterAgents(data,'','').some(function(a){return a.id===want;}))open(want);
       }).catch(fail);
