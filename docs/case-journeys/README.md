@@ -44,3 +44,7 @@ python3 13_Faculty_Resources/_automation/case_journeys/project_case_journeys.py 
 **Merge-day gates:** authorization and `reviewDate` recorded 2026-10-04; `sources.json` is `faculty-reviewed` with a `resolution` on every `scopeLimit`; the two risperidone drug-card links stay in the reviewed snapshot but the projection ships them only once `pharmacy.json` marks the card `reviewed` (re-run `--write` then); faculty-console ledger rows for `one-patient-six-weeks.html` and the three case files are a separate `attest/pending` commit by the faculty identity after merge (governance separation L2–L4). Rollback: revert the r2 commit; `history/r1-2026-09-27/` is untouched.
 
 **Known uncertainty.** Whether the learner shell forwards `#risperidone` to the embedded pharmacy tool is not covered by a smoke test yet; the pharmacy page itself honours `location.hash` on load.
+
+## Suggested practice tasks (2026-10-04)
+
+`docs/case-journeys/practice-coverage.json` is `faculty-reviewed` (PR #972 approval). The projection now carries each chapter's tasks into the learner JSON as `practiceTasks`, and the practice chooser marks those buttons **Suggested** with a one-line explanation; every task stays available and nothing is disabled, scored, or saved. A case without `practiceTasks` (Jordan) renders the chooser exactly as before. The renderer rejects unknown or duplicate task ids (fail closed). Test: AC12. Changing a chapter's suggestions means editing the mapping and re-running `project_case_journeys.py --write`; the coverage gate (AC11) still applies.

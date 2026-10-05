@@ -23,7 +23,7 @@ Usage:
   APIFY_TOKEN=*** python3 run_guideline_surv.py --out findings.json
   python3 run_guideline_surv.py --out f.json --fixture fake_texts.json --baseline-dir /tmp/bl
 """
-import os, sys, json, argparse, difflib, hashlib, io, subprocess
+import os, re, sys, json, argparse, difflib, hashlib, io, subprocess
 import urllib.request
 import lib_surveillance as L
 
@@ -38,6 +38,20 @@ def _excerpt(old_norm, new_norm, max_lines=40):
     diff = [ln for ln in difflib.unified_diff(old, new, lineterm="", n=1)
             if ln and ln[0] in "+-" and not ln.startswith(("+++", "---"))]
     return "\n".join(diff[:max_lines])
+
+
+def same_words(old_text, new_text):
+    """True when two extractions differ only in where whitespace falls.
+
+    normalize_text collapses runs of whitespace but cannot undo a space a PDF extractor
+    inserts INSIDE a word: re-rendering the Spravato REMS overview turned "S trategy" into
+    "Strategy" and "1 -855" into "1-855", and that alone filed P1 #927 against a document
+    whose every character was unchanged. Any added, removed or changed character still
+    differs. Whitespace CAN carry meaning ("now here" vs "nowhere"), so equality here only
+    downgrades a PDF finding to a capped P2 in the digest -- it never silences one, and it
+    is never applied to an HTML source, whose extraction does not split words.
+    """
+    return re.sub(r"\s+", "", old_text) == re.sub(r"\s+", "", new_text)
 
 
 def evaluate(source, raw_text, baseline_dir):
@@ -68,6 +82,8 @@ def evaluate(source, raw_text, baseline_dir):
         return None, record       # baseline established, nothing to report
     if prev.get("hash") == new_hash:
         return None, record       # unchanged
+    spacing_only = (source.get("type") == "pdf" and not signal_only and prev.get("text")
+                    and same_words(prev["text"], norm))
 
     ev = {"prev_hash": prev.get("hash"), "new_hash": new_hash,
           "prev_seen_at": prev.get("checked_at")}
@@ -75,6 +91,14 @@ def evaluate(source, raw_text, baseline_dir):
         ev["diff_excerpt"] = _excerpt(prev["text"], norm)
     summary = (f"Content changed at {source['name']}"
                + ("" if not signal_only else " (signal-only source; excerpt withheld for copyright)"))
+    if spacing_only:
+        # Still a finding, still carrying its diff: P2 routes it to the digest instead of an
+        # issue, and the cap stops the acute-path escalation from raising it back to P1/P0.
+        summary += " (whitespace only: the text is identical once spacing is ignored; check the excerpt for a word boundary that changed meaning)"
+        ev["spacing_only"] = True
+        finding = _finding(source, "modified", "P2", summary, evidence=ev, signature=new_hash)
+        finding["severity_cap"] = "P2"
+        return finding, record
     finding = _finding(source, "modified", source.get("severity_default", "P1"),
                        summary, evidence=ev, signature=new_hash)
     return finding, record
