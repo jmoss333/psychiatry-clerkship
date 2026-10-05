@@ -43,8 +43,9 @@ jobs:
     if: >-
       (github.event.workflow_run.conclusion == 'failure' ||
        github.event.workflow_run.conclusion == 'success') && !(
-       github.event.workflow_run.name == 'Surveillance — Firecrawl Faculty Review' &&
-       github.event.workflow_run.display_title == 'Firecrawl comparison probe')
+       github.event.workflow_run.name == 'Firecrawl comparison probe' ||
+       (github.event.workflow_run.name == 'Surveillance — Firecrawl Faculty Review' &&
+        github.event.workflow_run.display_title == 'Firecrawl comparison probe'))
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
