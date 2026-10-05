@@ -1390,11 +1390,11 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-10-04",
+    "at": "2026-10-05",
     "by": "Joshua Moss, MD",
     "note": "Fictional composite longitudinal simulation.",
-    "contentHash": "15ea8979b064c796e7302c8d7de34b09ac7dde85",
-    "clinicalHash": "d435fd235cde4476567163bde97a16641c695b68"
+    "contentHash": "02ab7e11b97db39388403fd0724e67aeb6d537ed",
+    "clinicalHash": "760c8ce0552bf70fad918dfbee464b04dd40d913"
   },
   "anki.md": {
     "status": "reviewed",
