@@ -3804,6 +3804,27 @@ test.describe('Essentials Phase 2', () => {
     await page.locator('[data-fd-tab="library"]:visible').click(); await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
     await expectHealthy(page);
   });
+  for (const width of [390, 1280]) {
+    test(`tool hint filter match stays visible beside a summary at ${width}px`, async ({ page }, info) => {
+      await page.setViewportSize({ width, height: 900 });
+      await seedApp(page, info);
+      await page.goto('/?tab=library');
+      const field = filterField(page);
+      await page.keyboard.press('/');
+      await expect(field).toBeFocused();
+      await page.keyboard.type('descriptor');
+      const description = page.locator('.fd-kit__reading[data-fd-open="mse.html"] .fd-kit__summary');
+      const hint = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8')).libraryHints['mse.html'];
+      await expect(description).toHaveText(hint);
+      await expect(description.locator('mark')).toHaveText('descriptor');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await field.press('Tab');
+      await expect(page.locator('[data-fd-library-filter-clear]')).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(field).toHaveValue('');
+      await expectHealthy(page);
+    });
+  }
   test('filter: updates as you type, announces N of M, highlights, restores from history.state, resets on reload, never in URL or storage', async ({ page }, info) => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
@@ -3825,7 +3846,7 @@ test.describe('Essentials Phase 2', () => {
     await expect(libraryStatus(page)).toHaveText(`${count} of ${kitCount(info)} items match “mood”.`);
     for (const title of await page.locator('.fd-kit__reading .fd-kit__title').allInnerTexts()) expect(title.toLowerCase()).toContain('mood');
     await expect(page.locator('.fd-kit__title mark').first()).toHaveText(/mood/i);
-    await expect(page.locator('.fd-library__footer .fd-library__searchlink[data-fd-search-query="mood"]')).toHaveText('Search inside every page for “mood” →');
+    await expect(page.locator('.fd-library__footer .fd-library__searchlink[data-fd-search-query="mood"]')).toHaveText('Search the library for “mood” →');
     // Memory only: same URL, same storage, the entry's history.state carries the query.
     const during = await page.evaluate(shellMemory);
     expect(during).toEqual(before);
@@ -3868,16 +3889,16 @@ test.describe('Essentials Phase 2', () => {
     await expect(libraryStatus(page)).toHaveText('No titles match “milieu rules”.');
     const empty = page.locator('.fd-library__empty');
     await expect(empty.getByRole('heading', { level: 2 })).toHaveText('No titles match “milieu rules”');
-    await expect(empty).toContainText('This filter checks titles and topics in the current view. Search looks inside every page, including tools.');
+    await expect(empty).toContainText('This filter checks titles and tool descriptions in the current view. Search also checks summaries and related terms across the library.');
     await expect(empty).toContainText('Still unsure? ＋ Ask a question saves it on this device for supervision.');
     await expect(page.locator('.fd-kit__tool-preview')).toHaveCount(0);
     await expect(page.locator('.fd-btn--primary:visible')).toHaveCount(1);
-    await empty.getByRole('button', { name: 'Search all content' }).click();
+    await empty.getByRole('button', { name: 'Search the library' }).click();
     const dialog = page.getByRole('dialog', { name: 'Search' });
     const input = dialog.getByRole('textbox', { name: 'Search resources' });
     await expect(input).toHaveValue('milieu rules');
     await expect(input).toBeFocused();
-    await expect(dialog.locator('.fd-searchpanel__foot')).toHaveText('Searches inside every page and tool. Not here? ＋ Ask a question saves it for supervision.');
+    await expect(dialog.locator('.fd-searchpanel__foot')).toHaveText('Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.');
     await input.fill('delirium');
     const labels = dialog.locator('.fd-searchpanel__group');
     await expect(labels.first()).toHaveText('Safety protocols');

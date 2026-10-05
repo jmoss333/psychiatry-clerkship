@@ -122,8 +122,9 @@ function fdLibraryRow(item, ctx){
   var titleCls=c.compact?'fd-collink__label':'fd-kit__title';
   var selected=!c.compact&&c.selectedRef&&c.selectedRef===item.ref;
   /* Essentials rows read the summary (a reading's tldr) or, for a tool, its hint; Everything rows
-     are compact and show only the hint. The hint is what the filter matches, so it is marked. */
-  var summary=c.compact?'':(item.summary||''), text=summary||item.hint||'';
+     are compact and show only the hint. A tool without a hint keeps its summary fallback.
+     The hint is what the filter matches, so it is visible and marked even when a tool has a summary. */
+  var summary=(c.compact||(item.kind==='tool'&&item.hint))?'':(item.summary||''), text=summary||item.hint||'';
   var out='<div class="fd-kit__item'+(selected?' is-selected':'')+'">';
   out+='<button type="button" class="'+rowCls+'" data-fd-open="'+fdEsc(item.ref)+'">'+
     '<span class="fd-kit__titlerow">'+
@@ -252,9 +253,9 @@ function fdLibraryEmpty(query){
   var q=fdLibraryQuery(query);
   return '<section class="fd-library__empty" aria-labelledby="fd-library-empty-h">'+
     '<h2 class="fd-library__empty-h" id="fd-library-empty-h">No titles match “'+fdEsc(q)+'”</h2>'+
-    '<p class="fd-library__empty-p">This filter checks titles and topics in the current view. Search looks inside every page, including tools.</p>'+
+    '<p class="fd-library__empty-p">This filter checks titles and tool descriptions in the current view. Search also checks summaries and related terms across the library.</p>'+
     '<div class="fd-library__empty-actions">'+
-      '<button type="button" class="fd-btn fd-btn--primary" data-fd-search data-fd-search-query="'+fdEsc(q)+'">Search all content</button>'+
+      '<button type="button" class="fd-btn fd-btn--primary" data-fd-search data-fd-search-query="'+fdEsc(q)+'">Search the library</button>'+
       '<button type="button" class="fd-btn fd-btn--ghost" data-fd-library-filter-clear>Clear filter</button>'+
     '</div>'+
     '<p class="fd-library__empty-note">Still unsure? <strong>＋ Ask a question</strong> saves it on this device for supervision.</p>'+
@@ -263,7 +264,7 @@ function fdLibraryEmpty(query){
 
 function fdLibraryFooter(query){
   var q=fdLibraryQuery(query);
-  return '<p class="fd-library__footer">Not seeing it? <button type="button" class="fd-library__searchlink" data-fd-search data-fd-search-query="'+fdEsc(q)+'">Search inside every page for “'+fdEsc(q)+'” →</button></p>';
+  return '<p class="fd-library__footer">Not seeing it? <button type="button" class="fd-library__searchlink" data-fd-search data-fd-search-query="'+fdEsc(q)+'">Search the library for “'+fdEsc(q)+'” →</button></p>';
 }
 
 /* The one shell both views render through. `model` is built by fdLibrary / fdEssentials:

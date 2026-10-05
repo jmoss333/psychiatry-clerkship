@@ -100,7 +100,7 @@ test('care-intent searches surface the matching ReConnect resource without forwa
   // Phase 2 of the one-thread redesign: care results sit under their own group label; the footer
   // sentence is the spec's.
   assert.match(html, /<p class="fd-searchpanel__group is-care">Patient care resources<\/p><a class="fd-result is-care"/);
-  assert.match(html, /<div class="fd-searchpanel__foot">Searches inside every page and tool\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
+  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, and related terms\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
 });
 
 test('care suggestions never outrank an explicit safety trigger', () => {
@@ -190,7 +190,7 @@ test('renders the panel skeleton with input, Close button, grouped results and t
   assert.match(html, /<div class="fd-searchpanel">/);
   assert.match(html, /<input type="text" class="fd-searchpanel__input" value=""/);
   assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>Close<\/button>/);
-  assert.match(html, /<div class="fd-searchpanel__foot">Searches inside every page and tool\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
+  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, and related terms\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
   // Defaults: the five protocols lead, then the pinned tools and the pocket guide, each under its group label.
   const groups = [...html.matchAll(/<p class="fd-searchpanel__group(?: (is-[a-z]+))?">([^<]+)<\/p>/g)].map((m) => m[2]);
   assert.deepEqual(groups, ['Safety protocols', 'Tools', 'Pages']);
