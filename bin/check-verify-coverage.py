@@ -104,10 +104,13 @@ def invoked_scripts(text):
             continue
         if not line or line.startswith("#"):
             continue
+        # A trailing operator continues a compound across newlines without a
+        # backslash. Its next command remains conditional/pipelined, not a gate.
+        shell_continuation = line.endswith("\\") or bool(re.search(r"(?:&&|\|\||\|)\s*$", line))
         if continued:
-            continued = line.endswith("\\")
+            continued = shell_continuation
             continue
-        if line.endswith("\\"):
+        if shell_continuation:
             continued = True
             continue
         # Never let data inside a heredoc be mistaken for commands.
@@ -382,6 +385,11 @@ def self_test():
         "subshell": "(\npython3 " + target + "\n)",
         "dead assignment": "if false; then\nA=bin\nfi\npython3 $A/check_a.py",
         "masked": "python3 " + target + " || true",
+        "newline and": "false &&\npython3 " + target,
+        "newline or": "true ||\npython3 " + target,
+        "newline pipe": "printf text |\npython3 " + target,
+        "newline chain": "false &&\ntrue &&\n# comment\npython3 " + target,
+        "newline masked": "python3 " + target + " ||\ntrue",
         "suffix": "python3 " + target + ".disabled",
         "heredoc": "cat <<'END'\npython3 " + target + "\nEND",
         "continued echo": "echo \\\npython3 " + target,
@@ -413,6 +421,8 @@ def self_test():
     # consume the rest of the file and manufacture orphans.
     check("after compound", ungated_findings([target],
           "if false; then\necho no\nfi\npython3 " + target, "", {}, 0), ([], 1, 0))
+    check("after continued compound", ungated_findings([target],
+          "false &&\necho no\npython3 " + target, "", {}, 0), ([], 1, 0))
 
     # 9. The glob sees both spellings in the live tree and the live list is not vacuous.
     live = checkers(ROOT)
