@@ -5810,9 +5810,6 @@
       "Present on rounds",
       "Write a progress note"
     ],
-    "safetyLevel": "moderate",
-    "facultyReview": {
-      "status": "pending"
-    }
+    "safetyLevel": "moderate"
   }
 }

@@ -1390,11 +1390,11 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-10-01",
+    "at": "2026-10-04",
     "by": "Joshua Moss, MD",
     "note": "Fictional composite longitudinal simulation.",
-    "contentHash": "87fae80949dda985d3768459f8beb14cb4d0f6ae",
-    "clinicalHash": "ea2e069ff632887f99297204eb9ef60e04e2c484"
+    "contentHash": "15ea8979b064c796e7302c8d7de34b09ac7dde85",
+    "clinicalHash": "d435fd235cde4476567163bde97a16641c695b68"
   },
   "anki.md": {
     "status": "reviewed",
@@ -1488,13 +1488,14 @@
     "clinicalHash": "2f22b016eeeb6c9e378ec53285fa79edc1fac4cb"
   },
   "prepare-for-tomorrow.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New preparation guide, synthetic examples, and tomorrow cards await faculty review.",
-    "at": "2026-10-03",
-    "by": "Pending faculty review"
+    "at": "2026-10-04",
+    "by": "Joshua Moss, MD",
+    "contentHash": "7b4e50643cb836b354ba1e9ae95caa6819d98c8b",
+    "clinicalHash": "e7b686488027d06c3278bb1ebf181fe54357edc0"
   }
 }

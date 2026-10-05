@@ -1723,7 +1723,10 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
       }
       expect.soft(geometry.searchAccessibleText, 'the search name is the sentence at every width').toContain('Search a symptom, drug, or task');
       expect.soft(geometry.searchIconWidth).toBeGreaterThan(0);
-      expect.soft(geometry.searchLabelWidth).toBeGreaterThanOrEqual(44);
+      // The label is text inside the Search button, not a separate touch target.
+      // The button's 44px target and collision-free bounds are asserted above.
+      expect.soft(geometry.searchLabelWidth, 'Search text remains visible').toBeGreaterThan(0);
+      await expect(page.locator('.fd-searchbtn')).toHaveAccessibleName(/Search a symptom, drug, or task/);
       // The ⌘K chip is a ≥1000px affordance now (it yields its width to "＋ Ask a question" below that).
       expect.soft(geometry.shortcutDisplay).toBe('none');
       expect.soft(geometry.headerBottom).toBeLessThanOrEqual(geometry.mainTop + 0.5);
@@ -1761,7 +1764,8 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
       };
     });
     expect.soft(browseHeader.collisions).toBe(false);
-    expect.soft(browseHeader.labelWidth).toBeGreaterThanOrEqual(44);
+    expect.soft(browseHeader.labelWidth, 'Search text remains visible while browsing').toBeGreaterThan(0);
+    await expect(page.locator('.fd-searchbtn')).toHaveAccessibleName(/Search a symptom, drug, or task/);
     expect.soft(browseHeader.shortcutDisplay).toBe('none');
     expect.soft(browseHeader.scrollWidth).toBeLessThanOrEqual(browseHeader.viewportWidth);
     await expectHealthy(page);
@@ -5369,8 +5373,18 @@ for (const width of [320, 390, 768, 1280]) {
     await expect(page.locator('.fd-header [data-fd-change-week], .fd-carebtn, .fd-weekpill[data-fd-change-week]')).toHaveCount(0);
 
     const thread = page.locator('.fd-thread');
-    await expect(thread).toHaveAttribute('aria-label', 'Six-week path');
+    await expect(thread).toHaveAttribute('aria-label', 'Rotation weeks');
     await expect(thread.locator('.fd-thread__node')).toHaveCount(audience(info).weekCount);
+    const weekGrid = await thread.locator('.fd-thread__list').evaluate(list => {
+      const cells = [...list.children].map(node => node.getBoundingClientRect());
+      const box = list.getBoundingClientRect();
+      return {count: cells.length, width: box.width, lastRight: cells.at(-1).right, right: box.right,
+        cellWidths: cells.map(cell => cell.width)};
+    });
+    expect(Math.abs(weekGrid.lastRight - weekGrid.right), 'actual weeks fill the thread').toBeLessThan(1);
+    for (const cellWidth of weekGrid.cellWidths) {
+      expect(Math.abs(cellWidth - weekGrid.width / weekGrid.count)).toBeLessThan(1);
+    }
     await expect(thread.locator('[aria-current="step"]')).toHaveAttribute('data-fd-view-week', '1');
     await expect(thread.locator('[aria-current="step"]')).toHaveAccessibleName(/^Week 1: .+ \(current week\)$/);
     // Phone: only the current label is shown; every node is still a 44px target with its name.
