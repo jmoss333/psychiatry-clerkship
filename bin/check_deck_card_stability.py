@@ -38,6 +38,12 @@ WHAT THIS DOES, in order, and the whole thing is exit 1 on the first class that 
                forever. This is an acknowledgment only: learner schedules are NOT migrated, cleared or repaired.
                Without the flag the refresh refuses and says which ids would shift.
 
+HISTORY. The trusted PR base (--base in CI), or locally the merge-base with
+CLERKSHIP_PR_BASE/origin/main, supplies the previous pin and append-only rekeys prefix.
+A deleted pin is restored from that history, never treated as first generation. Normal
+checks also require new dated acknowledgements naming all base-to-live positional breaks,
+so manually replacing the pin cannot erase the obligation. Missing history exits 2.
+
 WHY FINGERPRINTS AND NOT EXPLICIT IDS. An `id` field on each question would be the textbook
 fix, and it is the wrong first move here. (a) It is a content edit to a shipped file inside a
 governance PR, which bin/check_governance_separation.py L1 forbids in one diff — and it should.
@@ -87,7 +93,9 @@ import copy
 import datetime as _dt
 import hashlib
 import json
+import os
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -172,7 +180,10 @@ def load_schema(root):
 
 
 def load_pin(root):
-    pin = _read_json(root, PIN)
+    return validate_pin(_read_json(root, PIN))
+
+
+def validate_pin(pin):
     decks = pin.get("decks") if isinstance(pin, dict) else None
     rekeys = pin.get("rekeys") if isinstance(pin, dict) else None
     if (not isinstance(decks, dict) or not isinstance(rekeys, list)
@@ -180,6 +191,63 @@ def load_pin(root):
         raise CheckError(f"{PIN} is not the shape this tool writes (decks: {{id: [hex...]}}, rekeys: [...]); "
                          f"regenerate with `{UPDATE_HINT}`")
     return pin
+
+
+def _git(root, *args):
+    try:
+        result = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True)
+    except OSError as exc:
+        raise CheckError(f"history unavailable: {exc}") from exc
+    if result.returncode:
+        raise CheckError(f"history unavailable: git {' '.join(args)}: {result.stderr.strip()}")
+    return result.stdout.strip()
+
+
+def history_pin(root, base=None):
+    """Anchor to the PR base in CI; locally use the established stacked-PR convention.
+
+    Never infer first generation from a missing working pin. Even a base without a pin
+    cannot prove that positional ids were never shipped, so it requires investigation.
+    """
+    parent = base or os.environ.get("CLERKSHIP_PR_BASE", "").strip() or "origin/main"
+    commit = _git(root, "rev-parse", "--verify", f"{parent}^{{commit}}")
+    if base is None:
+        commit = _git(root, "merge-base", commit, "HEAD")
+    if (base or os.environ.get("CLERKSHIP_PR_BASE", "").strip()) and commit == _git(root, "rev-parse", "HEAD"):
+        raise CheckError("explicit history base equals HEAD; select the trusted PR base, not this branch's tip")
+    paths = _git(root, "ls-tree", "--name-only", commit, "--", PIN, "bin/" + PIN).splitlines()
+    historical = PIN if PIN in paths else "bin/" + PIN
+    if historical not in paths:
+        raise CheckError(f"required fingerprint history missing at {commit}; cannot treat this as first generation")
+    try:
+        return validate_pin(json.loads(_git(root, "show", f"{commit}:{historical}")))
+    except ValueError as exc:
+        raise CheckError(f"unreadable fingerprint history at {commit}: {exc}") from exc
+
+
+def shift_ids(drift):
+    return [f"{did}#{idx}" if idx is not None else did
+            for cls, did, idx, _ in drift if cls in REKEY_CLASSES]
+
+
+def history_findings(base_pin, pin, live):
+    old = base_pin["rekeys"]
+    if pin["rekeys"][:len(old)] != old:
+        return ["re-key history must preserve the trusted base's append-only prefix"], []
+    added = pin["rekeys"][len(old):]
+    for entry in added:
+        if (not isinstance(entry, dict) or not isinstance(entry.get("reason"), str)
+                or not entry["reason"].strip() or not isinstance(entry.get("date"), str)
+                or not isinstance(entry.get("shifts"), list) or not entry["shifts"]
+                or any(not isinstance(slot, str) or not slot for slot in entry["shifts"])):
+            return ["new re-key acknowledgement needs a date, nonblank reason and affected ids"], []
+        try:
+            _dt.date.fromisoformat(entry["date"])
+        except ValueError:
+            return ["new re-key acknowledgement needs an ISO date"], []
+    covered = {slot for entry in added for slot in entry["shifts"]}
+    missing = [slot for slot in shift_ids(diff_pin(base_pin["decks"], live)) if slot not in covered]
+    return [], missing
 
 
 # ---------------------------------------------------------------------------------- findings
@@ -261,7 +329,7 @@ def diff_pin(pinned, live):
 
 # -------------------------------------------------------------------------------------- gate
 
-def check(root, out=print, update=False, rekey_reason=None):
+def check(root, out=print, update=False, rekey_reason=None, base=None):
     """The whole exit contract, in-process so --self-test can drive it. 0 / 1 / 2 as documented."""
     try:
         validator = load_schema(root)
@@ -291,14 +359,16 @@ def check(root, out=print, update=False, rekey_reason=None):
     cards = sum(len(v) for v in live.values())
     pin_path = Path(root) / PIN
     try:
-        pin = load_pin(root)
+        trusted = history_pin(root, base)
+        # Deletion is recoverable, but regeneration still compares to trusted history.
+        pin = trusted if update and not pin_path.exists() else load_pin(root)
     except CheckError as exc:
-        if update and not pin_path.exists():
-            write_pin(pin_path, pin_payload(datasets[SOURCE], []))
-            out(f"pin written to {PIN}: {len(live)} decks, {cards} cards (first generation, nothing to compare)")
-            return 0
         out(f"deck card stability: COULD NOT CHECK -- {exc}")
         return 2
+    errors, missing = history_findings(trusted, pin, live)
+    if errors:
+        out("FAIL -- " + "; ".join(errors))
+        return 1
 
     drift = diff_pin(pin["decks"], live)
     rekey = [d for d in drift if d[0] in REKEY_CLASSES]
@@ -308,22 +378,26 @@ def check(root, out=print, update=False, rekey_reason=None):
         out(f"{cls:<9} {slot:<10} {detail}")
 
     if update:
-        if rekey and not rekey_reason:
-            out(f"REFUSED -- {len(rekey)} shift(s) above would re-key learner schedules. Regenerate ONLY if you "
+        required = sorted(set(shift_ids(rekey) + missing))
+        if required and not (rekey_reason and rekey_reason.strip()):
+            out(f"REFUSED -- {len(required)} shift(s) above would re-key learner schedules. Regenerate ONLY if you "
                 f"intend to re-key them: {REKEY_HINT}")
             return 1
         rekeys = list(pin["rekeys"])
-        if rekey:
+        if required:
             rekeys.append({
                 "date": _dt.date.today().isoformat(),
                 "reason": rekey_reason,
-                "shifts": [f"{did}#{idx}" if idx is not None else did for _, did, idx, _ in rekey],
+                "shifts": required,
             })
-            out(f"OVERRIDE LOGGED -- {len(rekey)} positional id(s) changed; learner schedules were NOT migrated; reason recorded in {PIN}")
+            out(f"OVERRIDE LOGGED -- {len(required)} positional id(s) changed; learner schedules were NOT migrated; reason recorded in {PIN}")
         write_pin(pin_path, pin_payload(datasets[SOURCE], rekeys))
-        out(f"pin written to {PIN}: {len(live)} decks, {cards} cards; {len(refresh)} refreshed, {len(rekey)} positional breakage(s) acknowledged; learner schedules were NOT migrated")
+        out(f"pin written to {PIN}: {len(live)} decks, {cards} cards; {len(refresh)} refreshed, {len(required)} positional breakage(s) acknowledged; learner schedules were NOT migrated")
         return 0
 
+    if missing and not rekey:
+        out(f"FAIL -- new acknowledgement required for positional changes since trusted base: {', '.join(missing)}. {REKEY_HINT}")
+        return 1
     if rekey:
         out(f"FAIL -- {len(rekey)} positional id(s) would shift (deck#index above). This re-keys every learner's "
             f"SM-2 schedule on those ids. If that is intended, {REKEY_HINT}")
@@ -358,6 +432,10 @@ def _fixture(td):
         p.write_text(json.dumps(data), encoding="utf-8")
     (root / PIN).parent.mkdir(parents=True, exist_ok=True)
     write_pin(root / PIN, pin_payload(data, []))
+    _git(root, "init", "-q")
+    _git(root, "add", ".")
+    _git(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "trusted base")
+    _git(root, "update-ref", "refs/remotes/origin/main", "HEAD")
     return root, data
 
 
@@ -375,7 +453,12 @@ def self_test():
 
     def run(root, **kw):
         lines = []
-        rc = check(root, out=lines.append, **kw)
+        parent = os.environ.pop("CLERKSHIP_PR_BASE", None)
+        try:
+            rc = check(root, out=lines.append, **kw)
+        finally:
+            if parent is not None:
+                os.environ["CLERKSHIP_PR_BASE"] = parent
         return rc, "\n".join(lines)
 
     with tempfile.TemporaryDirectory(prefix="deck-stability-selftest.") as td:
@@ -482,7 +565,7 @@ def self_test():
         rc, out = run(root)
         expect("a missing pin exits 2, never a pass", rc == 2 and "missing" in out)
         rc, out = run(root, update=True)
-        expect("--update-fingerprints generates a first pin when none exists", rc == 0 and (root / PIN).exists())
+        expect("--update-fingerprints restores a deleted pin from trusted history", rc == 0 and (root / PIN).exists())
         (root / PIN).write_text('{"decks": []}', encoding="utf-8")
         rc, out = run(root)
         expect("a pin of the wrong shape exits 2", rc == 2)
@@ -497,10 +580,18 @@ def self_test():
         expect("a missing snapshot copy exits 2 (a lint that skips a file it was told to read is not a pass)",
                rc == 2)
 
-    rc, out = run(ROOT)
-    expect("the LIVE tree exits 0 against the committed pin", rc == 0)
-    if rc != 0:
-        print(out)
+    # The live sanity check needs only current bytes, as before. Netlify may have a
+    # shallow release checkout with no origin/main; history enforcement belongs to
+    # the direct verify.sh gate and CI's trusted PR-base invocation, not self-test.
+    try:
+        validator = load_schema(ROOT)
+        live_data = {rel: _read_json(ROOT, rel) for rel in SCHEMA_TARGETS}
+        errors = [line for rel, data in live_data.items()
+                  for line in schema_findings(validator, data, rel) + semantic_findings(data, rel)]
+        expect("the LIVE tree agrees with the committed pin",
+               not errors and not diff_pin(load_pin(ROOT)["decks"], fingerprints_of(live_data[SOURCE])))
+    except CheckError as exc:
+        expect(f"the LIVE tree is readable: {exc}", False)
     print(f"self-test: {'FAIL ' + str(len(failed)) + ' case(s)' if failed else 'OK'} -- planted schema, semantic "
           f"and positional defects go red; a re-key needs the logged flag; the live tree is clean")
     return 1 if failed else 0
@@ -513,6 +604,7 @@ def main():
                     help=f"rewrite {PIN} from the current tree; refuses shifts unless --acknowledge-positional-id-breakage")
     ap.add_argument("--acknowledge-positional-id-breakage", metavar="REASON", default=None,
                     help="with --update-fingerprints: acknowledge MOVED/DELETED/DECK GONE and log the reason; does NOT migrate learner schedules")
+    ap.add_argument("--base", help="trusted PR base commit; otherwise merge-base with CLERKSHIP_PR_BASE or origin/main")
     ap.add_argument("--self-test", action="store_true", help="prove every planted defect goes red")
     a = ap.parse_args()
     if a.self_test:
@@ -524,7 +616,7 @@ def main():
         print("--acknowledge-positional-id-breakage needs a reason; it is written into the committed pin")
         return 2
     root = Path(a.root).resolve() if a.root else ROOT
-    return check(root, update=a.update_fingerprints, rekey_reason=a.acknowledge_positional_id_breakage)
+    return check(root, update=a.update_fingerprints, rekey_reason=a.acknowledge_positional_id_breakage, base=a.base)
 
 
 if __name__ == "__main__":
