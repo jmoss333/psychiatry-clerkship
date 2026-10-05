@@ -445,6 +445,8 @@ def _write(root, data):
 
 
 def self_test():
+    from _git_env import scrub_inherited_git_env
+    scrub_inherited_git_env()
     failed = []
 
     def expect(name, ok):
