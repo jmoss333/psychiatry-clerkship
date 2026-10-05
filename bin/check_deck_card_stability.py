@@ -31,10 +31,11 @@ WHAT THIS DOES, in order, and the whole thing is exit 1 on the first class that 
 
                "refresh" means `--update-fingerprints` rewrites the pin and the diff is in the
                PR. "re-key" means the pin may ONLY be rewritten with
-               `--update-fingerprints --rekey-learner-schedules "<reason>"`, which appends a
+               `--update-fingerprints --acknowledge-positional-id-breakage "<reason>"`, which appends a
                dated entry naming every shifted id to the `rekeys` log INSIDE the committed pin
                — so the decision to break learners' schedules is in the diff, with its reason,
-               forever. Without the flag the refresh refuses and says which ids would shift.
+               forever. This is an acknowledgment only: learner schedules are NOT migrated, cleared or repaired.
+               Without the flag the refresh refuses and says which ids would shift.
 
 WHY FINGERPRINTS AND NOT EXPLICIT IDS. An `id` field on each question would be the textbook
 fix, and it is the wrong first move here. (a) It is a content edit to a shipped file inside a
@@ -63,7 +64,7 @@ the schema or the pin missing or unparsable; jsonschema not installed).
     python3 bin/check_deck_card_stability.py --self-test           # planted defects go red
     python3 bin/check_deck_card_stability.py --update-fingerprints # refresh-class drift only
     python3 bin/check_deck_card_stability.py --update-fingerprints \\
-            --rekey-learner-schedules "AR-12: Q3 withdrawn after faculty review"   # LOGGED
+            --acknowledge-positional-id-breakage "AR-12: Q3 withdrawn after faculty review"   # LOGGED
     python3 bin/check_deck_card_stability.py --root DIR            # another checkout / fixture
 """
 from __future__ import annotations
@@ -92,7 +93,7 @@ SCHEMA_TARGETS = (SOURCE, SNAPSHOT)
 REKEY_CLASSES = ("MOVED", "DELETED", "DECK GONE")
 REFRESH_CLASSES = ("EDITED", "APPENDED", "NEW DECK")
 UPDATE_HINT = "python3 bin/check_deck_card_stability.py --update-fingerprints"
-REKEY_HINT = UPDATE_HINT + ' --rekey-learner-schedules "<why learners lose these schedules>"'
+REKEY_HINT = UPDATE_HINT + ' --acknowledge-positional-id-breakage "<why learners lose these schedules>"'
 
 
 class CheckError(Exception):
@@ -120,7 +121,7 @@ def pin_payload(data, rekeys, source=SOURCE):
                   "card, per deck, per index; the index IS the card id review.html keys learner schedules "
                   "on (deck.id + '#' + index). Refresh with --update-fingerprints for in-place edits and "
                   "appends; a reorder, deletion or removed deck re-keys learners and may only be written "
-                  "with --rekey-learner-schedules \"<reason>\", which appends to `rekeys` below."),
+                  "with --acknowledge-positional-id-breakage \"<reason>\", which appends to `rekeys` below."),
         "source": source,
         "algorithm": "sha256(json [stem, [[optionText, keyed], ...]] ensure_ascii, no spaces)[:16]; fb excluded",
         "deckCount": len(decks),
@@ -305,9 +306,9 @@ def check(root, out=print, update=False, rekey_reason=None):
                 "reason": rekey_reason,
                 "shifts": [f"{did}#{idx}" if idx is not None else did for _, did, idx, _ in rekey],
             })
-            out(f"RE-KEY LOGGED -- {len(rekey)} id(s) now mean different content; reason recorded in {PIN}")
+            out(f"OVERRIDE LOGGED -- {len(rekey)} positional id(s) changed; learner schedules were NOT migrated; reason recorded in {PIN}")
         write_pin(pin_path, pin_payload(datasets[SOURCE], rekeys))
-        out(f"pin written to {PIN}: {len(live)} decks, {cards} cards; {len(refresh)} refreshed, {len(rekey)} re-keyed")
+        out(f"pin written to {PIN}: {len(live)} decks, {cards} cards; {len(refresh)} refreshed, {len(rekey)} positional breakage(s) acknowledged; learner schedules were NOT migrated")
         return 0
 
     if rekey:
@@ -399,7 +400,7 @@ def self_test():
                "pinned at index 2" in out and "pinned at index 0" in out)
         rc, out = run(root, update=True)
         expect("--update-fingerprints REFUSES to absorb a shift without the re-key flag",
-               rc == 1 and "REFUSED" in out and "--rekey-learner-schedules" in out)
+               rc == 1 and "REFUSED" in out and "--acknowledge-positional-id-breakage" in out)
         rc, out = run(root, update=True, rekey_reason="self-test: deliberate swap")
         pin = json.loads((root / PIN).read_text(encoding="utf-8"))
         expect("with the flag the pin is rewritten and the re-key is logged with reason and ids",
@@ -445,7 +446,7 @@ def self_test():
         expect("an in-place rewording is EDITED, exit 1, and asks for a plain refresh",
                rc == 1 and "EDITED    AR-01#1" in out and "--rekey" not in out.split("FAIL")[-1])
         rc, out = run(root, update=True)
-        expect("the plain refresh accepts EDITED without the re-key flag", rc == 0 and "0 re-keyed" in out)
+        expect("the plain refresh accepts EDITED without the re-key flag", rc == 0 and "0 positional breakage(s) acknowledged" in out)
         write_pin(root / PIN, pin_payload(clean, []))
 
         fb_only = copy.deepcopy(clean)
@@ -496,21 +497,21 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--root", default=None, help="checkout to judge (default: this repository)")
     ap.add_argument("--update-fingerprints", action="store_true",
-                    help=f"rewrite {PIN} from the current tree; refuses shifts unless --rekey-learner-schedules")
-    ap.add_argument("--rekey-learner-schedules", metavar="REASON", default=None,
-                    help="with --update-fingerprints: accept MOVED/DELETED/DECK GONE and log the reason in the pin")
+                    help=f"rewrite {PIN} from the current tree; refuses shifts unless --acknowledge-positional-id-breakage")
+    ap.add_argument("--acknowledge-positional-id-breakage", metavar="REASON", default=None,
+                    help="with --update-fingerprints: acknowledge MOVED/DELETED/DECK GONE and log the reason; does NOT migrate learner schedules")
     ap.add_argument("--self-test", action="store_true", help="prove every planted defect goes red")
     a = ap.parse_args()
     if a.self_test:
         return self_test()
-    if a.rekey_learner_schedules is not None and not a.update_fingerprints:
-        print("--rekey-learner-schedules only means something with --update-fingerprints")
+    if a.acknowledge_positional_id_breakage is not None and not a.update_fingerprints:
+        print("--acknowledge-positional-id-breakage only means something with --update-fingerprints")
         return 2
-    if a.rekey_learner_schedules is not None and not a.rekey_learner_schedules.strip():
-        print("--rekey-learner-schedules needs a reason; it is written into the committed pin")
+    if a.acknowledge_positional_id_breakage is not None and not a.acknowledge_positional_id_breakage.strip():
+        print("--acknowledge-positional-id-breakage needs a reason; it is written into the committed pin")
         return 2
     root = Path(a.root).resolve() if a.root else ROOT
-    return check(root, update=a.update_fingerprints, rekey_reason=a.rekey_learner_schedules)
+    return check(root, update=a.update_fingerprints, rekey_reason=a.acknowledge_positional_id_breakage)
 
 
 if __name__ == "__main__":

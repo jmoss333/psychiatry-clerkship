@@ -347,8 +347,9 @@ step "production rotation edition locked"   python3 bin/check-rotation-edition-l
 # governance path, 07_*/ is content), checks what Draft-07 cannot (counts agree, exactly one
 # keyed option), then compares every card's fingerprint to the committed pin
 # bin/quizzes.fingerprints.json. In-place edits refresh the pin (--update-fingerprints); a
-# reorder, deletion or removed deck may only be written with --rekey-learner-schedules "<why>",
+# reorder, deletion or removed deck may only be written with --acknowledge-positional-id-breakage "<why>",
 # which logs the shifted ids and the reason INSIDE the pin, so the decision is in the diff.
+# This acknowledgment does not migrate, clear or repair learner schedules.
 step "unit — deck card stability"           python3 bin/check_deck_card_stability.py --self-test
 step "quizzes schema + card ids pinned"     python3 bin/check_deck_card_stability.py
 # The attestation gate existed on ONE of six question banks, at runtime only; the other five
