@@ -55,6 +55,10 @@ class GuardStepCallsBothTools(unittest.TestCase):
     def test_it_runs_the_separation_gate(self):
         self.assertIn("bin/check_governance_separation.py", self.run)
 
+    def test_deck_history_uses_the_trusted_pr_base(self):
+        self.assertIn('python3 bin/check_deck_card_stability.py --base "$BASE_SHA"', self.run)
+        self.assertEqual(self.step["env"]["BASE_SHA"], "${{ github.event.pull_request.base.sha }}")
+
     def test_it_runs_the_strict_attestation_hash_check(self):
         # Diff-scoped --strict is what binds a console promotion to the text it
         # attests. Without it the console's own branch is the one branch no hash
