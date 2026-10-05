@@ -1053,10 +1053,10 @@
       "kind": "general",
       "level": "low"
     },
-    "at": "2026-09-21",
+    "at": "2026-10-05",
     "by": "Joshua Moss, MD",
-    "contentHash": "d8dad5f2c8bcc3cb1213acb827af8b3bdfdcf7cd",
-    "clinicalHash": "02a1abc06aedc6219303398fd156f788dd61a156"
+    "contentHash": "1cdafe9a3da8276f1385ea6aa0944464d0d04a3a",
+    "clinicalHash": "847b66807abbbfd8665b25c3edc0b7967b1e1203"
   },
   "landmark_trials.md": {
     "status": "reviewed",
@@ -1390,11 +1390,11 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-10-04",
+    "at": "2026-10-05",
     "by": "Joshua Moss, MD",
     "note": "Fictional composite longitudinal simulation.",
-    "contentHash": "15ea8979b064c796e7302c8d7de34b09ac7dde85",
-    "clinicalHash": "d435fd235cde4476567163bde97a16641c695b68"
+    "contentHash": "02ab7e11b97db39388403fd0724e67aeb6d537ed",
+    "clinicalHash": "760c8ce0552bf70fad918dfbee464b04dd40d913"
   },
   "anki.md": {
     "status": "reviewed",
@@ -1482,10 +1482,10 @@
       "kind": "formulary",
       "level": "high"
     },
-    "at": "2026-10-03",
+    "at": "2026-10-05",
     "by": "Joshua Moss, MD",
-    "contentHash": "1f14e3a12909a5c9277f50045e52d446e959181c",
-    "clinicalHash": "2f22b016eeeb6c9e378ec53285fa79edc1fac4cb"
+    "contentHash": "821c7e7c4f3c30483fc3433e9176406f5c247caa",
+    "clinicalHash": "0470c99156f34a04bad0cc81292f93fa024d6e01"
   },
   "prepare-for-tomorrow.html": {
     "status": "reviewed",
