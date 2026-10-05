@@ -278,7 +278,7 @@
 /* 2. The six-week thread: six equal columns, 28px marks joined by a 2px connector at the mark's
  * centre line (top:13px). Done = teal fill + ✓; current = 2px teal ring with a 4px wash halo and a
  * teal-deep number; future = control-line ring, dim number. The connector after a done week is
- * teal. Labels are week titles, 12/1.3, 14ch max; a phone keeps only the current one. */
+ * teal. Labels are week titles, 12/1.3, 24ch max (14ch on phones); a phone keeps only the current one. */
 .fd-thread{margin:0 0 var(--fd-space-10)}
 .fd-thread__list{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin:0;padding:0;list-style:none}
 .fd-thread__step{position:relative;min-width:0}
@@ -296,7 +296,7 @@
 }
 .fd-thread__step.is-done .fd-thread__mark{background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent)}
 .fd-thread__step.is-current .fd-thread__mark{border:2px solid var(--fd-teal);box-shadow:0 0 0 4px var(--fd-teal-wash);color:var(--fd-teal-deep)}
-.fd-thread__label{max-width:14ch;font-size:var(--fd-font-xs);line-height:1.3;text-align:center;overflow-wrap:anywhere}
+.fd-thread__label{max-width:min(100%,24ch);font-size:var(--fd-font-xs);line-height:1.3;text-align:center;overflow-wrap:anywhere}
 .fd-thread__step.is-current .fd-thread__label{color:var(--fd-teal-deep);font-weight:700}
 .fd-thread__node:hover .fd-thread__label{color:var(--fd-text)}
 
@@ -2302,6 +2302,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 @media (max-width:640px){
   .fd-today__h1{font-size:var(--fd-font-3xl)}
   .fd-continue__title,.fd-setupcta__title,.fd-now .fd-due__label,.fd-now .fd-lastread__title,.fd-now .fd-resume__link>span:first-child{font-size:var(--fd-font-xl)}
+  .fd-thread__label{max-width:14ch}
   /* Only the current week keeps its label on a phone; the marks and connectors stay. */
   .fd-thread__step:not(.is-current) .fd-thread__label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
   .fd-thread__step:not(.is-current) .fd-thread__node{min-height:var(--fd-target-touch)}
