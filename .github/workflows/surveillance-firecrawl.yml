@@ -1,5 +1,5 @@
 name: Surveillance — Firecrawl Faculty Review
-run-name: ${{ inputs.comparison_probe && 'Firecrawl comparison probe' || 'Firecrawl faculty collection' }}
+run-name: ${{ inputs.comparison_probe && 'Firecrawl comparison probe' || 'Surveillance — Firecrawl Faculty Review' }}
 on:
   schedule:
     - cron: "30 6 * * 1"
