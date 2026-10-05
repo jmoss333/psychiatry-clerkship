@@ -379,7 +379,11 @@ test('AC12: each chapter carries its reviewed practice tasks and the chooser mar
     assert.equal((out.match(/id="practice-task-/g) || []).length, 3, chapter.id + ': all three tasks still offered');
     assert.doesNotMatch(out, /practice-task-\w+"[^>]*\bdisabled\b/, chapter.id + ': no task is disabled');
     assert.match(out, chapter.practiceTasks.length === 3 ? /All three tasks fit this chapter\./ : /Suggested for this chapter: .*Any task is available\./);
-    assert.equal((out.match(/<span class="opf-practice__tag">Suggested<\/span>/g) || []).length, chapter.practiceTasks.length === 3 ? 0 : chapter.practiceTasks.length);
+    assert.equal((out.match(/<span class="opf-practice__tag" aria-hidden="true">Suggested<\/span>/g) || []).length, chapter.practiceTasks.length === 3 ? 0 : chapter.practiceTasks.length, chapter.id + ': tag is hidden from the accessible name so the button is still named exactly by its label');
+    for (const id of ['interview', 'rounds', 'note']) {
+      const button = out.match(new RegExp('<button id="practice-task-' + id + '"[^>]*>([\\s\\S]*?)<\\/button>'))[1];
+      assert.equal(button.replace(/<span class="opf-practice__tag" aria-hidden="true">Suggested<\/span>/, ''), api.escape(defs.tasks[id].label), chapter.id + ': accessible name unchanged for ' + id);
+    }
   }
   const jordan = cases[0];
   const out = api.practiceMarkup(defs, jordan, jordan.weeks[0], api.practiceInitial());

@@ -170,7 +170,7 @@
       out += '<div class="opf-practice__choices" role="group" aria-label="Choose a practice task"' + (suggested.length ? ' aria-describedby="practice-suggested"' : '') + '>';
       ['interview','rounds','note'].forEach(function (id) {
         var isSuggested = suggested.indexOf(id) >= 0;
-        out += '<button id="practice-task-' + id + '" data-practice-action="task" data-value="' + id + '" aria-pressed="' + (state.task === id) + '"' + (isSuggested ? ' data-suggested="true"' : '') + '>' + e(defs.tasks[id].label) + (isSuggested && suggested.length < 3 ? '<span class="opf-practice__tag">Suggested</span>' : '') + '</button>';
+        out += '<button id="practice-task-' + id + '" data-practice-action="task" data-value="' + id + '" aria-pressed="' + (state.task === id) + '"' + (isSuggested ? ' data-suggested="true"' : '') + '>' + e(defs.tasks[id].label) + (isSuggested && suggested.length < 3 ? '<span class="opf-practice__tag" aria-hidden="true">Suggested</span>' : '') + '</button>';
       });
       out += '</div><p>How much time do you have?</p><div class="opf-practice__choices" role="group" aria-label="Choose practice time">';
       [5,15].forEach(function (minutes) { out += '<button id="practice-minutes-' + minutes + '" data-practice-action="minutes" data-value="' + minutes + '" aria-pressed="' + (state.minutes === minutes) + '">About ' + minutes + ' minutes</button>'; });
