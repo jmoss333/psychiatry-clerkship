@@ -14,8 +14,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
   'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
-  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge','data-fd-dock-forward',
-  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view','data-fd-dock-browse-go',
+  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
+  'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
   'data-fd-kit-section','data-fd-kit-tool',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
@@ -33,7 +33,6 @@ var FD_ACTION_SEMANTICS={
   'data-fd-toggle':'toggle governed progress',
   'data-fd-tab':'open top-level tab',
   'data-fd-library-view':'choose Library view',
-  'data-fd-dock-browse-go':'choose Library view or open search from the phone dock',
   'data-fd-kit-section':'filter Essentials sections',
   'data-fd-kit-tool':'preview an Essentials tool',
   'data-fd-care-intent':'choose a transient Care navigator task',
@@ -85,7 +84,6 @@ var FD_ACTION_SEMANTICS={
   'data-fd-close-search':'close search dialog',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
-  'data-fd-dock-forward':'forward contextual dock action',
   'data-fd-try-now':'preview related tool',
   'data-fd-expand-tool':'toggle saved tool workspace width',
   'data-fd-reading-top':'clear this reading place and focus the article heading'
@@ -674,16 +672,6 @@ function fdDispatch(attrs, context, state){
       route:fdRouteForTab('library',c.search,view),effect:null
     };
   }
-  /* The phone dock's Browse menu carries its own attribute rather than data-fd-library-view
-     directly: that value already marks the local Library view switch,
-     present in the DOM (though not visible) even while this menu is closed, so reusing it here
-     would leave two elements answering to the same selector. */
-  if(fdOwn(a,'data-fd-dock-browse-go')){
-    var dockGo=String(a['data-fd-dock-browse-go']||'');
-    /* "search" is the dock's in-reach Search: the phone header scrolls away mid-page. */
-    if(dockGo==='search') return fdDispatch({'data-fd-search':''},c,s);
-    return fdDispatch({'data-fd-library-view':dockGo},c,s);
-  }
   if(fdOwn(a,'data-fd-tab')){
     tab=String(a['data-fd-tab']||'');
     /* The Everything tab is not a fifth app-level tab -- it is the top-row entry point into the
@@ -1090,7 +1078,7 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-dock-browse-go],[data-fd-kit-section],[data-fd-kit-tool],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
   '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
   '[data-fd-care-share],[data-fd-care-share-close],[data-fd-care-copy],[data-fd-care-copy-selected],'+
   '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
@@ -1104,29 +1092,14 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
-  '[data-fd-try-now],[data-fd-expand-tool],[data-fd-dock-forward],[data-fd-reading-top]';
+  '[data-fd-try-now],[data-fd-expand-tool],[data-fd-reading-top]';
 
-function fdDockSource(root){
-  var el=root&&root.querySelector?root.querySelector('[data-fd-dock-source]'):null;
-  if(!el||el.isConnected===false) return null;
-  var id=el.getAttribute('data-fd-dock-source');
-  var label=el.getAttribute('data-fd-dock-label');
-  return id&&label?{id:id,label:label}:null;
-}
-
-function fdForwardDockAction(root,id){
-  if(!id) return false;
-  var nodes=root&&root.querySelectorAll?root.querySelectorAll('[data-fd-dock-source]'):[], i, el;
-  for(i=0;i<nodes.length;i++){
-    el=nodes[i];
-    if(el.getAttribute('data-fd-dock-source')===id&&
-       el.isConnected!==false&&typeof el.click==='function'){
-      el.click();
-      return true;
-    }
-  }
-  return false;
-}
+/* The dock stopped forwarding the page's primary action on 2026-10-04 (one-thread redesign,
+   Phase 1): fdDockSource / fdForwardDockAction and the data-fd-dock-forward action left with it.
+   data-fd-dock-source / data-fd-dock-label are still emitted by the surfaces that own a primary
+   (fd_today.js, fd_due.js, fd_block.js, fd_reader.js, fd_app.js) -- fdPatchCompletion in
+   spa_index.html still carries the label across a completion patch -- but nothing reads them to
+   render a control any more, and no controller action answers to them. */
 
 function fdAttrsFromTarget(target){
   var out={};
@@ -2100,11 +2073,6 @@ function fdWire(root, initialState, opts){
       if(readingSession)readingSession.startAtTop();
       return;
     }
-    if(fdOwn(attrs,'data-fd-dock-forward')){
-      if(fdForwardDockAction(root,attrs['data-fd-dock-forward'])) return;
-      apply(fdDispatch({'data-fd-tab':'library'},context(),state),target,false);
-      return;
-    }
     apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
     /* Path rerenders its route and detail together, so the activated tab no longer exists after
        apply(). Restore its equivalent without scrolling the learner away from the route. */
@@ -2256,16 +2224,6 @@ function fdWire(root, initialState, opts){
       if(event.preventDefault) event.preventDefault();
       apply(fdDispatch({close:true},context(),state),event.target,false);
       return;
-    }
-    if(event.key==='Escape'&&root&&root.querySelector){
-      var libraryMenu=root.querySelector('.fd-dock__browse[open]');
-      if(libraryMenu){
-        libraryMenu.open=false;
-        var librarySummary=libraryMenu.querySelector('summary');
-        if(librarySummary)librarySummary.focus();
-        if(event.preventDefault)event.preventDefault();
-        return;
-      }
     }
     if(event.key==='Enter'&&state.searchOpen&&fdIsTypingTarget(event.target)){
       var searcher=o.searchResults||fdSearchResults;

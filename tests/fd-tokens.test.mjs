@@ -140,6 +140,16 @@ test('the desktop breakpoint is 1000px, as the design specifies', () => {
 test('animations are disabled under prefers-reduced-motion', () => {
   assert.match(fd, /@media\s*\(prefers-reduced-motion:\s*reduce\)/,
     'the source prototype ships no reduced-motion handling; this repo requires it');
+  // One-thread acceptance: "with reduced motion there is no animation" -- the block must zero BOTH
+  // animation and transition for everything in the shell, not merely exist.
+  const reduced = fd.slice(fd.indexOf('/* ═══ Reduced motion'));
+  const block = reduced.match(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{([\s\S]*?)\n\}/);
+  assert.ok(block, 'the reduced-motion block is where the keyframes section says it is');
+  assert.match(block[1], /\.fd-shell \*,[\s\S]*?\{[^}]*animation:none !important/);
+  assert.match(block[1], /\.fd-shell \*,[\s\S]*?\{[^}]*transition:none !important/);
+  // And Today itself no longer animates in at all (the entrance stagger is gone).
+  assert.match(rule(fd, '.fd-today'), /animation:none/);
+  assert.doesNotMatch(rule(fd, '.fd-row'), /animation:/);
 });
 
 test('reader body gives rendered long-form content a readable token-based type scale', () => {
@@ -172,8 +182,11 @@ test('reader body gives rendered long-form content a readable token-based type s
 
 test('portalled overlays retain a visible keyboard focus indicator', () => {
   const focus = rule(fd, '.fd-search :focus-visible,.fd-sheet :focus-visible,.fd-nudge :focus-visible');
-  assert.match(focus, /outline:\s*2px solid var\(--fd-focus\)/,
+  // 3px since 2026-10-04 (one-thread redesign: one focus ring, 3px --fd-focus at a 2px offset).
+  assert.match(focus, /outline:\s*3px solid var\(--fd-focus\)/,
     'overlays may mount outside .fd-shell and need their own visible outline');
+  assert.match(rule(fd, '.fd-shell :focus-visible'), /outline:\s*3px solid var\(--fd-focus\)/,
+    'the shell ring matches the overlay ring');
   assert.match(focus, /outline-offset:\s*2px/,
     'overlay focus needs separation from the control edge');
 });

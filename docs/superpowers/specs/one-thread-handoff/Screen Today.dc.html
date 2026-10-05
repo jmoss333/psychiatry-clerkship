@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>@font-face{font-family:'Source Serif 4';font-style:normal;font-weight:600 700;font-display:swap;src:url('13_Faculty_Resources/_automation/site_build/fonts/source-serif-4-latin-opsz-wght600-700.woff2') format('woff2')}body{margin:0}a{color:#2c6356}a:hover{color:#3b332c}</style></helmet>
+<div style="{{ rootStyle }}">
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <header style="background:var(--fd-surface-warm);border-bottom:1px solid var(--fd-line)">
+      <div style="max-width:1200px;margin:0 auto;padding:12px 40px 0;display:flex;align-items:center;gap:16px">
+        <div style="display:flex;align-items:center;gap:10px;flex:none"><span style="width:30px;height:30px;border-radius:8px;background:var(--fd-terracotta);color:var(--fd-on-accent);display:grid;place-items:center;font-family:Georgia,serif;font-size:18px">ψ</span><span style="font-size:14px;font-weight:700">Inpatient Psychiatry</span></div>
+        <div style="flex:1;max-width:440px;margin-left:20px;display:flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid var(--fd-line-strong);border-radius:999px;background:var(--fd-surface);color:var(--fd-text-dim);font-size:13px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg><span style="flex:1">Search a symptom, drug, or task…</span><span style="font-size:11px;font-weight:600;border:1px solid var(--fd-line-strong);border-radius:6px;padding:1px 6px">⌘K</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <button type="button" style="min-height:36px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:13px;font-weight:600">＋ Ask a question</button>
+          <button type="button" style="min-height:36px;padding:7px 15px;border-radius:999px;border:1.5px solid var(--fd-danger);background:var(--fd-danger);color:var(--fd-on-accent);font:inherit;font-size:13px;font-weight:700">✚ Safety</button>
+          <button type="button" aria-label="Settings" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:15px">⚙</button>
+        </div>
+      </div>
+      <nav aria-label="Primary" style="max-width:1200px;margin:0 auto;padding:6px 40px 0;display:flex;gap:4px">
+        <span aria-current="page" style="padding:10px 16px;font-size:14px;font-weight:700;color:var(--fd-teal-deep);border-bottom:3px solid var(--fd-teal)">Today</span>
+        <span style="padding:10px 16px;font-size:14px;color:var(--fd-text-mid);border-bottom:3px solid transparent">Path</span>
+        <span style="padding:10px 16px;font-size:14px;color:var(--fd-text-mid);border-bottom:3px solid transparent">Library</span>
+        <span style="padding:10px 16px;font-size:14px;color:var(--fd-text-mid);border-bottom:3px solid transparent">Patient care resources</span>
+      </nav>
+    </header>
+  </sc-if>
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <header style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--fd-surface-warm);border-bottom:1px solid var(--fd-line)">
+      <span style="width:32px;height:32px;border-radius:8px;background:var(--fd-terracotta);color:var(--fd-on-accent);display:grid;place-items:center;font-family:Georgia,serif;font-size:18px;flex:none">ψ</span>
+      <div style="flex:1;min-width:0;min-height:44px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 14px;border:1.5px solid var(--fd-line-strong);border-radius:999px;background:var(--fd-surface);color:var(--fd-text-dim);font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg>Search</div>
+      <button type="button" style="min-height:44px;padding:0 14px;border-radius:999px;border:0;background:var(--fd-danger);color:var(--fd-on-accent);font:inherit;font-size:14px;font-weight:700;flex:none">✚ Safety</button>
+      <button type="button" aria-label="Settings" style="width:44px;height:44px;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:16px;flex:none">⚙</button>
+    </header>
+  </sc-if>
+
+  <main style="max-width:1200px;margin:0 auto;padding:var(--pad-top) var(--pad-x) 56px;box-sizing:border-box">
+    <div role="note" style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;min-height:44px;box-sizing:border-box;margin:0 0 22px;padding:6px 14px;border-radius:8px;background:var(--fd-callout);border:1px solid var(--fd-line);font-size:13px;line-height:1.4"><span style="flex:1 1 auto;min-width:0;font-weight:700">This learning site is in active testing</span><span style="font-weight:600;color:var(--fd-text-mid);text-decoration:underline">Details</span><a href="#" style="font-weight:700;color:var(--fd-teal-deep)">Share feedback</a></div>
+    <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start">
+      <div style="flex:999 1 560px;min-width:0;max-width:760px">
+
+        <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:var(--fd-text-mid)">Thursday · browsing — no week set</p>
+          <h1 style="margin:0 0 24px;font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:var(--h1);line-height:1.15;letter-spacing:-.01em">Today</h1>
+          <section aria-labelledby="now-setup" style="padding:24px;border-radius:12px;background:var(--fd-surface);border:1px solid var(--fd-line);border-top:3px solid var(--fd-teal);box-shadow:var(--fd-shadow-card)">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:var(--fd-teal-deep)">30-second setup</p>
+            <h2 id="now-setup" style="margin:0 0 16px;font-family:'Source Serif 4',Georgia,serif;font-size:24px;line-height:1.25">Set your rotation week → get a real Today</h2>
+            <button type="button" style="min-height:44px;padding:12px 20px;border-radius:8px;border:1px solid var(--fd-teal);background:var(--fd-teal);color:var(--fd-on-accent);font:inherit;font-size:15px;font-weight:600">Set rotation week</button>
+            <p style="margin:14px 0 0;font-size:13px;color:var(--fd-text-dim)">Not on rotation? The Library and Safety work without a week.</p>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isBlock }}" hint-placeholder-val="{{ true }}">
+          <p style="margin:0 0 6px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:13px;font-weight:600;color:var(--fd-text-mid)"><span>Week 2 of 6 · Thursday</span><a href="#" style="color:var(--fd-teal-deep);font-weight:700">Change week</a></p>
+          <h1 style="margin:0 0 4px;font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:var(--h1);line-height:1.15;letter-spacing:-.01em">Mood, Psychosis &amp; Pharm</h1>
+          <p style="margin:0 0 20px;font-size:15px;color:var(--fd-text-mid)">Dx frameworks · the top-10 drugs</p>
+
+          <nav aria-label="Six-week path" style="margin:0 0 28px">
+            <ol style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));position:relative">
+              <li style="position:relative;display:grid;justify-items:center;gap:6px"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-teal)"></span><span style="position:relative;width:28px;height:28px;border-radius:50%;background:var(--fd-teal);color:var(--fd-on-accent);display:grid;place-items:center;font-size:12px;font-weight:700">✓</span><span style="display:var(--wk-labels);font-size:12px;line-height:1.3;text-align:center;color:var(--fd-text-mid);max-width:14ch">Foundations &amp; the MSE</span></li>
+              <li aria-current="step" style="position:relative;display:grid;justify-items:center;gap:6px"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-line-strong)"></span><span style="position:relative;width:28px;height:28px;border-radius:50%;background:var(--fd-surface);border:2px solid var(--fd-teal);box-shadow:0 0 0 4px var(--fd-teal-wash);color:var(--fd-teal-deep);display:grid;place-items:center;font-size:12px;font-weight:700;box-sizing:border-box">2</span><span style="font-size:12px;line-height:1.3;text-align:center;font-weight:700;color:var(--fd-teal-deep);max-width:14ch">Mood, Psychosis &amp; Pharm</span></li>
+              <li style="position:relative;display:grid;justify-items:center;gap:6px"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-line-strong)"></span><span style="position:relative;width:28px;height:28px;border-radius:50%;background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-dim);display:grid;place-items:center;font-size:12px;font-weight:600;box-sizing:border-box">3</span><span style="display:var(--wk-labels);font-size:12px;line-height:1.3;text-align:center;color:var(--fd-text-dim);max-width:14ch">Psychotherapy &amp; Personality</span></li>
+              <li style="position:relative;display:grid;justify-items:center;gap:6px"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-line-strong)"></span><span style="position:relative;width:28px;height:28px;border-radius:50%;background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-dim);display:grid;place-items:center;font-size:12px;font-weight:600;box-sizing:border-box">4</span><span style="display:var(--wk-labels);font-size:12px;line-height:1.3;text-align:center;color:var(--fd-text-dim);max-width:14ch">Family Systems &amp; EE</span></li>
+              <li style="position:relative;display:grid;justify-items:center;gap:6px"><span style="position:absolute;top:13px;left:50%;right:-50%;height:2px;background:var(--fd-line-strong)"></span><span style="position:relative;width:28px;height:28px;border-radius:50%;background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-dim);display:grid;place-items:center;font-size:12px;font-weight:600;box-sizing:border-box">5</span><span style="display:var(--wk-labels);font-size:12px;line-height:1.3;text-align:center;color:var(--fd-text-dim);max-width:14ch">Acute &amp; Emergency</span></li>
+              <li style="position:relative;display:grid;justify-items:center;gap:6px"><span style="position:relative;width:28px;height:28px;border-radius:50%;background:var(--fd-surface);border:1.5px solid var(--fd-line-strong);color:var(--fd-text-dim);display:grid;place-items:center;font-size:12px;font-weight:600;box-sizing:border-box">6</span><span style="display:var(--wk-labels);font-size:12px;line-height:1.3;text-align:center;color:var(--fd-text-dim);max-width:14ch">Integration &amp; Exam</span></li>
+            </ol>
+          </nav>
+
+          <section aria-labelledby="now-title" style="padding:22px 24px 24px;border-radius:12px;background:var(--fd-surface);border:1px solid var(--fd-line);border-top:3px solid var(--fd-teal);box-shadow:var(--fd-shadow-card)">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:var(--fd-teal-deep)">Pick up where you left off</p>
+            <h2 id="now-title" style="margin:0 0 14px;font-family:'Source Serif 4',Georgia,serif;font-size:var(--h2);line-height:1.2">10-minute block · 1 of 2 steps done</h2>
+            <ol style="list-style:none;margin:0 0 18px;padding:0;display:grid;gap:8px">
+              <li style="display:flex;align-items:center;gap:12px;font-size:15px;color:var(--fd-text-dim)"><span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;background:var(--fd-teal);color:var(--fd-on-accent);display:grid;place-items:center;font-size:11px;font-weight:700;flex:none">✓</span><span style="flex:1">6 practice questions</span><span style="font-size:13px">done</span></li>
+              <li style="display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600"><span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--fd-teal);box-sizing:border-box;background:conic-gradient(var(--fd-teal) 0 50%,transparent 0);flex:none"></span><span style="flex:1">Psychosis</span><span style="font-size:13px;font-weight:500;color:var(--fd-text-dim)">reading · ~5 min</span></li>
+            </ol>
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px">
+              <button type="button" style="min-height:44px;padding:12px 22px;border-radius:8px;border:1px solid var(--fd-teal);background:var(--fd-teal);color:var(--fd-on-accent);font:inherit;font-size:15px;font-weight:600">Continue the block →</button>
+              <span style="font-size:13px;color:var(--fd-text-dim)">Saved on this device · resumes after reload</span>
+            </div>
+          </section>
+
+          <section aria-labelledby="also" style="margin-top:36px">
+            <h2 id="also" style="margin:0 0 6px;font-family:'Source Serif 4',Georgia,serif;font-size:19px;line-height:1.3">Also today</h2>
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 2px;border-top:1px solid var(--fd-line)">
+              <span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--fd-olive);color:var(--fd-olive-deep);display:grid;place-items:center;font-size:11px;font-weight:800;box-sizing:border-box;flex:none">2</span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">2 reviews due</div><div style="font-size:13px;color:var(--fd-text-dim)">Daily Review · 2 daily</div></div>
+              <a href="#" style="font-size:14px;font-weight:700;color:var(--fd-teal-deep);min-height:44px;display:flex;align-items:center">Start review</a>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 2px;border-top:1px solid var(--fd-line)">
+              <span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--fd-teal);box-sizing:border-box;background:conic-gradient(var(--fd-teal) 0 20%,transparent 0);flex:none"></span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">Continue · Week 2</div><div style="font-size:13px;color:var(--fd-text-dim)">Psychosis next · 1 of 5 activities done</div></div>
+              <a href="#" style="font-size:14px;font-weight:700;color:var(--fd-teal-deep);min-height:44px;display:flex;align-items:center">Open</a>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 2px;border-top:1px solid var(--fd-line);border-bottom:1px solid var(--fd-line)">
+              <span aria-hidden="true" style="width:22px;height:22px;border-radius:6px;border:1.5px solid var(--fd-line-hover);color:var(--fd-text-mid);display:grid;place-items:center;font-size:13px;box-sizing:border-box;flex:none">＋</span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600">2 questions saved for supervision</div><div style="font-size:13px;color:var(--fd-text-dim)">Saved on this device. No patient details.</div></div>
+              <a href="#" style="font-size:14px;font-weight:700;color:var(--fd-teal-deep);min-height:44px;display:flex;align-items:center">Review</a>
+            </div>
+          </section>
+
+          <details open="" style="margin-top:24px;padding:4px 0 18px;border-bottom:1px solid var(--fd-line)">
+            <summary style="list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:44px;cursor:pointer;font-size:15px;font-weight:600;color:var(--fd-text)">What am I preparing for?<span aria-hidden="true" style="font-size:14px;color:var(--fd-text-dim)">⌃</span></summary>
+            <p style="margin:0 0 12px;font-size:13px;line-height:1.5;color:var(--fd-text-mid)">Optional. Your choice stays in this page session and resets on reload. Regular Today and your due-review plan stay unchanged.</p>
+            <div role="group" aria-label="Preparation purpose" style="display:flex;flex-wrap:wrap;gap:8px">
+              <button type="button" aria-pressed="false" style="min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:14px;font-weight:600">Before rounds</button>
+              <button type="button" aria-pressed="false" style="min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:14px;font-weight:600">Interview</button>
+              <button type="button" aria-pressed="false" style="min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:14px;font-weight:600">Family conversation</button>
+              <button type="button" aria-pressed="false" style="min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:14px;font-weight:600">Study</button>
+              <button type="button" aria-pressed="true" style="min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep);font:inherit;font-size:14px;font-weight:700">Regular Today</button>
+            </div>
+          </details>
+
+          <section aria-labelledby="wk" style="margin-top:32px">
+            <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;margin:0 0 6px"><h2 id="wk" style="margin:0;font-family:'Source Serif 4',Georgia,serif;font-size:19px;line-height:1.3">Suggested this week</h2><span style="font-size:13px;color:var(--fd-text-dim)">1 of 5 done</span></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 2px;border-top:1px solid var(--fd-line)"><span role="img" aria-label="Done" style="width:22px;height:22px;border-radius:50%;background:var(--fd-teal);color:var(--fd-on-accent);display:grid;place-items:center;font-size:11px;font-weight:700;flex:none">✓</span><span style="flex:1;min-width:0;font-size:15px;font-weight:600;color:var(--fd-text-dim)">Mood</span><span style="font-size:13px;color:var(--fd-text-dim)">5 min</span></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 2px;border-top:1px solid var(--fd-line)"><span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;border:1.5px solid var(--fd-line-strong);box-sizing:border-box;flex:none"></span><span style="flex:1;min-width:0;font-size:15px;font-weight:600">Psychosis</span><span style="font-size:13px;color:var(--fd-text-dim)">Reading</span></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 2px;border-top:1px solid var(--fd-line)"><span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;border:1.5px solid var(--fd-line-strong);box-sizing:border-box;flex:none"></span><span style="flex:1;min-width:0;font-size:15px;font-weight:600">Psychopharmacology Primer</span><span style="font-size:13px;color:var(--fd-text-dim)">Reading</span></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 2px;border-top:1px solid var(--fd-line)"><span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;border:1.5px solid var(--fd-line-strong);box-sizing:border-box;flex:none"></span><span style="flex:1;min-width:0;font-size:15px;font-weight:600">Differential Dx Scaffolds</span><span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid var(--fd-olive);color:var(--fd-olive-deep);background:var(--fd-olive-wash)">Pending review</span></div>
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 2px;border-top:1px solid var(--fd-line);border-bottom:1px solid var(--fd-line)"><span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;border:1.5px solid var(--fd-line-strong);box-sizing:border-box;flex:none"></span><span style="flex:1;min-width:0;font-size:15px;font-weight:600">Practice Questions — Question Bank</span><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--fd-teal-wash);color:var(--fd-teal-deep)">tool</span></div>
+          </section>
+
+          <section aria-labelledby="unit" style="margin-top:32px;display:grid;grid-template-columns:28px minmax(0,1fr);gap:0 14px">
+            <div aria-hidden="true" style="display:grid;justify-items:center;grid-template-rows:28px 1fr"><span style="width:28px;height:28px;border-radius:50%;border:2px solid var(--fd-teal);box-sizing:border-box;background:var(--fd-surface);color:var(--fd-teal-deep);display:grid;place-items:center;font-size:12px;font-weight:700">2</span><span style="width:2px;background:var(--fd-line-strong);margin-top:4px"></span></div>
+            <div style="min-width:0">
+              <p style="margin:3px 0 4px;font-size:13px;font-weight:700;color:var(--fd-teal-deep)">On the unit this week · Case Journeys, week 2</p>
+              <h2 id="unit" style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-size:21px;line-height:1.25">Differential: hold more than one explanation</h2>
+              <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:var(--fd-text-mid)">Build a problem representation, keep primary, substance-related, and medical explanations visible, and identify the next collateral question.</p>
+              <p style="margin:0 0 14px;padding:10px 14px;border-left:3px solid var(--fd-teal);background:var(--fd-callout);font-size:14px;line-height:1.55;color:var(--fd-text-mid)"><strong style="color:var(--fd-text)">Carry it to rounds:</strong> On rounds, label your leading diagnosis as a working hypothesis and state what would update it.</p>
+              <a href="#" style="display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:8px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text);font-size:14px;font-weight:600;text-decoration:none">Open case week 2</a>
+            </div>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="qt-m" style="margin-top:32px">
+            <h2 id="qt-m" style="margin:0 0 6px;font-family:'Source Serif 4',Georgia,serif;font-size:19px">Quick tools</h2>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <span style="min-height:40px;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);font-size:13px;font-weight:600;color:var(--fd-text-mid)">Practice Questions</span>
+              <span style="min-height:40px;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);font-size:13px;font-weight:600;color:var(--fd-text-mid)">Mental Status Exam</span>
+              <span style="min-height:40px;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);font-size:13px;font-weight:600;color:var(--fd-text-mid)">Decisional Capacity</span>
+              <span style="min-height:40px;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);font-size:13px;font-weight:600;color:var(--fd-text-mid)">Violence Risk (FRST)</span>
+            </div>
+            <p style="margin:14px 0 0;font-size:13px;color:var(--fd-text-dim)">Safety protocols are one tap away in the top bar.</p>
+          </section>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+        <aside aria-label="Safety kit and quick tools" style="flex:1 1 280px;max-width:320px;min-width:0;display:grid;gap:32px">
+          <section aria-labelledby="kit" style="border-top:3px solid var(--fd-danger);background:var(--fd-surface);border-radius:0 0 12px 12px;border-left:1px solid var(--fd-line);border-right:1px solid var(--fd-line);border-bottom:1px solid var(--fd-line)">
+            <h2 id="kit" style="margin:0;padding:14px 16px 6px;font-family:'Source Serif 4',Georgia,serif;font-size:17px;color:var(--fd-text)">Safety kit</h2>
+            <div style="padding:9px 16px;border-top:1px solid var(--fd-line)"><div style="font-size:14px;font-weight:700">Suicide Risk &amp; Safety</div><div style="font-size:12px;color:var(--fd-text-dim)">Screen · stratify · safety plan</div></div>
+            <div style="padding:9px 16px;border-top:1px solid var(--fd-line)"><div style="font-size:14px;font-weight:700">Agitation &amp; Restraint</div><div style="font-size:12px;color:var(--fd-text-dim)">Verbal first · PO before IM</div></div>
+            <div style="padding:9px 16px;border-top:1px solid var(--fd-line)"><div style="font-size:14px;font-weight:700">Consult Questions: Capacity, Delirium, Catatonia, Withdrawal</div><div style="font-size:12px;color:var(--fd-text-dim)">Choice · understand · appreciate · reason</div></div>
+            <div style="padding:9px 16px;border-top:1px solid var(--fd-line)"><div style="font-size:14px;font-weight:700">Substance Use</div><div style="font-size:12px;color:var(--fd-text-dim)">Score · thiamine · escalate</div></div>
+            <div style="padding:9px 16px 12px;border-top:1px solid var(--fd-line)"><div style="font-size:14px;font-weight:700">Delirium</div><div style="font-size:12px;color:var(--fd-text-dim)">Vitals · meds · CAM</div></div>
+          </section>
+          <section aria-labelledby="qt">
+            <h2 id="qt" style="margin:0 0 6px;font-family:'Source Serif 4',Georgia,serif;font-size:17px">Quick tools</h2>
+            <div style="padding:10px 2px;border-top:1px solid var(--fd-line);font-size:14px;font-weight:600;color:var(--fd-text-mid)">Practice Questions — Question Bank</div>
+            <div style="padding:10px 2px;border-top:1px solid var(--fd-line);font-size:14px;font-weight:600;color:var(--fd-text-mid)">Mental Status Exam</div>
+            <div style="padding:10px 2px;border-top:1px solid var(--fd-line);font-size:14px;font-weight:600;color:var(--fd-text-mid)">Decisional Capacity</div>
+            <div style="padding:10px 2px;border-top:1px solid var(--fd-line);font-size:14px;font-weight:600;color:var(--fd-text-mid)">Withdrawal: COWS Tool · CIWA-Ar Official Form &amp; Training</div>
+            <div style="padding:10px 2px;border-top:1px solid var(--fd-line);border-bottom:1px solid var(--fd-line);font-size:14px;font-weight:600;color:var(--fd-text-mid)">Violence Risk (FRST)</div>
+          </section>
+          <a href="#" style="font-size:13px;font-weight:600;color:var(--fd-teal-deep)">Learning activity &amp; review →</a>
+        </aside>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+      <p style="margin:18px 0 72px"><a href="#" style="font-size:13px;font-weight:600;color:var(--fd-teal-deep)">Learning activity &amp; review →</a></p>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <nav aria-label="Primary" style="position:absolute;left:0;right:0;top:778px;height:66px;box-sizing:border-box;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:6px 6px 8px;background:var(--fd-surface-warm);border-top:1px solid var(--fd-line);box-shadow:0 -4px 16px rgba(59,51,44,.08)">
+      <span aria-current="page" style="display:grid;place-items:center;border-radius:10px;background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-size:13px;font-weight:700">Today</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">Path</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">Library</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">Care</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">＋ Ask</span>
+    </nav>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:1500},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;device&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;'desktop'|'mobile'&quot;},&quot;scenario&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;block&quot;,&quot;setup&quot;],&quot;default&quot;:&quot;block&quot;,&quot;tsType&quot;:&quot;'block'|'setup'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.theme === 'dark';
+    const mobile = this.props.device === 'mobile';
+    const scenario = this.props.scenario || 'block';
+    const L = {'--fd-bg':'#f6f3ee','--fd-surface':'#ffffff','--fd-surface-warm':'#fffdf9','--fd-line':'#ebe5da','--fd-line-strong':'#ddd3c6','--fd-line-hover':'#c8baa7','--fd-text':'#3b332c','--fd-text-mid':'#64574b','--fd-text-dim':'#76695d','--fd-terracotta':'#a9634b','--fd-teal':'#3a7d6e','--fd-teal-deep':'#2c6356','--fd-teal-wash':'#edf4f2','--fd-olive':'#8b7040','--fd-olive-deep':'#725b35','--fd-olive-wash':'#f7f0e2','--fd-danger':'#a34132','--fd-danger-dark':'#8f372a','--fd-danger-wash':'#fbefec','--fd-chip':'#f1ece6','--fd-callout':'#fbf8f3','--fd-on-accent':'#ffffff','--fd-focus':'#2f6fd0','--fd-shadow-card':'0 1px 2px rgba(59,51,44,.05),0 8px 24px rgba(59,51,44,.04)'};
+    const D = {'--fd-bg':'#211d1a','--fd-surface':'#2a2521','--fd-surface-warm':'#2f2a25','--fd-line':'#3a332c','--fd-line-strong':'#4a4139','--fd-line-hover':'#5d5248','--fd-text':'#ece5db','--fd-text-mid':'#bcb0a2','--fd-text-dim':'#a2968a','--fd-terracotta':'#d08a6f','--fd-teal':'#5fa392','--fd-teal-deep':'#7fc0ae','--fd-teal-wash':'#1d332e','--fd-olive':'#c0a06a','--fd-olive-deep':'#d8bb87','--fd-olive-wash':'#332a1c','--fd-danger':'#d97a68','--fd-danger-dark':'#e8917f','--fd-danger-wash':'#3a231f','--fd-chip':'#332c26','--fd-callout':'#2b2620','--fd-on-accent':'#211d1a','--fd-focus':'#7aa2ff','--fd-shadow-card':'0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3)'};
+    const layout = mobile
+      ? {'--pad-x':'16px','--pad-top':'22px','--h1':'28px','--h2':'22px','--wk-labels':'none'}
+      : {'--pad-x':'40px','--pad-top':'36px','--h1':'34px','--h2':'26px','--wk-labels':'block'};
+    return {
+      rootStyle: Object.assign({}, dark ? D : L, layout, {
+        position:'relative', width: mobile ? '390px' : '1280px', minHeight: mobile ? '844px' : '800px',
+        background:'var(--fd-bg)', color:'var(--fd-text)', colorScheme: dark ? 'dark' : 'light',
+        fontFamily:"'Inter',system-ui,-apple-system,'Segoe UI',sans-serif", lineHeight:1.55,
+        WebkitFontSmoothing:'antialiased'
+      }),
+      isMobile: mobile, isDesktop: !mobile,
+      isBlock: scenario === 'block', isSetup: scenario === 'setup'
+    };
+  }
+}
+</script>
+</body>
+</html>

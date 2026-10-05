@@ -151,13 +151,18 @@ function shellFunction(name) {
   return match[0];
 }
 
+// The harness still OFFERS a marked primary source in the content host (data-fd-dock-source /
+// data-fd-dock-label), exactly as fd_reader.js / fd_today.js still emit one. Since 2026-10-04 the
+// dock must not read it: the tests below hand the source over and assert nothing in the dock
+// changes with it. `reads` counts every time fdRenderDock asks the host for the source, so a
+// regression that re-wires forwarding fails even if its markup happened to look right.
 function dockHarness(preview = false) {
-  let primary = { id: 'primary-reader', label: 'Mark done' }, guide = false;
+  let primary = { id: 'primary-reader', label: 'Mark done' }, guide = false, reads = 0;
   const host = { querySelector(selector) {
     if (selector === '.fd-reader--guide') return guide ? {} : null;
-    if (selector === '[data-fd-dock-source]' && primary) return {
+    if (selector === '[data-fd-dock-source]') { reads++; return primary ? {
       getAttribute: key => key === 'data-fd-dock-source' ? primary.id : primary.label,
-    };
+    } : null; }
     return null;
   } };
   const doc = { activeElement: null };
@@ -195,22 +200,24 @@ function dockHarness(preview = false) {
     function fdClone(state){return JSON.parse(JSON.stringify(state));}
     function fdEsc(value){return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
     ${shellModule}
-    ${wireModule.slice(wireModule.indexOf('function fdDockSource('), wireModule.indexOf('function fdForwardDockAction('))}
     function fdLiveState(state){return state;}
     ${shellFunction('fdRenderDock')}
     return fdRenderDock;
   `)(host, mount, preview, doc);
-  return { host, mount, render, doc, primary(value) { primary = value; }, guide(value) { guide = value; } };
+  return { host, mount, render, doc, primary(value) { primary = value; }, guide(value) { guide = value; },
+    reads() { return reads; } };
 }
 
-test('same-route dock refresh preserves the focused action without scrolling', () => {
+const FIXED_DOCK = /^<nav class="fd-dock" aria-label="Learning actions"><button type="button" class="fd-dock__item" data-fd-tab="today">Today<\/button><button type="button" class="fd-dock__item" data-fd-tab="path">Path<\/button><button type="button" class="fd-dock__item" data-fd-tab="library">Library<\/button><button type="button" class="fd-dock__item" data-fd-tab="care" aria-label="Patient care resources">Care<\/button><button type="button" class="fd-dock__item" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">＋ Ask<\/button><\/nav>$/;
+
+test('same-route dock refresh preserves the focused destination without scrolling', () => {
   const h = dockHarness(), state = { screen: 'app', tab: 'today', openId: 'a.md' };
   h.render(state);
-  const old = h.mount.querySelector('[data-fd-dock-forward="primary-reader"]');
+  const old = h.mount.querySelector('[data-fd-tab="path"]');
   old.focus();
   h.primary({ id: 'primary-reader', label: 'Next: Page B →' });
   h.render(state, true);
-  const fresh = h.mount.querySelector('[data-fd-dock-forward="primary-reader"]');
+  const fresh = h.mount.querySelector('[data-fd-tab="path"]');
   assert.notEqual(fresh, old);
   assert.equal(h.doc.activeElement, fresh);
   assert.deepEqual(fresh.focusOptions, { preventScroll: true });
@@ -226,16 +233,17 @@ test('dock refresh does not take focus from content, dialogs, navigation, or an 
   }
   for (const overlay of [{ searchOpen: true }, { sheet: 'safety' }]) {
     const h = dockHarness(); h.render(state);
-    h.mount.querySelector('[data-fd-dock-forward="primary-reader"]').focus();
+    h.mount.querySelector('[data-fd-tab="path"]').focus();
     h.render({ ...state, ...overlay }, true);
     assert.equal(h.doc.activeElement, null, 'overlay owns its focus transition');
   }
   const h = dockHarness(); h.render(state);
-  h.mount.querySelector('[data-fd-dock-forward="primary-reader"]').focus();
+  h.mount.querySelector('[data-fd-tab="path"]').focus();
   h.render({ ...state, openId: 'b.md' });
   assert.equal(h.doc.activeElement, null, 'full navigation owns focus');
-  h.mount.querySelector('[data-fd-dock-forward="primary-reader"]').focus();
-  h.primary(null); h.render(state, true);
+  // A focused control with no equivalent in the new dock (APP drops Path) invents no target.
+  h.mount.querySelector('[data-fd-tab="path"]').focus();
+  h.render({ ...state, appMode: true }, true);
   assert.equal(h.doc.activeElement, null, 'no equivalent action means no invented target');
 });
 
@@ -253,21 +261,48 @@ test('dock refresh retains the Capture invoker and its expanded state without mo
     assert.equal(capture.isConnected, true);
     assert.equal(capture.getAttribute('aria-expanded'), 'true');
     assert.equal(h.doc.activeElement, input);
-    assert.match(h.mount.innerHTML, /data-fd-dock-forward="primary-resume">Resume/);
+    assert.doesNotMatch(h.mount.innerHTML, /primary-resume|Resume/, 'the page primary never reaches the dock');
   }
 });
 
-test('dock refresh uses the live source and clears learner actions on excluded screens', () => {
+// One-thread redesign, Phase 1 (2026-10-04): the dock's five slots are FIXED. A marked primary in
+// the content host used to become the centre slot; now the dock must render identically whether
+// the host offers a source, a different source, or none -- and must not even ask.
+test('dock render ignores the content host\'s marked primary and never reads it', () => {
   const h = dockHarness(), state = { screen: 'app', tab: 'today' };
   h.render(state);
-  assert.match(h.mount.innerHTML, /data-fd-dock-forward="primary-reader">Mark done/);
+  const withReader = h.mount.innerHTML;
+  assert.match(withReader, FIXED_DOCK);
+  assert.doesNotMatch(withReader, /Mark done|primary-reader|data-fd-dock-forward|fd-dock__item--context|fd-dock__browse/);
   h.primary({ id: 'primary-resume', label: 'Resume' });
   h.render(state);
-  assert.match(h.mount.innerHTML, /data-fd-dock-forward="primary-resume">Resume/);
-  assert.doesNotMatch(h.mount.innerHTML, /primary-reader/);
-  assert.equal(state.dockAction, undefined, 'derived action never mutates live state');
+  assert.equal(h.mount.innerHTML.replace(/ aria-current="page"/, ''), withReader.replace(/ aria-current="page"/, ''),
+    'a different source changes nothing');
   h.primary(null); h.render(state);
-  assert.match(h.mount.innerHTML, /data-fd-tab="library">Essential</);
+  assert.equal(h.mount.innerHTML.replace(/ aria-current="page"/, ''), withReader.replace(/ aria-current="page"/, ''),
+    'no source changes nothing');
+  assert.equal(state.dockAction, undefined, 'nothing derives a dock action onto live state');
+  assert.equal(h.reads(), 0, 'fdRenderDock never queries [data-fd-dock-source]');
+});
+
+test('the dock marks the origin destination current, including while a resource is open', () => {
+  const h = dockHarness();
+  // The harness's innerHTML is the rendered string; aria-current is SET on the control after the
+  // render (fdRenderDock), so it is read back through the control, as the browser would expose it.
+  const current = () => ['today', 'path', 'library', 'care']
+    .filter((tab) => h.mount.querySelector(`[data-fd-tab="${tab}"]`).getAttribute('aria-current') === 'page');
+  h.render({ screen: 'app', tab: 'library' });
+  assert.deepEqual(current(), ['library']);
+  // Focused learning is a mode, not a destination: the tab the reading was opened from stays current.
+  h.render({ screen: 'app', tab: 'path', openId: 'a.md', fromTab: 'path' });
+  assert.deepEqual(current(), ['path']);
+  h.render({ screen: 'app', tab: 'nonsense' });
+  assert.deepEqual(current(), ['today'], 'an unknown tab falls back to Today');
+  assert.equal(h.mount.querySelector('[data-capture-open]').getAttribute('aria-current'), null, 'Ask is never a destination');
+});
+
+test('dock refresh clears learner actions on excluded screens and keeps the dock for enhanced guides', () => {
+  const h = dockHarness(), state = { screen: 'app', tab: 'today' };
   h.guide(true); h.render(state);
   assert.match(h.mount.innerHTML, /data-capture-open/, 'enhanced guides retain the learner dock');
   h.guide(false); h.render({ screen: 'setup' });
@@ -312,11 +347,11 @@ for (const ok of [true, false]) test(`resource ${ok ? 'tool mount' : 'load failu
     return ok;
   });
   assert.equal(await open('tool.html', { state }), ok);
-  if (ok) assert.match(h.mount.innerHTML, />Next: Page B →<\/button>/);
-  else {
-    assert.doesNotMatch(h.mount.innerHTML, /data-fd-dock-forward/);
-    assert.match(h.mount.innerHTML, />Essential<\/button>/);
-  }
+  // Both outcomes refresh the dock from the final DOM -- and both render the same five fixed slots,
+  // with the origin tab current; the tool's own primary never lands in the dock either way.
+  assert.equal(h.mount.querySelector('[data-fd-tab="today"]').getAttribute('aria-current'), 'page');
+  assert.doesNotMatch(h.mount.innerHTML, /Next: Page B|data-fd-dock-forward|Essential</);
+  assert.equal((h.mount.innerHTML.match(/<button\b/g) || []).length, 5);
 });
 
 test('the source body is the single live Front Door shell', () => {
@@ -337,9 +372,13 @@ test('the learner dock follows each base render and refreshes after a completion
   assert.ok(mount > -1 && mount < main, 'dock mount is a shell sibling before main');
   const helper = source.slice(source.indexOf('function fdRenderDock('), source.indexOf('function fdProgressMarkup(state)'));
   assert.match(helper, /state\.screen==='app'&&!facultyPreviewRequest/);
-  assert.match(helper, /fdDockSource\(contentEl\)/);
+  // 2026-10-04: the dock renders from live state alone. It must not look into the content host
+  // for a marked primary (fdDockSource is gone), and must not derive a dockAction. Comments are
+  // stripped first: the function's own comment is allowed to say what it no longer does.
+  assert.doesNotMatch(helper.replace(/\/\*[\s\S]*?\*\//g, ''), /fdDockSource|contentEl|dockAction|fd-dock__browse|data-fd-dock-forward/);
   assert.match(helper, /fdClone\(fdLiveState\(state\)\)/);
   assert.match(helper, /fdDock\(live\)/);
+  assert.match(helper, /setAttribute\('aria-current','page'\)/);
   const base = source.slice(source.indexOf('function fdRender(state,detail)'), source.indexOf('function fdPatchCompletion(state)'));
   assert.ok(base.indexOf('contentEl.innerHTML=fdBaseMarkup(state)') < base.indexOf('fdRenderDock(state,!!hydrate)'),
     'dock reads the newly rendered source');
@@ -525,8 +564,15 @@ test('fdRender guards every live surface independently', () => {
   assert.match(source, /d\.preserveResource/);
   assert.match(source, /d\.effect&&d\.effect\.mode/);
   assert.match(source, /hydrate=detail&&detail\.kind==='hydrate'/);
-  assert.match(source, /if\(!hydrate&&fdChromeMount\)/,
+  assert.match(source, /if\(!hydrate\)fdRenderChrome\(state\);/,
     'background hydration must not replace focused header controls');
+  // The header's "＋ Ask a question" is the capture dialog's opener object: a header re-render
+  // must hand the same button back (as fdRenderDock does for the dock's), never a fresh copy.
+  const chrome = source.slice(source.indexOf('function fdRenderChrome('), source.indexOf('function fdRender(state,detail)'));
+  assert.match(chrome, /var retained=fdChromeMount\.querySelector\('\.fd-askbtn\[data-capture-open\]'\);/);
+  assert.match(chrome, /live\.facultyPreview=!!facultyPreviewRequest;/, 'a faculty preview renders no Ask');
+  assert.match(chrome, /replacement\.parentNode\.replaceChild\(retained,replacement\)/);
+  assert.match(source, /if\(surfaces\.chrome&&state\.screen==='app'\)fdRenderChrome\(state\);/);
 });
 
 test('faculty preview ignores the learner tool-width preference', () => {
