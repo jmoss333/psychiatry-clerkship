@@ -597,7 +597,8 @@ A compact row used elsewhere is borderless.
 ## 5. Library
 
 One-thread redesign, Phase 2 (2026-10-04; spec `docs/superpowers/specs/one-thread-handoff/README.md`
-section 2). Essentials and Everything are two views of ONE Library and render through one shell
+section 2). The view switch uses two shrinkable grid tracks, bounded by the container; labels and counts may wrap under wider fallback fonts while retaining touch targets. Practice recommendations retain each source tool's review badge.
+Essentials and Everything are two views of ONE Library and render through one shell
 (fd_library.js `fdLibraryShell`). The Essentials root carries the `.fd-kit` modifier; Everything is
 the bare `.fd-library`.
 

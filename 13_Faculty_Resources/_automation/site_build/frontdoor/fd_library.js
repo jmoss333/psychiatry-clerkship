@@ -234,7 +234,7 @@ function fdLibraryPreview(item, ctx){
     for(i=0;i<practice.length;i++){
       out+='<p class="fd-kit__preview-practice"><strong>'+fdEsc(practice[i].title)+'</strong> · '+
         (practice[i].rights?'reference':(practice[i].kind==='tool'?'tool':'reading'))+
-        (practice[i].hint?' — '+fdEsc(practice[i].hint):'')+'</p>';
+        (practice[i].hint?' — '+fdEsc(practice[i].hint):'')+governanceBadge(practice[i].governance)+'</p>';
     }
   }
   var g=item.governance;

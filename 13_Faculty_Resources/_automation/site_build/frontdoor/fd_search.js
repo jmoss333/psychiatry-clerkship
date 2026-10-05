@@ -412,7 +412,7 @@ function fdSearchResults(index, query, synonyms, state){
    other surfaces) gets the result's own `meta` string exactly as before. */
 function fdSearchRowMeta(r, ctx){
   var it=r.item, idx=ctx&&ctx.index;
-  if(!idx) return r.meta||'';
+  if(!idx||r.kind==='care') return r.meta||'';
   if(r.kind==='protocol'){
     var kit=idx.kit||[];
     for(var k=0;k<kit.length;k++){ if(kit[k].item&&kit[k].item.ref===it.ref&&kit[k].sub) return String(kit[k].sub); }

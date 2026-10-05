@@ -719,3 +719,20 @@ test('the selected preparation preview shows its governed status and one launch 
     assert.match(html, /data-fd-kit-tool="prepare-for-tomorrow.html" aria-pressed="true"/);
   }
 });
+
+
+test('reviewed reading preview keeps pending practice recommendation status separate', () => {
+  const idx = kitFixture();
+  idx.byRef['m1.md'].governance = {status: 'reviewed', riskLevel: 'low'};
+  idx.byRef['t2.html'].governance = {status: 'pending', riskLevel: 'high'};
+  const pairings = {pairings: [{id: 'synthetic', audiences: ['ms3'], items: [
+    {role: 'read', kind: 'page', ref: 'm1.md'},
+    {role: 'practice', kind: 'tool', ref: 't2.html'},
+  ]}]};
+  const html = F.fdEssentials(idx, {kitToolPreview: 'm1.md', pairings, audience: 'ms3'});
+  const pane = html.match(/<aside class="fd-kit__tool-preview"[\s\S]*?<\/aside>/)[0];
+  const practice = pane.match(/<p class="fd-kit__preview-practice">[\s\S]*?<\/p>/)[0];
+  assert.match(practice, /Tool Two/);
+  assert.match(practice, /Pending review · High risk/);
+  assert.match(pane, /faculty-attested/);
+});

@@ -5501,3 +5501,23 @@ test('one thread at 200% text and 320px: no horizontal scroll, no clipping, no a
   }
   await expectHealthy(page);
 });
+
+
+test('Library view switch fits at 320px with wider fallback font metrics', async ({page}, info) => {
+  await seedApp(page, info);
+  await page.setViewportSize({width:320,height:844});
+  await page.goto('/?tab=library');
+  await expect(page.locator('.fd-library__views')).toBeVisible();
+  await page.addStyleTag({content:'.fd-library__views {font-family:Verdana,sans-serif}'});
+  const buttons=page.locator('.fd-library__view');
+  for(const button of await buttons.all()) {
+    const box=await button.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x+box.width).toBeLessThanOrEqual(320);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(await button.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  }
+  await buttons.nth(1).click();
+  await expect(buttons.nth(1)).toHaveAttribute('aria-pressed','true');
+  await expectHealthy(page);
+});

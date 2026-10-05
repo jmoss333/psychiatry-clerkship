@@ -1034,8 +1034,8 @@
 .fd-library__controls{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-6) var(--fd-space-7);margin:0 0 var(--fd-space-5)}
 /* Segmented control (PR 950's .fd-library__views, re-valued): a two-cell grid on the chip
  * background; the selected cell lifts onto the surface. Labels carry live counts. */
-.fd-library__views{display:inline-grid;grid-template-columns:1fr 1fr;flex:0 1 auto;min-width:min(100%,300px);padding:calc(var(--fd-space-1) + 1px);border-radius:var(--fd-radius-md);background:var(--fd-chip);border:1px solid var(--fd-line)}
-.fd-library__view{min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0 var(--fd-space-7);border:0;border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-md);font-weight:600;white-space:nowrap;cursor:pointer;transition:color var(--fd-dur-fast) var(--fd-ease-standard),background-color var(--fd-dur-fast) var(--fd-ease-standard)}
+.fd-library__views{display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:100%;flex:0 1 auto;min-width:min(100%,300px);padding:calc(var(--fd-space-1) + 1px);border-radius:var(--fd-radius-md);background:var(--fd-chip);border:1px solid var(--fd-line)}
+.fd-library__view{min-width:0;min-height:38px;display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0;padding:0 var(--fd-space-7);border:0;border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-md);font-weight:600;white-space:normal;cursor:pointer;transition:color var(--fd-dur-fast) var(--fd-ease-standard),background-color var(--fd-dur-fast) var(--fd-ease-standard)}
 .fd-library__view:hover{color:var(--fd-text)}
 .fd-library__view.is-active{background:var(--fd-surface);color:var(--fd-teal-deep);font-weight:700;box-shadow:var(--fd-shadow-sm)}
 /* The count span is a flex item, so its leading space must be kept explicitly. */
@@ -2017,7 +2017,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
  * (below): a sidebar of rows, 9×12 padding, active row on teal-wash. One markup, two shapes. */
 .fd-kit__index{position:relative;min-width:0}
 .fd-kit__index-track{display:flex;gap:var(--fd-space-4);max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;padding:2px 0 var(--fd-space-3)}
-.fd-kit__index-item{display:inline-flex;flex:0 0 auto;align-items:center;gap:var(--fd-space-3);min-height:var(--fd-target-touch);padding:0 var(--fd-space-7);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-sm);font-weight:600;white-space:nowrap;cursor:pointer;transition:color var(--fd-dur-fast) var(--fd-ease-standard),background-color var(--fd-dur-fast) var(--fd-ease-standard),border-color var(--fd-dur-fast) var(--fd-ease-standard)}
+.fd-kit__index-item{display:inline-flex;flex:0 0 auto;align-items:center;gap:var(--fd-space-3);min-height:var(--fd-target-touch);padding:0 var(--fd-space-7);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-sm);font-weight:600;white-space:normal;cursor:pointer;transition:color var(--fd-dur-fast) var(--fd-ease-standard),background-color var(--fd-dur-fast) var(--fd-ease-standard),border-color var(--fd-dur-fast) var(--fd-ease-standard)}
 .fd-kit__index-item:hover{border-color:var(--fd-line-hover);color:var(--fd-text)}
 .fd-kit__index-item.is-active{border-color:var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-weight:700}
 .fd-kit__index-count{color:var(--fd-text-dim);font-weight:500;font-variant-numeric:tabular-nums}
