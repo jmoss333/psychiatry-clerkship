@@ -20,8 +20,10 @@ const ROUTES = [
 const PHONE = { width: 390, height: 844 };
 const NARROW = { width: 320, height: 844 };
 const DESKTOP = { width: 1280, height: 800 };
-const captureLauncher = (page) => page.locator('.fd-dock [data-capture-open]:visible, .fd-capture-launch--global[data-capture-open]:visible');
-const desktopLauncher = (page) => page.locator('.fd-capture-launch--global[data-capture-open]:visible');
+// One-thread redesign (2026-10-04): the standing capture opener is the header's "＋ Ask a question"
+// (.fd-askbtn, above 640px) and the dock's "＋ Ask" (≤640px). The floating launcher is gone.
+const captureLauncher = (page) => page.locator('.fd-dock [data-capture-open]:visible, .fd-askbtn[data-capture-open]:visible');
+const desktopLauncher = (page) => page.locator('.fd-askbtn[data-capture-open]:visible');
 const inbox = (page) => page.locator('.cap-sheet[role="dialog"]');
 const email = (page) => page.locator('.cap-email-sheet[role="dialog"]');
 
@@ -65,7 +67,7 @@ test.describe('capture affordance is route- and breakpoint-persistent', () => {
       const btn = captureLauncher(page);
       await expect(btn).toBeVisible();
       await expect(btn).toHaveCount(1);
-      await expect(page.locator('.fd-capture-launch--global:visible')).toHaveCount(0);
+      await expect(page.locator('.fd-askbtn:visible, .fd-capture-launch--global:visible')).toHaveCount(0);
       await expect(btn).toHaveAttribute('aria-expanded', 'false');
       await btn.click();
       await expect(page.locator('.cap-sheet')).toBeVisible();
@@ -591,7 +593,9 @@ test('T10: the phone dock adds no horizontal overflow and replaces the Reader ac
   expect(widths.scroll).toBeLessThanOrEqual(widths.client);
 });
 
-test('the visible Capture launcher stays fixed, reachable, and inside the viewport', async ({ page }) => {
+// The opener lives in the fixed dock ≤640px and in the sticky header above it (one-thread,
+// 2026-10-04): either way it is on screen at every scroll position, which is what this pins.
+test('the visible Capture launcher stays pinned on screen, reachable, and inside the viewport', async ({ page }) => {
   const cases = [
     { label: 'Today', url: '/', ready: '.fd-today' },
     { label: 'Reader', url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body' },
@@ -602,9 +606,10 @@ test('the visible Capture launcher stays fixed, reachable, and inside the viewpo
       await page.goto(surface.url);
       await expect(page.locator(surface.ready)).toBeVisible();
       await expect(captureLauncher(page)).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       const geometry = await page.evaluate(() => {
         const mount = window.innerWidth <= 640
-          ? document.querySelector('.fd-dock') : document.querySelector('#fdCaptureMount');
+          ? document.querySelector('.fd-dock') : document.querySelector('.fd-header');
         const button = mount.querySelector('[data-capture-open]');
         const mountBox = mount.getBoundingClientRect();
         const buttonBox = button.getBoundingClientRect();
@@ -621,13 +626,16 @@ test('the visible Capture launcher stays fixed, reachable, and inside the viewpo
           viewportHeight: window.innerHeight,
         };
       });
-      expect(geometry.position, `${viewport.width}px ${surface.label} mount position`).toBe('fixed');
+      expect(geometry.position, `${viewport.width}px ${surface.label} mount position`).toBe(viewport.width <= 640 ? 'fixed' : 'sticky');
       expect(geometry.mountTop).toBeGreaterThanOrEqual(0);
       expect(geometry.mountBottom).toBeLessThanOrEqual(geometry.viewportHeight);
       expect(geometry.buttonTop).toBeGreaterThanOrEqual(0);
       expect(geometry.buttonBottom).toBeLessThanOrEqual(geometry.viewportHeight);
-      expect(geometry.buttonWidth).toBeGreaterThanOrEqual(44);
-      expect(geometry.buttonHeight).toBeGreaterThanOrEqual(44);
+      // Touch floor (44px) through 999px; the desktop app bar's controls are 36px pills by spec
+      // (pointer input), the same height as ✚ Safety and the Settings circle beside it.
+      const minTarget = viewport.width <= 999 ? 44 : 36;
+      expect(geometry.buttonWidth, `${viewport.width}px ${surface.label} launcher width`).toBeGreaterThanOrEqual(44);
+      expect(geometry.buttonHeight, `${viewport.width}px ${surface.label} launcher height`).toBeGreaterThanOrEqual(minTarget);
       expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth);
     }
   }

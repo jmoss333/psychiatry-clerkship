@@ -401,13 +401,50 @@ function fdSearchResults(index, query, synonyms, state){
   return protoResults.concat(careResults, aliasItems, hayProtocols, rest).slice(0,8);
 }
 
+/* ---- Result rows and groups (one-thread redesign, Phase 2; spec section 6) ----------------
+   Rows are shown in three groups -- Safety protocols, Pages, Tools (plus Patient care resources
+   when a care match exists) -- each with its own meta line:
+     protocol  the kit's own cue line (curriculum.safetyKit `sub`), red dot
+     page      "Reading · <section> · Weeks…" (section = the libraryColumns column), outlined dot
+     tool      the existing hint (curriculum.libraryHints), teal dot; a rights reference keeps its
+               "Reference · not reproduced" line so the row itself says the scale is not here
+   `ctx` carries the index for the section and kit lookups; a caller without one (older tests,
+   other surfaces) gets the result's own `meta` string exactly as before. */
+function fdSearchRowMeta(r, ctx){
+  var it=r.item, idx=ctx&&ctx.index;
+  if(!idx||r.kind==='care') return r.meta||'';
+  if(r.kind==='protocol'){
+    var kit=idx.kit||[];
+    for(var k=0;k<kit.length;k++){ if(kit[k].item&&kit[k].item.ref===it.ref&&kit[k].sub) return String(kit[k].sub); }
+    return r.meta||'';
+  }
+  /* The rights line is the existing string, unchanged (front-door.spec.js pins it by name). */
+  if(it.rights) return 'reference · not reproduced';
+  if(it.kind==='tool') return it.hint||'Tool';
+  var parts=['Reading'], cols=idx.columns||[], c, j;
+  for(c=0;c<cols.length;c++){
+    var items=cols[c].items||[], hit=false;
+    for(j=0;j<items.length;j++){ if(items[j].ref===it.ref) hit=true; }
+    if(hit){ parts.push(cols[c].name); break; }
+  }
+  var weeks=[], ws=idx.weeks||[], w, i;
+  for(w=0;w<ws.length;w++){
+    var wi=ws[w].items||[];
+    for(i=0;i<wi.length;i++){ if(wi[i].ref===it.ref){ weeks.push(ws[w].n); break; } }
+  }
+  if(weeks.length===1) parts.push('Week '+weeks[0]);
+  else if(weeks.length>1) parts.push('Weeks '+weeks.slice(0,weeks.length-1).join(', ')+' and '+weeks[weeks.length-1]);
+  return parts.join(' · ');
+}
+
 /* Protocol rows keep the safety panel; ordinary results open the resource directly. */
-function fdSearchResultRow(r){
-  var it=r.item;
+function fdSearchResultRow(r, ctx){
+  var it=r.item, c=ctx||{};
+  var meta=fdSearchRowMeta(r,c);
   if(r.kind==='care'){
     return '<a class="fd-result is-care" data-care-resource="'+fdEsc(it.id)+'" href="'+fdEsc(it.url)+'" target="_blank" rel="noopener noreferrer">'+
       '<span class="fd-result__dot is-care"></span><span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
-      '<span class="fd-result__meta">'+fdEsc(r.meta)+'</span></a>';
+      '<span class="fd-result__meta">'+fdEsc(meta)+'</span></a>';
   }
   var isProto=(r.kind==='protocol');
   var dotCls='fd-result__dot';
@@ -416,12 +453,47 @@ function fdSearchResultRow(r){
   var openAttrs=isProto
     ?(' data-fd-safety="'+fdEsc(it.ref)+'"')
     :(' data-fd-open="'+fdEsc(it.ref)+'"');
-  return '<button type="button" class="fd-result"'+openAttrs+'>'+
+  return '<button type="button" class="fd-result'+(c.first?' is-first':'')+'"'+openAttrs+'>'+
     '<span class="'+dotCls+'"></span>'+
     '<span class="fd-result__title">'+fdEsc(it.searchTitle||it.title)+'</span>'+
     governanceBadge(it.governance)+
-    '<span class="fd-result__meta">'+fdEsc(r.meta)+'</span>'+
+    '<span class="fd-result__meta">'+fdEsc(meta)+'</span>'+
   '</button>';
+}
+
+/* Groups appear in the order their best-ranked member holds in `results`, so the first rendered
+   row is always results[0] -- the row Enter opens (fd_wire.js). A crisis query puts a trigger
+   protocol first by contract, so Safety protocols lead exactly as the spec draws; an alias query
+   such as "patient refuses medication" (#429) keeps its tool ahead of a protocol that merely
+   shares a word, which a fixed Safety-first order would have undone. Only a leading protocol
+   wears the danger-wash `is-first` background. */
+var FD_SEARCH_GROUPS={
+  protocol:{cls:'is-safety',label:'Safety protocols'},
+  page:{cls:'',label:'Pages'},
+  tool:{cls:'',label:'Tools'},
+  care:{cls:'is-care',label:'Patient care resources'}
+};
+function fdSearchGroupOf(r){
+  if(r.kind==='protocol'||r.kind==='care') return r.kind;
+  return (r.item&&r.item.kind==='tool')?'tool':'page';
+}
+function fdSearchGroupedRows(results, index){
+  var order=[], byGroup={}, i, g;
+  for(i=0;i<results.length;i++){
+    g=fdSearchGroupOf(results[i]);
+    if(!byGroup[g]){ byGroup[g]=[]; order.push(g); }
+    byGroup[g].push(results[i]);
+  }
+  var out='';
+  for(i=0;i<order.length;i++){
+    g=order[i];
+    var meta=FD_SEARCH_GROUPS[g];
+    out+='<p class="fd-searchpanel__group'+(meta.cls?' '+meta.cls:'')+'">'+meta.label+'</p>';
+    for(var j=0;j<byGroup[g].length;j++){
+      out+=fdSearchResultRow(byGroup[g][j],{index:index,first:i===0&&j===0&&g==='protocol'});
+    }
+  }
+  return out;
 }
 
 function fdSearchOverlay(index, query, synonyms, state){
@@ -433,11 +505,11 @@ function fdSearchOverlay(index, query, synonyms, state){
   out+='<div class="fd-searchpanel">';
   out+='<div class="fd-searchpanel__head">';
   out+='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" '+
-    'stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle>'+
+    'stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle>'+
     '<path d="M21 21l-4-4"></path></svg>';
   out+='<input type="text" class="fd-searchpanel__input" value="'+fdEsc(q)+'" '+
     'aria-label="Search resources" placeholder="Symptom, drug, tool, or task…">';
-  out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc</button>';
+  out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">Close</button>';
   out+='</div>';
   if(!(state&&state.appMode===true)){
     out+='<div class="fd-searchpanel__browse">'+
@@ -459,10 +531,10 @@ function fdSearchOverlay(index, query, synonyms, state){
     if(/\bcalculator\b/i.test(q)&&!results.some(function(r){
       return /\bcalculator\b/i.test(fdSearchHaystack(r.item));
     })) out+='<p class="fd-searchpanel__empty">No matching calculator found. Related teaching resources:</p>';
-    for(var i=0;i<results.length;i++){ out+=fdSearchResultRow(results[i]); }
+    out+=fdSearchGroupedRows(results,index);
   }
   out+='</div>';
-  out+='<div class="fd-searchpanel__foot">Choose a result to open it. Safety protocols open in a quick-access panel. External care resources open in a new tab.</div>';
+  out+='<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, and related terms. Not here? <strong>＋ Ask a question</strong> saves it for supervision.</div>';
   out+='</div>';
   out+='</div>';
   return out;

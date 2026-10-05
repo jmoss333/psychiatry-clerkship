@@ -105,8 +105,12 @@ test('Front Door index and both live browse renderers preserve the shared govern
   assert.match(source, /function governanceBadge\(triplet,opts\)\{/);
   assert.match(source, /Pending review · High risk/);
   assert.match(dataModule, /risk: \(t&&t\.riskLevel\)\|\|m\.safetyLevel\|\|null/);
+  // Phase 2 of the one-thread redesign (2026-10-04): every Library row and the preview pane carry
+  // the FULL badge verbatim ("Pending review" / "Pending review · High risk"); the compact dot form
+  // is no longer used anywhere in the Library (the Today rail still uses it).
   assert.match(libraryModule, /governanceBadge\(item\.governance\)/);
-  assert.match(libraryModule, /governanceBadge\(item\.governance,\{compact:true\}\)/);
+  assert.match(libraryModule, /governanceBadge\(g\)/);
+  assert.doesNotMatch(libraryModule, /governanceBadge\([^)]*\{compact:true\}\)/);
   assert.match(searchModule, /governanceBadge\(it\.governance\)/);
   assert.match(source, /governanceNotice:renderGovernanceNotice/);
 });

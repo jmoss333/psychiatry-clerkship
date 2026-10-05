@@ -5,8 +5,12 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(537 distinct `fd-*` selector names, 28 `is-*` state classes). Every class below has a rule in that file unless
+(573 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
+
+**One-thread redesign, Phase 1 (2026-10-04)** — shell and Today were rebuilt to
+`docs/superpowers/specs/one-thread-handoff/README.md` (owner decisions D1–D6). Sections 1 and 3
+below describe the new contract; the per-row notes name what each change replaced.
 
 **Why this file exists.** The original implementation plan named 39 contract classes. Its stylesheet styled
 273. The remaining 234 were `__element` and `--modifier` names introduced while porting the
@@ -42,14 +46,16 @@ them and let the breakpoint decide:
 | Class | Hidden | Shown |
 |---|---|---|
 | `.fd-rail`, `.fd-railnav` | below 1000px | ≥ 1000px |
-| `.fd-actionbar`, `.fd-actionbar__spacer` | ≥ 1000px and ≤ 640px | 641–999px only; on phones their DOM remains available for dock forwarding |
+| `.fd-actionbar`, `.fd-actionbar__spacer` | ≥ 1000px and ≤ 640px | 641–999px only; on phones their DOM stays (the marked `data-fd-dock-source` twin that `fdPatchCompletion` relabels) but nothing renders from it |
 | `.fd-dock` | above 640px | ≤ 640px on learner app screens, including enhanced guides |
-| `#fdCaptureMount` | ≤ 640px | above 640px on learner app screens |
-| `.fd-quicktools--pills` | ≥ 1000px | below 1000px |
-| `.fd-article__actions` | below 1000px | ≥ 1000px |
+| `#fdCaptureMount` | always (it is kept empty: `#fdCaptureMount:empty{display:none}`) | never — the floating launcher retired 2026-10-04; the header's `.fd-askbtn` and the dock's "＋ Ask" open the same dialog |
+| `.fd-askbtn` ("＋ Ask a question") | ≤ 640px (the dock's "＋ Ask" takes over) | above 640px |
+| `.fd-quicktools--pills`, `.fd-today__record` (phone copy of the learning-record link) | ≥ 1000px | below 1000px |
+| `.fd-article__actions` | 641–999px (the fixed `.fd-actionbar` serves there) | ≥ 1000px, and ≤ 640px since 2026-10-04 — with the dock no longer mirroring the reader's primary, a phone's "Mark done" is this in-flow row at the end of the article |
 | `.fd-article .fd-tip` (Reader's keyboard hint **only** — the wizard's `.fd-tip--setup` line is a different subtree and stays visible) | below 1000px | ≥ 1000px |
 | `.fd-tabs` | ≤ 640px on every route | above 640px; still emitted inside `.fd-header` to preserve tablet/desktop behavior |
-| `.fd-weekpill`, `.fd-settingsbtn` on a **reader** (`.fd-shell:has(.fd-actionbar)`). `.fd-brand__name` is clipped there, never `display:none`, so the home button keeps its accessible name. | ≤ 640px | above 640px, and at every width on Today / Path / Library / Progress / not-found |
+| `.fd-brand__name`, `.fd-searchbtn__long` | clipped (never `display:none`) ≤ 640px on **every** route, so the home button and the search opener keep their accessible names; `.fd-searchbtn__short` ("Search", `aria-hidden`) shows instead | above 640px |
+| `.fd-thread__label` on a non-current week | ≤ 640px (clipped; the node's `aria-label` carries the week) | above 640px |
 | `.fd-article__head` and an empty `.fd-article__lead` on a **tool** (`.fd-reader--tool`); `.fd-article__h1` is clipped there, never `display:none`. Not a breakpoint: a tool supplies its own `<h1>` (calibrated on every shipped tool 2026-09-19; `tool-expand.spec.js` opens each one and asserts it), so the shell's masthead yields at every width. | every width | never on a tool |
 
 The enhanced `.fd-reader--guide` is a scoped exception: its week `.fd-railnav` remains
@@ -78,7 +84,7 @@ instead — see their surfaces.)
 | `.fd-h1` | `<h1>` | Georgia 30px. Setup screens. |
 | `.fd-sub` | `<p>` | Lead paragraph under `.fd-h1`. |
 | `.fd-eyebrow` | `<span>` | 12px sentence-case terracotta label. No label in this stylesheet is uppercased or tracked out (2026-10-01): every label shows the sentence-case text its markup carries. |
-| `.fd-sectionhead` | `<h2>` | 15px sentence-case serif heading in mid ink ("Suggested this week", "Quick tools", "Safety kit"); 2026-10-01, was a 12px tracked-caps label. |
+| `.fd-sectionhead` | `<h2>` | 19px (`--fd-font-section`, 2026-10-04) sentence-case serif heading in mid ink ("Also today", "This week", "Quick tools", "Safety kit"); was 15px, and before 2026-10-01 a 12px tracked-caps label. |
 | `.fd-tip` | `<p>` | 11.5px keyboard hint. |
 | `.fd-logo` | `<span>` | 30px terracotta ψ tile. |
 | `.fd-attested` | `<span>` | "✓ faculty-attested" pill. Reader + sheet item preview. |
@@ -92,7 +98,7 @@ instead — see their surfaces.)
 | `.fd-check` | `<button>` | 22px done-toggle circle. |
 | `.fd-check.is-done` | same element | Filled success + visible ✓. |
 | `.fd-check.is-done.is-just-done` | same element | **Both** state classes needed for the pop animation. |
-| `.fd-row` | `<div>` | Item row. Full card treatment. |
+| `.fd-row` | `<div>` | Item row. Flat since 2026-10-04 (one-thread): `padding:12px 2px`, a hairline above, no card, no entrance stagger (`fdRow` emits no `animation-delay`). |
 | `.fd-row.is-compact` | same element | Strips card bg/shadow/padding for the Path detail pane. |
 | `.fd-row__open` | `<button>` | Fills the row; wraps title + meta. |
 | `.fd-row__title` | `<span>` | |
@@ -121,11 +127,13 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
     .fd-searchbtn          <button>          (search affordance, not an input)
       <svg>
       .fd-searchbtn__label <span>
+        .fd-searchbtn__long  <span>         (the sentence: the accessible name at every width)
+        .fd-searchbtn__short <span aria-hidden> ("Search"; shown ≤640px only)
       .fd-kbd              <span>⌘K</span>
     .fd-header__actions
-      .fd-weekpill         <button>
+      .fd-weekpill.fd-weekpill--identity <span>APP</span>   (APP only; a label, not a control)
+      .fd-askbtn           <button data-capture-open>  ("＋ Ask a question"; hidden ≤640px)
       .fd-safetybtn        <button>
-      .fd-carebtn          <button>          (phone-only Patient care resources shortcut)
       .fd-settingsbtn      <button>          (compact settings-panel gear)
   .fd-tabs                 <nav>          (hidden ≤640px)
     .fd-tab                <button> ×4 standard / ×3 APP
@@ -133,18 +141,20 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
     .fd-tab.fd-tab--care   <button>      (far-right Patient care resources destination)
 #fdDockMount               <div>          (sibling of #fdChromeMount and .fd-main)
   .fd-dock                <nav aria-label="Learning actions"> (≤640px only)
-    .fd-dock__item        <button> ×5
+    .fd-dock__item        <button> ×5 standard / ×4 APP (.fd-dock--four)
 ```
 
 | Class | Notes |
 |---|---|
 | `.fd-header` | `position:sticky; top:0; z-index:40`. |
-| `.fd-header__bar` | The 1200px-capped flex row; at 640px and below it becomes a two-row grid so brand/search and utilities cannot collide — except on a reader (`.fd-shell:has(.fd-actionbar)`), where it is one flex row again: ψ tile, search grown to fill, ✚ Safety, and Care. `.fd-header` alone has no max-width. |
-| `.fd-header__actions` | `margin-left:auto` in the flex layout; at 640px and below it spans grid row two and becomes a four-column grid for week/identity, Safety, Care, and Settings. The reader override returns it to a compact flex row. |
-| `.fd-carebtn` | Hidden above 640px. On phones it is a teal, 44px-minimum shortcut beside Safety that routes to the existing Patient care resources tab; `.is-active` and `aria-current="page"` mark the current destination. |
-| `.fd-settingsbtn` | Compact icon-only header gear opening the settings panel; `aria-label` names the action. |
+| `.fd-header__bar` | The 1200px-capped flex row, `padding:12px 40px 0; gap:16px` (one-thread). At 640px and below it stays ONE row on every route: ψ tile (32px, name clipped), the search pill grown to fill (44 tall, "Search"), ✚ Safety (44) and the 44px Settings circle. The two-row phone grid and its reader-only exception are gone (2026-10-04). Sides are 20px below 1000px and 12px at ≤390px (where the search pill's own padding also drops to 12px), so the "Search" label stays a 44px target at 320px. `.fd-header` alone has no max-width. |
+| `.fd-searchbtn` | The search opener (a `<button>`, not an input): `max-width:440px; margin-left:20px` beside the brand on the desktop bar, `margin-left:12px` below 1000px (the 20px offset was what left the clipped placeholder a 42px label at 641px), `flex:1; margin-left:0` at ≤640px. |
+| `.fd-header__actions` | `margin-left:auto; gap:8px`: the APP identity chip when applicable, "＋ Ask a question", ✚ Safety, Settings. The week pill (`data-fd-change-week`) and the phone Care shortcut (`.fd-carebtn`) were removed 2026-10-04 (owner decision D4): the week is changed from Today's eyebrow, Path and first-run setup; Care is a tab above 640px and a fixed dock slot below. |
+| `.fd-askbtn` | Ghost pill (min-height 36, 7×14, 1.5px `--fd-line-strong`, 13/600 mid) carrying `data-capture-open aria-haspopup="dialog" aria-expanded="false"` — the same action and state pair the dock's "＋ Ask" and the retired floating launcher used; the capture open/close handler updates it. Hidden ≤640px. |
+| `.fd-weekpill` | Now only `.fd-weekpill--identity`, the APP chip: a `<span>`, no hover, no action. |
+| `.fd-settingsbtn` | 36px icon-only header gear opening the settings panel (44px on phones); `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
-| `.fd-tab[data-fd-tab="everything"]` | Not a distinct `state.tab` value -- clicking it dispatches the same `data-fd-library-view="full"` transition as the in-Library "Everything (N pages) →" footer button (fd_library.js), landing on `tab:'library', libraryView:'full'`. `is-active` on Everything and on Essentials are mutually exclusive projections of that one `libraryView` field (fd_shell.js `fdTabs`). |
+| `.fd-tab[data-fd-tab="everything"]` | Not a distinct `state.tab` value -- clicking it dispatches the same `data-fd-library-view="full"` transition as the in-Library segmented control (fd_library.js), landing on `tab:'library', libraryView:'full'`. `is-active` on Everything and on Essentials are mutually exclusive projections of that one `libraryView` field (fd_shell.js `fdTabs`). |
 | `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right on tablet and desktop. |
 | `.fd-tab__label[data-compact]` | One resilient text node per responsive tab. Its full button `aria-label` remains accessible. |
 | `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right. At ≤640px the divider and auto margin disappear. |
@@ -153,43 +163,34 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 ⚠ `.fd-tabs` is a **sibling** of `.fd-header__bar` inside `.fd-header`, not a child of it.
 ⚠ Rails stick to `top:106px`, which assumes the full header (bar + tabs) is present and sticky.
 
-### Adaptive dock — mounted phone contract
+### Fixed dock — mounted phone contract (one-thread, 2026-10-04)
 
 ```
-.fd-dock                 <nav aria-label="Learning actions">
-  .fd-dock__item         <button> ×1   (Today, or On shift)
-  .fd-dock__item         <button> ×1   (Path, or The Essentials)
-  .fd-dock__item.fd-dock__item--context
-                         <button>      (primary action, or Library Essentials fallback)
-  .fd-dock__item.fd-dock__browse
-                         <details>     (Browse -- see below)
-    .fd-dock__browsemenu <div role="menu">
-      .fd-dock__browseitem <button> ×3 (The Essentials, Everything, Search)
-  .fd-dock__item         <button> ×1   (Capture)
+.fd-dock                 <nav aria-label="Learning actions">   (.fd-dock--four for APP)
+  .fd-dock__item         <button data-fd-tab="today">   Today  (On shift for APP)
+  .fd-dock__item         <button data-fd-tab="path">    Path   (absent for APP)
+  .fd-dock__item         <button data-fd-tab="library"> Library
+  .fd-dock__item         <button data-fd-tab="care" aria-label="Patient care resources"> Care
+  .fd-dock__item         <button data-capture-open aria-haspopup="dialog" aria-expanded="false"> ＋ Ask
 ```
 
 | Class | Notes |
 |---|---|
-| `.fd-dock` | `<nav aria-label="Learning actions">`; fixed five-column phone grid under `#fdDockMount`. Its safe-area padding is the only phone bottom-edge action surface. Hidden above 640px. |
-| `.fd-dock__item` | `<button>` for four of the five slots, `<details>` for Browse (see below). Every phone target has at least 44×44 CSS pixels and visible text. Height is bounded to 60px with three visible lines so a long reader title cannot exceed the 84px content clearance; the full text remains the accessible name. `[aria-current="page"]` marks the active top-level destination; `:disabled` dims an unavailable item. |
-| `.fd-dock__item--context` | Modifier on the center button. A marked primary source forwards its existing click through `data-fd-dock-forward` and is marked by its terracotta fill, level with the other four (2026-10-01; it used to be raised out of the bar, which left its label above the rest); absent or stale source opens the Library (Essentials) as a flat **Essential** item (singular since 2026-09-27: at 390px the plural split mid-word, `Essential`/`s`). Renamed from **Browse** (2026-09-25) once the dedicated `.fd-dock__browse` item shipped beside it -- both landing on the same word read as a duplicate-label bug rather than two purposeful controls, since this fallback only appears when nothing is actively being read while the dedicated Browse item is always present. The reader's marked source stays in the hidden legacy action bar solely to own its behavior; Today sources remain visible in their cards. |
-| `.fd-dock__browse` | Replaces the dock's old Search button (2026-09-25) and carries Search as its third item (2026-09-26): the phone header is not pinned -- it scrolls away with the page -- so `.fd-searchbtn` is out of reach mid-page, and reaching it scrolls the reader (and its saved reading place) to the top. A native `<details>`/`<summary>` disclosure, not a dispatched action: opening/closing it is browser-owned, so it needs no state field and nothing to reset on unrelated navigation. `fdRenderDock` retains this disclosure during same-route refreshes and while Search is open, preserving its open state and focused control. Navigation closes it. Escape closes it and focuses its summary. Overrides `.fd-dock__item`'s `overflow:hidden`/line-clamp (built for a plain text label) with `overflow:visible`, since `.fd-dock__browsemenu` is an absolutely-positioned descendant that must escape this box to float above the dock. |
-| `.fd-dock__browsemenu` | The popover revealed by `.fd-dock__browse[open]`; `position:absolute;bottom:100%` anchors it above the dock. `role="menu"`. |
-| `.fd-dock__browseitem` | `<button role="menuitem" data-fd-dock-browse-go="essentials"\|"full"\|"search">` -- a thin alias fd_wire.js resolves onto `data-fd-library-view` (the exact action the local Library view switch uses) or `data-fd-search`. Its own attribute, never the target's: a bare `data-fd-library-view="full"` would duplicate the Library footer button, and a bare `data-fd-search` would let focus restore land on the off-screen header `.fd-searchbtn`. |
+| `.fd-dock` | `<nav aria-label="Learning actions">`; fixed phone grid under `#fdDockMount`: `repeat(5,minmax(0,1fr))`, `gap:4px`, `padding:6px 6px 8px` plus the safe-area inset, 66px tall, `--fd-surface-warm`, hairline top, `--fd-shadow-bar`. Hidden above 640px. |
+| `.fd-dock--four` | APP modifier: four columns (On shift · Library · Care · ＋ Ask); APP has no Path. |
+| `.fd-dock__item` | Every slot is a plain `<button>` with a FIXED meaning — the same four destinations as the tab row, in the same order, plus the capture opener. 13/600 mid, radius 10, 52px tall with two visible lines; every target is at least 44×44. `[aria-current="page"]` marks the current destination (teal wash, teal-deep, 700) — including while a reading or tool is open, when the ORIGIN tab stays current (focused learning is a mode, not a destination); `:disabled` dims an unavailable item. |
+| ~~`.fd-dock__item--context`~~ | Retired 2026-10-04. The centre slot that mirrored the page's primary action through `data-fd-dock-forward` is gone, and so are `fdDockSource` / `fdForwardDockAction` and the `data-fd-dock-forward` action in fd_wire.js. `data-fd-dock-source` / `data-fd-dock-label` are still emitted by the surfaces that own a primary (and `fdPatchCompletion` still carries the label), but nothing renders from them. |
+| ~~`.fd-dock__browse`, `.fd-dock__browsemenu`, `.fd-dock__browseitem`~~ | Retired 2026-10-04 with the `data-fd-dock-browse-go` action. The Library tab reaches Essentials/Everything; Search is reached from the header's `.fd-searchbtn`, which is inside the sticky `.fd-header` and so on screen at every scroll position and width. |
 
-The renderer inserts the context button after the two leading destinations, making it the third
-of five items, with Browse fourth and Capture fifth. APP changes the first two labels and routes
-its second item to Library. Capture carries `aria-haspopup="dialog"` and an `aria-expanded` state
-that the existing Capture open/close handler updates. The shell refreshes the dock's route and
-context controls after each base render, completion change, and settled resource load (including
-failure, only for the current route). It reuses the same Capture button object, preserving its
-open-dialog invoker and expanded state without taking focus from the dialog, and while search is
-open it also reuses the open `.fd-dock__browse` disclosure, whose Search item is the search
-dialog's invoker. `fdDockSource(contentEl)` supplies the marked
-action and the delegated controller forwards it. The dock is cleared on setup, faculty preview,
-and non-app screens. Enhanced guides retain this single dock for completion and Capture while
-their inline Find, Print, Practice, and contents controls keep their existing behavior. Capture
-retains its existing dialog focus trap and returns focus to the exact dock button that opened it.
+`fdRenderDock` (spa_index.html) renders from live state alone — it no longer reads `contentEl`
+and derives no `dockAction`. It still refreshes after each base render, completion change and
+settled resource load; reuses the same "＋ Ask" button object across refreshes, preserving its
+open-dialog invoker and expanded state without taking focus from the dialog; restores focus to the
+equivalent destination on a same-route refresh (never on navigation or under an overlay); marks
+the origin tab current; and clears the dock on setup, faculty preview and non-app screens.
+Enhanced guides retain this single dock while their inline Find, Print, Practice and contents
+controls keep their existing behavior. Capture retains its existing dialog focus trap and returns
+focus to the exact dock button that opened it.
 
 ---
 
@@ -230,71 +231,91 @@ ancestor; there is no modifier class for it.
 
 ## 3. Today
 
+Order, top to bottom (one-thread README §1; `fd_today.js` composes it, the shell hands the runtime
+faces in on state — `nowHtml`, `alsoRows`, `purposeHtml`, `offlineHtml`, `statusHtml` (the bare
+concept-count status line when nothing is due), `caseWeek`):
+
 ```
 .fd-today
-  .fd-today__h1 / .fd-today__sub
-  .fd-pilot                           labelled active-testing feedback invitation
-    .fd-pilot__eyebrow
-    .fd-pilot__copy
-      .fd-pilot__title
-    .fd-pilot__button   <button>      opens the existing private feedback form
-  .fd-consistency                     role="img" aria-label="Active N of the last 7 days" (absent until N ≥ 1)
-    .fd-consistency__dots  <span>     aria-hidden
-      .fd-consistency__day ×7
-        .fd-consistency__dot(.is-on) / .fd-consistency__label
-    .fd-consistency__text  <span>     aria-hidden
+  .fd-pilot              <section aria-labelledby>   0. the active-testing LINE (D1): one 44px row
+    .fd-pilot__title     <h2>                         "This learning site is in active testing"
+    .fd-pilot__details   <details>  .fd-pilot__more <summary>Details</summary>
+      .fd-pilot__copy    <div><p>                     the existing sentence, verbatim, folded
+    .fd-pilot__button    <button.pgfb-b>              "Share feedback" (text link)
+  .fd-today__place                                     1. place
+    .fd-today__sub       <p>                          eyebrow "Week 2 of 6 · Thursday" [· exam countdown]
+      .fd-today__changeweek <button data-fd-change-week>  "Change week" (only with a week set)
+    .fd-today__h1        <h1>                         the week title (34px; "Today" without a week)
+    .fd-today__theme     <p>                          the week theme (only with a week set)
+  .fd-thread             <nav aria-label="Rotation weeks">   2. the projected-week thread
+    .fd-thread__list     <ol>
+      .fd-thread__step(.is-done)(.is-current) <li> ×N
+        .fd-thread__node <button data-fd-tab="path" data-fd-view-week="N" [aria-current="step"] aria-label>
+          .fd-thread__mark  <span aria-hidden>        ✓ when done, else N
+          .fd-thread__label <span aria-hidden>        the week title (clipped on phones unless current)
   .fd-today__cols
     .fd-today__main
-      .fd-continue    <button>
-        .fd-continue__body
-          .fd-continue__kicker
-          .fd-continue__title          serif; a tool/reference .fd-chip may follow the title
-        .fd-continue__meta
-          .fd-continue__count / .fd-continue__left
-        .fd-continue__segs   aria-hidden   one row below; absent when the week has no items
-          .fd-continue__seg(.is-done) ×N   one per activity, filled from the left
-      .fd-setupcta    <button>         (alternative to .fd-continue when no week is set)
-        .fd-setupcta__kicker / .fd-setupcta__title
-      .fd-prepare     <section>        optional MS3 tool invitation after the lead-end marker/runtime daily rows
-        .fd-prepare__title <h2>        canonical item title
-        .fd-prepare__copy <p>          task and 5/15-minute choice
-        governanceBadge(compact)       ordinary review status; one .fd-btn--ghost[data-fd-open]
-      .fd-offline     <section>        compact Offline availability disclosure after the primary action
-        .fd-offline__open <button>      status plus aria-expanded
-        .fd-offline__details            in-flow, hidden until opened
-          .fd-offline__inventory        response-only subtree
-          .fd-offline__actions          refresh and close buttons, never inside the response subtree
-      .fd-today__exam  <div>           exam-date nudge: exam path only, until a date is stored
-        .fd-today__examtext  <p>
-        .fd-today__examcta   <button data-fd-settings>
-      .fd-listhead
-        .fd-sectionhead / .fd-listhead__theme
+      .fd-now.fd-now--{week|ahead|setup}               3. THE Now card -- the lead card is primary
+        .fd-continue <button> | .fd-setupcta <button>
+      .fd-primary.fd-now.fd-now--{resume|block|read|due}   ...or a device-store face won (state.nowHtml)
+        .fd-due | .fd-resume | .fd-lastread | .fd-block     (fd_due.js / fd_block.js, chrome stripped)
+      .fd-offline        <section>                    the offline receipt, right after the Now card
+      .fd-sectionhead.fd-also <h2>                    4. "Also today" (always rendered)
+      .fd-alsolist                                     (only when a row exists)
+        .fd-also__row[data-fd-mark][data-fd-count][style=--mark-share] ×N   the faces that did not win
+          .fd-due / .fd-study-planner|.fd-block / .fd-resume / .fd-lastread / .fd-continue.is-secondary / .fd-capture
+      .fd-purpose        <details>                    5. the preparation chooser (shell-owned open state)
+        .fd-prepare                                    the Prepare-for-tomorrow line + ghost button (sites shipping the tool)
+      .fd-today__exam    <div>                        exam-date nudge: exam path only, until a date is stored
+        .fd-today__examtext <p> / .fd-today__examcta <button data-fd-settings>
+      .fd-listhead                                     6. "This week"
+        .fd-sectionhead / .fd-listhead__count          "N of M done" at the right
       .fd-list
-        .fd-row ×N                     (see Shared)
-      .fd-pick        <button>
-        .fd-pick__dot / .fd-pick__kicker / .fd-pick__title
-      .fd-quicktools--pills            (below 1000px only)
+        .fd-row ×N                                     flat rows (see Shared)
+      .fd-unit           <section aria-labelledby>    7. "On the unit this week" (only where the case tool ships)
+        .fd-unit__line   <span aria-hidden>            the vertical thread line
+        .fd-unit__body
+          .fd-unit__kicker / .fd-unit__title <h2> / .fd-unit__task <p> / .fd-unit__handoff <p>
+          .fd-unit__open <a.fd-btn.fd-btn--ghost href="?tool=one-patient-six-weeks.html&week=N">
+      .fd-quicktools--pills                            (below 1000px only) after the week
         .fd-quicktool ×5
-    .fd-rail                           (≥1000px only)
-      .fd-sectionhead
-      .fd-railkit                      (Safety kit panel; precedes Quick tools, next to header's red button)
-        .fd-kitcard    <button> ×5     quiet rows divided by hairlines
+      .fd-today__record                                (below 1000px only)
+        .fd-progresscard <button data-fd-progress>
+    .fd-rail                                           8. (≥1000px only)
+      .fd-sectionhead "Safety kit"
+      .fd-railkit                                      one panel, 3px --fd-danger top rule
+        .fd-kitcard    <button> ×5
           .fd-kitcard__title / .fd-kitcard__sub
-      .fd-sectionhead
-      .fd-quicktool  <button> ×5
+      .fd-sectionhead "Quick tools"
+      .fd-quicktool  <button> ×5                       flat rows
         .fd-quicktool__dot / .fd-quicktool__label
+      .fd-progresscard <button data-fd-progress>       "Learning activity & review →"
 ```
+
+Removed from Today (2026-10-04): `.fd-consistency` (D2 — it now opens Learning activity & review,
+`fdProgressMarkup`), `.fd-pick` (the daily pick; the Library reaches every library-only read), the
+`.fd-quicktools--pills` `order:-1` hoist, the `<!--fd-lead-end-->` splice marker, and the
+`.fd-pilot__eyebrow` badge.
 
 | Class | Notes |
 |---|---|
+| `.fd-now` | THE shell of the Now card, one per Today: `padding:22px 24px 24px`, radius 12, `--fd-surface`, hairline, `border-top:3px solid --fd-teal`, `--fd-shadow-card`. `.fd-now--{kind}` names `fdTodayPrimary`'s winner. The face inside gives up its own border/background/shadow/padding under this ancestor and maps onto four parts: kicker (13/700 teal-deep: `.fd-continue__kicker`, `.fd-setupcta__kicker`, `.fd-due__kicker`, `.fd-lastread__kicker`, the `.fd-resume` `.fd-sectionhead`, `.fd-block__kicker`), title (26px serif: `.fd-continue__title`, `.fd-setupcta__title`, `.fd-due__label`, `.fd-lastread__title`, the resume link's first span), ONE filled teal button (`.fd-continue__cta`, `.fd-setupcta__cta`, `.fd-due__action`, `.fd-lastread__action`, the resume link's last span, `.fd-block .fd-btn--primary`) and a 13px dim meta line. When the whole face is already the control (`.fd-continue`, `.fd-setupcta`, `.fd-due`, `.fd-lastread`, `.fd-resume__link`) the button is a `<span>`: a button inside a button is invalid markup. 21px title and a full-width button ≤640px. |
+| `.fd-primary` | Still marks the one device-store face that won; since 2026-10-04 it always travels with `.fd-now` (`class="fd-primary fd-now fd-now--due"`), and carries no chrome of its own. Absent when the lead card (`.fd-continue` / `.fd-setupcta`) is the primary. |
+| `.fd-thread`, `.fd-thread__list`, `.fd-thread__step`, `.fd-thread__node`, `.fd-thread__mark`, `.fd-thread__label` | The projected-week thread (`fdThread`): one equal grid column per actual projected week; a 28px mark per week joined by a 2px connector at `top:13px` from centre to centre (teal after a done week, `--fd-line-strong` otherwise). Done = teal fill + ✓, computed from real week-scoped completion (`fdProgressForWeek`), never from the week being past; current = 2px teal ring, 4px `--fd-teal-wash` halo, teal-deep number, `aria-current="step"`; future = control-line ring, dim number. Each node previews that week on Path through `data-fd-tab="path" data-fd-view-week="N"` (the completed Continue card's existing pair) and never sets the week. Labels 12/1.3, capped at the column width or 24ch (14ch on phones); only the current label shows ≤640px. Renders only on a valid projected path. |
+| `.fd-today__place`, `.fd-today__sub`, `.fd-today__changeweek`, `.fd-today__h1`, `.fd-today__theme` | The place block. Eyebrow 13/600 mid with the "Change week" text link (teal-deep 700, reopens week setup via the retired pill's `data-fd-change-week` action, so Back and focus restore are unchanged); H1 Source Serif 4 700 at `--fd-font-4xl` (34) / 1.15 / −.01em, `--fd-font-3xl` ≤640px; theme line 15px mid. |
+| `.fd-pilot`, `.fd-pilot__title`, `.fd-pilot__details`, `.fd-pilot__more`, `.fd-pilot__copy`, `.fd-pilot__button` | The active-testing line (D1): one row, min-height 44, `--fd-callout` ground, hairline, radius 8, 13px. Title 700 · "Details" disclosure (teal-deep) revealing `.fd-pilot__copy` as a full-width row · "Share feedback" as a text link (`.pgfb-b`, `data-fb-context="Today landing page"`). The sentence is folded, never hidden by a breakpoint. |
+| `.fd-also`, `.fd-alsolist`, `.fd-also__row` | "Also today": `.fd-also` is the `<h2>` modifier (margin-top 32); `.fd-alsolist` holds the rows; each `.fd-also__row` is a flat row (`padding:13px 2px`, hairline above) whose `::before` draws the 22px status mark from `data-fd-mark` — `due` (2px olive ring with `data-fd-count`), `progress` (2px teal ring, conic fill from the row's inline `--mark-share`), `ring` (not started), `plus` ("＋" for saved questions). Inside, the faces (`.fd-due`, `.fd-resume`, `.fd-lastread`, `.fd-capture`, `.fd-block`/`.fd-study-planner`, `.fd-continue.is-secondary`) lose their card chrome: title 15/600, meta 13 dim (`order:9`), trailing link 14/700 teal-deep with a 44px target. Row order is the shell's (block · due · resume · read), then the week's own Continue (partly filled mark), then saved questions last. |
+| `.fd-listhead__count` | "N of M done" at the right of the week heading (replaces `.fd-listhead__theme`; the theme moved under the H1). |
+| `.fd-unit`, `.fd-unit__line`, `.fd-unit__body`, `.fd-unit__kicker`, `.fd-unit__title`, `.fd-unit__task`, `.fd-unit__handoff`, `.fd-unit__open` | "On the unit this week" (`fdUnitWeek` over `fdWeekCaseStep`): a `28px | 1fr` grid with a vertical teal thread line, kicker "On the unit this week · Case Journeys, week N", the case week's title (serif 21), the source tool's compact governance badge, `learnerTask` (15/1.6 mid), the "Carry it to rounds:" callout (3px teal left rule on `--fd-callout`) and a ghost `<a>` "Open case week N" to `?tool=one-patient-six-weeks.html&week=N` — a real link, since a ref-only action drops the query. Every string is verbatim from `longitudinal_case.json`, which `build_deploy.py` inlines read-only as `FD_CASE_ARC` (verified needle, same mechanism as `RETIRED_QB_IDS`) so the section exists at first render and Today's DOM never churns after boot; renders only where the tool ships and the week exists. |
+| `.fd-today__record` | Wrapper for the phone's copy of the `.fd-progresscard` link, under the pills; hidden ≥1000px where the rail carries it. |
+| `.fd-continue__cta`, `.fd-setupcta__cta` | The Now card's filled button on the two lead faces, as `aria-hidden` spans (the card is the control; the kicker and title are its name). "Continue →" / "Preview week →" / "Review week →" / "Set rotation week". A demoted Continue (`.is-secondary`) has none and arrows its title instead. |
 | `.fd-continue__kicker.is-complete` | Switches teal → terracotta when the week is finished. |
 | `.fd-continue__segs` | The week's progress as one `.fd-continue__seg` per activity, `.is-done` filled teal over the `--fd-ring-track` ground from the left (2026-10-01). Replaces the retired `.fd-ring` percentage ring. Decorative (`aria-hidden`): `.fd-continue__count` is the text. On a secondary Continue it still renders; the title drops to 17px. |
 | `.fd-railkit` | The rail's Safety kit as ONE panel (2026-10-01): warm surface, hairline border, a 4px `--fd-danger` rule on the left. Its `.fd-kitcard` rows have no border or ground of their own -- hairline dividers between them, `--fd-danger-wash` on hover -- so `.fd-kitcard__sub` ink is gated against `--fd-surface-warm`. The sheet's `.fd-kitrow` is unchanged. |
 | `.fd-quicktool` (label) | `fdQuickToolLabel` shows the title before its ` — ` subtitle ("The Interview Room"), and the full title rides on the button as `title` (2026-10-01). |
-| `.fd-list` | Supplies the 8px gap between `.fd-row`s — rows have no sibling margin. |
-| `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Replaces the subhead's `· N days in a row` clause, which only Daily Review could write. Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Carries a `-12px` top margin so the subhead's 22px gap closes only when the strip is present. |
-| `.fd-prepare`, `.fd-prepare__title`, `.fd-prepare__copy` | Optional preparation invitation, emitted only for the resolved known tool item. Uses warm surface, neutral hairline and ordinary teal action; it stays below primary and runtime daily work, with one existing `data-fd-open` route. It introduces no primary rule, durable state or nested scrolling. |
-| `.fd-pilot` | Shared active-testing invitation (2026-09-21). Its `.fd-pilot__button` uses the existing `.pgfb-b` launcher and adds `data-fb-context="Today landing page"`; no second form or submission channel is introduced. |
+| `.fd-list` | Flat rows separated by `.fd-row`'s own hairline (gap 0 since 2026-10-04). |
+| `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Since 2026-10-04 (owner decision D2) it renders at the top of **Learning activity & review** (`fdProgressMarkup`), not on Today. |
+| `.fd-prepare`, `.fd-prepare__title`, `.fd-prepare__copy` | Optional preparation invitation, emitted only for the resolved known tool item — INSIDE the preparation chooser (`fdTodayPurpose`) since 2026-10-04: a hairline-topped line (title in bold, the 5/15-minute sentence, the compact governance badge) plus one `.fd-btn--ghost[data-fd-open]`. No primary rule, durable state or nested scrolling. |
 | `.fd-offline` | One in-flow cache receipt after Today's actual primary card, or immediately after the APP's marked primary resource inside its starting-route resources or selected task's Prepare links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
 | `.fd-today__exam` | Today's exam-date nudge, after the primary action (and the offline availability receipt when present), before the week list. Rendered only on the path that ends in an exam and only until a parseable date is stored (`fdExamDatePrompt`, `fd_state.js`). The date has exactly one home, the settings panel's Pacing field (`.fd-set__date`, `fd_sheet.js`) — this nudge carries no field of its own. `.fd-today__examcta` reopens Settings via the SAME `data-fd-settings` action the gear exposes: a second *trigger* for one action, not a second action. It does not disappear on its own — closing the field's `change` handler only sets `baseStale` (`fd_wire.js`); Today's base render, this nudge included, is rebuilt the next time `absorbStaleBase` finds that flag set, which is exactly when the panel closes (`data-fd-close-sheet` always touches `sheet`, a base-triggering settlement). That render destroys the CTA along with the rest of the stale Today markup, so `restoreInvoker` finds it disconnected and falls back to `equivalentControl` — any live control sharing the same action attribute and value, i.e. the gear — needing no bespoke focus-restore code of its own. (2026-09-26 — previously this duplicated the panel's own `<input type=date>` inline and deliberately avoided `data-fd-settings` for this same reason, before this settle-on-close path was confirmed to cover it.) |
 | `.fd-offline__status`, `.fd-offline__detail`, `.fd-offline__scope`, `.fd-offline__checked` | Detailed state, reason, current route, and current-session verification timestamp. `Checked just now` is emitted only for a validated active-worker response. |
@@ -312,14 +333,11 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-resume` | Session-resume section; `.fd-resume__link` is the query-preserving link. |
 | `.fd-resume__block` | Progress line inside `.fd-resume__link` when the capsule came from a timed block ("Block · 1 of 2 done"); the link then carries `resume=1&block=1&n[&cat]` (Phase 2, 2026-09-16). |
 | `.fd-block` | Timed block card (2026-09-02, not in the prototype), spliced in with the due row and resume card by `fdTodayLive`. Planner face: `.fd-block__head` (`__kicker`, `__chips` › `__chip(.is-sel)`, `__hint`), `.fd-block__steps` › `__step` (`__dot.is-review/.is-page/.is-qb`, `__title`, `__min`), `.fd-block__actions` (a `.fd-btn--primary` carrying `data-block-start`), or `.fd-block__empty`. Live face adds `.is-live` on the card, `__count`, `__check` on each `__step(.is-done)`, and `__doneline`. Click attributes are `data-block-minutes` / `-start` / `-continue` / `-end`, owned by the shell's auxiliary click handler — deliberately outside the `data-fd-*` controller namespace. Rendered by `fdBlockCard` (`frontdoor/fd_block.js`). |
-| `.fd-primary` | Wrapper the shell puts around the ONE device-store row that won Today's primary slot (`fdTodayPrimary`, `frontdoor/fd_today.js`; composed by `fdTodayLive`). Gives the card inside a terracotta top bar and the card shadow. Absent when the lead card (`.fd-continue` / `.fd-setupcta`) is itself the primary — that card then carries no `.is-secondary`. |
 | ~~`.fd-primary__why`~~ | Retired 2026-10-01 (owner-directed design pass) with `fdTodayWhy`: the page's order already says what the line explained. |
-| `.fd-also` | Modifier on the `.fd-sectionhead` `<h2>` that reads "Also today"; everything that did not win renders below it in a fixed order (block › due › resume › last-read › capture), then the week list. |
 | `.fd-lastread` | "You were reading" row (`fdLastReadRow`, `frontdoor/fd_due.js`): the last opened item when it is an undone read from this week and not already the Continue target. Shares the runtime-row rule with `.fd-due`. Contains `.fd-lastread__kicker` (primary only), `.fd-lastread__title`, `.fd-lastread__action`. |
 | `.fd-due__kicker` | "Clear what's due" line, present only when the due row is the primary (`.fd-due.is-primary`). |
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
-| `.fd-capture-launch` | Full-width capture-dialog launcher. |
-| `.fd-capture-launch--global` *(no rule)* | Stable learner-route launcher hook; `#fdCaptureMount` keeps it fixed above 640px and is hidden at phone widths. The dock's Capture button opens the same dialog. |
+| ~~`.fd-capture-launch`, `.fd-capture-launch--global`~~ | Retired 2026-10-04. The floating launcher is replaced by the header's standing `.fd-askbtn` ("＋ Ask a question") and the dock's "＋ Ask", both `data-capture-open`. `#fdCaptureMount` stays in the DOM, empty, hidden by `:empty`. |
 | `.fd-capture` | Compact Today/On shift follow-up for the oldest open unrouted question only. Contains `.fd-capture__head` with a section heading, `.fd-capture__question` with escaped learner text, `.fd-capture__new` as the **View all N** dialog opener, and `.fd-capture__purpose` with the device-local privacy boundary. If no unrouted question remains, this card is omitted even while routed items remain in Capture. The full inbox, route buttons, Copy questions, Delete, Erase all, and explicit email selection live in the portalled `.cap-sheet` styled by the shell's inline CSS (`.cap-list__row`, `.cap-route`, `.cap-next__done`). The global and dock Capture launchers still open it. |
 | `.fd-progresscard` | Internal-Progress entry; contains `.fd-progresscard__title` and `.fd-progresscard__meta`. |
 | `.fd-progress-reader` | Reader modifier for the internal Progress surface. |
@@ -352,15 +370,14 @@ inline -- it defaults to `0%`, so a ring rendered without it silently shows an e
 a rounded pill (`.fd-quicktools--pills .fd-quicktool`); inside `.fd-rail` it stays a full-width row.
 Emit the identical inner markup for both; only the container class differs.
 
-⚠ **At 640px and narrower `.fd-pilot` is ONE row** (2026-09-26): `.fd-pilot__title` beside a 44px
-`.fd-pilot__button`, with `.fd-pilot__eyebrow` hidden because it repeats the title's words. Stacked, the
-badge, title and full-width button took 138px above the primary card. At 390px and narrower the
-explanatory sentence stays hidden as before; the feedback form repeats it.
+⚠ **`.fd-pilot` is ONE row at every width** (D1, 2026-10-04): title · Details · Share feedback, the
+sentence folded behind the disclosure. Nothing about it is breakpoint-hidden any more; the 390px
+`display:none` rule the old banner needed to stay above the fold is gone with it.
 
-⚠ **At 640px and narrower the pill row is ONE sideways-scrolling row** (2026-09-26), still placed
-above the primary by `order:-1`. Do not let it wrap again: wrapped, five long tool names took
-164–207px and pushed the student Today's primary card under the fixed dock. The row's padding keeps a
-focused pill's outline inside the scroller, which clips on both axes. `tests/fd-today.test.mjs` pins
+⚠ **At 640px and narrower the pill row is ONE sideways-scrolling row** (2026-09-26), placed AFTER the
+week since 2026-10-04 (the `order:-1` hoist is gone: the Now card is first after the heading at every
+width). Do not let it wrap again: wrapped, five long tool names took 164–207px. The row's padding keeps
+a focused pill's outline inside the scroller, which clips on both axes. `tests/fd-today.test.mjs` pins
 the rule and `front-door.spec.js` "One Thing First E/E2" measures the primary against the dock top.
 
 ⚠ `.fd-today__cols` is the flex wrapper that puts `.fd-today__main` and `.fd-rail` side by side.
@@ -579,77 +596,110 @@ A compact row used elsewhere is borderless.
 
 ## 5. Library
 
-```
-.fd-library
-  .fd-library__head
-    .fd-library__h1 / .fd-library__count
-  .fd-library__grid
-    .fd-col                      (break-inside:avoid; a whole section per column)
-      .fd-col__name
-      .fd-collink  <button> ×N
-        .fd-collink__dot
-        .fd-collink__label
-        .fd-collink__hint          (tools only — the row's one-line "use this when…")
-```
-
-The Essentials view keeps the same `.fd-library` root and replaces the full Library grid with
-this subtree:
+One-thread redesign, Phase 2 (2026-10-04; spec `docs/superpowers/specs/one-thread-handoff/README.md`
+section 2). The view switch uses two shrinkable grid tracks, bounded by the container; labels and counts may wrap under wider fallback fonts while retaining touch targets. Practice recommendations retain each source tool's review badge.
+Essentials and Everything are two views of ONE Library and render through one shell
+(fd_library.js `fdLibraryShell`). The Essentials root carries the `.fd-kit` modifier; Everything is
+the bare `.fd-library`.
 
 ```
-.fd-library.fd-kit
+.fd-library[.fd-kit]
   .fd-library__head
-  nav.fd-kit__index                      (scrollable section index)
-    .fd-kit__index-track
-      button.fd-kit__index-item[data-fd-kit-section] ×N
-        .fd-kit__index-count
-  .fd-kit__review
-    details / summary                    (native review explanation)
-  .fd-kit__layout
+    .fd-library__h1                      ("Library", 34px serif)
+    .fd-library__lede                    (one 15px sentence)
+  .fd-library__controls
+    nav.fd-library__views                (segmented control, aria-label="Library views")
+      button.fd-library__view[data-fd-library-view][aria-pressed] ×2   + .is-active
+        .fd-library__view-count          (" · N", live totals, never filtered)
+    .fd-library__filter [role=search]
+      <svg>
+      input.fd-library__filter-input[data-fd-library-filter]
+      button.fd-library__filter-clear[data-fd-library-filter-clear]   (only with a query)
+      .fd-kbd.fd-library__filter-key     ("/", desktop only, only without a query)
+  p.fd-library__status [role=status]     (visible 13px dim line)
+  .fd-library__body                      + .has-preview (Essentials with a previewed item)
+    nav.fd-kit__index                    (aria-label="Essentials sections" | "Catalogue sections")
+      .fd-kit__index-track
+        button.fd-kit__index-item[data-fd-kit-section][aria-pressed] ×N   + .is-active
+          span / .fd-kit__index-count
     .fd-kit__readings
-      details.fd-kit__group ×N
+      .fd-kit__review                    (only with pending readings; existing string verbatim)
+        span / details > summary "What that means" + p
+      details.fd-kit__group[open] ×N
         summary
-        .fd-kit__reading <button> ×N
-          .fd-kit__title / .fd-kit__pending / .fd-kit__summary / .fd-kit__minutes
-    aside.fd-kit__tools                  (tool preview rail)
-      details.fd-kit__group.fd-kit__tool-group
-        summary
-        .fd-kit__tool-switcher
-          .fd-kit__tool-tabs [role=tablist]
-            .fd-kit__tool-tab <button role=tab> ×N
-          .fd-kit__tool-preview [role=tabpanel]
-            h3 / p / governanceBadge(compact) / .fd-btn[data-fd-open]
-      .fd-kit__teaching                  (external teaching companion)
-        h3
-        .fd-teachinglink <a>
-          .fd-teachinglink__title / .fd-teachinglink__description
-        .fd-teachinglink__note
+          .fd-kit__group-name / .fd-kit__group-count ("· N") / .fd-kit__chevron
+        .fd-kit__item ×N                 + .is-selected (the previewed row, Essentials)
+          button.fd-kit__reading[data-fd-open]      (Essentials)  |  button.fd-collink[data-fd-open]  (Everything)
+            .fd-kit__titlerow
+              .fd-kit__safety [role=img aria-label="Safety"]   (kit pages and acute-safety tools)
+              .fd-kit__title (serif 19)                        |  .fd-collink__label (Inter 600 16)
+              .fd-chip.is-tool ("tool" | "reference")          (tools only)
+              governanceBadge(item.governance)                 (full badge, verbatim, when pending)
+            .fd-kit__summary             (reading summary verbatim; tool hint verbatim, summary fallback; Everything: hint only)
+            .fd-kit__meta                ("Reading|Tool|Reference · N min · Safety kit · Week N · Case week N")
+          button.fd-kit__peek[data-fd-kit-tool][aria-pressed]  (Essentials only; desktop only)
+      .fd-library__footer                (with a query and matches)
+        button.fd-library__searchlink[data-fd-search][data-fd-search-query]
+      .fd-library__empty                 (with a query and no matches; replaces the groups)
+        .fd-library__empty-h / .fd-library__empty-p
+        .fd-library__empty-actions
+          .fd-btn.fd-btn--primary[data-fd-search][data-fd-search-query]  "Search the library"
+          .fd-btn.fd-btn--ghost[data-fd-library-filter-clear]            "Clear filter"
+        .fd-library__empty-note
+      .fd-kit__teaching                  (Essentials, All/Tools, no query — external teaching companion)
+        h3 / .fd-teachinglink <a> (.fd-teachinglink__title / .fd-teachinglink__description) / .fd-teachinglink__note
+    aside.fd-kit__tool-preview#fd-kit-tool-preview [aria-label=Preview]   (Essentials, desktop only)
+      .fd-kit__preview-kicker / .fd-kit__preview-title / .fd-kit__preview-summary
+      .fd-kit__preview-h "Where it is used" + ul.fd-kit__preview-list
+      .fd-kit__preview-h "Practice with" + p.fd-kit__preview-practice ×N
+      .fd-kit__preview-status [.fd-kit__preview-attested]   (badge verbatim | "✓ faculty-attested")
+      .fd-btn.fd-btn--primary.fd-kit__preview-open[data-fd-open]   ("Open reading" | "Open tool")
+      .fd-kit__preview-note
 ```
 
-The selected `.fd-kit__tool-preview` includes the shared compact governance badge after its title/hint and before its single launch button. Its status follows the resolved item, including pending preparation content; tool selection remains transient.
+Layout. Below 1000px `.fd-library__body` is one column: the index is a horizontally scrolling chip
+row (`.fd-kit__index-track{display:flex;overflow-x:auto}`, 44px pill chips), the preview pane and
+every `.fd-kit__peek` are `display:none`. At 1000px and wider the body is `200px | minmax(0,1fr)`
+(index sidebar of 9×12 rows, active row on teal-wash), or `200px | 1fr | 320px` with
+`.has-preview`, which also shows the pane and the per-row Preview control. `.fd-kit__item.is-selected`
+is styled only inside `.has-preview`. The row itself (`data-fd-open`) opens the page at every width;
+the Preview control (`data-fd-kit-tool`) only changes the pane. No row animation: the list repaints on
+every keystroke of the filter.
 
-At 1000px and wider, `.fd-kit__layout` is a 3:1 readings/tool-rail grid. Below 1000px the
-readings and tools stack in document order: **readings first, at every width** (2026-09-26). The tool
-rail used to move above the readings at 640px and narrower; once the aside carried the shared preview
-pane and the teaching companion it stood about 496px tall, and at 390x844 the first reading began below
-the dock. Do not reintroduce `order:-1` on `.fd-kit__tools`; `front-door.spec.js` asserts the first
-reading is whole above the dock at 390px. At 640px and narrower `.fd-kit__tool-tabs` is still a
-horizontally scrolling row above its shared preview pane. Arrow
-keys move the selected tool tab; only the preview pane's button opens a tool. The section picker and
-both group types remain native `select`/`details` controls at every width.
+State. Section (`kitSection`), filter (`libraryFilter`) and preview (`kitToolPreview`) are controller
+memory only (fd_wire.js): never persisted, never in the URL. Section and filter ride on the Library's
+history entry via `history.replaceState` so Back/Forward restore them (owner decision D3); a reload
+resets them. The preview is not in history. `/` focuses the filter in the Library; ⌘K still opens Search.
+
+Strings. Status: "Showing all N Essentials items." / "Showing all N pages." / "Showing N readings in
+X." / "Showing N pages in X." / "Showing N readings for this week." / "Showing N tools."; with a query
+"N of M items|pages match “q”." or "No titles match “q”.". The review banner, summaries, hints and
+badges are byte-identical to their sources; `<mark>` wraps the matched run without changing it.
 
 | Class | Notes |
 |---|---|
-| `.fd-library__grid` | Multi-column flow, `columns:280px` (2026-09-19; was an `auto-fill, minmax(280px,1fr)` grid whose rows were as tall as their tallest cell). Sections balance by height; `.fd-col{break-inside:avoid}` keeps each whole. |
-| `.fd-library__shortcut` | Wraps "· press / to filter" inside `.fd-library__count`; hidden at ≤640px as a whole fragment. |
-| `.fd-col__name` | Column heading: uppercase terracotta with a bottom rule. |
-| `.fd-collink__dot.is-tool` | Teal dot; default is olive (a read). |
-| `.fd-collink__hint` | One line under a tool's label, from `curriculum.libraryHints` (2026-09-16). The row wraps (`flex-wrap`) and the hint takes the full width, indented past the dot. Omitted from the markup, not emptied, when an item has none — every read row renders exactly as before. |
+| `.fd-library__views` | Re-valued (was a row of ghost buttons): `inline-grid 2 cols; padding:3px; radius 10` on `--fd-chip`; the active option lifts onto `--fd-surface` with a 1px/3px shadow, teal-deep 700. |
+| `.fd-library__filter` | The bordered box is the control (`flex:1 1 320px; min-height:44px; 1.5px --fd-line-strong; radius 10`); the input inside is borderless and `:focus-within` paints the ring on the box. |
+| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. |
+| `.fd-kit__index-item` | One markup, two shapes: pill chip (phone) or sidebar row (desktop). `.is-active` is teal-wash + teal-deep 700 in both. Counts show matches while a query is live. |
+| `.fd-kit__review` | Existing string verbatim, now on `--fd-olive-wash` with `border-left:3px solid --fd-olive`; the summary is olive-deep 700 underlined. |
+| `.fd-kit__group > summary` | "Name · count", 13px/700 `--fd-text-mid`, `border-bottom:1px solid --fd-line-strong`; every group starts open. |
+| `.fd-kit__item` | Row wrapper: `grid minmax(0,1fr) auto; border-bottom:1px solid --fd-line`. `.is-selected` (desktop Essentials): `--fd-selected` background, `inset 3px 0 0 --fd-teal`, bleeds 16px into the gutters. |
+| `.fd-kit__reading` / `.fd-collink` | The row button: `padding:16px 2px` (Everything 14px), name first. Serif 600 19px title in Essentials, Inter 600 16px in Everything. Hover colours the title teal-deep. |
+| `.fd-kit__safety` | The 8px `--fd-danger` dot — the only red in the list. |
+| `.fd-kit__meta` | 13px `--fd-text-dim`. Replaces `.fd-kit__minutes`. |
+| `mark` | `--fd-teal-wash`, `color:inherit`, radius 3 — inside titles, labels and tool hints in both views; reading summaries stay verbatim. |
+| `.fd-kit__peek` | Desktop Essentials only (`display:none` otherwise): 44px pill, `aria-pressed` on the previewed row. |
+| `.fd-kit__tool-preview` | Re-valued as the one card on the screen: padding 20, radius 12, `border-top:3px solid --fd-teal`, `--fd-shadow-card`. Shown only inside `.has-preview` at ≥1000px. |
+| `.fd-library__empty` | Max-width 560, `border-top:1px solid --fd-line-strong`; "Search the library" is the screen's one filled teal button in this state (the preview pane is withheld). |
 | `.fd-kit__teaching` | Keeps the Family Therapy Seminar Companion with teaching tools rather than patient-facing care links. Its fixed external link opens in a new tab, names that behavior with `.fd-visually-hidden` text, and preserves its local-browser/no-identifiers boundary in the note. |
 
-`.fd-col` gained its first rule on 2026-09-19 (`break-inside:avoid` + the section gap): it is the
-unit the multi-column flow keeps whole, and the wrapper that groups a heading with its links.
-
-⚠ `.fd-collink` rows have **no sibling margin** — they sit flush by design (5px internal padding).
+Retired on 2026-10-04 (Phase 2): `.fd-library__grid`, `.fd-col`, `.fd-col__name`, `.fd-collink__dot`,
+`.fd-collink__hint`, `.fd-library__count`, `.fd-library__shortcut`, `.fd-kit__layout`,
+`.fd-kit__layout--tools`, `.fd-kit__tools`, `.fd-kit__tool-group`, `.fd-kit__tool-switcher`,
+`.fd-kit__tool-tabs`, `.fd-kit__tool-tab`, `.fd-kit__minutes`. The five-column multicol flow and the
+tool tablist (with its arrow-key roving in fd_wire.js) left with them; `role="tablist"` is gone from
+the Library.
 
 ---
 
@@ -702,6 +752,7 @@ unit the multi-column flow keeps whole, and the wrapper that groups a heading wi
 |---|---|
 | `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
+| `html:has(.fd-reader--tool)` | `scroll-padding-top` = the sticky header's height (68px ≤640px, 112px above) while a tool is open. The frame is content-height, so the page is its only scroll surface and the tool cannot see the header: without this, focus or `scrollIntoView` inside the frame parks a control under the bar, where a tap lands on ✚ Safety (2026-10-04). In-page readers keep their own `scroll-margin-top`. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
 | `.fd-reading-place` | Under `.fd-article` after Source, before actions. Ordinary readings only; initially empty. Runtime writes the exact device-only success copy after a successful store write, or the failure copy when storage is disallowed or fails. No live region or status badge. Tools, Progress, not-found, setup, faculty preview, and enhanced guides do not retain it. |
@@ -863,28 +914,41 @@ patient information, or an attestation, and it never turns a website action into
 
 ```
 .fd-search                          (fixed, full-screen scrim + flex host; click = close)
-  .fd-searchpanel                   (stopPropagation here)
-    .fd-searchpanel__head
+  .fd-searchpanel                   (stopPropagation here; radius 16, 3px teal top)
+    .fd-searchpanel__head           (min-height 56)
       <svg>
       .fd-searchpanel__input   <input>
-      .fd-searchpanel__esc     <button>esc</button>
+      .fd-searchpanel__esc     <button>Close</button>   (44px; aria-label="Close search")
     .fd-searchpanel__browse
       .fd-btn[data-fd-tab="library"] <button>Browse the Library</button> (standard mode only)
     .fd-searchpanel__body
-      .fd-result <button|a> ×N
-        .fd-result__dot         + .is-tool | .is-safety | .is-care
-        .fd-result__title
-        .fd-result__meta
+      .fd-searchpanel__group ×N       + .is-safety | .is-care   ("Safety protocols" / "Pages" / "Tools" / "Patient care resources")
+        .fd-result <button|a> ×N      + .is-first (a leading protocol, on --fd-danger-wash) | .is-care
+          .fd-result__dot         + .is-tool | .is-safety | .is-care   (default: outlined = a page)
+          .fd-result__title
+          governanceBadge
+          .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
-    .fd-searchpanel__foot
+    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.")
 ```
+
+Groups (one-thread redesign, Phase 2, spec section 6) appear in the order their best-ranked member
+holds in `fdSearchResults`, so the first rendered row is always `results[0]` — the row Enter opens. A
+crisis query leads with its trigger protocol by contract, so Safety protocols lead exactly as the
+concept draws; an alias query (#429, "patient refuses medication") keeps its tool ahead of a protocol
+that merely shares a word. Meta lines: protocols carry the kit's own cue line (`safetyKit[].sub`);
+pages "Reading · <libraryColumns section> · Weeks…"; tools their `libraryHints` hint; a rights
+reference its existing "reference · not reproduced" line. On phones the panel sits `12px 10px 0` from the top edge.
 
 | Class | Notes |
 |---|---|
-| `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). |
+| `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). Phone: `padding:12px 10px 20px`. |
+| `.fd-searchpanel__esc` | Re-valued: a 44×44 text button reading "Close" (teal-deep 700), no border. The class name is unchanged so the mobile 44px rule keeps matching. |
 | `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above results. APP already has The Essentials in dock slot 2, so this row is absent. |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
-| `.fd-result__dot` | Default olive (read); `.is-tool` teal; `.is-safety` danger; `.is-care` olive-deep. |
+| `.fd-searchpanel__group` | 12px/700 group label, `--fd-text-mid`; `.is-safety` in `--fd-danger-dark`; `.is-care` olive-deep. |
+| `.fd-result` | A `8px | 1fr` grid at every width (title, badge and meta stack in column 2). `.is-first`: `--fd-danger-wash` background, 700 title. |
+| `.fd-result__dot` | Default: outlined 1.5px `--fd-text-dim` ring (a page); `.is-tool` teal fill; `.is-safety` danger fill; `.is-care` olive-deep fill. |
 | `.fd-result.is-care` | Static external ReConnect result rendered as an anchor. `data-care-resource` pairs the visible first result with the controller's Enter shortcut, so keyboard activation clicks that exact fixed anchor. Curated search terms are matched locally; the learner's query is never added to the URL or sent to ReConnect. Explicit safety results still sort first. |
 
 ⚠ The search overlay uses **one** element for scrim + layout. The sheet uses **two**
@@ -986,16 +1050,19 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 
 | State | Applied to | Meaning |
 |---|---|---|
-| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice` | current tab / chosen segment / chosen chip / APP route, task, or private reflection |
+| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice`, `.fd-library__view`, `.fd-kit__index-item` | current tab / chosen segment / chosen chip / APP route, task, or private reflection / selected Library view / selected Library section |
 | `.is-sel` | `.fd-weektile`, `.fd-timeline__row` | chosen / viewed |
 | `.is-current` | `.fd-dot`, `.fd-railnav__row` | "you are here" |
 | `.is-done` | `.fd-check`, `.fd-dot`, `.fd-row__title`, `.fd-railnav__dot`, `.fd-railnav__title` | completed |
 | `.is-just-done` | `.fd-check`, `.fd-row__title` | **with `.is-done`** — fires the one-shot animation |
 | `.is-complete` | `.fd-continue__kicker` | whole week finished |
 | `.is-compact` | `.fd-row` | Path detail density |
-| `.is-tool` | `.fd-chip`, `.fd-collink__dot`, `.fd-result__dot` | item is a tool, not a read |
-| `.is-safety` | `.fd-result__dot` | search hit is a safety protocol |
-| `.is-care` | `.fd-result`, `.fd-result__dot` | search hit is an external ReConnect patient-care resource |
+| `.is-tool` | `.fd-chip`, `.fd-result__dot` | item is a tool, not a read |
+| `.is-selected` | `.fd-kit__item` | the Essentials row the desktop preview pane shows (transient) |
+| `.is-first` | `.fd-result` | the leading protocol row of a search that opens with Safety protocols (danger wash) |
+| `.has-preview` | `.fd-library__body` | Essentials body with a previewed item: adds the 320px preview column and the per-row Preview control at ≥1000px |
+| `.is-safety` | `.fd-result__dot`, `.fd-searchpanel__group` | search hit is a safety protocol / the Safety protocols group label |
+| `.is-care` | `.fd-result`, `.fd-result__dot`, `.fd-searchpanel__group` | search hit is an external ReConnect patient-care resource / its group label |
 | `.is-next` | `.fd-prevnext__btn` | right-aligned variant |
 | `.is-nav-next` / `.is-nav-prev` | `.fd-reader` | slide direction |
 | `.is-tool-expanded` | `.fd-main`, `.fd-reader--tool` | saved desktop tool workspace width |
@@ -1021,24 +1088,33 @@ A lighter rule pointed at it would render semibold. `tests/fd-display-font.test.
 ## Colour
 
 Markup must not carry colour. Every colour is a `var(--fd-*)` token declared in
-`13_Faculty_Resources/_automation/site_build/clinical-warm.css` (33 tokens, each with a light and a
+`13_Faculty_Resources/_automation/site_build/clinical-warm.css` (34 tokens, each with a light and a
 dark value). `tests/fd-tokens.test.mjs` fails the build on any raw hex in `frontdoor.css`, and
 `tests/fd-contrast.test.mjs` enforces WCAG AA across both palettes.
 
 **Red means safety (2026-10-01).** `frontdoor.css` paints no `--fd-terracotta*` at all, and
 `--fd-danger*` only on safety and crisis surfaces (Safety button, Safety kit, crisis blocks and their
 failure notices), form errors and destructive controls. Teal is "act / you are here" (logo, primary
-buttons, the dock's forward action, selected and current markers); olive is review/recall and small
+buttons, the dock's current destination, selected and current markers) and, since D6 (2026-10-04),
+also DONE: `--fd-success` carries the same value as `--fd-teal` in both themes, so the palette has
+three status roles — teal act/progress/done, olive review, red safety; olive is review/recall and small
 labels; status notices are neutral (`.fd-offline.is-not-ready` reads `--fd-callout` with a
 `--fd-text-dim` rule). `tests/fd-tokens.test.mjs` fails on a new terracotta or an unlisted red.
 
-The one custom property the markup owns is `--fd-ring-pct` on Path's `.fd-timeline__number`.
+The two custom properties the markup owns are `--fd-ring-pct` on Path's `.fd-timeline__number` and
+`--mark-share` on Today's `.fd-also__row[data-fd-mark="progress"]` (the conic fill of an in-progress
+mark; deliberately outside the `--fd-*` namespace `tests/fd-tokens.test.mjs` pins to clinical-warm.css).
+
+**Focus (2026-10-04):** one ring everywhere — `outline:3px solid var(--fd-focus); outline-offset:2px`
+on `.fd-shell :focus-visible` and on the portalled overlays. **Motion:** 120ms colour/border
+transitions on controls, 180ms-class disclosures, no entrance animation on Today; under
+`prefers-reduced-motion: reduce` nothing animates or transitions.
 
 Offline availability: `.fd-offline__open` wraps its label and cache status for small screens and large text; its status describes the current route cache, not clinical or shift readiness. The family-conversation result uses the existing `.fd-btn.fd-btn--ghost` internal Playbook control, only when the active audience index contains `family_playbook.md`.
 
 ## Optional session purpose chooser (2026-10-01)
 
-`fd-purpose`, `fd-purpose__summary`, `fd-purpose__choices`, `fd-purpose__note`, `fd-purpose__reason` style the optional disclosure before Today’s timed study block, including when an unfinished block is the primary action. It is a quiet hairline-ruled disclosure, not a card, and its summary draws the shared rotating chevron in place of the browser's ▶ marker. `.fd-today__exam` is likewise a quiet line with a link-styled `.fd-today__examcta`, not a bordered card (2026-10-01). The disclosure starts open on each fresh page load and remains learner-collapsible. Buttons reuse `fd-btn` tokens and pressed state uses an attribute selector. Purpose choices and open state are in-memory only; standard primary/due-review/planner rules remain unchanged.
+`fd-purpose`, `fd-purpose__summary`, `fd-purpose__choices`, `fd-purpose__note`, `fd-purpose__reason` style the optional disclosure. Since 2026-10-04 (one-thread README §1.5) it sits AFTER the "Also today" rows and BEFORE the week list at every primary kind — including when an unfinished block is the primary, which used to pull it above the Now card; it never changes the primary. Spec values: margin-top 24, `padding:4px 0 18px`, hairline below; summary 44 tall at 15/600; choices are 44px pills (1.5px `--fd-line-strong`, 14/600; pressed = teal border on teal wash, teal-deep 700). The Prepare-for-tomorrow invitation (`.fd-prepare`) renders inside it. It is a quiet hairline-ruled disclosure, not a card, and its summary draws the shared rotating chevron in place of the browser's ▶ marker. `.fd-today__exam` is likewise a quiet line with a link-styled `.fd-today__examcta`, not a bordered card (2026-10-01). The disclosure starts open on each fresh page load and remains learner-collapsible. Buttons reuse `fd-btn` tokens and pressed state uses an attribute selector. Purpose choices and open state are in-memory only; standard primary/due-review/planner rules remain unchanged.
 
 ### Optional study planning (phase one, 2026-10-03)
 
@@ -1057,9 +1133,9 @@ The desktop header has one **Library** destination, selected for both Essentials
 Everything. The phone disclosure uses the same **Library** label and retains Search. Its summary
 marks the current Library destination, including the Everything view; the center
 Essential shortcut is not incorrectly marked current for Everything.
-`.fd-library__views` is a wrapping local view switch above either Library heading;
-its two `.fd-btn` controls have 44px minimum height and `aria-pressed` selection,
-with the existing teal action/location tokens. It replaces the distant Everything
-footer and full-view return button. Existing Library routes remain unchanged.
+`.fd-library__views` is the local view switch in the Library's controls row (a segmented control
+since the one-thread redesign, Phase 2, 2026-10-04 -- see section 5); its two
+`.fd-library__view` options carry `aria-pressed` selection and live counts. It replaces the
+distant Everything footer and full-view return button. Existing Library routes remain unchanged.
 Same-route dock refreshes retain the disclosure and focused choice; route changes
 close it. Escape closes the disclosure and returns focus to its summary.

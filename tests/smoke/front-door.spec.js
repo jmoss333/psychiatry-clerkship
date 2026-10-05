@@ -5,11 +5,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 import { isResidentProject } from './audience.js';
-import { essentialsResourceRefs, essentialsResources } from './essentials-inventory.js';
+import { auditEverything, essentialsResourceRefs, essentialsResources, everythingResourceRefs } from './essentials-inventory.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const PHONE = { width: 390, height: 844 };
 const DOCK_PHONE = { width: 375, height: 812 };
+const DESKTOP = { width: 1280, height: 800 };
 const FAILURE_COPY = 'This safety protocol is unavailable right now—do not rely on this page for clinical guidance; use the crisis resources below and contact your supervising clinician.';
 const runtimeErrors = new WeakMap();
 const READING_REF = 't_mood.md';
@@ -63,12 +64,16 @@ async function scrollReadingTo(page, index, offset = 85) {
   }, offset);
 }
 
-// The phone dock's in-reach Search lives in its Browse disclosure. The header's search bar is
-// not pinned on phones -- it scrolls away with the page -- so reaching it mid-page scrolls the
-// reader to the top and re-saves the reading place there; this path must never do that.
-async function openDockSearch(page) {
-  await page.locator('.fd-dock__browse summary:visible').click();
-  await page.locator('.fd-dock [data-fd-dock-browse-go="search"]:visible').click();
+// Search on a phone is the sticky header's own search pill (one-thread redesign, 2026-10-04: the
+// dock's Browse disclosure that used to carry Search is gone). .fd-header is position:sticky, so
+// the pill is on screen at every scroll position; reaching it mid-page must not scroll the reader
+// to the top or re-save the reading place there -- the assertions that follow each call pin that.
+async function openHeaderSearch(page) {
+  const before = await page.evaluate(() => window.scrollY);
+  const pill = page.locator('.fd-header .fd-searchbtn:visible');
+  await expect(pill).toBeInViewport();
+  await pill.click();
+  expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
 async function expectReadingAnchor(page, index, ref = READING_REF) {
@@ -239,7 +244,7 @@ test('reading place: Today Continue focuses once; Library and Search restore scr
   await expect(page.locator('.fd-article__body h3').nth(1)).toBeFocused();
   expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
   await page.locator('.fd-reader__back:visible').evaluate(button => button.click());
-  await openDockSearch(page);
+  await openHeaderSearch(page);
   await page.getByRole('dialog', { name: 'Search' }).getByRole('button', { name: 'Browse the Library' }).click();
   const full = page.locator('[data-fd-library-view="full"]:visible');
   if (await full.count()) await full.click();
@@ -250,7 +255,7 @@ test('reading place: Today Continue focuses once; Library and Search restore scr
   await expectReadingAnchor(page, 1, ref);
   await expect(page.locator('.fd-reader:visible .fd-article__h1')).toBeFocused();
   expect(await page.evaluate(() => window.__readingFocusCalls)).toBe(1);
-  await openDockSearch(page);
+  await openHeaderSearch(page);
   const dialog = page.getByRole('dialog', { name: 'Search' });
   await expect(dialog.getByRole('textbox', { name: 'Search resources' })).toBeFocused();
   await expect(page.locator('.fd-article__body h3').nth(1)).not.toBeFocused();
@@ -434,7 +439,7 @@ test('route: Today shows only the oldest unrouted question while View all opens 
 test('capture persistence failure keeps questions and reports the failed Delete, Erase all, and Done actions', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
-  await page.locator('.fd-capture-launch--global[data-capture-open]:visible').click();
+  await page.locator('.fd-askbtn[data-capture-open]:visible').click();
   for (const question of ['First learning question?', 'Second learning question?']) {
     await page.locator('#capText').fill(question);
     await page.locator('#capSave').click();
@@ -477,7 +482,7 @@ test('capture persistence failure keeps questions and reports the failed Delete,
 test('capture Schedule review and Done move focus to the stable editor after the saved card repaints', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
-  const launcher = page.locator('.fd-capture-launch--global[data-capture-open]:visible');
+  const launcher = page.locator('.fd-askbtn[data-capture-open]:visible');
   await launcher.click();
   await page.locator('#capText').fill('How should I distinguish delirium from psychosis?');
   await page.locator('#capSave').click();
@@ -504,27 +509,28 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-// A missing dock, a second fixed phone bar, or a covered final reading row must fail here.
-async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedContext) {
+// The phone dock's FIXED slots (one-thread redesign, 2026-10-04): the same four destinations as the
+// tab row -- Today · Path · Library · Care -- then "＋ Ask". APP has no Path. `current` names the
+// one slot that must carry aria-current="page" (the origin tab, even while a resource is open).
+// A missing dock, a second fixed phone bar, a slot that mirrors the page, or a covered final
+// reading row must fail here.
+const DOCK_STANDARD = ['Today', 'Path', 'Library', 'Care', '＋ Ask'];
+const DOCK_APP = ['On shift', 'Library', 'Care', '＋ Ask'];
+async function expectFixedDock(page, expectedLabels, current) {
   const dock = page.locator('.fd-dock:visible');
   await expect(dock).toHaveCount(1);
   await expect(dock).toHaveAttribute('aria-label', 'Learning actions');
   const items = dock.locator('button:visible');
-  await expect(items).toHaveCount(4);
+  await expect(items).toHaveCount(expectedLabels.length);
   const labels = (await items.allTextContents()).map(label => label.trim());
-  expect(labels[0]).toBe(expectedFirst);
-  expect(labels[1]).toBe(expectedSecond);
-  if (expectedContext) {
-    expect(labels[2]).toBe(expectedContext.label);
-    await expect(items.nth(2)).toHaveAttribute('data-fd-dock-forward', expectedContext.sourceId);
-  } else {
-    expect(labels[2].length).toBeGreaterThan(0);
+  expect(labels).toEqual(expectedLabels);
+  await expect(dock.locator('details, [data-fd-dock-forward], [data-fd-dock-browse-go], .fd-dock__item--context')).toHaveCount(0);
+  await expect(dock.locator('[data-capture-open]')).toHaveAttribute('aria-haspopup', 'dialog');
+  await expect(dock.locator('[data-fd-tab="care"]')).toHaveAttribute('aria-label', 'Patient care resources');
+  if (current) {
+    await expect(dock.locator('[aria-current="page"]')).toHaveCount(1);
+    await expect(dock.locator(`[data-fd-tab="${current}"]`)).toHaveAttribute('aria-current', 'page');
   }
-  expect(labels.slice(3)).toEqual(['Capture']);
-  // Browse is a native <details> disclosure, not a button: closed, its two menu actions render
-  // but are not :visible, which is why it is absent from the `items` count above.
-  await expect(dock.locator('details.fd-dock__browse:visible')).toHaveCount(1);
-  await expect(dock.locator('details.fd-dock__browse summary')).toHaveText('Library');
   const geometry = await page.evaluate(() => {
     const dock = document.querySelector('.fd-dock');
     const bar = dock.getBoundingClientRect();
@@ -539,17 +545,11 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedC
       count: fixedBottomNavs.length,
       position: getComputedStyle(dock).position,
       bottom: bar.bottom,
-      // Excludes Browse's own menu buttons while its <details> is closed: querySelectorAll finds
-      // them regardless of display, and a real tap target's box is meaningless at display:none.
-      // getComputedStyle(button).display is NOT display:none here even when hidden -- that reads
-      // the button's OWN display property, which display:none on the .fd-dock__browsemenu
-      // ANCESTOR never changes; only the rendered box collapses to zero, which is what to filter.
       targets: [...dock.querySelectorAll('button')]
         .map(button => {
           const box = button.getBoundingClientRect();
           return { left: box.left, right: box.right, width: box.width, height: box.height };
-        })
-        .filter(box => box.width > 0 || box.height > 0),
+        }),
       pageWidth: document.documentElement.scrollWidth,
       viewportWidth: document.documentElement.clientWidth,
     };
@@ -569,10 +569,11 @@ async function expectAdaptiveDock(page, expectedFirst, expectedSecond, expectedC
 }
 
 async function expectDockDialogs(page, dock) {
-  // The dock no longer has its own Search opener (2026-09-25 -- replaced by Browse); the
-  // header's .fd-searchbtn is the one search entry point now, but the dialog/focus-trap
-  // behavior it opens is unchanged, so it is still worth exercising from this phone-dock test.
+  // Search is one activation away on every screen: the sticky header's .fd-searchbtn is the one
+  // search entry point at every width (the dock's Browse disclosure is gone, 2026-10-04); the
+  // dialog/focus-trap behavior it opens is exercised here from the phone.
   const search = page.locator('.fd-searchbtn[data-fd-search]:visible');
+  await expect(search).toBeInViewport();
   await search.click();
   const searchDialog = page.getByRole('dialog', { name: 'Search' });
   await expect(searchDialog).toBeVisible();
@@ -602,31 +603,40 @@ async function expectDockDialogs(page, dock) {
   await expect(capture).toBeFocused();
 }
 
-test('adaptive mobile dock: standard audience routes, dialogs, reader forwarding, and final-row clearance', async ({ page }, testInfo) => {
+test('fixed mobile dock: standard audience routes, dialogs, origin-tab current state, and final-row clearance', async ({ page }, testInfo) => {
   await page.setViewportSize(DOCK_PHONE);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
-  // The empty device stores leave the current week's next item as Today's primary.
-  let dock = await expectAdaptiveDock(page, 'Today', 'Path', { label: 'Continue', sourceId: 'primary-week' });
-  await dock.locator('[data-fd-tab="path"]:visible').click();
+  // The empty device stores leave the current week's next item as Today's primary -- and the dock
+  // must not care: its slots are the same whatever the page's primary is.
+  await expect(page.locator('[data-fd-dock-source="primary-week"]')).toHaveCount(1);
+  let dock = await expectFixedDock(page, DOCK_STANDARD, 'today');
+  await dock.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page.locator('.fd-path')).toBeVisible();
-  dock = await expectAdaptiveDock(page, 'Today', 'Path');
+  dock = await expectFixedDock(page, DOCK_STANDARD, 'path');
   await expectDockDialogs(page, dock);
+  await dock.locator('[data-fd-tab="care"]:visible').click();
+  await expect(page.locator('.fd-care-page')).toBeVisible();
+  await expectFixedDock(page, DOCK_STANDARD, 'care');
 
   await page.goto('/?page=t_mood.md');
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
-  dock = await expectAdaptiveDock(page, 'Today', 'Path');
+  // Focused learning is a mode, not a destination: the reader's own primary stays in the page (its
+  // marked source is still there for completion patching) and the ORIGIN tab stays current.
+  dock = await expectFixedDock(page, DOCK_STANDARD, 'today');
   const source = page.locator('[data-fd-dock-source="primary-reader"]');
-  const center = dock.locator('button').nth(2);
-  await expect(center).toHaveAttribute('data-fd-dock-forward', 'primary-reader');
-  await expect(center).toHaveText(await source.getAttribute('data-fd-dock-label'));
-  const before = await source.getAttribute('aria-pressed');
-  await center.click();
+  await expect(source).toHaveCount(1);
+  await expect(dock).not.toContainText(await source.getAttribute('data-fd-dock-label'));
+  // Mark done is reachable in the page on a phone: the in-flow actions row at the end of the article.
+  const markDone = page.locator('.fd-article__actions [data-fd-toggle]:visible');
+  await expect(markDone).toHaveCount(1);
+  const before = await markDone.getAttribute('aria-pressed');
+  await markDone.click();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1') || '{}')['t_mood.md']?.done)).toBe(before !== 'true');
+  await dock.locator('[data-fd-tab="today"]:visible').click();
   await expect(page.locator('.fd-today')).toBeVisible();
-  const progress = await page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1') || '{}'));
-  expect(progress['t_mood.md']?.done).toBe(before !== 'true');
-  await expectAdaptiveDock(page, 'Today', 'Path');
+  await expectFixedDock(page, DOCK_STANDARD, 'today');
 
   await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   const searchDialog = page.getByRole('dialog', { name: 'Search' });
@@ -634,9 +644,7 @@ test('adaptive mobile dock: standard audience routes, dialogs, reader forwarding
   await expect(browse).toBeVisible();
   await browse.click();
   await expect(page.locator('.fd-library')).toBeVisible();
-  // The helper also includes tool tabs, which follow the readings on every width since
-  // 2026-09-26. Check the actual last reading rather than the last element in the shared
-  // inventory selector.
+  // Every Essentials row is a .fd-kit__reading since Phase 2 (tools included); check the last one.
   const finalReading = page.locator('.fd-kit__reading[data-fd-open]').last();
   await expect(finalReading).toBeVisible();
   await finalReading.scrollIntoViewIfNeeded();
@@ -654,16 +662,22 @@ test('adaptive mobile dock: standard audience routes, dialogs, reader forwarding
   await expectHealthy(page);
 });
 
-test('adaptive mobile dock: enhanced Orientation guide retains Capture and forwarded completion', async ({ page }, testInfo) => {
+test('fixed mobile dock: enhanced Orientation guide keeps the dock and its own Mark done in the page', async ({ page }, testInfo) => {
   await page.setViewportSize(DOCK_PHONE);
   await seedApp(page, testInfo, { state: { autoAdvance: false } });
   await page.goto('/?page=orientation.md');
   await expect(page.locator('.fd-reader--guide')).toBeVisible();
-  const dock = await expectAdaptiveDock(page, 'Today', 'Path');
+  const dock = await expectFixedDock(page, DOCK_STANDARD, 'today');
   await expect(dock.locator('[data-capture-open]')).toBeVisible();
-  const complete = dock.getByRole('button', { name: 'Mark done', exact: true });
-  await expect(complete).toBeVisible();
-  await expect(complete).toHaveAttribute('data-fd-dock-forward', 'primary-reader');
+  // The guide's completion control is the page's own: the in-flow actions row at the end of the
+  // article (shown on phones since 2026-10-04, when the dock stopped mirroring it). The fixed
+  // action bar's twin stays in the DOM, hidden, still marked for completion patching.
+  await expect(dock.getByRole('button', { name: 'Mark done', exact: true })).toHaveCount(0);
+  await expect(page.locator('.fd-actionbar [data-fd-dock-source="primary-reader"]')).toHaveCount(1);
+  await expect(page.locator('.fd-actionbar [data-fd-dock-source="primary-reader"]')).toBeHidden();
+  const complete = page.locator('.fd-article__actions [data-fd-toggle]:visible');
+  await expect(complete).toHaveText('Mark done');
+  expect((await complete.boundingBox()).height).toBeGreaterThanOrEqual(44);
   await expect(page.getByLabel('Find in this guide', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Print guide', exact: true })).toBeVisible();
   await expect(page.locator('.fd-guide-practice[data-fd-open]')).toBeVisible();
@@ -673,12 +687,12 @@ test('adaptive mobile dock: enhanced Orientation guide retains Capture and forwa
   await expect(contents.getByRole('navigation', { name: 'On this page' })).toBeVisible();
   await complete.click();
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('cw_progress_v1') || '{}')['orientation.md']?.done)).toBe(true);
-  await expectAdaptiveDock(page, 'Today', 'Path');
+  await expectFixedDock(page, DOCK_STANDARD, 'today');
   await expectHealthy(page);
 });
 
 for (const mutation of ['save', 'delete']) {
-  test(`adaptive mobile dock: Capture ${mutation} preserves expanded state and restores its exact invoker`, async ({ page }, testInfo) => {
+  test(`fixed mobile dock: Capture ${mutation} preserves expanded state and restores its exact invoker`, async ({ page }, testInfo) => {
     await page.setViewportSize(DOCK_PHONE);
     await seedApp(page, testInfo);
     await page.goto('/?tab=today');
@@ -718,7 +732,7 @@ for (const mutation of ['save', 'delete']) {
   });
 }
 
-test('adaptive mobile dock: delayed Search hydration preserves input focus and exact invoker', async ({ page }, testInfo) => {
+test('phone search: delayed Search hydration preserves input focus and the header invoker', async ({ page }, testInfo) => {
   let releaseIndex;
   const delayed = new Promise(resolve => { releaseIndex = resolve; });
   await page.route('**/search-index.json', async route => {
@@ -729,8 +743,10 @@ test('adaptive mobile dock: delayed Search hydration preserves input focus and e
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
   await expect(page.locator('.fd-today')).toBeVisible();
-  await page.locator('.fd-dock__browse summary:visible').click();
-  const search = page.locator('.fd-dock [data-fd-dock-browse-go="search"]:visible');
+  // The sticky header's search pill is the phone's one Search opener (the dock's Browse disclosure
+  // that carried Search is gone, 2026-10-04).
+  const search = page.locator('.fd-header .fd-searchbtn[data-fd-search]:visible');
+  await expect(search).toBeInViewport();
   await search.evaluate(el => { window.__dockSearchInvoker = el; });
   await search.click();
   const dialog = page.getByRole('dialog', { name: 'Search' });
@@ -741,8 +757,8 @@ test('adaptive mobile dock: delayed Search hydration preserves input focus and e
   await expect.poll(() => page.evaluate(() => Boolean(window.SI && Object.keys(window.SI.postings).length))).toBe(true);
   await expect(input).toBeFocused();
   await expect(input).toHaveValue('sleep');
-  // The Browse disclosure is retained, open, across hydration while search is open: its Search
-  // item opened the dialog and is where focus must return.
+  // The header is not re-rendered by hydration while search is open: the opener object survives,
+  // and is where focus must return.
   expect(await page.evaluate(() => window.__dockSearchInvoker.isConnected)).toBe(true);
   await expect(search).toHaveCount(1);
   await input.press('Shift+Tab');
@@ -756,7 +772,7 @@ test('adaptive mobile dock: delayed Search hydration preserves input focus and e
   await expectHealthy(page);
 });
 
-test('adaptive mobile dock: resident APP invitation substitutes slots without changing saved identity', async ({ page }, testInfo) => {
+test('fixed mobile dock: resident APP invitation drops Path and relabels Today without changing saved identity', async ({ page }, testInfo) => {
   test.skip(!isResidentProject(testInfo.project.name), 'APP invitation exists only on the resident build');
   await page.setViewportSize(DOCK_PHONE);
   await seedApp(page, testInfo);
@@ -777,26 +793,27 @@ test('adaptive mobile dock: resident APP invitation substitutes slots without ch
   const beforeInvite = await storageSnapshot();
   await page.goto('/?audience=app&tab=today');
   await expect(page.locator('.fd-app')).toBeVisible();
-  const dock = await expectAdaptiveDock(page, 'On shift', 'The Essentials');
+  const dock = await expectFixedDock(page, DOCK_APP, 'today');
   await dock.locator('[data-fd-tab="library"]:visible').first().click();
   await expect(page.locator('.fd-library')).toBeVisible();
-  await expectAdaptiveDock(page, 'On shift', 'The Essentials');
+  await expectFixedDock(page, DOCK_APP, 'library');
   await expectDockDialogs(page, dock);
   expect(await storageSnapshot()).toEqual(beforeInvite);
   await page.screenshot({ path: testInfo.outputPath('adaptive-mobile-dock-app.png') });
   await page.goto('/?tab=library');
   await page.reload();
   await expect(page.locator('.fd-library')).toBeVisible();
-  await expectAdaptiveDock(page, 'Today', 'Path');
+  await expectFixedDock(page, DOCK_STANDARD, 'library');
   expect(await storageSnapshot()).toEqual(beforeInvite);
   expect(JSON.parse(beforeInvite.local.cw_frontdoor_v1).role).toBe('pgy1');
   await expectHealthy(page);
 });
 
-test('dock forwards a rendered resume anchor through its href once and a button once', async ({ page }) => {
-  let resumeRequests = 0;
+test('a marked primary is metadata only: the controller ships no dock forwarding and the resume anchor keeps its real href', async ({ page }) => {
+  // 2026-10-04 (one-thread, Phase 1): the dock no longer forwards a marked page primary. The
+  // attributes stay as metadata; nothing in fd_wire.js answers to data-fd-dock-forward, and the
+  // Resume face's query-preserving href is unchanged.
   await page.route('https://dock.test/**', async (route) => {
-    if (route.request().url().includes('tool=question-bank-practice.html')) resumeRequests++;
     await route.fulfill({ contentType: 'text/html', body: '<main>Dock target</main>' });
   });
   await page.goto('https://dock.test/');
@@ -804,36 +821,14 @@ test('dock forwards a rendered resume anchor through its href once and a button 
     readFileSync(new URL(`../../13_Faculty_Resources/_automation/site_build/frontdoor/${name}`, import.meta.url), 'utf8'));
   for (const content of snippets) await page.addScriptTag({ content });
   await page.evaluate(() => {
-    document.body.innerHTML =
-      fdResumeCard({ queueIds: ['a', 'b', 'c'], idx: 1 }, true) +
-      '<button type="button" data-fd-dock-source="primary-week" data-fd-dock-label="Continue">Continue</button>';
-    window.buttonClicks = 0;
-    document.querySelector('[data-fd-dock-source="primary-week"]').addEventListener('click', () => window.buttonClicks++);
-    document.querySelector('[data-fd-dock-source="primary-resume"]').addEventListener('click', () =>
-      sessionStorage.setItem('resumeClicks', String(Number(sessionStorage.getItem('resumeClicks') || 0) + 1)));
-    sessionStorage.removeItem('routeWrites');
-    for (const name of ['pushState', 'replaceState']) {
-      const original = history[name];
-      history[name] = function (...args) {
-        sessionStorage.setItem('routeWrites', String(Number(sessionStorage.getItem('routeWrites') || 0) + 1));
-        return original.apply(this, args);
-      };
-    }
+    document.body.innerHTML = fdResumeCard({ queueIds: ['a', 'b', 'c'], idx: 1 }, true);
   });
   const anchor = page.locator('a[data-fd-dock-source="primary-resume"]');
   await expect(anchor).toHaveAttribute('href', '?tool=question-bank-practice.html&resume=1');
-  expect(await page.evaluate(() => fdForwardDockAction(document, 'primary-week'))).toBe(true);
-  expect(await page.evaluate(() => window.buttonClicks)).toBe(1);
-  expect(page.url()).toBe('https://dock.test/');
-  const destination = 'https://dock.test/?tool=question-bank-practice.html&resume=1';
-  await Promise.all([
-    page.waitForURL(destination, { timeout: 3_000 }),
-    page.evaluate(() => fdForwardDockAction(document, 'primary-resume')),
-  ]);
-  expect(page.url()).toBe(destination);
-  expect(resumeRequests).toBe(1);
-  expect(await page.evaluate(() => sessionStorage.getItem('resumeClicks'))).toBe('1');
-  expect(await page.evaluate(() => sessionStorage.getItem('routeWrites'))).toBeNull();
+  await expect(anchor).toHaveAttribute('data-fd-dock-label', 'Resume question bank');
+  expect(await page.evaluate(() => [typeof window.fdDockSource, typeof window.fdForwardDockAction])).toEqual(['undefined', 'undefined']);
+  expect(await page.evaluate(() => FD_HANDLED_ATTRS.includes('data-fd-dock-forward') || FD_HANDLED_ATTRS.includes('data-fd-dock-browse-go'))).toBe(false);
+  expect(await page.evaluate(() => FD_ACTION_SELECTOR.includes('dock-forward') || FD_ACTION_SELECTOR.includes('dock-browse'))).toBe(false);
 });
 
 test('first run reaches Today; browse mode exposes the exact audience Library', async ({ page }, testInfo) => {
@@ -878,7 +873,7 @@ test('Path projects each audience duration without mobile overflow', async ({ pa
   const setupOverflow = await page.locator('.fd-setup').evaluate((el) => el.scrollWidth <= el.clientWidth);
   expect(setupOverflow).toBe(true);
   await page.locator('[data-fd-week="1"]').click();
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page.getByRole('heading', { name: site.pathHeading })).toBeVisible();
   await expect(page.locator('.fd-timeline__row')).toHaveCount(site.weekCount);
   expect(await page.locator('.fd-path').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
@@ -892,7 +887,7 @@ test('Path route keeps selection, current week, keyboard focus, and mobile rail 
   const site = audience(testInfo);
   await seedApp(page, testInfo);
   await page.goto('/');
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
 
   const tabs = page.getByRole('tab');
   await expect(tabs).toHaveCount(site.weekCount);
@@ -935,7 +930,7 @@ test('Path stops sit on the road, share one label baseline, and never overflow',
   for (const width of [1280, 1024, 700]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    await page.locator('[data-fd-tab="path"]:visible').click();
+    await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
     // The Path fades up; measure only once every animation in it has finished (mid-fade
     // boxes read fractional sizes).
     await page.locator('.fd-path').evaluate((el) =>
@@ -972,7 +967,7 @@ test('Path stops sit on the road, share one label baseline, and never overflow',
 test('the current-week flag never covers another stop, even when that week is complete', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   const current = page.locator('.fd-timeline__row[aria-current="step"]');
   await current.click();
   for (let k = 0; k < 30; k++) {
@@ -1008,7 +1003,7 @@ test('Path detail titles truncate rather than set a horizontal floor at 320px', 
   await page.goto('/');
   await page.locator('[data-fd-change-week]').click();
   await page.locator('[data-fd-week="1"]').click();
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page.locator('.fd-path')).toBeVisible();
 
   await page.evaluate(() => document.fonts.ready);
@@ -1035,19 +1030,23 @@ test('tab focus order is stable and Path preview does not change rotation until 
   await seedApp(page, testInfo);
   await page.goto('/');
 
+  // Desktop app bar order (one-thread): brand · search · ＋ Ask a question · ✚ Safety · ⚙ · tabs.
+  // The week pill is gone from the bar (D4); Today's eyebrow carries "Change week" instead.
   await page.locator('[data-fd-home]').focus();
   await page.keyboard.press('Tab');
   await expect(page.locator('.fd-searchbtn[data-fd-search]:visible')).toBeFocused();
   await page.keyboard.press('Tab');
-  await expect(page.locator('[data-fd-change-week]')).toBeFocused();
+  await expect(page.locator('.fd-askbtn[data-capture-open]')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('.fd-safetybtn[data-fd-safety]')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('.fd-settingsbtn[data-fd-settings]')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator('[data-fd-tab="today"]:visible')).toBeFocused();
+  await expect(page.locator('.fd-header [data-fd-change-week]')).toHaveCount(0);
+  await expect(page.locator('.fd-today__sub [data-fd-change-week]')).toHaveText('Change week');
 
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await expect(page.locator('.fd-path')).toBeVisible();
   await page.locator('[data-fd-view-week="3"]').click();
   await expect(page.locator('.fd-detail .fd-eyebrow')).toHaveText('Week 3');
@@ -1057,7 +1056,9 @@ test('tab focus order is stable and Path preview does not change rotation until 
   const stored = await page.evaluate(() => localStorage.getItem('cw_rotation_start'));
   expect(stored).toBe('2026-08-03');
   expect(await page.evaluate(value => new Date(`${value}T12:00:00`).getDay(), stored)).toBe(1);
-  await expect(page.locator('[data-fd-change-week]')).toContainText('Week 3');
+  await page.locator('[data-fd-tab="today"]:visible').click();
+  await expect(page.locator('.fd-today__sub')).toContainText('Week 3');
+  await expect(page.locator('.fd-thread [aria-current="step"]')).toHaveAttribute('data-fd-view-week', '3');
   await expectHealthy(page);
 });
 
@@ -1242,7 +1243,9 @@ test('Safety Kit, theme, and Progress remain usable and restore their invokers',
   await page.locator('.fd-sheet__close').click();
   await expect(safety).toBeFocused();
 
-  await page.locator('[data-fd-progress]').click();
+  // Two copies of the link exist (rail and phone column); CSS shows exactly one per width.
+  await expect(page.locator('[data-fd-progress]:visible')).toHaveCount(1);
+  await page.locator('[data-fd-progress]:visible').click();
   await expect(page).toHaveURL(/\?page=__progress__$/);
   await expect(page.locator('#pgRoot')).toBeVisible();
   await page.locator('.fd-reader__back[data-fd-back]').click();
@@ -1576,18 +1579,24 @@ test('390x844 reduced-motion Reader keeps one fixed 44px dock during scroll with
   expect(after.y).toBeCloseTo(before.y, 0);
   expect(after.y + after.height).toBeCloseTo(PHONE.height, 0);
 
+  // The 320px four-destinations pin: every dock slot plus every top-bar control is a 44px target.
+  // (One-thread, 2026-10-04: the dock's Browse summary and the header Care shortcut are gone; the
+  // Settings circle joined the phone bar.)
   const targets = await page.locator(
-    '.fd-dock:visible button:visible, .fd-dock__browse summary:visible, '
-      + '.fd-searchbtn:visible, .fd-safetybtn:visible, .fd-carebtn:visible',
+    '.fd-dock:visible button:visible, '
+      + '.fd-brand:visible, .fd-searchbtn:visible, .fd-safetybtn:visible, .fd-settingsbtn:visible',
   ).evaluateAll(controls => controls.map(control => {
       const box = control.getBoundingClientRect();
       return { width: box.width, height: box.height };
     }));
-  expect(targets.length).toBeGreaterThan(0);
+  expect(targets.length, 'five dock slots + brand, search, Safety, Settings').toBe(9);
   for (const target of targets) {
     expect(target.width).toBeGreaterThanOrEqual(44);
     expect(target.height).toBeGreaterThanOrEqual(44);
   }
+  // The same four destinations as the desktop tab row, in the same order, with Safety visible.
+  expect(await page.locator('.fd-dock:visible button:visible').allTextContents()).toEqual(DOCK_STANDARD);
+  await expect(page.locator('.fd-safetybtn:visible')).toHaveCount(1);
   expect(await page.locator('.fd-reader').evaluate(element => (
     getComputedStyle(element).animationName
   ))).toBe('none');
@@ -1606,18 +1615,18 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
   // page. That is governance behaviour, not header layout — pin the row rather than inherit the
   // live ledger (t_mood.md was pending/high when it became a bold-lead guide).
   await pinGovernance(page, 't_mood.md', { status: 'reviewed', riskLevel: 'low' });
-  // A reader collapses its header to one row on a phone (frontdoor.css "Phone chrome",
-  // 2026-09-18): the week pill, the settings gear and the tab row are one Back-tap away in the
-  // action bar and leave the header; the brand name is clipped but stays the home button's
-  // accessible name. Every control that remains keeps the 2026-08 audit's bar.
+  // The phone header is ONE row on every route (one-thread redesign, 2026-10-04): ψ tile, the search
+  // pill grown to fill, ✚ Safety and the Settings circle. The week pill and the Care shortcut are
+  // gone; "＋ Ask a question" yields to the dock's "＋ Ask" at ≤640px; the brand name is clipped but
+  // stays the home button's accessible name. Every control that remains keeps the 2026-08 audit's bar.
   const cases = [
     {
-      url: '/', ready: '.fd-today', oneRow: false,
-      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-weekpill', '.fd-safetybtn', '.fd-carebtn', '.fd-settingsbtn'],
+      url: '/', ready: '.fd-today',
+      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-askbtn', '.fd-safetybtn', '.fd-settingsbtn'],
     },
     {
-      url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body', oneRow: true,
-      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-safetybtn', '.fd-carebtn'],
+      url: '/?page=t_mood.md', ready: '.fd-reader .fd-article__body',
+      selectors: ['.fd-brand', '.fd-searchbtn', '.fd-askbtn', '.fd-safetybtn', '.fd-settingsbtn'],
     },
   ];
 
@@ -1627,7 +1636,7 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
       await page.goto(surface.url);
       await expect(page.locator(surface.ready)).toBeVisible();
       const visibleSelectors = surface.selectors.filter(selector => (
-        selector !== '.fd-carebtn' || width <= 640
+        selector !== '.fd-askbtn' || width > 640
       ));
 
       const geometry = await page.evaluate((selectors) => {
@@ -1677,7 +1686,11 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
           mainTop: main.top,
           brandNameWidth: brandName.width,
           brandAccessibleText: document.querySelector('.fd-brand').textContent.trim(),
-          utilitiesHidden: hidden('.fd-weekpill') && hidden('.fd-settingsbtn') && hidden('.fd-tabs'),
+          searchAccessibleText: document.querySelector('.fd-searchbtn').textContent.replace(/\s+/g, ' ').trim(),
+          searchShortVisible: visible(document.querySelector('.fd-searchbtn__short')),
+          tabsHidden: hidden('.fd-tabs'),
+          askHidden: hidden('.fd-askbtn'),
+          weekPill: document.querySelector('.fd-header [data-fd-change-week], .fd-carebtn'),
           searchIconWidth: searchIcon.width,
           searchLabelWidth: searchLabel.width,
           shortcutDisplay: getComputedStyle(shortcut).display,
@@ -1694,17 +1707,28 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
         expect.soft(box.right, `${width}px ${surface.url} ${selector} right edge`)
           .toBeLessThanOrEqual(geometry.viewportWidth);
       }
-      if (surface.oneRow && width <= 640) {
-        expect.soft(geometry.utilitiesHidden, `${width}px reader hides week, settings and tabs`).toBe(true);
-        expect.soft(geometry.brandAccessibleText, `${width}px reader home tile keeps its name`).toMatch(/\S/);
-        expect.soft(geometry.headerHeight, `${width}px reader header is one row`).toBeLessThanOrEqual(64);
+      expect.soft(geometry.weekPill, `${width}px ${surface.url}: no week pill or Care shortcut in the header`).toBeNull();
+      if (width <= 640) {
+        expect.soft(geometry.tabsHidden, `${width}px hides the tab row for the dock`).toBe(true);
+        expect.soft(geometry.askHidden, `${width}px: Ask lives in the dock`).toBe(true);
+        expect.soft(geometry.brandNameWidth, `${width}px clips the brand name`).toBeLessThanOrEqual(1);
+        expect.soft(geometry.brandAccessibleText, `${width}px home tile keeps its name`).toMatch(/\S/);
+        expect.soft(geometry.searchShortVisible, `${width}px shows the short search label`).toBe(true);
+        expect.soft(geometry.headerHeight, `${width}px ${surface.url} header is one row`).toBeLessThanOrEqual(66);
       } else {
         expect.soft(geometry.brandNameWidth).toBeGreaterThan(0);
-        expect.soft(geometry.utilitiesHidden, `${width}px ${surface.url} keeps its utilities`).toBe(false);
+        expect.soft(geometry.tabsHidden, `${width}px ${surface.url} keeps its tabs`).toBe(false);
+        expect.soft(geometry.askHidden, `${width}px ${surface.url} keeps Ask a question`).toBe(false);
+        expect.soft(geometry.searchShortVisible).toBe(false);
       }
+      expect.soft(geometry.searchAccessibleText, 'the search name is the sentence at every width').toContain('Search a symptom, drug, or task');
       expect.soft(geometry.searchIconWidth).toBeGreaterThan(0);
-      expect.soft(geometry.searchLabelWidth).toBeGreaterThanOrEqual(44);
-      expect.soft(geometry.shortcutDisplay).toBe(width <= 640 ? 'none' : 'block');
+      // The label is text inside the Search button, not a separate touch target.
+      // The button's 44px target and collision-free bounds are asserted above.
+      expect.soft(geometry.searchLabelWidth, 'Search text remains visible').toBeGreaterThan(0);
+      await expect(page.locator('.fd-searchbtn')).toHaveAccessibleName(/Search a symptom, drug, or task/);
+      // The ⌘K chip is a ≥1000px affordance now (it yields its width to "＋ Ask a question" below that).
+      expect.soft(geometry.shortcutDisplay).toBe('none');
       expect.soft(geometry.headerBottom).toBeLessThanOrEqual(geometry.mainTop + 0.5);
       expect.soft(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewportWidth);
       await expectHealthy(page);
@@ -1723,7 +1747,8 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
     }, role);
     await page.goto('/?tab=library');
     await expect(page.locator('.fd-library')).toBeVisible();
-    await expect(page.locator('.fd-weekpill')).toContainText('Set week');
+    // Browsing without a week shows no week control anywhere in the header (D4).
+    await expect(page.locator('.fd-header [data-fd-change-week], .fd-weekpill')).toHaveCount(0);
     const browseHeader = await page.evaluate(() => {
       const selectors = ['.fd-brand', '.fd-searchbtn', '.fd-header__actions'];
       const boxes = selectors.map(selector => document.querySelector(selector).getBoundingClientRect());
@@ -1739,22 +1764,25 @@ test('320-641px header controls remain distinct, readable, and fully tappable', 
       };
     });
     expect.soft(browseHeader.collisions).toBe(false);
-    expect.soft(browseHeader.labelWidth).toBeGreaterThanOrEqual(44);
-    expect.soft(browseHeader.shortcutDisplay).toBe(width <= 640 ? 'none' : 'block');
+    expect.soft(browseHeader.labelWidth, 'Search text remains visible while browsing').toBeGreaterThan(0);
+    await expect(page.locator('.fd-searchbtn')).toHaveAccessibleName(/Search a symptom, drug, or task/);
+    expect.soft(browseHeader.shortcutDisplay).toBe('none');
     expect.soft(browseHeader.scrollWidth).toBeLessThanOrEqual(browseHeader.viewportWidth);
     await expectHealthy(page);
   }
 });
 
-test('phone header Care shortcut sits beside Safety and opens Patient care resources', async ({ page }, testInfo) => {
+// One-thread redesign (2026-10-04): Care is reached from exactly one place per width -- the dock's
+// fixed Care slot ≤640px, the tab row above it. The header shortcut (.fd-carebtn, 2026-09-24 to
+// 2026-10-04) was a third copy of the same destination on one screen and is gone.
+test('phone Care is the dock\'s fixed slot, named in full, and the header carries no Care shortcut', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto('/');
   await expect(page.locator('.fd-today')).toBeVisible();
 
-  const safety = page.locator('.fd-safetybtn');
-  const care = page.locator('.fd-carebtn');
-  const settings = page.locator('.fd-settingsbtn');
+  await expect(page.locator('.fd-header__actions [data-fd-tab="care"], .fd-carebtn')).toHaveCount(0);
+  const care = page.locator('.fd-dock [data-fd-tab="care"]:visible');
   await expect(care).toBeVisible();
   await expect(care).toHaveAccessibleName('Patient care resources');
   await expect(care).toHaveText('Care');
@@ -1762,24 +1790,31 @@ test('phone header Care shortcut sits beside Safety and opens Patient care resou
   const order = await page.evaluate(() => {
     const box = selector => document.querySelector(selector).getBoundingClientRect();
     return {
-      safety: box('.fd-safetybtn'),
-      care: box('.fd-carebtn'),
-      settings: box('.fd-settingsbtn'),
+      brand: box('.fd-brand'), search: box('.fd-searchbtn'), safety: box('.fd-safetybtn'), settings: box('.fd-settingsbtn'),
+      library: box('.fd-dock [data-fd-tab="library"]'), care: box('.fd-dock [data-fd-tab="care"]'), ask: box('.fd-dock [data-capture-open]'),
     };
   });
-  expect(order.safety.right).toBeLessThanOrEqual(order.care.left + 0.5);
-  expect(order.care.right).toBeLessThanOrEqual(order.settings.left + 0.5);
+  // Top bar: ψ · Search · Safety · Settings, one row.
+  expect(order.brand.right).toBeLessThanOrEqual(order.search.left + 0.5);
+  expect(order.search.right).toBeLessThanOrEqual(order.safety.left + 0.5);
+  expect(order.safety.right).toBeLessThanOrEqual(order.settings.left + 0.5);
+  expect(Math.abs(order.safety.top - order.search.top)).toBeLessThanOrEqual(1);
+  // Dock: … Library · Care · ＋ Ask.
+  expect(order.library.right).toBeLessThanOrEqual(order.care.left + 0.5);
+  expect(order.care.right).toBeLessThanOrEqual(order.ask.left + 0.5);
 
   await care.click();
   await expect(page).toHaveURL(/\?tab=care$/);
   await expect(page.locator('.fd-care-page')).toBeVisible();
-  await expect(page.locator('.fd-carebtn')).toHaveAttribute('aria-current', 'page');
-  await expect(page.locator('.fd-carebtn')).toHaveClass(/is-active/);
+  await expect(care).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-dock [aria-current="page"]')).toHaveCount(1);
   await expectHealthy(page);
 
   await page.setViewportSize({ width: 800, height: 844 });
-  await expect(page.locator('.fd-carebtn')).toBeHidden();
+  await expect(page.locator('.fd-dock')).toBeHidden();
   await expect(page.locator('.fd-tab--care')).toBeVisible();
+  await expect(page.locator('.fd-tab--care')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-askbtn')).toBeVisible();
 });
 
 test('wide interview table remains accessible and contained in the live Reader', async ({ page }, testInfo) => {
@@ -2496,12 +2531,19 @@ test('One Thing First A1: everything pending — exactly one primary, and it is 
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary .fd-resume.is-primary .fd-sectionhead')).toHaveText('Pick up where you left off');
   await expect(page.locator('.fd-primary .fd-resume__link')).toContainText('Resume question bank — 4 left');
-  // A3 (presence + order): every demoted card is still there, below the heading, in the fixed order.
+  // A3 (presence + order): every demoted card is still there, below the heading, in the fixed order
+  // (one-thread: the week's own Continue row precedes saved questions, which close the list).
   const order = await page.evaluate(() => [...document.querySelector('.fd-today__main')
     .querySelectorAll('.fd-primary, .fd-also, .fd-block, .fd-due, .fd-resume, .fd-lastread, .fd-capture, .fd-continue, .fd-listhead')]
     .map(el => (el.matches('.fd-also') ? 'fd-also' : el.className.split(' ')[0])));
-  expect(order).toEqual(['fd-primary', 'fd-resume', 'fd-also', 'fd-block', 'fd-due', 'fd-capture', 'fd-continue', 'fd-listhead']);
+  expect(order).toEqual(['fd-primary', 'fd-resume', 'fd-also', 'fd-block', 'fd-due', 'fd-continue', 'fd-capture', 'fd-listhead']);
+  await expect(page.locator('.fd-primary')).toHaveClass(/fd-now fd-now--resume/);
   await expect(page.locator('.fd-continue')).toHaveClass(/is-secondary/);
+  // Every demoted face sits in an Also-today row that carries its status mark.
+  const marks = await page.locator('.fd-alsolist .fd-also__row').evaluateAll(rows => rows.map(r => r.getAttribute('data-fd-mark')));
+  expect(marks).toEqual(['progress', 'due', 'progress', 'plus']);
+  await expect(page.locator('.fd-also__row[data-fd-mark="due"]')).toHaveAttribute('data-fd-count', '2');
+  await expect(page.locator('.fd-also__row[data-fd-mark="plus"]')).toHaveAttribute('data-fd-count', '1');
   await expect(page.locator('.fd-block.is-live .fd-block__kicker')).toHaveText('Your block · 1 of 2 done');
   await expect(page.locator('.fd-block.is-live [data-block-continue]')).toHaveClass(/fd-btn--accent/);
   await expect(page.locator('.fd-due:not(.is-primary)')).toHaveCount(1);
@@ -2520,14 +2562,88 @@ test('One Thing First screen overrides style the primary and demote Continue out
   await seedApp(page, testInfo, { storage: { cw_sess_v1: OTF.capsule, cw_block_v1: OTF.block, cw_srs_v1: OTF.srs } });
   await page.goto('/');
   await otfExpectOnePrimary(page);
+  // One shell: the .fd-now wrapper carries the 3px teal top rule and the card shadow; the face inside
+  // has given up its own border, and the demoted Continue is a flat row (its wrapper draws the
+  // hairline, the face itself none).
   const styles = await page.evaluate(() => {
-    const primary = getComputedStyle(document.querySelector('.fd-primary .fd-resume__link'));
+    const shell = getComputedStyle(document.querySelector('.fd-primary.fd-now'));
+    const face = getComputedStyle(document.querySelector('.fd-primary .fd-resume__link'));
+    const teal = getComputedStyle(document.documentElement).getPropertyValue('--fd-teal').trim();
     const secondary = getComputedStyle(document.querySelector('.fd-continue.is-secondary'));
-    return { primaryBorder: primary.borderTopWidth, secondaryBorder: secondary.borderTopWidth };
+    const row = getComputedStyle(document.querySelector('.fd-alsolist .fd-also__row'));
+    const cta = getComputedStyle(document.querySelector('.fd-primary .fd-resume__link > span:last-child'));
+    return { shellBorder: shell.borderTopWidth, shellShadow: shell.boxShadow !== 'none', faceBorder: face.borderTopWidth,
+      secondaryBorder: secondary.borderTopWidth, rowBorder: row.borderTopWidth, ctaFilled: cta.backgroundColor, teal };
   });
-  expect(styles).toEqual({ primaryBorder: '3px', secondaryBorder: '1px' });
+  expect(styles.shellBorder).toBe('3px');
+  expect(styles.shellShadow).toBe(true);
+  expect(styles.faceBorder).toBe('0px');
+  expect(styles.secondaryBorder).toBe('0px');
+  expect(styles.rowBorder).toBe('1px');
+  // The one filled teal button on the screen is the Now card's.
+  const hex = styles.teal.replace('#', '');
+  const rgb = `rgb(${parseInt(hex.slice(0, 2), 16)}, ${parseInt(hex.slice(2, 4), 16)}, ${parseInt(hex.slice(4, 6), 16)})`;
+  expect(styles.ctaFilled).toBe(rgb);
   await expectHealthy(page);
 });
+
+// One-thread acceptance: exactly one filled teal button on Today for each primary kind, and it is
+// the Now card's. Measured by computed background against --fd-teal across every control in the
+// main column and the rail -- a second teal fill anywhere on the screen fails here.
+async function otfExpectOneTealFill(page) {
+  const fills = await page.evaluate(() => {
+    const teal = getComputedStyle(document.documentElement).getPropertyValue('--fd-teal').trim().replace('#', '');
+    const rgb = `rgb(${parseInt(teal.slice(0, 2), 16)}, ${parseInt(teal.slice(2, 4), 16)}, ${parseInt(teal.slice(4, 6), 16)})`;
+    // Controls and their labelled parts: a button, a link, or a span with a label (the 7px
+    // .fd-quicktool__dot marks are decoration, not buttons -- they carry no text).
+    const controls = [...document.querySelectorAll('.fd-today button, .fd-today a, .fd-today button > span, .fd-today a > span')]
+      .filter(el => el.tagName !== 'SPAN' || el.textContent.trim().length > 0);
+    return controls.filter(el => {
+      const box = el.getBoundingClientRect();
+      return box.width > 0 && box.height > 0 && getComputedStyle(el).backgroundColor === rgb;
+    }).map(el => ({ label: `${el.tagName.toLowerCase()}.${String(el.className).split(' ').slice(0, 2).join('.')} "${el.textContent.trim().slice(0, 30)}"`, insideNow: !!el.closest('.fd-now') }));
+  });
+  expect(fills.map(f => f.label), 'exactly one filled teal control, inside the Now card').toHaveLength(1);
+  expect(fills[0].insideNow).toBe(true);
+}
+
+for (const [kind, storage] of [
+  ['resume', { cw_sess_v1: OTF.capsule, cw_block_v1: OTF.block, cw_srs_v1: OTF.srs, cw_capture_v1: OTF.capture }],
+  ['block', { cw_block_v1: OTF.block, cw_srs_v1: OTF.srs, cw_capture_v1: OTF.capture }],
+  ['due', { cw_srs_v1: OTF.srs, cw_capture_v1: OTF.capture }],
+  ['week', { cw_capture_v1: OTF.capture }],
+]) {
+  for (const viewport of [PHONE, DESKTOP]) {
+    test(`One thread: ${kind} primary at ${viewport.width}px -- one Now card, one filled teal button, first after the heading, in the first screen`, async ({ page }, testInfo) => {
+      await page.setViewportSize(viewport);
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await seedApp(page, testInfo, { storage });
+      await page.goto('/');
+      await otfExpectOnePrimary(page);
+      await expect(page.locator('.fd-now')).toHaveCount(1);
+      await expect(page.locator('.fd-now')).toHaveClass(new RegExp(`fd-now--${kind}\\b`));
+      await otfExpectPrimaryIsFirstFocusable(page);
+      await otfExpectOneTealFill(page);
+      // First after the heading: nothing interactive between the H1 and the Now card except the
+      // eyebrow's Change week link and the six thread nodes, and the whole card is in the first screen.
+      const geometry = await page.evaluate(() => {
+        const h1 = document.querySelector('.fd-today__h1').getBoundingClientRect();
+        const now = document.querySelector('.fd-now').getBoundingClientRect();
+        const between = [...document.querySelectorAll('.fd-today button, .fd-today a')].filter(el => {
+          const b = el.getBoundingClientRect();
+          return b.top >= h1.bottom - 1 && b.bottom <= now.top + 1 && b.width > 0;
+        }).map(el => String(el.className).split(' ')[0]);
+        const dock = document.querySelector('.fd-dock');
+        const fold = dock && getComputedStyle(dock).display !== 'none' ? dock.getBoundingClientRect().top : innerHeight;
+        return { nowTop: now.top, nowBottom: now.bottom, h1Bottom: h1.bottom, between: [...new Set(between)], fold };
+      });
+      expect(geometry.nowTop).toBeGreaterThan(geometry.h1Bottom);
+      expect(geometry.between.every(c => c === 'fd-thread__node')).toBe(true);
+      expect(geometry.nowBottom, 'the whole Now card is in the first screen').toBeLessThanOrEqual(geometry.fold);
+      await expectHealthy(page);
+    });
+  }
+}
 
 test('One Thing First A2: remove the capsule and the live block wins', async ({ page }, testInfo) => {
   await seedApp(page, testInfo, { storage: { cw_block_v1: OTF.block, cw_srs_v1: OTF.srs, cw_capture_v1: OTF.capture } });
@@ -2536,8 +2652,12 @@ test('One Thing First A2: remove the capsule and the live block wins', async ({ 
   await expect(page.locator('.fd-primary .fd-block.is-live .fd-block__kicker')).toHaveText('Your 10-minute block');
   await expect(page.locator('.fd-primary [data-block-continue]')).toHaveClass(/fd-btn--primary/);
   await expect(page.locator('.fd-resume')).toHaveCount(0);
-  // The owner-directed purpose chooser precedes the primary timed block.
-  await expect(page.locator('.fd-today__main button').first()).toHaveAttribute('data-today-purpose','rounds');
+  // One-thread (README §1.5): the preparation chooser sits AFTER the Also rows at every primary
+  // kind -- it no longer precedes a primary timed block -- and keeps its open state and copy.
+  await otfExpectPrimaryIsFirstFocusable(page);
+  await expect(page.locator('.fd-purpose')).toHaveAttribute('open', '');
+  expect(await page.locator('.fd-purpose').evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-alsolist')) & Node.DOCUMENT_POSITION_PRECEDING))).toBe(true);
+  expect(await page.locator('.fd-purpose').evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-listhead')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
   await otfExerciseVisitAndBack(page);
   await expect(page.locator('.fd-primary .fd-block.is-live')).toHaveCount(1);
   await expectHealthy(page);
@@ -2561,8 +2681,13 @@ test('One Thing First A2: clear the dues and Continue leads, with the rows below
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-primary')).toHaveCount(0);
   await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].slice(0, 6).map(el => el.className.split(' ')[0])))
-    .toEqual(['fd-continue', 'fd-offline', 'fd-sectionhead', 'fd-purpose', 'fd-study-planner', 'fd-capture']);
+  await expect(page.locator('.fd-now.fd-now--week .fd-continue')).toHaveCount(1);
+  // Now card · offline receipt · "Also today" · its rows (planner, saved questions) · chooser · week.
+  // (The exam-date nudge, present on the exam path only, sits between the chooser and the week.)
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-today__main > *')].map(el => el.className.split(' ')[0]).filter(c => c !== 'fd-today__exam').slice(0, 6)))
+    .toEqual(['fd-now', 'fd-offline', 'fd-sectionhead', 'fd-alsolist', 'fd-purpose', 'fd-listhead']);
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-alsolist .fd-also__row > *:first-child')].map(el => el.className.split(' ')[0])))
+    .toEqual(['fd-study-planner', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await otfExerciseVisitAndBack(page);
   await expectHealthy(page);
@@ -2596,8 +2721,9 @@ test('One Thing First A2: a completed week looks ahead and offers a fresh set', 
   });
   await page.reload();
   await otfExpectOnePrimary(page);
-  await expect(page.locator('.fd-continue:not(.is-secondary) .fd-continue__title')).toHaveText(/^Preview Week \d+ →$/);
-  await expect(page.locator('.fd-freshset[data-fd-open="question-bank-practice.html"]')).toHaveCount(1);
+  await expect(page.locator('.fd-continue:not(.is-secondary) .fd-continue__title')).toHaveText(/^Preview Week \d+$/);
+  await expect(page.locator('.fd-continue:not(.is-secondary) .fd-continue__cta')).toHaveText('Preview week →');
+  await expect(page.locator('.fd-now.fd-now--ahead .fd-freshset[data-fd-open="question-bank-practice.html"]')).toHaveCount(1);
   await otfExpectPrimaryIsFirstFocusable(page);
   const before = await page.evaluate(() => localStorage.getItem('cw_progress_v1'));
   await page.locator('.fd-freshset').click();
@@ -2619,8 +2745,20 @@ test('One Thing First A2: no rotation week — the setup CTA leads', async ({ pa
   await page.goto('/');
   await otfExpectOnePrimary(page);
   await expect(page.locator('.fd-setupcta')).toHaveCount(1);
+  await expect(page.locator('.fd-now.fd-now--setup .fd-setupcta')).toHaveCount(1);
   await expect(page.locator('.fd-primary, .fd-continue')).toHaveCount(0);
+  // Setup copy (README, "Setup (no week)"): eyebrow, H1 "Today", kicker, title, button; no Change
+  // week link -- the card IS the week action -- and no week list or case step.
+  await expect(page.locator('.fd-today__sub')).toHaveText(/^[A-Z][a-z]+day · browsing — no week set$/);
+  await expect(page.locator('.fd-today__h1')).toHaveText('Today');
+  await expect(page.locator('.fd-setupcta__kicker')).toHaveText('30-second setup');
+  await expect(page.locator('.fd-setupcta__title')).toHaveText('Set your rotation week → get a real Today');
+  await expect(page.locator('.fd-setupcta__cta')).toHaveText('Set rotation week');
+  await expect(page.locator('.fd-today__changeweek, .fd-listhead, .fd-unit')).toHaveCount(0);
   await otfExpectPrimaryIsFirstFocusable(page);
+  await otfExpectOneTealFill(page);
+  await page.locator('.fd-setupcta').click();
+  await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toBeVisible();
   await expectHealthy(page);
 });
 
@@ -2661,7 +2799,7 @@ test('One Thing First D2: the Today shortcuts are unchanged with a primary prese
   await page.goto('/');
   await otfExpectOnePrimary(page);
   await page.keyboard.press('2');
-  await expect(page.locator('[data-fd-tab="path"]:visible')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible')).toHaveAttribute('aria-current', 'page');
   await page.keyboard.press('1');
   await expect(page.locator('[data-fd-tab="today"]:visible')).toHaveAttribute('aria-current', 'page');
   await expect(page.locator(OTF_PRIMARY)).toHaveCount(1);
@@ -2687,7 +2825,7 @@ test('One Thing First E: 390x844, reduced motion — the primary is above the fo
       dockTop: document.querySelector('.fd-dock').getBoundingClientRect().top,
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
-      newControls: measure('.fd-primary button, .fd-primary a, .fd-due, .fd-resume__link, .fd-lastread, .fd-block button, .fd-freshset'),
+      newControls: measure('.fd-primary button, .fd-primary a, .fd-due, .fd-resume__link, .fd-lastread, .fd-block button, .fd-freshset, .fd-thread__node, .fd-today__changeweek'),
       captureControls: measure('.fd-capture button'),
     };
   }, OTF_PRIMARY);
@@ -2705,22 +2843,28 @@ test('One Thing First E: 390x844, reduced motion — the primary is above the fo
 });
 
 // Every other primary Today can lead with, measured the same way. Each case first proves it is
-// the state it claims (the right primary, the 7-day strip present or absent), so a seed that
-// silently stopped producing a state fails here instead of measuring something else.
+// the state it claims (the right primary; and, since D2, the 7-day strip is NEVER on Today -- it
+// opens Learning activity & review instead), so a seed that silently stopped producing a state
+// fails here instead of measuring something else.
 const OTF_SRS_NOT_DUE = { ...OTF.srs, cards: Object.fromEntries(Object.entries(OTF.srs.cards)
   .map(([id, card]) => [id, { ...card, due: OTF_NOW + 48 * OTF_HOUR }])) };
 for (const [name, storage, check] of [
   ['reviews due', { cw_srs_v1: OTF.srs }, async (page) => {
     await expect(page.locator('.fd-primary .fd-due.is-primary')).toHaveCount(1);
-    await expect(page.locator('.fd-consistency')).toHaveCount(1);
+    await expect(page.locator('.fd-consistency')).toHaveCount(0);
   }],
   ['this week, first visit', {}, async (page) => {
     await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
     await expect(page.locator('.fd-consistency')).toHaveCount(0);
   }],
-  ['this week, returning learner with the 7-day strip', { cw_srs_v1: OTF_SRS_NOT_DUE }, async (page) => {
+  ['this week, returning learner (the 7-day strip now lives in the learning record)', { cw_srs_v1: OTF_SRS_NOT_DUE }, async (page) => {
     await expect(page.locator('.fd-continue:not(.is-secondary)')).toHaveCount(1);
-    await expect(page.locator('.fd-consistency')).toHaveCount(1);
+    await expect(page.locator('.fd-consistency')).toHaveCount(0);
+    await page.locator('.fd-progresscard[data-fd-progress]:visible').first().click();
+    await expect(page.locator('.fd-progress-reader .fd-consistency[role="img"]')).toHaveCount(1);
+    await expect(page.locator('.fd-progress-reader .fd-consistency')).toHaveAttribute('aria-label', /^Active \d of the last 7 days$/);
+    await page.goBack();
+    await expect(page.locator('.fd-today')).toBeVisible();
   }],
 ]) {
   test(`One Thing First E2: 390x844 — ${name}: the whole primary clears the phone dock`, async ({ page }, testInfo) => {
@@ -2882,11 +3026,15 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
   await seedApp(page, testInfo);
   await page.goto('/');
   await expect(page.locator('.fd-today')).toBeVisible();
-  await expect(page.locator('.fd-weekpill[data-fd-change-week]')).toContainText('Week 1');
+  // The week control is Today's eyebrow link since D4 (the header pill is gone).
+  const changeWeek = page.locator('.fd-today__sub .fd-today__changeweek[data-fd-change-week]');
+  await expect(page.locator('.fd-today__sub')).toContainText('Week 1');
+  await expect(changeWeek).toHaveText('Change week');
 
   // Back from a returning learner's Change week is a cancel, not a reset.
-  await page.locator('.fd-weekpill[data-fd-change-week]').click();
+  await changeWeek.click();
   await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toBeVisible();
+  await expect(page.locator('.fd-setup .fd-sub')).toHaveText('This sets your Today. Change it anytime from Today or Path.');
   await page.locator('.fd-setup__back[data-fd-back]').click();
   await expect(page.locator('.fd-today')).toBeVisible();
   await expect(page.getByRole('heading', { name: "Who's this for?" })).toHaveCount(0);
@@ -2894,10 +3042,10 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBe('2026-08-17');
 
   // Now leave rotation mode.
-  await page.locator('.fd-weekpill[data-fd-change-week]').click();
+  await changeWeek.click();
   await page.locator('[data-fd-week="0"]').click();
   await expect(page.locator('.fd-library')).toBeVisible();
-  await expect(page.locator('.fd-weekpill[data-fd-change-week]')).toContainText('Set week');
+  await expect(page.locator('[data-fd-change-week]')).toHaveCount(0, 'the Library carries no week control');
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).browsing)).toBe(true);
 
@@ -2913,10 +3061,12 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
   await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toHaveCount(0);
   await expect(page.locator('.fd-today')).toContainText('browsing — no week set');
 
-  // Choosing a week again leaves browse mode.
-  await page.locator('.fd-weekpill[data-fd-change-week]').click();
+  // Choosing a week again leaves browse mode. Without a week, the setup Now card IS the week action.
+  await expect(page.locator('.fd-today__changeweek')).toHaveCount(0);
+  await page.locator('.fd-setupcta[data-fd-change-week]').click();
   await page.locator('[data-fd-week="2"]').click();
-  await expect(page.locator('.fd-weekpill[data-fd-change-week]')).toContainText('Week 2');
+  await expect(page.locator('.fd-today__sub')).toContainText('Week 2');
+  await expect(page.locator('.fd-today__sub .fd-today__changeweek')).toHaveCount(1);
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).not.toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).browsing)).toBe(false);
 });
@@ -3119,7 +3269,8 @@ test('Patient care resources is a safe, responsive fourth destination and search
 
   await page.setViewportSize(PHONE);
   await expect(careTab).toBeHidden();
-  await expect(page.locator('.fd-dock:visible button:visible')).toHaveCount(4);
+  await expect(page.locator('.fd-dock:visible button:visible')).toHaveCount(5);
+  await expect(page.locator('.fd-dock:visible [data-fd-tab="care"]')).toHaveAttribute('aria-current', 'page');
   expect(await page.locator('.fd-tabs').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
   expect(await page.locator('.fd-care-page').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
 
@@ -3178,34 +3329,26 @@ test('Patient care resources is a safe, responsive fourth destination and search
   await expectHealthy(page);
 });
 
-// The in-flow Today row (#748) was the only phone route to Care until the header shortcut
-// .fd-carebtn arrived on 2026-09-24. From then on it duplicated a control on the same screen and
-// pushed the primary card toward the dock, so it is retired on phones (2026-09-26). The header
-// shortcut is now the phone route under test; APP's On shift keeps its own in-flow entry
-// (app-pathway.spec.js).
-test('Patient care resources stays reachable through the phone header shortcut and the wide tab', async ({ page }, testInfo) => {
+// The in-flow Today row (#748) was the phone route to Care, then the header shortcut .fd-carebtn
+// (2026-09-24 to 2026-10-04). Both are gone: the dock's fixed Care slot is the one phone route (the
+// same destination the tab row carries on wider screens), and no copy of it sits in Today or the
+// header. APP's On shift keeps its own in-flow entry (app-pathway.spec.js).
+test('Patient care resources stays reachable through the dock\'s fixed Care slot and the wide tab', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
-  await expect(page.locator('.fd-today .fd-care-entry')).toHaveCount(0);
-  const entry = page.locator('.fd-header .fd-carebtn[data-fd-tab="care"]');
+  await expect(page.locator('.fd-today .fd-care-entry, .fd-header__actions [data-fd-tab="care"], .fd-carebtn')).toHaveCount(0);
+  const entry = page.locator('.fd-dock [data-fd-tab="care"]:visible');
   await expect(entry).toBeVisible();
   await expect(entry).toHaveAccessibleName('Patient care resources');
-  expect(await entry.evaluate(el => getComputedStyle(el).position)).not.toBe('fixed');
-  // Today fades in (fdFadeUp: translateY 8px -> none, 0.24 s), and mid-fade the entry's box is
-  // mapped through a fractional transform in float: seeked frame by frame, the 44 px target read
-  // 44.00003 at 90 ms and CI measured 43.999969 on both attempts of one run (#788). Measure where
-  // it settles, on the fade's own `finished` promises rather than a clock; an infinite animation
-  // never settles, so it is not waited on.
-  await entry.evaluate(() => Promise.all(document.querySelector('.fd-today').getAnimations({ subtree: true })
-    .filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
-    .map(animation => animation.finished)));
+  await expect(entry).toHaveText('Care');
   expect((await entry.boundingBox()).height).toBeGreaterThanOrEqual(44);
-  await expect(page.locator('.fd-dock:visible button:visible')).toHaveCount(4);
+  await expect(page.locator('.fd-dock:visible button:visible')).toHaveCount(5);
   await entry.click();
   await expect(page.locator('.fd-care-page')).toBeVisible();
   await expect(page.locator('.fd-care-pack')).toBeVisible();
   expect(new URL(page.url()).searchParams.get('tab')).toBe('care');
+  await expect(entry).toHaveAttribute('aria-current', 'page');
 
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/?tab=today');
@@ -3439,15 +3582,16 @@ test('phone chrome: one dock stays at the bottom and the first screen belongs to
   await page.goto('/?page=t_mood.md');
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
   await expect(dock).toHaveCount(1);
-  // The reader collapses its header to one row while keeping Back in the article.
+  // The phone header is one row on every route (ψ · Search · Safety · Settings); Back stays in the article.
   await expect(page.locator('.fd-tabs:visible,.fd-actionbar:visible,#fdCaptureMount:visible')).toHaveCount(0);
-  await expect(page.locator('.fd-weekpill')).toBeHidden();
-  await expect(page.locator('.fd-settingsbtn')).toBeHidden();
+  await expect(page.locator('.fd-weekpill, .fd-askbtn:visible')).toHaveCount(0);
+  await expect(page.locator('.fd-settingsbtn')).toBeVisible();
   await expect(page.locator('.fd-safetybtn')).toBeVisible();
   await expect(page.locator('.fd-searchbtn')).toBeVisible();
   await expect(page.locator('.fd-brand')).toHaveAccessibleName(/\S/);
   const readerHeader = await page.locator('.fd-header').boundingBox();
-  expect(readerHeader.height, 'reader header is a single row').toBeLessThanOrEqual(64);
+  // One row: 10px padding + 44px controls + 10px padding + the hairline (one-thread phone top bar).
+  expect(readerHeader.height, 'reader header is a single row').toBeLessThanOrEqual(66);
   await expect(page.locator('.fd-reader > .fd-reader__back')).toBeVisible();
   const h1 = await page.locator('.fd-article__h1').boundingBox();
   expect(h1.y, 'the topic title sits in the top quarter of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.25);
@@ -3517,14 +3661,30 @@ test('returning from a Library resource restores the list position and focuses t
   await expectHealthy(page);
 });
 
-// Essentials Phase 2: exercise rendered controls against the actual audience payload.
+// Library (one-thread redesign, Phase 2 -- spec docs/superpowers/specs/one-thread-handoff/README.md
+// section 2 and its Phase 2 acceptance block). Exercises the rendered controls against the actual
+// audience payload; governance branches use controlled fixtures (#729), never the live ledger.
 test.describe('Essentials Phase 2', () => {
-  const rows = page => page.locator('.fd-kit [data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
+  const rows = page => page.locator('.fd-kit .fd-kit__reading[data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
   const full = page => page.locator('[data-fd-library-view="full"]');
   const kit = page => page.locator('[data-fd-library-view="essentials"]');
   const kitCount = info => audience(info).role === 'student' ? 31 : 35;
   const curriculum = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8'));
+  const shippedPages = JSON.parse(readFileSync(new URL('../../13_Faculty_Resources/_automation/site_build/shipped_pages.json', import.meta.url), 'utf8'));
   const expectedKit = info => curriculum.essentials[audience(info).role === 'student' ? 'ms3' : 'resident'].flatMap(column => column.refs);
+  const libraryStatus = page => page.locator('.fd-library__status[role="status"]');
+  const filterField = page => page.locator('.fd-library__filter-input[data-fd-library-filter]');
+  const shellMemory = () => ({ url: location.href, local: { ...localStorage }, session: { ...sessionStorage } });
+  // The served FD_CURRICULUM, for search-only slugs and libraryExclude as this site projects them.
+  async function servedCurriculum(page) {
+    const body = await (await page.request.get('/')).text();
+    const prefix = 'var FD_CURRICULUM=';
+    const start = body.indexOf(prefix) + prefix.length;
+    const end = body.indexOf(';\n  var FD_TOPIC_META=', start);
+    expect(start).toBeGreaterThan(prefix.length);
+    expect(end).toBeGreaterThan(start);
+    return JSON.parse(body.slice(start, end));
+  }
   async function readyReader(page, ref) {
     await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
     if (ref.endsWith('.html')) {
@@ -3535,14 +3695,19 @@ test.describe('Essentials Phase 2', () => {
       await expect(page.locator('.fd-article__body :is(p,h2,h3,ul,ol,table)').first()).toBeAttached();
     }
   }
-  test('L1–L3: default kit, both view buttons, URL reload and browser history', async ({ page }, info) => {
+  test('L1–L3: default kit, both view buttons with live counts, URL reload and browser history', async ({ page }, info) => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
-    await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
+    await expect(page.locator('.fd-library.fd-kit .fd-library__h1')).toHaveText('Library');
     await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     expect(await essentialsResourceRefs(page)).toEqual([...expectedKit(info).filter(ref => !ref.endsWith('.html')), ...expectedKit(info).filter(ref => ref.endsWith('.html'))]);
+    await expect(kit(page)).toHaveText(`Essentials · ${kitCount(info)}`);
+    await expect(full(page)).toHaveText(`Everything · ${audience(info).libraryCount}`);
+    await expect(kit(page)).toHaveAttribute('aria-pressed', 'true');
+    await expect(libraryStatus(page)).toHaveText(`Showing all ${kitCount(info)} Essentials items.`);
     await full(page).click();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
+    await expect(libraryStatus(page)).toHaveText(`Showing all ${audience(info).libraryCount} pages.`);
     await expect(page).toHaveURL(/tab=library&library=full/);
     await page.reload();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
@@ -3565,7 +3730,28 @@ test.describe('Essentials Phase 2', () => {
     expect(new URL(page.url()).searchParams.has('library')).toBe(false);
     await expectHealthy(page);
   });
-  test('readings-first sections: keyboard disclosure, every filter, memory-only state and reentry reset', async ({ page }, info) => {
+  test('inventory: every shipped page is in Everything exactly once, or excluded, or search-only; counts match shipped_pages.json', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.goto('/?tab=library&library=full');
+    const site = audience(info).role === 'student' ? 'ms3' : 'res';
+    const shipped = shippedPages.pages.filter(p => p.sites.includes(site)).map(p => p.slug);
+    const served = await servedCurriculum(page);
+    const placed = new Set((served.libraryColumns || []).flatMap(c => c.refs));
+    const excluded = new Set((served.libraryExclude || []).map(e => e.ref));
+    const searchOnly = new Set((served.searchResources || []).filter(ref => !placed.has(ref)));
+    const refs = await everythingResourceRefs(page);
+    expect(refs).toHaveLength(audience(info).libraryCount);
+    const audit = auditEverything(refs, { shipped, excluded, searchOnly });
+    expect(audit.duplicates, 'each page exactly once').toEqual([]);
+    expect(audit.notShipped, 'nothing in Everything that does not ship here').toEqual([]);
+    expect(audit.unreachable, 'every shipped page is in Everything, excluded on purpose, or search-only').toEqual([]);
+    expect(refs.length + [...excluded].filter(r => shipped.includes(r)).length + [...searchOnly].filter(r => shipped.includes(r) && !excluded.has(r)).length).toBe(shipped.length);
+    // Essentials stays a view of the Library: every Essentials row is also an Everything row.
+    await kit(page).click();
+    for (const ref of await essentialsResourceRefs(page)) expect(refs).toContain(ref);
+    await expectHealthy(page);
+  });
+  test('readings-first sections: keyboard disclosure, every section, memory-only state, re-entry reset and Back keeps the section', async ({ page }, info) => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
     await page.locator('[data-fd-tab="library"]:visible').click();
@@ -3576,12 +3762,12 @@ test.describe('Essentials Phase 2', () => {
     const groups = page.locator('.fd-kit__group');
     await expect(groups).toHaveCount(student ? 8 : 7);
     await expect(sectionButtons).toHaveCount(student ? 10 : 9);
-    await expect(page.locator('.fd-kit__reading')).toHaveCount(student ? 23 : 26);
+    await expect(page.locator('.fd-kit__reading')).toHaveCount(kitCount(info));
     const allRefs = await essentialsResourceRefs(page);
     expect([...allRefs].sort()).toEqual([...expectedKit(info)].sort());
     const storage = () => page.evaluate(() => ({local: {...localStorage}, session: {...sessionStorage}}));
     const before = await storage(); const url = page.url();
-    const expected = await groups.evaluateAll(ns => ns.map(n => [...n.querySelectorAll('.fd-kit__reading, [data-fd-kit-tool]')].map(x => x.dataset.fdOpen || x.dataset.fdKitTool)));
+    const expected = await groups.evaluateAll(ns => ns.map(n => [...n.querySelectorAll('.fd-kit__reading')].map(x => x.dataset.fdOpen)));
     const values = await sectionButtons.evaluateAll(ns => ns.slice(1).map(n => n.dataset.fdKitSection).filter(value => value !== 'week'));
     const summary = groups.first().locator('summary');
     await summary.focus(); await summary.press('Enter');
@@ -3593,35 +3779,235 @@ test.describe('Essentials Phase 2', () => {
       await expect(button).toBeFocused(); await expect(groups).toHaveCount(1);
       expect(await essentialsResourceRefs(page)).toEqual(expected[i]);
       expect(page.url()).toBe(url); expect(await storage()).toEqual(before);
+      // D3: the section rides on the history entry, never on the URL or in storage.
+      expect(await page.evaluate(() => history.state && history.state.state && history.state.state.kitSection)).toBe(values[i]);
     }
     await rail.locator('[data-fd-kit-section="all"]').click();
+    expect(await page.evaluate(() => history.state && history.state.state && Object.hasOwn(history.state.state, 'kitSection'))).toBe(false);
     await groups.first().locator('summary').click();
     await rail.locator(`[data-fd-kit-section="${values[0]}"]`).click(); await rail.locator('[data-fd-kit-section="all"]').click();
     await expect(page.locator('.fd-kit__group[open]')).toHaveCount(student ? 8 : 7);
+    // Opening an item and coming back (in-app Back AND browser Back) returns to the same section.
     await rail.locator(`[data-fd-kit-section="${values[0]}"]`).click();
     await page.locator('.fd-kit__reading').first().click();
     await expect(page.locator('.fd-reader .loading')).toHaveCount(0);
     await page.locator('.fd-reader__back[data-fd-back]').first().click();
-    await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
+    await expect(rail.locator(`[data-fd-kit-section="${values[0]}"]`)).toHaveAttribute('aria-pressed','true');
+    await expect(groups).toHaveCount(1);
+    await page.locator('.fd-kit__reading').first().click();
+    await expect(page.locator('.fd-reader .loading')).toHaveCount(0);
+    await page.goBack();
+    await expect(rail.locator(`[data-fd-kit-section="${values[0]}"]`)).toHaveAttribute('aria-pressed','true');
+    // A reload resets to All; so does leaving and re-entering the Library.
     await rail.locator('[data-fd-kit-section="tools"]').click(); await page.reload(); await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
     await rail.locator('[data-fd-kit-section="tools"]').click(); await page.locator('[data-fd-tab="today"]:visible').click();
     await page.locator('[data-fd-tab="library"]:visible').click(); await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
-    // Pending-dot rendering is a build-time governance projection, covered deterministically by
-    // fd-library.test.mjs and governance-warnings.spec.js. This interaction test must remain valid
-    // when faculty legitimately reduce the live pending count to zero.
+    await expectHealthy(page);
+  });
+  for (const width of [390, 1280]) {
+    test(`tool hint filter match stays visible beside a summary at ${width}px`, async ({ page }, info) => {
+      await page.setViewportSize({ width, height: 900 });
+      await seedApp(page, info);
+      await page.goto('/?tab=library');
+      const field = filterField(page);
+      await page.keyboard.press('/');
+      await expect(field).toBeFocused();
+      await page.keyboard.type('descriptor');
+      const description = page.locator('.fd-kit__reading[data-fd-open="mse.html"] .fd-kit__summary');
+      const hint = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8')).libraryHints['mse.html'];
+      await expect(description).toHaveText(hint);
+      await expect(description.locator('mark')).toHaveText('descriptor');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await field.press('Tab');
+      await expect(page.locator('[data-fd-library-filter-clear]')).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(field).toHaveValue('');
+      await expectHealthy(page);
+    });
+  }
+  test('filter: updates as you type, announces N of M, highlights, restores from history.state, resets on reload, never in URL or storage', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    const field = filterField(page);
+    await expect(field).toHaveAttribute('placeholder', 'Filter by title or topic — e.g. delirium, family meeting');
+    await expect(page.locator('.fd-library__filter-key')).toBeVisible();
+    const before = await page.evaluate(shellMemory);
+    // "/" focuses the filter on desktop (and does not open Search).
+    await page.keyboard.press('/');
+    await expect(field).toBeFocused();
+    await expect(page.getByRole('dialog', { name: 'Search' })).toHaveCount(0);
+    await page.keyboard.type('mood');
+    await expect(field).toHaveValue('mood');
+    await expect(field).toBeFocused();
+    await expect(page.locator('.fd-library__filter-clear[data-fd-library-filter-clear]')).toBeVisible();
+    await expect(page.locator('.fd-library__filter-key')).toHaveCount(0);
+    const count = await essentialsResources(page).count();
+    expect(count).toBeGreaterThan(0); expect(count).toBeLessThan(kitCount(info));
+    await expect(libraryStatus(page)).toHaveText(`${count} of ${kitCount(info)} items match “mood”.`);
+    for (const title of await page.locator('.fd-kit__reading .fd-kit__title').allInnerTexts()) expect(title.toLowerCase()).toContain('mood');
+    await expect(page.locator('.fd-kit__title mark').first()).toHaveText(/mood/i);
+    await expect(page.locator('.fd-library__footer .fd-library__searchlink[data-fd-search-query="mood"]')).toHaveText('Search the library for “mood” →');
+    // Memory only: same URL, same storage, the entry's history.state carries the query.
+    const during = await page.evaluate(shellMemory);
+    expect(during).toEqual(before);
+    expect(JSON.stringify(during)).not.toContain('mood');
+    expect(await page.evaluate(() => history.state.state.libraryFilter)).toBe('mood');
+    // Open a row and come back: the same filter, the same view.
+    const ref = (await essentialsResourceRefs(page))[0];
+    await page.locator(`.fd-kit__reading[data-fd-open="${ref}"]`).click();
+    await readyReader(page, ref);
+    await page.goBack();
+    await expect(field).toHaveValue('mood');
+    await expect(libraryStatus(page)).toHaveText(`${count} of ${kitCount(info)} items match “mood”.`);
+    await expect(page.locator(`.fd-kit__reading[data-fd-open="${ref}"]`)).toBeFocused();
+    await page.goForward(); await readyReader(page, ref); await page.goBack();
+    await expect(field).toHaveValue('mood');
+    // Switching views keeps the query and re-scopes it; Clear empties it; a reload resets it.
+    await full(page).click();
+    await expect(filterField(page)).toHaveValue('mood');
+    await expect(libraryStatus(page)).toHaveText(new RegExp(`^\\d+ of ${audience(info).libraryCount} pages match “mood”\\.$`));
+    await page.locator('[data-fd-library-filter-clear]').click();
+    await expect(filterField(page)).toHaveValue('');
+    await expect(filterField(page)).toBeFocused();
+    await expect(libraryStatus(page)).toHaveText(`Showing all ${audience(info).libraryCount} pages.`);
+    await filterField(page).fill('mood');
+    await expect(libraryStatus(page)).toHaveText(/ pages match “mood”\.$/);
+    await page.reload();
+    await expect(filterField(page)).toHaveValue('');
+    await expect(libraryStatus(page)).toHaveText(`Showing all ${audience(info).libraryCount} pages.`);
+    // Opening the reading above recorded cw_last (an existing store); nothing else changed, and no
+    // stored value ever carried the query.
+    const after = await page.evaluate(shellMemory);
+    delete after.local.cw_last;
+    expect(after).toEqual({ ...before, url: page.url() });
+    await expectHealthy(page);
+  });
+  test('zero results hand the query to Search; the dialog groups results and Close returns focus', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    await filterField(page).fill('milieu rules');
+    await expect(libraryStatus(page)).toHaveText('No titles match “milieu rules”.');
+    const empty = page.locator('.fd-library__empty');
+    await expect(empty.getByRole('heading', { level: 2 })).toHaveText('No titles match “milieu rules”');
+    await expect(empty).toContainText('This filter checks titles and tool descriptions in the current view. Search also checks summaries and related terms across the library.');
+    await expect(empty).toContainText('Still unsure? ＋ Ask a question saves it on this device for supervision.');
+    await expect(page.locator('.fd-kit__tool-preview')).toHaveCount(0);
+    await expect(page.locator('.fd-btn--primary:visible')).toHaveCount(1);
+    await empty.getByRole('button', { name: 'Search the library' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Search' });
+    const input = dialog.getByRole('textbox', { name: 'Search resources' });
+    await expect(input).toHaveValue('milieu rules');
+    await expect(input).toBeFocused();
+    await expect(dialog.locator('.fd-searchpanel__foot')).toHaveText('Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.');
+    await input.fill('delirium');
+    const labels = dialog.locator('.fd-searchpanel__group');
+    await expect(labels.first()).toHaveText('Safety protocols');
+    await expect(labels.first()).toHaveClass(/is-safety/);
+    expect(await labels.allInnerTexts()).toEqual(expect.arrayContaining(['Safety protocols', 'Pages']));
+    const first = dialog.locator('.fd-result').first();
+    await expect(first).toHaveClass(/is-first/);
+    await expect(first).toHaveAttribute('data-fd-safety', 'delirium.md');
+    await expect(first.locator('.fd-result__meta')).toHaveText('Vitals · meds · CAM');
+    const pageRow = dialog.locator('.fd-result[data-fd-open$=".md"]').first();
+    await expect(pageRow.locator('.fd-result__meta')).toHaveText(/^Reading/);
+    // A column-placed page names its section and weeks.
+    await input.fill('mood');
+    await expect(dialog.locator('.fd-result[data-fd-open="t_mood.md"] .fd-result__meta')).toHaveText(/^Reading · .+ · Weeks? \d/);
+    await input.fill('delirium');
+    await expect(dialog.getByRole('button', { name: 'Close search' })).toHaveText('Close');
+    // The panel pops in with a scale animation; measure once it has settled.
+    await dialog.locator('.fd-searchpanel').evaluate(el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished)));
+    const closeBox = await dialog.getByRole('button', { name: 'Close search' }).boundingBox();
+    expect(closeBox.height).toBeGreaterThanOrEqual(44); expect(closeBox.width).toBeGreaterThanOrEqual(44);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(filterField(page)).toHaveValue('milieu rules');
+    // Clear filter from the zero state returns to the full list with focus on the field.
+    await page.locator('.fd-library__empty [data-fd-library-filter-clear]').click();
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
+    await expect(filterField(page)).toBeFocused();
+    // The header opener: Close returns focus to it (existing restoreInvoker rules).
+    await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+    await expect(dialog.getByRole('textbox', { name: 'Search resources' })).toBeFocused();
+    await dialog.getByRole('button', { name: 'Close search' }).click();
+    await expect(page.locator('.fd-searchbtn[data-fd-search]:visible')).toBeFocused();
+    await expectHealthy(page);
+  });
+  test('pending and high-risk badges appear verbatim on every applicable row in both views and in the preview (fixture)', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.route('**/*', async route => {
+      if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+      const response = await routeFetchWithRetry(route);
+      const body = await response.text();
+      const prefix = 'var FD_SITE_MANIFEST=';
+      const start = body.indexOf(prefix) + prefix.length;
+      const end = body.indexOf(';\n', start);
+      expect(start).toBeGreaterThan(prefix.length);
+      const manifest = JSON.parse(body.slice(start, end));
+      for (const entry of manifest.md) {
+        if (entry[1] === 't_mood.md') entry[3] = { status: 'pending', riskKind: 'clinical', riskLevel: 'high' };
+        if (entry[1] === 't_psychosis.md') entry[3] = { status: 'pending', riskKind: 'general', riskLevel: 'low' };
+      }
+      await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(manifest) + body.slice(end) });
+    });
+    await page.goto('/?tab=library&library=full');
+    const mood = page.locator('.fd-collink[data-fd-open="t_mood.md"] .governance-badge');
+    const psychosis = page.locator('.fd-collink[data-fd-open="t_psychosis.md"] .governance-badge');
+    await expect(mood).toHaveText('Pending review · High risk');
+    await expect(mood).toHaveClass('governance-badge high');
+    await expect(psychosis).toHaveText('Pending review');
+    expect(await page.locator('.fd-collink .governance-badge').count()).toBeGreaterThanOrEqual(2);
+    await kit(page).click();
+    const kitRefs = await essentialsResourceRefs(page);
+    if (kitRefs.includes('t_mood.md')) {
+      await expect(page.locator('.fd-kit__reading[data-fd-open="t_mood.md"] .governance-badge')).toHaveText('Pending review · High risk');
+      await page.locator('.fd-kit__peek[data-fd-kit-tool="t_mood.md"]').click();
+      await expect(page.locator('.fd-kit__tool-preview .governance-badge')).toHaveText('Pending review · High risk');
+    }
+    await expect(page.locator('.fd-kit__review')).toContainText(/^Faculty re-review in progress — \d+ of \d+ readings changed since they were last attested ·/);
+    await page.locator('.fd-kit__review summary').click();
+    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings are marked pending review. Open a reading to see its full review notice.');
+    await expectHealthy(page);
+  });
+  test('summaries are byte-identical to topic_meta and the desktop preview pane follows the selected row', async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.goto('/?tab=library');
+    const meta = await (await page.request.get('/topic_meta.json')).json();
+    const refs = await essentialsResourceRefs(page);
+    for (const ref of refs.filter(r => r.endsWith('.md') && meta[r]?.tldr)) {
+      expect(await page.locator(`.fd-kit__reading[data-fd-open="${ref}"] .fd-kit__summary`).innerText()).toBe(meta[ref].tldr);
+    }
+    const before = await page.evaluate(shellMemory);
+    const pane = page.locator('.fd-kit__tool-preview');
+    await expect(pane).toHaveCount(1);
+    await expect(page.locator('.fd-kit__item.is-selected')).toHaveCount(1);
+    const peeks = page.locator('.fd-kit__peek');
+    await expect(peeks).toHaveCount(kitCount(info));
+    const reading = refs.find(r => r.endsWith('.md') && meta[r]?.tldr);
+    const title = (await page.locator(`.fd-kit__reading[data-fd-open="${reading}"] .fd-kit__title`).innerText()).trim();
+    await page.locator(`.fd-kit__peek[data-fd-kit-tool="${reading}"]`).click();
+    await expect(page.locator(`.fd-kit__peek[data-fd-kit-tool="${reading}"]`)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator(`.fd-kit__peek[data-fd-kit-tool="${reading}"]`)).toBeFocused();
+    await expect(page.locator('.fd-kit__item.is-selected .fd-kit__reading')).toHaveAttribute('data-fd-open', reading);
+    await expect(pane.locator('.fd-kit__preview-title')).toHaveText(title);
+    await expect(pane.locator('.fd-kit__preview-kicker')).toHaveText(/^Reading/);
+    await expect(pane.locator('.fd-kit__preview-summary')).toHaveText(meta[reading].tldr);
+    await expect(pane.locator('.fd-kit__preview-note')).toHaveText('Preview is not saved. Reload returns to the list.');
+    expect(await page.evaluate(shellMemory)).toEqual(before);
+    expect(await page.evaluate(() => JSON.stringify(history.state))).not.toContain(reading);
+    await pane.locator(`.fd-kit__preview-open[data-fd-open="${reading}"]`).click();
+    await readyReader(page, reading);
+    await page.goBack();
+    await expect(page.locator('.fd-kit__item.is-selected .fd-kit__reading')).toHaveAttribute('data-fd-open', reading);
+    await page.reload();
+    await expect(page.locator('.fd-kit__item.is-selected .fd-kit__reading')).not.toHaveAttribute('data-fd-open', reading);
     await expectHealthy(page);
   });
   test('This week follows the actual rotation week, keeps reading order, and stays transient', async ({ page }, info) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, info);
-    const response = await page.goto('/?tab=path');
-    const body = await response.text();
-    const prefix = 'var FD_CURRICULUM=';
-    const start = body.indexOf(prefix) + prefix.length;
-    const end = body.indexOf(';\n  var FD_TOPIC_META=', start);
-    expect(start).toBeGreaterThan(prefix.length);
-    expect(end).toBeGreaterThan(start);
-    const payload = JSON.parse(body.slice(start, end));
+    await page.goto('/?tab=path');
+    const payload = await servedCurriculum(page);
     const expectedWeek = n => {
       const assigned = new Set(payload.weeks.find(week => week.n === n).items.map(item => item.ref));
       return expectedKit(info).filter(ref => ref.endsWith('.md') && assigned.has(ref));
@@ -3630,7 +4016,8 @@ test.describe('Essentials Phase 2', () => {
     expect(expectedWeek(2).length).toBeGreaterThan(0);
     expect(expectedWeek(1)).not.toEqual(expectedWeek(2));
     await page.locator('[data-fd-view-week="2"]').click();
-    await expect(page.locator('[data-fd-change-week]')).toContainText('Week 1');
+    await expect(page.locator('#fd-path-week-2')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#fd-path-week-1')).toHaveAttribute('aria-current', 'step');
     await page.locator('[data-fd-tab="library"]:visible').click();
     const rail = page.locator('.fd-kit__index');
     await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
@@ -3639,10 +4026,13 @@ test.describe('Essentials Phase 2', () => {
     const before = await snapshot();
     await rail.locator('[data-fd-kit-section="week"]').click();
     await expect(rail.locator('[data-fd-kit-section="week"]')).toBeFocused();
-    expect(await rows(page).evaluateAll(nodes => nodes.map(node => node.dataset.fdOpen))).toEqual(expectedWeek(1));
-    await expect(page.locator('.fd-kit__tools')).toHaveCount(0);
+    expect(await essentialsResourceRefs(page)).toEqual(expectedWeek(1));
+    await expect(libraryStatus(page)).toHaveText(`Showing ${expectedWeek(1).length} readings for this week.`);
     expect(await snapshot()).toEqual(before);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
+    // Phone: no preview pane, no Preview controls.
+    await expect(page.locator('.fd-kit__tool-preview')).toBeHidden();
+    await expect(page.locator('.fd-kit__peek').first()).toBeHidden();
     await page.evaluate(() => {document.activeElement.blur(); window.scrollTo(0, 0);});
     await page.evaluate(() => document.fonts.ready);
     const path = info.outputPath(`essentials-this-week-${audience(info).role}.png`);
@@ -3652,18 +4042,22 @@ test.describe('Essentials Phase 2', () => {
     await page.locator(`.fd-kit__reading[data-fd-open="${ref}"]`).click();
     await readyReader(page, ref);
     await page.locator('[data-fd-back]:visible').first().click();
-    await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
-    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
-    await rail.locator('[data-fd-kit-section="week"]').click();
+    // Back returns to the same section (Phase 2); a reload resets to All.
+    await expect(rail.locator('[data-fd-kit-section="week"]')).toHaveAttribute('aria-pressed','true');
+    expect(await essentialsResourceRefs(page)).toEqual(expectedWeek(1));
     await page.reload();
     await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
-    await page.locator('[data-fd-change-week]').click();
+    await expect(essentialsResources(page)).toHaveCount(kitCount(info));
+    // The week is changed from Today (D4): no week control on the Library any more.
+    await expect(page.locator('[data-fd-change-week]')).toHaveCount(0);
+    await page.locator('[data-fd-tab="today"]:visible').click();
+    await page.locator('.fd-today__changeweek[data-fd-change-week]').click();
     await page.locator('[data-fd-week="2"]').click();
     await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
     await page.getByRole('dialog', { name: 'Search' }).getByRole('button', { name: 'Browse the Library' }).click();
     await rail.locator('[data-fd-kit-section="week"]').click();
     await expect(rail.locator('[data-fd-kit-section="week"] .fd-kit__index-count')).toHaveText(String(expectedWeek(2).length));
-    expect(await rows(page).evaluateAll(nodes => nodes.map(node => node.dataset.fdOpen))).toEqual(expectedWeek(2));
+    expect(await essentialsResourceRefs(page)).toEqual(expectedWeek(2));
     await full(page).click();
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await expectHealthy(page);
@@ -3671,13 +4065,14 @@ test.describe('Essentials Phase 2', () => {
   test('This week is absent in browse mode while all Essentials remain available', async ({ page }, info) => {
     await seedApp(page, info, {storage: {cw_rotation_start: ''}});
     await page.goto('/?tab=library');
-    await expect(page.locator('[data-fd-change-week]')).toContainText('Set week');
+    // Browse mode: no week control in the header (D4); Today's setup Now card owns the week action.
+    await expect(page.locator('[data-fd-change-week]')).toHaveCount(0);
     await expect(page.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
     await expect(page.locator('[data-fd-kit-section="week"]')).toHaveCount(0);
     await expect(essentialsResources(page)).toHaveCount(kitCount(info));
     await expectHealthy(page);
   });
-  test('late Essentials section return resets All and keeps focus visible through Back and reload', async ({ page }, info) => {
+  test('late Essentials section return keeps its section, scroll and a visible focused opener through Back and reload', async ({ page }, info) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, info);
     await page.goto('/?tab=library');
@@ -3686,16 +4081,19 @@ test.describe('Essentials Phase 2', () => {
       buttons.map(button=>button.dataset.fdKitSection).filter(value=>value!=='all'&&value!=='week'&&value!=='tools').at(-1));
     const openLateReading=async()=>{
       await rail.locator(`[data-fd-kit-section="${lateSection}"]`).click();
-      const opener=page.locator('.fd-kit__reading').first();
+      const opener=page.locator('.fd-kit__reading').last();
+      await opener.scrollIntoViewIfNeeded();
       const ref=await opener.getAttribute('data-fd-open');
+      const scrollY=await page.evaluate(() => window.scrollY);
       await opener.click();
       await readyReader(page,ref);
-      return {opener:page.locator(`.fd-kit__reading[data-fd-open="${ref}"]`),ref};
+      return {opener:page.locator(`.fd-kit__reading[data-fd-open="${ref}"]`),ref,scrollY};
     };
-    const expectVisibleReturn=async opener=>{
-      await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
-      await expect(opener).toBeFocused();
-      const geometry=await opener.evaluate(element=>{
+    const expectVisibleReturn=async opened=>{
+      await expect(rail.locator(`[data-fd-kit-section="${lateSection}"]`)).toHaveAttribute('aria-pressed','true');
+      await expect(opened.opener).toBeFocused();
+      expect(Math.abs(await page.evaluate(() => window.scrollY) - opened.scrollY), 'the list scrolls back to where it was').toBeLessThan(48);
+      const geometry=await opened.opener.evaluate(element=>{
         const box=element.getBoundingClientRect();
         let top=0,bottom=innerHeight;
         const header=document.querySelector('.fd-header');
@@ -3716,89 +4114,83 @@ test.describe('Essentials Phase 2', () => {
 
     let opened=await openLateReading();
     await page.locator('[data-fd-back]:visible').first().click();
-    await expectVisibleReturn(opened.opener);
+    await expectVisibleReturn(opened);
 
     opened=await openLateReading();
     await page.goBack();
-    await expectVisibleReturn(opened.opener);
+    await expectVisibleReturn(opened);
 
+    // A reload while reading resets the section memory: Back then lands on All with the opener focused.
     opened=await openLateReading();
     await page.reload();
     await readyReader(page,opened.ref);
     await page.locator('[data-fd-back]:visible').first().click();
-    await expectVisibleReturn(opened.opener);
+    await expect(rail.locator('[data-fd-kit-section="all"]')).toHaveAttribute('aria-pressed','true');
+    await expect(opened.opener).toBeFocused();
     await expectHealthy(page);
   });
-  test('tool preview cards update one shared pane without changing saved learner state', async ({ page }, info) => {
+  test('responsive: targets, no horizontal overflow at 320/390/641/1280 and at 200% text, reduced motion, and actual evidence', async ({ page }, info) => {
     await seedApp(page, info);
-    await page.goto('/?tab=library');
-    await page.locator('[data-fd-kit-section="tools"]').click();
-    const tabs = page.locator('.fd-kit__tool-tabs [data-fd-kit-tool]');
-    const panel = page.locator('.fd-kit__tool-preview[role="tabpanel"]');
-    await expect(tabs).toHaveCount(audience(info).role === 'student' ? 8 : 9);
-    await expect(panel).toHaveCount(1);
-    await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
-    await expect(panel.locator('h3')).toHaveText((await tabs.first().innerText()).trim());
-    const before = await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}));
-    const ref = await tabs.nth(1).getAttribute('data-fd-kit-tool');
-    const title = (await tabs.nth(1).innerText()).trim();
-    await tabs.nth(1).click();
-    await expect(tabs.nth(1)).toBeFocused();
-    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
-    await expect(panel.locator('h3')).toHaveText(title);
-    await expect(panel.locator('p')).not.toBeEmpty();
-    await expect(panel.locator('[data-fd-open]')).toHaveAttribute('data-fd-open', ref);
-    expect(await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}))).toEqual(before);
-    await panel.locator('[data-fd-open]').click();
-    await readyReader(page, ref);
-    await expectHealthy(page);
-  });
-  test('readings-first responsive targets and actual desktop and phone evidence', async ({ page }, info) => {
-    await seedApp(page, info);
-    for (const width of [390, 640, 641, 1280]) {
+    for (const width of [320, 390, 641, 1280]) {
       await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
       await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-      const tools = await page.locator('.fd-kit__tools').boundingBox();
-      const readings = await page.locator('.fd-kit__readings').boundingBox();
-      // Readings first on every width (2026-09-26). On phones the tools aside used to lead; with
-      // its preview card and teaching companion it was 496px tall and no reading was on screen.
-      if (width <= 640) expect(readings.y + readings.height).toBeLessThanOrEqual(tools.y);
-      if (width === 390) {
-        const first = await page.locator('.fd-kit__reading').first().boundingBox();
-        const dock = await page.locator('.fd-dock:visible').boundingBox();
-        expect(first.y + first.height, 'the first reading is whole on the first phone screen, above the dock')
-          .toBeLessThanOrEqual(dock.y);
+      const desktop = width >= 1000;
+      await expect(page.locator('.fd-kit__tool-preview')).toBeVisible({ visible: desktop });
+      await expect(page.locator('.fd-kit__peek').first()).toBeVisible({ visible: desktop });
+      await expect(page.locator('.fd-library__filter-key')).toBeVisible({ visible: desktop });
+      if (desktop) {
+        const index = await page.locator('.fd-kit__index').boundingBox();
+        const list = await page.locator('.fd-kit__readings').boundingBox();
+        const pane = await page.locator('.fd-kit__tool-preview').boundingBox();
+        expect(index.x + index.width).toBeLessThanOrEqual(list.x + 1);
+        expect(list.x + list.width).toBeLessThanOrEqual(pane.x + 1);
+      } else {
+        const track = page.locator('.fd-kit__index-track');
+        expect(await track.evaluate(el => getComputedStyle(el).overflowX)).toBe('auto');
+        if (width <= 390) {
+          const first = await page.locator('.fd-kit__reading').first().boundingBox();
+          const dock = await page.locator('.fd-dock:visible').boundingBox();
+          expect(first.y + first.height, 'the first reading is whole on the first phone screen, above the dock').toBeLessThanOrEqual(dock.y);
+        }
       }
-      if (width >= 1000) expect(tools.x).toBeGreaterThanOrEqual(readings.x + readings.width);
-      for (const control of await page.locator('.fd-kit__reading, .fd-kit__tool-tab, .fd-kit__tool-preview [data-fd-open], .fd-kit__group > summary, [data-fd-kit-section]').all()) {
-        await control.focus(); await expect(control).toBeFocused();
+      const controls = '.fd-kit__reading, .fd-library__view, .fd-library__filter, .fd-kit__group > summary, [data-fd-kit-section], .fd-kit__peek:visible, .fd-kit__preview-open:visible';
+      for (const control of await page.locator(controls).all()) {
+        if (!(await control.evaluate(el => el.matches('.fd-library__filter')))) { await control.focus(); await expect(control).toBeFocused(); }
         const box = await control.boundingBox();
+        // 44px on touch widths; 24px minimum on fine pointers (the desktop index rows are 9×12 on
+        // 14px text and the segmented options are the spec's 38px).
+        const min = desktop && await control.evaluate(el => el.hasAttribute('data-fd-kit-section') || el.hasAttribute('data-fd-library-view')) ? 24 : 44;
         // Chromium can report a CSS 44px target as 43.999984px after scrolling.
-        expect(Math.round(box.height * 1000) / 1000).toBeGreaterThanOrEqual(44);
-        expect(Math.round(box.width * 1000) / 1000).toBeGreaterThanOrEqual(44);
+        expect(Math.round(box.height * 1000) / 1000).toBeGreaterThanOrEqual(min);
+        expect(Math.round(box.width * 1000) / 1000).toBeGreaterThanOrEqual(min);
         expect(box.x).toBeGreaterThanOrEqual(0); expect(box.x + box.width).toBeLessThanOrEqual(width);
       }
-      const toolTabs = page.locator('.fd-kit__tool-tabs [data-fd-kit-tool]');
-      await toolTabs.first().focus();
-      const stable = await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}));
-      for (let i = 1; i < await toolTabs.count(); i++) {
-        await page.keyboard.press('ArrowRight'); await expect(toolTabs.nth(i)).toBeFocused();
-        await expect(toolTabs.nth(i)).toHaveAttribute('aria-selected', 'true');
-        const box = await toolTabs.nth(i).boundingBox();
-        const strip = await page.locator('.fd-kit__tool-tabs').boundingBox();
-        expect(box.x).toBeGreaterThanOrEqual(strip.x);
-        expect(box.x + box.width).toBeLessThanOrEqual(strip.x + strip.width);
-        expect(await page.evaluate(() => ({url: location.href, local: {...localStorage}, session: {...sessionStorage}}))).toEqual(stable);
-      }
       if (width === 390 || width === 1280) {
-        await page.evaluate(() => {document.activeElement.blur(); document.querySelector('.fd-kit__tool-tabs').scrollLeft = 0; window.scrollTo(0, 0);});
+        await page.evaluate(() => {document.activeElement.blur(); window.scrollTo(0, 0);});
         await page.evaluate(() => document.fonts.ready);
         const path=info.outputPath(`essentials-${audience(info).role}-${width}.png`);
         await page.screenshot({path,animations:'disabled'});
         await info.attach(`essentials-${audience(info).role}-${width}`,{path,contentType:'image/png'});
+        await full(page).click();
+        await expect(page.locator('.fd-collink').first()).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+        const fullPath=info.outputPath(`everything-${audience(info).role}-${width}.png`);
+        await page.screenshot({path: fullPath,animations:'disabled'});
+        await info.attach(`everything-${audience(info).role}-${width}`,{path: fullPath,contentType:'image/png'});
       }
     }
+    // 200% text at 320px: nothing scrolls sideways.
+    await page.setViewportSize({width: 320, height: 844}); await page.goto('/?tab=library');
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+    await full(page).click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+    // Reduced motion: no animation anywhere in the Library.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/?tab=library');
+    expect(await page.locator('.fd-library, .fd-library *').evaluateAll(els => els.filter(el => { const s = getComputedStyle(el); return s.animationName !== 'none' || (s.transitionDuration !== '0s' && s.transitionDuration !== ''); }).length)).toBe(0);
   });
   test('L4: every resource omitted from kit remains readable through Full and Back', async ({ page }, info) => {
     // Exhaustive mounted navigation costs more than one ordinary smoke flow.
@@ -3835,9 +4227,10 @@ test.describe('Essentials Phase 2', () => {
     await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
     await input.fill('she said she wants to die');
     await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await expect(page.locator('.fd-result').first()).toHaveClass(/is-first/);
     await expectHealthy(page);
   });
-  test('L6: view toggles add no storage keys or stored view, and tool openLibrary resets to kit', async ({ page }, info) => {
+  test('L6: view toggles and the filter add no storage keys or stored view, and tool openLibrary resets to kit', async ({ page }, info) => {
     await seedApp(page, info);
     await page.goto('/?tab=library');
     await expect(essentialsResources(page)).toHaveCount(kitCount(info));
@@ -3850,18 +4243,23 @@ test.describe('Essentials Phase 2', () => {
     const before = await snapshot();
     await full(page).click();
     await kit(page).click();
+    await filterField(page).fill('mood');
+    await page.locator('[data-fd-kit-section="tools"]').click();
     expect(await snapshot()).toEqual(before);
     const payload = await (await page.request.get('/')).text();
     const keys = payload.match(/var FD_KEYS=(\[[^;]+\]);/);
     expect(keys).not.toBeNull();
     expect(keys[1]).not.toContain('libraryView');
     expect(keys[1]).not.toContain('kitSection');
+    expect(keys[1]).not.toContain('libraryFilter');
+    expect(keys[1]).not.toContain('kitToolPreview');
     await full(page).click();
+    await page.locator('[data-fd-library-filter-clear]').click();
     await page.locator('.fd-collink[data-fd-open="mse.html"]').click();
     await readyReader(page, 'mse.html');
     const frame = await page.locator('.fd-article iframe').elementHandle();
     await (await frame.contentFrame()).evaluate(() => parent.postMessage({ type: 'openLibrary' }, location.origin));
-    await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
+    await expect(page.locator('.fd-library.fd-kit .fd-library__h1')).toHaveText('Library');
     await expect(essentialsResources(page)).toHaveCount(kitCount(info));
   });
   test('A2: an entirely unresolved built kit falls back to the complete Library', async ({ page }, info) => {
@@ -3881,12 +4279,12 @@ test.describe('Essentials Phase 2', () => {
       await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(curriculum) + body.slice(end) });
     });
     await page.goto('/?tab=library');
-    await expect(page.locator('.fd-library__h1')).toHaveText('Everything, one screen');
+    await expect(page.locator('.fd-library:not(.fd-kit) .fd-library__h1')).toHaveText('Library');
     await expect(kit(page)).toHaveCount(0);
     await expect(rows(page)).toHaveCount(audience(info).libraryCount);
     await expectHealthy(page);
   });
-  test('T1: phone quick tools precede the primary action without overflow; wider layouts retain order', async ({ page }, info) => {
+  test('T1: phone quick tools follow the week below the primary without overflow; wider layouts retain order', async ({ page }, info) => {
     await seedApp(page, info, { storage: { cw_srs_v1: OTF.srs } });
     for (const width of [390, 640, 641, 1280]) {
       await page.setViewportSize({ width, height: 844 });
@@ -3902,11 +4300,18 @@ test.describe('Essentials Phase 2', () => {
         await expect(page.locator('.fd-rail')).toBeVisible();
         const rail = await page.locator('.fd-rail').boundingBox();
         expect(rail.x).toBeGreaterThan(primary.x + primary.width);
+        // The rail ends with the learning-record link; the phone copy is hidden here.
+        await expect(page.locator('.fd-rail .fd-progresscard')).toBeVisible();
+        await expect(page.locator('.fd-today__record')).toBeHidden();
       } else {
         await expect(pills).toBeVisible();
         const bounds = await pills.boundingBox();
-        if (width <= 640) expect(bounds.y + bounds.height).toBeLessThanOrEqual(primary.y);
-        else expect(bounds.y).toBeGreaterThan(primary.y + primary.height);
+        // One-thread (README §1.9): the order:-1 hoist is gone at every width -- the Now card is
+        // first after the heading and the pills come after the week list.
+        expect(bounds.y).toBeGreaterThan(primary.y + primary.height);
+        const list = await page.locator('.fd-list').boundingBox();
+        expect(bounds.y).toBeGreaterThanOrEqual(list.y + list.height - 0.5);
+        await expect(page.locator('.fd-today__record .fd-progresscard')).toBeVisible();
         const links = pills.locator('button');
         for (let i = 0; i < await links.count(); i++) {
           await links.nth(i).focus();
@@ -4103,7 +4508,7 @@ test('Path: a supervisor feedback note saves privately, survives reload, and scr
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   await page.goto('/');
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   const open = page.locator('[data-fd-feedback-open]');
   if (!resident) {
     await expect(page.locator('.fd-detail__practice')).toBeVisible();
@@ -4147,7 +4552,7 @@ test('Path: a supervisor feedback note saves privately, survives reload, and scr
   await expect(page.locator('.fd-feedback__note')).toHaveCount(0);
   await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
   await page.reload();
-  await page.locator('[data-fd-tab="path"]:visible').click();
+  await page.locator('[data-fd-tab="path"]:is(.fd-tab,.fd-dock__item):visible').click();
   await page.locator('[data-fd-view-week="1"]').click();
   await expect(page.locator('.fd-feedback__note')).toHaveCount(2);
 
@@ -4791,7 +5196,9 @@ test('Today purpose active text meets contrast in both themes and disclosure sta
 
 for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
   for (const theme of ['light', 'dark']) {
-    test(`Today purpose is initially reachable before study: ${viewport.width}px ${theme}`, async ({ page }, testInfo) => {
+    // One-thread (README §1.5): the chooser is open on load and sits after the "Also today" rows
+    // (the collapsed study planner among them) and before the week list; it never changes the plan.
+    test(`Today purpose is initially open, after the Also rows and before the week: ${viewport.width}px ${theme}`, async ({ page }, testInfo) => {
       await page.setViewportSize(viewport);
       await seedApp(page, testInfo, { storage: { cw_theme: theme } });
       await page.goto('/');
@@ -4801,7 +5208,8 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
       await expect(chooser.getByRole('button', { name: 'Family conversation', exact: true })).toBeVisible();
       await expect(page.locator('[data-today-planner-toggle]')).toBeVisible();
       await expect(block).not.toBeVisible();
-      expect(await chooser.evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-block')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+      expect(await chooser.evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-alsolist .fd-study-planner')) & Node.DOCUMENT_POSITION_PRECEDING))).toBe(true);
+      expect(await chooser.evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-listhead')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       const studyBefore = await block.textContent();
       const toggle = chooser.locator('summary');
@@ -4828,22 +5236,40 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
       await page.reload();
       await expect(chooser).toHaveAttribute('open', '');
       await expect(chooser.getByRole('button', { name: 'Regular Today', exact: true })).toHaveAttribute('aria-pressed', 'true');
-      await expect(chooser.locator('[data-fd-open]')).toHaveCount(0);
+      // No suggested resource after reload; the Prepare-for-tomorrow line that lives inside the
+      // chooser on the site that ships it (one-thread §1.5) is a different, standing control.
+      await expect(chooser.locator('.fd-btn--accent[data-fd-open]')).toHaveCount(0);
+      await expect(chooser.locator('[data-fd-open]:not(.fd-prepare [data-fd-open])')).toHaveCount(0);
     });
   }
 }
 
-test('Today purpose precedes an unfinished primary study block', async ({ page }, testInfo) => {
+// One-thread (README §1.5): the preparation chooser keeps its open state and copy but sits in its
+// one place -- after "Also today", before the week -- at every primary kind, including an unfinished
+// block, which it used to precede. The Now card is first after the heading.
+test('Today purpose follows an unfinished primary study block, open, and never changes the primary', async ({ page }, testInfo) => {
   await seedApp(page, testInfo, { storage: { cw_block_v1: {
     v: 1, minutes: 10, createdAt: FROZEN_NOW.getTime(),
     steps: [{ kind: 'page', ref: 'pg_interview.md', title: 'Interview & MSE', min: 5 }],
   } } });
   await page.goto('/');
-  const block = page.locator('.fd-primary .fd-block');
+  const block = page.locator('.fd-primary.fd-now--block .fd-block');
   await expect(block).toBeVisible();
   await expect(page.locator('.fd-purpose')).toHaveAttribute('open', '');
-  expect(await page.locator('.fd-purpose').evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-primary .fd-block')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  await expect(page.locator('.fd-purpose__summary')).toHaveText('What am I preparing for?');
+  await expect(page.locator('.fd-purpose__note')).toHaveText('Optional. Your choice stays in this page session and resets on reload. Regular Today and your due-review plan stay unchanged.');
+  expect(await page.locator('.fd-purpose').evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-primary .fd-block')) & Node.DOCUMENT_POSITION_PRECEDING))).toBe(true);
+  expect(await page.locator('.fd-purpose').evaluate(el => !!(el.compareDocumentPosition(document.querySelector('.fd-listhead')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
   await expect(block.locator('[data-block-continue]')).toHaveCount(1);
+  // Choosing a purpose is session-only and never moves the primary.
+  await page.locator('[data-today-purpose="interview"]').click();
+  await expect(page.locator('.fd-purpose__reason')).toContainText('Suggested because you chose Interview.');
+  await expect(page.locator('.fd-primary.fd-now--block .fd-block')).toHaveCount(1);
+  await expect(page.locator('.fd-now')).toHaveCount(1);
+  expect(await page.evaluate(() => Object.keys(localStorage).filter(k => /purpose/i.test(k)))).toEqual([]);
+  await page.reload();
+  await expect(page.locator('.fd-purpose')).toHaveAttribute('open', '');
+  await expect(page.locator('.fd-purpose__reason')).toHaveCount(0);
 });
 
 for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
@@ -4867,10 +5293,7 @@ for (const viewport of [{ width: 1280, height: 720 }, PHONE]) {
       await page.locator('[data-block-minutes="20"]').click();
       await expect(disclosure).toHaveAttribute('open', '');
       await expect(page.locator('[data-block-start="20"]')).toBeVisible();
-      if (viewport.width < 1000) {
-        await page.locator('.fd-dock__browse summary').click();
-        await page.locator('[data-fd-dock-browse-go="essentials"]').click();
-      } else await page.locator('[data-fd-tab="library"]:visible').first().click();
+      await page.locator('[data-fd-tab="library"]:visible').first().click();
       await page.goBack(); await expect(disclosure).toHaveAttribute('open', '');
       await page.goForward(); await expect(page.locator('.fd-library')).toBeVisible();
       await page.goBack(); await page.reload();
@@ -4894,21 +5317,24 @@ test('shared Library navigation: local views survive history and reload', async 
   await expect(library).toHaveText('Library');
   await library.click();
   const views = page.getByRole('navigation', { name: 'Library views', exact: true });
-  await expect(views.getByRole('button', { name: 'Essentials', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await views.getByRole('button', { name: 'Everything', exact: true }).focus();
+  await expect(views.getByRole('button', { name: /^Essentials/ })).toHaveAttribute('aria-pressed', 'true');
+  await views.getByRole('button', { name: /^Everything/ }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('.fd-library__grid')).toBeVisible();
+  await expect(page.locator('.fd-library:not(.fd-kit)')).toBeVisible();
   await expect(library).toHaveAttribute('aria-current', 'page');
   await page.reload();
-  await expect(views.getByRole('button', { name: 'Everything', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(views.getByRole('button', { name: /^Everything/ })).toHaveAttribute('aria-pressed', 'true');
   await page.goBack();
   await expect(page.locator('.fd-kit')).toBeVisible();
   await page.goForward();
-  await expect(page.locator('.fd-library__grid')).toBeVisible();
+  await expect(page.locator('.fd-library:not(.fd-kit)')).toBeVisible();
   await expectHealthy(page);
 });
 
-test('shared Library navigation: phone menu survives delayed hydration and Escape restores summary', async ({ page }, testInfo) => {
+test('shared Library navigation: the phone dock\'s Library slot survives delayed hydration and keeps focus', async ({ page }, testInfo) => {
+  // One-thread (2026-10-04): the dock's Browse <details> is gone; the Library slot is a plain button
+  // and the in-Library view switch chooses Essentials / Everything. A dock refresh mid-hydration
+  // must leave the focused slot focused (same-route focus restoration) and never re-add a menu.
   let releaseIndex;
   const delayed = new Promise(resolve => { releaseIndex = resolve; });
   await page.route('**/search-index.json', async route => { await delayed; await route.continue(); });
@@ -4916,13 +5342,10 @@ test('shared Library navigation: phone menu survives delayed hydration and Escap
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
   await expect(page.locator('.fd-today')).toBeVisible();
-  const summary = page.locator('.fd-dock__browse summary');
-  await expect(summary).toHaveText('Library');
-  await summary.focus();
-  await page.keyboard.press('Enter');
-  const choice = page.locator('[data-fd-dock-browse-go="full"]');
-  await choice.focus();
-  await choice.evaluate(el => { window.__libraryChoice = el; });
+  const library = page.locator('.fd-dock [data-fd-tab="library"]');
+  await expect(library).toHaveText('Library');
+  await expect(page.locator('.fd-dock details, .fd-dock [data-fd-dock-browse-go]')).toHaveCount(0);
+  await library.focus();
   await page.evaluate(() => {
     window.__libraryHydrated = false;
     new MutationObserver((records, observer) => {
@@ -4931,17 +5354,191 @@ test('shared Library navigation: phone menu survives delayed hydration and Escap
   });
   releaseIndex();
   await page.waitForFunction(() => window.__libraryHydrated);
-  // The observed dock refresh proves hydration settled before checking identity and focus.
-  await expect.poll(() => choice.evaluate(el => el === window.__libraryChoice)).toBe(true);
-  await expect(choice).toBeFocused();
-  await choice.press('Escape');
-  await expect(summary).toBeFocused();
-  await expect(page.locator('.fd-dock__browse')).not.toHaveAttribute('open', '');
-  await summary.press('Enter');
-  await choice.click();
-  await expect(page.locator('.fd-library__grid')).toBeVisible();
-  await expect(summary).toHaveAttribute('aria-current', 'page');
-  await expect(page.locator('.fd-dock [data-fd-tab="library"]')).not.toHaveAttribute('aria-current', 'page');
-  await expect(page.locator('.fd-dock__browse')).not.toHaveAttribute('open', '');
+  // The observed dock refresh proves hydration settled before checking focus landed on the
+  // equivalent slot (the dock re-renders; focus restoration finds the same destination).
+  await expect(library).toBeFocused();
+  await expect(page.locator('.fd-dock details')).toHaveCount(0);
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-kit')).toBeVisible();
+  await expect(library).toHaveAttribute('aria-current', 'page');
+  await page.locator('[data-fd-library-view="full"]:visible').first().click();
+  await expect(page.locator('.fd-library:not(.fd-kit)')).toBeVisible();
+  await expect(library).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-dock [aria-current="page"]')).toHaveCount(1);
+  await expectHealthy(page);
+});
+
+// One-thread Phase 1 acceptance, measured end to end: the same four destinations, labels and order
+// at 320, 390, 768 and 1280px; Safety visible at all of them; Search one activation away; the six-
+// week thread previews a week on Path without changing the learner's week, and Back / Forward /
+// reload keep the destination and the preview; no horizontal scroll at any of the widths.
+// (The Back/Forward/reload flow and the scrollWidth pin are salvaged from #967, re-targeted from
+// its .fd-weekmap to the spec's .fd-thread.)
+for (const width of [320, 390, 768, 1280]) {
+  test(`one thread at ${width}px: four destinations, Safety, Search, the thread previews on Path, history holds`, async ({ page }, info) => {
+    await page.setViewportSize({ width, height: 900 });
+    await seedApp(page, info);
+    await page.goto('/');
+    await expect(page.locator('.fd-today')).toBeVisible();
+    const phone = width <= 640;
+    const destinations = phone
+      ? page.locator('.fd-dock:visible button[data-fd-tab]')
+      : page.locator('.fd-tabs:visible .fd-tab[data-fd-tab]');
+    expect(await destinations.evaluateAll(nodes => nodes.map(n => n.getAttribute('data-fd-tab')))).toEqual(['today', 'path', 'library', 'care']);
+    expect((await destinations.allTextContents()).map(t => t.trim())).toEqual(phone
+      ? ['Today', 'Path', 'Library', 'Care'] : ['Today', 'Path', 'Library', 'Patient care resources']);
+    await expect(page.locator(phone ? '.fd-tabs' : '.fd-dock')).toBeHidden();
+    await expect(page.locator('.fd-safetybtn:visible')).toHaveCount(1);
+    await expect(page.locator('.fd-header .fd-searchbtn:visible')).toHaveCount(1);
+    await expect(page.locator('.fd-askbtn:visible, .fd-dock [data-capture-open]:visible')).toHaveCount(1);
+    await expect(page.locator('.fd-header [data-fd-change-week], .fd-carebtn, .fd-weekpill[data-fd-change-week]')).toHaveCount(0);
+
+    const thread = page.locator('.fd-thread');
+    await expect(thread).toHaveAttribute('aria-label', 'Rotation weeks');
+    await expect(thread.locator('.fd-thread__node')).toHaveCount(audience(info).weekCount);
+    const weekGrid = await thread.locator('.fd-thread__list').evaluate(list => {
+      const cells = [...list.children].map(node => node.getBoundingClientRect());
+      const box = list.getBoundingClientRect();
+      return {count: cells.length, width: box.width, lastRight: cells.at(-1).right, right: box.right,
+        cellWidths: cells.map(cell => cell.width)};
+    });
+    expect(Math.abs(weekGrid.lastRight - weekGrid.right), 'actual weeks fill the thread').toBeLessThan(1);
+    for (const cellWidth of weekGrid.cellWidths) {
+      expect(Math.abs(cellWidth - weekGrid.width / weekGrid.count)).toBeLessThan(1);
+    }
+    await expect(thread.locator('[aria-current="step"]')).toHaveAttribute('data-fd-view-week', '1');
+    await expect(thread.locator('[aria-current="step"]')).toHaveAccessibleName(/^Week 1: .+ \(current week\)$/);
+    // Phone: only the current label is shown; every node is still a 44px target with its name.
+    if (phone) {
+      const labels = await thread.locator('.fd-thread__label').evaluateAll(nodes => nodes.map(n => ({
+        current: !!n.closest('.is-current'), width: n.getBoundingClientRect().width,
+      })));
+      expect(labels.filter(l => !l.current).every(l => l.width <= 1), 'non-current labels are clipped').toBe(true);
+      expect(labels.find(l => l.current).width).toBeGreaterThan(20);
+      for (const node of await thread.locator('.fd-thread__node').all()) {
+        const box = await node.boundingBox();
+        expect(box.width).toBeGreaterThanOrEqual(44);
+        expect(box.height).toBeGreaterThanOrEqual(44);
+      }
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await thread.locator('[data-fd-view-week="2"]').click();
+    await expect(page.locator('.fd-path')).toBeVisible();
+    await expect(page.locator('#fd-path-week-2')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#fd-path-week-1')).toHaveAttribute('aria-current', 'step');
+    expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBe('2026-08-17');
+    await expect(page.locator(phone ? '.fd-dock [data-fd-tab="path"]' : '.fd-tabs [data-fd-tab="path"]')).toHaveAttribute('aria-current', 'page');
+    await page.goBack();
+    await expect(thread).toBeVisible();
+    await expect(thread.locator('[aria-current="step"]')).toHaveAttribute('data-fd-view-week', '1');
+    await page.goForward();
+    await expect(page.locator('#fd-path-week-2')).toHaveAttribute('aria-selected', 'true');
+    await page.reload();
+    await expect(page.locator('#fd-path-week-2')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#fd-path-week-1')).toHaveAttribute('aria-current', 'step');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await expectHealthy(page);
+  });
+}
+
+// Phase 1 acceptance: 1-4 switch destinations, "/" and ⌘K open Search, Esc closes and returns focus
+// to the invoker, the active destination carries aria-current, and the four landmarks exist.
+test('one thread keyboard: 1-4, slash, cmd-K, Escape, focus return, aria-current and landmarks', async ({ page }, info) => {
+  await page.setViewportSize(DESKTOP);
+  await seedApp(page, info);
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  const landmarks = await page.evaluate(() => ({
+    banner: document.querySelectorAll('header.fd-header').length,
+    nav: document.querySelectorAll('nav.fd-tabs, nav.fd-thread, nav.fd-dock').length,
+    main: document.querySelectorAll('main#content').length,
+    complementary: document.querySelectorAll('aside.fd-rail').length,
+  }));
+  expect(landmarks.banner).toBe(1);
+  expect(landmarks.nav).toBeGreaterThanOrEqual(2);
+  expect(landmarks.main).toBe(1);
+  expect(landmarks.complementary).toBe(1);
+  for (const [key, tab] of [['2', 'path'], ['3', 'library'], ['4', 'care'], ['1', 'today']]) {
+    await page.keyboard.press(key);
+    await expect(page.locator(`.fd-tabs [data-fd-tab="${tab}"]`)).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.fd-tabs [aria-current="page"]')).toHaveCount(1);
+  }
+  const search = page.locator('.fd-header .fd-searchbtn');
+  await search.focus();
+  await page.keyboard.press('/');
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  await expect(dialog.getByRole('textbox', { name: 'Search resources' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(search).toBeFocused();
+  await page.keyboard.press('Meta+k');
+  await expect(dialog.getByRole('textbox', { name: 'Search resources' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(search).toBeFocused();
+  // The header's Ask opens the capture dialog and gets focus back on close.
+  const ask = page.locator('.fd-askbtn[data-capture-open]');
+  await ask.click();
+  await expect(page.locator('.cap-sheet[role="dialog"]')).toBeVisible();
+  await expect(ask).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.cap-sheet')).toHaveCount(0);
+  await expect(ask).toBeFocused();
+  await expect(ask).toHaveAttribute('aria-expanded', 'false');
+  await expectHealthy(page);
+});
+
+// Phase 1 acceptance: at 200% text and at 320px there is no horizontal scroll and nothing is
+// clipped; under reduced motion nothing animates on Today.
+test('one thread at 200% text and 320px: no horizontal scroll, no clipping, no animation under reduced motion', async ({ page }, info) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await seedApp(page, info, { storage: { cw_srs_v1: OTF.srs, cw_capture_v1: OTF.capture } });
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    await expect(page.locator('.fd-today')).toBeVisible();
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    await page.evaluate(() => document.fonts.ready);
+    const probe = await page.evaluate(() => {
+      // The quick-tool pills live in a deliberate sideways scroller (one row, 2026-09-26 fold probe);
+      // items inside a horizontally scrollable ancestor are reachable, not clipped.
+      const scroller = el => { for (let n = el.parentElement; n; n = n.parentElement) { const o = getComputedStyle(n).overflowX; if (o === 'auto' || o === 'scroll') return true; } return false; };
+      const clipped = [...document.querySelectorAll('.fd-today__main button, .fd-today__main a, .fd-header button')].filter(el => {
+        const box = el.getBoundingClientRect();
+        return box.width > 0 && !scroller(el) && (box.right > document.documentElement.clientWidth + 0.5 || box.left < -0.5);
+      }).map(el => String(el.className).split(' ')[0]);
+      const animated = [...document.querySelectorAll('.fd-today, .fd-today *')].filter(el => {
+        const s = getComputedStyle(el);
+        return s.animationName !== 'none' && s.animationDuration !== '0s';
+      }).map(el => String(el.className).split(' ')[0]);
+      return { scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth, clipped: [...new Set(clipped)], animated: [...new Set(animated)] };
+    });
+    expect(probe.scrollWidth, `${width}px at 200% text: no horizontal scroll`).toBeLessThanOrEqual(probe.clientWidth);
+    expect(probe.clipped, `${width}px at 200% text: nothing clipped`).toEqual([]);
+    expect(probe.animated, `${width}px reduced motion: nothing animates`).toEqual([]);
+    await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
+  }
+  await expectHealthy(page);
+});
+
+
+test('Library view switch fits at 320px with wider fallback font metrics', async ({page}, info) => {
+  await seedApp(page, info);
+  await page.setViewportSize({width:320,height:844});
+  await page.goto('/?tab=library');
+  await expect(page.locator('.fd-library__views')).toBeVisible();
+  await page.addStyleTag({content:'.fd-library__views {font-family:Verdana,sans-serif}'});
+  const buttons=page.locator('.fd-library__view');
+  for(const button of await buttons.all()) {
+    const box=await button.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x+box.width).toBeLessThanOrEqual(320);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(await button.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  }
+  await buttons.nth(1).click();
+  await expect(buttons.nth(1)).toHaveAttribute('aria-pressed','true');
   await expectHealthy(page);
 });

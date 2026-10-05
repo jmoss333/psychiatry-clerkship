@@ -40,7 +40,7 @@ const GOLDEN = [
   ['prozac', ['fluoxetine']], ['lexapro', ['escitalopram']], ['wellbutrin', ['bupropion']],
   ['remeron', ['mirtazapine']], ['ativan', ['lorazepam']], ['klonopin', ['clonazepam']],
   ['depakote', ['valproate']], ['tegretol', ['carbamazepine']], ['lamictal', ['lamotrigine']],
-  ['suboxone', ['buprenorphine']], ['vivitrol', ['naltrexone']], ['chantix', ['varenicline']],
+  ['suboxone', ['buprenorphine']], ['chantix', ['varenicline']],
   ['abilify', ['aripiprazole']], ['risperdal', ['risperidone']], ['invega', ['paliperidone']],
   ['latuda', ['lurasidone']], ['vraylar', ['cariprazine']], ['clozaril', ['clozapine']],
   ['effexor', ['venlafaxine']], ['cymbalta', ['duloxetine']], ['nardil', ['phenelzine']],
@@ -91,6 +91,15 @@ test('AC9: the golden set returns an expected drug in the top 3 for every query'
     if (!want.some((id) => top.includes(id))) misses.push(`${JSON.stringify(q)} → [${top.join(', ')}] (wanted one of ${want.join('/')})`);
   }
   assert.deepEqual(misses, []);
+});
+
+// #944 deliberately limits this card to oral naltrexone; the injectable brand is not an alias.
+test('oral naltrexone is found by generic name, not the injectable Vivitrol brand', () => {
+  assert.ok(P.rxFilterAgents(FEED, 'naltrexone', '').slice(0, 3).some(a => a.id === 'naltrexone'));
+  for (const query of ['vivitrol', 'Vivitrol']) {
+    assert.ok(!P.rxFilterAgents(FEED, query, '').some(a => a.id === 'naltrexone'),
+      `${query} must not return the oral-only naltrexone card`);
+  }
 });
 
 test('search is case- and diacritic-insensitive, AND across words, and empty for nonsense', () => {
