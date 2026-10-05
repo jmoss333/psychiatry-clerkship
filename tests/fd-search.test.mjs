@@ -95,7 +95,10 @@ test('care-intent searches surface the matching ReConnect resource without forwa
   assert.match(row, /target="_blank" rel="noopener noreferrer"/);
   assert.doesNotMatch(row, /housing|\?/i,
     'the destination is static; the learner query and patient context never cross sites');
-  assert.match(html, /External care resources open in a new tab/);
+  // Phase 2 of the one-thread redesign: care results sit under their own group label; the footer
+  // sentence is the spec's.
+  assert.match(html, /<p class="fd-searchpanel__group is-care">Patient care resources<\/p><a class="fd-result is-care"/);
+  assert.match(html, /<div class="fd-searchpanel__foot">Searches inside every page and tool\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
 });
 
 test('care suggestions never outrank an explicit safety trigger', () => {
@@ -179,13 +182,56 @@ test('empty query never throws on a missing index (undefined defaults like every
 
 // ---- fdSearchOverlay markup ------------------------------------------------------------------
 
-test('renders the panel skeleton with input, esc button, and footer copy', () => {
+test('renders the panel skeleton with input, Close button, grouped results and the footer sentence (Phase 2)', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
   assert.match(html, /^<div class="fd-search"(?:\s|>)/);
   assert.match(html, /<div class="fd-searchpanel">/);
   assert.match(html, /<input type="text" class="fd-searchpanel__input" value=""/);
-  assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>esc<\/button>/);
-  assert.match(html, /<div class="fd-searchpanel__foot">Choose a result to open it/);
+  assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>Close<\/button>/);
+  assert.match(html, /<div class="fd-searchpanel__foot">Searches inside every page and tool\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
+  // Defaults: the five protocols lead, then the pinned tools and the pocket guide, each under its group label.
+  const groups = [...html.matchAll(/<p class="fd-searchpanel__group(?: (is-[a-z]+))?">([^<]+)<\/p>/g)].map((m) => m[2]);
+  assert.deepEqual(groups, ['Safety protocols', 'Tools', 'Pages']);
+  assert.match(html, /<p class="fd-searchpanel__group is-safety">Safety protocols<\/p><button type="button" class="fd-result is-first" data-fd-safety="/,
+    'the leading protocol sits on the danger wash');
+});
+
+test('groups follow the ranking so the first rendered row is always results[0] -- the row Enter opens', () => {
+  // A crisis / topic query leads with its protocol, so Safety protocols come first, as the concept draws.
+  const delirium = F.fdSearchOverlay(REAL_INDEX, 'delirium', SYN, {});
+  const deliriumGroups = [...delirium.matchAll(/<p class="fd-searchpanel__group[^>]*>([^<]+)<\/p>/g)].map((m) => m[1]);
+  assert.equal(deliriumGroups[0], 'Safety protocols');
+  assert.match(delirium, /class="fd-result is-first" data-fd-safety="delirium\.md"/);
+  // An alias query (#429) keeps its tool ahead of a protocol that merely shares a word: Tools lead, and
+  // no protocol wears the danger wash because none is first.
+  const refuses = F.fdSearchOverlay(REAL_INDEX, 'patient refuses medication', SYN, {});
+  const refusesGroups = [...refuses.matchAll(/<p class="fd-searchpanel__group[^>]*>([^<]+)<\/p>/g)].map((m) => m[1]);
+  assert.equal(refusesGroups[0], 'Tools');
+  assert.match(refuses, /<p class="fd-searchpanel__group">Tools<\/p><button type="button" class="fd-result" data-fd-open="capacity\.html"/);
+  assert.doesNotMatch(refuses, /is-first/);
+  for (const [query, html] of [['delirium', delirium], ['patient refuses medication', refuses]]) {
+    const results = F.fdSearchResults(REAL_INDEX, query, SYN, {});
+    const firstRow = html.match(/class="fd-result[^"]*" data-fd-(?:open|safety)="([^"]+)"/)[1];
+    assert.equal(firstRow, results[0].item.ref, `${query}: the first rendered row is the ranked first`);
+    const rendered = [...html.matchAll(/class="fd-result[^"]*" data-fd-(?:open|safety)="([^"]+)"/g)].map((m) => m[1]);
+    assert.deepEqual([...rendered].sort(), results.map((r) => r.item.ref).sort(), `${query}: grouping drops nothing`);
+  }
+});
+
+test('result meta lines: the kit cue for protocols, "Reading · section · Weeks…" for pages, the hint for tools', () => {
+  const html = F.fdSearchOverlay(REAL_INDEX, 'delirium', SYN, {});
+  const kitSub = REAL_INDEX.kit.find((k) => k.item.ref === 'delirium.md').sub;
+  assert.ok(kitSub, 'fixture sanity: the delirium protocol has a cue line');
+  assert.match(html, new RegExp('data-fd-safety="delirium\\.md">[\\s\\S]*?<span class="fd-result__meta">' + kitSub.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '</span>'));
+  const page = REAL_INDEX.columns.flatMap((c) => c.items.map((it) => [it, c.name])).find(([it]) => it.kind === 'read' && /delirium/i.test(it.title) && !REAL_INDEX.kit.some((k) => k.item.ref === it.ref));
+  if (page) {
+    const [item, section] = page;
+    const row = html.match(new RegExp('data-fd-open="' + item.ref.replace(/\./g, '\\.') + '">[\\s\\S]*?</button>'));
+    assert.ok(row, `${item.ref} renders`);
+    assert.match(row[0], new RegExp('<span class="fd-result__meta">Reading · ' + section.replace(/&/g, '&amp;').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  const tools = F.fdSearchOverlay(REAL_INDEX, 'mental status', SYN, {});
+  assert.match(tools, /data-fd-open="mse\.html">[\s\S]*?<span class="fd-result__meta">Domain-by-domain descriptor bank/);
 });
 
 test('the results list announces its count politely (Fresh Eyes Audit A6)', () => {
@@ -208,7 +254,8 @@ test('the current query round-trips into the input value, escaped', () => {
 
 test('a protocol result carries data-fd-safety, not data-fd-open', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, 'suicide', SYN, {});
-  assert.match(html, /<button type="button" class="fd-result" data-fd-safety="pg_suicide\.md">/);
+  assert.match(html, /<button type="button" class="fd-result is-first" data-fd-safety="pg_suicide\.md">/);
+  assert.doesNotMatch(html, /data-fd-open="pg_suicide\.md"/);
 });
 
 test('choosing an ordinary search result navigates directly to its tool', () => {
@@ -276,8 +323,8 @@ test('the search overlay is a labelled modal dialog and its close control is nam
   assert.match(html, /^<div class="fd-search" role="dialog" aria-modal="true" aria-label="Search">/,
     'the full-screen search host is the modal surface');
   assert.match(html,
-    /class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">esc<\/button>/,
-    'the keyboard-looking close control must retain an explicit name');
+    /class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">Close<\/button>/,
+    'the close control keeps its explicit name');
 });
 
 // ---- purity / audience-neutral / no raw hex ---------------------------------------------------

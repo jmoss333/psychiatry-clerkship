@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(555 distinct `fd-*` selector names, 27 `is-*` state classes). Every class below has a rule in that file unless
+(573 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 1 (2026-10-04)** — shell and Today were rebuilt to
@@ -154,7 +154,7 @@ under `@media (pointer:coarse)`. Do not add padding or resize it to hit 44px —
 | `.fd-weekpill` | Now only `.fd-weekpill--identity`, the APP chip: a `<span>`, no hover, no action. |
 | `.fd-settingsbtn` | 36px icon-only header gear opening the settings panel (44px on phones); `aria-label` names the action. |
 | `.fd-tab.is-active` | Bold + teal + teal underline. |
-| `.fd-tab[data-fd-tab="everything"]` | Not a distinct `state.tab` value -- clicking it dispatches the same `data-fd-library-view="full"` transition as the in-Library "Everything (N pages) →" footer button (fd_library.js), landing on `tab:'library', libraryView:'full'`. `is-active` on Everything and on Essentials are mutually exclusive projections of that one `libraryView` field (fd_shell.js `fdTabs`). |
+| `.fd-tab[data-fd-tab="everything"]` | Not a distinct `state.tab` value -- clicking it dispatches the same `data-fd-library-view="full"` transition as the in-Library segmented control (fd_library.js), landing on `tab:'library', libraryView:'full'`. `is-active` on Everything and on Essentials are mutually exclusive projections of that one `libraryView` field (fd_shell.js `fdTabs`). |
 | `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right on tablet and desktop. |
 | `.fd-tab__label[data-compact]` | One resilient text node per responsive tab. Its full button `aria-label` remains accessible. |
 | `.fd-tab--care` | Uses `margin-left:auto` plus a quiet divider to keep Patient care resources visually separate at the far right. At ≤640px the divider and auto margin disappear. |
@@ -596,77 +596,109 @@ A compact row used elsewhere is borderless.
 
 ## 5. Library
 
-```
-.fd-library
-  .fd-library__head
-    .fd-library__h1 / .fd-library__count
-  .fd-library__grid
-    .fd-col                      (break-inside:avoid; a whole section per column)
-      .fd-col__name
-      .fd-collink  <button> ×N
-        .fd-collink__dot
-        .fd-collink__label
-        .fd-collink__hint          (tools only — the row's one-line "use this when…")
-```
-
-The Essentials view keeps the same `.fd-library` root and replaces the full Library grid with
-this subtree:
+One-thread redesign, Phase 2 (2026-10-04; spec `docs/superpowers/specs/one-thread-handoff/README.md`
+section 2). Essentials and Everything are two views of ONE Library and render through one shell
+(fd_library.js `fdLibraryShell`). The Essentials root carries the `.fd-kit` modifier; Everything is
+the bare `.fd-library`.
 
 ```
-.fd-library.fd-kit
+.fd-library[.fd-kit]
   .fd-library__head
-  nav.fd-kit__index                      (scrollable section index)
-    .fd-kit__index-track
-      button.fd-kit__index-item[data-fd-kit-section] ×N
-        .fd-kit__index-count
-  .fd-kit__review
-    details / summary                    (native review explanation)
-  .fd-kit__layout
+    .fd-library__h1                      ("Library", 34px serif)
+    .fd-library__lede                    (one 15px sentence)
+  .fd-library__controls
+    nav.fd-library__views                (segmented control, aria-label="Library views")
+      button.fd-library__view[data-fd-library-view][aria-pressed] ×2   + .is-active
+        .fd-library__view-count          (" · N", live totals, never filtered)
+    .fd-library__filter [role=search]
+      <svg>
+      input.fd-library__filter-input[data-fd-library-filter]
+      button.fd-library__filter-clear[data-fd-library-filter-clear]   (only with a query)
+      .fd-kbd.fd-library__filter-key     ("/", desktop only, only without a query)
+  p.fd-library__status [role=status]     (visible 13px dim line)
+  .fd-library__body                      + .has-preview (Essentials with a previewed item)
+    nav.fd-kit__index                    (aria-label="Essentials sections" | "Catalogue sections")
+      .fd-kit__index-track
+        button.fd-kit__index-item[data-fd-kit-section][aria-pressed] ×N   + .is-active
+          span / .fd-kit__index-count
     .fd-kit__readings
-      details.fd-kit__group ×N
+      .fd-kit__review                    (only with pending readings; existing string verbatim)
+        span / details > summary "What that means" + p
+      details.fd-kit__group[open] ×N
         summary
-        .fd-kit__reading <button> ×N
-          .fd-kit__title / .fd-kit__pending / .fd-kit__summary / .fd-kit__minutes
-    aside.fd-kit__tools                  (tool preview rail)
-      details.fd-kit__group.fd-kit__tool-group
-        summary
-        .fd-kit__tool-switcher
-          .fd-kit__tool-tabs [role=tablist]
-            .fd-kit__tool-tab <button role=tab> ×N
-          .fd-kit__tool-preview [role=tabpanel]
-            h3 / p / governanceBadge(compact) / .fd-btn[data-fd-open]
-      .fd-kit__teaching                  (external teaching companion)
-        h3
-        .fd-teachinglink <a>
-          .fd-teachinglink__title / .fd-teachinglink__description
-        .fd-teachinglink__note
+          .fd-kit__group-name / .fd-kit__group-count ("· N") / .fd-kit__chevron
+        .fd-kit__item ×N                 + .is-selected (the previewed row, Essentials)
+          button.fd-kit__reading[data-fd-open]      (Essentials)  |  button.fd-collink[data-fd-open]  (Everything)
+            .fd-kit__titlerow
+              .fd-kit__safety [role=img aria-label="Safety"]   (kit pages and acute-safety tools)
+              .fd-kit__title (serif 19)                        |  .fd-collink__label (Inter 600 16)
+              .fd-chip.is-tool ("tool" | "reference")          (tools only)
+              governanceBadge(item.governance)                 (full badge, verbatim, when pending)
+            .fd-kit__summary             (summary verbatim; Everything: the hint verbatim)
+            .fd-kit__meta                ("Reading|Tool|Reference · N min · Safety kit · Week N · Case week N")
+          button.fd-kit__peek[data-fd-kit-tool][aria-pressed]  (Essentials only; desktop only)
+      .fd-library__footer                (with a query and matches)
+        button.fd-library__searchlink[data-fd-search][data-fd-search-query]
+      .fd-library__empty                 (with a query and no matches; replaces the groups)
+        .fd-library__empty-h / .fd-library__empty-p
+        .fd-library__empty-actions
+          .fd-btn.fd-btn--primary[data-fd-search][data-fd-search-query]  "Search all content"
+          .fd-btn.fd-btn--ghost[data-fd-library-filter-clear]            "Clear filter"
+        .fd-library__empty-note
+      .fd-kit__teaching                  (Essentials, All/Tools, no query — external teaching companion)
+        h3 / .fd-teachinglink <a> (.fd-teachinglink__title / .fd-teachinglink__description) / .fd-teachinglink__note
+    aside.fd-kit__tool-preview#fd-kit-tool-preview [aria-label=Preview]   (Essentials, desktop only)
+      .fd-kit__preview-kicker / .fd-kit__preview-title / .fd-kit__preview-summary
+      .fd-kit__preview-h "Where it is used" + ul.fd-kit__preview-list
+      .fd-kit__preview-h "Practice with" + p.fd-kit__preview-practice ×N
+      .fd-kit__preview-status [.fd-kit__preview-attested]   (badge verbatim | "✓ faculty-attested")
+      .fd-btn.fd-btn--primary.fd-kit__preview-open[data-fd-open]   ("Open reading" | "Open tool")
+      .fd-kit__preview-note
 ```
 
-The selected `.fd-kit__tool-preview` includes the shared compact governance badge after its title/hint and before its single launch button. Its status follows the resolved item, including pending preparation content; tool selection remains transient.
+Layout. Below 1000px `.fd-library__body` is one column: the index is a horizontally scrolling chip
+row (`.fd-kit__index-track{display:flex;overflow-x:auto}`, 44px pill chips), the preview pane and
+every `.fd-kit__peek` are `display:none`. At 1000px and wider the body is `200px | minmax(0,1fr)`
+(index sidebar of 9×12 rows, active row on teal-wash), or `200px | 1fr | 320px` with
+`.has-preview`, which also shows the pane and the per-row Preview control. `.fd-kit__item.is-selected`
+is styled only inside `.has-preview`. The row itself (`data-fd-open`) opens the page at every width;
+the Preview control (`data-fd-kit-tool`) only changes the pane. No row animation: the list repaints on
+every keystroke of the filter.
 
-At 1000px and wider, `.fd-kit__layout` is a 3:1 readings/tool-rail grid. Below 1000px the
-readings and tools stack in document order: **readings first, at every width** (2026-09-26). The tool
-rail used to move above the readings at 640px and narrower; once the aside carried the shared preview
-pane and the teaching companion it stood about 496px tall, and at 390x844 the first reading began below
-the dock. Do not reintroduce `order:-1` on `.fd-kit__tools`; `front-door.spec.js` asserts the first
-reading is whole above the dock at 390px. At 640px and narrower `.fd-kit__tool-tabs` is still a
-horizontally scrolling row above its shared preview pane. Arrow
-keys move the selected tool tab; only the preview pane's button opens a tool. The section picker and
-both group types remain native `select`/`details` controls at every width.
+State. Section (`kitSection`), filter (`libraryFilter`) and preview (`kitToolPreview`) are controller
+memory only (fd_wire.js): never persisted, never in the URL. Section and filter ride on the Library's
+history entry via `history.replaceState` so Back/Forward restore them (owner decision D3); a reload
+resets them. The preview is not in history. `/` focuses the filter in the Library; ⌘K still opens Search.
+
+Strings. Status: "Showing all N Essentials items." / "Showing all N pages." / "Showing N readings in
+X." / "Showing N pages in X." / "Showing N readings for this week." / "Showing N tools."; with a query
+"N of M items|pages match “q”." or "No titles match “q”.". The review banner, summaries, hints and
+badges are byte-identical to their sources; `<mark>` wraps the matched run without changing it.
 
 | Class | Notes |
 |---|---|
-| `.fd-library__grid` | Multi-column flow, `columns:280px` (2026-09-19; was an `auto-fill, minmax(280px,1fr)` grid whose rows were as tall as their tallest cell). Sections balance by height; `.fd-col{break-inside:avoid}` keeps each whole. |
-| `.fd-library__shortcut` | Wraps "· press / to filter" inside `.fd-library__count`; hidden at ≤640px as a whole fragment. |
-| `.fd-col__name` | Column heading: uppercase terracotta with a bottom rule. |
-| `.fd-collink__dot.is-tool` | Teal dot; default is olive (a read). |
-| `.fd-collink__hint` | One line under a tool's label, from `curriculum.libraryHints` (2026-09-16). The row wraps (`flex-wrap`) and the hint takes the full width, indented past the dot. Omitted from the markup, not emptied, when an item has none — every read row renders exactly as before. |
+| `.fd-library__views` | Re-valued (was a row of ghost buttons): `inline-grid 2 cols; padding:3px; radius 10` on `--fd-chip`; the active option lifts onto `--fd-surface` with a 1px/3px shadow, teal-deep 700. |
+| `.fd-library__filter` | The bordered box is the control (`flex:1 1 320px; min-height:44px; 1.5px --fd-line-strong; radius 10`); the input inside is borderless and `:focus-within` paints the ring on the box. |
+| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. |
+| `.fd-kit__index-item` | One markup, two shapes: pill chip (phone) or sidebar row (desktop). `.is-active` is teal-wash + teal-deep 700 in both. Counts show matches while a query is live. |
+| `.fd-kit__review` | Existing string verbatim, now on `--fd-olive-wash` with `border-left:3px solid --fd-olive`; the summary is olive-deep 700 underlined. |
+| `.fd-kit__group > summary` | "Name · count", 13px/700 `--fd-text-mid`, `border-bottom:1px solid --fd-line-strong`; every group starts open. |
+| `.fd-kit__item` | Row wrapper: `grid minmax(0,1fr) auto; border-bottom:1px solid --fd-line`. `.is-selected` (desktop Essentials): `--fd-selected` background, `inset 3px 0 0 --fd-teal`, bleeds 16px into the gutters. |
+| `.fd-kit__reading` / `.fd-collink` | The row button: `padding:16px 2px` (Everything 14px), name first. Serif 600 19px title in Essentials, Inter 600 16px in Everything. Hover colours the title teal-deep. |
+| `.fd-kit__safety` | The 8px `--fd-danger` dot — the only red in the list. |
+| `.fd-kit__meta` | 13px `--fd-text-dim`. Replaces `.fd-kit__minutes`. |
+| `mark` | `--fd-teal-wash`, `color:inherit`, radius 3 — inside titles, labels and Everything hints only. |
+| `.fd-kit__peek` | Desktop Essentials only (`display:none` otherwise): 44px pill, `aria-pressed` on the previewed row. |
+| `.fd-kit__tool-preview` | Re-valued as the one card on the screen: padding 20, radius 12, `border-top:3px solid --fd-teal`, `--fd-shadow-card`. Shown only inside `.has-preview` at ≥1000px. |
+| `.fd-library__empty` | Max-width 560, `border-top:1px solid --fd-line-strong`; "Search all content" is the screen's one filled teal button in this state (the preview pane is withheld). |
 | `.fd-kit__teaching` | Keeps the Family Therapy Seminar Companion with teaching tools rather than patient-facing care links. Its fixed external link opens in a new tab, names that behavior with `.fd-visually-hidden` text, and preserves its local-browser/no-identifiers boundary in the note. |
 
-`.fd-col` gained its first rule on 2026-09-19 (`break-inside:avoid` + the section gap): it is the
-unit the multi-column flow keeps whole, and the wrapper that groups a heading with its links.
-
-⚠ `.fd-collink` rows have **no sibling margin** — they sit flush by design (5px internal padding).
+Retired on 2026-10-04 (Phase 2): `.fd-library__grid`, `.fd-col`, `.fd-col__name`, `.fd-collink__dot`,
+`.fd-collink__hint`, `.fd-library__count`, `.fd-library__shortcut`, `.fd-kit__layout`,
+`.fd-kit__layout--tools`, `.fd-kit__tools`, `.fd-kit__tool-group`, `.fd-kit__tool-switcher`,
+`.fd-kit__tool-tabs`, `.fd-kit__tool-tab`, `.fd-kit__minutes`. The five-column multicol flow and the
+tool tablist (with its arrow-key roving in fd_wire.js) left with them; `role="tablist"` is gone from
+the Library.
 
 ---
 
@@ -881,28 +913,41 @@ patient information, or an attestation, and it never turns a website action into
 
 ```
 .fd-search                          (fixed, full-screen scrim + flex host; click = close)
-  .fd-searchpanel                   (stopPropagation here)
-    .fd-searchpanel__head
+  .fd-searchpanel                   (stopPropagation here; radius 16, 3px teal top)
+    .fd-searchpanel__head           (min-height 56)
       <svg>
       .fd-searchpanel__input   <input>
-      .fd-searchpanel__esc     <button>esc</button>
+      .fd-searchpanel__esc     <button>Close</button>   (44px; aria-label="Close search")
     .fd-searchpanel__browse
       .fd-btn[data-fd-tab="library"] <button>Browse the Library</button> (standard mode only)
     .fd-searchpanel__body
-      .fd-result <button|a> ×N
-        .fd-result__dot         + .is-tool | .is-safety | .is-care
-        .fd-result__title
-        .fd-result__meta
+      .fd-searchpanel__group ×N       + .is-safety | .is-care   ("Safety protocols" / "Pages" / "Tools" / "Patient care resources")
+        .fd-result <button|a> ×N      + .is-first (a leading protocol, on --fd-danger-wash) | .is-care
+          .fd-result__dot         + .is-tool | .is-safety | .is-care   (default: outlined = a page)
+          .fd-result__title
+          governanceBadge
+          .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
-    .fd-searchpanel__foot
+    .fd-searchpanel__foot             ("Searches inside every page and tool. Not here? ＋ Ask a question saves it for supervision.")
 ```
+
+Groups (one-thread redesign, Phase 2, spec section 6) appear in the order their best-ranked member
+holds in `fdSearchResults`, so the first rendered row is always `results[0]` — the row Enter opens. A
+crisis query leads with its trigger protocol by contract, so Safety protocols lead exactly as the
+concept draws; an alias query (#429, "patient refuses medication") keeps its tool ahead of a protocol
+that merely shares a word. Meta lines: protocols carry the kit's own cue line (`safetyKit[].sub`);
+pages "Reading · <libraryColumns section> · Weeks…"; tools their `libraryHints` hint; a rights
+reference its existing "reference · not reproduced" line. On phones the panel sits `12px 10px 0` from the top edge.
 
 | Class | Notes |
 |---|---|
-| `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). |
+| `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). Phone: `padding:12px 10px 20px`. |
+| `.fd-searchpanel__esc` | Re-valued: a 44×44 text button reading "Close" (teal-deep 700), no border. The class name is unchanged so the mobile 44px rule keeps matching. |
 | `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above results. APP already has The Essentials in dock slot 2, so this row is absent. |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
-| `.fd-result__dot` | Default olive (read); `.is-tool` teal; `.is-safety` danger; `.is-care` olive-deep. |
+| `.fd-searchpanel__group` | 12px/700 group label, `--fd-text-mid`; `.is-safety` in `--fd-danger-dark`; `.is-care` olive-deep. |
+| `.fd-result` | A `8px | 1fr` grid at every width (title, badge and meta stack in column 2). `.is-first`: `--fd-danger-wash` background, 700 title. |
+| `.fd-result__dot` | Default: outlined 1.5px `--fd-text-dim` ring (a page); `.is-tool` teal fill; `.is-safety` danger fill; `.is-care` olive-deep fill. |
 | `.fd-result.is-care` | Static external ReConnect result rendered as an anchor. `data-care-resource` pairs the visible first result with the controller's Enter shortcut, so keyboard activation clicks that exact fixed anchor. Curated search terms are matched locally; the learner's query is never added to the URL or sent to ReConnect. Explicit safety results still sort first. |
 
 ⚠ The search overlay uses **one** element for scrim + layout. The sheet uses **two**
@@ -1004,16 +1049,19 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 
 | State | Applied to | Meaning |
 |---|---|---|
-| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice` | current tab / chosen segment / chosen chip / APP route, task, or private reflection |
+| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice`, `.fd-library__view`, `.fd-kit__index-item` | current tab / chosen segment / chosen chip / APP route, task, or private reflection / selected Library view / selected Library section |
 | `.is-sel` | `.fd-weektile`, `.fd-timeline__row` | chosen / viewed |
 | `.is-current` | `.fd-dot`, `.fd-railnav__row` | "you are here" |
 | `.is-done` | `.fd-check`, `.fd-dot`, `.fd-row__title`, `.fd-railnav__dot`, `.fd-railnav__title` | completed |
 | `.is-just-done` | `.fd-check`, `.fd-row__title` | **with `.is-done`** — fires the one-shot animation |
 | `.is-complete` | `.fd-continue__kicker` | whole week finished |
 | `.is-compact` | `.fd-row` | Path detail density |
-| `.is-tool` | `.fd-chip`, `.fd-collink__dot`, `.fd-result__dot` | item is a tool, not a read |
-| `.is-safety` | `.fd-result__dot` | search hit is a safety protocol |
-| `.is-care` | `.fd-result`, `.fd-result__dot` | search hit is an external ReConnect patient-care resource |
+| `.is-tool` | `.fd-chip`, `.fd-result__dot` | item is a tool, not a read |
+| `.is-selected` | `.fd-kit__item` | the Essentials row the desktop preview pane shows (transient) |
+| `.is-first` | `.fd-result` | the leading protocol row of a search that opens with Safety protocols (danger wash) |
+| `.has-preview` | `.fd-library__body` | Essentials body with a previewed item: adds the 320px preview column and the per-row Preview control at ≥1000px |
+| `.is-safety` | `.fd-result__dot`, `.fd-searchpanel__group` | search hit is a safety protocol / the Safety protocols group label |
+| `.is-care` | `.fd-result`, `.fd-result__dot`, `.fd-searchpanel__group` | search hit is an external ReConnect patient-care resource / its group label |
 | `.is-next` | `.fd-prevnext__btn` | right-aligned variant |
 | `.is-nav-next` / `.is-nav-prev` | `.fd-reader` | slide direction |
 | `.is-tool-expanded` | `.fd-main`, `.fd-reader--tool` | saved desktop tool workspace width |
@@ -1084,9 +1132,9 @@ The desktop header has one **Library** destination, selected for both Essentials
 Everything. The phone disclosure uses the same **Library** label and retains Search. Its summary
 marks the current Library destination, including the Everything view; the center
 Essential shortcut is not incorrectly marked current for Everything.
-`.fd-library__views` is a wrapping local view switch above either Library heading;
-its two `.fd-btn` controls have 44px minimum height and `aria-pressed` selection,
-with the existing teal action/location tokens. It replaces the distant Everything
-footer and full-view return button. Existing Library routes remain unchanged.
+`.fd-library__views` is the local view switch in the Library's controls row (a segmented control
+since the one-thread redesign, Phase 2, 2026-10-04 -- see section 5); its two
+`.fd-library__view` options carry `aria-pressed` selection and live counts. It replaces the
+distant Everything footer and full-view return button. Existing Library routes remain unchanged.
 Same-route dock refreshes retain the disclosure and focused choice; route changes
 close it. Escape closes the disclosure and returns focus to its summary.

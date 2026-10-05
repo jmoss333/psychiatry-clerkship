@@ -17,6 +17,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
   'data-fd-kit-section','data-fd-kit-tool',
+  'data-fd-library-filter','data-fd-library-filter-clear','data-fd-search-query',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
   'data-fd-care-pack-print','data-fd-care-share','data-fd-care-share-close',
@@ -33,8 +34,14 @@ var FD_ACTION_SEMANTICS={
   'data-fd-toggle':'toggle governed progress',
   'data-fd-tab':'open top-level tab',
   'data-fd-library-view':'choose Library view',
-  'data-fd-kit-section':'filter Essentials sections',
-  'data-fd-kit-tool':'preview an Essentials tool',
+  'data-fd-kit-section':'choose a Library section',
+  'data-fd-kit-tool':'preview an Essentials item',
+  /* The filter field commits on input events, like the exam-date field, and is deliberately
+     absent from FD_ACTION_SELECTOR. data-fd-search-query rides on a data-fd-search control and
+     seeds the dialog with the Library filter's query (zero results, filtered footer). */
+  'data-fd-library-filter':'filter Library titles and hints',
+  'data-fd-library-filter-clear':'clear the Library filter',
+  'data-fd-search-query':'seed the search dialog with the Library filter query',
   'data-fd-care-intent':'choose a transient Care navigator task',
   'data-fd-care-clear':'clear the transient Care navigator task',
   'data-fd-care-pack':'toggle a transient patient resource pack item',
@@ -143,7 +150,10 @@ function fdResolveState(url, stored, options){
   if(src.appBridge==='pa'||src.appBridge==='pmhnp') out.appBridge=src.appBridge;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
   out.libraryView='essentials';
+  /* Section, filter and preview are shell memory (one-thread redesign, D3): a reload always
+     starts the Library at All with an empty filter, whatever was stored or in the URL. */
   out.kitSection='all';
+  out.libraryFilter='';
   if(typeof src.openId==='string'&&src.openId) out.openId=src.openId;
   if(fdValidTab(src.fromTab)) out.fromTab=src.fromTab;
   if(typeof src.week==='number'&&!isNaN(src.week)) out.week=src.week;
@@ -619,6 +629,14 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-kit-tool')){
     return {patch:{kitToolPreview:String(a['data-fd-kit-tool']||'')},route:null,effect:null};
   }
+  /* The Library filter (one-thread redesign, Phase 2). Both are visit-only like kitSection: no
+     route, no save; apply() mirrors them onto the Library's history entry (D3). */
+  if(fdOwn(a,'data-fd-library-filter-clear')){
+    return {patch:{libraryFilter:''},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-library-filter')){
+    return {patch:{libraryFilter:String(a['data-fd-library-filter']||'')},route:null,effect:null};
+  }
   if(fdOwn(a,'data-fd-care-intent')){
     var careIntent=typeof a['data-fd-care-intent']==='string'
       ?a['data-fd-care-intent']:'';
@@ -683,6 +701,10 @@ function fdDispatch(attrs, context, state){
     patch={tab:tab,openId:null,searchOpen:false};
     if(tab!=='care'){ patch.careIntentId=''; patch.carePackIds=[]; }
     if(tab==='library'){ patch.libraryView='essentials'; patch.kitSection='all'; }
+    /* A fresh Library visit -- and leaving it -- clears the filter and the preview: both are
+       memory for ONE visit. Patched only when set so an unfiltered transition is unchanged. */
+    if(s.libraryFilter) patch.libraryFilter='';
+    if(s.kitToolPreview) patch.kitToolPreview='';
     return {patch:patch,route:fdRouteForTab(tab,c.search),effect:null};
   }
   if(fdOwn(a,'data-fd-role')){
@@ -721,8 +743,10 @@ function fdDispatch(attrs, context, state){
       }
       return {patch:{role:null,screen:'setup-role'},route:null,effect:null};
     }
+    /* Back returns to the SAME Library view, section and filter the item was opened from (spec
+       section 2 acceptance; owner decision D3). Until 2026-10-04 this reset kitSection to All. */
     tab=fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
-    return {patch:{openId:null,tab:tab,kitSection:'all'},route:fdRouteForTab(tab,c.search,s.libraryView),effect:null};
+    return {patch:{openId:null,tab:tab},route:fdRouteForTab(tab,c.search,s.libraryView),effect:null};
   }
   if(fdOwn(a,'data-fd-home')){
     return {
@@ -731,7 +755,11 @@ function fdDispatch(attrs, context, state){
     };
   }
   if(fdOwn(a,'data-fd-search')){
-    return {patch:{searchOpen:true},route:null,effect:{type:'focus-search'}};
+    patch={searchOpen:true};
+    /* The Library hands its filter query to Search (zero results, filtered footer). The query is
+       dialog state only: the search panel re-renders from it and nothing routes or saves it. */
+    if(fdOwn(a,'data-fd-search-query')) patch.query=String(a['data-fd-search-query']||'');
+    return {patch:patch,route:null,effect:{type:'focus-search'}};
   }
   if(fdOwn(a,'data-fd-change-week')){
     tab=s.openId&&fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
@@ -1078,7 +1106,7 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-library-filter-clear],'+
   '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
   '[data-fd-care-share],[data-fd-care-share-close],[data-fd-care-copy],[data-fd-care-copy-selected],'+
   '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
@@ -1397,11 +1425,19 @@ function fdWire(root, initialState, opts){
     for(var k in patch){ if(fdOwn(patch,k)) return true; }
     return !!r.route||!!(r.effect&&r.effect.type&&r.effect.type!=='set-theme');
   }
+  /* The route keys every entry carries, plus the Library's section and filter (owner decision D3,
+     one-thread redesign): both live ONLY here and in memory -- never in the URL, never in
+     storage -- so Back and Forward restore them, and a reload (which reads neither) resets them.
+     The preview (kitToolPreview) is deliberately absent: it stays transient. */
+  var FD_HISTORY_KEYS=['tab','viewWeek','openId','fromTab','libraryView','kitSection','libraryFilter'];
   function historySnapshot(){
-    var keys=['tab','viewWeek','openId','fromTab','libraryView'];
     var snap={};
-    for(var i=0;i<keys.length;i++){
-      if(state[keys[i]]!==undefined) snap[keys[i]]=state[keys[i]];
+    for(var i=0;i<FD_HISTORY_KEYS.length;i++){
+      var key=FD_HISTORY_KEYS[i];
+      if(state[key]===undefined) continue;
+      if(key==='kitSection'&&(state.tab!=='library'||state[key]==='all')) continue;
+      if(key==='libraryFilter'&&(state.tab!=='library'||!state[key])) continue;
+      snap[key]=state[key];
     }
     return {fd:true,state:snap};
   }
@@ -1482,7 +1518,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','careIntentId','carePackIds','offlineOpen'];
+    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','libraryFilter','careIntentId','carePackIds','offlineOpen'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1884,9 +1920,10 @@ function fdWire(root, initialState, opts){
     if(!before.openId&&state.openId){ state.scrollPos=currentScrollY(); rememberOpener(state.openId,invoker); }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
-    /* An explicit Essentials visit also reopens native groups when All was already selected. */
-    if(before.openId&&!state.openId&&state.tab==='library') state.kitSection='all';
-    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection');
+    /* Returning from an item keeps the Library's section and filter (spec section 2 acceptance:
+       "Opening an item and pressing Back returns to the same view, section and scroll"). Until
+       2026-10-04 this line reset kitSection to All on every return. */
+    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection')||fdOwn(patch,'libraryFilter');
     var detail=absorbStaleBase(transitionDetail(before,patch,result.effect,changedBase));
     var generation=navGeneration;
     if(changedBase||result.route||result.effect&&(result.effect.type==='open-resource'||
@@ -1963,13 +2000,13 @@ function fdWire(root, initialState, opts){
     }
     /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
        reset kitSection to All; those still carry durable route state and must be saved normally. */
-    var visitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||
+    var visitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||fdOwn(patch,'libraryFilter')||
       fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds')||fdOwn(patch,'careShareId')||
       fdOwn(patch,'offlineOpen')||!!(result.effect&&(result.effect.type==='refresh-offline'||
         result.effect.type==='copy-care-links'));
     var careShareTransition=fdOwn(patch,'careShareId');
     for(var saveKey in patch){
-      if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&
+      if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&saveKey!=='libraryFilter'&&
          saveKey!=='careIntentId'&&saveKey!=='carePackIds'&&saveKey!=='careShareId'&&
          saveKey!=='offlineOpen'&&!(careShareTransition&&(saveKey==='searchOpen'||saveKey==='sheet')))
         visitOnly=false;
@@ -1992,6 +2029,14 @@ function fdWire(root, initialState, opts){
     if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview'))&&!afterOverlay&&!beforeHadOverlay){
       var rebuiltFilter=equivalentControl(invoker,root);
       if(rebuiltFilter&&rebuiltFilter.focus) try{rebuiltFilter.focus();}catch(_){}
+    }
+    /* The filter field is rebuilt with the list it filters. Typing keeps the caret where it was
+       (inputHandler restores the selection it captured); Clear lands on the emptied field so the
+       learner can type again without a second click. */
+    if(fdOwn(patch,'libraryFilter')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector&&
+       invoker&&invoker.hasAttribute&&(invoker.hasAttribute('data-fd-library-filter')||invoker.hasAttribute('data-fd-library-filter-clear'))){
+      var filterField=root.querySelector('.fd-library__filter-input');
+      if(filterField&&filterField.focus) try{filterField.focus({preventScroll:true});}catch(_){try{filterField.focus();}catch(__){}}
     }
     if(fdOwn(patch,'careIntentId')&&!afterOverlay&&!beforeHadOverlay&&root&&root.querySelector){
       var careFocus=state.careIntentId
@@ -2123,6 +2168,23 @@ function fdWire(root, initialState, opts){
       if(state.feedbackDraft) state.feedbackDraft.text=String(target.value||'').slice(0,FD_FEEDBACK_MAX);
       return;
     }
+    /* The Library filter (one-thread redesign, Phase 2). Every keystroke is an ordinary dispatch
+       -- visit-only, mirrored onto the history entry (D3) -- and the list repaints around the
+       field, so the caret is put back where the learner left it, as the search input does. */
+    if(target&&target.matches&&target.matches('.fd-library__filter-input')){
+      if(!startupCommitted){
+        if(event.preventDefault) event.preventDefault();
+        return;
+      }
+      if(previewActive()){ lockPreview(); return; }
+      var fStart=target.selectionStart, fEnd=target.selectionEnd, fDir=target.selectionDirection;
+      apply(fdDispatch({'data-fd-library-filter':String(target.value||'')},context(),state),target,false);
+      var freshFilter=root&&root.querySelector?root.querySelector('.fd-library__filter-input'):null;
+      if(freshFilter&&freshFilter.setSelectionRange&&typeof fStart==='number'&&typeof fEnd==='number'){
+        try{freshFilter.setSelectionRange(fStart,fEnd,fDir||'none');}catch(_){}
+      }
+      return;
+    }
     if(!target||!target.matches||!target.matches('.fd-searchpanel__input')) return;
     if(!startupCommitted){
       if(event.preventDefault) event.preventDefault();
@@ -2205,20 +2267,18 @@ function fdWire(root, initialState, opts){
     if(externalModalOpen()) return;
     var d=dialog();
     if(d&&fdTrapFocus(event,d)) return;
-    var toolTab=event.target&&event.target.closest?event.target.closest('[data-fd-kit-tool]'):null;
-    if(toolTab&&(event.key==='ArrowRight'||event.key==='ArrowDown'||event.key==='ArrowLeft'||event.key==='ArrowUp'||event.key==='Home'||event.key==='End')){
-      var toolTabs=root&&root.querySelectorAll?root.querySelectorAll('[data-fd-kit-tool]'):[], current=-1, ti;
-      for(ti=0;ti<toolTabs.length;ti++) if(toolTabs[ti]===toolTab) current=ti;
-      if(current>=0&&toolTabs.length){
-        var next=current;
-        if(event.key==='Home') next=0;
-        else if(event.key==='End') next=toolTabs.length-1;
-        else if(event.key==='ArrowRight'||event.key==='ArrowDown') next=(current+1)%toolTabs.length;
-        else next=(current+toolTabs.length-1)%toolTabs.length;
+    /* The tool-tab arrow-key roving went with the tablist (one-thread redesign, Phase 2): the
+       preview is chosen from each row's own control, which is an ordinary button. */
+    /* In the Library "/" focuses the filter field rather than opening Search (spec: Interactions
+       & behaviour). ⌘K still opens Search from anywhere, and "/" is unchanged elsewhere. */
+    if(event.key==='/'&&!(event.metaKey||event.ctrlKey)&&!fdIsTypingTarget(event.target)&&
+       state.screen==='app'&&state.tab==='library'&&!state.openId&&!state.searchOpen&&!state.sheet&&!state.careShareId){
+      var filterField=root&&root.querySelector?root.querySelector('.fd-library__filter-input'):null;
+      if(filterField&&filterField.focus){
         if(event.preventDefault) event.preventDefault();
-        apply(fdDispatch({'data-fd-kit-tool':toolTabs[next].getAttribute('data-fd-kit-tool')},context(),state),toolTabs[next],false);
+        try{filterField.focus();}catch(_){}
+        return;
       }
-      return;
     }
     if(event.key==='Escape'&&(state.searchOpen||state.sheet||state.careShareId)){
       if(event.preventDefault) event.preventDefault();
@@ -2296,16 +2356,19 @@ function fdWire(root, initialState, opts){
     merged.sheetFrom=null;
     merged.stepsDone={};
     if(snap){
-      var routeKeys=['tab','viewWeek','openId','fromTab','libraryView'];
-      for(var routeIndex=0;routeIndex<routeKeys.length;routeIndex++){
-        delete merged[routeKeys[routeIndex]];
+      for(var routeIndex=0;routeIndex<FD_HISTORY_KEYS.length;routeIndex++){
+        delete merged[FD_HISTORY_KEYS[routeIndex]];
       }
-      for(var snapIndex=0;snapIndex<routeKeys.length;snapIndex++){
-        var routeKey=routeKeys[snapIndex];
+      for(var snapIndex=0;snapIndex<FD_HISTORY_KEYS.length;snapIndex++){
+        var routeKey=FD_HISTORY_KEYS[snapIndex];
         if(fdOwn(snap,routeKey)) merged[routeKey]=snap[routeKey];
       }
       if(merged.libraryView!=='full') merged.libraryView='essentials';
-      merged.kitSection='all';
+      /* Section and filter come back from the entry that recorded them (D3); an entry without
+         them -- every non-Library entry, and every entry written before this change -- means All
+         and no filter. Anything but a string is treated as absent. */
+      if(typeof merged.kitSection!=='string'||!merged.kitSection) merged.kitSection='all';
+      if(typeof merged.libraryFilter!=='string') merged.libraryFilter='';
     } else {
       merged.roles=o.roles||merged.roles;
       merged.rotationStart=o.rotationStart||merged.rotationStart;

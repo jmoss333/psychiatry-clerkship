@@ -53,8 +53,12 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-exam-date', 'data-fd-expand-tool',
     'data-fd-feedback-cancel', 'data-fd-feedback-confirm', 'data-fd-feedback-delete', 'data-fd-feedback-edit',
     'data-fd-feedback-open', 'data-fd-feedback-save',
-    'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
-    'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-settings',
+    // 'data-fd-library-filter' (the filter input, committed on input events), 'data-fd-library-filter-clear'
+    // and 'data-fd-search-query' (rides on a data-fd-search control to seed the dialog) joined on
+    // 2026-10-04 with the Library's filter field (one-thread redesign, Phase 2).
+    'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-filter', 'data-fd-library-filter-clear',
+    'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
+    'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-search-query', 'data-fd-settings',
     'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-view-week', 'data-fd-week',
   ]);

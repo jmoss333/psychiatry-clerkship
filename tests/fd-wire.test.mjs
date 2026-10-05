@@ -349,7 +349,7 @@ test('URL page/tool/tab values beat persisted Front Door state', () => {
   };
   assert.deepEqual(F.fdResolveState('/?page=new.md', stored), {
     role: 'first-role', tab: 'library', openId: 'new.md', fromTab: 'library',
-    week: 2, viewWeek: 2, autoAdvance: true, toolExpanded: true, screen: 'app', libraryView: 'essentials', kitSection: 'all',
+    week: 2, viewWeek: 2, autoAdvance: true, toolExpanded: true, screen: 'app', libraryView: 'essentials', kitSection: 'all', libraryFilter: '',
   });
   assert.equal(F.fdResolveState('/?tool=drill.html&case=a', stored).openId, 'drill.html');
   const tab = F.fdResolveState('/?tab=path', stored);
@@ -431,7 +431,7 @@ test('a bare URL restores stored state and defaults to Today with autoAdvance tr
     viewWeek: 4, week: 2,
   }), {
     role: 'first-role', tab: 'path', openId: 'saved.md', fromTab: 'library',
-    viewWeek: 4, week: 2, autoAdvance: true, screen: 'app', libraryView: 'essentials', kitSection: 'all',
+    viewWeek: 4, week: 2, autoAdvance: true, screen: 'app', libraryView: 'essentials', kitSection: 'all', libraryFilter: '',
   });
   const empty = F.fdResolveState('/', {});
   assert.equal(empty.tab, 'today');
@@ -579,7 +579,7 @@ test('a stored APP never re-enters the rotation wizard or restores the Path tab'
   assert.deepEqual(F.fdResolveState('/?tab=path', {
     role: 'app', tab: 'path', browsing: true, viewWeek: 3,
   }), {
-    role: 'app', tab: 'today', libraryView: 'essentials', kitSection: 'all',
+    role: 'app', tab: 'today', libraryView: 'essentials', kitSection: 'all', libraryFilter: '',
     viewWeek: 3, autoAdvance: true, browsing: true, screen: 'app',
   });
 });
@@ -4096,7 +4096,7 @@ test('Today, Path, and full Library preserve exact return offset without recente
   }
 });
 
-test('Essentials return keeps a relocated late-section opener inside the viewport after reset to All', () => {
+test('Essentials return keeps a relocated late-section opener inside the viewport and keeps its section (Phase 2)', () => {
   let box={top:900,bottom:960};
   const link={
     ...opener(),
@@ -4110,7 +4110,9 @@ test('Essentials return keeps a relocated late-section opener inside the viewpor
   h.controller.dispatch({'data-fd-open':'late.md'});
   setScrollY(0);
   h.controller.dispatch({'data-fd-back':''});
-  assert.equal(h.controller.getState().kitSection,'all');
+  // One-thread redesign, Phase 2 (owner decision D3): Back returns to the SAME section. Until
+  // 2026-10-04 this return reset kitSection to All.
+  assert.equal(h.controller.getState().kitSection,'late');
   assert.equal(link.focused,1);
   assert.deepEqual(scrolls,[[0,40]],'the saved offset is restored before visibility correction');
   assert.ok(box.top>=0&&box.bottom<=600,'the refocused opener is visible after its section moves');
@@ -4177,10 +4179,16 @@ test('Essentials section button rerenders and focuses its rebuilt rail control w
   assert.equal(focused.length,1); assert.equal(writes,0);
   assert.deepEqual(storage.dump(),before); assert.deepEqual(routes,[]);
   const filtered={...h.controller.getState(),kitSection:'tools'};
-  for(const action of [{'data-fd-tab':'library'},{'data-fd-library-view':'full'},{'data-fd-library-view':'essentials'},{'data-fd-back':''}]){
+  // A fresh Library visit and a view switch start at All; Back (data-fd-back) keeps the section
+  // the item was opened from (one-thread redesign, Phase 2, owner decision D3).
+  for(const action of [{'data-fd-tab':'library'},{'data-fd-library-view':'full'},{'data-fd-library-view':'essentials'}]){
     assert.equal(local.fdDispatch(action,{},filtered).patch.kitSection,'all');
   }
+  assert.equal(Object.hasOwn(local.fdDispatch({'data-fd-back':''},{},filtered).patch,'kitSection'),false,
+    'Back leaves the section alone');
   assert.equal(local.fdResolveState('/?tab=library&kitSection=tools',filtered).kitSection,'all');
+  assert.equal(local.fdResolveState('/?tab=library&libraryFilter=x',{...filtered,libraryFilter:'x'}).libraryFilter,'',
+    'a reload never restores the filter from the URL or from stored state');
 });
 
 test('Essentials section rail respects startup and faculty preview guards', () => {
@@ -4212,23 +4220,22 @@ test('Essentials tool preview selection rerenders and focuses its rebuilt card w
   assert.deepEqual(storage.dump(),before); assert.deepEqual(routes,[]);
 });
 
-test('Essentials tool preview tabs move with arrow, Home, and End keys', () => {
-  const local=make(memStorage()), renders=[], focused=[];
+test('the retired tool tablist takes no arrow, Home, or End keys: preview controls are plain buttons (Phase 2)', () => {
+  const local=make(memStorage()), renders=[];
   const refs=['first.html','second.html','third.html'];
-  const makeTab=ref=>actionTarget({'data-fd-kit-tool':ref},{focus(){focused.push(ref);}});
-  let liveTabs=refs.map(makeTab);
-  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials'}, {
-    F:local,render:(...args)=>{renders.push(args);liveTabs=refs.map(makeTab);},
+  const makeTab=ref=>actionTarget({'data-fd-kit-tool':ref});
+  const liveTabs=refs.map(makeTab);
+  const h=fakeHarness({...roleContext,screen:'app',tab:'library',libraryView:'essentials',kitToolPreview:'first.html'}, {
+    F:local,render:(...args)=>{renders.push(args);},
     querySelector:selector=>liveTabs.find(tab=>selector===`[data-fd-kit-tool="${tab.getAttribute('data-fd-kit-tool')}"]`)||null,
     querySelectorAll:selector=>selector==='[data-fd-kit-tool]'?liveTabs:[]
   });
-  const press=(key,index)=>h.windowHandlers.keydown({key,target:liveTabs[index],preventDefault(){}});
-  press('ArrowRight',0); assert.equal(h.controller.getState().kitToolPreview,'second.html');
-  press('ArrowLeft',1); assert.equal(h.controller.getState().kitToolPreview,'first.html');
-  press('End',0); assert.equal(h.controller.getState().kitToolPreview,'third.html');
-  press('Home',2); assert.equal(h.controller.getState().kitToolPreview,'first.html');
-  assert.deepEqual(focused,['second.html','first.html','third.html','first.html']);
-  assert.equal(renders.length,4);
+  renders.length=0;
+  for(const key of ['ArrowRight','ArrowLeft','End','Home']){
+    h.windowHandlers.keydown({key,target:liveTabs[0],preventDefault(){}});
+  }
+  assert.equal(h.controller.getState().kitToolPreview,'first.html');
+  assert.equal(renders.length,0);
 });
 
 
@@ -4340,4 +4347,152 @@ test('selection replacement refuses uncommitted, faculty preview, wrong active r
   const before=location.href,snapshot=memory.history.state,len=memory.entries.length;
   assert.equal(h.controller.replacePrepareSelection({task:'note',minutes:15}),false);assert.equal(location.href,before);assert.equal(memory.history.state,snapshot);assert.equal(memory.entries.length,len);
  }
+});
+
+// ---- One-thread redesign, Phase 2: the Library filter, section and preview as shell memory -------
+// Spec docs/superpowers/specs/one-thread-handoff/README.md "Interactions & behaviour" / "State
+// management" and owner decision D3: section and filter are transient, restored on Back/Forward
+// from history.state via replaceState on the Library entry, reset on reload, never written to the
+// URL or to storage; the preview stays transient (memory only, never in history).
+
+function filterField(value, extra = {}) {
+  return {
+    tagName: 'INPUT', isContentEditable: false, isConnected: true, value,
+    selectionStart: value.length, selectionEnd: value.length, selectionDirection: 'none',
+    matches: (sel) => sel === '.fd-library__filter-input',
+    closest: () => null,
+    hasAttribute: (name) => name === 'data-fd-library-filter',
+    getAttribute: (name) => (name === 'data-fd-library-filter' ? '' : null),
+    focus() { this.focused = (this.focused || 0) + 1; },
+    setSelectionRange(a, b, d) { this.selection = [a, b, d]; },
+    ...extra,
+  };
+}
+
+function libraryMemoryHarness(initial = {}, options = {}) {
+  const location = { href: 'https://example.test/?tab=library', pathname: '/', search: '?tab=library' };
+  const memory = memoryHistory(location);
+  const storage = memStorage();
+  const LocalF = make(storage);
+  const renders = [];
+  let fresh = filterField('');
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'library', libraryView: 'essentials', kitSection: 'all', libraryFilter: '', openId: null, ...initial }, {
+    F: LocalF, location, history: memory.history, openResource: () => {},
+    render: (...args) => { renders.push(args); fresh = filterField(h.controller.getState().libraryFilter || ''); },
+    querySelector: (sel) => (sel === '.fd-library__filter-input' ? fresh : (options.openers || {})[sel] || null),
+    ...options.harness,
+  });
+  memory.bind(h.windowHandlers.popstate);
+  return { h, memory, storage, location, renders, LocalF, fresh: () => fresh };
+}
+
+test('typing in the Library filter is visit-only: base render, replaceState on the entry, no route, no storage write', () => {
+  const { h, memory, storage, location, renders, fresh } = libraryMemoryHarness();
+  const before = storage.dump(); renders.length = 0;
+  const field = filterField('deli');
+  h.rootHandlers.input({ target: field, preventDefault() {} });
+  assert.equal(h.controller.getState().libraryFilter, 'deli');
+  assert.equal(renders.length, 1, 'the list repaints around the field');
+  assert.equal(renders[0][1].surfaces.base, true);
+  assert.deepEqual(storage.dump(), before, 'nothing is persisted');
+  assert.equal(location.search, '?tab=library', 'the URL never carries the filter');
+  assert.equal(memory.entries.length, 1, 'no new history entry');
+  assert.equal(memory.history.state.state.libraryFilter, 'deli', 'the Library entry remembers the filter (D3)');
+  assert.equal(fresh().focused, 1, 'focus returns to the rebuilt field');
+  assert.deepEqual(fresh().selection, [4, 4, 'none'], 'with the caret where it was');
+  // Clear.
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-library-filter-clear': '' }), preventDefault() {} });
+  assert.equal(h.controller.getState().libraryFilter, '');
+  assert.equal(Object.hasOwn(memory.history.state.state, 'libraryFilter'), false, 'an empty filter is not recorded');
+  assert.deepEqual(storage.dump(), before);
+  assert.equal(location.search, '?tab=library');
+});
+
+test('Back and Forward restore the Library section and filter from history.state; a reload resets both (D3)', () => {
+  const link = opener();
+  const { h, memory, storage, location, LocalF } = libraryMemoryHarness({}, { openers: { '[data-fd-open="deep.md"]': link } });
+  h.controller.dispatch({ 'data-fd-kit-section': '2' });
+  h.rootHandlers.input({ target: filterField('mood'), preventDefault() {} });
+  assert.deepEqual(memory.history.state.state, { tab: 'library', openId: null, libraryView: 'essentials', kitSection: '2', libraryFilter: 'mood' });
+  const stored = storage.dump();
+  h.controller.dispatch({ 'data-fd-open': 'deep.md' });
+  assert.equal(memory.entries.length, 2);
+  assert.equal(location.search, '?page=deep.md&tab=library');
+  // Browser Back: the entry's own section and filter come back; URL and storage never held them.
+  memory.go(-1);
+  const back = h.controller.getState();
+  assert.equal(back.openId, null);
+  assert.equal(back.kitSection, '2'); assert.equal(back.libraryFilter, 'mood');
+  assert.equal(location.search, '?tab=library');
+  assert.equal(JSON.stringify(storage.dump()).includes('mood'), false, 'the filter is in no stored value');
+  assert.equal(Object.hasOwn(JSON.parse(storage.getItem('cw_frontdoor_v1')), 'kitSection'), false);
+  assert.equal(Object.hasOwn(JSON.parse(storage.getItem('cw_frontdoor_v1')), 'libraryFilter'), false);
+  // Forward onto the reading entry, then Back again: still restored.
+  memory.go(1); assert.equal(h.controller.getState().openId, 'deep.md');
+  memory.go(-1); assert.equal(h.controller.getState().kitSection, '2'); assert.equal(h.controller.getState().libraryFilter, 'mood');
+  // An entry written before this change (no section/filter keys) means All and no filter.
+  h.windowHandlers.popstate({ state: { fd: true, state: { tab: 'library', libraryView: 'essentials' } } });
+  assert.equal(h.controller.getState().kitSection, 'all'); assert.equal(h.controller.getState().libraryFilter, '');
+  // A reload resolves from URL + storage only, and neither carries them.
+  const reload = LocalF.fdResolveState(location.href, { ...JSON.parse(storage.getItem('cw_frontdoor_v1')), kitSection: '2', libraryFilter: 'mood' });
+  assert.equal(reload.kitSection, 'all'); assert.equal(reload.libraryFilter, '');
+  void stored;
+});
+
+test('in-app Back from an item returns to the same Library view, section and filter', () => {
+  const link = opener();
+  const { h, location } = libraryMemoryHarness({}, { openers: { '[data-fd-open="deep.md"]': link } });
+  h.controller.dispatch({ 'data-fd-kit-section': 'tools' });
+  h.rootHandlers.input({ target: filterField('mse'), preventDefault() {} });
+  h.controller.dispatch({ 'data-fd-open': 'deep.md' });
+  h.controller.dispatch({ 'data-fd-back': '' });
+  const s = h.controller.getState();
+  assert.equal(s.openId, null); assert.equal(s.tab, 'library'); assert.equal(s.libraryView, 'essentials');
+  assert.equal(s.kitSection, 'tools'); assert.equal(s.libraryFilter, 'mse');
+  assert.equal(location.search, '?tab=library');
+  assert.equal(link.focused, 1, 'focus returns to the opener');
+});
+
+test('leaving the Library clears the filter and the preview; switching views keeps the filter and resets the section', () => {
+  const s = { ...roleContext, screen: 'app', tab: 'library', libraryView: 'essentials', kitSection: '1', libraryFilter: 'mood', kitToolPreview: 'mse.html' };
+  const away = F.fdDispatch({ 'data-fd-tab': 'today' }, {}, s).patch;
+  assert.equal(away.libraryFilter, ''); assert.equal(away.kitToolPreview, '');
+  const revisit = F.fdDispatch({ 'data-fd-tab': 'library' }, {}, s).patch;
+  assert.equal(revisit.libraryFilter, ''); assert.equal(revisit.kitSection, 'all');
+  const view = F.fdDispatch({ 'data-fd-library-view': 'full' }, {}, s).patch;
+  assert.equal(view.kitSection, 'all');
+  assert.equal(Object.hasOwn(view, 'libraryFilter'), false, 'the query follows the learner into Everything');
+  // Without a filter or preview the Today transition patch is exactly what it was.
+  const plain = F.fdDispatch({ 'data-fd-tab': 'today' }, {}, { ...s, libraryFilter: '', kitToolPreview: '' }).patch;
+  assert.equal(Object.hasOwn(plain, 'libraryFilter'), false); assert.equal(Object.hasOwn(plain, 'kitToolPreview'), false);
+});
+
+test('the preview stays transient: in memory for the visit, never on the history entry', () => {
+  const { h, memory } = libraryMemoryHarness();
+  h.controller.dispatch({ 'data-fd-kit-tool': 'mse.html' });
+  assert.equal(h.controller.getState().kitToolPreview, 'mse.html');
+  assert.equal(Object.hasOwn(memory.history.state.state, 'kitToolPreview'), false);
+});
+
+test('zero results hand the filter query to Search: data-fd-search-query seeds the dialog', () => {
+  const s = { ...roleContext, screen: 'app', tab: 'library', libraryFilter: 'milieu rules' };
+  const r = F.fdDispatch({ 'data-fd-search': '', 'data-fd-search-query': 'milieu rules' }, {}, s);
+  assert.deepEqual(r.patch, { searchOpen: true, query: 'milieu rules' });
+  assert.equal(r.route, null); assert.deepEqual(r.effect, { type: 'focus-search' });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, s).patch, { searchOpen: true }, 'a plain opener seeds nothing');
+});
+
+test('"/" focuses the Library filter instead of opening Search; ⌘K still opens Search; "/" elsewhere is unchanged', () => {
+  const { h, fresh } = libraryMemoryHarness();
+  const body = { tagName: 'BODY', isContentEditable: false, closest: () => null };
+  h.windowHandlers.keydown({ key: '/', target: body, preventDefault() {} });
+  assert.equal(h.controller.getState().searchOpen, undefined);
+  assert.equal(fresh().focused, 1, 'the filter field took focus');
+  h.windowHandlers.keydown({ key: 'k', metaKey: true, target: body, preventDefault() {} });
+  assert.equal(h.controller.getState().searchOpen, true);
+  h.controller.dispatch({ close: true });
+  // Not in the Library: "/" opens Search as before.
+  h.controller.dispatch({ 'data-fd-tab': 'today' });
+  h.windowHandlers.keydown({ key: '/', target: body, preventDefault() {} });
+  assert.equal(h.controller.getState().searchOpen, true);
 });
