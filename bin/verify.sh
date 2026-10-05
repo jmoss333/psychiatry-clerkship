@@ -340,6 +340,25 @@ step "lint — no hard-coded machine paths"   lint_machine_paths
 # else-branch, so local runs get the same immutability contract minus the base comparison.
 step "validate_rotation_edition_catalog"    python3 $A/validate_rotation_edition_catalog.py
 step "production rotation edition locked"   python3 bin/check-rotation-edition-locked.py
+# Flash-card decks (2026-10-04). review.html keys every SM-2 schedule on deck.id + "#" + index
+# over 07_…/Landmark_Trials/quizzes.json, which had no schema, no validator and no generator: a
+# reorder or an insert silently re-keys every later card's schedule to different content. The
+# first step validates both deck copies against quizzes.schema.json (repo root — a schema is a
+# governance path, 07_*/ is content), checks what Draft-07 cannot (counts agree, exactly one
+# keyed option), then compares every card's fingerprint to the committed pin
+# bin/quizzes.fingerprints.json. In-place edits refresh the pin (--update-fingerprints); a
+# reorder, deletion or removed deck may only be written with --rekey-learner-schedules "<why>",
+# which logs the shifted ids and the reason INSIDE the pin, so the decision is in the diff.
+step "unit — deck card stability"           python3 bin/check_deck_card_stability.py --self-test
+step "quizzes schema + card ids pinned"     python3 bin/check_deck_card_stability.py
+# The attestation gate existed on ONE of six question banks, at runtime only; the other five
+# shipped every draft. This names every un-attested item that ships, per bank, in
+# bin/qbank_draft_exposure_allowlist.json against caps in the script (CAPS = today's counts:
+# COMM 16, FAM 8, REASON 4, REASON-RES 5, DECK 437 with no review block, QB 0 live). A new draft,
+# a cap below reality and a stale entry all fail; the list only shrinks. Report-only: it never
+# changes an item's status — attesting is the console's job.
+step "unit — qbank draft exposure"          python3 bin/check_qbank_draft_exposure.py --self-test
+step "qbank draft exposure (ratchet)"       python3 bin/check_qbank_draft_exposure.py
 
 # --- node: root static-regression suite ---
 # Scoped to the *.test.mjs glob on purpose: tests/smoke/*.spec.js is a separate Playwright
