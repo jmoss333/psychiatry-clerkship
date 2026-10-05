@@ -182,10 +182,10 @@ It keeps the origin tab active and shows a back link ("‹ Today" / "‹ Library
     - **Selection stays transient** (not persisted, not in the URL).
 - **Zero results:**
   - H2 "No titles match “q”" (serif 22).
-  - "This filter checks titles and topics in the current view. Search looks inside every page, including tools."
-  - Primary "Search all content" opens global search with the same query; secondary "Clear filter".
+  - "This filter checks titles and tool descriptions in the current view. Search also checks summaries and related terms across the library."
+  - Primary "Search the library" opens global search with the same query; secondary "Clear filter".
   - Note "Still unsure? ＋ Ask a question saves it on this device for supervision."
-- **Filtered footer:** "Not seeing it? Search inside every page for “q” →".
+- **Filtered footer:** "Not seeing it? Search the library for “q” →".
 
 ### 3. Path (`Screen Path.dc.html`, shown with the resident site, week 3 current, previewing week 4)
 - Eyebrow "You are in week N of M"; H1 "Path".
@@ -241,7 +241,7 @@ It keeps the origin tab active and shows a back link ("‹ Today" / "‹ Library
   1. Safety protocols (label in `--fd-danger-dark`, red dots, the kit's own cue lines; the first result on a danger-wash background).
   2. Pages (outlined dot; meta "Reading · section · Weeks…").
   3. Tools (teal dot; the existing hint).
-- **Footer:** "Searches inside every page and tool. Not here? ＋ Ask a question saves it for supervision."
+- **Footer:** "Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision."
 - Esc or Close returns focus to the opener (existing `restoreInvoker` rules).
 
 ---

@@ -251,18 +251,35 @@ test('the filter matches titles and hints in the current view only, highlights w
   assert.match(F.fdLibrary(idx, { filter: 'two' }), /data-fd-kit-section="1" aria-pressed="false"><span>Acute stuff<\/span><span class="fd-kit__index-count">0<\/span>/, 'a section with no match still lists, at 0');
 });
 
+test('Essentials tool hint matches remain visible when the tool also has a summary', () => {
+  const cur = structuredClone(FIX_CUR);
+  cur.essentials = [{ name: 'Kit', accent: 'topic', refs: ['m1.md', 't1.html'] }];
+  cur.libraryHints = { 't1.html': 'Prepare in 5 or 15 minutes.' };
+  const meta = { 'm1.md': { tldr: 'Reading summary stays verbatim.' },
+    't1.html': { tldr: 'A guided rehearsal and supervision question.' } };
+  const idx = F.fdBuildIndex(cur, meta, FIX_TOOLS, FIX_MAN);
+  const filtered = F.fdEssentials(idx, { filter: 'minutes' });
+  assert.deepEqual(essentialsRefs(filtered), ['t1.html']);
+  assert.match(row(filtered, 't1.html'), /<span class="fd-kit__summary">Prepare in 5 or 15 <mark>minutes<\/mark>\.<\/span>/);
+  assert.match(row(F.fdEssentials(idx), 'm1.md'), /Reading summary stays verbatim\./);
+  delete cur.libraryHints['t1.html'];
+  const noHint = F.fdBuildIndex(cur, meta, FIX_TOOLS, FIX_MAN);
+  assert.match(row(F.fdEssentials(noHint), 't1.html'), /A guided rehearsal and supervision question\./,
+    'a tool without a hint retains its existing summary fallback');
+});
+
 test('with matches the filtered footer hands the query to Search; with none the zero-results state does', () => {
   const some = F.fdLibrary(IDX, { filter: 'one' });
-  assert.match(some, /<p class="fd-library__footer">Not seeing it\? <button type="button" class="fd-library__searchlink" data-fd-search data-fd-search-query="one">Search inside every page for “one” →<\/button><\/p>/);
+  assert.match(some, /<p class="fd-library__footer">Not seeing it\? <button type="button" class="fd-library__searchlink" data-fd-search data-fd-search-query="one">Search the library for “one” →<\/button><\/p>/);
   assert.doesNotMatch(some, /fd-library__empty/);
   const none = F.fdLibrary(IDX, { filter: 'milieu <rules>' });
   assert.equal(status(none), 'No titles match “milieu <rules>”.'.replace('<rules>', '&lt;rules&gt;'));
   assert.match(none, /<section class="fd-library__empty" aria-labelledby="fd-library-empty-h"><h2 class="fd-library__empty-h" id="fd-library-empty-h">No titles match “milieu &lt;rules&gt;”<\/h2>/);
-  assert.match(none, /<p class="fd-library__empty-p">This filter checks titles and topics in the current view\. Search looks inside every page, including tools\.<\/p>/);
-  assert.match(none, /<button type="button" class="fd-btn fd-btn--primary" data-fd-search data-fd-search-query="milieu &lt;rules&gt;">Search all content<\/button><button type="button" class="fd-btn fd-btn--ghost" data-fd-library-filter-clear>Clear filter<\/button>/);
+  assert.match(none, /<p class="fd-library__empty-p">This filter checks titles and tool descriptions in the current view\. Search also checks summaries and related terms across the library\.<\/p>/);
+  assert.match(none, /<button type="button" class="fd-btn fd-btn--primary" data-fd-search data-fd-search-query="milieu &lt;rules&gt;">Search the library<\/button><button type="button" class="fd-btn fd-btn--ghost" data-fd-library-filter-clear>Clear filter<\/button>/);
   assert.match(none, /<p class="fd-library__empty-note">Still unsure\? <strong>＋ Ask a question<\/strong> saves it on this device for supervision\.<\/p>/);
   assert.doesNotMatch(none, /fd-kit__group|fd-library__footer|data-fd-open=/, 'the groups and footer are replaced');
-  // Essentials withholds the preview pane in the zero state so "Search all content" is the one filled button.
+  // Essentials withholds the preview pane in the zero state so "Search the library" is the one filled button.
   const cur = structuredClone(FIX_CUR);
   cur.essentials = [{ name: 'Kit', accent: 'topic', refs: ['m1.md', 't1.html'] }];
   const kitNone = F.fdEssentials(F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN), { filter: 'zzz' });

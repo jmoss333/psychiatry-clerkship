@@ -635,7 +635,7 @@ the bare `.fd-library`.
               .fd-kit__title (serif 19)                        |  .fd-collink__label (Inter 600 16)
               .fd-chip.is-tool ("tool" | "reference")          (tools only)
               governanceBadge(item.governance)                 (full badge, verbatim, when pending)
-            .fd-kit__summary             (summary verbatim; Everything: the hint verbatim)
+            .fd-kit__summary             (reading summary verbatim; tool hint verbatim, summary fallback; Everything: hint only)
             .fd-kit__meta                ("Reading|Tool|Reference · N min · Safety kit · Week N · Case week N")
           button.fd-kit__peek[data-fd-kit-tool][aria-pressed]  (Essentials only; desktop only)
       .fd-library__footer                (with a query and matches)
@@ -643,7 +643,7 @@ the bare `.fd-library`.
       .fd-library__empty                 (with a query and no matches; replaces the groups)
         .fd-library__empty-h / .fd-library__empty-p
         .fd-library__empty-actions
-          .fd-btn.fd-btn--primary[data-fd-search][data-fd-search-query]  "Search all content"
+          .fd-btn.fd-btn--primary[data-fd-search][data-fd-search-query]  "Search the library"
           .fd-btn.fd-btn--ghost[data-fd-library-filter-clear]            "Clear filter"
         .fd-library__empty-note
       .fd-kit__teaching                  (Essentials, All/Tools, no query — external teaching companion)
@@ -688,10 +688,10 @@ badges are byte-identical to their sources; `<mark>` wraps the matched run witho
 | `.fd-kit__reading` / `.fd-collink` | The row button: `padding:16px 2px` (Everything 14px), name first. Serif 600 19px title in Essentials, Inter 600 16px in Everything. Hover colours the title teal-deep. |
 | `.fd-kit__safety` | The 8px `--fd-danger` dot — the only red in the list. |
 | `.fd-kit__meta` | 13px `--fd-text-dim`. Replaces `.fd-kit__minutes`. |
-| `mark` | `--fd-teal-wash`, `color:inherit`, radius 3 — inside titles, labels and Everything hints only. |
+| `mark` | `--fd-teal-wash`, `color:inherit`, radius 3 — inside titles, labels and tool hints in both views; reading summaries stay verbatim. |
 | `.fd-kit__peek` | Desktop Essentials only (`display:none` otherwise): 44px pill, `aria-pressed` on the previewed row. |
 | `.fd-kit__tool-preview` | Re-valued as the one card on the screen: padding 20, radius 12, `border-top:3px solid --fd-teal`, `--fd-shadow-card`. Shown only inside `.has-preview` at ≥1000px. |
-| `.fd-library__empty` | Max-width 560, `border-top:1px solid --fd-line-strong`; "Search all content" is the screen's one filled teal button in this state (the preview pane is withheld). |
+| `.fd-library__empty` | Max-width 560, `border-top:1px solid --fd-line-strong`; "Search the library" is the screen's one filled teal button in this state (the preview pane is withheld). |
 | `.fd-kit__teaching` | Keeps the Family Therapy Seminar Companion with teaching tools rather than patient-facing care links. Its fixed external link opens in a new tab, names that behavior with `.fd-visually-hidden` text, and preserves its local-browser/no-identifiers boundary in the note. |
 
 Retired on 2026-10-04 (Phase 2): `.fd-library__grid`, `.fd-col`, `.fd-col__name`, `.fd-collink__dot`,
@@ -929,7 +929,7 @@ patient information, or an attestation, and it never turns a website action into
           governanceBadge
           .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
-    .fd-searchpanel__foot             ("Searches inside every page and tool. Not here? ＋ Ask a question saves it for supervision.")
+    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.")
 ```
 
 Groups (one-thread redesign, Phase 2, spec section 6) appear in the order their best-ranked member

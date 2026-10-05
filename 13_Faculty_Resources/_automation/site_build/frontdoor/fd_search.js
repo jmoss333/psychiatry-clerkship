@@ -534,7 +534,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     out+=fdSearchGroupedRows(results,index);
   }
   out+='</div>';
-  out+='<div class="fd-searchpanel__foot">Searches inside every page and tool. Not here? <strong>＋ Ask a question</strong> saves it for supervision.</div>';
+  out+='<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, and related terms. Not here? <strong>＋ Ask a question</strong> saves it for supervision.</div>';
   out+='</div>';
   out+='</div>';
   return out;
