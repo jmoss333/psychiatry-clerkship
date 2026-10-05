@@ -105,7 +105,19 @@ step "git config health (before the run)"   python3 bin/check_git_config_health.
 step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
 
 # --- contract: this script still mirrors ci.yml's gate (it silently drifted before) ---
-step "gate coverage vs ci.yml"              python3 bin/check-verify-coverage.py
+# Two directions since 2026-10-04. Mirroring (ci.yml → here) only asks whether the two gate
+# files agree with each other; a bin/check_* on NEITHER agreed perfectly and was invisible —
+# two of 29 were, one for a month. The reverse direction fails on any checker named by
+# neither file, with a capped shrink-only UNGATED list for the deliberate exceptions.
+step "unit — gate coverage"                 python3 bin/check-verify-coverage.py --self-test
+step "gate coverage vs ci.yml + ungated"    python3 bin/check-verify-coverage.py
+# ADVISORY, local only (CI is always a fresh checkout). On 2026-10-04 the primary checkout sat
+# on a branch 11 days / 580 commits behind main, and from there the citation gate looked
+# "missing": not in bin/, not in this file, nothing said why. This prints a NOTICE past 7 days
+# (CLERKSHIP_FRESHNESS_MAX_DAYS, --max-days, --max-commits) and never fails the run — a feature
+# branch is supposed to be behind main. No fetch, no network; it reads the local origin/main.
+step "unit — checkout freshness"            python3 bin/check_primary_checkout_freshness.py --self-test
+step "checkout freshness (advisory)"        python3 bin/check_primary_checkout_freshness.py
 # The sibling contract. check-verify-coverage.py asks whether every CI step has a local
 # equivalent; this asks whether every falsification is RUN BY ANYTHING. Both exist because a
 # gate nobody executes looks exactly like a gate.
@@ -285,6 +297,13 @@ step "unit — netlify preview gate"          python3 bin/check_preview_gate.py 
 # committed under bin/data/), so it runs for real: a retiring F-code fires BEFORE October 1.
 step "unit — source integrity"              python3 bin/check_source_integrity.py --self-test
 step "unit — review cadence"                python3 bin/check_review_cadence.py --self-test
+# Same posture for the instrument-route sweep (INV-IR2's online half): the real run probes
+# every custodian site and is dev-only by its own docstring — flaky by nature, and Netlify
+# egress and the sandbox block those hosts. Only the SELF-TEST runs here, against a loopback
+# stub: a dead route exits 1, HEAD-refused-but-GET-served is not a false alarm, an empty
+# registry is exit 2 not a pass, and --stamp dates only an instrument whose every route passed.
+# Until 2026-10-04 this file had no falsification at all and sat on no gate.
+step "unit — instrument link sweep"         python3 bin/check_instrument_links.py --self-test
 step "unit — icd-10-cm codes"               python3 bin/check_icd_codes.py --self-test
 step "icd-10-cm codes in force"             python3 bin/check_icd_codes.py
 # Only the SELF-TEST runs here: the real comparison fetches a newer abstract from Europe PMC
