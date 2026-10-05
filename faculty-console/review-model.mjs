@@ -122,6 +122,10 @@ export function normalizeReviewItems(server = {}) {
       key: `${type}:${identity}`, type, identity, site,
       // Audience, not preview routing — see audienceSites(). Absent stays null.
       sites: audienceSites(record?.sites),
+      // The bank files this item's signature covers beyond its own source (server-derived from
+      // the hash's own path list). Non-empty makes it bank-bearing: signed one at a time, only
+      // once every section of Review bank contents has been opened (deriveAttestationEligibility).
+      bankFiles: list(record?.bankFiles).map(clean).filter(Boolean),
       title: clean(record.title) || identity,
       savedStatus: clean(record.status), completion: completion(type, record.status),
       revision: '', gate: '',
@@ -138,6 +142,7 @@ export function normalizeReviewItems(server = {}) {
     if (!identity) throw new TypeError('Invalid question review item.');
     items.push({
       key: `question:${identity}`, type: 'question', identity, site: 'ms3', sites: null,
+      bankFiles: [],
       title: identity, savedStatus: clean(record.status),
       completion: completion('question', record.status),
       revision: clean(record.revision), gate: clean(record.assessment?.gate),
@@ -413,6 +418,13 @@ export function deriveAttestationEligibility(context = {}) {
         || context.confirmations?.originalityAndNoPhi !== true) blockers.push('question.confirmations_required');
   } else {
     if (item.savedStatus !== 'unreviewed') blockers.push('content.status_not_attestable');
+    // Evidence of having looked, like a question's saved-revision receipt: never presumed by a
+    // one-click press. A bank-bearing item's signature covers its bank files, so every section
+    // of Review bank contents must have been opened (bank-review.mjs bankProgress) at the bank
+    // revision being signed. Callers without that view (the phone) are blocked here, by design.
+    if (list(item.bankFiles).length && context.bankReview?.complete !== true) {
+      blockers.push('review.bank_sections_required');
+    }
     if (context.previewStatus === 'ready' && context.completeItemReviewed !== true) blockers.push('review.complete_item_required');
     if (failedPreview && context.separateTabReviewed !== true) blockers.push('review.separate_tab_required');
     if (context.contentChecks?.accuracy !== true || context.contentChecks?.interactions !== true) {

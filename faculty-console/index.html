@@ -869,6 +869,55 @@
 
   .draft-preview-shell { min-height: 28rem; padding: 1rem; }
 
+  /* Review bank contents (2026-10-05): every bank file a signature covers, read-only. */
+  .bank-view-shell { min-height: 28rem; padding: 1rem; }
+  .bank-view-shell > header h2 { margin: 0.2rem 0 0.4rem; }
+  .bank-progress { font-weight: 700; }
+  .bank-progress.complete { color: var(--ready); }
+  .bank-toolbar { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-block: 0.6rem; }
+  .bank-toolbar button { min-height: 2.2rem; }
+  .bank-index { border: 1px solid var(--line); background: #f8faf8; padding: 0.5rem 0.8rem; margin-block: 0.6rem; }
+  .bank-index ol { margin: 0.2rem 0 0.5rem; padding-inline-start: 1.4rem; columns: 2 18rem; font-size: 0.82rem; }
+  .bank-index li.opened a::after { content: " ✓"; color: var(--ready); font-weight: 800; }
+  .bank-file { border-block-start: 2px solid var(--line); margin-block-start: 1rem; padding-block-start: 0.6rem; }
+  .bank-file-title { margin: 0 0 0.2rem; font-size: 1rem; overflow-wrap: anywhere; }
+  .bank-section { border: 1px solid var(--line); margin-block: 0.45rem; background: var(--surface); }
+  .bank-section > summary { cursor: pointer; padding: 0.5rem 0.7rem; font-weight: 700; }
+  .bank-section.opened > summary { background: var(--ready-soft); }
+  .bank-section-unit { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .bank-opened-mark { color: var(--ready); font-size: 0.8rem; }
+  .bank-section-body { padding: 0.2rem 0.9rem 0.8rem; border-block-start: 1px solid var(--line); }
+  .bank-fields { display: grid; grid-template-columns: minmax(7rem, max-content) minmax(0, 1fr); gap: 0.2rem 0.8rem; margin: 0.4rem 0; }
+  .bank-fields dt { color: var(--muted); font-size: 0.8rem; font-weight: 700; }
+  .bank-fields dd { margin: 0; min-width: 0; }
+  .bank-value, .bank-stem, .bank-option-text, .bank-feedback { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .bank-cards, .bank-records { padding-inline-start: 1.4rem; }
+  .bank-card { margin-block: 0.7rem; }
+  .bank-options, .bank-choices { list-style: none; padding: 0; margin: 0.3rem 0; display: grid; gap: 0.35rem; }
+  .bank-option, .bank-choice { border-inline-start: 3px solid var(--line); padding-inline-start: 0.6rem; }
+  .bank-option.keyed { border-inline-start-color: var(--ready); background: var(--ready-soft); }
+  .bank-option-text, .bank-feedback { margin: 0.15rem 0; }
+  .bank-feedback { color: var(--muted); font-size: 0.88rem; }
+  .bank-keyed { color: var(--ready); }
+  .bank-label { font-weight: 700; }
+  .bank-quality { display: inline-block; border: 1px solid var(--line); border-radius: 0.3rem; padding: 0 0.3rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+  .bank-choice.quality-best { border-inline-start-color: var(--ready); }
+  .bank-choice.quality-harmful { border-inline-start-color: var(--blocked); }
+  .bank-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8rem; max-height: none; }
+  .bank-empty { color: var(--muted); }
+  .rail-bank { border-inline-start: 3px solid var(--warning); padding-inline-start: 0.6rem; margin-block: 0.5rem; }
+  .rail-bank.complete { border-inline-start-color: var(--ready); }
+  @media print {
+    body.bank-printing #console-background > :not(#review-workspace),
+    body.bank-printing #review-workspace > :not(.preview-column),
+    body.bank-printing .preview-column > :not(.tool-view-stack),
+    body.bank-printing .tool-view-stack > :not(#tool-view-bank),
+    body.bank-printing .bank-toolbar,
+    body.bank-printing #app-status { display: none !important; }
+    body.bank-printing .bank-section { break-inside: auto; }
+    body.bank-printing .bank-card { break-inside: avoid; }
+  }
+
   .signoff-rail {
     position: sticky;
     inset-block-start: 1rem;

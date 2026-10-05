@@ -28,6 +28,9 @@ import {
   reviewedRevisionMatches,
   twinOf,
 } from './review-model.mjs';
+import {
+  bankProgress, bankProgressText, bankSections, renderBankFile, unitNoun,
+} from './bank-review.mjs';
 import { isDriftReason } from './change-history.mjs';
 import { pressForecast } from './press-forecast.mjs';
 import {
@@ -348,7 +351,17 @@ export function startFacultyConsole({
     baselineLeftOut: new Set(),
     correctionsSigned: new Set(),
     manyPageReceipt: null,
+    // Review bank contents (2026-10-05; see renderBankPane). Per slug, the server's read-only
+    // view of every bank file its signature covers; which sections are expanded right now; and
+    // which sections have been OPENED this sitting — expanded and on screen — keyed by content,
+    // so a case opened under one tool counts under every tool that carries the same text.
+    // Session-scoped: cleared with the sitting (Lock), never written anywhere.
+    bankViews: new Map(),
+    bankExpanded: new Set(),
+    bankOpened: new Set(),
   };
+  // One IntersectionObserver for the bank pane on screen (replaced on every pane render).
+  let bankObserver = null;
   let renderedIssueRecords = [];
   // Where each diff is on screen (key → element ids), so a diff that arrives later is drawn
   // into every place that asked for it without re-rendering the page around the reader.
@@ -1068,6 +1081,12 @@ export function startFacultyConsole({
     state.qbankError = '';
     state.qbankFeedbackIds = new Set();
     state.conflict = null;
+    // Opening a bank section is evidence of looking for THIS sitting only.
+    state.bankViews = new Map();
+    state.bankExpanded = new Set();
+    state.bankOpened = new Set();
+    bankObserver?.disconnect?.();
+    bankObserver = null;
   }
 
   function cancelPreviewTimer(preview = state.preview) {
@@ -1832,6 +1851,7 @@ export function startFacultyConsole({
   }
 
   function viewModeLabel(item = currentReviewItem()) {
+    if (hasBank(item) && state.viewMode === 'bank') return 'Bank contents';
     if (item?.type !== 'question' || state.viewMode === 'live') return 'Live deploy';
     return state.viewMode === 'draft' ? 'Draft preview' : 'Edit question';
   }
@@ -1885,7 +1905,48 @@ export function startFacultyConsole({
     refreshAttestationRail(focusId);
   }
 
+  /* A bank-bearing page or tool has a second view beside the live deploy: Review bank contents.
+     Switching shows/hides panes in place (applyToolView) and never re-renders the workspace,
+     because a preview frame that loads a second time reads — correctly — as a frame failure. */
+  function applyToolView(mode) {
+    const item = currentReviewItem();
+    if (!hasBank(item) || !['live', 'bank'].includes(mode)) return false;
+    state.viewMode = mode;
+    for (const [candidate, paneId] of [['live', 'question-view-live'], ['bank', 'tool-view-bank']]) {
+      document.getElementById(`view-${candidate}`)?.setAttribute('aria-pressed', String(candidate === mode));
+      const pane = document.getElementById(paneId);
+      if (candidate === mode) pane?.removeAttribute('hidden');
+      else pane?.setAttribute('hidden', '');
+    }
+    const view = document.getElementById('selected-item-view');
+    if (view) view.textContent = viewModeLabel(item);
+    if (mode === 'bank') {
+      const bank = state.bankViews.get(item.identity);
+      if (!bank || bank.status === 'error') void loadBankView(item);
+      else refreshBankPane();
+    }
+    return true;
+  }
+
+  function switchToolView(mode, focusId) {
+    if (!applyToolView(mode)) return;
+    refreshAttestationRail(focusId);
+  }
+
   function renderViewSwitcher(item) {
+    if (hasBank(item)) {
+      return el('div', { class: 'view-switcher', role: 'group', 'aria-label': 'Workspace view' }, [
+        ...[
+          ['live', 'Live deploy'],
+          ['bank', 'Review bank contents'],
+        ].map(([mode, label]) => el('button', {
+          id: `view-${mode}`,
+          type: 'button',
+          'aria-pressed': String((state.viewMode === 'bank' ? 'bank' : 'live') === mode),
+          onClick: () => switchToolView(mode, `view-${mode}`),
+        }, [label])),
+      ]);
+    }
     if (item?.type !== 'question') {
       return el('div', { class: 'view-switcher', 'aria-label': 'Current workspace view' }, [
         el('span', { class: 'view-label' }, ['Live deploy']),
@@ -2186,11 +2247,292 @@ export function startFacultyConsole({
       ]);
     }
     if (item.type === 'question') return renderQuestionSurfaces(item);
-    return el('section', {
+    const live = el('section', {
       id: 'question-view-live',
       class: 'preview-shell',
       'aria-label': 'Live learner deployment',
+      hidden: hasBank(item) && state.viewMode === 'bank' ? true : null,
     }, [renderLivePreview(item)]);
+    if (!hasBank(item)) return live;
+    return el('div', { class: 'tool-view-stack' }, [
+      live,
+      el('section', {
+        id: 'tool-view-bank',
+        class: 'preview-shell bank-view-shell',
+        'aria-labelledby': 'bank-view-title',
+        hidden: state.viewMode === 'bank' ? null : true,
+      }, [el('div', { id: 'bank-view-body' }, state.viewMode === 'bank' ? renderBankBody(item) : [])]),
+    ]);
+  }
+
+  /* ── Review bank contents (2026-10-05) ──────────────────────────────────────────────────
+     A signature covers a slug's source AND its bank files (decks, cases, scenarios: the
+     `extraSources` its hash is computed over). Neither the baseline list nor the live preview
+     ever displayed those banks, so signatures covered text the review surface had not shown.
+     This view shows all of it, read-only, from the bytes the hash covers (GET ?view=bank, which
+     re-derives the signature's fingerprint from what it returns). Each section counts as
+     OPENED once it has been expanded and its body has been on screen in this sitting — what
+     the console can honestly measure; it is not a record that anything was read. The item's
+     sign control stays disabled until every section is opened, and the press then carries the
+     bank revision it was opened at, which the server checks (requireBankReceipts). */
+
+  function hasBank(item) {
+    return Boolean(item) && item.type !== 'question' && list(item.bankFiles).length > 0;
+  }
+
+  function readyBankView(item) {
+    const view = hasBank(item) ? state.bankViews.get(item.identity) : null;
+    return view?.status === 'ready' ? view.data : null;
+  }
+
+  /** { complete, text } for the rail, the sign gate and the progress line. */
+  function bankReviewState(item) {
+    if (!hasBank(item)) return null;
+    const data = readyBankView(item);
+    if (!data) {
+      const files = list(item.bankFiles).length;
+      return {
+        complete: false,
+        loaded: false,
+        text: `Its signature also covers ${files} bank file${files === 1 ? '' : 's'}. `
+          + 'Open Review bank contents and open every section before signing.',
+      };
+    }
+    const progress = bankProgress(data, state.bankOpened);
+    return {
+      complete: progress.complete && data.verified === true,
+      loaded: true,
+      progress,
+      text: data.verified === true
+        ? bankProgressText(progress)
+        : 'These bank files could not be matched to the signature’s fingerprint on this load; reload them.',
+    };
+  }
+
+  function bankDomId(fileIndex, sectionIndex) {
+    return `bank-section-${fileIndex}-${sectionIndex}`;
+  }
+
+  async function loadBankView(item) {
+    if (!hasBank(item)) return;
+    const slug = item.identity;
+    if (state.bankViews.get(slug)?.status === 'loading') return;
+    const generation = state.viewGeneration;
+    state.bankViews.set(slug, { status: 'loading' });
+    refreshBankPane();
+    let next;
+    try {
+      const data = await viewRequest({ view: 'bank', slug }, 'The bank contents could not be loaded.', 'bank');
+      if (data.slug !== slug || !Array.isArray(data.files) || !/^[0-9a-f]{40}$/.test(text(data.bankRevision))) {
+        throw new Error('The server returned incomplete bank contents.');
+      }
+      next = { status: 'ready', data };
+    } catch (error) {
+      next = {
+        status: 'error',
+        message: error instanceof Error ? error.message : 'The bank contents could not be loaded.',
+      };
+    }
+    if (generation !== state.viewGeneration || !state.server) return;
+    state.bankViews.set(slug, next);
+    refreshBankPane();
+    refreshAttestationRail();
+    if (next.status === 'ready') {
+      const progress = bankProgress(next.data, state.bankOpened);
+      announce(`Bank contents loaded: ${progress.total} sections. ${bankProgressText(progress)}.`);
+    } else {
+      announce(next.message);
+    }
+  }
+
+  function markBankSectionOpened(key) {
+    if (!/^[0-9a-f]{40}$/.test(text(key)) || state.bankOpened.has(key)) return;
+    state.bankOpened.add(key);
+    for (const node of document.querySelectorAll?.(`[data-bank-key="${key}"]`) || []) {
+      node.classList?.add?.('opened');
+      const mark = node.querySelector?.('.bank-opened-mark');
+      if (mark) {
+        mark.textContent = ' ✓ opened';
+        mark.setAttribute?.('aria-label', 'opened');
+      }
+    }
+    for (const node of document.querySelectorAll?.(`[data-bank-index-key="${key}"]`) || []) {
+      node.classList?.add?.('opened');
+    }
+    refreshBankProgressLine();
+    refreshAttestationRail();
+  }
+
+  function observeBankSection(details) {
+    const key = details?.getAttribute?.('data-bank-key');
+    if (!key) return;
+    const Observer = window.IntersectionObserver;
+    if (typeof Observer !== 'function') {
+      // No way to tell what is on screen: expanding is the measurable act.
+      markBankSectionOpened(key);
+      return;
+    }
+    if (!bankObserver) {
+      bankObserver = new Observer((entries) => {
+        for (const entry of entries) {
+          const section = entry.target?.closest?.('details.bank-section');
+          if (!entry.isIntersecting || !section?.open) continue;
+          markBankSectionOpened(section.getAttribute('data-bank-key'));
+          bankObserver?.unobserve?.(entry.target);
+        }
+      });
+    }
+    bankObserver.observe(details.querySelector?.('.bank-section-body') || details);
+  }
+
+  function handleBankToggle(section, event) {
+    const details = event?.currentTarget || event?.target;
+    if (!section?.key) return;
+    if (details?.open) {
+      state.bankExpanded.add(section.key);
+      observeBankSection(details);
+    } else {
+      state.bankExpanded.delete(section.key);
+    }
+  }
+
+  function setAllBankSections(open) {
+    const nodes = [...(document.querySelectorAll?.('#tool-view-bank details.bank-section') || [])];
+    for (const details of nodes) details.open = open;
+    announce(open
+      ? `Expanded ${nodes.length} sections. Each counts as opened once it has been on screen.`
+      : 'Collapsed every section.');
+  }
+
+  function printBankContents() {
+    setAllBankSections(true);
+    const body = document.body;
+    body?.classList?.add?.('bank-printing');
+    try {
+      window.print?.();
+    } finally {
+      body?.classList?.remove?.('bank-printing');
+    }
+  }
+
+  function renderBankIndex(data) {
+    return el('details', { id: 'bank-index', class: 'bank-index', open: true }, [
+      el('summary', {}, [el('strong', {}, ['Index'])]),
+      ...list(data.files).map((file, fileIndex) => el('div', {}, [
+        el('p', {}, [el('code', {}, [text(file.path)])]),
+        el('ol', {}, list(file.sections).map((section, sectionIndex) => el('li', {
+          class: state.bankOpened.has(section.key) ? 'opened' : null,
+          'data-bank-index-key': text(section.key),
+        }, [el('a', { href: `#${bankDomId(fileIndex, sectionIndex)}` }, [
+          `${unitNoun(section.unit, 1)}: ${text(section.title)}`,
+        ])]))),
+      ])),
+    ]);
+  }
+
+  function renderBankProgressLine(item) {
+    const review = bankReviewState(item);
+    if (!review?.loaded) return el('p', { id: 'bank-progress', class: 'bank-progress' }, [review?.text || '']);
+    return el('p', {
+      id: 'bank-progress',
+      class: `bank-progress${review.complete ? ' complete' : ''}`,
+      role: 'status',
+    }, [review.text, review.complete ? '' : '. Signing stays off until every section has been opened.']);
+  }
+
+  function refreshBankProgressLine() {
+    const current = document.getElementById('bank-progress');
+    const item = currentReviewItem();
+    if (!current || !hasBank(item)) return;
+    const replacement = renderBankProgressLine(item);
+    current.className = replacement.className;
+    // childNodes, not children: the line is text, and `children` holds elements only.
+    current.replaceChildren(...[...(replacement.childNodes || replacement.children)]);
+  }
+
+  function renderBankBody(item) {
+    const view = state.bankViews.get(item.identity);
+    const files = list(item.bankFiles);
+    const children = [
+      el('header', {}, [
+        el('p', { class: 'eyebrow' }, ['Read-only · every file this signature covers beyond the page itself']),
+        el('h2', { id: 'bank-view-title', tabindex: '-1' }, ['Review bank contents']),
+        el('p', { class: 'hint' }, [
+          `${files.length} bank file${files.length === 1 ? '' : 's'}: ${files.join(', ')}. A section counts as `
+          + 'opened once you have expanded it and it has been on screen in this sitting. That is what the '
+          + 'console can measure; it does not record that you read it. Signing this item stays off until '
+          + 'every section has been opened.',
+        ]),
+      ]),
+    ];
+    if (!view || view.status === 'loading') {
+      children.push(el('p', { class: 'hint', role: 'status' }, ['Loading the bank contents from the attestation branch…']));
+      return children;
+    }
+    if (view.status === 'error') {
+      children.push(el('div', { class: 'session-notice individual' }, [
+        el('p', {}, [text(view.message)]),
+        el('button', { id: 'bank-retry', type: 'button', class: 'quiet', onClick: () => void loadBankView(item) }, ['Try again']),
+      ]));
+      return children;
+    }
+    const data = view.data;
+    children.push(el('p', { class: data.verified === true ? 'hint' : 'session-notice individual' }, [data.verified === true
+      ? `Read from ${text(data.branch)} at ${text(data.head).slice(0, 12)}. These bytes re-derive the fingerprint a `
+        + 'signature pressed now would bind. The page itself is in Live deploy.'
+      : 'These files could not be matched to the signature’s fingerprint on this load. Reload them before signing.']));
+    children.push(renderBankProgressLine(item));
+    children.push(el('div', { class: 'bank-toolbar' }, [
+      el('button', { id: 'bank-expand-all', type: 'button', onClick: () => setAllBankSections(true) }, ['Expand all']),
+      el('button', { id: 'bank-collapse-all', type: 'button', class: 'quiet', onClick: () => setAllBankSections(false) }, ['Collapse all']),
+      el('button', { id: 'bank-print', type: 'button', class: 'quiet', onClick: printBankContents }, ['Print']),
+      el('button', {
+        id: 'bank-reload',
+        type: 'button',
+        class: 'quiet',
+        onClick: () => { state.bankViews.delete(item.identity); void loadBankView(item); },
+      }, ['Reload']),
+    ]));
+    children.push(renderBankIndex(data));
+    list(data.files).forEach((file, fileIndex) => {
+      const domIds = new Map(list(file.sections).map((section, sectionIndex) => [section, bankDomId(fileIndex, sectionIndex)]));
+      children.push(renderBankFile(file, el, {
+        domId: section => domIds.get(section),
+        expanded: section => state.bankExpanded.has(section.key),
+        opened: section => state.bankOpened.has(section.key),
+        onToggle: handleBankToggle,
+      }));
+    });
+    return children;
+  }
+
+  /* Redraws the bank pane in place (never the workspace: the live frame must not reload). */
+  function refreshBankPane() {
+    const body = document.getElementById('bank-view-body');
+    const item = currentReviewItem();
+    if (!body || !hasBank(item)) return;
+    bankObserver?.disconnect?.();
+    bankObserver = null;
+    body.replaceChildren(...renderBankBody(item));
+    // Sections that render expanded (kept across redraws) are watched again.
+    for (const details of document.querySelectorAll?.('#tool-view-bank details.bank-section') || []) {
+      if (details.open) observeBankSection(details);
+    }
+  }
+
+  function renderBankRailStatus(item) {
+    const review = bankReviewState(item);
+    if (!review) return null;
+    return el('div', { id: 'rail-bank-status', class: `rail-bank${review.complete ? ' complete' : ''}` }, [
+      el('p', {}, [el('strong', {}, ['Bank contents: ']), review.text]),
+      state.viewMode === 'bank' ? null : el('button', {
+        id: 'rail-open-bank',
+        type: 'button',
+        class: 'quiet',
+        disabled: state.pending,
+        onClick: () => switchToolView('bank', 'bank-view-title'),
+      }, ['Review bank contents']),
+    ]);
   }
 
   function updateReviewCheck(item, key, checked, focusId) {
@@ -2536,6 +2878,8 @@ export function startFacultyConsole({
         && state.reviewChecks.separateTabReviewed,
       liveUnavailableAcknowledged: state.reviewChecks.liveUnavailableAcknowledged,
       reviewedRevision: state.reviewedRevisions.get(item.identity),
+      // Evidence of having looked: passed through unassumed, like reviewedRevision above.
+      bankReview: bankReviewState(item),
       warningAcks: state.warningAcks,
       confirmations: assumeHumanChecks
         ? { clinical: true, evidence: true, originalityAndNoPhi: true }
@@ -3872,7 +4216,10 @@ export function startFacultyConsole({
         el('h3', {}, ['Review']),
         el('p', {}, [item.type === 'question'
           ? 'Inspect the learner view, saved Draft, and governed question fields.'
-          : 'Inspect the complete learner-facing page or tool.']),
+          : hasBank(item)
+            ? `Inspect the complete learner-facing ${item.type}, and open every section of its bank contents.`
+            : 'Inspect the complete learner-facing page or tool.']),
+        renderBankRailStatus(item),
         renderReviewPath(item),
       ]),
       el('section', {
@@ -3896,6 +4243,10 @@ export function startFacultyConsole({
         question ? renderConfirmations(blocked || state.pending || !reviewComplete) : el('p', { class: 'muted' }, [
           item.completion === 'complete'
             ? 'This item is recorded as reviewed. Reopen it only when another review is needed.'
+            : hasBank(item) && bankReviewState(item)?.complete !== true
+            ? `Signing is off: ${bankReviewState(item)?.loaded
+              ? bankReviewState(item).text
+              : 'its bank contents have not been opened yet'}. Open every section in Review bank contents.`
             : oneClick
             ? 'One click records all three confirmations above and moves to the next item. '
               + 'Tick them individually instead if you want to record them one at a time.'
@@ -4089,6 +4440,12 @@ export function startFacultyConsole({
     ]);
     replaceApp(background, ...(modal ? [modal] : []));
     installCurrentPreviewFrame();
+    // A bank pane redrawn with sections already expanded: watch them again (refreshBankPane).
+    bankObserver?.disconnect?.();
+    bankObserver = null;
+    for (const details of document.querySelectorAll?.('#tool-view-bank details.bank-section[open]') || []) {
+      observeBankSection(details);
+    }
     applyIssueAssociations(renderedIssueRecords);
     focusRequested(focusTarget);
   }
@@ -5450,6 +5807,10 @@ export function startFacultyConsole({
     if (!item || !['page', 'tool'].includes(item.type) || typeof reviewed !== 'boolean') {
       throw new TypeError('Invalid content review mutation.');
     }
+    // A bank-bearing signature carries the revision of the bank view whose every section was
+    // opened; the server refuses one without it, or over a bank that has changed since.
+    const bank = reviewed && hasBank(item) && bankReviewState(item)?.complete === true
+      ? readyBankView(item) : null;
     return freezeSnapshot({
       key: item.key,
       reviewed,
@@ -5457,6 +5818,7 @@ export function startFacultyConsole({
         target: 'content',
         changes: { [item.identity]: reviewed },
         reasons: reviewed ? {} : { [item.identity]: state.reopenReason.trim() },
+        ...(bank ? { bankReviews: { [item.identity]: text(bank.bankRevision) } } : {}),
       },
     });
   }
@@ -5500,6 +5862,11 @@ export function startFacultyConsole({
       }
       state.reauthAction = null;
       if (!response.ok || payload.updated !== 1) {
+        // The bank moved after it was opened: drop the stale view so the next look reloads it.
+        // Sections whose text is unchanged stay opened (their keys are content-addressed).
+        if (payload?.error?.code === 'content.bank_changed') {
+          for (const slug of Object.keys(snapshot.body.changes || {})) state.bankViews.delete(slug);
+        }
         throw new Error(responseMessage(payload, 'This content review was not saved.'));
       }
       const commitUrl = safeExternalUrl(payload.commit);

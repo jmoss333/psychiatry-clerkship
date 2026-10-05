@@ -520,6 +520,12 @@ function refreshItem(item) {
     questionWarnings(item).length
       ? h('button', { class: 'btn', type: 'button', text: 'Attest on desktop', disabled: true, 'aria-disabled': 'true',
         title: 'This question has warnings; attest it on the desktop console.' })
+      // A bank-bearing page or tool (2026-10-05): its signature also covers bank files (decks,
+      // cases) that only the desktop's Review bank contents displays, and the server refuses a
+      // signature without that view's receipt. The phone never offers one.
+      : Array.isArray(item.bankFiles) && item.bankFiles.length
+      ? h('button', { class: 'btn', type: 'button', text: 'Sign on desktop', disabled: true, 'aria-disabled': 'true',
+        title: `Its signature also covers ${item.bankFiles.length} bank file(s); open every section of Review bank contents on the desktop console, then sign there.` })
       : h('button', { class: 'btn', type: 'button', text: 'Attest',
         disabled: state.pending || state.refreshing || preview.status === 'loading' || navigator.onLine === false,
         onClick: () => openSheet('confirm') }),
