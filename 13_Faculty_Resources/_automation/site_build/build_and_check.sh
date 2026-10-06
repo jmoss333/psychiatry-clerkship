@@ -83,6 +83,10 @@ python3 "$HERE/test_welcome_compass.py"
   python3 13_Faculty_Resources/_automation/site_build/test_concept_build.py
   python3 13_Faculty_Resources/_automation/site_build/test_concept_package.py
   python3 13_Faculty_Resources/_automation/site_build/test_review_companions.py
+  # "Beyond this page" media index (README_MEDIA.md M1): fixture-only parser/validator contracts
+  # plus the live map's resolve-and-draft-renders-nothing contract. Before either build so a
+  # broken map fails here with the key named, not halfway through build_deploy.py.
+  python3 13_Faculty_Resources/_automation/site_build/test_media_index.py
 )
 python3 "$LIB/13_Faculty_Resources/_automation/validate_topic_meta.py"
 python3 "$LIB/13_Faculty_Resources/_automation/validate_curriculum.py"
