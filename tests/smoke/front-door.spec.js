@@ -3637,15 +3637,14 @@ async function serveApprovedMedia(page, testInfo) {
   const site = isResidentProject(testInfo.project.name) ? 'res' : 'ms3';
   const fixture = {
     version: 1, site, status: 'approved',
-    guidance: {
-      familySay: meta['book_library.md'].clinicalWorkflow.say,
-      familySafety: meta['book_library.md'].clinicalWorkflow.safety,
-      listenSay: meta['podcast_library.md'].clinicalWorkflow.say,
-      listenSafety: meta['podcast_library.md'].clinicalWorkflow.safety,
-    },
     pages: {
       't_mood.md': {
-        week: 2,
+        page: 't_mood.md', sites: ['ms3', 'res'],
+        guidance: {
+          familySay: meta['book_library.md'].clinicalWorkflow.say,
+          familySafety: meta['book_library.md'].clinicalWorkflow.safety,
+          listenSafety: meta['podcast_library.md'].clinicalWorkflow.safety,
+        },
         listen: [
           { n: 25, title: 'The History and Nuances of Bipolar Illness', category: 'Mood & bipolar; suicide', url: 'https://www.youtube.com/watch?v=vBeB6V-KA70' },
           { n: 201, title: 'Psychotic Depression', category: 'Mood & bipolar; suicide', url: 'https://www.youtube.com/watch?v=OoXGcXxvojQ' },
@@ -3713,12 +3712,23 @@ test('Beyond this page: after Next in this thread, keyboard switch, verbatim gui
   await page.keyboard.press(' ');
   await expect(block.locator('#fd-beyond-listen .fd-beyond__card').first()).toBeFocused();
 
-  // Bring to family meeting: the capture dialog, prefilled with title and author only; nothing saved.
+  // Bring to family meeting only PREPARES the existing capture dialog: title and author as a draft,
+  // the no-patient-details warning shown, Save still the learner's step. Opening it marks nothing
+  // read, assigned or done -- the reading's own done state and every progress key are unchanged.
+  const progressBefore = await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_frontdoor_v1')]);
+  const doneBefore = await page.locator('.fd-article__actions [data-fd-toggle]').getAttribute('aria-pressed');
   await forFamily.click();
   await block.getByRole('button', { name: '＋ Bring to family meeting' }).click();
   await expect(page.locator('#capText')).toHaveValue('Loving Someone with Bipolar Disorder — Julie Fast & John Preston');
   await expect(page.locator('.cap-warn')).toBeVisible();
+  await expect(page.locator('#capSave')).toBeVisible();
+  await expect(page.locator('.cap-sheet')).not.toContainText(/assigned|completed|marked (as )?read/i);
+  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_frontdoor_v1')]),
+    'opening the dialog changes no progress state').toEqual(progressBefore);
   await page.locator('#capCancel').click();
+  await expect(page.locator('.fd-article__actions [data-fd-toggle]')).toHaveAttribute('aria-pressed', doneBefore || 'false');
+  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_frontdoor_v1')]),
+    'cancelling stores nothing').toEqual(progressBefore);
   const after = await page.evaluate(() => JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])));
   expect(after.includes('Loving Someone'), 'no draft or capture stored').toBe(false);
   expect(after.includes('fd-beyond') || after.includes('media'), 'no new persisted key').toBe(false);

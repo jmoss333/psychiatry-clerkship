@@ -1404,6 +1404,23 @@
   }
   /* Faculty preview deliberately keeps its audited preflight/status/query path. Normal learner
      navigation never calls this function; fdOpenResource owns the mounted reader instead. */
+  /* "Beyond this page" in the faculty preview (Dr. Moss, 2026-10-06: show the actual
+     recommendations in page context before re-signing). The preview renders a page through this
+     legacy show(), not the Reader, so without this the block a signature now covers (its
+     media_resolved file) would be invisible exactly where faculty review the page. Same renderer,
+     same inlined data as the learner Reader; appended after the body, as on the Reader, and after
+     makeCollapsible so it is never folded into the last section. Draft map: renders nothing. */
+  /* fd_reader.js lives inside the Front Door script's closure, which this script cannot see, so
+     that script hands the renderer across through this one global (set right after the Reader is
+     injected). Null until then, and the preview simply shows no block. */
+  var fdMediaPreviewHtml=null;
+  function fdFacultyPreviewMedia(ref){
+    if(!facultyPreviewRequest||typeof fdMediaPreviewHtml!=='function')return;
+    var html=fdMediaPreviewHtml(ref);
+    if(!html)return;
+    var holder=document.createElement('div'); holder.innerHTML=html;
+    if(holder.firstChild)contentEl.appendChild(holder.firstChild);
+  }
   function show(item, btn, opts){
     if(!facultyPreviewMatchesItem(item,opts)){showFacultyPreviewLockNotice();return false;}
     if(facultyPreviewRequest&&currentItem&&currentItem.k==='tool'&&item.k==='tool'&&currentItem.f===item.f)return true;
@@ -1426,7 +1443,7 @@
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f,{open:fdHandheld()}); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
-      makeCollapsible(contentEl); enhanceTables(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
+      makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
   }
@@ -2176,6 +2193,12 @@
   /*__FD_CARE__*/
 
   /*__FD_READER__*/
+  /* The faculty preview's "Beyond this page" (fdFacultyPreviewMedia, first script): the same
+     renderer and the same inlined index the learner Reader uses, read at call time. */
+  fdMediaPreviewHtml=function(ref){
+    if(typeof fdReaderMedia!=='function'||typeof FD_MEDIA==='undefined')return '';
+    return fdReaderMedia(FD_MEDIA,ref,typeof FD_INDEX!=='undefined'&&fdReaderIsSafetyPage(FD_INDEX,ref));
+  };
 
   /*__FD_GUIDE__*/
 

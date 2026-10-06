@@ -197,6 +197,27 @@ test('family actions: capture prefilled with titles and authors only, and the Fa
   assert.match(capOpen, /class="cap-warn"/, 'the existing no-patient-details warning is still shown');
 });
 
+test('an entry renders the guidance lines it signs, not a top-level copy', () => {
+  const own = { listenSafety: 'OWN POD SAFETY', familySay: 'OWN SAY', familySafety: 'OWN SAFETY' };
+  const html = section(render(media({ 't_mood.md': entry({ guidance: own }) })));
+  assert.match(html, /<p class="fd-beyond__note">OWN POD SAFETY<\/p>/);
+  assert.match(html, /How to offer it:<\/strong> OWN SAY<\/div>/);
+  assert.doesNotMatch(html, /POD SAFETY<\/p>[\s\S]*POD SAFETY<\/p>/);
+  assert.doesNotMatch(html, />BOOK SAFETY</, 'the fixture-only top-level guidance is ignored when the entry has its own');
+});
+
+test('the faculty preview renders the same block after the page body, only in preview', () => {
+  const fn = spa.match(/function fdFacultyPreviewMedia\(ref\)\{[\s\S]*?\n {2}\}/);
+  assert.ok(fn, 'fdFacultyPreviewMedia is defined');
+  assert.match(fn[0], /if\(!facultyPreviewRequest/);
+  assert.match(fn[0], /var html=fdMediaPreviewHtml\(ref\);/);
+  assert.match(fn[0], /contentEl\.appendChild/);
+  // The renderer lives in the Front Door closure; the bridge is set right after it is injected.
+  assert.match(spa, /\/\*__FD_READER__\*\/\s*\/\*[\s\S]*?\*\/\s*fdMediaPreviewHtml=function\(ref\)\{[\s\S]*?return fdReaderMedia\(FD_MEDIA,ref,/);
+  assert.match(spa, /makeCollapsible\(contentEl\); enhanceTables\(contentEl\); fdFacultyPreviewMedia\(item\.f\);/,
+    'appended after makeCollapsible so the block is never folded into the last section');
+});
+
 test('safety-kit page: the block is the quiet row variant', () => {
   const html = F.fdReader(IDX, state({ ref: 'delirium.md', week: null, thread: { media: media({ 'delirium.md': entry({ family: undefined }) }) } }), '<p>x</p>');
   assert.match(html, /<section class="fd-beyond fd-beyond--quiet"/);

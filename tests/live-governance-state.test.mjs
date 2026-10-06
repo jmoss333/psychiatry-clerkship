@@ -186,6 +186,12 @@ const REGISTRY = Object.freeze({
     why: 'Reads the served governance.json and topic_meta.json, then pins each governance branch with a '
       + 'controlled fixture (#729). Playwright, so not rehearsed here.',
   },
+  'tests/smoke/faculty-console.spec.js': {
+    kind: 'invariant',
+    why: 'Reads the served topic_meta.json only for the two libraries\' clinicalWorkflow say/safety lines in the '
+      + '"Beyond this page" preview test, which no review state changes; every governance branch it exercises is a '
+      + 'synthetic ledger or bank it serves itself. Playwright, so not rehearsed here.',
+  },
   'tests/smoke/qbank-retired.spec.js': {
     kind: 'fixture',
     why: 'Derives a test bank guaranteed to hold attested, draft and retired items from the shipped one and '

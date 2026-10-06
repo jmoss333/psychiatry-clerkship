@@ -414,7 +414,9 @@ function fdReaderMediaFamily(entry, guidance){
 function fdReaderMedia(media, ref, quiet){
   var pages=media&&media.pages, entry=pages&&Object.prototype.hasOwnProperty.call(pages, ref)?pages[ref]:null;
   if(!entry) return '';
-  var guidance=media.guidance||{};
+  /* The entry's own guidance lines are the ones its page signs (media_resolved/<slug>.json); a
+     top-level `guidance` is accepted only as a fallback for hand-built fixtures. */
+  var guidance=entry.guidance||media.guidance||{};
   var hasListen=!!(entry.listen&&entry.listen.length), hasFamily=!!(entry.family&&entry.family.length);
   if(!hasListen&&!hasFamily) return '';
   var both=hasListen&&hasFamily;
