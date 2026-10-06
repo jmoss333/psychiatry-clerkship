@@ -688,6 +688,9 @@
      Reader's optional podcast/book block. Same verified-needle injection as FD_PAIRINGS; the
      resident build swaps in its own value. A draft map inlines {pages:{}}, so nothing renders. */
   var FD_MEDIA=null;
+  /* One-shot arrival target for a "Beyond this page" library link: {ref, anchor}. Set by the
+     click, consumed by the next mount of that ref, never stored. */
+  var fdMediaArrival=null;
   var SEC_SEQ=0;
   function makeCollapsible(body){
     if(!body) return;
@@ -1882,7 +1885,13 @@
     capRenderBody();
     if(invoker)invoker.setAttribute('aria-expanded','true');
     document.addEventListener('keydown',capKeydown,true);
-    var ta=capSheet.querySelector('#capText'); if(ta){ try{ ta.focus(); }catch(_){ } }
+    var ta=capSheet.querySelector('#capText');
+    /* "Bring to family meeting" (Reader, Beyond this page) opens this same dialog with the book
+       titles and authors as a starting draft -- titles only, never patient details, and nothing
+       is stored until the learner presses Save (which still runs the PHI interstitial). */
+    var prefill=invoker&&invoker.getAttribute&&invoker.getAttribute('data-cap-prefill');
+    if(ta&&prefill&&!ta.value)ta.value=String(prefill).slice(0,280);
+    if(ta){ try{ ta.focus(); }catch(_){ } }
     capSheet.addEventListener('click',function(e){
       var t=e.target;
       if(t.id==='capEmailSelect'){capEmailOpen(t);return;}
@@ -2507,6 +2516,7 @@
        registries the Library already uses -- by reference, never copied into any store. */
     out.thread={caseArc:typeof FD_CASE_ARC!=='undefined'?FD_CASE_ARC:null,
       pairings:typeof FD_PAIRINGS!=='undefined'?FD_PAIRINGS:null,
+      media:typeof FD_MEDIA!=='undefined'?FD_MEDIA:null,
       audience:typeof FD_AUDIENCE!=='undefined'?FD_AUDIENCE:''};
     /* Supervisor feedback notes: read fresh on every render, the store staying their single home
        (fd_state.js). The controller writes it above the render, so the list a save repaints is
@@ -3133,6 +3143,9 @@
               }
             });
           };
+          /* A "Beyond this page" library link decides where its page opens: the category it
+             named (scrolled to below, after the reading place's own arrival). */
+          var mediaArrival=fdTakeMediaArrival(ref);
           fdGuideSession=fdGuideMount(body,{
             ref:ref,
             isPractice:function(target){return fdIsTool(target)&&!!((FD_INDEX.byRef||{})[target]||(FD_INDEX.known||{})[target]);},
@@ -3169,6 +3182,20 @@
               else guide.arrive(arrivalSearch,canFocus);
             });
           }else installReadingPlace(true);
+          if(mediaArrival){
+            /* Two frames: after the reading place's own arrival frame (which may restore a saved
+               place), so the category the learner asked for wins; reading on from it saves the
+               new place as usual. A heading that no longer slugs to the anchor leaves the page
+               where the reader put it. */
+            requestAnimationFrame(function(){ requestAnimationFrame(function(){
+              if(!currentItem||currentItem.f!==ref||!document.documentElement.contains(body))return;
+              var heading=fdMediaHeadingFor(body,mediaArrival.anchor);
+              if(!heading)return;
+              heading.scrollIntoView({block:'start'});
+              heading.setAttribute('tabindex','-1');
+              try{ heading.focus({preventScroll:true}); }catch(_){ heading.focus(); }
+            }); });
+          }
           fdGuideReturning=false;
         }else if(!facultyPreviewRequest&&fdGuideBookmark&&fdIsTool(ref)){
           var toolbar=contentEl.querySelector('.fd-reader__toolbar');
@@ -3275,6 +3302,8 @@
         fdRefreshLocalCompletion(localIdentity,localKind,localId);
       return;
     }
+    el=target.closest&&target.closest('[data-media-side]');
+    if(el){event.preventDefault();fdMediaSwitch(el);return;}
     el=target.closest&&target.closest('[data-capture-open]');
     if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
     el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
@@ -3327,8 +3356,47 @@
       var url;try{url=new URL(el.getAttribute('href'),location.href);}catch(_){return;}
       if(url.origin!==location.origin||url.pathname!==location.pathname)return;
       var ref=url.searchParams.get('page')||url.searchParams.get('tool');
-      if(ref){event.preventDefault();fdOpenRef(ref,url.search);}
+      if(ref){
+        event.preventDefault();
+        var mediaAnchor=el.getAttribute('data-media-anchor');
+        fdMediaArrival=mediaAnchor?{ref:ref,anchor:mediaAnchor}:null;
+        fdOpenRef(ref,url.search);
+      }
     }
+  }
+
+  /* "Beyond this page" audience switch: flips the two buttons and panels in place and moves focus
+     to the first card of the shown side. Transient by design -- no controller state, no URL, no
+     storage -- so a re-render returns to "For you". */
+  function fdMediaSwitch(button){
+    var section=button.closest&&button.closest('.fd-beyond');
+    if(!section)return;
+    var side=button.getAttribute('data-media-side');
+    var buttons=section.querySelectorAll('[data-media-side]'), panels=section.querySelectorAll('[data-media-panel]'), i, shown=null;
+    for(i=0;i<buttons.length;i++)buttons[i].setAttribute('aria-pressed',buttons[i].getAttribute('data-media-side')===side?'true':'false');
+    for(i=0;i<panels.length;i++){
+      var on=panels[i].getAttribute('data-media-panel')===side;
+      panels[i].hidden=!on;
+      if(on)shown=panels[i];
+    }
+    var card=shown&&shown.querySelector('.fd-beyond__card');
+    if(card){ try{ card.focus({preventScroll:false}); }catch(_){ card.focus(); } }
+  }
+  /* The heading a "Beyond this page" library link names: the first body h2 whose label slugs to
+     the anchor under the Reader's heading-slug rule (fd_reading_place.js; media_index.py
+     heading_anchor is the build twin). makeCollapsible's chevron is not part of the label. */
+  function fdMediaHeadingFor(body,anchor){
+    var heads=body?body.querySelectorAll('h2'):[], i, label;
+    for(i=0;i<heads.length;i++){
+      label=String(heads[i].textContent||'').replace(/^[\s▸]+/,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+      if(label&&label===anchor)return heads[i];
+    }
+    return null;
+  }
+  /* Take the arrival for THIS mount, or null. A different ref clears it: it is one click's intent. */
+  function fdTakeMediaArrival(ref){
+    var arrival=fdMediaArrival; fdMediaArrival=null;
+    return arrival&&arrival.ref===ref?arrival:null;
   }
 
   function fdAuxMessage(event){

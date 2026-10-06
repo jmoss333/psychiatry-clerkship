@@ -1241,6 +1241,45 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-nextthread__text{display:flex;flex-direction:column;gap:2px;min-width:0}
 .fd-nextthread__name{font-size:var(--fd-font-base);font-weight:600;line-height:1.4;overflow-wrap:anywhere}
 .fd-nextthread__meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-3);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
+/* "Beyond this page" (README_MEDIA.md M2, direction B) -- optional podcast/book picks after
+   "Next in this thread". Tokens only (both themes); every target 44px; the only motion is the
+   shared 120ms colour transition, removed under reduced motion. --quiet is the safety-kit
+   variant: rows, no card chrome, nothing heavier than the thread rows above it. */
+.fd-beyond{margin:var(--fd-space-11) 0 0;padding-top:var(--fd-space-8);border-top:1px solid var(--fd-line-strong)}
+.fd-beyond__head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:var(--fd-space-2) var(--fd-space-6);margin:0 0 var(--fd-space-4)}
+.fd-beyond__title{margin:0;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-size:var(--fd-font-section);line-height:1.3;font-weight:700;color:var(--fd-text)}
+.fd-beyond__tag{margin-left:auto;font-size:var(--fd-font-xs);color:var(--fd-text-dim)}
+.fd-beyond__switch{display:inline-grid;grid-template-columns:1fr 1fr;padding:3px;margin:var(--fd-space-3) 0 var(--fd-space-7);border:1px solid var(--fd-line);border-radius:var(--fd-radius-md);background:var(--fd-chip)}
+.fd-beyond__opt{min-height:var(--fd-target-touch);padding:0 var(--fd-space-7);border:0;border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-md);font-weight:600;cursor:pointer;transition:background-color var(--fd-dur-fast) var(--fd-ease-standard),color var(--fd-dur-fast) var(--fd-ease-standard)}
+.fd-beyond__opt[aria-pressed="true"]{background:var(--fd-surface);box-shadow:var(--fd-shadow-sm);color:var(--fd-teal-deep);font-weight:700}
+.fd-beyond__cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:14px}
+.fd-beyond__card{min-width:0;padding:14px;border:1px solid var(--fd-line);border-radius:var(--fd-radius-md);background:var(--fd-surface)}
+.fd-beyond__kicker{margin:0 0 var(--fd-space-1);font-size:var(--fd-font-xs);font-weight:700;color:var(--fd-teal-deep)}
+.fd-beyond__kicker--family{color:var(--fd-text-mid)}
+.fd-beyond__name{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-base);font-weight:600;line-height:1.35;color:var(--fd-text);overflow-wrap:anywhere}
+.fd-beyond__by{font-weight:400;color:var(--fd-text-dim)}
+.fd-beyond__meta{margin:0 0 var(--fd-space-3);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-dim)}
+.fd-beyond__desc{margin:0 0 var(--fd-space-3);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid)}
+.fd-beyond__link,.fd-beyond__practice,.fd-beyond__all a{display:inline-flex;align-items:center;min-height:var(--fd-target-touch);color:var(--fd-teal-deep);font-size:var(--fd-font-md);font-weight:700;text-decoration:none;overflow-wrap:anywhere}
+.fd-beyond__link:hover,.fd-beyond__practice:hover,.fd-beyond__all a:hover{text-decoration:underline;text-underline-offset:3px}
+.fd-beyond__note{margin:var(--fd-space-5) 0 0;font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid)}
+.fd-beyond__offer{margin:var(--fd-space-7) 0 0;padding:var(--fd-space-6) 14px;border-left:3px solid var(--fd-teal);border-radius:0 var(--fd-radius-sm) var(--fd-radius-sm) 0;background:var(--fd-callout);color:var(--fd-text);font-size:var(--fd-font-md);line-height:1.55}
+.fd-beyond__safety{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4) var(--fd-space-6);border-radius:var(--fd-radius-sm);background:var(--fd-olive-wash);color:var(--fd-olive-deep);font-size:var(--fd-font-sm);line-height:1.5}
+.fd-beyond__actions{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-5);margin-top:14px}
+.fd-beyond__bring{min-height:var(--fd-target-touch)}
+.fd-beyond__all{margin:var(--fd-space-5) 0 0;font-size:var(--fd-font-sm)}
+.fd-beyond__all a{font-size:var(--fd-font-sm)}
+.fd-beyond__opt:focus-visible,.fd-beyond__card:focus-visible,.fd-beyond__link:focus-visible,.fd-beyond__practice:focus-visible,.fd-beyond__all a:focus-visible,.fd-beyond__bring:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+.fd-beyond__card:focus:not(:focus-visible){outline:none}
+.fd-beyond--quiet .fd-beyond__cards{display:block}
+.fd-beyond--quiet .fd-beyond__card{padding:var(--fd-space-6) var(--fd-space-1);border:0;border-top:1px solid var(--fd-line);border-radius:0;background:transparent}
+.fd-beyond--quiet .fd-beyond__card:first-child{border-top:0}
+@media (max-width:999px){
+  .fd-beyond__switch{display:grid;width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  .fd-beyond__opt{transition:none}
+}
 /* The "On the Unit Practice and Tools" panel folds to ONE row while closed: title + its cue line
    + the chevron. The "Ward" tab and the "Click to open" pill stay in the markup (the panel's
    pinned snapshots are unchanged) and are hidden only in this closed reader state; opening the

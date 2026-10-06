@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(585 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(608 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -745,6 +745,27 @@ the Library.
             .fd-nextthread__mark          + --tool | --read
             .fd-nextthread__text
               .fd-nextthread__name / .fd-nextthread__meta
+      .fd-beyond <section>                (reads only; omitted unless the media index has this page)
+        .fd-beyond__head
+          .fd-beyond__title <h2> / .fd-beyond__tag
+        .fd-beyond__switch [role=group]   (only when BOTH sides exist)
+          .fd-beyond__opt <button data-media-side aria-pressed> ×2
+        .fd-beyond__panel [data-media-panel] ×1–2   (+ [hidden] on the unselected side)
+          .fd-beyond__cards
+            .fd-beyond__card [tabindex=-1] ×1–2
+              .fd-beyond__kicker            + --family
+              .fd-beyond__name
+                .fd-beyond__by              (book author)
+              .fd-beyond__meta              (episode) | .fd-beyond__desc (book, when the library has one)
+              .fd-beyond__link <a>
+          .fd-beyond__note                  (listen side: podcast safety line)
+          .fd-beyond__offer                 (family side: "How to offer it:" + book say line)
+          .fd-beyond__safety                (family side: book safety line)
+          .fd-beyond__actions
+            .fd-btn.fd-btn--ghost.fd-beyond__bring <button data-capture-open data-cap-prefill>
+            .fd-beyond__practice <a>
+          .fd-beyond__all
+            <a data-media-anchor>
       .fd-prevnext
         .fd-prevnext__btn                 (prev)
         .fd-prevnext__btn.is-next         (next)
@@ -782,6 +803,14 @@ the Library.
 | `.fd-article__next` | Link-styled navigation button inside `.fd-article__actions`, beside the primary: opens the POSITIONAL next item in the week (same target as `.fd-prevnext__btn.is-next`), never marks done. 44px target. The primary's label is unchanged because auto-advance can navigate on mark. |
 | `.fd-nextthread` | "Next in this thread": practice tool (toolRef, else first `role:'practice'` pairing), this week's Case Journeys step (a real `?tool=…&week=N` link, compact pending badge when pending), next item (in week, else first of next week). Rows are `<button data-fd-open>` except the case row (`<a>`). Hidden with the rest of reader chrome when a field guide prints. |
 | `.fd-nextthread__mark--tool` / `--read` | 10px dot: tool = `--fd-teal` fill, reading = `--fd-line-hover` ring. Decorative (`aria-hidden`); the meta line names the kind in text. |
+| `.fd-beyond` | "Beyond this page" (README_MEDIA.md, direction B): optional podcast/book picks from the build-inlined media index (`media_index.py` over `media_map.json`), after `.fd-nextthread`, before `.fd-prevnext`. Reads only, never tools. Absent when the index has no entry for the page — and while the map is a draft the index has none, so it is absent everywhere. Follows the article body, so it can never precede a crisis block or sit inside a governance notice. `margin-top` `--fd-space-11` (32px) + `padding-top` 20px over a `--fd-line-strong` rule. |
+| `.fd-beyond--quiet` | Safety-kit pages (`idx.kit`): cards become plain rows (no surface, border or radius; a `--fd-line` rule between rows) so the block carries no weight beyond the thread rows. |
+| `.fd-beyond__switch` / `.fd-beyond__opt` | Segmented control, two `<button aria-pressed>` with `data-media-side` (NOT a `data-fd-*` action: `spa_index.html` `fdMediaSwitch` flips buttons and `[data-media-panel][hidden]` in place and focuses the first `.fd-beyond__card`). Transient: no state, URL or storage; a re-render returns to "For you". Options are 44px; the selected one takes `--fd-surface` + `--fd-shadow-sm` + `--fd-teal-deep` 700. Full width below 1000px. |
+| `.fd-beyond__cards` / `.fd-beyond__card` | `repeat(auto-fit,minmax(min(240px,100%),1fr))`, 14px gap; cards 14px padding, `--fd-radius-md`, `--fd-surface`, 1px `--fd-line`. `tabindex="-1"` so the switch can move focus to the first card; it shows a 3px `--fd-focus` ring for keyboard focus only. |
+| `.fd-beyond__kicker` / `--family` | 12px/700. "For you" in `--fd-teal-deep`; "For the family" (`--family`) in `--fd-text-mid`. |
+| `.fd-beyond__link` / `.fd-beyond__practice` / `.fd-beyond__all a` | 44px-tall `--fd-teal-deep` 700 links. The episode link is external (`target=_blank`, `rel="noopener noreferrer"`, accessible name "Episode N on YouTube (opens in a new tab)"); the book and "All …" links are internal `?page=…#anchor` links carrying `data-media-anchor`, which the shell resolves against the target page's h2 labels after mount (`fdMediaHeadingFor`). No Amazon link is rendered. |
+| `.fd-beyond__offer` / `.fd-beyond__safety` / `.fd-beyond__note` | Guidance read verbatim from `topic_meta.json` (`book_library.md` / `podcast_library.md` → `clinicalWorkflow.say` / `.safety`) by the build: offer = `--fd-callout` with a 3px `--fd-teal` left rule; safety = `--fd-olive-wash` / `--fd-olive-deep`; note (listen side) = 13px `--fd-text-mid`. |
+| `.fd-beyond__bring` | Ghost button on `.fd-btn--ghost`: opens the existing capture dialog (`data-capture-open`) with `data-cap-prefill` = the books' "Title — Author" only. The dialog's own no-patient-details warning and PHI interstitial are unchanged; nothing is saved until Save. |
 | `.fd-article__body .practice-panel:not([open])` | Closed practice panel in the reader folds to one ≥52px row: `.practice-title` + `.practice-sub` (ellipsis) + `.practice-chev`. `.practice-tab` and `.practice-hint` are hidden in that state only; the markup (and `tests/__panels__` snapshots) are unchanged. The panel's own rules live in `spa_index.html`. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
 

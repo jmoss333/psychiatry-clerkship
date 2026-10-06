@@ -140,6 +140,12 @@ const REGISTRY = Object.freeze({
     why: 'Reads real topic_meta.json content for the Front Door index; the kit test requires `attested` to '
       + "follow each kit page's own facultyReview and reports an unattested kit protocol as a diagnostic.",
   },
+  'tests/fd-reader-media.test.mjs': {
+    kind: 'invariant',
+    why: 'Reads topic_meta.json only for the two libraries\' clinicalWorkflow say/safety lines, which no review '
+      + 'state changes; the media index it renders is resolved from the live map with status flipped in memory, and '
+      + "nothing it asserts reads a facultyReview block, a ledger row or a pending count.",
+  },
   'tests/fd-library.test.mjs': {
     kind: 'invariant',
     why: 'Real Essentials renders with its pending count computed from the same index and compared with the '
