@@ -1210,6 +1210,48 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-reading-place__top:focus-visible{outline:2px solid var(--fd-teal-deep);outline-offset:3px}
 .fd-article__actions{display:flex;gap:var(--fd-space-5);margin-top:16px;flex-wrap:wrap}
 
+/* ═══ Focused learning (one-thread redesign, Phase 3) ═══
+   One status line: the head row already wraps; the position joins it, and the reviewed receipt
+   (relocated by fd_reader.js, bytes unchanged) drops the notice block's bottom margin there.
+   Pending and unavailable notices keep their own styles above the H1. */
+.fd-article__pos{font-size:var(--fd-font-xs);font-weight:600;color:var(--fd-text-dim)}
+.fd-article__head .governance-notice{margin:0}
+/* On a phone the receipt wraps the status line to a second row; tighten that row so the H1 stays in
+   the first quarter of the screen (front-door.spec.js phone-chrome pin). Text and size unchanged.
+   `html .fd-reader` outranks `.fd-reader--guide .fd-article__head` below, because a field guide
+   moves the head into its own header, where a child combinator no longer reaches it. */
+@media (max-width:640px){
+  html .fd-reader .fd-article__head{row-gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-article__head .governance-notice.reviewed-receipt{padding-top:1px;padding-bottom:1px}
+}
+/* "Next in week N: Title →" -- a navigation control styled as a link so the primary stays the
+   one filled button. 44px target; ink is the action ink, never a fill token. */
+.fd-article__next{display:inline-flex;align-items:center;min-height:var(--fd-target-touch);padding:0 var(--fd-space-2);border:0;background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-base);font-weight:700;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.fd-article__next:hover{text-decoration:underline;text-underline-offset:3px}
+.fd-article__next:focus-visible,.fd-nextthread__row:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+.fd-nextthread{margin:var(--fd-space-10) 0 0;padding-top:var(--fd-space-7);border-top:1px solid var(--fd-line)}
+.fd-nextthread__title{margin:0 0 var(--fd-space-4);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-size:var(--fd-font-section);line-height:1.3;font-weight:700;color:var(--fd-text)}
+.fd-nextthread__list{margin:0;padding:0;list-style:none}
+.fd-nextthread__row{display:flex;align-items:flex-start;gap:var(--fd-space-6);width:100%;min-height:var(--fd-target-touch);padding:var(--fd-space-6) var(--fd-space-1);border:0;border-top:1px solid var(--fd-line);background:transparent;color:var(--fd-text);font:inherit;text-align:left;text-decoration:none;cursor:pointer}
+.fd-nextthread__list li:first-child .fd-nextthread__row{border-top:0}
+.fd-nextthread__row:hover .fd-nextthread__name{color:var(--fd-teal-deep)}
+.fd-nextthread__mark{flex:0 0 auto;width:10px;height:10px;margin-top:6px;border-radius:50%}
+.fd-nextthread__mark--tool{background:var(--fd-teal)}
+.fd-nextthread__mark--read{border:1.5px solid var(--fd-line-hover)}
+.fd-nextthread__text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.fd-nextthread__name{font-size:var(--fd-font-base);font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.fd-nextthread__meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-3);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
+/* The "On the Unit Practice and Tools" panel folds to ONE row while closed: title + its cue line
+   + the chevron. The "Ward" tab and the "Click to open" pill stay in the markup (the panel's
+   pinned snapshots are unchanged) and are hidden only in this closed reader state; opening the
+   panel restores today's full header. Open-by-default on a handheld is unchanged. */
+.fd-article__body .practice-panel:not([open])>.practice-summary{min-height:52px;padding-top:var(--fd-space-4);padding-bottom:var(--fd-space-4);gap:var(--fd-space-6)}
+.fd-article__body .practice-panel:not([open]) .practice-tab,
+.fd-article__body .practice-panel:not([open]) .practice-hint{display:none}
+.fd-article__body .practice-panel:not([open]) .practice-title{font-size:var(--fd-font-base)}
+.fd-article__body .practice-panel:not([open]) .practice-sub{margin-left:0;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.fd-article__body .practice-panel:not([open]) .practice-chev{margin-left:auto}
+
 .fd-keypoints{
   border:1px solid var(--fd-line);border-left:3px solid var(--fd-teal);
   background:var(--fd-callout);border-radius:var(--fd-radius-md);padding:16px 20px;margin:0 0 18px;
@@ -2082,7 +2124,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   body:has(.fd-reader--guide){--fd-guide-print-ink:CanvasText;--fd-guide-print-paper:Canvas;color-scheme:light;background:var(--fd-guide-print-paper) !important;color:var(--fd-guide-print-ink) !important}
   .fd-shell:has(.fd-reader--guide),.fd-main:has(.fd-reader--guide){display:block;min-height:0;width:auto;max-width:none;padding:0;margin:0;overflow:visible;background:var(--fd-guide-print-paper) !important}
   body:has(.fd-reader--guide) :is(.fd-header,.fd-tabs,.fd-dock,.fd-actionbar,.fd-sheet,.fd-sheetbackdrop,.fd-search,.fd-nudge,#fdCaptureMount){display:none !important}
-  .fd-reader--guide :is(.fd-reader__back,.fd-guide-margin,.fd-railnav,.fd-article__actions,.fd-prevnext,.fd-trynow,.fd-tip,.fd-actionbar__spacer,.pgfb,.sec-toolbar,.sec-chev,.fd-guide-arrival,.fd-guide-return,.fd-guide-table-controls,.fd-guide-table-rows,.table-scroll-hint){display:none !important}
+  .fd-reader--guide :is(.fd-reader__back,.fd-guide-margin,.fd-railnav,.fd-article__actions,.fd-nextthread,.fd-prevnext,.fd-trynow,.fd-tip,.fd-actionbar__spacer,.pgfb,.sec-toolbar,.sec-chev,.fd-guide-arrival,.fd-guide-return,.fd-guide-table-controls,.fd-guide-table-rows,.table-scroll-hint){display:none !important}
   .fd-reader--guide{font-size:var(--fd-font-base);animation:none !important;transform:none !important}
   .fd-reader--guide *{color:var(--fd-guide-print-ink) !important;background:transparent !important;box-shadow:none !important;text-shadow:none !important;overflow-wrap:anywhere}
   .fd-reader--guide .fd-reader__cols,.fd-reader--guide .fd-guide-header,.fd-reader--guide .fd-article{display:block;width:auto;max-width:none;padding:0;margin:0}

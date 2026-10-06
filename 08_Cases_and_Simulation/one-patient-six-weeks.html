@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Case Journeys" version="2.2" built="2026-10-03" category="longitudinal-simulation" audience="ms3,resident" settings="inpatient,outpatient,self-study" time="5-20min" summary="Follow four fictional patients through six chapters of supervised psychiatric practice. Transient, unscored chapter navigation; no patient entry or saved case progress." -->
+<!-- [CLERKSHIP-META v1] tool="Case Journeys" version="2.3" built="2026-10-05" category="longitudinal-simulation" audience="ms3,resident" settings="inpatient,outpatient,self-study" time="5-20min" summary="Follow four fictional patients through six chapters of supervised psychiatric practice. Transient, unscored chapter navigation; no patient entry or saved case progress." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -67,6 +67,28 @@ button{font:inherit}button:focus-visible,a:focus-visible,summary:focus-visible,[
 @media print{body{background:rgb(255,255,255);color:#000}.opf-hero{padding:24px 0;color:#000;background:rgb(255,255,255);border-bottom:2px solid #000}.opf-hero h1,.opf-eyebrow,.opf-dek,.opf-boundary p,.opf-boundary__mark{color:#000}.opf-spine,.opf-controls,.opf-folio__back,.opf-case-catalog{display:none}.opf-workbench{display:block;padding-top:24px}.opf-sheet{min-height:0;box-shadow:none}.opf-reflection{display:block}}
 
 .opf-route__copy,.opf-sheet,.opf-practice{overflow-wrap:anywhere}.opf-folio__chapter{position:relative}.opf-practice{position:relative;margin-top:28px;padding:24px;border:1px solid var(--opf-line);border-top:4px solid var(--opf-teal);background:var(--opf-panel-solid)}.opf-practice h3{margin:0 0 12px;font:700 1.5rem/1.2 var(--opf-serif)}.opf-practice__context{color:var(--opf-thread-dark);font-weight:800}.opf-practice__boundary{padding:12px;border:1px solid var(--opf-line);color:var(--opf-muted);font-size:.85rem}.opf-practice__choices{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 20px}.opf-practice__suggested{margin:6px 0 10px;color:var(--opf-muted);font-size:.86rem}.opf-practice__choices button[data-suggested="true"]{border-color:var(--opf-teal);box-shadow:inset 0 0 0 1px var(--opf-teal)}.opf-practice__tag{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;background:var(--opf-teal-pale);color:var(--opf-teal);font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;vertical-align:middle}.opf-practice button{min-height:44px;padding:10px 14px;border:1px solid var(--opf-line);color:var(--opf-ink);background:var(--opf-sheet);cursor:pointer}.opf-practice button[aria-pressed="true"],.opf-practice button.opf-practice__primary{color:var(--opf-sheet);background:var(--opf-teal);border-color:var(--opf-teal)}.opf-practice a{color:var(--opf-teal);font-weight:800}.opf-practice__error{font-weight:800}.opf-practice__model{padding:14px;border:1px solid var(--opf-line);margin:16px 0}.opf-practice__model summary{min-height:44px;padding:10px 0;cursor:pointer;font-weight:800}.opf-practice__card{padding:16px;border:1px solid var(--opf-line);background:var(--opf-teal-pale)}.opf-practice__card p{margin:12px 0}.opf-practice__card strong{display:block}.opf-practice__actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}@media(max-width:620px){.opf-practice{padding:18px}.opf-practice__choices button{flex:1 1 180px}}@media print{.opf-practice button,.opf-practice__choices,.opf-practice__actions{display:none}.opf-practice,.opf-practice *{color:#000!important;background:rgb(255,255,255)!important}.opf-practice__card{break-inside:avoid}}
+/* Try → Compare and Compare two chapters (one-thread redesign, Phase 3). Transient UI only. */
+[hidden]{display:none!important}
+.opf-try{margin:10px 0 4px;color:var(--opf-muted);font-size:.86rem;font-weight:700}
+.opf-compare-example{display:inline-flex;align-items:center;min-height:44px;margin-top:8px;padding:8px 12px;border:1px solid var(--opf-teal);border-radius:2px;color:var(--opf-teal);background:transparent;font-weight:800;text-align:left;cursor:pointer}
+.opf-compare-example[aria-expanded="true"]{color:var(--opf-sheet);background:var(--opf-teal)}
+.opf-note .opf-example{margin:11px 0 0;padding:10px 14px;border-left:3px solid var(--opf-teal);background:var(--opf-teal-pale);font:400 1.03rem/1.5 var(--opf-serif)}
+.opf-compare-open{display:block;width:100%;min-height:44px;margin-top:16px;padding:9px 14px;border:1px solid var(--opf-ink);border-radius:2px;color:var(--opf-ink);background:transparent;font-weight:800;text-align:left;cursor:pointer}
+.opf-compare-open[aria-expanded="true"],.opf-compare-open:hover{color:var(--opf-sheet);background:var(--opf-ink)}
+.opf-compare{position:relative;min-width:0;padding:clamp(22px,4vw,44px);border:1px solid var(--opf-line);background:var(--opf-sheet);box-shadow:var(--opf-shadow);overflow-wrap:anywhere}
+.opf-compare h2{margin:0 0 16px;font:700 clamp(1.6rem,3vw,2.4rem)/1.1 var(--opf-serif);letter-spacing:-.02em}
+.opf-compare__pickers{display:flex;flex-wrap:wrap;gap:12px 18px;margin-bottom:20px}
+.opf-compare__pick{display:grid;grid-template-columns:minmax(0,1fr);flex:1 1 220px;gap:4px;min-width:0;max-width:100%;color:var(--opf-thread-dark);font-size:.8rem;font-weight:800}
+.opf-compare__pick select{width:100%;min-width:0;min-height:44px;max-width:100%;padding:6px 10px;border:1px solid var(--opf-line);border-radius:2px;color:var(--opf-ink);background:var(--opf-sheet);font:inherit;font-weight:600}
+.opf-compare__pick select:focus-visible{outline:3px solid var(--opf-focus);outline-offset:2px}
+.opf-compare__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.opf-compare__col{min-width:0;padding:18px;border-top:4px solid var(--opf-thread);background:var(--opf-panel)}
+.opf-compare__col h3{margin:6px 0 12px;font:700 1.2rem/1.25 var(--opf-serif)}
+.opf-compare__col dt{margin-top:12px;color:var(--opf-thread-dark);font-size:.72rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.opf-compare__col dd{margin:4px 0 0}
+.opf-compare__close{min-height:44px;margin-top:20px;padding:9px 14px;border:1px solid var(--opf-ink);border-radius:2px;color:var(--opf-ink);background:transparent;font-weight:800;cursor:pointer}
+.opf-compare__close:hover{color:var(--opf-sheet);background:var(--opf-ink)}
+@media print{.opf-note .opf-example[hidden]{display:block!important}.opf-compare-example,.opf-compare-open{display:none}}
 </style>
 </head>
 <body>

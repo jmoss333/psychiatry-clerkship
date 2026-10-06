@@ -72,7 +72,7 @@ test.describe('risk-aware review status (shared shell)', () => {
 
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-    const alert = page.locator('.fd-article__body > .governance-notice.pending-high');
+    const alert = page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-high');
     await expect(alert).toHaveCount(1);
     await expect(alert).toContainText('Pending faculty review');
     await expect(alert).toBeFocused();
@@ -90,7 +90,7 @@ test.describe('risk-aware review status (shared shell)', () => {
 
     await page.goto(`${baseURL}/?tool=${encodeURIComponent(target.f)}`, { waitUntil: 'domcontentloaded' });
 
-    await expect(page.locator('.fd-article__body > .governance-notice.pending-high')).toBeVisible();
+    await expect(page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-high')).toBeVisible();
     const frame = page.frameLocator('.toolframe');
     await expect(frame.locator('.surface-governance-direct')).toBeHidden();
     await expect(page.locator('.governance-notice.pending-high:visible')).toHaveCount(1);
@@ -156,8 +156,8 @@ test.describe('risk-aware review status (shared shell)', () => {
 
       await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-      await expect(page.locator('.fd-article__body > .governance-notice.pending-compact')).toBeVisible();
-      await expect(page.locator('.fd-article__body > .governance-notice.pending-high')).toHaveCount(0);
+      await expect(page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-compact')).toBeVisible();
+      await expect(page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-high')).toHaveCount(0);
     }
   });
 
@@ -172,7 +172,7 @@ test.describe('risk-aware review status (shared shell)', () => {
 
     await page.goto(`${baseURL}/?page=${encodeURIComponent(target.f)}`, { waitUntil: 'domcontentloaded' });
 
-    const receipt = page.locator('.fd-article__body > .governance-notice.reviewed-receipt');
+    const receipt = page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.reviewed-receipt');
     await expect(receipt).toContainText(/Reviewed by .+ · \d{4}-\d{2}-\d{2}/);
     const date = receipt.locator('time');
     await expect(date).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}$/);
@@ -193,7 +193,7 @@ test.describe('risk-aware review status (shared shell)', () => {
     await page.route('**/governance.json', (route) => route.abort());
     await page.goto(`${baseURL}/?page=${encodeURIComponent(target.f)}`, { waitUntil: 'domcontentloaded' });
 
-    const notice = page.locator('.fd-article__body > .governance-notice.unavailable');
+    const notice = page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.unavailable');
     await expect(notice).toHaveText('Review status unavailable—verify with faculty');
     await expect(page.locator('.governance-notice.reviewed-receipt')).toHaveCount(0);
     await expect(page.locator('#content h1')).toBeVisible();

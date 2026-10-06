@@ -2499,6 +2499,11 @@
        than mirrored onto controller state so the stored key stays the single home; the panel's
        change handler writes it and the next render reads it back. */
     out.examDate=LS('cw_shelf_date')||'';
+    /* The Reader's "Next in this thread" (one-thread redesign, Phase 3) reads the two build-inlined
+       registries the Library already uses -- by reference, never copied into any store. */
+    out.thread={caseArc:typeof FD_CASE_ARC!=='undefined'?FD_CASE_ARC:null,
+      pairings:typeof FD_PAIRINGS!=='undefined'?FD_PAIRINGS:null,
+      audience:typeof FD_AUDIENCE!=='undefined'?FD_AUDIENCE:''};
     /* Supervisor feedback notes: read fresh on every render, the store staying their single home
        (fd_state.js). The controller writes it above the render, so the list a save repaints is
        the list on the device. Guarded like the usage emitter below: a surface built without the
@@ -2845,6 +2850,25 @@
     if(loaded)wire();
   }
 
+  /* One-thread Phase 3: Back from a page opened inside Case Journeys returns to the chapter (the
+     tool's case-selection message keeps it in the URL) AND to where the learner was on the page.
+     A reader-to-reader hop records no origin scroll (#427 keeps the TAB's), and the content-sized
+     frame grows after the browser's own restoration has given up, so the offset is held here: in
+     memory for this visit only, never stored, used once, and only when the entry being restored
+     is the one it was recorded on. */
+  var fdCaseReturn=null;
+  function fdCaseRememberScroll(){ fdCaseReturn={search:location.search,y:window.scrollY||0}; }
+  function fdCaseRestoreScroll(fromHistory){
+    var saved=fdCaseReturn, tries=0;
+    fdCaseReturn=null;
+    if(!fromHistory||!saved||saved.search!==location.search||!(saved.y>0))return;
+    (function attempt(){
+      var max=document.documentElement.scrollHeight-window.innerHeight;
+      if(max>=saved.y||tries>=60){window.scrollTo(0,Math.min(saved.y,Math.max(0,max)));return;}
+      tries++;setTimeout(attempt,50);
+    })();
+  }
+
   function fdPatchToolLayout(state){
     if(!contentEl)return;
     var reader=contentEl.querySelector('.fd-reader--tool');
@@ -3076,6 +3100,7 @@
         var body=contentEl&&contentEl.querySelector('.fd-article__body');
         var toolFrame=contentEl&&contentEl.querySelector('.toolframe');
         if(toolFrame&&!facultyPreviewRequest&&typeof fdSizeToolFrame==='function')fdSizeToolFrame(toolFrame);
+        if(toolFrame&&!facultyPreviewRequest&&ref==='one-patient-six-weeks.html')fdCaseRestoreScroll(!!options.fromHistory);
         if(body){
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
@@ -3312,6 +3337,14 @@
           fdController.getState().openId==='prepare-for-tomorrow.html')fdController.replacePrepareSelection(selection);
       return;
     }
+    if(data.type==='case-selection'){
+      var caseSelection=fdCaseSelection(data);
+      var caseFrame=contentEl&&contentEl.querySelector('.toolframe');
+      if(caseSelection&&fdController&&!facultyPreviewRequest&&event.origin===location.origin&&
+          caseFrame&&event.source===caseFrame.contentWindow&&currentItem&&currentItem.f==='one-patient-six-weeks.html'&&
+          fdController.getState().openId==='one-patient-six-weeks.html')fdController.replaceCaseSelection(caseSelection);
+      return;
+    }
     if(data.type==='cw:concept-week-request'){
       var reply=fdConceptWeekContext(event,location.origin,
         contentEl&&contentEl.querySelector('iframe.toolframe'),
@@ -3335,6 +3368,7 @@
          buttons do, so ?block=1&limit=N survives the hop). Only a short, plain query string is
          honoured; anything else falls back to the bare resource open. */
       var searchOk=(typeof data.search==='string'&&data.search.length<=200&&/^\?[A-Za-z0-9_.%=&-]*$/.test(data.search));
+      if(currentItem&&currentItem.f==='one-patient-six-weeks.html')fdCaseRememberScroll();
       fdOpenRef(data.f, searchOk?data.search:undefined);
       return;
     }

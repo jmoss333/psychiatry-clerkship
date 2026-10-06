@@ -4349,6 +4349,61 @@ test('selection replacement refuses uncommitted, faculty preview, wrong active r
  }
 });
 
+// ---- One-thread redesign, Phase 3: Case Journeys chapter onto the shell's own history entry -------
+// The case tool posts {type:'case-selection',case,chapter}; the shell replaces ONLY its URL so a
+// linked page's Back returns to that chapter. Mirrors the preparation contract above.
+const caseHelpers = () => new Function(wire+`;return {
+ selection:typeof fdCaseSelection==='function'?fdCaseSelection:null,
+ route:typeof fdCaseSelectionRoute==='function'?fdCaseSelectionRoute:null,
+ resource:fdResourceRequest};`)();
+test('case-selection messages accept only exact allow-listed case and integer chapter',()=>{
+ const C=caseHelpers(), valid={type:'case-selection',case:'leah',chapter:3};
+ assert.deepEqual(C.selection(valid),{slug:'leah',chapter:3});
+ for(const bad of [null,[],{...valid,prompt:'free text'},{...valid,chapter:'3'},{...valid,chapter:7},{...valid,chapter:0},{...valid,chapter:2.5},{...valid,case:'other'},{case:'leah',chapter:3}]) assert.equal(C.selection(bad),null);
+});
+test('case-selection routes touch only the case tool route and replace week with case + chapter',()=>{
+ const C=caseHelpers(), sel={slug:'eli',chapter:4};
+ assert.equal(C.route('?tool=one-patient-six-weeks.html&week=2',sel),'?tool=one-patient-six-weeks.html&case=eli&chapter=4');
+ for(const q of ['?tool=oral.html','?tool=one-patient-six-weeks.html&tool=oral.html','?tool=one-patient-six-weeks.html&page=doc_oral.md']) assert.equal(C.route(q,sel),null);
+ assert.equal(C.route('?tool=one-patient-six-weeks.html',{slug:'nobody',chapter:1}),null);
+ assert.equal(C.resource('one-patient-six-weeks.html','?tool=one-patient-six-weeks.html&case=eli&chapter=4').frameSuffix,'?case=eli&chapter=4&governed=1',
+  'the frame receives the restored chapter on Back');
+});
+test('case selection replaces only the URL, keeps the history snapshot, and survives a linked page then Back',()=>{
+ const ls=memStorage({cw_longitudinal_v1:'existing-learner-value'}), LocalF=make(ls);
+ const location={href:'https://example.test/?tool=one-patient-six-weeks.html&week=2',pathname:'/',search:'?tool=one-patient-six-weeks.html&week=2'};
+ const memory=memoryHistory(location), mounts=[], renders=[];
+ const index={...FOUR_INDEX,byRef:{'one-patient-six-weeks.html':{f:'one-patient-six-weeks.html',k:'tool'},'pg_interview.md':{f:'pg_interview.md',k:'md'}}};
+ const h=fakeHarness({...roleContext,screen:'app',tab:'today',openId:'one-patient-six-weeks.html',fromTab:'today'}, {F:LocalF,index,location,history:memory.history,openResource:(ref,opts)=>mounts.push({ref,opts}),render:s=>renders.push(s)});
+ memory.bind(h.windowHandlers.popstate);const snapshot=memory.history.state, before=ls.dump(), count=renders.length;
+ assert.equal(h.controller.replaceCaseSelection({slug:'leah',chapter:5}),true);
+ assert.equal(memory.entries.length,1);assert.equal(memory.history.state,snapshot);assert.equal(renders.length,count);assert.deepEqual(mounts,[]);assert.deepEqual(ls.dump(),before,'no storage write');
+ h.controller.dispatch({'data-fd-open':'pg_interview.md'});assert.equal(memory.entries.length,2);
+ memory.go(-1);assert.equal(h.controller.getState().openId,'one-patient-six-weeks.html');assert.equal(mounts.at(-1).opts.fromHistory,true);
+ assert.match(mounts.at(-1).opts.search,/case=leah&chapter=5/);assert.doesNotMatch(mounts.at(-1).opts.search,/week=/);
+ assert.equal(ls.dump().cw_longitudinal_v1,'existing-learner-value');
+ h.controller.destroy();
+});
+test('the case-selection path and the Back-scroll memory touch no storage (source contract)',()=>{
+ const spa=readFileSync(new URL(`${BUILD}/spa_index.html`,import.meta.url),'utf8');
+ const slice=(src,start,end)=>{const a=src.indexOf(start);assert.ok(a>=0,start);const b=src.indexOf(end,a+start.length);assert.ok(b>a,end);return src.slice(a,b);};
+ const bodies=[
+  slice(wire,'function fdCaseSelection(data){','function fdPrepareFrameParams('),
+  slice(wire,'  function replaceCaseSelection(selection){','  function replaceHistorySnapshot(){'),
+  slice(spa,'  var fdCaseReturn=null;','  function fdPatchToolLayout(state){'),
+  slice(spa,"    if(data.type==='case-selection'){","    if(data.type==='cw:concept-week-request'){"),
+ ];
+ for(const body of bodies) assert.doesNotMatch(body,/localStorage|sessionStorage|indexedDB|setItem|getItem|\bLS\(|cookie|cw_/,body.slice(0,60));
+});
+test('case selection replacement refuses uncommitted, faculty preview, another open resource and another route',()=>{
+ for(const options of [{commitStartup:false},{facultyPreview:{}},{other:true},{query:'?tool=oral.html'},{query:'?tool=one-patient-six-weeks.html&page=doc_oral.md'}]) {
+  const query=options.query||'?tool=one-patient-six-weeks.html',location={href:'https://example.test/'+query,pathname:'/',search:query},memory=memoryHistory(location);
+  const h=fakeHarness({...roleContext,screen:'app',tab:'today',openId:options.other?'oral.html':'one-patient-six-weeks.html'}, {F,location,history:memory.history,...options});
+  const before=location.href,len=memory.entries.length;
+  assert.equal(h.controller.replaceCaseSelection({slug:'eli',chapter:2}),false);assert.equal(location.href,before);assert.equal(memory.entries.length,len);
+ }
+});
+
 // ---- One-thread redesign, Phase 2: the Library filter, section and preview as shell memory -------
 // Spec docs/superpowers/specs/one-thread-handoff/README.md "Interactions & behaviour" / "State
 // management" and owner decision D3: section and filter are transient, restored on Back/Forward

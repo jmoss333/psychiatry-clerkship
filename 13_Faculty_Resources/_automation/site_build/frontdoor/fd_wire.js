@@ -244,6 +244,26 @@ function fdPrepareSelectionRoute(search,selection){
   params.set('prepareTask',selection.task);params.set('prepareMinutes',String(selection.minutes));
   return '?'+params.toString();
 }
+/* Case Journeys selection (one-thread redesign, Phase 3). The case tool posts exactly
+   {type:'case-selection', case, chapter} when the learner changes chapter, so the shell can write
+   it onto ITS OWN history entry and Back from a linked page returns to that chapter. Allow-listed
+   keys and values only; anything else is ignored. Never stored -- the URL is the whole memory. */
+var FD_CASE_SLUGS=['jordan','eli','leah','marisol'];
+function fdCaseSelection(data){
+  if(!data||typeof data!=='object'||Array.isArray(data))return null;
+  if(Object.keys(data).sort().join(',')!=='case,chapter,type'||data.type!=='case-selection')return null;
+  if(FD_CASE_SLUGS.indexOf(data['case'])<0)return null;
+  if(typeof data.chapter!=='number'||Math.floor(data.chapter)!==data.chapter||data.chapter<1||data.chapter>6)return null;
+  return {slug:data['case'],chapter:data.chapter};
+}
+function fdCaseSelectionRoute(search,selection){
+  if(!selection||!fdCaseSelection({type:'case-selection','case':selection.slug,chapter:selection.chapter}))return null;
+  var params=new URLSearchParams(String(search||'').replace(/^\?/,'')),tools=params.getAll('tool');
+  if(tools.length!==1||tools[0]!=='one-patient-six-weeks.html'||params.has('page'))return null;
+  params.delete('week');
+  params.set('case',selection.slug);params.set('chapter',String(selection.chapter));
+  return '?'+params.toString();
+}
 function fdPrepareFrameParams(search){
   var params=new URLSearchParams(String(search||'').replace(/^\?/,'')),task=params.getAll('prepareTask'),minutes=params.getAll('prepareMinutes');
   if(task.length!==1||minutes.length!==1||(minutes[0]!=='5'&&minutes[0]!=='15'))return '';
@@ -1452,6 +1472,13 @@ function fdWire(root, initialState, opts){
     try{win.history.replaceState(win.history.state,'',(win.location.pathname||'/')+query);return true;}
     catch(ignorePrepareHistory){return false;}
   }
+  function replaceCaseSelection(selection){
+    if(destroyed||!startupCommitted||previewActive()||state.openId!=='one-patient-six-weeks.html'||!win||!win.location||!win.history||!win.history.replaceState)return false;
+    var query=fdCaseSelectionRoute(win.location.search,selection);
+    if(!query)return false;
+    try{win.history.replaceState(win.history.state,'',(win.location.pathname||'/')+query);return true;}
+    catch(ignoreCaseHistory){return false;}
+  }
   function replaceHistorySnapshot(){
     if(!win||!win.history||!win.history.replaceState) return false;
     try{
@@ -2492,6 +2519,7 @@ function fdWire(root, initialState, opts){
       ok:ok===true,
       getState:function(){ return state; },
       replacePrepareSelection:replacePrepareSelection,
+      replaceCaseSelection:replaceCaseSelection,
       dispatch:function(attrs,c){
         if(destroyed||!startupCommitted) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);
