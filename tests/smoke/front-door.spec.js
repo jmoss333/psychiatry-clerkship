@@ -3714,8 +3714,9 @@ test('Beyond this page: after Next in this thread, keyboard switch, verbatim gui
 
   // Bring to family meeting only PREPARES the existing capture dialog: title and author as a draft,
   // the no-patient-details warning shown, Save still the learner's step. Opening it marks nothing
-  // read, assigned or done -- the reading's own done state and every progress key are unchanged.
-  const progressBefore = await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_frontdoor_v1')]);
+  // read, assigned or done -- completion (cw_progress_v1) and the capture store (cw_capture_v1) are
+  // unchanged. (cw_frontdoor_v1 legitimately moves: the reading place saves the scroll position.)
+  const progressBefore = await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_capture_v1')]);
   const doneBefore = await page.locator('.fd-article__actions [data-fd-toggle]').getAttribute('aria-pressed');
   await forFamily.click();
   await block.getByRole('button', { name: '＋ Bring to family meeting' }).click();
@@ -3723,11 +3724,11 @@ test('Beyond this page: after Next in this thread, keyboard switch, verbatim gui
   await expect(page.locator('.cap-warn')).toBeVisible();
   await expect(page.locator('#capSave')).toBeVisible();
   await expect(page.locator('.cap-sheet')).not.toContainText(/assigned|completed|marked (as )?read/i);
-  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_frontdoor_v1')]),
+  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_capture_v1')]),
     'opening the dialog changes no progress state').toEqual(progressBefore);
   await page.locator('#capCancel').click();
   await expect(page.locator('.fd-article__actions [data-fd-toggle]')).toHaveAttribute('aria-pressed', doneBefore || 'false');
-  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_frontdoor_v1')]),
+  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_capture_v1')]),
     'cancelling stores nothing').toEqual(progressBefore);
   const after = await page.evaluate(() => JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])));
   expect(after.includes('Loving Someone'), 'no draft or capture stored').toBe(false);
