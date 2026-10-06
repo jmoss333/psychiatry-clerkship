@@ -12,9 +12,16 @@ a governance edit: nothing globs site_build/test_*.py.
 
 import json
 import os
+import sys
+import tempfile
 import unittest
+from unittest import mock
 
 import media_index as mi
+import shipped_pages
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import attestation_hash  # noqa: E402  (read-only use: the rule every signature is checked by)
 
 LIB = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
@@ -210,10 +217,13 @@ class MediaIndexTests(unittest.TestCase):
         self.assertEqual(page["practiceRef"], "family-systems.html")
         self.assertNotIn("why", json.dumps(page), "curator notes are never rendered")
 
-    def test_guidance_is_verbatim_from_topic_meta(self):
-        guidance = self.resolve(_map())["guidance"]
-        self.assertEqual(guidance, {"familySay": "BOOK SAY 'quoted'", "familySafety": "BOOK SAFETY",
-                                    "listenSay": "POD SAY", "listenSafety": "POD SAFETY"})
+    def test_guidance_is_verbatim_from_topic_meta_and_only_what_renders(self):
+        page = self.resolve(_map())["pages"]["t_mood.md"]
+        self.assertEqual(page["guidance"], {"familySay": "BOOK SAY 'quoted'", "familySafety": "BOOK SAFETY",
+                                            "listenSafety": "POD SAFETY"})
+        listen_only = self.resolve(_map(family=[]))["pages"]["t_mood.md"]
+        self.assertEqual(listen_only["guidance"], {"listenSafety": "POD SAFETY"})
+        self.assertNotIn("guidance", self.resolve(_map()), "no unbound top-level guidance")
 
     def test_empty_side_is_omitted_not_padded(self):
         page = self.resolve(_map(family=[]))["pages"]["t_mood.md"]
@@ -230,13 +240,176 @@ class MediaIndexTests(unittest.TestCase):
     def test_output_is_deterministic(self):
         self.assertEqual(mi.serialize(self.resolve(_map())), mi.serialize(self.resolve(_map())))
 
-    # ---- the live map: contract only ---------------------------------------------------
+    # ---- site scope ------------------------------------------------------------------
 
-    def test_live_map_resolves_and_a_draft_renders_nothing(self):
+    def test_sites_scope_limits_an_entry_to_named_sites(self):
+        media_map = _map(sites=["ms3"])
+        self.assertEqual(self.resolve(media_map, "ms3")["pages"]["t_mood.md"]["sites"], ["ms3"])
+        self.assertEqual(self.resolve(media_map, "res")["pages"], {}, "an MS3-only pick never reaches residents")
+        self.assertEqual(self.resolve(_map(), "res")["pages"]["t_mood.md"]["sites"], ["ms3", "res"])
+
+    def test_bad_sites_scope_fails(self):
+        self.assertRejects(_map(sites=[]), "sites must be a non-empty list")
+        self.assertRejects(_map(sites=["ms3", "ms3"]), "sites must be a non-empty list")
+        self.assertRejects(_map(anchor="ms3_only.md", sites=["res"]), "is not a subset of where the anchor ships")
+
+
+class SignatureBindingTests(unittest.TestCase):
+    """Signature-bound activation: the complete resolved recommendation is a per-page file the
+    page's signature covers. A change to what the page shows reopens that page; a curator note,
+    a date or a governance field never does."""
+
+    PAGE_SOURCE = "03_Core_Topics/Mood/m.md"
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = tmp.name
+        self.write(mi.PODCAST_PATH, PODCASTS)
+        self.write(mi.BOOK_PATH, BOOKS)
+        self.write(mi.TOPIC_META_PATH, json.dumps(dict(TOPIC_META, **{"t_mood.md": {"tldr": "Mood"}})))
+        self.write(shipped_pages.RELATIVE_PATH, json.dumps(SHIPPED))
+        self.write(self.PAGE_SOURCE, "# Mood\\n")
+        self.write_map(_map())
+
+    def write(self, rel, text):
+        path = os.path.join(self.root, rel)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+
+    def read(self, rel):
+        with open(os.path.join(self.root, rel), encoding="utf-8") as fh:
+            return fh.read()
+
+    def write_map(self, media_map):
+        self.write(mi.MAP_PATH, json.dumps(media_map))
+
+    def shipped_with_binding(self):
+        doc = json.loads(json.dumps(SHIPPED))
+        for page in doc["pages"]:
+            if page["slug"] in mi.bound_sources(self.root):
+                page["extraSources"] = [mi.bound_sources(self.root)[page["slug"]]]
+        return doc
+
+    def digest(self):
+        meta = json.loads(self.read(mi.TOPIC_META_PATH))
+        return attestation_hash.digest_from_tree(self.root, self.shipped_with_binding(), meta, "t_mood.md")
+
+    def resolved(self):
+        return self.read(mi.resolved_path("t_mood.md"))
+
+    def test_a_draft_binds_nothing_and_needs_no_files(self):
+        self.write_map(_map(status="draft"))
+        self.assertEqual(mi.bound_sources(self.root), {})
+        self.assertEqual(mi.write_resolved(self.root), [])
+        self.assertEqual(mi.check_resolved(self.root), [])
+
+    def test_approved_binds_one_file_per_rendering_page(self):
+        self.assertEqual(mi.bound_sources(self.root), {"t_mood.md": "media_resolved/t_mood.md.json"})
+        self.assertEqual(mi.check_resolved(self.root), ["media_resolved/t_mood.md.json is missing (an approved page renders it)"])
+        self.assertEqual(mi.write_resolved(self.root), ["media_resolved/t_mood.md.json"])
+        self.assertEqual(mi.check_resolved(self.root), [])
+        self.write_map(_map(listen=[], family=[]))
+        self.assertEqual(mi.bound_sources(self.root), {}, "an entry that picks nothing renders nothing and binds nothing")
+
+    def test_the_record_is_the_complete_rendered_recommendation_and_nothing_else(self):
+        mi.write_resolved(self.root)
+        record = json.loads(self.resolved())
+        self.assertEqual(sorted(record), ["_note", "family", "familyAll", "guidance", "listen", "listenAll",
+                                          "page", "practiceRef", "sites"])
+        self.assertEqual(record["family"][0]["description"], "A family guide.")
+        self.assertEqual(record["listen"][0]["url"], "https://www.youtube.com/watch?v=AAAAAAAAAA1")
+        self.assertEqual(record["guidance"]["familySay"], "BOOK SAY 'quoted'")
+        text = self.resolved()
+        for absent in ("why", "draftedAt", "gap", "status", "facultyReview", "lastReviewed", "reviewer", "week"):
+            self.assertNotIn('"%s"' % absent, text, absent)
+        index = mi.build_for_site(self.root, "ms3")
+        self.assertEqual({k: v for k, v in record.items() if k != "_note"}, index["pages"]["t_mood.md"],
+                         "what the page renders is byte-for-byte what it signs")
+
+    def assert_reopens(self, change, label):
+        mi.write_resolved(self.root)
+        before_digest, before_bytes = self.digest(), self.resolved()
+        ledger = {"t_mood.md": {"status": "reviewed", "at": "2026-10-06", "by": "Fixture",
+                                "contentHash": before_digest}}
+        change()
+        self.assertTrue(mi.check_resolved(self.root), "%s: the build refuses the stale file" % label)
+        mi.write_resolved(self.root)
+        self.assertNotEqual(self.resolved(), before_bytes, label)
+        meta = json.loads(self.read(mi.TOPIC_META_PATH))
+        report = attestation_hash.ledger_hash_report(self.root, ledger, self.shipped_with_binding(), meta)
+        self.assertIn("t_mood.md", report["stale"], "%s: the page's signature reopens" % label)
+        self.assertNotEqual(self.digest(), before_digest)
+
+    def assert_keeps(self, change, label):
+        mi.write_resolved(self.root)
+        before_digest, before_bytes = self.digest(), self.resolved()
+        change()
+        self.assertEqual(mi.check_resolved(self.root), [], label)
+        self.assertEqual(mi.write_resolved(self.root), [], label)
+        self.assertEqual(self.resolved(), before_bytes, label)
+        self.assertEqual(self.digest(), before_digest, "%s: the signature stands" % label)
+
+    def test_relevant_upstream_changes_reopen_the_page(self):
+        self.assert_reopens(lambda: self.write(mi.PODCAST_PATH, PODCASTS.replace("The Basics", "The Basics, Revised")),
+                            "episode title in the podcast library")
+        self.assert_reopens(lambda: self.write(mi.PODCAST_PATH, PODCASTS.replace("watch?v=AAAAAAAAAA1", "watch?v=ZZZZZZZZZZ1")),
+                            "episode link")
+        self.assert_reopens(lambda: self.write(mi.BOOK_PATH, BOOKS.replace("A family guide.", "A revised family guide.")),
+                            "book description in the book library")
+        self.assert_reopens(lambda: self.write(mi.BOOK_PATH, BOOKS.replace("Julie Fast & John Preston", "Julie A. Fast & John Preston")),
+                            "book author")
+        meta = json.loads(self.read(mi.TOPIC_META_PATH))
+        meta["book_library.md"]["clinicalWorkflow"]["say"] = "BOOK SAY, reworded"
+        self.assert_reopens(lambda: self.write(mi.TOPIC_META_PATH, json.dumps(meta)), "offer line in topic_meta")
+        meta = json.loads(self.read(mi.TOPIC_META_PATH))
+        meta["podcast_library.md"]["clinicalWorkflow"]["safety"] = "POD SAFETY, reworded"
+        self.assert_reopens(lambda: self.write(mi.TOPIC_META_PATH, json.dumps(meta)), "podcast safety line in topic_meta")
+        self.assert_reopens(lambda: self.write_map(_map(listen=[{"episode": 2}])), "a changed pick")
+        self.assert_reopens(lambda: self.write_map(_map(listen=[{"episode": 2}], sites=["ms3"])), "a narrowed site scope")
+
+    def test_notes_dates_unrelated_lines_and_governance_never_reopen(self):
+        def note():
+            media_map = _map()
+            media_map["weeks"][0]["listen"][0]["why"] = "a different curator note"
+            media_map["weeks"][0]["family"][0]["why"] = "another note"
+            media_map["weeks"][0]["gap"] = "a gap note"
+            media_map["draftedAt"] = "2026-12-31"
+            self.write_map(media_map)
+        self.assert_keeps(note, "curator notes and dates")
+        self.assert_keeps(lambda: self.write(mi.BOOK_PATH, BOOKS.replace("The CRAFT approach.", "The CRAFT approach, revised.")),
+                          "an unpicked library line")
+        def signing():
+            meta = json.loads(self.read(mi.TOPIC_META_PATH))
+            meta["book_library.md"]["facultyReview"] = {"status": "reviewed", "reviewer": "X", "lastReviewed": "2026-10-06"}
+            meta["podcast_library.md"]["clinicalWorkflow"]["say"] = "POD SAY (never rendered)"
+            meta["t_mood.md"]["facultyReview"] = {"status": "reviewed", "lastReviewed": "2026-10-06"}
+            self.write(mi.TOPIC_META_PATH, json.dumps(meta))
+        self.assert_keeps(signing, "signing a library or the page, and the unrendered podcast say line")
+
+    def test_shipped_pages_lists_the_bound_file_as_the_anchor_pages_extra_source(self):
+        with mock.patch.object(mi, "bound_sources", return_value={"t_mood.md": "media_resolved/t_mood.md.json"}):
+            pages = {page["slug"]: page for page in shipped_pages.derive(LIB)["pages"]}
+        self.assertIn("media_resolved/t_mood.md.json", pages["t_mood.md"]["extraSources"])
+        self.assertEqual(attestation_hash.sources_for_slug({"pages": list(pages.values())}, "t_mood.md")[-1],
+                         "media_resolved/t_mood.md.json", "the attestation hash covers it")
+        others = [slug for slug, page in pages.items() if "media_resolved/t_mood.md.json" in page.get("extraSources", [])]
+        self.assertEqual(others, ["t_mood.md"], "binding is per page")
+
+
+class LiveContractTests(unittest.TestCase):
+    def test_live_map_resolves_and_a_draft_renders_and_binds_nothing(self):
         for site in ("ms3", "res"):
             index = mi.build_for_site(LIB, site)
             if index["status"] != mi.APPROVED:
                 self.assertEqual(index["pages"], {}, site)
+        self.assertEqual(mi.check_resolved(LIB), [], "media_resolved/ is in step with the live inputs")
+        live = shipped_pages.load_shipped_pages(LIB)
+        bound = set(mi.bound_sources(LIB).values())
+        listed = {extra for page in live["pages"] for extra in page.get("extraSources", [])
+                  if extra.startswith(mi.RESOLVED_DIR + "/")}
+        self.assertEqual(listed, bound, "shipped_pages.json binds exactly the approved recommendations")
 
 
 if __name__ == "__main__":
