@@ -92,18 +92,14 @@
       "anchor": "exp_family.md",
       "pairing": "pair_family_relapse",
       "podcastCategory": "Other & special topics",
-      "listen": [
-        {
-          "episode": 26,
-          "why": "Boundaries — supports confidentiality framing in family meetings"
-        }
-      ],
+      "listen": [],
       "family": [
         {
           "isbn": "9781476709475",
           "why": "CRAFT — named in book_library.md for substance use"
         }
-      ]
+      ],
+      "gap": "Episode 26 removed (Dr. Moss, 2026-10-06): a general relationship-boundaries episode, not confidentiality teaching, and no reading page teaches personal boundaries to move it to. The listen side is omitted. LEAP pick withheld until its ISBN is confirmed (see unverified)."
     },
     {
       "week": 5,
@@ -132,14 +128,10 @@
         {
           "episode": 207,
           "why": "Five domains of psychiatric care — a formulation frame"
-        },
-        {
-          "episode": 90,
-          "why": "Exam preparation for the final week"
         }
       ],
       "family": [],
-      "gap": "Integration week is learner-facing; no family pick."
+      "gap": "Episode 90 (USMLE Step 1 preparation) removed (Dr. Moss, 2026-10-06): exam preparation, not resident-level clinical teaching; it belongs only in an optional medical-student exam-preparation placement. Integration week is learner-facing; no family pick."
     }
   ],
   "excluded": {
