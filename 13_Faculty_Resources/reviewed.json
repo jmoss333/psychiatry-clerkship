@@ -1385,15 +1385,16 @@
     "clinicalHash": "dc835816041c17932b0915d62f28ef9e6965acee"
   },
   "one-patient-six-weeks.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "Content changed since faculty review on 2026-10-05; awaiting re-attestation.",
-    "at": "2026-10-05",
-    "by": "Pending faculty review",
-    "note": "Fictional composite longitudinal simulation."
+    "at": "2026-10-06",
+    "by": "Joshua Moss, MD",
+    "note": "Fictional composite longitudinal simulation.",
+    "contentHash": "915fedc095e8c0016a7ceb2215dfe3563542637d",
+    "clinicalHash": "69f82216ba404f52f889a432bd657651312233a7"
   },
   "anki.md": {
     "status": "reviewed",
