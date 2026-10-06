@@ -14,7 +14,9 @@ const make = new Function(`${wire}\nreturn {
   semantic: fdActionSemantic,
 };`);
 const F = make();
-const NON_ACTION_ATTRS = new Set(['data-fd-care-builder', 'data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-care-copy-status', 'data-fd-care-pack-origin', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status']);
+// data-fd-mark / data-fd-count (2026-10-04): the status mark on an "Also today" row wrapper
+// (fd_today.js fdAlsoRow) -- CSS reads them (::before content / conic share); no controller meaning.
+const NON_ACTION_ATTRS = new Set(['data-fd-care-builder', 'data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-care-copy-status', 'data-fd-care-pack-origin', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status', 'data-fd-mark', 'data-fd-count']);
 const AUX_ACTION_ATTRS = new Set(['data-fd-local-toggle']);
 
 function emittedAttributes() {
@@ -36,7 +38,9 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   // here (data-fd-try-now is the standing precedent, pinned by the next test instead).
   // 'data-fd-theme' left this list when the header glyph became the settings gear and returned
   // with the settings panel's Appearance segmented control (fd_sheet.js's fdSettingsSeg), which is
-  // now its only emitter.
+  // now its only emitter. 'data-fd-dock-forward' and 'data-fd-dock-browse-go' left this list on
+  // 2026-10-04 (one-thread redesign, Phase 1) with the dock's context slot and Browse disclosure;
+  // the controller retired both actions in the same change, and the test below pins that.
   assert.deepEqual(emitted, [
     'data-fd-analytics', 'data-fd-app-bridge', 'data-fd-app-practice-classify',
     'data-fd-app-practice-close', 'data-fd-app-practice-open', 'data-fd-app-practice-question', 'data-fd-app-practice-reset',
@@ -46,11 +50,15 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-care-pack', 'data-fd-care-pack-clear', 'data-fd-care-pack-print',
     'data-fd-care-share', 'data-fd-care-share-close', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
-    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-dock-browse-go', 'data-fd-dock-forward', 'data-fd-exam-date', 'data-fd-expand-tool',
+    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-exam-date', 'data-fd-expand-tool',
     'data-fd-feedback-cancel', 'data-fd-feedback-confirm', 'data-fd-feedback-delete', 'data-fd-feedback-edit',
     'data-fd-feedback-open', 'data-fd-feedback-save',
-    'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
-    'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-settings',
+    // 'data-fd-library-filter' (the filter input, committed on input events), 'data-fd-library-filter-clear'
+    // and 'data-fd-search-query' (rides on a data-fd-search control to seed the dialog) joined on
+    // 2026-10-04 with the Library's filter field (one-thread redesign, Phase 2).
+    'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-filter', 'data-fd-library-filter-clear',
+    'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
+    'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-search-query', 'data-fd-settings',
     'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-view-week', 'data-fd-week',
   ]);
@@ -69,6 +77,20 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
   const controllerActions = emitted.filter((attr) => !AUX_ACTION_ATTRS.has(attr));
   assert.equal(new Set(controllerActions.map(F.semantic)).size, controllerActions.length,
     'two emitted attributes accidentally share an action meaning');
+});
+
+test('the dock no longer forwards or browses: both retired actions are gone from the controller too', () => {
+  // A handled-but-unemitted action is allowed in general (data-fd-try-now), but THESE two were the
+  // dock's own and the dock no longer renders anything that could fire them. Leaving them handled
+  // would let a later renderer silently reactivate primary-forwarding from the dock.
+  for (const attr of ['data-fd-dock-forward', 'data-fd-dock-browse-go']) {
+    assert.equal(F.handled.includes(attr), false, `${attr} must not be handled`);
+    assert.equal(F.semantic(attr), null, `${attr} must have no semantic`);
+    assert.doesNotMatch(wire, new RegExp(`\\[${attr}\\]`), `${attr} must be out of the click selector`);
+  }
+  assert.doesNotMatch(wire, /function fdDockSource\(|function fdForwardDockAction\(/);
+  // The source attributes themselves still ride on the surfaces that own a primary, as metadata.
+  assert.ok(NON_ACTION_ATTRS.has('data-fd-dock-source') && NON_ACTION_ATTRS.has('data-fd-dock-label'));
 });
 
 test('reading resume is metadata on a normal open, while Start at top is its own action', () => {

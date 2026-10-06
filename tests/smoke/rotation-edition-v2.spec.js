@@ -744,8 +744,9 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
 
   await activateTab('Library');
   await expect(page.locator('.fd-library')).toBeVisible();
-  // A4: the real Curator-generated edition opens the trainee Library at The Essentials.
-  await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
+  // A4: the real Curator-generated edition opens the trainee Library at The Essentials (one Library
+  // shell since the one-thread redesign, Phase 2: the Essentials root carries .fd-kit).
+  await expect(page.locator('.fd-library.fd-kit .fd-library__h1')).toHaveText('Library');
   // MS3 includes the preparation guide added on 2026-10-03; resident remains at 35.
   await expect(essentialsResources(page)).toHaveCount(audience === 'ms3' ? 31 : 35);
   const essentials = JSON.parse(readFileSync(new URL('../../curriculum.json', import.meta.url), 'utf8')).essentials;
@@ -766,7 +767,7 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
     omitted: libraryItems.find((item) => item.ref.endsWith('.md') && !pathRefs.includes(item.ref)),
   };
   expect(library.omitted).toBeTruthy();
-  await expect(page.locator('.fd-library__count')).toContainText(`${library.count} pages`);
+  await expect(page.locator('.fd-library__status')).toHaveText(`Showing all ${library.count} pages.`);
   const omitted = page.locator(`.fd-collink[data-fd-open="${library.omitted.ref}"]`);
   await expect(omitted.locator('.fd-collink__label')).toHaveText(library.omitted.title);
   await keyboardActivate(omitted);
@@ -781,7 +782,7 @@ async function exerciseLearnerSurfaces(page, artifact, audience) {
   await expect(page.getByRole('heading', { name: library.omitted.title, exact: true }).first()).toBeVisible();
 
   await activateTab('Library');
-  await expect(page.locator('.fd-library__h1')).toHaveText('Core readings');
+  await expect(page.locator('.fd-library.fd-kit .fd-library__h1')).toHaveText('Library');
   await keyboardActivate(page.locator('[data-fd-library-view="full"]'));
   await expect(page.locator(`.fd-collink[data-fd-open="${library.omitted.ref}"]`)).toBeVisible();
   await activateTab('Today');

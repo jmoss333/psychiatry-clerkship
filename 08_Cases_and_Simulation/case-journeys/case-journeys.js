@@ -96,13 +96,21 @@
     return (base || '../index.html') + '?' + link.kind + '=' + encodeURIComponent(link.target) + (link.anchor ? '#' + encodeURIComponent(link.anchor) : '');
   }
 
+  // Try → Compare (one-thread redesign, Phase 3). Every checklist item shows its prompt first; the
+  // reviewed model example stays in the DOM, verbatim, behind a button that reports its state with
+  // aria-expanded. Opening it is transient: nothing is recorded, scored or stored, and a chapter
+  // change closes every example again. Print shows every example (see the tool's print rules).
+  var TRY_LINE = 'Try each one first — aloud or on paper. Then compare with one way to say it. Nothing you think or say is stored.';
+  var COMPARE_LABEL = 'Compare with one way to say it';
+
   function chapterMarkup(data, w) {
     var number = data.weeks.indexOf(w) + 1;
     var pilot = /eli_psychosis/.test(String(data.id)) && number >= 1 && number <= 4;
-    var language = w.checklist.map(function (item) {
-      return '<div class="opf-language"><p class="opf-note__prompt">' + escape(item.prompt) + '</p>' +
-        (pilot ? '<details class="opf-model"><summary>Model example · compare after your attempt</summary>' : '') +
-        '<blockquote>' + escape(item.example) + '</blockquote>' + (pilot ? '</details>' : '') + '</div>';
+    var language = '<p class="opf-try">' + escape(TRY_LINE) + '</p>' + w.checklist.map(function (item, i) {
+      var id = 'chapter-' + number + '-example-' + (i + 1);
+      return '<div class="opf-language"><p class="opf-note__prompt" id="' + id + '-prompt">' + escape(item.prompt) + '</p>' +
+        '<button type="button" class="opf-compare-example" data-compare-example aria-expanded="false" aria-controls="' + id + '" aria-describedby="' + id + '-prompt">' + escape(COMPARE_LABEL) + '</button>' +
+        '<blockquote class="opf-example" id="' + id + '" hidden>' + escape(item.example) + '</blockquote></div>';
     }).join('');
     function pilotResources(kind) {
       var links = w.links.filter(function (link) { return link.kind === kind; });
@@ -129,6 +137,52 @@
       '<section class="opf-note opf-note--language"><p class="opf-note__label">One way to say it</p>' + language + '</section>' +
       '<section class="opf-note opf-note--rounds"><p class="opf-note__label">' + (pilot ? 'Discuss · carry it to rounds' : 'Carry it to rounds') + '</p><p>' + escape(w.handoff) + '</p>' + (pilot ? '<p>' + escape(w.reflectionPrompt) + '</p>' : '') + misstep + resident + '</section></div>' + local +
       (pilot ? sourcesMarkup : '<details class="opf-reflection"><summary>Reflect and explore</summary><p>' + escape(w.reflectionPrompt) + '</p><nav aria-label="Resources for this chapter"><ul>' + resources + '</ul></nav>' + sourcesMarkup + '</details>');
+  }
+
+  // Compare two chapters (one-thread redesign, Phase 3). A transient view of the selected case:
+  // two chapter pickers, then each chapter's focus, story change, rounds handoff and reflection
+  // prompt side by side. Every value is the case file's own text; the labels are the ones the
+  // chapter view already uses. Nothing is stored and the comparison closes on reload.
+  function compareDefault(chapter) { return {a:chapter, b:chapter === 6 ? 5 : chapter + 1}; }
+  function comparePair(pair) {
+    function ok(n) { return Number.isInteger(n) && n >= 1 && n <= 6; }
+    return !!pair && ok(pair.a) && ok(pair.b);
+  }
+  function compareMarkup(data, pair, chapter) {
+    if (!comparePair(pair)) pair = compareDefault(chapter);
+    function picker(key, label, value) {
+      return '<label class="opf-compare__pick"><span>' + label + '</span><select data-compare-pick="' + key + '" id="compare-pick-' + key + '">' +
+        data.weeks.map(function (w, i) {
+          return '<option value="' + (i + 1) + '"' + (i + 1 === value ? ' selected' : '') + '>' + escape(w.label) + ' — ' + escape(w.title) + '</option>';
+        }).join('') + '</select></label>';
+    }
+    function column(n) {
+      var w = data.weeks[n - 1];
+      return '<div class="opf-compare__col"><p class="opf-sheet__chapter">Case chapter ' + n + ' of 6</p><h3>' + escape(w.title) + '</h3><dl>' +
+        '<dt>Chapter focus</dt><dd>' + w.focus.map(escape).join(' · ') + '</dd>' +
+        '<dt>What changed in ' + escape(data.patient.displayName) + '’s story</dt><dd>' + escape(w.patientState) + '</dd>' +
+        '<dt>Carry it to rounds</dt><dd>' + escape(w.handoff) + '</dd>' +
+        '<dt>Reflect and explore</dt><dd>' + escape(w.reflectionPrompt) + '</dd></dl></div>';
+    }
+    return '<h2 id="case-compare-title" tabindex="-1">Compare two chapters</h2>' +
+      '<div class="opf-compare__pickers">' + picker('a', 'First chapter', pair.a) + picker('b', 'Second chapter', pair.b) + '</div>' +
+      '<div class="opf-compare__grid">' + column(pair.a) + column(pair.b) + '</div>' +
+      '<button type="button" class="opf-compare__close" data-compare-close>Back to chapter ' + chapter + '</button>';
+  }
+
+  // Where the learner is, for Back. Only the selection itself crosses the frame boundary: exactly
+  // {type, case, chapter}, same-origin only. The shell writes it onto its own history entry so a
+  // linked page's Back returns to this chapter; the tool rewrites its own address the same way
+  // when opened directly. Neither is storage -- reload of a bare link still starts where it says.
+  function selectionMessage(selected) {
+    return {type:'case-selection', case:selected.slug, chapter:selected.chapter};
+  }
+  function selectionSearch(search, selected) {
+    var params = new URLSearchParams(search);
+    params.delete('week');
+    params.set('case', selected.slug);
+    params.set('chapter', String(selected.chapter));
+    return '?' + params.toString();
   }
 
   function validatePractice(defs) {
@@ -199,8 +253,9 @@
       '<section class="opf-shell opf-case-context" aria-label="Selected case context"><div class="opf-case-context__frame"><p class="opf-context-label">Case setting</p><p>' + escape(data.setting) + '</p></div>' +
       '<dl class="opf-case-facts"><div><dt>Clinical time</dt><dd>' + escape(timeFrame) + '</dd></div><div><dt>Learner audience</dt><dd>' + escape(audience) + '</dd></div></dl>' +
       '<aside class="opf-source-boundary"><p class="opf-context-label">Simulation boundary</p><p>' + escape(data.disclaimer) + '</p><p class="opf-source-boundary__note">Navigation is unscored and is not saved.</p>' + (selected.slug === 'eli' ? '<p class="opf-source-boundary__note">Chapters 1–4: Read → Practice → Discuss. Chapters 5–6: optional follow-through.</p>' : '') + '</aside></section>' +
-      '<section class="opf-shell opf-workbench" aria-label="' + escape(data.patient.displayName) + '’s interactive case folio"><div class="opf-spine"><div class="opf-spine__heading"><span>' + escape(data.patient.displayName) + '’s case file</span><strong id="counter" aria-live="polite">' + String(selected.chapter).padStart(2, '0') + ' / 06</strong></div><div id="case-route">' + routeMarkup(data, selected.chapter) + '</div></div>' +
-      '<div class="opf-folio"><div class="opf-folio__chapter"><div class="opf-folio__back" aria-hidden="true"></div><article class="opf-sheet" id="chapter-panel" role="tabpanel" tabindex="-1" aria-labelledby="chapter-tab-' + selected.chapter + '">' + chapterMarkup(data, w) + '</article></div>' +
+      '<section class="opf-shell opf-workbench" aria-label="' + escape(data.patient.displayName) + '’s interactive case folio"><div class="opf-spine"><div class="opf-spine__heading"><span>' + escape(data.patient.displayName) + '’s case file</span><strong id="counter" aria-live="polite">' + String(selected.chapter).padStart(2, '0') + ' / 06</strong></div><div id="case-route">' + routeMarkup(data, selected.chapter) + '</div>' +
+      '<button type="button" class="opf-compare-open" id="compare-open" aria-expanded="false" aria-controls="case-compare">Compare two chapters</button></div>' +
+      '<div class="opf-folio"><section class="opf-compare" id="case-compare" aria-labelledby="case-compare-title" hidden></section><div class="opf-folio__chapter"><div class="opf-folio__back" aria-hidden="true"></div><article class="opf-sheet" id="chapter-panel" role="tabpanel" tabindex="-1" aria-labelledby="chapter-tab-' + selected.chapter + '">' + chapterMarkup(data, w) + '</article></div>' +
       '<aside class="opf-practice" id="case-practice" aria-label="Practice with the selected patient"></aside><div class="opf-controls" aria-label="Case chapter controls"><button type="button" id="previous"' + (selected.chapter === 1 ? ' disabled' : '') + '>Previous chapter</button><p>Selection is not saved.</p><button type="button" id="next"' + (selected.chapter === 6 ? ' disabled' : '') + '>Next chapter</button></div></div></section></main>' +
       '<footer class="opf-shell opf-footer"><span>Fictional educational case</span><span>No patient entry · no saved case progress</span></footer>';
   }
@@ -238,8 +293,48 @@
       });
       practiceHost.addEventListener('toggle', function (event) { if (event.target.matches('details[data-practice-example]')) practice.exampleOpen = event.target.open; }, true);
 
+      var compareHost = doc.getElementById('case-compare'), compareOpen = doc.getElementById('compare-open');
+      var chapterView = doc.querySelector('.opf-folio__chapter'), controls = doc.querySelector('.opf-controls');
+      var compare = null;
+      function showCompare(pair, focusId) {
+        compare = comparePair(pair) ? pair : compareDefault(selected.chapter);
+        compareHost.innerHTML = compareMarkup(data, compare, selected.chapter);
+        compareHost.hidden = false; chapterView.hidden = true; practiceHost.hidden = true; controls.hidden = true;
+        compareOpen.setAttribute('aria-expanded', 'true');
+        var target = doc.getElementById(focusId || 'case-compare-title'); if (target) target.focus();
+      }
+      function hideCompare(focusOpen) {
+        compare = null; compareHost.hidden = true; compareHost.innerHTML = '';
+        chapterView.hidden = false; practiceHost.hidden = false; controls.hidden = false;
+        compareOpen.setAttribute('aria-expanded', 'false');
+        if (focusOpen) compareOpen.focus();
+      }
+      compareOpen.addEventListener('click', function () { if (compare) hideCompare(true); else showCompare(null); });
+      compareHost.addEventListener('change', function (event) {
+        var key = event.target.getAttribute('data-compare-pick');
+        if (!key || !compare) return;
+        var next = {a:compare.a, b:compare.b}; next[key] = Number(event.target.value);
+        showCompare(next, 'compare-pick-' + key);
+      });
+      compareHost.addEventListener('click', function (event) {
+        if (event.target.closest('[data-compare-close]')) hideCompare(true);
+      });
+      panel.addEventListener('click', function (event) {
+        var button = event.target.closest('button[data-compare-example]');
+        if (!button || !panel.contains(button)) return;
+        var target = doc.getElementById(button.getAttribute('aria-controls')), open = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (target) target.hidden = !open;
+      });
+      function remember() {
+        try { browser.history.replaceState(browser.history.state, '', browser.location.pathname + selectionSearch(browser.location.search, selected) + browser.location.hash); } catch (ignoreHistory) {}
+        try { if (browser.parent && browser.parent !== browser) browser.parent.postMessage(selectionMessage(selected), browser.location.origin); } catch (ignoreFrame) {}
+      }
+
       function render(focus) {
+        if (compare) hideCompare(false);
         practice = practiceInitial(); renderPractice();
+        if (focus) remember();
         route.innerHTML = routeMarkup(data, selected.chapter);
         panel.innerHTML = chapterMarkup(data, data.weeks[selected.chapter - 1]);
         panel.setAttribute('aria-labelledby', 'chapter-tab-' + selected.chapter);
@@ -268,5 +363,5 @@
     }
   }
 
-  return {escape:escape, validate:validate, selection:selection, moveChapter:moveChapter, accentFor:accentFor, catalogMarkup:catalogMarkup, routeMarkup:routeMarkup, chapterMarkup:chapterMarkup, pageMarkup:pageMarkup, validatePractice:validatePractice, practiceInitial:practiceInitial, practiceReduce:practiceReduce, practiceMarkup:practiceMarkup, start:start};
+  return {escape:escape, validate:validate, selection:selection, moveChapter:moveChapter, accentFor:accentFor, catalogMarkup:catalogMarkup, routeMarkup:routeMarkup, chapterMarkup:chapterMarkup, pageMarkup:pageMarkup, validatePractice:validatePractice, practiceInitial:practiceInitial, practiceReduce:practiceReduce, practiceMarkup:practiceMarkup, compareDefault:compareDefault, comparePair:comparePair, compareMarkup:compareMarkup, selectionMessage:selectionMessage, selectionSearch:selectionSearch, TRY_LINE:TRY_LINE, start:start};
 }));

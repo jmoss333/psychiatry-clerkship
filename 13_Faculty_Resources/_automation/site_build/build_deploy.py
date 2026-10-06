@@ -616,10 +616,47 @@ for _needle,_ids,_label in ((
         print("BUILD ABORTED — %s needle missing or duplicated in spa_index.html"%_label)
         raise SystemExit(1)
     _spa_t=_spa_t.replace(_needle,"var %s=%s;"%(_label,json.dumps(_ids)))
+# The longitudinal case ("One Patient, Six Weeks"), READ-ONLY, for Today's "On the unit this
+# week" (one-thread redesign, Phase 1). Injected rather than fetched so the section exists at
+# first render: a runtime fetch made Today's DOM churn after boot and two loads of the same page
+# disagree on their core render signature. The file already ships beside index.html (copied
+# above); this reads those same bytes and inlines them, escaped like every Front Door needle.
+# Not a JSON object -> null, and fdWeekCaseStep renders nothing. The tool, its attestation hash
+# and the file are untouched. The resident build inherits this (it rebrands this index.html).
+try:
+    _case_arc=json.load(open(OUT+"/longitudinal_case.json",encoding="utf-8"))
+except (OSError,ValueError):
+    _case_arc=None
+if not isinstance(_case_arc,dict): _case_arc=None
+_case_needle="var FD_CASE_ARC=null;"
+if _spa_t.count(_case_needle)!=1:
+    print("BUILD ABORTED — FD_CASE_ARC needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+_spa_t=_spa_t.replace(_case_needle,"var FD_CASE_ARC=%s;"%frontdoor_catalog._inline_json(_case_arc))
+# The pairings registry, READ-ONLY, for the Library preview's "Practice with" (one-thread
+# redesign, Phase 2). Same contract as FD_CASE_ARC: inlined so the Library renders at first paint,
+# the `_note` dropped (it is authoring commentary, not data), anything that is not a JSON object
+# with a `pairings` list injects null and the preview simply shows no practice line. The week
+# pages' own pairing blocks (_pairings above) are built from the same file and are untouched.
+try:
+    _pairings_raw=json.load(open(LIB+"/pairings.json",encoding="utf-8"))
+except (OSError,ValueError):
+    _pairings_raw=None
+if isinstance(_pairings_raw,dict) and isinstance(_pairings_raw.get("pairings"),list):
+    _pairings_inline={"pairings":_pairings_raw["pairings"]}
+else:
+    _pairings_inline=None
+_pairings_needle="var FD_PAIRINGS=null;"
+if _spa_t.count(_pairings_needle)!=1:
+    print("BUILD ABORTED — FD_PAIRINGS needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+_spa_t=_spa_t.replace(_pairings_needle,"var FD_PAIRINGS=%s;"%frontdoor_catalog._inline_json(_pairings_inline))
 open(_spa_out,"w",encoding="utf-8").write(_spa_t)
 print("retired-qb injection:",len(_retired_ids),"id(s)")
 print("draft-qb injection:",len(_draft_ids),"id(s)")
 print("practice-case-title injection:",len(_case_titles),"case(s)")
+print("case-arc injection:",len((_case_arc or {}).get("weeks") or []),"week(s)")
+print("pairings injection:",len((_pairings_inline or {}).get("pairings") or []),"pairing(s)")
 
 # ---- page->tool link divergence (report only; never fails the build) ----
 # The practice panel reconciles two sources that disagree in OPPOSITE directions:

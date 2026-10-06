@@ -140,6 +140,16 @@ test('the desktop breakpoint is 1000px, as the design specifies', () => {
 test('animations are disabled under prefers-reduced-motion', () => {
   assert.match(fd, /@media\s*\(prefers-reduced-motion:\s*reduce\)/,
     'the source prototype ships no reduced-motion handling; this repo requires it');
+  // One-thread acceptance: "with reduced motion there is no animation" -- the block must zero BOTH
+  // animation and transition for everything in the shell, not merely exist.
+  const reduced = fd.slice(fd.indexOf('/* ═══ Reduced motion'));
+  const block = reduced.match(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{([\s\S]*?)\n\}/);
+  assert.ok(block, 'the reduced-motion block is where the keyframes section says it is');
+  assert.match(block[1], /\.fd-shell \*,[\s\S]*?\{[^}]*animation:none !important/);
+  assert.match(block[1], /\.fd-shell \*,[\s\S]*?\{[^}]*transition:none !important/);
+  // And Today itself no longer animates in at all (the entrance stagger is gone).
+  assert.match(rule(fd, '.fd-today'), /animation:none/);
+  assert.doesNotMatch(rule(fd, '.fd-row'), /animation:/);
 });
 
 test('reader body gives rendered long-form content a readable token-based type scale', () => {
@@ -172,8 +182,11 @@ test('reader body gives rendered long-form content a readable token-based type s
 
 test('portalled overlays retain a visible keyboard focus indicator', () => {
   const focus = rule(fd, '.fd-search :focus-visible,.fd-sheet :focus-visible,.fd-nudge :focus-visible');
-  assert.match(focus, /outline:\s*2px solid var\(--fd-focus\)/,
+  // 3px since 2026-10-04 (one-thread redesign: one focus ring, 3px --fd-focus at a 2px offset).
+  assert.match(focus, /outline:\s*3px solid var\(--fd-focus\)/,
     'overlays may mount outside .fd-shell and need their own visible outline');
+  assert.match(rule(fd, '.fd-shell :focus-visible'), /outline:\s*3px solid var\(--fd-focus\)/,
+    'the shell ring matches the overlay ring');
   assert.match(focus, /outline-offset:\s*2px/,
     'overlay focus needs separation from the control edge');
 });
@@ -195,7 +208,10 @@ test('the class inventory documents the exact distinct front-door selector count
 test('red means safety: no terracotta, and danger only on the allowlisted surfaces', () => {
   const bare = fd.replace(/\/\*[\s\S]*?\*\//g, '');
   assert.doesNotMatch(bare, /--fd-terracotta/, 'frontdoor.css paints no terracotta');
-  const SAFETY = /fd-safetybtn|fd-kit|fd-railkit|crisis|fd-result__dot\.is-safety|fd-compass-safety|fd-sheet__failure|fd-feedback__hold|fd-app__error|fd-set__danger|fd-set__note--warn|fd-feedback__error|fd-feedback__delete/;
+  // Phase 2 of the one-thread redesign (2026-10-04) added three safety surfaces: the Library row's
+  // 8px safety dot (.fd-kit__safety, already covered by fd-kit), the Search dialog's "Safety
+  // protocols" group label and the leading protocol row's danger wash.
+  const SAFETY = /fd-safetybtn|fd-kit|fd-railkit|crisis|fd-result__dot\.is-safety|fd-searchpanel__group\.is-safety|fd-result\.is-first|fd-compass-safety|fd-sheet__failure|fd-feedback__hold|fd-app__error|fd-set__danger|fd-set__note--warn|fd-feedback__error|fd-feedback__delete/;
   const offenders = [...bare.matchAll(/([^{}]+)\{([^{}]*--fd-danger[^{}]*)\}/g)]
     .map((m) => m[1].replace(/\s+/g, ' ').trim()).filter((sel) => !SAFETY.test(sel));
   assert.deepEqual(offenders, [], `danger painted outside a safety surface: ${offenders.join(' | ')}`);

@@ -24,6 +24,7 @@ function extractShellCopy() {
   const shell = fs.readFileSync(path.join(BUILD_DIR, 'spa_index.html'), 'utf8');
   const swRegister = fs.readFileSync(path.join(BUILD_DIR, 'sw_register.js'), 'utf8');
   const fdDue = fs.readFileSync(path.join(BUILD_DIR, 'frontdoor', 'fd_due.js'), 'utf8');
+  const fdShell = fs.readFileSync(path.join(BUILD_DIR, 'frontdoor', 'fd_shell.js'), 'utf8');
 
   const strings = {};
 
@@ -60,9 +61,15 @@ function extractShellCopy() {
   assert.ok(capAria, 'capture textarea aria-label not found in spa_index.html');
   strings['capture textarea aria-label'] = capAria[1];
 
-  const capBtn = shell.match(/class="[^"]*\bfd-capture-launch\b[^"]*"[^>]*>([^<]*)</);
-  assert.ok(capBtn, 'Front Door capture button label not found in spa_index.html');
+  // The standing capture opener moved from a floating launcher in spa_index.html to the header
+  // (fd_shell.js, one-thread redesign 2026-10-04): "＋ Ask a question" in the bar, "＋ Ask" in the
+  // phone dock. Both ship to both sites verbatim, so both belong in this set.
+  const capBtn = fdShell.match(/class="fd-askbtn"[^>]*>([^<]*)</);
+  assert.ok(capBtn, 'Front Door capture button label not found in fd_shell.js');
   strings['Front Door capture button'] = capBtn[1];
+  const capDock = fdShell.match(/label:'(＋ Ask)',attr:'data-capture-open'/);
+  assert.ok(capDock, 'Front Door dock capture label not found in fd_shell.js');
+  strings['Front Door dock capture label'] = capDock[1];
 
   // Shared Progress + plan prose. These internal views replaced the retired Start-here surface
   // and now ship byte-identically to both audiences, so their learner-visible phrases belong in
