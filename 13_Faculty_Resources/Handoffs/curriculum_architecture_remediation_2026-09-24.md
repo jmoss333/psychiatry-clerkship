@@ -1132,7 +1132,7 @@ Every row was PubMed-verified on 2026-09-24. Resolve it again before registering
   - Site: Ambulatory 60–65%; ED 20–30%; Inpatient 5–10%.
   - Age: birth–12 10–15%; ≥ 13 85–90%.
 - **NBOME COMAT Clinical Psychiatry**, as transcribed in `09_Exam_Prep/shelf_comat_bank/01_BLUEPRINT_CROSSWALK.md` §3 (accessed 2026-07-13). **Re-fetch before encoding bands.**
-- **LCME 2026–27 Functions and Structure**, https://lcme.org/wp-content/uploads/2025/05/2026-27-Functions-and-Structure_2025-05-21.docx. Elements 6.1, 6.2, 8.6, 8.7, 9.4, 9.5, 9.7 and 9.8 were checked only against a 2021 mirror. **Confirm the wording against the 2026–27 document before quoting it in any faculty-facing file.** Key element 9.7: "Formal feedback occurs at least at the midpoint of the course or clerkship."
+- **LCME 2026–27 Functions and Structure**, https://lcme.org/wp-content/uploads/2025/10/2026-27-Functions-and-Structure_2025-05-21.docx. Elements 6.1, 6.2, 8.6, 8.7, 9.4, 9.5, 9.7 and 9.8 were checked only against a 2021 mirror. **Confirm the wording against the 2026–27 document before quoting it in any faculty-facing file.** Key element 9.7: "Formal feedback occurs at least at the midpoint of the course or clerkship."
 - **AAMC/ACGME/AACOM Foundational Competencies for UME**, released 2024-12-12, replacing the PCRS. https://engage.aamc.org/UME-Competencies-AAMC-ACGME-AACOM. The domain list was not retrieved (see WP-17).
 - **ACGME Psychiatry Milestones 2.0** (22 subcompetencies; version 2.1). https://www.acgme.org/globalassets/pdfs/milestones/psychiatrymilestones.pdf
 - **ADMSEP Junior Clerkship objectives** (1997 lineage). https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php. The appendix with the objective headings was not fetched.

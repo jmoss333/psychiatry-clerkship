@@ -26,8 +26,10 @@ reason. This tool closes the gap in two steps.
         (never the repository) that bin/what_needs_josh.py reads. Append-only and keyed by
         (agent, new version), so a later clean run or a re-pin never erases an observed drift:
         only a valid current faculty review bound to that exact label version and committed
-        source evidence retires it there. A later date alone does not. lastChecked advances only after a run over EVERY pinned
-        label -- an --only run records its drifts but never refreshes the date.
+        source evidence retires it there. A later date alone does not. lastChecked advances
+        only after a clean run over EXACTLY the receipt's agents -- an --only run, or any run
+        with an open finding (an unpinned agent, a stray pin), records its drifts but never
+        refreshes the date. A refused --pin keeps the last good pin, so the drug stays measured.
 
     --diff ID
         Print, for one agent whose label moved, the changed sections as a word diff: removed
@@ -756,8 +758,10 @@ def do_pin(args, receipt, pins, get):
             reason = ("DailyMed label is dated %s, receipt %s: run verify_pharmacy_labels.py "
                       "--only %s, review the card against the new label, then pin"
                       % (spl["effectiveDate"], ref.get("effectiveDate"), agent))
+            # Keep the last good pin. Deleting it dropped the drug from every later check while
+            # lastChecked advanced over the smaller set (SILENT_SHRINK); with it kept, do_check
+            # still measures the drift and the unpinned reason stays an open finding.
             pins.setdefault("unpinned", {})[agent] = reason
-            pins.get("agents", {}).pop(agent, None)
             refused.append(agent)
             print("REFUSED %-16s %s" % (agent, reason))
             continue
@@ -788,6 +792,8 @@ def do_pin(args, receipt, pins, get):
 def do_check(args, receipt, pins, get):
     records = records_by_id()
     pinned = pins.get("agents", {})
+    if not receipt.get("agents"):
+        raise CouldNotCheck("the label receipt lists no agents")  # zero labels is unknown, not fresh
     findings, missing = offline_check(receipt, pins)
     if missing:
         raise CouldNotCheck("receipt agent(s) with no usable pin: %s" % ", ".join(missing))
@@ -821,7 +827,11 @@ def do_check(args, receipt, pins, get):
     for line in findings:
         print("NOTE " + line)
     if args.record:
-        examined_all = set(wanted) == set(pinned)
+        # Fresh only after a clean pass over exactly the receipt's agents: an open finding
+        # (an unpinned or stray agent, a pin the receipt moved past) means the set examined is
+        # not the set owed, so lastChecked holds and ages into "unknown" on the dashboard.
+        examined_all = (bool(wanted) and not findings
+                        and set(wanted) == set(receipt.get("agents", {})))
         added = record(args.ledger, report, examined_all, datetime.date.today().isoformat(), records)
         print("recorded %d new drift(s) in %s%s" % (
             added, args.ledger, "" if examined_all else " (partial run: lastChecked unchanged)"),

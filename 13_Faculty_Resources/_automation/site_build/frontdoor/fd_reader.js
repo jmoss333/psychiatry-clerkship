@@ -246,13 +246,102 @@ function fdReaderRailNav(weekItems, state, weekN){
    ("Mark done" vs "Next: …"), but that is prose a caller could reword; the pressed state is the
    machine-readable half, and the mobile bar's twin button below carries the same value so the two
    renderings of one control can never disagree. */
-function fdReaderActions(item, doneLabel, backLabel, isDone){
+function fdReaderActions(item, doneLabel, backLabel, isDone, nextLink){
   return '<div class="fd-article__actions">'+
     '<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="'+fdEsc(item.ref)+'" '+
       'aria-pressed="'+(isDone?'true':'false')+'">'+
       fdEsc(doneLabel)+'</button>'+
+    (nextLink||'')+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-back>'+fdEsc(backLabel)+'</button>'+
   '</div>';
+}
+
+/* One-thread redesign, Phase 3 -- the end of a focused page names "the next item" in its week as a
+   plain navigation control beside "Mark done". It opens the POSITIONAL next item (the same one the
+   prev/next footer and the → key reach), never marks anything, and is omitted when the page is not
+   in the reader's week or is that week's last item. The primary keeps its existing label: with
+   auto-advance on, marking done also navigates, and a bare "Mark done" would under-describe it. */
+function fdReaderNextLink(next, weekN){
+  if(!next) return '';
+  return '<button type="button" class="fd-article__next" data-fd-open="'+fdEsc(next.ref)+'">'+
+    'Next in week '+fdEsc(weekN)+': '+fdEsc(next.title)+' →</button>';
+}
+
+/* The leading governance notice the caller prefixes to bodyHtml (fd_wire.js fdOpenResource:
+   `bar+body`). On a READING it is relocated, never rewritten: a reviewed receipt joins the one
+   status line, and every other notice (pending-compact, pending-high with its role="alert",
+   unavailable) moves above the H1. Its bytes are untouched -- the regex only finds where the
+   renderGovernanceNotice() element ends, and that renderer never nests its own tag. Tools keep the
+   notice where it is (above the frame): a tool's .fd-article__head is display:none at every
+   width, so a receipt moved there would vanish. */
+var FD_READER_NOTICE_RE=/^(\s*)(<(div|section) class="governance-notice[^"]*"[^>]*>[\s\S]*?<\/\3>)/;
+function fdReaderSplitNotice(bodyHtml){
+  var html=String(bodyHtml||''), m=FD_READER_NOTICE_RE.exec(html);
+  if(!m) return {notice:'', receipt:false, body:html};
+  return {
+    notice:m[2],
+    receipt:m[2].indexOf('<div class="governance-notice reviewed-receipt"')===0,
+    body:html.slice(m[0].length)
+  };
+}
+
+/* "Next in this thread" (one-thread redesign, Phase 3): where this page leads next, 0-3 rows built
+   only from data the shell already holds -- the page's practice tool (its own toolRef, else the
+   first `role:'practice'` pairing via fdPracticeWith), this week's Case Journeys step
+   (fdWeekCaseStep over the read-only longitudinal_case.json; the case tool itself skips it), and
+   the next item (in this week, else the first of next week). Titles are verbatim; the only new
+   words are the row labels. `st.thread` = {caseArc, pairings, audience} rides on the live render
+   state (spa_index.html fdLiveState); without it the practice-pairing and case rows are simply
+   absent. Nothing here is stored. */
+function fdReaderThreadRow(ref, name, meta, kind, extra){
+  return '<li><button type="button" class="fd-nextthread__row" data-fd-open="'+fdEsc(ref)+'">'+
+    '<span class="fd-nextthread__mark fd-nextthread__mark--'+(kind==='tool'?'tool':'read')+'" aria-hidden="true"></span>'+
+    '<span class="fd-nextthread__text"><span class="fd-nextthread__name">'+fdEsc(name)+'</span>'+
+    '<span class="fd-nextthread__meta">'+fdEsc(meta)+(extra||'')+'</span></span></button></li>';
+}
+function fdReaderThread(idx, st, item, readerWeek, inWeek, neighbours){
+  var thread=st.thread||{}, rows='', seen={}, byRef=idx.byRef||{}, practice=null, i;
+  var hasWeek=(typeof readerWeek==='number')&&!isNaN(readerWeek);
+  seen[item.ref]=true;
+  if(item.toolRef&&byRef[item.toolRef]) practice=byRef[item.toolRef];
+  if(!practice&&typeof fdPracticeWith==='function'){
+    var paired=fdPracticeWith(idx, thread.pairings, item.ref, thread.audience);
+    for(i=0;i<paired.length&&!practice;i++){ if(!seen[paired[i].ref]) practice=paired[i]; }
+  }
+  if(practice&&!seen[practice.ref]){
+    seen[practice.ref]=true;
+    rows+=fdReaderThreadRow(practice.ref, 'Practice: '+practice.title, 'Tool · practice for this page', 'tool');
+  }
+  var caseRef=(typeof FD_CASE_TOOL_REF==='string')?FD_CASE_TOOL_REF:'one-patient-six-weeks.html';
+  var step=(hasWeek&&!seen[caseRef]&&typeof fdWeekCaseStep==='function')
+    ?fdWeekCaseStep(idx, thread.caseArc, readerWeek):null;
+  if(step){
+    var caseTitle=(byRef[caseRef]&&byRef[caseRef].title)||'Case Journeys';
+    var badge=(typeof governanceBadge==='function')?governanceBadge(step.governance,{compact:true}):'';
+    /* A real link, not data-fd-open: the action layer drops query parameters and the case week
+       lives in ?week=N -- the same precedent as Today's "Open case week N" (fd_today.js). */
+    rows+='<li><a class="fd-nextthread__row" href="?tool='+fdEsc(caseRef)+'&amp;week='+fdEsc(step.n)+'">'+
+      '<span class="fd-nextthread__mark fd-nextthread__mark--tool" aria-hidden="true"></span>'+
+      '<span class="fd-nextthread__text"><span class="fd-nextthread__name">'+fdEsc(caseTitle)+' · Week '+fdEsc(step.n)+' — '+fdEsc(step.title)+'</span>'+
+      '<span class="fd-nextthread__meta">Tool · this week on the unit'+badge+'</span></span></a></li>';
+    seen[caseRef]=true;
+  }
+  var next=null, nextMeta='';
+  if(inWeek&&neighbours&&neighbours.next){
+    next=neighbours.next; nextMeta='next in week '+readerWeek;
+  } else if(hasWeek&&typeof fdNextWeek==='function'){
+    var nw=fdNextWeek(idx, readerWeek), items=(nw&&nw.items)||[];
+    for(i=0;i<items.length&&!next;i++){ if(!seen[items[i].ref]) next=items[i]; }
+    if(next) nextMeta='week '+nw.n;
+  }
+  if(next&&!seen[next.ref]){
+    var kind=next.kind==='tool'||fdIsTool(next.ref)?'tool':'read';
+    rows+=fdReaderThreadRow(next.ref, next.title, (kind==='tool'?'Tool':'Reading')+' · '+nextMeta, kind);
+  }
+  if(!rows) return '';
+  return '<nav class="fd-nextthread" aria-labelledby="fd-nextthread-title">'+
+    '<h2 class="fd-nextthread__title" id="fd-nextthread-title">Next in this thread</h2>'+
+    '<ul class="fd-nextthread__list">'+rows+'</ul></nav>';
 }
 
 /* Mobile fixed bar -- ALWAYS emitted, sibling of .fd-reader (see header comment; this is the
@@ -345,37 +434,46 @@ function fdReader(index, state, bodyHtml){
      the copy branches. */
   var isRights=(item.rights===true);
   var kindLabel=isRights?'Reference':(isTool?'Interactive tool':'Reading');
-  var eyebrowText=inWeek?('Week '+fdEsc(readerWeek)+' · '+kindLabel):kindLabel;
   var metaText=isRights?'instrument not reproduced here'
     :(isTool?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):''));
+  var weekPos=0;
+  for(w=0;w<weekItems.length;w++){ if(weekItems[w].ref===item.ref){ weekPos=w+1; break; } }
 
-  /* The "·" dot only separates the eyebrow from the meta text, so it is emitted only when there
-     IS meta text -- a read with no topic_meta.read entry has metaText==='', and a dot with
-     nothing after it is a stranded separator, not a degraded-but-honest render. */
-  var head='<div class="fd-article__head">'+
-    '<span class="fd-eyebrow">'+eyebrowText+'</span>';
-  if(metaText) head+='<span class="fd-article__dot">·</span>';
-  head+='<span class="fd-article__meta">'+fdEsc(metaText)+'</span>';
+  /* ONE status line (one-thread redesign, Phase 3): "Reading · 5 min · Week 2 · 2 of 5 ·
+     ✓ faculty-attested · Reviewed by … · date". Every string is the one the reader already
+     showed; only the arrangement changed. Each "·" only separates two present parts, so a read
+     with no topic_meta.read entry never strands a dot. */
+  var split=isTool?{notice:'', receipt:false, body:bodyHtml}:fdReaderSplitNotice(bodyHtml);
+  var dot='<span class="fd-article__dot">·</span>';
+  var head='<div class="fd-article__head"><span class="fd-eyebrow">'+kindLabel+'</span>'+
+    (metaText?dot:'')+'<span class="fd-article__meta">'+fdEsc(metaText)+'</span>';
+  if(inWeek) head+=dot+'<span class="fd-article__pos">Week '+fdEsc(readerWeek)+' · '+
+    weekPos+' of '+weekItems.length+'</span>';
   if(item.attested) head+='<span class="fd-attested">✓ faculty-attested</span>';
+  if(split.receipt) head+=split.notice;
   head+='</div>';
 
   /* The ref rides on the element (data-ref), not on screen: a learner has no use for a file name
      under the article (2026-09-29, the owner's call -- same rule as the protocol sheet's "From:"
-     line), but the smoke crawler and faculty feedback still need to know which page is open. */
-  var article='<div class="fd-article" data-ref="'+fdEsc(item.ref)+'">'+head+
+     line), but the smoke crawler and faculty feedback still need to know which page is open.
+     A pending or unavailable notice leads the article, above the status line and H1. */
+  var article='<div class="fd-article" data-ref="'+fdEsc(item.ref)+'">'+
+    (split.notice&&!split.receipt?split.notice:'')+head+
     '<h1 class="fd-article__h1">'+fdEsc(item.title)+'</h1>'+
     '<p class="fd-article__lead">'+fdEsc(item.summary)+'</p>';
   /* bodyHtml: verbatim, unescaped -- see header comment. Omitted entirely (no empty wrapper) when
      the caller has none, e.g. a render taken before Plan 3 wires marked() in. */
-  if(bodyHtml) article+='<div class="fd-article__body"'+
-    (isTool?' id="fd-tool-region"':'')+'>'+bodyHtml+'</div>';
+  if(split.body) article+='<div class="fd-article__body"'+
+    (isTool?' id="fd-tool-region"':'')+'>'+split.body+'</div>';
   article+=fdReaderKeyPoints(item.points);
   article+=fdReaderTryNow(item, idx);
   if(!isTool&&st.readingPlaceEligible!==false){
     article+='<p class="fd-reading-place" data-fd-reading-status></p>'+
       '<button type="button" class="fd-reading-place__top" data-fd-reading-top hidden>Start at top</button>';
   }
-  article+=fdReaderActions(item, doneLabel, backLabel, isDone);
+  article+=fdReaderActions(item, doneLabel, backLabel, isDone,
+    inWeek?fdReaderNextLink(neighbours.next, readerWeek):'');
+  article+=fdReaderThread(idx, st, item, readerWeek, inWeek, neighbours);
   article+=fdReaderPrevNext(neighbours);
   article+='</div>'; /* .fd-article */
 

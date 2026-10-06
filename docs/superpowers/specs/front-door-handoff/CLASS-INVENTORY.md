@@ -5,8 +5,12 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(573 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(585 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
+
+**One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
+receipt inside it and pending notices above the H1, "Next in week N", "Next in this thread", and the
+one-row folded practice panel. §6 below carries the twelve new names.
 
 **One-thread redesign, Phase 1 (2026-10-04)** — shell and Today were rebuilt to
 `docs/superpowers/specs/one-thread-handoff/README.md` (owner decisions D1–D6). Sections 1 and 3
@@ -714,8 +718,11 @@ the Library.
   [read only] .fd-reader__back   <button>
   .fd-reader__cols
     .fd-article
+      [read only] .governance-notice.pending-compact | .pending-high | .unavailable
+                                         (relocated above the status line; bytes unchanged)
       .fd-article__head                  (tool: display:none at EVERY width — the tool titles itself)
-        .fd-eyebrow / .fd-article__dot / .fd-article__meta / .fd-attested
+        .fd-eyebrow / .fd-article__dot / .fd-article__meta / .fd-article__pos / .fd-attested
+        [read only] .governance-notice.reviewed-receipt   (the one status line)
       .fd-article__h1                    (tool: clipped, never removed — the outer document keeps its heading)
       .fd-article__lead                  (tool: hidden when empty)
       .fd-article__body                  (rendered long-form content)
@@ -728,7 +735,16 @@ the Library.
       .fd-reading-place                    (read only; empty until a verified write or failure)
       .fd-reading-place__top <button hidden> (read only; shown after a valid restoration)
       .fd-article__actions                (≥1000px)
-        .fd-btn.fd-btn--primary / .fd-btn.fd-btn--ghost
+        .fd-btn.fd-btn--primary
+        .fd-article__next <button>        (in-week, not last: "Next in week N: Title →")
+        .fd-btn.fd-btn--ghost
+      .fd-nextthread <nav>                (0–3 rows; omitted when empty)
+        .fd-nextthread__title <h2>
+        .fd-nextthread__list <ul>
+          .fd-nextthread__row <button>|<a> ×N
+            .fd-nextthread__mark          + --tool | --read
+            .fd-nextthread__text
+              .fd-nextthread__name / .fd-nextthread__meta
       .fd-prevnext
         .fd-prevnext__btn                 (prev)
         .fd-prevnext__btn.is-next         (next)
@@ -761,6 +777,12 @@ the Library.
 | `.fd-visually-hidden` | Accessible completion suffix on done rail rows; never use `aria-pressed` for navigation. |
 | `.fd-prevnext__btn.is-next` | Right-aligns the next button's contents. |
 | `.fd-article__actions` | Desktop-only primary/ghost pair. **Always emit it** (no `desk` JS branch). At 641–999px the fixed action bar supplies the same actions. At phone widths the dock forwards to the hidden action bar's primary, while the reader header retains Back. |
+| `.fd-article__pos` | One-thread Phase 3 status line: "Week N · i of M" (positional, not a done count — the rail keeps "X of Y done"). Emitted only when the page is in the reader's week. |
+| `.fd-article__head .governance-notice` | A READING's reviewed receipt joins the status line (margin reset only; `.reviewed-receipt` keeps its pill). Pending-compact, pending-high (`role="alert"`) and unavailable notices lead `.fd-article` above the head instead. `fdReaderSplitNotice()` moves the leading `renderGovernanceNotice()` element; it never edits it. Tools leave the notice above the frame (their head is hidden). |
+| `.fd-article__next` | Link-styled navigation button inside `.fd-article__actions`, beside the primary: opens the POSITIONAL next item in the week (same target as `.fd-prevnext__btn.is-next`), never marks done. 44px target. The primary's label is unchanged because auto-advance can navigate on mark. |
+| `.fd-nextthread` | "Next in this thread": practice tool (toolRef, else first `role:'practice'` pairing), this week's Case Journeys step (a real `?tool=…&week=N` link, compact pending badge when pending), next item (in week, else first of next week). Rows are `<button data-fd-open>` except the case row (`<a>`). Hidden with the rest of reader chrome when a field guide prints. |
+| `.fd-nextthread__mark--tool` / `--read` | 10px dot: tool = `--fd-teal` fill, reading = `--fd-line-hover` ring. Decorative (`aria-hidden`); the meta line names the kind in text. |
+| `.fd-article__body .practice-panel:not([open])` | Closed practice panel in the reader folds to one ≥52px row: `.practice-title` + `.practice-sub` (ellipsis) + `.practice-chev`. `.practice-tab` and `.practice-hint` are hidden in that state only; the markup (and `tests/__panels__` snapshots) are unchanged. The panel's own rules live in `spa_index.html`. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
 
 ⚠ **`.fd-actionbar .fd-btn--primary` requires its label wrapped in a bare `<span>`**
