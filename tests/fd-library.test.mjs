@@ -548,8 +548,8 @@ print(json.dumps(out))
 `], { cwd: PROJECT_ROOT, encoding: 'utf8' }));
 
 // Pinned per-site counts (2026-10-04): Everything 85 / 94 shipped pages placed in columns;
-// Essentials 31 / 35 reading and tool rows; shipped 108 / 117.
-const SITES = { ms3: { kit: 31, full: 85, shipped: 108 }, res: { kit: 35, full: 94, shipped: 117 } };
+// Essentials 31 / 35 reading and tool rows; shipped 109 / 118 (2026-10-05: +1 CotW week per site).
+const SITES = { ms3: { kit: 31, full: 85, shipped: 109 }, res: { kit: 35, full: 94, shipped: 118 } };
 
 for (const [site, pins] of Object.entries(SITES)) {
   test(`${site}: every shipped page is in Everything exactly once, or deliberately excluded, or search-only; counts match shipped_pages.json`, () => {
