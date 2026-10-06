@@ -39,7 +39,7 @@
 - **[An Unquiet Mind](https://www.amazon.com/dp/0679763309)** — Kay Redfield Jamison. Kay Redfield Jamison's memoir of living with bipolar disorder—powerful testimony from a leading psychologist.  ISBN 9780679763307
 - **[Loving Someone with Bipolar Disorder](https://www.amazon.com/dp/1608822192)** — Julie Fast & John Preston. Family guide to understanding and supporting someone with bipolar disorder—covers symptoms, treatment, and daily living.  ISBN 9781608822195
 - **[Feeling Good](https://www.amazon.com/dp/0380810336)** — David Burns. The original CBT self-help classic—proven techniques for overcoming depression and anxiety through changing thought patterns.  ISBN 9780380810338
-- **[Reasons to Stay Alive](https://www.amazon.com/dp/0143128728)** — Matt Haig. A memoir of surviving depression and finding reasons to live—honest, hopeful, and practical insights from someone who's been there.  ISBN 9780143128724
+- **[Reasons to Stay Alive](https://www.amazon.com/dp/0143128728)** — Matt Haig. Matt Haig's memoir of his own depression and recovery—one person's story, and it includes discussion of suicidal thoughts. Optional lived-experience reading, not a family-support guide, a treatment, or a crisis resource.  ISBN 9780143128724
 - **[Noonday Demon](https://www.amazon.com/dp/1501123882)** — Andrew Solomon.  ISBN 9781501123887
 
 ## Psychosis & serious mental illness

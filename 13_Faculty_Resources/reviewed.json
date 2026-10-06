@@ -1037,15 +1037,14 @@
     "clinicalHash": "c2550163218601d9e43ee1811bdbf0ec75e51af5"
   },
   "book_library.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "general",
       "level": "low"
     },
+    "reason": "Content changed since faculty review on 2026-09-26; awaiting re-attestation.",
     "at": "2026-09-26",
-    "by": "Joshua Moss, MD",
-    "contentHash": "4786561076efab50005dd2d03b378068b3a667f4",
-    "clinicalHash": "25ef4199819c3d7b75108d5e487faf2cb732bfcf"
+    "by": "Pending faculty review"
   },
   "podcast_library.md": {
     "status": "reviewed",
