@@ -360,6 +360,42 @@ class LedgerTest(unittest.TestCase):
         self.assertIsNone(self.ledger_doc()["lastChecked"])
         self.assertIn("partial run", out)
 
+    def test_a_refused_re_pin_keeps_the_last_good_pin_and_keeps_measuring(self):  # SILENT_SHRINK
+        # The label moves past the receipt; re-pinning is refused. Before the fix the refusal
+        # also DELETED the v3 pin, so every later check skipped the drug while lastChecked
+        # advanced over the smaller set -- coverage looked fresh with one label unmeasured.
+        moved = FakeDailyMed(spl(4, "2026-02-01", dosing="Rewritten dosing."))
+        code, out = self.ws.run("--pin", get=moved)
+        self.assertEqual(code, 1, out)
+        pins = self.ws.pins_doc()
+        self.assertEqual(pins["agents"]["testdrug"]["version"], 3, "the last good pin must survive a refusal")
+        self.assertIn("verify_pharmacy_labels.py", pins["unpinned"]["testdrug"])
+        code, out = self.ws.run("--record", "--ledger", str(self.ledger), get=moved)
+        self.assertEqual(code, 1, out)
+        self.assertIn("examined 1/1", out)
+        doc = self.ledger_doc()
+        self.assertEqual([(d["agent"], d["toVersion"]) for d in doc["drifts"]], [("testdrug", 4)])
+        # An unpinned agent is an open finding: the run is not a clean pass over the receipt.
+        self.assertIsNone(doc["lastChecked"])
+        self.assertIn("partial run", out)
+
+    def test_last_checked_never_advances_while_any_finding_is_open(self):
+        # A pin the receipt does not list is a finding; the set examined is not the receipt's.
+        pins = self.ws.pins_doc()
+        pins["agents"]["strayagent"] = copy.deepcopy(pins["agents"]["testdrug"])
+        self.ws.pins.write_text(json.dumps(pins))
+        code, out = self.ws.run("--record", "--ledger", str(self.ledger),
+                                get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 1, out)
+        self.assertIsNone(self.ledger_doc()["lastChecked"])
+
+    def test_an_empty_receipt_could_not_check(self):  # zero labels is "unknown", never "fresh"
+        empty = Workspace(self, {"schemaVersion": 1, "agents": {}}, pins_doc={"schemaVersion": 1, "agents": {}})
+        ledger = Path(empty.dir.name) / "ledger.json"
+        code, out = empty.run("--record", "--ledger", str(ledger), get=FakeDailyMed(spl(3, "2026-01-01")))
+        self.assertEqual(code, 2, out)
+        self.assertFalse(ledger.exists() and json.loads(ledger.read_text()).get("lastChecked"))
+
     def test_a_failed_check_records_nothing(self):
         code, _ = self.ws.run("--record", "--ledger", str(self.ledger), get=FakeDailyMed(b"", fail=True))
         self.assertEqual(code, 2)
