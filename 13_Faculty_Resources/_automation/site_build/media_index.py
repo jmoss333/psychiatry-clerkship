@@ -24,6 +24,10 @@ alone, because a "▶ YouTube" line can still point at the wrong video:
 
 Books are eligible when their ISBN-13 is in the book library and its check digit is valid.
 
+A key listed under the map's "unverified" (an item that failed verification end to end, e.g. an
+ISBN no catalogue resolved) is never eligible, even though the library holds it: withholding is
+binding until a curator removes the entry.
+
 Draft is invisible. A map whose status is not exactly "approved" is VALIDATED in full -- a bad
 key still fails the build -- but the emitted index has no pages, so nothing renders anywhere.
 Only Dr. Moss flips status to "approved" (a content PR with no code).
@@ -220,6 +224,23 @@ def validate(media_map, episodes, books, shipped):
     if not isinstance(weeks, list):
         return errors + ["media_map.json: weeks must be a list"]
     pages = {page["slug"]: page for page in shipped["pages"]}
+    # Items a curator or verifier WITHHELD (media_map.json "unverified"): a real-looking key that
+    # failed verification end to end. Listing one there makes it unpickable until the entry is
+    # removed, so withholding is binding rather than a note a later edit can walk past.
+    withheld_isbns, withheld_episodes = set(), set()
+    unverified = media_map.get("unverified")
+    if unverified is not None:
+        items = unverified.get("items") if isinstance(unverified, dict) else None
+        if not isinstance(items, list):
+            errors.append("media_map.json: unverified.items must be a list")
+            items = []
+        for item in items:
+            if isinstance(item, dict) and isinstance(item.get("isbn"), str):
+                withheld_isbns.add(item["isbn"])
+            elif isinstance(item, dict) and isinstance(item.get("episode"), int):
+                withheld_episodes.add(item["episode"])
+            else:
+                errors.append("media_map.json: unverified item %r names no isbn or episode" % (item,))
     seen_anchors = {}
     for index, week in enumerate(weeks):
         where = "media_map.json weeks[%d]" % index
@@ -263,7 +284,9 @@ def validate(media_map, episodes, books, shipped):
                 errors.append("%s: episode %d picked twice" % (where, n))
             seen.add(n)
             episode = episodes.get(n)
-            if episode is None:
+            if n in withheld_episodes:
+                errors.append("%s: episode %d is withheld under unverified" % (where, n))
+            elif episode is None:
                 errors.append("%s: episode %d is not in the podcast library" % (where, n))
             elif not episode["verified"]:
                 errors.append("%s: episode %d has no verified YouTube link (%s)"
@@ -280,7 +303,9 @@ def validate(media_map, episodes, books, shipped):
                 errors.append("%s: ISBN %s picked twice" % (where, isbn))
             seen.add(isbn)
             book = books.get(isbn)
-            if book is None:
+            if isbn in withheld_isbns:
+                errors.append("%s: ISBN %s is withheld under unverified" % (where, isbn))
+            elif book is None:
                 errors.append("%s: ISBN %s is not in the book library" % (where, isbn))
             elif not book["isbnValid"]:
                 errors.append("%s: ISBN %s fails its ISBN-13 check digit" % (where, isbn))

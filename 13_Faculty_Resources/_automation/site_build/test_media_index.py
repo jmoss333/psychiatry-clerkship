@@ -147,6 +147,18 @@ class MediaIndexTests(unittest.TestCase):
         """The added acceptance: every shipped item resolves to a verified library entry."""
         self.assertRejects(_map(listen=[{"episode": 999}]), "episode 999 is not in the podcast library")
 
+    def test_withheld_item_cannot_be_picked(self):
+        """A key listed under "unverified" is unpickable even though the library holds it."""
+        media_map = _map(family=[{"isbn": "9781608822195"}])
+        media_map["unverified"] = {"items": [{"isbn": "9781608822195", "finding": "x"}]}
+        self.assertRejects(media_map, "ISBN 9781608822195 is withheld under unverified")
+        media_map = _map(listen=[{"episode": 1}])
+        media_map["unverified"] = {"items": [{"episode": 1}]}
+        self.assertRejects(media_map, "episode 1 is withheld under unverified")
+        media_map = _map()
+        media_map["unverified"] = {"items": [{"finding": "names nothing"}]}
+        self.assertRejects(media_map, "names no isbn or episode")
+
     def test_non_shipped_anchor_fails(self):
         self.assertRejects(_map(anchor="not_a_page.md"), "anchor is not a shipped page")
 
