@@ -1,4 +1,24 @@
 {
+  "cotw_20261005_mddaug_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (MDD treatment selection & augmentation, MS3) added 2026-10-05; awaiting faculty attestation.",
+    "at": "2026-10-05",
+    "by": "Pending faculty review"
+  },
+  "cotw_20261005_mddaug_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (MDD treatment selection & augmentation, resident) added 2026-10-05; awaiting faculty attestation.",
+    "at": "2026-10-05",
+    "by": "Pending faculty review"
+  },
   "cotw_20260928_mania_ms3.md": {
     "status": "reviewed",
     "risk": {
