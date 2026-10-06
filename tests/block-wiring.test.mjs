@@ -62,17 +62,38 @@ test('a tool may name its full route through openPage, but only a short plain qu
   assert.match(shell, /fdOpenRef\(data\.f, searchOk\?data\.search:undefined\)/);
 });
 
-test('the shell picks exactly one primary, names the secondary heading once, and splices at the lead marker', () => {
-  const today = shell.slice(shell.indexOf('function fdTodayLive('), shell.indexOf('function fdRenderCapture('));
+test('the shell picks exactly one primary and hands the faces to the renderer on state, never by splicing', () => {
+  const today = shell.slice(shell.indexOf('function fdTodayLive('), shell.indexOf('function fdCapsuleShare('));
   assert.equal(today.split('fdTodayPrimary(').length - 1, 1, 'one picker call');
-  assert.equal(today.split('Also today').length - 1, 1, 'one heading');
   assert.match(today, /live\.primaryKind=primary\.kind;/, 'the pure renderer is told who won before it renders');
   assert.match(today, /fdBlockCard\([^;]*\{primary:primary\.kind==='block',resume:blockResume\}\)/, 'the block card is primary only when it won, and knows when its question set can be resumed');
-  assert.match(today, /fdDueRow\(due,primary\.kind==='due'\)/);
+  assert.match(today, /var dueRow=fdDueRow\(due,primary\.kind==='due'\);/);
+  // The transient concept-count status never becomes an empty marked row: with a due row it rides
+  // inside that face; without one it is a bare status line (state.statusHtml), so the DOM is
+  // byte-identical across the fetch window apart from that one <p>.
+  assert.match(today, /due:dueRow\?dueRow\+conceptStatus:'',/);
+  assert.match(today, /live\.statusHtml=dueRow\?'':conceptStatus;/);
   assert.match(today, /fdResumeCard\(sess,primary\.kind==='resume',blockStatus\)/, 'the Resume card learns where the block stands');
   assert.match(today, /fdLastReadRow\(lastRead,primary\.kind==='read'\)/);
-  assert.match(today, /'<div class="fd-primary">'/);
-  assert.match(today, /FD_TODAY_LEAD_END/, 'the marker fd_today.js emits is the splice point');
+  // 2026-10-04 (one-thread, Phase 1): the shell no longer string-splices at an HTML-comment marker
+  // or writes the "Also today" heading itself. The winning face goes in as state.nowHtml, the rest
+  // as state.alsoRows with their status marks, and fd_today.js composes the page (and owns the
+  // heading). The old marker and the bare .fd-primary wrapper must not come back.
+  assert.doesNotMatch(today.replace(/\/\*[\s\S]*?\*\//g, ''), /FD_TODAY_LEAD_END|fd-lead-end|'<div class="fd-primary">'|Also today|\.replace\(/);
+  assert.match(today, /if\(kind===primary\.kind\) live\.nowHtml=faces\[kind\];/);
+  assert.match(today, /live\.alsoRows=rows;/);
+  assert.match(today, /live\.purposeHtml=facultyPreviewRequest\?'':fdTodayPurpose\(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen\);/);
+  assert.match(today, /live\.caseWeek=fdWeekCaseStep\(FD_INDEX,FD_CASE_ARC,weekN\);/);
+  // The case arc is build-injected (build_deploy.py replaces this exact needle), never fetched at
+  // runtime: a fetch made Today's DOM churn after boot and two loads disagree on their render signature.
+  once(shell, 'var FD_CASE_ARC=null;', 'spa_index.html');
+  assert.doesNotMatch(shell, /fetch\(['"]longitudinal_case\.json/, 'no runtime fetch of the case arc');
+  const build = read(`${BUILD}/build_deploy.py`);
+  assert.match(build, /_case_needle="var FD_CASE_ARC=null;"/);
+  assert.match(build, /frontdoor_catalog\._inline_json\(_case_arc\)/);
+  assert.match(today.replace(/\/\*[\s\S]*?\*\//g, ''), /return fdToday\(FD_INDEX,live\);\s*\}\s*$/, 'one render call, nothing patched after it');
+  for (const kind of ['block', 'due', 'resume', 'read']) assert.match(today, new RegExp(`${kind}:\\{mark:`), `${kind} carries a status mark`);
+  assert.match(today, /mark:'plus',count:captureSummary\?captureSummary\.total:undefined/);
   // 2026-10-01: the "First things first" explanation line is retired (owner-directed design pass).
   assert.doesNotMatch(today, /fdTodayWhy\(\)/);
 });
@@ -119,6 +140,19 @@ test('real block start serves scheduled due cards only, then applies its limit',
   assert.equal(block.queue.length,1);
   assert.equal(block.queue[0].id,'CONCEPT#due:1@1');
   assert.equal(block.fromBlock,true);
+});
+
+test('actual case-selection message branch rejects origin, frame, resource and payload mismatches',()=>{
+ const start=shell.indexOf('  function fdAuxMessage(event){'), end=shell.indexOf('\n\n  /* The root state',start);
+ const handler=shell.slice(start,end);
+ const selection=new Function(read(`${BUILD}/frontdoor/fd_wire.js`)+';return fdCaseSelection;')();
+ const frame={contentWindow:{}}, valid={type:'case-selection',case:'eli',chapter:4};
+ for(const change of [{},{origin:'https://other.test'},{source:{}},{frame:null},{item:'oral.html'},{openId:'oral.html'},{preview:{}},{data:{...valid,prompt:'free text'}},{data:{...valid,chapter:'4'}},{data:{...valid,case:'other'}}]) {
+   const calls=[], contentEl={querySelector:()=>Object.hasOwn(change,'frame')?change.frame:frame}, fdController={getState:()=>({openId:change.openId||'one-patient-six-weeks.html'}),replaceCaseSelection:v=>calls.push(v)};
+   const fn=new Function('contentEl','fdController','facultyPreviewRequest','currentItem','location','fdCaseSelection',handler+';return fdAuxMessage;')(contentEl,fdController,change.preview||null,{f:change.item||'one-patient-six-weeks.html'},{origin:'https://example.test'},selection);
+   fn({origin:change.origin||'https://example.test',source:change.source||frame.contentWindow,data:change.data||valid});
+   assert.deepEqual(calls,Object.keys(change).length?[]:[{slug:'eli',chapter:4}]);
+ }
 });
 
 test('actual preparation message branch rejects origin, frame, resource and payload mismatches',()=>{

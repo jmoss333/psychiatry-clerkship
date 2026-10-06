@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>@font-face{font-family:'Source Serif 4';font-style:normal;font-weight:600 700;font-display:swap;src:url('13_Faculty_Resources/_automation/site_build/fonts/source-serif-4-latin-opsz-wght600-700.woff2') format('woff2')}body{margin:0}</style></helmet>
+<div style="{{ rootStyle }}">
+  <div aria-hidden="true" style="position:absolute;inset:0;background:var(--fd-backdrop)"></div>
+  <div role="dialog" aria-modal="true" aria-label="Search" style="position:relative;margin:12px 10px 0;border-radius:16px;background:var(--fd-surface);border:1px solid var(--fd-line);border-top:3px solid var(--fd-teal);box-shadow:0 6px 18px rgba(0,0,0,.18),0 24px 56px rgba(0,0,0,.2);overflow:hidden">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 10px 0 16px;min-height:56px;border-bottom:1px solid var(--fd-line)">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--fd-text-dim);flex:none"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg>
+      <span style="flex:1;font-size:16px;font-weight:600">delirium</span>
+      <button type="button" style="min-width:44px;min-height:44px;border:0;background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:14px;font-weight:700">Close</button>
+    </div>
+    <div style="padding:6px 8px 10px">
+      <p style="margin:10px 8px 4px;font-size:12px;font-weight:700;color:var(--fd-danger-dark)">Safety protocols</p>
+      <div style="display:grid;grid-template-columns:8px minmax(0,1fr);gap:12px;padding:11px 8px;border-radius:8px;background:var(--fd-danger-wash)"><span aria-hidden="true" style="width:8px;height:8px;margin-top:7px;border-radius:50%;background:var(--fd-danger)"></span><span><span style="display:block;font-size:15px;font-weight:700">Delirium</span><span style="display:block;font-size:13px;color:var(--fd-text-mid)">Vitals · meds · CAM</span></span></div>
+      <div style="display:grid;grid-template-columns:8px minmax(0,1fr);gap:12px;padding:11px 8px"><span aria-hidden="true" style="width:8px;height:8px;margin-top:7px;border-radius:50%;background:var(--fd-danger)"></span><span><span style="display:block;font-size:15px;font-weight:600">Consult Questions: Capacity, Delirium, Catatonia, Withdrawal</span><span style="display:block;font-size:13px;color:var(--fd-text-mid)">Choice · understand · appreciate · reason</span></span></div>
+      <p style="margin:12px 8px 4px;font-size:12px;font-weight:700;color:var(--fd-text-mid)">Pages</p>
+      <div style="display:grid;grid-template-columns:8px minmax(0,1fr);gap:12px;padding:11px 8px"><span aria-hidden="true" style="width:8px;height:8px;margin-top:7px;border-radius:50%;border:1.5px solid var(--fd-text-dim);box-sizing:border-box"></span><span><span style="display:block;font-size:15px;font-weight:600">Delirium</span><span style="display:block;font-size:13px;color:var(--fd-text-dim)">Reading · Acute &amp; safety · Weeks 1 and 5</span></span></div>
+      <div style="display:grid;grid-template-columns:8px minmax(0,1fr);gap:12px;padding:11px 8px"><span aria-hidden="true" style="width:8px;height:8px;margin-top:7px;border-radius:50%;border:1.5px solid var(--fd-text-dim);box-sizing:border-box"></span><span><span style="display:block;font-size:15px;font-weight:600">Medical Workup &amp; Mimics</span><span style="display:block;font-size:13px;color:var(--fd-text-dim)">Reading · Acute &amp; safety</span></span></div>
+      <p style="margin:12px 8px 4px;font-size:12px;font-weight:700;color:var(--fd-text-mid)">Tools</p>
+      <div style="display:grid;grid-template-columns:8px minmax(0,1fr);gap:12px;padding:11px 8px"><span aria-hidden="true" style="width:8px;height:8px;margin-top:7px;border-radius:50%;background:var(--fd-teal)"></span><span><span style="display:block;font-size:15px;font-weight:600">Case Journeys</span><span style="display:block;font-size:13px;line-height:1.45;color:var(--fd-text-dim)">Follow four patients through psychosis, mood, trauma, delirium, safety, and care transitions.</span></span></div>
+    </div>
+    <p style="margin:0;padding:12px 16px;border-top:1px solid var(--fd-line);background:var(--fd-callout);font-size:13px;line-height:1.5;color:var(--fd-text-mid)">Searches inside every page and tool. Not here? <strong style="color:var(--fd-text)">＋ Ask a question</strong> saves it for supervision.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.theme === 'dark';
+    const L = {'--fd-bg':'#f6f3ee','--fd-surface':'#ffffff','--fd-line':'#ebe5da','--fd-text':'#3b332c','--fd-text-mid':'#64574b','--fd-text-dim':'#76695d','--fd-teal':'#3a7d6e','--fd-teal-deep':'#2c6356','--fd-danger':'#a34132','--fd-danger-dark':'#8f372a','--fd-danger-wash':'#fbefec','--fd-callout':'#fbf8f3','--fd-backdrop':'rgba(51,41,35,.38)'};
+    const D = {'--fd-bg':'#211d1a','--fd-surface':'#2a2521','--fd-line':'#3a332c','--fd-text':'#ece5db','--fd-text-mid':'#bcb0a2','--fd-text-dim':'#a2968a','--fd-teal':'#5fa392','--fd-teal-deep':'#7fc0ae','--fd-danger':'#d97a68','--fd-danger-dark':'#e8917f','--fd-danger-wash':'#3a231f','--fd-callout':'#2b2620','--fd-backdrop':'rgba(8,6,5,.62)'};
+    return {
+      rootStyle: Object.assign({}, dark ? D : L, {
+        position:'relative', width:'390px', height:'844px', overflow:'hidden',
+        background:'var(--fd-bg)', color:'var(--fd-text)', colorScheme: dark ? 'dark' : 'light',
+        fontFamily:"'Inter',system-ui,-apple-system,'Segoe UI',sans-serif", lineHeight:1.5, WebkitFontSmoothing:'antialiased'
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

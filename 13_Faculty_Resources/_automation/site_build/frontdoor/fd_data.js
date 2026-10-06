@@ -46,6 +46,11 @@ function fdMakeItem(ref, kind, topicMeta, toolIndex, manifestIndex, rights, libr
     attested: fr.status==='reviewed',
     toolRef: (m.relatedTools&&m.relatedTools.length)?m.relatedTools[0]:null,
     risk: (t&&t.riskLevel)||m.safetyLevel||null,
+    /* A tool the registry files under acute-safety is safety content (#951: red means safety).
+       Rows and search results mark it with the 8px danger dot alongside the safety-kit pages;
+       nothing else in the shell reads this flag. Reads are never flagged here -- the kit list
+       (curriculum.safetyKit) is the source of truth for which PAGES are protocols. */
+    safety: !!(t&&t.category==='acute-safety'),
     governance: manifest.governance||null,
     /* The Library's one-line "use this when…" for a tool row (curriculum.libraryHints). A
        string always, empty when the ref has none, so renderers test truthiness rather than
@@ -294,6 +299,70 @@ function fdNextWeek(index, n){
     if(weeks[i].n===n) return (i+1<weeks.length)?weeks[i+1]:null;
   }
   return null;
+}
+
+/* ---- Derived cross-references for the Library (one-thread redesign, Phase 2) ----------------
+   Pure functions over the existing index plus two READ-ONLY registries the shell already ships:
+   the longitudinal case (longitudinal_case.json, build-injected as FD_CASE_ARC) and the pairings
+   registry (pairings.json, build-injected as FD_PAIRINGS). Nothing here edits, copies into
+   storage, or re-attests any of them; the Library only reads them to say where a page is used
+   and what to practise it with. A missing or malformed registry yields empty lists. */
+
+/* Which Path weeks assign `ref`, and which Case Journeys weeks link to it. Case weeks are
+   reported only while the case tool ships on this site (same gate as fdWeekCaseStep): a site
+   without the tool has no case thread to point at. Each case week carries its title verbatim. */
+function fdUsedIn(index, caseArc, ref){
+  var out={weeks:[],caseWeeks:[]}, weeks=(index&&index.weeks)||[], i, j;
+  if(!ref) return out;
+  for(i=0;i<weeks.length;i++){
+    var items=(weeks[i]&&weeks[i].items)||[];
+    for(j=0;j<items.length;j++){
+      if(items[j]&&items[j].ref===ref){ out.weeks.push(weeks[i].n); break; }
+    }
+  }
+  var caseRef=(typeof FD_CASE_TOOL_REF==='string')?FD_CASE_TOOL_REF:'one-patient-six-weeks.html';
+  var tool=index&&index.byRef&&index.byRef[caseRef];
+  var cw=caseArc&&caseArc.weeks;
+  if(!tool||tool.kind!=='tool'||Object.prototype.toString.call(cw)!=='[object Array]') return out;
+  for(i=0;i<cw.length;i++){
+    var links=cw[i]&&cw[i].links;
+    if(Object.prototype.toString.call(links)!=='[object Array]') continue;
+    for(j=0;j<links.length;j++){
+      if(links[j]&&links[j].target===ref){
+        out.caseWeeks.push({n:i+1,title:(cw[i]&&typeof cw[i].title==='string')?cw[i].title:''});
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+/* The `role:'practice'` items of every pairing that contains `ref`, resolved to index items so
+   the renderer has the tool's title and hint. A pairing scoped to other audiences is skipped
+   (pairings.json uses 'ms3' / 'res'; the shell's FD_AUDIENCE says 'ms3' / 'resident'), as is a
+   practice ref this site does not ship, and the page itself never pairs with itself. */
+function fdPracticeWith(index, pairings, ref, audience){
+  var out=[], list=pairings&&pairings.pairings, seen={}, i, j;
+  var aud=audience==='resident'?'res':(audience||'');
+  if(!ref||Object.prototype.toString.call(list)!=='[object Array]') return out;
+  for(i=0;i<list.length;i++){
+    var p=list[i], items=p&&p.items;
+    if(Object.prototype.toString.call(items)!=='[object Array]') continue;
+    var auds=p.audiences;
+    if(aud&&Object.prototype.toString.call(auds)==='[object Array]'&&auds.length&&auds.indexOf(aud)===-1) continue;
+    var contains=false;
+    for(j=0;j<items.length;j++){ if(items[j]&&items[j].ref===ref) contains=true; }
+    if(!contains) continue;
+    for(j=0;j<items.length;j++){
+      var it=items[j];
+      if(!it||it.role!=='practice'||it.ref===ref||seen[it.ref]) continue;
+      var resolved=index&&index.byRef&&index.byRef[it.ref];
+      if(!resolved) continue;
+      seen[it.ref]=true;
+      out.push(resolved);
+    }
+  }
+  return out;
 }
 
 /* Candidates for the daily pick: reads that belong to no week, so the pick surfaces library

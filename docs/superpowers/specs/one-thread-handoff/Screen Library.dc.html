@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>@font-face{font-family:'Source Serif 4';font-style:normal;font-weight:600 700;font-display:swap;src:url('13_Faculty_Resources/_automation/site_build/fonts/source-serif-4-latin-opsz-wght600-700.woff2') format('woff2')}body{margin:0}a{color:#2c6356}a:hover{color:#3b332c}</style></helmet>
+<div style="{{ rootStyle }}">
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <header style="background:var(--fd-surface-warm);border-bottom:1px solid var(--fd-line)">
+      <div style="max-width:1200px;margin:0 auto;padding:12px 40px 0;display:flex;align-items:center;gap:16px">
+        <div style="display:flex;align-items:center;gap:10px;flex:none"><span style="width:30px;height:30px;border-radius:8px;background:var(--fd-terracotta);color:var(--fd-on-accent);display:grid;place-items:center;font-family:Georgia,serif;font-size:18px">ψ</span><span style="font-size:14px;font-weight:700">Inpatient Psychiatry</span></div>
+        <div style="flex:1;max-width:440px;margin-left:20px;display:flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid var(--fd-line-strong);border-radius:999px;background:var(--fd-surface);color:var(--fd-text-dim);font-size:13px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg><span style="flex:1">Search a symptom, drug, or task…</span><span style="font-size:11px;font-weight:600;border:1px solid var(--fd-line-strong);border-radius:6px;padding:1px 6px">⌘K</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <button type="button" style="min-height:36px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:13px;font-weight:600">＋ Ask a question</button>
+          <button type="button" style="min-height:36px;padding:7px 15px;border-radius:999px;border:1.5px solid var(--fd-danger);background:var(--fd-danger);color:var(--fd-on-accent);font:inherit;font-size:13px;font-weight:700">✚ Safety</button>
+          <button type="button" aria-label="Settings" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:15px">⚙</button>
+        </div>
+      </div>
+      <nav aria-label="Primary" style="max-width:1200px;margin:0 auto;padding:6px 40px 0;display:flex;gap:4px">
+        <span style="padding:10px 16px;font-size:14px;color:var(--fd-text-mid);border-bottom:3px solid transparent">Today</span>
+        <span style="padding:10px 16px;font-size:14px;color:var(--fd-text-mid);border-bottom:3px solid transparent">Path</span>
+        <span aria-current="page" style="padding:10px 16px;font-size:14px;font-weight:700;color:var(--fd-teal-deep);border-bottom:3px solid var(--fd-teal)">Library</span>
+        <span style="padding:10px 16px;font-size:14px;color:var(--fd-text-mid);border-bottom:3px solid transparent">Patient care resources</span>
+      </nav>
+    </header>
+  </sc-if>
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <header style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--fd-surface-warm);border-bottom:1px solid var(--fd-line)">
+      <span style="width:32px;height:32px;border-radius:8px;background:var(--fd-terracotta);color:var(--fd-on-accent);display:grid;place-items:center;font-family:Georgia,serif;font-size:18px;flex:none">ψ</span>
+      <div style="flex:1;min-width:0;min-height:44px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 14px;border:1.5px solid var(--fd-line-strong);border-radius:999px;background:var(--fd-surface);color:var(--fd-text-dim);font-size:14px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg>Search</div>
+      <button type="button" style="min-height:44px;padding:0 14px;border-radius:999px;border:0;background:var(--fd-danger);color:var(--fd-on-accent);font:inherit;font-size:14px;font-weight:700;flex:none">✚ Safety</button>
+      <button type="button" aria-label="Settings" style="width:44px;height:44px;border-radius:50%;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:16px;flex:none">⚙</button>
+    </header>
+  </sc-if>
+
+  <main style="max-width:1200px;margin:0 auto;padding:var(--pad-top) var(--pad-x) 96px;box-sizing:border-box">
+    <h1 style="margin:0 0 4px;font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:var(--h1);line-height:1.15;letter-spacing:-.01em">Library</h1>
+    <p style="margin:0 0 20px;font-size:15px;color:var(--fd-text-mid)">Everything the rotation uses. Essentials is the short list; Everything is the full catalogue.</p>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin:0 0 10px">
+      <div role="group" aria-label="Library view" style="display:inline-grid;grid-template-columns:1fr 1fr;flex:0 1 auto;min-width:min(100%,300px);padding:3px;border-radius:10px;background:var(--fd-chip);border:1px solid var(--fd-line)">
+        <span aria-pressed="{{ essPressed }}" style="{{ essStyle }}">Essentials · 30</span>
+        <span aria-pressed="{{ allPressed }}" style="{{ allStyle }}">Everything · 83</span>
+      </div>
+      <div role="search" style="flex:1 1 320px;min-width:0;display:flex;align-items:center;gap:10px;min-height:44px;box-sizing:border-box;padding:0 14px;border:1.5px solid var(--fd-line-strong);border-radius:10px;background:var(--fd-surface)">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--fd-text-dim);flex:none"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg>
+        <span style="{{ queryStyle }}">{{ queryText }}</span>
+        <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:700;color:var(--fd-teal-deep)">Clear</span></sc-if>
+        <sc-if value="{{ showSlash }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;font-weight:600;border:1px solid var(--fd-line-strong);border-radius:6px;padding:1px 6px;color:var(--fd-text-dim)">/</span></sc-if>
+      </div>
+    </div>
+    <p role="status" style="margin:0 0 18px;font-size:13px;color:var(--fd-text-dim)">{{ statusText }}</p>
+
+    <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+      <nav aria-label="Sections" style="display:flex;gap:8px;overflow:hidden;margin:0 -16px 18px;padding:0 16px">
+        <span aria-pressed="true" style="flex:none;min-height:40px;display:inline-flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1.5px solid var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-size:13px;font-weight:700">All <span style="font-weight:500">{{ allCount }}</span></span>
+        <span style="flex:none;min-height:40px;display:inline-flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font-size:13px;font-weight:600">{{ chip1 }}</span>
+        <span style="flex:none;min-height:40px;display:inline-flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font-size:13px;font-weight:600">{{ chip2 }}</span>
+        <span style="flex:none;min-height:40px;display:inline-flex;align-items:center;gap:6px;padding:0 14px;border-radius:999px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text-mid);font-size:13px;font-weight:600">{{ chip3 }}</span>
+      </nav>
+    </sc-if>
+
+    <div style="display:grid;grid-template-columns:var(--lib-cols);gap:36px;align-items:start">
+      <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ isEssentials }}" hint-placeholder-val="{{ true }}">
+          <nav aria-label="Essentials sections" style="display:grid;gap:2px;font-size:14px">
+            <span aria-current="true" style="display:flex;justify-content:space-between;padding:9px 12px;border-radius:8px;background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-weight:700">All<span>30</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">This week<span style="color:var(--fd-text-dim)">6</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Start here<span style="color:var(--fd-text-dim)">2</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Pocket cards<span style="color:var(--fd-text-dim)">3</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Acute &amp; safety<span style="color:var(--fd-text-dim)">5</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Core diagnoses<span style="color:var(--fd-text-dim)">6</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Medications<span style="color:var(--fd-text-dim)">2</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Family &amp; discharge<span style="color:var(--fd-text-dim)">3</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Exam<span style="color:var(--fd-text-dim)">2</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Tools<span style="color:var(--fd-text-dim)">7</span></span>
+          </nav>
+        </sc-if>
+        <sc-if value="{{ isEverything }}" hint-placeholder-val="{{ false }}">
+          <nav aria-label="Catalogue sections" style="display:grid;gap:2px;font-size:14px">
+            <span aria-current="true" style="display:flex;justify-content:space-between;padding:9px 12px;border-radius:8px;background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-weight:700">All<span>{{ allCount }}</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Interactive tools<span style="color:var(--fd-text-dim)">18</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Acute &amp; safety<span style="color:var(--fd-text-dim)">12</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Core topics<span style="color:var(--fd-text-dim)">17</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Clinical skills<span style="color:var(--fd-text-dim)">17</span></span>
+            <span style="display:flex;justify-content:space-between;padding:9px 12px;color:var(--fd-text-mid)">Evidence &amp; exam<span style="color:var(--fd-text-dim)">19</span></span>
+          </nav>
+        </sc-if>
+      </sc-if>
+
+      <div style="min-width:0">
+        <sc-if value="{{ isEssDefault }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;margin:0 0 22px;padding:10px 14px;border-radius:8px;background:var(--fd-olive-wash);border-left:3px solid var(--fd-olive);font-size:13px;line-height:1.5;color:var(--fd-text)"><span>Faculty re-review in progress — 2 of 23 readings changed since they were last attested ·</span><span style="font-weight:700;color:var(--fd-olive-deep);text-decoration:underline">What that means</span></div>
+
+          <h2 style="margin:0;padding:0 0 8px;font-size:13px;font-weight:700;color:var(--fd-text-mid);border-bottom:1px solid var(--fd-line-strong)">Start here · 2</h2>
+          <div style="padding:16px 2px;border-bottom:1px solid var(--fd-line)">
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:19px;line-height:1.3">Welcome to the Rotation</div>
+            <p style="margin:4px 0 6px;font-size:15px;line-height:1.55;color:var(--fd-text-mid)">Start with the Six-Week Compass and Orientation Packet, then choose the resource relevant to the task you are preparing to discuss with your supervising team.</p>
+            <div style="font-size:13px;color:var(--fd-text-dim)">Reading · 3 min · Week 1</div>
+          </div>
+          <div style="padding:16px 2px;border-bottom:1px solid var(--fd-line)">
+            <div style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center"><span style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:19px;line-height:1.3">Documentation &amp; Oral Presentation</span><span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid var(--fd-olive);color:var(--fd-olive-deep);background:var(--fd-olive-wash)">Pending review</span></div>
+            <p style="margin:4px 0 6px;font-size:15px;line-height:1.55;color:var(--fd-text-mid)">Write notes and give presentations that reveal reasoning — every note should let the next clinician know what you are treating, what else it could be, what the risk is today, what changed, and what has to happen before discharge.</p>
+            <div style="font-size:13px;color:var(--fd-text-dim)">Reading · 5 min · Week 1</div>
+          </div>
+
+          <h2 style="margin:28px 0 0;padding:0 0 8px;font-size:13px;font-weight:700;color:var(--fd-text-mid);border-bottom:1px solid var(--fd-line-strong)">Pocket cards · 3</h2>
+          <div style="{{ selRowStyle }}">
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:19px;line-height:1.3">Interview &amp; MSE</div>
+            <p style="margin:4px 0 6px;font-size:15px;line-height:1.55;color:var(--fd-text-mid)">Use the interview as a circle with the patient's story at the center — covering all 11 domains in whatever order the conversation allows — and always gather the safety trio (suicide, violence, vulnerability) before closing.</p>
+            <div style="font-size:13px;color:var(--fd-text-dim)">Reading · 5 min · Week 1 · Case week 1</div>
+          </div>
+          <div style="padding:16px 2px;border-bottom:1px solid var(--fd-line)">
+            <div style="display:flex;gap:10px;align-items:center"><span aria-hidden="true" style="width:8px;height:8px;border-radius:50%;background:var(--fd-danger);flex:none"></span><span style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:19px;line-height:1.3">Suicide Risk &amp; Safety</span></div>
+            <div style="margin-top:6px;font-size:13px;color:var(--fd-text-dim)">Reading · Safety kit · Week 1</div>
+          </div>
+          <div style="padding:16px 2px;border-bottom:1px solid var(--fd-line)">
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:19px;line-height:1.3">Formulation &amp; DDx</div>
+            <div style="margin-top:6px;font-size:13px;color:var(--fd-text-dim)">Reading</div>
+          </div>
+
+          <div style="margin-top:28px;display:grid">
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:48px;border-bottom:1px solid var(--fd-line-strong);font-size:13px;font-weight:700;color:var(--fd-text-mid)"><span>Acute &amp; safety · 5</span><span aria-hidden="true">⌄</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:48px;border-bottom:1px solid var(--fd-line-strong);font-size:13px;font-weight:700;color:var(--fd-text-mid)"><span>Core diagnoses · 6</span><span aria-hidden="true">⌄</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:48px;border-bottom:1px solid var(--fd-line-strong);font-size:13px;font-weight:700;color:var(--fd-text-mid)"><span>Medications · 2</span><span aria-hidden="true">⌄</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:48px;border-bottom:1px solid var(--fd-line-strong);font-size:13px;font-weight:700;color:var(--fd-text-mid)"><span>Family &amp; discharge · 3</span><span aria-hidden="true">⌄</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:48px;border-bottom:1px solid var(--fd-line-strong);font-size:13px;font-weight:700;color:var(--fd-text-mid)"><span>Exam · 2</span><span aria-hidden="true">⌄</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:48px;border-bottom:1px solid var(--fd-line-strong);font-size:13px;font-weight:700;color:var(--fd-text-mid)"><span>Tools · 7</span><span aria-hidden="true">⌄</span></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isFiltered }}" hint-placeholder-val="{{ false }}">
+          <h2 style="margin:0;padding:0 0 8px;font-size:13px;font-weight:700;color:var(--fd-text-mid);border-bottom:1px solid var(--fd-line-strong)">Interactive tools · 1</h2>
+          <div style="padding:14px 2px;border-bottom:1px solid var(--fd-line)">
+            <div style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center"><span style="font-size:16px;font-weight:600"><mark style="background:var(--fd-teal-wash);color:inherit;border-radius:3px;padding:0 2px">Family</mark> Systems Practice</span><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--fd-teal-wash);color:var(--fd-teal-deep)">tool</span></div>
+            <p style="margin:4px 0 0;font-size:14px;line-height:1.5;color:var(--fd-text-mid)">Rehearse collateral calls, family meetings, discharge-role mapping, and high-emotion conversations.</p>
+          </div>
+          <h2 style="margin:24px 0 0;padding:0 0 8px;font-size:13px;font-weight:700;color:var(--fd-text-mid);border-bottom:1px solid var(--fd-line-strong)">Clinical skills · 3</h2>
+          <div style="padding:14px 2px;border-bottom:1px solid var(--fd-line);font-size:16px;font-weight:600"><mark style="background:var(--fd-teal-wash);color:inherit;border-radius:3px;padding:0 2px">Family</mark> &amp; Discharge<div style="margin-top:2px;font-size:13px;font-weight:400;color:var(--fd-text-dim)">Reading · Week 4 · Case week 4</div></div>
+          <div style="padding:14px 2px;border-bottom:1px solid var(--fd-line);font-size:16px;font-weight:600"><mark style="background:var(--fd-teal-wash);color:inherit;border-radius:3px;padding:0 2px">Family</mark> Therapy Modalities<div style="margin-top:2px;font-size:13px;font-weight:400;color:var(--fd-text-dim)">Reading · Week 4</div></div>
+          <div style="padding:14px 2px;border-bottom:1px solid var(--fd-line);font-size:16px;font-weight:600"><mark style="background:var(--fd-teal-wash);color:inherit;border-radius:3px;padding:0 2px">Family</mark> Meeting Playbook (90-min)<div style="margin-top:2px;font-size:13px;font-weight:400;color:var(--fd-text-dim)">Reading · Week 4 · Case week 4</div></div>
+          <p style="margin:20px 0 0;font-size:14px;color:var(--fd-text-mid)">Not seeing it? <a href="#" style="font-weight:700;color:var(--fd-teal-deep)">Search inside every page for “family” →</a></p>
+        </sc-if>
+
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <section aria-labelledby="empty-h" style="padding:28px 0 8px;border-top:1px solid var(--fd-line-strong);max-width:560px">
+            <h2 id="empty-h" style="margin:0 0 8px;font-family:'Source Serif 4',Georgia,serif;font-size:22px;line-height:1.3">No titles match “milieu rules”</h2>
+            <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:var(--fd-text-mid)">This filter checks titles and topics in the current view. Search looks inside every page, including tools.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:10px">
+              <button type="button" style="min-height:44px;padding:0 18px;border-radius:8px;border:1px solid var(--fd-teal);background:var(--fd-teal);color:var(--fd-on-accent);font:inherit;font-size:15px;font-weight:600">Search all content</button>
+              <button type="button" style="min-height:44px;padding:0 18px;border-radius:8px;border:1.5px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:15px;font-weight:600">Clear filter</button>
+            </div>
+            <p style="margin:18px 0 0;font-size:13px;line-height:1.5;color:var(--fd-text-dim)">Still unsure? <strong style="color:var(--fd-text-mid)">＋ Ask a question</strong> saves it on this device for supervision.</p>
+          </section>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ showPreview }}" hint-placeholder-val="{{ true }}">
+        <aside aria-label="Preview" style="position:relative;padding:20px;border-radius:12px;background:var(--fd-surface);border:1px solid var(--fd-line);border-top:3px solid var(--fd-teal);box-shadow:var(--fd-shadow-card)">
+          <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:var(--fd-text-dim)">Reading · 5 min</p>
+          <h2 style="margin:0 0 10px;font-family:'Source Serif 4',Georgia,serif;font-size:22px;line-height:1.25">Interview &amp; MSE</h2>
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.55;color:var(--fd-text-mid)">Use the interview as a circle with the patient's story at the center — covering all 11 domains in whatever order the conversation allows — and always gather the safety trio (suicide, violence, vulnerability) before closing.</p>
+          <h3 style="margin:0 0 6px;font-size:13px;font-weight:700">Where it is used</h3>
+          <ul style="margin:0 0 14px;padding:0;list-style:none;display:grid;gap:6px;font-size:14px;color:var(--fd-text-mid)">
+            <li>Week 1 · Foundations &amp; the MSE</li>
+            <li>Case Journeys · Week 1 — Admission: start with the person and the timeline</li>
+          </ul>
+          <h3 style="margin:0 0 6px;font-size:13px;font-weight:700">Practice with</h3>
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:var(--fd-text-mid)"><strong style="color:var(--fd-text)">Mental Status Exam</strong> · tool — Domain-by-domain descriptor bank and a builder that drafts a written mental status exam.</p>
+          <p style="margin:0 0 16px;font-size:12px;font-weight:700;color:var(--fd-teal-deep)">✓ faculty-attested</p>
+          <button type="button" style="width:100%;min-height:44px;border-radius:8px;border:1px solid var(--fd-teal);background:var(--fd-teal);color:var(--fd-on-accent);font:inherit;font-size:15px;font-weight:600">Open reading</button>
+          <p style="margin:10px 0 0;font-size:12px;color:var(--fd-text-dim)">Preview is not saved. Reload returns to the list.</p>
+        </aside>
+      </sc-if>
+    </div>
+  </main>
+
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <nav aria-label="Primary" style="position:absolute;left:0;right:0;top:778px;height:66px;box-sizing:border-box;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:6px 6px 8px;background:var(--fd-surface-warm);border-top:1px solid var(--fd-line);box-shadow:0 -4px 16px rgba(59,51,44,.08)">
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">Today</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">Path</span>
+      <span aria-current="page" style="display:grid;place-items:center;border-radius:10px;background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-size:13px;font-weight:700">Library</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">Care</span>
+      <span style="display:grid;place-items:center;border-radius:10px;color:var(--fd-text-mid);font-size:13px;font-weight:600">＋ Ask</span>
+    </nav>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:1400},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;device&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;'desktop'|'mobile'&quot;},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;essentials&quot;,&quot;everything&quot;],&quot;default&quot;:&quot;essentials&quot;,&quot;tsType&quot;:&quot;'essentials'|'everything'&quot;},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;filtered&quot;,&quot;empty&quot;],&quot;default&quot;:&quot;default&quot;,&quot;tsType&quot;:&quot;'default'|'filtered'|'empty'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.theme === 'dark';
+    const mobile = this.props.device === 'mobile';
+    const view = this.props.view || 'essentials';
+    const state = this.props.state || 'default';
+    const L = {'--fd-bg':'#f6f3ee','--fd-surface':'#ffffff','--fd-surface-warm':'#fffdf9','--fd-line':'#ebe5da','--fd-line-strong':'#ddd3c6','--fd-line-hover':'#c8baa7','--fd-text':'#3b332c','--fd-text-mid':'#64574b','--fd-text-dim':'#76695d','--fd-terracotta':'#a9634b','--fd-teal':'#3a7d6e','--fd-teal-deep':'#2c6356','--fd-teal-wash':'#edf4f2','--fd-olive':'#8b7040','--fd-olive-deep':'#725b35','--fd-olive-wash':'#f7f0e2','--fd-danger':'#a34132','--fd-danger-dark':'#8f372a','--fd-danger-wash':'#fbefec','--fd-chip':'#f1ece6','--fd-callout':'#fbf8f3','--fd-selected':'#f3ebe5','--fd-on-accent':'#ffffff','--fd-focus':'#2f6fd0','--fd-shadow-card':'0 1px 2px rgba(59,51,44,.05),0 8px 24px rgba(59,51,44,.04)'};
+    const D = {'--fd-bg':'#211d1a','--fd-surface':'#2a2521','--fd-surface-warm':'#2f2a25','--fd-line':'#3a332c','--fd-line-strong':'#4a4139','--fd-line-hover':'#5d5248','--fd-text':'#ece5db','--fd-text-mid':'#bcb0a2','--fd-text-dim':'#a2968a','--fd-terracotta':'#d08a6f','--fd-teal':'#5fa392','--fd-teal-deep':'#7fc0ae','--fd-teal-wash':'#1d332e','--fd-olive':'#c0a06a','--fd-olive-deep':'#d8bb87','--fd-olive-wash':'#332a1c','--fd-danger':'#d97a68','--fd-danger-dark':'#e8917f','--fd-danger-wash':'#3a231f','--fd-chip':'#332c26','--fd-callout':'#2b2620','--fd-selected':'#3a2b24','--fd-on-accent':'#211d1a','--fd-focus':'#7aa2ff','--fd-shadow-card':'0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3)'};
+    const essDefault = view === 'essentials' && state === 'default';
+    const preview = !mobile && essDefault;
+    const layout = mobile
+      ? {'--pad-x':'16px','--pad-top':'22px','--h1':'28px','--lib-cols':'minmax(0,1fr)'}
+      : {'--pad-x':'40px','--pad-top':'36px','--h1':'34px','--lib-cols': preview ? '200px minmax(0,1fr) 320px' : '200px minmax(0,1fr)'};
+    const seg = (on) => ({minHeight:'38px',display:'grid',placeItems:'center',padding:'0 14px',borderRadius:'8px',fontSize:'14px',fontWeight: on ? 700 : 600,color: on ? 'var(--fd-teal-deep)' : 'var(--fd-text-mid)',background: on ? 'var(--fd-surface)' : 'transparent',boxShadow: on ? '0 1px 3px rgba(59,51,44,.12)' : 'none',whiteSpace:'nowrap'});
+    const q = state === 'filtered' ? 'family' : state === 'empty' ? 'milieu rules' : '';
+    const total = view === 'essentials' ? 30 : 83;
+    const status = state === 'filtered' ? `4 of ${total} ${view === 'essentials' ? 'items' : 'pages'} match “family”.`
+      : state === 'empty' ? `No titles match “milieu rules”.`
+      : view === 'essentials' ? 'Showing all 30 Essentials items.' : 'Showing all 83 pages.';
+    const ess = view === 'essentials';
+    return {
+      rootStyle: Object.assign({}, dark ? D : L, layout, {
+        position:'relative', width: mobile ? '390px' : '1280px', minHeight: mobile ? '844px' : '800px',
+        background:'var(--fd-bg)', color:'var(--fd-text)', colorScheme: dark ? 'dark' : 'light',
+        fontFamily:"'Inter',system-ui,-apple-system,'Segoe UI',sans-serif", lineHeight:1.55, WebkitFontSmoothing:'antialiased'
+      }),
+      isMobile: mobile, isDesktop: !mobile,
+      isEssentials: ess, isEverything: !ess,
+      essPressed: ess ? 'true' : 'false', allPressed: ess ? 'false' : 'true',
+      essStyle: seg(ess), allStyle: seg(!ess),
+      queryText: q || 'Filter by title or topic — e.g. delirium, family meeting',
+      queryStyle: {flex:1,minWidth:0,fontSize:'15px',color: q ? 'var(--fd-text)' : 'var(--fd-text-dim)',fontWeight: q ? 600 : 400,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'},
+      hasQuery: !!q, showSlash: !mobile && !q,
+      statusText: status,
+      allCount: state === 'filtered' ? 4 : state === 'empty' ? 0 : total,
+      chip1: ess ? 'This week · 6' : 'Interactive tools',
+      chip2: ess ? 'Start here · 2' : 'Acute & safety',
+      chip3: ess ? 'Pocket cards · 3' : 'Core topics',
+      isEssDefault: essDefault, isFiltered: state === 'filtered', isEmpty: state === 'empty',
+      showPreview: preview,
+      selRowStyle: preview
+        ? {padding:'16px 14px',margin:'0 -14px',borderBottom:'1px solid var(--fd-line)',background:'var(--fd-selected)',borderRadius:'8px',boxShadow:'inset 3px 0 0 var(--fd-teal)'}
+        : {padding:'16px 2px',borderBottom:'1px solid var(--fd-line)'}
+    };
+  }
+}
+</script>
+</body>
+</html>

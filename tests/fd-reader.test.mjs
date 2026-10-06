@@ -203,7 +203,7 @@ test('a Path reader uses the viewed week for its rail and practice completion', 
     ref: 'tool.html', week: 1, viewWeek: 2, fromTab: 'path', done: { 'tool.html': true },
     progressRaw: { 'tool.html': { done: true, practiceWeeks: { 1: { done: true } } } },
   }), '<iframe title="Tool"></iframe>');
-  assert.match(html, /Week 2 · Interactive tool/);
+  assert.match(html, /fd-eyebrow">Interactive tool<[\s\S]*fd-article__pos">Week 2 · 2 of 2</);
   assert.match(html, /Week 2 · 0 of 2 done/);
   assert.match(html, /data-fd-toggle="tool\.html" aria-pressed="false"/);
   assert.match(html, /Mark done · Next: Page D →/);
@@ -383,17 +383,105 @@ test('the currently-open row carries is-current, and only that row', () => {
 
 // ---- eyebrow / meta ---------------------------------------------------------------------------
 
-test('the eyebrow carries the week number only when the item belongs to the named week', () => {
-  assert.match(F.fdReader(IDX, s({ ref: 'a.md', week: 1 }), ''), /fd-eyebrow">Week 1 · Reading</);
+// One-thread Phase 3: ONE status line -- "Reading · 6 min · Week 1 · 1 of 3 · ✓ faculty-attested".
+test('the status line carries the week position only when the item belongs to the named week', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1 }), '');
+  const head = html.match(/<div class="fd-article__head">([\s\S]*?)<\/div>/)[1];
+  assert.equal(head.replace(/<[^>]+>/g, ''), 'Reading·6 min·Week 1 · 1 of 3✓ faculty-attested');
+  assert.match(F.fdReader(IDX, s({ ref: 'b.md', week: 1 }), ''), /fd-article__pos">Week 1 · 2 of 3</,
+    'the position is the item\'s place in the week, not a done count (the rail keeps that)');
   const noWeek = F.fdReader(IDX, s({ ref: 'lib.md', week: null }), '');
   assert.match(noWeek, /fd-eyebrow">Reading</);
-  assert.doesNotMatch(noWeek, /fd-eyebrow">Week/);
+  assert.doesNotMatch(noWeek, /fd-article__pos|Week \d/);
 });
 
 test('a tool item shows "Interactive tool" and "self-paced" rather than read minutes', () => {
   const html = F.fdReader(IDX, s({ ref: 'tool.html', week: 1 }), '');
-  assert.match(html, /fd-eyebrow">Week 1 · Interactive tool</);
+  assert.match(html, /fd-eyebrow">Interactive tool</);
+  assert.match(html, /fd-article__pos">Week 1 · 3 of 3</);
   assert.match(html, /fd-article__meta">self-paced</);
+});
+
+// ---- governance notice placement (one-thread Phase 3) ------------------------------------------
+// The caller prefixes renderGovernanceNotice()'s element to bodyHtml. On a reading it is MOVED,
+// byte-for-byte: a receipt joins the status line, anything else leads the article above the H1.
+// Fixture notices only -- never live governance state (CLAUDE.md, #729).
+const NOTICES = {
+  receipt: '<div class="governance-notice reviewed-receipt">Reviewed by Faculty reviewer · <time datetime="2026-08-01">2026-08-01</time></div>',
+  compact: '<div class="governance-notice pending-compact" role="status"><strong class="governance-title">Pending faculty review</strong><span class="governance-risk">Clinical · Moderate risk</span><span>Content changed since faculty review on 2026-10-05; awaiting re-attestation.</span></div>',
+  high: '<section class="governance-notice pending-high" role="alert" tabindex="-1"><strong class="governance-title">Pending faculty review</strong><span class="governance-risk">Clinical · High risk</span><p>Warn.</p><button type="button" class="pgfb-b">Feedback on this page →</button></section>',
+  unavailable: '<div class="governance-notice unavailable">Review status unavailable—verify with faculty</div>',
+};
+
+test('a reading\'s reviewed receipt joins the one status line, bytes unchanged', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1 }), NOTICES.receipt + '<p>Body</p>');
+  const head = html.match(/<div class="fd-article__head">[\s\S]*?<\/div><h1/)[0];
+  assert.ok(head.includes(NOTICES.receipt), 'receipt sits inside the status line');
+  assert.equal(html.split(NOTICES.receipt).length - 1, 1, 'and only there');
+  assert.match(html, /<div class="fd-article__body"><p>Body<\/p><\/div>/);
+});
+
+for (const kind of ['compact', 'high', 'unavailable']) {
+  test(`a reading's ${kind} notice leads the article above the status line and H1, bytes unchanged`, () => {
+    const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1 }), NOTICES[kind] + '<p>Body</p>');
+    const at = html.indexOf(NOTICES[kind]);
+    assert.ok(at > -1 && html.split(NOTICES[kind]).length === 2, 'present once, verbatim');
+    assert.ok(at === html.indexOf('<div class="fd-article" data-ref="a.md">') + '<div class="fd-article" data-ref="a.md">'.length);
+    assert.ok(at < html.indexOf('fd-article__head') && at < html.indexOf('fd-article__h1'));
+    if (kind === 'high') assert.match(html, /class="governance-notice pending-high" role="alert"/);
+  });
+}
+
+test('a tool keeps its notice above the frame (its status line is hidden at every width)', () => {
+  const html = F.fdReader(IDX, s({ ref: 'tool.html', week: 1 }), NOTICES.compact + '<iframe></iframe>');
+  assert.ok(html.includes('id="fd-tool-region">' + NOTICES.compact + '<iframe></iframe>'));
+  const receipt = F.fdReader(IDX, s({ ref: 'tool.html', week: 1 }), NOTICES.receipt + '<iframe></iframe>');
+  assert.ok(receipt.includes('id="fd-tool-region">' + NOTICES.receipt));
+});
+
+// ---- Mark done · Next in week N · Next in this thread (one-thread Phase 3) ----------------------
+
+test('"Next in week N" names the positional next item beside the primary, and never marks done', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1 }), '');
+  const actions = html.match(/<div class="fd-article__actions">([\s\S]*?)<\/div>/)[1];
+  assert.match(actions, /^<button type="button" class="fd-btn fd-btn--primary" data-fd-toggle="a\.md" aria-pressed="false">/);
+  assert.match(actions, /<button type="button" class="fd-article__next" data-fd-open="b\.md">Next in week 1: Page B →<\/button>/);
+  assert.doesNotMatch(actions.match(/class="fd-article__next"[^>]*>/)[0], /data-fd-toggle|aria-pressed/);
+  assert.doesNotMatch(F.fdReader(IDX, s({ ref: 'tool.html', week: 1 }), ''), /fd-article__next/,
+    'the last item in a week has no in-week next');
+  assert.doesNotMatch(F.fdReader(IDX, s({ ref: 'lib.md', week: null }), ''), /fd-article__next/);
+});
+
+test('"Next in this thread" lists practice, this week\'s case step, and the next item', () => {
+  const caseArc = { weeks: [{ title: 'Admission: start with the person', learnerTask: 'Task', handoff: 'Carry' }] };
+  const index = { ...IDX, byRef: { ...IDX.byRef, 'one-patient-six-weeks.html': {
+    ref: 'one-patient-six-weeks.html', kind: 'tool', title: 'Case Journeys' } } };
+  const html = F.fdReader(index, s({ ref: 'a.md', week: 1, thread: { caseArc } }), '');
+  const nav = html.match(/<nav class="fd-nextthread"[\s\S]*?<\/nav>/)[0];
+  const rows = [...nav.matchAll(/class="fd-nextthread__name">([^<]*)<\/span><span class="fd-nextthread__meta">([^<]*)/g)]
+    .map((m) => [m[1], m[2]]);
+  assert.deepEqual(rows, [
+    ['Practice: Tool T', 'Tool · practice for this page'],
+    ['Case Journeys · Week 1 — Admission: start with the person', 'Tool · this week on the unit'],
+    ['Page B', 'Reading · next in week 1'],
+  ]);
+  assert.match(nav, /<h2 class="fd-nextthread__title" id="fd-nextthread-title">Next in this thread<\/h2>/);
+  assert.match(nav, /<a class="fd-nextthread__row" href="\?tool=one-patient-six-weeks\.html&amp;week=1">/,
+    'the case step is a real ?week=N link (the action layer drops query parameters)');
+  assert.doesNotMatch(F.fdReader(index, s({ ref: 'one-patient-six-weeks.html', week: 1, thread: { caseArc } }), ''),
+    /this week on the unit/, 'the case tool does not point at itself');
+  assert.doesNotMatch(F.fdReader(IDX, s({ ref: 'a.md', week: 1 }), ''), /this week on the unit/,
+    'no case registry on the render state, no case row');
+});
+
+test('the last item in a week hands "Next in this thread" to the first item of next week', () => {
+  const html = F.fdReader(IDX, s({ ref: 'tool.html', week: 1 }), '');
+  assert.match(html, /fd-nextthread__name">Page D<\/span><span class="fd-nextthread__meta">Reading · week 2</);
+});
+
+test('Phase 3 reader copy is audience-neutral', () => {
+  const html = F.fdReader(IDX, s({ ref: 'a.md', week: 1, thread: { caseArc: { weeks: [{ title: 'T', learnerTask: 'L' }] } } }), '');
+  assert.doesNotMatch(html.replace(/<[^>]+>/g, ' '), AUDIENCE_TOKEN_RE);
 });
 
 test('tool Readers emit one stable expansion toggle while reading Readers emit none', () => {

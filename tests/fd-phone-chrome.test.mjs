@@ -49,24 +49,28 @@ test('competing phone bars are hidden while tablet and desktop rules remain avai
     assert.match(rule(phone(), selector), /display:none/, `${selector} must not own the phone edge`);
   }
   assert.match(css, /\.fd-actionbar\{[^}]*position:fixed/);
-  assert.match(shell, /#fdCaptureMount\{position:fixed/);
+  // 2026-10-04: the floating launcher is gone; the mount stays, empty and hidden while empty, and
+  // nothing in the shell positions it over the page any more.
+  assert.match(shell, /#fdCaptureMount:empty\{display:none\}/);
+  assert.doesNotMatch(shell, /#fdCaptureMount\{position:fixed|fd-capture-launch--global/);
 });
 
-test('every dock item has a 44px target and a readable label', () => {
-  const item = rule(phone(), '.fd-dock__item');
+test('every dock item has a 44px target and a readable label, and no slot is a forwarded primary', () => {
+  const block = phone(), item = rule(block, '.fd-dock__item');
   assert.match(item, /min-height:var\(--fd-target-touch\)/);
   assert.match(item, /min-width:var\(--fd-target-touch\)/);
   assert.match(item, /font-size:var\(--fd-font-/);
-  assert.match(item, /height:60px/, 'long reader titles cannot outgrow the reserved dock clearance');
+  assert.match(item, /height:52px/, 'fixed labels cannot outgrow the 66px dock');
   assert.match(item, /overflow:hidden/);
-  assert.match(item, /-webkit-line-clamp:3/, 'keep a visible action label within the bounded button');
-  // 2026-10-01: the primary action is marked by its fill, not raised out of the bar -- the raise
-  // left it taller than the dock with its label sitting above the other four.
-  const forward = rule(phone(), '.fd-dock__item--context[data-fd-dock-forward]');
-  assert.match(forward, /background:var\(--fd-teal\)/, 'only a real primary action is filled -- teal, since red means safety');
-  assert.doesNotMatch(forward, /transform:/, 'the primary action sits in the bar, level with the rest');
-  assert.match(rule(phone(), '.fd-dock__item:disabled'), /opacity:/);
-  assert.match(rule(phone(), '.fd-dock__item[aria-current="page"]'), /color:/);
+  assert.match(item, /-webkit-line-clamp:2/, 'keep a visible destination label within the bounded button');
+  // 2026-10-04 (one-thread redesign): the dock's five slots are fixed destinations. No slot is
+  // filled teal as "the primary", and no Browse disclosure floats a menu above the bar.
+  assert.doesNotMatch(block, /fd-dock__item--context|data-fd-dock-forward|fd-dock__browse/);
+  assert.match(rule(block, '.fd-dock__item:disabled'), /opacity:/);
+  const current = rule(block, '.fd-dock__item[aria-current="page"]');
+  assert.match(current, /color:var\(--fd-teal-deep\)/);
+  assert.match(current, /background:var\(--fd-teal-wash\)/);
+  assert.match(rule(block, '.fd-dock--four'), /repeat\(4,minmax\(0,1fr\)\)/, 'APP has no Path: four slots');
 });
 
 test('reader Back and tool toolbar remain usable when their fixed action bar retires', () => {
@@ -74,33 +78,44 @@ test('reader Back and tool toolbar remain usable when their fixed action bar ret
   assert.match(rule(block, '.fd-reader>.fd-reader__back'), /display:/);
   assert.match(rule(block, '.fd-reader__toolbar'), /display:/);
   assert.doesNotMatch(block, /\.fd-reader>\.fd-reader__back\{display:none/);
-  assert.match(rule(block, '.fd-shell:has(.fd-actionbar) .fd-header__bar'), /display:flex/);
-  assert.match(rule(block, '.fd-shell:has(.fd-actionbar) .fd-brand'), /min-width:44px/);
+  // The one-row top bar is now the phone's header on EVERY route, not a reader-only exception.
+  assert.doesNotMatch(block, /\.fd-shell:has\(\.fd-actionbar\)/);
+  assert.match(rule(block, '.fd-brand'), /min-width:44px/);
 });
 
-test('the reader keeps its compact header, named home target, Search, and Safety', () => {
-  const block = phone(), reader = '.fd-shell:has(.fd-actionbar)';
-  for (const selector of ['.fd-weekpill', '.fd-settingsbtn']) {
-    assert.match(rule(block, `${reader} ${selector}`), /display:none/);
-  }
-  const search = rule(block, `${reader} .fd-searchbtn`);
+test('the phone top bar is one row: named home target, Search, Safety, Settings; Ask lives in the dock', () => {
+  const block = phone();
+  assert.match(rule(block, '.fd-askbtn'), /display:none/, '"＋ Ask a question" yields to the dock\'s "＋ Ask"');
+  const search = rule(block, '.fd-searchbtn');
   assert.match(search, /flex:1/);
   assert.match(search, /width:auto/);
+  assert.match(search, /min-height:44px/);
   for (const match of block.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-    if (/\.fd-(safetybtn|searchbtn)\b/.test(match[1])) {
-      assert.doesNotMatch(match[2], /display:none|visibility:hidden/);
+    // The controls themselves, not their descendants (.fd-searchbtn .fd-kbd is hidden on purpose).
+    if (match[1].split(',').some((part) => /^\.fd-(safetybtn|searchbtn|settingsbtn)$/.test(part.trim()))) {
+      assert.doesNotMatch(match[2], /display:none|visibility:hidden/, match[1]);
     }
   }
-  const name = rule(block, `${reader} .fd-brand__name`);
+  const name = rule(block, '.fd-brand__name');
   assert.doesNotMatch(name, /display:none/);
   assert.match(name, /position:absolute/);
   assert.match(name, /width:1px/);
-  assert.match(rule(block, '.fd-header__bar'), /padding-bottom:\d+px/);
+  // The long search sentence is clipped the same way, never removed, so the name is unchanged.
+  const long = rule(block, '.fd-searchbtn__long');
+  assert.match(long, /position:absolute/);
+  assert.match(long, /width:1px/);
+  assert.match(rule(block, '.fd-searchbtn__short'), /display:inline/);
+  assert.match(rule(block, '.fd-settingsbtn'), /width:44px/);
+  assert.match(rule(block, '.fd-header__bar'), /padding:\d+px \d+px \d+px/);
+  assert.doesNotMatch(block, /fd-weekpill\{|fd-carebtn/);
 });
 
-test('the phone article preserves its Compass width and compact top spacing', () => {
+test('the phone article preserves its Compass width and the spec\'s 22px top spacing', () => {
   const block = phone();
-  assert.ok(Number(rule(block, '.fd-main').match(/padding-top:(\d+)px/)[1]) <= 12);
+  const main = rule(block, '.fd-main').match(/padding:(\d+)px (\d+)px /);
+  assert.ok(main, 'the phone .fd-main padding is one shorthand');
+  assert.equal(Number(main[1]), 22, 'one-thread page container: 22px top on a phone');
+  assert.equal(Number(main[2]), 20, '20px sides (the Welcome Compass sizes its column buckets against the content width; 16 tipped its 561px bucket)');
   const padding = rule(block, '.fd-article').match(/padding:var\(--fd-space-(\d+)\) var\(--fd-space-(\d+)\)/);
   assert.ok(padding);
   assert.ok(Number(padding[1]) <= 7);
@@ -109,7 +124,7 @@ test('the phone article preserves its Compass width and compact top spacing', ()
 
 test('the last phone focus target clears the dock and reduced motion stops its transition', () => {
   const block = phone();
-  assert.match(rule(block, '.fd-main'), /padding-bottom:calc\([^}]*env\(safe-area-inset-bottom/);
+  assert.match(rule(block, '.fd-main'), /padding:[^;]*calc\([^}]*env\(safe-area-inset-bottom/);
   assert.match(rule(block, 'html'), /scroll-padding-bottom:calc\([^}]*env\(safe-area-inset-bottom/);
   assert.match(rule(block, '.fd-nudge'), /bottom:calc\([^}]*env\(safe-area-inset-bottom/);
   const reduced = css.slice(css.indexOf('/* ═══ Reduced motion'));

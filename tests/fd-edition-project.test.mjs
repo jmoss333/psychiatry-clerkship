@@ -151,15 +151,22 @@ for (const audience of ['ms3','resident']) {
       readFileSync(new URL('frontdoor/fd_library.js',base),'utf8')+
       '\nreturn {kit:fdEssentials,full:fdLibrary};'
     )();
-    assert.match(render.kit(projected.index),/>Core readings<\/h1>/);
-    assert.equal(render.kit(projected.index),render.kit(before));
+    // One Library shell for both views (one-thread redesign, Phase 2): the H1 reads "Library" and
+    // the Essentials root carries .fd-kit.
+    assert.match(render.kit(projected.index),/<section class="fd-library fd-kit">[\s\S]*<h1 class="fd-library__h1">Library<\/h1>/);
+    // Row meta now names the weeks that assign each page (Phase 2), and the edition legitimately
+    // places library/example in its own week; compare the two renders over the same Path so the
+    // check stays about the kit, the columns and the badges.
+    assert.equal(render.kit({...projected.index,weeks:before.weeks}),render.kit(before));
     const week = audience === 'ms3' ? 1 : 4;
     const weekly = render.kit(projected.index,{week,kitSection:'week'});
     assert.match(weekly,/data-fd-kit-section="week"[^>]*aria-pressed="true"[^>]*><span>This week<\/span><span class="fd-kit__index-count">1<\/span>/);
-    assert.equal((weekly.match(/data-fd-open="library\/example"/g)||[]).length,1);
+    // The row opens the page; the desktop preview pane's "Open reading" is the second opener.
+    assert.equal((weekly.match(/class="fd-kit__reading" data-fd-open="library\/example"/g)||[]).length,1);
+    assert.equal((weekly.match(/data-fd-open="library\/example"/g)||[]).length,2);
     assert.doesNotMatch(render.kit(before,{week,kitSection:'week'}),/value="week"/,
       'weekly readings follow the edition placements, not the canonical Path');
-    assert.equal(render.full(projected.index),render.full(before));
+    assert.equal(render.full({...projected.index,weeks:before.weeks}),render.full(before));
     assert.deepEqual(core,before,'projection cannot mutate the canonical kit');
   });
 }
