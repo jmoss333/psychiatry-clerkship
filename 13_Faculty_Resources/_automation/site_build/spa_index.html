@@ -684,6 +684,10 @@
      reason: the Library renders at first paint from what is already on the page. Nothing here
      writes to the file; the week pages' pairing blocks are built from it separately. */
   var FD_PAIRINGS=null;
+  /* The "Beyond this page" media index (media_index.py over media_map.json), READ-ONLY, for the
+     Reader's optional podcast/book block. Same verified-needle injection as FD_PAIRINGS; the
+     resident build swaps in its own value. A draft map inlines {pages:{}}, so nothing renders. */
+  var FD_MEDIA=null;
   var SEC_SEQ=0;
   function makeCollapsible(body){
     if(!body) return;

@@ -1,0 +1,167 @@
+{
+  "_note": "DRAFT for curricular review (Dr. Moss). While status is \"draft\" the build validates every key and renders nothing (site_build/media_index.py); only Dr. Moss sets \"approved\". Maps each week's anchor reading (from pairings.json) to optional podcast episodes and books from the two existing libraries. Titles, authors and descriptions are resolved at build time from 12_Media/psychiatry_psychotherapy_podcast_library.md and 07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md; this file stores only keys. Only episodes marked '▶ YouTube' (exact verified link) are eligible; '▶ search channel' items are excluded. Books are keyed by ISBN. 'family' picks render under 'For the family' with the book library's own offer line and safety line; an empty list means the side is omitted, not filled. Optional, not required; never counted toward the week.",
+  "status": "draft",
+  "draftedAt": "2026-10-04",
+  "weeks": [
+    {
+      "week": 1,
+      "anchor": "pg_interview.md",
+      "pairing": "pair_biopsychosocial",
+      "podcastCategory": "Foundations & the psychiatric interview",
+      "listen": [
+        {
+          "episode": 1,
+          "why": "Interview fundamentals — matches the week's MSE and interview work"
+        },
+        {
+          "episode": 28,
+          "why": "Start of the alliance series the podcast page recommends first"
+        }
+      ],
+      "family": [],
+      "gap": "No family-facing book in the library fits an orientation week; omit the family side."
+    },
+    {
+      "week": 2,
+      "anchor": "t_psychosis.md",
+      "pairing": "pair_antipsychotic_selection",
+      "podcastCategory": "Psychosis & schizophrenia",
+      "listen": [
+        {
+          "episode": 70,
+          "why": "Engagement, not pharmacology — keeps clear of the medication workstream"
+        },
+        {
+          "episode": 211,
+          "why": "Early psychosis presentation"
+        }
+      ],
+      "family": [],
+      "gap": "LEAP pick withheld until its ISBN is confirmed (see unverified); omit the family side rather than substitute."
+    },
+    {
+      "week": 2,
+      "anchor": "t_mood.md",
+      "pairing": null,
+      "podcastCategory": "Mood & bipolar; suicide",
+      "listen": [
+        {
+          "episode": 25,
+          "why": "Bipolar history and nuance — pairs with the page's screen-for-mania lead"
+        },
+        {
+          "episode": 201,
+          "why": "Psychotic depression — sits on the mood/psychosis boundary of week 2"
+        }
+      ],
+      "family": [
+        {
+          "isbn": "9781608822195",
+          "why": "Family guide to bipolar disorder"
+        },
+        {
+          "isbn": "9780143128724",
+          "why": "Lived-experience depression memoir named in book_library.md"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "anchor": "psychotherapy.md",
+      "pairing": "pair_therapeutic_alliance",
+      "podcastCategory": "Psychotherapy process — transference & dynamics",
+      "listen": [
+        {
+          "episode": 41,
+          "why": "Transference and countertransference on the unit"
+        },
+        {
+          "episode": 199,
+          "why": "Motivational interviewing — usable in a ten-minute bedside conversation"
+        }
+      ],
+      "family": [
+        {
+          "isbn": "9781684036899",
+          "why": "Stop Walking on Eggshells — named in book_library.md for borderline-pattern family dynamics"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "anchor": "exp_family.md",
+      "pairing": "pair_family_relapse",
+      "podcastCategory": "Other & special topics",
+      "listen": [
+        {
+          "episode": 26,
+          "why": "Boundaries — supports confidentiality framing in family meetings"
+        }
+      ],
+      "family": [
+        {
+          "isbn": "9781476709475",
+          "why": "CRAFT — named in book_library.md for substance use"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "anchor": "delirium.md",
+      "pairing": "pair_delirium",
+      "podcastCategory": "Other & special topics",
+      "listen": [
+        {
+          "episode": 31,
+          "why": "Psychiatric approach to delirium"
+        },
+        {
+          "episode": 40,
+          "why": "Reducing inpatient violence — the week's agitation work"
+        }
+      ],
+      "family": [],
+      "gap": "The book library has no delirium or acute-safety family title; omit rather than stretch. Safety week media stays strictly secondary to the Safety kit."
+    },
+    {
+      "week": 6,
+      "anchor": "case_formulation.md",
+      "pairing": "pair_formulation",
+      "podcastCategory": "Foundations & the psychiatric interview",
+      "listen": [
+        {
+          "episode": 207,
+          "why": "Five domains of psychiatric care — a formulation frame"
+        },
+        {
+          "episode": 90,
+          "why": "Exam preparation for the final week"
+        }
+      ],
+      "family": [],
+      "gap": "Integration week is learner-facing; no family pick."
+    }
+  ],
+  "excluded": {
+    "reason": "Kept out of the draft on purpose",
+    "items": [
+      "Medication-focused episodes (e.g. 49, 57, 71, 167, 236) — medication workstream is reviewed separately",
+      "All '▶ search channel' episodes (e.g. 58, 119, 126, 231) — no exact verified link",
+      "Suicide-specific episodes (54, 60, 82) — not paired automatically with a learning page; surface only through the Safety kit if faculty choose"
+    ]
+  },
+  "unverified": {
+    "reason": "Withheld from the picks because the item could not be verified end to end; the build cannot pick these until a curator restores them.",
+    "checkedOn": "2026-10-05",
+    "items": [
+      {
+        "isbn": "9780985206703",
+        "was": [
+          "t_psychosis.md family",
+          "exp_family.md family"
+        ],
+        "finding": "Title and author confirmed (Xavier Amador, I Am Not Sick I Don't Need Help!, via OpenAlex title search), but the ISBN itself did not resolve in Open Library or Crossref, so the edition the library names is unconfirmed. Restore after confirming the ISBN against a catalogue."
+      }
+    ]
+  }
+}
