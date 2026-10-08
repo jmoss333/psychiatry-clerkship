@@ -1,12 +1,16 @@
 import { test, expect } from '@playwright/test';
 import { isResidentProject } from './audience.js';
+import { LANDING, TODAY_TAB } from './landing.js';
 
 const PHONE = { width: 390, height: 844 };
 const privateTerms = /appBridge|appReflection|\bpmhnp\b|\brevisit\b/i;
 
+// Choosing APP ends setup on the landing (FD_LANDING_VIEW, fd_wire.js); On shift is its Today tab.
 async function enterApp(page) {
   await page.goto('/');
   await page.locator('[data-fd-role="app"]').click();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  await page.locator(TODAY_TAB).click();
   await expect(page.locator('.fd-app')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'On shift', exact: true })).toBeVisible();
 }
@@ -40,6 +44,9 @@ test('APP entry is absent from MS3 and available only on the resident preview', 
 
   await expect(appChoice).toBeVisible();
   await appChoice.click();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  expect(new URL(page.url()).search).toBe(LANDING.search);
+  await page.locator(TODAY_TAB).click();
   await expect(page.locator('.fd-app__bridge-choice')).toHaveCount(2);
   await expect(page.locator('.fd-app__resource')).toHaveCount(8);
   await expect(page.locator('[data-fd-app-shift]')).toHaveCount(3);
@@ -85,6 +92,9 @@ test('APP change practice is keyboard-operable, non-evaluative, and private', as
   await page.goto('/');
   const appChoice = await tabTo(page, '[data-fd-role="app"]');
   await expect(appChoice).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  await page.locator(TODAY_TAB).focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('.fd-app')).toBeVisible();
 
