@@ -44,10 +44,12 @@ function scannedFiles() {
   return [...set].sort();
 }
 
-// Comments may name the retired wording on purpose (they explain why it went); UI may not.
+// JS comments may name the retired wording on purpose (they explain why it went); UI may not.
+// HTML comments are deliberately NOT stripped: none carries the wording today, and a regex
+// "sanitiser" for <!-- --> is exactly what CodeQL flags (js/incomplete-multi-character-
+// sanitization) -- a scan that over-reports a comment is the safe direction here anyway.
 function stripComments(src) {
-  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/(^|[^:'"\\])\/\/[^\n]*/g, '$1');
+  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"\\])\/\/[^\n]*/g, '$1');
 }
 
 const FILES = scannedFiles();
