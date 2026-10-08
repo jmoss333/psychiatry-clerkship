@@ -173,6 +173,14 @@ Acceptance:
 - Dr. Moss reviews `media_map.json`. Setting `status:"approved"` is a content PR with no code.
 - Add the table surfaces one at a time, each with its own small PR.
 
+#### Activation is signature-bound (Dr. Moss, 2026-10-06; built in #1001)
+Approval is not only a PR review. What a page shows must be inside that page's signature:
+- **Per-page binding.** For each approved entry, `python3 13_Faculty_Resources/_automation/site_build/media_index.py --write` writes `media_resolved/<slug>.json`: the complete resolved recommendation the page renders (picks; titles, authors, descriptions and links from the libraries; the offer/safety lines from `topic_meta.json`; the site scope). `shipped_pages.py --write` then lists that file as the page's `extraSources`, so it is hashed into the page's signature and appears in the console's **Review bank contents** (signing is gated on opening it).
+- **What reopens review.** Any upstream change that alters what a page shows — a picked library line, a guidance string, a pick, a site scope — changes that page's file and drifts only that page to pending. The build refuses a missing, stale or orphaned file. Curator notes (`why`, `gap`), dates, `status`, unpicked library lines and every governance field (`facultyReview`, signatures) are not in the file, so editing a note or signing a page never reopens one. Not used: binding the whole `media_map.json`, which would reopen all seven pages on any edit and miss library changes.
+- **Page context.** The faculty preview renders the same "Beyond this page" block after the page body, so the reviewer sees the recommendations in place, not a keys-only map. The preview shows the deployed site, so re-sign after the approval has published (the console's "What learners see" panel says when).
+- **Approval PR steps.** (1) Set `"status": "approved"`. (2) Run `media_index.py --write`, then `shipped_pages.py --write`. (3) Commit the resolved files, the map and `shipped_pages.json` together. The anchor pages then render as pending (registration). (4) After publish, re-sign each page in the console.
+- **`sites` scope.** An entry may carry `"sites": ["ms3"]` (a subset of where its anchor ships) to keep a pick off a site; the scope is part of the signed file.
+
 ---
 
 ## Files

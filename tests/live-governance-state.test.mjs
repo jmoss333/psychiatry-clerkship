@@ -140,6 +140,12 @@ const REGISTRY = Object.freeze({
     why: 'Reads real topic_meta.json content for the Front Door index; the kit test requires `attested` to '
       + "follow each kit page's own facultyReview and reports an unattested kit protocol as a diagnostic.",
   },
+  'tests/fd-reader-media.test.mjs': {
+    kind: 'invariant',
+    why: 'Reads topic_meta.json only for the two libraries\' clinicalWorkflow say/safety lines, which no review '
+      + 'state changes; the media index it renders is resolved from the live map with status flipped in memory, and '
+      + "nothing it asserts reads a facultyReview block, a ledger row or a pending count.",
+  },
   'tests/fd-library.test.mjs': {
     kind: 'invariant',
     why: 'Real Essentials renders with its pending count computed from the same index and compared with the '
@@ -179,6 +185,12 @@ const REGISTRY = Object.freeze({
     kind: 'fixture',
     why: 'Reads the served governance.json and topic_meta.json, then pins each governance branch with a '
       + 'controlled fixture (#729). Playwright, so not rehearsed here.',
+  },
+  'tests/smoke/faculty-console.spec.js': {
+    kind: 'invariant',
+    why: 'Reads the served topic_meta.json only for the two libraries\' clinicalWorkflow say/safety lines in the '
+      + '"Beyond this page" preview test, which no review state changes; every governance branch it exercises is a '
+      + 'synthetic ledger or bank it serves itself. Playwright, so not rehearsed here.',
   },
   'tests/smoke/qbank-retired.spec.js': {
     kind: 'fixture',

@@ -231,6 +231,19 @@ if _missing_shell or _stale_shell:
     for needle in _missing_shell: print("   - missing:",repr(needle))
     for needle in _stale_shell: print("   - stale:",repr(needle))
     raise SystemExit(1)
+# "Beyond this page" (README_MEDIA.md M1): the copied index.html carries the MS3 media index,
+# inlined by build_deploy.py. Swap in the resident one -- an anchor that does not ship here is
+# skipped -- by matching that exact inlined value, so a drifted needle aborts the build rather
+# than shipping MS3 picks to residents.
+import media_index as _media_index
+_media_ms3_inline="var FD_MEDIA=%s;"%frontdoor_catalog._inline_json(_media_index.build_or_abort(LIB,"ms3"))
+_media_res=_media_index.build_or_abort(LIB,"res")
+if ix.count(_media_ms3_inline)!=1:
+    print("BUILD ABORTED — the MS3 FD_MEDIA value is missing or duplicated in the copied index.html")
+    raise SystemExit(1)
+ix=ix.replace(_media_ms3_inline,"var FD_MEDIA=%s;"%frontdoor_catalog._inline_json(_media_res))
+open(OUT+"/media_index.json","w",encoding="utf-8").write(_media_index.serialize(_media_res))
+print("media index (res): status=%s, %d page(s) render"%(_media_res["status"],len(_media_res["pages"])))
 open(OUT+"/index.html","w",encoding="utf-8").write(ix)
 
 # ---- resident-level reasoning cases: same tool, harder audience-specific payload ----

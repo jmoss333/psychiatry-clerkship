@@ -344,6 +344,106 @@ function fdReaderThread(idx, st, item, readerWeek, inWeek, neighbours){
     '<ul class="fd-nextthread__list">'+rows+'</ul></nav>';
 }
 
+/* "Beyond this page" (README_MEDIA.md M2, direction B): optional podcast and book picks after
+   "Next in this thread", before the prev/next footer. Data is the build-inlined media index
+   (media_index.py over media_map.json), riding on st.thread.media like the pairings do. Every
+   title, author, description, link and guidance line is the libraries' own text, resolved at
+   build time; the only words here are the labels below. Nothing is stored and nothing is counted:
+   the block never reaches Today, the week list, due reviews or any progress state. A draft map
+   inlines no pages, so the block is absent everywhere until the curator approves it.
+
+   The audience switch is two buttons with aria-pressed (data-media-side), shown only when both
+   sides exist; spa_index.html's delegated click handler flips them in place and moves focus to the
+   first card, so the choice is transient (no state, no URL). "Bring to family meeting" reuses the
+   existing capture dialog (data-capture-open) prefilled with titles and authors only
+   (data-cap-prefill); nothing is saved until the learner presses Save. Library links carry
+   data-media-anchor so the shell can scroll to the category heading on arrival.
+
+   Placement is structural: the block follows the article body, so it can never sit above a
+   build-injected crisis block or inside a governance notice. On a safety-kit page it renders as
+   plain rows (fd-beyond--quiet), with no visual weight beyond the thread rows above it. */
+var FD_MEDIA_PODCAST_NAME='Psychiatry & Psychotherapy Podcast';
+function fdReaderMediaListen(entry, guidance){
+  var out='<div class="fd-beyond__cards">', items=entry.listen||[], i, ep;
+  for(i=0;i<items.length;i++){
+    ep=items[i];
+    out+='<div class="fd-beyond__card" tabindex="-1">'+
+      '<p class="fd-beyond__kicker">For you</p>'+
+      '<p class="fd-beyond__name">Episode '+fdEsc(ep.n)+': '+fdEsc(ep.title)+'</p>'+
+      '<p class="fd-beyond__meta">'+fdEsc(FD_MEDIA_PODCAST_NAME)+' · '+fdEsc(ep.category)+'</p>'+
+      '<a class="fd-beyond__link" href="'+fdEsc(ep.url)+'" target="_blank" rel="noopener noreferrer" '+
+        'aria-label="Episode '+fdEsc(ep.n)+' on YouTube (opens in a new tab)">YouTube ↗</a>'+
+    '</div>';
+  }
+  out+='</div>';
+  if(guidance.listenSafety) out+='<p class="fd-beyond__note">'+fdEsc(guidance.listenSafety)+'</p>';
+  if(entry.listenAll) out+='<p class="fd-beyond__all"><a href="?page='+fdEsc(entry.listenAll.ref)+
+    '#'+fdEsc(entry.listenAll.anchor)+'" data-media-anchor="'+fdEsc(entry.listenAll.anchor)+'">All '+
+    fdEsc(entry.listenAll.category)+' episodes</a></p>';
+  return out;
+}
+function fdReaderMediaFamily(entry, guidance){
+  var out='<div class="fd-beyond__cards">', items=entry.family||[], prefill=[], i, bk;
+  for(i=0;i<items.length;i++){
+    bk=items[i];
+    prefill.push(bk.title+(bk.author?' — '+bk.author:''));
+    out+='<div class="fd-beyond__card" tabindex="-1">'+
+      '<p class="fd-beyond__kicker fd-beyond__kicker--family">For the family</p>'+
+      '<p class="fd-beyond__name">'+fdEsc(bk.title)+
+        (bk.author?' <span class="fd-beyond__by">· '+fdEsc(bk.author)+'</span>':'')+'</p>'+
+      (bk.description?'<p class="fd-beyond__desc">'+fdEsc(bk.description)+'</p>':'')+
+      '<a class="fd-beyond__link" href="?page=book_library.md#'+fdEsc(bk.anchor)+'" '+
+        'data-media-anchor="'+fdEsc(bk.anchor)+'">In the Book Library</a>'+
+    '</div>';
+  }
+  out+='</div>';
+  if(guidance.familySay) out+='<div class="fd-beyond__offer"><strong>How to offer it:</strong> '+
+    fdEsc(guidance.familySay)+'</div>';
+  if(guidance.familySafety) out+='<p class="fd-beyond__safety">'+fdEsc(guidance.familySafety)+'</p>';
+  out+='<div class="fd-beyond__actions">'+
+    '<button type="button" class="fd-btn fd-btn--ghost fd-beyond__bring" data-capture-open '+
+      'data-cap-prefill="'+fdEsc(prefill.join('; '))+'">＋ Bring to family meeting</button>'+
+    (entry.practiceRef?'<a class="fd-beyond__practice" href="?tool='+fdEsc(entry.practiceRef)+'">'+
+      'Practice the offer in Family Systems →</a>':'')+
+  '</div>';
+  if(entry.familyAll) out+='<p class="fd-beyond__all"><a href="?page='+fdEsc(entry.familyAll.ref)+
+    '#'+fdEsc(entry.familyAll.anchor)+'" data-media-anchor="'+fdEsc(entry.familyAll.anchor)+'">All '+
+    fdEsc(entry.familyAll.category)+' books</a></p>';
+  return out;
+}
+function fdReaderMedia(media, ref, quiet){
+  var pages=media&&media.pages, entry=pages&&Object.prototype.hasOwnProperty.call(pages, ref)?pages[ref]:null;
+  if(!entry) return '';
+  /* The entry's own guidance lines are the ones its page signs (media_resolved/<slug>.json); a
+     top-level `guidance` is accepted only as a fallback for hand-built fixtures. */
+  var guidance=entry.guidance||media.guidance||{};
+  var hasListen=!!(entry.listen&&entry.listen.length), hasFamily=!!(entry.family&&entry.family.length);
+  if(!hasListen&&!hasFamily) return '';
+  var both=hasListen&&hasFamily;
+  var out='<section class="fd-beyond'+(quiet?' fd-beyond--quiet':'')+'" aria-labelledby="fd-beyond-title">'+
+    '<div class="fd-beyond__head"><h2 class="fd-beyond__title" id="fd-beyond-title">Beyond this page</h2>'+
+    '<span class="fd-beyond__tag">Suggested, not required</span></div>';
+  if(both){
+    out+='<div class="fd-beyond__switch" role="group" aria-label="Who it is for">'+
+      '<button type="button" class="fd-beyond__opt" data-media-side="listen" aria-pressed="true" '+
+        'aria-controls="fd-beyond-listen">For you · listen</button>'+
+      '<button type="button" class="fd-beyond__opt" data-media-side="family" aria-pressed="false" '+
+        'aria-controls="fd-beyond-family">For the family · read</button>'+
+    '</div>';
+  }
+  if(hasListen) out+='<div class="fd-beyond__panel" id="fd-beyond-listen" data-media-panel="listen">'+
+    fdReaderMediaListen(entry, guidance)+'</div>';
+  if(hasFamily) out+='<div class="fd-beyond__panel" id="fd-beyond-family" data-media-panel="family"'+
+    (both?' hidden':'')+'>'+fdReaderMediaFamily(entry, guidance)+'</div>';
+  out+='</section>';
+  return out;
+}
+function fdReaderIsSafetyPage(idx, ref){
+  var kit=(idx&&idx.kit)||[];
+  for(var i=0;i<kit.length;i++){ if(kit[i]&&kit[i].item&&kit[i].item.ref===ref) return true; }
+  return false;
+}
+
 /* Mobile fixed bar -- ALWAYS emitted, sibling of .fd-reader (see header comment; this is the
    assertion tests/fd-reader.test.mjs pins hardest). CLASS-INVENTORY's ⚠ trap: the primary
    button's label MUST be wrapped in a bare <span> (`.fd-actionbar .fd-btn--primary span` supplies
@@ -474,6 +574,7 @@ function fdReader(index, state, bodyHtml){
   article+=fdReaderActions(item, doneLabel, backLabel, isDone,
     inWeek?fdReaderNextLink(neighbours.next, readerWeek):'');
   article+=fdReaderThread(idx, st, item, readerWeek, inWeek, neighbours);
+  if(!isTool) article+=fdReaderMedia((st.thread||{}).media, item.ref, fdReaderIsSafetyPage(idx, item.ref));
   article+=fdReaderPrevNext(neighbours);
   article+='</div>'; /* .fd-article */
 
