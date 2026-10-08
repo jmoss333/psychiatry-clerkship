@@ -25,6 +25,10 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { scrubInheritedGitEnv } from './_git_env.mjs';
+
+// Fixtures must never inherit the caller's repository (including from a git hook).
+scrubInheritedGitEnv();
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const QUIZZES = '07_Evidence_and_Reading/Landmark_Trials/quizzes.json';
@@ -45,6 +49,7 @@ const COPIED = [
 function run(tool, root, args = []) {
   return spawnSync('python3', [path.join(repo, 'bin', tool), '--root', root, ...args], {
     cwd: repo,
+    env: { ...process.env, CLERKSHIP_PR_BASE: '' },
     encoding: 'utf8',
     timeout: 120_000,
   });
@@ -59,6 +64,14 @@ function withCopy(fn) {
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       fs.copyFileSync(path.join(repo, rel), dest);
     }
+    const git = (...args) => {
+      const r = spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' });
+      assert.equal(r.status, 0, r.stderr);
+    };
+    git('init', '-q');
+    git('add', '.');
+    git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'trusted base');
+    git('update-ref', 'refs/remotes/origin/main', 'HEAD');
     return fn(root);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -289,4 +302,109 @@ test('stability: CLI names an acknowledgment, explicitly disclaims migration, an
   const obsolete = run('check_deck_card_stability.py', repo, ['--rekey-learner-schedules', 'not a migration']);
   assert.equal(obsolete.status, 2);
   assert.match(obsolete.stderr, /unrecognized arguments/);
+});
+
+for (const change of ['swap', 'delete', 'remove deck']) {
+  test(`stability history: deleting/regenerating or manually replacing the pin cannot hide ${change}`, () => {
+    withCopy(root => {
+      const data = readJson(root, QUIZZES);
+      const deck = data.decks[0];
+      if (change === 'swap') [deck.questions[0], deck.questions[1]] = [deck.questions[1], deck.questions[0]];
+      if (change === 'delete') { deck.questions.pop(); deck.n--; data.questionCount--; }
+      if (change === 'remove deck') { data.decks.shift(); data.deckCount--; data.questionCount -= deck.n; }
+      writeJson(root, QUIZZES, data);
+      fs.unlinkSync(path.join(root, 'quizzes.fingerprints.json'));
+      const refused = run('check_deck_card_stability.py', root, ['--update-fingerprints']);
+      assert.equal(refused.status, 1, refused.stdout);
+      assert.ok(!fs.existsSync(path.join(root, 'quizzes.fingerprints.json')), 'refusal writes nothing');
+      const accepted = run('check_deck_card_stability.py', root, ['--update-fingerprints', '--acknowledge-positional-id-breakage', 'fixture: deliberate change']);
+      assert.equal(accepted.status, 0, accepted.stdout);
+      assert.equal(run('check_deck_card_stability.py', root).status, 0);
+      const pin = readJson(root, 'quizzes.fingerprints.json');
+      pin.rekeys = [];
+      writeJson(root, 'quizzes.fingerprints.json', pin);
+      const replaced = run('check_deck_card_stability.py', root);
+      assert.equal(replaced.status, 1, replaced.stdout);
+      assert.match(replaced.stdout, /acknowledg/i);
+    });
+  });
+}
+
+test('stability history: unavailable history fails closed even when regenerating', () => {
+  withCopy(root => {
+    const r = run('check_deck_card_stability.py', root, ['--base', 'missing-history', '--update-fingerprints']);
+    assert.equal(r.status, 2, r.stdout);
+    assert.match(r.stdout, /COULD NOT CHECK/);
+  });
+});
+
+test('stability history: prior acknowledgements are immutable and cannot authorize a new break', () => {
+  withCopy(root => {
+    const pinPath = 'quizzes.fingerprints.json';
+    const old = { date: '2026-10-01', reason: 'previous approved change', shifts: ['AR-01#0', 'AR-01#1'] };
+    const pin = readJson(root, pinPath);
+    pin.rekeys = [old];
+    writeJson(root, pinPath, pin);
+    const git = (...args) => {
+      const r = spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' });
+      assert.equal(r.status, 0, r.stderr);
+      return r.stdout.trim();
+    };
+    git('add', pinPath);
+    git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'previous acknowledgement');
+    git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+    for (const replacement of [[], [{ ...old, reason: 'rewritten history' }]]) {
+      writeJson(root, pinPath, { ...pin, rekeys: replacement });
+      for (const args of [[], ['--update-fingerprints']]) {
+        const r = run('check_deck_card_stability.py', root, args);
+        assert.equal(r.status, 1, r.stdout);
+        assert.match(r.stdout, /append-only prefix/);
+      }
+    }
+    writeJson(root, pinPath, pin);
+    const data = readJson(root, QUIZZES);
+    [data.decks[0].questions[0], data.decks[0].questions[1]] = [data.decks[0].questions[1], data.decks[0].questions[0]];
+    writeJson(root, QUIZZES, data);
+    fs.unlinkSync(path.join(root, pinPath));
+    assert.equal(run('check_deck_card_stability.py', root, ['--update-fingerprints']).status, 1);
+    const updated = run('check_deck_card_stability.py', root, ['--update-fingerprints', '--acknowledge-positional-id-breakage', 'new approved change']);
+    assert.equal(updated.status, 0, updated.stdout);
+    const fresh = readJson(root, pinPath);
+    assert.deepEqual(fresh.rekeys[0], old);
+    assert.equal(fresh.rekeys.length, 2);
+    fresh.rekeys.pop();
+    writeJson(root, pinPath, fresh);
+    assert.equal(run('check_deck_card_stability.py', root).status, 1, 'old acknowledgement cannot be replayed');
+  });
+});
+
+test('stability history: missing pin history and missing git both fail closed', () => {
+  withCopy(root => {
+    const git = (...args) => {
+      const r = spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' });
+      assert.equal(r.status, 0, r.stderr);
+    };
+    git('rm', 'quizzes.fingerprints.json');
+    git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'base with no pin');
+    git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+    const missing = run('check_deck_card_stability.py', root, ['--update-fingerprints']);
+    assert.equal(missing.status, 2, missing.stdout);
+    assert.match(missing.stdout, /required fingerprint history missing/);
+    fs.rmSync(path.join(root, '.git'), { recursive: true });
+    const checked = run('check_deck_card_stability.py', root, ['--update-fingerprints']);
+    assert.equal(checked.status, 2, checked.stdout);
+    assert.match(checked.stdout, /history unavailable/);
+  });
+});
+
+test('stability history: explicitly selecting this branch tip is not a trusted base', () => {
+  withCopy(root => {
+    const r = run('check_deck_card_stability.py', root, ['--base', 'HEAD']);
+    assert.equal(r.status, 2, r.stdout);
+    assert.match(r.stdout, /explicit history base equals HEAD/);
+    const fromEnv = spawnSync('python3', [path.join(repo, 'bin/check_deck_card_stability.py'), '--root', root], {
+      encoding: 'utf8', env: { ...process.env, CLERKSHIP_PR_BASE: 'HEAD' },
+    });
+    assert.equal(fromEnv.status, 2, fromEnv.stdout);
+  });
 });

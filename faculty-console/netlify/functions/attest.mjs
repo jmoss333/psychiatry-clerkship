@@ -1612,7 +1612,8 @@ function sectionKey(path, section) {
     ? section.text
     : canonicalJson(Object.hasOwn(section, 'record') ? section.record
       : Object.hasOwn(section, 'records') ? section.records : section.value);
-  return createHash('sha1').update(`${path}\u0000${section.unit}\u0000${content}`, 'utf8').digest('hex');
+  // Identity is visible review content too; a renamed section must be opened again.
+  return createHash('sha1').update(canonicalJson([path, section.id, section.title, section.unit, content]), 'utf8').digest('hex');
 }
 
 /**
