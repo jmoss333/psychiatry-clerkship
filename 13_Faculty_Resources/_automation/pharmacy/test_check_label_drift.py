@@ -602,6 +602,126 @@ class PacketTest(unittest.TestCase):
         self.assertEqual(self.render(record, ledger), self.render(record, ledger))
 
 
+class OELabelDeltaTest(unittest.TestCase):
+    """oe_label_delta.py: ask OpenEvidence what a label change does to the card, verify the answer."""
+
+    @classmethod
+    def setUpClass(cls):
+        import oe_label_delta as oe
+        cls.oe = oe
+
+    CARD = {"id": "testdrug", "generic": "testdrug", "dailymedSetId": SET_ID,
+            "dosing": {"titration": "Titrate to the usual range.", "labelLink": "https://x"},
+            "flags": {"qtcRisk": "Low"}, "evidenceIds": ["e1"],
+            "pearls": {"t1": ["Watch for sedation.", "Check levels."]},
+            "provenance": {"fieldClasses": {"dosing.titration": "J", "dosing.labelLink": "L",
+                                            "flags": "R", "pearls": "J", "evidenceIds": "J"}}}
+
+    def row(self):
+        pin, _ = drift.pin_entry(drift.parse_spl(V3), [], "x")
+        texts = drift.section_texts(pin, drift.parse_spl(V3), drift.parse_spl(V4_DOSING),
+                                    ["2.4", "MEDICATION GUIDE"])
+        texts["MEDICATION GUIDE"] = {"old": None, "new": "A patient guide sentence.", "oldStatus": "absent"}
+        return {"agent": "testdrug", "observedOn": "2026-10-10", "fromVersion": 3, "toVersion": 4,
+                "fromDate": "2026-01-01", "toDate": "2026-02-01", "texts": texts}
+
+    NEW = "Dosages above 24 mg daily may be appropriate."
+
+    def test_claims_are_the_card_text_with_stable_ids_and_no_identifiers(self):
+        self.assertEqual(self.oe.claims(self.CARD), [
+            ("dosing.titration", "Titrate to the usual range."),
+            ("flags.qtcRisk", "Low"),
+            ("pearls.t1.0", "Watch for sedation."),
+            ("pearls.t1.1", "Check levels."),
+        ])
+
+    def test_the_prompt_lists_every_claim_and_only_what_changed(self):
+        prompt = self.oe.build_prompt(self.CARD, self.row())
+        for cid, _ in self.oe.claims(self.CARD):
+            self.assertIn("- %s:" % cid, prompt)
+        self.assertIn("NEW: " + self.NEW, prompt)
+        self.assertIn("REMOVED (context only, never quote): Dosages above the usual range may be "
+                      "appropriate for some patients.", prompt)
+        self.assertNotIn("An untitled block folds in.", prompt)       # unchanged sentence
+        self.assertNotIn("patient guide", prompt)                     # Medication Guide left out
+
+    def answer(self, **override):
+        lines = {
+            "dosing.titration": 'CLAIM dosing.titration | CONTRADICTED | "%s"' % self.NEW,
+            "flags.qtcRisk": "CLAIM flags.qtcRisk | SILENT",
+            "pearls.t1.0": "- **CLAIM** `pearls.t1.0` | **SILENT**",
+            "pearls.t1.1": "CLAIM pearls.t1.1 | SILENT",
+        }
+        lines.update(override)
+        return "Summary: one claim moved.\n" + "\n".join(v for v in lines.values() if v) + "\n"
+
+    def test_a_complete_verbatim_answer_passes_and_sorts_contradictions_first(self):
+        verdicts, problems = self.oe.verify(self.CARD, self.row(), self.oe.parse_answer(self.answer()))
+        self.assertEqual(problems, [])
+        self.assertEqual((verdicts[0]["claim"], verdicts[0]["verdict"]), ("dosing.titration", "CONTRADICTED"))
+
+    def test_an_answer_that_cannot_be_trusted_says_why(self):
+        cases = {
+            "missing": ({"pearls.t1.1": None}, "has no verdict"),
+            "index dropped": ({"pearls.t1.1": "CLAIM pearls.t1 | SILENT"}, "unknown claim id"),
+            "invented id": ({"flags.extra": "CLAIM flags.extra | SILENT"}, "unknown claim id"),
+            "paraphrase": ({"dosing.titration": 'CLAIM dosing.titration | CONTRADICTED | "Doses above 24 mg are fine."'},
+                           "not verbatim"),
+            "stitched": ({"dosing.titration": 'CLAIM dosing.titration | NARROWED | "Dosages above ... appropriate."'},
+                         "ellipsis"),
+            "old text": ({"dosing.titration": 'CLAIM dosing.titration | SUPPORTED | "Titrate to response."'},
+                         "not verbatim"),                             # unchanged, so never shown
+            "silent quote": ({"flags.qtcRisk": 'CLAIM flags.qtcRisk | SILENT | "%s"' % self.NEW}, "SILENT but quotes"),
+        }
+        for name, (override, expected) in cases.items():
+            with self.subTest(case=name):
+                _, problems = self.oe.verify(self.CARD, self.row(),
+                                             self.oe.parse_answer(self.answer(**override)))
+                self.assertTrue(any(expected in p for p in problems), problems)
+
+    def test_cli_prompt_check_and_save(self):
+        ws = Workspace(self, receipt())
+        ledger = Path(ws.dir.name) / "ledger.json"
+        row = self.row(); row["agent"] = "lithium"                     # a card that exists
+        ledger.write_text(json.dumps({"schemaVersion": 1, "lastChecked": "2026-10-10", "drifts": [row]}))
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(self.oe.main(["prompt", "lithium", "--ledger", str(ledger)]), 0)
+        self.assertIn("NEW: " + self.NEW, out.getvalue())
+        answer = Path(ws.dir.name) / "answer.md"
+        answer.write_text('CLAIM dosing.titration | CONTRADICTED | "%s"\n' % self.NEW)
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = self.oe.main(["check", "lithium", str(answer), "--ledger", str(ledger), "--save"])
+        self.assertEqual(code, 1)                                       # the other claims are missing
+        saved = json.loads(self.oe.results_path(ledger, "lithium", 4).read_text())
+        self.assertFalse(saved["complete"])
+        with contextlib.redirect_stderr(err):
+            self.assertEqual(self.oe.main(["prompt", "nodrug", "--ledger", str(ledger)]), 2)
+            self.assertEqual(self.oe.main(["prompt", "lithium", "--ledger", str(ledger) + ".absent"]), 2)
+            answer.write_text("no claim lines here")
+            self.assertEqual(self.oe.main(["check", "lithium", str(answer), "--ledger", str(ledger)]), 2)
+
+    def test_the_packet_shows_the_checklist_or_how_to_get_it(self):
+        import render_review_packet as packet
+        row = self.row(); row.update(agent="lithium", fields=["dosing"])
+        ledger = {"schemaVersion": 1, "lastChecked": "2026-10-10", "drifts": [row]}
+        pharmacy = json.loads(drift.PHARMACY.read_text(encoding="utf-8"))
+        record = copy.deepcopy(next(r for r in pharmacy["records"] if r["id"] == "lithium"))
+        record["facultyReview"] = {"status": "reviewed", "lastReviewed": "2026-09-29"}
+        receipt_doc = json.loads(drift.RECEIPT.read_text(encoding="utf-8"))
+        today = datetime.date(2026, 10, 12)
+        text = packet.render([record], receipt_doc, ledger, today)
+        self.assertIn("oe_label_delta.py prompt lithium", text)
+        result = {"complete": True, "problems": [], "verdicts": [
+            {"claim": "dosing.titration", "text": "Titrated to a trough.", "verdict": "CONTRADICTED",
+             "quote": self.NEW, "verified": True},
+            {"claim": "pk.halfLifeHours", "text": "24", "verdict": "SILENT", "quote": None, "verified": True}]}
+        text = packet.render([record], receipt_doc, ledger, today, oe={("lithium", 4): result})
+        self.assertIn("**OpenEvidence claim check (verified):**", text)
+        self.assertIn("- [ ] **CONTRADICTED** `dosing.titration`: Titrated to a trough.", text)
+        self.assertIn("Verdicts: CONTRADICTED 1, SILENT 1.", text)
+
+
 class CommittedPinsTest(unittest.TestCase):
     """The committed label_pins.json against the committed label_receipt.json (CI's step)."""
 
