@@ -37,11 +37,28 @@ its own reviewable commit. Three properties, copied from the ratchet pattern in
 docs/RATCHETS.md:
 
   1. The debt can only shrink. An addition past the cap fails.
-  2. An entry that stops reproducing FAILS AS STALE until it is deleted. Entries are keyed
-     by a hash of the citation's own text, so editing the citation retires its grandfather
-     clause — which is the point: an edited citation is new work.
+  2. An entry that stops reproducing is reported as STALE on every run until it is deleted.
+     Entries are keyed by a hash of the citation's own text, so editing the citation retires
+     its grandfather clause — which is the point: an edited citation is new work. Since
+     2026-10-07 stale WARNS (exit 0) rather than fails — see WHY STALE WARNS below.
   3. It suppresses ONE finding, citation.no_identifier, and nothing else. It can never
      silence a mismatch. A contradicted citation is fixed, not adjudicated.
+
+WHY STALE WARNS (2026-10-07; the deadlock #982 fixed for check_qbank_draft_exposure.py and
+#991 for its sibling). The allowlist lives in bin/, a governance path; the three grandfathered
+citations live on case-of-the-week pages (07-20, 08-10, 09-07), which are content.
+bin/check_governance_separation.py L1 forbids both in one diff. With stale = FAIL, the content
+PR that fixes or edits one of those citations failed this gate; adding the allowlist deletion to
+that PR failed L1; and deleting the entry first, in a governance PR, left the still-unfixed
+citation unlisted and failed citation.no_identifier. No PR could ever touch those three lines.
+So the content PR now passes with a WARN naming the entry, and a follow-up governance PR deletes
+it (a content-class commit) and lowers ALLOWLIST_CAP (a policy-class commit).
+What stays FAIL: a citation with no identifier that is not listed (citation.no_identifier —
+which also catches swapping one listed citation for a new unlisted one at an unchanged count);
+a list longer than ALLOWLIST_CAP; a malformed entry, a hand-typed key, a cap desync (only a bin/
+edit can cause those). The cost, stated: until the follow-up lands, a stale entry still occupies
+a cap slot (over_cap counts every entry), and if the EXACT citation text it names reappears it is
+honoured again without a FAIL — the key is a hash of that text, so nothing else can match it.
 
 A CATEGORY EXEMPTION ("legacy citations are exempt") was rejected: a category regrows,
 because nothing stops the next citation from joining it. A named, capped list cannot.
@@ -70,7 +87,8 @@ WHAT IS CHECKED, and the scope it is checked over.
                               author list, detectable with no network call at all.
   7. citation.self_attribution  the site owner listed as an author of an external work.
                               #672 inserted "Moss, J." into a paper he did not write.
-  8. allowlist.*              over cap, stale, malformed, or desynchronised from the cap.
+  8. allowlist.*              over cap, malformed, or desynchronised from the cap (FAIL);
+                              stale (WARN — exit 0, printed every run until deleted).
 
   Every mismatch prints the claimed value and the resolved value side by side. "Citation 7
   is wrong" sends someone to guess; "claimed Am J Psychiatry, resolved Br J Addict" is
@@ -556,14 +574,18 @@ def check_attribution(refs, cache, out):
 REQUIRED_ENTRY_FIELDS = ("citationKey", "citation", "path", "reason", "by", "at")
 
 
-def check_allowlist(allowlist, refs, out):
+def check_allowlist(allowlist, refs, out, warn=None):
     """Cap, shape, and staleness. Returns the set of keys the door check may honour.
 
     Staleness is the half that makes this a ratchet rather than a list of excuses: an entry
     whose citation no longer appears in the tree — because it was fixed, edited or deleted —
-    FAILS until someone removes it. Without that, the list only ever grows stale and the cap
-    stops meaning anything, since dead entries keep occupying slots.
+    is reported on every run until someone removes it, and keeps occupying a cap slot until
+    then. It goes to `warn`, not `out` (see WHY STALE WARNS in the module docstring): a FAIL
+    here made those three content pages unfixable under L1. A caller that passes no `warn`
+    list gets the old behaviour, so nothing that imports this function changes silently.
     """
+    if warn is None:
+        warn = out
     entries = (allowlist or {}).get("entries") or []
     declared_cap = (allowlist or {}).get("cap")
 
@@ -603,13 +625,15 @@ def check_allowlist(allowlist, refs, out):
                 f"`python3 bin/check_citation_attribution.py --key '<citation text>'`."))
             continue
         if key not in present:
-            out.append(finding(
+            warn.append(finding(
                 "allowlist.stale",
                 f"{where} ({key}) no longer matches any identifier-less reference in the tree. "
-                f"Either the citation was fixed, edited or removed — all good news. Delete this "
-                f"entry; a grandfather clause that outlives the thing it grandfathers is how a "
-                f"capped list quietly becomes a blanket exemption.\n"
-                f"        was: {str(entry['citation'])[:140]}"))
+                f"Either the citation was fixed, edited or removed — all good news. Remove this "
+                f"entry in a follow-up governance PR (bin/ cannot ride in the content PR that "
+                f"fixed the citation — L1), then lower ALLOWLIST_CAP in its own policy commit; "
+                f"until then it still occupies a cap slot.\n"
+                f"        was: {str(entry['citation'])[:140]}\n"
+                f"        on:  {entry.get('path')}"))
             continue
         honoured.add(key)
     return honoured
@@ -627,36 +651,44 @@ def load_json(path):
         return None, f"{os.path.relpath(path, REPO)} is unreadable: {exc}"
 
 
-def run(repo=REPO, cache=None, allowlist=None, require_identifier=True, out=print):
+def run(repo=REPO, cache=None, allowlist=None, require_identifier=True, out=print,
+        warnings_out=None):
     """The whole exit contract, in-process so --self-test can drive it.
-    Returns (exit_code, findings)."""
+    Returns (exit_code, findings). Findings are failures only; a warning (a stale allowlist
+    entry) never moves the exit code and is appended to `warnings_out` when one is given."""
     refs = collect_references(repo)
     if not refs:
         out("citation attribution: NO REFERENCES FOUND. A pass over an empty set is not a pass "
             "(docs/SILENT_SHRINK_CHECKLIST.md D4) — the scope rule or the tree is wrong.")
         return 2, []
 
-    findings = []
-    honoured = check_allowlist(allowlist, refs, findings)
+    findings, warnings = [], []
+    honoured = check_allowlist(allowlist, refs, findings, warnings)
     check_author_plausibility(refs, findings)
     check_self_attribution(refs, findings)
     check_identifier_door(refs, honoured, findings, require_identifier)
     check_attribution(refs, cache, findings)
 
-    for f in findings:
-        loc = f"{f['path']}:{f['line']}" if f.get("path") else ""
-        out(f"  FAIL  {f['code']:28s} {loc}\n        {f['msg']}" if loc
-            else f"  FAIL  {f['code']:28s} {f['msg']}")
+    for level, items in (("FAIL", findings), ("WARN", warnings)):
+        for f in items:
+            loc = f"{f['path']}:{f['line']}" if f.get("path") else ""
+            out(f"  {level}  {f['code']:28s} {loc}\n        {f['msg']}" if loc
+                else f"  {level}  {f['code']:28s} {f['msg']}")
 
     n_id = sum(1 for r in refs if r.identifier[0])
     n_allowed = len(honoured)
     out(f"citation attribution: {len(refs)} reference(s) in "
         f"{len({r.path for r in refs})} file(s); {n_id} carry an identifier "
         f"({100 * n_id / len(refs):.1f}%), {n_allowed} grandfathered of "
-        f"{ALLOWLIST_CAP} allowed; {len(findings)} finding(s)")
+        f"{ALLOWLIST_CAP} allowed; {len(findings)} finding(s), {len(warnings)} warning(s)")
     if n_allowed < ALLOWLIST_CAP and not findings:
-        out(f"  note: the allowlist is down to {n_allowed} of {ALLOWLIST_CAP}. Lower "
-            f"ALLOWLIST_CAP to {n_allowed} in a policy-only commit to lock the gain in.")
+        first = (f"delete the {len(warnings)} stale entr{'y' if len(warnings) == 1 else 'ies'} "
+                 f"(content-class commit), then " if warnings else "")
+        out(f"  note: the allowlist is down to {n_allowed} of {ALLOWLIST_CAP}. In a follow-up "
+            f"governance PR, {first}lower ALLOWLIST_CAP to {n_allowed} in a policy-only commit "
+            f"to lock the gain in.")
+    if warnings_out is not None:
+        warnings_out.extend(warnings)
     return (1 if findings else 0), findings
 
 
@@ -865,9 +897,62 @@ def self_test():
     stale = {"cap": ALLOWLIST_CAP,
              "entries": [entry("1. Nobody N. A citation that is no longer anywhere in the tree. "
                                "Some Journal. 2019;1:1-2.")]}
+    out, warned = [], []
+    check_allowlist(stale, refs, out, warned)
+    ck("C4 a stale entry warns, not fails", ([f["code"] for f in out], [f["code"] for f in warned]),
+       ([], ["allowlist.stale"]))
+    ck("C4 the warning names the follow-up governance PR",
+       "follow-up governance PR" in warned[0]["msg"], True)
     out = []
     check_allowlist(stale, refs, out)
-    ck("C4 a stale entry fails", [f["code"] for f in out], ["allowlist.stale"])
+    ck("C4 a caller passing no warn list keeps the old FAIL", [f["code"] for f in out],
+       ["allowlist.stale"])
+
+    # ── the deadlock this replaced, end to end, through run()'s exit code ────────────────
+    # A content PR fixes a grandfathered citation (adds a PMID). The allowlist (bin/, governance)
+    # cannot ride in that PR under L1, so its entry goes stale in the same diff.
+    import tempfile
+    page = "08_Cases_and_Simulation/case-of-the-week/x.md"
+    guide = "1. Org A. *Guidance A.* 2024. [Guidance](https://example.org/a)"
+    other = "2. Org B. *Guidance B.* 2024. [Guidance](https://example.org/b)"
+    fixed = "1. Org A. *Guidance A.* 2024. PMID: 12345678"
+    unlisted = "3. Org C. *Guidance C.* 2024. [Guidance](https://example.org/c)"
+    allow = {"cap": ALLOWLIST_CAP, "entries": [entry(guide, page), entry(other, page)]}
+    cache_fixed = {"dois": {}, "pmids": {"12345678": {"status": "resolved", "title":
+                   "Guidance A", "container": "", "year": 2024, "authors": []}}}
+
+    def tree(*lines):
+        d = tempfile.mkdtemp(prefix="cca-selftest-")
+        os.makedirs(os.path.join(d, os.path.dirname(page)))
+        with open(os.path.join(d, page), "w", encoding="utf-8") as fh:
+            fh.write("# Case\n\n## References\n" + "\n".join(lines) + "\n")
+        return d
+
+    import shutil
+    for label, lines, allowlist_, expect_code, expect_fail, expect_warn in (
+        ("baseline: both grandfathered", (guide, other), allow, 0, [], []),
+        ("stale (citation fixed, entry not yet removed) -> WARN, exit 0",
+         (fixed, other), allow, 0, [], ["allowlist.stale"]),
+        ("new unlisted identifier-less citation -> FAIL",
+         (guide, other, unlisted), allow, 1, ["citation.no_identifier"], []),
+        ("swap a listed citation for an unlisted one at the same count -> FAIL",
+         (fixed, unlisted), allow, 1, ["citation.no_identifier"], ["allowlist.stale"]),
+        ("over cap -> FAIL",
+         (guide, other, unlisted),
+         {"cap": ALLOWLIST_CAP, "entries": [entry(t, page) for t in
+                                            (guide, other, unlisted, "4. Org D. *D.* 2024.")]},
+         1, ["allowlist.over_cap"], ["allowlist.stale"]),
+    ):
+        d = tree(*lines)
+        try:
+            warned = []
+            code, found = run(repo=d, cache=cache_fixed, allowlist=allowlist_,
+                              out=lambda *_: None, warnings_out=warned)
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+        ck(f"E2E {label}", (code, sorted({f["code"] for f in found}),
+                            sorted({w["code"] for w in warned})),
+           (expect_code, expect_fail, expect_warn))
 
     # -- the allowlist may never silence a mismatch --
     out = []
@@ -917,7 +1002,8 @@ def self_test():
         return 1
     print(f"self-test: OK — {len(checks)}/{len(checks)} checks passed, covering the four failure "
           f"classes the 2026-09-27 ruling requires (no identifier; identifier on a different "
-          f"paper; allowlist over cap; stale allowlist entry), the real #672 defects, and the "
+          f"paper; allowlist over cap; stale allowlist entry, which warns), the stale/unlisted/"
+          f"swap/over-cap exit codes end to end, the real #672 defects, and the "
           f"live tree against the committed cache and allowlist")
     return 0
 
@@ -951,11 +1037,13 @@ def main():
                   f"a missing input is exit 2, not a pass.")
             return 2
 
+    warnings = []
     code, findings = run(cache=cache, allowlist=allowlist,
-                         require_identifier=args.require_identifier)
+                         require_identifier=args.require_identifier, warnings_out=warnings)
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:
-            json.dump({"generatedAt": today(), "findings": findings}, fh, indent=2)
+            json.dump({"generatedAt": today(), "findings": findings, "warnings": warnings},
+                      fh, indent=2)
             fh.write("\n")
     return 0 if args.report_only else code
 
