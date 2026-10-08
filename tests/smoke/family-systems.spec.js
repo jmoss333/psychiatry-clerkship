@@ -25,8 +25,8 @@ test('practice mode reveal + self-rate writes one FAM# card and stores no free t
   expect(srs.cards[famIds[0]].ivl).toBe(1);            // Good on first encounter → interval 1 day
   expect(srs.cards[famIds[0]].due).toBeGreaterThan(Date.now());
   expect(Object.keys(srs.cards).every((k) => k.startsWith('FAM#'))).toBe(true); // no QB#/TOPIC# fabricated
-  // Family ratings must not touch shared stats: review.html renders Retention as correct/seen,
-  // and a self-rating has no ground-truth correctness to contribute.
+  // Family ratings must not touch shared stats: a self-rating has no ground-truth correctness
+  // to add to the correct/seen tally (sm2_apply_grade.js's stats contract).
   expect((srs.stats || {}).seen || 0).toBe(0);
   expect((srs.stats || {}).totalReviews || 0).toBe(0);
 
