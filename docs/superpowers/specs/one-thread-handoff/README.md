@@ -45,7 +45,10 @@ Where the concept and an existing class conflict, keep the class and change its 
 - **Brand:**
   - 30×30 tile, radius 8, `--fd-terracotta`, glyph "ψ" Georgia 18px in `--fd-on-accent`.
   - Wordmark 14px/700: "Inpatient Psychiatry", or "MMC Psychiatry" via rebrand.
-  - Brand = Home (Today).
+  - Brand = Home (Today). **Deviation (owner, 2026-10-08):** Brand = Home = the landing, set by the
+    one build-time constant `FD_LANDING_VIEW` in `frontdoor/fd_wire.js`. While it is `'essentials'`
+    the brand and the end of first-run setup open Library → Essentials, and Today is reached by its
+    tab; set it back to `'today'` and this line holds as written again.
 - **Search button:**
   - Layout: `flex:1; max-width:440px; margin-left:20px; padding:9px 14px; border:1.5px solid --fd-line-strong; border-radius:999px`; background `--fd-surface`; text 13px `--fd-text-dim`.
   - Label: "Search a symptom, drug, or task…".

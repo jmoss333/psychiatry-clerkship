@@ -3,6 +3,7 @@ import { routeFetchWithRetry } from './net-resilience.js';
 import { audienceOf, isResidentProject } from './audience.js';
 import { webcrypto } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { LANDING, LANDING_VIEW, TODAY_TAB } from './landing.js';
 
 const DESKTOP = { width: 1280, height: 800 };
 const PHONE = { width: 390, height: 844 };
@@ -2046,14 +2047,15 @@ test('legacy aliases canonicalize on load, delegated actions, messages, and hist
   expect(aliasRequests).toEqual([]);
   expect(await page.evaluate(() => localStorage.getItem('cw_last'))).toBeNull();
 
+  // Home is the landing (FD_LANDING_VIEW); Back, Forward and reload walk it like any tab.
   await page.locator('[data-fd-home]').first().click();
-  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
   await page.goBack();
   await expect(page.locator('#pgRoot')).toBeVisible();
   await page.goForward();
-  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
   await page.reload();
-  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
 });
 
 test('initial Home alias persists Today before an immediate canonical reload', async ({ page }) => {
@@ -2760,4 +2762,105 @@ test('reduced motion zeroes the skip-link transition along with the rest of the 
   await expect(page.locator('.fd-today')).toBeVisible();
   const durations = await page.locator('.skip-link').evaluate((el) => getComputedStyle(el).transitionDuration);
   expect(durations.split(',').map((d) => d.trim())).toEqual(['0s']);
+});
+
+// ---- Landing (FD_LANDING_VIEW, owner decision 2026-10-08) -----------------------------------
+// The end of first-run setup and the brand/Home button open Library -> Essentials; a returning
+// learner's bare visit and every deep link keep their own rules. Expectations come from LANDING
+// (tests/smoke/landing.js reads the constant), so these specs hold on either build.
+const landingRole = (testInfo) => (audienceOf(testInfo.project.name) === 'resident' ? 'pgy1' : 'student');
+const LANDING_TODAY_TAB = '.fd-tabs [data-fd-tab="today"]';
+
+async function finishSetup(page, testInfo, week = '1') {
+  await expect(page.getByRole('heading', { name: "Who's this for?" })).toBeVisible();
+  await page.locator(`[data-fd-role="${landingRole(testInfo)}"]`).click();
+  await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toBeVisible();
+  await page.locator(`[data-fd-week="${week}"]`).click();
+}
+
+test('landing: choosing a role lands on the landing; Today, Back and Home behave', async ({ page }, testInfo) => {
+  const runtimeErrors = captureErrors(page);
+  await page.setViewportSize(DESKTOP);
+  await page.goto('/');
+  await finishSetup(page, testInfo);
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  await expect(page.locator(`.fd-tabs [data-fd-tab="${LANDING.tab}"]`)).toHaveAttribute('aria-current', 'page');
+  expect(new URL(page.url()).search).toBe(LANDING.search);
+  if (LANDING_VIEW === 'essentials') {
+    await expect(page.locator('[data-fd-library-view="essentials"]')).toHaveAttribute('aria-pressed', 'true');
+  }
+  // Back from an item opened on the landing returns to the landing.
+  const item = page.locator(`${LANDING.surface} [data-fd-open]:visible`).first();
+  await item.click();
+  await expect(page).toHaveURL(/[?&](page|tool)=/);
+  await page.goBack();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  // Today is one tap away, with the week just chosen and its Now card.
+  await page.locator(LANDING_TODAY_TAB).click();
+  await expect(page.locator('.fd-today__sub')).toContainText('Week 1');
+  await expect(page.locator('.fd-now')).toHaveCount(1);
+  expect(new URL(page.url()).search).toBe('');
+  // Home returns to the landing; Back returns to Today.
+  await page.locator('[data-fd-home]').click();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  expect(new URL(page.url()).search).toBe(LANDING.search);
+  if (LANDING_VIEW === 'essentials') {
+    await page.goBack();
+    await expect(page.locator('.fd-today')).toBeVisible();
+  }
+  expect(runtimeErrors).toEqual([]);
+});
+
+test('landing: a deep link reaches its target through a role choice', async ({ page }, testInfo) => {
+  await page.setViewportSize(DESKTOP);
+  for (const [url, ready, tab] of [
+    ['/?tab=care', '.fd-tabs [data-fd-tab="care"]', 'care'],
+    ['/?tab=today', '.fd-today', 'today'],
+    ['/?tab=library&library=full', '[data-fd-library-view="full"][aria-pressed="true"]', 'library'],
+  ]) {
+    await page.goto(url);
+    await page.evaluate(() => localStorage.clear());
+    await page.goto(url);
+    await finishSetup(page, testInfo);
+    await expect(page.locator(ready).first()).toBeVisible();
+    await expect(page.locator(`.fd-tabs [data-fd-tab="${tab}"]`)).toHaveAttribute('aria-current', 'page');
+    expect(new URL(page.url()).searchParams.get('tab') || 'today', url).toBe(tab);
+  }
+  // A page link never meets the wizard: the role-less reader is a guest on the target.
+  await page.evaluate(() => localStorage.clear());
+  await page.goto('/?page=t_mood.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  await expect(page.locator(LANDING.surface)).toHaveCount(0);
+});
+
+test('landing: a returning learner\'s bare visit restores the stored tab, as before', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  // Seed ONCE so the visit's own saves survive the reload below.
+  await page.addInitScript(() => {
+    if (localStorage.getItem('cw_frontdoor_v1')) return;
+    const now = new Date();
+    now.setHours(12, 0, 0, 0);
+    now.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('cw_rotation_start', start);
+    localStorage.setItem('cw_frontdoor_v1', JSON.stringify({ role: 'staff', tab: 'path', viewWeek: 1, autoAdvance: false }));
+  });
+  await page.goto('/');
+  await expect(page.locator('.fd-tabs [data-fd-tab="path"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.fd-tabs [data-fd-tab="library"]')).not.toHaveAttribute('aria-current', 'page');
+});
+
+test('landing: the Today-only affordances stay one tap from the landing', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await seedCompleteSetup(page, { frontdoor: { tab: 'library' } });
+  await page.goto('/?tab=library');
+  await page.locator('[data-fd-home]').click();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  await page.locator(LANDING_TODAY_TAB).click();
+  // The resume/"Now" card and the week control live on Today.
+  await expect(page.locator('.fd-now')).toHaveCount(1);
+  await expect(page.locator('.fd-today__sub .fd-today__changeweek[data-fd-change-week]')).toHaveText('Change week');
+  // Setting a rotation week is also on Path ("Set as my week") and in Settings.
+  await page.locator('.fd-tabs [data-fd-tab="path"]').click();
+  await expect(page.locator('[data-fd-view-week]').first()).toBeVisible();
 });
