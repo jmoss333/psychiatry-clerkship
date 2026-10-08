@@ -86,12 +86,12 @@ export default defineConfig({
   projects: [
     {
       name: 'nav-ms3',
-      testMatch: ['prepare-for-tomorrow.spec.js', 'nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'pharmacy.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'care-resource-pack.spec.js', 'app-pathway.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rounds-prep.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
+      testMatch: ['a11y-axe.spec.js', 'prepare-for-tomorrow.spec.js', 'nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'pharmacy.spec.js', 'qbank-retired.spec.js', 'aria-live.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'care-resource-pack.spec.js', 'app-pathway.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rounds-prep.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: MS3_URL },
     },
     {
       name: 'nav-res',
-      testMatch: ['prepare-for-tomorrow.spec.js', 'nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'pharmacy.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'care-resource-pack.spec.js', 'app-pathway.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rounds-prep.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
+      testMatch: ['a11y-axe.spec.js', 'prepare-for-tomorrow.spec.js', 'nav-crawl.spec.js', 'contrast.spec.js', 'frozen-colour.spec.js', 'longitudinal-case.spec.js', 'family-systems.spec.js', 'pharmacy.spec.js', 'communication-practice.spec.js', 'ward-capture.spec.js', 'frontdoor-runtime.spec.js', 'front-door.spec.js', 'care-resource-pack.spec.js', 'app-pathway.spec.js', 'tool-expand.spec.js', 'governance-warnings.spec.js', 'mse-builder.spec.js', 'rounds-prep.spec.js', 'rotation-curator.spec.js', 'rotation-edition-v2.spec.js', 'tool-contracts.spec.js'],
       use: { ...devices['Desktop Chrome'], baseURL: RES_URL },
     },
     // Production-only. See CANARY_SHARED_SPECS above for why these are narrower than nav-*.
