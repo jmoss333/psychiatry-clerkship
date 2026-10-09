@@ -1056,6 +1056,73 @@ class DirectToolInjectionTests(unittest.TestCase):
             rendered,
         )
 
+    def test_every_direct_status_variant_is_contained_by_a_named_region_landmark(
+        self,
+    ) -> None:
+        # axe `region` (moderate), 2026-10-07: the block is injected as the first child of
+        # <body>, outside the tool's own <main>, so it was "content not contained by
+        # landmarks" on every directly-opened tool. role="status"/"alert" on the block itself
+        # are not landmarks. Every variant must sit inside exactly one named region, and that
+        # region must be the whole block, so no injected text escapes it.
+        from html.parser import HTMLParser
+
+        class Walk(HTMLParser):
+            def __init__(self) -> None:
+                super().__init__()
+                self.stack: list[dict] = []
+                self.regions: list[dict] = []
+                self.outside: list[str] = []
+
+            def _in_region(self) -> bool:
+                return any(
+                    item.get("role") == "region" and item.get("aria-label")
+                    for item in self.stack
+                )
+
+            def handle_starttag(self, tag, attrs) -> None:
+                attributes = dict(attrs)
+                if attributes.get("role") == "region":
+                    self.regions.append(attributes)
+                elif not self._in_region():
+                    self.outside.append(tag)
+                self.stack.append(attributes)
+
+            def handle_endtag(self, tag) -> None:
+                if self.stack:
+                    self.stack.pop()
+
+            def handle_data(self, data) -> None:
+                if data.strip() and not self._in_region():
+                    self.outside.append(data.strip())
+
+        entries = {
+            "pending-high.html": self.pending_high_entry,
+            "pending-moderate.html": self.pending_moderate_entry,
+            "reviewed.html": self.reviewed_tool_entry,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            tools = Path(temporary)
+            for slug in entries:
+                (tools / slug).write_text(self.source, encoding="utf-8")
+            governance.apply_tool_status(tools, self._document(entries))
+            for slug in entries:
+                rendered = (tools / slug).read_text(encoding="utf-8")
+                block = rendered.split(governance.STATUS_START, 1)[1].split(
+                    governance.STATUS_END, 1
+                )[0]
+                walk = Walk()
+                walk.feed(block)
+                self.assertEqual(len(walk.regions), 1, slug)
+                self.assertEqual(
+                    walk.regions[0].get("aria-label"), "Faculty review status", slug
+                )
+                self.assertEqual(walk.outside, [], slug)
+                self.assertIn("surface-governance-direct", block, slug)
+                # Hidden with the block in a governed embed: no empty landmark in the iframe.
+                self.assertIn(
+                    "html.governed-embed .surface-governance-region{display:none", rendered
+                )
+
     def test_reinjection_replaces_the_prior_block_instead_of_duplicating(self) -> None:
         document = self._document(
             {
