@@ -144,3 +144,25 @@ with tempfile.TemporaryDirectory() as directory:
  assertPreparationTranscript(exported.ms3);
  for(const task of Object.values(data.tasks))for(const route of Object.values(task.routes))for(const text of [task.title,...preparationTeaching(route)])assert.equal(exported.resident.split(text).length-1,0,text);
 });
+
+// Review state is the governance layer's to say, never this guide's own copy (2026-10-09).
+// The boundary hard-coded "Draft teaching guide · Pending faculty review." and every reading's
+// attribution appended "This new wording awaits faculty review." Both kept saying so after the
+// guide was attested on 2026-10-04. The shell already states the live state from the ledger
+// (reviewed.json → governance.json → the shared governance notice when the row is pending or
+// drifted; nothing extra when it is reviewed), so a fixed phrase here can only be redundant or
+// false. Same rule and shape as tests/case-journey-practice.test.mjs for Case Journeys (#1006).
+const REVIEW_CLAIM=/pending|faculty review|attest|reviewed by|approved|awaits? (?:faculty )?review/i;
+test('authored guide copy makes no claim about faculty review state',()=>{
+ const visible=html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ');
+ assert.doesNotMatch(visible,REVIEW_CLAIM,'static page copy (boundary, intro, footer)');
+ const strings=[];(function walk(v){if(typeof v==='string')strings.push(v);else if(v&&typeof v==='object')Object.values(v).forEach(walk);})(data);
+ assert.ok(strings.length>=100,`every pft-data string is checked (${strings.length})`);
+ for(const text of strings)assert.doesNotMatch(text,REVIEW_CLAIM,text);
+ // The renderer appended the phrase to every reading's attribution, so check its literals too.
+ const scripts=[...html.matchAll(/<script(?![^>]*application\/json)[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+ assert.ok(scripts.length>=2,'pft-engine and pft-dom are both checked');
+ const code=scripts.join('\n').replace(/\/\*[\s\S]*?\*\/|^\s*\/\/[^\n]*/gm,'');
+ const claims=(code.match(/'[^'\n]*'|"[^"\n]*"/g)||[]).filter(literal=>REVIEW_CLAIM.test(literal));
+ assert.deepEqual(claims,[],'the renderer adds no review-state string either');
+});
