@@ -154,13 +154,13 @@ with tempfile.TemporaryDirectory() as directory:
 // false. Same rule and shape as tests/case-journey-practice.test.mjs for Case Journeys (#1006).
 const REVIEW_CLAIM=/pending|faculty review|attest|reviewed by|approved|awaits? (?:faculty )?review/i;
 test('authored guide copy makes no claim about faculty review state',()=>{
- const visible=html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ');
+ const visible=html.replace(/<script\b[\s\S]*?<\/script\b[^>]*>|<style\b[\s\S]*?<\/style\b[^>]*>/gi,' ').replace(/<[^>]+>/g,' ');
  assert.doesNotMatch(visible,REVIEW_CLAIM,'static page copy (boundary, intro, footer)');
  const strings=[];(function walk(v){if(typeof v==='string')strings.push(v);else if(v&&typeof v==='object')Object.values(v).forEach(walk);})(data);
  assert.ok(strings.length>=100,`every pft-data string is checked (${strings.length})`);
  for(const text of strings)assert.doesNotMatch(text,REVIEW_CLAIM,text);
  // The renderer appended the phrase to every reading's attribution, so check its literals too.
- const scripts=[...html.matchAll(/<script(?![^>]*application\/json)[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+ const scripts=[...html.matchAll(/<script\b(?![^>]*application\/json)[^>]*>([\s\S]*?)<\/script\b[^>]*>/gi)].map(m=>m[1]);
  assert.ok(scripts.length>=2,'pft-engine and pft-dom are both checked');
  const code=scripts.join('\n').replace(/\/\*[\s\S]*?\*\/|^\s*\/\/[^\n]*/gm,'');
  const claims=(code.match(/'[^'\n]*'|"[^"\n]*"/g)||[]).filter(literal=>REVIEW_CLAIM.test(literal));
