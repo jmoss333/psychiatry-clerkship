@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { TODAY_TAB } from './landing.js';
 import { syntheticMedicationSnapshot } from '../fixtures/medication-review.mjs';
 import { medicationView, prepareMedicationApproval } from '../../faculty-console/netlify/functions/pharmacy-actions.mjs';
 
@@ -2236,6 +2237,8 @@ test.describe.serial('faculty unified attestation workspace', () => {
     await externalTool.close();
     // The study-export surface lives in the internal Progress Reader reached from Today.
     await fullPage.locator('[data-fd-home]').first().click();
+    // Home is the landing (FD_LANDING_VIEW); Today is one tap on.
+    await fullPage.locator(TODAY_TAB).first().click();
     // Today carries the progress link twice since 2026-10-04 (the rail, and a phone copy under the
     // pills); only one is painted at any width.
     await fullPage.locator('[data-fd-progress]:visible').click();

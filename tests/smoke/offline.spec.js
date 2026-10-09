@@ -1,6 +1,7 @@
 /** Browser proof of the emitted worker and Offline availability on both built sites. */
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { TODAY_TAB } from './landing.js';
 
 const offlineModelSource = readFileSync(new URL(
   '../../13_Faculty_Resources/_automation/site_build/frontdoor/fd_offline.js', import.meta.url,
@@ -119,6 +120,8 @@ async function install(page, info, url = '/') {
     if (await choice.count()) await choice.click();
     const week = page.locator('[data-fd-week="1"]:visible');
     if (await week.count()) await week.click();
+    // Setup ends on the landing (FD_LANDING_VIEW); the offline receipt lives on Today.
+    await page.locator(TODAY_TAB).first().click();
   }
   await page.evaluate(() => navigator.serviceWorker.ready);
   if (!(await page.evaluate(() => !!navigator.serviceWorker.controller))) {
@@ -221,6 +224,7 @@ test('offline readiness: first uncontrolled visit does not claim the installed c
   await page.goto('/');
   await page.locator('[data-fd-role="' + (resident(info) ? 'pgy1' : 'student') + '"]:visible').click();
   await page.locator('[data-fd-week="1"]:visible').click();
+  await page.locator(TODAY_TAB).first().click();
   await page.evaluate(() => navigator.serviceWorker.ready);
   expect(await page.evaluate(() => navigator.serviceWorker.controller)).toBeNull();
   await expect(status(page)).toHaveText('Not verified');

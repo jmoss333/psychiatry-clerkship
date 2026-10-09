@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 import { isResidentProject } from './audience.js';
 import { auditEverything, essentialsResourceRefs, essentialsResources, everythingResourceRefs } from './essentials-inventory.js';
+import { LANDING, TODAY_TAB } from './landing.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const PHONE = { width: 390, height: 844 };
@@ -358,6 +359,9 @@ test('reading place: APP practice choices never enter the Front Door store', asy
   test.skip(!isResidentProject(testInfo.project.name), 'APP practice exists only on the resident build');
   await page.goto('/');
   await page.locator('[data-fd-role="app"]:visible').click();
+  // Setup ends on the landing (FD_LANDING_VIEW); On shift is APP's Today tab.
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  await page.locator(TODAY_TAB).click();
   await expect(page.locator('.fd-app')).toBeVisible();
   await page.locator('[data-fd-app-practice-open="training-briefing"]:visible').click();
   await expect(page.locator('.fd-app-practice')).toBeVisible();
@@ -831,7 +835,7 @@ test('a marked primary is metadata only: the controller ships no dock forwarding
   expect(await page.evaluate(() => FD_ACTION_SELECTOR.includes('dock-forward') || FD_ACTION_SELECTOR.includes('dock-browse'))).toBe(false);
 });
 
-test('first run reaches Today; browse mode exposes the exact audience Library', async ({ page }, testInfo) => {
+test('first run reaches the landing (FD_LANDING_VIEW); browse mode exposes the exact audience Library', async ({ page }, testInfo) => {
   const site = audience(testInfo);
   await freezeTime(page);
   await page.goto('/');
@@ -841,9 +845,13 @@ test('first run reaches Today; browse mode exposes the exact audience Library', 
   await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toBeFocused();
   await expect(page.locator('.fd-weektile[data-fd-week]')).toHaveCount(site.weekCount);
   await page.locator('[data-fd-week="1"]').click();
-  await expect(page.locator('.fd-today')).toBeVisible();
-  await expect(page.locator('[data-fd-tab="today"]:visible')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  await expect(page.locator(`[data-fd-tab="${LANDING.tab}"]:visible`)).toHaveAttribute('aria-current', 'page');
+  expect(new URL(page.url()).search).toBe(LANDING.search);
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBe('2026-08-17');
+  // The week just chosen is what Today shows, one tap away.
+  await page.locator(TODAY_TAB).click();
+  await expect(page.locator('.fd-today__sub')).toContainText('Week 1');
 
   await page.evaluate(() => localStorage.clear());
   await page.reload();
@@ -2973,7 +2981,7 @@ test('One Thing First B4: a block past its TTL is pruned; the planner returns an
 // A fresh browser that follows a link to one page reads it without the wizard and is assigned no
 // role (C1); a resource opened from the guest's Today pushes exactly one history entry and Back
 // restores the same primary (C4); the next plain visit asks "Who's this for?" (C2); and the wizard
-// from that state still lands on Today, not on the page read as a guest (C3).
+// from that state lands on the landing (FD_LANDING_VIEW), not on the page read as a guest (C3).
 test('One Thing First C1–C4: a guest reads one linked page, keeps no role, and meets the wizard on the next plain visit', async ({ page }, testInfo) => {
   const site = audience(testInfo);
   await freezeTime(page);
@@ -3008,11 +3016,11 @@ test('One Thing First C1–C4: a guest reads one linked page, keeps no role, and
   // C2 — the next plain visit asks
   await page.goto('/');
   await expect(page.getByRole('heading', { name: "Who's this for?" })).toBeVisible();
-  // C3 — the wizard from that state lands on Today, not on the page read as a guest
+  // C3 — the wizard from that state lands on the landing, not on the page read as a guest
   await page.locator(`[data-fd-role="${site.role}"]`).click();
   await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toBeVisible();
   await page.locator('[data-fd-week="1"]').click();
-  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
   expect(new URL(page.url()).searchParams.get('page')).toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role)).toBe(site.role);
   await expectHealthy(page);
