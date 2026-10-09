@@ -169,7 +169,10 @@ test('pending and unavailable review status stay honest; missing reading preserv
   await page.route('**/governance.json',route=>route.fulfill({json:ledger}));
   await page.goto(`/?tool=${REF}`);
   await expect(page.locator('.governance-notice.pending-compact[role="status"]')).toContainText('Pending faculty review');
-  await expect(guide(page).locator('.boundary')).toContainText('Pending faculty review');
+  // Pending is stated once, by the shell's governance notice from the ledger; the guide's own
+  // boundary makes no review-state claim (it once hard-coded one and kept it after attestation).
+  await expect(guide(page).locator('.boundary')).toContainText('All practice situations are fictional.');
+  await expect(guide(page).locator('.boundary')).not.toContainText('Pending faculty review');
   await choose(page,'note',5);
   await page.route('**/content/doc_oral.md*',route=>route.fulfill({status:404,body:'Not found'}));
   await guide(page).locator('[data-resource="doc_oral.md"]').click();
