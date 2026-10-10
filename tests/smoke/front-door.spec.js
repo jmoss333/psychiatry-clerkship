@@ -1336,6 +1336,199 @@ test('malformed built protocol fails closed with every canonical crisis resource
   await expectHealthy(page);
 });
 
+// ---- Safety drawer decision trees (2026-10-10 spec) ----------------------------------------------
+// Review state is a FIXTURE, never the live ledger: the index is patched after it is built so the
+// kit items read attested (or not) and, for the preview case, the draft flag is on. Trees are
+// walked by STRUCTURE (always the last answer) so an owner edit to the wording or ids keeps
+// these green.
+const SAFETY_NEEDLE = [
+  'var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);',
+  '  var FD_INDEX=FD_CANONICAL_INDEX;',
+].join('\n');
+const SAFETY_MOUNTS = ['fdChromeMount', 'fdCaptureMount', 'fdDockMount', 'content', 'governanceMount'];
+const TREE_REFS = ['pg_suicide.md', 'agitation.md', 'delirium.md'];
+
+async function serveSafetyTrees(page, { attested = true, draft = false } = {}) {
+  await page.route((url) => url.pathname === '/', async (route) => {
+    const response = await routeFetchWithRetry(route);
+    const original = await response.text();
+    expect(original.split(SAFETY_NEEDLE)).toHaveLength(2);
+    const patch = `\n  FD_INDEX.kit.forEach(function(k){k.item.attested=${attested};});`
+      + (draft ? '\n  FD_DRAFT_TREES=true;' : '');
+    await route.fulfill({ response, body: original.replace(SAFETY_NEEDLE, SAFETY_NEEDLE + patch) });
+  });
+}
+async function openProtocol(page, ref) {
+  await page.locator('.fd-safetybtn[data-fd-safety]').click();
+  await page.locator(`.fd-kitrow[data-fd-safety="${ref}"]`).click();
+}
+async function walkToAction(page) {
+  const heading = page.locator('.fd-sheet .fd-tree__heading');
+  for (let step = 0; step < 6 && (await page.locator('.fd-tree__option').count()) > 0; step += 1) {
+    await page.locator('.fd-tree__option').last().focus();
+    await page.keyboard.press('Enter');
+    await expect(heading).toBeFocused();
+  }
+  await expect(page.locator('.fd-tree__verdict')).toBeVisible();
+}
+
+test('each safety tree walks by keyboard to its script and back', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  for (const ref of TREE_REFS) {
+    await page.locator('.fd-safetybtn[data-fd-safety]').click();
+    await page.locator(`.fd-kitrow[data-fd-safety="${ref}"]`).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.fd-sheet.fd-sheet--safety .fd-tree')).toBeVisible();
+    await walkToAction(page);
+    await page.locator('.fd-tree__escalate').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#fdScriptHeading')).toBeFocused();
+    await expect(page.locator('.fd-script__parts dt')).toHaveCount(6);
+    await expect(page.locator('.fd-script__blank').first()).toBeVisible();
+    await page.locator('[data-fd-escalate-close]').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.fd-sheet .fd-tree__heading')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  }
+  await expectHealthy(page);
+});
+
+test('escalation is on the first screen, and Escape from a script closes the drawer', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'pg_suicide.md');
+  const escalate = page.locator('.fd-tree__escalate');
+  await expect(escalate).toHaveAttribute('data-fd-escalate', 'now');
+  await escalate.click();
+  await expect(page.locator('#fdScriptHeading')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  await expect(page.locator('.fd-safetybtn[data-fd-safety]')).toBeFocused();
+  await expectHealthy(page);
+});
+
+test('a double press advances one step', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'agitation.md');
+  await page.locator('.fd-tree__option').first().focus();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-tree__trail li')).toHaveCount(1);
+  await expectHealthy(page);
+});
+
+test('production hides an unattested tree behind its checklist', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page, { attested: false });
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'agitation.md');
+  await expect(page.locator('.fd-tree')).toHaveCount(0);
+  expect(await page.locator('.fd-step').count()).toBeGreaterThanOrEqual(3);
+  await expect(page.locator('.fd-sheet__pending')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('a deploy preview shows an unattested tree under the DRAFT banner', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page, { attested: false, draft: true });
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'agitation.md');
+  await expect(page.locator('.fd-tree__draft[role="note"]')).toBeVisible();
+  await expect(page.locator('.fd-tree__heading')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('tool inputs survive the drawer; the page is inert and paused while it is open', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/?tool=feedback.html');
+  const frameEl = page.locator('#content iframe.toolframe');
+  const tool = frameEl.contentFrame();
+  await tool.locator('#f_msg').fill('Typed before the drawer opened');
+  const before = await frameEl.elementHandle();
+  await tool.locator('body').evaluate(() => {
+    window.__cw = [];
+    window.addEventListener('message', (e) => {
+      if (e.data && /^cw-/.test(e.data.type || '')) window.__cw.push(e.data.type);
+    });
+  });
+  await page.evaluate(() => {
+    const a = document.createElement('audio');
+    let paused = false;
+    Object.defineProperty(a, 'paused', { get: () => paused });
+    a.pause = () => { paused = true; };
+    a.id = 'fdTestAudio';
+    document.getElementById('content').appendChild(a);
+  });
+  await page.locator('.fd-safetybtn[data-fd-safety]').click();
+  for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBe('');
+  expect(await page.locator('#fdOverlayMount').getAttribute('inert')).toBeNull();
+  expect(await page.evaluate(() => document.getElementById('fdTestAudio').paused)).toBe(true);
+  await page.locator('.fd-kitrow[data-fd-safety="agitation.md"]').click();
+  await page.locator('.fd-tree__option').first().click();
+  await page.keyboard.press('Escape');
+  for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBeNull();
+  await expect(page.locator('.fd-safetybtn[data-fd-safety]')).toBeFocused();
+  expect(await before.evaluate((el) => el.isConnected)).toBe(true);
+  expect(await frameEl.evaluate((el, b) => el === b, before)).toBe(true);
+  await expect(tool.locator('#f_msg')).toHaveValue('Typed before the drawer opened');
+  await expect.poll(() => tool.locator('body').evaluate(() => window.__cw)).toEqual(['cw-pause', 'cw-resume']);
+  await expectHealthy(page);
+});
+
+test('Open the full page from a tree releases the page before it mounts', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'delirium.md');
+  await page.locator('.fd-sheet [data-fd-open="delirium.md"]').click();
+  await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBeNull();
+  await expect(page.locator('.fd-article')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('the safety skip control is the second Tab stop and opens the kit', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.skip-safety')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-sheet[role="dialog"]')).toHaveAttribute('aria-label', 'Safety kit');
+  await expectHealthy(page);
+});
+
+test('the drawer fits a 320px phone with 48px controls', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/');
+    for (const ref of TREE_REFS) {
+      await openProtocol(page, ref);
+      for (const sel of ['.fd-tree__option', '.fd-tree__escalate']) {
+        for (const box of await page.locator(sel).evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) {
+          expect(box, `${ref} ${sel} at ${width}px`).toBeGreaterThanOrEqual(47.5);
+        }
+      }
+      await page.locator('.fd-tree__escalate').click();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${ref} page at ${width}px`).toBe(true);
+      expect(await page.locator('.fd-sheet__body').evaluate((el) => el.scrollWidth <= el.clientWidth), `${ref} sheet at ${width}px`).toBe(true);
+      await page.keyboard.press('Escape');
+    }
+  }
+  await expectHealthy(page);
+});
+
 test('Compass native Tab sequence keeps every link above the mobile dock', async ({ page }, testInfo) => {
   test.skip(audience(testInfo).role !== 'student', 'The Compass belongs to the student Welcome');
   await page.setViewportSize({ width: 390, height: 844 });
