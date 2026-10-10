@@ -1690,11 +1690,13 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 @keyframes fdSlideL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
 
 /* ═══ Safety drawer: decision trees + escalation scripts ═════════════════════
-   2026-10-10 safety-drawer spec §4.6. Text inside a safety sheet is --fd-text on a surface or a
-   wash (11:1+ both themes); tone is a 6px bar and a WORD ("Act now" / "First move"), never red
-   or teal text, because neither ink reaches 7:1 on the dark sheet. The one filled control,
-   Escalate, is on-accent over danger-dark (7.64 light / 7.0004 dark). Controls are at least
-   48px tall: the 44px touch token plus one 4px step. */
+   2026-10-10 safety-drawer spec §4.6. Front-door text inside a safety sheet is --fd-text on a
+   surface, a wash or a hover ground (10.5:1+ both themes) -- the sheet's own chrome and kit-list
+   subtitles included, overridden below; tone is a 6px bar and a WORD ("Act now" / "First
+   move"), never red or teal text, because neither ink reaches 7:1 on the dark sheet. The one
+   filled control, Escalate, is on-accent over danger-dark (7.64 light / 7.0004 dark). The
+   build-injected crisis block keeps its own governed styling. Controls are at least 48px tall:
+   the 44px touch token plus one 4px step; control borders are 2px --fd-text-dim (4.5:1+). */
 .fd-sheet--safety .fd-sheet__body{color:var(--fd-text)}
 .fd-tree{display:flex;flex-direction:column;gap:var(--fd-space-6);margin-bottom:var(--fd-space-7)}
 .fd-tree__draft{margin:0;padding:var(--fd-space-5) var(--fd-space-6);border:2px dashed var(--fd-text);border-radius:var(--fd-radius-md);background:var(--fd-olive-wash);color:var(--fd-text);font-size:var(--fd-font-sm);font-weight:700}
@@ -1720,13 +1722,28 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-script__parts dt{margin-top:var(--fd-space-5);font-size:var(--fd-font-xs);font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--fd-text)}
 .fd-script__parts dd{margin:var(--fd-space-2) 0 0;font-size:var(--fd-font-lg);line-height:1.5;color:var(--fd-text)}
 .fd-script__blank{padding:0 var(--fd-space-1);border-bottom:2px dashed var(--fd-text);border-radius:var(--fd-radius-2xs);background:var(--fd-olive-wash);color:var(--fd-text)}
+/* Ghost buttons in the drawer (Back, Start over, the see links, Back to where you were, Open the
+   full page): the base ghost border is a 1px --fd-line-strong hairline (~1.4:1), and a
+   transparent button has no other edge, so here it is a 2px --fd-text-dim border at 48px. */
+.fd-tree__nav .fd-btn,.fd-tree__see .fd-btn,.fd-script .fd-btn,.fd-sheet--safety .fd-btn--ghost{min-height:calc(var(--fd-target-touch) + var(--fd-space-2));border:2px solid var(--fd-text-dim)}
+.fd-tree__nav .fd-btn:hover,.fd-tree__see .fd-btn:hover,.fd-script .fd-btn:hover,.fd-sheet--safety .fd-btn--ghost:hover{border-color:var(--fd-text)}
+/* Sheet chrome and kit-list text: the base sheet inks these --fd-teal-deep, --fd-text-mid,
+   --fd-text-dim and --fd-olive-deep (4.9-6.9:1); a safety sheet inks them --fd-text. These
+   overrides sit after the base rules they override. The kit back link and the close glyph also
+   take the 48px target (the close glyph is a 32px square on desktop otherwise). */
+.fd-sheet--safety .fd-sheet__back,.fd-sheet--safety .fd-sheet__close,.fd-sheet--safety .fd-sheet__intro,.fd-sheet--safety .fd-kitrow__sub,.fd-sheet--safety .fd-sheet__attribution,.fd-sheet--safety .fd-sheet__pending,.fd-sheet--safety .fd-doccallout{color:var(--fd-text)}
+.fd-sheet--safety .fd-sheet__back{min-height:calc(var(--fd-target-touch) + var(--fd-space-2))}
+.fd-sheet--safety .fd-sheet__back:hover{text-decoration:underline}
+.fd-sheet--safety .fd-sheet__close{min-width:calc(var(--fd-target-touch) + var(--fd-space-2));min-height:calc(var(--fd-target-touch) + var(--fd-space-2));border:2px solid var(--fd-text-dim)}
 @media (forced-colors:active){
   .fd-tree__escalate,.fd-tree__option,.fd-tree__draft{border:2px solid ButtonText}
   .fd-tree__verdict{border:2px solid CanvasText;border-left-width:6px}
   .fd-script__blank{border-bottom-color:CanvasText}
+  .fd-tree__nav .fd-btn,.fd-tree__see .fd-btn,.fd-script .fd-btn,.fd-sheet--safety .fd-btn--ghost,.fd-sheet--safety .fd-sheet__close{border:2px solid ButtonText}
 }
 @media (prefers-contrast:more){
   .fd-tree__option{border-color:var(--fd-text)}
+  .fd-tree__nav .fd-btn,.fd-tree__see .fd-btn,.fd-script .fd-btn,.fd-sheet--safety .fd-btn--ghost,.fd-sheet--safety .fd-sheet__close{border-color:var(--fd-text)}
   .fd-sheet--safety .fd-sheet__head{border-bottom:2px solid var(--fd-text)}
 }
 
