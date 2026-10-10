@@ -706,6 +706,13 @@ for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.h
 _crisis.inject_required_html_file(OUT+"/index.html", _crisis_data, "Front Door shell index")
 print("crisis block injected: shell index")
 
+# Icon sprite (C1, icons & wayfinding): the vendored Lucide subset as one hidden <symbol> sprite,
+# so fdIcon()'s <use href="#ic-NAME"> resolves. Verified replacement of the one marker comment;
+# hidden, 0x0, aria-hidden, and referenced by nothing yet, so it changes no rendered pixel. The
+# resident build inherits it with this index; common.assert_page_contract requires exactly one.
+import icon_sprite as _icon_sprite
+print("icon sprite injected: shell index, %d glyph(s)"%_icon_sprite.inject_sprite_file(OUT+"/index.html"))
+
 
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
