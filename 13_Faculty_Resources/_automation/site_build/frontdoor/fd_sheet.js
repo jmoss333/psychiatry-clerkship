@@ -91,6 +91,21 @@ function fdSheetKitEntry(index, ref){
   return null;
 }
 
+/* True for the sheets the safety drawer owns: the kit list and any kit protocol. False for
+   Settings and item previews. The shell pauses the page only under these, and only these take
+   the high-contrast .fd-sheet--safety treatment. */
+function fdSheetIsSafety(index, sheet){
+  if(!sheet) return false;
+  return sheet==='kit'||!!fdSheetKitEntry(index, sheet);
+}
+
+/* {ref: title} for the kit, so a tree's `see` link can name the protocol it opens. */
+function fdSheetKitTitles(index){
+  var kit=(index&&index.kit)||[], out={};
+  for(var i=0;i<kit.length;i++) out[kit[i].item.ref]=kit[i].item.title;
+  return out;
+}
+
 /* Week number containing ref, or null for a library-only page. The prototype read this off its
    items' own `w` field; this repo's items carry no week (curriculum.json owns that structure), so
    it is a lookup rather than a property read. */
@@ -208,17 +223,30 @@ function fdSheetProtocolFailure(copy, crisisHtml){
 
 /* Every clinical value below is read from topicMeta[ref]; the crisis block is a trusted build
    artifact passed through the shell's inert template. Neither is defaulted to clinical text. */
-function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml, failureCopy){
+function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml, failureCopy, treeState){
   var item=entry.item;
   var protocol=fdSheetProtocolData(entry,topicMeta);
   if(protocol.kind==='missing')return fdSheetProtocolFailure(failureCopy,crisisHtml);
-  var steps=protocol.steps;
+  /* A tree replaces the checklist only when its page is attested -- the attestation hash covers
+     the whole topic_meta record, so an edited tree demotes its page and drops back to the
+     checklist by itself. A deploy preview (draftTrees, build-injected only there) shows an
+     unattested tree under a DRAFT banner so faculty can review it. Missing steps still fail
+     closed above: the checklist is the tree's fallback and must exist. */
+  var ts=treeState||{}, tree=((topicMeta||{})[item.ref]||{}).safetyTree;
+  var showTree=typeof fdTreeValid==='function'&&fdTreeValid(tree)&&
+    (protocol.kind==='reviewed'||ts.draft===true);
   var out='';
-  /* Wrapper carries only the 16px gap down to the callout (the prototype's own step container).
-     The steps stay siblings of each other inside it, so the + rule above still applies. */
-  out+='<div style="margin-bottom:16px">';
-  for(var i=0;i<steps.length;i++){ out+=fdSheetStep(steps[i], i, stepsDone); }
-  out+='</div>';
+  if(showTree){
+    out+=fdTreeView(tree,{path:ts.path,escalate:ts.escalate},
+      {draft:protocol.kind!=='reviewed',kitTitles:ts.kitTitles});
+  } else {
+    var steps=protocol.steps;
+    /* Wrapper carries only the 16px gap down to the callout (the prototype's own step container).
+       The steps stay siblings of each other inside it, so the + rule above still applies. */
+    out+='<div style="margin-bottom:16px">';
+    for(var i=0;i<steps.length;i++){ out+=fdSheetStep(steps[i], i, stepsDone); }
+    out+='</div>';
+  }
   out+='<div class="fd-doccallout"><b>Document:</b> '+fdEsc(protocol.doc)+'</div>';
   /* "From:" names the PAGE, not the file. The prototype's line is `From: {{ protoSrc }}` with a
      human-readable source ("Acute & Safety / Toxidromes"); the first implementation substituted
@@ -511,15 +539,18 @@ function fdSheet(index, topicMeta, state){
     title=entry.item.title;
     hasBack=(st.sheetFrom==='kit');
     body=fdSheetProtocolBody(
-      entry, topicMeta, st.stepsDone, st.crisisHtml, st.protocolFailureCopy
+      entry, topicMeta, st.stepsDone, st.crisisHtml, st.protocolFailureCopy,
+      {path:st.treePath, escalate:st.escalate, draft:st.draftTrees===true,
+        kitTitles:fdSheetKitTitles(idx)}
     );
   }
 
   /* Two elements, not one: .fd-sheetbackdrop is a separate sibling emitted BEFORE the panel and
      carries the click-to-close. Only the search overlay merges scrim and layout into one element
      (CLASS-INVENTORY's ⚠ trap -- do not mirror one pattern onto the other). */
+  var safety=fdSheetIsSafety(idx, sheet);
   return '<div class="fd-sheetbackdrop" data-fd-close-sheet></div>'+
-    '<aside class="fd-sheet" role="dialog" aria-modal="true" aria-label="'+fdEsc(title)+'">'+
+    '<aside class="fd-sheet'+(safety?' fd-sheet--safety':'')+'" role="dialog" aria-modal="true" aria-label="'+fdEsc(title)+'">'+
       fdSheetHead(title, hasBack)+
       '<div class="fd-sheet__body">'+body+'</div>'+
     '</aside>';

@@ -112,7 +112,7 @@ test('the live controller restores only connected dialog invokers', () => {
 test('search and sheet are labelled modal dialogs', () => {
   assert.match(fdSearch, /class="fd-search" role="dialog" aria-modal="true" aria-label="Search"/);
   assert.match(fdSheet,
-    /class="fd-sheet" role="dialog" aria-modal="true" aria-label="'\+fdEsc\(title\)\+'"/);
+    /class="fd-sheet'\+\(safety\?' fd-sheet--safety':''\)\+'" role="dialog" aria-modal="true" aria-label="'\+fdEsc\(title\)\+'"/);
 });
 
 test('nested dialog keyboard order traps focus, closes search first, then restores once', () => {
