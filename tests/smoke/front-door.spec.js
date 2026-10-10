@@ -1524,7 +1524,12 @@ test('the drawer fits a 320px phone with 48px controls', async ({ page }, testIn
     await page.goto('/');
     for (const ref of TREE_REFS) {
       await openProtocol(page, ref);
+      // Escape on the previous protocol (unread) raised the full-read toast; reopening Safety
+      // must clear it -- the drawer never shares the screen with the toast.
+      await expect(page.locator('.fd-nudge'), `${ref} toast at ${width}px`).toHaveCount(0);
       for (const sel of ['.fd-tree__option', '.fd-tree__escalate']) {
+        // An empty set would pass the height loop vacuously.
+        expect(await page.locator(sel).count(), `${ref} ${sel} at ${width}px`).toBeGreaterThan(0);
         for (const box of await page.locator(sel).evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) {
           expect(box, `${ref} ${sel} at ${width}px`).toBeGreaterThanOrEqual(47.5);
         }

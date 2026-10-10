@@ -483,11 +483,26 @@ test('navigate, preview sheet, and protocol dispatch remain three separate paths
   assert.deepEqual(protocol, {
     patch: {
       sheet: 'risk.md', sheetFrom: 'kit', stepsDone: {}, treePath: [], escalate: null,
-      searchOpen: false,
+      nudge: null, searchOpen: false,
     },
     route: null,
     effect: { type: 'open-protocol', ref: 'risk.md' },
   });
+});
+
+/* The "full read" toast (.fd-nudge) stacks above the safety drawer and its mount is never inerted,
+   so a nudge left over from closing an unread protocol would paint over the reopened modal for
+   the rest of its 8 s timeout. Both safety openers therefore clear it. */
+test('both safety openers clear a pending full-read nudge', () => {
+  const s = { ...roleContext, nudge: 'agitation.md' };
+  const kit = F.fdDispatch({ 'data-fd-safety': '' }, {}, s);
+  assert.equal(kit.patch.sheet, 'kit');
+  assert.ok(Object.prototype.hasOwnProperty.call(kit.patch, 'nudge'), 'kit open patches nudge');
+  assert.equal(kit.patch.nudge, null);
+  const protocol = F.fdDispatch({ 'data-fd-safety': 'agitation.md' }, { inSheet: true }, s);
+  assert.equal(protocol.patch.sheet, 'agitation.md');
+  assert.ok(Object.prototype.hasOwnProperty.call(protocol.patch, 'nudge'), 'protocol open patches nudge');
+  assert.equal(protocol.patch.nudge, null);
 });
 
 test('routed tool actions preserve case, scenario, resume, and faculty-preview parameters', () => {

@@ -616,17 +616,20 @@ function fdDispatch(attrs, context, state){
     return {patch:{feedbackNotice:null},route:null,effect:{type:'feedback-remove',id:noteId}};
   }
 
+  /* Both openers clear nudge: the full-read toast stacks above this drawer and its mount is never
+     inerted, so one left by closing an unread protocol would sit over the reopened modal for the
+     rest of its timeout. The timeout later patching nudge:null onto a null key is harmless. */
   if(fdOwn(a,'data-fd-safety')){
     ref=a['data-fd-safety'];
     if(ref){
       return {
         patch:{sheet:String(ref),sheetFrom:c.inSheet?'kit':null,stepsDone:{},treePath:[],
-          escalate:null,searchOpen:false},
+          escalate:null,nudge:null,searchOpen:false},
         route:null,effect:{type:'open-protocol',ref:String(ref)}
       };
     }
     return {
-      patch:{sheet:'kit',sheetFrom:null,stepsDone:{},treePath:[],escalate:null,
+      patch:{sheet:'kit',sheetFrom:null,stepsDone:{},treePath:[],escalate:null,nudge:null,
         searchOpen:false},
       route:null,effect:{type:'open-sheet',ref:null}
     };
