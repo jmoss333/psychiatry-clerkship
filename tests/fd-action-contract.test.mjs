@@ -50,7 +50,8 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-care-pack', 'data-fd-care-pack-clear', 'data-fd-care-pack-print',
     'data-fd-care-share', 'data-fd-care-share-close', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
-    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-exam-date', 'data-fd-expand-tool',
+    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-escalate', 'data-fd-escalate-close',
+    'data-fd-exam-date', 'data-fd-expand-tool',
     'data-fd-feedback-cancel', 'data-fd-feedback-confirm', 'data-fd-feedback-delete', 'data-fd-feedback-edit',
     'data-fd-feedback-open', 'data-fd-feedback-save',
     // 'data-fd-library-filter' (the filter input, committed on input events), 'data-fd-library-filter-clear'
@@ -60,6 +61,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
     'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-search-query', 'data-fd-settings',
     'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
+    'data-fd-tree-answer', 'data-fd-tree-back', 'data-fd-tree-restart',
     'data-fd-view-week', 'data-fd-week',
   ]);
   for (const attr of emitted) {

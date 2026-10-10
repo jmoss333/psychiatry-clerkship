@@ -887,6 +887,7 @@ SNIPPET_MARKERS = {
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
     "/*__FD_GUIDE__*/": "frontdoor/fd_guide.js",
     "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
+    "/*__FD_TREE__*/": "frontdoor/fd_tree.js",
     "/*__FD_SHEET__*/": "frontdoor/fd_sheet.js",
     "/*__FD_WIRE__*/": "frontdoor/fd_wire.js",
 }

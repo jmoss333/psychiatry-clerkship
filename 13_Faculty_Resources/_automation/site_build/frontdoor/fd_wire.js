@@ -38,7 +38,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-care-copy','data-fd-care-copy-selected',
   'data-fd-offline-open','data-fd-offline-close','data-fd-offline-refresh',
   'data-fd-feedback-open','data-fd-feedback-cancel','data-fd-feedback-save',
-  'data-fd-feedback-edit','data-fd-feedback-confirm','data-fd-feedback-delete'
+  'data-fd-feedback-edit','data-fd-feedback-confirm','data-fd-feedback-delete',
+  'data-fd-tree-answer','data-fd-tree-back','data-fd-tree-restart','data-fd-escalate','data-fd-escalate-close'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -107,7 +108,12 @@ var FD_ACTION_SEMANTICS={
   'data-fd-close-nudge':'dismiss protocol nudge',
   'data-fd-try-now':'preview related tool',
   'data-fd-expand-tool':'toggle saved tool workspace width',
-  'data-fd-reading-top':'clear this reading place and focus the article heading'
+  'data-fd-reading-top':'clear this reading place and focus the article heading',
+  'data-fd-tree-answer':'answer a safety tree question',
+  'data-fd-tree-back':'step back one safety tree answer',
+  'data-fd-tree-restart':'restart a safety tree',
+  'data-fd-escalate':'show an escalation script',
+  'data-fd-escalate-close':'return from an escalation script to its tree'
 };
 
 function fdActionSemantic(attr){
@@ -1214,6 +1220,7 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
+  '[data-fd-tree-answer],[data-fd-tree-back],[data-fd-tree-restart],[data-fd-escalate],[data-fd-escalate-close],'+
   '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool],[data-fd-reading-top]';
 
