@@ -649,25 +649,45 @@ test('fd_sheet.js touches no DOM, storage, or clock, and stays ES5', () => {
     'fd_sheet.js is a build-injected snippet, not a module -- ES5 only (var/function)');
 });
 
+// The sheet variants the markup guards below cover. agitation.md is rendered BOTH ways, from
+// fixtures that pin its review state -- as its checklist (NO_TREE) and as its tree (TREE). Read
+// from REAL_META, which surface these guards checked would depend on whether the faculty had
+// signed the page: a reviewed record renders the tree and the checklist markup silently drops out
+// of every guard, and the rehearsal cannot see it because both states pass. The premise asserts
+// make a render that stops being the surface it is named for fail here, not shrink the guard.
+const guardRenders = (extra = {}) => {
+  const ref = 'agitation.md';
+  const checklist = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: ref, ...extra });
+  const tree = F.fdSheet(TREE_INDEX, TREE_META, { sheet: ref, ...extra });
+  assert.match(checklist, /class="fd-step"/, `premise: ${ref} without a tree renders its checklist`);
+  assert.match(tree, /<div class="fd-tree">/, `premise: ${ref} reviewed with its tree renders the tree`);
+  return [
+    ['kit', F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit', ...extra })],
+    [`${ref} (checklist)`, checklist],
+    [`${ref} (tree)`, tree],
+    ['item:mse.html', F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'item:mse.html', ...extra })],
+  ];
+};
+
 test('no rendered output carries an audience-specific token', () => {
-  for (const s of ['kit', 'agitation.md', 'item:mse.html']) {
-    assert.doesNotMatch(F.fdSheet(REAL_INDEX, REAL_META, { sheet: s }), AUDIENCE_TOKEN_RE, `variant ${s}`);
+  for (const [s, html] of guardRenders()) {
+    assert.doesNotMatch(html, AUDIENCE_TOKEN_RE, `variant ${s}`);
   }
   assert.doesNotMatch(F.fdNudge(REAL_INDEX.byRef['delirium.md']), AUDIENCE_TOKEN_RE);
 });
 
 test('no raw hex in emitted markup', () => {
-  for (const s of ['kit', 'agitation.md', 'item:mse.html']) {
-    assert.doesNotMatch(F.fdSheet(REAL_INDEX, REAL_META, { sheet: s }), /#[0-9a-fA-F]{3,6}/, `variant ${s}`);
+  for (const [s, html] of guardRenders()) {
+    assert.doesNotMatch(html, /#[0-9a-fA-F]{3,6}/, `variant ${s}`);
   }
 });
 
 test('only classes that exist in frontdoor.css are emitted', () => {
   const css = read('frontdoor/frontdoor.css');
   const seen = new Set();
-  for (const s of ['kit', 'agitation.md', 'item:mse.html', 'item:evil.md']) {
-    const html = s.startsWith('item:e') ? F.fdSheet(FIX_INDEX, FIX_META, { sheet: s })
-      : F.fdSheet(REAL_INDEX, REAL_META, { sheet: s, sheetFrom: 'kit', stepsDone: { 0: true } });
+  const renders = guardRenders({ sheetFrom: 'kit', stepsDone: { 0: true } })
+    .concat([['item:evil.md', F.fdSheet(FIX_INDEX, FIX_META, { sheet: 'item:evil.md' })]]);
+  for (const [, html] of renders) {
     for (const m of html.matchAll(/class="([^"]+)"/g)) m[1].split(/\s+/).forEach((c) => seen.add(c));
   }
   for (const m of F.fdNudge(REAL_INDEX.byRef['delirium.md']).matchAll(/class="([^"]+)"/g)) {
@@ -680,6 +700,11 @@ test('only classes that exist in frontdoor.css are emitted', () => {
       const html = F.fdSheet(TREE_PENDING_INDEX, TREE_PENDING_META, { sheet: ref, draftTrees: true, ...st });
       for (const m of html.matchAll(/class="([^"]+)"/g)) m[1].split(/\s+/).forEach((c) => seen.add(c));
     }
+  }
+  // Coverage, not only correctness: the checklist and the tree markup must both have been seen,
+  // whatever the faculty have signed, or this guard passes over a surface it claims to check.
+  for (const c of ['fd-step', 'fd-step__text', 'fd-check', 'is-done', 'fd-tree', 'fd-tree__verdict']) {
+    assert.ok(seen.has(c), `class check never rendered "${c}" -- a surface dropped out of the guard`);
   }
   // Word-boundary match, not a substring one: `css.includes('.' + c)` would let an invented short
   // name pass on the strength of a longer real class it happens to prefix (".fd-step" would
