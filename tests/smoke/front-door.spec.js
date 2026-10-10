@@ -1389,6 +1389,10 @@ test('each safety tree walks by keyboard to its script and back', async ({ page 
     await expect(page.locator('.fd-script__blank').first()).toBeVisible();
     await page.locator('[data-fd-escalate-close]').focus();
     await page.keyboard.press('Enter');
+    // The script's own heading also carries .fd-tree__heading, so prove the script is gone and
+    // the verdict is back before trusting the focus check.
+    await expect(page.locator('#fdScriptHeading')).toHaveCount(0);
+    await expect(page.locator('.fd-tree__verdict')).toBeVisible();
     await expect(page.locator('.fd-sheet .fd-tree__heading')).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.locator('.fd-sheet')).toHaveCount(0);
@@ -1485,12 +1489,17 @@ test('tool inputs survive the drawer; the page is inert and paused while it is o
 test('Open the full page from a tree releases the page before it mounts', async ({ page }, testInfo) => {
   await serveSafetyTrees(page);
   await seedApp(page, testInfo);
+  // Served-ledger fixture, not live state: a pending high-risk page takes focus onto its notice
+  // when it mounts, and an inert #content silently refuses that focus -- so the focused notice
+  // is the observable proof the release landed BEFORE the mount, not merely at some point.
+  await pinGovernance(page, 'delirium.md', { status: 'pending', riskLevel: 'high' });
   await page.goto('/');
   await openProtocol(page, 'delirium.md');
   await page.locator('.fd-sheet [data-fd-open="delirium.md"]').click();
   await expect(page.locator('.fd-sheet')).toHaveCount(0);
   for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBeNull();
   await expect(page.locator('.fd-article')).toBeVisible();
+  await expect(page.locator('#content .governance-notice.pending-high')).toBeFocused();
   await expectHealthy(page);
 });
 
