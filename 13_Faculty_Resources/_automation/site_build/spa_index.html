@@ -129,8 +129,9 @@
   .pgfb{margin:30px 0 0;padding-top:16px;border-top:1px solid var(--border)}
   .pgfb-b{background:none;border:1px solid var(--border);border-radius:999px;padding:6px 15px;color:var(--text-light);cursor:pointer;font:inherit;font-size:var(--fd-font-sm)}
   .pgfb-b:hover{border-color:var(--accent);color:var(--accent-dark)}
-  .skip-link{position:absolute;left:12px;top:-52px;background:var(--surface);color:var(--text);border:2px solid var(--focus);border-radius:6px;padding:8px 12px;z-index:100;transition:top .15s}
-  .skip-link:focus{top:12px}
+  .skip-link,.skip-safety{position:absolute;left:12px;top:-52px;background:var(--surface);color:var(--text);border:2px solid var(--focus);border-radius:6px;padding:8px 12px;z-index:100;transition:top .15s}
+  .skip-link:focus,.skip-safety:focus{top:12px}
+  .skip-safety{font:inherit;cursor:pointer}
   /* Reduced motion (#428): the Front Door stylesheet zeroes its own motion under this query; the
      shell's remaining transitions -- the skip link above, the legacy sidebar chrome and the
      section chevrons -- live here and were the ones an audit found still animating. */
@@ -360,7 +361,7 @@
   }
   /* Reduced motion must be the LAST word on these transitions: the declarations it zeroes have the
      same specificity and sit later in this sheet, so an earlier override lost the cascade (#428). */
-  @media(prefers-reduced-motion:reduce){.skip-link,.layout,.layout>aside,.modetoggle .knob,.navgroupsec .chev,.navsec .chev,.practice-chev,.md-body .sec-chev,.fd-article__body .sec-chev{transition:none}}
+  @media(prefers-reduced-motion:reduce){.skip-link,.skip-safety,.layout,.layout>aside,.modetoggle .knob,.navgroupsec .chev,.navsec .chev,.practice-chev,.md-body .sec-chev,.fd-article__body .sec-chev{transition:none}}
 </style>
 <style>
   /* ===== Tool launcher badges (from Claude Design handoff, house-tokenized) ===== */
@@ -640,6 +641,7 @@
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
 <div id="fdApp" class="fd-shell" aria-busy="true" inert>
+  <button type="button" class="skip-safety" data-fd-safety>Safety protocols</button>
   <div id="fdChromeMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
   <span id="careNavigatorStatus" class="vh-live" role="status" aria-live="polite" aria-atomic="true"></span>
@@ -659,6 +661,7 @@
   try{contentEl=document.getElementById('content');}catch(ignoreContentElement){FD_RUNTIME_WIRING_OK=false;}
   var currentItem=null; var GOVERNANCE={status:'loading',items:{}}; var governanceFocusSlug=''; var SCROLL={};
   var FD_PROTOCOL_FAILURE_COPY='This safety protocol is unavailable right now—do not rely on this page for clinical guidance; use the crisis resources below and contact your supervising clinician.';
+  var FD_DRAFT_TREES=false;
   /* Fetch and capture callbacks live in this script; the Front Door controller is installed by
      the following IIFE. Keep one shared dispatcher that is safe until that controller is ready. */
   var specialRefresh=function(){};
@@ -2168,6 +2171,8 @@
 
   /*__FD_SEARCH__*/
 
+  /*__FD_TREE__*/
+
   /*__FD_SHEET__*/
 
   /*__FD_WIRE__*/
@@ -2564,6 +2569,7 @@
       :{checklist:{},resources:{}};
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
+    if(typeof FD_DRAFT_TREES==='boolean')out.draftTrees=FD_DRAFT_TREES;
     return out;
   }
 
@@ -2776,6 +2782,46 @@
     return fdSurface('today',function(){ return fdTodayLive(state); });
   }
 
+  /* ---- safety pause (begin) ----
+     2026-10-10 safety-drawer spec §4.5. While a SAFETY sheet (the kit or a kit protocol) is
+     open, the page under it is frozen: the mounts below take `inert` (no focus, no pointer,
+     out of the accessibility tree, nothing unloaded, so a tool frame keeps every input),
+     playing media pauses and stays paused, and the tool frame is told {type:'cw-pause'} /
+     {type:'cw-resume'} the same way it is told the theme. Settings and item previews are not
+     safety sheets and pause nothing. #fdApp's own startup-gate `inert` is never touched; the
+     live regions, #fdOverlayMount and #fdNudgeMount are never inerted. fdSyncSafetyPause runs
+     FIRST in fdRender and fdRenderTransient so the release lands before a resource mounts: an
+     inert #content silently refuses the pending-high notice its focus. */
+  var FD_SAFETY_INERT_IDS=['fdChromeMount','fdCaptureMount','fdDockMount','content','governanceMount'];
+  var fdSafetyPaused=false;
+  function fdPauseMedia(doc){
+    var media=(doc&&doc.querySelectorAll)?doc.querySelectorAll('audio,video'):[];
+    for(var i=0;i<media.length;i++){
+      if(media[i]&&media[i].paused===false) try{media[i].pause();}catch(_){}
+    }
+  }
+  function fdSafetyPause(on){
+    for(var i=0;i<FD_SAFETY_INERT_IDS.length;i++){
+      var el=document.getElementById(FD_SAFETY_INERT_IDS[i]);
+      if(!el)continue;
+      if(on)el.setAttribute('inert','');else el.removeAttribute('inert');
+    }
+    var frame=(contentEl&&contentEl.querySelector)?contentEl.querySelector('iframe'):null;
+    if(on){
+      fdPauseMedia(document);
+      try{if(frame&&frame.contentDocument)fdPauseMedia(frame.contentDocument);}catch(_){}
+    }
+    if(frame&&frame.contentWindow)
+      try{frame.contentWindow.postMessage(on?{type:'cw-pause',reason:'safety'}:{type:'cw-resume'},'*');}catch(_){}
+  }
+  function fdSyncSafetyPause(state){
+    var want=!!(state&&state.sheet&&fdSheetIsSafety(FD_INDEX,state.sheet));
+    if(want===fdSafetyPaused)return;
+    fdSafetyPaused=want;
+    fdSafetyPause(want);
+  }
+  /* ---- safety pause (end) ---- */
+
   function fdRenderOverlays(state){
     var live=fdLiveState(state), overlays='';
     if(state.searchOpen)overlays+=fdSurface('search',function(){ return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live); });
@@ -2976,6 +3022,7 @@
 
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
+    fdSyncSafetyPause(state);
     fdPrepareRoute(state,detail);
     fdAdoptSpecialContext(state);
     if(!hydrate)fdRenderChrome(state);
@@ -3023,6 +3070,7 @@
 
   function fdRenderTransient(state,detail){
     var d=detail||{}, surfaces=d.surfaces||{};
+    fdSyncSafetyPause(state);
     /* An effect carries a MODE; a frame boundary can only carry a painted attribute. Resolve once
        here so the paint and what an embedded tool is told agree, and so 'system' never escapes as
        a value no stylesheet and no tool can act on. */

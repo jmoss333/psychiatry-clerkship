@@ -31,13 +31,19 @@ const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf
 const sheetSrc = read('frontdoor/fd_sheet.js');
 const shellSrc = read('spa_index.html');
 
+// fdThemeMode is spliced in (the real function, via themeModeSource() below -- a hoisted
+// declaration) because the settings variant normalises through it, and the safety-modifier test
+// renders that variant to prove it stays unmarked.
 // eslint-disable-next-line no-new-func
 const make = new Function(`
   ${read('phase_policy.js')}
   ${read('frontdoor/fd_state.js')}
   ${read('frontdoor/fd_data.js')}
+  ${read('frontdoor/fd_tree.js')}
+  ${themeModeSource()}
   ${sheetSrc}
-  return { fdSheet: fdSheet, fdNudge: fdNudge, fdBuildIndex: fdBuildIndex, fdEsc: fdEsc };
+  return { fdSheet: fdSheet, fdNudge: fdNudge, fdBuildIndex: fdBuildIndex, fdEsc: fdEsc,
+    fdSheetIsSafety: fdSheetIsSafety, fdTreeValid: fdTreeValid };
 `);
 const F = make();
 
@@ -73,6 +79,37 @@ const ATTESTED_META = {
   },
 };
 const ATTESTED_INDEX = F.fdBuildIndex(REAL_MS3_CUR, ATTESTED_META, REAL_TOOLS, REAL_MAN);
+
+// Safety trees, pinned with CONTROLLED review state (live-governance-state.test.mjs re-runs this
+// file with the faculty's queue drained and refilled). TREE_REFS are the kit pages carrying a
+// safetyTree in the real source; the checklist tests use NO_TREE_META so they keep covering all
+// five protocols whatever the faculty have signed.
+const TREE_REFS = KIT_REFS.filter((ref) => REAL_META[ref] && REAL_META[ref].safetyTree);
+const withReview = (status) => Object.fromEntries(Object.entries(REAL_META).map(([k, v]) => [k,
+  TREE_REFS.includes(k) ? { ...v, facultyReview: { lastReviewed: '2026-01-01', reviewer: 'Fixture reviewer', status } } : v]));
+const TREE_META = withReview('reviewed');
+const TREE_INDEX = F.fdBuildIndex(REAL_MS3_CUR, TREE_META, REAL_TOOLS, REAL_MAN);
+const TREE_PENDING_META = withReview('pending');
+const TREE_PENDING_INDEX = F.fdBuildIndex(REAL_MS3_CUR, TREE_PENDING_META, REAL_TOOLS, REAL_MAN);
+const NO_TREE_META = Object.fromEntries(Object.entries(REAL_META).map(([k, v]) => {
+  if (!v || typeof v !== 'object' || !('safetyTree' in v)) return [k, v];
+  const { safetyTree, ...rest } = v;
+  return [k, rest];
+}));
+const NO_TREE_INDEX = F.fdBuildIndex(REAL_MS3_CUR, NO_TREE_META, REAL_TOOLS, REAL_MAN);
+// One answer path to every action node, derived from the data, so every action variant
+// (is-danger, see links, trail, nav) gets class-checked whatever ids the owner gives the nodes.
+const actionPaths = (tree) => {
+  const byId = Object.fromEntries(tree.nodes.map((n) => [n.id, n]));
+  const out = [];
+  const walk = (id, path) => {
+    const n = byId[id];
+    if (!n.options) { out.push(path); return; }
+    n.options.forEach((o, i) => walk(o.next, path.concat(`${n.id}.${i}`)));
+  };
+  walk(tree.start, []);
+  return out;
+};
 
 // A fixture whose every string is hostile, for the escaping pass, plus the degraded cases the real
 // data cannot produce (a kit page with no safetySteps; a protocol that is not faculty-reviewed).
@@ -236,18 +273,18 @@ test('the kit variant has no back affordance -- it is the root of the sheet', ()
 
 test('every real kit protocol renders at least 3 steps from the source topic_meta.json', () => {
   for (const ref of KIT_REFS) {
-    const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref });
+    const html = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: ref });
     const n = html.split('class="fd-step"').length - 1;
     assert.ok(n >= 3, `${ref} rendered ${n} protocol steps; a safety protocol needs at least 3`);
-    assert.equal(n, REAL_META[ref].safetySteps.length, `${ref} must render every step it has`);
+    assert.equal(n, NO_TREE_META[ref].safetySteps.length, `${ref} must render every step it has`);
   }
 });
 
 test('protocol steps render in topic_meta order, verbatim', () => {
   for (const ref of KIT_REFS) {
-    const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref });
+    const html = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: ref });
     let cursor = -1;
-    for (const step of REAL_META[ref].safetySteps) {
+    for (const step of NO_TREE_META[ref].safetySteps) {
       const at = html.indexOf(`<span class="fd-step__text">${F.fdEsc(step)}</span>`);
       assert.ok(at > cursor, `${ref}: "${step}" must appear, after the previous step`);
       cursor = at;
@@ -257,10 +294,10 @@ test('protocol steps render in topic_meta order, verbatim', () => {
 
 test('the Document callout carries topic_meta.safetyDoc', () => {
   for (const ref of KIT_REFS) {
-    const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref });
+    const html = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: ref });
     assert.match(
       html,
-      new RegExp(`<div class="fd-doccallout"><b>Document:</b> ${F.fdEsc(REAL_META[ref].safetyDoc).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</div>`),
+      new RegExp(`<div class="fd-doccallout"><b>Document:</b> ${F.fdEsc(NO_TREE_META[ref].safetyDoc).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</div>`),
     );
   }
 });
@@ -279,9 +316,9 @@ test('a sheet ref that names no kit protocol renders nothing rather than an empt
 
 test('step checks reflect state.stepsDone by index', () => {
   const ref = KIT_REFS[0];
-  const off = F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref });
+  const off = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: ref });
   assert.doesNotMatch(off, /fd-check is-done/);
-  const on = F.fdSheet(REAL_INDEX, REAL_META, { sheet: ref, stepsDone: { 0: true, 2: true } });
+  const on = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: ref, stepsDone: { 0: true, 2: true } });
   assert.equal(on.split('fd-check is-done').length - 1, 2);
   assert.match(on, /data-fd-step="0" aria-pressed="true"><span class="fd-check is-done"/);
   assert.match(on, /data-fd-step="1" aria-pressed="false"><span class="fd-check"/);
@@ -292,19 +329,19 @@ test('step checks reflect state.stepsDone by index', () => {
 // inverts the item's meaning. The glyph must therefore be decorative and the state must live on
 // the button that actually toggles.
 test('the checkmark is hidden from assistive tech and the state is carried by aria-pressed', () => {
-  const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: KIT_REFS[0], stepsDone: { 0: true } });
+  const html = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: KIT_REFS[0], stepsDone: { 0: true } });
   assert.equal(html.split('aria-hidden="true">✓</span>').length - 1,
-    REAL_META[KIT_REFS[0]].safetySteps.length, 'every check glyph is decorative');
+    NO_TREE_META[KIT_REFS[0]].safetySteps.length, 'every check glyph is decorative');
   assert.doesNotMatch(html, /class="fd-check[^"]*"(?! aria-hidden)/,
     'no check glyph may reach the a11y tree');
   assert.match(html, /aria-pressed="true"/);
   assert.match(html, /aria-pressed="false"/);
-  const off = F.fdSheet(REAL_INDEX, REAL_META, { sheet: KIT_REFS[0] });
+  const off = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: KIT_REFS[0] });
   assert.doesNotMatch(off, /aria-pressed="true"/, 'nothing checked means nothing announced pressed');
 });
 
 test('the check lives INSIDE .fd-step so the 20px ancestor-keyed size rule applies', () => {
-  const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: KIT_REFS[0] });
+  const html = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: KIT_REFS[0] });
   assert.match(html, /class="fd-step"[^>]*><span class="fd-check"/,
     '.fd-step .fd-check is the only size variant and it is keyed on the ancestor, not a modifier');
   assert.doesNotMatch(html, /fd-check--/, 'no invented size modifier');
@@ -507,7 +544,7 @@ test('an item preview for a ref the index does not carry degrades to a titled sh
 
 test('the backdrop is a separate sibling element emitted BEFORE the sheet', () => {
   const html = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit' });
-  assert.match(html, /^<div class="fd-sheetbackdrop" data-fd-close-sheet><\/div><aside class="fd-sheet"(?:\s|>)/,
+  assert.match(html, /^<div class="fd-sheetbackdrop" data-fd-close-sheet><\/div><aside class="fd-sheet(?: fd-sheet--safety)?"(?:\s|>)/,
     'the sheet uses two elements (backdrop + panel); only the search overlay merges them');
 });
 
@@ -544,7 +581,7 @@ test('the nudge omits the minute clause when the page carries no read time', () 
 test('the sheet and its icon-only controls expose modal and action semantics', () => {
   const sheet = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit' });
   assert.match(sheet,
-    /^<div class="fd-sheetbackdrop" data-fd-close-sheet><\/div><aside class="fd-sheet" role="dialog" aria-modal="true" aria-label="Safety kit">/,
+    /^<div class="fd-sheetbackdrop" data-fd-close-sheet><\/div><aside class="fd-sheet fd-sheet--safety" role="dialog" aria-modal="true" aria-label="Safety kit">/,
     'the mount-ready sheet panel is itself the labelled modal dialog');
   assert.match(sheet,
     /class="fd-sheet__close" data-fd-close-sheet aria-label="Close side sheet"/,
@@ -612,29 +649,62 @@ test('fd_sheet.js touches no DOM, storage, or clock, and stays ES5', () => {
     'fd_sheet.js is a build-injected snippet, not a module -- ES5 only (var/function)');
 });
 
+// The sheet variants the markup guards below cover. agitation.md is rendered BOTH ways, from
+// fixtures that pin its review state -- as its checklist (NO_TREE) and as its tree (TREE). Read
+// from REAL_META, which surface these guards checked would depend on whether the faculty had
+// signed the page: a reviewed record renders the tree and the checklist markup silently drops out
+// of every guard, and the rehearsal cannot see it because both states pass. The premise asserts
+// make a render that stops being the surface it is named for fail here, not shrink the guard.
+const guardRenders = (extra = {}) => {
+  const ref = 'agitation.md';
+  const checklist = F.fdSheet(NO_TREE_INDEX, NO_TREE_META, { sheet: ref, ...extra });
+  const tree = F.fdSheet(TREE_INDEX, TREE_META, { sheet: ref, ...extra });
+  assert.match(checklist, /class="fd-step"/, `premise: ${ref} without a tree renders its checklist`);
+  assert.match(tree, /<div class="fd-tree">/, `premise: ${ref} reviewed with its tree renders the tree`);
+  return [
+    ['kit', F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit', ...extra })],
+    [`${ref} (checklist)`, checklist],
+    [`${ref} (tree)`, tree],
+    ['item:mse.html', F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'item:mse.html', ...extra })],
+  ];
+};
+
 test('no rendered output carries an audience-specific token', () => {
-  for (const s of ['kit', 'agitation.md', 'item:mse.html']) {
-    assert.doesNotMatch(F.fdSheet(REAL_INDEX, REAL_META, { sheet: s }), AUDIENCE_TOKEN_RE, `variant ${s}`);
+  for (const [s, html] of guardRenders()) {
+    assert.doesNotMatch(html, AUDIENCE_TOKEN_RE, `variant ${s}`);
   }
   assert.doesNotMatch(F.fdNudge(REAL_INDEX.byRef['delirium.md']), AUDIENCE_TOKEN_RE);
 });
 
 test('no raw hex in emitted markup', () => {
-  for (const s of ['kit', 'agitation.md', 'item:mse.html']) {
-    assert.doesNotMatch(F.fdSheet(REAL_INDEX, REAL_META, { sheet: s }), /#[0-9a-fA-F]{3,6}/, `variant ${s}`);
+  for (const [s, html] of guardRenders()) {
+    assert.doesNotMatch(html, /#[0-9a-fA-F]{3,6}/, `variant ${s}`);
   }
 });
 
 test('only classes that exist in frontdoor.css are emitted', () => {
   const css = read('frontdoor/frontdoor.css');
   const seen = new Set();
-  for (const s of ['kit', 'agitation.md', 'item:mse.html', 'item:evil.md']) {
-    const html = s.startsWith('item:e') ? F.fdSheet(FIX_INDEX, FIX_META, { sheet: s })
-      : F.fdSheet(REAL_INDEX, REAL_META, { sheet: s, sheetFrom: 'kit', stepsDone: { 0: true } });
+  const renders = guardRenders({ sheetFrom: 'kit', stepsDone: { 0: true } })
+    .concat([['item:evil.md', F.fdSheet(FIX_INDEX, FIX_META, { sheet: 'item:evil.md' })]]);
+  for (const [, html] of renders) {
     for (const m of html.matchAll(/class="([^"]+)"/g)) m[1].split(/\s+/).forEach((c) => seen.add(c));
   }
   for (const m of F.fdNudge(REAL_INDEX.byRef['delirium.md']).matchAll(/class="([^"]+)"/g)) {
     m[1].split(/\s+/).forEach((c) => seen.add(c));
+  }
+  for (const ref of TREE_REFS) {
+    const states = [{}, { escalate: 'now' }, { escalate: 'soon' }]
+      .concat(actionPaths(TREE_META[ref].safetyTree).map((treePath) => ({ treePath })));
+    for (const st of states) {
+      const html = F.fdSheet(TREE_PENDING_INDEX, TREE_PENDING_META, { sheet: ref, draftTrees: true, ...st });
+      for (const m of html.matchAll(/class="([^"]+)"/g)) m[1].split(/\s+/).forEach((c) => seen.add(c));
+    }
+  }
+  // Coverage, not only correctness: the checklist and the tree markup must both have been seen,
+  // whatever the faculty have signed, or this guard passes over a surface it claims to check.
+  for (const c of ['fd-step', 'fd-step__text', 'fd-check', 'is-done', 'fd-tree', 'fd-tree__verdict']) {
+    assert.ok(seen.has(c), `class check never rendered "${c}" -- a surface dropped out of the guard`);
   }
   // Word-boundary match, not a substring one: `css.includes('.' + c)` would let an invented short
   // name pass on the strength of a longer real class it happens to prefix (".fd-step" would
@@ -651,4 +721,73 @@ test('the class check itself rejects a name that merely prefixes a real class', 
   const re = (c) => new RegExp(`\\.${c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_-])`);
   assert.match(css, re('fd-step'), 'control: the real class still matches');
   assert.doesNotMatch(css, re('fd-ste'), 'a substring check would have passed this');
+});
+
+// ---- safety trees -------------------------------------------------------------------------------
+
+test('a reviewed page with a valid tree renders the tree instead of the checklist', () => {
+  assert.ok(TREE_REFS.length >= 1, 'the real source carries at least one safetyTree');
+  for (const ref of TREE_REFS) {
+    const html = F.fdSheet(TREE_INDEX, TREE_META, { sheet: ref, crisisHtml: '<div class="crisis-block">C</div>' });
+    assert.match(html, /<div class="fd-tree">/, ref);
+    assert.doesNotMatch(html, /class="fd-step"|fd-tree__draft/, ref);
+    assert.match(html, /fd-doccallout/, ref);
+    assert.match(html, /fd-sheet__attribution/, ref);
+    assert.match(html, /class="crisis-block"/, ref);
+  }
+});
+
+test('an unreviewed page keeps its checklist and never shows a tree in production', () => {
+  for (const ref of TREE_REFS) {
+    const html = F.fdSheet(TREE_PENDING_INDEX, TREE_PENDING_META, { sheet: ref });
+    assert.doesNotMatch(html, /fd-tree/, ref);
+    assert.ok(html.split('class="fd-step"').length - 1 >= 3, ref);
+    assert.match(html, /fd-sheet__pending/, ref);
+  }
+});
+
+test('a deploy preview shows the unreviewed tree under the DRAFT banner', () => {
+  for (const ref of TREE_REFS) {
+    const html = F.fdSheet(TREE_PENDING_INDEX, TREE_PENDING_META, { sheet: ref, draftTrees: true });
+    assert.match(html, /fd-tree__draft/, ref);
+    assert.match(html, /fd-sheet__pending/, ref);
+  }
+});
+
+test('the draft banner never appears on a reviewed page', () => {
+  for (const ref of TREE_REFS) {
+    assert.doesNotMatch(F.fdSheet(TREE_INDEX, TREE_META, { sheet: ref, draftTrees: true }), /fd-tree__draft/, ref);
+  }
+});
+
+test('a malformed tree falls back to the checklist', () => {
+  const ref = TREE_REFS[0];
+  const meta = { ...TREE_META, [ref]: { ...TREE_META[ref], safetyTree: { ...TREE_META[ref].safetyTree, start: 'nope' } } };
+  const html = F.fdSheet(F.fdBuildIndex(REAL_MS3_CUR, meta, REAL_TOOLS, REAL_MAN), meta, { sheet: ref });
+  assert.doesNotMatch(html, /fd-tree/);
+  assert.ok(html.split('class="fd-step"').length - 1 >= 3);
+});
+
+test('missing steps still fail closed even when the tree is valid', () => {
+  const ref = TREE_REFS[0];
+  const meta = { ...TREE_META, [ref]: { ...TREE_META[ref], safetySteps: [] } };
+  const html = F.fdSheet(F.fdBuildIndex(REAL_MS3_CUR, meta, REAL_TOOLS, REAL_MAN), meta,
+    { sheet: ref, protocolFailureCopy: 'Unavailable.' });
+  assert.match(html, /fd-sheet__failure" role="alert">Unavailable\./);
+  assert.doesNotMatch(html, /fd-tree/);
+});
+
+test('only kit sheets are safety sheets and take the modifier', () => {
+  assert.equal(F.fdSheetIsSafety(REAL_INDEX, 'kit'), true);
+  for (const ref of KIT_REFS) assert.equal(F.fdSheetIsSafety(REAL_INDEX, ref), true, ref);
+  for (const s of ['settings', 'item:mse.html', 'welcome.md', '', null]) {
+    assert.equal(F.fdSheetIsSafety(REAL_INDEX, s), false, String(s));
+  }
+  assert.match(F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'kit' }), /class="fd-sheet fd-sheet--safety"/);
+  assert.doesNotMatch(F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'settings' }), /fd-sheet--safety/);
+  assert.doesNotMatch(F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'item:mse.html' }), /fd-sheet--safety/);
+});
+
+test('every real safetyTree passes the runtime check the sheet relies on', () => {
+  for (const ref of TREE_REFS) assert.equal(F.fdTreeValid(REAL_META[ref].safetyTree), true, ref);
 });

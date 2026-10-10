@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(585 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(603 distinct `fd-*` selector names, 30 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1029,6 +1029,17 @@ reference its existing "reference · not reproduced" line. On phones the panel s
         .fd-seg__btn   <button> ×2             (On / Off; .is-active + aria-pressed on the chosen one)
       .fd-set__note                            (states what is true of THIS device in each state)
                                                (under a browser DNT/GPC signal: the note alone, no segments)
+    ── safety-tree variant ──
+    .fd-sheet--safety                  (modifier: kit list + kit protocols only)
+    .fd-tree                           (protocol body when the page carries an attested safetyTree)
+      .fd-tree__draft      [role=note] (deploy previews only, unattested tree)
+      .fd-tree__escalate               (every tree screen; the script's urgency upgrade too)
+      .fd-tree__trail                  (answers taken, only once there is one)
+      .fd-tree__heading    [tabindex=-1] (focused after every tree action)
+      .fd-tree__hint / .fd-tree__options > li > .fd-tree__option
+      .fd-tree__verdict(.is-danger) > .fd-tree__tone + .fd-tree__heading
+      .fd-tree__acts / .fd-tree__see / .fd-tree__nav
+      .fd-script > .fd-script__label + .fd-script__parts(dt/dd) > .fd-script__blank
 
 .fd-nudge                           (fixed, z-120, bottom-centre toast)
   .fd-nudge__text
@@ -1055,6 +1066,10 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 | `.fd-set__danger` | The destructive control, **outlined in both states** — calm ("Clear everything on this device") and armed ("Erase everything"). Never filled: a red slab under the fingertip that just armed the confirm invites the reflex second tap the two-tap pattern exists to prevent. Its armed partner is `.fd-btn.fd-btn--ghost`, so the pair still reads red-versus-neutral. |
 | `.fd-set__note--warn` | Modifier: the armed erase warning. **Apply alongside `.fd-set__note`**, not instead of it — it overrides the base note's `--fd-text-mid` ink to `--fd-text`, which is the gated pair against `--fd-danger-wash`. Carries `role="alert"`, and is rendered ONLY when armed: the panel is rebuilt on every render, so the button the learner pressed is gone and the generic focus restore has no equivalent to return to — the live region is the only thing that announces the arming. |
 | `.fd-set__row` | The armed pair's two-button row. Wraps at phone width; both children stretch. The only place in the panel where two controls share a line. |
+| `.fd-sheet--safety` | Scope for the high-contrast safety treatment; never on Settings or item previews. Under it the sheet's own chrome and kit text ink `--fd-text` (7:1+): `.fd-sheet__back`, `.fd-sheet__close`, `.fd-sheet__intro`, `.fd-kitrow__sub`, `.fd-sheet__attribution`, `.fd-sheet__pending`, `.fd-doccallout`. `.fd-sheet__back` and `.fd-sheet__close` are 48px targets (close 48px square), and every ghost button in the drawer (tree Back / Start over, the see links, "Back to where you were", "Open the full page") is 48px with a 2px `--fd-text-dim` border instead of the 1px `--fd-line-strong` hairline. Overrides sit after the base rules. |
+| `.fd-tree__heading` | The one focus target after an answer, back, restart or script toggle (fd_wire focusSheetHeading). |
+| `.fd-tree__verdict` | Action verdict: 6px tone bar + wash; `.is-danger` swaps teal for danger. Tone is also a word. |
+| `.fd-script__blank` | A spoken blank; keeps its brackets so it reads as a blank with styles off. |
 
 At the mobile breakpoint, primary actions, navigation controls, dialog close/back controls, and
 icon-sized controls have a minimum 44px hit target. Icon-sized controls also have a 44px minimum
@@ -1065,6 +1080,8 @@ text, so it stays a high-contrast slab in both themes. Do not override its colou
 
 ⚠ All three sheet variants share `.fd-sheet__head` / `.fd-sheet__body`; only the body contents
 differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
+
+⚠ Tone is never ink: neither --fd-danger nor --fd-teal reaches 7:1 as text on the dark sheet; `.fd-tree__tone` carries the word in --fd-text.
 
 ---
 
@@ -1091,6 +1108,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-primary` | `.fd-due`, `.fd-resume`, `.fd-lastread` | this row is Today's primary action (kicker copy changes; the visual treatment comes from the `.fd-primary` wrapper) |
 | `.is-secondary` | `.fd-continue` | a device-store row won the primary slot; the Continue card drops its gradient and top accent |
 | `.is-print-ready` | `.fd-care-pack` | one to three valid resources and the governed crisis block are present; only this state activates isolated handout print styling |
+| `.is-danger` | `.fd-tree__verdict` | an "Act now" verdict: the tone bar and wash swap teal for danger (the word in `.fd-tree__tone` carries the meaning too) |
 | `.is-checking` / `.is-ready` / `.is-update` / `.is-not-ready` | `.fd-offline` | Worker check pending / all current-route eligible files verified / verified current copy with a waiting update / verification failed or files missing. Never color-only: compact and detailed text name each state. |
 
 ## Keyframes

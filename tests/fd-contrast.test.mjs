@@ -101,6 +101,17 @@ const PAIRS = [
   ['fd-terracotta', 'fd-bg', 3], ['fd-terracotta', 'fd-surface', 3], ['fd-terracotta', 'fd-surface-warm', 3],
   ['fd-olive', 'fd-bg', 3], ['fd-olive', 'fd-surface', 3], ['fd-olive', 'fd-surface-warm', 3],
   ['fd-focus', 'fd-surface', 3], ['fd-focus', 'fd-bg', 3], ['fd-focus', 'fd-surface-warm', 3],
+  // Safety drawer AAA (2026-10-10 spec §4.6): every front-door text pair inside .fd-sheet--safety
+  // reaches 7:1 in both themes (the build-injected crisis block keeps its own governed styling),
+  // and its borders and tone bars reach 3:1. Measured at authoring: on-accent/danger-dark is 7.64
+  // light and 7.0004 dark, the tightest pair here. Callout and selected are the hover grounds of
+  // the drawer's ghost buttons and its close glyph.
+  ['fd-text', 'fd-surface-warm', 7], ['fd-text', 'fd-surface', 7],
+  ['fd-text', 'fd-callout', 7], ['fd-text', 'fd-selected', 7],
+  ['fd-on-accent', 'fd-danger-dark', 7], ['fd-text', 'fd-danger-wash', 7],
+  ['fd-text', 'fd-teal-wash', 7], ['fd-text', 'fd-olive-wash', 7],
+  ['fd-text-dim', 'fd-surface', 3], ['fd-danger', 'fd-danger-wash', 3],
+  ['fd-teal', 'fd-teal-wash', 3], ['fd-danger-dark', 'fd-surface-warm', 3],
 ];
 
 // Inherited from the design prototype (normative when ported; frontdoor.css is since 2026-10-03). Each entry is a

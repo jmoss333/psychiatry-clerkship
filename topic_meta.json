@@ -126,7 +126,166 @@
       "EPA2",
       "EPA3",
       "EPA10"
-    ]
+    ],
+    "safetyTree": {
+      "start": "vitals",
+      "nodes": [
+        {
+          "id": "vitals",
+          "ask": "Check vitals and a fingerstick glucose first. What do they show?",
+          "hint": "Ask the nurse if you can't check them yourself. Note whether the patient is hard to rouse.",
+          "options": [
+            {
+              "label": "Abnormal, or hard to rouse",
+              "next": "unstable"
+            },
+            {
+              "label": "Normal",
+              "next": "onset"
+            },
+            {
+              "label": "Not checked yet",
+              "next": "unchecked"
+            }
+          ]
+        },
+        {
+          "id": "onset",
+          "ask": "Did this start over hours to days, and does it come and go?",
+          "hint": "Compare with their baseline. Lucid on morning rounds and disorganized by evening counts.",
+          "options": [
+            {
+              "label": "Yes",
+              "next": "attention"
+            },
+            {
+              "label": "Don't know their baseline",
+              "next": "attention"
+            },
+            {
+              "label": "No, long-standing and stable",
+              "next": "baseline"
+            }
+          ]
+        },
+        {
+          "id": "attention",
+          "ask": "Test attention: months of the year backward, or digit span. Can they do it?",
+          "hint": "Test it deliberately. Don't infer it from conversation.",
+          "options": [
+            {
+              "label": "No, they lose the sequence",
+              "next": "alertness"
+            },
+            {
+              "label": "Yes, attention is intact",
+              "next": "attentive"
+            }
+          ]
+        },
+        {
+          "id": "alertness",
+          "ask": "Is their thinking disorganized, or is their level of alertness off?",
+          "hint": "Rambling or illogical speech; or too drowsy, or keyed-up and hypervigilant.",
+          "options": [
+            {
+              "label": "Yes",
+              "next": "delirium"
+            },
+            {
+              "label": "No",
+              "next": "partial"
+            }
+          ]
+        },
+        {
+          "id": "unstable",
+          "title": "Abnormal vitals or hard to rouse: medical emergency",
+          "tone": "danger",
+          "act": [
+            "Tell the nurse now. Use your unit's emergency response if they are unresponsive or unstable, per local policy.",
+            "Stay with the patient until help arrives."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "unchecked",
+          "title": "New confusion, vitals unknown: escalate now",
+          "tone": "danger",
+          "act": [
+            "Ask the nurse for vitals and a fingerstick glucose now.",
+            "New confusion is medical until proven otherwise. Tell the team while vitals are checked."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "baseline",
+          "title": "Long-standing and stable: confirm the baseline",
+          "tone": "first",
+          "act": [
+            "Get collateral on their baseline mental status, so \"altered\" means a real change.",
+            "Tell the team what you found. If anything turns out to be new, start this again."
+          ],
+          "escalate": "soon"
+        },
+        {
+          "id": "attentive",
+          "title": "Attention intact: delirium less likely right now",
+          "tone": "first",
+          "act": [
+            "Intact attention makes delirium less likely. Reconsider the diagnosis.",
+            "Retest later this shift. Delirium waxes and wanes.",
+            "Tell the team which test you used and the result."
+          ],
+          "escalate": "soon"
+        },
+        {
+          "id": "delirium",
+          "title": "Features of delirium: a medical emergency",
+          "tone": "danger",
+          "act": [
+            "Tell the team now: delirium until proven otherwise, not a psychiatric label.",
+            "Pull the med list. Flag anticholinergics, benzodiazepines, and opioids.",
+            "Look for the cause: infection, metabolic, hypoxia, withdrawal, retention, constipation, pain."
+          ],
+          "escalate": "now",
+          "see": [
+            "agitation.md"
+          ]
+        },
+        {
+          "id": "partial",
+          "title": "Inattentive, but not the full picture yet",
+          "tone": "first",
+          "act": [
+            "Tell the team about the acute change and the attention result.",
+            "Review the med list for anticholinergics, benzodiazepines, and opioids.",
+            "Retest later this shift. The picture can change within hours."
+          ],
+          "escalate": "soon"
+        }
+      ],
+      "scripts": {
+        "now": {
+          "label": "Ask them to come now",
+          "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
+          "situation": "They have a new change in mental status: [what you saw]. I'm worried this is delirium [or: they are hard to rouse]. I need you to come now.",
+          "background": "[Age], admitted for [reason]. Baseline mental status: [from collateral, or unknown]. Recent medications: [anticholinergics, benzodiazepines, opioids, or other new ones].",
+          "assessment": "Vitals [values, or not yet checked]; glucose [value, or not yet checked]. Attention test: [result]. It started [when] and [comes and goes, or is constant].",
+          "recommendation": "Please come assess now. Is there anything you want started before you get here?",
+          "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
+        },
+        "soon": {
+          "label": "Ask them to see the patient today",
+          "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
+          "situation": "I'm calling about a change in mental status I noticed: [what you saw]. Vitals and glucose are normal and nothing is unsafe right now.",
+          "background": "[Age], admitted for [reason]. Baseline mental status: [from collateral, or unknown]. Recent medications: [anticholinergics, benzodiazepines, opioids, or other new ones].",
+          "assessment": "Attention test: [result]. It started [when]. I'm not sure yet whether this is delirium.",
+          "recommendation": "Can you see them today — when? Should I retest attention later this shift?",
+          "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
+        }
+      }
+    }
   },
   "agitation.md": {
     "read": 4,
@@ -263,7 +422,168 @@
       "EPA2",
       "EPA4",
       "EPA10"
-    ]
+    ],
+    "safetyTree": {
+      "start": "danger",
+      "nodes": [
+        {
+          "id": "danger",
+          "ask": "Is anyone in immediate physical danger right now?",
+          "hint": "An assault in progress, an object being used as a weapon, or the patient hurting themselves.",
+          "options": [
+            {
+              "label": "Yes",
+              "next": "imminent"
+            },
+            {
+              "label": "No",
+              "next": "vitals"
+            }
+          ]
+        },
+        {
+          "id": "vitals",
+          "ask": "Ask the nurse for vitals and a fingerstick glucose. What do they show?",
+          "hint": "Keep one calm voice talking while someone checks.",
+          "options": [
+            {
+              "label": "Something is abnormal",
+              "next": "medical"
+            },
+            {
+              "label": "Normal",
+              "next": "driver"
+            },
+            {
+              "label": "Can't get them yet",
+              "next": "unchecked"
+            }
+          ]
+        },
+        {
+          "id": "driver",
+          "ask": "Could this be delirium, intoxication, or withdrawal?",
+          "hint": "Confusion that comes and goes, poor attention, tremor or sweating, or a recent last drink or dose.",
+          "options": [
+            {
+              "label": "Yes, or not sure",
+              "next": "medical-driver"
+            },
+            {
+              "label": "No",
+              "next": "restless"
+            }
+          ]
+        },
+        {
+          "id": "restless",
+          "ask": "Could it be akathisia, pain, or urinary retention?",
+          "hint": "A new or increased antipsychotic with restlessness they can't sit through, or untreated pain or a full bladder.",
+          "options": [
+            {
+              "label": "Yes, or not sure",
+              "next": "treatable"
+            },
+            {
+              "label": "No",
+              "next": "behavioral"
+            }
+          ]
+        },
+        {
+          "id": "imminent",
+          "title": "Imminent danger: get help, stay safe",
+          "tone": "danger",
+          "act": [
+            "Call for help now: tell the nurse and use your unit's emergency response, per local policy.",
+            "Step back. Keep your exit clear and never stand between the patient and the door.",
+            "Let trained staff lead. Medication or restraint for imminent danger is the team's decision.",
+            "Afterward, tell the team what you saw and join the debrief."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "medical",
+          "title": "Abnormal vitals or glucose: treat it as medical first",
+          "tone": "danger",
+          "act": [
+            "Tell the nurse and your team now. The abnormal value is the emergency.",
+            "Keep de-escalating verbally while the team treats the cause.",
+            "Do not call this behavioral until the cause is found."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "unchecked",
+          "title": "Vitals unknown: escalate while you keep trying",
+          "tone": "danger",
+          "act": [
+            "Keep de-escalating with one calm voice; offer space and real choices.",
+            "Tell the team the vitals and glucose could not be checked. That is itself a reason to come.",
+            "Treat a medical cause as possible until someone has ruled it out."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "medical-driver",
+          "title": "Possible delirium, intoxication, or withdrawal",
+          "tone": "danger",
+          "act": [
+            "Tell the team now. The driver changes the treatment.",
+            "Flag that benzodiazepines can worsen delirium, unless this is alcohol or sedative withdrawal.",
+            "Pull recent vitals, labs, the medication and PRN list, and the last drink or dose."
+          ],
+          "escalate": "now",
+          "see": [
+            "delirium.md",
+            "t_sud.md"
+          ]
+        },
+        {
+          "id": "treatable",
+          "title": "Possible akathisia, pain, or retention",
+          "tone": "first",
+          "act": [
+            "Tell the team. Akathisia is easy to mistake for difficult behavior.",
+            "Pull medication changes and PRNs given in the last day.",
+            "Keep using verbal de-escalation while the team reviews."
+          ],
+          "escalate": "soon"
+        },
+        {
+          "id": "behavioral",
+          "title": "No medical driver found: least restrictive first",
+          "tone": "first",
+          "act": [
+            "Lower stimulation: a quieter space and fewer people.",
+            "One calm voice: name the feeling, offer real choices, set kind and clear limits.",
+            "If medication is needed, the team offers oral before IM. IM is for imminent danger only.",
+            "Afterward, join the debrief: what could have prevented this?"
+          ],
+          "escalate": "soon"
+        }
+      ],
+      "scripts": {
+        "now": {
+          "label": "Ask them to come now",
+          "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
+          "situation": "They are agitated right now and I'm worried about safety: [what they are doing]. I need you to come now.",
+          "background": "[Age], admitted for [reason]. This started [when]. Recent medication changes or PRNs: [list, or none].",
+          "assessment": "Vitals [values, or not yet checked]; glucose [value, or not yet checked]. I'm concerned about [delirium, intoxication, withdrawal, akathisia, or I don't know the cause].",
+          "recommendation": "Please come assess now. The nurse is aware and staff are with the patient. What should we do until you get here?",
+          "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
+        },
+        "soon": {
+          "label": "Ask them to see the patient today",
+          "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
+          "situation": "They were agitated and are calmer now with verbal de-escalation. No one is in immediate danger.",
+          "background": "[Age], admitted for [reason]. This started [when]. Recent medication changes or PRNs: [list, or none].",
+          "assessment": "Vitals and glucose are normal. I'm wondering about [akathisia, pain, retention, or a behavioral cause].",
+          "recommendation": "Could you assess them — when can you come? Is there anything you want done before then?",
+          "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
+        }
+      }
+    }
   },
   "catatonia.md": {
     "read": 3,
@@ -2352,7 +2672,175 @@
       "EPA1",
       "EPA2",
       "EPA10"
-    ]
+    ],
+    "safetyTree": {
+      "start": "danger",
+      "nodes": [
+        {
+          "id": "danger",
+          "ask": "Is there immediate danger right now?",
+          "hint": "An attempt in progress, a means in hand, or the patient trying to leave the unit.",
+          "options": [
+            {
+              "label": "Yes",
+              "next": "imminent"
+            },
+            {
+              "label": "No",
+              "next": "ask"
+            }
+          ]
+        },
+        {
+          "id": "ask",
+          "ask": "Ask directly: \"Have you had thoughts of killing yourself?\"",
+          "hint": "If they say no, also ask: \"Have you wished you would not wake up?\"",
+          "options": [
+            {
+              "label": "Yes, thoughts of killing themselves",
+              "next": "plan"
+            },
+            {
+              "label": "Only a wish to be dead",
+              "next": "plan"
+            },
+            {
+              "label": "No to both",
+              "next": "contradict"
+            }
+          ]
+        },
+        {
+          "id": "plan",
+          "ask": "Ask about plan, intent, and preparation.",
+          "hint": "\"Have you thought about how? How likely are you to act? Have you taken any steps?\"",
+          "options": [
+            {
+              "label": "Any plan, intent, or preparation",
+              "next": "high"
+            },
+            {
+              "label": "None of these",
+              "next": "acute"
+            }
+          ]
+        },
+        {
+          "id": "acute",
+          "ask": "Is any acute risk factor present right now?",
+          "hint": "Intoxication or withdrawal, severe agitation, psychosis or command hallucinations, severe insomnia, new access to lethal means, or unwilling to work on safety.",
+          "options": [
+            {
+              "label": "Yes",
+              "next": "high-acute"
+            },
+            {
+              "label": "No",
+              "next": "thoughts"
+            }
+          ]
+        },
+        {
+          "id": "contradict",
+          "ask": "Does anything contradict that answer?",
+          "hint": "Collateral or a note saying otherwise, a recent attempt, or sudden improvement after severe suicidality.",
+          "options": [
+            {
+              "label": "Yes",
+              "next": "contradicted"
+            },
+            {
+              "label": "No",
+              "next": "denies"
+            }
+          ]
+        },
+        {
+          "id": "imminent",
+          "title": "Immediate danger: do not leave them alone",
+          "tone": "danger",
+          "act": [
+            "Keep the patient in sight and call for help: the nurse and your unit's emergency response, per local policy.",
+            "Do not put yourself at risk. Let trained staff remove any means.",
+            "Tell the team exactly what you saw and heard."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "high",
+          "title": "Plan, intent, or preparation: escalate now",
+          "tone": "danger",
+          "act": [
+            "Tell the nurse now. The patient should not be alone until the team has assessed them.",
+            "Write down their exact words.",
+            "If not yet asked: access to firearms, stockpiled medication, or other means."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "high-acute",
+          "title": "Thoughts plus an acute risk factor: escalate now",
+          "tone": "danger",
+          "act": [
+            "Tell the nurse and your team now.",
+            "Write down their exact words and which risk factor you found.",
+            "Ask about firearms and stockpiled medication if you have not yet."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "thoughts",
+          "title": "Thoughts without plan or acute factors: still report",
+          "tone": "first",
+          "act": [
+            "Tell your team before this encounter ends. You do not decide their risk.",
+            "Ask about lethal means, firearms first, and any past attempt.",
+            "Write down their exact words and the reasons for living they named."
+          ],
+          "escalate": "soon"
+        },
+        {
+          "id": "contradicted",
+          "title": "Denies, but the picture disagrees: escalate now",
+          "tone": "danger",
+          "act": [
+            "Tell your team what contradicts the denial. It outweighs \"denies SI.\"",
+            "Note the source: collateral, the chart, or what you observed."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "denies",
+          "title": "Denies, nothing contradicts: tell the team anyway",
+          "tone": "first",
+          "act": [
+            "\"Denies SI\" is not the end of the assessment. Tell the team what prompted your concern.",
+            "Ask about past attempts and access to lethal means if you have not yet."
+          ],
+          "escalate": "soon"
+        }
+      ],
+      "scripts": {
+        "now": {
+          "label": "Ask them to come now",
+          "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
+          "situation": "I'm calling about a suicide safety concern. They told me: '[their exact words]'. I need you to assess them now.",
+          "background": "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access to lethal means: [firearms, stockpiled medication, other, or unknown].",
+          "assessment": "I'm worried their acute risk is high because [plan, intent, preparation, an acute risk factor, or contradicting collateral]. Right now [who is with them].",
+          "recommendation": "Please come now. Should they be on closer observation until you get here?",
+          "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
+        },
+        "soon": {
+          "label": "Ask them to see the patient today",
+          "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
+          "situation": "I want to report a safety concern from my interview. They told me: '[their exact words]'.",
+          "background": "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access to lethal means: [firearms, stockpiled medication, other, or unknown].",
+          "assessment": "I did not find a plan, intent, preparation, or acute risk factor, but I'm not the one who decides their risk.",
+          "recommendation": "Can you assess them today — when? Is there anything I should do first?",
+          "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
+        }
+      }
+    }
   },
   "suicide.md": {
     "read": 5,

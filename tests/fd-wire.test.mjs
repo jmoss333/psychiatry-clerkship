@@ -472,16 +472,37 @@ test('navigate, preview sheet, and protocol dispatch remain three separate paths
   });
   const preview = F.fdDispatch({ 'data-fd-open': 'scale.html', 'data-fd-sheet': '' }, {}, roleContext);
   assert.deepEqual(preview, {
-    patch: { sheet: 'item:scale.html', sheetFrom: null, stepsDone: {}, searchOpen: false },
+    patch: {
+      sheet: 'item:scale.html', sheetFrom: null, stepsDone: {}, treePath: [], escalate: null,
+      searchOpen: false,
+    },
     route: null,
     effect: { type: 'open-sheet', ref: 'scale.html' },
   });
   const protocol = F.fdDispatch({ 'data-fd-safety': 'risk.md' }, { inSheet: true }, roleContext);
   assert.deepEqual(protocol, {
-    patch: { sheet: 'risk.md', sheetFrom: 'kit', stepsDone: {}, searchOpen: false },
+    patch: {
+      sheet: 'risk.md', sheetFrom: 'kit', stepsDone: {}, treePath: [], escalate: null,
+      nudge: null, searchOpen: false,
+    },
     route: null,
     effect: { type: 'open-protocol', ref: 'risk.md' },
   });
+});
+
+/* The "full read" toast (.fd-nudge) stacks above the safety drawer and its mount is never inerted,
+   so a nudge left over from closing an unread protocol would paint over the reopened modal for
+   the rest of its 8 s timeout. Both safety openers therefore clear it. */
+test('both safety openers clear a pending full-read nudge', () => {
+  const s = { ...roleContext, nudge: 'agitation.md' };
+  const kit = F.fdDispatch({ 'data-fd-safety': '' }, {}, s);
+  assert.equal(kit.patch.sheet, 'kit');
+  assert.ok(Object.prototype.hasOwnProperty.call(kit.patch, 'nudge'), 'kit open patches nudge');
+  assert.equal(kit.patch.nudge, null);
+  const protocol = F.fdDispatch({ 'data-fd-safety': 'agitation.md' }, { inSheet: true }, s);
+  assert.equal(protocol.patch.sheet, 'agitation.md');
+  assert.ok(Object.prototype.hasOwnProperty.call(protocol.patch, 'nudge'), 'protocol open patches nudge');
+  assert.equal(protocol.patch.nudge, null);
 });
 
 test('routed tool actions preserve case, scenario, resume, and faculty-preview parameters', () => {
@@ -565,6 +586,39 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     { stepsDone: { 2: false } });
   assert.equal(F.fdDispatch({ 'data-fd-try-now': 'scale.html' }, {}, roleContext).patch.sheet,
     'item:scale.html');
+});
+
+test('safety tree actions patch only overlay state and ask for the new heading', () => {
+  const s = { ...roleContext, sheet: 'agitation.md', treePath: ['danger.1'], escalate: null };
+  const heading = { type: 'focus-sheet-heading' };
+  assert.deepEqual(F.fdDispatch({ 'data-fd-tree-answer': 'vitals.2' }, { inSheet: true }, s),
+    { patch: { treePath: ['danger.1', 'vitals.2'], escalate: null }, route: null, effect: heading });
+  assert.deepEqual(s.treePath, ['danger.1'], 'the answer never mutates the array it extends');
+  assert.deepEqual(F.fdDispatch({ 'data-fd-tree-back': '' }, { inSheet: true }, s),
+    { patch: { treePath: [], escalate: null }, route: null, effect: heading });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-tree-restart': '' }, { inSheet: true }, s).patch,
+    { treePath: [], escalate: null });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-escalate': 'soon' }, { inSheet: true }, s),
+    { patch: { escalate: 'soon' }, route: null, effect: heading });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-escalate': 'anything' }, { inSheet: true }, s).patch,
+    { escalate: 'now' }, 'an unknown urgency fails toward now');
+  assert.deepEqual(F.fdDispatch({ 'data-fd-escalate-close': '' }, { inSheet: true }, { ...s, escalate: 'now' }),
+    { patch: { escalate: null }, route: null, effect: heading });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-tree-answer': 'not a step' }, { inSheet: true }, s),
+    { patch: {}, route: null, effect: null });
+});
+
+test('opening any sheet, closing it, and history all reset the tree', () => {
+  const s = { ...roleContext, treePath: ['danger.0'], escalate: 'now' };
+  for (const [attrs, ctx] of [[{ 'data-fd-safety': '' }, {}], [{ 'data-fd-safety': 'delirium.md' }, { inSheet: true }],
+    [{ 'data-fd-open': 'scale.html', 'data-fd-sheet': '' }, {}]]) {
+    const patch = F.fdDispatch(attrs, ctx, s).patch;
+    assert.deepEqual(patch.treePath, [], JSON.stringify(attrs));
+    assert.equal(patch.escalate, null, JSON.stringify(attrs));
+  }
+  const closed = F.fdDispatch({ 'data-fd-close-sheet': '' }, {}, { ...s, sheet: 'agitation.md', done: { 'agitation.md': true } });
+  assert.deepEqual(closed.patch.treePath, []);
+  assert.equal(closed.patch.escalate, null);
 });
 
 test('the patient-care destination survives direct links and reader return context', () => {
@@ -777,7 +831,8 @@ test('closing an unread protocol raises an 8-second nudge, but a read one does n
   // has a single reset point rather than a branch that has to recognise which sheet it is
   // closing, and a protocol close disarming an erase nobody armed costs nothing.
   assert.deepEqual(unread.patch, {
-    sheet: null, sheetFrom: null, stepsDone: {}, nudge: 'risk.md', settingsConfirmClear: false,
+    sheet: null, sheetFrom: null, stepsDone: {}, treePath: [], escalate: null, nudge: 'risk.md',
+    settingsConfirmClear: false,
   });
   assert.deepEqual(unread.effect, { type: 'nudge-timeout', delay: 8000 });
   const read = F.fdDispatch({ 'data-fd-close-sheet': '' }, {}, {

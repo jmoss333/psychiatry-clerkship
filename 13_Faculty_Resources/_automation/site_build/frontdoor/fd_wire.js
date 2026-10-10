@@ -38,7 +38,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-care-copy','data-fd-care-copy-selected',
   'data-fd-offline-open','data-fd-offline-close','data-fd-offline-refresh',
   'data-fd-feedback-open','data-fd-feedback-cancel','data-fd-feedback-save',
-  'data-fd-feedback-edit','data-fd-feedback-confirm','data-fd-feedback-delete'
+  'data-fd-feedback-edit','data-fd-feedback-confirm','data-fd-feedback-delete',
+  'data-fd-tree-answer','data-fd-tree-back','data-fd-tree-restart','data-fd-escalate','data-fd-escalate-close'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -107,7 +108,12 @@ var FD_ACTION_SEMANTICS={
   'data-fd-close-nudge':'dismiss protocol nudge',
   'data-fd-try-now':'preview related tool',
   'data-fd-expand-tool':'toggle saved tool workspace width',
-  'data-fd-reading-top':'clear this reading place and focus the article heading'
+  'data-fd-reading-top':'clear this reading place and focus the article heading',
+  'data-fd-tree-answer':'answer a safety tree question',
+  'data-fd-tree-back':'step back one safety tree answer',
+  'data-fd-tree-restart':'restart a safety tree',
+  'data-fd-escalate':'show an escalation script',
+  'data-fd-escalate-close':'return from an escalation script to its tree'
 };
 
 function fdActionSemantic(attr){
@@ -411,7 +417,8 @@ function fdCloseSheet(state){
   var ref=fdProtocolRef(state&&state.sheet);
   var unread=!!ref&&!((state.done||{})[ref]===true);
   return {
-    patch:{sheet:null,sheetFrom:null,stepsDone:{},nudge:unread?ref:null,settingsConfirmClear:false},
+    patch:{sheet:null,sheetFrom:null,stepsDone:{},treePath:[],escalate:null,
+      nudge:unread?ref:null,settingsConfirmClear:false},
     route:null,
     effect:unread?{type:'nudge-timeout',delay:8000}:null
   };
@@ -609,16 +616,21 @@ function fdDispatch(attrs, context, state){
     return {patch:{feedbackNotice:null},route:null,effect:{type:'feedback-remove',id:noteId}};
   }
 
+  /* Both openers clear nudge: the full-read toast stacks above this drawer and its mount is never
+     inerted, so one left by closing an unread protocol would sit over the reopened modal for the
+     rest of its timeout. The timeout later patching nudge:null onto a null key is harmless. */
   if(fdOwn(a,'data-fd-safety')){
     ref=a['data-fd-safety'];
     if(ref){
       return {
-        patch:{sheet:String(ref),sheetFrom:c.inSheet?'kit':null,stepsDone:{},searchOpen:false},
+        patch:{sheet:String(ref),sheetFrom:c.inSheet?'kit':null,stepsDone:{},treePath:[],
+          escalate:null,nudge:null,searchOpen:false},
         route:null,effect:{type:'open-protocol',ref:String(ref)}
       };
     }
     return {
-      patch:{sheet:'kit',sheetFrom:null,stepsDone:{},searchOpen:false},
+      patch:{sheet:'kit',sheetFrom:null,stepsDone:{},treePath:[],escalate:null,nudge:null,
+        searchOpen:false},
       route:null,effect:{type:'open-sheet',ref:null}
     };
   }
@@ -626,7 +638,8 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-try-now')){
     ref=String(a['data-fd-try-now']||'');
     return {
-      patch:{sheet:'item:'+ref,sheetFrom:null,stepsDone:{},searchOpen:false},
+      patch:{sheet:'item:'+ref,sheetFrom:null,stepsDone:{},treePath:[],escalate:null,
+        searchOpen:false},
       route:null,effect:{type:'open-sheet',ref:ref}
     };
   }
@@ -635,7 +648,8 @@ function fdDispatch(attrs, context, state){
     if(fdIsLegacyRouteAlias(ref)) return fdLegacyRouteResult(ref,c,s);
     if(fdOwn(a,'data-fd-sheet')){
       return {
-        patch:{sheet:'item:'+ref,sheetFrom:null,stepsDone:{},searchOpen:false},
+        patch:{sheet:'item:'+ref,sheetFrom:null,stepsDone:{},treePath:[],escalate:null,
+          searchOpen:false},
         route:null,effect:{type:'open-sheet',ref:ref}
       };
     }
@@ -815,6 +829,31 @@ function fdDispatch(attrs, context, state){
     patch=fdClone(s.stepsDone);
     if(n!==null) patch[n]=!patch[n];
     return {patch:{stepsDone:patch},route:null,effect:null};
+  }
+  /* Safety tree (2026-10-10 safety-drawer spec §4.4). Overlay-only state, reset by every sheet
+     open and close. Each action asks for the new heading, so a screen reader announces the
+     next question or the script, and a second press on Enter lands on that heading, not on
+     whichever answer now occupies the pressed button's place. */
+  if(fdOwn(a,'data-fd-tree-answer')){
+    raw=String(a['data-fd-tree-answer']||'');
+    if(!/^[a-z][a-z0-9-]{0,23}\.[0-3]$/.test(raw)) return {patch:{},route:null,effect:null};
+    next=(s.treePath||[]).slice();
+    next.push(raw);
+    return {patch:{treePath:next,escalate:null},route:null,effect:{type:'focus-sheet-heading'}};
+  }
+  if(fdOwn(a,'data-fd-tree-back')){
+    return {patch:{treePath:(s.treePath||[]).slice(0,-1),escalate:null},route:null,
+      effect:{type:'focus-sheet-heading'}};
+  }
+  if(fdOwn(a,'data-fd-tree-restart')){
+    return {patch:{treePath:[],escalate:null},route:null,effect:{type:'focus-sheet-heading'}};
+  }
+  if(fdOwn(a,'data-fd-escalate')){
+    return {patch:{escalate:a['data-fd-escalate']==='soon'?'soon':'now'},route:null,
+      effect:{type:'focus-sheet-heading'}};
+  }
+  if(fdOwn(a,'data-fd-escalate-close')){
+    return {patch:{escalate:null},route:null,effect:{type:'focus-sheet-heading'}};
   }
   if(fdOwn(a,'data-fd-back')){
     if(s.screen==='setup-week'){
@@ -1214,6 +1253,7 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
+  '[data-fd-tree-answer],[data-fd-tree-back],[data-fd-tree-restart],[data-fd-escalate],[data-fd-escalate-close],'+
   '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool],[data-fd-reading-top]';
 
@@ -1446,6 +1486,15 @@ function fdWire(root, initialState, opts){
     var first=(d.querySelector&&d.querySelector('.fd-searchpanel__input'))||fdFocusable(d)[0]||d;
     if(first&&first.focus) try{first.focus();}catch(_){}
   }
+  /* The tree's one focus target. refocusInvoker cannot serve a tree action: an answer's
+     "equivalent control" is whichever button happens to share its attribute in the next node. */
+  function focusSheetHeading(){
+    var d=dialog();
+    var h=d&&d.querySelector&&d.querySelector('.fd-tree__heading');
+    if(!h||!h.focus) return false;
+    try{h.focus();}catch(_){return false;}
+    return true;
+  }
   /* THE EQUIVALENT of a control that is gone: the one live element carrying the same action
      attribute AND the same value, inside the given scope. That pairing is the whole of it -- two
      controls with the same attribute and value do the same thing, which is why focus may move to
@@ -1632,7 +1681,7 @@ function fdWire(root, initialState, opts){
        under it. Left out, it falls to the else branch and is classed as a base change, so every
        arm and every cancel rebuilds contentEl.innerHTML beneath an open sheet. */
     var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,careShareId:true,
-      nudge:true,settingsConfirmClear:true};
+      nudge:true,settingsConfirmClear:true,treePath:true,escalate:true};
     var actionKeys={done:true,justDone:true,progressRaw:true};
     for(var key in patch){
       if(fdOwn(patch,key)&&before[key]!==state[key]){
@@ -2179,7 +2228,8 @@ function fdWire(root, initialState, opts){
        an open panel nobody touched. Focus belongs wherever the learner left it there; the
        fallback is for the element that was destroyed under their finger. */
     else if(afterOverlay&&afterOverlay===beforeOverlay){
-      if(!refocusInvoker(invoker)&&invoker) focusDialog();
+      var headed=!!(result.effect&&result.effect.type==='focus-sheet-heading')&&focusSheetHeading();
+      if(!headed&&!refocusInvoker(invoker)&&invoker) focusDialog();
     }
     return state;
   }
@@ -2457,6 +2507,8 @@ function fdWire(root, initialState, opts){
     merged.sheet=null;
     merged.sheetFrom=null;
     merged.stepsDone={};
+    merged.treePath=[];
+    merged.escalate=null;
     if(snap){
       for(var routeIndex=0;routeIndex<FD_HISTORY_KEYS.length;routeIndex++){
         delete merged[FD_HISTORY_KEYS[routeIndex]];
