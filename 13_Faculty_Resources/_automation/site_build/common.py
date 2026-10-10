@@ -1364,3 +1364,23 @@ def apply_preview_headers(out_dir, context=None, label=""):
         "(https://app.netlify.com)%s" % ((" - " + label) if label else "")
     )
     return True
+
+
+DRAFT_TREES_NEEDLE = "var FD_DRAFT_TREES=false;"
+
+
+def apply_draft_trees_flag(text, context=None):
+    """Show unattested safety trees, under a DRAFT banner, ONLY on a Netlify deploy preview.
+
+    2026-10-10 safety-drawer spec §4.7: an unattested decision tree must never reach a learner,
+    and a preview is where faculty review one before attesting it. Production and branch deploys
+    keep the literal `false`, byte-identical. A missing or duplicated needle raises, so a renamed
+    shell variable fails the build instead of silently dropping the preview.
+    """
+    if context is None:
+        context = os.environ.get("CONTEXT", "")
+    if text.count(DRAFT_TREES_NEEDLE) != 1:
+        raise ValueError("FD_DRAFT_TREES needle missing or duplicated in spa_index.html")
+    if context != PREVIEW_CONTEXT:
+        return text
+    return text.replace(DRAFT_TREES_NEEDLE, "var FD_DRAFT_TREES=true;")

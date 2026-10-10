@@ -651,6 +651,13 @@ if _spa_t.count(_pairings_needle)!=1:
     print("BUILD ABORTED — FD_PAIRINGS needle missing or duplicated in spa_index.html")
     raise SystemExit(1)
 _spa_t=_spa_t.replace(_pairings_needle,"var FD_PAIRINGS=%s;"%frontdoor_catalog._inline_json(_pairings_inline))
+# Safety-drawer draft trees: previews only (common.apply_draft_trees_flag). The resident build
+# copies this index.html, so both sites inherit the same value from the same CONTEXT.
+try:
+    _spa_t=common.apply_draft_trees_flag(_spa_t)
+except ValueError as _draft_err:
+    print("BUILD ABORTED —",_draft_err)
+    raise SystemExit(1)
 open(_spa_out,"w",encoding="utf-8").write(_spa_t)
 print("retired-qb injection:",len(_retired_ids),"id(s)")
 print("draft-qb injection:",len(_draft_ids),"id(s)")
