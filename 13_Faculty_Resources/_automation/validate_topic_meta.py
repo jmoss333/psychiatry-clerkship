@@ -182,6 +182,171 @@ if os.path.exists(family_systems_path):
 errs = []
 def bad(k, msg): errs.append("%s: %s" % (k, msg))
 
+# safetyTree (2026-10-10 safety-drawer spec §4.3): the branching view of a safety-kit protocol.
+# It carries the page's attestation like safetySteps, so its shape is checked here, where a bad
+# tree fails the build before it reaches the one surface that must be right under pressure.
+# Rules that need curriculum.json (kit membership, `see` targets) live in validate_curriculum.py.
+TREE_ID_RE = re.compile(r"^[a-z][a-z0-9-]{0,23}$")
+TREE_BLANK_RE = re.compile(r"\[[^\[\]]{1,80}\]")
+# Mirrors DOSE_RE in .claude/hooks/clerkship_guards.py (itself mirroring check-static-site.mjs).
+TREE_DOSE_RE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg/kg)\b", re.I)
+# Three or more digits in a row covers every crisis line and phone number. Crisis contacts live
+# in crisis_resources.json only; a tree states none.
+TREE_DIGITS_RE = re.compile(r"\d{3,}")
+# validate_curriculum.py's ROLE_AUDIENCE_TOKEN_RE with word boundaries: the bare form fires on
+# "unexplained" and "autoimmune" (UNE), and a tree is clinical prose where both can occur. The
+# optional suffix catches plurals and possessives ("residents", "students'", "MS3s"), which a
+# boundary straight after the token would let through; the closing boundary still spares
+# "unexplained". This is the only gate on tree prose: curriculum.json's scan never sees a tree.
+TREE_AUDIENCE_RE = re.compile(
+    r"\b(?:MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford)(?:s|'s|s')?\b", re.I)
+TREE_SCRIPT_KEYS = ("label", "identify", "situation", "background", "assessment",
+                    "recommendation", "readBack")
+TREE_MAX_QUESTIONS = 5
+TREE_CAPS = {"ask": 140, "hint": 160, "label": 60, "title": 80, "act": 160,
+             "script": 240, "scriptLabel": 60}
+TREE_QUESTION_KEYS = {"id", "ask", "hint", "options"}
+TREE_ACTION_KEYS = {"id", "title", "tone", "act", "escalate", "see"}
+
+
+def tree_text_problems(text, cap, allow_blanks):
+    """Problems with one tree string, as message fragments; empty when it is fine."""
+    if not isinstance(text, str) or not text.strip():
+        return ["must be a non-empty string"]
+    out = []
+    if len(text) > cap:
+        out.append("is %d characters (max %d)" % (len(text), cap))
+    if TREE_DOSE_RE.search(text):
+        out.append("contains a dose literal")
+    if TREE_DIGITS_RE.search(text):
+        out.append("contains a run of 3+ digits (crisis contacts live in crisis_resources.json)")
+    if TREE_AUDIENCE_RE.search(text):
+        out.append("contains an audience-specific token")
+    rest = TREE_BLANK_RE.sub("", text) if allow_blanks else text
+    if "[" in rest or "]" in rest:
+        out.append("has a bracket outside a [blank]" if allow_blanks
+                   else "has a [blank]; blanks belong in scripts only")
+    return out
+
+
+def check_safety_tree(k, v):
+    tree = v.get("safetyTree")
+    if not isinstance(tree, dict):
+        bad(k, "'safetyTree' must be an object")
+        return
+    if "safetySteps" not in v:
+        bad(k, "'safetyTree' requires 'safetySteps' and 'safetyDoc' (the checklist is its fallback)")
+    extra = set(tree) - {"start", "nodes", "scripts"}
+    if extra:
+        bad(k, "safetyTree has unknown key(s): %s" % ", ".join(sorted(extra)))
+    scripts = tree.get("scripts")
+    if not isinstance(scripts, dict) or "now" not in scripts:
+        bad(k, "safetyTree.scripts must be an object with a 'now' script")
+        scripts = scripts if isinstance(scripts, dict) else {}
+    for key in sorted(scripts):
+        script, label = scripts[key], "safetyTree.scripts.%s" % key
+        if key not in ("now", "soon"):
+            bad(k, "%s: script keys are 'now' and 'soon' only" % label)
+            continue
+        if not isinstance(script, dict) or set(script) != set(TREE_SCRIPT_KEYS):
+            bad(k, "%s must have exactly the keys %s" % (label, ", ".join(TREE_SCRIPT_KEYS)))
+            continue
+        for part in TREE_SCRIPT_KEYS:
+            cap = TREE_CAPS["scriptLabel"] if part == "label" else TREE_CAPS["script"]
+            for problem in tree_text_problems(script[part], cap, part != "label"):
+                bad(k, "%s.%s %s" % (label, part, problem))
+    nodes = tree.get("nodes")
+    if not isinstance(nodes, list) or len(nodes) < 2:
+        bad(k, "safetyTree.nodes must be a list of at least 2 nodes")
+        return
+    by_id = {}
+    for i, node in enumerate(nodes):
+        nid = node.get("id") if isinstance(node, dict) else None
+        if not isinstance(nid, str) or not TREE_ID_RE.match(nid):
+            bad(k, "safetyTree.nodes[%d] needs an id matching %s" % (i, TREE_ID_RE.pattern))
+        elif nid in by_id:
+            bad(k, "safetyTree: duplicate node id %r" % nid)
+        else:
+            by_id[nid] = node
+    for nid, node in by_id.items():
+        label, keys = "safetyTree node %r" % nid, set(node)
+        if "ask" in node:
+            if keys - TREE_QUESTION_KEYS:
+                bad(k, "%s mixes question and action keys: %s"
+                    % (label, ", ".join(sorted(keys - TREE_QUESTION_KEYS))))
+                continue
+            for problem in tree_text_problems(node["ask"], TREE_CAPS["ask"], False):
+                bad(k, "%s ask %s" % (label, problem))
+            if "hint" in node:
+                for problem in tree_text_problems(node["hint"], TREE_CAPS["hint"], False):
+                    bad(k, "%s hint %s" % (label, problem))
+            options = node.get("options")
+            if not isinstance(options, list) or not 2 <= len(options) <= 4:
+                bad(k, "%s needs 2-4 options" % label)
+                continue
+            for j, opt in enumerate(options):
+                if not isinstance(opt, dict) or set(opt) != {"label", "next"}:
+                    bad(k, "%s option %d must be {label, next}" % (label, j))
+                    continue
+                for problem in tree_text_problems(opt["label"], TREE_CAPS["label"], False):
+                    bad(k, "%s option %d label %s" % (label, j, problem))
+                if opt["next"] not in by_id:
+                    bad(k, "%s option %d points at unknown node %r" % (label, j, opt["next"]))
+            continue
+        if keys - TREE_ACTION_KEYS or not {"title", "tone", "act", "escalate"} <= keys:
+            bad(k, "%s must be a question {ask, options} or an action {title, tone, act, escalate}"
+                % label)
+            continue
+        for problem in tree_text_problems(node["title"], TREE_CAPS["title"], False):
+            bad(k, "%s title %s" % (label, problem))
+        if node["tone"] not in ("danger", "first"):
+            bad(k, "%s tone must be 'danger' or 'first'" % label)
+        acts = node["act"]
+        if not isinstance(acts, list) or not 1 <= len(acts) <= 4:
+            bad(k, "%s needs 1-4 actions" % label)
+        else:
+            for j, act in enumerate(acts):
+                for problem in tree_text_problems(act, TREE_CAPS["act"], False):
+                    bad(k, "%s act %d %s" % (label, j, problem))
+        if node["escalate"] not in scripts:
+            bad(k, "%s escalates to missing script %r" % (label, node["escalate"]))
+        if "see" in node:
+            see = node["see"]
+            if (not isinstance(see, list) or not 1 <= len(see) <= 2
+                    or not all(isinstance(s, str) and s for s in see)):
+                bad(k, "%s see must list 1-2 page refs" % label)
+            elif k in see:
+                bad(k, "%s see must not name its own page" % label)
+    start = tree.get("start")
+    if start not in by_id:
+        bad(k, "safetyTree.start %r names no node" % (start,))
+        return
+    # Walk every path from start: no cycle, no unreachable node, no path past the budget.
+    reached, found = set(), set()
+
+    def walk(nid, asked, on_path):
+        reached.add(nid)
+        node = by_id[nid]
+        if "ask" not in node:
+            return
+        if nid in on_path:
+            found.add("safetyTree has a cycle through node %r" % nid)
+            return
+        if asked >= TREE_MAX_QUESTIONS:
+            found.add("safetyTree: a path from start asks more than %d questions"
+                      % TREE_MAX_QUESTIONS)
+            return
+        options = node.get("options")
+        for opt in options if isinstance(options, list) else []:
+            if isinstance(opt, dict) and opt.get("next") in by_id:
+                walk(opt["next"], asked + 1, on_path | {nid})
+
+    walk(start, 0, frozenset())
+    for message in sorted(found):
+        bad(k, message)
+    for nid in sorted(set(by_id) - reached):
+        bad(k, "safetyTree node %r is unreachable from start" % nid)
+
 def hrefs_from_cta(cta):
     if isinstance(cta, dict):
         href = cta.get("href")
@@ -317,6 +482,8 @@ for k, v in d.items():
             bad(k, "'safetySteps' entries must be non-empty strings")
         if not isinstance(v.get("safetyDoc"), str) or not v.get("safetyDoc", "").strip():
             bad(k, "'safetySteps' requires a non-empty 'safetyDoc' documentation line")
+    if "safetyTree" in v:
+        check_safety_tree(k, v)
 
 topics = [k for k in d if k != "_note"]
 if errs:
