@@ -194,8 +194,12 @@ TREE_DOSE_RE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg/kg)\b", re.I)
 # in crisis_resources.json only; a tree states none.
 TREE_DIGITS_RE = re.compile(r"\d{3,}")
 # validate_curriculum.py's ROLE_AUDIENCE_TOKEN_RE with word boundaries: the bare form fires on
-# "unexplained" and "autoimmune" (UNE), and a tree is clinical prose where both can occur.
-TREE_AUDIENCE_RE = re.compile(r"\b(?:MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford)\b", re.I)
+# "unexplained" and "autoimmune" (UNE), and a tree is clinical prose where both can occur. The
+# optional suffix catches plurals and possessives ("residents", "students'", "MS3s"), which a
+# boundary straight after the token would let through; the closing boundary still spares
+# "unexplained". This is the only gate on tree prose: curriculum.json's scan never sees a tree.
+TREE_AUDIENCE_RE = re.compile(
+    r"\b(?:MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford)(?:s|'s|s')?\b", re.I)
 TREE_SCRIPT_KEYS = ("label", "identify", "situation", "background", "assessment",
                     "recommendation", "readBack")
 TREE_MAX_QUESTIONS = 5

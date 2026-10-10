@@ -211,6 +211,15 @@ class SafetyTreeValidatorTest(unittest.TestCase):
         r = self.run_tree(lambda t: t["nodes"][0].__setitem__("hint", "Unexplained autoimmune signs."))
         self.assertEqual(r.returncode, 0, r.stdout)
 
+    def test_rejects_plural_and_possessive_audience_tokens(self):
+        for field, text in (("act", "Page the residents now."),
+                            ("title", "Students stay at bedside."),
+                            ("act", "Read the residents' note.")):
+            def mutate(t, field=field, text=text):
+                t["nodes"][2][field] = [text] if field == "act" else text
+            with self.subTest(text=text):
+                self.assert_rejects("audience-specific token", mutate)
+
     def test_rejects_a_tree_without_the_checklist_fallback(self):
         self.assert_rejects("requires 'safetySteps'", record=dict(BASE, safetyTree=TREE))
 
