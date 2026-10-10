@@ -1,7 +1,8 @@
 # Safety drawer: decision trees + escalation scripts — design
 
 - **Date:** 2026-10-10
-- **Status:** DRAFT — awaiting owner review of §6 (clinical content) before planning
+- **Status:** APPROVED 2026-10-10 (rulings in §7). §6 is approved as the text to encode; its
+  clinical sign-off is still the owner's console re-attestation of the three kit pages (§8)
 - **Owner / reviewer of record:** Joshua Moss, MD
 - **Branch:** `claude/safety-button-slideout-drawer-7b5040` (verified at `78082c88`)
 - **Class:** design spec (neutral under `check_policy_content_separation.py`)
@@ -458,6 +459,9 @@ see: Agitation
   shift?"
 
 ## 7. Decisions for the owner
+
+**Owner rulings, 2026-10-10:** D1 — keep "Escalate to attending". D2, D3, D4 — approved as
+written. D5 — open; settled at PR 2 merge time. Spec approved for planning.
 
 - **D1 — Button label.** "Escalate to attending" is shipped as asked. On many teams a student's
   first call is the resident, and the shell's own failure copy says "your supervising
