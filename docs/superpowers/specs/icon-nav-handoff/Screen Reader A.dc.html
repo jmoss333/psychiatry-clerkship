@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Site A Reader kicker</title>
+<script src="./support.js"></script>
+<script src="icons/wf-icons.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.th{--bg:#f6f3ee;--surface:#ffffff;--text:#3b332c;--mid:#64574b;--dim:#76695d;--teal:#3a7d6e;--tealdeep:#2c6356;--wash:#edf4f2;--olive:#8b7040;--line:#ebe5da;--line2:#ddd3c6}
+.th.dark{--bg:#211d1a;--surface:#2a2521;--text:#ece5db;--mid:#bcb0a2;--dim:#a2968a;--teal:#5fa392;--tealdeep:#7fc0ae;--wash:#1d332e;--olive:#c0a06a;--line:#3a332c;--line2:#4a4139}
+.ic{display:block;flex:none;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.s14{width:14px;height:14px;stroke-width:2.1}.s16{width:16px;height:16px;stroke-width:2}.s18{width:18px;height:18px;stroke-width:1.8}
+a{color:inherit}
+</style>
+</helmet>
+<div class="th {{theme}}" style="width: 2000px; height: 1100px; box-sizing: border-box; padding: 64px; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; display: flex; gap: 64px; align-items: flex-start;">
+  <div style="width: 520px; flex: none; display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-size: 14px; font-weight: 600; color: var(--mid);">Before — shipped</div>
+    <img src="/_blob/f2dd132307e12d2d4f27c51d45d8cbfe" alt="Shipped Reader: only a Library back link" style="width: 520px; border-radius: 10px; border: 1px solid var(--line2); display: block;">
+    <div style="font-size: 13px; color: var(--mid); line-height: 1.5;">"‹ Library" is the only wayfinding cue. Nothing says which section you came from or what kind of page this is.</div>
+  </div>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-size: 14px; font-weight: 600; color: var(--tealdeep);">After — the kicker names the section; the status line names the type</div>
+    <div style="width: {{w}}px; background: var(--bg); border: 1px solid var(--line2); border-radius: {{radius}}px; padding: {{pad}}; box-sizing: border-box; display: flex; gap: 48px; align-items: flex-start;">
+      <article style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+        <nav aria-label="Breadcrumb" style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 14px; color: var(--mid);">
+          <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 2px; color: var(--tealdeep); font-weight: 600; text-decoration: none;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.chevronLeft}}"></path></svg>Library</a>
+          <sc-if value="{{fromSection}}" hint-placeholder-val="{{ true }}">
+            <span style="display: flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="color: var(--line2); padding: 0 4px;">·</span><a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 6px; color: var(--mid); text-decoration: none;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.evidence}}"></path></svg>Evidence &amp; exam</a></span>
+          </sc-if>
+        </nav>
+        <h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: {{h1}}px; line-height: 1.1;">Book Library</h1>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; color: var(--mid);"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.bookList}}"></path></svg><strong style="font-weight: 600; color: var(--text);">Book list</strong><span>· 3 min · Reviewed by [faculty reviewer, as rendered today]</span></div>
+        <div style="height: 1px; background: var(--line2); margin: 8px 0;"></div>
+        <h2 style="margin: 8px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 22px;">[Topic heading 1]</h2>
+        <ul style="margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 15px;">
+          <li style="display: flex; gap: 8px; align-items: center;"><a href="#" style="color: var(--tealdeep);">[Book title]</a><span style="color: var(--mid);"><svg class="ic s14" viewBox="0 0 24 24" role="img" aria-label="opens in a new tab"><path d="{{i.external}}"></path></svg></span></li>
+          <li style="display: flex; gap: 8px; align-items: center;"><a href="#" style="color: var(--tealdeep);">[Book title]</a><span style="color: var(--mid);"><svg class="ic s14" viewBox="0 0 24 24" role="img" aria-label="opens in a new tab"><path d="{{i.external}}"></path></svg></span></li>
+        </ul>
+        <h2 style="margin: 12px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 22px;">[Topic heading 2]</h2>
+        <div style="font-size: 13px; color: var(--dim);">Content unchanged. Only off-site book links gain the trailing external mark.</div>
+      </article>
+      <sc-if value="{{isDesktop}}" hint-placeholder-val="{{ true }}">
+        <aside style="width: 220px; flex: none; display: flex; flex-direction: column; gap: 8px; font-size: 14px; padding-top: 52px;">
+          <div style="font-weight: 600; color: var(--mid);">On this page</div>
+          <a href="#" style="color: var(--tealdeep); text-decoration: none; box-shadow: inset 2px 0 0 var(--teal); padding-left: 10px;">[Topic heading 1]</a>
+          <a href="#" style="color: var(--mid); text-decoration: none; padding-left: 10px;">[Topic heading 2]</a>
+          <a href="#" style="color: var(--mid); text-decoration: none; padding-left: 10px;">…14 topics</a>
+        </aside>
+      </sc-if>
+    </div>
+    <div style="max-width: 1180px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; font-size: 14px; color: var(--mid); line-height: 1.55; margin-top: 8px;">
+      <div><strong style="color: var(--text);">Breadcrumb, not a second back link.</strong> "‹ Library" keeps its role and target. The section segment is a separate link that returns to the Library with that section selected. It's restored from <code>history.state</code> as in D3, with no new storage.</div>
+      <div><strong style="color: var(--text);">Arrived by search or deep link?</strong> The section segment is hidden (switch the <em>state</em> tweak to "direct"); "‹ Library" stays. The section is known from the page's catalogue entry, so it could also be shown here. Owner's call: we recommend showing it.</div>
+      <div><strong style="color: var(--text);">Type in the status line.</strong> The same icon and word as the Library row. Governance text ("Reviewed by…") renders exactly as today, after the type.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"device":{"editor":"enum","options":["desktop","mobile"],"default":"desktop"},"state":{"editor":"enum","options":["from-section","direct"],"default":"from-section"},"$preview":{"width":2000,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var W = window.WFIcons;
+    var desk = this.props.device !== 'mobile';
+    return {
+      i: W ? W.all() : {},
+      theme: this.props.theme === 'dark' ? 'dark' : '',
+      isDesktop: desk,
+      fromSection: this.props.state !== 'direct',
+      w: desk ? 1180 : 390, pad: desk ? '40px 64px 48px' : '20px 18px 28px', radius: desk ? 10 : 28, h1: desk ? 40 : 30
+    };
+  }
+}
+</script>
+</body>
+</html>

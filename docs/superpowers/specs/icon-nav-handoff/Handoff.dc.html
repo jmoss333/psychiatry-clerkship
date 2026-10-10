@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Handoff bundle</title>
+<script src="./support.js"></script>
+<script src="icons/wf-icons.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.th{--bg:#f6f3ee;--surface:#ffffff;--text:#3b332c;--mid:#64574b;--dim:#76695d;--teal:#3a7d6e;--tealdeep:#2c6356;--wash:#edf4f2;--danger:#a34132;--line:#ebe5da;--line2:#ddd3c6}
+.th.dark{--bg:#211d1a;--surface:#2a2521;--text:#ece5db;--mid:#bcb0a2;--dim:#a2968a;--teal:#5fa392;--tealdeep:#7fc0ae;--wash:#1d332e;--danger:#d97a68;--line:#3a332c;--line2:#4a4139}
+.ic{display:block;flex:none;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.s16{width:16px;height:16px;stroke-width:2}.s18{width:18px;height:18px;stroke-width:1.8}
+a{color:#2c6356}a:hover{color:#3a7d6e}
+td,th{text-align:left;vertical-align:top}
+</style>
+</helmet>
+<div class="th {{theme}}" style="width: 1440px; min-height: 2400px; box-sizing: border-box; padding: 96px 120px; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.55; display: flex; flex-direction: column; gap: 56px;">
+  <header style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="font-size: 14px; color: var(--mid);">Handoff bundle · mirrors the One Thread structure</div>
+    <h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 48px; line-height: 1.1;">Rollout, decisions, class map, files</h1>
+  </header>
+
+  <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;">
+    <sc-for list="{{phases}}" as="p" hint-placeholder-count="2">
+      <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px 28px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 26px; font-weight: 600;">{{p.title}}</h2>
+        <div style="font-size: 13px; color: var(--mid);">One PR per phase · each reverts with one commit · no data migration</div>
+        <sc-for list="{{p.rows}}" as="r" hint-placeholder-count="4">
+          <div style="display: flex; gap: 14px; padding-top: 12px; border-top: 1px solid var(--line);">
+            <div style="width: 44px; flex: none; font-weight: 700; color: var(--tealdeep);">{{r.id}}</div>
+            <div style="display: flex; flex-direction: column; gap: 2px;"><div style="font-weight: 600;">{{r.name}}</div><div style="font-size: 14px; color: var(--mid);">{{r.what}}</div></div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 14px;">
+    <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 30px; font-weight: 700;">Proposed D7 (same format as D1–D6)</h2>
+    <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead><tr style="background: var(--bg); color: var(--mid);"><th style="padding: 12px 18px; font-weight: 600; width: 60px;">ID</th><th style="padding: 12px 18px; font-weight: 600; width: 160px;">Decision</th><th style="padding: 12px 18px; font-weight: 600;">Answer</th><th style="padding: 12px 18px; font-weight: 600; width: 200px;">Affects</th></tr></thead>
+        <tbody><tr style="border-top: 1px solid var(--line);"><td style="padding: 14px 18px; font-weight: 700;">D7</td><td style="padding: 14px 18px;">New icons</td><td style="padding: 14px 18px; color: var(--mid);"><strong style="color: var(--text);">Amend "No new icons"</strong>: a vendored Lucide subset (ISC) at <code>--fd-glyph-sm/md/lg</code>, three colour roles (text-mid · teal-deep · danger), every icon paired with a visible label, no icon-only navigation.</td><td style="padding: 14px 18px; color: var(--mid);">W1–W3, shell + Library</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;">
+    <sc-for list="{{maps}}" as="m" hint-placeholder-count="2">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 24px; font-weight: 600;">{{m.title}}</h2>
+        <div style="font-size: 13px; color: var(--danger);">Verify every row against the repo before use.</div>
+        <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead><tr style="background: var(--bg); color: var(--mid);"><th style="padding: 10px 14px; font-weight: 600;">Existing</th><th style="padding: 10px 14px; font-weight: 600;">Change / new class</th></tr></thead>
+            <tbody>
+              <sc-for list="{{m.rows}}" as="r" hint-placeholder-count="8">
+                <tr style="border-top: 1px solid var(--line);"><td style="padding: 9px 14px;"><code>{{r.a}}</code></td><td style="padding: 9px 14px; color: var(--mid);">{{r.b}}</td></tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-for>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 14px;">
+    <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 30px; font-weight: 700;">Files in this bundle</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+      <a href="handoff/README.md" style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; gap: 12px; text-decoration: none; color: var(--text);"><span style="color: var(--mid); padding-top: 2px;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.reading}}"></path></svg></span><span style="display: flex; flex-direction: column;"><strong>handoff/README.md</strong><span style="font-size: 13px; color: var(--mid);">The full spec, in the One Thread section order</span></span></a>
+      <a href="handoff/PROMPT_CLERKSHIP.md" style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; gap: 12px; text-decoration: none; color: var(--text);"><span style="color: var(--mid); padding-top: 2px;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.ask}}"></path></svg></span><span style="display: flex; flex-direction: column;"><strong>handoff/PROMPT_CLERKSHIP.md</strong><span style="font-size: 13px; color: var(--mid);">Kickoff for Site A, Phase W1</span></span></a>
+      <a href="handoff/PROMPT_TOOLS_HUB.md" style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; gap: 12px; text-decoration: none; color: var(--text);"><span style="color: var(--mid); padding-top: 2px;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.ask}}"></path></svg></span><span style="display: flex; flex-direction: column;"><strong>handoff/PROMPT_TOOLS_HUB.md</strong><span style="font-size: 13px; color: var(--mid);">Kickoff for Site B, Phase H1</span></span></a>
+      <a href="icons/wf-icons.js" style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; gap: 12px; text-decoration: none; color: var(--text);"><span style="color: var(--mid); padding-top: 2px;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.tool}}"></path></svg></span><span style="display: flex; flex-direction: column;"><strong>icons/wf-icons.js</strong><span style="font-size: 13px; color: var(--mid);">The exact subset and <code>icon()</code> API (ES5)</span></span></a>
+      <a href="icons/SOURCES.md" style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; gap: 12px; text-decoration: none; color: var(--text);"><span style="color: var(--mid); padding-top: 2px;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.bookList}}"></path></svg></span><span style="display: flex; flex-direction: column;"><strong>icons/SOURCES.md</strong><span style="font-size: 13px; color: var(--mid);">Per-glyph upstream name, plus a version slot</span></span></a>
+      <a href="icons/LICENSE-lucide.txt" style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; gap: 12px; text-decoration: none; color: var(--text);"><span style="color: var(--mid); padding-top: 2px;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.reference}}"></path></svg></span><span style="display: flex; flex-direction: column;"><strong>icons/LICENSE-lucide.txt</strong><span style="font-size: 13px; color: var(--mid);">ISC (+ Feather MIT); replace with the pinned release's file</span></span></a>
+    </div>
+    <div style="font-size: 13px; color: var(--dim);">Screens on this canvas: Shell A · Library A · Reader A · Explore B · Home B · Tool Header B, each with theme / device / state tweaks. "Before" images are the brief's screenshots. "After" PNGs for <code>screenshots/</code> come from Share › Export.</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var W = window.WFIcons;
+    function r(id, name, what) { return { id: id, name: name, what: what }; }
+    function m(a, b) { return { a: a, b: b }; }
+    return {
+      i: W ? W.all() : {},
+      theme: this.props.theme === 'dark' ? 'dark' : '',
+      phases: [
+        { title: 'Site A — learning site', rows: [
+          r('C0', 'Spec only', 'Fixed bundle, ASSETS-OMITTED.md, D7 answer. After #1001 and #1008; Lucide pinned first.'),
+          r('C1', 'Icon module', 'FD/fd_icons.js (fdIcon + fdEsc); marker 40 → 41. Nothing visible changes.'),
+          r('W1', 'Shell', 'Dock and tab icons; ✚ / ⚙ redrawn; 64 px bar with the clamp on an inner label. One baseline refresh.'),
+          r('W2', 'Library', 'Index icons; row type column derived in the renderer (no kind field); reference type; existing type words kept unless N3.'),
+          r('W3', 'Reader + Search', 'Breadcrumb kicker with section icon; search result icons replace dots. No external marks in reading content.'),
+          r('W4', 'Case Journeys', 'Footprints identity. Phase 3, after faculty re-attestation.')
+        ]},
+        { title: 'Site B — tools hub', rows: [
+          r('R1', 'Icon library', 'Prefixed wf-* names (no rc-icons name overwritten); 🆘 / 🚨 → life-buoy, ⚠ / 🛑 → calm notice icon; size aliases. Lucide pinned first.'),
+          r('H1', 'Nav', 'Nav and bottom-tab icons.'),
+          r('H2', 'Explore', 'Help-now band ("Crisis" on every item, tel:988, 4 tools on phone), group headings, chip icons, trail mark, Family -strong on -light, phone filters, toast.'),
+          r('H3', 'Home', 'Intent icons + proposed subtitles (copy sign-off first).'),
+          r('H4', 'Tool header', 'One row ≤ 56 px keeping name, Saved, toggle, 988; category kicker below. N2 and same-tab ship as their own PRs.'),
+          r('H5', 'Stepper', 'One shared stepper, adopted tool by tool.')
+        ]}
+      ],
+      maps: [
+        { title: 'Site A class map (inventory-enforced)', rows: [
+          m('.fd-dock', '+ .fd-dock__icon'), m('.fd-tabs', '+ .fd-tabs__icon'), m('.fd-kit__index-item', '+ .fd-kit__index-icon'),
+          m('.fd-kit__group', '+ .fd-kit__group-icon'), m('.fd-row / .fd-kit__reading', '+ .fd-row__type, .fd-row__trail'),
+          m('.fd-chip.is-tool', 'kept unless N3 (also on Today/Path)'), m('.fd-thread__*', 'reuses .fd-row__type'), m('.fd-quicktool__dot', '→ .fd-quicktool__icon'),
+          m('.fd-kit__safety', 'flagged as mislabelled: confirm the element first'), m('.fd-dock', '+ .fd-dock__label (carries the clamp)'), m('(new)', '.fd-kicker, .fd-kicker__section, .fd-stepper__current')
+        ]},
+        { title: 'Site B class map', rows: [
+          m('.rc-shell-toolcard', '+ .rc-shell-toolcard-trail; stretched title link'), m('.rc-shell-filterchip', '+ .rc-shell-filterchip-icon; .is-cat-family → --rc-cat-family-strong'),
+          m('.rc-shell-badge', 'icon before the word; Family -strong on -light (6.46:1)'), m('.rc-shell-eyebrow', 'unchanged'),
+          m('(new)', '.rc-shell-helpband, .rc-shell-grouphead, .rc-shell-audiencesheet'), m('.rc-ts-*', '+ .rc-ts-cat (kicker); .rc-ts-name kept'),
+          m('(new shared)', '.rc-stepper'), m('rc-tokens.css', '+ --rc-icon-xs/sm/md/lg (decision)')
+        ]}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
