@@ -62,7 +62,8 @@ test('snapshot is stamped: ReConnect repo, file and a full commit sha', () => {
 test('both repos pin the same Lucide release', () => {
   assert.equal(snapshot.lucideVersion, '1.54.0');
   assert.equal(vendor.source.version, snapshot.lucideVersion);
-  assert.match(iconsSrc, new RegExp(`var FD_ICON_SOURCE='lucide-static@${snapshot.lucideVersion.replace(/\./g, '\\.')}';`));
+  assert.ok(iconsSrc.includes(`var FD_ICON_SOURCE='lucide-static@${snapshot.lucideVersion}';`),
+    'fd_icons.js must name the same lucide-static release');
 });
 
 test('the shared set is the pinned overlap (no silent shrink)', () => {
