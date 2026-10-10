@@ -13,6 +13,8 @@ import sys
 import tempfile
 import unittest
 
+from jsonschema import Draft7Validator
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 VALIDATOR = os.path.join(HERE, "validate_topic_meta.py")
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -48,6 +50,59 @@ def _run(entry):
 
 
 BASE = {"read": 4, "tldr": "t", "points": ["p"]}
+
+SCRIPT = {
+    "label": "Come now", "identify": "This is [your name], [your role].",
+    "situation": "Situation [what you saw].", "background": "Background.",
+    "assessment": "Assessment.", "recommendation": "Recommendation.",
+    "readBack": "Read back [their instructions].",
+}
+
+# A minimal valid tree: two questions, two actions, both scripts. Mutations below break exactly
+# one rule each.
+TREE = {
+    "start": "q1",
+    "nodes": [
+        {"id": "q1", "ask": "Question one?", "hint": "Hint.",
+         "options": [{"label": "Yes", "next": "a1"}, {"label": "No", "next": "q2"}]},
+        {"id": "q2", "ask": "Question two?",
+         "options": [{"label": "Left", "next": "a1"}, {"label": "Right", "next": "a2"}]},
+        {"id": "a1", "title": "Act one", "tone": "danger", "act": ["Do one."],
+         "escalate": "now", "see": ["other.md"]},
+        {"id": "a2", "title": "Act two", "tone": "first", "act": ["Do two."], "escalate": "soon"},
+    ],
+    "scripts": {"now": SCRIPT, "soon": dict(SCRIPT, label="See today")},
+}
+
+
+class SafetyTreeSchemaTest(unittest.TestCase):
+    def setUp(self):
+        with open(os.path.join(REPO, "topic_meta.schema.json"), encoding="utf-8") as fh:
+            self.validator = Draft7Validator(json.load(fh))
+
+    def errors(self, tree):
+        return list(self.validator.iter_errors({"x.md": dict(BASE, safetyTree=tree)}))
+
+    def test_accepts_a_valid_tree(self):
+        self.assertEqual(self.errors(TREE), [])
+
+    def test_rejects_a_tree_without_a_now_script(self):
+        tree = copy.deepcopy(TREE)
+        del tree["scripts"]["now"]
+        self.assertTrue(self.errors(tree))
+
+    def test_rejects_a_node_that_mixes_question_and_action_keys(self):
+        tree = copy.deepcopy(TREE)
+        tree["nodes"][0]["title"] = "Both"
+        self.assertTrue(self.errors(tree))
+
+    def test_rejects_an_unknown_tree_key(self):
+        self.assertTrue(self.errors(dict(TREE, extra=True)))
+
+    def test_the_soon_script_is_checked_through_its_ref(self):
+        tree = copy.deepcopy(TREE)
+        del tree["scripts"]["soon"]["readBack"]
+        self.assertTrue(self.errors(tree))
 
 
 class SafetyStepsTest(unittest.TestCase):
