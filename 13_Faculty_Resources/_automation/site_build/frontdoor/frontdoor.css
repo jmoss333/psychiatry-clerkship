@@ -1689,6 +1689,47 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 @keyframes fdSlideR{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
 @keyframes fdSlideL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
 
+/* ═══ Safety drawer: decision trees + escalation scripts ═════════════════════
+   2026-10-10 safety-drawer spec §4.6. Text inside a safety sheet is --fd-text on a surface or a
+   wash (11:1+ both themes); tone is a 6px bar and a WORD ("Act now" / "First move"), never red
+   or teal text, because neither ink reaches 7:1 on the dark sheet. The one filled control,
+   Escalate, is on-accent over danger-dark (7.64 light / 7.0004 dark). Controls are at least
+   48px tall: the 44px touch token plus one 4px step. */
+.fd-sheet--safety .fd-sheet__body{color:var(--fd-text)}
+.fd-tree{display:flex;flex-direction:column;gap:var(--fd-space-6);margin-bottom:var(--fd-space-7)}
+.fd-tree__draft{margin:0;padding:var(--fd-space-5) var(--fd-space-6);border:2px dashed var(--fd-text);border-radius:var(--fd-radius-md);background:var(--fd-olive-wash);color:var(--fd-text);font-size:var(--fd-font-sm);font-weight:700}
+.fd-tree__escalate{display:block;width:100%;min-height:calc(var(--fd-target-touch) + var(--fd-space-2));padding:var(--fd-space-5) var(--fd-space-6);border:2px solid var(--fd-danger-dark);border-radius:var(--fd-radius-md);background:var(--fd-danger-dark);color:var(--fd-on-accent);font:inherit;font-size:var(--fd-font-md);font-weight:700;text-align:center;cursor:pointer}
+.fd-tree__escalate:hover{text-decoration:underline}
+.fd-tree__trail{margin:0;padding-left:var(--fd-space-8);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text)}
+.fd-tree__trail li + li{margin-top:var(--fd-space-2)}
+.fd-tree__heading{margin:0;font-size:var(--fd-font-xl);line-height:1.3;color:var(--fd-text)}
+.fd-tree__hint{margin:var(--fd-space-3) 0 0;font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text)}
+.fd-tree__options{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--fd-space-4)}
+.fd-tree__option{display:block;width:100%;min-height:calc(var(--fd-target-touch) + var(--fd-space-2));padding:var(--fd-space-5) var(--fd-space-6);border:2px solid var(--fd-text-dim);border-radius:var(--fd-radius-md);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-md);font-weight:600;text-align:left;cursor:pointer}
+.fd-tree__option:hover{border-color:var(--fd-text)}
+.fd-tree__verdict{padding:var(--fd-space-5) var(--fd-space-6);border-left:6px solid var(--fd-teal);border-radius:var(--fd-radius-md);background:var(--fd-teal-wash)}
+.fd-tree__verdict.is-danger{border-left-color:var(--fd-danger);background:var(--fd-danger-wash)}
+.fd-tree__tone{display:block;margin-bottom:var(--fd-space-2);font-size:var(--fd-font-xs);font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--fd-text)}
+.fd-tree__acts{margin:0;padding-left:var(--fd-space-8);font-size:var(--fd-font-md);line-height:1.5;color:var(--fd-text)}
+.fd-tree__acts li + li{margin-top:var(--fd-space-3)}
+.fd-tree__see{display:flex;flex-direction:column;gap:var(--fd-space-3)}
+.fd-tree__nav{display:flex;flex-wrap:wrap;gap:var(--fd-space-4)}
+.fd-script{display:flex;flex-direction:column;gap:var(--fd-space-5)}
+.fd-script__label{margin:0;font-weight:700;color:var(--fd-text)}
+.fd-script__parts{margin:0}
+.fd-script__parts dt{margin-top:var(--fd-space-5);font-size:var(--fd-font-xs);font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--fd-text)}
+.fd-script__parts dd{margin:var(--fd-space-2) 0 0;font-size:var(--fd-font-lg);line-height:1.5;color:var(--fd-text)}
+.fd-script__blank{padding:0 var(--fd-space-1);border-bottom:2px dashed var(--fd-text);border-radius:var(--fd-radius-2xs);background:var(--fd-olive-wash);color:var(--fd-text)}
+@media (forced-colors:active){
+  .fd-tree__escalate,.fd-tree__option,.fd-tree__draft{border:2px solid ButtonText}
+  .fd-tree__verdict{border:2px solid CanvasText;border-left-width:6px}
+  .fd-script__blank{border-bottom-color:CanvasText}
+}
+@media (prefers-contrast:more){
+  .fd-tree__option{border-color:var(--fd-text)}
+  .fd-sheet--safety .fd-sheet__head{border-bottom:2px solid var(--fd-text)}
+}
+
 /* ═══ Reduced motion ═════════════════════════════════════════════════════════
  * Not in the source prototype. Surfaces still appear — only the movement is removed, so a
  * user who asks for less motion does not lose the sheet, the overlay, or the done state.
