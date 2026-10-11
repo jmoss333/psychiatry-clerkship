@@ -1,13 +1,14 @@
 {
   "cotw_20261005_mddaug_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New Case of the Week (MDD treatment selection & augmentation, MS3) added 2026-10-05; awaiting faculty attestation.",
-    "at": "2026-10-05",
-    "by": "Pending faculty review"
+    "at": "2026-10-11",
+    "by": "Joshua Moss, MD",
+    "contentHash": "68edb284e985676649e58503640d25afd982748a",
+    "clinicalHash": "9b8a9a262a6c97fe32ac3e771bd40bf5353fdd1d"
   },
   "cotw_20261005_mddaug_res.md": {
     "status": "pending",
