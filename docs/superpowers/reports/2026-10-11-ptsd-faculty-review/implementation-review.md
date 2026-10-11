@@ -2,7 +2,7 @@
 
 Prepared October 11, 2026. **Local teaching drafts; faculty review pending. Both AI features remain disabled.**
 
-The existing draft PR is #1015. This local revision is based on `15ec232b2b34d1245d32bfd62a11ae2ec685adc8`; it has not been published, merged or deployed. The original comparison remains in README.md and source-receipt.json. This document describes the applied follow-up, not a faculty approval or benchmark label.
+The existing draft PR is #1015. The applied content is saved locally in commit `f956508b7818967d4d58a083f19919e2946032e1`, based on `15ec232b2b34d1245d32bfd62a11ae2ec685adc8`. It has not been pushed, merged or deployed; the remote PR does not yet contain these corrections. The original comparison remains in README.md and source-receipt.json. This document describes the applied follow-up, not a faculty approval or benchmark label.
 
 ## What changed
 
@@ -104,7 +104,15 @@ Both original guideline records have facultyReviewStatus **pending**. Their blan
 
 The edited question passes the console's phone-review readiness check. The existing question draft-exposure policy has a cap of **zero**, however, so the required demotion to draft fails that separate gate: `qb_anx_002` is unlisted and the open count is 1 above a cap of 0. Keeping it attested, marking it retired, or modifying the cap/allowlist to clear this content change would misstate review or bypass the rule.
 
-Full local verification is in progress. Record its final result here before handoff. Do not push through a failed pre-push gate. The next faculty step is to review this exact wording and resolve the review-before-delivery path through the repository's separate governance process; human acceptance of prose is not an agent-written attestation.
+Full local verification completed at `f956508b` with **exit 1**. Five steps failed, all tied to the draft-exposure policy: its self-test, its live ratchet, the root application test suite, and both audience build commands. An independent complete capture of the root suite found **3,726 passed, 5 failed, 15 skipped, 0 cancelled** out of 3,746 tests. All five failed assertions are in `tests/deck-governance.test.mjs` and derive from `qb_anx_002` being draft with an open count of 1, cap 0 and no allowlist entry. Temporary cleanup passed.
+
+Source registry, citation attribution, evidence annotations, pharmacy, question coherence, phone-review readiness, derived evidence exercise and governance-separation checks passed. Both new guideline spans are clean. The whole-corpus span ratchet also passed with 11 pre-existing flagged sources (9 truncated and 6 edited sentences), so that pass is not a claim that the entire corpus is clean. Both audience build commands stopped at the root tests, before assembling fresh sites; later checks of existing build output do not establish a new successful build.
+
+The full diagnostic run used the host environment, with Node 25.9.0, Python 3.13.7 and Bash 3.2.57 observed for this handoff. The runtime-contract step checks repository declarations by default; it does not certify that this run used the declared Node 22/Python 3.11/Bash 5 environment. CI, new site builds, deployed behavior and native screen-reader checks are not established by this result.
+
+[implementation-validation.json](implementation-validation.json) records the verified content commit, exact failed steps, root-test inventory, preserved approval boundaries and log hashes. Local full logs are in `output/ai-pilot/ptsd-faculty-review/`. A merge analysis against inspected main `615b8c838c6cf6f7d96ff3e9e4acfe6fabec1baf` found no conflicts; no merge was performed.
+
+Delivery remains held. Do not push through the failed pre-push gate. The next faculty step is to review this exact wording, then separately resolve a review-only staging path for reopened questions that cannot expose drafts to learners. The current console cannot import this local patch. Human acceptance of prose is not an agent-written attestation; no cap, allowlist or approval record was changed to clear the hold.
 
 `READING_COMPANION_ENABLED` and `FACULTY_EVIDENCE_BRIEF_ENABLED` remain `false` in `sp-preview/netlify.toml`. No hosting settings, API credentials or provider calls were changed.
 
