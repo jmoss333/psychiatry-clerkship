@@ -1,12 +1,5 @@
 # 05 · Psychopharmacology
-Two tiers: a **student primer** (to build) sitting above your **faculty protocol library** (exists).
 
-### Student_Primer_Top10 — ➕ Expand (P1)
-Author "Top-10 inpatient drugs" student tier (sources: protocol library below + ASCP Psychopharmacology Curriculum 11th ed in iCloud Gen Psych Resources).
+Start with the [Psychopharmacology Primer](Student_Primer_Top10/psychopharmacology_primer_inpatient.md): common inpatient medications, illness-phase-specific choices, monitoring, counseling, neuromodulation, and short recognition cases. The student core includes brief resident nuances; it is not a dosing guide.
 
-### Protocol_Library — ✅ Exists
-- Benzodiazepine taper → `~/BHU2_Benzodiazepine_Taper_Checklist.html` + `~/Benzodiazepine_Taper_OrderSet_Spec.docx`
-- Clozapine post-REMS → `~/BHU2_Clozapine_PostREMS_Workflow.html` + `~/Clozapine_PostREMS_OrderSet_Spec.docx`
-- Delirium / restraint order-set specs → `~/Delirium_OrderSet_Spec.docx`, `~/Restraint_PhysicalHolding_OrderSet_Spec.docx`
-
-**Status tags:** ✅ Exists · 🔧 Revise · ➕ Expand · ✳️ Create · 🔀 Merge · 🗄️ Archive
+Use [Medication Monitoring & Labs](Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md), [ECT & Neuromodulation](ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md), and the Protocol Library for deeper learning and supervised local workflows. Faculty review status is determined by the Library's review system, separately from source verification.
