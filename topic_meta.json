@@ -278,10 +278,10 @@
         "soon": {
           "label": "Ask them to see the patient today",
           "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
-          "situation": "I'm calling about a change in mental status I noticed: [what you saw]. Vitals and glucose are normal and nothing is unsafe right now.",
+          "situation": "I'm calling about their mental status: [what you saw, and whether it is new or long-standing]. Vitals and glucose are normal and nothing is unsafe right now.",
           "background": "[Age], admitted for [reason]. Baseline mental status: [from collateral, or unknown]. Recent medications: [anticholinergics, benzodiazepines, opioids, or other new ones].",
-          "assessment": "Attention test: [result]. It started [when]. I'm not sure yet whether this is delirium.",
-          "recommendation": "Can you see them today — when? Should I retest attention later this shift?",
+          "assessment": "Attention test: [result, or not done]. Onset: [when it started, or long-standing per collateral]. I'm not sure yet whether this is delirium.",
+          "recommendation": "Can you see them today — when? Should I check attention later this shift?",
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         }
       }
@@ -576,7 +576,7 @@
         "soon": {
           "label": "Ask them to see the patient today",
           "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
-          "situation": "They were agitated and are calmer now with verbal de-escalation. No one is in immediate danger.",
+          "situation": "They have been agitated, and no one is in immediate danger. Right now they are [calmer with verbal de-escalation, or still agitated].",
           "background": "[Age], admitted for [reason]. This started [when]. Recent medication changes or PRNs: [list, or none].",
           "assessment": "Vitals and glucose are normal. I'm wondering about [akathisia, pain, retention, or a behavioral cause].",
           "recommendation": "Could you assess them — when can you come? Is there anything you want done before then?",
@@ -2833,9 +2833,9 @@
         "soon": {
           "label": "Ask them to see the patient today",
           "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
-          "situation": "I want to report a safety concern from my interview. They told me: '[their exact words]'.",
+          "situation": "I want to report a safety concern from my interview: [their exact words, or what prompted my concern].",
           "background": "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access to lethal means: [firearms, stockpiled medication, other, or unknown].",
-          "assessment": "I did not find a plan, intent, preparation, or acute risk factor, but I'm not the one who decides their risk.",
+          "assessment": "What I found: [no plan, intent, preparation or acute risk factor; or: denies suicidal thoughts]. I'm not the one who decides their risk.",
           "recommendation": "Can you assess them today — when? Is there anything I should do first?",
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         }
