@@ -627,8 +627,9 @@ the bare `.fd-library`.
         button.fd-kit__index-item[data-fd-kit-section][aria-pressed] ×N   + .is-active
           span / .fd-kit__index-count
     .fd-kit__readings
-      .fd-kit__review                    (only with pending readings; existing string verbatim)
-        span / details > summary "What that means" + p
+      .fd-kit__review                    (only with pending readings; compact olive notice)
+        details > summary "Faculty re-review · N of M readings" + p
+                                         (44px target; expanded text explains changed/awaiting-review state)
       details.fd-kit__group[open] ×N
         summary
           .fd-kit__group-name / .fd-kit__group-count ("· N") / .fd-kit__chevron

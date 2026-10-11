@@ -3995,9 +3995,9 @@ test.describe('Essentials Phase 2', () => {
       await page.locator('.fd-kit__peek[data-fd-kit-tool="t_mood.md"]').click();
       await expect(page.locator('.fd-kit__tool-preview .governance-badge')).toHaveText('Pending review · High risk');
     }
-    await expect(page.locator('.fd-kit__review')).toContainText(/^Faculty re-review in progress — \d+ of \d+ readings changed since they were last attested ·/);
+    await expect(page.locator('.fd-kit__review summary')).toHaveText(/^Faculty re-review · \d+ of \d+ readings$/);
     await page.locator('.fd-kit__review summary').click();
-    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings are marked pending review. Open a reading to see its full review notice.');
+    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings changed since they were last attested and are marked pending review. Open a reading to see its full review notice.');
     await expectHealthy(page);
   });
   test('summaries are byte-identical to topic_meta and the desktop preview pane follows the selected row', async ({ page }, info) => {
@@ -4162,9 +4162,22 @@ test.describe('Essentials Phase 2', () => {
   });
   test('responsive: targets, no horizontal overflow at 320/390/641/1280 and at 200% text, reduced motion, and actual evidence', async ({ page }, info) => {
     await seedApp(page, info);
+    // Always exercise the re-review notice, independent of the live faculty queue.
+    await page.route('**/*', async route => {
+      if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+      const response = await routeFetchWithRetry(route), body = await response.text();
+      const prefix = 'var FD_SITE_MANIFEST=', start = body.indexOf(prefix) + prefix.length;
+      expect(start).toBeGreaterThan(prefix.length);
+      const end = body.indexOf(';\n', start), manifest = JSON.parse(body.slice(start, end));
+      const primer = manifest.md.find(entry => entry[1] === 'psychopharm_primer.md');
+      expect(primer).toBeTruthy();
+      primer[3] = { status: 'pending', riskKind: 'clinical', riskLevel: 'high' };
+      await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(manifest) + body.slice(end) });
+    });
     for (const width of [320, 390, 641, 1280]) {
       await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
       await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
+      await expect(page.locator('.fd-kit__review summary')).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       const desktop = width >= 1000;
       await expect(page.locator('.fd-kit__tool-preview')).toBeVisible({ visible: desktop });

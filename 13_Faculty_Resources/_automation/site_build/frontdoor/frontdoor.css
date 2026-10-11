@@ -2064,10 +2064,10 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-kit__index-item.is-active{border-color:var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-weight:700}
 .fd-kit__index-count{color:var(--fd-text-dim);font-weight:500;font-variant-numeric:tabular-nums}
 .fd-kit__index-item.is-active .fd-kit__index-count{color:var(--fd-teal-deep)}
-/* Review banner: the existing string verbatim, on olive-wash with a 3px olive rule. */
-.fd-kit__review{display:flex;flex-wrap:wrap;gap:var(--fd-space-2) var(--fd-space-4);align-items:baseline;margin:0 0 calc(var(--fd-space-8) + var(--fd-space-1));padding:var(--fd-space-5) var(--fd-space-7);border-radius:var(--fd-radius-sm);background:var(--fd-olive-wash);border-left:3px solid var(--fd-olive);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text)}
+/* Keep the pending count visible without displacing the first reading on a phone. */
+.fd-kit__review{margin:0 0 var(--fd-space-4);padding:0 var(--fd-space-4);border-radius:var(--fd-radius-sm);background:var(--fd-olive-wash);border-left:3px solid var(--fd-olive);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text)}
 .fd-kit__review summary{cursor:pointer;color:var(--fd-olive-deep);font-weight:700;text-decoration:underline;min-height:var(--fd-target-touch);align-content:center}
-.fd-kit__review p{margin:var(--fd-space-3) 0 0;color:var(--fd-text-mid)}
+.fd-kit__review p{margin:var(--fd-space-3) 0 var(--fd-space-4);color:var(--fd-text-mid)}
 .fd-kit__readings{min-width:0}
 /* The compact pending dot the shared badge emits in its {compact:true} form (fd_today.js rail). */
 .fd-kit__pending{display:inline-block;align-self:center;width:calc(var(--fd-space-10) / 4);height:calc(var(--fd-space-10) / 4);border-radius:50%;background:var(--fd-olive)}

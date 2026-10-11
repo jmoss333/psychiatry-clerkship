@@ -321,8 +321,8 @@ function fdLibraryShell(model, opts){
   }
   out+='</div></nav>';
   out+='<div class="fd-kit__readings">';
-  if(m.readings.pending) out+='<div class="fd-kit__review"><span>Faculty re-review in progress — '+m.readings.pending+' of '+m.readings.total+' readings changed since they were last attested ·</span> '+
-    '<details><summary>What that means</summary><p>These readings are marked pending review. Open a reading to see its full review notice.</p></details></div>';
+  if(m.readings.pending) out+='<div class="fd-kit__review"><details><summary>Faculty re-review · '+m.readings.pending+' of '+m.readings.total+' readings</summary>'+
+    '<p>These readings changed since they were last attested and are marked pending review. Open a reading to see its full review notice.</p></details></div>';
   if(query&&!matched){
     out+=fdLibraryEmpty(query);
   } else {
