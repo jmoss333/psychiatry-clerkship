@@ -1262,14 +1262,12 @@
     if(refs.length)html+='<div class="practice-section-title">Official forms</div><div class="practice-actions">'+refs.join('')+'</div><p class="practice-muted">Official form and training \u2014 the instrument itself is not reproduced here.</p>';
     return html;
   }
-  function buildTpl(m,file,opts){
+  function buildTpl(m,file){
     if(!hasPracticeTpl(m))return '';
-    /* D-1: the summary is byte-identical to what it has always rendered -- the visual
-       baselines screenshot a collapsed panel, and everything WP-D changes is inside the body.
-       opts.open===true is the one caller-decided exception: the reader passes it on a handheld
-       viewport (fdHandheld), where this panel IS the point-of-need content and a closed
-       disclosure hid it behind a tap on every topic page. Desktop stays closed and byte-identical. */
-    var h='<details class="topic-tpl practice-panel"'+((opts&&opts.open===true)?' open':'')+'>';
+    /* Ward is a native disclosure, closed on every page mount at every width. Its
+       expansion is transient DOM state, never a stored preference or a route field.
+       Keep the body and summary intact so native keyboard activation reveals the same content. */
+    var h='<details class="topic-tpl practice-panel">';
     h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
     h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; /* No review chip: the governance receipt above the panel already states review status and date, and the head's ✓ pill states attestation — a third rendering on one page was the 2026-09-18 critique's consistency finding. */ h+='</div>';
@@ -1282,7 +1280,7 @@
     }
     h+='<div class="practice-sections">';
     h+='<section class="practice-section"><div class="practice-section-title">In 30 seconds</div>';
-    /* Points only. The one-line tldr is ALREADY the page's lead (fd_data.js maps item.summary from it), and on a phone the panel opens by default directly under that lead, so the same sentence printed twice on one screen (2026-09-18 critique). */ if(m.points&&m.points.length){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul></div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
+    /* Points only. The one-line tldr is ALREADY the page's lead (fd_data.js maps item.summary from it), so repeating it here would print the same sentence twice when the panel is opened (2026-09-18 critique). */ if(m.points&&m.points.length){ h+='<div class="in30"><div class="lbl">In 30 seconds</div><ul>'; for(var i=0;i<m.points.length;i++){ h+='<li>'+esc(m.points[i])+'</li>'; } h+='</ul></div>'; } else h+='<p class="practice-muted">Use this page as the quick reference before or after the encounter.</p>';
     h+='</section><section class="practice-section"><div class="practice-section-title">On the unit</div>';
     var wf=buildWorkflow(m,pseen), hasUnit=false; if(wf){ h+=wf; hasUnit=true; }
     if(m.cant&&m.cant!==reason){ h+='<div class="cantmiss"><span class="ico">⚠</span><span class="tx"><b>Can’t miss. </b>'+esc(m.cant)+'</span></div>'; hasUnit=true; }
@@ -1295,12 +1293,6 @@
     h+='</div></div></details>'; return h;
   }
   /* ---- end practice panel ---- */
-  /* "Handheld" is the shell's own not-desktop threshold: the rails and the desktop action pair
-     appear at >=1000px (the front-door stylesheet's one desktop breakpoint), so anything
-     narrower is where the fixed action bar shows and where the practice panel opens by default.
-     matchMedia rather than innerWidth so the answer can never disagree with the stylesheet;
-     a browser with no matchMedia (or a throwing one) reads as desktop, the closed default. */
-  function fdHandheld(){ try{ return !!(window.matchMedia&&window.matchMedia('(max-width:999px)').matches); }catch(_){ return false; } }
   function pageTitle(it){ return it ? (it.t+' \u2014 MS3 Psychiatry Clerkship') : 'Inpatient Psychiatry \u2014 MS3 Clerkship'; }
   function setLearnerTitle(item){ if(!facultyPreviewRequest)document.title=pageTitle(item); }
   function fdSpecialItemForState(state){
@@ -1418,7 +1410,7 @@
       var _governance=document.createElement('div'); _governance.innerHTML=renderGovernanceNotice(item); if(_governance.firstChild) _insertAfterTitle(_governance.firstChild);
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
-      if(_m){ var _html=buildTpl(_m, item.f,{open:fdHandheld()}); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
+      if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
       makeCollapsible(contentEl); enhanceTables(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -3090,7 +3082,7 @@
       signal:options.signal,
       parseMarkdown:function(markdown){
         var html=marked.parse(markdown), meta=TOPIC_META&&TOPIC_META[ref];
-        return (meta?buildTpl(meta,ref,{open:fdHandheld()}):'')+html;
+        return (meta?buildTpl(meta,ref):'')+html;
       },
       facultyPreviewMatches:facultyPreviewMatchesItem,
       facultyPreviewLock:showFacultyPreviewLockNotice,
