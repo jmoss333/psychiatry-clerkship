@@ -365,12 +365,14 @@ now*
 2. Ask about past attempts and access to lethal means if you have not yet.
 
 **Script `now`** — label: *Ask them to come now*
-- **Situation:** "I'm calling about a suicide safety concern. They told me: '[their exact
-  words]'. I need you to assess them now."
+- **Situation:** "I'm calling about a suicide safety concern: [their exact words, what they did,
+  or what prompted my concern]. I need you to assess them now." *(Owner ruling 2026-10-11: this
+  script is reachable from the first question via the pinned Escalate button, so it must allow
+  unknowns.)*
 - **Background:** "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access
   to lethal means: [firearms, stockpiled medication, other, or unknown]."
-- **Assessment:** "I'm worried their acute risk is high because [plan, intent, preparation, an
-  acute risk factor, or contradicting collateral]. Right now [who is with them]."
+- **Assessment:** "I'm worried their acute risk may be high. What I know so far: [plan, intent,
+  preparation, an acute risk factor — or: I haven't asked yet]. Right now [who is with them]."
 - **Recommendation:** "Please come now. Should they be on closer observation until you get
   here?"
 

@@ -2824,9 +2824,9 @@
         "now": {
           "label": "Ask them to come now",
           "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
-          "situation": "I'm calling about a suicide safety concern. They told me: '[their exact words]'. I need you to assess them now.",
+          "situation": "I'm calling about a suicide safety concern: [their exact words, what they did, or what prompted my concern]. I need you to assess them now.",
           "background": "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access to lethal means: [firearms, stockpiled medication, other, or unknown].",
-          "assessment": "I'm worried their acute risk is high because [plan, intent, preparation, an acute risk factor, or contradicting collateral]. Right now [who is with them].",
+          "assessment": "I'm worried their acute risk may be high. What I know so far: [plan, intent, preparation, an acute risk factor — or: I haven't asked yet]. Right now [who is with them].",
           "recommendation": "Please come now. Should they be on closer observation until you get here?",
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         },
