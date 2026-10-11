@@ -415,6 +415,30 @@ async function pinGovernance(page, ref, status) {
   await page.route('**/governance.json', route => route.fulfill({ json: ledger }));
 }
 
+// A served shell whose embedded review state shows nothing pending. A layout assertion about the
+// ordinary Library must not depend on the faculty's queue: while any Essentials reading has
+// drifted, the "Faculty re-review in progress" banner (fd_library.js) sits above the first reading,
+// and that banner's own test pins it with the opposite fixture.
+async function serveNothingPending(page) {
+  await page.route('**/*', async route => {
+    if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+    const response = await routeFetchWithRetry(route);
+    const body = await response.text();
+    const prefix = 'var FD_SITE_MANIFEST=';
+    const at = body.indexOf(prefix);
+    expect(at, 'the served shell embeds FD_SITE_MANIFEST').toBeGreaterThan(-1);
+    const start = at + prefix.length;
+    const end = body.indexOf(';\n', start);
+    const manifest = JSON.parse(body.slice(start, end));
+    for (const list of [manifest.md || [], manifest.tools || []]) {
+      for (const entry of list) {
+        if (entry[3] && entry[3].status === 'pending') entry[3] = { ...entry[3], status: 'reviewed' };
+      }
+    }
+    await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(manifest) + body.slice(end) });
+  });
+}
+
 async function expectHealthy(page) {
   await expect(page.locator('.fd-fallback[role="alert"]')).toHaveCount(0);
   expect(runtimeErrors.get(page)).toEqual([]);
@@ -4369,6 +4393,7 @@ test.describe('Essentials Phase 2', () => {
   });
   test('responsive: targets, no horizontal overflow at 320/390/641/1280 and at 200% text, reduced motion, and actual evidence', async ({ page }, info) => {
     await seedApp(page, info);
+    await serveNothingPending(page);
     for (const width of [320, 390, 641, 1280]) {
       await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
       await expect(page.locator('.fd-kit__reading').first()).toBeVisible();

@@ -20,6 +20,20 @@ async function loadNavItems(request, baseURL) {
   return flattenNav(nav);
 }
 
+// The safety-kit protocol refs, read from the curriculum the built shell embeds. Search routes a
+// kit ref to its protocol (a data-fd-safety result), never to a plain page row, so a test about
+// page rows must not pick one -- and whether a kit page is pending is the faculty's queue, not
+// the code: re-attesting or drifting a protocol must not decide what this test checks.
+async function safetyKitRefs(request, baseURL) {
+  const body = await (await requestGetWithRetry(request, `${baseURL}/`)).text();
+  const prefix = 'var FD_CURRICULUM=';
+  const start = body.indexOf(prefix);
+  const end = start < 0 ? -1 : body.indexOf(';\n', start);
+  if (start < 0 || end < 0) throw new Error('FD_CURRICULUM is missing from the served shell');
+  const curriculum = JSON.parse(body.slice(start + prefix.length, end));
+  return new Set((curriculum.safetyKit || []).map((entry) => entry.ref));
+}
+
 async function seedCompleteSetup(page) {
   await page.addInitScript(() => {
     localStorage.setItem('cw_rotation_start', '2026-08-17');
@@ -203,10 +217,11 @@ test.describe('risk-aware review status (shared shell)', () => {
     page, request, baseURL,
   }) => {
     const items = await loadPlacedNavItems(page, request, baseURL);
+    const kit = await safetyKitRefs(request, baseURL);
     const target = findItem(
       items,
-      (it) => it.governance && it.governance.status === 'pending',
-      'any pending item',
+      (it) => it.governance && it.governance.status === 'pending' && !kit.has(it.f),
+      'any pending page that search lists as a page row (not a safety-kit protocol)',
     );
     const label = target.governance.riskLevel === 'high' ? 'Pending review · High risk' : 'Pending review';
 
