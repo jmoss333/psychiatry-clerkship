@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / '13_Faculty_Resources/_automation'))
@@ -87,6 +88,19 @@ def extract(root):
     return pack
 
 
+def atomic_write(out, output):
+    out.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, name = tempfile.mkstemp(prefix=out.name + '.', suffix='.tmp', dir=out.parent)
+    temp = Path(name)
+    try:
+        with os.fdopen(descriptor, 'w', encoding='utf8') as handle:
+            os.fchmod(handle.fileno(), 0o600)
+            handle.write(output)
+        temp.replace(out)
+    finally:
+        temp.unlink(missing_ok=True)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', type=Path, default=HERE.parent)
@@ -100,20 +114,14 @@ def main():
         if args.enabled:
             # Delete stale output so a failed enabled build cannot reuse it.
             if not args.check:
-                args.out.parent.mkdir(parents=True, exist_ok=True)
-                args.out.write_text(canonical({'version': 1, 'available': False, 'reason': 'source_unavailable'}) + '\n')
-                os.chmod(args.out, 0o600)
+                atomic_write(args.out, canonical({'version': 1, 'available': False, 'reason': 'source_unavailable'}) + '\n')
             print('source_unavailable: ' + str(error), file=sys.stderr)
             return 1
         pack = {'version': 1, 'available': False, 'reason': 'source_unavailable'}
     output = canonical(pack) + '\n'
     if args.check:
         return 0 if args.out.is_file() and args.out.read_text() == output else 1
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    temp = args.out.with_suffix(args.out.suffix + '.tmp')
-    temp.write_text(output, encoding='utf8')
-    os.chmod(temp, 0o600)
-    temp.replace(args.out)
+    atomic_write(args.out, output)
     return 0
 
 if __name__ == '__main__':
