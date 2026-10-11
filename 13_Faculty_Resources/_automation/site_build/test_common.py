@@ -853,6 +853,7 @@ class TestSharedSnippets(unittest.TestCase):
         """All Front Door markers resolve through the frontdoor subdirectory."""
         markers = [
             ("/*__FD_DATA__*/", "function fdEsc("),
+            ("/*__FD_ICONS__*/", "function fdIcon(name, opts){"),
             ("/*__FD_EDITION_CATALOG__*/", "var FD_EDITION_CATALOG="),
             ("/*__FD_EDITION_V1_SALVAGE__*/", "var fdEditionV1ValidateForSalvage;"),
             ("/*__FD_TODAY__*/", "function fdTodayProgress("),
@@ -931,6 +932,105 @@ class TestSharedSnippets(unittest.TestCase):
             any("injected more than once" in m for _, ms in failures for m in ms),
             failures,
         )
+
+    # ---- icon sprite (icon_sprite.py, C1) -------------------------------------------------
+    _INDEX_OK = (
+        '<a class="skip-link">s</a><script>cw_theme</script>'
+        '<style>[data-theme="dark"]{}</style><link rel="icon">'
+    )
+
+    def _sprite_site(self, index_html, tool_extra=""):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d, True)
+        os.makedirs(os.path.join(d, "tools"))
+        open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(index_html)
+        open(os.path.join(d, "tools", "t.html"), "w", encoding="utf-8").write(
+            '<a class="skip-link">s</a><div id="root"></div><script>cw_theme</script>'
+            '<style>[data-theme="dark"]{}</style><link rel="icon"><!--ifn-->' + tool_extra)
+        return d
+
+    def _messages(self, d):
+        return [m for _, ms in common.page_contract_failures(d) for m in ms]
+
+    def test_index_with_one_sprite_passes(self):
+        d = self._sprite_site(self._INDEX_OK + '<svg id="fd-icon-sprite"></svg>')
+        self.assertEqual(common.page_contract_failures(d), [])
+
+    def test_index_without_sprite_fails(self):
+        d = self._sprite_site(self._INDEX_OK)
+        self.assertTrue(any("exactly one icon sprite" in m for m in self._messages(d)))
+
+    def test_index_with_two_sprites_fails(self):
+        d = self._sprite_site(self._INDEX_OK + '<svg id="fd-icon-sprite"></svg>' * 2)
+        self.assertTrue(any("found 2" in m for m in self._messages(d)))
+
+    def test_unexpanded_sprite_marker_fails_on_any_page(self):
+        d = self._sprite_site(self._INDEX_OK + '<svg id="fd-icon-sprite"></svg>',
+                              tool_extra="<!--fd-icon-sprite-->")
+        self.assertTrue(any("unexpanded icon sprite marker" in m for m in self._messages(d)))
+
+
+class TestIconSprite(unittest.TestCase):
+    """icon_sprite.py: the build step that turns the vendored Lucide subset into <symbol>s."""
+
+    def setUp(self):
+        import icon_sprite
+        self.mod = icon_sprite
+        self.data = icon_sprite.load_icons()
+
+    def test_render_is_deterministic_and_order_independent(self):
+        a = self.mod.render_sprite(self.data)
+        shuffled = dict(self.data)
+        shuffled["icons"] = dict(reversed(list(self.data["icons"].items())))
+        self.assertEqual(a, self.mod.render_sprite(self.data))
+        self.assertEqual(a, self.mod.render_sprite(shuffled))
+
+    def test_one_symbol_per_glyph_with_verbatim_body(self):
+        out = self.mod.render_sprite(self.data)
+        for name, entry in self.data["icons"].items():
+            self.assertEqual(out.count('<symbol id="ic-%s"' % name), 1, name)
+            self.assertIn('viewBox="0 0 24 24">%s</symbol>' % entry["body"], out)
+        self.assertEqual(out.count("<symbol "), len(self.data["icons"]))
+
+    def test_sprite_is_hidden_and_inert(self):
+        out = self.mod.render_sprite(self.data)
+        head = out[:out.index("<!--")]
+        for attr in ('id="fd-icon-sprite"', 'aria-hidden="true"', 'focusable="false"',
+                     'width="0"', 'height="0"', "position:absolute"):
+            self.assertIn(attr, head)
+        self.assertNotRegex(out, r"<script|\son[a-z]+=|<title|#[0-9a-fA-F]{3,6}\b")
+
+    def test_licence_notices_are_verbatim_and_comment_safe(self):
+        out = self.mod.render_sprite(self.data)
+        lic = open(os.path.join(os.path.dirname(self.mod.__file__), "vendor",
+                                "lucide-static-1.54.0.LICENSE"), encoding="utf-8").read()
+        self.assertIn(self.mod._ISC, lic)
+        self.assertIn(self.mod._MIT, lic)
+        comment = out[out.index("<!--") + 4:out.index("-->")]
+        self.assertIn(self.mod._ISC, comment)
+        self.assertIn(self.mod._MIT, comment)
+        self.assertIn("lucide-static@1.54.0", comment)
+        self.assertNotIn("--", comment)
+        self.assertEqual(out.count("-->"), 1)
+
+    def test_inject_requires_exactly_one_marker(self):
+        sprite = self.mod.render_sprite(self.data)
+        ok = self.mod.inject_sprite_text("<body><!--fd-icon-sprite--><main></main>", sprite)
+        self.assertEqual(ok, "<body>%s<main></main>" % sprite)
+        for bad in ("<body></body>", "<!--fd-icon-sprite--><!--fd-icon-sprite-->"):
+            with self.assertRaises(self.mod.SpriteError):
+                self.mod.inject_sprite_text(bad, sprite)
+        with self.assertRaises(self.mod.SpriteError):
+            self.mod.inject_sprite_text(ok + "<!--fd-icon-sprite-->", sprite)
+
+    def test_rejects_markup_that_is_not_plain_shapes(self):
+        bad = dict(self.data)
+        bad["icons"] = {"sun": {"body": '<path d="M0 0"/><script>x</script>', "feather": False}}
+        with self.assertRaises(self.mod.SpriteError):
+            self.mod.render_sprite(bad)
+        bad["icons"] = {"Bad Name": {"body": '<path d="M0 0"/>', "feather": False}}
+        with self.assertRaises(self.mod.SpriteError):
+            self.mod.render_sprite(bad)
 
 
 class TestServiceWorkerEmission(unittest.TestCase):

@@ -19,7 +19,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // +1 (2026-09-23): Fixed-choice Care navigator (fd_care_navigator.js).
 // +1 (2026-09-23): Patient resource pack renderer (fd_care_pack.js).
 // +1 (2026-09-23): Verified offline readiness model (fd_offline.js).
-const EXPECTED_MARKER_COUNT = 40; // +1 2026-09-30: /*__RX_RETRIEVAL__*/
+// +1 (2026-10-09): Front Door icon helper (fd_icons.js), C1 icons & wayfinding.
+const EXPECTED_MARKER_COUNT = 41; // +1 2026-09-30: /*__RX_RETRIEVAL__*/
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(
