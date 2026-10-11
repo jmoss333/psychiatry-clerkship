@@ -114,3 +114,7 @@ tmp/
 
 # Local print/PDF render of the workplace-assessment faculty pack (build_assessment_pdf.py).
 /output/assessment-pack/
+
+/sp-preview/generated/
+
+/output/ai-pilot/

@@ -5,10 +5,18 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  READING_COMPANION_ENABLED = "false"
+  FACULTY_EVIDENCE_BRIEF_ENABLED = "false"
 
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/reading-companion"
+  to = "/.netlify/functions/reading-companion"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/api/dana-preview"

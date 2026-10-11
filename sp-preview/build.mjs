@@ -1,10 +1,14 @@
 import {mkdir,rm,copyFile,readdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {execFileSync} from 'node:child_process';
 const here=path.dirname(fileURLToPath(import.meta.url));
-const allowed=['index.html','app.js','styles.css','station.js','station-content.js','moment-content.js','moment-station.js','practice-content.js','practice-coach.js'];
+const allowed=['index.html','app.js','styles.css','station.js','station-content.js','moment-content.js','moment-station.js','practice-content.js','practice-coach.js','reading-companion.html','reading-companion.js','reading-companion.css'];
 const publicFiles=(await readdir(path.join(here,'public'))).sort();
 if(JSON.stringify(publicFiles)!==JSON.stringify([...allowed].sort()))throw new Error('Preview public directory differs from the explicit allowlist.');
+const sourceArgs=[path.join(here,'build-reading-source.py'),'--root',path.dirname(here),'--out',path.join(here,'generated/reading-companion.json')];
+if(process.env.READING_COMPANION_ENABLED==='true')sourceArgs.push('--enabled');
+execFileSync('python3',sourceArgs,{stdio:'pipe'});
 await rm(path.join(here,'dist'),{recursive:true,force:true});
 await mkdir(path.join(here,'dist'));
 for(const file of allowed)await copyFile(path.join(here,'public',file),path.join(here,'dist',file));

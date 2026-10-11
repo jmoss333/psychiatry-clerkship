@@ -124,7 +124,7 @@ export default defineConfig({
     // It needs no server from start-local-servers.sh and makes no network call.
     {
       name: 'hosted-preview',
-      testMatch: 'hosted-preview-browser.spec.js',
+      testMatch: ['hosted-preview-browser.spec.js', 'reading-companion.spec.js'],
       use: { ...devices['Desktop Chrome'] },
     },
     {
