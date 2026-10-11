@@ -1,3 +1,5 @@
+import {scrubInheritedGitEnv} from '../../tests/_git_env.mjs';
+scrubInheritedGitEnv();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
