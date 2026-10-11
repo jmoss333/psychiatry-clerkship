@@ -107,12 +107,18 @@ function fdTreeWalk(tree, path){
   return {node:node,trail:trail,ok:true};
 }
 
-/* Script text with each spoken blank marked. Escaped FIRST, so the only markup is ours; the
-   brackets stay inside the mark, so a blank still reads as one with styles off. The bound is
-   160, not the validator's 80: escaping lengthens a blank ("don't" becomes "don&#39;t"), and
-   a long spoken menu must not silently lose its mark. */
+/* Script text with each spoken blank marked. Blanks are found on the RAW text with the
+   validator's own rule (1-80 characters, no nesting) and every piece is escaped on its own, so
+   the only markup is ours and escaping can never push a valid blank past the cap ("&" becomes
+   five characters). The brackets stay inside the mark, so a blank still reads as one with
+   styles off. */
 function fdTreeBlanks(text){
-  return fdEsc(text).replace(/\[([^\[\]]{1,160})\]/g,'<mark class="fd-script__blank">[$1]</mark>');
+  var s=String(text), re=/\[([^\[\]]{1,80})\]/g, out='', last=0, m;
+  while((m=re.exec(s))){
+    out+=fdEsc(s.slice(last,m.index))+'<mark class="fd-script__blank">['+fdEsc(m[1])+']</mark>';
+    last=re.lastIndex;
+  }
+  return out+fdEsc(s.slice(last));
 }
 
 function fdTreeEscalateButton(script, label){

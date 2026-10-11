@@ -114,6 +114,21 @@ test('every tree string is escaped, blanks included', () => {
     /<mark class="fd-script__blank">\[&lt;b&gt;x&lt;\/b&gt;\]<\/mark>/);
 });
 
+test('a blank is found on the raw text, so escaping can never push a valid blank past the cap', () => {
+  // The validator caps a blank at 80 RAW characters; "&" escapes to five, so an escape-first
+  // scan saw 400 and left a valid blank unmarked. The mark must follow the validator exactly.
+  const t = clone();
+  const longest = '&'.repeat(80);
+  t.scripts.now.situation = `Say [${longest}] now`;
+  assert.match(F.fdTreeView(t, { path: [], escalate: 'now' }, {}),
+    new RegExp(`<mark class="fd-script__blank">\\[${'&amp;'.repeat(80)}\\]</mark>`));
+  t.scripts.now.situation = `Say [${'&'.repeat(81)}] now`;
+  const over = F.fdTreeView(t, { path: [], escalate: 'now' }, {});
+  assert.ok(over.includes(`<dd>Say [${'&amp;'.repeat(81)}] now</dd>`),
+    'over the cap is not a blank, exactly as the validator rules it: plain escaped text');
+  assert.doesNotMatch(over, /<mark class="fd-script__blank">\[(&amp;)+\]<\/mark>/);
+});
+
 test('fdTreeValid accepts the fixture and fails closed on each broken rule', () => {
   assert.equal(F.fdTreeValid(TREE), true);
   const breaks = {
