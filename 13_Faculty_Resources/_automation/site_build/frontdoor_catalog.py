@@ -259,6 +259,8 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
         projected["searchTitles"] = {ref: pages[ref]["title"] for ref in search_refs}
         projected["searchAliases"] = {ref: aliases for ref, aliases in
                                       projected.get("searchAliases", {}).items() if ref in search_refs}
+        projected["medicationTerms"] = {ref: terms for ref, terms in
+                                        projected.get("medicationTerms", {}).items() if ref in search_refs}
         manifest_refs += [ref for ref in search_refs if ref not in manifest_refs]
     for ref in manifest_refs:
         title, kind, governance = catalog_entries[ref]

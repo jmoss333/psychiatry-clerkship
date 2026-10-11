@@ -3695,6 +3695,30 @@ test('returning from a Library resource restores the list position and focuses t
 // Library (one-thread redesign, Phase 2 -- spec docs/superpowers/specs/one-thread-handoff/README.md
 // section 2 and its Phase 2 acceptance block). Exercises the rendered controls against the actual
 // audience payload; governance branches use controlled fixtures (#729), never the live ledger.
+test('medication search: names reach readings while clinical context keeps its destination', async ({ page }, info) => {
+  await seedApp(page, info);
+  await page.setViewportSize(PHONE);
+  await page.goto('/?tab=library');
+  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  const input = dialog.getByRole('textbox', { name: 'Search resources' });
+  for (const query of ['Wellbutrin XL', 'LAMICTAL?', 'Suboxone', 'Ativan']) {
+    await input.fill(query);
+    await expect(dialog.locator('[data-fd-open="psychopharm_primer.md"]')).toBeVisible();
+  }
+  await input.fill('Ativan catatonia');
+  await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toBeVisible();
+  await input.fill('Spravato');
+  await expect(dialog.locator('[data-fd-open="ect_neuromodulation.md"]')).toBeVisible();
+  await input.fill('Ativan withdrawing from alcohol');
+  await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 't_sud.md');
+  await input.fill('Wellbutrin');
+  await dialog.locator('[data-fd-open="psychopharm_primer.md"]').click();
+  await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', 'psychopharm_primer.md');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
+  await expectHealthy(page);
+});
+
 test.describe('Essentials Phase 2', () => {
   const rows = page => page.locator('.fd-kit .fd-kit__reading[data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
   const full = page => page.locator('[data-fd-library-view="full"]');
