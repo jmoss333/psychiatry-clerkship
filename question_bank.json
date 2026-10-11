@@ -479,7 +479,7 @@
     },
     {
       "id": "qb_anx_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -506,7 +506,7 @@
         },
         {
           "key": "B",
-          "t": "Start an SSRI or SNRI, counsel her about delayed onset, and plan trauma-focused therapy (prolonged exposure or CPT) as a discharge goal",
+          "t": "Choose sertraline, paroxetine or venlafaxine when medication is selected, discuss delayed benefit, and arrange a discussion of trauma-focused therapy options such as CPT, PE or EMDR.",
           "c": true
         },
         {
@@ -514,7 +514,7 @@
           "t": "Start propranolol — beta blockade prevents autonomic consolidation of traumatic memories and is first-line for established PTSD",
           "trap": {
             "name": "Wrong mechanism for PTSD",
-            "note": "Propranolol is studied as an acute peritraumatic adjunct — it is not first-line pharmacotherapy for established PTSD; SSRIs and SNRIs are."
+            "note": "Propranolol is not a recommended first-line medication for established PTSD. The 2023 VA/DoD guideline recommends sertraline, paroxetine or venlafaxine when medication is selected."
           }
         },
         {
@@ -526,9 +526,9 @@
           }
         }
       ],
-      "why": "The reflexive benzodiazepine is the most common trap — standing benzos for PTSD create dependence without treating the disorder and are explicitly avoided on the inpatient unit. SSRIs and SNRIs are first-line across all anxiety disorders and PTSD; definitive treatment pairs medication with trauma-focused therapy (prolonged exposure or CPT) planned at discharge. Propranolol is studied in acute peritraumatic settings, not as first-line pharmacotherapy for established PTSD. Antipsychotics conflate re-experiencing with psychosis.",
-      "pearl": "SSRIs/SNRIs are first-line for PTSD — benzodiazepines are a liability on the unit; pair medication with trauma-focused therapy (PE or CPT) at discharge.",
-      "evidence": "t_anxiety.md 'Acute inpatient management' — SSRIs and SNRIs are first-line across anxiety disorders, OCD, and PTSD; avoid standing benzodiazepines on the unit; pair pharmacology with disorder-specific behavioral work — prolonged exposure (PE) and cognitive processing therapy (CPT) for PTSD."
+      "why": "Sertraline, paroxetine and venlafaxine are the medications recommended for PTSD by the 2023 VA/DoD guideline. The recommendation applies to named drugs, not every SSRI or SNRI. Individual trauma-focused psychotherapy with CPT, PE or EMDR is preferred over medication when feasible and acceptable; treatment planning should reflect preference and access, and combined care is not a universal requirement. The guideline recommends against benzodiazepines for PTSD. Propranolol and antipsychotics are not recommended first-line medications for established PTSD, and intrusive re-experiencing alone does not establish a psychotic disorder.",
+      "pearl": "For PTSD, prefer individual trauma-focused psychotherapy (CPT, PE or EMDR); choose sertraline, paroxetine or venlafaxine when medication is selected. Avoid benzodiazepines for PTSD; discuss preference and access rather than requiring combined treatment.",
+      "evidence": "t_anxiety.md 'Acute inpatient management' and 'Exam treatment anchors' — individual trauma-focused psychotherapy (CPT, PE or EMDR) is preferred; sertraline, paroxetine or venlafaxine when medication is chosen; benzodiazepines are not recommended for PTSD. Original 2023 VA/DoD PTSD guideline, Recommendations 7–8 (pp. 35–36), 15, 19 and 21 (p. 37); evidence ID vadod-2023-ptsd-cpg. Recommendation 21 finds insufficient evidence for the specified medication/psychotherapy combinations or augmentation; combined treatment is not a universal requirement."
     },
     {
       "id": "qb_sud_002",

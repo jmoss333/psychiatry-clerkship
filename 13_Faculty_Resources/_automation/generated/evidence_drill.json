@@ -172,8 +172,8 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
-     "sourceId": "aacap-parameters",
+     "t": "Crone et al. · 2023 · The American Journal of Psychiatry",
+     "sourceId": "apa-eating-disorders-2023",
      "key": "A"
     },
     {
@@ -183,13 +183,13 @@
      "key": "B"
     },
     {
-     "t": "U.S. Food and Drug Administration · 2026",
-     "sourceId": "fda-prozac-label-maoi-switching",
+     "t": "U.S. Food and Drug Administration · 2025",
+     "sourceId": "clozapine-rems",
      "key": "C"
     },
     {
-     "t": "Schefft et al. · 2019 · Acta Psychiatr Scand",
-     "sourceId": "schefft-2019",
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
      "key": "D"
     }
    ],
@@ -212,24 +212,24 @@
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
-     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "t": "Border et al. · 2019 · American Journal of Psychiatry",
+     "sourceId": "border-2019-candidate-gene",
      "key": "A"
     },
     {
-     "t": "American Psychiatric Association Publishing · 2022",
-     "sourceId": "dsm-5-tr",
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
      "key": "B"
+    },
+    {
+     "t": "Cuijpers et al. · 2026 · Clin Psychol Rev",
+     "sourceId": "cuijpers-2026",
+     "key": "C"
     },
     {
      "t": "U.S. Food and Drug Administration · 2026",
      "c": true,
      "sourceId": "fda-prozac-label-maoi-switching",
-     "key": "C"
-    },
-    {
-     "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
-     "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
      "key": "D"
     }
    ],
@@ -252,19 +252,19 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Appelbaum et al. · 1988 · The New England Journal of Medicine",
-     "sourceId": "appelbaum-grisso-1988-capacity",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "c": true,
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "The Columbia Lighthouse Project · 2011",
+     "sourceId": "cssrs-columbia-lighthouse",
      "key": "C"
     },
     {
@@ -297,14 +297,14 @@
      "key": "A"
     },
     {
-     "t": "Cipriani et al. · 2013 · BMJ",
-     "c": true,
-     "sourceId": "cipriani-2013-lithium-suicide",
+     "t": "Chung et al. · 2019 · BMJ Open",
+     "sourceId": "chung-2019-first-week-month",
      "key": "B"
     },
     {
-     "t": "Franklin et al. · 2017 · Psychological Bulletin",
-     "sourceId": "franklin-2017-suicide-risk-meta-analysis",
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "c": true,
+     "sourceId": "cipriani-2013-lithium-suicide",
      "key": "C"
     },
     {
@@ -342,14 +342,14 @@
      "key": "B"
     },
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "c": true,
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "Diefenbach et al. · 2025 · Gen Hosp Psychiatry",
+     "sourceId": "diefenbach-2025",
      "key": "C"
     },
     {
-     "t": "Wibbelink et al. · 2026 · JAMA Psychiatry",
-     "sourceId": "wibbelink-2026",
+     "t": "Nolen et al. · 2019 · Bipolar Disord",
+     "c": true,
+     "sourceId": "nolen-2019-lithium-levels",
      "key": "D"
     }
    ],
@@ -532,13 +532,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Bohus et al. · 2021 · Lancet",
-     "sourceId": "bohus-lancet-2021",
+     "t": "Man et al. · 2023 · Clin Psychol Psychother",
+     "sourceId": "man-2023",
      "key": "A"
     },
     {
-     "t": "Lima et al. · 2004 · Cochrane Database of Systematic Reviews",
-     "sourceId": "lima-2004-betablockers-akathisia",
+     "t": "Saxler et al. · 2024 · Front Psychol",
+     "sourceId": "saxler-2024",
      "key": "B"
     },
     {
@@ -572,13 +572,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Yatham et al. · 2018 · Bipolar Disorders",
-     "sourceId": "canmat-isbd-bipolar-2018",
+     "t": "Diefenbach et al. · 2024 · JAMA Psychiatry",
+     "sourceId": "diefenbach-2024-primary",
      "key": "A"
     },
     {
-     "t": "National Institute for Health and Care Excellence · 2015",
-     "sourceId": "nice-violence-aggression-ng10",
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
      "key": "B"
     },
     {

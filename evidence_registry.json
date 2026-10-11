@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-24",
+  "updated": "2026-10-11",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -10803,6 +10803,100 @@
             "date": "2026-09-28",
             "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case student_jargon_rupture_001 teaches repairing a rupture the student caused. Two meta-analyses. Rupture repair episodes were associated with better patient outcome (11 studies, 1,314 patients; r = .29, d = .62). Rupture-resolution training or supervision was NOT significantly related to patient outcome (6 studies, 276 trainees; r = .11, d = .22, p = .28). It licenses 'repair is associated with better outcomes', not 'training in repair improves outcomes'. The repair-outcome analysis is correlational; the training analysis compared trained groups with comparison groups. Annotation is AI-drafted and awaits faculty signature.",
             "reason": "curriculum fine-tuning WP-I (plan FT-2, approved by Josh 2026-09-28): new communication-practice case student_jargon_rupture_001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vadod-2017-ptsd-cpg",
+      "type": "guideline",
+      "citation": {
+        "title": "VA/DoD Clinical Practice Guideline for Management of Posttraumatic Stress Disorder and Acute Stress Disorder (Version 3.0, June 2017)",
+        "authors": [],
+        "organization": "U.S. Department of Veterans Affairs / Department of Defense",
+        "year": 2017,
+        "journal": "",
+        "volume": "",
+        "pages": "1-200",
+        "doi": "",
+        "pmid": "",
+        "url": "https://www.ptsd.va.gov/professional/articles/article-pdf/id88366.pdf"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Full original VA/DoD guideline title, version, date and recommendations; source receipt docs/superpowers/reports/2026-10-11-ptsd-faculty-review/source-receipt.json; SHA-256 22579ed04ba25c38e74e4e858afefa4ca78331595ab6e2ef5a70176ad90a2213",
+        "verifiedAt": "2026-10-11",
+        "note": "Original full VA/DoD guideline, Version 3.0, June 2017; PDF SHA-256 22579ed04ba25c38e74e4e858afefa4ca78331595ab6e2ef5a70176ad90a2213. Identity and selected passages checked 2026-10-11; this is source verification, not faculty approval. Historical version used only to explain Recommendation 28b; superseded by the 2023 full guideline."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "clinical practice guideline (original full text)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-11",
+        "reviewCadence": "annual",
+        "supersededBy": [
+          "vadod-2023-ptsd-cpg"
+        ],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "ptsd",
+          "trauma",
+          "psychotherapy",
+          "prazosin"
+        ],
+        "clerkshipRelevance": "Historical insufficient-evidence position on prazosin for nightmares; distinguishes the 2017 recommendation from the 2023 update.",
+        "noteHistory": [
+          {
+            "date": "2026-10-11",
+            "note": "Original full VA/DoD guideline, Version 3.0, June 2017; PDF SHA-256 22579ed04ba25c38e74e4e858afefa4ca78331595ab6e2ef5a70176ad90a2213. Identity and selected passages checked 2026-10-11; this is source verification, not faculty approval. Historical version used only to explain Recommendation 28b; superseded by the 2023 full guideline.",
+            "reason": "F01–F03 source-backed teaching revision prepared for faculty review; no approval recorded."
+          }
+        ]
+      }
+    },
+    {
+      "id": "vadod-2023-ptsd-cpg",
+      "type": "guideline",
+      "citation": {
+        "title": "VA/DoD Clinical Practice Guideline for Management of Posttraumatic Stress Disorder and Acute Stress Disorder (Version 4.0, June 2023)",
+        "authors": [],
+        "organization": "U.S. Department of Veterans Affairs / Department of Defense",
+        "year": 2023,
+        "journal": "",
+        "volume": "",
+        "pages": "1-167",
+        "doi": "",
+        "pmid": "",
+        "url": "https://web.archive.org/web/20230721190354id_/https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG.pdf"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Full original VA/DoD guideline title, version, date and recommendations; source receipt docs/superpowers/reports/2026-10-11-ptsd-faculty-review/source-receipt.json; SHA-256 6e41b72b9eb6b59184e6d04091639c0e26e4c0c3ecfa270d923eda3af9c9edb8",
+        "verifiedAt": "2026-10-11",
+        "note": "Original full VA/DoD guideline, Version 4.0, June 2023; PDF SHA-256 6e41b72b9eb6b59184e6d04091639c0e26e4c0c3ecfa270d923eda3af9c9edb8. Identity and selected passages checked 2026-10-11; this is source verification, not faculty approval. Preserved original release from the July 21, 2023 archive capture. Selected recommendations and prazosin initial-dose table were compared with receipt-pinned August 2023 and later VA-edited copies. The 2024 Schnurr synopsis remains a separate source. Faculty review pending."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "clinical practice guideline (original full text)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-11",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "ptsd",
+          "trauma",
+          "psychotherapy",
+          "prazosin"
+        ],
+        "clerkshipRelevance": "Supports F01–F03: nightmare-specific prazosin versus global PTSD, initial prazosin dose, preferred trauma-focused psychotherapy, named medications, benzodiazepines, and uncertainty about combination treatment.",
+        "noteHistory": [
+          {
+            "date": "2026-10-11",
+            "note": "Original full VA/DoD guideline, Version 4.0, June 2023; PDF SHA-256 6e41b72b9eb6b59184e6d04091639c0e26e4c0c3ecfa270d923eda3af9c9edb8. Identity and selected passages checked 2026-10-11; this is source verification, not faculty approval. Preserved original release from the July 21, 2023 archive capture. Selected recommendations and prazosin initial-dose table were compared with receipt-pinned August 2023 and later VA-edited copies. The 2024 Schnurr synopsis remains a separate source. Faculty review pending.",
+            "reason": "F01–F03 source-backed teaching revision prepared for faculty review; no approval recorded."
           }
         ]
       }

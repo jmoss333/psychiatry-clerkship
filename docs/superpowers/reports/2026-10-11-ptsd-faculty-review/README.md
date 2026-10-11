@@ -6,7 +6,7 @@ The original guidelines support one useful historical benchmark case, with sever
 
 The next priority is consistency: our core page and some questions use broad SSRI/SNRI language even though nearby teaching already names the three medications supported by the 2023 guideline. We should preserve the correct material and historical study findings while faculty decides which wording to refine.
 
-This packet proposes changes; it does not apply them, grant clinical approval, create an attestation, or run a live model evaluation. All faculty decisions are pending in [review-decisions.csv](review-decisions.csv). Both feature switches remain false. This is **one candidate case, not five approved cases**.
+**Implementation update:** F01–F03 are now applied locally as review drafts, with verified original-guideline references and dose support. See the [implementation review](implementation-review.md) for the exact changes, source checks, dependencies and validation status. The comparisons below preserve the original proposal context. No clinical approval, new attestation or live model evaluation is recorded. All faculty decisions remain pending in [review-decisions.csv](review-decisions.csv). Both feature switches remain false. This is **one candidate case, not five approved cases**.
 
 ## 1. Sources and version recovery
 
@@ -53,7 +53,7 @@ The evidence line assigns the 2017 insufficient-evidence position to 2023 and co
 
 > The 2017 VA/DoD guideline found insufficient evidence for or against prazosin for PTSD-related nightmares. The 2023 guideline suggests it for those nightmares, with a weak recommendation, while continuing to suggest against prazosin for PTSD overall. The negative PACT trial is part of the evidence considered; it does not replace the later guideline's symptom-specific conclusion.
 
-Attach original guideline provenance to Rec28b and Rec32/18. Preserve the orthostasis teaching at line409. The existing sentence also contains a dose; this packet does not validate or propose a dose. A remediation must separately retain, relocate or revise that dose under normal medication-source review, rather than silently treating this draft as its verification. The Key paper at line407 also needs source alignment; a 2023 secondary article alone should not stand in for the original recommendation.
+Implementation now attaches the original guideline sources to Rec28b and Rec32/18 and preserves the orthostasis pearl. The original 2023 Appendix B, Table B-1, p102 verifies the initial dose as 1 mg at bedtime, titrated to clinical response. The dose now has its own teaching line, and the secondary article reference has been replaced with the original guideline references. Faculty review remains pending; see the implementation review for the extracted table evidence.
 
 ### F02 - Make the core page internally consistent
 
@@ -102,7 +102,7 @@ Revise the related rationale/pearl and distractor explanation consistently. Pres
 
 The registry's `schnurr-2024-vadod-ptsd-cpg-synopsis` is a 2024 abstract-level synopsis, with faculty review pending. Its three stored claims cover therapy priority, named medications, and benzodiazepines/cannabis, not prazosin nightmares. The `williams-2022-cochrane-ptsd-pharmacotherapy` stored claim covers SSRI response. Prazosin's pharmacy record points there, which does not establish the nightmare-specific claim.
 
-A future remediation should add the appropriate original-guideline identity and verified recommendation span using the existing evidence workflow, then link the changed teaching to it. Do not relabel the synopsis as the full guideline or mark any source approved here. If core wording changes, review/regenerate its downstream pharmacy pearl and derived concept/pearl material through their producers rather than editing derivatives in isolation.
+The F01–F03 implementation adds both original-guideline identities, verified recommendation spans and independently extracted audit passages through the existing evidence workflow, with faculty review pending, and links the changed teaching to them. Do not relabel the synopsis as the full guideline or mark any source approved here. If core wording changes, review/regenerate its downstream pharmacy pearl and derived concept/pearl material through their producers rather than editing derivatives in isolation.
 
 ### F07 - Optional resident teaching on interpreting changes
 
@@ -126,7 +126,7 @@ The teaching review covered the identified PTSD-bearing shipped Markdown teachin
 
 The teaching baseline is `70e7b5ef63be1254984f97cbe4362bfa9d8b1d04`. Remote main was refreshed to `615b8c838c6cf6f7d96ff3e9e4acfe6fabec1baf`; selected teaching and evidence files were compared against that revision. This is source freshness, not proof of what learners are currently served.
 
-Both sites ship `t_anxiety.md`, `rounds_questions.md`, `rapid_review.md`, `t_sud.md` and the question tools; `canon_200.md` is resident-only. Local attestation checking found the relevant pages bound (Rounds clinically bound) at this baseline. Changing teaching or attested questions later creates new review work. This packet changes none of those sources or signatures.
+Both sites ship `t_anxiety.md`, `rounds_questions.md`, `rapid_review.md`, `t_sud.md` and the question tools; `canon_200.md` is resident-only. Local attestation checking found the relevant pages bound (Rounds clinically bound) at this baseline. Changing teaching or attested questions later creates new review work. The original comparison snapshot changed none of those sources or signatures. The linked F01–F03 implementation changes the selected teaching and demotes qb_anx_002 to draft; it preserves the attestation ledger and reports the resulting review work.
 
 Two source defects show why exact recommendation text matters:
 

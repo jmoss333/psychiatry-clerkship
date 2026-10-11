@@ -1,5 +1,6 @@
-# PTSD teaching map for faculty review — draft, no clinical changes applied
+# PTSD teaching map for faculty review — draft, original baseline snapshot
 
+**Implementation update:** F01–F03 are applied locally for faculty review; the observations below describe the original baseline. See [implementation-review.md](implementation-review.md) for current wording, source support, dependency changes and the outstanding draft-question gate.
 Baseline: `70e7b5ef63be1254984f97cbe4362bfa9d8b1d04` in `codex/ai-paired-pilot-plan-2026-10-10`, inspected 2026-10-11. Remote inspection refreshed `origin/main` to `615b8c838c6cf6f7d96ff3e9e4acfe6fabec1baf` and found no HEAD-to-main diff for the selected Anxiety/Rounds/Resident/question-bank/evidence-registry targets; this does not establish live publication. All paths below are relative to that worktree. This is a source-to-teaching mapping, not a faculty approval. Verified original guideline recommendation numbers, page references and proposal wording are attached in README.md. Clinical and benchmark approval remain pending. No canonical teaching, registry, attestation, question, flag, or deployment file was edited.
 
 ## Scope and method
