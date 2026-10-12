@@ -2118,7 +2118,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   .fd-kit .fd-library__footer{padding-bottom:calc(var(--fd-target-touch) + var(--fd-space-10))}
 }
 @media (max-width:640px){
-  /* Leave room for a pending-review notice and wrapped resident titles above the dock.
+  /* Leave room for a pending-review notice and wrapped titles above the dock.
    * Compact the spaces between sections, not the text or 44px touch controls. */
   .fd-library__head,.fd-library__status{margin-bottom:var(--fd-space-4)}
   .fd-library__body{row-gap:var(--fd-space-4)}
