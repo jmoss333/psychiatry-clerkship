@@ -172,7 +172,7 @@ test.describe('flag on', () => {
     const during = await snapshot(page);
     expect(during.keys).toEqual([KEY]);
     expect(during.local).toEqual(before.local);
-    expect(Object.keys(during.packet).sort()).toEqual(['ids', 'inserts', 'mode', 'why']);
+    expect(Object.keys(during.packet).sort()).toEqual(['ids', 'inserts', 'mode', 'unit', 'why']);
     await tray(page).getByRole('button', { name: 'Clear packet' }).click();
     expect((await snapshot(page)).keys).toEqual([]);
     await page.waitForTimeout(400);

@@ -12,7 +12,12 @@ const read = name => {
   return existsSync(url) ? readFileSync(url, 'utf8') : '';
 };
 const PACKET = read('fd_care_packet.js');
+const SHEET = read('fd_care_packet_sheet.js');
 const EXPORTS = `;return typeof fdCarePacketNormalize === 'function' ? {
+  controls: typeof fdCarePacketControls === 'function' ? fdCarePacketControls : null,
+  blocker: typeof fdCarePacketBlocker === 'function' ? fdCarePacketBlocker : null,
+  sheet: typeof fdCarePacketSheet === 'function' ? fdCarePacketSheet : null,
+  FD_PAYLOAD_DEFAULT: typeof FD_CARE_INSERTS === 'undefined' ? undefined : FD_CARE_INSERTS,
   enabled: fdCarePacketEnabled, LIMIT: FD_CARE_PACKET_LIMIT, SUGGEST: FD_CARE_PACKET_SUGGEST, KEY: FD_CARE_PACKET_KEY,
   blank: fdCarePacketBlank, normalize: fdCarePacketNormalize, load: fdCarePacketLoad, save: fdCarePacketSave,
   ids: fdCarePacketIds, toggle: fdCarePacketToggle, addMany: fdCarePacketAddMany, move: fdCarePacketMove,
@@ -23,8 +28,10 @@ const EXPORTS = `;return typeof fdCarePacketNormalize === 'function' ? {
   displayOrder: typeof fdCarePacketDisplayOrder === 'function' ? fdCarePacketDisplayOrder : null,
   held: typeof fdCarePacketHeld === 'function' ? fdCarePacketHeld : null
 } : null;`;
-const load = (source = PACKET, storage = undefined) =>
-  new Function('sessionStorage', read('fd_data.js') + source + read('fd_care_search.js') + EXPORTS)(storage);
+// The shell's order: fd_data (fdEsc), the packet, the sheet it prints with, the search that hosts it. `FD_CARE_INSERTS`
+// is the build-injected payload; passed as a parameter so the PRODUCTION default (the global) is the path under test.
+const load = (source = PACKET, storage = undefined, payload = null) =>
+  new Function('sessionStorage', 'FD_CARE_INSERTS', read('fd_data.js') + source + SHEET + read('fd_care_search.js') + EXPORTS)(storage, payload);
 const P = load();
 
 const store = () => {
@@ -211,7 +218,7 @@ test('the tray is empty-state safe, grouped by category, escaped, and nudges at 
   assert.match(P.tray({ ...P.blank(), ids: idsOf(12) }, big, {}), /full at 12/);
 });
 
-test('the review gate has four unticked-by-default checks and reports readiness without any print button yet', () => {
+test('the review gate has four unticked-by-default checks and reports readiness; Print and Copy live in the preview, never in the tray', () => {
   const data = dataOf(3);
   const st = { ...P.blank(), ids: ['a1'] };
   const html = P.tray(st, data, {});
@@ -222,7 +229,7 @@ test('the review gate has four unticked-by-default checks and reports readiness 
   const ready = P.tray(st, data, gateOn);
   assert.equal((ready.match(/ checked/g) || []).length, 4);
   assert.match(ready, /data-fd-care-packet-ready="true"/);
-  assert.doesNotMatch(html + ready, /data-fd-care-packet-print|data-fd-care-packet-copy/, 'Print and Copy arrive in PR C');
+  assert.doesNotMatch(html + ready, /data-fd-care-packet-print|data-fd-care-packet-copy/, 'Print and Copy sit beside the reason they are unavailable, in the preview, not in the tray');
   assert.match(P.tray(P.blank(), data, gateOn), /data-fd-care-packet-ready="false"/, 'an empty packet is never ready');
 });
 
@@ -507,5 +514,5 @@ test('the gate is never read back from storage when the controller is created', 
   c.mount(null, null, () => dataOf(3));
   assert.deepEqual(c.gate(), { verification: false, region: false, identifiers: false, supervisor: false });
   c.toggle('a2');
-  assert.equal(Object.keys(JSON.parse(s.m.get('fd_care_packet_v1'))).sort().join(), 'ids,inserts,mode,why', 'only the four documented fields are ever written');
+  assert.equal(Object.keys(JSON.parse(s.m.get('fd_care_packet_v1'))).sort().join(), 'ids,inserts,mode,unit,why', 'only the five documented fields are ever written');
 });
