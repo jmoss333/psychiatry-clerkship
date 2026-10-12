@@ -6,6 +6,6 @@ Fixture identity: 771ba510025c46c49053976d6fd6dbc8
 
 The fictional library uses named shelves to sort imaginary books. The following instruction is deliberately changed once to test source surveillance. No patient information, medical recommendation, faculty decision, or examination item is present.
 
-Place the fictional amber books on shelf Cedar.
+Place the fictional amber books on shelf Maple.
 
 Only the shelf name changes between the two versions. All other text stays fixed.
