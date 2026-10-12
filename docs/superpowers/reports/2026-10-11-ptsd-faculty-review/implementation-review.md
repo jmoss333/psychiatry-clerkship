@@ -1,8 +1,10 @@
 # F01–F03 implementation review
 
-Prepared October 11, 2026. **Local teaching drafts; faculty review pending. Both AI features remain disabled.**
+Prepared October 11, 2026. **Teaching drafts; faculty review pending. Both AI features remain disabled.**
 
-The existing draft PR is #1015. The applied content is saved locally in commit `f956508b7818967d4d58a083f19919e2946032e1`, based on `15ec232b2b34d1245d32bfd62a11ae2ec685adc8`. It has not been pushed, merged or deployed; the remote PR does not yet contain these corrections. The original comparison remains in README.md and source-receipt.json. This document describes the applied follow-up, not a faculty approval or benchmark label.
+**Current staging update:** this draft incorporates the review-only workflow in [PR #1024](https://github.com/jmoss333/psychiatry-clerkship/pull/1024). The pending medication question remains a draft and is excluded from learner publication. See the staging follow-up below and the exact-head validation in [PR #1015](https://github.com/jmoss333/psychiatry-clerkship/pull/1015).
+
+**Historical record before staging:** the existing draft PR was #1015. The applied content was saved locally in commit `f956508b7818967d4d58a083f19919e2946032e1`, based on `15ec232b2b34d1245d32bfd62a11ae2ec685adc8`. At that point it had not been pushed, merged or deployed; the remote PR did not contain these corrections. The original comparison remains in README.md and source-receipt.json. This document describes the applied follow-up, not a faculty approval or benchmark label.
 
 ## What changed
 
@@ -100,7 +102,7 @@ Both original guideline records have facultyReviewStatus **pending**. Their blan
 - The five source signatures reopened by this change are `t_anxiety.md`, `rounds_questions.md`, `question-bank-practice.html`, `shelf-mode.html`, and `review.html`. The attestation ledger was not edited and no signature was created. `qb_anx_002` independently needs renewed item review.
 - Q39, other question-bank items, historical PACT/fluoxetine summaries, and the remaining optional F04–F07 teaching proposals are unchanged. F06 source support was added only as necessary for F01–F03.
 
-## Validation and delivery hold
+## Historical validation and delivery hold
 
 The edited question passes the console's phone-review readiness check. The existing question draft-exposure policy has a cap of **zero**, however, so the required demotion to draft fails that separate gate: `qb_anx_002` is unlisted and the open count is 1 above a cap of 0. Keeping it attested, marking it retired, or modifying the cap/allowlist to clear this content change would misstate review or bypass the rule.
 
@@ -117,3 +119,20 @@ Delivery remains held. Do not push through the failed pre-push gate. The next fa
 `READING_COMPANION_ENABLED` and `FACULTY_EVIDENCE_BRIEF_ENABLED` remain `false` in `sp-preview/netlify.toml`. No hosting settings, API credentials or provider calls were changed.
 
 Potential follow-up: use Q40 as a benchmark with two traps—confusing nightmares with overall PTSD, and confusing an initial-dose column with a dose-range column. This is an unimplemented evaluation idea, not an approved benchmark.
+
+
+## Review-only staging follow-up
+
+The failed validation above and [implementation-validation.json](implementation-validation.json) remain the historical record for `f956508b`. The separate governance foundation at `204f1afa6a1e3ab29298489578fb4acd6d9c7a23` passed the complete local gate, including both audience builds and download parity, and is available as draft [PR #1024](https://github.com/jmoss333/psychiatry-clerkship/pull/1024). It is incorporated into this branch; the clinical draft depends on it landing first. Nothing has been merged to main or release by this work.
+
+Faculty source data can now retain a valid saved draft. Both learner builds publish the complete approved, active subset, including placement questions, saved-question inventories, and Anki/CSV downloads. The revised question is temporarily omitted; its earlier approved wording is not kept as a separate published copy. The accompanying Daily Review change accepts a valid empty approved inventory while still refusing a missing or malformed inventory.
+
+The source check now names `qb_anx_002` as **STAGED — faculty review only**, and the phone-review check reports that this one live draft is ready for faculty review. It remains `status: draft`; the source contains 192 questions and the approved projection contains 188. It is the only changed question relative to the workflow foundation. The QB exposure cap is still zero, the exception list is unchanged, and no approval record differs from that foundation.
+
+Baseline question approval is bound to the exact IDs, saved item revisions, and manifest shown in its preview. Changed selected questions require a fresh preview, and new drafts cannot silently join a previous selection. This binding does not replace human review of the wording.
+
+The Validation section of [PR #1015](https://github.com/jmoss333/psychiatry-clerkship/pull/1015) records the completed combined-head local checks and online checks as they become available. A passing foundation check alone does not establish a successful combined build. Local checks, CI, preview deployment, production delivery and faculty approval remain separate facts. The old failed receipt has not been relabeled successful.
+
+Both AI flags remain `false`. No live provider call, credential change, hosting-setting change or faculty attestation was made. The next review is the staging workflow followed by F01–F03 and the exact saved medication-question revision.
+
+Potential later improvement: a faculty-only view placing the last approved wording beside the saved draft, with its exact revision and learner publication status. This is not implemented here.

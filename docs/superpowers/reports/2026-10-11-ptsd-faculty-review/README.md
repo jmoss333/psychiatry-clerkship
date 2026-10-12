@@ -6,7 +6,9 @@ The original guidelines support one useful historical benchmark case, with sever
 
 The next priority is consistency: our core page and some questions use broad SSRI/SNRI language even though nearby teaching already names the three medications supported by the 2023 guideline. We should preserve the correct material and historical study findings while faculty decides which wording to refine.
 
-**Implementation update:** F01–F03 are now applied locally as review drafts, with verified original-guideline references and dose support. See the [implementation review](implementation-review.md) for the exact changes, source checks, dependencies and validation status. The comparisons below preserve the original proposal context. No clinical approval, new attestation or live model evaluation is recorded. All faculty decisions remain pending in [review-decisions.csv](review-decisions.csv). Both feature switches remain false. This is **one candidate case, not five approved cases**.
+**Implementation update:** F01–F03 are applied as review drafts, with verified original-guideline references and dose support. See the [implementation review](implementation-review.md) for the exact changes, source checks, dependencies and validation status. The comparisons below preserve the original proposal context. No clinical approval, new attestation or live model evaluation is recorded. All faculty decisions remain pending in [review-decisions.csv](review-decisions.csv). Both feature switches remain false. This is **one candidate case, not five approved cases**.
+
+**Review-only staging:** [PR #1024](https://github.com/jmoss333/psychiatry-clerkship/pull/1024) supplies the publication boundary for dependent [PR #1015](https://github.com/jmoss333/psychiatry-clerkship/pull/1015). `qb_anx_002` stays draft and is withheld from learner pages and downloads until faculty approval. The [staging follow-up](implementation-review.md#review-only-staging-follow-up) preserves the earlier failed receipt and points to current validation. Neither PR activates either AI feature.
 
 ## 1. Sources and version recovery
 
