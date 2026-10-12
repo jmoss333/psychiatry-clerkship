@@ -78,6 +78,7 @@ def good():
                         "defaultOn": insert_id in DEFAULT_ON,
                         "body": "A short plain sentence."})
     by_id = {insert["id"]: insert for insert in inserts}
+    by_id["intro"]["body"] = "A short plain sentence. Call the unit at {{unitPhone}} if you need help."
     by_id["national"]["table"] = [row("Example Helpline", "1-800-555-0101"), row("Example Text Line", "211")]
     by_id["insurance"]["table"] = [row("Example Coverage Office", "1-800-555-0102")]
     def line(ref):
@@ -688,6 +689,19 @@ class Housekeeping(Base):
         data = good()
         insert(data, "notes")["rows"] = ["", "", ""]
         self.assertEqual([], run_check(data).errors)
+
+    def test_the_welcome_insert_must_keep_a_unit_token(self):
+        # The always-on welcome page is what makes every Final copy name the unit, and so need a confirmed unit profile. Removing its
+        # tokens would quietly lift that requirement. Fails if the validator stops requiring a token on the always-on page.
+        data = good()
+        intro = insert(data, "intro")
+        intro["body"] = intro["body"].replace("{{unitPhone}}", "the unit")
+        intro["signoff"] = "With care, from the team"
+        self.assertErrorMentions(run_check(data), "intro", "unitPhone")
+        data = good()
+        intro = insert(data, "intro")
+        intro["signoff"] = "With care, from the team"
+        self.assertEqual([e for e in run_check(data).errors if "must carry" in e], [], "one token is enough")
 
     def test_the_welcome_insert_must_be_core_and_on(self):
         data = good()

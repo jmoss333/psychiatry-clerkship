@@ -113,6 +113,10 @@ def packet_enabled(source_path=None):
 def _shipped_profile(profile):
     """A profile as the browser receives it: the confirmation record replaced by the last day it may be used."""
     out = {key: profile[key] for key in PROFILE_SHIPPED_KEYS}
+    # Institutional branding is approval-pending until the owner says otherwise: an unapproved organisation name stays out of the
+    # page source of two public learner sites, not just out of the printed header.
+    if not profile["brandingApproved"]:
+        out["org"] = None
     out["usableThrough"] = _validator.usable_through(_validator.parse_iso(profile["phoneConfirmedOn"]))
     return out
 

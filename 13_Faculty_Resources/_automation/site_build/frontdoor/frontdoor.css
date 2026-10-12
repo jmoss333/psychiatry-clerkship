@@ -779,7 +779,7 @@
 .fd-care-packet-preview__addresses ul{margin:var(--fd-space-3) 0 0;padding-left:var(--fd-space-9)}
 .fd-care-packet-preview__url{overflow-wrap:anywhere;font-variant-ligatures:none}
 .fd-care-packet-preview__sheet{margin-top:var(--fd-space-6)}
-@media (max-width:640px){.fd-care-packet{padding:var(--fd-space-4)}.fd-care-search__pack{margin-left:0}.fd-care-packet :is(button,input,h3){scroll-margin-top:76px}.fd-care-search__preview{padding:var(--fd-space-4)}.fd-care-search__preview :is(button,input,h3){scroll-margin-top:76px}}
+@media (max-width:640px){.fd-care-packet{padding:var(--fd-space-4)}.fd-care-search__pack{margin-left:0}.fd-care-packet :is(button,input,select,h3){scroll-margin-top:76px}.fd-care-search__preview{padding:var(--fd-space-4)}.fd-care-search__preview :is(button,input,select,textarea,h3){scroll-margin-top:76px}}
 
 /* ---- The printable aftercare packet (fd_care_packet_sheet.js) -----------------------------------------------------
  * Ink only: system colours (Canvas, CanvasText), borders and weight, never a tint, so a monochrome ward printer, a

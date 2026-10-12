@@ -180,13 +180,15 @@ function fdCarePacketReasonOf(ctx,id){return ctx&&typeof ctx.reason==='function'
 function fdCarePacketPayloadDown(ctx){return !ctx||typeof ctx.reason!=='function'||ctx.payloadOk!==true;}
 
 function fdCarePacketButton(row,ctx){
-  var packed=!!ctx.ids[row.id],locked=ctx.full&&!packed,reason=fdCarePacketReasonOf(ctx,row.id);
+  var packed=!!ctx.ids[row.id],locked=ctx.full&&!packed,reason=fdCarePacketReasonOf(ctx,row.id),note;
   /* Payload down: the bulk bar says so once, and no row repeats it. */
   if(reason==='PAYLOAD')return '';
-  if(reason)return '<p class="fd-care-search__ineligible" data-fd-care-packet-ineligible="'+fdEsc(reason)+'">Can’t be added to the packet: '+fdEsc(fdCarePacketReasonText(reason))+'</p>';
+  note=reason?'<p class="fd-care-search__ineligible" data-fd-care-packet-ineligible="'+fdEsc(reason)+'">Can’t be added to the packet: '+fdEsc(fdCarePacketReasonText(reason))+'</p>':'';
+  /* Not in the packet: nothing to press. In the packet: the same pressed button as ever, so the trainee can take it out here too. */
+  if(reason&&!packed)return note;
   /* The visible label never changes, so the accessible name always contains it (WCAG 2.5.3); the pressed
      state, the "In packet" tag and the card border carry the state. */
-  return '<button type="button" class="fd-care-search__pack" data-fd-care-packet="'+fdEsc(row.id)+'" aria-pressed="'+(packed?'true':'false')+
+  return note+'<button type="button" class="fd-care-search__pack" data-fd-care-packet="'+fdEsc(row.id)+'" aria-pressed="'+(packed?'true':'false')+
     '" aria-label="'+fdEsc('Add to packet: '+row.name)+'"'+(locked?' disabled':'')+'>Add to packet</button>';
 }
 function fdCarePacketBulk(result,ctx){
@@ -215,7 +217,7 @@ function fdCarePacketCardReason(payload){
   return '';
 }
 function fdCarePacketCardNote(payload,message){
-  return message||fdCarePacketCardReason(payload)||'A separate one-sided page: the crisis lines and space for your own numbers. It is not part of the packet.';
+  return message||fdCarePacketCardReason(payload)||'A separate one-sided page: the crisis lines and space for your own numbers. It is not part of the packet. Print from Chrome or Edge with scale 100 and margins set to Default, so it stays card-sized.';
 }
 
 function fdCarePacketTray(state,data,gate,ui){
@@ -255,6 +257,11 @@ function fdCarePacketTray(state,data,gate,ui){
   }
   /* Offered whenever anything is saved (a unit, a profile, a Final copy, a page switch), not only when there are listings. */
   if(fdCarePacketHasState(state))out+='<button type="button" class="fd-care-packet__clear" data-fd-care-packet-clear>Clear packet</button>';
+  /* The wallet card is its own optional print, available with no listings, with its own note and reason line. It needs
+     no review confirmations, mode or unit details: it carries only the governed crisis lines and write-in space. */
+  out+='<div class="fd-care-packet__card"><button type="button" class="fd-care-packet__cardbtn" data-fd-care-packet-card-print aria-describedby="fd-care-packet-card-note"'+
+    (fdCarePacketCardReason(payload)?' disabled':'')+'>Print wallet card</button><p class="fd-care-packet__note" id="fd-care-packet-card-note" data-fd-care-packet-card-note>'+
+    fdEsc(fdCarePacketCardNote(payload,ui.cardMessage))+'</p></div>';
   out+='<fieldset class="fd-care-packet__gate"><legend>Review before printing</legend>';
   for(i=0;i<FD_CARE_PACKET_GATES.length;i++){
     var key=FD_CARE_PACKET_GATES[i][0];
@@ -271,17 +278,12 @@ function fdCarePacketTray(state,data,gate,ui){
      speak. Its label never changes (WCAG 2.5.3); aria-expanded carries the state. */
   if(n)out+='<button type="button" class="fd-care-packet__preview-toggle" data-fd-care-packet-preview-toggle aria-expanded="'+(ui.previewOpen?'true':'false')+
     '" aria-controls="fd-care-packet-preview">Preview and print</button>';
-  /* The wallet card is its own optional print, available with no listings, with its own note and reason line. It needs
-     no review confirmations, mode or unit details: it carries only the governed crisis lines and write-in space. */
-  out+='<div class="fd-care-packet__card"><button type="button" class="fd-care-packet__cardbtn" data-fd-care-packet-card-print aria-describedby="fd-care-packet-card-note"'+
-    (fdCarePacketCardReason(payload)?' disabled':'')+'>Print wallet card</button><p class="fd-care-packet__note" id="fd-care-packet-card-note" data-fd-care-packet-card-note>'+
-    fdEsc(fdCarePacketCardNote(payload,ui.cardMessage))+'</p></div>';
   return out+'</section>';
 }
 
 /* Blockers whose fix re-arms the review gate (a unit that is not confirmed, a call-back page nobody can promise, a saved listing
    that cannot print) come BEFORE the four confirmations: confirming first and then being told to start again is the trap. */
-var FD_CARE_PACKET_SETUP=['INELIGIBLE','UNIT_UNCONFIRMED','CALLBACK_UNCONFIRMED'];
+var FD_CARE_PACKET_SETUP=['INELIGIBLE','CRISIS_NUMBER','UNIT_UNCONFIRMED','CALLBACK_UNCONFIRMED'];
 function fdCarePacketSetupBlocker(sheet,forCopy){
   var list=sheet&&sheet.ok&&sheet.blockers?sheet.blockers:[],i;
   for(i=0;i<list.length;i++)if(FD_CARE_PACKET_SETUP.indexOf(list[i].code)!==-1&&!(forCopy&&list[i].scope==='print'))return {code:list[i].code,message:list[i].message};
@@ -305,8 +307,9 @@ function fdCarePacketBlocker(state,data,gate,sheet,forCopy){
 }
 
 /* The profile line the trainee reads: what is loaded and how long its confirmation holds, or that typed details are not confirmed. */
-function fdCarePacketProfileStatus(info,profiles,typed){
+function fdCarePacketProfileStatus(info,profiles,typed,stale){
   var i,found=null;
+  if(stale)return 'The saved unit profile is not available in this version. Type your own details, or choose another profile and press Load profile.';
   if(info.loaded){
     for(i=0;i<profiles.length;i++)if(profiles[i].id===info.profile)found=profiles[i];
     if(info.expired)return 'The loaded profile’s phone confirmation has lapsed'+(found&&found.usableThrough?' (it held through '+found.usableThrough+')':'')+'. A Final copy needs a current confirmation.';
@@ -329,19 +332,19 @@ function fdCarePacketControls(state,data,payload,gate,ui){
   var sheet=ui.sheet,mode=state.mode==='final'?'final':'review',i,ins,box,out='',reason,typed=!!(raw.name||raw.phone);
   function radio(value,label,note){
     return '<label class="fd-care-packet__check"><input type="radio" name="fd-care-packet-mode" value="'+value+'" data-fd-care-packet-mode="'+value+'"'+
-      (mode===value?' checked':'')+'> <span><b>'+label+'</b> '+note+'</span></label>';
+      (mode===value?' checked':'')+' aria-describedby="fd-care-packet-modenote"> <span><b>'+label+'</b> '+note+'</span></label>';
   }
   function field(key,label,type,max,value,hint){
     var id='fd-care-packet-unit-'+key,err=errors[key]||'';
     return '<div class="fd-care-packet-preview__field"><label for="'+id+'">'+label+'</label>'+
       '<input id="'+id+'" type="'+type+'"'+(type==='tel'?' inputmode="tel"':'')+' data-fd-care-packet-unit-field="'+key+'" maxlength="'+max+'" autocomplete="off" spellcheck="false"'+
-      (info.loaded?' readonly':'')+(err?' aria-invalid="true"':'')+' aria-describedby="fd-care-packet-unit-hint '+id+'-error" value="'+fdEsc(value)+'">'+
+      (info.loaded?' readonly':'')+(err?' aria-invalid="true"':'')+' aria-describedby="fd-care-packet-profile-status '+(key==='phone'?'fd-care-packet-readback ':'')+'fd-care-packet-unit-hint '+id+'-error" value="'+fdEsc(value)+'">'+
       '<p class="fd-care-packet-preview__error" id="'+id+'-error"'+(err?'':' hidden')+'>'+fdEsc(err)+'</p></div>';
   }
   out+='<fieldset class="fd-care-packet-preview__mode"><legend>Copy to print</legend>'+
     radio('review','Review copy','Prints on the unit, with tick boxes for the patient to mark.')+
     radio('final','Final copy','Goes home with the After Visit Summary.')+
-    '<p class="fd-care-packet-preview__hint" data-fd-care-packet-modenote>A Final copy that names the unit or promises a call needs a confirmed unit profile. A Review copy does not.</p></fieldset>';
+    '<p class="fd-care-packet-preview__hint" id="fd-care-packet-modenote" data-fd-care-packet-modenote>A Final copy that names the unit or promises a call needs a confirmed unit profile. A Review copy does not.</p></fieldset>';
   if(payload&&Array.isArray(payload.inserts)){
     out+='<fieldset class="fd-care-packet-preview__pages"><legend>Pages to include</legend><p class="fd-care-packet-preview__always">Always included: the welcome and the crisis lines.</p>';
     for(i=0;i<payload.inserts.length;i++){
@@ -359,13 +362,13 @@ function fdCarePacketControls(state,data,payload,gate,ui){
     for(i=0;i<profiles.length;i++)out+='<option value="'+fdEsc(profiles[i].id)+'"'+(info.loaded&&info.profile===profiles[i].id?' selected':'')+'>'+fdEsc(profiles[i].label)+'</option>';
     out+='</select><button type="button" data-fd-care-packet-profile-load>Load profile</button></div>';
   }else out+='<p class="fd-care-packet-preview__hint" data-fd-care-packet-profile-none>No confirmed unit profile is set up yet. A Final copy that names the unit needs one; ask the project owner to add it.</p>';
-  out+='<p class="fd-care-packet-preview__hint" data-fd-care-packet-profile-status>'+fdEsc(fdCarePacketProfileStatus(info,profiles,typed))+'</p>'+
+  out+='<p class="fd-care-packet-preview__hint" id="fd-care-packet-profile-status" data-fd-care-packet-profile-status>'+fdEsc(fdCarePacketProfileStatus(info,profiles,typed,!!raw.profile&&!info.loaded))+'</p>'+
     '<button type="button" data-fd-care-packet-profile-unlink'+(info.loaded?'':' hidden')+'>Use my own details instead</button></div>';
   out+='<div class="fd-care-packet-preview__unit">'+
     field('name','Unit name (prints at the top of the first page)','text',60,info.loaded?info.name:raw.name)+
     field('phone','Unit phone (patients call this number)','tel',30,info.loaded?info.phone:raw.phone)+
     '<p class="fd-care-packet-preview__hint" id="fd-care-packet-unit-hint">The ward’s details, never the patient’s. A phone you type is never treated as confirmed.</p>'+
-    '<p class="fd-care-packet-preview__hint" data-fd-care-packet-readback>'+fdEsc(fdCarePacketReadback(info,mode))+'</p></div>';
+    '<p class="fd-care-packet-preview__hint" id="fd-care-packet-readback" data-fd-care-packet-readback>'+fdEsc(fdCarePacketReadback(info,mode))+'</p></div>';
   reason=fdCarePacketReason(blocker,copyBlocker);
   out+='<p class="fd-care-packet-preview__reason" id="fd-care-packet-reason" tabindex="-1">'+fdEsc(reason)+'</p>'+
     '<div class="fd-care-packet-preview__actions">'+
@@ -417,7 +420,7 @@ function fdCreateCarePacket(options){
   var payload=options&&options.payload!==undefined?options.payload:(typeof FD_CARE_INSERTS!=='undefined'?FD_CARE_INSERTS:null);
   var state=null,gate=fdCarePacketGateBlank(),root=null,live=null,notify=null,sayTimer=null;
   var previewRoot=null,controlsNode=null,pagesNode=null,controlsBuilt=false,previewOpen=false,draft={},pagesTimer=null,deferTimer=null,lastSheet=null;
-  var printing=false,printStarted=0,printHost=null,pageStyle=null,savedTitle=null,printTitle='',printKind='',fallbackText='',cardMessage='',listening=false;
+  var printing=false,printStarted=0,printHost=null,pageStyle=null,savedTitle=null,printTitle='',printKind='',fallbackText='',cardMessage='',listening=false,lastPointer=null;
   var getData=function(){return null;};
   /* Layout options for every sheet this controller builds. Production passes none; a test may hand in a measurer. */
   var sheetBase=(options&&options.sheet)||{};
@@ -470,7 +473,7 @@ function fdCreateCarePacket(options){
   function viewState(){
     var s=fdCarePacketCopy(current());
     /* A loaded profile is the only source of the unit's details, so a stale draft never overrides it. */
-    if(!s.unit.profile){
+    if(!unitInfo(s).loaded){
       if(draft.name!==undefined)s.unit.name=draft.name;
       if(draft.phone!==undefined)s.unit.phone=draft.phone;
     }
@@ -539,7 +542,7 @@ function fdCreateCarePacket(options){
       error.textContent=ui.unitErrors[keys[i]];error.hidden=!ui.unitErrors[keys[i]];
       if(ui.unitErrors[keys[i]])input.setAttribute('aria-invalid','true');else input.removeAttribute('aria-invalid');
     }
-    if(statusNode)statusNode.textContent=fdCarePacketProfileStatus(info,fdCarePacketProfiles(payload),!!(s.unit.name||s.unit.phone));
+    if(statusNode)statusNode.textContent=fdCarePacketProfileStatus(info,fdCarePacketProfiles(payload),!!(s.unit.name||s.unit.phone),!!s.unit.profile&&!info.loaded);
     if(unlinkNode)unlinkNode.hidden=!info.loaded;
     if(selectNode&&info.loaded)selectNode.value=info.profile;
     if(readbackNode)readbackNode.textContent=fdCarePacketReadback(info,s.mode);
@@ -775,12 +778,13 @@ function fdCreateCarePacket(options){
   function setUnit(field,value){
     if(field!=='name'&&field!=='phone')return false;
     var raw=String(value==null?'':value).slice(0,200).replace(/^\s+|\s+$/g,''),cur=current(),was,next,before;
-    if(cur.unit.profile)return false;
+    /* Typing is refused only while a profile is really LOADED; a saved id the build no longer ships is dropped on the first edit. */
+    if(unitInfo(cur).loaded)return false;
     delete draft[field];
     if(cur.unit[field]===raw){schedulePages();return true;}
     before=availability();
     was=resetGate();
-    next=fdCarePacketCopy(cur);next.unit[field]=raw;
+    next=fdCarePacketCopy(cur);next.unit.profile='';next.unit[field]=raw;
     /* Deferred: this runs on the field's change event, which fires BEFORE focus moves. If the trainee is tabbing to
        Print, Print must still be there when focus lands; the controls are brought up to date a task later. */
     commit(next,{patch:true,defer:true});
@@ -807,12 +811,14 @@ function fdCreateCarePacket(options){
   }
   /* Typed details start empty: nothing confirmed is carried into values that are not. */
   function unlinkProfile(){
-    var cur=current(),was,next,before;
+    var cur=current(),was,next,before,chosenSelect;
     if(!cur.unit.profile)return false;
     before=availability();
     was=resetGate();
     next=fdCarePacketCopy(cur);next.unit={name:'',phone:'',profile:''};
     commit(next,{patch:true});
+    chosenSelect=previewRoot&&typeof previewRoot.querySelector==='function'?previewRoot.querySelector('[data-fd-care-packet-profile-select]'):null;
+    if(chosenSelect)chosenSelect.value='';
     sayChanged('Unit profile removed. Type your own unit details.'+cleared(was),before);
     return true;
   }
@@ -850,6 +856,8 @@ function fdCreateCarePacket(options){
       say(sheet.message);
       return {ok:false,code:sheet.code};
     }
+    /* The staged card is removed by the afterprint listener; without it a card could stay staged for the next ordinary print. */
+    if(!listening){say('The card cannot print from here.');return {ok:false,code:'NO_PRINT_HOOK'};}
     if(typeof document==='undefined'||!document.body||typeof window==='undefined'||typeof window.print!=='function')return {ok:false,code:'NO_DOCUMENT'};
     cardMessage='';
     if(wasMessage&&root)patchTray();
@@ -886,7 +894,14 @@ function fdCreateCarePacket(options){
      ordinary page prints. The inline preview itself is hidden in print always. */
   function onBefore(){
     var s,sheet,blocker;
-    if(printing)return;
+    if(printing){
+      if(printStarted&&Date.now()-printStarted<30000)return;
+      /* afterprint never came (some browsers skip it): whatever is staged is stale and must not print again. */
+      teardown();
+    }
+    /* A mouse click on a button elsewhere does not always move focus (Safari, Firefox on macOS), so the last pointer-down also counts:
+       a print that follows a click OUTSIDE the packet is that control's print (the older pack's), never the packet's. */
+    if(lastPointer&&Date.now()-lastPointer.at<2000&&!lastPointer.inside){teardown();return;}
     if(!previewOpen||!focusInside()){teardown();return;}
     if(draft.name!==undefined||draft.phone!==undefined){buildHost('',true);return;}
     s=current();sheet=fdCarePacketSheet(s,getData(),payload,layout({headingBase:1}));
@@ -921,7 +936,8 @@ function fdCreateCarePacket(options){
     if(button.hasAttribute('data-fd-care-packet-card-print')){printCard();return {attr:'data-fd-care-packet-card-print',id:'',keep:true};}
     if(button.hasAttribute('data-fd-care-packet-profile-load')){
       var chosen=previewRoot&&typeof previewRoot.querySelector==='function'?previewRoot.querySelector('[data-fd-care-packet-profile-select]'):null;
-      loadProfile(chosen?chosen.value:'');
+      if(!chosen||!chosen.value)say('Choose a unit profile first, then press Load profile.');
+      else loadProfile(chosen.value);
       return {attr:'data-fd-care-packet-profile-load',id:'',keep:true};
     }
     if(button.hasAttribute('data-fd-care-packet-profile-unlink')){
@@ -994,12 +1010,17 @@ function fdCreateCarePacket(options){
     closePreview();
     return {attr:'data-fd-care-packet-preview-toggle',id:''};
   }
+  function onPointer(event){
+    var target=event&&event.target;
+    lastPointer={at:Date.now(),inside:!!target&&((previewRoot&&typeof previewRoot.contains==='function'&&previewRoot.contains(target))||(root&&typeof root.contains==='function'&&root.contains(target)))};
+  }
   function unlisten(){
     if(listening&&typeof window!=='undefined'&&window.removeEventListener){
       window.removeEventListener('beforeprint',onBefore);
       window.removeEventListener('afterprint',onAfter);
     }
-    listening=false;
+    if(listening&&typeof document!=='undefined'&&document&&typeof document.removeEventListener==='function')document.removeEventListener('pointerdown',onPointer,true);
+    listening=false;lastPointer=null;
   }
   return {
     mount:function(node,status,dataGetter,onChange,previewNode){
@@ -1012,6 +1033,7 @@ function fdCreateCarePacket(options){
       if(previewRoot&&typeof window!=='undefined'&&window.addEventListener){
         window.addEventListener('beforeprint',onBefore);
         window.addEventListener('afterprint',onAfter);
+        if(typeof document!=='undefined'&&document&&typeof document.addEventListener==='function')document.addEventListener('pointerdown',onPointer,true);
         listening=true;
       }
       paint();

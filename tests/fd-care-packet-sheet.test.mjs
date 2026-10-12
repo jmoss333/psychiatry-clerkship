@@ -42,8 +42,12 @@ const EXPORTS = `;return typeof fdCarePacketSheet === 'function' ? {
   paginate: fdCarePacketPaginate, estimate: fdCarePacketEstimate, sheet: fdCarePacketSheet, text: fdCarePacketText,
   validate: fdCareDirectoryValidate, blank: fdCarePacketBlank, insertOn: fdCarePacketInsertOn,
   checkCrisis: fdCarePacketCheckCrisis, payloadOk: fdCarePacketPayloadOk,
-  strip: fdCarePacketStrip, phoneLike: fdCarePacketPhoneLike,
-  ORG: FD_CARE_PACKET_ORG, BAND: FD_CARE_PACKET_BAND
+  strip: fdCarePacketStrip, phoneLike: fdCarePacketPhoneLike, esc: fdEsc,
+  eligibility: fdCarePacketEligibility, reasonText: fdCarePacketReasonText, REASONS: FD_CARE_PACKET_REASONS, dial: fdCarePacketDial,
+  unitOf: fdCarePacketUnitOf, profiles: fdCarePacketProfiles, profileUsable: fdCarePacketProfileUsable, profileFind: fdCarePacketProfileFind,
+  expired: fdCarePacketExpired, cardSheet: fdCarePacketCardSheet, checkCard: fdCarePacketCheckCard, hasState: fdCarePacketHasState,
+  helplineNumbers: fdCarePacketHelplineNumbers,
+  BAND: FD_CARE_PACKET_BAND
 } : null;`;
 const src = name => readFileSync(path.join(SITE_BUILD, name), 'utf8');
 // The shell's order: fd_data (fdEsc), the QR generator, fd_care_pack (fdCarePackQrSvg), the packet, the sheet, the search (validate).
@@ -70,10 +74,21 @@ const eight = () => [
   row(7, { category: 'community_services', name: 'Services 7' }),
 ];
 const idsOf = records => records.map(r => r.id);
-const stateOf = (records, more = {}) => ({ ...S.blank(), ids: idsOf(records), unit: { name: '4 East', phone: '(207) 555-0100' }, ...more });
-const finalState = (records, more = {}) => stateOf(records, { mode: 'final', ...more });
+// The shipped payload carries no unit profile (unitProfiles is []), and a typed phone never confirms the unit, so a
+// printable Final copy needs a profile. PROFILED is the real build payload plus the TEST-ONLY fixture profiles (the
+// payload's own shape, a fictional 555-01xx number); nothing else differs. A test about the shipped payload passes PAYLOAD.
+const FIXTURE = JSON.parse(readFileSync(path.join(REPO, 'tests/fixtures/care-unit-profile.json'), 'utf8'));
+const withProfiles = (payload, ...profiles) => { const out = clone(payload); out.unitProfiles = profiles.map(clone); return out; };
+const PROFILED = withProfiles(PAYLOAD, FIXTURE.profile, FIXTURE.expired);
+const LOADED = { name: '', phone: '', profile: FIXTURE.profile.id };
+// Review drafts carry the trainee's typed (unconfirmed) unit details; a Final copy loads the fixture profile.
+const stateOf = (records, more = {}) => ({ ...S.blank(), ids: idsOf(records), unit: { name: '4 East', phone: '(207) 555-0100', profile: '' }, ...more });
+const finalState = (records, more = {}) => stateOf(records, { mode: 'final', unit: { ...LOADED }, ...more });
+const typedFinal = (records, more = {}) => stateOf(records, { mode: 'final', ...more });
 const MODES = ['review', 'final'];
-const render = (records, state, payload = PAYLOAD, opts = {}) => S.sheet(state, dataOf(records), payload, opts);
+const render = (records, state, payload = PROFILED, opts = {}) => S.sheet(state, dataOf(records), payload, opts);
+const codesOf = result => result.blockers.map(b => b.code);
+const governedName = id => GOVERNED.resources.find(r => r.id === id).name;
 // Plain-text view of the html, for oracle scans.
 // The entities are decoded in ONE pass: decoding "&amp;" first and then "&lt;" would turn the text "&amp;lt;" into "<".
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
@@ -94,16 +109,31 @@ test('the module exists, exports the sheet API, and is a front-door module (ES5,
   // No registered crisis contact, anywhere it could be typed (comments included): the governed record is the only home.
   const css = readIf(path.join(FD, 'frontdoor.css'));
   const digitsOf = text => text.replace(/\D/g, '');
+  // Every registered number: each governed contact, and the payload's crisisNumbers (which adds alsoAvailable numbers).
+  const registered = new Set(PAYLOAD.crisisNumbers);
   for (const resource of GOVERNED.resources) {
-    for (const token of String(resource.contact).match(/\d[\d\-\s().]*\d/g) || []) {
-      const digits = digitsOf(token);
-      const pattern = new RegExp('(?<!\\d)(?:1[\\s.\\-()]*)?' + digits.split('').join('[\\s.\\-()]*') + '(?!\\d)');
-      for (const [label, text] of [['sheet module', SHEET_SRC], ['packet module', PACKET_SRC], ['frontdoor.css', css]]) {
-        assert.doesNotMatch(text, pattern, label + ' must not type ' + resource.id + "'s number");
-      }
+    for (const token of String(resource.contact).match(/\d[\d\-\s().]*\d/g) || []) registered.add(digitsOf(token));
+  }
+  assert.ok(registered.size >= GOVERNED.resources.length, 'the scan has numbers to look for: ' + registered.size);
+  for (const digits of registered) {
+    const pattern = new RegExp('(?<!\\d)(?:1[\\s.\\-()]*)?' + digits.split('').join('[\\s.\\-()]*') + '(?!\\d)');
+    for (const [label, text] of [['sheet module', SHEET_SRC], ['packet module', PACKET_SRC], ['frontdoor.css', css]]) {
+      assert.doesNotMatch(text, pattern, label + ' must not type a registered crisis number (' + digits.length + ' digits)');
     }
   }
   assert.doesNotMatch(SHEET_SRC, /lifeline_|maine_crisis|emergency_911|crisis_text_line|veterans_crisis/, 'the sheet never names a crisis id: the payload says which are required');
+});
+
+test('source wording: no hard-coded organisation, no Review-copy promise of a "final copy", no listing-status logic in the packet modules', () => {
+  for (const [label, text] of [['sheet module', SHEET_SRC], ['packet module', PACKET_SRC]]) {
+    assert.doesNotMatch(text, /FD_CARE_PACKET_ORG|Maine Medical Center/, label + ': the organisation comes only from a loaded profile with approved branding');
+    // The feed already dropped closed and withdrawn records and blanked blocked contacts; the packet reads verdicts, it does not re-decide them.
+    assert.doesNotMatch(text, /\.(?:status|closed|withdrawn|verificationRequired|verifiedDate|reviewAfter)\b/, label + ' reads no listing status or verification field');
+  }
+  for (const promise of ['finalize this together', 'print a final copy', 'for the final copy', 'keep what you tick']) {
+    assert.equal(SHEET_SRC.toLowerCase().includes(promise), false, 'the Review copy no longer promises: ' + promise);
+  }
+  assert.equal(S.BAND, 'Review copy · we will go over this with you before you leave');
 });
 
 // ---- fill --------------------------------------------------------------------------------------------------
@@ -132,19 +162,53 @@ test('payload validity: every crisis line and every required line resolves, and 
   assert.equal(S.payloadOk(dropped), false, 'a required line that is not one of the printed lines');
   const unresolved = clone(PAYLOAD); delete unresolved.contacts[PAYLOAD.crisis[2].ref];
   assert.equal(S.payloadOk(unresolved), false, 'a printed line with no contact');
+  for (const blank of ['', '   ', undefined, 7]) {
+    const nameless = clone(PAYLOAD); nameless.contacts[PAYLOAD.crisis[2].ref].name = blank;
+    assert.equal(S.payloadOk(nameless), false, 'a printed line whose contact has no official name: ' + JSON.stringify(blank));
+  }
   for (const bad of [null, undefined, 7, 'x', [], {}]) assert.equal(S.payloadOk(bad), false, JSON.stringify(bad));
 });
 
-test('the rendered-output check refuses a layout that lost a required contact, on the page or on the wallet card', () => {
-  const contact = id => PAYLOAD.contacts[id].contact;
-  const lines = PAYLOAD.required.map(id => '<li>' + contact(id) + '</li>').join('');
+test('the shipped payload: crisis lines carry a ref and no label, each contact carries the GOVERNED name, the card is not an insert, no unit profile', () => {
+  assert.deepEqual(Object.keys(PAYLOAD).sort(), ['card', 'checkedOn', 'contacts', 'crisis', 'crisisCopy', 'crisisNumbers', 'generatedAt', 'inserts', 'required', 'unitProfiles']);
+  for (const line of PAYLOAD.crisis) {
+    assert.deepEqual(Object.keys(line).sort(), ['ref', 'when'], line.ref + ' carries no label to print');
+    assert.equal(PAYLOAD.contacts[line.ref].name, governedName(line.ref), line.ref + ': the official name from crisis_resources.json');
+  }
+  assert.equal(PAYLOAD.inserts.some(i => i.id === 'card'), false, 'the wallet card is its own print, not a page of the packet');
+  assert.deepEqual(PAYLOAD.unitProfiles, [], 'no unit profile ships');
+  assert.deepEqual(S.profiles(PAYLOAD), []);
+  assert.deepEqual(S.profiles(PROFILED).map(p => p.id), [FIXTURE.profile.id, FIXTURE.expired.id], 'the test-only fixture is in the shipped shape and survives re-validation');
+});
+
+// REWRITTEN for Revision 2: the check now needs each required line's official NAME as well as its contact, both in the
+// same crisis unit, and the wallet card is no longer a unit of the packet (it has its own check, fdCarePacketCheckCard).
+test('the rendered-output check needs every required line\'s official NAME and CONTACT in one crisis unit; a card-flagged unit no longer counts either way', () => {
+  // A sentinel name with an ampersand: the check compares ESCAPED text, as the sheet prints it.
+  const payload = clone(PAYLOAD);
+  const first = payload.required[0];
+  payload.contacts[first].name = 'Sentinel & Official';
+  const contactOf = id => S.esc(payload.contacts[id].contact);
+  const nameOf = id => S.esc(payload.contacts[id].name);
+  const lineOf = id => '<li data-fd-packet-crisis="' + S.esc(id) + '"><b>' + contactOf(id) + '</b><span>' + nameOf(id) + '</span></li>';
+  const lines = payload.required.map(lineOf).join('');
   const good = [{ crisis: true, card: false, html: lines }];
-  assert.equal(S.checkCrisis(good, PAYLOAD), true);
-  assert.equal(S.checkCrisis([{ crisis: true, html: lines.replace(contact(PAYLOAD.required[0]), '') }], PAYLOAD), false, 'a contact missing from the block');
-  assert.equal(S.checkCrisis([], PAYLOAD), false, 'no crisis block at all');
-  assert.equal(S.checkCrisis([{ crisis: false, html: lines }], PAYLOAD), false, 'contacts that are not in the crisis unit do not count');
-  assert.equal(S.checkCrisis([...good, { crisis: false, card: true, html: '<div>' + contact(PAYLOAD.required[0]) + '</div>' }], PAYLOAD), false, 'a wallet card without every required line');
-  assert.equal(S.checkCrisis([...good, { crisis: false, card: true, html: lines }], PAYLOAD), true);
+  assert.equal(S.checkCrisis(good, payload), true);
+  // Added with the review fixes: the NAME and the NUMBER must be on the same printed line. Names rotated one place along (every
+  // name and every number is still somewhere in the block) used to pass. Fails if the check goes back to "somewhere in the unit".
+  const rotated = payload.required.map((id, i) => '<li data-fd-packet-crisis="' + S.esc(id) + '"><b>' + contactOf(id) + '</b><span>' + nameOf(payload.required[(i + 1) % payload.required.length]) + '</span></li>').join('');
+  assert.equal(S.checkCrisis([{ crisis: true, html: rotated }], payload), false, 'a number printed beside another line\'s name');
+  assert.equal(S.checkCrisis([{ crisis: true, html: lines.split('data-fd-packet-crisis=').join('data-x=') }], payload), false, 'a line that does not say which resource it is');
+  assert.equal(S.checkCrisis([{ crisis: true, html: lines.replace(contactOf(first), '') }], payload), false, 'a contact missing from the block');
+  assert.equal(S.checkCrisis([{ crisis: true, html: lines.replace(nameOf(first), '') }], payload), false, 'a NAME missing from the block: the number alone is not enough');
+  assert.equal(S.checkCrisis([{ crisis: true, html: lines.replace(nameOf(first), 'Sentinel & Official') }], payload), false, 'an unescaped name is not what the sheet prints');
+  const split = payload.required.map(id => '<li>' + contactOf(id) + '</li>').join('');
+  const names = payload.required.map(id => '<li>' + nameOf(id) + '</li>').join('');
+  assert.equal(S.checkCrisis([{ crisis: true, html: split }, { crisis: true, html: names }], payload), false, 'name and contact in DIFFERENT units do not make a line');
+  assert.equal(S.checkCrisis([], payload), false, 'no crisis block at all');
+  assert.equal(S.checkCrisis([{ crisis: false, html: lines }], payload), false, 'lines that are not in the crisis unit do not count');
+  assert.equal(S.checkCrisis([{ crisis: false, card: true, html: lines }], payload), false, 'a card-flagged unit does not stand in for the crisis block');
+  assert.equal(S.checkCrisis([...good, { crisis: false, card: true, html: '<div></div>' }], payload), true, 'and a card-flagged unit without the lines no longer fails the packet');
   assert.match(SHEET_SRC, /if\(!fdCarePacketCheckCrisis\(units,payload\)\)return fdCarePacketFail\('CRISIS_UNAVAILABLE'/, 'the build step really calls the check');
 });
 
@@ -349,17 +413,20 @@ test('review mode carries the band and a tick box per listing on every page; fin
   assert.doesNotMatch(textOf(final.html), /Tick the ones/);
 });
 
-test('the crisis block is built from the payload: every crisis line with its governed contact, on page 1, plus availability', () => {
+// REWRITTEN for Revision 2: a line printed its short `label`; it now prints the contact's official governed name (the
+// payload has no label). The name oracle is crisis_resources.json itself, not the payload.
+test('the crisis block is built from the payload: every crisis line with its governed contact and official name, on page 1, plus availability', () => {
   const records = eight();
   for (const mode of MODES) {
-    const r = render(records, stateOf(records, { mode }));
+    const r = render(records, mode === 'final' ? finalState(records) : stateOf(records));
     const page1 = r.html.split('data-fd-packet-page')[1];
     for (const line of PAYLOAD.crisis) {
       const marker = new RegExp('data-fd-packet-crisis="' + line.ref + '"[\\s\\S]*?</li>');
       const found = page1.match(marker);
       assert.ok(found, mode + ': a line for ' + line.ref);
       assert.ok(found[0].includes(governed(line.ref)), mode + ': ' + line.ref + ' carries ITS OWN governed contact');
-      assert.ok(textOf(found[0]).includes(line.label), 'and its label');
+      assert.ok(textOf(found[0]).includes(governedName(line.ref)), mode + ': and ITS OWN official governed name');
+      assert.ok(textOf(found[0]).includes(line.when), 'and when to use it');
     }
     assert.match(page1, /24\/7/, 'availability from the governed record is shown');
     assert.ok(textOf(page1).includes(PAYLOAD.crisisCopy.heading));
@@ -383,16 +450,23 @@ test('the standard pages follow the payload: defaults on, optional pages switcha
   assert.equal(S.insertOn({ inserts: { x: 'no' } }, { id: 'x', core: false, defaultOn: true }), true, 'only booleans override a default');
 });
 
-test('tokens in the standard pages resolve: the unit name and phone, and crisis contacts from the payload', () => {
+// REWRITTEN for Revision 2: this Final copy used to get its unit from a typed phone; it now loads the fixture profile,
+// because a typed phone never confirms the unit. The typed values still fill a Review draft.
+test('tokens in the standard pages resolve: the loaded profile\'s unit name and phone on a Final copy, and crisis contacts from the payload', () => {
   const records = eight();
-  const r = render(records, stateOf(records, { mode: 'final', inserts: { rights: true, safety: true } }));
+  const r = render(records, finalState(records, { inserts: { rights: true, safety: true } }));
+  assert.equal(r.ok, true, r.message);
+  assert.deepEqual(r.blockers, [], 'a confirmed profile leaves nothing in the way');
   const text = textOf(r.html);
-  assert.ok(text.includes('(207) 555-0100'), 'unit phone');
-  assert.ok(text.includes('4 East'), 'unit name');
+  assert.ok(text.includes(FIXTURE.profile.unitPhone), 'unit phone from the profile');
+  assert.ok(text.includes(FIXTURE.profile.unitName), 'unit name from the profile');
   assert.equal(/\{\{|\}\}/.test(r.html), false, 'no token survives');
   assert.ok(text.includes('call ' + governed('emergency_911')) || text.includes(governed('emergency_911')), 'a crisis token resolved');
-  const blanks = render(records, finalState(records, { unit: { name: '', phone: '' } }));
+  const draft = textOf(render(records, stateOf(records, { inserts: { rights: true } })).html);
+  assert.ok(draft.includes('(207) 555-0100') && draft.includes('4 East'), 'a Review draft fills the typed values');
+  const blanks = render(records, typedFinal(records, { unit: { name: '', phone: '', profile: '' } }));
   assert.equal(blanks.html.includes('class="fd-packet-blank"'), true, 'an unavailable unit value prints a blank to write in');
+  assert.ok(codesOf(blanks).includes('UNIT_UNCONFIRMED'), 'and such a Final copy cannot print: the welcome page carries a unit token');
 });
 
 test('every listing prints its name, phone, domain and area; the QR appears exactly for https websites', () => {
@@ -402,11 +476,12 @@ test('every listing prints its name, phone, domain and area; the QR appears exac
     row(2, { name: 'No Site', website: '' }),
     row(3, { name: 'Bad Scheme', website: 'javascript:alert(1)' }),
   ];
-  const r = render(records, stateOf(records, { mode: 'final' }));
+  const r = render(records, finalState(records));
   assert.equal(r.ok, true, r.message);
   const text = textOf(r.html);
   for (const name of ['Has Https', 'Has Http', 'No Site']) assert.ok(text.includes(name), name);
-  assert.ok(text.includes('207-700-0123') && text.includes('York County'));
+  assert.match(text, /Call\s+207-700-0123/, 'the dialable number from the feed link');
+  assert.ok(text.includes('York County'), 'and the area');
   // The printed domain is its own token in the text, not a substring of something longer.
   assert.match(text, /(^|\s)example\.org(\s|$)/);
   // Visible text, not markup: the QR's own namespace attribute legitimately contains "www." (w3.org).
@@ -418,7 +493,7 @@ test('every listing prints its name, phone, domain and area; the QR appears exac
   assert.equal(r.html.includes('fd-packet-qrurl'), false, 'the full address is not part of the measured sheet (a preview-only line would measure differently from the paper)');
   assert.deepEqual(r.addresses, [{ name: 'Has Https', url: 'https://www.example.org/deep/link?x=1' }],
     'the address a QR encodes comes back as data, for the preview to show beside the sheet');
-  const preview = S.sheet(stateOf(records, { mode: 'final' }), dataOf(records), PAYLOAD, { preview: true });
+  const preview = S.sheet(finalState(records), dataOf(records), PROFILED, { preview: true });
   assert.equal(preview.html.includes('/deep/link'), false, 'not even the preview sheet carries it: the sheet is the same bytes everywhere');
   assert.equal(preview.html, r.html);
 });
@@ -426,7 +501,7 @@ test('every listing prints its name, phone, domain and area; the QR appears exac
 test('a QR code that would be too dense to scan at the printed size is left off, and the domain still prints', () => {
   const longUrl = 'https://example.org/' + 'a'.repeat(190);
   const records = [row(0, { name: 'Short Link', website: 'https://example.org/x' }), row(1, { name: 'Long Link', website: longUrl })];
-  const r = render(records, stateOf(records, { mode: 'final' }));
+  const r = render(records, finalState(records));
   assert.equal(r.html.split('<svg').length - 1, 1, 'only the short address gets a code');
   assert.ok(textOf(r.html).split('example.org').length - 1 >= 2, 'both domains still print');
   assert.ok(r.html.indexOf('Short Link') < r.html.indexOf('<svg') && r.html.indexOf('<svg') < r.html.indexOf('Long Link'), 'the code belongs to the short one');
@@ -445,7 +520,7 @@ test('heading levels are relative to a base: one h1 on paper, none in the previe
 test('hostile listing text is escaped and the sheet cannot be made to contain markup or script', () => {
   const evil = '<img src=x onerror=alert(1)> & "q" \'s\'';
   const records = [row(0, { name: evil, description: evil, area: evil, phone: '207-700-0123' })];
-  const r = render(records, stateOf(records, { mode: 'final' }));
+  const r = render(records, finalState(records));
   assert.equal(r.ok, true, r.message);
   assert.equal(r.html.includes('<img'), false);
   assert.equal(/onerror=alert/.test(r.html.replace(/&lt;img[^&]*&gt;/g, '')), false);
@@ -454,10 +529,12 @@ test('hostile listing text is escaped and the sheet cannot be made to contain ma
 
 // ---- AC5 --------------------------------------------------------------------------------------------------
 const AC5 = /Verification due|verifiedDate|reviewAfter|L[1-4]\b|\b\d+\s?mg\b/i;
+// Every page the payload carries (the wallet card is no longer one of them: it is its own print).
+const INSERT_IDS = PAYLOAD.inserts.map(i => i.id);
 const insertSets = {
   default: {},
-  allOn: Object.fromEntries(['intro', 'week', 'callback', 'warning', 'safety', 'family', 'national', 'insurance', 'meds', 'rights', 'card', 'notes'].map(id => [id, true])),
-  coreOnly: Object.fromEntries(['week', 'callback', 'warning', 'safety', 'family', 'national', 'insurance', 'meds', 'rights', 'card', 'notes'].map(id => [id, false])),
+  allOn: Object.fromEntries(INSERT_IDS.map(id => [id, true])),
+  coreOnly: Object.fromEntries(INSERT_IDS.filter(id => !PAYLOAD.inserts.find(i => i.id === id).core).map(id => [id, false])),
 };
 function oracleHits(strings) {
   // The validator's own pattern family, run in a child process: independent of the JS filter under test.
@@ -470,23 +547,28 @@ function oracleHits(strings) {
   assert.equal(run.status, 0, run.stderr);
   return JSON.parse(run.stdout);
 }
+// Final copies load the fixture profile (Revision 2: a typed phone never makes a printable Final copy), so every page set
+// below is a Final copy that could really print; the required lines are read from the payload, never typed here.
 test('AC5: no sheet and no copy text, in either mode and any page set, contains verification metadata or a dose; the required crisis lines are always present', () => {
   const records = eight();
   const outputs = [];
   for (const [setName, inserts] of Object.entries(insertSets)) {
     for (const mode of MODES) {
-      const state = stateOf(records, { mode, inserts });
-      const r = S.sheet(state, dataOf(records), PAYLOAD, {});
+      const state = mode === 'final' ? finalState(records, { inserts }) : stateOf(records, { mode, inserts });
+      const r = S.sheet(state, dataOf(records), PROFILED, {});
       assert.equal(r.ok, true, setName + '/' + mode + ': ' + r.message);
+      if (mode === 'final') assert.deepEqual(r.blockers, [], setName + ': a Final copy with a confirmed profile can print');
       outputs.push([setName + '/' + mode + '/html', r.html], [setName + '/' + mode + '/text', textOf(r.html)]);
       if (mode === 'final') {
-        const t = S.text(state, dataOf(records), PAYLOAD, {});
+        const t = S.text(state, dataOf(records), PROFILED, {});
         assert.equal(t.ok, true, setName + ' text: ' + t.message);
         outputs.push([setName + '/text-copy', t.text]);
       }
       const visible = textOf(r.html);
-      assert.ok(visible.includes('988'), setName + '/' + mode + ' carries 988');
-      assert.ok(visible.includes('1-888-568-1112'), setName + '/' + mode + ' carries the Maine Crisis Line');
+      for (const id of PAYLOAD.required) {
+        assert.ok(visible.includes(PAYLOAD.contacts[id].contact), setName + '/' + mode + ' carries the required line ' + id);
+        assert.ok(visible.includes(governedName(id)), setName + '/' + mode + ' names the required line ' + id + ' by its official name');
+      }
     }
   }
   for (const [label, text] of outputs) {
@@ -505,7 +587,7 @@ test('AC5 on hostile feed text: every printed free-text field is filtered, and a
     row(3, { phone: '10 mcg line' }),
     row(4, { name: 'Zero' + ZWSP + 'width 1' + ZWJ + '0 mg Clinic' }),
   ];
-  const r = render(hostile, stateOf(hostile, { mode: 'final' }));
+  const r = render(hostile, finalState(hostile));
   assert.equal(r.ok, true, r.message);
   assert.doesNotMatch(textOf(r.html), /10 mg|mcg|Verification|verify/i);
   assert.equal(r.html.includes('1' + ZWJ + '0'), false, 'and the hidden character itself is not printed either');
@@ -517,19 +599,23 @@ test('AC5 on hostile feed text: every printed free-text field is filtered, and a
 });
 
 // ---- blockers and fail-closed -----------------------------------------------------------------------------
-test('blockers: a crisis number in a listing, Final without a unit phone, hidden saved listings, an empty packet', () => {
+// REWRITTEN for Revision 2: UNIT_PHONE is gone. A typed phone never confirms the unit, so a Final copy without a loaded,
+// current profile is blocked by UNIT_UNCONFIRMED (typed, missing or invalid alike), and the clean case loads the fixture.
+test('blockers: a crisis number in a listing, an unconfirmed unit on a Final copy, hidden saved listings, an empty packet', () => {
   const clean = eight();
-  assert.deepEqual(render(clean, finalState(clean)).blockers, []);
+  assert.deepEqual(render(clean, finalState(clean)).blockers, [], 'a loaded, current profile: nothing in the way');
   const withCrisis = [row(0, { phone: '207-799-4160 | Crisis Line: 888-568-1112' }), ...clean.slice(1)];
   assert.ok(render(withCrisis, finalState(withCrisis)).blockers.some(b => b.code === 'CRISIS_NUMBER' && b.message.includes('Support 0')));
-  const noPhone = finalState(clean, { unit: { name: '4 East', phone: '' } });
-  assert.ok(render(clean, noPhone).blockers.some(b => b.code === 'UNIT_PHONE'));
-  assert.equal(render(clean, { ...noPhone, mode: 'review' }).blockers.some(b => b.code === 'UNIT_PHONE'), false, 'review copies may carry blanks');
-  const badPhone = finalState(clean, { unit: { name: '', phone: '911' } });
-  assert.ok(render(clean, badPhone).blockers.some(b => b.code === 'UNIT_PHONE'), 'an invalid phone counts as missing');
-  const hidden = S.sheet(finalState(clean, { ids: [...idsOf(clean), 'gone-id'] }), dataOf(clean, undefined), PAYLOAD, {});
+  assert.deepEqual(codesOf(render(clean, typedFinal(clean))), ['UNIT_UNCONFIRMED'], 'a valid typed phone does not confirm the unit');
+  const noPhone = typedFinal(clean, { unit: { name: '4 East', phone: '', profile: '' } });
+  assert.deepEqual(codesOf(render(clean, noPhone)), ['UNIT_UNCONFIRMED']);
+  assert.deepEqual(render(clean, { ...noPhone, mode: 'review' }).blockers, [], 'review copies may carry blanks and typed values');
+  const badPhone = typedFinal(clean, { unit: { name: '', phone: governed('emergency_911'), profile: '' } });
+  assert.deepEqual(codesOf(render(clean, badPhone)), ['UNIT_UNCONFIRMED'], 'an invalid phone is no better');
+  assert.ok(render(clean, badPhone).blockers.every(b => b.scope === 'print'), 'the unit rule guards printing only');
+  const hidden = S.sheet(finalState(clean, { ids: [...idsOf(clean), 'gone-id'] }), dataOf(clean, undefined), PROFILED, {});
   assert.equal(hidden.blockers.some(b => b.code === 'HIDDEN_LISTINGS'), false, 'a COMPLETE feed that lacks the id simply drops it');
-  const partial = S.sheet(finalState(clean, { ids: [...idsOf(clean), 'gone-id'] }), S.validate(feed(clean, { categories: feed(clean).categories.map((c, i) => (i === 3 ? { ...c, available: false } : c)) })), PAYLOAD, {});
+  const partial = S.sheet(finalState(clean, { ids: [...idsOf(clean), 'gone-id'] }), S.validate(feed(clean, { categories: feed(clean).categories.map((c, i) => (i === 3 ? { ...c, available: false } : c)) })), PROFILED, {});
   assert.ok(partial.blockers.some(b => b.code === 'HIDDEN_LISTINGS'), 'a PARTIAL feed holds saved listings back: printing is blocked, not silently shorter');
   assert.equal(S.sheet(stateOf([]), dataOf(clean), PAYLOAD, {}).code, 'EMPTY');
   assert.equal(S.sheet(stateOf([]), dataOf(clean), PAYLOAD, {}).ok, false);
@@ -582,40 +668,53 @@ test('the crisis block must land on page 1: a layout that pushes it later is ref
   assert.equal(r.code, 'CRISIS_NOT_PAGE_ONE');
 });
 
+// Extended for Revision 2: 4, 8 and 12 listings, both copies (the Final copy with a loaded profile), every page set.
 test('the default estimator is deterministic, fits every standard page on a sheet on its own, and is not the production measurer', () => {
-  const records = eight();
-  for (const [name, inserts] of Object.entries(insertSets)) {
-    const a = S.sheet(stateOf(records, { inserts }), dataOf(records), PAYLOAD, {});
-    const b = S.sheet(stateOf(records, { inserts }), dataOf(records), PAYLOAD, {});
-    assert.equal(a.html, b.html, name + ': same input, same bytes');
-    assert.equal(a.ok, true, name + ': ' + a.message);
-    assert.ok(a.pages.every(p => p.used <= p.capacity), name + ': no estimated page is over capacity');
+  for (const count of [4, 8, 12]) {
+    const records = Array.from({ length: count }, (_, i) => row(i, i % 3 === 1 ? { category: 'peer_support', name: 'Peer Group ' + i } : {}));
+    for (const [name, inserts] of Object.entries(insertSets)) {
+      for (const mode of MODES) {
+        const label = count + '/' + name + '/' + mode;
+        const state = mode === 'final' ? finalState(records, { inserts }) : stateOf(records, { inserts });
+        const a = render(records, state);
+        const b = render(records, state);
+        assert.equal(a.html, b.html, label + ': same input, same bytes');
+        assert.equal(a.ok, true, label + ': ' + a.message);
+        assert.ok(a.count >= 1 && a.pages.length === a.count, label);
+        assert.ok(a.pages.every(p => p.used <= p.capacity), label + ': no estimated page is over capacity');
+        assert.deepEqual(a.blockers, [], label + ': nothing in the way');
+        assert.equal(a.html.split('data-fd-packet-res').length - 1, count, label + ': every listing printed once');
+      }
+    }
   }
   assert.equal(typeof S.estimate, 'function');
 });
 
 // ---- the copy text ------------------------------------------------------------------------------------------
-test('copy text: crisis lines first, then each listing, raw (never HTML-escaped), no unit details, Final only', () => {
+test('copy text: crisis lines first by official name, then each listing, raw (never HTML-escaped), no unit details, Final only', () => {
   const records = [row(0, { name: "Children's Place & Co", area: 'York' }), ...eight().slice(1)];
   const state = finalState(records);
-  const t = S.text(state, dataOf(records), PAYLOAD, {});
+  const t = S.text(state, dataOf(records), PROFILED, {});
   assert.equal(t.ok, true, t.message);
   assert.ok(t.text.includes("Children's Place & Co"), 'raw characters, not entities');
   assert.equal(/&#39;|&amp;|&lt;/.test(t.text), false);
   assert.ok(t.text.indexOf(governed('lifeline_988')) < t.text.indexOf("Children's Place"), 'crisis lines come first');
-  assert.equal(t.text.includes('4 East') || t.text.includes('555-0100'), false, 'the unit is not copied into a medical record field');
+  for (const line of PAYLOAD.crisis) assert.ok(t.text.includes(governedName(line.ref) + ': ' + governed(line.ref)), line.ref + ': official name, then contact');
+  for (const value of [FIXTURE.profile.unitName, FIXTURE.profile.unitPhone, FIXTURE.profile.org, '4 East', '555-0100']) {
+    assert.equal(t.text.includes(value), false, 'the unit is not copied into a medical record field: ' + value);
+  }
   assert.doesNotMatch(t.text, /Not a medical record/, 'text that is going INTO the record cannot say it is not part of it');
   assert.match(t.text, /ReConnect community directory on 2026-10-12/);
   assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PAYLOAD, {}).ok, false, 'a Review draft never goes into the record');
   assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PAYLOAD, {}).code, 'NOT_FINAL');
-  const hidden = S.text(finalState([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), dataOf([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), PAYLOAD, {}).text;
+  const hidden = S.text(finalState([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), dataOf([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), PROFILED, {}).text;
   assert.equal(hidden.includes(RLO) || hidden.includes(ZWSP), false, 'control and bidi characters are stripped');
   assert.ok(hidden.includes('ABC'), 'and what is left is the visible name');
 });
 
 test('the footer prints the directory copy date and the OLDEST helpline check date (never the file date) and never claims the listings were verified', () => {
   const records = eight();
-  const r = S.sheet(finalState(records), dataOf(records, { generatedAt: '2026-09-30T08:00:00Z' }), PAYLOAD, {});
+  const r = S.sheet(finalState(records), dataOf(records, { generatedAt: '2026-09-30T08:00:00Z' }), PROFILED, {});
   const text = textOf(r.html);
   assert.match(text, /ReConnect community directory on 2026-09-30/);
   assert.match(text, /Call ahead to confirm hours, cost and availability/);
@@ -625,7 +724,7 @@ test('the footer prints the directory copy date and the OLDEST helpline check da
   assert.equal(text.includes('as of ' + PAYLOAD.generatedAt), false, 'the file date is not presented as a check date');
   assert.equal(text.split('Helpline numbers checked').length - 1, r.count, 'the line is on every page');
   assert.doesNotMatch(text, /verified/i);
-  const undated = S.sheet(finalState(records), dataOf(records), { ...PAYLOAD, checkedOn: undefined }, {});
+  const undated = S.sheet(finalState(records), dataOf(records), { ...PROFILED, checkedOn: undefined }, {});
   assert.doesNotMatch(textOf(undated.html), /Helpline numbers checked/, 'no check date, no claim of a check');
 });
 
@@ -682,7 +781,7 @@ test('paper and copy print the SAME cleaned listings: one withheld field is with
   ];
   const state = finalState(records);
   const paper = render(records, state);
-  const copy = S.text(state, dataOf(records), PAYLOAD, {});
+  const copy = S.text(state, dataOf(records), PROFILED, {});
   assert.equal(paper.ok && copy.ok, true, paper.message + copy.message);
   const visible = textOf(paper.html);
   for (const [label, text] of [['paper', visible], ['copy', copy.text]]) {
@@ -705,6 +804,379 @@ test('a crisis number in a listing NAME blocks printing, like one in a phone fie
   const r = render(named, finalState(named));
   assert.ok(r.blockers.some(b => b.code === 'CRISIS_NUMBER' && b.message.includes('Hope Line 988')));
   assert.equal(textOf(r.html).includes('Hope Line 988'), false, 'and the listing is not printed at all');
+});
+
+// ---- eligibility: one rule for what may be offered and printed (Revision 2) ------------------------------------------
+// Crisis numbers are read from the payload at run time, never typed here.
+const crisisOfLength = len => {
+  const found = PAYLOAD.crisisNumbers.find(n => n.length === len);
+  assert.ok(found, 'the payload registers a ' + len + '-digit crisis number');
+  return found;
+};
+test('eligibility: each reason code (PAYLOAD, CRISIS_CATEGORY, CRISIS_NUMBER, NO_CONTACT), and a good listing passes', () => {
+  assert.equal(S.eligibility(row(0), PAYLOAD), '', 'a listing with a dial link and a website is eligible');
+  for (const bad of [null, undefined, {}, 7, { ...PAYLOAD, required: [] }, { ...PAYLOAD, crisis: [] }]) {
+    assert.equal(S.eligibility(row(0), bad), 'PAYLOAD', 'no usable payload, nothing eligible: ' + JSON.stringify(bad && Object.keys(bad)));
+    assert.equal(S.eligibility(row(1, { category: 'crisis' }), bad), 'PAYLOAD', 'the payload is asked before anything else');
+  }
+  assert.equal(S.eligibility(row(0, { category: 'crisis', name: 'Some Service' }), PAYLOAD), 'CRISIS_CATEGORY', 'crisis services print only in the crisis box');
+  assert.equal(S.eligibility(row(0, { category: 'crisis', contactHref: '', website: '' }), PAYLOAD), 'CRISIS_CATEGORY', 'the category is the reason even with no contact');
+  const ten = crisisOfLength(10);
+  const dressed = ten.slice(0, 3) + '-' + ten.slice(3, 6) + '-' + ten.slice(6);
+  assert.equal(S.eligibility(row(0, { name: 'Help ' + dressed }), PAYLOAD), 'CRISIS_NUMBER', 'a crisis number in the name');
+  assert.equal(S.eligibility(row(0, { phone: 'Main 207-700-0123, after hours ' + dressed }), PAYLOAD), 'CRISIS_NUMBER', 'in the free-text phone');
+  assert.equal(S.eligibility(row(0, { contactHref: 'tel:+1' + ten }), PAYLOAD), 'CRISIS_NUMBER', 'as the dial link');
+  assert.equal(S.eligibility(row(0, { contactHref: 'sms:' + crisisOfLength(6) }), PAYLOAD), 'CRISIS_NUMBER', 'a texted short code');
+  assert.equal(S.eligibility(row(0, { contactHref: 'tel:' + crisisOfLength(3) }), PAYLOAD), 'CRISIS_NUMBER', 'a dialled short code');
+  assert.equal(S.eligibility(row(0, { contactHref: '', website: '' }), PAYLOAD), 'NO_CONTACT');
+  assert.equal(S.eligibility(row(0, { contactHref: '', website: '', phone: '207-700-0123' }), PAYLOAD), 'NO_CONTACT', 'a free-text phone is not a contact on record');
+  for (const href of ['mailto:help@example.org', 'tel:', 'tel:12', 'tel:207-700-0123', 'javascript:alert(1)', 'https://example.org/']) {
+    assert.equal(S.eligibility(row(0, { contactHref: href, website: '' }), PAYLOAD), 'NO_CONTACT', 'not dialable: ' + href);
+  }
+  for (const junk of [null, undefined, 'a0', 7]) assert.equal(S.eligibility(junk, PAYLOAD), 'NO_CONTACT', 'not a row: ' + String(junk));
+});
+
+test('eligibility on partial rows: a dial link alone or a website alone is enough, and missing fields never throw', () => {
+  assert.equal(S.eligibility(row(0, { website: '' }), PAYLOAD), '', 'a dial link alone');
+  assert.equal(S.eligibility(row(0, { contactHref: '' }), PAYLOAD), '', 'a website alone');
+  assert.equal(S.eligibility({ id: 'x', contactHref: 'tel:2077000123' }, PAYLOAD), '', 'no name, phone or category');
+  assert.equal(S.eligibility({ id: 'x', website: 'https://example.org/' }, PAYLOAD), '');
+  assert.equal(S.eligibility({}, PAYLOAD), 'NO_CONTACT');
+  assert.equal(S.eligibility({ id: 'x', name: null, phone: undefined, contactHref: 7, website: '' }, PAYLOAD), 'NO_CONTACT');
+});
+
+test('every reason code has plain, specific text the trainee reads; any other code has none', () => {
+  assert.deepEqual(Object.keys(S.REASONS).sort(), ['CRISIS_CATEGORY', 'CRISIS_NUMBER', 'NO_CONTACT', 'PAYLOAD']);
+  for (const code of Object.keys(S.REASONS)) {
+    const text = S.reasonText(code);
+    assert.ok(text.length > 20, code);
+    assert.doesNotMatch(text, /[<>{}]/, code + ' is plain text');
+    assert.equal(S.crisisHit(text, PAYLOAD), false, code + ' names no crisis number');
+  }
+  for (const other of ['INELIGIBLE', 'toString', '__proto__', 'hasOwnProperty', '', undefined, null]) assert.equal(S.reasonText(other), '', String(other));
+});
+
+test('a saved listing that has become ineligible is not printed and blocks with INELIGIBLE and its reason; a crisis number keeps its own code', () => {
+  const records = [...eight(), row(8, { category: 'crisis', name: 'Crisis Service 8' }), row(9, { name: 'Unreachable 9', contactHref: '', website: '' })];
+  const r = render(records, finalState(records));
+  assert.equal(r.ok, true, r.message);
+  const ineligible = r.blockers.filter(b => b.code === 'INELIGIBLE');
+  assert.deepEqual(ineligible.map(b => b.id + ':' + b.reason).sort(), ['a8:CRISIS_CATEGORY', 'a9:NO_CONTACT']);
+  assert.deepEqual(codesOf(r), ['INELIGIBLE', 'INELIGIBLE'], 'nothing else is in the way');
+  for (const b of ineligible) {
+    assert.ok(b.message.includes(S.reasonText(b.reason)), 'the message says why: ' + b.reason);
+    assert.equal(b.scope, undefined, 'a listing blocker is not scoped to print: it stops Copy too');
+  }
+  const visible = textOf(r.html);
+  assert.equal(visible.includes('Crisis Service 8') || visible.includes('Unreachable 9'), false, 'neither is printed');
+  const copy = S.text(finalState(records), dataOf(records), PROFILED, {});
+  assert.deepEqual(copy.blockers.map(b => b.code), ['INELIGIBLE', 'INELIGIBLE'], 'Copy carries the same listing blockers');
+  assert.equal(copy.text.includes('Crisis Service 8') || copy.text.includes('Unreachable 9'), false);
+  const numbered = [row(0, { contactHref: 'tel:+1' + crisisOfLength(10) })];
+  assert.deepEqual(codesOf(render(numbered, finalState(numbered))), ['CRISIS_NUMBER'], 'a crisis number keeps CRISIS_NUMBER, not INELIGIBLE');
+});
+
+// ---- the printed phone comes only from the feed's dial link (Revision 2) -----------------------------------------------
+test('dial: Call or Text from the link, ten digits formatted, a leading 1 dropped, a keyword decoded; anything else is no number', () => {
+  assert.deepEqual(S.dial(row(0, { contactHref: 'tel:2077000123' })), { verb: 'Call', number: '207-700-0123', keyword: '' });
+  assert.deepEqual(S.dial(row(0, { contactHref: 'tel:+12077000123' })), { verb: 'Call', number: '207-700-0123', keyword: '' }, 'eleven digits with a leading 1');
+  assert.deepEqual(S.dial(row(0, { contactHref: 'tel:12077000123' })), { verb: 'Call', number: '207-700-0123', keyword: '' });
+  assert.deepEqual(S.dial(row(0, { contactHref: 'sms:55123' })), { verb: 'Text', number: '55123', keyword: '' }, 'a short code with no keyword');
+  assert.deepEqual(S.dial(row(0, { contactHref: 'sms:55123?body=INFO' })), { verb: 'Text', number: '55123', keyword: 'INFO' }, 'a short code with a keyword');
+  assert.deepEqual(S.dial(row(0, { contactHref: 'sms:+12077000123?body=HELP%20NOW' })), { verb: 'Text', number: '207-700-0123', keyword: 'HELP NOW' }, 'an encoded keyword is decoded');
+  assert.equal(S.dial(row(0, { contactHref: 'sms:55123?body=%E0%A4' })).keyword, '', 'a keyword that does not decode is dropped, never printed raw');
+  for (const href of ['', 'tel:', 'tel:12', 'tel:207-700-0123', 'tel:2077000123x', 'mailto:a@example.org', 'sms:55123?body=info']) {
+    assert.equal(S.dial(row(0, { contactHref: href })), null, JSON.stringify(href));
+  }
+  assert.equal(S.dial(null), null);
+  assert.equal(S.dial({ phone: '207-700-0123' }), null, 'a free-text phone is not a dial link');
+});
+
+test('paper and copy print the dial link\'s number, never the free-text phone; a text line says "(send KEYWORD)"; no link, no number', () => {
+  const records = [
+    row(0, { name: 'Linked Call', phone: '(207) 555-0199 ext 4, ask for intake', contactHref: 'tel:+12077000123' }),
+    row(1, { name: 'Linked Text', phone: 'Text us', contactHref: 'sms:55123?body=INFO' }),
+    row(2, { name: 'Bare Text', phone: '', contactHref: 'sms:55124' }),
+    row(3, { name: 'Website Only', phone: '207-555-0188', contactHref: '', website: 'https://example.org/only' }),
+  ];
+  const paper = render(records, finalState(records));
+  const copy = S.text(finalState(records), dataOf(records), PROFILED, {});
+  assert.equal(paper.ok && copy.ok, true, paper.message + copy.message);
+  assert.deepEqual(paper.blockers, []);
+  const visible = textOf(paper.html);
+  assert.match(visible, /Call\s+207-700-0123/);
+  assert.match(visible, /Text\s+55123\s+\(send INFO\)/);
+  assert.match(visible, /Text\s+55124(?!\s+\(send)/, 'no keyword, no "(send ...)"');
+  for (const freeText of ['555-0199', 'ask for intake', 'Text us', '555-0188']) {
+    assert.equal(visible.includes(freeText), false, 'paper: the free-text phone never prints: ' + freeText);
+    assert.equal(copy.text.includes(freeText), false, 'copy: the free-text phone never prints: ' + freeText);
+  }
+  assert.ok(copy.text.includes('- Linked Call · Call 207-700-0123 · '), 'copy: the formatted dial number');
+  assert.ok(copy.text.includes('- Linked Text · Text 55123 (send INFO) · '), 'copy: the keyword');
+  assert.ok(copy.text.includes('- Bare Text · Text 55124 · '));
+  assert.ok(copy.text.includes('- Website Only · example.org · '), 'copy: no number at all, straight to the website');
+  const section = name => paper.html.split('<section class="fd-packet-res"').find(part => part.includes('>' + name + '<')) || '';
+  assert.ok(section('Website Only').length > 0);
+  assert.equal(section('Website Only').includes('fd-packet-res__phone'), false, 'paper: no dial link, no phone line, though the feed has a free-text phone');
+});
+
+test('a dial link whose keyword is internal text (a tier or verification note) is withheld whole, and the omission is recorded', () => {
+  const records = [row(0, { name: 'Tier Keyword', contactHref: 'sms:55123?body=L3' }), row(1, { name: 'Second Keyword', contactHref: 'sms:55124?body=VERIFY' })];
+  const paper = render(records, finalState(records));
+  const copy = S.text(finalState(records), dataOf(records), PROFILED, {});
+  assert.equal(paper.ok && copy.ok, true, paper.message + copy.message);
+  for (const [label, text] of [['paper', textOf(paper.html)], ['copy', copy.text]]) {
+    assert.doesNotMatch(text, /55123|55124|\(send|\bL3\b|VERIFY/, label + ': neither the keyword nor its number prints');
+    assert.ok(text.includes('Tier Keyword') && text.includes('Second Keyword'), label + ': the listing still prints (it has a website)');
+  }
+  assert.deepEqual(paper.withheld.filter(w => w.field === 'contact').map(w => w.id + ':' + w.reason), ['a0:note', 'a1:note']);
+  assert.deepEqual(paper.blockers, [], 'a withheld contact is noted, not a blocker');
+});
+
+// ---- the official governed names (Revision 2) ---------------------------------------------------------------------------
+test('the crisis block, the copy and the wallet card print each line\'s OFFICIAL governed name (a sentinel), never a label', () => {
+  const sentinel = clone(PROFILED);
+  sentinel.crisis.forEach((line, i) => {
+    sentinel.contacts[line.ref].name = 'SENTINEL-OFFICIAL-' + i + ' & Co';
+    line.label = 'SENTINEL-LABEL-' + i; // a stale label key, as the old payload carried: it must never print
+  });
+  const records = eight();
+  const paper = S.sheet(finalState(records), dataOf(records), sentinel, {});
+  const copy = S.text(finalState(records), dataOf(records), sentinel, {});
+  const card = S.cardSheet(sentinel, {});
+  for (const [label, r] of [['paper', paper], ['copy', copy], ['card', card]]) assert.equal(r.ok, true, label + ': ' + r.message);
+  const page1 = paper.html.split('data-fd-packet-page')[1];
+  const lineOn = (html, ref) => (html.match(new RegExp('data-fd-packet-crisis="' + ref + '"[\\s\\S]*?</li>')) || [''])[0];
+  sentinel.crisis.forEach((line, i) => {
+    const official = 'SENTINEL-OFFICIAL-' + i + ' & Co';
+    assert.ok(lineOn(page1, line.ref).includes(S.esc(official)), 'page 1: line ' + i + ' carries its official name, escaped');
+    assert.ok(lineOn(card.html, line.ref).includes(S.esc(official)), 'card: line ' + i + ' carries its official name, escaped');
+    assert.ok(copy.text.includes(official + ': ' + sentinel.contacts[line.ref].contact), 'copy: the raw official name, then the contact');
+  });
+  for (const [label, out] of [['paper', paper.html], ['copy', copy.text], ['card', card.html]]) {
+    assert.equal(out.includes('SENTINEL-LABEL'), false, label + ' never prints a label');
+  }
+});
+
+// ---- the unit: header, draft line, Review wording (Revision 2) -----------------------------------------------------
+test('the header names the organisation only from a loaded profile with approved branding; otherwise the unit name alone, or nothing', () => {
+  const records = eight();
+  const orgLines = r => (r.html.match(/<p class="fd-packet-org">[^<]*<\/p>/g) || []).map(p => textOf(p).trim());
+  const none = render(records, stateOf(records, { unit: { name: '', phone: '', profile: '' } }));
+  assert.deepEqual(orgLines(none), [], 'no unit and no profile: no org line at all');
+  assert.deepEqual(orgLines(render(records, stateOf(records))), ['4 East'], 'a typed unit name prints alone');
+  assert.deepEqual(orgLines(render(records, finalState(records))), [FIXTURE.profile.org + ' · ' + FIXTURE.profile.unitName], 'approved branding: org and unit');
+  const unbranded = render(records, finalState(records), withProfiles(PAYLOAD, { ...FIXTURE.profile, brandingApproved: false }));
+  assert.deepEqual(orgLines(unbranded), [FIXTURE.profile.unitName], 'branding not approved: the unit name alone');
+  assert.equal(unbranded.html.includes(FIXTURE.profile.org), false, 'and the org appears nowhere');
+  const loose = render(records, finalState(records), withProfiles(PAYLOAD, { ...FIXTURE.profile, brandingApproved: 'true' }));
+  assert.equal(loose.html.includes(FIXTURE.profile.org), false, 'only the boolean true approves branding');
+  for (const r of [none, unbranded, loose]) assert.equal(r.html.includes('Maine Medical Center'), false, 'no hard-coded organisation');
+});
+
+test('a Review copy with no unit phone says, on paper, that the nurse will write it; a typed or profile phone, or a Final copy, prints no such line', () => {
+  const records = eight();
+  const DRAFT = /data-fd-packet-draft/;
+  const noPhone = render(records, stateOf(records, { unit: { name: '4 East', phone: '', profile: '' } }));
+  assert.equal(noPhone.html.split('data-fd-packet-draft').length - 1, 1, 'once');
+  assert.match(noPhone.html.split('data-fd-packet-page')[1], /<p class="fd-packet-draft" data-fd-packet-draft>/, 'on page 1');
+  assert.match(textOf(noPhone.html), /Draft\.\s+Your nurse will write the unit’s phone number on the blank lines in this packet before you leave\./);
+  const typed = render(records, stateOf(records));
+  assert.doesNotMatch(typed.html, DRAFT, 'a typed phone prints with no draft line');
+  assert.doesNotMatch(textOf(typed.html), /not confirmed/i, 'and the paper does not call a printed number unconfirmed (the preview says so)');
+  assert.doesNotMatch(render(records, stateOf(records, { unit: { ...LOADED } })).html, DRAFT, 'a profile phone prints with no draft line');
+  assert.doesNotMatch(render(records, typedFinal(records, { unit: { name: '', phone: '', profile: '' } })).html, DRAFT, 'a Final copy never carries it');
+  assert.match(render(records, stateOf(records, { unit: { name: '', phone: '555-0100', profile: '' } })).html, DRAFT, 'an invalid typed phone does not print, so the line does');
+});
+
+test('the Review copy promises a talk before discharge, never a "final copy"; the Final copy carries neither the note nor the tip', () => {
+  const records = eight();
+  const review = textOf(render(records, stateOf(records)).html);
+  assert.doesNotMatch(review, /final copy|finali[sz]e|keep what you tick/i, 'no promise that depends on a Final copy existing');
+  assert.match(review, /go over (?:this|your choices) with you before you leave/);
+  const final = textOf(render(records, finalState(records)).html);
+  assert.doesNotMatch(final, /While you are still here|Tick the ones/);
+});
+
+// ---- Final-copy rules: the unit must be confirmed by a loaded, current profile (Revision 2) ---------------------------
+// A payload whose pages carry no unit token, so the only things that name the unit or promise contact are what a test switches on.
+const BARE = (() => {
+  const out = clone(PROFILED);
+  out.inserts = JSON.parse(JSON.stringify(out.inserts).replace(/\{\{unit(?:Name|Phone)\}\}/g, 'your care team'));
+  return out;
+})();
+test('a Final copy that names no unit and promises no contact is NOT held back; a unit name, an included unit token or the call-back page each needs a confirmed profile', () => {
+  const records = eight();
+  const nobody = { name: '', phone: '', profile: '' };
+  const run = (payload, more = {}) => render(records, typedFinal(records, { unit: { ...nobody }, ...more }), payload);
+  assert.deepEqual(run(BARE).blockers, [], 'no unit name, no unit token, no call-back page: printable');
+  assert.deepEqual(codesOf(run(PROFILED)), ['UNIT_UNCONFIRMED'], 'the shipped welcome page carries a unit token, so a real Final copy always needs a profile');
+  assert.deepEqual(codesOf(run(BARE, { unit: { name: '4 East', phone: '', profile: '' } })), ['UNIT_UNCONFIRMED'], 'a unit NAME in the header names the unit');
+  const tokened = clone(BARE);
+  tokened.inserts.find(i => i.id === 'notes').body += ' Ask the team on {{unitName}}.';
+  assert.deepEqual(run(tokened).blockers, [], 'a token on a page that is switched off does not count');
+  assert.deepEqual(codesOf(run(tokened, { inserts: { notes: true } })), ['UNIT_UNCONFIRMED'], 'a token on a page that is included does');
+  assert.deepEqual(codesOf(run(BARE, { inserts: { callback: true } })), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED'], 'the call-back page promises contact even with no token in it');
+  assert.deepEqual(run(tokened, { unit: { ...LOADED }, inserts: { callback: true, notes: true } }).blockers, [], 'a loaded, current profile with a call-back program clears all of them');
+  for (const more of [{}, { unit: { name: '4 East', phone: '(207) 555-0100', profile: '' }, inserts: { callback: true } }]) {
+    assert.deepEqual(render(records, stateOf(records, more)).blockers, [], 'a Review copy is never held back by the unit rules');
+  }
+});
+
+test('UNIT_UNCONFIRMED: typed values never confirm, and neither does a lapsed profile (the fixture, or opts.now); the message says what a Final copy needs', () => {
+  const records = eight();
+  const last = Date.UTC(2099, 11, 31, 23, 59, 59);
+  const msg = r => (r.blockers.find(b => b.code === 'UNIT_UNCONFIRMED') || {}).message || '';
+  assert.deepEqual(render(records, finalState(records), PROFILED, { now: last }).blockers, [], 'the last second of usableThrough still confirms');
+  const lapsed = render(records, finalState(records), PROFILED, { now: last + 1000 });
+  assert.deepEqual(codesOf(lapsed), ['UNIT_UNCONFIRMED'], 'the next second it has lapsed');
+  assert.match(msg(lapsed), /lapsed/);
+  assert.equal(lapsed.unit.loaded && lapsed.unit.expired && !lapsed.unit.confirmed, true);
+  assert.ok(textOf(lapsed.html).includes(FIXTURE.profile.unitPhone), 'a lapsed profile still fills the page: it is the print that is refused');
+  const expired = render(records, finalState(records, { unit: { name: '', phone: '', profile: FIXTURE.expired.id } }));
+  assert.deepEqual(codesOf(expired), ['UNIT_UNCONFIRMED'], 'the fixture whose usableThrough is past');
+  assert.match(msg(expired), /lapsed/);
+  assert.deepEqual(codesOf(render(records, finalState(records), PROFILED, { now: NaN })), ['UNIT_UNCONFIRMED'], 'an unknown clock is lapsed');
+  const noneShipped = render(records, typedFinal(records), PAYLOAD);
+  assert.match(msg(noneShipped), /none is set up yet/, 'no profile shipped: says so');
+  assert.match(msg(render(records, typedFinal(records), PROFILED)), /Load one/, 'profiles exist: says to load one');
+  for (const r of [lapsed, expired, noneShipped]) {
+    for (const b of r.blockers) {
+      assert.equal(b.scope, 'print', 'the unit rule guards printing only');
+      assert.doesNotMatch(b.message, /Review copy/, 'the message does not steer to the Review copy');
+    }
+  }
+});
+
+test('CALLBACK_UNCONFIRMED: the call-back page needs a confirmed profile that records a call-back program', () => {
+  const records = eight();
+  const callback = { inserts: { callback: true } };
+  assert.deepEqual(render(records, finalState(records, callback)).blockers, [], 'confirmed, with a program');
+  const noProgram = withProfiles(PAYLOAD, { ...FIXTURE.profile, callbackProgram: false });
+  assert.deepEqual(codesOf(render(records, finalState(records, callback), noProgram)), ['CALLBACK_UNCONFIRMED'], 'confirmed but no program: the call-back rule alone');
+  assert.deepEqual(render(records, finalState(records), noProgram).blockers, [], 'and with the page off, nothing');
+  const loose = withProfiles(PAYLOAD, { ...FIXTURE.profile, callbackProgram: 'true' });
+  assert.deepEqual(codesOf(render(records, finalState(records, callback), loose)), ['CALLBACK_UNCONFIRMED'], 'only the boolean true records a program');
+  const lapsed = finalState(records, { ...callback, unit: { name: '', phone: '', profile: FIXTURE.expired.id } });
+  assert.deepEqual(codesOf(render(records, lapsed)), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED'], 'a lapsed profile');
+  const typed = render(records, typedFinal(records, callback));
+  assert.deepEqual(codesOf(typed), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED'], 'typed values');
+  assert.ok(typed.blockers.every(b => b.scope === 'print' && b.message.length > 0));
+  assert.deepEqual(render(records, stateOf(records, callback)).blockers, [], 'a Review copy may carry the call-back page');
+});
+
+test('the unit rules guard printing only: Copy (fdCarePacketText) is never stopped by them, while listing blockers still apply to it', () => {
+  const records = eight();
+  const state = typedFinal(records, { inserts: { callback: true } });
+  assert.deepEqual(codesOf(render(records, state)), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED']);
+  const copy = S.text(state, dataOf(records), PROFILED, {});
+  assert.equal(copy.ok, true, copy.message);
+  assert.deepEqual(copy.blockers, [], 'no unit blocker reaches Copy');
+  for (const value of ['4 East', '555-0100']) assert.equal(copy.text.includes(value), false, 'and the copied text names no unit: ' + value);
+  const lapsed = S.text(finalState(records, { unit: { name: '', phone: '', profile: FIXTURE.expired.id } }), dataOf(records), PROFILED, {});
+  assert.equal(lapsed.ok && lapsed.blockers.length === 0, true, 'a lapsed profile does not stop Copy either');
+  const withIneligible = [...records, row(8, { category: 'crisis', name: 'Crisis Service 8' })];
+  const mixed = S.text(typedFinal(withIneligible, { inserts: { callback: true } }), dataOf(withIneligible), PROFILED, {});
+  assert.deepEqual(mixed.blockers.map(b => b.code), ['INELIGIBLE'], 'a listing blocker is not scoped to print, so Copy keeps it');
+});
+
+// ---- unit profiles: re-validated in the browser, resolved by one function (Revision 2) ---------------------------------
+test('a unit profile is re-validated before it is offered: a crisis-number phone, markup, a bad id or a missing value drops it', () => {
+  const base = FIXTURE.profile;
+  assert.deepEqual(S.profileUsable(base, PAYLOAD), {
+    id: base.id, label: base.label, name: base.unitName, phone: base.unitPhone, org: base.org, callbackProgram: true, usableThrough: base.usableThrough,
+  });
+  const ten = crisisOfLength(10);
+  const crisisPhone = '(' + ten.slice(0, 3) + ') ' + ten.slice(3, 6) + '-' + ten.slice(6);
+  const bad = [
+    ['a registered crisis number as the unit phone', { unitPhone: crisisPhone }],
+    ['a service code as the exchange', { unitPhone: '(207) 411-0142' }],
+    ['a seven-digit phone', { unitPhone: '555-0142' }],
+    ['markup in the unit name', { unitName: '<b>4 East</b>' }],
+    ['braces in the unit name', { unitName: '{{unitName}}' }],
+    ['a phone number in the unit name', { unitName: 'Unit 207 555 0142' }],
+    ['internal text in the unit name', { unitName: 'Verification Unit' }],
+    ['markup in the label', { label: 'Unit <i>4</i>' }],
+    ['markup in the org', { org: '<script>Org</script>' }],
+    ['an upper-case id', { id: 'Fixture-Unit' }],
+    ['an underscore in the id', { id: 'fixture_unit' }],
+    ['an id over 40 characters', { id: 'a'.repeat(41) }],
+    ['an empty id', { id: '' }],
+    ['a numeric id', { id: 7 }],
+    ['no unit name', { unitName: '' }],
+    ['no unit phone', { unitPhone: undefined }],
+    ['no label', { label: '' }],
+  ];
+  for (const [why, change] of bad) {
+    const profile = { ...base, ...change };
+    assert.equal(S.profileUsable(profile, PAYLOAD), null, why);
+    assert.deepEqual(S.profiles(withProfiles(PAYLOAD, profile)), [], why + ': not offered');
+    assert.deepEqual(S.profiles(withProfiles(PAYLOAD, profile, FIXTURE.expired)).map(p => p.id), [FIXTURE.expired.id], why + ': the others still are');
+  }
+  for (const junk of [null, undefined, 'fixture-unit', 7, []]) assert.equal(S.profileUsable(junk, PAYLOAD), null, JSON.stringify(junk));
+  assert.deepEqual(S.profileUsable({ ...base, org: null, callbackProgram: 'yes', unitPhone: '207-555-0142', usableThrough: 20991231 }, PAYLOAD),
+    { id: base.id, label: base.label, name: base.unitName, phone: '(207) 555-0142', org: '', callbackProgram: false, usableThrough: '' },
+    'no org is fine; only true records a program; the phone is normalised; a non-string date is empty (and so lapsed)');
+  assert.equal(S.profileUsable({ ...base, brandingApproved: false }, PAYLOAD).org, '', 'the org is kept only with approved branding');
+  // A profile in state that fails re-validation is not loaded, and the Final copy is held back.
+  const refused = withProfiles(PAYLOAD, { ...base, unitPhone: crisisPhone });
+  const info = S.unitOf({ unit: { name: '', phone: '', profile: base.id } }, refused, Date.UTC(2026, 9, 12));
+  assert.equal(info.loaded || info.confirmed || info.phone !== '', false, 'an unusable profile is "not loaded"');
+  assert.deepEqual(codesOf(render(eight(), finalState(eight()), refused)), ['UNIT_UNCONFIRMED']);
+  assert.equal(S.profileFind(PROFILED, base.id).id, base.id);
+  for (const id of ['', 'no-such-unit', 'Fixture-Unit', null, 7, 'a'.repeat(41)]) assert.equal(S.profileFind(PROFILED, id), null, String(id));
+  assert.equal(S.profileFind(PAYLOAD, base.id), null, 'the shipped payload carries none');
+  assert.equal(S.profileFind(null, base.id), null);
+});
+
+test('a confirmation is usable through the last second of its usableThrough day (UTC) and lapsed the next; a bad date or an unknown clock is lapsed', () => {
+  const through = '2099-12-31';
+  assert.equal(S.expired(through, Date.UTC(2099, 11, 31, 0, 0, 0)), false, 'the first second of the last day');
+  assert.equal(S.expired(through, Date.UTC(2099, 11, 31, 23, 59, 59)), false, 'the last second of the last day');
+  assert.equal(S.expired(through, Date.UTC(2100, 0, 1, 0, 0, 0)), true, 'the next second');
+  assert.equal(S.expired(through, Date.UTC(2026, 9, 12)), false);
+  for (const bad of ['', undefined, null, 20991231, '2099-12-31T00:00:00Z', '2099/12/31', '31-12-2099', ' 2099-12-31', 'never']) {
+    assert.equal(S.expired(bad, Date.UTC(2026, 9, 12)), true, 'a bad or missing date is lapsed: ' + JSON.stringify(bad));
+  }
+  for (const clock of [NaN, Infinity, -Infinity, undefined, null, '1760000000000', new Date(Date.UTC(2026, 9, 12))]) {
+    assert.equal(S.expired(through, clock), true, 'an unknown clock is lapsed: ' + String(clock));
+  }
+});
+
+test('who the packet names: a loaded, usable profile beats typed values; an unknown profile id is "not loaded"; typed values are never confirmed', () => {
+  const now = Date.UTC(2026, 9, 12);
+  const typed = { name: '4 West', phone: '(207) 555-0100' };
+  assert.deepEqual(S.unitOf({ unit: { ...typed, profile: FIXTURE.profile.id } }, PROFILED, now), {
+    name: FIXTURE.profile.unitName, phone: FIXTURE.profile.unitPhone, org: FIXTURE.profile.org, profile: FIXTURE.profile.id,
+    loaded: true, expired: false, confirmed: true, callbackProgram: true, nameError: '', phoneError: '',
+  }, 'the profile wins and the typed values beside it are ignored');
+  assert.deepEqual(S.unitOf({ unit: { ...typed, profile: 'no-such-unit' } }, PROFILED, now), {
+    name: '4 West', phone: '(207) 555-0100', org: '', profile: '', loaded: false, expired: false, confirmed: false, callbackProgram: false, nameError: '', phoneError: '',
+  }, 'an unknown id is not loaded, and typed values are not confirmed');
+  assert.equal(S.unitOf({ unit: { ...typed, profile: FIXTURE.profile.id } }, PAYLOAD, now).loaded, false, 'a profile id the payload does not carry');
+  const lapsed = S.unitOf({ unit: { profile: FIXTURE.expired.id } }, PROFILED, now);
+  assert.equal(lapsed.loaded && lapsed.expired && !lapsed.confirmed, true, 'loaded but lapsed is not confirmed');
+  assert.equal(S.unitOf({ unit: { profile: FIXTURE.profile.id } }, PROFILED, NaN).confirmed, false, 'no clock, no confirmation');
+  const bad = S.unitOf({ unit: { name: '<b>', phone: governed('emergency_911'), profile: '' } }, PROFILED, now);
+  assert.equal(bad.name + bad.phone, '', 'invalid typed values are not used');
+  assert.ok(bad.nameError.length > 0 && bad.phoneError.length > 0, 'and say why');
+  for (const state of [null, undefined, {}, { unit: null }]) assert.equal(S.unitOf(state, PROFILED, now).loaded, false, JSON.stringify(state));
+  const records = eight();
+  const printed = textOf(render(records, finalState(records, { unit: { ...typed, profile: FIXTURE.profile.id } })).html);
+  assert.ok(printed.includes(FIXTURE.profile.unitPhone) && printed.includes(FIXTURE.profile.unitName), 'paper: the profile');
+  assert.equal(printed.includes('4 West') || printed.includes('555-0100'), false, 'paper: typed values beside a loaded profile never print');
+});
+
+test('Clear is offered whenever anything is saved: listings, a unit name, phone or profile, a Final copy, or any page switch', () => {
+  assert.equal(S.hasState(S.blank()), false, 'a blank packet');
+  assert.deepEqual(S.blank().unit, { name: '', phone: '', profile: '' }, 'a blank packet has an empty profile slot');
+  const blank = S.blank();
+  for (const [why, change] of [
+    ['a listing', { ids: ['a0'] }], ['a Final copy', { mode: 'final' }],
+    ['a unit name', { unit: { ...blank.unit, name: '4 East' } }], ['a unit phone', { unit: { ...blank.unit, phone: '2075550100' } }],
+    ['a loaded profile', { unit: { ...blank.unit, profile: FIXTURE.profile.id } }],
+    ['a page switched on', { inserts: { safety: true } }], ['a page switched OFF', { inserts: { week: false } }],
+  ]) assert.equal(S.hasState({ ...S.blank(), ...change }), true, why);
 });
 
 test('a category label with a dose or a crisis number prints as "Other resources"', () => {
@@ -749,12 +1221,17 @@ test('a standard page that cannot be built is refused with its own code, not pri
 // The layout check after the pages are assembled. Node has no layout engine, so a minimal document stands in; the real
 // one runs in the browser spec. What this pins is the WIRING: the check runs on the assembled pages, counts them, and
 // turns an over-tall, over-wide or missing page into a refusal.
-function withDocument(pageStubs, body) {
+// A wallet-card panel is ID-1: 324 x 204 CSS px (3.375in x 2.125in at 96 per inch); the layout check refuses a panel past it.
+const panelStub = (width, height) => ({ getBoundingClientRect: () => ({ width, height }) });
+function withDocument(pageStubs, body, panelStubs = [panelStub(324, 204), panelStub(324, 204)]) {
   const made = [];
   const doc = {
     body: { appendChild(node) { node.parentNode = this; made.push(node); return node; }, removeChild(node) { node.parentNode = null; return node; } },
     createElement() {
-      return { className: '', parentNode: null, setAttribute() {}, innerHTML: '', querySelectorAll(selector) { return selector === '.fd-packet-page' ? pageStubs : []; } };
+      return { className: '', parentNode: null, setAttribute() {}, innerHTML: '', querySelectorAll(selector) {
+        if (selector === '.fd-packet-page') return pageStubs;
+        return selector === '[data-fd-packet-card]' ? panelStubs : [];
+      } };
     },
   };
   globalThis.document = doc;
@@ -795,6 +1272,140 @@ test('a measurer or a layout check that THROWS refuses the packet instead of esc
   try {
     assert.equal(S.sheet(state, dataOf(records), PAYLOAD, { measure }).code, 'MEASURE_FAILED', 'a check that cannot run is a refusal, never a pass');
   } finally { delete globalThis.document; }
+});
+
+// ---- the wallet card: its own one-page print, never part of the packet (Revision 2) ------------------------------------
+const cardPanel = (html, which) => {
+  const start = html.indexOf('data-fd-packet-card="' + which + '"');
+  return start === -1 ? '' : html.slice(start, html.indexOf('</section>', start));
+};
+test('the wallet card is one page with two panels; the crisis panel carries every line, and every required line\'s official name and contact', () => {
+  const card = S.cardSheet(PAYLOAD, {});
+  assert.equal(card.ok, true, card.message);
+  assert.equal(card.count, 1);
+  assert.equal(card.mode, 'card');
+  assert.equal(card.html.split('data-fd-packet-page').length - 1, 1, 'exactly one page');
+  assert.equal(card.html.split('data-fd-packet-card="crisis"').length - 1, 1, 'one crisis panel');
+  assert.equal(card.html.split('data-fd-packet-card="mine"').length - 1, 1, 'one write-in panel');
+  const crisis = cardPanel(card.html, 'crisis');
+  for (const id of PAYLOAD.required) {
+    assert.ok(crisis.includes(S.esc(governed(id))), id + ': contact inside the crisis panel');
+    assert.ok(crisis.includes(S.esc(governedName(id))), id + ': official name inside the crisis panel');
+  }
+  for (const line of PAYLOAD.crisis) {
+    assert.match(crisis, new RegExp('data-fd-packet-crisis="' + line.ref + '"'), 'every crisis line: ' + line.ref);
+    assert.equal(textOf(card.html).includes(line.when), false, 'no "when to use it" text on the card');
+  }
+  assert.equal(card.html.includes('fd-packet-crisis__when'), false, 'no availability on the card');
+  assert.ok(textOf(crisis).includes(PAYLOAD.crisisCopy.cardHeading));
+  const mine = textOf(cardPanel(card.html, 'mine'));
+  assert.ok(mine.includes(PAYLOAD.card.mineTitle));
+  for (const label of PAYLOAD.card.rows) assert.ok(mine.includes(label), label);
+  for (const id of PAYLOAD.required) assert.equal(mine.includes(governed(id)), false, 'the write-in panel carries no crisis line');
+  const visible = textOf(card.html);
+  assert.ok(visible.includes(PAYLOAD.card.title) && visible.includes(PAYLOAD.card.body));
+  assert.equal(/\{\{|\}\}/.test(card.html) || /<a[\s>]/.test(card.html) || card.html.includes('id="'), false, 'no token, anchor or id');
+  assert.equal((card.html.match(/<h1[\s>]/g) || []).length, 1, 'one h1');
+});
+
+test('the wallet card names no unit: no unit name, phone, org or blank, even with a profile in the payload', () => {
+  const card = S.cardSheet(PROFILED, {});
+  assert.equal(card.ok, true, card.message);
+  for (const value of [FIXTURE.profile.unitName, FIXTURE.profile.unitPhone, FIXTURE.profile.org, FIXTURE.profile.label]) {
+    assert.equal(card.html.includes(S.esc(value)), false, value);
+  }
+  for (const cls of ['fd-packet-blank', 'fd-packet-org', 'fd-packet-draft']) assert.equal(card.html.includes(cls), false, cls);
+  assert.equal(card.html, S.cardSheet(PAYLOAD, {}).html, 'the same bytes with or without profiles');
+});
+
+test('the wallet card refuses rather than print without its lines: an unusable payload, a lost required line, a nameless contact, no card copy, more than five lines', () => {
+  const refuse = (payload, code, why) => {
+    const r = S.cardSheet(payload, {});
+    assert.equal(r.ok, false, why);
+    assert.equal(r.code, code, why);
+    assert.equal(r.html, '', why + ': no html');
+  };
+  for (const bad of [null, undefined, {}, 7]) refuse(bad, 'CRISIS_UNAVAILABLE', 'payload ' + String(bad));
+  const lost = clone(PAYLOAD); lost.crisis = lost.crisis.filter(l => l.ref !== PAYLOAD.required[0]);
+  refuse(lost, 'CRISIS_UNAVAILABLE', 'a required line missing');
+  const nameless = clone(PAYLOAD); nameless.contacts[PAYLOAD.required[0]].name = '';
+  refuse(nameless, 'CRISIS_UNAVAILABLE', 'a required contact with no name');
+  const unnamed = clone(PAYLOAD); delete unnamed.contacts[PAYLOAD.required[1]].name;
+  refuse(unnamed, 'CRISIS_UNAVAILABLE', 'a required contact whose name is missing');
+  const blankContact = clone(PAYLOAD); blankContact.contacts[PAYLOAD.required[1]].contact = ' ';
+  refuse(blankContact, 'CRISIS_UNAVAILABLE', 'a blank contact');
+  const noCard = clone(PAYLOAD); delete noCard.card;
+  refuse(noCard, 'CARD_UNAVAILABLE', 'no card copy');
+  for (const [field, value] of [['title', 7], ['body', null], ['mineTitle', undefined], ['rows', []], ['rows', 'x']]) {
+    const odd = clone(PAYLOAD); odd.card[field] = value;
+    refuse(odd, 'CARD_UNAVAILABLE', 'card.' + field + ' = ' + JSON.stringify(value));
+  }
+  const listCard = clone(PAYLOAD); listCard.card = [];
+  refuse(listCard, 'CARD_UNAVAILABLE', 'a card that is a list');
+  const noHeading = clone(PAYLOAD); delete noHeading.crisisCopy.cardHeading;
+  refuse(noHeading, 'CARD_UNAVAILABLE', 'no card heading');
+  assert.ok(PAYLOAD.crisis.length <= 5, 'the shipped card is within its budget');
+  const six = clone(PAYLOAD); six.crisis.push({ ref: PAYLOAD.crisis[0].ref, when: 'again' });
+  assert.equal(S.payloadOk(six), true, 'six resolvable lines are a usable payload (the packet prints them)');
+  refuse(six, 'CARD_UNAVAILABLE', 'six lines exceed the card\'s five-line budget');
+  const optional = PAYLOAD.crisis.map(l => l.ref).filter(ref => !PAYLOAD.required.includes(ref));
+  const four = clone(PAYLOAD); four.crisis = four.crisis.filter(l => l.ref !== optional[0]);
+  assert.equal(S.cardSheet(four, {}).ok, true, 'fewer lines are fine');
+});
+
+test('the card check reads the crisis PANEL: a required name or contact elsewhere on the card does not count', () => {
+  const html = S.cardSheet(PAYLOAD, {}).html;
+  assert.equal(S.checkCard(html, PAYLOAD), true);
+  const id = PAYLOAD.required[0];
+  const panel = cardPanel(html, 'crisis');
+  const moveToMine = what => html.replace(panel, panel.split(what).join('')).replace('data-fd-packet-card="mine">', 'data-fd-packet-card="mine">' + what);
+  assert.equal(S.checkCard(moveToMine(S.esc(governedName(id))), PAYLOAD), false, 'the name only in the write-in panel');
+  assert.equal(S.checkCard(moveToMine(S.esc(governed(id))), PAYLOAD), false, 'the contact only in the write-in panel');
+  assert.equal(S.checkCard(html.replace('data-fd-packet-card="crisis"', 'data-fd-packet-card="other"'), PAYLOAD), false, 'no crisis panel');
+  assert.equal(S.checkCard('', PAYLOAD), false);
+  assert.match(SHEET_SRC, /if\(!fdCarePacketCheckCard\(html,payload\)\)return fdCarePacketFail\('CRISIS_UNAVAILABLE'/, 'the card build really calls the check');
+});
+
+test('the card\'s layout check: one sheet passes; taller, wider or a missing page refuses; verify:false skips it; with no document it passes unchecked', () => {
+  const fit = withDocument([stub(1056)], made => ({ r: S.cardSheet(PAYLOAD, {}), made }));
+  assert.equal(fit.r.ok, true, fit.r.message);
+  assert.ok(fit.made.length === 2 && fit.made.every(node => node.innerHTML.includes('data-fd-packet-card="crisis"')), 'what was checked is the card page, once as a page and once as two panels');
+  assert.ok(fit.made.every(node => node.parentNode === null), 'the hidden host is removed');
+  assert.equal(withDocument([stub(1058)], () => S.cardSheet(PAYLOAD, {})).code, 'OVERFLOW', 'two pixels over a sheet');
+  assert.equal(withDocument([stub(1056, 900)], () => S.cardSheet(PAYLOAD, {})).code, 'OVERFLOW', 'wider than its box');
+  assert.equal(withDocument([], () => S.cardSheet(PAYLOAD, {})).code, 'MEASURE_FAILED', 'no page found: could not check, so refuse');
+  assert.equal(withDocument([stub(1056), stub(1056)], () => S.cardSheet(PAYLOAD, {})).code, 'MEASURE_FAILED', 'the card is ONE page');
+  // Added with the review fixes: the panels must stay credit-card sized WHEN THE CARD PRINTS (a page that merely fits 11in is not
+  // enough: a panel grown past 2.125in is no longer wallet-sized). Fails if fdCarePacketVerifyCard is not run, or its limits drift.
+  assert.equal(withDocument([stub(1056)], () => S.cardSheet(PAYLOAD, {}), [panelStub(324, 205), panelStub(324, 204)]).ok, true, 'one pixel of rounding is tolerated');
+  assert.equal(withDocument([stub(1056)], () => S.cardSheet(PAYLOAD, {}), [panelStub(324, 206), panelStub(324, 204)]).code, 'OVERFLOW', 'a crisis panel grown taller than a credit card');
+  assert.equal(withDocument([stub(1056)], () => S.cardSheet(PAYLOAD, {}), [panelStub(324, 204), panelStub(326, 204)]).code, 'OVERFLOW', 'a write-in panel wider than a credit card');
+  assert.equal(withDocument([stub(1056)], () => S.cardSheet(PAYLOAD, {}), [panelStub(324, 204)]).code, 'MEASURE_FAILED', 'a missing panel cannot be checked, so it refuses');
+  assert.match(withDocument([stub(1056)], () => S.cardSheet(PAYLOAD, {}), [panelStub(324, 300), panelStub(324, 204)]).message, /credit-card sized/, 'and says what is wrong');
+  const skipped = withDocument([stub(5000)], made => ({ r: S.cardSheet(PAYLOAD, { verify: false }), made }));
+  assert.equal(skipped.r.ok, true, 'verify:false skips the layout check');
+  assert.equal(skipped.made.length, 0, 'and touches no document');
+  assert.equal(S.cardSheet(PAYLOAD, {}).ok, true, 'without a document there is nothing to check and the card stands');
+  const broken = { body: { appendChild() {}, removeChild() {} }, createElement: () => ({ setAttribute() {}, set innerHTML(value) {}, querySelectorAll() { throw new Error('no layout'); } }) };
+  globalThis.document = broken;
+  try {
+    assert.equal(S.cardSheet(PAYLOAD, {}).code, 'MEASURE_FAILED', 'a check that throws is a refusal');
+  } finally { delete globalThis.document; }
+});
+
+test('the wallet card is never part of a packet: no page set, copy or stored switch puts it in the sheet or the copied text', () => {
+  const records = eight();
+  for (const [setName, inserts] of Object.entries({ ...insertSets, cardSwitch: { card: true } })) {
+    for (const mode of MODES) {
+      const label = setName + '/' + mode;
+      const state = mode === 'final' ? finalState(records, { inserts }) : stateOf(records, { inserts });
+      const r = render(records, state);
+      assert.equal(r.ok, true, label + ': ' + r.message);
+      assert.equal(r.html.includes('data-fd-packet-card') || r.html.includes('fd-packet-cardsheet'), false, label + ': no card in the packet');
+      assert.equal(textOf(r.html).includes(PAYLOAD.card.title), false, label);
+      if (mode === 'final') assert.equal(S.text(state, dataOf(records), PROFILED, {}).text.includes(PAYLOAD.card.title), false, label + ' copy');
+    }
+  }
 });
 
 // ---- the scan reads the engine's Unicode tables, so it cannot lag the validator ------------------------------------------
@@ -858,6 +1469,104 @@ test('an engine without Unicode property escapes cannot run the scan, so the pac
   assert.equal(r.code, 'CHECK_UNAVAILABLE');
   assert.equal(r.html || '', '', 'no html at all');
   assert.equal(limited.text(finalState(records), data, PAYLOAD, {}).code, 'CHECK_UNAVAILABLE');
+  const card = limited.cardSheet(PAYLOAD, { verify: false });
+  assert.equal(card.code, 'CHECK_UNAVAILABLE', 'the wallet card refuses too');
+  assert.equal(card.html, '', 'with no html');
   assert.equal(typeof limited.norm('10 mg'), 'string', 'the helpers degrade rather than throw (the unit field still validates)');
   assert.equal(limited.strip('  a\tb  '), 'a b');
+});
+
+// Added with the owner's directions: a date that does not exist rolls forward inside Date.UTC (02-30 becomes 03-02) and would
+// have kept a confirmation alive past a date nobody wrote. Fails if the calendar round-trip in fdCarePacketExpired is removed.
+test('a confirmation date that is not a real calendar day is lapsed, never rolled forward into a later day', () => {
+  const now = Date.UTC(2026, 2, 1);
+  for (const impossible of ['2026-02-30', '2026-02-29', '2026-13-01', '2026-00-10', '2026-04-31', '2026-06-00']) {
+    assert.equal(S.expired(impossible, now), true, impossible + ' does not exist, so it is lapsed');
+  }
+  assert.equal(S.expired('2028-02-29', now), false, 'a real leap day is a day');
+});
+
+// ---- added with the review fixes ----------------------------------------------------------------------------------------
+// Eligibility judges what will really print. A contact the sheet leaves off the paper (a text keyword or an address that holds a
+// note or a dose) is not a contact; a listing left with none must be refused up front, not printed with no way to reach it.
+// Fails if fdCarePacketEligibility goes back to "has a website string / has a link".
+test('eligibility counts only contacts that will really print: a listing whose only contact is filtered out is NO_CONTACT', () => {
+  const siteOnly = (website, more = {}) => row(0, { phone: '', contactHref: '', website, ...more });
+  assert.equal(S.eligibility(siteOnly('https://example.org/care'), PAYLOAD), '', 'an ordinary address keeps it eligible');
+  assert.equal(S.eligibility(siteOnly('https://hospital2.example.org/'), PAYLOAD), 'NO_CONTACT', 'an address the sheet would drop (it trips the tier-note scan) leaves nothing to call or visit');
+  assert.equal(S.eligibility(siteOnly('https://hospital2.example.org/', { contactHref: 'tel:2077000123' }), PAYLOAD), '', 'a phone keeps it eligible when the address is dropped');
+  assert.equal(S.eligibility(siteOnly('', { phone: '', contactHref: 'sms:741999?body=VERIFY' }), PAYLOAD), 'NO_CONTACT', 'a text link whose keyword holds a verification word prints nothing');
+  assert.equal(S.eligibility(siteOnly('https://example.org/care', { contactHref: 'sms:741999?body=VERIFY' }), PAYLOAD), '', 'but the address keeps it eligible');
+  assert.equal(S.eligibility(siteOnly('not a web address'), PAYLOAD), 'NO_CONTACT', 'an address that prints no domain is no contact');
+  // And the sheet agrees with the chooser: nothing eligible comes out with no contact, nothing refused goes in.
+  for (const [more, expected] of [[{ website: 'https://hospital2.example.org/', contactHref: '', phone: '' }, 'NO_CONTACT'], [{}, '']]) {
+    const records = [row(0, more)];
+    const r = render(records, stateOf(records));
+    assert.equal(r.blockers.some(b => b.code === 'INELIGIBLE' && b.reason === 'NO_CONTACT'), expected === 'NO_CONTACT', JSON.stringify(more));
+  }
+});
+
+// Fails if the address is no longer scanned for crisis numbers (a live telehealth listing printed an address that spells one).
+test('a web address that spells a registered crisis number is refused like a phone that does', () => {
+  const digits = PAYLOAD.crisisNumbers.find(d => d.length === 3);
+  assert.ok(digits, 'precondition: a three-digit crisis number is registered');
+  assert.equal(S.eligibility(row(0, { website: 'https://nh' + digits + '.example.org/' }), PAYLOAD), 'CRISIS_NUMBER');
+  assert.equal(S.eligibility(row(0, { website: 'https://example.org/care' }), PAYLOAD), '');
+});
+
+test('the crisis-service reason tells the trainee what to do (it is not "printed in the crisis box"), and every reason names its own cause', () => {
+  const text = S.reasonText('CRISIS_CATEGORY');
+  assert.match(text, /tell the patient about it yourself/);
+  assert.doesNotMatch(text, /print only in the crisis box/, 'a local crisis service is NOT in the crisis box, so the old wording sent the trainee nowhere');
+  assert.match(S.reasonText('CRISIS_NUMBER'), /crisis box/, 'a listing that carries one of the five governed numbers IS covered by the box');
+});
+
+// A unit name may not say when the unit answers: only the crisis lines are round the clock. The validator refuses these phrases in a
+// profile (AVAILABILITY_RE); the browser's rule for a typed name must be the same rule. Fails if either side drifts.
+test('PARITY: a typed unit name refuses exactly the availability phrases the validator refuses in a profile', () => {
+  const probes = ['Call us any time', '4 East anytime', 'Any-time unit', '4 East 24/7', 'Unit 24 / 7', '24-hour unit', '24 hours a day', 'Open day or night',
+    'Round-the-clock care', 'around the clock', 'Open all hours', 'Unit 24/7!', '4 East', 'West 24', 'Unit 247', '24 East', 'Sometime Unit', 'Hourly Unit', 'Nightingale Unit', '12/7 Unit', '124/7'];
+  const python = py(
+    `import validate_care_inserts as v\nprobes = json.loads(sys.stdin.read())\nprint(json.dumps([bool(v.AVAILABILITY_RE.search(v.normalise(s))) for s in probes]))`,
+    [], JSON.stringify(probes),
+  );
+  assert.equal(python.status, 0, python.stderr);
+  const theirs = JSON.parse(python.stdout);
+  probes.forEach((probe, i) => {
+    const ours = S.unitName(probe, PAYLOAD);
+    const refusedForAvailability = ours.ok === false && /when it answers/.test(ours.error);
+    assert.equal(refusedForAvailability, theirs[i], JSON.stringify(probe) + ' (validator ' + theirs[i] + ')');
+  });
+  assert.ok(theirs.some(Boolean) && theirs.some(v => !v), 'precondition: the probe list covers both sides');
+});
+
+// The validator refuses a unit phone that is a helpline-table number; a typed phone and a profile's phone get the same rule in the
+// browser. Fails if the browser stops reading the payload's tables, or the two lists of helpline numbers diverge.
+test('PARITY: a unit phone may not be any helpline-table number, and the browser reads the same numbers the validator does', () => {
+  const python = py(
+    `import validate_care_inserts as v, care_inserts_payload as p\nprint(json.dumps(sorted(v.helpline_digits(p.build_payload()))))`,
+  );
+  assert.equal(python.status, 0, python.stderr);
+  const theirs = JSON.parse(python.stdout).filter(d => d.length === 10);
+  assert.ok(theirs.length >= 10, 'precondition: the shipped tables carry helpline numbers');
+  const ours = new Set(S.helplineNumbers(PAYLOAD).filter(d => d.length === 10));
+  assert.deepEqual([...ours].sort(), [...theirs].sort(), 'the same ten-digit numbers');
+  for (const d of theirs) {
+    const typed = '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6);
+    const r = S.unitPhone(typed, PAYLOAD);
+    assert.equal(r.ok, false, typed + ' is a helpline number');
+    assert.match(r.error, /helpline number/, typed);
+  }
+  assert.equal(S.unitPhone('(207) 555-0100', PAYLOAD).ok, true, 'an ordinary unit number is still fine');
+  // A profile that carries one is not offered: the profile re-check uses the same rule.
+  const bad = { ...clone(FIXTURE.profile), id: 'helpline-phone', unitPhone: '(' + theirs[0].slice(0, 3) + ') ' + theirs[0].slice(3, 6) + '-' + theirs[0].slice(6) };
+  assert.equal(S.profileUsable(bad, PAYLOAD), null);
+  const named = { ...clone(FIXTURE.profile), id: 'says-24-7', unitName: 'Fixture Unit open 24/7' };
+  assert.equal(S.profileUsable(named, PAYLOAD), null, 'a profile whose name says when it answers is not offered either');
+});
+
+// The copy is checked against its OUTPUT as well as built from a loop: a source-level pin, because no payload that passes
+// fdCarePacketPayloadOk can make the loop and the output disagree (that is why it is defence in depth).
+test('the copied text is checked for every required line\'s official name and number before it is returned', () => {
+  assert.match(SHEET_SRC, /missing from the copied text/);
 });

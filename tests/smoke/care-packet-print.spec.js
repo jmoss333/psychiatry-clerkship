@@ -1,30 +1,52 @@
 // PR C of the Care aftercare packet in a real browser: the preview, the print lifecycle, layout on a Letter sheet, the
-// review gate, copy, and the places the payload can fail. The pure rules are in tests/fd-care-packet-*.test.mjs; this file
-// is for what only a layout engine, focus and a print pipeline can show.
+// review gate, copy, the unit profile, the wallet card (its own print), and the places the payload can fail. The pure rules
+// are in tests/fd-care-packet-*.test.mjs; this file is for what only a layout engine, focus and a print pipeline can show.
 //
 // Honest limits, said once: Chromium only (every smoke project is Desktop Chrome), so Firefox, Safari and phone printing are
-// unproven and are covered only by the human gate G-C. Page counts are RECORDED, never pinned, because they depend on the
-// machine's fonts. No screenshot baseline exists here and none may be made before G-C (and then only on the Ubuntu runner).
+// unproven and are covered only by the human gate G-C. Page counts are RECORDED (with the browser, OS and fonts named),
+// because they depend on the machine's fonts; the one count that is pinned is the owner's budget (the default pages with up
+// to eight ordinary listings fit five sheets). No screenshot baseline exists here and none may be made before G-C (and then
+// only on the Ubuntu runner).
 import fs from 'node:fs';
+import os from 'node:os';
 import { test, expect } from '@playwright/test';
 import { careDirectoryFixture, pinCareDirectory } from './care-directory-fixture.js';
-import { enableCarePacketHtml, printFeed } from './care-packet-fixture.js';
+import { enableCarePacketHtml, printFeed, PRINT_LISTINGS } from './care-packet-fixture.js';
+import { enablePatientSharingHtml } from './care-patient-sharing-fixture.js';
 import { pdfPageCount } from './pdf-pages.js';
 import { probeContrastWithin, probeBoundariesWithin } from './contrast-probe.js';
 import { isResidentProject } from './audience.js';
 
-// Titles and crisis numbers are read from the data the build ships, never typed here: a renamed page or a changed number must
-// fail a test about the page, not pass because the test repeated the old value.
+// Titles, crisis names and numbers are read from the data the build ships, never typed here: a renamed page or a changed
+// number must fail a test about the page, not pass because the test repeated the old value.
 const REPO_ROOT = new URL('../../', import.meta.url);
 const readJson = path => JSON.parse(fs.readFileSync(new URL(path, REPO_ROOT), 'utf8'));
 const INSERTS = readJson('13_Faculty_Resources/_automation/site_build/data/care-inserts.v1.json');
 const GOVERNED = readJson('crisis_resources.json');
+// TEST ONLY: unit profiles in the payload's shipped shape, with a fictional 555-01xx number. `profile` is confirmed through
+// 2099; `expired` is the same unit whose confirmation lapsed in 2020. The shipped payload carries no profile at all.
+const FIXTURE = readJson('tests/fixtures/care-unit-profile.json');
+const PROFILE = FIXTURE.profile, EXPIRED = FIXTURE.expired;
+// The confirmed profile without a call-back program, differing in that one field (and its id and label).
+const NO_CALLBACK = { ...PROFILE, id: 'fixture-unit-no-callback', label: 'Fixture unit without call-back (test only)', callbackProgram: false };
 const titleOf = id => INSERTS.inserts.find(insert => insert.id === id).title;
-const contactOf = id => GOVERNED.resources.find(resource => resource.id === id).contact;
+const governed = id => GOVERNED.resources.find(resource => resource.id === id);
+const contactOf = id => governed(id).contact;
+const nameOf = id => governed(id).name;
+const defaultOn = id => { const insert = INSERTS.inserts.find(i => i.id === id); return insert.core === true || insert.defaultOn === true; };
+// The blocker messages, copied from fd_care_packet_sheet.js (fdCarePacketUnconfirmedMessage and the CALLBACK_UNCONFIRMED
+// blocker). A reworded message fails here and is re-read from the source, never guessed.
+const MSG = {
+  unconfirmed: 'A Final copy needs a confirmed unit profile. Load one in the unit details.',
+  noProfiles: 'A Final copy needs a confirmed unit profile, and none is set up yet. Ask the project owner to add one.',
+  lapsed: 'The unit profile’s phone confirmation has lapsed. A Final copy needs a current one; ask the project owner to confirm it again.',
+  callback: 'The call-back page promises a call from the unit. A Final copy needs a confirmed unit profile that records a call-back program, or switch that page off.',
+};
 const KEY = 'fd_care_packet_v1';
 const GATES = ['verification', 'region', 'identifiers', 'supervisor'];
 const PAPER = { width: 816, height: 1056 }; // 8.5in x 11in at 96 dpi
 const EDGE = 0.35 * 96; // nothing prints closer to a sheet's edge than this
+const CARD = { width: 3.375 * 96, height: 2.125 * 96 }; // ID-1: 324 x 204 CSS px, border included
 
 async function seed(page, info) {
   await page.clock.setFixedTime(new Date('2026-10-12T12:00:00Z'));
@@ -36,8 +58,10 @@ async function seed(page, info) {
 // Counts calls instead of opening a dialog; real browsers fire beforeprint/afterprint around the real call, a stub does not.
 const stubPrint = page => page.addInitScript(() => { window.__prints = 0; window.print = () => { window.__prints += 1; }; });
 const prints = page => page.evaluate(() => window.__prints);
+const afterprint = page => page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
 
-// One route does both jobs the shell needs here: flip the packet's source flag (served HTML only, never source) and, for the
+// One route does every job the shell needs here: flip the packet's source flag (served HTML only, never source), offer the
+// fixture unit profiles (the shipped payload has none), optionally flip the older patient-sharing flag, and, for the
 // fail-closed tests, rewrite the injected payload on its single line.
 function rewritePayload(html, mutate) {
   const match = html.match(/var FD_CARE_INSERTS=(.*);\n/);
@@ -45,13 +69,26 @@ function rewritePayload(html, mutate) {
   const next = mutate(JSON.parse(match[1]));
   return html.replace(match[0], () => 'var FD_CARE_INSERTS=' + JSON.stringify(next) + ';\n');
 }
-async function routeShell(page, mutate) {
+async function routeShell(page, opts = {}) {
+  const { mutate, profiles = [PROFILE, EXPIRED], sharing = false } = typeof opts === 'function' ? { mutate: opts } : opts;
   await page.route(url => url.pathname === '/', async route => {
     const response = await route.fetch();
     let html = enableCarePacketHtml(await response.text());
-    if (mutate !== undefined) html = rewritePayload(html, mutate);
+    if (sharing) html = enablePatientSharingHtml(html);
+    html = rewritePayload(html, p => {
+      expect(Array.isArray(p.unitProfiles), 'the served payload has a unitProfiles list to fill').toBe(true);
+      p.unitProfiles = profiles.map(profile => ({ ...profile }));
+      return mutate ? mutate(p) : p;
+    });
     await route.fulfill({ response, body: html });
   });
+}
+// The payload exactly as the build serves it (no flag flip, no fixture), for numbers a test must not type.
+async function servedPayload(page) {
+  const html = await (await page.request.get('/')).text();
+  const match = html.match(/var FD_CARE_INSERTS=(.*);\n/);
+  expect(match, 'the served shell declares its payload on one line').toBeTruthy();
+  return JSON.parse(match[1]);
 }
 
 const preview = page => page.locator('#fd-care-packet-preview');
@@ -63,19 +100,43 @@ const reason = page => page.locator('#fd-care-packet-reason');
 const status = page => page.locator('#careDirectoryStatus');
 const host = page => page.locator('#fdPacketPrint');
 const snapshot = page => page.evaluate(k => JSON.parse(sessionStorage.getItem(k) || 'null'), KEY);
+const gate = (page, g) => page.locator(`input[data-fd-care-packet-gate="${g}"]`);
+const insertBox = (page, id) => page.locator(`input[data-fd-care-packet-insert="${id}"]`);
+const tray = page => page.locator('[data-fd-care-packet-tray]');
+const cardButton = page => page.locator('[data-fd-care-packet-card-print]');
+const profileSelect = page => page.locator('[data-fd-care-packet-profile-select]');
+const loadButton = page => page.locator('[data-fd-care-packet-profile-load]');
+const unlinkButton = page => page.locator('[data-fd-care-packet-profile-unlink]');
+const profileStatus = page => page.locator('[data-fd-care-packet-profile-status]');
+const readback = page => page.locator('[data-fd-care-packet-readback]');
+const cleanOf = (page, why) => async () => {
+  await expect(host(page), why).toHaveCount(0);
+  expect(await page.evaluate(() => document.body.classList.contains('fd-packet-printing') || !!document.getElementById('fdPacketPageRule')), why).toBe(false);
+};
 
-// Add every listing of the eight-listing feed, open the preview, choose the copy, fill the ward's details, then (last, because
-// every one of those re-arms the confirmations) tick the four confirmations.
-async function build(page, { mode = 'review', name = '4 East', phone = '(207) 555-0199', release = true, open = true } = {}) {
-  await page.goto('/?tab=care');
+// Choose a unit profile the way a trainee does: the native select, then the explicit Load button.
+async function loadProfile(page, id) {
+  await profileSelect(page).selectOption(id);
+  await loadButton(page).click();
+  await expect(unitField(page, 'name'), 'a loaded profile makes the unit fields read-only').not.toBeEditable();
+}
+// Add every listing of the feed, open the preview, choose the copy, set the ward's details (a Final copy loads the confirmed
+// fixture profile through the real controls; a Review copy types them), then (last, because every one of those re-arms the
+// confirmations) tick the four confirmations.
+async function build(page, { mode = 'review', profile, name, phone, release = true, open = true, count = PRINT_LISTINGS.length, visit = true } = {}) {
+  if (profile === undefined) profile = mode === 'final' ? PROFILE.id : '';
+  if (name === undefined) name = profile ? '' : '4 East';
+  if (phone === undefined) phone = profile ? '' : '(207) 555-0199';
+  if (visit) await page.goto('/?tab=care');
   const panel = page.locator('[data-care-directory]');
   await panel.getByLabel('Resource name or service').fill('southern maine');
-  await panel.getByRole('button', { name: /^Add all results \(8\)$/ }).click();
+  await panel.getByRole('button', { name: new RegExp(`^Add all results \\(${count}\\)$`) }).click();
   if (open) await toggle(page).click();
   if (open && mode === 'final') await page.getByRole('radio', { name: /Final copy/ }).check();
+  if (open && profile) await loadProfile(page, profile);
   if (open && name) { await unitField(page, 'name').fill(name); await unitField(page, 'name').press('Tab'); }
   if (open && phone) { await unitField(page, 'phone').fill(phone); await unitField(page, 'phone').press('Tab'); }
-  if (release) for (const g of GATES) await page.locator(`input[data-fd-care-packet-gate="${g}"]`).check();
+  if (release) for (const g of GATES) await gate(page, g).check();
   return panel;
 }
 async function stage(page) {
@@ -83,6 +144,30 @@ async function stage(page) {
   await printButton(page).click();
   await expect(host(page)).toHaveCount(1);
 }
+// What the print engine would see: a listener added AFTER the packet's own (so it runs second) records what is staged.
+async function watchStaged(page) {
+  await page.evaluate(() => {
+    window.__staged = [];
+    window.addEventListener('beforeprint', () => {
+      const node = document.getElementById('fdPacketPrint');
+      window.__staged.push(node ? { notice: !!node.querySelector('.fd-packet-notice'), pages: node.querySelectorAll('.fd-packet-page').length,
+        card: node.querySelectorAll('.fd-packet-cardsheet').length } : null);
+    });
+  });
+}
+const staged = page => page.evaluate(() => window.__staged);
+// The browser, the OS and which faces of the sheet's stacks are installed (a face is present when a canvas measures it
+// differently from both generic fallbacks), so a recorded page count names the machine that produced it.
+async function environment(page) {
+  const fonts = await page.evaluate(() => {
+    const ctx = document.createElement('canvas').getContext('2d'), probe = 'Harbor Counseling Center 207-555-0101 Wellness';
+    const width = font => { ctx.font = font; return ctx.measureText(probe).width; };
+    return ['Arial', 'Liberation Sans', 'Helvetica', 'Times New Roman', 'Liberation Serif']
+      .filter(face => ['monospace', 'serif'].some(fallback => width(`16px '${face}', ${fallback}`) !== width(`16px ${fallback}`)));
+  });
+  return `Chromium ${page.context().browser().version()} on ${os.platform()} ${os.release()}; installed faces: ${fonts.join(', ') || 'none of the sheet stack'}`;
+}
+
 // Layout of a staged print, taken at paper width under print emulation: the only geometry that is the print engine's.
 async function layout(page) {
   await page.setViewportSize(PAPER);
@@ -158,7 +243,7 @@ test.describe('preview, print and copy', () => {
   });
   test.afterEach(() => { expect(errors, 'no uncaught page error').toEqual([]); });
 
-  // ---- layout and pagination, both copies ---------------------------------------------------------------------------------------
+  // ---- layout and pagination, both copies (a Final copy with the confirmed fixture profile loaded) ---------------------------------
   for (const mode of ['review', 'final']) {
     test(`${mode} copy: every sheet is exactly paper width, clips nothing, keeps the crisis lines on page 1, and the PDF has one page per sheet`, async ({ page }) => {
       await build(page, { mode });
@@ -195,7 +280,7 @@ test.describe('preview, print and copy', () => {
     await expect(status(page)).toContainText('Preview closed.');
   });
 
-  // ---- typing: the controls are patched, not replaced ---------------------------------------------------------------------------
+  // ---- typing (a Review copy: the only copy whose unit details are typed): the controls are patched, not replaced ---------------
   test('typing the ward\'s name keeps focus and the caret on every keystroke, saves on leaving the field, and writes nothing to the announcer', async ({ page }) => {
     await build(page, { release: false, name: '', phone: '' });
     const name = unitField(page, 'name');
@@ -216,26 +301,28 @@ test.describe('preview, print and copy', () => {
     expect((await snapshot(page)).unit.name).toBe('4 East');
   });
 
-  // ---- the review gate is re-armed by anything that adds content ----------------------------------------------------------------
-  test('an edit after the confirmations clears them, disables Print and Copy with the reason beside them, and focus is never lost to the page', async ({ page }) => {
+  // ---- the review gate is re-armed by anything that adds content or changes the unit -------------------------------------------
+  // Rewritten for the unit profile: a Final copy's unit fields are read-only while a profile is loaded, so the edit after review
+  // is the unit's identity loaded again (the typed-field edit is the Review-copy test after this one).
+  test('an edit after the confirmations (the unit profile loaded again, or a page switched on) clears them, disables Print and Copy with the reason beside them, and focus is never lost to the page', async ({ page }) => {
     await build(page, { mode: 'final' });
     await expect(printButton(page)).toBeEnabled();
     await expect(copyButton(page)).toBeEnabled();
     await expect(reason(page)).toContainText('Print and Copy are available.');
-    await unitField(page, 'name').fill('4 West');
-    await unitField(page, 'name').press('Tab');
-    for (const g of GATES) await expect(page.locator(`input[data-fd-care-packet-gate="${g}"]`)).not.toBeChecked();
+    await loadButton(page).click();
+    for (const g of GATES) await expect(gate(page, g)).not.toBeChecked();
     await expect(printButton(page)).toBeDisabled();
     await expect(copyButton(page)).toBeDisabled();
     await expect(printButton(page)).toHaveAttribute('aria-describedby', 'fd-care-packet-reason');
     await expect(reason(page)).toContainText('Finish the four review confirmations');
     await expect(status(page)).toContainText('Review confirmations cleared');
+    await expect(loadButton(page), 'focus stays on the button that was pressed (patched in place, never replaced)').toBeFocused();
     expect(await page.evaluate(() => document.activeElement === document.body), 'focus is somewhere real').toBe(false);
     // Switching a page ON adds content nobody reviewed; switching one OFF does not.
-    for (const g of GATES) await page.locator(`input[data-fd-care-packet-gate="${g}"]`).check();
+    for (const g of GATES) await gate(page, g).check();
     await page.getByRole('checkbox', { name: titleOf('safety') }).check();
     await expect(printButton(page)).toBeDisabled();
-    for (const g of GATES) await page.locator(`input[data-fd-care-packet-gate="${g}"]`).check();
+    for (const g of GATES) await gate(page, g).check();
     await page.getByRole('checkbox', { name: titleOf('safety') }).uncheck();
     await expect(printButton(page)).toBeEnabled();
   });
@@ -253,31 +340,50 @@ test.describe('preview, print and copy', () => {
     await expect(printButton(page)).toBeEnabled();
   });
 
-  test('Tab out of an edited unit phone onto Print leaves focus on a real element that says why Print went away, and says it aloud', async ({ page }) => {
-    await build(page, { mode: 'final' });
-    await unitField(page, 'phone').fill('(207) 555-0142');
+  // Was a Final-copy test; a Final copy's phone is read-only (profile) or never printable (typed), so the edit-then-Tab path
+  // exists only in the Review copy now. The announcement also reads the typed number back.
+  test('in a Review copy, Tab out of an edited unit phone onto Print leaves focus on a real element that says why Print went away, and says it aloud with the number read back as not confirmed', async ({ page }) => {
+    await build(page);
+    await expect(printButton(page)).toBeEnabled();
+    await unitField(page, 'phone').fill('(207) 555-0177');
     await page.keyboard.press('Tab');
     await expect(reason(page), 'the reason takes focus when the button under it is disabled').toBeFocused();
     await expect(printButton(page)).toBeDisabled();
-    await expect(status(page)).toContainText('Unit phone saved. Review confirmations cleared. Finish the four review confirmations above.');
+    await expect(status(page)).toContainText('Unit phone saved. Patients will be told to call (207) 555-0177. This number is not confirmed. Review confirmations cleared. Finish the four review confirmations above.');
+    await expect(readback(page)).toHaveText('Patients will be told to call (207) 555-0177. This number is not confirmed.');
   });
 
-  test('the one-sided hint follows the wallet-card page while the preview stays open', async ({ page }) => {
-    await build(page, { mode: 'final' });
-    const hint = page.locator('[data-fd-care-packet-hint]');
-    await expect(hint).toContainText('one-sided');
-    await page.getByRole('checkbox', { name: titleOf('card') }).uncheck();
-    await expect(hint, 'the card is off, so the instruction goes').not.toContainText('one-sided');
-    await expect(preview(page)).toBeVisible();
-    await page.getByRole('checkbox', { name: titleOf('card') }).check();
-    await expect(hint).toContainText('one-sided');
+  // Replaces "the one-sided hint follows the wallet-card page": the card left the packet.
+  test('the packet carries no wallet-card page, even with every page switched on, and its print hint says nothing about a card or one-sided printing', async ({ page }) => {
+    await build(page, { mode: 'final', release: false });
+    const offered = await page.locator('[data-fd-care-packet-insert]').evaluateAll(boxes => boxes.map(b => b.getAttribute('data-fd-care-packet-insert')));
+    expect(offered, 'the page switches are the standard pages and nothing else').toEqual(INSERTS.inserts.filter(i => !i.core).map(i => i.id));
+    await expect(page.getByRole('checkbox', { name: INSERTS.card.title })).toHaveCount(0);
+    for (const id of offered) await insertBox(page, id).check();
+    for (const g of GATES) await gate(page, g).check();
+    await expect(page.locator('[data-fd-care-packet-hint]')).not.toHaveText(/wallet|card|one-sided|double-sided|duplex/i);
+    await expect(page.locator('.fd-packet-sheet--screen [data-fd-packet-card], .fd-packet-sheet--screen .fd-packet-cardsheet')).toHaveCount(0);
+    await stage(page);
+    expect(await host(page).locator('[data-fd-packet-card], .fd-packet-cardsheet').count(), 'no card in the packet print').toBe(0);
+    expect(await host(page).locator('.fd-packet-page').count()).toBeGreaterThanOrEqual(2);
+    const text = await host(page).textContent();
+    expect(text).not.toContain(INSERTS.card.body);
+    expect(text).not.toContain(INSERTS.card.mineTitle);
   });
 
-  test('Ctrl+P while a ward field is still being typed prints only the notice', async ({ page }) => {
-    await build(page, { mode: 'final' });
+  // Was a Final-copy test that typed into a Final copy's unit field; that field is read-only now, so the draft case is Review.
+  test('in a Review copy, Ctrl+P while a ward field is still being typed prints only the notice, and the same packet prints whole once the field is committed and reviewed', async ({ page }) => {
+    await build(page);
+    await watchStaged(page);
     await unitField(page, 'name').fill('Bed 4');
     expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'an uncommitted field: one sheet, the notice').toBe(1);
+    expect((await staged(page))[0], 'what was staged is the notice, not a packet page').toEqual({ notice: true, pages: 0, card: 0 });
     await expect(host(page)).toHaveCount(0);
+    await page.keyboard.press('Tab');
+    for (const g of GATES) await gate(page, g).check();
+    const shown = await page.locator('.fd-packet-sheet--screen .fd-packet-page').count();
+    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'committed and reviewed: the packet itself').toBe(shown);
+    expect((await staged(page))[1]).toEqual({ notice: false, pages: shown, card: 0 });
   });
 
   test('the preview lists the web address behind each QR code outside the sheet, and the sheet itself prints only the domain', async ({ page }) => {
@@ -314,8 +420,9 @@ test.describe('preview, print and copy', () => {
     await expect(host(page)).toHaveCount(0);
   });
 
-  test('a click on a tray control straight after typing in a unit field lands: the field\'s commit must not replace the tray under the pointer', async ({ page }) => {
-    await build(page, { mode: 'final', release: false });
+  // Was a Final-copy test; typing into a unit field is a Review-copy act now (the Final copy's fields are read-only).
+  test('in a Review copy, a click on a tray control straight after typing in a unit field lands: the field\'s commit must not replace the tray under the pointer', async ({ page }) => {
+    await build(page, { release: false });
     await unitField(page, 'name').fill('4 West');
     await gate(page, 'verification').click();
     await expect(gate(page, 'verification'), 'the click was not lost to a repaint').toBeChecked();
@@ -328,33 +435,27 @@ test.describe('preview, print and copy', () => {
     const title = await page.title();
     await stage(page);
     expect(await prints(page), 'window.print was called once').toBe(1);
-    const staged = await page.evaluate(() => ({
+    const stagedNow = await page.evaluate(() => ({
       parent: document.getElementById('fdPacketPrint').parentElement.tagName, marked: document.body.classList.contains('fd-packet-printing'),
       rule: document.getElementById('fdPacketPageRule') && document.getElementById('fdPacketPageRule').textContent, title: document.title,
       hiddenOnScreen: getComputedStyle(document.getElementById('fdPacketPrint')).display,
     }));
-    expect(staged.parent).toBe('BODY');
-    expect(staged.marked).toBe(true);
-    expect(staged.rule.replace(/\s/g, '')).toBe('@page{size:Letter;margin:0}');
-    expect(staged.title).toBe('Your aftercare resources');
-    expect(staged.hiddenOnScreen, 'display:none on screen, so a leftover can never hide the app').toBe('none');
+    expect(stagedNow.parent).toBe('BODY');
+    expect(stagedNow.marked).toBe(true);
+    expect(stagedNow.rule.replace(/\s/g, '')).toBe('@page{size:Letter;margin:0}');
+    expect(stagedNow.title).toBe('Your aftercare resources');
+    expect(stagedNow.hiddenOnScreen, 'display:none on screen, so a leftover can never hide the app').toBe('none');
     await expect(page.locator('#content'), 'the app itself is still visible on screen').toBeVisible();
     // No timer removes it: a print engine that returns early (iOS Safari) still needs the container for its snapshot.
     await page.evaluate(() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
     await page.waitForTimeout(500);
     await expect(host(page)).toHaveCount(1);
-    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await afterprint(page);
     await expect(host(page)).toHaveCount(0);
     expect(await page.evaluate(() => ({ marked: document.body.classList.contains('fd-packet-printing'), rule: !!document.getElementById('fdPacketPageRule'), title: document.title })))
       .toEqual({ marked: false, rule: false, title });
     await expect(printButton(page)).toBeFocused();
   });
-
-  const gate = (page, g) => page.locator(`input[data-fd-care-packet-gate="${g}"]`);
-  const cleanOf = (page, why) => async () => {
-    await expect(host(page), why).toHaveCount(0);
-    expect(await page.evaluate(() => document.body.classList.contains('fd-packet-printing') || !!document.getElementById('fdPacketPageRule')), why).toBe(false);
-  };
 
   test('a staged print is removed by anything that changes the packet, and by leaving Care (never left to go stale)', async ({ page }) => {
     await build(page, { mode: 'final' });
@@ -392,10 +493,43 @@ test.describe('preview, print and copy', () => {
     await expect(host(page), 'preview closed: nothing is staged, the ordinary page prints').toHaveCount(0);
     expect(await page.evaluate(() => {
       window.dispatchEvent(new Event('beforeprint'));
-      const staged = !!document.getElementById('fdPacketPrint');
+      const s = !!document.getElementById('fdPacketPrint');
       window.dispatchEvent(new Event('afterprint'));
-      return staged;
+      return s;
     }), 'beforeprint with the preview closed stages nothing').toBe(false);
+  });
+
+  // The older resource pack (patient sharing) has its own Print on the same Care page: its print must stay the ordinary page.
+  test('the older pack\'s own Print never prints the packet: beforeprint with focus on that button, or anywhere outside the packet, stages nothing, while the same event with focus in the packet stages the packet', async ({ page }) => {
+    await routeShell(page, { sharing: true });
+    await page.goto('/?tab=care');
+    const pack = page.locator('.fd-care-pack');
+    await pack.locator('[data-fd-care-pack]').first().click();
+    const packPrint = pack.locator('[data-fd-care-pack-print]');
+    await expect(packPrint, 'the older pack can print').toBeEnabled();
+    await build(page, { mode: 'final', visit: false });
+    await expect(preview(page)).toBeVisible();
+    const beforeprint = () => page.evaluate(() => {
+      window.dispatchEvent(new Event('beforeprint'));
+      const node = document.getElementById('fdPacketPrint');
+      const out = node ? { pages: node.querySelectorAll('.fd-packet-page').length, notice: !!node.querySelector('.fd-packet-notice') } : null;
+      window.dispatchEvent(new Event('afterprint'));
+      return out;
+    });
+    await packPrint.focus();
+    expect(await beforeprint(), 'focus on the older pack\'s Print: nothing is staged, the ordinary page prints').toBeNull();
+    await page.locator('#fd-care-directory-query').focus();
+    expect(await beforeprint(), 'focus in the search box, outside the packet: nothing is staged').toBeNull();
+    const shown = await page.locator('.fd-packet-sheet--screen .fd-packet-page').count();
+    await printButton(page).focus();
+    expect(await beforeprint(), 'focus in the packet preview: the packet the preview shows').toEqual({ pages: shown, notice: false });
+    await toggle(page).focus();
+    expect(await beforeprint(), 'focus in the packet tray is in the packet too').toEqual({ pages: shown, notice: false });
+    await expect(host(page)).toHaveCount(0);
+    // And the older pack's own button still prints through its own path, staging nothing of the packet.
+    await packPrint.click();
+    expect(await prints(page), 'the older pack called window.print').toBe(1);
+    await expect(host(page)).toHaveCount(0);
   });
 
   test('a sheet that is handed too much grows rather than clips, so an overflow is an extra sheet in the PDF and never lost text', async ({ page }) => {
@@ -448,7 +582,7 @@ test.describe('preview, print and copy', () => {
     await stage(page);
     await printButton(page).click();
     expect(await prints(page), 'the second click did not print again').toBe(1);
-    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await afterprint(page);
     await page.evaluate(() => { window.print = () => { throw new Error('no printer'); }; });
     await printButton(page).click();
     await cleanOf(page, 'a failed print')();
@@ -456,14 +590,29 @@ test.describe('preview, print and copy', () => {
   });
 
   // ---- what blocks Print, and why it says so -----------------------------------------------------------------------------------------
-  test('a Final copy needs the unit phone; a Review copy prints with a line to write on', async ({ page }) => {
-    await build(page, { mode: 'final', phone: '' });
+  // Rewritten from "a Final copy needs the unit phone": a typed phone no longer makes a Final copy, a confirmed profile does.
+  test('a Final copy needs a confirmed unit profile, not typed details; a Review copy with no unit phone prints a draft line and a blank wherever the pages ask for the phone, and a typed phone prints with neither', async ({ page }) => {
+    await build(page, { mode: 'final', profile: '', name: '4 East', phone: '' });
     await expect(printButton(page)).toBeDisabled();
-    await expect(reason(page)).toContainText('Enter the unit phone number');
+    await expect(reason(page)).toHaveText(MSG.unconfirmed);
     await page.getByRole('radio', { name: /Review copy/ }).check();
     await expect(printButton(page)).toBeEnabled();
     await stage(page);
-    expect(await host(page).locator('.fd-packet-blank').count(), 'the welcome and the call-back page leave a line to write on').toBeGreaterThanOrEqual(2);
+    // Every {{unitPhone}} in the pages a fresh packet carries becomes a line to write on (unitName is filled by "4 East").
+    const asked = INSERTS.inserts.filter(insert => defaultOn(insert.id)).reduce((n, insert) => n + (JSON.stringify(insert).match(/\{\{unitPhone\}\}/g) || []).length, 0);
+    expect(asked, 'the default pages ask for the unit phone somewhere').toBeGreaterThan(0);
+    expect(await host(page).locator('.fd-packet-blank').count(), 'a line to write on for every unit phone the pages ask for').toBe(asked);
+    expect(await host(page).locator('.fd-packet-page').first().locator('[data-fd-packet-draft]').count(), 'the draft line is on page 1').toBe(1);
+    expect(await host(page).locator('[data-fd-packet-draft]').count(), 'and only there').toBe(1);
+    expect(await host(page).locator('[data-fd-packet-draft]').textContent()).toBe('Draft. Your nurse will write the unit’s phone number on the blank lines in this packet before you leave.');
+    await afterprint(page);
+    await unitField(page, 'phone').fill('(207) 555-0199');
+    await unitField(page, 'phone').press('Tab');
+    for (const g of GATES) await gate(page, g).check();
+    await stage(page);
+    expect(await host(page).locator('[data-fd-packet-draft]').count(), 'a typed number prints with no draft line').toBe(0);
+    expect(await host(page).locator('.fd-packet-blank').count(), 'and no blank where the number goes').toBe(0);
+    expect(await host(page).textContent()).toContain('(207) 555-0199');
   });
 
   test('a dose or a verification note in a listing\'s description is left off the paper, and the preview says what was left off', async ({ page }) => {
@@ -480,14 +629,27 @@ test.describe('preview, print and copy', () => {
     expect(text, 'the listing itself still prints').toContain('Harbor Counseling Center');
   });
 
-  test('a crisis line number inside a listing blocks printing and names the listing; removing it unblocks', async ({ page }) => {
+  // Rewritten: the chooser no longer offers a listing with a crisis number (see care-packet.spec.js), so this is a SAVED listing
+  // whose feed entry gained one. The number comes from the served payload's crisisNumbers, never typed here.
+  test('a saved listing that now lists a crisis number blocks printing before the confirmations, names the listing, and removing it unblocks', async ({ page }) => {
+    const payload = await servedPayload(page);
+    const ten = payload.crisisNumbers.find(n => /^\d{10}$/.test(n));
+    expect(ten, 'the payload ships a ten-digit registered crisis number').toBeTruthy();
     const feed = printFeed(careDirectoryFixture());
-    feed.records[2].phone = '207-799-4160 | Crisis Line: 1-888-568-1112';
+    feed.records[2].phone = `${feed.records[2].phone} | Crisis Line: ${ten.slice(0, 3)}-${ten.slice(3, 6)}-${ten.slice(6)}`;
     await pinCareDirectory(page, feed);
-    await build(page, { mode: 'final' });
+    await page.addInitScript(([k, ids, profile]) => {
+      if (!sessionStorage.getItem(k)) sessionStorage.setItem(k, JSON.stringify({ ids, why: {}, inserts: {}, mode: 'final', unit: { name: '', phone: '', profile } }));
+    }, [KEY, feed.records.map(r => r.id), PROFILE.id]);
+    await page.goto('/?tab=care');
+    await expect(tray(page).locator('[data-fd-care-packet-item="r-2"] [data-fd-care-packet-ineligible="CRISIS_NUMBER"]'), 'the tray names the problem on the listing').toHaveCount(1);
+    await toggle(page).click();
+    await expect(printButton(page)).toBeDisabled();
+    await expect(reason(page), 'named before the confirmations, because removing it re-arms nothing').toContainText('Southern Maine Wellness Clinic');
+    await expect(reason(page)).toContainText('crisis line number');
+    for (const g of GATES) await gate(page, g).check();
     await expect(printButton(page)).toBeDisabled();
     await expect(reason(page)).toContainText('Southern Maine Wellness Clinic');
-    await expect(reason(page)).toContainText('crisis line number');
     await page.locator('[data-fd-care-packet-remove="r-2"]').click();
     await expect(printButton(page), 'removing adds nothing unreviewed, so the confirmations stand').toBeEnabled();
   });
@@ -506,23 +668,201 @@ test.describe('preview, print and copy', () => {
     await expect(reason(page)).toContainText('hidden while the directory is incomplete');
   });
 
+  // ---- the unit: a confirmed profile, or typed details that are never confirmed ------------------------------------------------------
+  test('a Final copy with typed unit details is refused with the unconfirmed-unit reason ahead of the confirmations and under Ctrl+P, while Copy (which names no unit) still works', async ({ page, baseURL }) => {
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(baseURL).origin });
+    await build(page, { mode: 'final', profile: '', name: '4 East', phone: '(207) 555-0199', release: false });
+    await expect(printButton(page)).toBeDisabled();
+    await expect(reason(page), 'the unit comes before the four confirmations').toHaveText(MSG.unconfirmed);
+    await expect(readback(page)).toHaveText('Patients will be told to call (207) 555-0199. This number is not confirmed.');
+    await expect(profileStatus(page)).toHaveText('Using the details you typed. They are not a confirmed profile.');
+    await expect(page.locator('[data-fd-care-packet-modenote]')).toContainText('needs a confirmed unit profile');
+    for (const g of GATES) await gate(page, g).check();
+    await expect(printButton(page), 'confirming the review does not confirm the unit').toBeDisabled();
+    await expect(reason(page)).toHaveText(MSG.unconfirmed);
+    await expect(copyButton(page), 'Copy is blocked only by what the copy contains').toBeEnabled();
+    await printButton(page).evaluate(b => { b.disabled = false; });
+    await printButton(page).click();
+    expect(await prints(page)).toBe(0);
+    await expect(host(page)).toHaveCount(0);
+    await expect(status(page)).toContainText(MSG.unconfirmed);
+    await watchStaged(page);
+    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'the print command gets the notice').toBe(1);
+    expect((await staged(page))[0]).toEqual({ notice: true, pages: 0, card: 0 });
+    await copyButton(page).click();
+    await expect(status(page)).toContainText('Copied.');
+    const text = await page.evaluate(() => navigator.clipboard.readText());
+    expect(text).toContain('Harbor Counseling Center');
+    expect(text, 'the copied text names no unit').not.toMatch(/4 East|555-0199/);
+  });
+
+  test('with no unit profile in the payload (as shipped), the preview says none is set up, and a Final copy is refused even with nothing typed because the welcome asks for the unit phone', async ({ page }) => {
+    await routeShell(page, { profiles: [] });
+    await build(page, { mode: 'final', profile: '', name: '', phone: '' });
+    await expect(page.locator('[data-fd-care-packet-profile-none]')).toBeVisible();
+    await expect(profileSelect(page)).toHaveCount(0);
+    await expect(loadButton(page)).toHaveCount(0);
+    await expect(unlinkButton(page)).toBeHidden();
+    await expect(printButton(page)).toBeDisabled();
+    await expect(reason(page)).toHaveText(MSG.noProfiles);
+    await page.getByRole('radio', { name: /Review copy/ }).check();
+    await expect(printButton(page), 'the Review copy is unaffected').toBeEnabled();
+  });
+
+  test('the confirmed fixture profile prints a Final copy under its approved org; its lapsed twin is refused with the lapse reason, and loading the current one again restores Print', async ({ page }) => {
+    await build(page, { mode: 'final' });
+    await expect(readback(page)).toHaveText(`Patients will be told to call ${PROFILE.unitPhone}.`);
+    await stage(page);
+    expect(await prints(page)).toBe(1);
+    expect(await host(page).locator('.fd-packet-org').first().textContent(), 'the org prints only from a profile with approved branding').toBe(`${PROFILE.org} · ${PROFILE.unitName}`);
+    expect(await host(page).textContent()).toContain(PROFILE.unitPhone);
+    await afterprint(page);
+    await loadProfile(page, EXPIRED.id);
+    await expect(profileStatus(page)).toHaveText(`The loaded profile’s phone confirmation has lapsed (it held through ${EXPIRED.usableThrough}). A Final copy needs a current confirmation.`);
+    await expect(readback(page)).toHaveText(`Patients will be told to call ${EXPIRED.unitPhone}. This number is not confirmed.`);
+    await expect(printButton(page)).toBeDisabled();
+    await expect(reason(page), 'named before the confirmations').toHaveText(MSG.lapsed);
+    for (const g of GATES) await gate(page, g).check();
+    await expect(printButton(page)).toBeDisabled();
+    await expect(reason(page)).toHaveText(MSG.lapsed);
+    await printButton(page).evaluate(b => { b.disabled = false; });
+    await printButton(page).click();
+    expect(await prints(page), 'a lapsed confirmation never reaches the printer').toBe(1);
+    await expect(host(page)).toHaveCount(0);
+    await loadProfile(page, PROFILE.id);
+    for (const g of GATES) await gate(page, g).check();
+    await expect(printButton(page)).toBeEnabled();
+  });
+
+  test('the call-back page in a Final copy needs a confirmed profile that records a call-back program: typed details are refused first, a profile without the program is refused, one with it prints the page', async ({ page }) => {
+    await routeShell(page, { profiles: [PROFILE, NO_CALLBACK] });
+    await build(page, { mode: 'final', profile: '', name: '4 East', phone: '(207) 555-0199', release: false });
+    await insertBox(page, 'callback').check();
+    for (const g of GATES) await gate(page, g).check();
+    await expect(reason(page), 'an unconfirmed unit is named first').toHaveText(MSG.unconfirmed);
+    await loadProfile(page, NO_CALLBACK.id);
+    for (const g of GATES) await gate(page, g).check();
+    await expect(printButton(page)).toBeDisabled();
+    await expect(reason(page)).toHaveText(MSG.callback);
+    await expect(copyButton(page), 'the copied text promises no call').toBeEnabled();
+    await insertBox(page, 'callback').uncheck();
+    await expect(printButton(page), 'switching the page off is the other way out').toBeEnabled();
+    await insertBox(page, 'callback').check();
+    await loadProfile(page, PROFILE.id);
+    for (const g of GATES) await gate(page, g).check();
+    await stage(page);
+    expect(await host(page).locator('[data-fd-packet-insert="callback"]').count(), 'the call-back page is in the print').toBeGreaterThan(0);
+  });
+
+  test('the unit profile is a native select loaded only by its button: choosing does nothing, Load makes the fields read-only (dashed) with a status and read-back, and "Use my own details instead" empties them and moves focus to the name field', async ({ page }) => {
+    await build(page, { release: false, name: '4 West', phone: '(207) 555-0177' });
+    await expect(page.getByLabel('Confirmed unit profile')).toHaveCount(1);
+    expect(await profileSelect(page).evaluate(el => el.tagName)).toBe('SELECT');
+    expect(await profileSelect(page).locator('option').allTextContents()).toEqual(['Choose a profile…', PROFILE.label, EXPIRED.label]);
+    await expect(unlinkButton(page), 'nothing to unlink before a profile is loaded').toBeHidden();
+    await profileSelect(page).selectOption(PROFILE.id);
+    await page.waitForTimeout(400);
+    expect((await snapshot(page)).unit, 'choosing in the select loads nothing').toEqual({ name: '4 West', phone: '(207) 555-0177', profile: '' });
+    await expect(unitField(page, 'name')).toBeEditable();
+    await expect(unitField(page, 'name')).toHaveValue('4 West');
+    await expect(profileStatus(page)).toHaveText('Using the details you typed. They are not a confirmed profile.');
+    await loadButton(page).click();
+    for (const key of ['name', 'phone']) {
+      await expect(unitField(page, key)).not.toBeEditable();
+      expect(await unitField(page, key).evaluate(el => getComputedStyle(el).borderTopStyle), `${key}: a read-only field is drawn dashed`).toBe('dashed');
+    }
+    await expect(unitField(page, 'name')).toHaveValue(PROFILE.unitName);
+    await expect(unitField(page, 'phone')).toHaveValue(PROFILE.unitPhone);
+    await expect(profileStatus(page)).toHaveText(`Loaded: ${PROFILE.label}. Phone confirmed through ${PROFILE.usableThrough}.`);
+    await expect(readback(page)).toHaveText(`Patients will be told to call ${PROFILE.unitPhone}.`);
+    await expect(status(page)).toContainText(`Loaded unit profile ${PROFILE.label}.`);
+    await expect(loadButton(page), 'focus stays on Load').toBeFocused();
+    expect((await snapshot(page)).unit, 'the typed details are dropped: the profile is the only source').toEqual({ name: '', phone: '', profile: PROFILE.id });
+    await expect(page.locator('.fd-packet-sheet--screen .fd-packet-org').first()).toHaveText(`${PROFILE.org} · ${PROFILE.unitName}`);
+    await expect(unlinkButton(page)).toBeVisible();
+    for (const target of [profileSelect(page), loadButton(page), unlinkButton(page), cardButton(page)]) {
+      const box = await target.boundingBox();
+      expect(box.height, await target.evaluate(n => n.outerHTML.slice(0, 80))).toBeGreaterThanOrEqual(44);
+    }
+    await unlinkButton(page).click();
+    await expect(unitField(page, 'name'), 'focus goes to the name field').toBeFocused();
+    for (const key of ['name', 'phone']) {
+      await expect(unitField(page, key)).toBeEditable();
+      await expect(unitField(page, key), 'typed details start empty: nothing confirmed is carried over, and the old typing is gone').toHaveValue('');
+    }
+    await expect(unlinkButton(page)).toBeHidden();
+    await expect(profileStatus(page)).toHaveText('');
+    expect((await snapshot(page)).unit).toEqual({ name: '', phone: '', profile: '' });
+    await expect(status(page)).toContainText('Unit profile removed. Type your own unit details.');
+  });
+
+  test('Clear packet is offered with no listings whenever a unit profile, typed unit details, a Final copy or a page switch is saved, and it clears that', async ({ page }) => {
+    await page.goto('/?tab=care');
+    await expect(tray(page).getByRole('button', { name: 'Clear packet' }), 'nothing saved, nothing to clear').toHaveCount(0);
+    const cases = [
+      ['a loaded unit profile', { unit: { name: '', phone: '', profile: PROFILE.id } }, 'Packet cleared: unit details removed.'],
+      ['a typed unit name', { unit: { name: '4 East', phone: '', profile: '' } }, 'Packet cleared: unit details removed.'],
+      ['a Final copy', { mode: 'final' }, 'Packet cleared: copy and page choices removed.'],
+      ['a page switch', { inserts: { safety: true } }, 'Packet cleared: copy and page choices removed.'],
+    ];
+    for (const [what, saved, said] of cases) {
+      await page.evaluate(([k, s]) => sessionStorage.setItem(k, JSON.stringify({ ids: [], why: {}, inserts: {}, mode: 'review', unit: { name: '', phone: '', profile: '' }, ...s })), [KEY, saved]);
+      await page.reload();
+      await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('0');
+      const clear = tray(page).getByRole('button', { name: 'Clear packet' });
+      await expect(clear, `${what}: Clear is offered`).toBeVisible();
+      await clear.click();
+      expect(await snapshot(page), `${what}: nothing is left`).toBeNull();
+      await expect(clear).toHaveCount(0);
+      await expect(page.locator('#fd-care-packet-title'), 'focus goes to the tray heading').toBeFocused();
+      await expect(status(page)).toContainText(said);
+    }
+  });
+
+  test('Clear packet with listings, a loaded profile, a Final copy and every confirmation ticked clears all of it, and the profile comes back only when it is chosen and loaded again', async ({ page }) => {
+    await build(page, { mode: 'final' });
+    await insertBox(page, 'safety').check();
+    for (const g of GATES) await gate(page, g).check();
+    await tray(page).getByRole('button', { name: 'Clear packet' }).click();
+    await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('0');
+    for (const g of GATES) { await expect(gate(page, g)).not.toBeChecked(); await expect(gate(page, g)).toBeDisabled(); }
+    await expect(preview(page)).toBeHidden();
+    expect(await snapshot(page)).toBeNull();
+    await expect(status(page)).toContainText(`Packet cleared: ${PRINT_LISTINGS.length} listings, unit details, copy and page choices removed. Review confirmations cleared.`);
+    const panel = page.locator('[data-care-directory]');
+    await panel.getByRole('button', { name: /^Add all results \(8\)$/ }).click();
+    await toggle(page).click();
+    await expect(page.getByRole('radio', { name: /Review copy/ })).toBeChecked();
+    await expect(insertBox(page, 'safety'), 'page switches are back to their defaults').not.toBeChecked();
+    await expect(profileSelect(page)).toHaveValue('');
+    for (const key of ['name', 'phone']) { await expect(unitField(page, key)).toBeEditable(); await expect(unitField(page, key)).toHaveValue(''); }
+    await expect(profileStatus(page)).toHaveText('');
+    await expect(unlinkButton(page)).toBeHidden();
+    await loadProfile(page, PROFILE.id);
+    await expect(profileStatus(page)).toHaveText(`Loaded: ${PROFILE.label}. Phone confirmed through ${PROFILE.usableThrough}.`);
+  });
+
   // ---- copy ------------------------------------------------------------------------------------------------------------------------------
-  test('Copy as text reaches the clipboard in a Final copy, with the crisis lines first and no unit details, and says so only afterwards', async ({ page, baseURL }) => {
+  test('Copy as text reaches the clipboard in a Final copy, with the crisis lines (official names) first and no unit details, and says so only afterwards', async ({ page, baseURL }) => {
     await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(baseURL).origin });
     await build(page, { mode: 'final' });
     await copyButton(page).click();
     await expect(status(page)).toContainText('Copied.');
     const text = await page.evaluate(() => navigator.clipboard.readText());
-    // The governed numbers themselves, in the governed order, before the first listing.
+    // The governed names and numbers themselves, in the governed order, before the first listing.
     const first = text.indexOf('Harbor Counseling Center');
     expect(first).toBeGreaterThan(0);
+    let previous = -1;
     for (const id of INSERTS.crisis.map(line => line.ref)) {
-      const at = text.indexOf(contactOf(id));
-      expect(at, `${id} (${contactOf(id)}) is in the copied text`).toBeGreaterThanOrEqual(0);
+      const at = text.indexOf(`${nameOf(id)}: ${contactOf(id)}`);
+      expect(at, `${id} (${nameOf(id)}: ${contactOf(id)}) is in the copied text`).toBeGreaterThanOrEqual(0);
       expect(at, `${id} comes before the first listing`).toBeLessThan(first);
+      expect(at, `${id} keeps the governed order`).toBeGreaterThan(previous);
+      previous = at;
     }
     expect(text, 'text that goes INTO the record does not say it is not part of it').not.toContain('Not a medical record');
-    expect(text).not.toMatch(/4 East|555-0199|SENTINEL|2031-02-03|Verification due|\b\d+\s?mg\b/);
+    for (const unit of [PROFILE.unitName, PROFILE.org, PROFILE.unitPhone, '555-0142']) expect(text, 'no unit details').not.toContain(unit);
+    expect(text).not.toMatch(/SENTINEL|2031-02-03|Verification due|\b\d+\s?mg\b/);
     expect(text).not.toMatch(/&amp;|&#39;|&lt;/);
     await page.getByRole('radio', { name: /Review copy/ }).check();
     await expect(copyButton(page), 'a Review draft never goes into the record').toBeDisabled();
@@ -546,7 +886,7 @@ test.describe('preview, print and copy', () => {
     await expect(status(page)).toContainText('Review complete. Print and Copy are available.');
   });
 
-  test('the Tab order runs search, results, tray, then the preview, and ends at Print', async ({ page }) => {
+  test('the Tab order runs search, results, tray (its card button included), then the preview with the profile controls, and ends at Print', async ({ page }) => {
     await build(page, { mode: 'final' });
     await page.locator('#fd-care-directory-query').focus();
     const seen = [];
@@ -555,12 +895,15 @@ test.describe('preview, print and copy', () => {
       seen.push(await page.evaluate(() => {
         const el = document.activeElement;
         if (el.id) return el.id;
-        for (const a of ['print', 'preview-toggle', 'mode', 'insert', 'gate', 'remove', 'up']) if (el.hasAttribute('data-fd-care-packet-' + a)) return a === 'print' ? 'print' : 'data-fd-care-packet-' + a;
+        for (const a of ['print', 'preview-toggle', 'card-print', 'mode', 'insert', 'profile-load', 'profile-unlink', 'gate', 'remove', 'up']) if (el.hasAttribute('data-fd-care-packet-' + a)) return a === 'print' ? 'print' : 'data-fd-care-packet-' + a;
         return el.hasAttribute('data-fd-care-packet') ? 'add' : el.tagName.toLowerCase();
       }));
     }
     const at = k => seen.indexOf(k);
-    const order = ['add', 'data-fd-care-packet-remove', 'data-fd-care-packet-gate', 'data-fd-care-packet-preview-toggle', 'data-fd-care-packet-mode', 'data-fd-care-packet-insert', 'fd-care-packet-unit-name', 'fd-care-packet-unit-phone', 'print'];
+    // The card control sits BEFORE the review confirmations, so "Preview and print" is the control that precedes the preview it opens.
+    const order = ['add', 'data-fd-care-packet-remove', 'data-fd-care-packet-card-print', 'data-fd-care-packet-gate', 'data-fd-care-packet-preview-toggle',
+      'data-fd-care-packet-mode', 'data-fd-care-packet-insert', 'fd-care-packet-profile', 'data-fd-care-packet-profile-load', 'data-fd-care-packet-profile-unlink',
+      'fd-care-packet-unit-name', 'fd-care-packet-unit-phone', 'print'];
     for (const k of order) expect(at(k), `${k} is reachable by Tab`).toBeGreaterThanOrEqual(0);
     for (let i = 1; i < order.length; i++) expect(at(order[i]), `${order[i - 1]} comes before ${order[i]}`).toBeGreaterThan(at(order[i - 1]));
   });
@@ -573,12 +916,14 @@ test.describe('preview, print and copy', () => {
     const origin = new URL(page.url()).origin;
     await build(page, { mode: 'final' });
     await stage(page);
-    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await afterprint(page);
     expect(requests.filter(r => r.method !== 'GET' && r.method !== 'HEAD'), 'no write ever leaves the browser').toEqual([]);
     expect(new Set(requests.map(r => r.origin)), 'and nothing goes anywhere else').toEqual(new Set([origin]));
     expect(await page.evaluate(() => ({ ...localStorage })), 'no durable storage').toEqual(baseline);
     expect(await page.evaluate(() => Object.keys(sessionStorage))).toEqual([KEY]);
-    expect(Object.keys(await snapshot(page)).sort()).toEqual(['ids', 'inserts', 'mode', 'unit', 'why']);
+    const saved = await snapshot(page);
+    expect(Object.keys(saved).sort()).toEqual(['ids', 'inserts', 'mode', 'unit', 'why']);
+    expect(saved.unit, 'the session holds the profile id, never the unit\'s details').toEqual({ name: '', phone: '', profile: PROFILE.id });
   });
 
   // ---- the layout under pressure ---------------------------------------------------------------------------------------------------
@@ -622,25 +967,148 @@ test.describe('preview, print and copy', () => {
     for (const size of sizes) for (const edge of size) expect(edge).toBeGreaterThanOrEqual(0.9 * 96 - 0.5);
   });
 
-  test('the wallet card is credit-card sized and carries every crisis line', async ({ page }) => {
-    await build(page, { mode: 'final' });
+  test('page 1 prints each crisis line under its official governed name and number (crisis_resources.json), never a short label', async ({ page }) => {
+    await build(page);
+    await stage(page);
+    const lines = await host(page).locator('[data-fd-packet-unit="crisis"] li[data-fd-packet-crisis]').evaluateAll(lis => lis.map(li => ({
+      ref: li.getAttribute('data-fd-packet-crisis'), num: li.querySelector('.fd-packet-crisis__num').textContent, name: li.querySelector('.fd-packet-crisis__label').textContent })));
+    expect(lines).toEqual(INSERTS.crisis.map(line => ({ ref: line.ref, num: contactOf(line.ref), name: nameOf(line.ref) })));
+    expect(INSERTS.crisis.filter(line => 'label' in line), 'the insert data carries no label that could print instead').toEqual([]);
+    expect(await host(page).locator('.fd-packet-page').first().locator('[data-fd-packet-unit="crisis"]').count(), 'on page 1').toBe(1);
+  });
+
+  // Recorded 2026-10-12 on macOS, Chromium, Arial: a listing description is 14px (--fd-font-md) and the welcome text 15px
+  // (--fd-font-base). A packer that shrank type to fit (smaller tokens, zoom, a transform) would show here first, under the
+  // most pressure a packet can carry: twelve long listings and every page on.
+  test('text is not shrunk to fit: with twelve long listings and every page on, descriptions stay 14px, the welcome 15px, every crisis line at least 12px, and no sheet is zoomed or scaled', async ({ page }) => {
+    await pinCareDirectory(page, printFeed(careDirectoryFixture(), { long: true, count: 12 }));
+    await build(page, { mode: 'final', count: 12, release: false });
+    for (const insert of INSERTS.inserts) if (!insert.core) await insertBox(page, insert.id).check();
+    for (const g of GATES) await gate(page, g).check();
     await stage(page);
     await page.setViewportSize(PAPER);
     await page.emulateMedia({ media: 'print' });
-    const card = await page.evaluate(() => {
-      const el = document.querySelector('#fdPacketPrint [data-fd-packet-card]'), r = el.getBoundingClientRect();
-      const lines = [...el.querySelectorAll('[data-fd-packet-crisis]')].map(li => li.getAttribute('data-fd-packet-crisis'));
-      // The card is a floor (min-height), so its own height reads 2.125in whenever its content fits. The content's height is what
-      // shows how close it is: padding, border and every child, as laid out.
-      const style = getComputedStyle(el);
-      const content = [...el.children].reduce((sum, child) => sum + child.getBoundingClientRect().height, 0)
-        + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
-      return { w: r.width, h: r.height, content, lines, all: [...document.querySelectorAll('#fdPacketPrint [data-fd-packet-unit="crisis"] [data-fd-packet-crisis]')].map(li => li.getAttribute('data-fd-packet-crisis')) };
+    const sizes = await page.evaluate(() => {
+      const px = selector => [...document.querySelectorAll('#fdPacketPrint ' + selector)].map(el => parseFloat(getComputedStyle(el).fontSize));
+      const texty = el => [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim());
+      return {
+        desc: px('.fd-packet-res__d'), intro: px('.fd-packet-intro p'),
+        crisis: [...document.querySelectorAll('#fdPacketPrint [data-fd-packet-unit="crisis"] li *')].filter(texty).map(el => parseFloat(getComputedStyle(el).fontSize)),
+        scaled: [...document.querySelectorAll('#fdPacketPrint, #fdPacketPrint .fd-packet-page, #fdPacketPrint .fd-packet-body')]
+          .map(el => getComputedStyle(el)).filter(s => (s.zoom !== '1' && s.zoom !== 'normal') || s.transform !== 'none').length,
+        pages: document.querySelectorAll('#fdPacketPrint .fd-packet-page').length,
+      };
     });
-    expect(card.w).toBeCloseTo(3.375 * 96, 0);
-    expect(card.h, 'ID-1 is 2.125in tall: a card that grows no longer fits a wallet').toBeLessThanOrEqual(2.125 * 96 + 0.5);
-    expect(card.content, 'and its content fits with room to spare, so a wider font on another machine cannot push it over (the Linux runner measured 1.2px over before)').toBeLessThanOrEqual(2.125 * 96 - 6);
-    expect(card.lines, 'the card carries the same lines as the page-1 block').toEqual(card.all);
+    console.log(`FONT SIZES (12 long listings, every page): description ${[...new Set(sizes.desc)].join('/')}px, welcome ${[...new Set(sizes.intro)].join('/')}px, crisis ${Math.min(...sizes.crisis)}-${Math.max(...sizes.crisis)}px, ${sizes.pages} sheets`);
+    expect(sizes.desc.length, 'every listing has its description').toBe(12);
+    expect(Math.min(...sizes.desc), 'listing descriptions are not shrunk below 14px').toBeGreaterThanOrEqual(14);
+    expect(sizes.intro.length).toBeGreaterThan(0);
+    expect(Math.min(...sizes.intro), 'the welcome is not shrunk below 15px').toBeGreaterThanOrEqual(15);
+    expect(sizes.crisis.length).toBeGreaterThan(0);
+    expect(Math.min(...sizes.crisis), 'no crisis-line text below 12px').toBeGreaterThanOrEqual(12);
+    expect(sizes.scaled, 'no zoom or transform scales a sheet down').toBe(0);
+  });
+
+  // ---- the wallet card: its own print, never part of the packet -----------------------------------------------------------------
+  // Replaces "the wallet card is credit-card sized and carries every crisis line" (the card was a page of the packet then).
+  test('the wallet card is its own print: from an empty packet its tray button needs no listing or confirmation, stages one card page and no packet page, and afterprint removes it and returns focus to the button', async ({ page }) => {
+    await page.goto('/?tab=care');
+    await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('0');
+    for (const g of GATES) await expect(gate(page, g), 'nothing to confirm in an empty packet').toBeDisabled();
+    await expect(cardButton(page)).toBeEnabled();
+    await expect(cardButton(page)).toHaveAccessibleName('Print wallet card');
+    await expect(page.locator('[data-fd-care-packet-card-note]')).toContainText('It is not part of the packet.');
+    const title = await page.title();
+    await cardButton(page).click();
+    expect(await prints(page), 'window.print was called once').toBe(1);
+    await expect(host(page)).toHaveCount(1);
+    expect(await host(page).locator('.fd-packet-page').count(), 'one page').toBe(1);
+    expect(await host(page).locator('.fd-packet-page.fd-packet-cardsheet').count()).toBe(1);
+    expect(await host(page).locator('.fd-packet-page:not(.fd-packet-cardsheet), [data-fd-packet-unit], .fd-packet-band, .fd-packet-foot, [data-fd-packet-res]').count(), 'no packet page or packet part').toBe(0);
+    expect(await page.evaluate(() => ({ title: document.title, marked: document.body.classList.contains('fd-packet-printing'), rule: (document.getElementById('fdPacketPageRule') || { textContent: '' }).textContent.replace(/\s/g, '') })))
+      .toEqual({ title: INSERTS.card.title, marked: true, rule: '@page{size:Letter;margin:0}' });
+    await afterprint(page);
+    await cleanOf(page, 'afterprint')();
+    await expect(cardButton(page), 'focus returns to the card button').toBeFocused();
+    expect(await page.title()).toBe(title);
+  });
+
+  test('the wallet card is two ID-1 panels on one Letter page: each 3.375in wide and at least 2.125in tall, every crisis entry two unwrapped lines, 8px of headroom, every required name and number in the crisis panel, nothing wider than its box, one PDF page', async ({ page }) => {
+    const payload = await servedPayload(page);
+    await page.goto('/?tab=care');
+    await cardButton(page).click();
+    await page.setViewportSize(PAPER);
+    await page.emulateMedia({ media: 'print' });
+    const m = await page.evaluate(() => {
+      // Line boxes of an element's text, from the text's own rects (getClientRects on a block box is always one rect).
+      const lines = el => { const range = document.createRange(); range.selectNodeContents(el); return new Set([...range.getClientRects()].filter(r => r.width > 0).map(r => Math.round(r.top))).size; };
+      const sheet = document.querySelector('#fdPacketPrint .fd-packet-cardsheet');
+      const panels = [...sheet.querySelectorAll('[data-fd-packet-card]')].map(p => {
+        const r = p.getBoundingClientRect(), s = getComputedStyle(p);
+        const content = [...p.children].reduce((sum, child) => sum + child.getBoundingClientRect().height, 0)
+          + parseFloat(s.paddingTop) + parseFloat(s.paddingBottom) + parseFloat(s.borderTopWidth) + parseFloat(s.borderBottomWidth);
+        return { kind: p.getAttribute('data-fd-packet-card'), w: r.width, h: r.height, content, border: s.borderTopStyle };
+      });
+      const crisis = sheet.querySelector('[data-fd-packet-card="crisis"]');
+      const entries = [...crisis.querySelectorAll('li[data-fd-packet-crisis]')].map(li => {
+        const num = li.querySelector('.fd-packet-crisis__num'), name = li.querySelector('.fd-packet-crisis__label');
+        const lh = el => parseFloat(getComputedStyle(el).lineHeight);
+        return { ref: li.getAttribute('data-fd-packet-crisis'), num: num.textContent, name: name.textContent, numLines: lines(num), nameLines: lines(name),
+          height: li.getBoundingClientRect().height, twoLines: lh(num) + lh(name), sizes: [num, name].map(el => parseFloat(getComputedStyle(el).fontSize)) };
+      });
+      const r = sheet.getBoundingClientRect();
+      return {
+        panels, entries, crisisText: crisis.textContent, allText: sheet.textContent,
+        overflowX: [...sheet.querySelectorAll('*')].filter(el => !el.closest('.fd-packet-vh') && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).display !== 'inline').length,
+        docWidth: document.documentElement.scrollWidth, sheet: { w: r.width, h: r.height },
+      };
+    });
+    expect(m.panels.map(p => p.kind)).toEqual(['crisis', 'mine']);
+    for (const p of m.panels) {
+      expect(Math.abs(p.w - CARD.width), `${p.kind} panel is 3.375in wide (${p.w}px)`).toBeLessThanOrEqual(1);
+      expect(p.h, `${p.kind} panel is at least 2.125in tall`).toBeGreaterThanOrEqual(CARD.height);
+      expect(p.h, `${p.kind} panel has not grown past ID-1, so it still fits a wallet`).toBeLessThanOrEqual(CARD.height + 0.5);
+      expect(p.border, `${p.kind} panel is inside its own dashed cut line`).toBe('dashed');
+    }
+    const crisisPanel = m.panels.find(p => p.kind === 'crisis');
+    expect(CARD.height - crisisPanel.content, `crisis panel headroom (content ${crisisPanel.content.toFixed(1)}px of ${CARD.height}): a wider face on another machine must not push it over`).toBeGreaterThanOrEqual(8);
+    expect(m.entries.map(e => e.ref), 'the card carries every governed line, in order').toEqual(INSERTS.crisis.map(line => line.ref));
+    for (const e of m.entries) {
+      expect([e.num, e.name], `${e.ref}: number over the official name`).toEqual([contactOf(e.ref), nameOf(e.ref)]);
+      expect([e.numLines, e.nameLines], `${e.ref}: the number and the name are one line each (no wrap)`).toEqual([1, 1]);
+      expect(e.height, `${e.ref}: the entry is exactly two lines tall`).toBeLessThanOrEqual(e.twoLines + 0.5);
+      expect(Math.min(...e.sizes), `${e.ref}: crisis text is at least 12px`).toBeGreaterThanOrEqual(12);
+    }
+    expect(payload.required.length).toBeGreaterThan(0);
+    for (const id of payload.required) {
+      expect(m.crisisText, `required ${id}: its official name is in the crisis panel`).toContain(nameOf(id));
+      expect(m.crisisText, `required ${id}: its number is in the crisis panel`).toContain(contactOf(id));
+    }
+    expect(m.overflowX, 'no element on the card page is wider than its box').toBe(0);
+    expect(m.docWidth, 'nothing is wider than a sheet').toBeLessThanOrEqual(PAPER.width);
+    expect(Math.abs(m.sheet.w - PAPER.width), 'the card page is a Letter sheet wide').toBeLessThan(1);
+    expect(m.sheet.h, 'and no taller than one').toBeLessThanOrEqual(PAPER.height + 1);
+    expect(m.allText).toContain(INSERTS.card.mineTitle);
+    for (const row of INSERTS.card.rows) expect(m.allText).toContain(row);
+    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'the card prints on one page').toBe(1);
+    await cleanOf(page, 'the print command ended')();
+    await expect(cardButton(page)).toBeFocused();
+  });
+
+  test('the wallet card names no unit: with typed ward details, and again with a confirmed profile loaded, nothing of the unit reaches the card', async ({ page }) => {
+    await build(page, { release: false });
+    for (const round of ['typed', 'profile']) {
+      if (round === 'profile') await loadProfile(page, PROFILE.id);
+      await cardButton(page).click();
+      await expect(host(page).locator('.fd-packet-cardsheet')).toHaveCount(1);
+      const text = await host(page).textContent();
+      for (const unit of round === 'typed' ? ['4 East', '555-0199'] : [PROFILE.unitName, PROFILE.org, PROFILE.unitPhone, '555-0142']) expect(text, `${round}: "${unit}"`).not.toContain(unit);
+      await afterprint(page);
+      await cleanOf(page, `${round}: afterprint`)();
+      await expect(cardButton(page)).toBeFocused();
+    }
+    expect(await prints(page)).toBe(2);
+    await expect(preview(page), 'printing the card leaves the packet preview as it was').toBeVisible();
   });
 });
 
@@ -651,20 +1119,42 @@ test.describe('fail closed: the packet refuses to print without its crisis lines
     await stubPrint(page);
     await pinCareDirectory(page, printFeed(careDirectoryFixture()));
   });
+  // Rewritten to start from a SAVED Final packet: with an unusable payload the chooser offers nothing to add (which these tests
+  // also check), so a packet can only exist from before the payload broke.
+  const savedPacket = page => page.addInitScript(([k, ids, profile]) => {
+    if (!sessionStorage.getItem(k)) sessionStorage.setItem(k, JSON.stringify({ ids, why: {}, inserts: {}, mode: 'final', unit: { name: '', phone: '', profile } }));
+  }, [KEY, PRINT_LISTINGS.map((_, i) => 'r-' + i), PROFILE.id]);
   const cases = [
-    ['no payload at all', () => null],
-    ['a required contact deleted', p => { delete p.contacts[p.required[0]]; return p; }],
-    ['a required contact blank', p => { p.contacts[p.required[1]].contact = ''; return p; }],
-    ['a crisis token that names nothing', p => { p.inserts.find(i => i.id === 'warning').groups[3].bullets[0] = 'Call {{crisis:not_a_real_id}} now.'; return p; }],
+    ['no payload at all', () => null, true],
+    ['a required contact deleted', p => { delete p.contacts[p.required[0]]; return p; }, true],
+    ['a required contact blank', p => { p.contacts[p.required[1]].contact = ''; return p; }, true],
+    ['a crisis token that names nothing', p => { p.inserts.find(i => i.id === 'warning').groups[3].bullets[0] = 'Call {{crisis:not_a_real_id}} now.'; return p; }, false],
   ];
-  for (const [label, mutate] of cases) {
-    test(`${label}: Print and Copy are off, the reason says so, and nothing is staged, printed or copied`, async ({ page }) => {
+  for (const [label, mutate, down] of cases) {
+    test(`${label}: Print and Copy are off, the reason says so, and nothing is staged, printed or copied${down ? '; the chooser offers nothing and says why once, and the wallet card refuses too' : ''}`, async ({ page }) => {
       await page.addInitScript(() => {
         window.__copies = 0;
         Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => { window.__copies += 1; return Promise.resolve(); } } });
       });
       await routeShell(page, mutate);
-      await build(page, { mode: 'final' });
+      await savedPacket(page);
+      await page.goto('/?tab=care');
+      const panel = page.locator('[data-care-directory]');
+      await panel.getByLabel('Resource name or service').fill('southern maine');
+      await expect(panel.locator('.fd-care-search__result').first()).toBeVisible();
+      if (down) {
+        await expect(page.locator('[data-care-directory-results] [data-fd-care-packet-ineligible]'), 'one note for the whole chooser, no reason per row').toHaveCount(1);
+        await expect(page.locator('[data-care-directory-results] [data-fd-care-packet-ineligible="PAYLOAD"]')).toHaveCount(1);
+        await expect(panel.locator('[data-fd-care-packet], [data-fd-care-packet-page], [data-fd-care-packet-all]'), 'nothing is offered').toHaveCount(0);
+        await expect(tray(page).locator('[data-fd-care-packet-ineligible="PAYLOAD"]'), 'the tray says it too').toHaveCount(1);
+        await expect(cardButton(page), 'the card needs the crisis lines as much as the packet does').toBeDisabled();
+        await expect(page.locator('[data-fd-care-packet-card-note]')).toContainText('crisis lines did not load');
+      } else {
+        await expect(panel.getByRole('button', { name: /^Add all results/ }), 'a usable payload still offers listings').toHaveCount(1);
+        await expect(cardButton(page), 'the card carries no standard page, so a broken page does not stop it').toBeEnabled();
+      }
+      await toggle(page).click();
+      for (const g of GATES) await gate(page, g).check();
       await expect(printButton(page)).toBeDisabled();
       await expect(copyButton(page)).toBeDisabled();
       await expect(reason(page)).toContainText(/crisis/i);
@@ -677,13 +1167,17 @@ test.describe('fail closed: the packet refuses to print without its crisis lines
       expect(await prints(page)).toBe(0);
       expect(await page.evaluate(() => window.__copies)).toBe(0);
       await expect(host(page)).toHaveCount(0);
-      // The same failure when the browser itself prints: only the notice, never a page.
+      // The same failure when the browser itself prints from inside the packet: only the notice, never a page.
+      await watchStaged(page);
       expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true }))).toBe(1);
+      expect((await staged(page))[0]).toEqual({ notice: true, pages: 0, card: 0 });
     });
   }
 
+  // The data edit now lands on a page that is ON by default ("Warning signs"), because the call-back page is off by default.
   test('a standard page taller than a sheet is refused, not clipped (this is the detector for a data edit that outgrows a page)', async ({ page }) => {
-    await routeShell(page, p => { p.inserts.find(i => i.id === 'callback').body = 'A long paragraph that keeps going. '.repeat(260); return p; });
+    expect(defaultOn('warning'), 'the page edited here is in a fresh packet').toBe(true);
+    await routeShell(page, p => { p.inserts.find(i => i.id === 'warning').body = 'A long paragraph that keeps going. '.repeat(260); return p; });
     await build(page, { mode: 'final' });
     await expect(printButton(page)).toBeDisabled();
     await expect(reason(page)).toContainText('too long for one page');
@@ -701,15 +1195,17 @@ test.describe('a real window.print()', () => {
     await routeShell(page);
     await pinCareDirectory(page, printFeed(careDirectoryFixture()));
   });
+  const watchBeforeprint = page => page.addInitScript(() => {
+    window.__seen = [];
+    window.addEventListener('beforeprint', () => {
+      const rule = document.getElementById('fdPacketPageRule');
+      window.__seen.push({ host: !!document.getElementById('fdPacketPrint'), marked: document.body.classList.contains('fd-packet-printing'),
+        rule: rule ? rule.textContent.replace(/\s/g, '') : '', sheets: document.querySelectorAll('#fdPacketPrint .fd-packet-page').length,
+        cards: document.querySelectorAll('#fdPacketPrint .fd-packet-cardsheet').length });
+    }, true);
+  });
   test('stages the container, the marker and the page rule for beforeprint, then removes all of it when printing ends', async ({ page }) => {
-    await page.addInitScript(() => {
-      window.__seen = [];
-      window.addEventListener('beforeprint', () => {
-        const rule = document.getElementById('fdPacketPageRule');
-        window.__seen.push({ host: !!document.getElementById('fdPacketPrint'), marked: document.body.classList.contains('fd-packet-printing'),
-          rule: rule ? rule.textContent.replace(/\s/g, '') : '', sheets: document.querySelectorAll('#fdPacketPrint .fd-packet-page').length });
-      }, true);
-    });
+    await watchBeforeprint(page);
     await build(page, { mode: 'final' });
     await printButton(page).click();
     const seen = await page.evaluate(() => window.__seen);
@@ -717,10 +1213,69 @@ test.describe('a real window.print()', () => {
     expect(seen[0].host && seen[0].marked, 'the container and the marker were there when the engine looked').toBe(true);
     expect(seen[0].rule).toBe('@page{size:Letter;margin:0}');
     expect(seen[0].sheets).toBeGreaterThanOrEqual(2);
+    expect(seen[0].cards, 'no card in the packet').toBe(0);
     await expect(host(page), 'afterprint removed it').toHaveCount(0);
     expect(await page.evaluate(() => document.body.classList.contains('fd-packet-printing') || !!document.getElementById('fdPacketPageRule'))).toBe(false);
     await expect(printButton(page)).toBeFocused();
   });
+  test('the wallet card button stages exactly the one card page for beforeprint, then removes it and returns focus to the card button', async ({ page }) => {
+    await watchBeforeprint(page);
+    await page.goto('/?tab=care');
+    await cardButton(page).click();
+    const seen = await page.evaluate(() => window.__seen);
+    expect(seen).toEqual([{ host: true, marked: true, rule: '@page{size:Letter;margin:0}', sheets: 1, cards: 1 }]);
+    await expect(host(page), 'afterprint removed it').toHaveCount(0);
+    await expect(cardButton(page)).toBeFocused();
+  });
+});
+
+// ---- recorded page counts, and the one budget that is pinned ------------------------------------------------------------------------------
+// The owner's report: 4, 8 and 12 listings, short and long descriptions, both copies, with the first-week page on or off and
+// "Making home safer" on or off. Every count is RECORDED (annotation and a console line naming the browser, OS and installed
+// faces). Only the owner's budget is pinned: the default pages with eight or fewer ordinary (short) listings fit five sheets in
+// both copies (measured 2026-10-12 on macOS Chromium with Arial: 5 and 5 at eight listings, 5 and 4 at four).
+test.describe('recorded page counts', () => {
+  test.beforeEach(async ({ page }, info) => {
+    await seed(page, info);
+    await stubPrint(page);
+    await routeShell(page);
+  });
+  for (const count of [4, 8, 12]) {
+    for (const long of [false, true]) {
+      const kind = long ? 'long' : 'short';
+      test(`${count} ${kind} listings: both copies x first-week page x Making home safer, each PDF one page per sheet${!long && count <= 8 ? '; the default pages fit five sheets' : ''}`, async ({ page }) => {
+        test.setTimeout(240_000);
+        await pinCareDirectory(page, printFeed(careDirectoryFixture(), { long, count }));
+        await build(page, { mode: 'final', count, release: false });
+        const env = await environment(page);
+        const rows = [];
+        for (const mode of ['review', 'final']) {
+          await page.getByRole('radio', { name: mode === 'final' ? /Final copy/ : /Review copy/ }).check();
+          for (const week of [true, false]) {
+            for (const safety of [false, true]) {
+              for (const [id, on] of [['week', week], ['safety', safety]]) { if (on) await insertBox(page, id).check(); else await insertBox(page, id).uncheck(); }
+              for (const g of GATES) await gate(page, g).check();
+              await stage(page);
+              const sheets = await host(page).locator('.fd-packet-page').count();
+              const pages = pdfPageCount(await page.pdf({ preferCSSPageSize: true }));
+              expect(pages, `${mode} week:${week} safety:${safety}: one PDF page per sheet`).toBe(sheets);
+              await expect(host(page), 'the print command ended').toHaveCount(0);
+              rows.push({ mode, week, safety, pages, owner: week === defaultOn('week') && safety === defaultOn('safety') });
+            }
+          }
+        }
+        const line = rows.map(r => `${r.mode} week:${r.week ? 'on' : 'off'} safety:${r.safety ? 'on' : 'off'}=${r.pages}${r.owner ? ' (default)' : ''}`).join(', ');
+        test.info().annotations.push({ type: `page counts, ${count} ${kind} listings`, description: `${line} [${env}]` });
+        console.log(`PAGE COUNTS ${count} ${kind} listings [${env}]: ${line}`);
+        if (!long && count <= 8) {
+          for (const mode of ['review', 'final']) {
+            const row = rows.find(r => r.mode === mode && r.owner);
+            expect(row.pages, `the owner's budget: the default pages with ${count} ordinary listings fit five sheets (${mode} copy)`).toBeLessThanOrEqual(5);
+          }
+        }
+      });
+    }
+  }
 });
 
 // ---- accessibility, as deterministic checks (axe-core is proposed in draft #1008; these do not depend on it) ---------------------------------
@@ -736,18 +1291,22 @@ for (const [width, scheme] of [[1280, 'light'], [390, 'dark'], [320, 'light']]) 
       await page.emulateMedia({ colorScheme: scheme });
     });
 
-    test('reflows without sideways scroll, every target is 44px, names and structure are right', async ({ page }) => {
+    test('reflows without sideways scroll, every target (the profile select, its buttons and the card button included) is 44px, names and structure are right', async ({ page }) => {
       await build(page, { mode: 'final' });
+      // A page with a table, so the phone layout of a table is checked (no table page is on by default).
+      await page.getByRole('checkbox', { name: titleOf('national') }).check();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal page scroll with the preview open').toBe(true);
-      const small = await page.evaluate(() => [...document.querySelectorAll('#fd-care-packet-preview button, #fd-care-packet-preview input[type="text"], #fd-care-packet-preview input[type="tel"], #fd-care-packet-preview label.fd-care-packet__check, [data-fd-care-packet-preview-toggle]')]
+      const small = await page.evaluate(() => [...document.querySelectorAll('#fd-care-packet-preview button, #fd-care-packet-preview select, #fd-care-packet-preview input[type="text"], #fd-care-packet-preview input[type="tel"], #fd-care-packet-preview label.fd-care-packet__check, [data-fd-care-packet-preview-toggle], [data-fd-care-packet-card-print]')]
         .filter(el => el.getBoundingClientRect().width > 0).map(el => ({ el: el.tagName + (el.id ? '#' + el.id : ''), h: el.getBoundingClientRect().height })).filter(x => x.h < 43.9));
       expect(small, 'targets under 44px').toEqual([]);
       await expect(page.getByRole('button', { name: 'Print packet' })).toHaveCount(1);
       await expect(page.getByRole('button', { name: 'Copy as text' })).toHaveCount(1);
+      await expect(page.getByRole('button', { name: 'Print wallet card' })).toHaveCount(1);
       await expect(page.getByRole('radio'), 'the two copies').toHaveCount(2);
       await expect(page.getByRole('radio', { checked: true })).toHaveCount(1);
       await expect(page.getByLabel(/^Unit name/)).toHaveCount(1);
       await expect(page.getByLabel(/^Unit phone/)).toHaveCount(1);
+      await expect(page.getByLabel('Confirmed unit profile')).toHaveCount(1);
       const pages = await page.locator('.fd-packet-sheet--screen article.fd-packet-page').count();
       expect(pages).toBeGreaterThanOrEqual(2);
       for (let n = 1; n <= pages; n++) await expect(page.locator(`.fd-packet-sheet--screen article[aria-label="Page ${n} of ${pages}"]`)).toHaveCount(1);
@@ -805,7 +1364,7 @@ for (const [width, scheme] of [[1280, 'light'], [390, 'dark'], [320, 'light']]) 
       // WCAG 1.4.12: with the spacing increased, no sibling may run over the one before it (units on a sheet, the preview's controls).
       const overlaps = await page.evaluate(() => {
         const found = [];
-        const parents = [...document.querySelectorAll('.fd-packet-sheet--screen .fd-packet-body, .fd-packet-sheet--screen .fd-packet-ins, .fd-packet-sheet--screen .fd-packet-crisis__box, [data-fd-care-packet-controls], .fd-care-packet-preview__unit, .fd-care-packet-preview__field, .fd-care-packet-preview__actions')];
+        const parents = [...document.querySelectorAll('.fd-packet-sheet--screen .fd-packet-body, .fd-packet-sheet--screen .fd-packet-ins, .fd-packet-sheet--screen .fd-packet-crisis__box, [data-fd-care-packet-controls], .fd-care-packet-preview__unit, .fd-care-packet-preview__field, .fd-care-packet-preview__actions, .fd-care-packet-preview__profile, .fd-care-packet-preview__profilerow')];
         for (const parent of parents) {
           const kids = [...parent.children].filter(k => k.getClientRects().length > 0 && !k.closest('.fd-packet-vh') && getComputedStyle(k).position !== 'absolute');
           for (let i = 1; i < kids.length; i++) {
@@ -819,10 +1378,11 @@ for (const [width, scheme] of [[1280, 'light'], [390, 'dark'], [320, 'light']]) 
       expect(overlaps.found, 'siblings run over each other when text spacing is increased').toEqual([]);
     });
 
-    test('the Preview button and Print are never hidden under the fixed bottom bar when focused', async ({ page }) => {
+    test('the Preview button, the card button, the profile controls and Print are never hidden under the fixed bottom bar when focused', async ({ page }) => {
       await build(page, { mode: 'final' });
-      for (const target of [toggle(page), printButton(page)]) {
+      for (const target of [toggle(page), cardButton(page), profileSelect(page), loadButton(page), unlinkButton(page), printButton(page)]) {
         await target.focus();
+        await expect(target).toBeFocused();
         const hidden = await page.evaluate(() => {
           const a = document.activeElement.getBoundingClientRect(), d = document.querySelector('.fd-dock');
           if (!d || getComputedStyle(d).display === 'none') return false;
@@ -844,7 +1404,6 @@ test('pdfPageCount counts what Chromium wrote: one, three and twelve pages (the 
 });
 
 test('no screenshot baseline exists for the packet, and none may be made before the human gate (and then only on the Ubuntu runner)', async () => {
-  const fs = await import('node:fs');
   const here = new URL('.', import.meta.url);
   const spec = fs.readFileSync(new URL('care-packet-print.spec.js', here), 'utf8');
   // The needles are assembled so this very test does not trip itself.

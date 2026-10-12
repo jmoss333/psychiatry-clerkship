@@ -452,3 +452,19 @@ for (const site of ['ms3', 'res']) {
     assert.deepEqual(JSON.parse(value), payload());
   });
 }
+
+// Institutional branding is approval-pending. An organisation name the owner has not approved must not be in the page source of the
+// two public learner sites either, not only out of the printed header. Fails if _shipped_profile ships org without approval.
+test('a profile whose branding is not approved ships with no organisation name; an approved one ships it', t => {
+  const data = readJson(DATA);
+  const fixture = readJson(FIXTURE);
+  const confirmedOn = addDays(data.generatedAt, -30);
+  const unapproved = { ...sourceProfile(fixture.profile, confirmedOn), id: 'unapproved-unit', brandingApproved: false, org: 'Sentinel Health System' };
+  const approved = { ...sourceProfile(fixture.profile, confirmedOn), id: 'approved-unit', brandingApproved: true, org: 'Test Org' };
+  const run = buildWith('profiles_path=sys.argv[1]', [profilesFile(t, [unapproved, approved])]);
+  assert.equal(run.status, 0, run.stderr);
+  const built = JSON.parse(run.stdout);
+  assert.equal(built.unitProfiles.find(profile => profile.id === 'unapproved-unit').org, null);
+  assert.ok(!run.stdout.includes('Sentinel Health System'), 'the unapproved name is nowhere in the payload');
+  assert.equal(built.unitProfiles.find(profile => profile.id === 'approved-unit').org, 'Test Org');
+});

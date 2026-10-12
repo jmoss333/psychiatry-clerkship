@@ -394,6 +394,9 @@ def check(data, schema, crisis, today):
             errors.append("core insert '%s' cannot default off" % insert_id)
         if insert_id in ALWAYS_ON and not (item["core"] and item["defaultOn"]):
             errors.append("insert '%s' must be core and on by default (it carries the unit phone)" % insert_id)
+        if insert_id in ALWAYS_ON and not UNIT_TOKEN_RE.search(json.dumps(item, ensure_ascii=False)):
+            errors.append("insert '%s' must carry {{unitPhone}} or {{unitName}}: that token is what makes a Final copy "
+                          "need a confirmed unit profile, so the always-on page may never lose it" % insert_id)
         if not has_content(item):
             errors.append("insert '%s' has no content (body, bullets, groups, rows or table)" % insert_id)
         for n, group in enumerate(item.get("groups", []) or []):
