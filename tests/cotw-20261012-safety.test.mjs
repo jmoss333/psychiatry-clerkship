@@ -96,7 +96,11 @@ test('resident case does not turn sober denial or a suspected diagnosis into dis
   assert.match(text, /does not establish the full diagnostic criteria/);
   assert.match(text, /Current denial of intent and clinical sobriety do not establish/);
   assert.match(text, /not yet determined by the stem/);
-  assert.doesNotMatch(text, /now returning toward baseline|given receding acute drivers|dose-response in quality/);
+  assert.match(text, /Possible major depressive episode/);
+  assert.match(text, /neither trauma exposure nor dissociation is supplied/);
+  assert.match(text, /only the assessment and mitigation actually completed/);
+  assert.match(text, /do not assume the roommate can take this role/);
+  assert.doesNotMatch(text, /now returning toward baseline|given receding acute drivers|dose-response in quality|roommate-verified storage|protective value \(none\)/);
 });
 
 test('study claims preserve uncertainty, study design and negative outcomes', () => {
@@ -106,6 +110,8 @@ test('study claims preserve uncertainty, study design and negative outcomes', ()
     assert.match(text, /no significant effect on ideation/);
     assert.match(text, /not reduced depression symptoms/);
     assert.match(text, /qualitative study did not measure a reduction in suicide deaths/);
+    assert.match(text, /four of six studies at high risk of bias/);
+    assert.match(text, /could not establish an effect on suicide deaths/);
     assert.doesNotMatch(text, /meta-analysis confirms|triple follow-up engagement|not patient refusal/);
   }
 });

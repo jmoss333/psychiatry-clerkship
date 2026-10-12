@@ -64,7 +64,8 @@ Vital signs are normal. He is clinically sober (last drink the previous evening)
 ## Facilitator notes (not for learner handout)
 
 - **Timing:** 20–30 minutes. Reveal Part 2 only after the group commits to how they would ask about suicide.
-- **Common misconceptions to surface:** (a) avoiding direct questions when a patient minimizes; (b) "no-suicide contracts" are protective — they are not and are no longer recommended; (c) a calm, pleasant patient requesting discharge is low risk; (d) risk assessment produces a number that decides disposition — prediction tools alone perform poorly, and the assessment informs clinical judgment rather than replacing it.
+- **Common misconceptions to surface:** (a) avoiding direct questions when a patient minimizes; (b) a no-suicide contract establishes safety — do not use a contract as evidence of safety or as a substitute for assessment and collaborative planning [2]; (c) a calm, pleasant patient requesting discharge is low risk; (d) risk assessment produces a number that decides disposition — prediction tools alone perform poorly, and the assessment informs clinical judgment rather than replacing it.
+- **Evidence limits:** Nuij rated four of six studies at high risk of bias and identified possible publication bias [5]. Doupnik could not establish an effect on suicide deaths, and possible publication bias affected the linkage outcome [6]. Teach the reported outcomes and uncertainty rather than promising an individual result.
 - **Pivot questions:** "What would have to be true for you to feel comfortable discharging him?" · "Who secures the firearms, concretely, before he leaves?" · "What changes if he had a prior attempt?"
 - **Safety framing:** keep all discussion method-nonspecific; model asking directly and compassionately. If any learner discloses personal distress, pause teaching and follow your program's support pathway.
 
