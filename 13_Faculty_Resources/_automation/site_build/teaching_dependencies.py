@@ -310,7 +310,19 @@ def discover(root, page, manifest, site, out_dir=None):
                 built = Path(out_dir) / url
                 if not built.is_file():
                     raise DependencyError("%s loads teaching asset not built: %s" % (page["slug"], url))
-                if _teaching_bytes(built, url) != _teaching_bytes(Path(root) / source, url):
+                if url == "question_bank.json":
+                    from qbank_public import project_question_bank
+                    try:
+                        expected = project_question_bank(json.loads((Path(root) / source).read_text(encoding="utf-8")))
+                        # Audit the published document as-is: projecting it would
+                        # silently discard leaked drafts or editorial fields.
+                        actual = json.loads(built.read_text(encoding="utf-8"))
+                        differs = json.dumps(actual, sort_keys=True) != json.dumps(expected, sort_keys=True)
+                    except (OSError, ValueError, TypeError) as error:
+                        raise DependencyError("question_bank.json projection audit failed: " + str(error)) from error
+                else:
+                    differs = _teaching_bytes(built, url) != _teaching_bytes(Path(root) / source, url)
+                if differs:
                     raise DependencyError("%s teaching asset %s differs from %s"
                                           % (page["slug"], url, source))
             if is_script:
