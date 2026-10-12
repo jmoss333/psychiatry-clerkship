@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Care aftercare packet - standard inserts (v1)",
-  "description": "Standard inserts the trainee can switch on in the Care aftercare packet, plus the helpline tables that print with them. Shape only: validate_care_inserts.py enforces what a schema cannot (print order, crisis single-source, number format and freshness, dose-literal and metadata bans). TEXT RULES for every string: plain language (target grade 6); no markup; no phone number outside a table row; no crisis number typed (crisis contacts are referenced by id from crisis_resources.json); no dose literals; and only three placeholders, which the renderer HTML-escapes and fills: {{unitName}} and {{unitPhone}} (from the edition contract or the preview panel; when one is unavailable the renderer prints a handwriting blank, never an empty gap) and {{crisis:<id>}}, replaced by that resource's `contact` string from crisis_resources.json, so 'call {{crisis:emergency_911}}' prints 'call 911' (<id> must also be listed in `crisis`). RENDERING CONTRACT: page 1 is the intro insert, then the crisis block, then the `week` insert; resource pages follow; then the remaining inserts in array order. The crisis block is built from crisisCopy.heading, crisisCopy.note and each `crisis` line (name and contact from crisis_resources.json; label and when from this file). It is NOT the shared learner crisis block, which is addressed to clinicians. The wallet card prints crisisCopy.cardHeading and the same lines. An insert prints its title, then any of body, bullets, groups, rows, table, tip and signoff in that order; layout is the renderer's job. Review-mode chrome (the review band, tick boxes, 'tick the ones you want to try') is renderer-owned and not in this file. A row label of \"\" is an unlabelled handwriting line.",
+  "description": "Standard inserts the trainee can switch on in the Care aftercare packet, plus the helpline tables that print with them. Shape only: validate_care_inserts.py enforces what a schema cannot (print order, crisis single-source, number format and freshness, dose-literal and metadata bans, the unit-wording rules, the wallet card's five-line budget). TEXT RULES for every string: plain language (target grade 6); no markup; no phone number outside a table row; no crisis number typed (crisis contacts are referenced by id from crisis_resources.json); no dose literals; and only three placeholders, which the renderer HTML-escapes and fills: {{unitName}} and {{unitPhone}} (from the edition contract or the preview panel; when one is unavailable the renderer prints a handwriting blank, never an empty gap) and {{crisis:<id>}}, replaced by that resource's `contact` string from crisis_resources.json, so 'call {{crisis:emergency_911}}' prints 'call 911' (<id> must also be listed in `crisis`). A sentence that refers to the unit (us, we, our, the unit, a unit placeholder) never carries an availability phrase (any time, 24/7, day or night, around the clock, all hours): only the crisis lines are round the clock. A sentence that says 'the unit' carries {{unitPhone}} or {{unitName}} (titles and headings excepted). RENDERING CONTRACT: page 1 is the intro insert, then the crisis block, then the `week` insert; resource pages follow; then the remaining inserts in array order. The crisis block is built from crisisCopy.heading, crisisCopy.note and each `crisis` line, where the line's official NAME, contact and availability come from crisis_resources.json and only `when` comes from this file. It is NOT the shared learner crisis block, which is addressed to clinicians. The wallet card is a SEPARATE, optional print, never a packet page: it is built from the top-level `card` object plus crisisCopy.cardHeading and the same `crisis` lines (official name and contact from crisis_resources.json). An insert prints its title, then any of body, bullets, groups, rows, table, tip and signoff in that order; layout is the renderer's job. Review-mode chrome (the review band, tick boxes, 'tick the ones you want to try') is renderer-owned and not in this file. A row label of \"\" is an unlabelled handwriting line.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "generatedAt", "crisisCopy", "crisis", "inserts"],
+  "required": ["schemaVersion", "generatedAt", "crisisCopy", "crisis", "card", "inserts"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "generatedAt": { "$ref": "#/definitions/date" },
@@ -20,18 +20,32 @@
       }
     },
     "crisis": {
-      "description": "Crisis lines, as references to resource ids in crisis_resources.json (the single source of truth for crisis numbers and names). Order is print order. label and when are the patient-facing words around the number.",
+      "description": "Crisis lines, as references to resource ids in crisis_resources.json (the single source of truth for crisis numbers and their official names). Order is print order. `when` is the only patient-facing text this file adds to a line.",
       "type": "array",
       "minItems": 2,
       "maxItems": 8,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["ref", "label", "when"],
+        "required": ["ref", "when"],
         "properties": {
           "ref": { "type": "string", "pattern": "^[a-z0-9_]+$" },
-          "label": { "type": "string", "minLength": 1, "maxLength": 40 },
           "when": { "type": "string", "minLength": 1, "maxLength": 120 }
+        }
+      }
+    },
+    "card": {
+      "description": "The wallet card: a separate, optional one-sided print, not a packet page. title heads the print; body is the cutting instruction; mineTitle heads the write-in panel, and each of rows is a labelled line to write on. Contains no number: the crisis lines come from `crisis`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "body", "mineTitle", "rows"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "body": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "mineTitle": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "rows": {
+          "type": "array", "minItems": 1, "maxItems": 4,
+          "items": { "type": "string", "minLength": 1, "maxLength": 60, "pattern": "\\S" }
         }
       }
     },
@@ -93,7 +107,7 @@
       "properties": {
         "id": {
           "enum": ["intro", "week", "callback", "warning", "safety", "family",
-                   "national", "insurance", "meds", "rights", "card", "notes"]
+                   "national", "insurance", "meds", "rights", "notes"]
         },
         "title": { "type": "string", "minLength": 1, "maxLength": 80 },
         "core": { "type": "boolean" },
