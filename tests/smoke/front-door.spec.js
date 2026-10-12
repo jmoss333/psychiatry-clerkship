@@ -1,3 +1,4 @@
+import { enablePatientSharing } from './care-patient-sharing-fixture.js';
 import { pinCareDirectory } from './care-directory-fixture.js';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -3356,7 +3357,7 @@ test('Patient care resources stays reachable through the dock\'s fixed Care slot
   await expect(page.locator('.fd-dock:visible button:visible')).toHaveCount(5);
   await entry.click();
   await expect(page.locator('.fd-care-page')).toBeVisible();
-  await expect(page.locator('.fd-care-pack')).toBeVisible();
+  await expect(page.locator('.fd-care-pack')).toHaveCount(0);
   expect(new URL(page.url()).searchParams.get('tab')).toBe('care');
   await expect(entry).toHaveAttribute('aria-current', 'page');
 
@@ -3369,6 +3370,7 @@ test('Patient care resources stays reachable through the dock\'s fixed Care slot
 });
 
 test('Care Quick Share keeps exact links transient, keyboard-safe, and usable at 320 px', async ({ page }, testInfo) => {
+  await enablePatientSharing(page);
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -3456,6 +3458,7 @@ test('Care Quick Share keeps exact links transient, keyboard-safe, and usable at
 });
 
 test('Supervised Resource Builder opens context-free without changing Care Quick Share', async ({ page }, testInfo) => {
+  await enablePatientSharing(page);
   const url = 'https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html';
   const launches = [];
   await page.context().route('https://reconnect-tools.netlify.app/**', async route => {
@@ -4974,13 +4977,12 @@ test('Care Playbook returns to Care with its existing transient reset; offline l
   await page.evaluate(()=>document.documentElement.style.fontSize='');
   await page.setViewportSize({width:1280,height:900});
   await page.locator('[data-fd-tab="care"]:visible').click();
-  await expect(page.getByRole('heading',{name:'Share resource websites',exact:true})).toBeVisible();
-  await expect(page.getByRole('link',{name:'Build a specific resource handout',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Share resource websites',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Build a specific resource handout',exact:true})).toHaveCount(0);
   for (const width of [1280,320,640]) {
     await page.setViewportSize({width,height:900});
     await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
     await page.locator('[data-fd-care-intent="family-conversation"]').click();
-    await page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]').click();
     const open=page.getByRole('button',{name:'Open Family Meeting Playbook',exact:true});
     await page.keyboard.press('Tab'); await open.focus();
     const paint=await open.evaluate(el=>({outline:getComputedStyle(el).outlineStyle, fits:document.documentElement.scrollWidth<=innerWidth,height:el.getBoundingClientRect().height}));
@@ -4992,7 +4994,7 @@ test('Care Playbook returns to Care with its existing transient reset; offline l
     await expect(page.getByRole('heading',{name:'Patient care resources',exact:true,level:1})).toBeVisible();
     await expect(open).toHaveCount(0);
     await expect(page.locator('[data-fd-care-intent="family-conversation"]')).toHaveAttribute('aria-pressed','false');
-    await expect(page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]')).toHaveAttribute('aria-pressed','false');
+    await expect(page.locator('.fd-care-pack')).toHaveCount(0);
     await expect(page.locator('#careNavigatorStatus')).toHaveText('');
   }
   await expectHealthy(page);
