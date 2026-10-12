@@ -716,6 +716,8 @@
 .fd-care-search__pack[aria-pressed="true"]::before{content:"\2713\00a0";font-weight:700}
 .fd-care-search__result article.is-packed{border-left:3px solid var(--fd-olive);padding-left:var(--fd-space-4)}
 .fd-care-search__packed{color:var(--fd-olive-deep);font-weight:750}
+/* A listing that cannot go in the packet says why, in plain text where the button would be (not focusable, not a disabled button). */
+.fd-care-search__ineligible{margin:var(--fd-space-2) 0 0;color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:1.6}
 .fd-care-search__tray{margin-top:var(--fd-space-6)}
 .fd-care-packet{padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);background:var(--fd-bg)}
 .fd-care-packet__head h3{display:flex;align-items:center;gap:var(--fd-space-3);margin:0;font-size:var(--fd-font-lg);line-height:1.4;scroll-margin-top:var(--fd-space-10)}
@@ -727,6 +729,10 @@
 .fd-care-packet__item{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--fd-space-3);padding:var(--fd-space-3) var(--fd-space-4);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
 .fd-care-packet__name{min-width:0;overflow-wrap:anywhere;font-size:var(--fd-font-sm);font-weight:650}
 .fd-care-packet__btns{display:flex;flex-wrap:wrap;gap:var(--fd-space-2)}
+.fd-care-packet__why{flex:1 0 100%;color:var(--fd-text);font-size:var(--fd-font-xs);font-weight:700;line-height:1.5}
+.fd-care-packet__why::before{content:"\26a0\00a0"}
+.fd-care-packet__card{margin-top:var(--fd-space-5);padding-top:var(--fd-space-4);border-top:1px solid var(--fd-line)}
+.fd-care-packet__note{margin:var(--fd-space-3) 0 0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.6}
 .fd-care-search .fd-care-packet__btns button{min-width:var(--fd-target-touch)}
 .fd-care-search .fd-care-packet__clear{margin-top:var(--fd-space-4)}
 .fd-care-packet__gate{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm)}
@@ -747,6 +753,14 @@
 .fd-care-packet-preview__field label{font-size:var(--fd-font-sm);font-weight:700}
 .fd-care-packet-preview__field input{min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-5);border:1px solid var(--fd-text-mid);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-base)}
 .fd-care-packet-preview__field input[aria-invalid="true"]{border-color:var(--fd-text);border-width:3px}
+.fd-care-packet-preview__field input[readonly]{border-style:dashed;color:var(--fd-text-mid)}
+.fd-care-packet-preview__profile{margin-top:var(--fd-space-5)}
+.fd-care-packet-preview__profile label{display:block;font-size:var(--fd-font-sm);font-weight:700}
+.fd-care-packet-preview__profilerow{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-3);margin-top:var(--fd-space-2)}
+.fd-care-packet-preview__profile select{box-sizing:border-box;min-width:0;max-width:100%;min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-4);border:1px solid var(--fd-text-mid);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-base)}
+.fd-care-search .fd-care-packet-preview__profile button{margin-top:var(--fd-space-3)}
+.fd-care-search .fd-care-packet-preview__profilerow button{margin-top:0}
+.fd-care-packet-preview__profile button[hidden]{display:none}
 .fd-care-packet-preview__error{margin:0;color:var(--fd-text);font-size:var(--fd-font-sm);font-weight:800}
 .fd-care-packet-preview__error::before{content:"\26a0\00a0"}
 .fd-care-packet-preview__error[hidden]{display:none}
@@ -774,7 +788,7 @@
  * appear only as a sheet's width and height. Geometry rules carry no width or media conditions, so a sheet measured in a
  * hidden box and the same sheet printed lay out alike. Units space themselves with padding-bottom (the measurer reads
  * boxes, and margins are not in a box), so anything bordered is an inner element. Nothing on a page may clip. */
-.fd-packet-sheet{color-scheme:light;color:CanvasText;background:Canvas;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:var(--fd-font-base);line-height:var(--fd-leading-snug);letter-spacing:normal;word-spacing:normal;font-kerning:normal;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.fd-packet-sheet{color-scheme:light;color:CanvasText;background:Canvas;font-family:Arial,'Liberation Sans',Helvetica,sans-serif;font-size:var(--fd-font-base);line-height:var(--fd-leading-snug);letter-spacing:normal;word-spacing:normal;font-kerning:normal;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .fd-packet-sheet *{box-sizing:border-box;min-width:0;overflow-wrap:anywhere}
 .fd-packet-sheet :where(h1,h2,h3,h4,h5,h6,p,ul,ol,figure){margin:0}
 .fd-packet-page{display:flex;flex-direction:column;width:100%;max-width:8.5in;min-height:0;margin-inline:auto;margin-bottom:var(--fd-space-7);padding:var(--fd-space-12);border:1px solid CanvasText;border-radius:var(--fd-radius-sm);overflow-x:clip}
@@ -790,19 +804,21 @@
 .fd-packet-blank{position:relative;display:inline-block;min-width:1.6in;border-bottom:1px solid CanvasText}
 .fd-packet-head__box{padding-bottom:var(--fd-space-4);border-bottom:3px solid CanvasText}
 .fd-packet-org{font-size:var(--fd-font-xs);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
-.fd-packet-title{font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-3xl);line-height:var(--fd-leading-tight)}
+.fd-packet-title{font-family:'Times New Roman','Liberation Serif',Times,serif;font-size:var(--fd-font-3xl);line-height:var(--fd-leading-tight)}
+/* The paper's missing-contact line: bold with a rule, never colour, so a monochrome printer shows it. */
+.fd-packet-draft{margin-top:var(--fd-space-4);padding-top:var(--fd-space-3);border-top:1px solid CanvasText;font-size:var(--fd-font-sm);line-height:var(--fd-leading-snug)}
 .fd-packet-intro p+p{padding-top:var(--fd-space-4)}
 .fd-packet-sign{padding-top:var(--fd-space-4);font-style:italic}
 .fd-packet-review-note{padding-top:var(--fd-space-4)}
 .fd-packet-crisis__box{padding:var(--fd-space-6) var(--fd-space-7);border:2px solid CanvasText;border-radius:var(--fd-radius-md)}
-.fd-packet-crisis__title{padding-bottom:var(--fd-space-4);font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-tight)}
+.fd-packet-crisis__title{padding-bottom:var(--fd-space-4);font-family:'Times New Roman','Liberation Serif',Times,serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-tight)}
 .fd-packet-crisis__lines,.fd-packet-card__lines{display:grid;gap:var(--fd-space-4);padding:0;list-style:none}
 .fd-packet-crisis__lines li{display:grid;grid-template-columns:2.3in minmax(0,1fr);column-gap:var(--fd-space-7);align-items:baseline}
 .fd-packet-crisis__num{grid-row:1 / span 2;font-size:var(--fd-font-lg);font-weight:800;font-variant-numeric:tabular-nums}
 .fd-packet-crisis__label{font-weight:700}
 .fd-packet-crisis__when{grid-column:2;font-size:var(--fd-font-sm)}
 .fd-packet-crisis__note{padding-top:var(--fd-space-5);font-size:var(--fd-font-sm)}
-.fd-packet-ins__title,.fd-packet-sec{padding-bottom:var(--fd-space-3);border-bottom:1px solid CanvasText;font-family:Georgia,'Times New Roman',serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-tight)}
+.fd-packet-ins__title,.fd-packet-sec{padding-bottom:var(--fd-space-3);border-bottom:1px solid CanvasText;font-family:'Times New Roman','Liberation Serif',Times,serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-tight)}
 .fd-packet-ins__title+*{margin-top:var(--fd-space-4)}
 .fd-packet-sechead,.fd-packet-tipwrap{padding-bottom:var(--fd-space-5)}
 .fd-packet-ins p+p,.fd-packet-ins p+ul,.fd-packet-ins ul+p{padding-top:var(--fd-space-4)}
@@ -833,20 +849,22 @@
 .fd-packet-res__phone b{font-size:var(--fd-font-lg);font-variant-numeric:tabular-nums}
 .fd-packet-qr{grid-column:3;width:0.9in;height:0.9in}
 .fd-packet-qr svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
-.fd-packet-cardwrap .fd-packet-card{margin-top:var(--fd-space-5)}
-/* ID-1 (a credit card): 3.375in by 2.125in. Five crisis lines and two lines to write on have to fit that, so its type and
- * rows are the smallest on the sheet (12px, a 9pt wallet-card size). A taller card is a test failure, not a quiet growth. */
-.fd-packet-card{width:3.375in;min-height:2.125in;padding:var(--fd-space-3) var(--fd-space-5);border:2px dashed CanvasText;border-radius:var(--fd-radius-md)}
-.fd-packet-card__title{padding-bottom:var(--fd-space-2);font-size:var(--fd-font-sm);font-weight:800}
-.fd-packet-card__lines{gap:var(--fd-space-1);font-size:var(--fd-font-xs);line-height:var(--fd-leading-snug)}
-.fd-packet-card__lines li{display:flex;justify-content:space-between;gap:var(--fd-space-4)}
-/* The card reuses the crisis-line markup, whose number is page-1 sized; on the card it is the card's size. */
-.fd-packet-card__lines .fd-packet-crisis__num{font-size:inherit;grid-row:auto}
-.fd-packet-card__lines .fd-packet-crisis__label{text-align:right}
-.fd-packet-card .fd-packet-rows{gap:var(--fd-space-2);padding-top:var(--fd-space-3);font-size:var(--fd-font-xs)}
-.fd-packet-card .fd-packet-row{min-height:var(--fd-space-9)}
-.fd-packet-card .fd-packet-row span{max-width:none;white-space:nowrap}
-.fd-packet-card .fd-packet-row i{min-height:var(--fd-space-7)}
+/* The wallet card prints by itself (one page, one-sided): two ID-1 panels, 3.375in x 2.125in including the border, at the top of
+ * the Letter sheet, each inside its own dashed cut line. A panel is a min-height floor; its CONTENT must fit with headroom under
+ * a wide face (194.5px of 204 on the crisis panel, 185.4px on "My numbers", measured in the default, Verdana and Arial faces).
+ * Crisis text is never below --fd-font-xs and nothing else below --fd-font-2xs. Every crisis line is two lines (the number over
+ * the governed name): a sixth line, or any line that wraps, no longer fits, so the browser spec asserts both. */
+.fd-packet-cardpair{display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--fd-space-9)}
+.fd-packet-card{flex:none;width:3.375in;min-height:2.125in;padding:var(--fd-space-3) var(--fd-space-5);border:2px dashed CanvasText;border-radius:var(--fd-radius-md);break-inside:avoid;page-break-inside:avoid}
+.fd-packet-card__title{padding-bottom:var(--fd-space-1);border-bottom:1px solid CanvasText;font-size:var(--fd-font-sm);font-weight:800;line-height:var(--fd-leading-tight)}
+.fd-packet-card__title+*{padding-top:var(--fd-space-1)}
+.fd-packet-card__lines{gap:var(--fd-space-1);font-size:var(--fd-font-xs);line-height:var(--fd-leading-tight)}
+.fd-packet-card__lines .fd-packet-crisis__num{display:block;grid-row:auto;font-size:var(--fd-font-sm)}
+.fd-packet-card__lines .fd-packet-crisis__label{display:block;font-weight:400}
+.fd-packet-card__rows{display:grid;gap:var(--fd-space-4);font-size:var(--fd-font-xs);line-height:var(--fd-leading-tight)}
+.fd-packet-card__row span{display:block;font-weight:700}
+.fd-packet-card__row i{display:block;min-height:var(--fd-space-10);border-bottom:1px solid CanvasText}
+.fd-packet-cardsheet__note{padding-top:var(--fd-space-5);font-size:var(--fd-font-sm)}
 .fd-packet-notice{padding:var(--fd-space-12);font-size:var(--fd-font-xl);font-weight:800}
 .fd-packet-sheet--screen .fd-packet-box.is-blank{display:none}
 /* The measuring box and the print container are body-level, never inside the shell. The wrapper is zero-sized and clips

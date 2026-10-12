@@ -12,15 +12,23 @@
    Invisible characters are never written into this file as themselves (nobody reviewing it could see them). Which
    characters count as invisible, as a dash or as a digit comes from the engine's own Unicode tables, below. */
 
-var FD_CARE_PACKET_ORG='Maine Medical Center';
 var FD_CARE_PACKET_TITLE='Your aftercare resources';
-var FD_CARE_PACKET_BAND='Review copy · we will finalize this together before you leave';
+var FD_CARE_PACKET_BAND='Review copy · we will go over this with you before you leave';
 /* Pixels held back at the foot of every sheet: a measured layout and a printed one can differ by a line or two. */
 var FD_CARE_PACKET_SLACK=24;
 /* Above this many modules a 0.9 in code has modules under 0.4 mm, which older phones struggle to scan. */
 var FD_CARE_PACKET_QR_MAX_MODULES=49;
 /* A Letter sheet is 11 in tall; CSS pixels are 96 to the inch in print as well as on screen. */
 var FD_CARE_PACKET_SHEET_PX=1056;
+/* Why a directory listing cannot go in the packet. The trainee sees these in the chooser and in the tray. */
+var FD_CARE_PACKET_REASONS={
+  PAYLOAD:'The crisis lines did not load, so listings cannot be added. Reload the page.',
+  CRISIS_CATEGORY:'Crisis services print only in the crisis box on page 1.',
+  CRISIS_NUMBER:'It lists a crisis line number, and those print only in the crisis box.',
+  NO_CONTACT:'It has no working phone or website on record.'
+};
+function fdCarePacketReasonText(code){return Object.prototype.hasOwnProperty.call(FD_CARE_PACKET_REASONS,code)?FD_CARE_PACKET_REASONS[code]:'';}
+/* A profile's phone confirmation is good for a fixed number of days past its date (the build computes usableThrough). */
 var FD_CARE_PACKET_BLANK='<span class="fd-packet-blank"><span class="fd-packet-vh">blank line to write in</span></span>';
 
 /* ---- text hygiene ------------------------------------------------------------------------------------------- */
@@ -105,7 +113,9 @@ function fdCarePacketNumbers(text){
   return out;
 }
 function fdCarePacketCrisisNumbers(payload){
-  var out=[],id,contacts=payload&&payload.contacts,n,i;
+  var out=[],id,contacts=payload&&payload.contacts,list=payload&&payload.crisisNumbers,n,i;
+  /* The build ships EVERY registered number (the validator reads contact and alsoAvailable of every governed resource). */
+  if(Array.isArray(list))for(i=0;i<list.length;i++)if(typeof list[i]==='string'&&/^\d{3,}$/.test(list[i]))out.push(list[i]);
   if(!contacts||typeof contacts!=='object')return out;
   for(id in contacts){
     if(!Object.prototype.hasOwnProperty.call(contacts,id)||!contacts[id])continue;
@@ -118,6 +128,30 @@ function fdCarePacketCrisisHit(text,payload){
   var registered=fdCarePacketCrisisNumbers(payload),found=fdCarePacketNumbers(text),i;
   for(i=0;i<found.length;i++)if(registered.indexOf(found[i])!==-1)return true;
   return false;
+}
+/* The number a directory row can be dialled or texted at, from the feed's own contact link (which is non-empty only when
+   the shared permission rule allowed the action and the shared phone rule produced a link). null = none. */
+function fdCarePacketDial(row){
+  var m=/^(tel|sms):\+?(\d{3,15})(?:\?body=([A-Z0-9%]{1,80}))?$/.exec(row&&typeof row.contactHref==='string'?row.contactHref:''),d,body='';
+  if(!m)return null;
+  d=m[2];
+  if(d.length===11&&d.charAt(0)==='1')d=d.slice(1);
+  if(d.length===10)d=d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6);
+  if(m[3]){try{body=decodeURIComponent(m[3]);}catch(ignoreBody){body='';}}
+  return {verb:m[1]==='sms'?'Text':'Call',number:d,keyword:fdCarePacketStrip(body)};
+}
+/* ONE rule for what may be offered and printed. It reads the verdicts the directory feed already carries (the shared
+   eligibility rule lives where the feed is generated: closed and withdrawn records are never shipped, and a contact the
+   rule blocked is blank), adds the owner's crisis direction, and reuses the crisis-number check. A reason code, or ''. */
+function fdCarePacketEligibility(row,payload){
+  var dial;
+  if(!row||typeof row!=='object')return 'NO_CONTACT';
+  if(!fdCarePacketPayloadOk(payload))return 'PAYLOAD';
+  if(row.category==='crisis')return 'CRISIS_CATEGORY';
+  dial=fdCarePacketDial(row);
+  if(!dial&&!row.website)return 'NO_CONTACT';
+  if(fdCarePacketCrisisHit(row.name,payload)||fdCarePacketCrisisHit(row.phone,payload)||(dial&&fdCarePacketCrisisHit(dial.number,payload)))return 'CRISIS_NUMBER';
+  return '';
 }
 /* Seven or more digits joined only by separators is a phone number, in any format. */
 function fdCarePacketPhoneLike(text){return /(^|[^0-9])[0-9](?:[\s\-.\/()]*[0-9]){6,}(?![0-9])/.test(fdCarePacketNorm(text));}
@@ -148,6 +182,53 @@ function fdCarePacketUnitPhone(value,payload){
   crisis=fdCarePacketCrisisNumbers(payload);
   for(i=0;i<crisis.length;i++)if(crisis[i]===d)return {ok:false,value:'',error:'That is a crisis line number. Enter the unit’s own number.'};
   return {ok:true,value:'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6),error:''};
+}
+
+/* ---- the unit profile: the only source of a CONFIRMED unit phone ------------------------------------------------ */
+/* Profiles come from the build payload (the owner adds and confirms them in data). Each value is run through the same
+   validators as a typed one, so a profile the build should have refused is never offered. */
+function fdCarePacketProfileFind(payload,id){
+  var list=payload&&Array.isArray(payload.unitProfiles)?payload.unitProfiles:[],i;
+  if(typeof id!=='string'||!/^[a-z0-9-]{1,40}$/.test(id))return null;
+  for(i=0;i<list.length;i++)if(list[i]&&list[i].id===id)return list[i];
+  return null;
+}
+function fdCarePacketProfileUsable(p,payload){
+  var name,phone,label,org='';
+  if(!p||typeof p!=='object'||typeof p.id!=='string'||!/^[a-z0-9-]{1,40}$/.test(p.id))return null;
+  name=fdCarePacketUnitName(p.unitName,payload);phone=fdCarePacketUnitPhone(p.unitPhone,payload);label=fdCarePacketUnitName(p.label,payload);
+  if(!name.ok||!name.value||!phone.ok||!phone.value||!label.ok||!label.value)return null;
+  if(p.org!=null){
+    org=fdCarePacketUnitName(p.org,payload);
+    if(!org.ok)return null;
+    org=org.value;
+  }
+  return {id:p.id,label:label.value,name:name.value,phone:phone.value,org:p.brandingApproved===true?org:'',callbackProgram:p.callbackProgram===true,
+    usableThrough:typeof p.usableThrough==='string'?p.usableThrough:''};
+}
+function fdCarePacketProfiles(payload){
+  var list=payload&&Array.isArray(payload.unitProfiles)?payload.unitProfiles:[],out=[],i,u;
+  for(i=0;i<list.length;i++){u=fdCarePacketProfileUsable(list[i],payload);if(u)out.push(u);}
+  return out;
+}
+/* A confirmation lapses on its end date. A missing date, a bad date or an unknown clock all count as lapsed. */
+function fdCarePacketExpired(through,now){
+  var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof through==='string'?through:'');
+  if(!m||typeof now!=='number'||!isFinite(now))return true;
+  return now>Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3]),23,59,59);
+}
+/* Who the packet names as the unit: a loaded, usable profile (confirmed unless its confirmation has lapsed) or the
+   trainee's own typed values (never confirmed). */
+function fdCarePacketUnitOf(state,payload,now){
+  var u=state&&state.unit?state.unit:{},found=u.profile?fdCarePacketProfileFind(payload,u.profile):null,usable=found?fdCarePacketProfileUsable(found,payload):null,name,phone,lapsed;
+  if(usable){
+    lapsed=fdCarePacketExpired(usable.usableThrough,now);
+    return {name:usable.name,phone:usable.phone,org:usable.org,profile:usable.id,loaded:true,expired:lapsed,confirmed:!lapsed,callbackProgram:usable.callbackProgram,
+      nameError:'',phoneError:''};
+  }
+  name=fdCarePacketUnitName(u.name,payload);phone=fdCarePacketUnitPhone(u.phone,payload);
+  return {name:name.ok?name.value:'',phone:phone.ok?phone.value:'',org:'',profile:'',loaded:false,expired:false,confirmed:false,callbackProgram:false,
+    nameError:name.ok?'':name.error,phoneError:phone.ok?'':phone.error};
 }
 
 /* ---- tokens ------------------------------------------------------------------------------------------------- */
@@ -262,7 +343,7 @@ function fdCarePacketUnit(key,group,keepNext,html,extra){
 /* ---- the crisis block and the wallet card ------------------------------------------------------------------- */
 function fdCarePacketCrisisLine(line,contact,withWhen){
   return '<li data-fd-packet-crisis="'+fdEsc(line.ref)+'"><b class="fd-packet-crisis__num">'+fdEsc(contact.contact)+'</b>'+
-    '<span class="fd-packet-crisis__label">'+fdEsc(line.label)+'</span>'+
+    '<span class="fd-packet-crisis__label">'+fdEsc(contact.name)+'</span>'+
     (withWhen?'<span class="fd-packet-crisis__when">'+(contact.availability?fdEsc(contact.availability)+' · ':'')+fdEsc(line.when)+'</span>':'')+'</li>';
 }
 /* A unit spaces itself with padding, because the measurer reads boxes and margins are not in a box. So the bordered
@@ -276,15 +357,6 @@ function fdCarePacketCrisisUnit(payload,ctx,st,hb){
   }
   return fdCarePacketUnit('crisis',null,false,out+'</ul><p class="fd-packet-crisis__note">'+fdCarePacketFillOr(payload.crisisCopy.note,ctx,st)+'</p></div></section>',{crisis:true});
 }
-function fdCarePacketCardUnit(ins,payload,ctx,st,hb){
-  var lines='',i,line;
-  for(i=0;i<payload.crisis.length;i++){line=payload.crisis[i];lines+=fdCarePacketCrisisLine(line,payload.contacts[line.ref],false);}
-  return fdCarePacketUnit('card-0',null,false,
-    '<section class="fd-packet-ins fd-packet-cardwrap" data-fd-packet-unit="insert" data-fd-packet-insert="card">'+
-    fdCarePacketHeading(hb,2,'fd-packet-ins__title',ins.title)+(ins.body?fdCarePacketParagraphs(ins.body,ctx,st):'')+
-    '<div class="fd-packet-card" data-fd-packet-card>'+fdCarePacketHeading(hb,3,'fd-packet-card__title',payload.crisisCopy.cardHeading)+
-    '<ul class="fd-packet-card__lines">'+lines+'</ul>'+(ins.rows?fdCarePacketRows(ins.rows):'')+'</div></section>',{card:true});
-}
 
 /* ---- the standard pages ------------------------------------------------------------------------------------- */
 function fdCarePacketInsertOn(state,ins){
@@ -297,10 +369,9 @@ function fdCarePacketInsertOn(state,ins){
    tip). The title rides with the first part. Each part is one unit. */
 function fdCarePacketInsertUnits(ins,payload,ctx,st,hb,mode){
   var id=ins.id,parts=[],lead='',wrapOpen,units=[],i,g,gh,tail='';
-  if(id==='card')return [fdCarePacketCardUnit(ins,payload,ctx,st,hb)];
   if(id==='intro'){
     lead=ins.body?fdCarePacketParagraphs(ins.body,ctx,st):'';
-    if(mode==='review')lead+='<p class="fd-packet-review-note"><b>While you are still here:</b> read through this, tick the places you want to try, and cross out the ones that do not fit. We will print a final copy with your choices before you leave.</p>';
+    if(mode==='review')lead+='<p class="fd-packet-review-note"><b>While you are still here:</b> read through this, tick the places you want to try, and cross out the ones that do not fit. We will go over your choices with you before you leave.</p>';
     if(ins.signoff)lead+='<p class="fd-packet-sign">'+fdCarePacketFillOr(ins.signoff,ctx,st)+'</p>';
     return [fdCarePacketUnit('intro-0',null,false,'<section class="fd-packet-ins fd-packet-intro" data-fd-packet-unit="insert" data-fd-packet-insert="intro">'+lead+'</section>')];
   }
@@ -333,13 +404,18 @@ function fdCarePacketInsertUnits(ins,payload,ctx,st,hb,mode){
    A listing whose NAME or PHONE holds a verification note, a dose or a crisis number is not printed at all (and
    printing is blocked, naming it). A DESCRIPTION or AREA that does is left off and noted. */
 function fdCarePacketListing(row,payload,out){
-  var name=fdCarePacketStrip(row.name),phone=fdCarePacketStrip(row.phone),area=fdCarePacketStrip(row.area),host=fdCarePacketHost(row.website),desc,svg,addr='';
+  var name=fdCarePacketStrip(row.name),phone=fdCarePacketStrip(row.phone),area=fdCarePacketStrip(row.area),host=fdCarePacketHost(row.website),dial=fdCarePacketDial(row),reason,desc,svg,addr='';
   if(fdCarePacketForbidden(name)||fdCarePacketForbidden(phone)){
     out.blockers.push({code:'LISTING_TEXT',id:row.id,message:'“'+name+'” has text that cannot print on a patient page (a verification note or a dose). Remove it from the packet.'});
     return null;
   }
-  if(fdCarePacketCrisisHit(name,payload)||fdCarePacketCrisisHit(phone,payload)){
+  reason=fdCarePacketEligibility(row,payload);
+  if(reason==='CRISIS_NUMBER'){
     out.blockers.push({code:'CRISIS_NUMBER',id:row.id,message:'“'+name+'” lists a crisis line number. The crisis lines on page 1 are the only place they print. Remove it, or choose another listing.'});
+    return null;
+  }
+  if(reason){
+    out.blockers.push({code:'INELIGIBLE',id:row.id,reason:reason,message:'“'+name+'” can’t go in the packet. '+fdCarePacketReasonText(reason)+' Remove it.'});
     return null;
   }
   if(area&&(fdCarePacketForbidden(area)||fdCarePacketCrisisHit(area,payload))){out.withheld.push({field:'area',id:row.id,name:name,reason:fdCarePacketForbidden(area)?'note':'crisis'});area='';}
@@ -349,14 +425,15 @@ function fdCarePacketListing(row,payload,out){
   if(desc.withheld.length)out.withheld.push({field:'description',id:row.id,name:name,reason:desc.withheld[0].reason});
   svg=fdCarePacketQr(row.website,host);
   if(svg)addr=String(row.website);
-  return {id:row.id,name:name,phone:phone,area:area,host:host,desc:desc,svg:svg,address:addr};
+  if(dial&&(fdCarePacketForbidden(dial.keyword))){dial=null;out.withheld.push({field:'contact',id:row.id,name:name,reason:'note'});}
+  return {id:row.id,name:name,phone:dial?dial.number:'',dial:dial,area:area,host:host,desc:desc,svg:svg,address:addr};
 }
 function fdCarePacketListingUnit(item,index,mode,hb){
   return fdCarePacketUnit('res-'+index,null,false,'<section class="fd-packet-res" data-fd-packet-unit="res" data-fd-packet-res>'+
     '<span class="'+(mode==='review'?'fd-packet-box':'fd-packet-box is-blank')+'" aria-hidden="true"></span>'+
     '<div class="fd-packet-res__main">'+fdCarePacketHeading(hb,3,'fd-packet-res__name',item.name)+
     (item.desc.text?'<p class="fd-packet-res__d">'+fdEsc(item.desc.text)+'</p>':'')+(item.desc.moreOnWebsite?'<p class="fd-packet-res__d">More details on the website.</p>':'')+
-    '<p class="fd-packet-res__c">'+(item.phone?'<span class="fd-packet-res__phone">Call <b>'+fdEsc(item.phone)+'</b></span>':'')+(item.host?'<span>'+fdEsc(item.host)+'</span>':'')+
+    '<p class="fd-packet-res__c">'+(item.dial?'<span class="fd-packet-res__phone">'+item.dial.verb+' <b>'+fdEsc(item.dial.number)+'</b>'+(item.dial.keyword?' <span>(send '+fdEsc(item.dial.keyword)+')</span>':'')+'</span>':'')+(item.host?'<span>'+fdEsc(item.host)+'</span>':'')+
     (item.area?'<span>'+fdEsc(item.area)+'</span>':'')+'</p></div>'+
     (item.svg?'<div class="fd-packet-qr">'+item.svg+'</div>':'')+'</section>');
 }
@@ -370,6 +447,7 @@ function fdCarePacketPayloadOk(payload){
   for(i=0;i<payload.crisis.length;i++){
     line=payload.crisis[i];
     if(!line||!payload.contacts[line.ref]||typeof payload.contacts[line.ref].contact!=='string'||!/\S/.test(payload.contacts[line.ref].contact))return false;
+    if(typeof payload.contacts[line.ref].name!=='string'||!/\S/.test(payload.contacts[line.ref].name))return false;
   }
   for(i=0;i<payload.required.length;i++){
     id=payload.required[i];
@@ -381,14 +459,12 @@ function fdCarePacketPayloadOk(payload){
 /* What was RENDERED, not what was asked for: every required contact must be in the crisis block, and on the wallet
    card when there is one. Separate so a test can hand it a deliberately broken layout. */
 function fdCarePacketCheckCrisis(units,payload){
-  var i,j,needle,found;
+  var i,j,needle,name,found;
   for(i=0;i<payload.required.length;i++){
     needle=fdEsc(payload.contacts[payload.required[i]].contact);
+    name=fdEsc(payload.contacts[payload.required[i]].name);
     found=false;
-    for(j=0;j<units.length;j++){
-      if(units[j].crisis&&units[j].html.indexOf(needle)!==-1)found=true;
-      if(units[j].card&&units[j].html.indexOf(needle)===-1)return false;
-    }
+    for(j=0;j<units.length;j++)if(units[j].crisis&&units[j].html.indexOf(needle)!==-1&&units[j].html.indexOf(name)!==-1)found=true;
     if(!found)return false;
   }
   return true;
@@ -399,23 +475,35 @@ function fdCarePacketDate(stamp){
 }
 function fdCarePacketFail(code,message){return {ok:false,code:code,message:message,pages:[],count:0,html:'',text:'',withheld:[],blockers:[],addresses:[]};}
 
+function fdCarePacketUnconfirmedMessage(info,payload){
+  if(info.loaded&&info.expired)return 'The unit profile’s phone confirmation has lapsed. A Final copy needs a current one; ask the project owner to confirm it again.';
+  if(!fdCarePacketProfiles(payload).length)return 'A Final copy needs a confirmed unit profile, and none is set up yet. Ask the project owner to add one.';
+  return 'A Final copy needs a confirmed unit profile. Load one in the unit details.';
+}
 function fdCarePacketBuild(state,data,payload,opts){
   if(!FD_CARE_PACKET_UNICODE)return fdCarePacketFail('CHECK_UNAVAILABLE','This browser cannot check the listings for text that must not print, so it cannot print the packet. Use Chrome or Edge.');
   var hb=(opts&&opts.headingBase)||1,mode=state&&state.mode==='final'?'final':'review';
-  var live,byId,cats,ctx,unit,st={crisis:false,other:false},out={blockers:[],withheld:[]},units=[],i,j,k,ins,rest=[],item,label,groupCount;
-  var intro=null,week=null,crisisUnit,groups=[],members,addresses=[];
+  var now=opts&&typeof opts.now==='number'?opts.now:(typeof Date!=='undefined'?Date.now():NaN);
+  var live,byId,cats,ctx,info,st={crisis:false,other:false},out={blockers:[],withheld:[]},units=[],i,j,k,ins,rest=[],item,label,groupCount;
+  var intro=null,week=null,crisisUnit,groups=[],members,addresses=[],included=[],orgText,draft='',callbackOn=false,namesUnit,usesTokens;
   if(!fdCarePacketPayloadOk(payload))return fdCarePacketFail('CRISIS_UNAVAILABLE','The crisis lines did not load, so this packet cannot print. Reload the page and try again.');
   live=fdCarePacketDisplayOrder(state,data);
   if(!live.length)return fdCarePacketFail('EMPTY','Add a listing to the packet to preview it.');
   byId=fdCarePacketRecords(data);
-  unit={name:fdCarePacketUnitName(state.unit&&state.unit.name,payload),phone:fdCarePacketUnitPhone(state.unit&&state.unit.phone,payload)};
-  ctx={unitName:unit.name.ok?unit.name.value:'',unitPhone:unit.phone.ok?unit.phone.value:'',contacts:payload.contacts};
+  info=fdCarePacketUnitOf(state,payload,now);
+  ctx={unitName:info.name,unitPhone:info.phone,contacts:payload.contacts};
+  orgText=info.org&&info.name?info.org+' · '+info.name:(info.org||info.name);
+  /* A draft with no unit phone says so on the page, in ink. A typed number prints with no such line: "not confirmed" next to a
+     printed number would contradict it, and the preview tells the trainee instead. */
+  if(mode==='review'&&!ctx.unitPhone)draft='<p class="fd-packet-draft" data-fd-packet-draft><b>Draft.</b> Your nurse will write the unit’s phone number on this page before you leave.</p>';
 
-  units.push(fdCarePacketUnit('p1-header',null,false,'<header class="fd-packet-head" data-fd-packet-unit="header"><div class="fd-packet-head__box"><p class="fd-packet-org">'+fdEsc(FD_CARE_PACKET_ORG)+
-    (ctx.unitName?' · '+fdEsc(ctx.unitName):'')+'</p>'+fdCarePacketHeading(hb,1,'fd-packet-title',FD_CARE_PACKET_TITLE)+'</div></header>'));
+  units.push(fdCarePacketUnit('p1-header',null,false,'<header class="fd-packet-head" data-fd-packet-unit="header"><div class="fd-packet-head__box">'+(orgText?'<p class="fd-packet-org">'+fdEsc(orgText)+'</p>':'')+
+    fdCarePacketHeading(hb,1,'fd-packet-title',FD_CARE_PACKET_TITLE)+draft+'</div></header>'));
   for(i=0;i<payload.inserts.length;i++){
     ins=payload.inserts[i];
     if(!fdCarePacketInsertOn(state,ins))continue;
+    included.push(ins);
+    if(ins.id==='callback')callbackOn=true;
     if(ins.id==='intro')intro=ins;else if(ins.id==='week')week=ins;else rest.push(ins);
   }
   if(intro)units=units.concat(fdCarePacketInsertUnits(intro,payload,ctx,st,hb,mode));
@@ -426,7 +514,7 @@ function fdCarePacketBuild(state,data,payload,opts){
   /* A bordered element is never a unit root: the unit is a plain wrapper that keeps its own bottom padding, because the
      measurer reads boxes and a margin is not in one. */
   units.push(fdCarePacketUnit('res-head',null,true,'<div class="fd-packet-sechead">'+fdCarePacketHeading(hb,2,'fd-packet-sec','Places that can help')+'</div>'));
-  if(mode==='review')units.push(fdCarePacketUnit('res-tip',null,true,'<div class="fd-packet-tipwrap" data-fd-packet-unit="tip"><p class="fd-packet-tip"><b>Tick the ones you want to try.</b> Put an X through any that do not fit. We will keep what you tick for the final copy.</p></div>'));
+  if(mode==='review')units.push(fdCarePacketUnit('res-tip',null,true,'<div class="fd-packet-tipwrap" data-fd-packet-unit="tip"><p class="fd-packet-tip"><b>Tick the ones you want to try.</b> Put an X through any that do not fit. We will go over your choices with you before you leave.</p></div>'));
   cats=(data&&data.categories)||[];
   for(i=0,k=0;i<cats.length;i++){
     members=[];
@@ -451,8 +539,16 @@ function fdCarePacketBuild(state,data,payload,opts){
   if(!fdCarePacketCheckCrisis(units,payload))return fdCarePacketFail('CRISIS_UNAVAILABLE','A required crisis line is missing from the packet, so it cannot print.');
   groupCount=state.ids.length;
   if(data&&data.partial&&groupCount>live.length)out.blockers.push({code:'HIDDEN_LISTINGS',id:'',message:(groupCount-live.length)+' saved listing'+(groupCount-live.length===1?' is':'s are')+' hidden while the directory is incomplete. Reload the directory before printing.'});
-  if(mode==='final'&&!ctx.unitPhone)out.blockers.push({code:'UNIT_PHONE',id:'',message:'Enter the unit phone number so the Final copy can tell patients how to reach the unit.'});
-  return {ok:true,mode:mode,units:units,groups:groups,blockers:out.blockers,withheld:out.withheld,addresses:addresses,ctx:ctx,live:live,hb:hb,
+  /* A Final copy that NAMES the unit or PROMISES contact (a unit token anywhere in the pages it carries, an org or unit name
+     in the header, or the call-back page) needs a confirmed unit phone, which only a loaded profile provides. These apply to
+     printing; the copied text names no unit and promises no contact, so they do not block Copy. */
+  namesUnit=!!(info.name||info.org);
+  usesTokens=/\{\{unit(?:Name|Phone)\}\}/.test(JSON.stringify(included));
+  if(mode==='final'&&(namesUnit||usesTokens||callbackOn)&&!info.confirmed)
+    out.blockers.push({code:'UNIT_UNCONFIRMED',scope:'print',id:'',message:fdCarePacketUnconfirmedMessage(info,payload)});
+  if(mode==='final'&&callbackOn&&!(info.confirmed&&info.callbackProgram))
+    out.blockers.push({code:'CALLBACK_UNCONFIRMED',scope:'print',id:'',message:'The call-back page promises a call from the unit. A Final copy needs a confirmed unit profile that records a call-back program, or switch that page off.'});
+  return {ok:true,mode:mode,units:units,groups:groups,blockers:out.blockers,withheld:out.withheld,addresses:addresses,ctx:ctx,unit:info,live:live,hb:hb,
     date:fdCarePacketDate(data&&data.generatedAt),checkedOn:fdCarePacketDate(payload.checkedOn)};
 }
 
@@ -584,7 +680,52 @@ function fdCarePacketSheet(state,data,payload,opts){
     if(!checked)return fdCarePacketFail('MEASURE_FAILED','The packet could not be checked after layout, so it cannot print.');
     if(!checked.ok)return fdCarePacketFail('OVERFLOW','A page does not fit its sheet, so this packet cannot print.');
   }
-  return {ok:true,code:'',message:'',pages:pack.pages,count:pack.count,html:html,mode:model.mode,blockers:model.blockers,withheld:model.withheld,addresses:model.addresses};
+  return {ok:true,code:'',message:'',pages:pack.pages,count:pack.count,html:html,mode:model.mode,blockers:model.blockers,withheld:model.withheld,addresses:model.addresses,unit:model.unit};
+}
+
+/* ---- the wallet card: its own optional print, one page, never part of the packet -------------------------------- */
+/* Two ID-1 panels on one single-sided Letter page, each with its own dashed cut line: the crisis lines (the official
+   governed name over the number, never a short label) and "My numbers" (write-in space). Nothing here depends on duplex
+   printing and nothing on it names the unit. The crisis check covers every required line's NAME and CONTACT inside the
+   crisis panel; a card that cannot carry them refuses to build. */
+function fdCarePacketCheckCard(html,payload){
+  var start=html.indexOf('data-fd-packet-card="crisis"'),end=html.indexOf('</section>',start),panel,i,id;
+  if(start===-1||end===-1)return false;
+  panel=html.slice(start,end);
+  for(i=0;i<payload.required.length;i++){
+    id=payload.required[i];
+    if(panel.indexOf(fdEsc(payload.contacts[id].contact))===-1||panel.indexOf(fdEsc(payload.contacts[id].name))===-1)return false;
+  }
+  return true;
+}
+function fdCarePacketCardSheet(payload,opts){
+  var card=payload&&payload.card,lines='',rows='',html,checked,i,line,contact,hb=(opts&&opts.headingBase)||1;
+  if(!FD_CARE_PACKET_UNICODE)return fdCarePacketFail('CHECK_UNAVAILABLE','This browser cannot check the card for text that must not print, so it cannot print the card. Use Chrome or Edge.');
+  if(!fdCarePacketPayloadOk(payload))return fdCarePacketFail('CRISIS_UNAVAILABLE','The crisis lines did not load, so the card cannot print. Reload the page and try again.');
+  if(!card||typeof card!=='object'||typeof card.title!=='string'||typeof card.body!=='string'||typeof card.mineTitle!=='string'||!Array.isArray(card.rows)||!card.rows.length||
+      typeof payload.crisisCopy.cardHeading!=='string'||payload.crisis.length>5)
+    return fdCarePacketFail('CARD_UNAVAILABLE','The wallet card could not be built, so it cannot print.');
+  for(i=0;i<payload.crisis.length;i++){
+    line=payload.crisis[i];contact=payload.contacts[line.ref];
+    lines+='<li data-fd-packet-crisis="'+fdEsc(line.ref)+'"><b class="fd-packet-crisis__num">'+fdEsc(contact.contact)+'</b><span class="fd-packet-crisis__label">'+fdEsc(contact.name)+'</span></li>';
+  }
+  for(i=0;i<card.rows.length;i++)
+    rows+='<div class="fd-packet-card__row"><span>'+fdEsc(card.rows[i])+'</span><i aria-hidden="true"></i><i aria-hidden="true"></i></div>';
+  /* Measured as prototype C: two ID-1 panels at the top of one Letter page and one instruction line under them. */
+  html='<article class="fd-packet-page fd-packet-cardsheet" data-fd-packet-page aria-label="'+fdEsc(card.title)+'">'+
+    fdCarePacketHeading(hb,1,'fd-packet-vh',card.title)+
+    '<div class="fd-packet-cardpair"><section class="fd-packet-card" data-fd-packet-card="crisis">'+fdCarePacketHeading(hb,2,'fd-packet-card__title',payload.crisisCopy.cardHeading)+
+    '<ul class="fd-packet-card__lines">'+lines+'</ul></section>'+
+    '<section class="fd-packet-card" data-fd-packet-card="mine">'+fdCarePacketHeading(hb,2,'fd-packet-card__title',card.mineTitle)+
+    '<div class="fd-packet-card__rows">'+rows+'</div></section></div>'+
+    '<p class="fd-packet-cardsheet__note">'+fdEsc(card.body)+'</p></article>';
+  if(!fdCarePacketCheckCard(html,payload))return fdCarePacketFail('CRISIS_UNAVAILABLE','A required crisis line is missing from the card, so it cannot print.');
+  if(!(opts&&opts.verify===false)){
+    try{checked=fdCarePacketVerifyDom(html,1);}catch(verifyError){checked=null;}
+    if(!checked)return fdCarePacketFail('MEASURE_FAILED','The card could not be checked after layout, so it cannot print.');
+    if(!checked.ok)return fdCarePacketFail('OVERFLOW','The card does not fit its page, so it cannot print.');
+  }
+  return {ok:true,code:'',message:'',pages:[],count:1,html:html,mode:'card',blockers:[],withheld:[],addresses:[]};
 }
 
 /* ---- the copy for the After Visit Summary ------------------------------------------------------------------- */
@@ -592,7 +733,7 @@ function fdCarePacketSheet(state,data,payload,opts){
    listings as the paper, crisis lines first, no unit details. It is going INTO the medical record, so it does not
    say the page is "not a medical record". */
 function fdCarePacketText(state,data,payload,opts){
-  var model=fdCarePacketBuild(state,data,payload,opts),lines=[],i,j,g,item,bits,line,contact,note;
+  var model=fdCarePacketBuild(state,data,payload,opts),lines=[],i,j,g,item,bits,line,contact,note,copyBlockers;
   if(!model.ok)return model;
   if(model.mode!=='final')return fdCarePacketFail('NOT_FINAL','Switch to the Final copy to copy text for the After Visit Summary.');
   note=fdCarePacketFill(payload.crisisCopy.note,{unitName:'',unitPhone:'',contacts:payload.contacts},'text');
@@ -600,7 +741,7 @@ function fdCarePacketText(state,data,payload,opts){
   lines.push(FD_CARE_PACKET_TITLE,'',fdCarePacketStrip(payload.crisisCopy.heading));
   for(i=0;i<payload.crisis.length;i++){
     line=payload.crisis[i];contact=payload.contacts[line.ref];
-    lines.push(fdCarePacketStrip(line.label)+': '+fdCarePacketStrip(contact.contact)+(contact.availability?' ('+fdCarePacketStrip(contact.availability)+')':''));
+    lines.push(fdCarePacketStrip(contact.name)+': '+fdCarePacketStrip(contact.contact)+(contact.availability?' ('+fdCarePacketStrip(contact.availability)+')':''));
   }
   lines.push(fdCarePacketStrip(note.out),'','Places that can help');
   for(g=0;g<model.groups.length;g++){
@@ -608,12 +749,14 @@ function fdCarePacketText(state,data,payload,opts){
     for(j=0;j<model.groups[g].items.length;j++){
       item=model.groups[g].items[j];
       bits=[item.name];
-      if(item.phone)bits.push(item.phone);
+      if(item.dial)bits.push(item.dial.verb+' '+item.dial.number+(item.dial.keyword?' (send '+item.dial.keyword+')':''));
       if(item.host)bits.push(item.host);
       if(item.area)bits.push(item.area);
       lines.push('- '+bits.join(' · ')+(item.desc.text?'. '+item.desc.text:''));
     }
   }
   lines.push('',(model.date?'Listings copied from the ReConnect community directory on '+model.date+'. ':'Listings copied from the ReConnect community directory. ')+'Call ahead to confirm hours, cost and availability.');
-  return {ok:true,code:'',message:'',text:lines.join('\n'),blockers:model.blockers,withheld:model.withheld,mode:model.mode};
+  /* The copied text names no unit and promises no contact, so the blockers that guard printing a unit (scope print) do not apply to it. */
+  for(i=0,copyBlockers=[];i<model.blockers.length;i++)if(model.blockers[i].scope!=='print')copyBlockers.push(model.blockers[i]);
+  return {ok:true,code:'',message:'',text:lines.join('\n'),blockers:copyBlockers,withheld:model.withheld,mode:model.mode};
 }
