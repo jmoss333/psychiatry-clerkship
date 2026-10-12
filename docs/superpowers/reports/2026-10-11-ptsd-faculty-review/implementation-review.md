@@ -1,10 +1,24 @@
 # F01–F03 implementation review
 
-Prepared October 11, 2026. **Teaching drafts; faculty review pending. Both AI features remain disabled.**
+Prepared October 11, 2026; faculty decision recorded October 12, 2026. **F01–F03 approved as revised at `8b8813ec876319f99136ca71db4817604811b1d7`. Publication attestation and merging remain held. Both AI features remain disabled.**
 
-**Current staging update:** this draft incorporates the review-only workflow in [PR #1024](https://github.com/jmoss333/psychiatry-clerkship/pull/1024). The pending medication question remains a draft and is excluded from learner publication. See the staging follow-up below and the exact-head validation in [PR #1015](https://github.com/jmoss333/psychiatry-clerkship/pull/1015).
+**Current staging update:** this draft incorporates the review-only workflow in [PR #1024](https://github.com/jmoss333/psychiatry-clerkship/pull/1024). The approved wording of the medication question remains saved as a draft and excluded from learner publication until the separate faculty-console attestation. See the staging follow-up below and the exact-head validation in [PR #1015](https://github.com/jmoss333/psychiatry-clerkship/pull/1015).
 
-**Historical record before staging:** the existing draft PR was #1015. The applied content was saved locally in commit `f956508b7818967d4d58a083f19919e2946032e1`, based on `15ec232b2b34d1245d32bfd62a11ae2ec685adc8`. At that point it had not been pushed, merged or deployed; the remote PR did not contain these corrections. The original comparison remains in README.md and source-receipt.json. This document describes the applied follow-up, not a faculty approval or benchmark label.
+**Historical record before staging:** the existing draft PR was #1015. The applied content was saved locally in commit `f956508b7818967d4d58a083f19919e2946032e1`, based on `15ec232b2b34d1245d32bfd62a11ae2ec685adc8`. At that point it had not been pushed, merged or deployed; the remote PR did not contain these corrections. The original comparison remains in README.md and source-receipt.json. That historical preparation did not record a faculty approval or benchmark label; the later, limited faculty decision follows.
+
+## Faculty decisions — October 12, 2026
+
+Joshua Moss, MD explicitly approved **F01–F03 as revised** in the Codex conversation, for clinical content commit **`8b8813ec876319f99136ca71db4817604811b1d7`**. Codex transcribed that instruction in [review-decisions.csv](review-decisions.csv) and [faculty-decisions.json](faculty-decisions.json). The latter preserves the instruction, reviewed commit, original packet and source-file fingerprints, and the complete saved F03 item's fingerprint. File fingerprints identify the reviewed version; they do not approve unrelated content in those files. Future wording changes require renewed review.
+
+| Decision | Approved scope | Outcome |
+|---|---|---|
+| F01 | Revised Q40, including guideline attribution, nightmare/global distinction, verified initial dose, references and orthostasis pearl | Approved as revised |
+| F02 | The core teaching passages and two pearls reproduced below | Approved as revised |
+| F03 | Full saved question, all options/explanations, answer B, rationale, pearl and evidence, including the October 12 refinements | Approved as revised |
+
+This records the human clinical decision. It does not write a faculty-console publication attestation: `qb_anx_002` remains `draft`, and `reviewed.json`, source/pharmacy review statuses and all clinical files remain unchanged. F04–F07, N01–N03 and B01–B03 remain pending, including benchmark eligibility and excerpt permission. No benchmark gold labels are created. The staging-workflow decision, merge authorization, production publication and either AI feature's activation are outside this approval.
+
+The approved clinical revision passed the full local gate and [GitHub CI run 38278922194](https://github.com/jmoss333/psychiatry-clerkship/actions/runs/38278922194), with 1,241 browser passes, 43 skips and zero failures. Both local learner builds and downloads contain the 188 approved active questions from 192 source items; F03 remains withheld. Hosted learner-preview proof remains separately pinned to `fb7e6ee5`. This decision-record update changes no clinical text or feature setting.
 
 ## What changed
 
@@ -100,7 +114,7 @@ The October 12 refinement removes B's unique counseling/therapy-plan qualificati
 
 **Draft now:** Intrusive re-experiencing alone does not establish a psychotic disorder. Antipsychotics are not first-line medications for PTSD; a separate comorbid condition may warrant them.
 
-This aligns the explanation with the revised rationale and keeps the medication statement scoped to PTSD. The question remains a draft pending faculty review.
+This aligns the explanation with the revised rationale and keeps the medication statement scoped to PTSD. Faculty approved this wording at the revision above; the question remains a draft awaiting the separate faculty-console publication attestation.
 
 ### Rationale
 
@@ -157,12 +171,12 @@ The failed validation above and [implementation-validation.json](implementation-
 
 Faculty source data can now retain a valid saved draft. Both learner builds publish the complete approved, active subset, including placement questions, saved-question inventories, and Anki/CSV downloads. The revised question is temporarily omitted; its earlier approved wording is not kept as a separate published copy. The accompanying Daily Review change accepts a valid empty approved inventory while still refusing a missing or malformed inventory.
 
-The source check now names `qb_anx_002` as **STAGED — faculty review only**, and the phone-review check reports that this one live draft is ready for faculty review. It remains `status: draft`; the source contains 192 questions and the approved projection contains 188. It is the only changed question relative to the workflow foundation. The QB exposure cap is still zero, the exception list is unchanged, and no approval record differs from that foundation.
+The source check names `qb_anx_002` as **STAGED — faculty review only**, and the phone-review check reports that this one live draft is ready for the faculty-console workflow. Its wording is approved in the decision record above, while it remains `status: draft`; the source contains 192 questions and the approved projection contains 188. It is the only changed question relative to the workflow foundation. The QB exposure cap is still zero, the exception list is unchanged, and no publication-attestation record differs from that foundation.
 
 Baseline question approval is bound to the exact IDs, saved item revisions, and manifest shown in its preview. Changed selected questions require a fresh preview, and new drafts cannot silently join a previous selection. This binding does not replace human review of the wording.
 
 The Validation section of [PR #1015](https://github.com/jmoss333/psychiatry-clerkship/pull/1015) records the completed combined-head local checks and online checks as they become available. A passing foundation check alone does not establish a successful combined build. Local checks, CI, preview deployment, production delivery and faculty approval remain separate facts. The old failed receipt has not been relabeled successful.
 
-Both AI flags remain `false`. No live provider call, credential change, hosting-setting change or faculty attestation was made. The next review is the staging workflow followed by F01–F03 and the exact saved medication-question revision.
+Both AI flags remain `false`. No live provider call, credential change, hosting-setting change or faculty-console attestation was made. F01–F03's wording decision is recorded above. The next integration review is the staging workflow against current main, followed by the dependent PR and its resulting checks/previews. Console attestation and learner delivery remain separate from merging; the user's merge hold remains in force.
 
 Potential later improvement: a faculty-only view placing the last approved wording beside the saved draft, with its exact revision and learner publication status. This is not implemented here.

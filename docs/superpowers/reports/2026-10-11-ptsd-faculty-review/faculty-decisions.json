@@ -1,0 +1,96 @@
+{
+  "recordType": "faculty-review-decision",
+  "schemaVersion": 1,
+  "decision": "approved-as-revised",
+  "reviewer": "Joshua Moss, MD",
+  "reviewedOn": "2026-10-12",
+  "recordedAt": "2026-10-12T17:15:01.113377+00:00",
+  "recordedBy": "Codex, transcribing the explicit faculty instruction in this chat",
+  "decisionSource": {
+    "channel": "explicit user instruction in Codex chat",
+    "threadId": "01a126a2-e207-7212-bb63-91d181793afd",
+    "instruction": "Let’s approve F01–F03 as revised and record the faculty decisions for this exact version. Show me what remains before merging. Keep both AI features disabled and hold off on merging."
+  },
+  "reviewedContentCommit": "8b8813ec876319f99136ca71db4817604811b1d7",
+  "reviewedPullRequest": "https://github.com/jmoss333/psychiatry-clerkship/pull/1015",
+  "reviewedPacket": {
+    "path": "docs/superpowers/reports/2026-10-11-ptsd-faculty-review/implementation-review.md",
+    "gitBlob": "21547cfa794c92843ea5f066364d7cd756cefa53",
+    "sha256": "23b99c790bcdcb151de116459ad19314deb89a309b9067de94254f6b9b6b8891"
+  },
+  "sourceVerificationReceipt": {
+    "path": "docs/superpowers/reports/2026-10-11-ptsd-faculty-review/implementation-source-checks.json",
+    "gitBlob": "06f7e83bb54d7ebc7e36d777ecd2d56a0c79c2f4",
+    "sha256": "8bf6cf425db3d6fa50a99d6ef6733c43d9bb988a08cf7b1b77f13c2432faf7f0"
+  },
+  "bindingInterpretation": "File hashes identify the exact reviewed version and context. Approval is limited to the decision scopes below, not every item or claim in a containing file. Future content changes do not inherit this approval.",
+  "decisions": [
+    {
+      "id": "F01",
+      "decision": "approved-as-revised",
+      "scope": "Revised Rounds Q40 answer, 2017/2023 guideline attribution, nightmare-versus-global-PTSD distinction, verified initial-dose line, references and orthostasis pearl.",
+      "source": {
+        "path": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+        "gitBlob": "f0685c0289115d2d7e833b9865ebd559b730dcc9",
+        "sha256": "b2b6c3ddfc335bf971f49b36eefd2c6926ce4d80bdeec20b7d95d33ea5e27390"
+      }
+    },
+    {
+      "id": "F02",
+      "decision": "approved-as-revised",
+      "scope": "Revised core teaching passages shown in the implementation review: summary, acute inpatient management, exam treatment anchors, disposition/access planning and the two listed pearls.",
+      "source": {
+        "path": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+        "gitBlob": "17a3f6041c501929b218658078446bbd1dacdfa9",
+        "sha256": "8add708fbc7b0cc580191cade18b9f4dbf65f750cdd2059dd074d4df0afcffc8"
+      }
+    },
+    {
+      "id": "F03",
+      "decision": "approved-as-revised",
+      "scope": "Full revised qb_anx_002 stem, all four options and incorrect-answer explanations, correct answer B, shared rationale, pearl and evidence, including the October 12 A/B/D refinements.",
+      "source": {
+        "path": "question_bank.json",
+        "gitBlob": "6e5d0966c07f18df3805e7ee4484091a759493a8",
+        "sha256": "f260572cc2e2fe7138832bb1316a7d25c3aaa31deb04de5d468b41e9e5d9c269"
+      }
+    }
+  ],
+  "questionBinding": {
+    "id": "qb_anx_002",
+    "canonicalJsonSha256": "47819495d07c69adbe2f4993ddc9157796e22bd45c037d64f6feef5ec46eaf5f",
+    "canonicalization": "UTF-8 JSON with recursively sorted object keys, ensure_ascii=false, separators=(comma,colon), no trailing newline; complete saved item including draft status.",
+    "correctAnswer": "B",
+    "savedStatus": "draft"
+  },
+  "validationOfReviewedContent": {
+    "fullLocalGate": "passed at reviewedContentCommit",
+    "githubCi": "https://github.com/jmoss333/psychiatry-clerkship/actions/runs/38278922194",
+    "browserTests": {
+      "passed": 1241,
+      "skipped": 43,
+      "failed": 0
+    },
+    "hostedLearnerPreviewLastVerifiedCommit": "fb7e6ee5f00416ae34492a0bfaa3ef124fdf4a40"
+  },
+  "notIncluded": [
+    "F04–F07",
+    "N01–N03",
+    "B01–B03",
+    "Standalone source-registry or pharmacy review status changes",
+    "Approval or merger of the #1024 staging workflow",
+    "Faculty-console publication attestation",
+    "Benchmark gold labels or excerpt permission",
+    "AI feature activation or live model evaluation",
+    "Merge or production publication"
+  ],
+  "heldBoundaries": {
+    "readingCompanionEnabled": false,
+    "facultyEvidenceBriefEnabled": false,
+    "questionPublicationStatus": "draft; withheld from learner builds and downloads",
+    "approvalLedgerChanged": false,
+    "mergeAuthorized": false,
+    "productionPublicationAuthorized": false
+  },
+  "approvalLedgerSha256": "8979bbb5205c9c97905a12f02fafb31c291b4cd9d71f13bf9c184b97b6f0fa3c"
+}

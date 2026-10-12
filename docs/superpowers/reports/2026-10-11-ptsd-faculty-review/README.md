@@ -1,14 +1,14 @@
 # Faculty review packet: VA/DoD PTSD guideline, 2017 to 2023
 
-**Draft for faculty judgment | prepared October 11, 2026 | neither pilot feature enabled**
+**F01–F03 approved at the exact revision below; remaining decisions pending | prepared October 11, updated October 12, 2026 | neither pilot feature enabled**
 
-The original guidelines support one useful historical benchmark case, with several distinct teaching decisions. The clearest correction is Rounds Q40: its answer suggests prazosin for PTSD-related nightmares, but its explanation incorrectly attributes an insufficient-evidence rating to the 2023 guideline. The 2023 recommendation is weakly in favor for nightmares; the recommendation for PTSD overall remains weakly against.
+The original guidelines support one useful historical benchmark case, with several distinct teaching decisions. In the original teaching baseline, Rounds Q40's answer suggested prazosin for PTSD-related nightmares, but its explanation incorrectly attributed an insufficient-evidence rating to the 2023 guideline. The approved F01 revision corrects that attribution: the 2023 recommendation is weakly in favor for nightmares; the recommendation for PTSD overall remains weakly against.
 
-The next priority is consistency: our core page and some questions use broad SSRI/SNRI language even though nearby teaching already names the three medications supported by the 2023 guideline. We should preserve the correct material and historical study findings while faculty decides which wording to refine.
+The original baseline also contained broad SSRI/SNRI language in the core page and some questions, even though nearby teaching already named the three medications supported by the 2023 guideline. The approved F02/F03 revisions align the selected core passages and medication question while preserving correct material and historical study findings. Other proposed refinements remain separate pending decisions.
 
-**Implementation update:** F01–F03 are applied as review drafts, with verified original-guideline references and dose support. See the [implementation review](implementation-review.md) for the exact changes, source checks, dependencies and validation status. The comparisons below preserve the original proposal context. No clinical approval, new attestation or live model evaluation is recorded. All faculty decisions remain pending in [review-decisions.csv](review-decisions.csv). Both feature switches remain false. This is **one candidate case, not five approved cases**.
+**Faculty decision update:** Joshua Moss, MD approved F01–F03 as revised at clinical content commit **`8b8813ec876319f99136ca71db4817604811b1d7`** through an explicit instruction in the Codex conversation on October 12, 2026. The [decision record](faculty-decisions.json) binds that approval to the reviewed packet, source files and exact saved question. [review-decisions.csv](review-decisions.csv) records only F01–F03 as approved; all other decisions remain pending. See the [implementation review](implementation-review.md) for the approved wording and its scope. The comparisons below preserve the earlier proposal context and are not a separate approved replacement. Publication attestation, merging, benchmark eligibility and live model evaluation remain held or pending. Both feature switches remain false. This is **one candidate benchmark case with no approved gold labels**.
 
-**Review-only staging:** [PR #1024](https://github.com/jmoss333/psychiatry-clerkship/pull/1024) supplies the publication boundary for dependent [PR #1015](https://github.com/jmoss333/psychiatry-clerkship/pull/1015). `qb_anx_002` stays draft and is withheld from learner pages and downloads until faculty approval. The [staging follow-up](implementation-review.md#review-only-staging-follow-up) preserves the earlier failed receipt and points to current validation. Neither PR activates either AI feature.
+**Review-only staging:** [PR #1024](https://github.com/jmoss333/psychiatry-clerkship/pull/1024) supplies the publication boundary for dependent [PR #1015](https://github.com/jmoss333/psychiatry-clerkship/pull/1015). `qb_anx_002` stays draft and is withheld from learner pages and downloads until its separate faculty-console publication attestation. Recording the approved wording does not change that status. The [staging follow-up](implementation-review.md#review-only-staging-follow-up) preserves the earlier failed receipt and points to current validation. Neither PR activates either AI feature, and both remain unmerged.
 
 ## 1. Sources and version recovery
 
@@ -45,7 +45,7 @@ The 2023 guideline explains on pp16-17 that stricter GRADE application and evalu
 
 ## 3. Proposed teaching decisions, with ready-to-review wording
 
-Paths are repository-relative at teaching baseline `70e7b5ef63be1254984f97cbe4362bfa9d8b1d04`. Stable Git links open the reviewed source. Line numbers are navigation aids; the receipt pins file bytes. These drafts are **not faculty-approved replacement text**.
+Paths are repository-relative at teaching baseline `70e7b5ef63be1254984f97cbe4362bfa9d8b1d04`. Stable Git links open the original source. Line numbers are navigation aids; the receipt pins file bytes. These historical proposals are **not the approved replacement text**; approval applies only to the later F01–F03 implementation at the exact revision identified above.
 
 ### F01 - Correct the Q40 version attribution first
 
@@ -55,7 +55,7 @@ The evidence line assigns the 2017 insufficient-evidence position to 2023 and co
 
 > The 2017 VA/DoD guideline found insufficient evidence for or against prazosin for PTSD-related nightmares. The 2023 guideline suggests it for those nightmares, with a weak recommendation, while continuing to suggest against prazosin for PTSD overall. The negative PACT trial is part of the evidence considered; it does not replace the later guideline's symptom-specific conclusion.
 
-Implementation now attaches the original guideline sources to Rec28b and Rec32/18 and preserves the orthostasis pearl. The original 2023 Appendix B, Table B-1, p102 verifies the initial dose as 1 mg at bedtime, titrated to clinical response. The dose now has its own teaching line, and the secondary article reference has been replaced with the original guideline references. Faculty review remains pending; see the implementation review for the extracted table evidence.
+Implementation now attaches the original guideline sources to Rec28b and Rec32/18 and preserves the orthostasis pearl. The original 2023 Appendix B, Table B-1, p102 verifies the initial dose as 1 mg at bedtime, titrated to clinical response. The dose now has its own teaching line, and the secondary article reference has been replaced with the original guideline references. Faculty approved the exact F01 implementation identified above; see the implementation review for the extracted table evidence and separate publication-attestation status.
 
 ### F02 - Make the core page internally consistent
 
