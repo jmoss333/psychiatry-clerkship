@@ -319,6 +319,17 @@ COMMUNICATION_CASES_WPI_2026_09_IDS = {
     "talevski-2020-teach-back",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | COMMUNICATION_CASES_WPI_2026_09_IDS
+# Source-backed corrections to the 2026-10-12 case. Existing Stanley, Doupnik and Franklin
+# identities are reused; each new identity has a case-bound claim and an original span.
+COTW_SAFETY_2026_10_IDS = {
+    "ferguson-2021-safety-planning-review",
+    "houtsma-2018-firearm-suicide-review",
+    "nuij-2021-safety-planning-meta-analysis",
+    "posner-2011-cssrs",
+    "powsner-2023-emergency-suicide-assessment",
+    "siry-2021-lethal-means-clinician-views",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | COTW_SAFETY_2026_10_IDS
 VALIDATE = Path(__file__).with_name("validate.py")
 REGISTRY_CLI = Path(__file__).with_name("registry.py")
 ZOTERO_CONFIG_PATH = Path(__file__).with_name("zotero_config.json")

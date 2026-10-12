@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-27",
+  "updated": "2026-10-12",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -15,7 +15,6 @@
       "caspi-2003-5htt-stress",
       "engel-1977-biopsychosocial-model",
       "felitti-1998-ace",
-      "franklin-2017-suicide-risk-meta-analysis",
       "linehan-1991-dbt",
       "march-2004-tads",
       "rosenhan-1973-sane-places",
@@ -243,11 +242,11 @@
       "sourceId": "stanley-brown-2018",
       "verifiedAgainst": {
         "spanType": "abstract",
-        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-09-24",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:29998307%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
         "pmid": "29998307",
         "doi": "10.1001/jamapsychiatry.2018.1776",
-        "sourceSpan": "Cohort comparison design with 6-month follow-up at 9 EDs (5 intervention sites and 4 control sites) in Veterans Health Administration hospital EDs. The intervention combines SPI and telephone follow-up. Of the 1640 total patients, 1186 were in the intervention group and 454 were in the comparison group. Patients in the SPI+ condition were less likely to engage in suicidal behavior (n = 36 of 1186; 3.03%) than those receiving usual care (n = 24 of 454; 5.29%) during the 6-month follow-up period. The SPI+ was associated with 45% fewer suicidal behaviors, approximately halving the odds of suicidal behavior over 6 months (odds ratio, 0.56; 95% CI, 0.33-0.95, P = .03). Intervention patients had more than double the odds of attending at least 1 outpatient mental health visit (odds ratio, 2.06; 95% CI, 1.57-2.71; P < .001)."
+        "sourceSpan": "Cohort comparison design with 6-month follow-up at 9 EDs (5 intervention sites and 4 control sites) in Veterans Health Administration hospital EDs. The intervention combines SPI and telephone follow-up. Of the 1640 total patients, 1186 were in the intervention group and 454 were in the comparison group. Patients in the SPI+ condition were less likely to engage in suicidal behavior (n = 36 of 1186; 3.03%) than those receiving usual care (n = 24 of 454; 5.29%) during the 6-month follow-up period. The SPI+ was associated with 45% fewer suicidal behaviors, approximately halving the odds of suicidal behavior over 6 months (odds ratio, 0.56; 95% CI, 0.33-0.95, P = .03). Intervention patients had more than double the odds of attending at least 1 outpatient mental health visit (odds ratio, 2.06; 95% CI, 1.57-2.71; P < .001). Patients were eligible for the study if they were 18 years or older, had an ED visit for a suicide-related concern, had inpatient hospitalization not clinically indicated, and were able to read English."
       },
       "claims": [
         {
@@ -275,6 +274,21 @@
           "direction": "positive",
           "usedBy": [
             "AR-36"
+          ]
+        },
+        {
+          "claimId": "cotw-spi-plus-association",
+          "claimText": "In a nonrandomized VA ED cohort, SPI plus telephone follow-up was associated with lower odds of suicidal behavior (OR 0.56) and higher odds of attending outpatient care (OR 2.06) over six months; hospitalization had already been judged not clinically indicated.",
+          "claimTerms": [
+            "Cohort comparison design",
+            "0.56",
+            "2.06",
+            "inpatient hospitalization not clinically indicated"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
           ]
         }
       ]
@@ -1607,6 +1621,20 @@
           "usedBy": [
             "evidence_inpatient"
           ]
+        },
+        {
+          "claimId": "cotw-brief-acute-care-association",
+          "claimText": "Doupnik et al. found brief acute-care interventions associated with fewer subsequent attempts (pooled OR 0.69) and greater linkage to follow-up (OR 3.04), but not reduced depression symptoms.",
+          "claimTerms": [
+            "0.69",
+            "3.04",
+            "not associated with reduced depression symptoms"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
         }
       ]
     },
@@ -2795,6 +2823,187 @@
           "direction": "mixed",
           "usedBy": [
             "communication-practice"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "posner-2011-cssrs",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:22193671%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
+        "pmid": "22193671",
+        "doi": "10.1176/appi.ajp.2011.10111704",
+        "sourceSpan": "Both the ideation and behavior subscales were sensitive to change over time. The intensity of ideation subscale demonstrated moderate to strong internal consistency."
+      },
+      "claims": [
+        {
+          "claimId": "cotw-cssrs-change",
+          "claimText": "Posner et al. found C-SSRS ideation and behavior subscales sensitive to change over time.",
+          "claimTerms": [
+            "sensitive to change over time"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "powsner-2023-emergency-suicide-assessment",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:37205029%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
+        "pmid": "37205029",
+        "doi": "10.1176/appi.focus.20220072",
+        "sourceSpan": "Screening helps to identify the few people at risk within a large group. Assessment seeks to decide whether a specific individual is at significant risk. Mitigation aims to reduce the risk of suicide or of a serious attempt for a person at risk. These aims cannot be achieved with perfect reliability, but some approaches are more effective than others. Suicide screening specifics are important, even to individual practitioners, because a positive screen triggers assessment. Evidence-based screening and assessment tools are inadequate for the possible complexities, making care of individual patients dependent on good clinical assessment."
+      },
+      "claims": [
+        {
+          "claimId": "cotw-screen-assess-mitigate",
+          "claimText": "Powsner et al. distinguish screening, assessment and mitigation and emphasize clinical assessment for complex individual presentations.",
+          "claimTerms": [
+            "Screening helps",
+            "Assessment seeks",
+            "Mitigation aims",
+            "good clinical assessment"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "nuij-2021-safety-planning-meta-analysis",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:35048835%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
+        "pmid": "35048835",
+        "doi": "10.1192/bjp.2021.50",
+        "sourceSpan": "Of 1816 unique abstracts screened, 6 studies with 3536 participants were eligible for analysis. The relative risk of suicidal behaviour among patients who received an SPTI compared with control was 0.570 (95% CI 0.408-0.795, P = 0.001; number needed to treat, 16). No significant effect was found for suicidal ideation."
+      },
+      "claims": [
+        {
+          "claimId": "cotw-spti-behavior-not-ideation",
+          "claimText": "Nuij et al. pooled six studies and found lower suicidal behavior (RR 0.570), but no significant effect on ideation.",
+          "claimTerms": [
+            "0.570",
+            "No significant effect was found for suicidal ideation"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "ferguson-2021-safety-planning-review",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:33913799%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
+        "pmid": "33913799",
+        "doi": "10.1080/13811118.2021.1915217",
+        "sourceSpan": "The evidence supports improvements in each of these domains, with complementary findings from the remaining quantitative and qualitative studies suggesting that the SPI is a feasible and acceptable intervention. While positive, these findings are limited by the heterogeneity of interventions and study designs, making the specific impact of the SPI difficult to both determine and generalize."
+      },
+      "claims": [
+        {
+          "claimId": "cotw-spi-feasibility-limits",
+          "claimText": "Ferguson et al. reported feasibility and acceptability findings, while heterogeneous designs and combined interventions limited attribution to SPI alone.",
+          "claimTerms": [
+            "feasible and acceptable",
+            "limited by the heterogeneity"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "siry-2021-lethal-means-clinician-views",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:33971519%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
+        "pmid": "33971519",
+        "doi": "10.1016/j.genhosppsych.2021.04.011",
+        "sourceSpan": "One-on-one qualitative interviews were conducted with clinicians (n = 15) at three large emergency departments. Interviewees noted that the tool had numerous potential benefits but that its uptake and effectiveness would depend on clinicians' perceptions on its utility, time constraints, and integration into workflow. Addressable concerns related to relationship to other resources, fit within emergency department workflow, and clarification about which emergency department clinician types should use the tool."
+      },
+      "claims": [
+        {
+          "claimId": "cotw-decision-aid-implementation",
+          "claimText": "Siry et al. interviewed clinicians about the Lock to Live decision aid and identified implementation issues involving perceived utility, time constraints and workflow; this qualitative study did not measure a reduction in suicide deaths.",
+          "claimTerms": [
+            "qualitative interviews",
+            "time constraints",
+            "integration into workflow"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "houtsma-2018-firearm-suicide-review",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:30122279%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
+        "pmid": "30122279",
+        "doi": "10.1016/j.copsyc.2017.07.002",
+        "sourceSpan": "Firearm ownership, experience using firearms, unsafe firearm storage, and high cultural acceptability of firearms increase risk for death by firearm suicide."
+      },
+      "claims": [
+        {
+          "claimId": "cotw-firearm-access-storage",
+          "claimText": "Houtsma et al. reviewed firearm access and storage as modifiable contributors to firearm-suicide risk.",
+          "claimTerms": [
+            "unsafe firearm storage"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "franklin-2017-suicide-risk-meta-analysis",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:27841450%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
+        "pmid": "27841450",
+        "doi": "10.1037/bul0000084",
+        "sourceSpan": "This included 365 studies (3,428 total risk factor effect sizes) from the past 50 years. The present random-effects meta-analysis produced several unexpected findings: across odds ratio, hazard ratio, and diagnostic accuracy analyses, prediction was only slightly better than chance for all outcomes; no broad category or subcategory accurately predicted far above chance levels; predictive ability has not improved across 50 years of research; studies rarely examined the combined effect of multiple risk factors; risk factors have been homogenous over time, with 5 broad categories accounting for nearly 80% of all risk factor tests; and the average study was nearly 10 years long, but longer studies did not produce better prediction. The homogeneity of existing research means that the present meta-analysis could only speak to STB risk factor associations within very narrow methodological limits-limits that have not allowed for tests that approximate most STB theories."
+      },
+      "claims": [
+        {
+          "claimId": "cotw-longitudinal-prediction-limits",
+          "claimText": "Franklin et al. found that longitudinal risk-factor prediction was only slightly better than chance, with substantial methodological limits and an average study duration of nearly ten years.",
+          "claimTerms": [
+            "only slightly better than chance",
+            "average study was nearly 10 years long",
+            "very narrow methodological limits"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
           ]
         }
       ]

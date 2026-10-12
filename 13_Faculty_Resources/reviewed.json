@@ -1524,7 +1524,7 @@
     "status": "pending",
     "risk": {
       "kind": "clinical",
-      "level": "moderate"
+      "level": "high"
     },
     "reason": "New Case of the Week (Suicide risk assessment & safety planning, MS3) added 2026-10-12; awaiting faculty attestation.",
     "at": "2026-10-12",
@@ -1534,7 +1534,7 @@
     "status": "pending",
     "risk": {
       "kind": "clinical",
-      "level": "moderate"
+      "level": "high"
     },
     "reason": "New Case of the Week (Suicide risk assessment & safety planning, resident) added 2026-10-12; awaiting faculty attestation.",
     "at": "2026-10-12",
