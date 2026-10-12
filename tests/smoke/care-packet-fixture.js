@@ -26,3 +26,28 @@ export function packetFeed(base) {
   const count = id => records.filter(r => r.category === id).length;
   return { ...base, records, categories: base.categories.map(c => ({ ...c, count: count(c.id) })) };
 }
+
+// A directory of exactly eight listings across five categories, for the print tests. `long` gives each a description near the
+// feed's 420-character cut, which is what makes pages fill; the default is a short realistic one. details/verifiedDate/reviewAfter
+// carry sentinels that must never reach a sheet. Phones and addresses are placeholders; no crisis number appears.
+const SHORT_DESCRIPTION = 'Counseling and medication follow-up for adults leaving the hospital. Intake within a week.';
+const LONG_DESCRIPTION = 'Outpatient counseling and medication follow-up for adults leaving the hospital. Appointments are offered within seven days of discharge, including evenings. Telehealth visits are available for people without transportation, and staff can help with insurance questions, prior authorization and finding a pharmacy close to home. Walk-in intake is open weekday mornings.';
+export const PRINT_LISTINGS = [
+  ['aftercare', 'Harbor Counseling Center'], ['aftercare', 'Casco Bay Outpatient Care'], ['aftercare', 'Southern Maine Wellness Clinic'],
+  ['peer_support', 'Harbor Peer Recovery Center'], ['peer_support', 'Warmline Peer Support'], ['basic_needs', 'York County Community Ride'],
+  ['recovery_meetings', 'SMART Recovery Maine'], ['community_services', 'Southern Maine Benefits Navigation'],
+];
+export function printFeed(base, { long = false, hostile = false } = {}) {
+  const records = PRINT_LISTINGS.map(([category, name], i) => ({
+    id: 'r-' + i, category,
+    name: hostile ? name + ' ' + 'N'.repeat(170 - name.length) : name,
+    description: hostile ? LONG_DESCRIPTION + ' ' + LONG_DESCRIPTION.slice(0, 140) : (long ? LONG_DESCRIPTION : SHORT_DESCRIPTION),
+    details: 'SENTINEL-DETAILS-7f3a', area: hostile ? 'Southern Maine and the surrounding counties, including rural and island communities' : 'Southern Maine',
+    regions: ['Southern Maine'], phone: hostile ? '207-555-01' + String(i).padStart(2, '0') + ' ext. 4 (' + 'weekdays '.repeat(14) + ')' : '207-555-01' + String(i).padStart(2, '0'),
+    contactHref: 'tel:20755501' + String(i).padStart(2, '0'),
+    website: hostile ? 'https://' + 'a'.repeat(60) + '.example.org/programs/' + 'b'.repeat(80) : 'https://example.org/resources/' + (i + 1),
+    verifiedDate: '2031-02-03', reviewAfter: '2032-04-05', verificationRequired: false,
+  }));
+  const count = id => records.filter(r => r.category === id).length;
+  return { ...base, records, categories: base.categories.map(c => ({ ...c, available: true, count: count(c.id) })) };
+}

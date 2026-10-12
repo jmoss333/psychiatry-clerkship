@@ -116,7 +116,7 @@ test.describe('flag on', () => {
     await expect(panel.getByRole('button', { name: /^Add all results/ })).toBeEnabled();
   });
 
-  // ---- AC4 (the review gate; the Print and Copy buttons themselves arrive in the next PR)
+  // ---- AC4 (the review gate; what it does to the Print and Copy buttons is in care-packet-print.spec.js)
   test('the review confirmations are bound to the packet: disabled when empty, reset by adding or clearing, reset on leaving Care', async ({ page }) => {
     await search(page);
     const ready = tray(page).locator('[data-fd-care-packet-ready]');
