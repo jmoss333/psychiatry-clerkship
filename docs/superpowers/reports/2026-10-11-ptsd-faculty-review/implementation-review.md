@@ -10,7 +10,7 @@ Prepared October 11, 2026. **Teaching drafts; faculty review pending. Both AI fe
 
 - **F01:** corrected the 2017/2023 attribution, retained prazosin's nightmare-specific scope, preserved the orthostasis pearl, and separated the verified initial dose from the guideline rating. Replaced the secondary article citation with the original guidelines and exact locations.
 - **F02:** aligned the core page, summary, exam anchor, discharge paragraph and pearls around CPT/PE/EMDR and the three named medications. Removed a universal combined-treatment implication. Separate anxiety/OCD, withdrawal and akathisia teaching remains. The optional secure-video and co-occurring-SUD expansion was not added.
-- **F03:** retained the pharmacotherapy stem and correct answer B; updated option B, options C and D's explanations, rationale, pearl and evidence together. Returned the edited question from attested to draft. Other questions are unchanged.
+- **F03:** retained the pharmacotherapy stem and correct answer B; updated option B, options C and D's explanations, rationale, pearl and evidence together. The October 12 refinements shorten B to remove an answer-length cue, scope A's explanation to PTSD, and rename D's trap to match the misconception. Returned the edited question from attested to draft. Other questions are unchanged.
 
 ## F01 — full revised Q40
 
@@ -60,19 +60,41 @@ Both original guideline records have facultyReviewStatus **pending**. Their blan
 
 **Stem, unchanged:** A 28-year-old woman admitted for a severe depressive episode is also found to have untreated PTSD — she endorses daily nightmares, hypervigilance, and avoidance behaviors that have persisted for two years since an assault. She has no history of substance use disorder. After addressing the acute safety concern, which is the most appropriate first-line pharmacotherapy for her PTSD?
 
-### Option B
+### Option A — incorrect; October 12 explanation refinement
+
+**Option, unchanged:** Start scheduled lorazepam — benzodiazepines reduce hyperarousal and improve sleep, targeting PTSD's core neurobiological substrate
+
+**Trap:** The reflexive benzodiazepine
+
+**Previous explanation:** Benzodiazepines drive dependence, falls, and delirium and are not a treatment for PTSD — standing benzodiazepines for anxiety disorders are explicitly to be avoided on the inpatient unit.
+
+**Draft now:** Benzodiazepines are not recommended for PTSD, even without a history of substance use disorder. They carry risks of dependence, falls, and cognitive impairment; a separate clinical indication requires its own assessment.
+
+### Option B — correct
 
 **Before:** Start an SSRI or SNRI, counsel her about delayed onset, and plan trauma-focused therapy (prolonged exposure or CPT) as a discharge goal
 
-**Draft now:** Choose sertraline, paroxetine or venlafaxine when medication is selected, discuss delayed benefit, and arrange a discussion of trauma-focused therapy options such as CPT, PE or EMDR.
+**Draft now:** Start sertraline, paroxetine or venlafaxine — antidepressants with evidence for treating established PTSD.
 
-### Option C explanation
+The October 12 refinement removes B's unique counseling/therapy-plan qualification and answer-length cue. The shared rationale below provides B's explanation; no separate explanation field is required. Delayed-benefit counseling and access planning move into that rationale; the pearl and evidence remain unchanged.
+
+### Option C — incorrect
+
+**Option, unchanged:** Start propranolol — beta blockade prevents autonomic consolidation of traumatic memories and is first-line for established PTSD
+
+**Trap:** Wrong mechanism for PTSD
 
 **Before:** Propranolol is studied as an acute peritraumatic adjunct — it is not first-line pharmacotherapy for established PTSD; SSRIs and SNRIs are.
 
 **Draft now:** Propranolol is not a recommended first-line medication for established PTSD. The 2023 VA/DoD guideline recommends sertraline, paroxetine or venlafaxine when medication is selected.
 
-### Option D explanation — October 12 clarification
+### Option D — incorrect; October 12 clarification
+
+**Option, unchanged:** Start an antipsychotic for the intrusive re-experiencing — flashback-like episodes indicate psychotic features requiring dopamine blockade
+
+**Trap label before:** Psychosis = schizophrenia
+
+**Trap label now:** Flashbacks = psychosis
 
 **Before:** Intrusive re-experiencing in PTSD is not psychosis — antipsychotics are not first-line for PTSD and conflating the two is the inpatient trap that delays correct treatment.
 
@@ -84,7 +106,7 @@ This aligns the explanation with the revised rationale and keeps the medication 
 
 **Before:** The reflexive benzodiazepine is the most common trap — standing benzos for PTSD create dependence without treating the disorder and are explicitly avoided on the inpatient unit. SSRIs and SNRIs are first-line across all anxiety disorders and PTSD; definitive treatment pairs medication with trauma-focused therapy (prolonged exposure or CPT) planned at discharge. Propranolol is studied in acute peritraumatic settings, not as first-line pharmacotherapy for established PTSD. Antipsychotics conflate re-experiencing with psychosis.
 
-**Draft now:** Sertraline, paroxetine and venlafaxine are the medications recommended for PTSD by the 2023 VA/DoD guideline. The recommendation applies to named drugs, not every SSRI or SNRI. Individual trauma-focused psychotherapy with CPT, PE or EMDR is preferred over medication when feasible and acceptable; treatment planning should reflect preference and access, and combined care is not a universal requirement. The guideline recommends against benzodiazepines for PTSD. Propranolol and antipsychotics are not recommended first-line medications for established PTSD, and intrusive re-experiencing alone does not establish a psychotic disorder.
+**Draft now:** Sertraline, paroxetine and venlafaxine are the medications recommended for PTSD by the 2023 VA/DoD guideline. The recommendation applies to named drugs, not every SSRI or SNRI. Individual trauma-focused psychotherapy with CPT, PE or EMDR is preferred over medication when feasible and acceptable; treatment planning should reflect preference and access, and combined care is not a universal requirement. Discuss delayed medication benefit and arrange access to the selected treatment. The guideline recommends against benzodiazepines for PTSD. Propranolol and antipsychotics are not recommended first-line medications for established PTSD, and intrusive re-experiencing alone does not establish a psychotic disorder.
 
 ### Pearl
 

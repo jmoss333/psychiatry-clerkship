@@ -501,12 +501,12 @@
           "t": "Start scheduled lorazepam — benzodiazepines reduce hyperarousal and improve sleep, targeting PTSD's core neurobiological substrate",
           "trap": {
             "name": "The reflexive benzodiazepine",
-            "note": "Benzodiazepines drive dependence, falls, and delirium and are not a treatment for PTSD — standing benzodiazepines for anxiety disorders are explicitly to be avoided on the inpatient unit."
+            "note": "Benzodiazepines are not recommended for PTSD, even without a history of substance use disorder. They carry risks of dependence, falls, and cognitive impairment; a separate clinical indication requires its own assessment."
           }
         },
         {
           "key": "B",
-          "t": "Choose sertraline, paroxetine or venlafaxine when medication is selected, discuss delayed benefit, and arrange a discussion of trauma-focused therapy options such as CPT, PE or EMDR.",
+          "t": "Start sertraline, paroxetine or venlafaxine — antidepressants with evidence for treating established PTSD.",
           "c": true
         },
         {
@@ -521,12 +521,12 @@
           "key": "D",
           "t": "Start an antipsychotic for the intrusive re-experiencing — flashback-like episodes indicate psychotic features requiring dopamine blockade",
           "trap": {
-            "name": "Psychosis = schizophrenia",
+            "name": "Flashbacks = psychosis",
             "note": "Intrusive re-experiencing alone does not establish a psychotic disorder. Antipsychotics are not first-line medications for PTSD; a separate comorbid condition may warrant them."
           }
         }
       ],
-      "why": "Sertraline, paroxetine and venlafaxine are the medications recommended for PTSD by the 2023 VA/DoD guideline. The recommendation applies to named drugs, not every SSRI or SNRI. Individual trauma-focused psychotherapy with CPT, PE or EMDR is preferred over medication when feasible and acceptable; treatment planning should reflect preference and access, and combined care is not a universal requirement. The guideline recommends against benzodiazepines for PTSD. Propranolol and antipsychotics are not recommended first-line medications for established PTSD, and intrusive re-experiencing alone does not establish a psychotic disorder.",
+      "why": "Sertraline, paroxetine and venlafaxine are the medications recommended for PTSD by the 2023 VA/DoD guideline. The recommendation applies to named drugs, not every SSRI or SNRI. Individual trauma-focused psychotherapy with CPT, PE or EMDR is preferred over medication when feasible and acceptable; treatment planning should reflect preference and access, and combined care is not a universal requirement. Discuss delayed medication benefit and arrange access to the selected treatment. The guideline recommends against benzodiazepines for PTSD. Propranolol and antipsychotics are not recommended first-line medications for established PTSD, and intrusive re-experiencing alone does not establish a psychotic disorder.",
       "pearl": "For PTSD, prefer individual trauma-focused psychotherapy (CPT, PE or EMDR); choose sertraline, paroxetine or venlafaxine when medication is selected. Avoid benzodiazepines for PTSD; discuss preference and access rather than requiring combined treatment.",
       "evidence": "t_anxiety.md 'Acute inpatient management' and 'Exam treatment anchors' — individual trauma-focused psychotherapy (CPT, PE or EMDR) is preferred; sertraline, paroxetine or venlafaxine when medication is chosen; benzodiazepines are not recommended for PTSD. Original 2023 VA/DoD PTSD guideline, Recommendations 7–8 (pp. 35–36), 15, 19 and 21 (p. 37); evidence ID vadod-2023-ptsd-cpg. Recommendation 21 finds insufficient evidence for the specified medication/psychotherapy combinations or augmentation; combined treatment is not a universal requirement."
     },
