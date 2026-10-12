@@ -56,6 +56,7 @@ function fdCareDirectoryValidate(raw){
 }
 function fdCareDirectorySearch(data,query,category,region,page){
   var q=String(query||'').trim().toLowerCase(),tokens=q.split(/\s+/).filter(Boolean),matches=[];
+  var namePhrase=q?new RegExp('(^|[^a-z0-9])'+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=$|[^a-z0-9])'):null;
   if(!q&&!category&&!region)return {idle:true,total:0,rows:[],page:1,pages:0};
   var maine=region&&region!=='NH'&&region!=='VT/Other NE';
   for(var i=0;i<data.records.length;i++){
@@ -66,7 +67,7 @@ function fdCareDirectorySearch(data,query,category,region,page){
     matches.push(row);
   }
   matches.sort(function(a,b){
-    var ar=q&&a.name.toLowerCase().indexOf(q)!==-1?0:1,br=q&&b.name.toLowerCase().indexOf(q)!==-1?0:1;
+    var ar=namePhrase&&namePhrase.test(a.name.toLowerCase())?0:1,br=namePhrase&&namePhrase.test(b.name.toLowerCase())?0:1;
     return ar-br||a.name.localeCompare(b.name)||a.id.localeCompare(b.id);
   });
   var pages=Math.ceil(matches.length/5),current=Math.min(Math.max(1,page||1),pages||1);

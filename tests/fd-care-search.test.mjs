@@ -40,6 +40,12 @@ test('includes statewide Maine listings only with matching Maine filters',()=>{
   assert.equal(F.search(data,'support','','Southern Maine',1).total,1);
   assert.equal(F.search(data,'support','','NH',1).total,0);
 });
+test('ranks whole resource names ahead of incidental substring matches',()=>{
+  const data=F.validate(feed([row(1,{name:'Dynamic support'}),row(2,{name:'NAMI support'}),
+    row(3,{name:'Family group (NAMI)'})]));
+  assert.deepEqual(F.search(data,'nami','','',1).rows.map(r=>r.id),['a3','a2','a1']);
+  assert.equal(F.search(data,'[nami]','','',1).total,0);
+});
 test('escapes directory text and drops unsafe actions without hiding the listing',()=>{
   const data=F.validate(feed([row(1,{name:'<img src=x onerror=alert(1)>',phone:'<b>phone</b>',
     contactHref:'javascript:alert(1)',website:'https://user:pass@example.org/'})]));

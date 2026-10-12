@@ -24,8 +24,8 @@ directory, not a recommendation engine or availability check.
 
 - [x] Initial model/security regressions written and seen failing.
 - [x] Pure model, rendering and visit controller implemented.
-- [ ] Both-site integration, source tests and private builds.
-- [ ] Desktop/320px/390px browser regression and independent safety/a11y review.
+- [x] Both-site integration, source tests and private builds.
+- [x] Desktop/320px/390px browser regression and independent safety/a11y review.
 - [ ] Final-head gates, scoped PR, normal merge and release/preview evidence.
 
 ReConnect owns the feed and generates it before each release. No canonical data,
