@@ -288,7 +288,7 @@
    "review": null,
    "page": "psychopharm_primer.md",
    "sourceId": "brunner-2025-benzodiazepine-taper",
-   "claim": "Withdrawal can be severe; use an individualized supervised taper.",
+   "claim": "Do not abruptly stop treatment in someone likely to be physically dependent and at risk of withdrawal.",
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -408,7 +408,7 @@
    "review": null,
    "page": "psychopharm_primer.md",
    "sourceId": "huhn-2019-antipsychotics",
-   "claim": "A later network meta-analysis found efficacy differences as well as larger adverse-effect differences; its acute, multi-episode schizophrenia population should not be treated as every clinical setting.",
+   "claim": "In a later network meta-analysis of acute, multi-episode schizophrenia, symptom-reduction estimates favored antipsychotics over placebo, but six drugs did not reach statistical significance; these findings should not be generalized to every clinical setting.",
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -608,7 +608,7 @@
    "review": null,
    "page": "psychopharm_primer.md",
    "sourceId": "mcpheeters-2023-aud",
-   "claim": "Oral naltrexone and acamprosate have evidence for alcohol-use outcomes alongside psychosocial care.",
+   "claim": "Oral naltrexone and acamprosate have evidence for reducing return to any drinking.",
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
