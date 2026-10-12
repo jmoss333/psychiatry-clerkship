@@ -3,6 +3,8 @@
 import argparse
 from collections import Counter
 from contextlib import closing
+import csv
+import io
 import html
 import json
 from pathlib import Path
@@ -69,13 +71,31 @@ def check_qbank(rows, items, deck_id):
             raise ValueError('question-bank template mismatch')
 
 
-def check_output(out, bank=None, crosswalk=None):
+def check_qbank_csv(path, items):
+    """Check all learner CSV cells, including blanks and extras, against approved items."""
+    fields = ["id", "status", "category", "type", "difficulty", "high_yield",
+              "competency", "source_pages", "stem", "options", "answer_key",
+              "answer_text", "why", "pearl", "evidence"]
+    expected_file = io.StringIO(newline="")
+    writer = csv.DictWriter(expected_file, fieldnames=fields)
+    writer.writeheader()
+    for item in items:
+        writer.writerows(qb.csv_rows(item, False))
+    expected_file.seek(0)
+    expected = list(csv.reader(expected_file))
+    with Path(path).open(newline="") as handle:
+        actual = list(csv.reader(handle))
+    if actual != expected:
+        raise ValueError('question-bank CSV parity mismatch against approved public source')
+
+
+def check_output(out, crosswalk=None):
     out=Path(out)
-    root=Path(__file__).resolve().parents[3]
     feed=json.loads((out/'tools/concepts.json').read_text())
-    items=json.loads(Path(bank or root/'question_bank.json').read_text())['items']
+    items=qb.project_question_bank(json.loads((out/'question_bank.json').read_text()))['items']
     crosswalk=crosswalk or concepts.load_crosswalk()
-    if {p.name for p in (out/'anki').glob('*.apkg')} != set(FILES): raise ValueError('expected exactly three staged packages')
+    if {p.name for p in (out/'anki').iterdir()} != set(FILES) | {'psychiatry_clerkship_library.csv'}:
+        raise ValueError('expected exactly three staged packages and one question CSV download')
     q,c,combined=[read_cards(out/'anki'/name) for name in FILES]
     check_concepts(c,feed,crosswalk,concepts.DECK_ID)
     check_qbank(q,items,qb.DECK_ID)
@@ -86,6 +106,7 @@ def check_output(out, bank=None, crosswalk=None):
     check_qbank(cq,items,2059400193)
     signature=lambda rows: sorted((r['guid'],r['ordinal'],tuple(r['fields'])) for r in rows)
     if signature(c)!=signature(cc): raise ValueError('standalone/combined concept note mismatch')
+    check_qbank_csv(out/'anki'/'psychiatry_clerkship_library.csv', items)
     print(f'Anki parity PASS: Concepts {len(c)} cards; Qbank {len(q)} cards; combined {len(combined)} cards')
 
 if __name__=='__main__':

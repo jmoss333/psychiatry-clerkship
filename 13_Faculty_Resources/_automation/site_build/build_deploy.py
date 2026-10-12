@@ -8,6 +8,7 @@ from pathlib import Path
 import common
 import concept_cards
 import review_companions
+import qbank_public
 import hashlib
 import frontdoor_catalog
 import shipped_pages
@@ -236,37 +237,19 @@ with open(os.path.join(OUT,"pharmacy_public.json"),"wb") as _fh:
 _pp_problems=_pp.verify(json.load(open(os.path.join(OUT,"pharmacy_public.json"),encoding="utf-8")),_pharmacy_src)
 if _pp_problems:
     raise SystemExit("pharmacy_public.json failed verification: "+"; ".join(_pp_problems))
-# question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
-_missing_req=[]
-_copy_required(LIB+"/question_bank.json", OUT+"/question_bank.json", _missing_req)
-_abort_missing(_missing_req)
-
-# ---- diagnostic pretest pool (adaptive engine v2): 1 attested, scoreable item per
-# blueprint category. Slim pool so the SPA home never loads the full bank. Selection:
-# prefer difficulty-2, then high-yield, then lowest id (deterministic). ----
-_PRETEST_CATS=["mood","psychosis","anxiety","substance","neurocog","pharm",
-               "safety","personality","childdev","otherdx","ethics","relational"]
-try:
-    _qb=json.load(open(LIB+"/question_bank.json",encoding="utf-8"))
-    def _one_correct(it): return sum(1 for o in it.get("options",[]) if o.get("c") is True)==1
-    _pool=[]
-    for _cat in _PRETEST_CATS:
-        _cand=[i for i in _qb.get("items",[]) if i.get("category")==_cat
-               and i.get("status")=="attested" and _one_correct(i)]
-        if not _cand: continue
-        _cand.sort(key=lambda i:(abs((i.get("difficulty") or 2)-2), 0 if i.get("hy") else 1, i.get("id","")))
-        _it=_cand[0]
-        _pool.append({"id":_it["id"],"cat":_cat,"pages":_it.get("pages",[]),
-            "stem":_it.get("stem",""),
-            "options":[{"key":o.get("key"),"t":o.get("t",""),"c":bool(o.get("c"))}
-                       for o in _it.get("options",[])],
-            "why":_it.get("why",""),"pearl":_it.get("pearl","")})
-    json.dump({"v":1,"generated":"build","items":_pool},
-              open(OUT+"/pretest_pool.json","w",encoding="utf-8"))
-    print("pretest pool:",len(_pool),"of",len(_PRETEST_CATS),"categories")
-except Exception as _e:
-    open(OUT+"/pretest_pool.json","w",encoding="utf-8").write('{"v":1,"items":[]}')
-    print("pretest pool: WARN could not build (%s)" % _e)
+# Publish only the explicit faculty-attested, active projection. Canonical drafts
+# stay in the repository and faculty console, never in a learner download.
+_qb_public=qbank_public.project_question_bank(
+    json.load(open(LIB+"/question_bank.json",encoding="utf-8")))
+with open(OUT+"/question_bank.json","w",encoding="utf-8") as _fh:
+    json.dump(_qb_public,_fh,ensure_ascii=False,indent=2)
+    _fh.write("\n")
+# Placement is another publication of question text, so it takes the same released
+# bytes as practice and Anki. Missing categories are reported by static QA.
+_pretest=qbank_public.pretest_pool(_qb_public)
+with open(OUT+"/pretest_pool.json","w",encoding="utf-8") as _fh:
+    json.dump(_pretest,_fh,ensure_ascii=False)
+print("pretest pool:",len(_pretest["items"]),"of",len(qbank_public.PRETEST_CATEGORIES),"categories")
 
 # ---- local tool runtime vendor: no bedside CDN dependency ----
 # Several React-based tools historically loaded React from cdnjs and went blank when ward
@@ -587,18 +570,11 @@ except ValueError as _fd_error:
     raise SystemExit(1)
 print("frontdoor payload:",sum(len(c["refs"]) for c in _fd_payload["curriculum"]["libraryColumns"]),"placed refs (ms3)")
 
-# ---- retired/draft-bank-ids injection (shell servability parity) ----
-# The shell counts due QB# cards and confidently-wrong items straight from cw_srs_v1 /
-# cw_qb_v1; the practice tool filters via activeItems() — retired items always, drafts
-# unless the learner opted in (cw_qb_drafts_v1; WP-37 attested-only default). Inject the
-# CURRENT retired and draft ids so both surfaces count identically. Verified replacement:
-# a missing/duplicated needle means the shell's parity plumbing was edited away — fail the
-# build, don't ship the drift. The resident build inherits this (it rebrands the MS3-built
-# index.html).
-_qb_items=json.load(open(LIB+"/question_bank.json",encoding="utf-8")).get("items",[])
-_retired_ids=sorted(i["id"] for i in _qb_items if i.get("retired"))
-_draft_ids=sorted(i["id"] for i in _qb_items
-                  if not i.get("retired") and i.get("status")!="attested")
+# ---- released-bank-ids injection (shell servability parity) ----
+# An allowlist excludes withdrawn and unknown saved IDs, even if an old browser
+# still has the historical draft opt-in. Derive it from the actual public JSON.
+_qb_items=json.load(open(OUT+"/question_bank.json",encoding="utf-8"))["items"]
+_released_ids=sorted(i["id"] for i in _qb_items)
 # Communication-case titles for the practice panel's spoken drills. The shell used to carry a
 # hand-written id->title map that had already fallen two cases behind communication_cases.json,
 # so three pages rendered an unnamed "What Do You Say Next?" tile beside named ones. Injecting
@@ -609,8 +585,7 @@ _case_titles={c["id"]:c["title"] for c in _cc.get("cases",[]) if c.get("id") and
 _spa_out=OUT+"/index.html"
 _spa_t=open(_spa_out,encoding="utf-8").read()
 for _needle,_ids,_label in ((
-        "var RETIRED_QB_IDS=[];",_retired_ids,"RETIRED_QB_IDS"),(
-        "var DRAFT_QB_IDS=[];",_draft_ids,"DRAFT_QB_IDS"),(
+        "var RELEASED_QB_IDS=[];",_released_ids,"RELEASED_QB_IDS"),(
         "var PRACTICE_CASE_TITLES={};",_case_titles,"PRACTICE_CASE_TITLES")):
     if _spa_t.count(_needle)!=1:
         print("BUILD ABORTED — %s needle missing or duplicated in spa_index.html"%_label)

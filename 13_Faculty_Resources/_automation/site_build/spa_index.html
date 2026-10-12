@@ -673,7 +673,7 @@
   fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ specialRefresh(); }catch(_){ } }).catch(function(){});
   /* The longitudinal case (Case Journeys, "One Patient, Six Weeks"), READ-ONLY, for Today's "On the
      unit this week" (one-thread redesign, Phase 1). Build-injected by build_deploy.py through the
-     same verified-needle mechanism as RETIRED_QB_IDS (the resident build inherits it), so the
+     same verified-needle mechanism as RELEASED_QB_IDS (the resident build inherits it), so the
      section is there at FIRST render and Today's DOM never churns after boot -- a runtime fetch
      made the core render signature differ between two loads of the same page. A missing or
      malformed file injects null and fdWeekCaseStep renders no section. Nothing here writes to the
@@ -1989,22 +1989,12 @@
   /* ---- helpers reading existing storage ---- */
   function LS(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
   /* ---- qb servability (shell parity) ----
-     Which bank records/cards the shell may count, matching question-bank-practice.html's
-     activeItems(): retired items are never servable; un-attested drafts are servable only
-     while the learner's cw_qb_drafts_v1 opt-in is set (WP-37 attested-only default).
-     Both id lists are BUILD-INJECTED from question_bank.json (the source literals stay
-     empty; build_deploy.py hard-fails if either needle is missing or duplicated, and
-     check-static-site.mjs §6c cross-checks the built output). The resident shell inherits
-     the injected lists (it rebrands the MS3-built index.html). Counting a record the
-     practice tool will not serve re-opens the "Due today counts cards nothing can serve"
-     defect class. */
-  var RETIRED_QB_IDS=[];
-  function isRetiredQb(id){ return RETIRED_QB_IDS.indexOf(id)>=0; }
-  var DRAFT_QB_IDS=[];
-  function isDraftQb(id){ return DRAFT_QB_IDS.indexOf(id)>=0; }
-  function qbDraftsIncluded(){ try{ return localStorage.getItem('cw_qb_drafts_v1')==='true'; }catch(_){ return false; } }
-  /* id is the bank item id (no QB# prefix). */
-  function qbRecordServable(id){ if(isRetiredQb(id))return false; if(!qbDraftsIncluded()&&isDraftQb(id))return false; return true; }
+     Only IDs in this build's approved public question bank may count toward due
+     or confidently-wrong practice. Missing, withdrawn and old draft IDs stay in
+     local history but cannot become due work. The build verifies this allowlist
+     against question_bank.json; a historical draft opt-in cannot widen it. */
+  var RELEASED_QB_IDS=[];
+  function qbRecordServable(id){ return RELEASED_QB_IDS.indexOf(id)>=0; }
   /* ---- end qb servability ---- */
   /*__CONCEPT_RECALL__*/
   var conceptDueState={status:'checking',releasedIds:null};
@@ -2177,7 +2167,7 @@
      for the confidently-wrong count, which intentionally reads cw_qb_v1 — same predicate as
      question-bank-practice.html's certWrongItems() (certWrong===true). Retired-item parity
      with certWrongItems() (which filters through activeItems()) is closed via the
-     build-injected RETIRED_QB_IDS — both counters skip since-retired records. */
+     build-injected RELEASED_QB_IDS — both counters skip unpublished records. */
   function renderCalibPanel(){
     var ledger=(typeof calibRead==='function')?calibRead():{qb:[],rev:[]};
     var qbEvents=ledger.qb||[];
