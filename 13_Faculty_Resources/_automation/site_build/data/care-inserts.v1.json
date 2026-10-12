@@ -206,6 +206,9 @@
           "number": "211",
           "what": "Free. Call any time to find help with food, housing, heating bills, and rides. Or text your ZIP code to 898-211.",
           "source": "https://211maine.org/",
+          "alsoSources": [
+            "https://211maine.org/basic-needs/"
+          ],
           "verifiedDate": "2026-10-12"
         },
         {
@@ -269,6 +272,9 @@
           "number": "1-866-636-0355",
           "what": "Maine's health insurance marketplace. Free help with your application, and it can check if you can get MaineCare. Monday to Friday, 8 a.m. to 5 p.m.",
           "source": "https://www.coverme.gov/contact-us",
+          "alsoSources": [
+            "https://www.coverme.gov/learn/faqs"
+          ],
           "verifiedDate": "2026-10-12"
         },
         {
@@ -286,6 +292,10 @@
           "number": "1-800-633-4227",
           "what": "Questions about Original Medicare benefits, costs, or bills. Open 24/7, except some federal holidays. If you have a Medicare Advantage or drug plan, call your plan first.",
           "source": "https://www.medicare.gov/talk-to-someone",
+          "alsoSources": [
+            "https://www.medicare.gov/basics/your-medicare-rights/get-help-with-your-rights-protections",
+            "https://www.medicare.gov/about-us/contact-medicare"
+          ],
           "verifiedDate": "2026-10-12"
         }
       ],
