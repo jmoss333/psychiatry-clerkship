@@ -22,15 +22,22 @@ SENTENCES = {'A': 'Place the fictional amber books on shelf Cedar.',
              'B': 'Place the fictional amber books on shelf Maple.'}
 
 
-def fixture(probe_id, version):
+def sentence(version, change_kind):
+    if change_kind == 'emphasis':
+        return SENTENCES['A'].replace('Cedar', '**Cedar**') if version == 'B' else SENTENCES['A']
+    return SENTENCES[version]
+
+
+def fixture(probe_id, version, change_kind='wording'):
     return ('# Synthetic change-detection fixture\n\n'
             'This is an automated software test, not clinical guidance or learner material.\n\n'
             f'Fixture identity: {probe_id}\n\n'
             'The fictional library uses named shelves to sort imaginary books. '
             'The following instruction is deliberately changed once to test source surveillance. '
             'No patient information, medical recommendation, faculty decision, or examination item is present.\n\n'
-            + SENTENCES[version] + '\n\n'
-            'Only the shelf name changes between the two versions. All other text stays fixed.\n')
+            + sentence(version, change_kind) + '\n\n'
+            + ('Only bold emphasis changes between the two versions. All words stay fixed.\n' if change_kind == 'emphasis' else
+             'Only the shelf name changes between the two versions. All other text stays fixed.\n'))
 
 
 def github(method, endpoint, payload=None):
@@ -86,14 +93,14 @@ def wait_for_fixture(url, expected):
     return False
 
 
-def validate_observation(source, observation, prior, probe_id, version, expected_status):
+def validate_observation(source, observation, prior, probe_id, version, expected_status, change_kind="wording"):
     response = observation.get('response')
     assessed = R.assess(source, response, None)
     if assessed['status'] == 'unable-to-check':
         return 'inconclusive', assessed['reason']
     data = response['data']
     text = data['markdown']
-    if probe_id not in text or SENTENCES[version] not in text or SENTENCES['B' if version == 'A' else 'A'] in text:
+    if probe_id not in text or sentence(version, change_kind) not in text or sentence('B' if version == 'A' else 'A', change_kind) in text:
         return 'inconclusive', 'Expected fixture identity and version were not retrieved'
     tracking = data.get('changeTracking', {})
     status = tracking.get('changeStatus')
@@ -124,7 +131,42 @@ def validate_observation(source, observation, prior, probe_id, version, expected
     return 'pass', 'Expected provider and saved-text result verified'
 
 
-def run_known_change(out_dir, token, publisher, probe_id):
+def replay_faculty(report):
+    """Exercise production assessment, impact scan and packet merge in memory only."""
+    from run_firecrawl_review import change_passages
+    from question_impact import scan_impacts
+    from review_packets import merge_observation, validate_state
+    source = {'id': 'synthetic-known-change', 'url': report['sourceUrl'], 'modality': 'full_text'}
+    item = {'id': 'synthetic-shelf-question', 'stem': 'Where do fictional amber books belong?',
+            'why': SENTENCES['A'], 'options': [{'t': 'Maple', 'c': False, 'trap': {'note': SENTENCES['A']}}]}
+    state, counts = None, []
+    for observation in report['observations']:
+        prior = (state or {}).get('latestValid', {}).get(source['id'])
+        row = R.assess(source, observation['response'], prior)
+        if row['status'] == 'unable-to-check':
+            raise ValueError('Replay retrieval incomplete')
+        passages = change_passages(row, prior)
+        impact = scan_impacts({'items': [item]}, passages, {p['id']: [item['id']] for p in passages})
+        if impact['status'] != 'complete':
+            raise ValueError('Replay question examination incomplete')
+        impact['questionSnapshots'] = {item['id']: item}
+        before = len((state or {}).get('packets', []))
+        state = merge_observation(state, {'mode': 'fixture', 'generated_at': observation['completedAt'], 'results': [row]}, {source['id']: impact})
+        validate_state(state)
+        if state['failures']:
+            raise ValueError('Replay packet examination incomplete')
+        counts.append(len(state['packets']) - before)
+    return {'status': 'complete', 'newPacketsByObservation': counts,
+            'pendingPackets': len(state['packets']),
+            'candidateCount': sum(len(p['candidates']) for p in state['packets']),
+            'formattingOnlyAlert': bool(state['packets']) if report['changeKind'] == 'emphasis' else None,
+            'productionInboxWrites': 0, 'state': state,
+            'limits': 'In-memory replay using a synthetic linked question, not a production inbox or UI notification test.'}
+
+
+def run_known_change(out_dir, token, publisher, probe_id, change_kind='wording'):
+    if change_kind not in ('wording', 'emphasis'):
+        raise ValueError('Unknown controlled change')
     out_dir = Path(out_dir).resolve()
     if out_dir.is_relative_to(Path(L.SURV_ROOT).resolve() / 'history'):
         raise ValueError('Output must be separate from production history')
@@ -133,6 +175,8 @@ def run_known_change(out_dir, token, publisher, probe_id):
     out_dir.mkdir(parents=True, exist_ok=False)
     report = {'version': 1, 'mode': 'synthetic-known-change', 'probeId': probe_id,
               'status': 'incomplete', 'verdict': 'inconclusive', 'apiRequests': 0,
+              'changeKind': change_kind,
+              'facultyReplay': {'status': 'inconclusive', 'formattingOnlyAlert': None},
               'maxApiRequests': 4, 'requestCountComplete': False, 'observations': [], 'publications': [],
               'expected': ['new', 'same', 'changed', 'same'],
               'limits': 'Synthetic text detection only; not clinical sensitivity, faculty approval, or review credit.'}
@@ -150,7 +194,7 @@ def run_known_change(out_dir, token, publisher, probe_id):
     report.update(sourceUrl=publisher.url, fixtureBranch=publisher.branch, trackingTag='known-' + probe_id)
     try:
         for index, version in enumerate(('A', 'A', 'B', 'B')):
-            text = fixture(probe_id, version)
+            text = fixture(probe_id, version, change_kind)
             if index in (0, 2):
                 commit = publisher.publish(text)
                 report['publications'].append({'version': version, 'commit': commit, 'textHash': L.sha_full(text)})
@@ -164,7 +208,7 @@ def run_known_change(out_dir, token, publisher, probe_id):
             observation['response'] = safe_response(R.fetch(source, token, tracking_tag=report['trackingTag']))
             observation['completedAt'] = now()
             observation['providerStatus'] = observation['response'].get('data', {}).get('changeTracking', {}).get('changeStatus')
-            verdict, reason = validate_observation(source, observation, report['observations'], probe_id, version, report['expected'][index])
+            verdict, reason = validate_observation(source, observation, report['observations'], probe_id, version, report['expected'][index], change_kind)
             observation.update(verdict=verdict, reason=reason)
             if report['observations'] and verdict != 'inconclusive':
                 old = report['observations'][-1]['response']['data']['markdown']
@@ -176,6 +220,7 @@ def run_known_change(out_dir, token, publisher, probe_id):
                 break
         report['requestCountComplete'] = True
         if len(report['observations']) == 4 and all(o['verdict'] != 'inconclusive' for o in report['observations']):
+            report['facultyReplay'] = replay_faculty(report)
             report['status'] = 'complete'
             report['verdict'] = 'disagreement' if any(o['verdict'] == 'disagreement' for o in report['observations']) else 'pass'
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
@@ -188,10 +233,11 @@ def run_known_change(out_dir, token, publisher, probe_id):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--change-kind', choices=('wording', 'emphasis'), default='wording')
     parser.add_argument('--out-dir', type=Path, required=True)
     args = parser.parse_args()
     publisher = FixturePublisher(os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
-    report = run_known_change(args.out_dir, os.environ.get('FIRECRAWL_API_KEY', ''), publisher, uuid.uuid4().hex)
+    report = run_known_change(args.out_dir, os.environ.get('FIRECRAWL_API_KEY', ''), publisher, uuid.uuid4().hex, change_kind=args.change_kind)
     print(json.dumps({k: report[k] for k in ('status', 'verdict', 'apiRequests')}))
     return 0 if report['verdict'] == 'pass' else 1 if report['verdict'] == 'disagreement' else 2
 
