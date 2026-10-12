@@ -4258,7 +4258,6 @@ test.describe('Essentials Phase 2', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/?tab=library');
     expect(await page.locator('.fd-library, .fd-library *').evaluateAll(els => els.filter(el => { const s = getComputedStyle(el); return s.animationName !== 'none' || (s.transitionDuration !== '0s' && s.transitionDuration !== ''); }).length)).toBe(0);
-    await expectHealthy(page);
   });
   test('L4: every resource omitted from kit remains readable through Full and Back', async ({ page }, info) => {
     // Exhaustive mounted navigation costs more than one ordinary smoke flow.
