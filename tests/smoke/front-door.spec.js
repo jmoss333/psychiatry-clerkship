@@ -209,6 +209,8 @@ test('reading place: returning to the fresh position cancels an abandoned pendin
   await page.waitForTimeout(400);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.setViewportSize(PHONE);
+  // This next move is after resize, not during its one-frame restore window.
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
