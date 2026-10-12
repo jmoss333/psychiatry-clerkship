@@ -1,3 +1,4 @@
+import { pinCareDirectory } from './care-directory-fixture.js';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -503,6 +504,7 @@ test('capture Schedule review and Done move focus to the stable editor after the
 });
 
 test.beforeEach(async ({ page }) => {
+  await pinCareDirectory(page);
   // Netlify's deploy-preview review drawer overlaps the mobile dock; it is not learner UI.
   await page.route('**/.netlify/scripts/cdp', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   const errors = [];
