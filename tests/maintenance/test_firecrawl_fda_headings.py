@@ -16,7 +16,7 @@ HEADINGS = ['What Is FDA Announcing?', 'What Is FDA Doing?', 'What Is Clozapine,
             'How Can I Get New Safety Information on Medicines I’m Prescribing or Taking?']
 
 def document(prefix):
-    return ' '.join(f'## [{label}]({URL}\\\\#{prefix}{i:05x}) Teaching sentence stays fixed.'
+    return ' '.join(f'## [{label}]({URL}\\#{prefix}{i:05x}) Teaching sentence stays fixed.'
                     for i, label in enumerate(HEADINGS)) + ' [Reference](https://example.org/paper)'
 
 class FDAHeadings(unittest.TestCase):

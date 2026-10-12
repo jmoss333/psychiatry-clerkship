@@ -11,9 +11,9 @@ HEADINGS = frozenset((
     'How Can I Get New Safety Information on Medicines I’m Prescribing or Taking?',
 ))
 # Preserve the entire heading/link spelling except its generated identifier.
-# In normalized Firecrawl snapshots the literal fragment separator has two escapes.
+# In normalized Firecrawl snapshots the literal fragment separator has one escape.
 HEADING_LINK = re.compile(r'(?<![#\\])## \[([^\]\n]+)\]\(('
-                          + re.escape(SOURCE_URL) + r'\\{2}#)(6[0-9a-f]{12})\)')
+                          + re.escape(SOURCE_URL) + r'\\#)(6[0-9a-f]{12})\)')
 
 
 def generated_heading_ids_only(prior, row):
