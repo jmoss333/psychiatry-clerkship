@@ -49,13 +49,13 @@ for(const width of [1280,390,320])test(`local Care search, paging and native fil
   await expect(panel.getByRole('link',{name:/Open full Finder/})).toHaveAttribute('href','https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html');
   // Existing Care interaction re-renders the base; search remains visit-only.
   await query.fill('support');
-  await page.locator('.fd-care-pack [data-fd-care-pack="resource-finder"]').click();
+  await page.locator('[data-fd-care-intent="services"]').click();
   await expect(query).toHaveValue('support');
-  await expect(page.locator('.fd-care-pack #fd-care-pack-limit')).toContainText('1 of 3');
+  await expect(page.locator('[data-fd-care-intent="services"]')).toHaveAttribute('aria-pressed','true');
   await page.locator('[data-fd-tab="library"]:visible').click();
   await page.locator('[data-fd-tab="care"]:visible').click();
   await expect(query).toHaveValue('');
-  await expect(page.locator('.fd-care-pack #fd-care-pack-limit')).toContainText('0 of 3');
+  await expect(page.locator('[data-fd-care-intent="services"]')).toHaveAttribute('aria-pressed','false');
   expect(errors).toEqual([]);
   await panel.screenshot({path:info.outputPath(`care-directory-${width}.png`)});
 });
@@ -81,7 +81,7 @@ test('network failure and malformed data offer recovery without losing Care or S
   const panel=page.locator('[data-care-directory]');
   await expect(panel).toContainText('Directory search is unavailable');
   await expect(page.locator('.fd-care-navigator')).toBeVisible();
-  await expect(page.locator('.fd-care-pack')).toBeVisible();
+  await expect(page.locator('.fd-care-pack')).toHaveCount(0);
   await expect(panel.getByRole('link',{name:/Open full Finder/})).toBeVisible();
   await page.route('**/care-directory.v1.json',r=>r.fulfill({contentType:'application/json',body:'{"schemaVersion":999}'}));
   await panel.getByRole('button',{name:'Try again'}).click();
@@ -105,4 +105,35 @@ test('late responses cannot repaint another tab or persist the query',async({pag
   expect(await page.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}))).not.toContain('temporary-query');
   await pinCareDirectory(page);await page.locator('[data-fd-tab="care"]:visible').click();
   await expect(page.locator('#fd-care-directory-query')).toHaveValue('');
+});
+
+for (const width of [320,390]) test(`patient sharing is absent while directory contacts remain at ${width}px`, async ({page},info) => {
+  await page.setViewportSize({width,height:900});
+  await page.goto('/?tab=care');
+  const panel=page.locator('[data-care-directory]');
+  await expect(panel.locator('#fd-care-directory-count')).toContainText('Search by');
+  const sharing=page.locator('.fd-care-pack,.fd-care-share,.fd-care-builder,'+
+    '[data-fd-care-share],[data-fd-care-pack],[data-fd-care-copy],'+
+    '[data-fd-care-copy-selected],[data-fd-care-pack-print]');
+  await expect(sharing).toHaveCount(0);
+  await expect(page.getByRole('heading',{name:'Share resource websites',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:/Show QR|Print handout|Copy selected links|Add .*handout/})).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Build a specific resource handout',exact:true})).toHaveCount(0);
+  // Tab moves directly between the retained resource links, skipping no hidden controls.
+  await page.locator('.fd-care-navigator__choice').last().focus();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('[data-care-resource]').nth(0)).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('[data-care-resource]').nth(1)).toBeFocused();
+  await panel.getByLabel('Resource name or service').fill('support counseling');
+  await expect(panel.locator('.fd-care-search__result')).toHaveCount(5);
+  await expect(panel.locator('a[href^="tel:"]').first()).toBeVisible();
+  await expect(panel.getByRole('link',{name:/Website for/}).first()).toBeVisible();
+  await expect(sharing).toHaveCount(0);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.locator('.fd-safetybtn[data-fd-safety]').click();
+  await expect(page.locator('.fd-kitrow[data-fd-safety]').first()).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(panel.getByLabel('Resource name or service')).toHaveValue('support counseling');
+  await page.screenshot({path:info.outputPath(`care-sharing-off-${width}.png`),fullPage:true});
 });

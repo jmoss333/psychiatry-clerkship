@@ -2,6 +2,13 @@
    Pure ES5. No patient fields, persistence, route state, analytics, clock, or network access.
    Crisis HTML is the trusted build artifact from the shell's injected fdCrisisTemplate. */
 
+/* Patient-facing sharing requires explicit owner approval before re-enabling.
+   This source gate has no URL, storage or learner-facing override. */
+var FD_CARE_PATIENT_SHARING_ENABLED=false;
+function fdCarePatientSharingEnabled(){
+  return FD_CARE_PATIENT_SHARING_ENABLED===true;
+}
+
 var FD_CARE_PACK_LIMIT=3;
 
 function fdCarePackSafeId(value){
@@ -11,6 +18,7 @@ function fdCarePackSafeId(value){
 
 /* A launch destination, never a selectable handout resource. Ignore all screen state. */
 function fdCareBuilder(index){
+  if(!fdCarePatientSharingEnabled()) return '';
   var item=index&&index.careBuilder;
   if(!item||!fdCarePackSafeId(item.id)||item.id!=='supervised-resource-builder'||
      typeof item.title!=='string'||!item.title||
@@ -124,6 +132,7 @@ function fdCarePackResource(item){
 }
 
 function fdCareShare(index,id,ids){
+  if(!fdCarePatientSharingEnabled()) return '';
   var item=fdCarePackResourceById(index,id);
   if(!item) return '';
   var selectedIds=fdCarePackIds(index,ids),selected=false,i;
@@ -156,6 +165,7 @@ function fdCareShare(index,id,ids){
 }
 
 function fdCarePack(index,ids,crisisHtml){
+  if(!fdCarePatientSharingEnabled()) return '';
   var resources=fdCarePackResources(index),selectedIds=fdCarePackIds(index,ids);
   var selected=Object.create(null),byId=Object.create(null),limit=selectedIds.length>=FD_CARE_PACK_LIMIT;
   var hasCrisis=typeof crisisHtml==='string'&&/class=["']crisis-block["']/.test(crisisHtml);
