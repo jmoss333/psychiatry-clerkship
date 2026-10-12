@@ -58,15 +58,23 @@ ALWAYS_ON = ("intro",)
 TABLE_INSERTS = ("national", "insurance")
 
 # The packet must always be able to print these two lines. Keyed by resource id in
-# crisis_resources.json, with the number the resolved contact must contain, so a silent
-# transcription error in the crisis source also fails here.
+# crisis_resources.json, with the number as printed and its digits. The digits must EQUAL one of the
+# numbers parsed from the resource's `contact` field: a segment of a longer number ("1-800-988-0199"
+# contains 988) or a number in `alsoAvailable` (a chat address) must not satisfy it, or a wrong
+# contact would render through {{crisis:<id>}}.
 REQUIRED_CRISIS = {
-    "lifeline_988": ("988", re.compile(r"\b988\b")),
-    "maine_crisis_line": ("1-888-568-1112", re.compile(r"\b1-888-568-1112\b")),
+    "lifeline_988": ("988", "988"),
+    "maine_crisis_line": ("1-888-568-1112", "8885681112"),
 }
 
-# Aggregators and directories are not acceptable provenance for a helpline number.
-DISALLOWED_SOURCE_HOSTS = ("wikipedia.org", "healthline.com", "webmd.com", "psychologytoday.com")
+# A helpline number's provenance is the operating organization's own site or a government page, so only
+# these domains (and their subdomains) are accepted. This is an allowlist on purpose: a list of bad hosts
+# cannot recognise a typo ("samhsa.example") or an unrelated site. A new helpline from a new organization
+# means adding its domain here, after checking that it really is that organization's.
+APPROVED_SOURCE_DOMAINS = (
+    "211maine.org", "coverme.gov", "mainecahc.org", "maine.gov", "medicare.gov", "nami.org", "nnepc.org",
+    "samhsa.gov", "thehotline.org", "thetrevorproject.org",
+)
 
 PLAIN_PLACEHOLDERS = ("unitName", "unitPhone")
 PLACEHOLDER_RE = re.compile(r"\{\{([^{}]*)\}\}")
@@ -79,6 +87,13 @@ DOSE_UNITS = (r"(?:mgs?|mcgs?|[µμu]g|g|gm|grams?|mls?|cc|iu|meq|milligrams?|mi
               r"millilit(?:er|re)s?)")
 DOSE_RE = re.compile(r"\b\d+(?:[.,]\d+)?\s*-?\s*" + DOSE_UNITS + r"(?!\w)", re.I)
 DOSE_WORD_RE = re.compile(r"\b(?:milligram|microgram|millilit(?:er|re))s?\b", re.I)
+# "five mg", "twenty-five mg", "one hundred mcg", "half a gram": a spelled-out quantity before ANY unit,
+# not only the long ones DOSE_WORD_RE already bans outright.
+NUMBER_WORDS = (r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|"
+                r"sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|"
+                r"hundred|thousand|half|quarter)")
+DOSE_SPELLED_RE = re.compile(r"\b" + NUMBER_WORDS + r"(?:[\s-]+(?:and\s+|a\s+)?" + NUMBER_WORDS + r")*[\s-]+(?:a\s+)?"
+                             + DOSE_UNITS + r"(?!\w)", re.I)
 DOSE_COUNT_RE = re.compile(
     r"\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|half)\s+(?:tablets?|pills?|capsules?)\b", re.I)
 # Verification metadata and review tiers are an internal record and are never printed. This is the
@@ -127,6 +142,11 @@ def core_digits(text):
     """Digits of a number with a leading North American 1 removed."""
     digits = re.sub(r"\D", "", text)
     return digits[1:] if len(digits) == 11 and digits.startswith("1") else digits
+
+
+def contact_numbers(resource):
+    """Digit strings (leading North American 1 removed) of the numbers in a resource's `contact` only."""
+    return {core_digits(token) for token in re.findall(r"\d[\d\-\s().]*\d", str(resource.get("contact", "")))}
 
 
 def crisis_numbers(crisis):
@@ -208,9 +228,12 @@ def has_content(block):
     return any(block.get(key) for key in ("body", "bullets", "groups", "rows", "table"))
 
 
-def host_is_disallowed(url):
+def host_if_unapproved(url):
+    """The URL's host when it is not an approved source domain (or a subdomain of one), else None.
+    urlparse().hostname drops userinfo and port, so "https://samhsa.gov@evil.com/" is judged as evil.com."""
     host = (urlparse(url).hostname or "").rstrip(".")
-    return host if any(host == bad or host.endswith("." + bad) for bad in DISALLOWED_SOURCE_HOSTS) else None
+    approved = any(host == good or host.endswith("." + good) for good in APPROVED_SOURCE_DOMAINS)
+    return None if approved else (host or url)
 
 
 def check_date(label, text, today, errors, field):
@@ -295,11 +318,11 @@ def check(data, schema, crisis, today):
             if age > STALE_AFTER_DAYS:
                 warnings.append("%s: last verified %s, %d days ago (limit %d)"
                                 % (label, resource["verifiedOn"], age, STALE_AFTER_DAYS))
-    for rid, (number, pattern) in REQUIRED_CRISIS.items():
+    for rid, (number, digits) in REQUIRED_CRISIS.items():
         if rid not in refs:
             errors.append("`crisis` must reference '%s' (the packet always carries %s)" % (rid, number))
-        elif rid in resources and not pattern.search(str(resources[rid].get("contact", ""))):
-            errors.append("crisis_resources.json '%s' contact %r does not contain %s"
+        elif rid in resources and digits not in contact_numbers(resources[rid]):
+            errors.append("crisis_resources.json '%s' contact %r is not exactly %s"
                           % (rid, resources[rid].get("contact"), number))
 
     # ---- prose hygiene, on normalised text with placeholders resolved or rejected ---------
@@ -335,7 +358,8 @@ def check(data, schema, crisis, today):
             errors.append("%s: contains a crisis number registered in crisis_resources.json (%s); "
                           "reference it from `crisis` or use {{crisis:<id>}}, never type it"
                           % (pointer, ", ".join(hit)))
-        if DOSE_RE.search(scan) or DOSE_WORD_RE.search(scan) or DOSE_COUNT_RE.search(scan):
+        if (DOSE_RE.search(scan) or DOSE_SPELLED_RE.search(scan) or DOSE_WORD_RE.search(scan)
+                or DOSE_COUNT_RE.search(scan)):
             errors.append("%s: dose literal; the packet teaches the decision, not the number" % pointer)
         if METADATA_RE.search(scan):
             errors.append("%s: verification metadata or a review tier in patient-facing text" % pointer)
@@ -366,10 +390,11 @@ def check(data, schema, crisis, today):
                         warnings.append("%s: last verified %s, %d days ago (limit %d) - re-check before "
                                         "the next release" % (where, entry["verifiedDate"], age, STALE_AFTER_DAYS))
             for url in [entry["source"]] + entry.get("alsoSources", []):
-                bad = host_is_disallowed(url)
+                bad = host_if_unapproved(url)
                 if bad:
-                    errors.append("%s: source host %s is not authoritative; use the operating "
-                                  "organization or a government page" % (where, bad))
+                    errors.append("%s: source host %s is not an approved source; use the operating "
+                                  "organization's own site or a government page, and add a new domain to "
+                                  "APPROVED_SOURCE_DOMAINS only after checking it" % (where, bad))
             who_key = entry["who"].strip().casefold()
             earlier = by_number.setdefault(digits, (who_key, entry["source"], entry["who"]))
             if earlier[:2] != (who_key, entry["source"]):

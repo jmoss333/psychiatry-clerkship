@@ -48,7 +48,7 @@ def crisis_fixture():
 
 def row(who="Example Helpline", number="1-800-555-0101", verified="2026-10-12"):
     return {"who": who, "number": number, "what": "Help with example things, 24/7",
-            "source": "https://example.org/" + who.lower().replace(" ", "-"), "verifiedDate": verified}
+            "source": "https://www.samhsa.gov/" + who.lower().replace(" ", "-"), "verifiedDate": verified}
 
 
 def good():
@@ -166,6 +166,30 @@ class CrisisSingleSource(Base):
         crisis = crisis_fixture()
         crisis["resources"][1]["contact"] = "1-888-568-1121"
         self.assertErrorMentions(run_check(crisis=crisis), "1-888-568-1112")
+
+    def test_988_must_be_the_whole_contact_number_not_a_segment_of_another_number(self):
+        crisis = crisis_fixture()
+        crisis["resources"][0]["contact"] = "Call 1-800-988-0199"
+        self.assertErrorMentions(run_check(crisis=crisis), "lifeline_988", "988")
+
+    def test_the_chat_address_in_also_available_cannot_stand_in_for_the_contact_number(self):
+        crisis = crisis_fixture()
+        crisis["resources"][0]["contact"] = "Call 1-800-988-0199"
+        crisis["resources"][0]["alsoAvailable"] = "Chat at chat.988lifeline.org"
+        self.assertErrorMentions(run_check(crisis=crisis), "lifeline_988")
+
+    def test_the_maine_line_must_be_exact_not_a_longer_number_that_starts_with_it(self):
+        for contact in ("1-888-568-11122", "11-888-568-1112", "Call 1-800-568-1112"):
+            with self.subTest(contact=contact):
+                crisis = crisis_fixture()
+                crisis["resources"][1]["contact"] = contact
+                self.assertErrorMentions(run_check(crisis=crisis), "maine_crisis_line", "1-888-568-1112")
+
+    def test_the_real_registered_phrasing_still_passes(self):
+        crisis = crisis_fixture()
+        crisis["resources"][0]["contact"] = "Call or text 988"
+        crisis["resources"][1]["contact"] = "Call 1-888-568-1112 or dial 711"
+        self.assertEqual([], run_check(crisis=crisis).errors)
 
     def test_a_duplicate_reference_fails(self):
         data = good()
@@ -305,11 +329,6 @@ class TableRows(Base):
                 insert(data, "insurance")["table"][0]["number"] = number
                 self.assertEqual([], run_check(data).errors)
 
-    def test_a_lookalike_host_is_not_mistaken_for_an_aggregator(self):
-        data = good()
-        insert(data, "national")["table"][0]["source"] = "https://notwikipedia.org/page"
-        self.assertEqual([], run_check(data).errors)
-
     def test_source_is_required_and_must_be_https(self):
         data = good()
         del insert(data, "national")["table"][0]["source"]
@@ -318,12 +337,23 @@ class TableRows(Base):
         insert(data, "national")["table"][0]["source"] = "http://example.org/x"
         self.assertTrue(run_check(data).errors)
 
-    def test_aggregator_sources_are_not_provenance(self):
-        for host in ("en.wikipedia.org", "www.healthline.com", "www.webmd.com"):
-            with self.subTest(host=host):
+    def test_only_approved_source_hosts_count_as_provenance(self):
+        for source in ("https://samhsa.example/x", "https://notsamhsa.gov/x", "https://evil.com/samhsa.gov",
+                       "https://samhsa.gov.evil.com/x", "https://samhsa.gov@evil.com/x", "https://example.org/x",
+                       "https://en.wikipedia.org/wiki/SAMHSA", "https://www.healthline.com/x", "https://www.webmd.com/x"):
+            with self.subTest(source=source):
                 data = good()
-                insert(data, "national")["table"][0]["source"] = "https://%s/page" % host
-                self.assertErrorMentions(run_check(data), host)
+                insert(data, "national")["table"][0]["source"] = source
+                self.assertErrorMentions(run_check(data), "approved source")
+
+    def test_the_approved_hosts_and_their_subdomains_pass_including_odd_but_equivalent_spellings(self):
+        for source in ("https://www.samhsa.gov/find-help", "https://samhsa.gov/x", "https://samhsa.gov./x",
+                       "https://SAMHSA.GOV:443/x", "https://www.maine.gov/dhhs/ofi", "https://211maine.org/",
+                       "https://www.nnepc.org/about"):
+            with self.subTest(source=source):
+                data = good()
+                insert(data, "national")["table"][0]["source"] = source
+                self.assertEqual([], run_check(data).errors)
 
     def test_one_number_listed_twice_must_carry_the_same_name_and_source(self):
         data = good()
@@ -475,6 +505,18 @@ class DoseSpellings(Base):
             with self.subTest(text=text):
                 self.assertRejects(text)
 
+    def test_spelled_out_quantities_fail_for_every_unit_not_only_the_long_ones(self):
+        for text in ("five mg", "take five mg", "five grams", "twenty mEq", "twenty-five mg", "one hundred mcg",
+                     "half a gram", "ten ml", "two g", "fifty cc", "thirty-five micrograms", "Seven IU"):
+            with self.subTest(text=text):
+                self.assertRejects(text)
+
+    def test_number_words_beside_ordinary_words_do_not_trip_the_dose_rule(self):
+        data = good()
+        insert(data, "meds")["body"] = ("Call one person you trust. Wait two days. Ten minutes of rest helps. "
+                                         "A great plan, five good habits, one great day, twenty questions.")
+        self.assertEqual([], run_check(data).errors)
+
     def test_tablet_and_pill_counts_fail(self):
         for text in ("Take 2 tablets", "take two pills", "1 capsule at night"):
             with self.subTest(text=text):
@@ -520,21 +562,21 @@ class Housekeeping(Base):
         insert(data, "national")["table"][0]["verifiedDate"] = "1970-01-01"
         self.assertErrorMentions(run_check(data), "verifiedDate", "before")
 
-    def test_the_aggregator_check_survives_a_trailing_dot_and_a_port(self):
+    def test_the_host_check_survives_a_trailing_dot_and_a_port_on_an_unapproved_host(self):
         for source in ("https://wikipedia.org./page", "https://en.wikipedia.org:443/page"):
             with self.subTest(source=source):
                 data = good()
                 insert(data, "national")["table"][0]["source"] = source
-                self.assertErrorMentions(run_check(data), "not authoritative")
+                self.assertErrorMentions(run_check(data), "approved source")
 
     def test_extra_sources_are_optional_https_urls_and_held_to_the_same_rule(self):
         data = good()
-        insert(data, "national")["table"][0]["alsoSources"] = ["https://example.org/hours"]
+        insert(data, "national")["table"][0]["alsoSources"] = ["https://www.samhsa.gov/hours"]
         self.assertEqual([], run_check(data).errors)
-        insert(data, "national")["table"][0]["alsoSources"] = ["http://example.org/hours"]
+        insert(data, "national")["table"][0]["alsoSources"] = ["http://www.samhsa.gov/hours"]
         self.assertTrue(run_check(data).errors)
         insert(data, "national")["table"][0]["alsoSources"] = ["https://www.webmd.com/x"]
-        self.assertErrorMentions(run_check(data), "not authoritative")
+        self.assertErrorMentions(run_check(data), "approved source")
 
 
 class CrisisDatesAndNumbers(Base):
