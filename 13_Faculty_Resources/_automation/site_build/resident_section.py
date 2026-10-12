@@ -231,6 +231,15 @@ if _missing_shell or _stale_shell:
     for needle in _missing_shell: print("   - missing:",repr(needle))
     for needle in _stale_shell: print("   - stale:",repr(needle))
     raise SystemExit(1)
+# The aftercare packet's payload was injected into the MS3 shell this build copied (build_deploy.py). The
+# rebrand above only rewrites text, but a resident shell that lost or doubled it would ship a packet that
+# refuses to print, so the postcondition is asserted here too rather than assumed.
+import care_inserts_payload
+try:
+    care_inserts_payload.assert_injected(ix)
+except care_inserts_payload.PayloadError as _care_error:
+    print("BUILD ABORTED — resident aftercare packet payload: %s"%_care_error)
+    raise SystemExit(1)
 open(OUT+"/index.html","w",encoding="utf-8").write(ix)
 
 # ---- resident-level reasoning cases: same tool, harder audience-specific payload ----

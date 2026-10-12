@@ -685,6 +685,10 @@
      reason: the Library renders at first paint from what is already on the page. Nothing here
      writes to the file; the week pages' pairing blocks are built from it separately. */
   var FD_PAIRINGS=null;
+  /* The aftercare packet's standard inserts and the crisis contacts they reference (care_inserts_payload.py).
+     Same verified-needle injection as FD_PAIRINGS, and the resident build inherits it. Inert data: only the
+     flag-gated packet reads it. Null means the payload never arrived, and the packet then refuses to print. */
+  var FD_CARE_INSERTS=null;
   var SEC_SEQ=0;
   function makeCollapsible(body){
     if(!body) return;

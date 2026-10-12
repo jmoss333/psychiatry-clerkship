@@ -651,12 +651,26 @@ if _spa_t.count(_pairings_needle)!=1:
     print("BUILD ABORTED — FD_PAIRINGS needle missing or duplicated in spa_index.html")
     raise SystemExit(1)
 _spa_t=_spa_t.replace(_pairings_needle,"var FD_PAIRINGS=%s;"%frontdoor_catalog._inline_json(_pairings_inline))
+# The aftercare packet's standard inserts plus the crisis contacts they reference (care_inserts_payload.py).
+# Validated here by the validator's own check(); a payload the packet cannot print safely aborts the
+# build, so the last good deploy stays live. Crisis numbers are copied from crisis_resources.json, never
+# typed. The resident build rebrands this index.html, so it inherits the payload and re-asserts the
+# postcondition (resident_section.py).
+import care_inserts_payload
+try:
+    _care_inserts=care_inserts_payload.build_payload()
+    _spa_t=care_inserts_payload.inject(_spa_t,_care_inserts)
+    care_inserts_payload.assert_injected(_spa_t)
+except care_inserts_payload.PayloadError as _care_error:
+    print("BUILD ABORTED — aftercare packet payload: %s"%_care_error)
+    raise SystemExit(1)
 open(_spa_out,"w",encoding="utf-8").write(_spa_t)
 print("retired-qb injection:",len(_retired_ids),"id(s)")
 print("draft-qb injection:",len(_draft_ids),"id(s)")
 print("practice-case-title injection:",len(_case_titles),"case(s)")
 print("case-arc injection:",len((_case_arc or {}).get("weeks") or []),"week(s)")
 print("pairings injection:",len((_pairings_inline or {}).get("pairings") or []),"pairing(s)")
+print("care-inserts injection:",len(_care_inserts["inserts"]),"insert(s),",len(_care_inserts["contacts"]),"crisis contact(s)")
 
 # ---- page->tool link divergence (report only; never fails the build) ----
 # The practice panel reconciles two sources that disagree in OPPOSITE directions:
