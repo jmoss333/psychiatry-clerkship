@@ -836,7 +836,7 @@
 .fd-packet-cardwrap .fd-packet-card{margin-top:var(--fd-space-5)}
 /* ID-1 (a credit card): 3.375in by 2.125in. Five crisis lines and two lines to write on have to fit that, so its type and
  * rows are the smallest on the sheet (12px, a 9pt wallet-card size). A taller card is a test failure, not a quiet growth. */
-.fd-packet-card{width:3.375in;min-height:2.125in;padding:var(--fd-space-4) var(--fd-space-5);border:2px dashed CanvasText;border-radius:var(--fd-radius-md)}
+.fd-packet-card{width:3.375in;min-height:2.125in;padding:var(--fd-space-3) var(--fd-space-5);border:2px dashed CanvasText;border-radius:var(--fd-radius-md)}
 .fd-packet-card__title{padding-bottom:var(--fd-space-2);font-size:var(--fd-font-sm);font-weight:800}
 .fd-packet-card__lines{gap:var(--fd-space-1);font-size:var(--fd-font-xs);line-height:var(--fd-leading-snug)}
 .fd-packet-card__lines li{display:flex;justify-content:space-between;gap:var(--fd-space-4)}
@@ -844,7 +844,8 @@
 .fd-packet-card__lines .fd-packet-crisis__num{font-size:inherit;grid-row:auto}
 .fd-packet-card__lines .fd-packet-crisis__label{text-align:right}
 .fd-packet-card .fd-packet-rows{gap:var(--fd-space-2);padding-top:var(--fd-space-3);font-size:var(--fd-font-xs)}
-.fd-packet-card .fd-packet-row{min-height:var(--fd-space-10)}
+.fd-packet-card .fd-packet-row{min-height:var(--fd-space-9)}
+.fd-packet-card .fd-packet-row span{max-width:none;white-space:nowrap}
 .fd-packet-card .fd-packet-row i{min-height:var(--fd-space-7)}
 .fd-packet-notice{padding:var(--fd-space-12);font-size:var(--fd-font-xl);font-weight:800}
 .fd-packet-sheet--screen .fd-packet-box.is-blank{display:none}

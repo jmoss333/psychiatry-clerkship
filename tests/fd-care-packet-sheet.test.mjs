@@ -75,8 +75,14 @@ const finalState = (records, more = {}) => stateOf(records, { mode: 'final', ...
 const MODES = ['review', 'final'];
 const render = (records, state, payload = PAYLOAD, opts = {}) => S.sheet(state, dataOf(records), payload, opts);
 // Plain-text view of the html, for oracle scans.
-const textOf = html => html.replace(/<[^>]*>/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+// The entities are decoded in ONE pass: decoding "&amp;" first and then "&lt;" would turn the text "&amp;lt;" into "<".
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
+const textOf = html => html.replace(/<[^>]*>/g, ' ').replace(/&(amp|lt|gt|quot|#39);/g, (whole, name) => ENTITIES[name]);
 const governed = id => GOVERNED.resources.find(r => r.id === id).contact;
+
+test('textOf decodes entities once: "&amp;lt;" stays "&lt;" and is not turned into "<"', () => {
+  assert.equal(textOf('a &amp;lt; b &amp;amp; c &lt;i&gt; &quot;q&quot; &#39;s&#39;'), `a &lt; b &amp; c <i> "q" 's'`);
+});
 
 test('the module exists, exports the sheet API, and is a front-door module (ES5, no network, no storage, no crisis literal)', () => {
   assert.ok(S, 'fd_care_packet_sheet.js exists and exports the sheet API');
@@ -400,7 +406,9 @@ test('every listing prints its name, phone, domain and area; the QR appears exac
   assert.equal(r.ok, true, r.message);
   const text = textOf(r.html);
   for (const name of ['Has Https', 'Has Http', 'No Site']) assert.ok(text.includes(name), name);
-  assert.ok(text.includes('207-700-0123') && text.includes('York County') && text.includes('example.org'));
+  assert.ok(text.includes('207-700-0123') && text.includes('York County'));
+  // The printed domain is its own token in the text, not a substring of something longer.
+  assert.match(text, /(^|\s)example\.org(\s|$)/);
   // Visible text, not markup: the QR's own namespace attribute legitimately contains "www." (w3.org).
   assert.equal(text.includes('www.'), false, 'the domain prints without www.');
   assert.equal(r.html.split('<svg').length - 1, 1, 'one QR: only the https listing has one (the generator IS loaded, so this is not "no QR anywhere")');

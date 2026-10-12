@@ -630,10 +630,16 @@ test.describe('preview, print and copy', () => {
     const card = await page.evaluate(() => {
       const el = document.querySelector('#fdPacketPrint [data-fd-packet-card]'), r = el.getBoundingClientRect();
       const lines = [...el.querySelectorAll('[data-fd-packet-crisis]')].map(li => li.getAttribute('data-fd-packet-crisis'));
-      return { w: r.width, h: r.height, lines, all: [...document.querySelectorAll('#fdPacketPrint [data-fd-packet-unit="crisis"] [data-fd-packet-crisis]')].map(li => li.getAttribute('data-fd-packet-crisis')) };
+      // The card is a floor (min-height), so its own height reads 2.125in whenever its content fits. The content's height is what
+      // shows how close it is: padding, border and every child, as laid out.
+      const style = getComputedStyle(el);
+      const content = [...el.children].reduce((sum, child) => sum + child.getBoundingClientRect().height, 0)
+        + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+      return { w: r.width, h: r.height, content, lines, all: [...document.querySelectorAll('#fdPacketPrint [data-fd-packet-unit="crisis"] [data-fd-packet-crisis]')].map(li => li.getAttribute('data-fd-packet-crisis')) };
     });
     expect(card.w).toBeCloseTo(3.375 * 96, 0);
     expect(card.h, 'ID-1 is 2.125in tall: a card that grows no longer fits a wallet').toBeLessThanOrEqual(2.125 * 96 + 0.5);
+    expect(card.content, 'and its content fits with room to spare, so a wider font on another machine cannot push it over (the Linux runner measured 1.2px over before)').toBeLessThanOrEqual(2.125 * 96 - 6);
     expect(card.lines, 'the card carries the same lines as the page-1 block').toEqual(card.all);
   });
 });

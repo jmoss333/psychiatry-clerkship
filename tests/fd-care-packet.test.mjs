@@ -206,7 +206,7 @@ test('the tray is empty-state safe, grouped by category, escaped, and nudges at 
   const html = P.tray({ ...P.blank(), ids: ['a1', 'a2', 'a3'] }, data, {});
   assert.match(html, /Aftercare packet[\s\S]*>3</);
   assert.ok(html.indexOf('>aftercare<') < html.indexOf('>Peer support<'), 'groups follow the directory category order');
-  assert.doesNotMatch(html, /<script>/);
+  assert.doesNotMatch(html, /<script/i);
   assert.match(html, /&lt;script&gt;/);
   assert.match(html, /data-fd-care-packet-up="a1"[^>]*disabled/);
   assert.match(html, /data-fd-care-packet-down="a3"[^>]*disabled/);
