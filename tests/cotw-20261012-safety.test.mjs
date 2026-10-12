@@ -57,7 +57,7 @@ for (const c of cases) {
       json('evidence_annotations.json'), json('evidence_registry.json')), c.references);
   });
 
-  test(`${c.site}: pending-high rendering and crisis contacts survive the built page`, (t) => {
+  test(`${c.site}: built case carries high-risk warning data and crisis contacts`, (t) => {
     const reason = staleBuildReason(ROOT, c.site, [source(c.level), ledgerPath,
       '13_Faculty_Resources/_automation/site_build/build_deploy.py',
       '13_Faculty_Resources/_automation/site_build/resident_section.py',
@@ -69,8 +69,10 @@ for (const c of cases) {
     assert.equal(governance.riskKind, 'clinical');
     assert.equal(governance.riskLevel, 'high');
     if (governance.status === 'pending') {
-      assert.match(page, /surface-governance-pending-high/);
-      assert.match(page, /Verify decisions with your supervising clinician/);
+      // Markdown warnings are rendered by the reader from governance.json, not injected
+      // into the raw .md file. Direct tool HTML has a different injection path.
+      assert.match(governance.warning, /high-risk clinical teaching/);
+      assert.match(governance.warning, /Verify decisions with your supervising clinician/);
     }
     assert.match(page, /crisis-block-hook/);
     assert.match(page, /not yet determined|does not establish a safe disposition/);
