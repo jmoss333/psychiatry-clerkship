@@ -1519,5 +1519,25 @@
     "by": "Joshua Moss, MD",
     "contentHash": "7b4e50643cb836b354ba1e9ae95caa6819d98c8b",
     "clinicalHash": "e7b686488027d06c3278bb1ebf181fe54357edc0"
+  },
+  "cotw_20261012_safety_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Suicide risk assessment & safety planning, MS3) added 2026-10-12; awaiting faculty attestation.",
+    "at": "2026-10-12",
+    "by": "Pending faculty review"
+  },
+  "cotw_20261012_safety_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Suicide risk assessment & safety planning, resident) added 2026-10-12; awaiting faculty attestation.",
+    "at": "2026-10-12",
+    "by": "Pending faculty review"
   }
 }
