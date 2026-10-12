@@ -45,10 +45,10 @@ class KnownChange(unittest.TestCase):
             self.assertEqual(report['apiRequests'], 4)
             replay = report['facultyReplay']
             self.assertEqual(replay['status'], 'complete')
-            self.assertEqual(replay['newPacketsByObservation'], [0,0,1,0])
-            self.assertEqual(replay['pendingPackets'], 1)
-            self.assertTrue(replay['formattingOnlyAlert'])
-            self.assertGreater(replay['candidateCount'], 0)
+            self.assertEqual(replay['newPacketsByObservation'], [0,0,0,0])
+            self.assertEqual(replay['pendingPackets'], 0)
+            self.assertFalse(replay['formattingOnlyAlert'])
+            self.assertEqual(replay['candidateCount'], 0)
             self.assertEqual(replay['productionInboxWrites'], 0)
 
     def test_whitespace_control_replay_is_quiet_but_wording_control_is_not(self):

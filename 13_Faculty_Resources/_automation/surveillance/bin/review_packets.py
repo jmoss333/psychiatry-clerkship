@@ -1,9 +1,49 @@
 """Append-preserving evidence inbox. No faculty decision or attestation writes."""
 from copy import deepcopy
 import json
+import re
 from pathlib import Path
 import jsonschema
 from question_impact import revision
+
+
+def bold_only_change(before, after):
+    """Conservative allowlist, not a general Markdown-to-text conversion.
+
+    Only balanced **plain words** may differ. Reject contexts where stars can
+    be literal code, link targets, HTML, escapes or other Markdown syntax.
+    Unrecognized syntax stays reviewable rather than being guessed harmless.
+    """
+    if not isinstance(before, str) or not isinstance(after, str) or not before or before == after:
+        return False
+    def plain(text):
+        if any(c in text for c in '`\\[]<>_|~'):
+            return None
+        stripped = re.sub(r'(?<![\w*])\*\*([A-Za-z0-9]+(?: [A-Za-z0-9]+)*)\*\*(?![\w*])', r'\1', text)
+        return None if '*' in stripped else stripped
+    left, right = plain(before), plain(after)
+    return left is not None and right is not None and left == right
+
+
+def formatting_only_change(prior, row):
+    """Full snapshot and every mapped passage must independently be harmless."""
+    if not prior or not bold_only_change(prior.get('text'), row.get('text')):
+        return False
+    old_review, review = prior.get('passage_review', {}), row.get('passage_review', {})
+    if any(r.get('status') == 'unavailable' for r in (old_review, review)):
+        return False
+    old, new = old_review.get('observations', {}), review.get('observations', {})
+    if not isinstance(old, dict) or not isinstance(new, dict) or old.keys() != new.keys():
+        return False
+    for key in old:
+        a, b = old[key], new[key]
+        if not isinstance(a, dict) or not isinstance(b, dict):
+            return False
+        if {k: v for k, v in a.items() if k != 'quote'} != {k: v for k, v in b.items() if k != 'quote'}:
+            return False
+        if a.get('quote') != b.get('quote') and not bold_only_change(a.get('quote'), b.get('quote')):
+            return False
+    return True
 
 
 def validate_state(state):
@@ -36,13 +76,14 @@ def merge_observation(previous, report, impacts):
             state['failures'].append({'sourceId': source, 'reason': review.get('reason', 'Passage mapping unavailable')})
         changed = prior is not None and (row.get('hash') != prior.get('hash') or
                   review.get('observations') != prior.get('passage_review', {}).get('observations'))
+        formatting_only = changed and impact['status'] == 'complete' and formatting_only_change(prior, row)
         superseded = {r for p in state['packets'] for r in p.get('supersedes', [])}
         recoveries = [p for p in state['packets'] if p['sourceId'] == source
                       and p['revision'] not in superseded and p.get('mappingStatus') == 'unavailable'
                       and p.get('lexicalScanStatus') == 'complete'
                       and review.get('status') in ('changed', 'unchanged', 'first-observation', 'outside-mapped-passages')
                       and impact['status'] == 'complete']
-        if changed or recoveries:
+        if (changed and not formatting_only) or recoveries:
             if impact['status'] != 'complete':
                 state['failures'].append({'sourceId': source, 'reason': 'Question scan incomplete'})
             packet = {'sourceId': source, 'sourceUrl': row['source_url'],
@@ -73,6 +114,8 @@ def merge_observation(previous, report, impacts):
                 state['packets'].append(packet)
         # Preserve prior mapping receipt across failed mapping examinations.
         valid = deepcopy(row)
+        valid['changeClassification'] = ('formatting-only' if formatting_only else
+                                         'review-required' if changed else 'unchanged' if prior else 'first-observation')
         if review.get('status') == 'unavailable' and prior:
             valid['passage_review'] = deepcopy(prior.get('passage_review', {}))
         state['latestValid'][source] = valid
