@@ -1,0 +1,358 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-12",
+  "crisisCopy": {
+    "heading": "If things feel unsafe, call right away",
+    "cardHeading": "If things feel unsafe",
+    "note": "You can call for yourself or for someone you are worried about. You do not need to be in an emergency to call. If you are in danger right now, call {{crisis:emergency_911}} or go to the nearest emergency room."
+  },
+  "crisis": [
+    {
+      "ref": "lifeline_988",
+      "label": "Suicide and crisis line",
+      "when": "For thoughts of suicide, or any mental health crisis."
+    },
+    {
+      "ref": "maine_crisis_line",
+      "label": "Maine Crisis Line",
+      "when": "Talk with a Maine crisis worker. They can send a mobile crisis team to you."
+    },
+    {
+      "ref": "crisis_text_line",
+      "label": "Crisis text line",
+      "when": "If you would rather text than talk."
+    },
+    {
+      "ref": "veterans_crisis_line",
+      "label": "Veterans Crisis Line",
+      "when": "For veterans, service members, and the people who care about them."
+    },
+    {
+      "ref": "emergency_911",
+      "label": "Emergency",
+      "when": "If you or someone else is in danger right now."
+    }
+  ],
+  "inserts": [
+    {
+      "id": "intro",
+      "title": "Warm welcome",
+      "core": true,
+      "defaultOn": true,
+      "body": "This packet is for you. It goes home with your After Visit Summary.\n\nLeaving the hospital is a big step. The first days at home can feel strange, tiring, or like a lot at once. That is normal, and it usually settles. The people and places in these pages can help with the hard parts. That might be a first appointment, a place to sleep, a ride, or just someone to talk to.\n\nYou do not have to do everything on this list. Start with one thing. If a number does not work or a door is closed, that is not your fault. Try the next one, or call the unit at {{unitPhone}} and we will help you find another way.\n\nIf you feel worse instead of better, do not wait. Reach out to us or to a crisis line, any time.",
+      "signoff": "With care, from the team on {{unitName}}"
+    },
+    {
+      "id": "week",
+      "title": "Your first week",
+      "core": false,
+      "defaultOn": true,
+      "rows": [
+        "First appointment: day and time",
+        "Where it is",
+        "My pharmacy",
+        "Someone I will call if I struggle",
+        "One thing I will do each day"
+      ]
+    },
+    {
+      "id": "callback",
+      "title": "Expect a call from us",
+      "core": false,
+      "defaultOn": true,
+      "body": "Someone from our team will call to see how the first days are going. It is a short, friendly check-in, not a test. We may ask how you are sleeping, whether you got your medicines, and whether your first appointment is set.",
+      "bullets": [
+        "Save the number we write below in your phone, so you know the call is from us.",
+        "Tell us the best number to reach you, and whether it is okay to leave a message.",
+        "If you miss the call, you can call us back at {{unitPhone}}.",
+        "If you would rather we call a family member or supporter, tell us before you leave and we will write it below."
+      ],
+      "rows": [
+        "We will call on (day)",
+        "Around (time)",
+        "The call will come from",
+        "Best number to reach me",
+        "Okay to leave a message?",
+        "Who else may we call"
+      ]
+    },
+    {
+      "id": "warning",
+      "title": "Warning signs and what to do",
+      "core": false,
+      "defaultOn": true,
+      "groups": [
+        {
+          "heading": "Common early signs that things are slipping",
+          "tone": "warn",
+          "bullets": [
+            "Sleeping much less or much more than usual",
+            "Skipping meals, medicines, or appointments",
+            "Pulling away from people, or not answering the phone",
+            "Thoughts getting faster, darker, or hard to turn off",
+            "Drinking or using more than planned",
+            "Feeling that nothing will help",
+            "Thinking about suicide or about hurting yourself"
+          ]
+        },
+        {
+          "heading": "My own signs",
+          "rows": [
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "heading": "If I notice them, I will",
+          "rows": [
+            "",
+            ""
+          ]
+        },
+        {
+          "heading": "What to do",
+          "bullets": [
+            "If you notice early signs: call your clinic, or talk to someone you trust.",
+            "If you have thoughts of suicide or of hurting yourself: {{crisis:lifeline_988}}. You can also call the Maine Crisis Line at {{crisis:maine_crisis_line}}.",
+            "If you might act on those thoughts, or you are in danger: call {{crisis:emergency_911}} or go to the nearest emergency room.",
+            "If you cannot call: go to the nearest emergency room, or ask someone nearby to call for you."
+          ]
+        }
+      ],
+      "tip": "Noticing early is a strength, not a failure."
+    },
+    {
+      "id": "safety",
+      "title": "Making home safer",
+      "core": false,
+      "defaultOn": false,
+      "bullets": [
+        "Keep medicines, including ones you buy without a prescription, in a locked box. Or ask a trusted person to hold them and give you a week at a time.",
+        "If there are guns in the home, ask someone you trust to keep them outside the home for now. If that is not possible, lock them up, unloaded, and give the key to someone else.",
+        "Ask them to hold anything else you might use to hurt yourself, too. Talk with your care team before you take any of it back.",
+        "Agree on one person who will check in with you each day, by phone or in person.",
+        "If you use drugs, your body may not handle as much as it did before your hospital stay. Use less than before, and do not use alone. Pills and powders not from a pharmacy can contain fentanyl.",
+        "Keep naloxone (Narcan) at home, and show the people you live with where it is and how to use it. You can buy it at a pharmacy, and you do not need a prescription. Many programs in Maine give it out for free. To find free naloxone, go to GetMaineNaloxone.org.",
+        "If someone will not wake up or is not breathing, give naloxone and call {{crisis:emergency_911}}."
+      ]
+    },
+    {
+      "id": "family",
+      "title": "For family and supporters",
+      "core": false,
+      "defaultOn": true,
+      "groups": [
+        {
+          "heading": "What helps",
+          "bullets": [
+            "Ask “what would help today?” rather than “how are you?”",
+            "It is okay to ask: “Are you thinking about suicide?” Asking does not put the idea in their head.",
+            "Offer rides and company to the first appointments",
+            "Keep routines simple: meals, sleep, a short walk",
+            "Take care of yourself too. NAMI in Maine has free support groups for families and friends."
+          ]
+        },
+        {
+          "heading": "Signs to take seriously",
+          "tone": "warn",
+          "bullets": [
+            "Talk about suicide or wanting to die, or giving things away",
+            "Not sleeping for days, or not getting out of bed",
+            "You feel unsafe or out of your depth"
+          ]
+        },
+        {
+          "heading": "What to do",
+          "bullets": [
+            "For advice from a crisis worker, any time: {{crisis:lifeline_988}}. You can call for someone else.",
+            "If they are in danger right now, call {{crisis:emergency_911}} and stay with them."
+          ]
+        }
+      ],
+      "table": [
+        {
+          "who": "NAMI Maine HelpLine",
+          "number": "1-800-464-5767",
+          "what": "Press 1. Support and information for family and friends with questions about mental health. Monday to Friday, 8 a.m. to 4 p.m.",
+          "source": "https://www.maine.gov/dhhs/about/contact/hotlines",
+          "verifiedDate": "2026-10-12"
+        }
+      ]
+    },
+    {
+      "id": "national",
+      "title": "Helplines and support lines",
+      "core": false,
+      "defaultOn": true,
+      "body": "Hours are shown for each line. Not sure who to call, or it is after hours? {{crisis:lifeline_988}}, any time.",
+      "table": [
+        {
+          "who": "SAMHSA National Helpline",
+          "number": "1-800-662-4357",
+          "what": "Free, private help finding treatment and support groups for mental health or substance use. Open 24/7. English and Spanish by phone. It does not give counseling.",
+          "source": "https://www.samhsa.gov/find-help/helplines/national-helpline",
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "NAMI HelpLine",
+          "number": "1-800-950-6264",
+          "what": "Free, private support and mental health information. Monday to Friday, 10 a.m. to 10 p.m. Eastern. Closed on federal holidays. Or text NAMI to 62640. Not a crisis line.",
+          "source": "https://www.nami.org/nami-helpline/",
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "211 Maine",
+          "number": "211",
+          "what": "Free. Call any time to find help with food, housing, heating bills, and rides. Or text your ZIP code to 898-211.",
+          "source": "https://211maine.org/",
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "NAMI Maine HelpLine",
+          "number": "1-800-464-5767",
+          "what": "Press 1. Support and information when you, a family member, or a friend has questions about mental health. Monday to Friday, 8 a.m. to 4 p.m.",
+          "source": "https://www.maine.gov/dhhs/about/contact/hotlines",
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "The Trevor Project",
+          "number": "1-866-488-7386",
+          "what": "Crisis and suicide support for LGBTQ+ young people, any time of day or night. Or text START to 678-678.",
+          "source": "https://www.thetrevorproject.org/get-help/",
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "National Domestic Violence Hotline",
+          "number": "1-800-799-7233",
+          "what": "Free, private help with domestic violence. Open 24/7. Or text START to 88788.",
+          "source": "https://www.thehotline.org/",
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "Poison Help",
+          "number": "1-800-222-1222",
+          "what": "Hard to wake, not breathing, or took too much on purpose? Call {{crisis:emergency_911}} first. For other medicine or poison questions, call free, any time. In Maine you can also text POISON to 85511.",
+          "source": "https://www.nnepc.org/about",
+          "alsoSources": [
+            "https://www.nnepc.org/contact"
+          ],
+          "verifiedDate": "2026-10-12"
+        }
+      ]
+    },
+    {
+      "id": "insurance",
+      "title": "Insurance and paying for care",
+      "core": false,
+      "defaultOn": true,
+      "table": [
+        {
+          "who": "MaineCare: apply or renew",
+          "number": "1-855-797-4357",
+          "what": "Find out if you qualify, apply, renew, or report a change. Monday to Friday, 7 a.m. to 4 p.m. You can also apply online at MyMaineConnection.gov.",
+          "source": "https://www.maine.gov/dhhs/ofi",
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "MaineCare Member Services",
+          "number": "1-800-977-6740",
+          "what": "Questions about what MaineCare covers, or choosing a primary care provider. Monday to Friday, 7 a.m. to 6 p.m.",
+          "source": "https://www.maine.gov/dhhs/oms/contact-us",
+          "alsoSources": [
+            "https://www.maine.gov/dhhs/oms/member-resources/attention-mainecare-members-2026-03-26"
+          ],
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "CoverME.gov",
+          "number": "1-866-636-0355",
+          "what": "Maine's health insurance marketplace. Free help with your application, and it can check if you can get MaineCare. Monday to Friday, 8 a.m. to 5 p.m.",
+          "source": "https://www.coverme.gov/contact-us",
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "Consumers for Affordable Health Care",
+          "number": "1-800-965-7476",
+          "what": "Free Maine help with health coverage questions, bills you do not understand, and denied claims. Monday to Friday, 8:30 a.m. to 4 p.m. Leave a message if busy.",
+          "source": "https://mainecahc.org/consumer-assistance/overview.html",
+          "alsoSources": [
+            "https://mainecahc.org/who-we-are/contact.html"
+          ],
+          "verifiedDate": "2026-10-12"
+        },
+        {
+          "who": "Medicare (1-800-MEDICARE)",
+          "number": "1-800-633-4227",
+          "what": "Questions about Original Medicare benefits, costs, or bills. Open 24/7, except some federal holidays. If you have a Medicare Advantage or drug plan, call your plan first.",
+          "source": "https://www.medicare.gov/talk-to-someone",
+          "verifiedDate": "2026-10-12"
+        }
+      ],
+      "tip": "Three things make calls easier. Have your insurance card, or say you do not have insurance yet. Ask “is there a sliding scale?” That means the price depends on your income. If a bill arrives that you do not understand, do not ignore it. Call the number on the bill, or call Consumers for Affordable Health Care."
+    },
+    {
+      "id": "meds",
+      "title": "Your medicines after discharge",
+      "core": false,
+      "defaultOn": true,
+      "bullets": [
+        "Your medicine list is on your After Visit Summary, not here.",
+        "Fill your prescriptions as soon as you can. If the pharmacy says a medicine needs “prior authorization,” call the unit. We can help. If you cannot pay for a medicine, call the unit before you go without it.",
+        "If you miss a dose, do not double up. Ask your pharmacist what to do.",
+        "If you have not taken a medicine for 2 days or more, call before you start it again. Some medicines must be restarted at a lower dose.",
+        "Do not stop a medicine suddenly, even if you feel better. Call the person who prescribes it first. If you do not have one yet, call the unit at {{unitPhone}}.",
+        "Side effects that worry you are worth a call. Most can be managed.",
+        "Get emergency help now (call {{crisis:emergency_911}} or go to an emergency room) for a rash with blisters or mouth sores, a high fever with stiff muscles or confusion, fainting, a seizure, or trouble breathing."
+      ],
+      "rows": [
+        "My pharmacy",
+        "Pharmacy phone",
+        "Who prescribes my medicines now",
+        "Their phone",
+        "Next refill is due"
+      ]
+    },
+    {
+      "id": "rights",
+      "title": "Reaching the unit and your rights",
+      "core": false,
+      "defaultOn": false,
+      "bullets": [
+        "Unit phone: {{unitPhone}}.",
+        "You can ask for a copy of your medical records. The hospital may charge a reasonable fee for copying and mailing them.",
+        "If you need help in a language other than English, you can ask for an interpreter. It is free.",
+        "If you have a concern or complaint, you can tell the hospital by talking or in writing. The hospital must tell you who to contact.",
+        "In Maine, you can write down ahead of time what mental health care you want if you become too sick to decide. This is sometimes called a psychiatric advance directive. Disability Rights Maine has a guide with sample forms."
+      ]
+    },
+    {
+      "id": "card",
+      "title": "Wallet crisis card",
+      "core": false,
+      "defaultOn": true,
+      "body": "Cut along the dashed line and keep this card in your wallet.",
+      "rows": [
+        "My person (name and phone)",
+        "My clinic (name and phone)"
+      ]
+    },
+    {
+      "id": "notes",
+      "title": "Questions for my first appointment",
+      "core": false,
+      "defaultOn": false,
+      "body": "Write your questions here so they are ready when you walk in.",
+      "rows": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    }
+  ]
+}
