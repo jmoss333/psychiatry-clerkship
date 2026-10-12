@@ -2117,6 +2117,18 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   .fd-library__view{min-height:var(--fd-target-touch)}
   .fd-kit .fd-library__footer{padding-bottom:calc(var(--fd-target-touch) + var(--fd-space-10))}
 }
+@media (max-width:640px){
+  /* Make room for the first complete reading even when the re-review notice is present.
+     Reclaim whitespace only: keep the notice's copy, type, padding and disclosure target,
+     and retain the row/control minimum touch sizes and the shell's dock clearance. */
+  .fd-main:has(.fd-library){padding-top:var(--fd-space-4)}
+  .fd-library__head{margin-bottom:var(--fd-space-4)}
+  .fd-library__controls{row-gap:var(--fd-space-4);margin-bottom:var(--fd-space-4)}
+  .fd-library__status{margin-bottom:var(--fd-space-2)}
+  .fd-library__body{row-gap:var(--fd-space-4)}
+  .fd-kit__review{margin-bottom:var(--fd-space-2)}
+  .fd-kit__reading,.fd-collink{padding-block:var(--fd-space-4)}
+}
 
 @media print{
   .fd-care-builder{display:none !important}

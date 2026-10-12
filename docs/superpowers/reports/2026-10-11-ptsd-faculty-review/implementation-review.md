@@ -10,7 +10,7 @@ Prepared October 11, 2026. **Teaching drafts; faculty review pending. Both AI fe
 
 - **F01:** corrected the 2017/2023 attribution, retained prazosin's nightmare-specific scope, preserved the orthostasis pearl, and separated the verified initial dose from the guideline rating. Replaced the secondary article citation with the original guidelines and exact locations.
 - **F02:** aligned the core page, summary, exam anchor, discharge paragraph and pearls around CPT/PE/EMDR and the three named medications. Removed a universal combined-treatment implication. Separate anxiety/OCD, withdrawal and akathisia teaching remains. The optional secure-video and co-occurring-SUD expansion was not added.
-- **F03:** retained the pharmacotherapy stem and correct answer B; updated option B, option C's explanation, rationale, pearl and evidence together. Returned the edited question from attested to draft. Other questions are unchanged.
+- **F03:** retained the pharmacotherapy stem and correct answer B; updated option B, options C and D's explanations, rationale, pearl and evidence together. Returned the edited question from attested to draft. Other questions are unchanged.
 
 ## F01 — full revised Q40
 
@@ -71,6 +71,14 @@ Both original guideline records have facultyReviewStatus **pending**. Their blan
 **Before:** Propranolol is studied as an acute peritraumatic adjunct — it is not first-line pharmacotherapy for established PTSD; SSRIs and SNRIs are.
 
 **Draft now:** Propranolol is not a recommended first-line medication for established PTSD. The 2023 VA/DoD guideline recommends sertraline, paroxetine or venlafaxine when medication is selected.
+
+### Option D explanation — October 12 clarification
+
+**Before:** Intrusive re-experiencing in PTSD is not psychosis — antipsychotics are not first-line for PTSD and conflating the two is the inpatient trap that delays correct treatment.
+
+**Draft now:** Intrusive re-experiencing alone does not establish a psychotic disorder. Antipsychotics are not first-line medications for PTSD; a separate comorbid condition may warrant them.
+
+This aligns the explanation with the revised rationale and keeps the medication statement scoped to PTSD. The question remains a draft pending faculty review.
 
 ### Rationale
 

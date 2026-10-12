@@ -4162,9 +4162,28 @@ test.describe('Essentials Phase 2', () => {
   });
   test('responsive: targets, no horizontal overflow at 320/390/641/1280 and at 200% text, reduced motion, and actual evidence', async ({ page }, info) => {
     await seedApp(page, info);
+    // Re-review is a normal Library state. Pin one shared Essentials reading pending so a
+    // later faculty signature cannot remove the banner and silently weaken phone coverage.
+    await page.route('**/*', async route => {
+      if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+      const response = await routeFetchWithRetry(route);
+      const body = await response.text();
+      const prefix = 'var FD_SITE_MANIFEST=';
+      const start = body.indexOf(prefix) + prefix.length;
+      const end = body.indexOf(';\n', start);
+      expect(start).toBeGreaterThan(prefix.length);
+      const manifest = JSON.parse(body.slice(start, end));
+      expect(manifest.md.some(entry => entry[1] === 't_mood.md')).toBe(true);
+      for (const entry of manifest.md) {
+        entry[3] = { ...entry[3], status: entry[1] === 't_mood.md' ? 'pending' : 'reviewed' };
+      }
+      await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(manifest) + body.slice(end) });
+    });
     for (const width of [320, 390, 641, 1280]) {
       await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
       await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
+      await expect(page.locator('.fd-kit__review')).toContainText(/^Faculty re-review in progress — 1 of \d+ readings changed since they were last attested ·/);
+      await page.evaluate(() => document.fonts.ready);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       const desktop = width >= 1000;
       await expect(page.locator('.fd-kit__tool-preview')).toBeVisible({ visible: desktop });
@@ -4185,7 +4204,7 @@ test.describe('Essentials Phase 2', () => {
           expect(first.y + first.height, 'the first reading is whole on the first phone screen, above the dock').toBeLessThanOrEqual(dock.y);
         }
       }
-      const controls = '.fd-kit__reading, .fd-library__view, .fd-library__filter, .fd-kit__group > summary, [data-fd-kit-section], .fd-kit__peek:visible, .fd-kit__preview-open:visible';
+      const controls = '.fd-kit__reading, .fd-library__view, .fd-library__filter, .fd-kit__review summary, .fd-kit__group > summary, [data-fd-kit-section], .fd-kit__peek:visible, .fd-kit__preview-open:visible';
       for (const control of await page.locator(controls).all()) {
         if (!(await control.evaluate(el => el.matches('.fd-library__filter')))) { await control.focus(); await expect(control).toBeFocused(); }
         const box = await control.boundingBox();
@@ -4211,10 +4230,27 @@ test.describe('Essentials Phase 2', () => {
         await info.attach(`everything-${audience(info).role}-${width}`,{path: fullPath,contentType:'image/png'});
       }
     }
-    // 200% text at 320px: nothing scrolls sideways.
+    // The Library uses px-valued font tokens, so changing only html's font-size would
+    // leave its text unchanged. Double the actual type scale and prove the rendered sizes.
     await page.setViewportSize({width: 320, height: 844}); await page.goto('/?tab=library');
-    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
+    const textSizes = await page.evaluate(() => {
+      const root = document.documentElement;
+      const computed = getComputedStyle(root);
+      const sizes = () => ['.fd-kit__review', '.fd-kit__title'].map(selector =>
+        parseFloat(getComputedStyle(document.querySelector(selector)).fontSize));
+      const before = sizes();
+      const tokens = Array.from(computed).filter(name => name.startsWith('--fd-font-'))
+        .map(name => [name, parseFloat(computed.getPropertyValue(name))]);
+      for (const [name, size] of tokens) root.style.setProperty(name, `${size * 2}px`);
+      root.style.fontSize = '200%';
+      return { before, after: sizes(), tokenCount: tokens.length };
+    });
+    expect(textSizes.tokenCount).toBeGreaterThanOrEqual(11);
+    expect(textSizes.after).toEqual(textSizes.before.map(size => size * 2));
+    await page.locator('.fd-kit__review summary').click();
+    await expect(page.locator('.fd-kit__review p')).toBeVisible();
+    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings are marked pending review. Open a reading to see its full review notice.');
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
     await full(page).click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
@@ -4222,6 +4258,7 @@ test.describe('Essentials Phase 2', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/?tab=library');
     expect(await page.locator('.fd-library, .fd-library *').evaluateAll(els => els.filter(el => { const s = getComputedStyle(el); return s.animationName !== 'none' || (s.transitionDuration !== '0s' && s.transitionDuration !== ''); }).length)).toBe(0);
+    await expectHealthy(page);
   });
   test('L4: every resource omitted from kit remains readable through Full and Back', async ({ page }, info) => {
     // Exhaustive mounted navigation costs more than one ordinary smoke flow.
