@@ -12,6 +12,7 @@ const snippets = ['fd_data.js', 'fd_search.js', 'fd_today.js'].map((f) =>
 const F = new Function('governanceBadge', `${snippets}\nreturn {fdBuildIndex,fdSearchResults};`)(() => '');
 
 const curriculum = json('curriculum.json');
+const audit = json('tests/fixtures/medication-search-audit.json');
 const projections = JSON.parse(execFileSync('python3', ['-B', '-c', `
 import json,sys
 sys.path.insert(0,'13_Faculty_Resources/_automation/site_build')
@@ -47,6 +48,11 @@ for (const site of ['ms3','res']) {
   const p=projections[site], index=F.fdBuildIndex(p.curriculum,meta,tools,p.manifest);
   const results=q=>F.fdSearchResults(index,q,p.curriculum.synonyms,{});
   const oldIndex=F.fdBuildIndex({...p.curriculum,medicationTerms:{}},meta,tools,p.manifest);
+  test(`${site}: the documented medication audit has no unexpected empty searches`,()=>{
+    assert.equal(new Set(audit.queries).size,audit.queries.length);
+    const empty=audit.queries.filter(query=>results(query).length===0);
+    assert.deepEqual(empty,audit.deliberateMisspellings);
+  });
   for(const name of names) test(`${site}: ${name} finds a medication reading`,()=>{
     for(const query of [name, name.toUpperCase()+'?']) {
       const rows=results(query), refs=rows.map(r=>r.item.ref);

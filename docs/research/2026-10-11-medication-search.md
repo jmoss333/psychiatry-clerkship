@@ -6,6 +6,8 @@ Extend the existing search with verified brand/generic medication vocabulary. Na
 
 Initial audit of both audience projections: 30 of 58 selected medication/treatment queries returned no results. After implementation, 56 of the same 58 queries return results on each audience. The two remaining queries are misspellings deliberately left outside automatic substitution. The expanded primer is the general medication overview; esketamine/Spravato also reaches the dedicated neuromodulation reading. Clonazepam/Klonopin reaches the benzodiazepine class discussion, not a product-specific monograph. Suboxone is the combination buprenorphine/naloxone product; the destination is the OUD overview, not a claim that formulations are interchangeable.
 
+The exact audit queries are retained in `tests/fixtures/medication-search-audit.json` and exercised against both real audience projections by `tests/medication-search.test.mjs`.
+
 The primer expansion removes the old content-absence reasons for holding Wellbutrin and Lamictal searches. Ativan can now find an ordinary reading without the protocol-demoting behavior of a priority alias. Other held safety-routing decisions in search-ward.json remain held.
 
 ## Name verification
