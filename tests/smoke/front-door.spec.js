@@ -43,8 +43,7 @@ async function readingReady(page, ref = READING_REF) {
   await expect(reader.locator('.fd-article__body h3')).toHaveCount(3);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveCount(1);
   await expect(reader).not.toHaveClass(/fd-reader--guide/);
-  // DOM readiness can precede the 8px entrance transform. Settle geometry
-  // before capturing a reading place or changing viewport; keep offset bounds.
+  // Settle fonts and entrance effects before measuring a reading place.
   await reader.evaluate(async el => {
     await document.fonts.ready;
     const animations = [];
@@ -117,14 +116,20 @@ test('reading place: reload and phone reflow restore the second heading; Start a
   await expect(reader.locator('[data-fd-reading-top]')).toBeVisible();
   await reader.locator('[data-fd-reading-top]').click();
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]).toBeUndefined();
+  const clearedY = await page.evaluate(() => window.scrollY);
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.reload();
   await readingReady(page);
+  // Native restoration may preserve the position, or startup may reset to document top.
+  // Neither route may drift downward or create a new bookmark.
+  const firstReloadY = await page.evaluate(() => window.scrollY);
+  expect(firstReloadY).toBeLessThanOrEqual(clearedY + 0.5);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   await page.reload();
   await readingReady(page);
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(firstReloadY + 0.5);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await scrollReadingTo(page, 2);
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]?.heading).toBe(

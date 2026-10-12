@@ -1108,7 +1108,8 @@
 
 /* ═══ Reader (reading / tool pane) ═══════════════════════════════════════════ */
 
-.fd-reader{animation:fdFadeUp .24s cubic-bezier(.2,.8,.2,1)}
+/* Opacity-only arrival keeps saved reading positions independent of animation timing. */
+.fd-reader{animation:fdBackdropIn .24s cubic-bezier(.2,.8,.2,1)}
 .fd-reader.is-nav-next{animation-name:fdSlideR}
 .fd-reader.is-nav-prev{animation-name:fdSlideL}
 .fd-reader__back{
