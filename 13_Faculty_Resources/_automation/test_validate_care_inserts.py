@@ -579,6 +579,35 @@ class NumberRows(Base):
         self.assertEqual([], run_check(data).errors)
 
 
+class BuildGateWiring(Base):
+    """The validator only protects the handout while the build actually runs it."""
+    GATE = ROOT / "13_Faculty_Resources" / "_automation" / "site_build" / "build_and_check.sh"
+    UNIT = 'python3 "$LIB/13_Faculty_Resources/_automation/test_validate_care_inserts.py"'
+    CHECK = 'python3 "$LIB/13_Faculty_Resources/_automation/validate_care_inserts.py"'
+    CRISIS = 'python3 "$LIB/13_Faculty_Resources/_automation/validate_crisis_resources.py"'
+
+    def gate(self):
+        return self.GATE.read_text(encoding="utf-8")
+
+    def test_the_build_gate_runs_the_tests_and_the_validator_before_either_site_builds(self):
+        gate = self.gate()
+        site_builds = gate.index('case "$SITE" in')
+        for command in (self.UNIT, self.CHECK):
+            with self.subTest(command=command):
+                self.assertIn(command, gate)
+                self.assertLess(gate.index(command), site_builds)
+
+    def test_the_validator_runs_after_the_crisis_source_it_resolves_against(self):
+        gate = self.gate()
+        self.assertLess(gate.index(self.CRISIS), gate.index(self.CHECK))
+
+    def test_the_build_gate_is_not_strict_because_a_stale_number_must_not_block_a_safety_deploy(self):
+        lines = [line for line in self.gate().splitlines() if "validate_care_inserts.py" in line
+                 and "test_validate" not in line]
+        self.assertEqual(1, len(lines), lines)
+        self.assertNotIn("--strict", lines[0])
+
+
 class CommandLine(Base):
     def setUp(self):
         self._dir = tempfile.TemporaryDirectory()
