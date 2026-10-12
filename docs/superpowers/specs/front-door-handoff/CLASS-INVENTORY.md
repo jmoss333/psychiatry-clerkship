@@ -767,7 +767,8 @@ the Library.
 
 | Class | Notes |
 |---|---|
-| `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
+| `.fd-reader` | Opacity-only arrival (`fdBackdropIn`): vertical entrance movement changes heading geometry while saved reading positions restore, causing scroll drift on reload. |
+| `.fd-reader.is-nav-next` / `.is-nav-prev` | Horizontal slide-in direction. **Same element as `.fd-reader`.** Vertical heading geometry stays fixed. |
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
 | `html:has(.fd-reader--tool)` | `scroll-padding-top` = the sticky header's height (68px ≤640px, 112px above) while a tool is open. The frame is content-height, so the page is its only scroll surface and the tool cannot see the header: without this, focus or `scrollIntoView` inside the frame parks a control under the bar, where a tap lands on ✚ Safety (2026-10-04). In-page readers keep their own `scroll-margin-top`. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
