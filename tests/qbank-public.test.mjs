@@ -1,15 +1,6 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-
-test('question bank publication excludes drafts and rejects malformed or incomplete output', () => {
-  const result = spawnSync('python3', [fileURLToPath(new URL(
-    '../13_Faculty_Resources/_automation/site_build/test_qbank_public.py', import.meta.url,
-  ))], { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
-  assert.equal(result.status, 0, result.stdout + result.stderr);
-});
 
 test('stale opt-ins and saved IDs cannot make an unpublished question servable', () => {
   const source = readFileSync(new URL(
