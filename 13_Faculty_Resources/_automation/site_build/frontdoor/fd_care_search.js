@@ -57,7 +57,7 @@ function fdCareDirectoryValidate(raw){
 function fdCareDirectorySearch(data,query,category,region,page){
   var q=String(query||'').trim().toLowerCase(),tokens=q.split(/\s+/).filter(Boolean),matches=[];
   var namePhrase=q?new RegExp('(^|[^a-z0-9])'+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=$|[^a-z0-9])'):null;
-  if(!q&&!category&&!region)return {idle:true,total:0,rows:[],page:1,pages:0};
+  if(!q&&!category&&!region)return {idle:true,total:0,rows:[],allIds:[],page:1,pages:0};
   var maine=region&&region!=='NH'&&region!=='VT/Other NE';
   for(var i=0;i<data.records.length;i++){
     var row=data.records[i];
@@ -71,23 +71,29 @@ function fdCareDirectorySearch(data,query,category,region,page){
     return ar-br||a.name.localeCompare(b.name)||a.id.localeCompare(b.id);
   });
   var pages=Math.ceil(matches.length/5),current=Math.min(Math.max(1,page||1),pages||1);
-  return {idle:false,total:matches.length,page:current,pages:pages,rows:matches.slice((current-1)*5,current*5)};
+  /* allIds spans every page: "Add all results" means all matches, not just the visible five. */
+  return {idle:false,total:matches.length,page:current,pages:pages,rows:matches.slice((current-1)*5,current*5),
+    allIds:matches.map(function(row){return row.id;})};
 }
 function fdCareDirectorySummary(result){
   if(result.idle)return 'Search by resource name or service, or choose a category or region.';
   if(!result.total)return 'No matching listings. Try fewer words, another category, or a wider region.';
   return ((result.page-1)*5+1)+'–'+Math.min(result.page*5,result.total)+' of '+result.total+' listings';
 }
-function fdCareDirectoryResults(data,result,today){
+/* ctx is optional (the aftercare-packet context). Without it the markup is exactly what shipped before. */
+function fdCareDirectoryResults(data,result,today,ctx){
   var out='<h3 class="fd-care-search__count" id="fd-care-directory-count" tabindex="-1">'+fdEsc(fdCareDirectorySummary(result))+'</h3>';
   if(result.idle||!result.total)return out;
+  if(ctx)out+=fdCarePacketBulk(result,ctx);
   out+='<ol class="fd-care-search__list" start="'+((result.page-1)*5+1)+'">';
   for(var i=0;i<result.rows.length;i++){
     var row=result.rows[i],label=row.category;
     for(var c=0;c<data.categories.length;c++)if(data.categories[c].id===row.category)label=data.categories[c].label;
     var date=row.verifiedDate&&row.verifiedDate<=today?row.verifiedDate:'';
     var due=!date||row.verificationRequired||!row.reviewAfter||row.reviewAfter<=today;
-    out+='<li class="fd-care-search__result"><article><p class="fd-care-search__meta">'+fdEsc(label)+' · '+fdEsc(row.area||'Area not recorded')+'</p>'+
+    var packed=!!(ctx&&ctx.ids[row.id]);
+    out+='<li class="fd-care-search__result"><article'+(packed?' class="is-packed"':'')+'><p class="fd-care-search__meta">'+fdEsc(label)+' · '+fdEsc(row.area||'Area not recorded')+
+      (packed?' · <span class="fd-care-search__packed">In packet</span>':'')+'</p>'+
       '<h4>'+fdEsc(row.name)+'</h4>'+(row.description?'<p>'+fdEsc(row.description)+'</p>':'')+
       (row.details?'<p class="fd-care-search__details">'+fdEsc(row.details)+'</p>':'')+
       '<p class="fd-care-search__verification">'+(date?'Recorded verification: <time datetime="'+date+'">'+date+'</time>. ':'Verification date not recorded. ')+
@@ -98,6 +104,7 @@ function fdCareDirectoryResults(data,result,today){
     else if(row.phone)out+='<span class="fd-care-search__contact">Contact listed: '+fdEsc(row.phone)+'</span>';
     if(row.website)out+='<a href="'+fdEsc(row.website)+'" target="_blank" rel="noopener noreferrer" aria-label="'+fdEsc('Website for '+row.name+' (opens in a new tab)')+'">Website <span aria-hidden="true">↗</span></a>';
     if(!row.contactHref&&!row.website)out+='<span class="fd-care-search__contact">No usable contact link listed.</span>';
+    if(ctx)out+=fdCarePacketButton(row,ctx);
     out+='</div></article></li>';
   }
   out+='</ol>';
@@ -121,16 +128,19 @@ function fdCareSearch(index){
     '<button type="button" data-care-directory-clear>Clear</button></div></form>'+
     '<p class="fd-care-search__privacy" id="fd-care-directory-privacy">Use resource names or services. Keep patient details out of search. Your search stays in this tab.</p>'+
     '<div class="fd-care-search__notice" data-care-directory-notice></div><div data-care-directory-results aria-busy="true"><p>Loading directory…</p></div>'+
+    /* The packet tray sits after the results and outside their mount, so typing never repaints it. */
+    (typeof fdCarePacketEnabled==='function'&&fdCarePacketEnabled()?'<div class="fd-care-search__tray" data-fd-care-packet-tray></div>':'')+
     '<p class="fd-care-search__foot">Listings do not confirm availability, eligibility or referral acceptance. Maine region filters also include statewide listings. Use Safety for urgent guidance.</p></section>';
 }
 
 /* Owns one visit, separate from fdWire history/persistence. Only the result mount
    changes while typing; native inputs and their focus/caret stay in place. */
-function fdCreateCareDirectory(){
-  var data=null,error=false,loading=false,query='',category='',region='',page=1;
+function fdCreateCareDirectory(packet){
+  var data=null,error=false,loading=false,query='',category='',region='',page=1,lastResult=null;
   var root=null,status=null,timer=null,timeout=null,abort=null,generation=0;
   function announce(message){if(status&&!(document.querySelector('[role="dialog"][aria-modal="true"]')))status.textContent=message;}
-  function paint(focus){
+  /* quiet: a packet change repaints the results without replacing the packet's own announcement. */
+  function paint(focus,quiet){
     if(!root||!root.isConnected)return;
     var mount=root.querySelector('[data-care-directory-results]'),notice=root.querySelector('[data-care-directory-notice]');
     if(!mount)return;
@@ -141,9 +151,9 @@ function fdCreateCareDirectory(){
     var warning=(data.partial?'Some categories or listings could not be loaded. These results are incomplete. ':'')+
       (old?'This directory snapshot is more than a week old. ':'');
     notice.textContent=warning+'Directory snapshot: '+data.generatedAt.slice(0,10)+'.';
-    var result=fdCareDirectorySearch(data,query,category,region,page);page=result.page;
-    mount.innerHTML=fdCareDirectoryResults(data,result,new Date().toISOString().slice(0,10));
-    announce(warning+fdCareDirectorySummary(result));
+    var result=fdCareDirectorySearch(data,query,category,region,page);page=result.page;lastResult=result;
+    mount.innerHTML=fdCareDirectoryResults(data,result,new Date().toISOString().slice(0,10),packet?packet.context():null);
+    if(!quiet)announce(warning+fdCareDirectorySummary(result));
     if(focus){var count=mount.querySelector('#fd-care-directory-count');if(count)count.focus();}
   }
   function options(){
@@ -162,23 +172,57 @@ function fdCreateCareDirectory(){
     if(typeof fetch!=='function'){fail();return;}
     fetch(FD_CARE_DIRECTORY_URL,{credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:abort?abort.signal:undefined})
       .then(function(response){if(!response.ok)throw new Error('Directory request failed');return response.text();})
-      .then(function(body){if(token!==generation)return;if(body.length>8000000)throw new Error('Directory too large');data=fdCareDirectoryValidate(JSON.parse(body));clearTimeout(timeout);loading=false;error=false;options();paint(false);})
+      .then(function(body){if(token!==generation)return;if(body.length>8000000)throw new Error('Directory too large');data=fdCareDirectoryValidate(JSON.parse(body));clearTimeout(timeout);loading=false;error=false;options();paint(false);if(packet)packet.refresh();})
       .catch(fail);
+  }
+  /* Put focus back after a repaint. A hit names an attribute and the value to find (never spliced into a
+     selector, so an id can hold any character); fallbacks cover a button that became disabled. */
+  function focusAt(hit){
+    if(!root||!hit)return;
+    var found=null,attrs=[hit.attr],i,nodes;
+    if(hit.attr==='id')found=root.querySelector('#'+hit.id);
+    else{
+      if(hit.fallback)attrs.push(hit.fallback);
+      attrs.push('data-fd-care-packet-remove');
+      for(var a=0;a<attrs.length&&!found;a++){
+        nodes=root.querySelectorAll('['+attrs[a]+']');
+        for(i=0;i<nodes.length;i++)if(nodes[i].getAttribute(attrs[a])===hit.id&&!nodes[i].disabled){found=nodes[i];break;}
+      }
+    }
+    /* No preventScroll: on a phone the browser must be free to honour the shell's scroll-padding, or a
+       restored control can end up under the fixed bottom tab bar (WCAG 2.4.11). */
+    if(found)found.focus();
   }
   function mount(node,live){
     root=node;status=live;if(!root)return;
     root.querySelector('#fd-care-directory-query').value=query;options();
     root.oninput=function(event){if(event.target.id!=='fd-care-directory-query')return;query=event.target.value;page=1;clearTimeout(timer);timer=setTimeout(function(){paint(false);},180);};
-    root.onchange=function(event){if(event.target.id==='fd-care-directory-category')category=event.target.value;else if(event.target.id==='fd-care-directory-region')region=event.target.value;else return;page=1;paint(false);};
+    root.onchange=function(event){
+      if(packet&&event.target.hasAttribute&&event.target.hasAttribute('data-fd-care-packet-gate')){focusAt(packet.handleChange(event.target));return;}
+      if(event.target.id==='fd-care-directory-category')category=event.target.value;else if(event.target.id==='fd-care-directory-region')region=event.target.value;else return;page=1;paint(false);};
     root.querySelector('form').onsubmit=function(event){event.preventDefault();clearTimeout(timer);paint(false);};
     root.onclick=function(event){
       var target=event.target.closest('button');if(!target||!root.contains(target))return;
+      if(packet){
+        if(target.hasAttribute('data-fd-care-packet-page')||target.hasAttribute('data-fd-care-packet-all')){
+          var every=target.hasAttribute('data-fd-care-packet-all');
+          packet.addMany(every?lastResult.allIds:lastResult.rows.map(function(row){return row.id;}));
+          var again=root.querySelector(every?'[data-fd-care-packet-all]:not([disabled])':'[data-fd-care-packet-page]:not([disabled])');
+          /* When both bulk buttons are now disabled, the tray heading is the useful place for focus: its
+             name carries the new packet count. */
+          (again||root.querySelector('#fd-care-packet-title')||root.querySelector('#fd-care-directory-count')).focus();
+          return;
+        }
+        var hit=packet.handleClick(target);
+        if(hit){focusAt(hit);return;}
+      }
       if(target.hasAttribute('data-care-directory-clear')){query='';category='';region='';page=1;root.querySelector('#fd-care-directory-query').value='';options();paint(false);root.querySelector('#fd-care-directory-query').focus();}
       else if(target.hasAttribute('data-care-directory-retry')){root.querySelector('#fd-care-directory-query').focus({preventScroll:true});load();}
       else if(target.hasAttribute('data-care-directory-page')){page=Number(target.getAttribute('data-care-directory-page'));paint(true);}
     };
+    if(packet)packet.mount(root.querySelector('[data-fd-care-packet-tray]'),status,function(){return data;},function(){paint(false,true);});
     if(!data&&!loading&&!error)load();else paint(false);
   }
-  function leave(){generation++;if(abort)abort.abort();clearTimeout(timeout);clearTimeout(timer);data=null;query='';category='';region='';page=1;loading=false;error=false;root=null;if(status)status.textContent='';status=null;}
+  function leave(){if(packet)packet.leave();generation++;if(abort)abort.abort();clearTimeout(timeout);clearTimeout(timer);data=null;query='';category='';region='';page=1;loading=false;error=false;root=null;if(status)status.textContent='';status=null;}
   return {mount:mount,leave:leave};
 }
