@@ -75,6 +75,7 @@ test('a mounted tool keeps its primary in the page -- never the dock -- and comp
     ${read('phase_policy.js')}
     ${read('frontdoor/fd_state.js')}
     ${read('frontdoor/fd_data.js')}
+    ${read('frontdoor/fd_care_search.js')}
     ${read('frontdoor/fd_today.js')}
     ${read('frontdoor/fd_block.js')}
     ${read('frontdoor/fd_shell.js')}
@@ -91,6 +92,8 @@ test('a mounted tool keeps its primary in the page -- never the dock -- and comp
     function fdRenderOverlays(){}
     function fdSyncSafetyPause(){}
     function fdSyncOfflineVisit(){}
+    var fdCareDirectory=fdCreateCareDirectory();
+    ${shellFunction('fdMountCareDirectory')}
     ${shellFunction('fdUpdateCareNavigatorStatus')}
     ${shellFunction('fdRenderDock')}
     ${shellFunction('fdPatchCompletion')}

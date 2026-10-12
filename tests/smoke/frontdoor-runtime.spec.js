@@ -1,3 +1,4 @@
+import { pinCareDirectory } from './care-directory-fixture.js';
 import { test, expect } from '@playwright/test';
 import { routeFetchWithRetry } from './net-resilience.js';
 import { audienceOf, isResidentProject } from './audience.js';
@@ -2864,3 +2865,6 @@ test('landing: the Today-only affordances stay one tap from the landing', async 
   await page.locator('.fd-tabs [data-fd-tab="path"]').click();
   await expect(page.locator('[data-fd-view-week]').first()).toBeVisible();
 });
+
+// The directory contract is tested separately; other journeys use a fixed public fixture.
+test.beforeEach(async ({ page }) => { await pinCareDirectory(page); });

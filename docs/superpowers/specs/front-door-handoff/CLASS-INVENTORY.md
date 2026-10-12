@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(603 distinct `fd-*` selector names, 30 `is-*` state classes). Every class below has a rule in that file unless
+(622 distinct `fd-*` selector names, 30 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1179,3 +1179,13 @@ since the one-thread redesign, Phase 2, 2026-10-04 -- see section 5); its two
 distant Everything footer and full-view return button. Existing Library routes remain unchanged.
 Same-route dock refreshes retain the disclosure and focused choice; route changes
 close it. Escape closes the disclosure and returns focus to its summary.
+
+## Care directory search (2026-10-12)
+
+`fd_care_search.js` renders `.fd-care-search`, `__head`, `__eyebrow`, `__finder`,
+`__form`, `__query`, `__filters`, `__privacy`, `__notice`, `__count`, `__list`,
+`__result`, `__meta`, `__details`, `__verification`, `__actions`, `__contact`,
+`__pages` and `__foot` beneath that prefix. The `.fd-care-search__retry` button
+uses the scoped button rule. Controls have 44px minimum targets and visible
+focus; filters and header reflow at 640px. Results alone update during typing.
+The persistent `#careDirectoryStatus.vh-live` announces result counts politely.

@@ -1,3 +1,4 @@
+import { pinCareDirectory } from './care-directory-fixture.js';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -527,6 +528,7 @@ test('capture Schedule review and Done move focus to the stable editor after the
 });
 
 test.beforeEach(async ({ page }) => {
+  await pinCareDirectory(page);
   // Netlify's deploy-preview review drawer overlaps the mobile dock; it is not learner UI.
   await page.route('**/.netlify/scripts/cdp', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   const errors = [];
@@ -3834,7 +3836,7 @@ test('phone chrome: one dock stays at the bottom and the first screen belongs to
   await expect(page.locator('.fd-reader > .fd-reader__back')).toBeVisible();
   const h1 = await page.locator('.fd-article__h1').boundingBox();
   expect(h1.y, 'the topic title sits in the top quarter of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.25);
-  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(true);
+  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(false);
   // Progress retains its top Back link and the same dock.
   await page.goto('/?page=__progress__');
   await expect(page.locator('#pgRoot')).toBeVisible();
@@ -5805,3 +5807,71 @@ test('Library view switch fits at 320px with wider fallback font metrics', async
   await expect(buttons.nth(1)).toHaveAttribute('aria-pressed','true');
   await expectHealthy(page);
 });
+
+// The Ward accessory is a native disclosure; a new page mount never carries its expanded
+// presentation. Saved study records and the article's own disclosures are independent.
+for (const width of [320, 390, 1280]) {
+  test(`ward default: keyboard and every page visit stay independent at ${width}px`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: width < 1000 ? 740 : 800 });
+    const savedQuiz = { 't_mood.md': { seen: 2, wrong: 1, last: '2026-10-09' } };
+    const capture = { v: 2, items: [{ id: 'study-fixture', text: 'Synthetic study question?', at: 1,
+      ctx: null, route: null, state: 'open' }] };
+    await seedApp(page, testInfo, { storage: { cw_quiz_v1: savedQuiz, cw_capture_v1: capture } });
+    // A reload must preserve the existing synthetic records rather than reseeding them.
+    for (const ref of ['t_mood.md', 'pg_interview.md']) {
+      await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+      await page.route(`**/content/${ref}`, route => route.fulfill({ contentType: 'text/markdown',
+        body: '# Synthetic study notes\n\n<details id="unrelated-study" open><summary>Article study notes</summary><p>Synthetic notes remain available.</p></details>\n\n### Study section\n\nNeutral study text.' }));
+    }
+    const ward = page.locator('.fd-article__body > details.practice-panel');
+    const summary = ward.locator(':scope > summary');
+    async function ready(ref) {
+      await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', ref);
+      await expect(ward).toHaveCount(1);
+      await expect(ward).not.toHaveAttribute('open', '');
+      expect(await ward.evaluate(el => el.open)).toBe(false);
+      await expect(summary).toHaveAccessibleName(/^On the Unit Practice and Tools\b/);
+      await expect(page.locator('#unrelated-study')).toHaveAttribute('open', '');
+      await expect(page.locator('#unrelated-study p')).toBeVisible();
+    }
+    await page.goto('/?page=t_mood.md');
+    await ready('t_mood.md');
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await summary.focus();
+    await expect(summary).toBeFocused();
+    const box = await summary.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    await page.keyboard.press('Enter');
+    await expect(ward).toHaveAttribute('open', '');
+    await expect(ward.locator('.practice-body')).toBeVisible();
+    await page.keyboard.press('Space');
+    expect(await ward.evaluate(el => el.open)).toBe(false);
+    await page.keyboard.press('Enter');
+    await expect(ward).toHaveAttribute('open', '');
+    await page.screenshot({ path: testInfo.outputPath(`ward-expanded-${width}.png`) });
+    // A real routed reading link exercises the controller rather than page.goto().
+    await page.evaluate(() => {
+      const a = document.createElement('a');
+      a.id = 'ward-navigation-fixture'; a.href = '?page=pg_interview.md';
+      a.textContent = 'Open another synthetic reading';
+      document.querySelector('.fd-article__body').append(a);
+    });
+    await page.locator('#ward-navigation-fixture').click();
+    await ready('pg_interview.md');
+    await summary.click();
+    await expect(ward).toHaveAttribute('open', '');
+    await page.goBack();
+    await ready('t_mood.md');
+    await summary.click();
+    await page.goForward();
+    await ready('pg_interview.md');
+    await summary.click();
+    await page.reload();
+    await ready('pg_interview.md');
+    await page.screenshot({ path: testInfo.outputPath(`ward-collapsed-${width}.png`) });
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_quiz_v1')))).toEqual(savedQuiz);
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')))).toEqual(capture);
+    await expectHealthy(page);
+  });
+}
