@@ -21,7 +21,10 @@ const F = make();
 // like the data-care-directory-* controls beside them -- never through fd_wire's dispatcher, which would
 // turn every keystroke-free tray click into a route/history action. Behind FD_CARE_PACKET_ENABLED.
 const CARE_PACKET_ATTRS = ['data-fd-care-packet', 'data-fd-care-packet-all', 'data-fd-care-packet-clear', 'data-fd-care-packet-down', 'data-fd-care-packet-gate', 'data-fd-care-packet-item', 'data-fd-care-packet-page', 'data-fd-care-packet-ready', 'data-fd-care-packet-remove', 'data-fd-care-packet-tray', 'data-fd-care-packet-up'];
-const NON_ACTION_ATTRS = new Set(['data-fd-care-builder', 'data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-care-copy-status', 'data-fd-care-pack-origin', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status', 'data-fd-mark', 'data-fd-count', ...CARE_PACKET_ATTRS]);
+// The printable sheet's own structure markers (fd_care_packet_sheet.js). They label units, pages and crisis lines for the
+// measurer, the tests and assistive technology; none is clicked, so none belongs to the controller.
+const PACKET_SHEET_ATTRS = ['data-fd-packet-card', 'data-fd-packet-crisis', 'data-fd-packet-insert', 'data-fd-packet-page', 'data-fd-packet-res', 'data-fd-packet-unit'];
+const NON_ACTION_ATTRS = new Set(['data-fd-care-builder', 'data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-care-copy-status', 'data-fd-care-pack-origin', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status', 'data-fd-mark', 'data-fd-count', ...CARE_PACKET_ATTRS, ...PACKET_SHEET_ATTRS]);
 const AUX_ACTION_ATTRS = new Set(['data-fd-local-toggle']);
 
 function emittedAttributes() {
