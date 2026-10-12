@@ -2121,13 +2121,26 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   /* Make room for the first complete reading even when the re-review notice is present.
      Reclaim whitespace only: keep the notice's copy, type, padding and disclosure target,
      and retain the row/control minimum touch sizes and the shell's dock clearance. */
-  .fd-main:has(.fd-library){padding-top:var(--fd-space-4)}
+  /* The reader's 20px gutters protect its embedded Compass; the Library list can use
+     more of the phone's width without changing any reader or tool layout. */
+  .fd-main:has(.fd-library){padding-top:var(--fd-space-4);padding-inline:var(--fd-space-6)}
   .fd-library__head{margin-bottom:var(--fd-space-4)}
   .fd-library__controls{row-gap:var(--fd-space-4);margin-bottom:var(--fd-space-4)}
   .fd-library__status{margin-bottom:var(--fd-space-2)}
   .fd-library__body{row-gap:var(--fd-space-4)}
   .fd-kit__review{margin-bottom:var(--fd-space-2)}
   .fd-kit__reading,.fd-collink{padding-block:var(--fd-space-4)}
+}
+@media (max-width:430px){
+  /* System fonts wrap long reading descriptions onto an extra line on Linux. Leave
+     room for that variation on the narrowest phones without shortening any text. */
+  .fd-main:has(.fd-library){padding-top:var(--fd-space-2)}
+  .fd-library__head{margin-bottom:var(--fd-space-2)}
+  .fd-library__controls{row-gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-library__status{margin-bottom:0}
+  .fd-library__body{row-gap:var(--fd-space-2)}
+  .fd-kit__review{margin-bottom:0}
+  .fd-kit__reading,.fd-collink{padding-block:var(--fd-space-2)}
 }
 
 @media print{
