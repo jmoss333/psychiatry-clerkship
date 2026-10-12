@@ -30,6 +30,11 @@ const built = py('import care_inserts_payload as p\nprint(json.dumps(p.build_pay
 assert.equal(built.status, 0, built.stderr);
 const PAYLOAD = JSON.parse(built.stdout);
 const clone = value => JSON.parse(JSON.stringify(value));
+// Invisible and direction-changing characters are built from code points and never typed: nobody reviewing this file
+// could see them, which is exactly the property under test. A raw-source scan below keeps it that way.
+const cp = (...codes) => String.fromCodePoint(...codes);
+const ZWSP = cp(0x200b), ZWJ = cp(0x200d), RLO = cp(0x202e), NBSP = cp(0xa0), SHY = cp(0xad), TAG_ONE = cp(0xe0031);
+const FULLWIDTH_MG = cp(0xff4d, 0xff47), ARABIC_FIVE = cp(0x665);
 
 const EXPORTS = `;return typeof fdCarePacketSheet === 'function' ? {
   norm: fdCarePacketNorm, forbidden: fdCarePacketForbidden, unitName: fdCarePacketUnitName, unitPhone: fdCarePacketUnitPhone,
@@ -37,14 +42,14 @@ const EXPORTS = `;return typeof fdCarePacketSheet === 'function' ? {
   paginate: fdCarePacketPaginate, estimate: fdCarePacketEstimate, sheet: fdCarePacketSheet, text: fdCarePacketText,
   validate: fdCareDirectoryValidate, blank: fdCarePacketBlank, insertOn: fdCarePacketInsertOn,
   checkCrisis: fdCarePacketCheckCrisis, payloadOk: fdCarePacketPayloadOk,
+  strip: fdCarePacketStrip, phoneLike: fdCarePacketPhoneLike,
   ORG: FD_CARE_PACKET_ORG, BAND: FD_CARE_PACKET_BAND
 } : null;`;
 const src = name => readFileSync(path.join(SITE_BUILD, name), 'utf8');
 // The shell's order: fd_data (fdEsc), the QR generator, fd_care_pack (fdCarePackQrSvg), the packet, the sheet, the search (validate).
-const S = new Function(
-  src('frontdoor/fd_data.js') + src('vendor/qrcode-generator-1.4.4.js') + src('frontdoor/fd_care_pack.js') +
-  PACKET_SRC + SHEET_SRC + src('frontdoor/fd_care_search.js') + EXPORTS,
-)();
+const SOURCE = src('frontdoor/fd_data.js') + src('vendor/qrcode-generator-1.4.4.js') + src('frontdoor/fd_care_pack.js') +
+  PACKET_SRC + SHEET_SRC + src('frontdoor/fd_care_search.js') + EXPORTS;
+const S = new Function(SOURCE)();
 
 // ---- fixtures ---------------------------------------------------------------------------------------------
 const categoryIds = ['aftercare', 'crisis', 'peer_support', 'basic_needs', 'community_services', 'housing_shelters', 'recovery_meetings', 'telehealth_providers'];
@@ -152,7 +157,9 @@ test('fill FAILS rather than print a hole: unknown id, blank contact, unknown to
 // ---- the forbidden-text filter -----------------------------------------------------------------------------
 const HOSTILE = [
   '10 mg', '10mg', '10 mcg', '5-mg', '2 grams', '20 mEq', 'ten milligrams', 'five mg', 'twenty-five mg', 'half a gram', 'two tablets',
-  'Verification due', 'verifiedDate: 2026-01-01', 'reviewAfter', 'L3', 'BHU L2 unit', '10​mg', '1‍0 mg', 'ｍｇ 10 mg', '10 mg',
+  'Verification due', 'verifiedDate: 2026-01-01', 'reviewAfter', 'L3', 'BHU L2 unit',
+  '10' + ZWSP + 'mg', '1' + ZWJ + '0 mg', FULLWIDTH_MG + ' 10 mg', '10' + NBSP + 'mg', '10' + SHY + ' mg', '1' + TAG_ONE + '0 mg',
+  RLO + '10 mg', ARABIC_FIVE + ' mg',
 ];
 const CLEAN = [
   'Open 24/7. Call 207-555-0100.', 'Monday to Friday, 8 a.m. to 4 p.m.', 'Free help for people 18 and over.', 'Group meets weekly in Portland.',
@@ -185,10 +192,28 @@ test('PARITY: the shared patterns agree with the Python validator on a probe lis
   });
 });
 
-test('norm folds width, drops format and bidi controls, and unifies dashes (so hidden characters cannot defeat a scan)', () => {
-  assert.equal(S.norm('1​0‮ mg'), '10 mg');
-  assert.equal(S.norm('１０ mg'), '10 mg');
-  assert.equal(S.norm('2‑–− 3'), '2--- 3');
+test('norm folds width, drops format and bidi controls, maps other scripts\' digits, and unifies dashes (so hidden characters cannot defeat a scan)', () => {
+  assert.equal(S.norm('1' + ZWSP + '0' + RLO + ' mg'), '10 mg');
+  assert.equal(S.norm(cp(0xff11, 0xff10) + ' mg'), '10 mg');
+  assert.equal(S.norm('2' + cp(0x2011, 0x2013, 0x2212) + ' 3'), '2--- 3');
+  assert.equal(S.norm('9' + TAG_ONE + '88'), '988', 'tag characters (outside the BMP) are dropped');
+  assert.equal(S.norm(cp(0x669, 0x668, 0x668)), '988', 'Arabic-Indic digits become ASCII');
+  assert.equal(S.norm(cp(0x96f, 0x96e, 0x96e)), '988', 'Devanagari digits become ASCII');
+  assert.equal(S.norm(cp(0x9ef, 0x9ee, 0x9ee)), '988', 'Bengali digits become ASCII');
+  assert.equal(S.norm(cp(0x6f9, 0x6f8, 0x6f8)), '988', 'Extended Arabic-Indic digits become ASCII');
+});
+
+test('strip is what PRINTS: control and format characters are removed and whitespace collapsed', () => {
+  assert.equal(S.strip('  A' + RLO + 'B' + ZWSP + 'C\t\nD  '), 'ABC D');
+  assert.equal(S.strip(null), '');
+});
+
+test('no source file in this feature contains a raw invisible, format or bidirectional character', () => {
+  const invisible = /[\u00ad\u0600-\u0605\u061c\u06dd\u070f\u180e\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u206f\ufeff\ufff9-\ufffb]|\udb40[\udc00-\udc7f]/;
+  for (const [label, text] of [['sheet module', SHEET_SRC], ['packet module', PACKET_SRC], ['this test', readFileSync(fileURLToPath(import.meta.url), 'utf8')]]) {
+    const hit = invisible.exec(text);
+    assert.equal(hit, null, label + ' has a raw invisible character at offset ' + (hit && hit.index));
+  }
 });
 
 // ---- unit name and phone -----------------------------------------------------------------------------------
@@ -382,8 +407,12 @@ test('every listing prints its name, phone, domain and area; the QR appears exac
   assert.match(r.html, /QR code for website example\.org/, 'the QR is named by its destination');
   assert.equal(r.html.includes('javascript:'), false);
   assert.equal(text.includes('/deep/link'), false, 'paper prints the domain only');
-  assert.equal(S.sheet(stateOf(records, { mode: 'final' }), dataOf(records), PAYLOAD, { preview: true }).html.includes('/deep/link?x=1'), true,
-    'the preview (never the paper) shows the full address a QR encodes, as text');
+  assert.equal(r.html.includes('fd-packet-qrurl'), false, 'the full address is not part of the measured sheet (a preview-only line would measure differently from the paper)');
+  assert.deepEqual(r.addresses, [{ name: 'Has Https', url: 'https://www.example.org/deep/link?x=1' }],
+    'the address a QR encodes comes back as data, for the preview to show beside the sheet');
+  const preview = S.sheet(stateOf(records, { mode: 'final' }), dataOf(records), PAYLOAD, { preview: true });
+  assert.equal(preview.html.includes('/deep/link'), false, 'not even the preview sheet carries it: the sheet is the same bytes everywhere');
+  assert.equal(preview.html, r.html);
 });
 
 test('a QR code that would be too dense to scan at the printed size is left off, and the domain still prints', () => {
@@ -466,12 +495,13 @@ test('AC5 on hostile feed text: every printed free-text field is filtered, and a
     row(1, { area: 'National (verify Maine availability)' }),
     row(2, { name: 'Verification Services Inc' }),
     row(3, { phone: '10 mcg line' }),
-    row(4, { name: 'Zero​width 1‍0 mg Clinic' }),
+    row(4, { name: 'Zero' + ZWSP + 'width 1' + ZWJ + '0 mg Clinic' }),
   ];
   const r = render(hostile, stateOf(hostile, { mode: 'final' }));
   assert.equal(r.ok, true, r.message);
-  assert.doesNotMatch(textOf(r.html), /10 mg|mcg|Verification|verify|1‍0/i);
-  assert.ok(r.withheld.some(w => w.field === 'description'));
+  assert.doesNotMatch(textOf(r.html), /10 mg|mcg|Verification|verify/i);
+  assert.equal(r.html.includes('1' + ZWJ + '0'), false, 'and the hidden character itself is not printed either');
+  assert.ok(r.withheld.some(w => w.field === 'description' && w.reason === 'note'));
   assert.ok(r.withheld.some(w => w.field === 'area'));
   const codes = r.blockers.map(b => b.code);
   assert.ok(codes.includes('LISTING_TEXT'), 'a name or phone with forbidden text blocks printing');
@@ -566,20 +596,260 @@ test('copy text: crisis lines first, then each listing, raw (never HTML-escaped)
   assert.equal(/&#39;|&amp;|&lt;/.test(t.text), false);
   assert.ok(t.text.indexOf(governed('lifeline_988')) < t.text.indexOf("Children's Place"), 'crisis lines come first');
   assert.equal(t.text.includes('4 East') || t.text.includes('555-0100'), false, 'the unit is not copied into a medical record field');
-  assert.match(t.text, /Not a medical record/);
+  assert.doesNotMatch(t.text, /Not a medical record/, 'text that is going INTO the record cannot say it is not part of it');
   assert.match(t.text, /ReConnect community directory on 2026-10-12/);
   assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PAYLOAD, {}).ok, false, 'a Review draft never goes into the record');
   assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PAYLOAD, {}).code, 'NOT_FINAL');
-  assert.equal(/‮|​/.test(S.text(finalState([row(0, { name: 'A‮B​C' })]), dataOf([row(0, { name: 'A‮B​C' })]), PAYLOAD, {}).text), false, 'control and bidi characters are stripped');
+  const hidden = S.text(finalState([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), dataOf([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), PAYLOAD, {}).text;
+  assert.equal(hidden.includes(RLO) || hidden.includes(ZWSP), false, 'control and bidi characters are stripped');
+  assert.ok(hidden.includes('ABC'), 'and what is left is the visible name');
 });
 
-test('the footer prints the directory copy date (not the inserts date) and never claims the listings were verified', () => {
+test('the footer prints the directory copy date and the OLDEST helpline check date (never the file date) and never claims the listings were verified', () => {
   const records = eight();
   const r = S.sheet(finalState(records), dataOf(records, { generatedAt: '2026-09-30T08:00:00Z' }), PAYLOAD, {});
   const text = textOf(r.html);
   assert.match(text, /ReConnect community directory on 2026-09-30/);
   assert.match(text, /Call ahead to confirm hours, cost and availability/);
   assert.match(text, /Not a medical record/);
-  assert.match(text, new RegExp('Helplines checked against each organization.s own website, ' + PAYLOAD.generatedAt));
+  assert.match(text, new RegExp('Helpline numbers checked against official sources, as of ' + PAYLOAD.checkedOn + '\\.'));
+  assert.ok(PAYLOAD.checkedOn < PAYLOAD.generatedAt, 'the check date is older than the file date, so the two cannot be confused in this test');
+  assert.equal(text.includes('as of ' + PAYLOAD.generatedAt), false, 'the file date is not presented as a check date');
+  assert.equal(text.split('Helpline numbers checked').length - 1, r.count, 'the line is on every page');
   assert.doesNotMatch(text, /verified/i);
+  const undated = S.sheet(finalState(records), dataOf(records), { ...PAYLOAD, checkedOn: undefined }, {});
+  assert.doesNotMatch(textOf(undated.html), /Helpline numbers checked/, 'no check date, no claim of a check');
+});
+
+// ---- review fixes: crisis numbers in any shape, hidden characters, one cleaned set of listings --------------------
+test('numbers: a ten-digit number is taken whole so surrounding text cannot hide it; short codes are standalone runs only', () => {
+  assert.deepEqual(S.numbers('1-888-568-1112 (24/7)'), ['8885681112'], 'a trailing (24/7) does not hide the number');
+  assert.deepEqual(S.numbers('Call (888) 568-1112 or 988 (24 hours)'), ['8885681112', '988']);
+  assert.deepEqual(S.numbers('+1 888.568.1112'), ['8885681112']);
+  assert.deepEqual(S.numbers('dial 9 1 1 now'), ['911'], 'spaced-out short code');
+  assert.deepEqual(S.numbers('9-8-8'), ['988']);
+  assert.deepEqual(S.numbers('Open since 1988, ext 9881'), ['1988', '9881'], 'longer runs are their own numbers, never the short code inside them');
+  assert.deepEqual(S.numbers('1-800-988-0199'), ['8009880199'], 'the groups of a longer number are not re-read as short codes');
+  assert.deepEqual(S.numbers('Mon-Fri 8-4, ages 18 and up'), [], 'ordinary figures are not numbers worth matching');
+  assert.deepEqual(S.numbers('ref 7417412'), [], 'a seven-digit run is not read as the six-digit code at its front');
+});
+
+test('a crisis number is recognised however it is dressed: trailing text, other-script digits, invisible characters, tag characters', () => {
+  const hits = [
+    '1-888-568-1112 (24/7)', '988 (24 hours)', 'Call 988.', 'text 9 8 8', cp(0x669, 0x668, 0x668), cp(0x96f, 0x96e, 0x96e),
+    '9' + TAG_ONE + '88', '9' + ZWSP + '88', RLO + '988', '888' + NBSP + '568' + NBSP + '1112',
+  ];
+  for (const hit of hits) assert.equal(S.crisisHit(hit, PAYLOAD), true, JSON.stringify(hit));
+  for (const clean of ['1988', 'Suite 9881', '(207) 555-0100', 'Open 9 to 5', 'Ages 18-24']) assert.equal(S.crisisHit(clean, PAYLOAD), false, clean);
+  assert.equal(S.crisisHit('Call 988', { contacts: {} }), false, 'no registered numbers, nothing to match (the payload check refuses such a payload before this)');
+});
+
+test('unit name: a crisis number or a phone number in the name is rejected; a hidden character is dropped, not printed', () => {
+  for (const bad of ['Call 988', '1-888-568-1112 (24/7)', 'Unit 4 207 555 0100', '2075550100', '9 1 1']) {
+    assert.equal(S.unitName(bad, PAYLOAD).ok, false, bad);
+    assert.ok(S.unitName(bad, PAYLOAD).error.length > 0, 'the rejection explains itself');
+  }
+  assert.equal(S.unitName('Unit 4 (P6)', PAYLOAD).ok, true);
+  assert.equal(S.unitName('Unit 4 East 2', PAYLOAD).ok, true, 'ordinary digits are fine');
+  assert.deepEqual(S.unitName('Uni' + ZWSP + 't' + RLO + ' 4', PAYLOAD), { ok: true, value: 'Unit 4', error: '' });
+  assert.equal(S.phoneLike('call 207 555 0100'), true);
+  assert.equal(S.phoneLike('207' + cp(0x2028) + '555' + cp(0x2029) + '0100'), true, 'any whitespace between the groups, not just a space');
+  assert.equal(S.phoneLike('Unit 4'), false);
+});
+
+test('a description is judged by the length the FEED cut it at, before whitespace was collapsed', () => {
+  // 432 characters as stored, 312 once whitespace is collapsed: the old order treated it as a short label and printed the fragment.
+  const stored = 'Open daily. ' + 'word   '.repeat(60);
+  assert.ok(stored.length >= 400 && S.strip(stored).length < 400);
+  const out = S.description(stored, 'https://example.org/');
+  assert.equal(out.text, 'Open daily.', 'trimmed back to the last complete sentence');
+  assert.equal(S.description('Counselling' + ' '.repeat(10), 'https://example.org/').text, 'Counselling', 'a short stored label is left alone');
+});
+
+test('paper and copy print the SAME cleaned listings: one withheld field is withheld in both, and a hidden character is in neither', () => {
+  const records = [
+    row(0, { name: 'A' + RLO + 'lpha' + ZWSP + ' Clinic', description: 'Call 1-888-568-1112 (24/7) about the walk-in schedule.', area: 'York' + TAG_ONE + ' County' }),
+    row(1, { area: 'Dial 9 8 8', website: 'https://10mg.example.org/' }),
+    row(2, {}),
+  ];
+  const state = finalState(records);
+  const paper = render(records, state);
+  const copy = S.text(state, dataOf(records), PAYLOAD, {});
+  assert.equal(paper.ok && copy.ok, true, paper.message + copy.message);
+  const visible = textOf(paper.html);
+  for (const [label, text] of [['paper', visible], ['copy', copy.text]]) {
+    assert.ok(text.includes('Alpha Clinic'), label + ': the visible name');
+    assert.equal(text.includes('walk-in schedule'), false, label + ': a description holding a crisis number is withheld whole');
+    assert.equal(text.includes('Dial 9 8 8'), false, label + ': a crisis number in an area is withheld');
+    assert.equal(text.includes('10mg'), false, label + ': a dose-shaped website is withheld');
+    assert.ok(text.includes('York County'), label + ': the visible area');
+  }
+  assert.match(visible, /More details on the website\./, 'a withheld description points at the website when there is one');
+  const everything = paper.html + copy.text;
+  for (const char of [RLO, ZWSP, TAG_ONE]) assert.equal(everything.includes(char), false, 'no hidden character reaches paper or the record');
+  assert.deepEqual(Object.fromEntries(paper.withheld.map(w => [w.field, w.reason])), { description: 'crisis', area: 'crisis', website: 'note' }, 'each omission says WHY, so the preview can tell the trainee');
+  assert.equal(paper.addresses.some(a => a.url.includes('10mg')), false, 'no QR address for a withheld website');
+});
+
+test('a crisis number in a listing NAME blocks printing, like one in a phone field', () => {
+  const clean = eight();
+  const named = [row(0, { name: 'Hope Line 988' }), ...clean.slice(1)];
+  const r = render(named, finalState(named));
+  assert.ok(r.blockers.some(b => b.code === 'CRISIS_NUMBER' && b.message.includes('Hope Line 988')));
+  assert.equal(textOf(r.html).includes('Hope Line 988'), false, 'and the listing is not printed at all');
+});
+
+test('a category label with a dose or a crisis number prints as "Other resources"', () => {
+  const records = eight();
+  const data = S.validate(feed(records, { categories: feed(records).categories.map(c => (c.id === 'aftercare' ? { ...c, label: 'Aftercare 10 mg' } : c.id === 'peer_support' ? { ...c, label: 'Peers: dial 988' } : c)) }));
+  const r = S.sheet(stateOf(records), data, PAYLOAD, {});
+  assert.equal(r.ok, true, r.message);
+  const visible = textOf(r.html);
+  assert.equal(visible.includes('10 mg') || visible.includes('Peers: dial'), false);
+  assert.ok(visible.split('Other resources').length - 1 >= 2, 'both groups survive under a safe label');
+});
+
+test('structure: the header and the crisis block are one bordered element inside an unmargined wrapper; categories are not headings; listing names are h3', () => {
+  const records = eight();
+  const r = render(records, stateOf(records), PAYLOAD, { headingBase: 1 });
+  assert.match(r.html, /<header class="fd-packet-head"[^>]*><div class="fd-packet-head__box">/);
+  assert.match(r.html, /<section class="fd-packet-crisis"[^>]*><div class="fd-packet-crisis__box">/);
+  assert.match(r.html, /<p class="fd-packet-cat"[^>]*>Aftercare<\/p>/, 'a category is a label, not a heading level');
+  assert.match(r.html, /<h3 class="fd-packet-res__name">Support 0<\/h3>/, 'a listing sits at the level below its section');
+  assert.ok((r.html.match(/<h2[\s>]/g) || []).length >= 2, 'sections are h2');
+});
+
+test('every write-in row is announced: a labelled row by its label, an unlabelled one as "blank line to write in"', () => {
+  const records = eight();
+  const r = render(records, stateOf(records, { inserts: insertSets.allOn }));
+  const rows = r.html.match(/<div class="fd-packet-row">[\s\S]*?<\/div>/g) || [];
+  assert.ok(rows.length >= 6, 'the all-on set has write-in rows');
+  for (const one of rows) assert.match(one, /^<div class="fd-packet-row"><span( class="fd-packet-vh")?>[^<]+<\/span><i aria-hidden="true"><\/i><\/div>$/, one);
+  assert.ok(rows.some(one => one.includes('class="fd-packet-vh"')), 'some rows are unlabelled in the data, so some say what they are');
+});
+
+test('a standard page that cannot be built is refused with its own code, not printed with a hole', () => {
+  const records = eight();
+  const bad = clone(PAYLOAD);
+  bad.inserts.find(i => i.id === 'warning').groups[3].bullets[0] = 'Do {{nonsense}} now';
+  const r = S.sheet(stateOf(records), dataOf(records), bad, {});
+  assert.equal(r.ok, false);
+  assert.equal(r.code, 'PAGES_UNAVAILABLE');
+  assert.equal(r.html || '', '');
+});
+
+// The layout check after the pages are assembled. Node has no layout engine, so a minimal document stands in; the real
+// one runs in the browser spec. What this pins is the WIRING: the check runs on the assembled pages, counts them, and
+// turns an over-tall, over-wide or missing page into a refusal.
+function withDocument(pageStubs, body) {
+  const made = [];
+  const doc = {
+    body: { appendChild(node) { node.parentNode = this; made.push(node); return node; }, removeChild(node) { node.parentNode = null; return node; } },
+    createElement() {
+      return { className: '', parentNode: null, setAttribute() {}, innerHTML: '', querySelectorAll(selector) { return selector === '.fd-packet-page' ? pageStubs : []; } };
+    },
+  };
+  globalThis.document = doc;
+  try { return body(made); } finally { delete globalThis.document; }
+}
+const stub = (height, scroll = 800, client = 800) => ({ getBoundingClientRect: () => ({ height }), scrollWidth: scroll, clientWidth: client });
+test('after layout, the assembled pages are checked: too tall, too wide, or a different count each refuse; a fit passes; the host is removed', () => {
+  const records = eight();
+  const state = stateOf(records);
+  const measure = units => ({ heights: units.map(() => 90), capacity: 880 });
+  const dry = S.sheet(state, dataOf(records), PAYLOAD, { measure, verify: false });
+  assert.equal(dry.ok, true);
+  const n = dry.count;
+  const run = pages => withDocument(pages, made => ({ result: S.sheet(state, dataOf(records), PAYLOAD, { measure }), made }));
+  const fit = run(Array.from({ length: n }, () => stub(1056)));
+  assert.equal(fit.result.ok, true, 'a page exactly one sheet tall passes');
+  assert.ok(fit.made.length >= 1 && fit.made.every(node => node.parentNode === null), 'the hidden host is always removed');
+  assert.ok(fit.made[0].innerHTML.includes('data-fd-packet-page'), 'what was checked is the assembled pages');
+  const tall = run(Array.from({ length: n }, (_, i) => stub(i === n - 1 ? 1058 : 1056)));
+  assert.equal(tall.result.code, 'OVERFLOW', 'one page two pixels over a sheet is refused');
+  const wide = run(Array.from({ length: n }, (_, i) => stub(1056, i === 0 ? 900 : 800)));
+  assert.equal(wide.result.code, 'OVERFLOW', 'a page wider than its box is refused');
+  const missing = run(Array.from({ length: n - 1 }, () => stub(1056)));
+  assert.equal(missing.result.code, 'MEASURE_FAILED', 'fewer pages than packed means the check could not run: refuse, never assume');
+  assert.ok(missing.made.every(node => node.parentNode === null), 'removed on the failure path too');
+  assert.equal(S.sheet(state, dataOf(records), PAYLOAD, { measure }).ok, true, 'without a document there is nothing to check and the sheet stands');
+});
+
+test('a measurer or a layout check that THROWS refuses the packet instead of escaping into the caller', () => {
+  const records = eight();
+  const state = stateOf(records);
+  const thrown = S.sheet(state, dataOf(records), PAYLOAD, { measure: () => { throw new Error('layout engine gone'); } });
+  assert.equal(thrown.ok, false);
+  assert.equal(thrown.code, 'MEASURE_FAILED');
+  const measure = units => ({ heights: units.map(() => 90), capacity: 880 });
+  const broken = { body: { appendChild() {}, removeChild() {} }, createElement: () => ({ setAttribute() {}, set innerHTML(value) {}, querySelectorAll() { throw new Error('no layout'); } }) };
+  globalThis.document = broken;
+  try {
+    assert.equal(S.sheet(state, dataOf(records), PAYLOAD, { measure }).code, 'MEASURE_FAILED', 'a check that cannot run is a refusal, never a pass');
+  } finally { delete globalThis.document; }
+});
+
+// ---- the scan reads the engine's Unicode tables, so it cannot lag the validator ------------------------------------------
+// Every code point that could sit between "5" and "mg" (controls, format characters, dashes, spaces) and every decimal digit
+// that could stand for the 5, sent through the validator's own patterns in Python. Anything Python flags, the sheet must too.
+const codePointsOf = pattern => {
+  const out = [];
+  for (let c = 0; c < 0x110000; c += 1) {
+    if (c >= 0xd800 && c <= 0xdfff) continue;
+    if (pattern.test(String.fromCodePoint(c))) out.push(c);
+  }
+  return out;
+};
+test('PARITY, exhaustively: whatever the validator flags between a number and a unit, or as a digit before one, the sheet flags too', () => {
+  const between = codePointsOf(/^[\p{Cc}\p{Cf}\p{Pd}\p{Zs}\p{Zl}\p{Zp}]$/u);
+  const digits = codePointsOf(/^\p{Nd}$/u);
+  const probes = [...between.map(c => '5' + cp(c) + 'mg'), ...digits.map(c => cp(c) + ' mg')];
+  assert.ok(between.length > 250 && digits.length > 500, 'the sweep is not vacuous: ' + between.length + ' separators, ' + digits.length + ' digits');
+  const python = py(
+    `import validate_care_inserts as v\nprobes = json.loads(sys.stdin.read())\n` +
+    `pats = [v.DOSE_RE, v.DOSE_WORD_RE, v.DOSE_SPELLED_RE, v.DOSE_COUNT_RE, v.METADATA_RE]\n` +
+    `print(json.dumps([any(p.search(v.normalise(s)) for p in pats) for s in probes]))`,
+    [], JSON.stringify(probes),
+  );
+  assert.equal(python.status, 0, python.stderr);
+  const theirs = JSON.parse(python.stdout);
+  assert.ok(theirs.filter(Boolean).length > 700, 'Python flags most of them (else the oracle is not running the patterns)');
+  const missed = probes.filter((probe, i) => theirs[i] && !S.forbidden(probe)).map(probe => [...probe].map(ch => 'U+' + ch.codePointAt(0).toString(16)).join(' '));
+  assert.deepEqual(missed.slice(0, 10), [], missed.length + ' probes the validator flags and the sheet does not');
+});
+
+test('every decimal digit of every script reads as the digit it is (checked against Python\'s own table)', () => {
+  const digits = codePointsOf(/^\p{Nd}$/u);
+  const python = py(
+    `import unicodedata\nchars = json.loads(sys.stdin.read())\n` +
+    `print(json.dumps([unicodedata.decimal(c, -1) for c in chars]))`,
+    [], JSON.stringify(digits.map(c => String.fromCodePoint(c))),
+  );
+  assert.equal(python.status, 0, python.stderr);
+  const theirs = JSON.parse(python.stdout);
+  let compared = 0;
+  digits.forEach((c, i) => {
+    if (theirs[i] < 0) return;
+    compared += 1;
+    assert.equal(S.norm(String.fromCodePoint(c)), String(theirs[i]), 'U+' + c.toString(16));
+  });
+  assert.ok(compared > 500, 'compared ' + compared + ' digits');
+});
+
+test('an engine without Unicode property escapes cannot run the scan, so the packet refuses to build (and the helpers still do not throw)', () => {
+  const noProperties = function (source, flags) {
+    if (/\\p\{/.test(source)) throw new SyntaxError('Invalid regular expression: invalid property name');
+    return new RegExp(source, flags);
+  };
+  const limited = new Function('RegExp', SOURCE)(noProperties);
+  const records = eight();
+  const state = stateOf(records);
+  const data = limited.validate(feed(records));
+  const r = limited.sheet(state, data, PAYLOAD, {});
+  assert.equal(r.ok, false);
+  assert.equal(r.code, 'CHECK_UNAVAILABLE');
+  assert.equal(r.html || '', '', 'no html at all');
+  assert.equal(limited.text(finalState(records), data, PAYLOAD, {}).code, 'CHECK_UNAVAILABLE');
+  assert.equal(typeof limited.norm('10 mg'), 'string', 'the helpers degrade rather than throw (the unit field still validates)');
+  assert.equal(limited.strip('  a\tb  '), 'a b');
 });

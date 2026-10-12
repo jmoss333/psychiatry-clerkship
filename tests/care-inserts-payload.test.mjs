@@ -78,7 +78,7 @@ test('`required` is the validator\'s pair and each id resolves to a non-empty co
 test('the payload is the validated data plus contacts and required, minus every internal record', () => {
   const data = readJson(DATA);
   const built = payload();
-  assert.deepEqual(Object.keys(built).sort(), ['contacts', 'crisis', 'crisisCopy', 'generatedAt', 'inserts', 'required']);
+  assert.deepEqual(Object.keys(built).sort(), ['checkedOn', 'contacts', 'crisis', 'crisisCopy', 'generatedAt', 'inserts', 'required']);
   assert.equal(built.generatedAt, data.generatedAt);
   assert.deepEqual(built.crisisCopy, data.crisisCopy);
   assert.deepEqual(built.crisis, data.crisis);
@@ -94,6 +94,19 @@ test('the payload is the validated data plus contacts and required, minus every 
     'unitEscalationNote', 'verifiedDate', 'alsoSources', '"source"']) {
     assert.ok(!shipped.includes(key), `${key} stays out of the payload`);
   }
+});
+
+test('checkedOn is the OLDEST check behind anything printed: a helpline row\'s date or a governed crisis line\'s, never the file date', () => {
+  const data = readJson(DATA);
+  const crisis = readJson(CRISIS);
+  const built = payload();
+  const dates = data.inserts.flatMap(insert => (insert.table || []).map(row => row.verifiedDate));
+  for (const id of Object.keys(built.contacts)) dates.push(crisis.resources.find(resource => resource.id === id).verifiedOn);
+  assert.equal(built.checkedOn, dates.sort()[0]);
+  assert.ok(built.checkedOn <= data.generatedAt);
+  // The governed crisis lines were verified before the inserts file was assembled, so a footer dated from the file would
+  // claim a check that never happened for them.
+  assert.ok(built.checkedOn < data.generatedAt, 'the oldest check predates the file (the test would be vacuous otherwise)');
 });
 
 test('a crisis reference that does not resolve aborts the build instead of shipping a hole', t => {
@@ -182,6 +195,7 @@ for (const site of ['ms3', 'res']) {
   test(`${site}: the built shell serves exactly the payload the builder produces`, t => {
     const stale = staleBuildReason(REPO, site, [
       SHELL, DATA, SCHEMA, CRISIS, path.join(SITE_BUILD, 'care_inserts_payload.py'), path.join(SITE_BUILD, 'build_deploy.py'),
+      path.join(SITE_BUILD, 'resident_section.py'), path.join(SITE_BUILD, 'frontdoor_catalog.py'), path.join(REPO, '13_Faculty_Resources/_automation/validate_care_inserts.py'),
     ]);
     if (stale) return t.skip(stale);
     const html = fs.readFileSync(path.join(REPO, '_build', site, 'index.html'), 'utf8');

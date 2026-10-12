@@ -31,10 +31,14 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const EXPORTS = `;return typeof fdCarePacketControls === 'function' ? {
   blank: fdCarePacketBlank, normalize: fdCarePacketNormalize, load: fdCarePacketLoad, save: fdCarePacketSave,
   tray: fdCarePacketTray, controls: fdCarePacketControls, blocker: fdCarePacketBlocker, create: fdCreateCarePacket,
-  sheet: fdCarePacketSheet, validate: fdCareDirectoryValidate, KEY: FD_CARE_PACKET_KEY
+  sheet: fdCarePacketSheet, validate: fdCareDirectoryValidate, KEY: FD_CARE_PACKET_KEY,
+  stale: fdCarePacketStale, hint: fdCarePacketHint, TITLE: FD_CARE_PACKET_TITLE
 } : null;`;
+// The shell's order. The QR generator and fd_care_pack.js are loaded because a sheet built without them has no codes at all.
+const QR = readFileSync(path.join(SITE_BUILD, 'vendor/qrcode-generator-1.4.4.js'), 'utf8');
+const PACK = readIf(path.join(FD, 'fd_care_pack.js'));
 const load = (storage = undefined, global = PAYLOAD) =>
-  new Function('sessionStorage', 'FD_CARE_INSERTS', DATA + PACKET + SHEET + SEARCH + EXPORTS)(storage, global);
+  new Function('sessionStorage', 'FD_CARE_INSERTS', DATA + QR + PACK + PACKET + SHEET + SEARCH + EXPORTS)(storage, global);
 const P = load();
 
 const store = () => {
@@ -270,7 +274,7 @@ test('print() and copy() refuse while the confirmations are stale, whatever the 
   assert.equal(c.print().code, 'NO_DOCUMENT', 'with the confirmations back the only thing missing is a browser (this suite has none)');
 });
 
-test('an unfinished edit is committed before printing, and committing re-arms and refuses', () => {
+test('an unfinished edit is committed before printing, and committing re-arms and refuses', async () => {
   const { c, preview } = mounted();
   c.toggle('a1');
   c.setUnit('phone', '(207) 555-0100');
@@ -281,6 +285,7 @@ test('an unfinished edit is committed before printing, and committing re-arms an
   const result = c.print();
   assert.equal(result.ok, false);
   assert.equal(result.code, 'REVIEW');
+  await settle();
   assert.equal(preview.pieces.controls.innerHTML.includes('Bed 4'), true, 'the committed value is what the controls now show');
 });
 
@@ -422,3 +427,245 @@ test('the module header and search wiring describe the preview, not "printing ar
 function fakeButtonTarget(attr) {
   return { hasAttribute: k => k === attr, getAttribute: k => (k === attr ? 'x' : null) };
 }
+
+// ---- review fixes: what the controller does around the sheet ---------------------------------------------------------
+// A measurer for tests that install a fake document: the real DOM measurer needs a layout engine, which node does not have.
+const FIXED_LAYOUT = { measure: units => ({ heights: units.map(() => 90), capacity: 880 }), verify: false };
+const readyPacket = (c, mode = 'final') => {
+  c.toggle('a1');
+  c.setUnit('phone', '(207) 555-0100');
+  c.setMode(mode);
+  confirmAll(c);
+};
+
+// Just enough browser for the print lifecycle: a body and head to put nodes in, a title, and the two print events.
+function fakeBrowser(t) {
+  const handlers = {};
+  const holder = () => {
+    const box = { children: [], appendChild(node) { node.parentNode = box; box.children.push(node); return node; },
+      removeChild(node) { node.parentNode = null; box.children = box.children.filter(n => n !== node); return node; } };
+    return box;
+  };
+  const body = holder();
+  const marks = new Set();
+  body.classList = { add: name => marks.add(name), remove: name => marks.delete(name) };
+  const head = holder();
+  const doc = { title: 'Home', body, head, activeElement: null, querySelector: () => null,
+    createElement: () => ({ parentNode: null, id: '', className: '', innerHTML: '', textContent: '' }) };
+  const win = { printed: 0, print() { win.printed += 1; },
+    addEventListener: (type, fn) => { handlers[type] = fn; }, removeEventListener: type => { delete handlers[type]; } };
+  globalThis.document = doc;
+  globalThis.window = win;
+  t.after(() => { delete globalThis.document; delete globalThis.window; });
+  return { handlers, doc, win, body, head, marks };
+}
+
+test('Ctrl+P with the preview open prints the packet the button would; with a ward field still being typed it prints only the notice', t => {
+  const env = fakeBrowser(t);
+  const { c } = mounted(6, { create: { sheet: FIXED_LAYOUT } });
+  readyPacket(c);
+  c.openPreview();
+  env.handlers.beforeprint();
+  assert.match(env.body.children[0].innerHTML, /fd-packet-page/, 'nothing pending: the same packet the button prints');
+  env.handlers.afterprint();
+  assert.equal(env.body.children.length, 0, 'and it is removed afterwards');
+  c.handleInput(fakeField('name', 'Bed 4'));
+  env.handlers.beforeprint();
+  assert.match(env.body.children[0].innerHTML, /This is not the patient packet/);
+  assert.doesNotMatch(env.body.children[0].innerHTML, /fd-packet-page/, 'a packet that silently lacks the typed text never reaches paper');
+  env.handlers.afterprint();
+  assert.equal(env.marks.size, 0, 'the body marker goes with the container');
+});
+
+test('the page title is put back after printing only if nothing else changed it meanwhile', t => {
+  const env = fakeBrowser(t);
+  const { c } = mounted(6, { create: { sheet: FIXED_LAYOUT } });
+  readyPacket(c);
+  assert.deepEqual(c.print(), { ok: true, code: '' });
+  assert.equal(env.win.printed, 1);
+  assert.equal(env.doc.title, P.TITLE, 'the print uses its own title');
+  env.handlers.afterprint();
+  assert.equal(env.doc.title, 'Home', 'put back when it is still ours');
+  assert.deepEqual(c.print(), { ok: true, code: '' });
+  env.doc.title = 'Care directory';
+  env.handlers.afterprint();
+  assert.equal(env.doc.title, 'Care directory', 'a title the app set in between is not overwritten with a stale one');
+  assert.equal(env.body.children.length, 0);
+});
+
+test('mounting into a NEW preview node starts clean: nothing from the old node is reused', () => {
+  const { c, data, live } = mounted();
+  c.toggle('a1');
+  c.openPreview();
+  const second = fakePreview();
+  c.mount(null, live, () => data, null, second);
+  assert.match(second.pieces.controls.innerHTML, /Copy to print/, 'the new node gets its own controls');
+  assert.match(second.pieces.pages.innerHTML, /fd-packet-page/, 'and its own pages');
+});
+
+test('the copy fallback describes ONE packet: any change, a closed preview or a withdrawn confirmation removes it', async () => {
+  const { c, preview } = mounted();
+  readyPacket(c);
+  c.openPreview();
+  const shown = () => preview.pieces.controls.innerHTML.includes('Copy this text');
+  const stage = () => { confirmAll(c); assert.equal(c.copy().code, 'NO_CLIPBOARD', 'this suite has no clipboard, so the text is shown instead'); assert.equal(shown(), true, 'precondition'); };
+  stage(); c.setUnit('name', 'Bed 4'); await settle();
+  assert.equal(shown(), false, 'a changed ward detail');
+  stage(); c.setGate('region', false);
+  assert.equal(shown(), false, 'a withdrawn confirmation');
+  stage(); c.closePreview(); c.openPreview();
+  assert.equal(shown(), false, 'a closed preview');
+  stage(); c.toggle('a2');
+  assert.equal(shown(), false, 'a changed listing');
+  stage(); c.setInsert('safety', true);
+  assert.equal(shown(), false, 'a changed page list');
+});
+
+test('a unit field commit brings the preview controls up to date a task later, so focus lands first; the announcement describes the settled screen', async () => {
+  const { c, live, preview } = mounted();
+  readyPacket(c);
+  c.openPreview();
+  await settle();
+  live.textContent = '';
+  const writes = preview.pieces.controls.writes;
+  c.handleChange(fakeField('name', 'Bed 4'));
+  assert.equal(preview.pieces.controls.writes, writes, 'not yet: Print is still there when focus lands on it');
+  assert.deepEqual(c.gate(), gateOff, 'but the gate is already re-armed, so a click in between is refused');
+  await settle();
+  assert.ok(preview.pieces.controls.writes > writes, 'then the controls follow');
+  assert.match(live.textContent, /Unit name saved\. Review confirmations cleared\. Finish the four review confirmations above\./, 'and what became unavailable is said');
+  assert.equal(c.print().code, 'REVIEW', 'a click on a stale Print is refused for the right reason');
+});
+
+test('an announcement adds what Print and Copy can now do only when that changed', async () => {
+  const { c, live } = mounted();
+  readyPacket(c, 'review');
+  c.openPreview();
+  await settle();
+  c.setInsert('warning', false);
+  await settle();
+  assert.match(live.textContent, /\d+ pages? · Review copy\./);
+  assert.doesNotMatch(live.textContent, /available/, 'Print is still available and Copy still is not: nothing changed, nothing added');
+  c.setMode('final');
+  await settle();
+  assert.match(live.textContent, /Final copy selected\./);
+  assert.match(live.textContent, /Print and Copy are available\./, 'Copy became available, so the announcement says so');
+});
+
+// A tray stand-in that records writes to its innerHTML and offers the pieces patchTray looks for.
+function fakeTray() {
+  const node = attrs => ({ checked: false, disabled: false, textContent: '', attrs: { ...attrs }, getAttribute(k) { return this.attrs[k] === undefined ? null : this.attrs[k]; }, setAttribute(k, v) { this.attrs[k] = String(v); } });
+  const boxes = ['verification', 'region', 'identifiers', 'supervisor'].map(key => node({ 'data-fd-care-packet-gate': key }));
+  const ready = node({ 'data-fd-care-packet-ready': 'false' });
+  const toggle = node({ 'aria-expanded': 'false' });
+  let html = '';
+  const root = { isConnected: true, writes: 0, get innerHTML() { return html; }, set innerHTML(value) { root.writes += 1; html = value; },
+    querySelector(selector) { return /ready/.test(selector) ? ready : /preview-toggle/.test(selector) ? (/data-fd-care-packet-preview-toggle/.test(html) ? toggle : null) : null; },
+    querySelectorAll(selector) { return /gate/.test(selector) ? boxes : []; } };
+  return { root, boxes, ready, toggle };
+}
+test('changes that do not touch the listings patch the tray in place; a changed listing repaints it', () => {
+  const tray = fakeTray();
+  const { c, data, live } = mounted();
+  c.mount(tray.root, live, () => data, null, fakePreview());
+  c.toggle('a1');
+  const written = tray.root.writes;
+  assert.ok(written >= 1, 'a listing change repaints the tray');
+  confirmAll(c);
+  assert.equal(tray.root.writes, written, 'confirmations are patched in place');
+  assert.deepEqual(tray.boxes.map(box => box.checked), [true, true, true, true]);
+  assert.equal(tray.ready.textContent, 'Review complete.');
+  assert.equal(tray.ready.attrs['data-fd-care-packet-ready'], 'true');
+  c.openPreview();
+  assert.equal(tray.root.writes, written, 'opening the preview only flips aria-expanded');
+  assert.equal(tray.toggle.attrs['aria-expanded'], 'true');
+  c.setUnit('name', '4 East');
+  assert.equal(tray.root.writes, written, 'a ward detail re-arms the boxes in place');
+  assert.deepEqual(tray.boxes.map(box => box.checked), [false, false, false, false]);
+  assert.match(tray.ready.textContent, /Finish the four review confirmations/);
+  c.closePreview();
+  assert.equal(tray.toggle.attrs['aria-expanded'], 'false');
+  assert.equal(tray.root.writes, written);
+  c.toggle('a2');
+  assert.equal(tray.root.writes, written + 1, 'a changed listing list is a structural change: repainted');
+});
+
+test('the tray falls back to a repaint when its pieces are missing (never leaves a half-patched tray)', () => {
+  const { c, data, live } = mounted();
+  const bare = { isConnected: true, writes: 0, get innerHTML() { return ''; }, set innerHTML(v) { bare.writes += 1; } };
+  c.mount(bare, live, () => data, null, fakePreview());
+  c.toggle('a1');
+  const before = bare.writes;
+  c.setGate('region', true);
+  assert.equal(bare.writes, before + 1, 'no querySelector on the tray: repaint');
+});
+
+test('the directory copy age: a notice after more than a week, none within it, and a pure function of its inputs', () => {
+  const on = Date.UTC(2026, 9, 8);
+  assert.equal(P.stale('2026-10-01T00:00:00Z', on), null, 'exactly seven days is not stale');
+  assert.deepEqual(P.stale('2026-10-01T00:00:00Z', Date.UTC(2026, 9, 9)), { days: 8, date: '2026-10-01' });
+  for (const bad of [undefined, null, 7, '', 'yesterday', '2026-13']) assert.equal(P.stale(bad, on), null, JSON.stringify(bad));
+  assert.equal(P.stale('2026-10-01T00:00:00Z', NaN), null);
+  assert.equal(P.stale('2026-10-01T00:00:00Z', '2026-10-30'), null, 'a non-numeric clock is not a date');
+});
+const daysAgo = n => new Date(Date.now() - n * 86400000).toISOString().replace(/\.\d+Z$/, 'Z');
+const mountedWith = data => {
+  const live = fakeLive();
+  const preview = fakePreview();
+  const c = P.create({ storage: store(), payload: PAYLOAD });
+  c.mount(null, live, () => data, null, preview);
+  return { c, live, preview };
+};
+test('the preview warns when the directory copy is old, and not when it is recent', () => {
+  const records = Array.from({ length: 3 }, (_, i) => row(i));
+  const old = mountedWith(P.validate({ ...feed(records), generatedAt: daysAgo(20) }));
+  old.c.toggle('a1'); old.c.openPreview();
+  assert.match(old.preview.pieces.pages.innerHTML, /data-fd-care-packet-stale/);
+  assert.match(old.preview.pieces.pages.innerHTML, /20 days ago/);
+  const recent = mountedWith(P.validate({ ...feed(records), generatedAt: daysAgo(2) }));
+  recent.c.toggle('a1'); recent.c.openPreview();
+  assert.doesNotMatch(recent.preview.pieces.pages.innerHTML, /data-fd-care-packet-stale/);
+});
+
+test('the preview says what was left off the paper and why, and lists the web addresses behind the QR codes outside the sheet', () => {
+  const records = [
+    row(0, { description: 'Call 1-888-568-1112 (24/7) about the schedule.' }),
+    row(1, { description: 'Lovely place. Take 10 mg nightly.' }),
+    row(2, { website: 'https://example.org/deep/link?x=1' }),
+  ];
+  const { c, preview } = mountedWith(P.validate(feed(records)));
+  for (const id of ['a0', 'a1', 'a2']) c.toggle(id);
+  c.openPreview();
+  const pages = preview.pieces.pages.innerHTML;
+  assert.match(pages, /Not printed: the description of “Support 0” \(it holds a crisis line number, and those print only in the crisis lines on page 1\)/);
+  assert.match(pages, /Not printed: the description of “Support 1” \(it holds a verification note or a dose\)/);
+  const [before, sheet] = pages.split('<div class="fd-packet-sheet');
+  assert.match(before, /<details class="fd-care-packet-preview__addresses">/);
+  assert.match(before, /https:\/\/example\.org\/deep\/link\?x=1/, 'the full address is shown in the preview, beside the sheet');
+  assert.doesNotMatch(sheet, /deep\/link/, 'and the sheet itself is the same bytes as the paper');
+  assert.match(before, /Web addresses behind the QR codes \(3\)/);
+});
+
+test('the print hint is its own node and follows the wallet-card page', () => {
+  const on = P.controls({ ...P.blank(), ids: ['a0'], inserts: { card: true } }, dataOf(3), PAYLOAD, gateOn, { unitErrors: { name: '', phone: '' } });
+  const off = P.controls({ ...P.blank(), ids: ['a0'], inserts: { card: false } }, dataOf(3), PAYLOAD, gateOn, { unitErrors: { name: '', phone: '' } });
+  assert.match(on, /<p[^>]*data-fd-care-packet-hint[^>]*>[^<]*one-sided/);
+  assert.doesNotMatch(off, /one-sided/);
+  assert.match(off, /<p[^>]*data-fd-care-packet-hint/);
+  assert.equal(P.hint(true), P.hint(false) + ' Print one-sided so the wallet card can be cut out.');
+});
+
+test('a unit value that will not print is announced as needing a fix, never as saved', async () => {
+  const { c, live } = mounted();
+  readyPacket(c);
+  c.openPreview();
+  await settle();
+  live.textContent = '';
+  c.setUnit('phone', '911');
+  await settle();
+  assert.match(live.textContent, /Unit phone needs fixing: Enter the ten-digit number patients call, with the area code\./);
+  assert.doesNotMatch(live.textContent, /saved/);
+  c.setUnit('phone', '(207) 555-0142');
+  await settle();
+  assert.match(live.textContent, /Unit phone saved\./, 'a valid value is saved');
+});

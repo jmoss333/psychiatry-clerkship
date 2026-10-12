@@ -107,8 +107,15 @@ def build_payload(data_path=None, schema_path=None, crisis_path=None, today=None
     if missing:
         raise PayloadError("the packet must carry %s; `crisis` does not reference it" % ", ".join(sorted(missing)))
 
+    # The footer says when the printed numbers were last checked. That is the OLDEST check behind anything on the sheet:
+    # every helpline row's own date and every governed crisis line it prints. The data file's `generatedAt` is when the
+    # file was assembled, not when a number was verified, so it must not stand in for either.
+    checked = [row["verifiedDate"] for insert in data["inserts"] for row in insert.get("table", [])]
+    checked += [resources[rid]["verifiedOn"] for rid in contacts]
+
     return {
         "generatedAt": data["generatedAt"],
+        "checkedOn": min(checked),
         "crisisCopy": data["crisisCopy"],
         "crisis": data["crisis"],
         "inserts": [_printable(insert) for insert in data["inserts"]],
