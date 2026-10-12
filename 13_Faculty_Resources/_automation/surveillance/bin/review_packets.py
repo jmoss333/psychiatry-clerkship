@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 import jsonschema
 from question_impact import revision
+from fda_heading_noise import generated_heading_ids_only
 
 
 def bold_only_change(before, after):
@@ -27,13 +28,18 @@ def bold_only_change(before, after):
 
 def formatting_only_change(prior, row):
     """Full snapshot and every mapped passage must independently be harmless."""
-    if not prior or not bold_only_change(prior.get('text'), row.get('text')):
+    if not prior:
+        return False
+    generated_ids = generated_heading_ids_only(prior, row)
+    if not generated_ids and not bold_only_change(prior.get('text'), row.get('text')):
         return False
     old_review, review = prior.get('passage_review', {}), row.get('passage_review', {})
     if any(r.get('status') == 'unavailable' for r in (old_review, review)):
         return False
     old, new = old_review.get('observations', {}), review.get('observations', {})
     if not isinstance(old, dict) or not isinstance(new, dict) or old.keys() != new.keys():
+        return False
+    if generated_ids and (not old or old != new):
         return False
     for key in old:
         a, b = old[key], new[key]
