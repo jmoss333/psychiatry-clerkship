@@ -6,6 +6,7 @@ import subprocess
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 GENERATOR = Path(__file__).with_name("generate_evidence_drill.py")
@@ -82,6 +83,84 @@ class GeneratedFileContract(unittest.TestCase):
             self.assertNotIn("[^", claim, item["id"])
             self.assertNotIn("**", claim, item["id"])
             self.assertTrue(claim.strip(), item["id"])
+
+
+class PrimerEvidenceBindings(unittest.TestCase):
+    """Catch #1019's three evidence defects across annotations and generated claims.
+
+    Cached abstracts were independently checked against the primary records. These
+    tests guard the documented scope, not clinical approval or every possible claim.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.annotations = json.loads((ROOT / "evidence_annotations.json").read_text())["annotations"]
+        cls.abstracts = json.loads(
+            (ROOT / "13_Faculty_Resources/_automation/span_audit/abstract_cache.json").read_text()
+        )
+        # A later faculty cut/keep decision must not disable source-binding coverage.
+        # The existing freshness test separately checks the committed, filtered drill.
+        with patch.object(gen, "load_decisions", return_value={}):
+            cls.generated = gen.build(ROOT)["items"]
+
+    def binding(self, source_id):
+        rows = [a for a in self.annotations if a["sourceId"] == source_id]
+        self.assertEqual(len(rows), 1, source_id)
+        row = rows[0]
+        claims = [c for c in row["claims"] if "psychopharm_primer.md" in c["usedBy"]]
+        self.assertEqual(len(claims), 1, source_id)
+        matches = [i for i in self.generated if i["page"] == "psychopharm_primer.md"
+                   and i["sourceId"] == source_id]
+        self.assertEqual(len(matches), 1, source_id)
+        return row["verifiedAgainst"], [claims[0]["claimText"], matches[0]["claim"]]
+
+    def assert_span_in_section(self, verified, start, end=None):
+        abstract = self.abstracts[verified["pmid"]]
+        self.assertIn(start, abstract)
+        section = abstract.split(start, 1)[1]
+        if end:
+            self.assertIn(end, section)
+            section = section.split(end, 1)[0]
+        span = verified["sourceSpan"]
+        self.assertTrue(span.strip(), "An empty excerpt must not pass containment")
+        self.assertIn(span, section, "Use the reported results, not the conclusion")
+        return span
+
+    def test_huhn_uses_findings_and_keeps_the_nonsignificance_qualifier(self):
+        verified, claims = self.binding("huhn-2019-antipsychotics")
+        span = self.assert_span_in_section(verified, " Findings ", " Interpretation ")
+        self.assertIn("reduced overall symptoms more than placebo", span)
+        self.assertIn("not statistically significant for six drugs", span)
+        for claim in claims:
+            self.assertIn("symptom-reduction estimates", claim)
+            self.assertIn("over placebo", claim)
+            self.assertIn("six drugs did not reach statistical significance", claim)
+            self.assertNotIn("larger adverse-effect differences", claim)
+        self.assertIn("acute, multi-episode schizophrenia", claims[1])
+
+    def test_brunner_anchor_does_not_license_the_adjacent_taper_instruction(self):
+        verified, claims = self.binding("brunner-2025-benzodiazepine-taper")
+        span = self.assert_span_in_section(verified, " Recommendations ")
+        self.assertIn("not discontinue BZDs abruptly", span)
+        for claim in claims:
+            self.assertIn("abruptly", claim)
+            self.assertIn("physically dependent and at risk of withdrawal", claim)
+            self.assertNotIn("taper", claim.lower())
+            self.assertNotIn("severe", claim.lower())
+        self.assertTrue(claims[1].startswith("Do not abruptly stop treatment"))
+
+    def test_mcpheeters_results_and_consumers_name_the_same_drinking_outcome(self):
+        verified, claims = self.binding("mcpheeters-2023-aud")
+        span = self.assert_span_in_section(verified, " Results ", " Conclusions and relevance ")
+        self.assertIn("returning to any drinking", span)
+        self.assertIn("acamprosate", span)
+        self.assertIn("oral naltrexone", span)
+        self.assertEqual(claims[0], claims[1])
+        for claim in claims:
+            self.assertIn("return to any drinking", claim)
+            self.assertIn("acamprosate", claim)
+            self.assertIn("Oral naltrexone", claim)
+            self.assertNotIn("first-line", claim)
 
 
 class ReviewDecisions(unittest.TestCase):
