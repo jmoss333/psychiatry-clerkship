@@ -4202,6 +4202,7 @@ test.describe('Essentials Phase 2', () => {
       await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
       await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
       await expect(page.locator('.fd-kit__review summary')).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       const desktop = width >= 1000;
       await expect(page.locator('.fd-kit__tool-preview')).toBeVisible({ visible: desktop });
