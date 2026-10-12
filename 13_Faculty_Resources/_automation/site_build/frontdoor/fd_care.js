@@ -1,6 +1,7 @@
-/* Patient care resources: a quiet, governed launch shelf for stable external destinations.
-   Pure ES5 renderer. All links are fixed curriculum URLs and open in a separate tab; no query,
-   route state, or patient context is ever appended. This is navigation, not attested Clerkship
+/* Patient care resources: native public directory search and stable app launchers.
+   Pure ES5 renderer. The launchers retain their fixed curriculum URLs; the directory
+   supplies separately validated contact links. No query or patient context is appended.
+   This is navigation, not attested Clerkship
    content, completion work, or a substitute for supervision. */
 
 function fdCareGroup(resources, group, title, intro, packIds){
@@ -40,7 +41,7 @@ function fdCare(index,selectedIntentId,packIds,crisisHtml){
     '<div class="fd-care-page__provenance" aria-label="Collection provenance"><strong>Created by Joshua Moss, MD</strong>'+
     '<span>Apps built from personally curated ReConnect databases developed over several years.</span></div></header>'+
     '<div class="fd-care-page__notice" role="note"><strong>Verify current details before sharing</strong><span>Resources open in a new tab. Do not enter patient-identifying information.</span></div>'+
-    fdCareNavigator(idx,selectedIntentId)+
+    fdCareSearch(idx)+fdCareNavigator(idx,selectedIntentId)+
     fdCarePack(idx,packIds,crisisHtml)+
     '<div class="fd-care-page__groups">'+
     fdCareGroup(resources,'support','Find support and follow-up','Use while planning services, recovery support, or discharge follow-up.',packIds)+

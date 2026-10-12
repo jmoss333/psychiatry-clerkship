@@ -47,3 +47,14 @@
 # Numbers: 13_Faculty_Resources/_automation/NETLIFY_COST_REDUCTION_PLAN.md.
 [build]
   ignore = "/bin/false"
+
+# Fixed public directory projection. Browser requests stay same-origin and never
+# include search terms. This route is not a generic proxy or a patient-data API.
+[[redirects]]
+  from = "/care-directory.v1.json"
+  to = "https://reconnect-tools.netlify.app/tools/data/care-directory.v1.json"
+  status = 200
+  force = true
+
+# Proxied response headers are owned by the ReConnect feed publisher; Netlify
+# does not apply this site's custom response headers to an upstream proxy.

@@ -1,3 +1,4 @@
+import { pinCareDirectory } from './care-directory-fixture.js';
 import { test, expect } from '@playwright/test';
 import { isResidentProject } from './audience.js';
 
@@ -59,6 +60,7 @@ async function expectHealthy(page) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await pinCareDirectory(page);
   const errors = [];
   runtimeErrors.set(page, errors);
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));

@@ -643,6 +643,7 @@
   <div id="fdChromeMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
   <span id="careNavigatorStatus" class="vh-live" role="status" aria-live="polite" aria-atomic="true"></span>
+  <span id="careDirectoryStatus" class="vh-live" role="status" aria-live="polite" aria-atomic="true"></span>
   <div id="fdCaptureMount"></div>
   <div id="fdDockMount"></div>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
@@ -2152,6 +2153,8 @@
 
   /*__FD_CARE_PACK__*/
 
+  /*__FD_CARE_SEARCH__*/
+
   /*__FD_CARE__*/
 
   /*__FD_READER__*/
@@ -2966,6 +2969,13 @@
     if(retained&&replacement)replacement.parentNode.replaceChild(retained,replacement);
   }
 
+  var fdCareDirectory=fdCreateCareDirectory();
+  function fdMountCareDirectory(state){
+    if(state.screen==='app'&&state.tab==='care'&&!state.openId&&contentEl){
+      fdCareDirectory.mount(contentEl.querySelector('[data-care-directory]'),document.getElementById('careDirectoryStatus'));
+    }else fdCareDirectory.leave();
+  }
+
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
     fdPrepareRoute(state,detail);
@@ -2978,6 +2988,7 @@
     fdRenderOverlays(state);
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);
+    fdMountCareDirectory(state);
     fdSyncOfflineVisit(state);
   }
 
@@ -3037,6 +3048,7 @@
     if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
     fdUpdateCareNavigatorStatus(state);
+    if(surfaces.base||surfaces.completion)fdMountCareDirectory(state);
     fdSyncOfflineVisit(state);
   }
 
