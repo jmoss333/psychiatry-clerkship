@@ -2894,17 +2894,18 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:31303314%20AND%20SRC:MED&resultType=core&format=json",
-        "retrievedAt": "2026-10-11",
+        "retrievedAt": "2026-10-12",
         "pmid": "31303314",
         "doi": "10.1016/s0140-6736(19)31135-3",
-        "sourceSpan": "There are some efficacy differences between antipsychotics, but most of them are gradual rather than discrete. Differences in side-effects are more marked."
+        "sourceSpan": "Effect size estimates suggested all antipsychotics reduced overall symptoms more than placebo (although not statistically significant for six drugs)"
       },
       "claims": [
         {
           "claimId": "primer-huhn-2019-antipsychotics",
-          "claimText": "Antipsychotics differ in efficacy; differences in side effects are more marked.",
+          "claimText": "In the network meta-analysis, symptom-reduction estimates favored antipsychotics over placebo, but six drugs did not reach statistical significance.",
           "claimTerms": [
-            "Differences in side-effects are more marked"
+            "reduced overall symptoms more than placebo",
+            "not statistically significant for six drugs"
           ],
           "direction": "mixed",
           "usedBy": [
@@ -2990,17 +2991,19 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:37934220%20AND%20SRC:MED&resultType=core&format=json",
-        "retrievedAt": "2026-10-11",
+        "retrievedAt": "2026-10-12",
         "pmid": "37934220",
         "doi": "10.1001/jama.2023.19761",
-        "sourceSpan": "these findings support the use of oral naltrexone at 50 mg/d and acamprosate as first-line pharmacotherapies for alcohol use disorder."
+        "sourceSpan": "to prevent 1 person from returning to any drinking were 11 (95% CI, 1-32) for acamprosate and 18 (95% CI, 4-32) for oral naltrexone"
       },
       "claims": [
         {
           "claimId": "primer-mcpheeters-2023-aud",
-          "claimText": "The review supports oral naltrexone and acamprosate as first-line alcohol-use-disorder pharmacotherapies.",
+          "claimText": "Oral naltrexone and acamprosate have evidence for reducing return to any drinking.",
           "claimTerms": [
-            "acamprosate as first-line pharmacotherapies"
+            "returning to any drinking",
+            "acamprosate",
+            "oral naltrexone"
           ],
           "direction": "positive",
           "usedBy": [
