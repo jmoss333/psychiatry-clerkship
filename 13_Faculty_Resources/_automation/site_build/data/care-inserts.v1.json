@@ -9,37 +9,41 @@
   "crisis": [
     {
       "ref": "lifeline_988",
-      "label": "Suicide and crisis line",
       "when": "For thoughts of suicide, or any mental health crisis."
     },
     {
       "ref": "maine_crisis_line",
-      "label": "Maine Crisis Line",
       "when": "Talk with a Maine crisis worker. They can send a mobile crisis team to you."
     },
     {
       "ref": "crisis_text_line",
-      "label": "Crisis text line",
       "when": "If you would rather text than talk."
     },
     {
       "ref": "veterans_crisis_line",
-      "label": "Veterans Crisis Line",
       "when": "For veterans, service members, and the people who care about them."
     },
     {
       "ref": "emergency_911",
-      "label": "Emergency",
       "when": "If you or someone else is in danger right now."
     }
   ],
+  "card": {
+    "title": "Wallet crisis card",
+    "body": "Cut along the dashed lines. Keep both cards together in your wallet.",
+    "mineTitle": "My numbers",
+    "rows": [
+      "My person (name and phone)",
+      "My clinic (name and phone)"
+    ]
+  },
   "inserts": [
     {
       "id": "intro",
       "title": "Warm welcome",
       "core": true,
       "defaultOn": true,
-      "body": "This packet is for you. It goes home with your After Visit Summary.\n\nLeaving the hospital is a big step. The first days at home can feel strange, tiring, or like a lot at once. That is normal, and it usually settles. The people and places in these pages can help with the hard parts. That might be a first appointment, a place to sleep, a ride, or just someone to talk to.\n\nYou do not have to do everything on this list. Start with one thing. If a number does not work or a door is closed, that is not your fault. Try the next one, or call the unit at {{unitPhone}} and we will help you find another way.\n\nIf you feel worse instead of better, do not wait. Reach out to us or to a crisis line, any time.",
+      "body": "This packet is for you. It goes home with your After Visit Summary.\n\nLeaving the hospital is a big step. The first days at home can feel strange, tiring, or like a lot at once. That is normal, and it usually settles. The people and places in these pages can help with the hard parts. That might be a first appointment, a place to sleep, a ride, or just someone to talk to.\n\nYou do not have to do everything on this list. Start with one thing. If a number does not work or a door is closed, that is not your fault. Try the next one, or call the unit at {{unitPhone}} and we will help you find another way.\n\nIf you feel worse instead of better, do not wait. Call or text one of the numbers in the box below. They answer any time, day or night.",
       "signoff": "With care, from the team on {{unitName}}"
     },
     {
@@ -59,7 +63,7 @@
       "id": "callback",
       "title": "Expect a call from us",
       "core": false,
-      "defaultOn": true,
+      "defaultOn": false,
       "body": "Someone from our team will call to see how the first days are going. It is a short, friendly check-in, not a test. We may ask how you are sleeping, whether you got your medicines, and whether your first appointment is set.",
       "bullets": [
         "Save the number we write below in your phone, so you know the call is from us.",
@@ -141,7 +145,7 @@
       "id": "family",
       "title": "For family and supporters",
       "core": false,
-      "defaultOn": true,
+      "defaultOn": false,
       "groups": [
         {
           "heading": "What helps",
@@ -184,7 +188,7 @@
       "id": "national",
       "title": "Helplines and support lines",
       "core": false,
-      "defaultOn": true,
+      "defaultOn": false,
       "body": "Hours are shown for each line. Not sure who to call, or it is after hours? {{crisis:lifeline_988}}, any time.",
       "table": [
         {
@@ -248,7 +252,7 @@
       "id": "insurance",
       "title": "Insurance and paying for care",
       "core": false,
-      "defaultOn": true,
+      "defaultOn": false,
       "table": [
         {
           "who": "MaineCare: apply or renew",
@@ -308,7 +312,7 @@
       "defaultOn": true,
       "bullets": [
         "Your medicine list is on your After Visit Summary, not here.",
-        "Fill your prescriptions as soon as you can. If the pharmacy says a medicine needs “prior authorization,” call the unit. We can help. If you cannot pay for a medicine, call the unit before you go without it.",
+        "Fill your prescriptions as soon as you can. If the pharmacy says a medicine needs “prior authorization,” call the unit at {{unitPhone}}. We can help. If you cannot pay for a medicine, call the unit at {{unitPhone}} before you go without it.",
         "If you miss a dose, do not double up. Ask your pharmacist what to do.",
         "If you have not taken a medicine for 2 days or more, call before you start it again. Some medicines must be restarted at a lower dose.",
         "Do not stop a medicine suddenly, even if you feel better. Call the person who prescribes it first. If you do not have one yet, call the unit at {{unitPhone}}.",
@@ -334,17 +338,6 @@
         "If you need help in a language other than English, you can ask for an interpreter. It is free.",
         "If you have a concern or complaint, you can tell the hospital by talking or in writing. The hospital must tell you who to contact.",
         "In Maine, you can write down ahead of time what mental health care you want if you become too sick to decide. This is sometimes called a psychiatric advance directive. Disability Rights Maine has a guide with sample forms."
-      ]
-    },
-    {
-      "id": "card",
-      "title": "Wallet crisis card",
-      "core": false,
-      "defaultOn": true,
-      "body": "Cut along the dashed line and keep this card in your wallet.",
-      "rows": [
-        "My person (name and phone)",
-        "My clinic (name and phone)"
       ]
     },
     {

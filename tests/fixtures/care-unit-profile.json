@@ -1,0 +1,23 @@
+{
+  "_comment": "TEST ONLY. Unit profiles in the SHIPPED payload shape (care_inserts_payload.py unitProfiles), with a fictional 555-01xx number. Never copy into care-unit-profiles.v1.json. `profile` is usable until 2099; `expired` is identical except its id, label and a usableThrough in the past.",
+  "profile": {
+    "id": "fixture-unit",
+    "label": "Fixture unit (test only)",
+    "org": "Test Org",
+    "brandingApproved": true,
+    "unitName": "Fixture Unit 4 East",
+    "unitPhone": "(207) 555-0142",
+    "callbackProgram": true,
+    "usableThrough": "2099-12-31"
+  },
+  "expired": {
+    "id": "fixture-unit-expired",
+    "label": "Expired fixture unit (test only)",
+    "org": "Test Org",
+    "brandingApproved": true,
+    "unitName": "Fixture Unit 4 East",
+    "unitPhone": "(207) 555-0142",
+    "callbackProgram": true,
+    "usableThrough": "2020-01-01"
+  }
+}

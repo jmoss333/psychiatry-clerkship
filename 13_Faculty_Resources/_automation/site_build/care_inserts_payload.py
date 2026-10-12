@@ -12,10 +12,23 @@ module (the edit hook, the pre-commit gate and tests/crisis-block.test.mjs all r
 checks the OUTPUT it renders against this list, so a payload that never arrived, or lost a line, fails
 closed at the one place that can stop a page going home without its crisis lines.
 
+`card` is the wallet card (a separate, optional print, not a packet page). `crisisNumbers` is every
+registered crisis number as digits (the validator's own registered_crisis_digits(): `contact` AND
+`alsoAvailable` of every governed resource), so the browser refuses exactly the numbers this build scans
+for without the governed record's other fields being shipped. `unitProfiles` is the confirmed unit
+profiles (data/care-unit-profiles.v1.json, validated by check_profiles), each with `usableThrough`, the
+confirmation date plus PROFILE_USABLE_DAYS: a fixed date, so the build stays reproducible, after which the
+browser refuses a Final copy from that profile.
+
 What is deliberately NOT shipped: each helpline row's `source` and `alsoSources` URLs and its
 `verifiedDate` (an internal provenance record: "neither is ever printed", so a browser that never
-receives them cannot print them), and the governed record's `alsoAvailable`, notes, sources and review
-dates (further numbers and internal notes).
+receives them cannot print them), the governed record's `alsoAvailable` text, notes, sources and review
+dates (internal notes), and a profile's confirmation record (`phoneConfirmedOn`, `phoneConfirmedBy`).
+
+Activation is coupled to a profile: every Final copy needs a confirmed unit phone, which only a profile
+provides, so the build fails when the packet module's FD_CARE_PACKET_ENABLED is anything but the literal
+false while the profiles file is empty. The check reads the source (fail closed: an unreadable or
+doubled declaration aborts too).
 
 The payload is built from the validator's own loader and `check()`; there is no second token scanner to
 drift from it. `check()` is given the data's own `generatedAt` as "today" so the build stays
@@ -45,6 +58,12 @@ import validate_care_inserts as _validator  # noqa: E402
 NEEDLE = "var FD_CARE_INSERTS=null;"
 DECLARATION = "var FD_CARE_INSERTS="
 CRISIS_TOKEN = re.compile(r"\{\{crisis:([a-z0-9_]+)\}\}")
+PACKET_SOURCE = os.path.join(HERE, "frontdoor", "fd_care_packet.js")
+# Every assignment of the flag (never a comparison such as `FD_CARE_PACKET_ENABLED===true`), with its value.
+FLAG_ASSIGNMENT = re.compile(r"(?<![\w$.])FD_CARE_PACKET_ENABLED\s*=(?!=)\s*([^;\n]*)")
+# What a profile ships. Its confirmation record (phoneConfirmedOn, phoneConfirmedBy) stays in the source file; the
+# browser receives only `usableThrough`, derived from it.
+PROFILE_SHIPPED_KEYS = ("id", "label", "org", "brandingApproved", "unitName", "unitPhone", "callbackProgram")
 
 
 class PayloadError(ValueError):
@@ -76,13 +95,38 @@ def _printable(insert):
     return dict(insert, table=rows)
 
 
-def build_payload(data_path=None, schema_path=None, crisis_path=None, today=None):
+def packet_enabled(source_path=None):
+    """Whether the packet module's flag may be on. Fail closed: anything but exactly one assignment of the literal
+    `false` counts as on, and a module that cannot be read aborts (PayloadError)."""
+    path = source_path or PACKET_SOURCE
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except (OSError, ValueError) as error:
+        raise PayloadError("%s: cannot be read to tell whether FD_CARE_PACKET_ENABLED is on (%s)" % (path, error))
+    values = FLAG_ASSIGNMENT.findall(text)
+    if len(values) != 1:
+        raise PayloadError("%s: expected exactly one FD_CARE_PACKET_ENABLED assignment, found %d; cannot tell whether "
+                           "the packet is on" % (path, len(values)))
+    return values[0].strip() != "false"
+
+
+def _shipped_profile(profile):
+    """A profile as the browser receives it: the confirmation record replaced by the last day it may be used."""
+    out = {key: profile[key] for key in PROFILE_SHIPPED_KEYS}
+    out["usableThrough"] = _validator.usable_through(_validator.parse_iso(profile["phoneConfirmedOn"]))
+    return out
+
+
+def build_payload(data_path=None, schema_path=None, crisis_path=None, today=None, profiles_path=None,
+                  profiles_schema_path=None, packet_source_path=None):
     """The validated payload, or PayloadError. Paths default to the real files (tests pass copies)."""
     if _validator.Draft7Validator is None:
         raise PayloadError("jsonschema is not installed - run: python3 -m pip install -r requirements.txt")
     data = _load(data_path or _validator.DATA, "care-inserts.v1.json")
     schema = _load(schema_path or _validator.SCHEMA, "care-inserts.v1.schema.json")
     crisis = _load(crisis_path or _validator.CRISIS, "crisis_resources.json")
+    profiles = _load(profiles_path or _validator.PROFILES, "care-unit-profiles.v1.json")
+    profiles_schema = _load(profiles_schema_path or _validator.PROFILES_SCHEMA, "care-unit-profiles.v1.schema.json")
     when = today or _validator.parse_iso(data.get("generatedAt") if isinstance(data, dict) else None)
     if when is None:
         raise PayloadError("care-inserts.v1.json: generatedAt is not a calendar date")
@@ -90,6 +134,14 @@ def build_payload(data_path=None, schema_path=None, crisis_path=None, today=None
     report = _validator.check(data, schema, crisis, when)
     if report.errors:
         raise PayloadError("care-inserts.v1.json failed validation:\n   - " + "\n   - ".join(report.errors))
+    profile_report = _validator.check_profiles(profiles, profiles_schema, crisis, data, when)
+    if profile_report.errors:
+        raise PayloadError("care-unit-profiles.v1.json failed validation:\n   - "
+                           + "\n   - ".join(profile_report.errors))
+    if packet_enabled(packet_source_path) and not profiles["profiles"]:
+        raise PayloadError("FD_CARE_PACKET_ENABLED is on in fd_care_packet.js but care-unit-profiles.v1.json has no "
+                           "confirmed unit profile; every Final copy needs one, so the packet cannot be activated "
+                           "without it")
 
     resources = {resource["id"]: resource for resource in crisis["resources"]}
     contacts = {}
@@ -118,9 +170,12 @@ def build_payload(data_path=None, schema_path=None, crisis_path=None, today=None
         "checkedOn": min(checked),
         "crisisCopy": data["crisisCopy"],
         "crisis": data["crisis"],
+        "card": data["card"],
         "inserts": [_printable(insert) for insert in data["inserts"]],
         "contacts": contacts,
+        "crisisNumbers": _validator.registered_crisis_digits(crisis),
         "required": sorted(_validator.REQUIRED_CRISIS),
+        "unitProfiles": [_shipped_profile(profile) for profile in profiles["profiles"]],
     }
 
 

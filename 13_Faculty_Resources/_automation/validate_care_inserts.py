@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-"""Validate care-inserts.v1.json - the standard inserts of the Care aftercare packet.
+"""Validate care-inserts.v1.json - the standard inserts of the Care aftercare packet - and its confirmed unit profiles.
 
 Runs in the build gate. The file holds patient-facing helpline numbers and advice that will be
 printed and sent home, so this checks what a JSON Schema cannot: that every number carries a real,
 non-future verification date and an official source; that nothing is stale without saying so; that
 crisis contacts are REFERENCED from crisis_resources.json (the single source) and resolve to the
-two numbers the packet must always carry; that no crisis number, phone number, dose literal or
-verification metadata is typed into prose; and that the inserts are present, unique, in print
-order, and not empty.
+two numbers the packet must always carry, every one of them governed as 24/7 (the welcome says they
+answer any time); that no crisis number, phone number, dose literal or verification metadata is typed
+into prose; that no sentence about the unit promises round-the-clock cover and every "the unit" carries
+the unit's token; that the wallet card's crisis lines fit it; and that the inserts are present, unique,
+in print order, and not empty.
+
+care-unit-profiles.v1.json (check_profiles) holds the units whose phone number someone on the unit
+confirmed. A profile is the only source of a CONFIRMED unit phone, so this checks that the number is
+one a patient can dial and is not a crisis or helpline number, that the confirmation is a real past
+date (warning when stale) made by a role, and that the names it prints obey the sheet's own rules.
 
 Prose may say "call 911" without typing it: `{{crisis:emergency_911}}` is replaced at render time
 by that resource's contact string from crisis_resources.json. Every scan runs on NORMALISED text
@@ -25,7 +32,7 @@ import json
 import re
 import sys
 import unicodedata
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -38,6 +45,8 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "13_Faculty_Resources" / "_automation" / "site_build" / "data"
 DATA = DATA_DIR / "care-inserts.v1.json"
 SCHEMA = DATA_DIR / "care-inserts.v1.schema.json"
+PROFILES = DATA_DIR / "care-unit-profiles.v1.json"
+PROFILES_SCHEMA = DATA_DIR / "care-unit-profiles.v1.schema.json"
 CRISIS = ROOT / "crisis_resources.json"
 
 # A helpline number older than this was last checked too long ago to print without a re-check.
@@ -47,12 +56,35 @@ STALE_AFTER_DAYS = 180
 # No real verification predates this: it is a sentinel ("1970-01-01") standing in for "never".
 EARLIEST_VERIFICATION = date(2026, 1, 1)
 
-# Print order of the inserts. The array must contain every id exactly once, in this order.
+# Print order of the inserts. The array must contain every id exactly once, in this order. The wallet card is not
+# here: it is a separate, optional print built from the top-level `card` (packet design, direction 5).
 PRINT_ORDER = ("intro", "week", "callback", "warning", "safety", "family",
-               "national", "insurance", "meds", "rights", "card", "notes")
+               "national", "insurance", "meds", "rights", "notes")
 
-# The welcome insert carries the unit phone and is the one insert that may never be switched off.
+# The welcome insert names the unit and carries both unit tokens ({{unitPhone}} in its text, {{unitName}} in its
+# sign-off), and it is the one insert that may never be switched off.
 ALWAYS_ON = ("intro",)
+
+# The wallet card's crisis panel was measured to fit five lines with no wrap and less than one line of headroom
+# (packet design, Revision 2: 194.5px of 204 in every face measured), so a sixth line is a data error here.
+CARD_MAX_CRISIS_LINES = 5
+
+# A unit profile's confirmed phone is usable for a Final copy for this many days after it was confirmed: the payload
+# ships phoneConfirmedOn plus this as `usableThrough`, and the browser refuses a Final copy after it. The same window
+# as STALE_AFTER_DAYS, past which the confirmation warns here.
+PROFILE_USABLE_DAYS = STALE_AFTER_DAYS
+
+# The resident build rewrites these phrases EVERYWHERE in the shell it copies (resident_section.py RESIDENT_REBRAND,
+# applied by common.apply_verified_replacements with str.replace), and the packet payload is inline in that shell, so
+# a profile carrying one would reach the resident site rewritten. Mirrored, not imported: resident_section.py
+# rebuilds a directory at import time. test_validate_care_inserts.py pins this mirror to that list.
+RESIDENT_REBRAND_NEEDLES = (
+    '<span class="fd-brand__name">Inpatient Psychiatry</span>',
+    '<span class="fd-setup__brand-name">Inpatient Psychiatry</span>',
+    "MS3 Psychiatry Clerkship",
+    "MS3 Clerkship",
+    "A private learning hub for the third-year inpatient psychiatry clerkship.",
+)
 
 # Inserts whose whole job is a table of numbers; an empty one would print a heading over nothing.
 TABLE_INSERTS = ("national", "insurance")
@@ -107,6 +139,23 @@ CRISIS_SHORT_SEPARATORS = r"[ .\-]"
 # North American numbers: area code and exchange start 2-9; three-digit services are N11.
 NANP_TEN_RE = re.compile(r"^[2-9]\d\d[2-9]\d\d\d{4}$")
 NANP_N11_RE = re.compile(r"^[2-9]11$")
+# A unit phone as the browser accepts one (fd_care_packet_sheet.js fdCarePacketUnitPhone): digits and phone
+# punctuation only, so an extension or a word is refused rather than silently dropped.
+UNIT_PHONE_CHARS_RE = re.compile(r"[0-9\s().+\-]+")
+
+# Unit wording (packet design, direction 3 and Revision 2): a sentence that refers to the unit may not carry an
+# availability phrase, because the unit does not give round-the-clock crisis cover (only the crisis lines do).
+UNIT_REF_RE = re.compile(r"\b(?:us|we|our|ours|the\s+unit|our\s+team)\b|\{\{unit(?:Name|Phone)\}\}", re.I)
+AVAILABILITY_RE = re.compile(
+    r"\bany[\s-]?time\b|(?<!\d)24\s*/\s*7(?!\d)|(?<!\d)24[\s-]hours?\b|\bday\s+or\s+night\b"
+    r"|\b(?:a)?round[\s-]the[\s-]clock\b|\ball\s+hours\b", re.I)
+# Any sentence that says "the unit" must carry the unit's token, so the confirmed-phone rule (which reads tokens) can
+# see that the sentence names the unit or promises contact. Titles and headings are exempt.
+THE_UNIT_RE = re.compile(r"\bthe\s+unit\b", re.I)
+UNIT_TOKEN_RE = re.compile(r"\{\{unit(?:Name|Phone)\}\}")
+SENTENCE_SPLIT_RE = re.compile(r"[.!?\n]+")
+# The printed sheet refuses every "verif-" word on paper (fd_care_packet_sheet.js FD_CARE_PACKET_FORBIDDEN).
+VERIF_RE = re.compile(r"\bverif\w*", re.I)
 
 
 class Report:
@@ -163,6 +212,59 @@ def crisis_numbers(crisis):
     return out
 
 
+def registered_crisis_digits(crisis):
+    """Every registered crisis number (`contact` AND `alsoAvailable`, every resource, three digits or more), as sorted
+    digit strings. Shipped as the payload's `crisisNumbers`, so the browser refuses the same numbers this scans for."""
+    return sorted({digits for numbers in crisis_numbers(crisis).values() for digits in numbers})
+
+
+def helpline_digits(data):
+    """Digits of every helpline-table number in a care-inserts document (tolerates a malformed one)."""
+    out = set()
+    inserts = data.get("inserts") if isinstance(data, dict) else None
+    for item in inserts if isinstance(inserts, list) else []:
+        table = item.get("table") if isinstance(item, dict) else None
+        for entry in table if isinstance(table, list) else []:
+            if isinstance(entry, dict) and isinstance(entry.get("number"), str):
+                out.add(core_digits(entry["number"]))
+    return out
+
+
+def unit_phone_digits(value):
+    """The ten digits of a unit phone, or None. The browser's rule (fd_care_packet_sheet.js fdCarePacketUnitPhone):
+    digits and phone punctuation only; a leading North American 1 dropped; ten digits whose area code and exchange
+    both start 2-9 and neither of which is a three-digit service code (second and third digit both 1)."""
+    raw = value.strip() if isinstance(value, str) else ""
+    if not raw or not UNIT_PHONE_CHARS_RE.fullmatch(raw):
+        return None
+    digits = re.sub(r"\D", "", raw)
+    if len(digits) == 11 and digits.startswith("1"):
+        digits = digits[1:]
+    if not NANP_TEN_RE.match(digits) or digits[1:3] == "11" or digits[4:6] == "11":
+        return None
+    return digits
+
+
+def unit_wording_problems(text, kind):
+    """Why a patient-readable string breaks the unit-wording rules, one message per offending sentence.
+    Titles and headings are exempt from the token rule only ("Reaching the unit and your rights")."""
+    problems = []
+    for sentence in SENTENCE_SPLIT_RE.split(normalise(text)):
+        sentence = " ".join(sentence.split())
+        if not sentence:
+            continue
+        unit_ref = UNIT_REF_RE.search(sentence)
+        availability = AVAILABILITY_RE.search(sentence)
+        if unit_ref and availability:
+            problems.append("\"%s\" refers to the unit ('%s') and carries an availability phrase ('%s'); the unit "
+                            "must never sound like round-the-clock crisis cover, which only the crisis lines give"
+                            % (sentence, unit_ref.group(0), availability.group(0)))
+        if kind != "title" and THE_UNIT_RE.search(sentence) and not UNIT_TOKEN_RE.search(sentence):
+            problems.append("\"%s\" says 'the unit' without {{unitPhone}} or {{unitName}} in the same sentence; the "
+                            "confirmed-phone rule can only see a promise that carries the unit's token" % sentence)
+    return problems
+
+
 def crisis_patterns(numbers):
     """(resource id, regex) for prose. Short codes (<= 4 digits) match contiguously or with ONE
     separator repeated between every digit, so "9-1-1" is caught but 19115 or 9881 is not; longer
@@ -187,8 +289,10 @@ def crisis_patterns(numbers):
 
 
 def text_fields(data):
-    """Every string a patient could read, as (JSON pointer, text, kind). kind is "text",
-    "row" (a handwriting label, which may be blank) or "number" (a table dial string)."""
+    """Every string a patient could read, as (JSON pointer, text, kind). kind is "text", "title" (a title or
+    heading: scanned like text, exempt only from the unit-token rule), "row" (a handwriting label, which may be
+    blank) or "number" (a table dial string). A crisis line contributes only `when`: its name, contact and
+    availability come from crisis_resources.json."""
     out = []
 
     def add(pointer, value, kind="text"):
@@ -199,21 +303,28 @@ def text_fields(data):
         for i, value in enumerate(values or []):
             add("%s/%d" % (pointer, i), value, kind)
 
-    for key in ("heading", "cardHeading", "note"):
-        add("/crisisCopy/" + key, data.get("crisisCopy", {}).get(key))
+    crisis_copy = data.get("crisisCopy", {})
+    add("/crisisCopy/heading", crisis_copy.get("heading"), "title")
+    add("/crisisCopy/cardHeading", crisis_copy.get("cardHeading"), "title")
+    add("/crisisCopy/note", crisis_copy.get("note"))
     for i, line in enumerate(data.get("crisis", [])):
-        for key in ("label", "when"):
-            add("/crisis/%d/%s" % (i, key), line.get(key))
+        add("/crisis/%d/when" % i, line.get("when"))
+    card = data.get("card", {})
+    add("/card/title", card.get("title"), "title")
+    add("/card/body", card.get("body"))
+    add("/card/mineTitle", card.get("mineTitle"), "title")
+    add_list("/card/rows", card.get("rows"), "row")
     for i, item in enumerate(data.get("inserts", [])):
         base = "/inserts/%d" % i
-        for key in ("title", "body", "tip", "signoff"):
+        add(base + "/title", item.get("title"), "title")
+        for key in ("body", "tip", "signoff"):
             add("%s/%s" % (base, key), item.get(key))
         add_list(base + "/bullets", item.get("bullets"))
         add_list(base + "/rows", item.get("rows"), "row")
         for j, group in enumerate(item.get("groups", []) or []):
             gbase = "%s/groups/%d" % (base, j)
-            for key in ("heading", "body"):
-                add("%s/%s" % (gbase, key), group.get(key))
+            add(gbase + "/heading", group.get("heading"), "title")
+            add(gbase + "/body", group.get("body"))
             add_list(gbase + "/bullets", group.get("bullets"))
             add_list(gbase + "/rows", group.get("rows"), "row")
         for j, entry in enumerate(item.get("table", []) or []):
@@ -311,6 +422,12 @@ def check(data, schema, crisis, today):
             continue
         resolved.append(ref)
         label = "crisis_resources.json '%s'" % ref
+        # The welcome tells patients the lines in the box "answer any time, day or night", so every line the box
+        # prints must be governed as round the clock.
+        availability = resource.get("availability")
+        if not normalise(str(availability or "")).strip().casefold().startswith("24/7"):
+            errors.append("%s: availability %r does not begin '24/7'; the welcome tells patients every line in the "
+                          "crisis box answers any time" % (label, availability))
         verified = check_date(label, resource.get("verifiedOn"), today, errors, "verifiedOn")
         if verified is not None:
             dates.append(verified)
@@ -324,6 +441,9 @@ def check(data, schema, crisis, today):
         elif rid in resources and digits not in contact_numbers(resources[rid]):
             errors.append("crisis_resources.json '%s' contact %r is not exactly %s"
                           % (rid, resources[rid].get("contact"), number))
+    if len(refs) > CARD_MAX_CRISIS_LINES:
+        errors.append("`crisis` lists %d lines; the wallet card holds at most %d without a wrap"
+                      % (len(refs), CARD_MAX_CRISIS_LINES))
 
     # ---- prose hygiene, on normalised text with placeholders resolved or rejected ---------
     registered = crisis_numbers(crisis)
@@ -366,6 +486,8 @@ def check(data, schema, crisis, today):
         if kind != "number" and PHONE_RE.search(scan):
             errors.append("%s: contains a phone number; every number must be a table row carrying "
                           "its own verifiedDate and source" % pointer)
+        if kind != "number":
+            errors.extend("%s: %s" % (pointer, problem) for problem in unit_wording_problems(value, kind))
 
     # ---- helpline rows: format, dates, sources, consistency ---------------------------------
     numbers = 0
@@ -417,6 +539,121 @@ def check(data, schema, crisis, today):
     return report
 
 
+def name_problems(value, patterns):
+    """Why a profile's display text (label, org or unitName) cannot be shown or printed, as short phrases. The
+    browser re-checks a loaded profile with the sheet's own rules (fd_care_packet_sheet.js fdCarePacketUnitName);
+    this is a superset of them, so a profile that passes here is never refused there."""
+    problems = []
+    if not value.strip():
+        problems.append("is blank")
+    if any(unicodedata.category(ch) in ("Cc", "Cf") for ch in value):
+        problems.append("contains a control or invisible character")
+    if "<" in value or ">" in value:
+        problems.append("contains markup (< or >)")
+    if "{" in value or "}" in value:
+        problems.append("contains a brace; a profile is plain text, never a placeholder")
+    scan = normalise(value)
+    if PHONE_RE.search(scan):
+        problems.append("contains a phone number; the unit's number goes in unitPhone")
+    hit = sorted({rid for rid, pattern in patterns if pattern.search(scan)})
+    if hit:
+        problems.append("contains a crisis number registered in crisis_resources.json (%s)" % ", ".join(hit))
+    if DOSE_RE.search(scan) or DOSE_SPELLED_RE.search(scan) or DOSE_WORD_RE.search(scan) or DOSE_COUNT_RE.search(scan):
+        problems.append("contains a dose literal")
+    if METADATA_RE.search(scan):
+        problems.append("contains verification metadata or a review tier")
+    if VERIF_RE.search(scan):
+        problems.append("uses a 'verif-' word, which the printed sheet forbids")
+    if AVAILABILITY_RE.search(scan):
+        problems.append("carries an availability phrase; a unit's name must not promise round-the-clock cover")
+    folded = scan.casefold()
+    for needle in RESIDENT_REBRAND_NEEDLES:
+        if needle.casefold() in folded:
+            problems.append("contains '%s', which the resident build rewrites everywhere in the shell" % needle)
+    return problems
+
+
+def check_profiles(profiles_doc, profiles_schema, crisis, inserts_data, today):
+    """Validate care-unit-profiles.v1.json. Pure: no I/O, no clock (today is passed in).
+
+    A profile is the only source of a CONFIRMED unit phone, so its number must be one a patient can dial (the
+    browser's own rule) and must not be a crisis or helpline number the packet already prints, its confirmation must
+    be a real past date made by a role, and every name it shows must obey the sheet's rules."""
+    report = Report()
+    errors, warnings = report.errors, report.warnings
+
+    for error in sorted(Draft7Validator(profiles_schema).iter_errors(profiles_doc),
+                        key=lambda e: [str(p) for p in e.path]):
+        pointer = "/" + "/".join(str(p) for p in error.path)
+        errors.append("%s: %s" % (pointer, error.message))
+    if errors:  # shape is wrong, so semantic checks would only report noise
+        return report
+
+    profiles = profiles_doc["profiles"]
+    patterns = crisis_patterns(crisis_numbers(crisis))
+    crisis_digits = set(registered_crisis_digits(crisis))
+    helplines = helpline_digits(inserts_data)
+    seen = set()
+    dates = []
+    for n, profile in enumerate(profiles):
+        where = "profile %d ('%s')" % (n, profile["id"])
+        if profile["id"] in seen:
+            errors.append("%s: id is listed twice" % where)
+        seen.add(profile["id"])
+
+        for key in ("label", "org", "unitName"):
+            if profile[key] is not None:
+                errors.extend("%s: %s %s" % (where, key, problem) for problem in name_problems(profile[key], patterns))
+        if profile["brandingApproved"] and profile["org"] is None:
+            errors.append("%s: brandingApproved is true but org is null; an approval needs the organization line "
+                          "it approves" % where)
+
+        digits = unit_phone_digits(profile["unitPhone"])
+        if digits is None:
+            errors.append("%s: unitPhone %r is not a ten-digit North American number a patient can dial (digits and "
+                          "phone punctuation only; area code and exchange start 2-9 and neither is a service code "
+                          "such as 411)" % (where, profile["unitPhone"]))
+        elif digits in crisis_digits:
+            errors.append("%s: unitPhone %r is a crisis number registered in crisis_resources.json; a profile carries "
+                          "the unit's own number" % (where, profile["unitPhone"]))
+        elif digits in helplines:
+            errors.append("%s: unitPhone %r is a helpline-table number in care-inserts.v1.json; a profile carries the "
+                          "unit's own number" % (where, profile["unitPhone"]))
+
+        confirmed = check_date(where, profile["phoneConfirmedOn"], today, errors, "phoneConfirmedOn")
+        if confirmed is not None:
+            if confirmed < EARLIEST_VERIFICATION:
+                errors.append("%s: phoneConfirmedOn %s is before %s; that is a placeholder, not a confirmation"
+                              % (where, profile["phoneConfirmedOn"], EARLIEST_VERIFICATION))
+            else:
+                dates.append(confirmed)
+                age = (today - confirmed).days
+                if age > STALE_AFTER_DAYS:
+                    warnings.append("%s: unit phone last confirmed %s, %d days ago (limit %d) - re-confirm it; the "
+                                    "browser refuses a Final copy from this profile after %s"
+                                    % (where, profile["phoneConfirmedOn"], age, STALE_AFTER_DAYS,
+                                       usable_through(confirmed)))
+
+        role = profile["phoneConfirmedBy"]
+        role_scan = normalise(role)
+        if (not role.strip() or re.search(r"\d", role_scan) or "@" in role_scan
+                or any(unicodedata.category(ch) in ("Cc", "Cf") for ch in role)):
+            errors.append("%s: phoneConfirmedBy %r must name a role (for example 'unit charge nurse'), never a "
+                          "number, an email or blank" % (where, role))
+
+    report.stats = {
+        "profiles": len(profiles),
+        "oldestConfirmed": min(dates).isoformat() if dates else None,
+        "oldestAgeDays": (today - min(dates)).days if dates else None,
+    }
+    return report
+
+
+def usable_through(confirmed):
+    """The last day a profile's confirmed phone may print on a Final copy (shipped as `usableThrough`)."""
+    return (confirmed + timedelta(days=PROFILE_USABLE_DAYS)).isoformat()
+
+
 def iso_date_arg(text):
     parsed = parse_iso(text)
     if parsed is None:
@@ -429,6 +666,8 @@ def build_parser():
     parser.add_argument("--data", type=Path, default=DATA)
     parser.add_argument("--schema", type=Path, default=SCHEMA)
     parser.add_argument("--crisis", type=Path, default=CRISIS)
+    parser.add_argument("--profiles", type=Path, default=PROFILES)
+    parser.add_argument("--profiles-schema", type=Path, default=PROFILES_SCHEMA)
     parser.add_argument("--strict", action="store_true",
                         help="exit 1 on any freshness warning, not only on a hard problem")
     parser.add_argument("--today", type=iso_date_arg, default=None,
@@ -446,33 +685,48 @@ def fail(problems, label):
 def main(argv=None):
     args = build_parser().parse_args(argv)
     label = args.data.name
+    profiles_label = args.profiles.name
 
-    missing = ["%s: MISSING" % path.name for path in (args.data, args.schema, args.crisis)
-               if not path.exists()]
+    paths = (args.data, args.schema, args.crisis, args.profiles, args.profiles_schema)
+    missing = ["%s: MISSING" % path.name for path in paths if not path.exists()]
     if missing:
         return fail(missing, label)
-    try:
-        data = json.loads(args.data.read_text(encoding="utf-8"))
-        schema = json.loads(args.schema.read_text(encoding="utf-8"))
-        crisis = json.loads(args.crisis.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as error:
-        return fail(["invalid JSON at line %d col %d: %s" % (error.lineno, error.colno, error.msg)], label)
+    loaded = []
+    for path in paths:
+        try:
+            loaded.append(json.loads(path.read_text(encoding="utf-8")))
+        except json.JSONDecodeError as error:
+            return fail(["%s: invalid JSON at line %d col %d: %s" % (path.name, error.lineno, error.colno, error.msg)],
+                        label)
+    data, schema, crisis, profiles, profiles_schema = loaded
     if Draft7Validator is None:
         return fail(["jsonschema not installed - run: python3 -m pip install -r requirements.txt"], label)
 
-    report = check(data, schema, crisis, args.today or date.today())
-    if report.errors:
-        return fail(report.errors, label)
+    today = args.today or date.today()
+    report = check(data, schema, crisis, today)
+    profile_report = check_profiles(profiles, profiles_schema, crisis, data, today)
+    if report.errors or profile_report.errors:
+        if report.errors:
+            fail(report.errors, label)
+        if profile_report.errors:
+            fail(profile_report.errors, profiles_label)
+        return 1
 
-    for warning in report.warnings:
+    warnings = report.warnings + profile_report.warnings
+    for warning in warnings:
         print("WARNING: " + warning)
     stats = report.stats
     print("%s: OK - %d inserts (%d on by default), %d numbers, %d crisis references; oldest verified %s "
           "(%d days ago)" % (label, stats["inserts"], stats["onByDefault"], stats["numbers"],
                              stats["crisisRefs"], stats["oldestVerified"], stats["oldestAgeDays"]))
-    if args.strict and report.warnings:
-        print("%s: FAILED (--strict): %d number(s) past the %d-day limit"
-              % (label, len(report.warnings), STALE_AFTER_DAYS))
+    pstats = profile_report.stats
+    print("%s: OK - %d confirmed unit profile(s)%s" % (
+        profiles_label, pstats["profiles"],
+        "; oldest phone confirmation %s (%d days ago)" % (pstats["oldestConfirmed"], pstats["oldestAgeDays"])
+        if pstats["oldestConfirmed"] else ""))
+    if args.strict and warnings:
+        print("%s: FAILED (--strict): %d check(s) past the %d-day limit"
+              % (label, len(warnings), STALE_AFTER_DAYS))
         return 1
     return 0
 
