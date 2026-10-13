@@ -976,6 +976,66 @@ test.describe('learner preview protocol', () => {
     }]);
   });
 
+  // "Beyond this page" (Dr. Moss, 2026-10-06): faculty must see the actual recommendations in page
+  // context before re-signing a page whose signature covers them. The live map is a draft, so the
+  // preview shows none; an APPROVED fixture index (the inlined FD_MEDIA value rewritten on the
+  // document response, real library entries, guidance read from the site's own topic_meta.json)
+  // must appear after the page body in the preview, both sides readable.
+  test('shows the page\'s media recommendations in the preview only when the map is approved', async ({ page }) => {
+    await installLearnerPreviewHarness(page);
+    const url = learnerPreviewUrl({ page: 't_mood.md', reviewKey: 'page:t_mood.md' });
+    await page.goto(url.href);
+    await expect.poll(() => learnerPreviewStatuses(page)).toEqual([
+      expectedLearnerPreviewStatus('page', 'page:t_mood.md', 'ready'),
+    ]);
+    await expect(page.locator('#content .fd-beyond')).toHaveCount(0);
+
+    const meta = await (await page.request.get(new URL('/topic_meta.json', MS3_URL).href)).json();
+    const fixture = {
+      version: 1, site: 'ms3', status: 'approved',
+      pages: {
+        't_mood.md': {
+          page: 't_mood.md', sites: ['ms3', 'res'],
+          listen: [{ n: 25, title: 'The History and Nuances of Bipolar Illness', category: 'Mood & bipolar; suicide', url: 'https://www.youtube.com/watch?v=vBeB6V-KA70' }],
+          listenAll: { ref: 'podcast_library.md', category: 'Mood & bipolar; suicide', anchor: 'mood-bipolar-suicide' },
+          family: [{ isbn: '9781608822195', title: 'Loving Someone with Bipolar Disorder', author: 'Julie Fast & John Preston',
+            description: 'Family guide to understanding and supporting someone with bipolar disorder—covers symptoms, treatment, and daily living.',
+            category: 'Mood, bipolar & depression', anchor: 'mood-bipolar-depression' }],
+          familyAll: { ref: 'book_library.md', category: 'Mood, bipolar & depression', anchor: 'mood-bipolar-depression' },
+          practiceRef: 'family-systems.html',
+          guidance: {
+            listenSafety: meta['podcast_library.md'].clinicalWorkflow.safety,
+            familySay: meta['book_library.md'].clinicalWorkflow.say,
+            familySafety: meta['book_library.md'].clinicalWorkflow.safety,
+          },
+        },
+      },
+    };
+    await page.route(/\/(?:\?[^/]*)?$/, async route => {
+      const response = await route.fetch();
+      const original = await response.text();
+      const inlined = original.match(/var FD_MEDIA=\{[^;]*\};/g) || [];
+      expect(inlined).toHaveLength(1);
+      await route.fulfill({ response, body: original.replace(inlined[0], `var FD_MEDIA=${JSON.stringify(fixture)};`) });
+    });
+    await page.evaluate(() => { window.__facultyPreviewStatuses = []; });
+    await page.goto(url.href);
+    const block = page.locator('#content .fd-beyond');
+    await expect(block).toBeVisible();
+    const order = await page.evaluate(() => {
+      const kids = [...document.querySelector('#content').children];
+      return { beyond: kids.indexOf(document.querySelector('#content .fd-beyond')),
+        feedback: kids.indexOf(document.querySelector('#content .pgfb')) };
+    });
+    expect(order.beyond, 'after the body, before only the feedback button').toBe(order.feedback - 1);
+    await expect(block.locator('.fd-beyond__name').first()).toHaveText('Episode 25: The History and Nuances of Bipolar Illness');
+    await expect(block.locator('.fd-beyond__note')).toHaveText(meta['podcast_library.md'].clinicalWorkflow.safety);
+    await block.locator('[data-media-side="family"]').click();
+    await expect(block.locator('.fd-beyond__offer')).toHaveText(`How to offer it: ${meta['book_library.md'].clinicalWorkflow.say}`);
+    await expect(block.locator('.fd-beyond__safety')).toHaveText(meta['book_library.md'].clinicalWorkflow.safety);
+    await expect(block.locator('#fd-beyond-family .fd-beyond__name')).toContainText('Loving Someone with Bipolar Disorder');
+  });
+
   test('maps Markdown 404, HTTP failure, and network failure truthfully', async ({ page }) => {
     await installLearnerPreviewHarness(page);
     const url = learnerPreviewUrl({
