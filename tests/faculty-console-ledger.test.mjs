@@ -177,9 +177,9 @@ function env(secret, extra = {}) {
   };
 }
 
-async function call(mock, envValues, method, body) {
+async function call(mock, envValues, method, body, query = '') {
   const handler = createHandler({ env: envValues, fetchImpl: mock.fetchImpl, treeCache: null });
-  const response = await handler(new Request(API_URL, {
+  const response = await handler(new Request(API_URL + query, {
     method,
     headers: { 'x-faculty-key': FACULTY_KEY, Origin: API_ORIGIN, 'Content-Type': 'application/json' },
     ...(body ? { body: JSON.stringify(body) } : {}),
@@ -365,6 +365,15 @@ const BASELINE_STATEMENT = 'I have reviewed this content and attest to it as it 
   + 'clinically accurate, supported by its cited evidence, original, and free of protected health '
   + 'information.';
 
+async function ledgerBaselineSnapshot(mock, envValues) {
+  const { status, payload } = await call(mock, envValues, 'GET', undefined, '?view=batch&mode=baseline');
+  assert.equal(status, 200, JSON.stringify(payload));
+  return {
+    manifestRevision: payload.questions.manifestRevision,
+    items: payload.questions.sign.map(({ id, revision }) => ({ id, revision })),
+  };
+}
+
 test('a ledger baseline is one append of one signed line per page, and ready questions ride along', async () => {
   const { secret, signer } = newSigner();
   const fx = fixture(signer);
@@ -372,8 +381,9 @@ test('a ledger baseline is one append of one signed line per page, and ready que
   // one longer distractor makes it an ordinary ready draft.
   fx.files['question_bank.json'].items[0].options[3].t = 'Adjustment disorder with depressed mood';
   const mock = githubMock(fx);
+  const questionSnapshot = await ledgerBaselineSnapshot(mock, env(secret));
   const { status, payload } = await call(mock, env(secret), 'POST',
-    { target: 'content', mode: 'baseline', statement: BASELINE_STATEMENT });
+    { target: 'content', mode: 'baseline', statement: BASELINE_STATEMENT, questionSnapshot });
   assert.equal(status, 200, JSON.stringify(payload));
   assert.equal(payload.updated, 2);
   assert.deepEqual(payload.signed.map(item => [item.slug, item.was]).sort(), [['mse-tool', 'drifted'], ['t_mood.md', 'pending']]);
@@ -397,6 +407,42 @@ test('a ledger baseline is one append of one signed line per page, and ready que
   assert.deepEqual(read.payload.items.map(item => [item.slug, item.status, item.stale]), [
     ['t_mood.md', 'reviewed', undefined], ['mse-tool', 'reviewed', undefined],
   ]);
+});
+
+test('a stale ledger baseline question snapshot signs neither pages nor the changed question', async () => {
+  const { secret, signer } = newSigner();
+  const fx = fixture(signer);
+  fx.files['question_bank.json'].items[0].options[3].t = 'Adjustment disorder with depressed mood';
+  const mock = githubMock(fx);
+  const questionSnapshot = await ledgerBaselineSnapshot(mock, env(secret));
+  fx.files['question_bank.json'].items[0].pearl = 'Changed after the baseline preview.';
+  const { status, payload } = await call(mock, env(secret), 'POST', {
+    target: 'content', mode: 'baseline', statement: BASELINE_STATEMENT, questionSnapshot,
+  });
+  assert.equal(status, 409, JSON.stringify(payload));
+  assert.equal(payload.error.code, 'qbank.conflict');
+  assert.equal(mock.state.puts.length, 0);
+  assert.equal(mock.state.ledger, null);
+});
+
+test('a ledger baseline retry keeps the preview revision when a question changes during signing', async () => {
+  const { secret, signer } = newSigner();
+  const fx = fixture(signer);
+  fx.files['question_bank.json'].items[0].options[3].t = 'Adjustment disorder with depressed mood';
+  const mock = githubMock(fx, { onPut(state) {
+    if (state.puts.length !== 2) return;
+    fx.files['question_bank.json'].items[0].pearl = 'Changed during the question append.';
+    return new Response(JSON.stringify({ message: 'Synthetic concurrent ledger append.' }), { status: 409 });
+  } });
+  const questionSnapshot = await ledgerBaselineSnapshot(mock, env(secret));
+  const { status, payload } = await call(mock, env(secret), 'POST', {
+    target: 'content', mode: 'baseline', statement: BASELINE_STATEMENT, questionSnapshot,
+  });
+  assert.equal(status, 200, JSON.stringify(payload));
+  assert.equal(payload.questions.updated, 0);
+  assert.equal(payload.questions.error.code, 'qbank.conflict');
+  const { events } = verifyLedger(mock.state.ledger, keysFor(signer));
+  assert.deepEqual(events.map(event => event.kind), ['content', 'content']);
 });
 
 test('a ledger baseline leaves out a page whose source says it is unreviewed, and signs the rest', async () => {
