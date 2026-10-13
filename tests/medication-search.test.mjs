@@ -48,6 +48,18 @@ for (const site of ['ms3','res']) {
   const p=projections[site], index=F.fdBuildIndex(p.curriculum,meta,tools,p.manifest);
   const results=q=>F.fdSearchResults(index,q,p.curriculum.synonyms,{});
   const oldIndex=F.fdBuildIndex({...p.curriculum,medicationTerms:{}},meta,tools,p.manifest);
+  test(`${site}: literal page and tool filenames do not broaden into extension matches`,()=>{
+    for (const ref of ['psychopharm_primer.md','med_monitoring.md','mse.html']) {
+      assert.deepEqual(results(ref).map(r=>r.item.ref),[ref],ref);
+      assert.deepEqual(results(' '+ref.toUpperCase()+' ').map(r=>r.item.ref),[ref],ref);
+    }
+    // A filename still retains any established safety routing; it is not an early return.
+    assert.deepEqual(results('withdrawal.html').map(r=>[r.item.ref,r.kind]),
+      [['t_sud.md','protocol'],['withdrawal.html','item']]);
+    for (const ref of ['unknown_reading.md','unknown-tool.html']) {
+      assert.deepEqual(results(ref),[],ref);
+    }
+  });
   test(`${site}: the documented medication audit has no unexpected empty searches`,()=>{
     assert.equal(new Set(audit.queries).size,audit.queries.length);
     const empty=audit.queries.filter(query=>results(query).length===0);
@@ -68,6 +80,89 @@ for (const site of ['ms3','res']) {
     assert.ok(refs.indexOf(ref)>=0&&refs.indexOf(ref)<3, `${query}: ${refs}`);
     if(query.includes('catatonia')||query.includes('monitoring'))
       assert.ok(!refs.includes('psychopharm_primer.md')||refs.indexOf(ref)<refs.indexOf('psychopharm_primer.md'),`${query}: ${refs}`);
+  });
+  // Leaving punctuation attached to context words must fail these destination checks.
+  for (const [med, context, ref] of [
+    ['Ativan', 'catatonia', 'catatonia.md'],
+    ['lorazepam', 'catatonia', 'catatonia.md'],
+    ['lithium', 'monitoring', 'med_monitoring.md'],
+    ['lithium', 'level', 'med_monitoring.md'],
+  ]) test(`${site}: punctuation around ${med} ${context} keeps the specific reading ahead of the primer`,()=>{
+    for (const query of [
+      `${med} ${context}?`, `${med} ${context}!`, `${med}: ${context}.`,
+      `(${med}) [${context}]`, `${med} "${context}"`, `“${med} ${context}”`,
+      `${med}/${context}`, `${med}-${context}`, `${med}—${context}`,
+      `${med}, ${context};`,
+    ]) {
+      const rows=results(query), refs=rows.map(r=>r.item.ref);
+      assert.ok(refs.indexOf(ref)>=0&&refs.indexOf(ref)<3, `${query}: ${refs}`);
+      assert.ok(!refs.includes('psychopharm_primer.md')||refs.indexOf(ref)<refs.indexOf('psychopharm_primer.md'), `${query}: ${refs}`);
+      assert.equal(new Set(refs).size,refs.length);
+      assert.ok(refs.length<=8);
+    }
+  });
+  test(`${site}: recovering punctuated context does not invent or demote safety evidence`,()=>{
+    for (const [query, protocols] of [
+      ['Ativan catatonia?', []],
+      ['lithium monitoring?', []],
+      ['Ativan withdrawing from alcohol?', ['t_sud.md']],
+    ]) {
+      const rows=results(query);
+      assert.deepEqual(rows.filter(r=>r.kind==='protocol').map(r=>r.item.ref),protocols,query);
+      if(protocols.length) assert.equal(rows[0].item.ref,protocols[0],query);
+    }
+  });
+  test(`${site}: punctuation-separated explicit safety phrases lead with their protocols`,()=>{
+    for (const [phrase, protocols] of [
+      ['patient suicidal', ['pg_suicide.md']],
+      ['suicide risk', ['pg_suicide.md']],
+      ['alcohol withdrawal', ['t_sud.md']],
+      ['i want to kill myself', ['pg_suicide.md']],
+      ['pulled out iv', ['agitation.md','delirium.md']],
+      ['out of control', ['agitation.md']],
+      ['against medical advice', ['exp_consult.md']],
+      ['altered mental status', ['delirium.md']],
+    ]) for (const separator of ['-', '/', '—', '_', "'"]) for (const prefix of ['', 'Ativan ']) {
+      const query=prefix+phrase.split(' ').join(separator), rows=results(query);
+      assert.deepEqual(rows.slice(0,protocols.length).map(r=>[r.item.ref,r.kind]),
+        protocols.map(ref=>[ref,'protocol']),query);
+      assert.equal(new Set(rows.map(r=>r.item.ref)).size,rows.length,query);
+    }
+    // The authored CIWA trigger should work with the instrument's hyphen too.
+    assert.equal(results('CIWA-Ar')[0].item.ref,'t_sud.md');
+    assert.equal(results('CIWA-Ar')[0].kind,'protocol');
+    assert.ok(results('CIWA-Ar').slice(0,3).some(r=>r.item.ref==='withdrawal.html'));
+    // Exercise the authored inventory too, so a future trigger joins this guard automatically.
+    for (const kit of p.curriculum.safetyKit) for (const phrase of kit.triggers) {
+      for (const separator of ['-', '/', '—', '_', "'"]) {
+        const query='Ativan '+phrase.replace(/[ -]/g,separator), rows=results(query);
+        const rank=rows.findIndex(r=>r.kind==='protocol'&&r.item.ref===kit.ref);
+        const firstItem=rows.findIndex(r=>r.kind!=='protocol');
+        assert.ok(rank>=0&&(firstItem<0||rank<firstItem),`${query}: ${kit.ref}`);
+      }
+    }
+  });
+  test(`${site}: punctuation recovery does not turn fragments or metadata into safety evidence`,()=>{
+    for (const query of ['diet-and-nutrition','min-dose','Sep-7','oxidation-risk',
+      'suicidalx','alcohol-withdrawalx']) {
+      assert.deepEqual(results(query).filter(r=>r.kind==='protocol'),[],query);
+    }
+  });
+  test(`${site}: punctuated authored abbreviations recover safety rows without displacing specific aliases`,()=>{
+    for (const [phrase, protocol] of [
+      ['patient si','pg_suicide.md'], ['patient hi','pg_suicide.md'],
+      ['patient etoh','t_sud.md'], ['patient ams','delirium.md'],
+    ]) for (const separator of ['-', '/', '—', '_', "'"]) {
+      const query=phrase.split(' ').join(separator), rows=results(query);
+      assert.equal(rows[0].kind,'protocol',query);
+      const rank=rows.findIndex(r=>r.item.ref===protocol&&r.kind==='protocol');
+      assert.ok(rank>=0&&rank<3,query);
+      assert.equal(rows.filter(r=>r.item.ref===protocol).length,1,query);
+    }
+    for (const query of ['patient-refuses-medication','refuses-medication']) {
+      assert.deepEqual(results(query).slice(0,2).map(r=>[r.item.ref,r.kind]),
+        [['capacity.html','item'],['exp_consult.md','protocol']],query);
+    }
   });
   test(`${site}: medication vocabulary preserves all existing protocol matches and their order`,()=>{
     const phrases=['i want to kill myself','withdrawing from alcohol','confused at night',
