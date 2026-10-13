@@ -886,6 +886,20 @@ test.describe('preview, print and copy', () => {
     await expect(status(page)).toContainText('Review complete. Print and Copy are available.');
   });
 
+  // WCAG 2.2 AA 2.5.8 (target size, minimum): a control smaller than 24 x 24 CSS px must have 24px of clear space around it. The
+  // label row is 44px, but axe (4.13) measures the INPUT, and found the packet's 22.4px checkboxes next to the shell's fixed tab bar
+  // at one scroll position. A 24px box passes whatever is nearby. Fails if the checkbox/radio size drops below 24px again.
+  for (const width of [1280, 320]) {
+    test(`every checkbox and radio in the tray and the preview is at least 24 x 24 CSS px (WCAG 2.5.8), at ${width}px wide`, async ({ page }) => {
+      await page.setViewportSize({ width, height: width === 320 ? 640 : 800 });
+      await build(page, { mode: 'final', release: false });
+      const small = await page.evaluate(() => [...document.querySelectorAll('[data-fd-care-packet-tray] input[type="checkbox"], #fd-care-packet-preview input[type="checkbox"], #fd-care-packet-preview input[type="radio"]')]
+        .map(el => ({ what: el.getAttribute('data-fd-care-packet-gate') || el.getAttribute('data-fd-care-packet-insert') || el.getAttribute('data-fd-care-packet-mode'), box: el.getBoundingClientRect() }))
+        .filter(item => item.box.width < 24 || item.box.height < 24).map(item => item.what + ' ' + item.box.width + 'x' + item.box.height));
+      expect(small, `every box is at least 24px at ${width}px wide`).toEqual([]);
+    });
+  }
+
   test('the Tab order runs search, results, tray (its card button included), then the preview with the profile controls, and ends at Print', async ({ page }) => {
     await build(page, { mode: 'final' });
     await page.locator('#fd-care-directory-query').focus();

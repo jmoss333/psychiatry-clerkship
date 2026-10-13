@@ -738,7 +738,7 @@
 .fd-care-packet__gate{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm)}
 .fd-care-packet__gate legend{padding:0 var(--fd-space-2);font-size:var(--fd-font-sm);font-weight:750}
 .fd-care-packet__check{display:flex;align-items:center;gap:var(--fd-space-3);min-height:var(--fd-target-touch);font-size:var(--fd-font-sm);line-height:1.5;cursor:pointer}
-.fd-care-packet__check input{flex:none;width:1.4rem;height:1.4rem;margin:0}
+.fd-care-packet__check input{flex:none;width:1.5rem;height:1.5rem;margin:0}
 .fd-care-packet__ready[data-fd-care-packet-ready="true"]{color:var(--fd-olive-deep);font-weight:700}
 .fd-care-packet__preview-toggle{margin-top:var(--fd-space-5)}
 /* The preview region: always present while the packet exists, hidden when closed. Controls are patched in place, never replaced. */
