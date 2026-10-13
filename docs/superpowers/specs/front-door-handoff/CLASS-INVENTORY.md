@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(663 distinct `fd-*` selector names, 31 `is-*` state classes). Every class below has a rule in that file unless
+(666 distinct `fd-*` selector names, 31 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -513,14 +513,14 @@ the packet hooks into it, so both are recorded here. Everything marked **(packet
   .fd-care-search__head / form.fd-care-search__form / .fd-care-search__privacy / __notice
   [data-care-directory-results]                       the ONLY node repainted while typing
     h3.fd-care-search__count#fd-care-directory-count   tabindex=-1; focus target after paging
-    .fd-care-search__bulk role="group"                 (packet) Add this page (n) / Add all results (n)
+    .fd-care-search__bulk role="group"                 (packet) Add from this page / Add from all results, with capacity descriptions
     ol.fd-care-search__list
       li.fd-care-search__result
         article[.is-packed]                            (packet) is-packed adds the left rule
           p.fd-care-search__meta                       (packet) + span.fd-care-search__packed "In packet"
           .fd-care-search__actions
             a (Call / Text) / a (Website)
-            button.fd-care-search__pack                (packet) aria-pressed, constant label "Add to packet"
+            button.fd-care-search__pack                (packet) aria-pressed, action label "Add to packet" / "Remove from packet"
     nav.fd-care-search__pages
   .fd-care-search__tray [data-fd-care-packet-tray]     (packet) AFTER the results mount; never repainted by typing
     section.fd-care-packet
@@ -1266,3 +1266,10 @@ close it. Escape closes the disclosure and returns focus to its summary.
 uses the scoped button rule. Controls have 44px minimum targets and visible
 focus; filters and header reflow at 640px. Results alone update during typing.
 The persistent `#careDirectoryStatus.vh-live` announces result counts politely.
+
+## G-B owner-approved controls (2026-10-13)
+
+- `.fd-care-search__capacity` spans the bulk bar; each button has its own remaining-capacity description.
+- `.fd-care-packet__outcome` retains the last bulk result and an expandable omission list, outside patient output and storage.
+- `dialog.fd-care-packet__confirm` is a body-level native modal with counted heading, Keep packet first, Clear packet second; Escape/backdrop preserve state. It uses the shared theme and focus tokens.
+- Category order is fixed; moves operate within a category and clear review confirmations.

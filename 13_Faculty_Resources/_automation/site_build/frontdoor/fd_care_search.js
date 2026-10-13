@@ -178,7 +178,7 @@ function fdCreateCareDirectory(packet){
   /* Put focus back after a repaint. A hit names an attribute and the value to find (never spliced into a
      selector, so an id can hold any character); fallbacks cover a button that became disabled. */
   function focusAt(hit){
-    if(!root||!hit)return;
+    if(!root||!hit||!hit.attr)return;
     var found=null,attrs=[hit.attr],i,nodes;
     if(hit.attr==='id')found=root.querySelector('#'+hit.id);
     else{
