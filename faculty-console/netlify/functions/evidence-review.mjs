@@ -1,5 +1,6 @@
 // Used only behind attest.mjs authentication; no public function handler.
 import {createHash} from 'node:crypto';
+import {decodeEvidenceStorage} from './evidence-storage.mjs';
 import {itemRevision} from './qbank-actions.mjs';
 export const INBOX='13_Faculty_Resources/_automation/surveillance/history/firecrawl/inbox.json';
 export const DECISIONS='13_Faculty_Resources/evidence_review_decisions.json';
@@ -19,10 +20,11 @@ export async function readEvidence(repository){
  const reportCommit=await repository.headOf(REPORT_BRANCH);
  const head=await repository.head();
  const teachingCommit=await repository.headOf('main');
- const [{json:state},{json:decisions,sha:decisionRevision},{json:bank}]=await Promise.all([
+ const [{json:stored},{json:decisions,sha:decisionRevision},{json:bank}]=await Promise.all([
   repository.read(INBOX,{ref:reportCommit,maxBytes:8_000_000}),
   repository.read(DECISIONS,{ref:head,maxBytes:2_000_000}),
   repository.read('question_bank.json',{ref:teachingCommit,maxBytes:4_000_000})]);
+ let state;try{state=decodeEvidenceStorage(stored);}catch{fail('Evidence snapshot integrity check failed',503);}
  validState(state);
  if(decisions?.version!==1||!Array.isArray(decisions.decisions)||!Array.isArray(bank.items))fail('Review records unavailable',503);
  const items=new Map(bank.items.filter(q=>!q.retired&&!q.retiredReason).map(q=>[q.id,q]));

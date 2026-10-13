@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0,'13_Faculty_Resources/_automation/surveillance/bin')
 import run_firecrawl_pilot as R,lib_surveillance as L,passage_review as P
 from simulate_firecrawl_passages import fixture_markdown
+from evidence_storage import decode_inbox
 with tempfile.TemporaryDirectory() as folder:
  root=Path(folder); inputs=root/'responses.json'; state=root/'inbox.json'
  sources={s['id']:s for s in L.load_registry()['sources']}
@@ -22,11 +23,11 @@ with tempfile.TemporaryDirectory() as folder:
  first=run('first');assert first.returncode==0,first.stderr
  responses['clozapine-rems']['data']['markdown']=responses['clozapine-rems']['data']['markdown'].replace('no longer have to be enrolled','must be enrolled')
  changed=run('changed');assert changed.returncode==1,changed.stderr
- packet=json.loads(state.read_text())['packets'][0]
+ packet=decode_inbox(json.loads(state.read_text()))['packets'][0]
  assert any(c['fieldPath'].endswith('/trap/note') for c in packet['candidates'])
  assert packet['readings'] and packet['questionSnapshots']
  again=run('again');assert again.returncode==0,again.stderr
- saved=json.loads(state.read_text())
+ saved=decode_inbox(json.loads(state.read_text()))
  assert saved['packets']==[packet]
  assert 'storageCapacity' not in saved
  receipt=json.loads((root/'again/receipt.json').read_text())
@@ -34,6 +35,12 @@ with tempfile.TemporaryDirectory() as folder:
  assert receipt['storageCapacity']['usedBytes']==state.stat().st_size
  assert receipt['storageCapacity']['remainingBytes']==8_000_000-state.stat().st_size
  assert 'Evidence storage:' in (root/'again/faculty-brief.md').read_text()
+ # A meaningful reversal after shared storage still creates a new packet.
+ responses['clozapine-rems']['data']['markdown']=responses['clozapine-rems']['data']['markdown'].replace('must be enrolled','no longer have to be enrolled')
+ reversal=run('reversal');assert reversal.returncode==1,reversal.stderr
+ final=decode_inbox(json.loads(state.read_text()))
+ assert len(final['packets'])==2 and final['packets'][0]==packet
+ assert final['packets'][1]['candidates']
 `],{encoding:'utf8'});assert.equal(r.status,0,r.stdout+r.stderr);
 });
 
