@@ -30,8 +30,9 @@ function memStorage(seed = {}) {
   };
 }
 
+// Explicit opt-in fixture for retained sharing behavior.
 // eslint-disable-next-line no-new-func
-const make = (storage) => new Function('localStorage', `${phase}\n${state}\n${data}\n${careNavigator}\n${carePack}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nreturn {
+const make = (storage) => new Function('localStorage', `${phase}\n${state}\n${data}\n${careNavigator}\n${carePack}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nFD_CARE_PATIENT_SHARING_ENABLED=true;\nreturn {
   dispatch: fdDispatch,
   resolve: fdResolveState,
   wire: fdWire,

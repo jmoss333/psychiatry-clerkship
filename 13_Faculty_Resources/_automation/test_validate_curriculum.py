@@ -1534,6 +1534,20 @@ class ShippedSetTest(unittest.TestCase):
             self.assertIn(MS3_ONLY_FIXTURE, r.stdout)
 
 
+def _tree(see=None):
+    """Smallest tree validate_curriculum.py has an opinion about; its shape is
+    validate_topic_meta.py's business."""
+    action = {"id": "a", "title": "T", "tone": "first", "act": ["Do."], "escalate": "now"}
+    if see is not None:
+        action["see"] = see
+    script = {"label": "L", "identify": "I.", "situation": "S.", "background": "B.",
+              "assessment": "A.", "recommendation": "R.", "readBack": "RB."}
+    return {"start": "q", "scripts": {"now": script}, "nodes": [
+        {"id": "q", "ask": "Q?", "options": [{"label": "A", "next": "a"},
+                                             {"label": "B", "next": "a"}]},
+        action]}
+
+
 class SafetyKitTest(unittest.TestCase):
     def _run(self, mutate=None, topic_meta=None, evidence_registry=None):
         cur = _curriculum([])
@@ -1628,6 +1642,33 @@ class SafetyKitTest(unittest.TestCase):
         self.assertEqual(r.returncode, 1)
         self.assertIn(SAFETY_REFS[0], r.stdout)
         self.assertIn(SAFETY_REFS[1], r.stdout)
+
+    def test_accepts_a_safety_tree_on_a_kit_protocol(self):
+        meta = _topic_meta()
+        meta["agitation.md"]["safetyTree"] = _tree(see=["delirium.md"])
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_rejects_a_safety_tree_outside_the_kit(self):
+        meta = _topic_meta()
+        meta["welcome.md"] = {"safetyTree": _tree()}
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("only a safetyKit protocol may carry a safetyTree", r.stdout)
+
+    def test_rejects_a_see_link_to_a_page_outside_the_kit(self):
+        meta = _topic_meta()
+        meta["agitation.md"]["safetyTree"] = _tree(see=["welcome.md"])
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("must name another safetyKit protocol", r.stdout)
+
+    def test_rejects_a_see_link_to_the_protocol_itself(self):
+        meta = _topic_meta()
+        meta["agitation.md"]["safetyTree"] = _tree(see=["agitation.md"])
+        r = self._run(topic_meta=meta)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("must name another safetyKit protocol", r.stdout)
 
 
 class RolesTest(unittest.TestCase):
