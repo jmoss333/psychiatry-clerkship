@@ -223,3 +223,14 @@ ledger separately. A code rollback after conversion requires a reader that still
 supports the envelope; do not restore an old inbox over newer review evidence.
 For offline inspection use `evidence_storage.decode_inbox(json.loads(...))`.
 The original packet schema validates the reconstructed state, not the envelope.
+
+The authenticated faculty GET response is also losslessly compressed, inside an
+explicit `evidence-gzip-base64-v1` JSON envelope. The browser restores the complete
+view before rendering or selecting dispositions. This avoids the provider's 6 MB
+buffered-response ceiling without relying on binary-response handling. The server
+rejects a wire payload over 5 MB (leaving provider overhead margin), and both ends
+reject an expanded view over 64 MB. These bounds fail explicitly; they never trim
+packets or decisions. As unique evidence grows, storage and response capacity still
+need monitoring; this change is not unbounded storage. Original JSON responses
+remain readable by the new browser client. Reload already-open faculty tabs after
+deployment so they load the new decoder.

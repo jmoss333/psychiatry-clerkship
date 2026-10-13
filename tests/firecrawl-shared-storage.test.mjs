@@ -1,3 +1,5 @@
+import {encodeEvidenceResponse} from '../faculty-console/netlify/functions/evidence-response.mjs';
+import {decodeEvidenceResponse} from '../faculty-console/evidence-response.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {spawnSync} from 'node:child_process';
 import {decodeEvidenceStorage} from '../faculty-console/netlify/functions/evidence-storage.mjs';
 import {readEvidence,decideEvidence,INBOX,DECISIONS} from '../faculty-console/netlify/functions/evidence-review.mjs';
@@ -28,7 +30,7 @@ test('existing faculty decisions and subsequent writes retain the same packet re
  const writes=[];const originalDecisions=structuredClone(decisions);
  const repo={head:async()=> 'h',headOf:async()=> 'r',ensureBranchFresh:async()=>{},read:async path=>({json:path===INBOX?stored:path===DECISIONS?decisions:{items:[question]},sha:'d'}),writeAtHead:async(path,value)=>{writes.push(path);decisions=value;return {commit:'saved'};},ensureRollingPullRequest:async()=> 'pr'};
  const before=await readEvidence(repo);stored=encode(stored);
- assert.deepEqual(await readEvidence(repo),before);assert.deepEqual(decisions,originalDecisions);assert.deepEqual(writes,[]);
+ assert.deepEqual(await readEvidence(repo),before);assert.deepEqual(await decodeEvidenceResponse(encodeEvidenceResponse(await readEvidence(repo))),before);assert.deepEqual(decisions,originalDecisions);assert.deepEqual(writes,[]);
  await decideEvidence(repo,{packetRevision:'b',expectedReportCommit:'r',expectedDecisionRevision:'d',dispositions:[{itemKey:'question:q1',itemRevision:itemRevision(question),outcome:'defer',rationale:'Further review'}]},'Faculty');
  assert.deepEqual(writes,[DECISIONS]);assert.deepEqual(decisions.decisions[0],originalDecisions.decisions[0]);assert.equal(decisions.decisions[1].packetRevision,'b');
  stored.snapshots[Object.keys(stored.snapshots)[0]]+=' ';
