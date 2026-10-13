@@ -11,6 +11,7 @@
 // touches this repository: every git call gets an environment with the inherited GIT_* removed.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -48,7 +49,7 @@ function write(file, text, mode) {
 function fixture(t) {
   const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'install-hooks-')));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-  const remote = path.join(dir, 'remote.git');
+  const remote = path.join(dir, 'remote with spaces.git');
   const main = path.join(dir, 'main');
   const wt = path.join(dir, 'wt');
   const trace = path.join(dir, 'trace.log');
@@ -94,6 +95,112 @@ function push(fx, cwd, ref, env = {}) {
 function remoteHas(fx, ref) {
   return git(fx.dir, '--git-dir', fx.remote, 'for-each-ref', '--format=%(refname)', `refs/heads/${ref}`) !== '';
 }
+
+// Use the real LFS clean filter and local-file transfer adapter: a Git ref arriving without
+// these bytes is precisely the defect. No network, media downloads, or lfs install (which
+// would replace the hook under test). The repo requires Git LFS on both host and CI.
+function mediaCommit(fx, cwd, name = 'sample.mp3') {
+  git(cwd, 'config', 'filter.lfs.clean', 'git-lfs clean -- %f');
+  git(cwd, 'config', 'filter.lfs.required', 'true');
+  write(path.join(cwd, '.gitattributes'), '*.mp3 filter=lfs diff=lfs merge=lfs -text\n');
+  const bytes = Buffer.from(`Synthetic hook fixture: ${name}\n`);
+  write(path.join(cwd, name), bytes);
+  git(cwd, 'add', '.gitattributes', name);
+  const c = run('git', ['commit', '-qm', `media ${name}`], { cwd, env: fx.env });
+  assert.equal(c.status, 0, c.stderr);
+  const oid = createHash('sha256').update(bytes).digest('hex');
+  assert.match(git(cwd, 'show', `HEAD:${name}`), new RegExp(`oid sha256:${oid}`));
+  const objectPath = path.join('lfs', 'objects', oid.slice(0, 2), oid.slice(2, 4), oid);
+  return {
+    bytes,
+    localObject: path.join(fx.main, '.git', objectPath),
+    remoteObject: path.join(fx.remote, objectPath),
+  };
+}
+
+for (const checkout of ['main', 'wt']) {
+  test(`pre-push uploads real LFS bytes from the ${checkout} checkout only after verification passes`, (t) => {
+    const fx = fixture(t);
+    const cwd = fx[checkout];
+    const media = mediaCommit(fx, cwd);
+    const ref = 'HEAD:refs/heads/media';
+    const blocked = push(fx, cwd, ref, { VERIFY_EXIT: '1' });
+    assert.notEqual(blocked.status, 0);
+    assert.equal(remoteHas(fx, 'media'), false);
+    assert.equal(fs.existsSync(media.remoteObject), false, 'failed checks must not upload media');
+    const ok = push(fx, cwd, ref);
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.equal(remoteHas(fx, 'media'), true);
+    assert.equal(fs.existsSync(media.remoteObject), true, 'Git arrived, but its LFS media did not');
+    assert.deepEqual(fs.readFileSync(media.remoteObject), media.bytes);
+    assert.equal(traceLines(fx).filter((line) => line.startsWith('verify ')).length, 2);
+  });
+}
+
+test('pre-push preserves every ref for verification and LFS, including a later branch and tag', (t) => {
+  const fx = fixture(t);
+  const first = mediaCommit(fx, fx.main, 'first.mp3');
+  const later = mediaCommit(fx, fx.wt, 'later.mp3');
+  git(fx.wt, 'tag', 'media-tag');
+  const r = run('git', ['push', 'origin', 'main', 'feat', 'refs/tags/media-tag'], { cwd: fx.wt, env: fx.env });
+  assert.equal(r.status, 0, r.stderr);
+  for (const media of [first, later]) {
+    assert.equal(fs.existsSync(media.remoteObject), true, 'every ref must reach the LFS uploader');
+    assert.deepEqual(fs.readFileSync(media.remoteObject), media.bytes);
+  }
+  const runs = traceLines(fx).filter((line) => line.startsWith('verify '));
+  assert.equal(runs.length, 1);
+  for (const ref of ['refs/heads/main', 'refs/heads/feat', 'refs/tags/media-tag']) {
+    assert.ok(runs[0].includes(ref), `${ref} must also reach verification`);
+  }
+});
+
+test('pre-push blocks the Git ref when a required local LFS object is missing', (t) => {
+  const fx = fixture(t);
+  const media = mediaCommit(fx, fx.wt);
+  fs.unlinkSync(media.localObject);
+  const r = push(fx, fx.wt, 'feat');
+  assert.notEqual(r.status, 0, 'a Git pointer must not be published without its media');
+  assert.match(r.stderr, /pre-push BLOCKED.*Git LFS/);
+  assert.equal(remoteHas(fx, 'feat'), false);
+  assert.equal(fs.existsSync(media.remoteObject), false);
+  assert.equal(traceLines(fx).filter((line) => line.startsWith('verify ')).length, 1);
+});
+
+test('pre-push blocks the Git ref when the local LFS destination cannot accept an upload', (t) => {
+  const fx = fixture(t);
+  mediaCommit(fx, fx.wt);
+  write(path.join(fx.remote, 'lfs'), 'a file obstructs the media storage directory\n');
+  const r = push(fx, fx.wt, 'feat');
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /pre-push BLOCKED.*Git LFS/);
+  assert.equal(remoteHas(fx, 'feat'), false);
+});
+
+test('pre-harness branches still upload their LFS media when no verification script is required', (t) => {
+  const fx = fixture(t);
+  const old = path.join(fx.dir, 'wt-old');
+  git(fx.main, 'worktree', 'add', '-q', '-b', 'old', old, 'pre-harness');
+  const media = mediaCommit(fx, old);
+  const r = push(fx, old, 'old');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stderr, /predates the harness/);
+  assert.equal(fs.existsSync(media.remoteObject), true, 'the gate exemption is not an LFS exemption');
+  assert.deepEqual(fs.readFileSync(media.remoteObject), media.bytes);
+  assert.equal(traceLines(fx).filter((line) => line.startsWith('verify ')).length, 0);
+});
+
+test('deleting a remote branch succeeds without trying to upload missing local media', (t) => {
+  const fx = fixture(t);
+  const media = mediaCommit(fx, fx.wt);
+  const initial = push(fx, fx.wt, 'feat');
+  assert.equal(initial.status, 0, initial.stderr);
+  fs.unlinkSync(media.localObject);
+  const deletion = push(fx, fx.wt, ':refs/heads/feat');
+  assert.equal(deletion.status, 0, deletion.stderr);
+  assert.equal(remoteHas(fx, 'feat'), false);
+  assert.equal(traceLines(fx).filter((line) => line.startsWith('verify ')).length, 2);
+});
 
 test('pre-push runs verify.sh with the push refs on stdin, no inherited GIT_DIR, and blocks on its failure', (t) => {
   const fx = fixture(t);
