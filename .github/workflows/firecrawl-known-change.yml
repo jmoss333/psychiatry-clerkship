@@ -1,6 +1,14 @@
 name: Firecrawl synthetic known-change test
 on:
   workflow_dispatch:
+    inputs:
+      change_kind:
+        description: Controlled edit (emphasis preserves every word)
+        type: choice
+        default: wording
+        options:
+          - wording
+          - emphasis
 permissions:
   contents: write
 concurrency:
@@ -19,13 +27,17 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.11"
+      - name: Install packet replay dependency
+        run: pip install --quiet jsonschema==4.26.0
       - name: Test one controlled fixture change
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          CHANGE_KIND: ${{ inputs.change_kind || 'wording' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
           python3 13_Faculty_Resources/_automation/surveillance/bin/run_firecrawl_known_change.py
           --out-dir "$RUNNER_TEMP/firecrawl-known-change"
+          --change-kind "$CHANGE_KIND"
       - name: Upload controlled-change evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
