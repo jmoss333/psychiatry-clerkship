@@ -22,14 +22,30 @@ attestation ledger. Missing candidate files and malformed profiles fail closed. 
 candidate contract and learner integration are delivered separately; no real profile
 or learner feature flag is activated by this change.
 
-Each decision replaces one complete signed authority snapshot in the faculty site's
-`care-profile-authority-v1` Netlify Blob store, using strong reads and an expected ETag.
+Before enrollment, the owner must also provision a **separate dedicated storage project**
+with no repository connection, deploy previews, branch deployments or untrusted deployed
+code. Its `CARE_PROFILE_STORE_SITE_ID` must differ from the console's automatic `SITE_ID`;
+its `CARE_PROFILE_STORE_TOKEN` must be a production-only Functions secret on the console.
+The adapter requires both and never falls back to the console's automatically accessible
+store. Do not grant preview code or other services these credentials. No project, token,
+environment variable or deployment is created by this change.
+
+This isolation is necessary because a site-wide Blob store is shared with that site's
+deploy previews. A preview able to write the same store could replay a previously signed
+approval after revocation; signing and ETag checks alone cannot prevent that rollback.
+The isolated store must remain inaccessible to previews. Confirm that boundary during
+owner setup before permitting any real approval; a different site ID alone cannot prove
+that its owner configured the destination safely.
+
+Each decision replaces one complete signed authority snapshot in that isolated site's
+`care-profile-authority-v1` Blob store, using strong reads and an expected ETag.
 Concurrent decisions fail with a conflict and are never retried automatically. This
 is a current-state register, not a historical attestation ledger. The signing secret
-authenticates snapshots independently of editable profile JSON. Site-wide Blobs are
-shared across deploy contexts: previews cannot open the store through these handlers,
-and a production-only signing secret prevents preview code from forging approvals.
-Someone controlling production code or production secrets controls this authority.
+authenticates snapshots independently of editable profile JSON. The isolated-store token
+and signing secret are absent from previews, and these handlers refuse non-production
+contexts before opening storage. Someone controlling production code, production secrets
+or the isolated store controls this authority; HMAC does not independently prevent a
+trusted storage administrator from replaying an old signed snapshot.
 
 Approval binds SHA-256 of canonical UTF-8 JSON `{policyVersion:1,profile:...}`: recursively
 sorted object keys, no spaces, all public fields plus the full verification array sorted
@@ -42,7 +58,13 @@ Disabled branding requires null `org`; disabled callback requires its four field
 
 Freshness ends at the **start of the New York calendar date** 90 days after the oldest
 required actual verification. Approval time never extends it. Any covered change needs
-a new approval. Suspend and Revoke immediately withdraw current authority without a
+a new approval. The approval also binds the **latest commit touching the profile file**,
+read from GitHub at the same immutable main snapshot. An edit followed by restoring the
+old bytes cannot revive approval, and a change between owner load and save is refused.
+This is deliberately conservative: changing any profile in this shared file invalidates
+all profiles' prior approvals; unrelated commits elsewhere do not. Per-profile history
+can narrow that collateral re-review later without weakening the no-revival rule.
+Suspend and Revoke immediately withdraw current authority without a
 learner rebuild; both remain withdrawn until an explicit fresh approval. An owner can
 withdraw a known saved revision even if its source candidate was removed.
 
@@ -56,7 +78,8 @@ permission. Printed paper cannot be recalled.
 
 The owner endpoint is `/.netlify/functions/care-profile-approvals`, with the personal
 credential in `x-care-profile-owner-key`. GET lists candidates and their current approval
-version. POST accepts only `action`, `profileId`, `revision`, `expectedVersion`. Approve
+version. POST accepts only `action`, `profileId`, `revision`, `expectedVersion`,
+`expectedSourceCommit`. Approve
 uses the displayed candidate revision; Suspend/Revoke use the existing authority revision.
 The browser clears its review after every attempt, including conflicts, and requires a
 fresh load. Locking the screen invalidates outstanding responses and clears its separate

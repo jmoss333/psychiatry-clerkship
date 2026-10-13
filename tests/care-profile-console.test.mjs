@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as ui from '../faculty-console/care-profiles.mjs';
-const row={profile:{id:'fixture'},revision:'a'.repeat(64),expiresOn:'2026-12-30',authority:{status:'unapproved',version:null,revision:null}};
+const row={profile:{id:'fixture'},revision:'a'.repeat(64),sourceCommit:'a'.repeat(40),expiresOn:'2026-12-30',authority:{status:'unapproved',version:null,revision:null}};
 const snapshot={ok:true,approver:'Joshua Moss, MD',profiles:[row]};
 function harness(fetchImpl) {const values=new Map();const storage={getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};return ui.createOwnerReview({fetchImpl,storage});}
 test('owner console requires deliberate review before sending exact saved version',async()=>{
@@ -9,7 +9,7 @@ test('owner console requires deliberate review before sending exact saved versio
   await client.unlock('fixture-owner-key');
   await assert.rejects(client.decide('fixture','approve',false),/Review/);assert.equal(calls.length,1);
   await client.decide('fixture','approve',true);
-  assert.deepEqual(JSON.parse(calls[1].body),{action:'approve',profileId:'fixture',revision:row.revision,expectedVersion:null});
+  assert.deepEqual(JSON.parse(calls[1].body),{action:'approve',profileId:'fixture',revision:row.revision,expectedVersion:null,expectedSourceCommit:row.sourceCommit});
   assert.equal(calls[1].headers['x-faculty-key'],undefined);assert.equal(calls[1].cache,'no-store');
   assert.equal(client.state.profiles,null);
 });

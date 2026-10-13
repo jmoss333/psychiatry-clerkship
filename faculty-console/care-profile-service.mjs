@@ -56,7 +56,7 @@ export function createCareProfileHandlers({env,store,readCandidates,now=()=>new 
       if(!value) return json(result(id,revision,at,'unapproved'),200,origin);
       const authority=value.data;
       if(authority.status!=='approved') return json(result(id,revision,at,authority.status),200,origin);
-      if(authority.revision!==revision || profileRevision(profile)!==revision) return json(result(id,revision,at,'changed'),200,origin);
+      if(authority.revision!==revision || profileRevision(profile)!==revision || authority.sourceCommit!==current.commit) return json(result(id,revision,at,'changed'),200,origin);
       const expiry=expiresOn(profile);
       requireThat(authority.expiresOn===expiry && authority.approvedAt<=at && authority.changedAt<=at);
       if(newYorkDate(at)>=expiry) return json(result(id,revision,at,'expired',null,expiry),200,origin);
@@ -76,28 +76,32 @@ export function createCareProfileHandlers({env,store,readCandidates,now=()=>new 
       const at=now();newYorkDate(at);
       if(request.method==='GET') {
         const current=await snapshot(at), profiles=[];
-        for(const profile of current.profiles){const value=await stored(profile.id);profiles.push({profile,revision:profileRevision(profile),expiresOn:expiresOn(profile),
-          authority:{status:value?.data.status||'unapproved',version:value?.data.version||null,revision:value?.data.revision||null}});}
+        for(const profile of current.profiles){const value=await stored(profile.id), revision=profileRevision(profile), expiry=expiresOn(profile);
+          let status=value?.data.status||'unapproved';
+          if(status==='approved')status=value.data.revision!==revision || value.data.sourceCommit!==current.commit?'changed':newYorkDate(at)>=expiry?'expired':'approved';
+          profiles.push({profile,revision,sourceCommit:current.commit,expiresOn:expiry,
+            authority:{status,version:value?.data.version||null,revision:value?.data.revision||null}});}
         return json({ok:true,profiles,approver:APPROVER},200,origin);
       }
       requireThat(request.headers.get('Content-Type')?.split(';')[0]==='application/json',400,'invalid-request');
       const text=await request.text();requireThat(Buffer.byteLength(text)<=MAX_BODY,413,'request-too-large');
       let body;try{body=JSON.parse(text);}catch{throw new AuthorityError(400,'invalid-request');}
-      requireThat(exactKeys(body,['action','profileId','revision','expectedVersion']) && ['approve','suspend','revoke'].includes(body.action)
+      requireThat(exactKeys(body,['action','profileId','revision','expectedVersion','expectedSourceCommit']) && ['approve','suspend','revoke'].includes(body.action)
         && PROFILE_ID.test(body.profileId) && REVISION.test(body.revision)
+        && typeof body.expectedSourceCommit==='string' && /^[a-f0-9]{40}$/.test(body.expectedSourceCommit)
         && (body.expectedVersion===null || typeof body.expectedVersion==='string' && /^[a-f0-9-]{36}$/.test(body.expectedVersion)),400,'invalid-request');
       const previous=await stored(body.profileId);
       requireThat((previous?.data.version||null)===body.expectedVersion,409,'approval-changed');
       let value;
       if(body.action==='approve') {
         const current=await snapshot(at), profile=current.profiles.find(p=>p.id===body.profileId);
-        requireThat(profile && profileRevision(profile)===body.revision,409,'profile-changed');
+        requireThat(profile && profileRevision(profile)===body.revision && current.commit===body.expectedSourceCommit,409,'profile-changed');
         const expiry=expiresOn(profile);requireThat(newYorkDate(at)<expiry,409,'expired');
         value={schemaVersion:1,profileId:body.profileId,revision:body.revision,status:'approved',version:newVersion(),approvedAt:at,changedAt:at,
           principal:PRINCIPAL,expiresOn:expiry,sourceCommit:current.commit};
         // Re-read at save time; unrelated main commits do not invalidate the reviewed digest.
         const latest=await snapshot(at), latestProfile=latest.profiles.find(p=>p.id===body.profileId);
-        requireThat(latestProfile && profileRevision(latestProfile)===body.revision,409,'profile-changed');
+        requireThat(latestProfile && profileRevision(latestProfile)===body.revision && latest.commit===body.expectedSourceCommit,409,'profile-changed');
       } else {
         requireThat(previous!==null && previous.data.revision===body.revision,409,'approval-changed');
         const {signature,...old}=previous.data;
@@ -129,18 +133,31 @@ export function githubCandidates({env,fetchImpl=globalThis.fetch}) {
     }
     const ref=await get('/git/ref/heads/main'), commit=ref?.object?.sha;
     requireThat(typeof commit==='string' && /^[a-f0-9]{40}$/.test(commit));
+    const history=await get('/commits?path='+encodeURIComponent(PROFILE_PATH)+'&sha='+commit+'&per_page=1');
+    requireThat(Array.isArray(history) && history.length===1 && /^[a-f0-9]{40}$/.test(history[0]?.sha));
     const file=await get('/contents/'+PROFILE_PATH+'?ref='+commit);
     requireThat(file?.encoding==='base64' && typeof file.content==='string');
     const source=JSON.parse(Buffer.from(file.content,'base64').toString('utf8'));
     requireThat(exactKeys(source,['schemaVersion','profiles']) && source.schemaVersion===1 && Array.isArray(source.profiles));
-    return {commit,profiles:source.profiles};
+    // Conservatively bind all profiles to this file's last change commit. Returning old bytes
+    // in a later commit cannot resurrect an approval, while unrelated main commits leave it valid.
+    return {commit:history[0].sha,profiles:source.profiles};
   };
+}
+export function authorityStoreOptions(env) {
+  const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+  requireThat(typeof env.SITE_ID==='string' && uuid.test(env.SITE_ID)
+    && typeof env.CARE_PROFILE_STORE_SITE_ID==='string' && uuid.test(env.CARE_PROFILE_STORE_SITE_ID)
+    && env.CARE_PROFILE_STORE_SITE_ID.toLowerCase()!==env.SITE_ID.toLowerCase()
+    && typeof env.CARE_PROFILE_STORE_TOKEN==='string' && env.CARE_PROFILE_STORE_TOKEN.length>=32);
+  return {name:'care-profile-authority-v1',siteID:env.CARE_PROFILE_STORE_SITE_ID,token:env.CARE_PROFILE_STORE_TOKEN,consistency:'strong'};
 }
 export async function productionHandlers(env=process.env) {
   // Do not even open the production store from a preview or unconfigured deploy.
   configured(env);
+  const options=authorityStoreOptions(env);
   const {getStore}=await import('@netlify/blobs');
-  const store=getStore({name:'care-profile-authority-v1',consistency:'strong'});
+  const store=getStore(options);
   return createCareProfileHandlers({env,store,readCandidates:githubCandidates({env})});
 }
 export async function routeProduction(request,route) {

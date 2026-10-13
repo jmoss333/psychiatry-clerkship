@@ -29,16 +29,17 @@ function storage() {
 }
 function harness(options = {}) {
   let profiles = [candidate()];
+  let sourceCommit='a'.repeat(40);
   const store = options.store || storage();
   const env = {CONTEXT:'production', CARE_PROFILE_OWNER_KEY:FIXTURE_OWNER_KEY,
     CARE_PROFILE_SIGNING_SECRET:FIXTURE_SIGNING_KEY, ...options.env};
   const handlers = service.createCareProfileHandlers({env, store, now: () => options.now || now,
-    readCandidates: async () => ({commit:'a'.repeat(40), profiles:structuredClone(profiles)})});
+    readCandidates: async () => ({commit:sourceCommit, profiles:structuredClone(profiles)})});
   const owner = (body, key = FIXTURE_OWNER_KEY) => handlers.approvals(new Request(origin+'/.netlify/functions/care-profile-approvals', {
     method:body ? 'POST' : 'GET', headers:{Origin:origin,'x-care-profile-owner-key':key,'Content-Type':'application/json'},
-    ...(body ? {body:JSON.stringify(body)} : {})}));
+    ...(body ? {body:JSON.stringify({expectedSourceCommit:'a'.repeat(40),...body})} : {})}));
   const status = (revision, caller = learner, extra = '') => handlers.status(new Request(origin+'/.netlify/functions/care-profile-status?profileId=fictional-unit&revision='+revision+extra,{headers:{Origin:caller}}));
-  return {store, owner, status, setProfiles: value => {profiles=value;}};
+  return {store, owner, status, setProfiles: value => {profiles=value;sourceCommit=(sourceCommit[0]==='a'?'b':'c').repeat(40);}};
 }
 async function approve(h) {
   const loaded = await (await h.owner()).json();
@@ -137,4 +138,37 @@ test('same-origin browser GET needs no Origin header, but an originless POST is 
   const url=origin+'/.netlify/functions/care-profile-approvals';
   assert.equal((await handlers.approvals(new Request(url,{headers:{'x-care-profile-owner-key':FIXTURE_OWNER_KEY}}))).status,200);
   assert.equal((await handlers.approvals(new Request(url,{method:'POST',headers:{'x-care-profile-owner-key':FIXTURE_OWNER_KEY}}))).status,403);
+});
+test('restoring old profile bytes after an intervening edit cannot revive approval',async()=>{
+  const h=harness(),approved=await approve(h),changed=candidate();changed.unitHours='Changed';
+  h.setProfiles([changed]);h.setProfiles([candidate()]);
+  assert.equal((await (await h.status(approved.revision)).json()).status,'changed');
+});
+test('owner review identifies stale approval instead of labeling changed details approved',async()=>{
+  const h=harness();await approve(h);const changed=candidate();changed.unitHours='Changed';h.setProfiles([changed]);
+  const loaded=await (await h.owner()).json();assert.equal(loaded.profiles[0].authority.status,'changed');
+});
+test('production store adapter never falls back to preview-shared site storage',()=>{
+  const env={SITE_ID:'11111111-1111-4111-8111-111111111111',CARE_PROFILE_STORE_SITE_ID:'22222222-2222-4222-8222-222222222222',CARE_PROFILE_STORE_TOKEN:'fixture-isolated-site-token-000000000000'};
+  assert.deepEqual(service.authorityStoreOptions(env),{name:'care-profile-authority-v1',siteID:env.CARE_PROFILE_STORE_SITE_ID,token:env.CARE_PROFILE_STORE_TOKEN,consistency:'strong'});
+  assert.throws(()=>service.authorityStoreOptions({}));
+  assert.throws(()=>service.authorityStoreOptions({...env,CARE_PROFILE_STORE_SITE_ID:env.SITE_ID}));
+  assert.throws(()=>service.authorityStoreOptions({...env,CARE_PROFILE_STORE_TOKEN:''}));
+});
+test('repository adapter binds the latest profile-file change rather than unrelated main changes',async()=>{
+  const paths=[],head='b'.repeat(40),pathCommit='a'.repeat(40);
+  const read=service.githubCandidates({env:{GITHUB_TOKEN:'fixture-read-token'},fetchImpl:async(url,init)=>{
+    paths.push(url);assert.equal(init.method,undefined);assert.equal(init.cache,'no-store');
+    if(url.includes('/git/ref/'))return new Response(JSON.stringify({object:{sha:head}}));
+    if(url.includes('/commits?'))return new Response(JSON.stringify([{sha:pathCommit}]));
+    return new Response(JSON.stringify({encoding:'base64',content:Buffer.from(JSON.stringify({schemaVersion:1,profiles:[candidate()]})).toString('base64')}));
+  }});
+  const data=await read();assert.equal(data.commit,pathCommit);assert.equal(data.profiles[0].id,'fictional-unit');
+  assert.ok(paths[1].includes('sha='+head));assert.ok(paths[1].includes('per_page=1'));assert.ok(paths[2].endsWith('ref='+head));
+});
+test('restoring bytes between review and approval requires a fresh source-version review',async()=>{
+  const h=harness(),loaded=await (await h.owner()).json(),row=loaded.profiles[0];
+  h.setProfiles([]);h.setProfiles([candidate()]);
+  const response=await h.owner({action:'approve',profileId:row.profile.id,revision:row.revision,expectedVersion:null,expectedSourceCommit:row.sourceCommit});
+  assert.equal(response.status,409);assert.equal(h.store.writes.length,0);
 });

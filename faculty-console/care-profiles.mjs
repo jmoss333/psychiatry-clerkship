@@ -16,7 +16,7 @@ export function createOwnerReview({fetchImpl=globalThis.fetch,storage,onChange=(
   async function load(){
     const run=++generation;Object.assign(state,{busy:true,profiles:null,notice:''});publish();
     try{const data=await request('GET');if(run!==generation)return;
-      if(data.approver!==APPROVER || !Array.isArray(data.profiles) || data.profiles.some(r=>!r.profile?.id || !/^[a-f0-9]{64}$/.test(r.revision) || !r.authority))throw Error('The review response is incomplete. Reload before deciding.');
+      if(data.approver!==APPROVER || !Array.isArray(data.profiles) || data.profiles.some(r=>!r.profile?.id || !/^[a-f0-9]{64}$/.test(r.revision) || !/^[a-f0-9]{40}$/.test(r.sourceCommit) || !r.authority))throw Error('The review response is incomplete. Reload before deciding.');
       state.profiles=data.profiles;
       if(!data.profiles.length)state.notice='No unit profiles are set up. Nothing has been approved.';
     }catch(error){if(run===generation)state.notice=error.message;}
@@ -28,7 +28,7 @@ export function createOwnerReview({fetchImpl=globalThis.fetch,storage,onChange=(
     if(state.busy || !row || !['approve','suspend','revoke'].includes(action) || action==='approve' && reviewed!==true)throw Error('Review this exact profile before approving.');
     if(action!=='approve' && !row.authority.version)throw Error('There is no approval to withdraw.');
     const revision=action==='approve'?row.revision:row.authority.revision;
-    const body={action,profileId:id,revision,expectedVersion:row.authority.version};
+    const body={action,profileId:id,revision,expectedVersion:row.authority.version,expectedSourceCommit:row.sourceCommit};
     const run=++generation;Object.assign(state,{busy:true,profiles:null,notice:''});publish();
     try{const saved=await request('POST',body);if(run!==generation)return;
       const expected=action==='approve'?'approved':action==='suspend'?'suspended':'revoked';
@@ -64,6 +64,7 @@ export function mountOwnerReview(document,storage,fetchImpl=globalThis.fetch){
     for(const row of state.profiles||[]){
       const section=el('section'),check=el('input',null,{type:'checkbox',id:'review-'+row.profile.id});
       section.append(el('h2',row.profile.label),el('p','Saved status: '+row.authority.status),el('p','Expires at the start of '+row.expiresOn+' in America/New_York.'),data(row.profile),el('p','Exact revision: '+row.revision,{class:'revision'}));
+      if(row.authority.revision && row.authority.revision!==row.revision)section.append(el('p','Previous approval covered a different revision: '+row.authority.revision,{class:'revision'}));
       const label=el('label',null,{for:check.id||'review-'+row.profile.id});label.append(check,el('span',' I reviewed these exact details and the actual verification records, including any callback and branding claims.'));
       const approve=el('button','Approve exact version',{type:'button'});approve.disabled=true;check.addEventListener('change',()=>{approve.disabled=!check.checked;});
       approve.addEventListener('click',()=>void client.decide(row.profile.id,'approve',check.checked));section.append(label,approve);
