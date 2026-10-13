@@ -1252,6 +1252,29 @@ class TestPreviewHeaders(unittest.TestCase):
         self.assertLess(copytree_at, apply_at)
 
 
+class DraftTreesFlagTest(unittest.TestCase):
+    """Safety-drawer draft trees render only on a deploy preview (2026-10-10 spec §4.7)."""
+    SHELL = "a\nvar FD_DRAFT_TREES=false;\nb"
+
+    def test_a_deploy_preview_turns_the_flag_on(self):
+        self.assertIn("var FD_DRAFT_TREES=true;",
+                      common.apply_draft_trees_flag(self.SHELL, "deploy-preview"))
+
+    def test_production_and_branch_deploys_stay_byte_identical(self):
+        for context in ("production", "branch-deploy", "dev", ""):
+            self.assertEqual(common.apply_draft_trees_flag(self.SHELL, context), self.SHELL, context)
+
+    def test_a_missing_or_duplicated_needle_fails_the_build(self):
+        for text in ("no needle here", self.SHELL + self.SHELL):
+            with self.assertRaises(ValueError):
+                common.apply_draft_trees_flag(text, "production")
+
+    def test_the_real_shell_carries_the_needle_exactly_once(self):
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spa_index.html")
+        with open(path, encoding="utf-8") as fh:
+            self.assertEqual(fh.read().count(common.DRAFT_TREES_NEEDLE), 1)
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

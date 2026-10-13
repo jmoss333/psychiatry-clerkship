@@ -19,7 +19,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // +1 (2026-09-23): Fixed-choice Care navigator (fd_care_navigator.js).
 // +1 (2026-09-23): Patient resource pack renderer (fd_care_pack.js).
 // +1 (2026-09-23): Verified offline readiness model (fd_offline.js).
-const EXPECTED_MARKER_COUNT = 41; // +1 2026-10-12: /*__FD_CARE_SEARCH__*/
+const EXPECTED_MARKER_COUNT = 42; // +1 2026-10-10: /*__FD_TREE__*/ (safety decision trees); +1 2026-10-12: /*__FD_CARE_SEARCH__*/
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(
