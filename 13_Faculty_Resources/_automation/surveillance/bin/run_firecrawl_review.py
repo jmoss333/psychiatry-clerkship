@@ -21,6 +21,9 @@ def atomic_json(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(value, ensure_ascii=False, indent=2) + '\n'
     if len(text.encode()) > 8_000_000:
+        # Keep every record and the existing byte cap; discard indentation only.
+        text = json.dumps(value, ensure_ascii=False, separators=(',', ':')) + '\n'
+    if len(text.encode()) > 8_000_000:
         raise ValueError('Evidence inbox exceeds supported size; retain existing state and review storage')
     temp = path.with_suffix('.tmp')
     temp.write_text(text)
