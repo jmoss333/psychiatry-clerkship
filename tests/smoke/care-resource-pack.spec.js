@@ -1,3 +1,5 @@
+import { enablePatientSharing, enablePatientSharingHtml } from './care-patient-sharing-fixture.js';
+import { pinCareDirectory } from './care-directory-fixture.js';
 import { test, expect } from '@playwright/test';
 import { isResidentProject } from './audience.js';
 
@@ -59,6 +61,8 @@ async function expectHealthy(page) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await pinCareDirectory(page);
+  await enablePatientSharing(page);
   const errors = [];
   runtimeErrors.set(page, errors);
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
@@ -177,7 +181,7 @@ test('fails closed when the governed crisis template is unavailable', async ({ p
   await seedCare(page, testInfo);
   await page.route(url => url.pathname === '/' && url.search === '?tab=care', async route => {
     const response = await route.fetch();
-    const html = await response.text();
+    const html = enablePatientSharingHtml(await response.text());
     const crisisTemplate = /<template id="fdCrisisTemplate">[\s\S]*?<\/template>/;
     expect(html).toMatch(crisisTemplate);
     await route.fulfill({
@@ -213,7 +217,7 @@ test('native print without governed crisis content keeps failure UI and omits th
   await seedCare(page, testInfo);
   await page.route(url => url.pathname === '/' && url.search === '?tab=care', async route => {
     const response = await route.fetch();
-    const html = await response.text();
+    const html = enablePatientSharingHtml(await response.text());
     const crisisTemplate = /<template id="fdCrisisTemplate">[\s\S]*?<\/template>/;
     expect(html).toMatch(crisisTemplate);
     await route.fulfill({ response,

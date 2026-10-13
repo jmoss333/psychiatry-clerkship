@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { LANDING, TODAY_TAB } from './landing.js';
 
 // Ward question capture: the phone dock and desktop global launcher give every learner route
 // one visible way to open the same device-local dialog. Today also owns the triage card.
@@ -273,7 +274,10 @@ test('Today capture clears a prior Reader context without corrupting the learner
   await expect(page.locator('.fd-article')).toBeVisible();
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cw_last'))).toBe('orientation.md');
 
+  // Home is the landing (FD_LANDING_VIEW); the capture under test is Today's, one tap on.
   await page.locator('[data-fd-home]').first().click();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  await page.locator(TODAY_TAB).first().click();
   await expect(page.locator('.fd-today')).toBeVisible();
   await captureLauncher(page).click();
   await page.locator('#capText').fill('what should I review after rounds');
