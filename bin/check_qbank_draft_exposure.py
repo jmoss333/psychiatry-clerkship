@@ -44,7 +44,7 @@ not pretend any flag is cleared, it stops the number rising unnoticed.
   WARN  a listed id that is no longer open              (stale: cleared, retired or gone)
   WARN  fewer open items than the bank's cap            (names the number to lower CAPS to)
 
-WHY A STALE ENTRY WARNS HERE, when check_citation_attribution.py's stale entry FAILS. The
+WHY A STALE ENTRY WARNS HERE (check_citation_attribution.py adopted the same rule on 2026-10-07). The
 allowlist lives in bin/, a governance path; the banks are content (shipped extraSources).
 bin/check_governance_separation.py L1 forbids both in one diff. If a stale entry failed, the
 content PR that clears an item's flag would fail this gate; adding the allowlist deletion to that

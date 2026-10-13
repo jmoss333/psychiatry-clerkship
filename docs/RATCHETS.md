@@ -39,14 +39,18 @@ script rather than in the JSON. Three departures, each for a reason:
 - **Entries are named, not counted.** A count cannot see one flagged row replaced by a
   different one (the "Known limitation" below). A named list can: every entry carries the
   citation verbatim, a written reason, who decided and when.
-- **A stale entry FAILS.** Entries are keyed by a hash of the citation's own text, so fixing or
-  editing the citation retires its entry, and the gate then fails until the dead entry is
-  deleted. Without that half, a capped list fills with grandfather clauses for citations that
-  no longer exist and the cap stops bounding anything real.
+- **A stale entry WARNS, every run, until deleted** (it FAILED until 2026-10-07). Entries are
+  keyed by a hash of the citation's own text, so fixing or editing the citation retires its
+  entry, and the gate names the dead entry until a follow-up governance PR deletes it; it keeps
+  occupying a cap slot meanwhile. It warns rather than fails because the entries name content
+  pages and L1 keeps `bin/` out of a content PR — a FAIL left no legal merge path (the deadlock
+  #982 and #991 fixed for their own allowlists). Without the report, a capped list fills with
+  grandfather clauses for citations that no longer exist and the cap stops bounding anything real.
 
 Run `python3 bin/check_citation_attribution.py --self-test` to falsify it: the four failure
 classes (no identifier; an identifier on a different paper; an addition past the cap; a stale
-entry) each have a case, and the last assertion runs the live tree against the committed cap.
+entry, which warns) each have a case, plus end-to-end exit codes for stale / unlisted / swap /
+over-cap, and the last assertion runs the live tree against the committed cap.
 | `bin/check_editorial_leaks.py` | `bin/editorial_leaks_baseline.json` | `leaks` (16 at 2026-09-24: the three pasted-instruction audio-quiz items, both deck copies; 0 since 2026-09-25, after WP-3 #772 removed them) | could-not-check is exit 2: a required registry missing or unparsable, a listed shipped source missing, no pack, nothing examined |
 | `bin/check_qbank_length_cue.py` | `bin/qbank_length_cue_baseline.json` | `attested_uniquely_longest` (125 of 134), `live_uniquely_longest` (155 of 189) — items whose keyed option is the uniquely longest (WP-7) | none; the flagged ids it prints are the rewrite work list. Report-only lines for `topic_meta.json` quizzes and the practice-case JSONs never move the exit |
 | `bin/qbank_blueprint_report.py` | `bin/qbank_blueprint_baseline.json` — **not shipped yet** | points outside the NBME/COMAT band, per dimension, over the attested pool (WP-8) | any untagged attested item exits 2 (PARTIAL), so only `--self-test` is in `verify.sh` until tagging is complete |

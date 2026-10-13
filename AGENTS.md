@@ -157,7 +157,9 @@ the container when the Bash 5 environment is part of the evidence.
   `## References` heading in curriculum markdown (270 today, 267 with an identifier). The three
   that have none are grandfathered by name in `bin/citation_identifier_allowlist.json`, **capped
   at 3 by `ALLOWLIST_CAP` in the script**; the list may only shrink, and an entry whose citation
-  no longer reproduces fails as **stale** until deleted. Comparison runs against the committed
+  no longer reproduces is reported as **stale** (WARN, exit 0 — since 2026-10-07, the #982
+  deadlock fix: those entries name content pages, and L1 keeps `bin/` out of a content PR) on
+  every run until a follow-up governance PR deletes it. Comparison runs against the committed
   cache `bin/data/citation_attribution_cache.json` and **touches no network** — refresh it
   deliberately with `bin/refresh_citation_attribution_cache.py`, never from CI. Option B
   (search-and-judge) is `bin/audit_citation_allowlist.py`, a weekly sweep in
