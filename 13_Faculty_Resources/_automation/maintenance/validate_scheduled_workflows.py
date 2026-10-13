@@ -448,7 +448,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "5c11d5859d727ef0ea51fee37bbb51938df6ad5f1d0b7f77032c82a102a8edb4"
     ),
-    "ci.yml": "2dde7c5fe439c4651499356393818f3a9da6d5af24283cd9464133058ee3e645",
+    "ci.yml": "6f9c9228639e0f9aa37267661c879432e00a17a50f9e5eba313853f4fc5d7fc7",
     "maintenance-governance-digest.yml": (
         "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
     ),
@@ -637,6 +637,7 @@ CRITICAL_STEPS = {
                 'echo "::error::no base sha"; exit 2; fi\n'
                 "python3 bin/check_governance_separation.py "
                 '--base "$BASE_SHA" --head HEAD --head-branch "$HEAD_BRANCH"\n'
+                'python3 bin/check_deck_card_stability.py --base "$BASE_SHA"\n'
                 'if [ "$HEAD_BRANCH" = "attest/pending" ]; then\n'
                 "  python3 bin/check_attestation_hashes.py --strict "
                 '--base "$BASE_SHA"\n'
