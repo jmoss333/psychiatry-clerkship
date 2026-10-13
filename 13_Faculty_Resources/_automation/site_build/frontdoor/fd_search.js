@@ -297,6 +297,10 @@ function fdSearchResults(index, query, synonyms, state){
   var qw=[];
   for(var e=0;e<expandedWords.length;e++){ if(expandedWords[e]) qw.push(expandedWords[e]); }
   var contentWords=fdSearchContentWords(qw);
+  /* Share punctuation boundaries between reading discovery and literal safety triggers.
+     Resource filenames stay literal: splitting their shared .md/.html extension would
+     match almost the whole library, even when the requested filename does not exist. */
+  var readingQuery=/\.(md|html)\b/.test(rawQuery)?rawQuery:fdSearchNormalize(rawQuery);
 
   /* Two ways into the safety kit, both deliberate.
 
@@ -333,6 +337,18 @@ function fdSearchResults(index, query, synonyms, state){
       }
     }
   }
+  /* Additional separator recovery may expose an authored abbreviation (patient-si) or
+     phrase (refuses-medication). Its expansion is discovery evidence, not a new crisis
+     trigger: keep the curated capacity alias ahead of the consult sheet it also finds. */
+  var recoveredSafetyWords=[], readingPadded=' '+readingQuery+' ';
+  if(readingQuery!==normalizedQuery){
+    for(var recoveredKey in safetySynonyms){
+      if(readingPadded.indexOf(' '+recoveredKey+' ')!==-1&&
+         normalizedPadded.indexOf(' '+recoveredKey+' ')===-1){
+        recoveredSafetyWords=recoveredSafetyWords.concat(fdSearchContentWords(safetySynonyms[recoveredKey].split(/\s+/)));
+      }
+    }
+  }
   /* Two tiers of protocol row, both placed by position rather than by score. Route (1) -- the
      explicit trigger vocabulary and the punctuation-recovered safety synonyms -- is the crisis
      contract and always comes first. Route (2), an ordinary haystack match on a content word, is
@@ -347,9 +363,11 @@ function fdSearchResults(index, query, synonyms, state){
     var kitItem=kit[kk].item;
     var triggered=fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
        fdSearchTriggerHit(kit[kk].triggers, ' '+normalizedQuery+' ')||
+       fdSearchTriggerHit(kit[kk].triggers, ' '+readingQuery+' ')||
        fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords, true);
     /* loose: see fdSearchWordIn. Protocol rows keep the pre-2026-09-24 substring test. */
-    var byHaystack=fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords, true);
+    var byHaystack=fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords, true)||
+       fdSearchHits(fdSearchHaystack(kitItem), '', recoveredSafetyWords, true);
     if(triggered){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
@@ -373,11 +391,8 @@ function fdSearchResults(index, query, synonyms, state){
   refs.sort(function(a,b){ return a<b?-1:(a>b?1:0); });
 
   /* Reading discovery also sees punctuation-separated words. Keep the original query's
-     matches and score for compound names; neither this query nor its expanded words feed
-     the protocol pass above, whose safety evidence and ordering remain unchanged. */
-  /* Resource filenames stay literal: splitting their shared .md/.html extension would
-     match almost the whole library, even when the requested filename does not exist. */
-  var readingQuery=/\.(md|html)\b/.test(rawQuery)?rawQuery:fdSearchNormalize(rawQuery);
+     matches and score for compound names. Only literal phrases can recover an authored
+     safety trigger above; these expanded words never feed the protocol haystack. */
   var readingWords=fdSearchContentWords(fdExpandQuery(readingQuery, synonyms).split(/\s+/));
   var itemResults=[];
   for(var r=0;r<refs.length;r++){
@@ -414,7 +429,8 @@ function fdSearchResults(index, query, synonyms, state){
      before the Consult Questions sheet whose title merely contains the word. Trigger-matched
      protocols stay in kit order -- that block is the crisis contract and is never reordered. */
   for(var hp=0;hp<hayProtocols.length;hp++){
-    hayProtocols[hp]._score=fdSearchScore(hayProtocols[hp].item, rawQuery, contentWords, true);
+    hayProtocols[hp]._score=Math.max(fdSearchScore(hayProtocols[hp].item, rawQuery, contentWords, true),
+      fdSearchScore(hayProtocols[hp].item, '', recoveredSafetyWords, true));
   }
   hayProtocols.sort(function(a,b){
     return (b._score-a._score) ||

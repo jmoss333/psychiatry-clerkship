@@ -4134,6 +4134,22 @@ for (const [device, viewport] of [['phone', PHONE], ['desktop', DESKTOP]]) {
     const dialog = page.getByRole('dialog', { name: 'Search' });
     const input = dialog.getByRole('textbox', { name: 'Search resources' });
     for (const [query, ref] of [
+      ['patient-suicidal', 'pg_suicide.md'],
+      ['lithium suicide-risk', 'pg_suicide.md'],
+      ['Ativan alcohol-withdrawal', 't_sud.md'],
+      ['Ativan pulled-out-iv', 'agitation.md'],
+      ['CIWA-Ar', 't_sud.md'],
+      ['patient-si', 'pg_suicide.md'],
+    ]) {
+      await input.fill(query);
+      await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', ref);
+      await expect(dialog.locator(`[data-fd-safety="${ref}"]`)).toHaveCount(1);
+      await expect(dialog.locator(`[data-fd-open="${ref}"]`)).toHaveCount(0);
+    }
+    await input.fill('patient-refuses-medication');
+    await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 'capacity.html');
+    await expect(dialog.locator('[data-fd-safety="exp_consult.md"]')).toBeVisible();
+    for (const [query, ref] of [
       ['Ativan catatonia?', 'catatonia.md'],
       ['lorazepam (catatonia)', 'catatonia.md'],
       ['lithium/monitoring', 'med_monitoring.md'],

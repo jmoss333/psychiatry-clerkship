@@ -112,6 +112,58 @@ for (const site of ['ms3','res']) {
       if(protocols.length) assert.equal(rows[0].item.ref,protocols[0],query);
     }
   });
+  test(`${site}: punctuation-separated explicit safety phrases lead with their protocols`,()=>{
+    for (const [phrase, protocols] of [
+      ['patient suicidal', ['pg_suicide.md']],
+      ['suicide risk', ['pg_suicide.md']],
+      ['alcohol withdrawal', ['t_sud.md']],
+      ['i want to kill myself', ['pg_suicide.md']],
+      ['pulled out iv', ['agitation.md','delirium.md']],
+      ['out of control', ['agitation.md']],
+      ['against medical advice', ['exp_consult.md']],
+      ['altered mental status', ['delirium.md']],
+    ]) for (const separator of ['-', '/', '—', '_', "'"]) for (const prefix of ['', 'Ativan ']) {
+      const query=prefix+phrase.split(' ').join(separator), rows=results(query);
+      assert.deepEqual(rows.slice(0,protocols.length).map(r=>[r.item.ref,r.kind]),
+        protocols.map(ref=>[ref,'protocol']),query);
+      assert.equal(new Set(rows.map(r=>r.item.ref)).size,rows.length,query);
+    }
+    // The authored CIWA trigger should work with the instrument's hyphen too.
+    assert.equal(results('CIWA-Ar')[0].item.ref,'t_sud.md');
+    assert.equal(results('CIWA-Ar')[0].kind,'protocol');
+    assert.ok(results('CIWA-Ar').slice(0,3).some(r=>r.item.ref==='withdrawal.html'));
+    // Exercise the authored inventory too, so a future trigger joins this guard automatically.
+    for (const kit of p.curriculum.safetyKit) for (const phrase of kit.triggers) {
+      for (const separator of ['-', '/', '—', '_', "'"]) {
+        const query='Ativan '+phrase.replace(/[ -]/g,separator), rows=results(query);
+        const rank=rows.findIndex(r=>r.kind==='protocol'&&r.item.ref===kit.ref);
+        const firstItem=rows.findIndex(r=>r.kind!=='protocol');
+        assert.ok(rank>=0&&(firstItem<0||rank<firstItem),`${query}: ${kit.ref}`);
+      }
+    }
+  });
+  test(`${site}: punctuation recovery does not turn fragments or metadata into safety evidence`,()=>{
+    for (const query of ['diet-and-nutrition','min-dose','Sep-7','oxidation-risk',
+      'suicidalx','alcohol-withdrawalx']) {
+      assert.deepEqual(results(query).filter(r=>r.kind==='protocol'),[],query);
+    }
+  });
+  test(`${site}: punctuated authored abbreviations recover safety rows without displacing specific aliases`,()=>{
+    for (const [phrase, protocol] of [
+      ['patient si','pg_suicide.md'], ['patient hi','pg_suicide.md'],
+      ['patient etoh','t_sud.md'], ['patient ams','delirium.md'],
+    ]) for (const separator of ['-', '/', '—', '_', "'"]) {
+      const query=phrase.split(' ').join(separator), rows=results(query);
+      assert.equal(rows[0].kind,'protocol',query);
+      const rank=rows.findIndex(r=>r.item.ref===protocol&&r.kind==='protocol');
+      assert.ok(rank>=0&&rank<3,query);
+      assert.equal(rows.filter(r=>r.item.ref===protocol).length,1,query);
+    }
+    for (const query of ['patient-refuses-medication','refuses-medication']) {
+      assert.deepEqual(results(query).slice(0,2).map(r=>[r.item.ref,r.kind]),
+        [['capacity.html','item'],['exp_consult.md','protocol']],query);
+    }
+  });
   test(`${site}: medication vocabulary preserves all existing protocol matches and their order`,()=>{
     const phrases=['i want to kill myself','withdrawing from alcohol','confused at night',
       'violent','suicidal','overdose','catatonia','fever and rigidity'];
