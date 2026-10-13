@@ -26,7 +26,14 @@ with tempfile.TemporaryDirectory() as folder:
  assert any(c['fieldPath'].endswith('/trap/note') for c in packet['candidates'])
  assert packet['readings'] and packet['questionSnapshots']
  again=run('again');assert again.returncode==0,again.stderr
- assert len(json.loads(state.read_text())['packets'])==1
+ saved=json.loads(state.read_text())
+ assert saved['packets']==[packet]
+ assert 'storageCapacity' not in saved
+ receipt=json.loads((root/'again/receipt.json').read_text())
+ assert receipt['status']=='complete'
+ assert receipt['storageCapacity']['usedBytes']==state.stat().st_size
+ assert receipt['storageCapacity']['remainingBytes']==8_000_000-state.stat().st_size
+ assert 'Evidence storage:' in (root/'again/faculty-brief.md').read_text()
 `],{encoding:'utf8'});assert.equal(r.status,0,r.stdout+r.stderr);
 });
 
