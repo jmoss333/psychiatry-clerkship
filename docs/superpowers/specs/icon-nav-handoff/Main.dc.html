@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Icons and wayfinding overview</title>
+<script src="./support.js"></script>
+<script src="icons/wf-icons.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.th{--bg:#f6f3ee;--surface:#ffffff;--text:#3b332c;--mid:#64574b;--dim:#76695d;--teal:#3a7d6e;--tealdeep:#2c6356;--wash:#edf4f2;--olive:#8b7040;--danger:#a34132;--dwash:#fbefec;--terra:#a9634b;--line:#ebe5da;--line2:#ddd3c6}
+.th.dark{--bg:#211d1a;--surface:#2a2521;--text:#ece5db;--mid:#bcb0a2;--dim:#a2968a;--teal:#5fa392;--tealdeep:#7fc0ae;--wash:#1d332e;--olive:#c0a06a;--danger:#d97a68;--dwash:#3a231f;--terra:#d08a6f;--line:#3a332c;--line2:#4a4139}
+.ic{display:block;flex:none;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.s14{width:14px;height:14px;stroke-width:2.1}.s16{width:16px;height:16px;stroke-width:2}.s18{width:18px;height:18px;stroke-width:1.8}.s22{width:22px;height:22px;stroke-width:1.6}.s24{width:24px;height:24px;stroke-width:1.5}.s32{width:32px;height:32px;stroke-width:1.4}
+.bold{stroke-width:3.2}
+a{color:#2c6356}a:hover{color:#3a7d6e}
+td,th{text-align:left;vertical-align:top}
+</style>
+</helmet>
+<div class="th {{theme}}" style="width: 1440px; min-height: 2900px; box-sizing: border-box; padding: 96px 120px; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.55; display: flex; flex-direction: column; gap: 72px;">
+
+  <header style="display: flex; flex-direction: column; gap: 16px; max-width: 920px;">
+    <div style="font-size: 14px; color: var(--mid);">Icon and wayfinding layer · two sites · October 2026</div>
+    <h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 56px; line-height: 1.08; letter-spacing: -0.01em;">One quiet icon language for two calm sites</h1>
+    <p style="margin: 0; font-size: 19px; color: var(--mid); max-width: 820px;">A reviewer asked for icons and graphic cues that define the sections and make navigation more intuitive. We treat that as a wayfinding problem. Layout, type, copy and colour stay as shipped. We add one vendored set of line icons, a few "you are here" cues and two layout fixes.</p>
+  </header>
+
+  <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;">
+    <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 28px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; gap: 10px; color: var(--tealdeep);"><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.library}}"></path></svg><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.reading}}"></path></svg><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.deck}}"></path></svg></div>
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 24px; font-weight: 600;">1 · Tell sections apart</h2>
+      <p style="margin: 0; color: var(--mid);">Each section and content type gets one icon, always with its visible text label. On Site A, a flashcard deck no longer looks the same as a reading.</p>
+    </div>
+    <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 28px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; gap: 10px; color: var(--tealdeep);"><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.chevronLeft}}"></path></svg><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.evidence}}"></path></svg></div>
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 24px; font-weight: 600;">2 · Know where you are</h2>
+      <p style="margin: 0; color: var(--mid);">The active dock or tab item is shown in teal-deep with a wash pill. Pages get a kicker naming their section: "‹ Library · Evidence &amp; exam" on Site A, "‹ Explore tools · Exercises" on Site B.</p>
+    </div>
+    <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 28px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; gap: 10px; color: var(--tealdeep);"><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.chevronRight}}"></path></svg><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.external}}"></path></svg></div>
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 24px; font-weight: 600;">3 · Predict a tap</h2>
+      <p style="margin: 0; color: var(--mid);">Two trailing marks, used consistently: a chevron means the item opens here, and the external-link icon (with an accessible name) means it opens in a new tab or another site. The whole card becomes the tap target.</p>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 34px; font-weight: 700;">Icon set: Lucide, vendored into one registry for both sites</h2>
+      <p style="margin: 0; color: var(--mid); max-width: 900px;">Judged on five criteria: match to rc-icons (24 grid, ~1.8 stroke, round caps), coverage of the two maps, calm tone, licence, and subset size. rc-icons' search, arrow and close glyphs already use Lucide geometry, so Lucide extends the house style rather than replacing it.</p>
+    </div>
+    <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background: var(--bg); color: var(--mid);">
+            <th style="padding: 14px 18px; font-weight: 600; width: 150px;">Set</th>
+            <th style="padding: 14px 18px; font-weight: 600;">Grid · stroke · caps</th>
+            <th style="padding: 14px 18px; font-weight: 600;">Match to rc-icons</th>
+            <th style="padding: 14px 18px; font-weight: 600;">Coverage of the maps</th>
+            <th style="padding: 14px 18px; font-weight: 600;">Tone</th>
+            <th style="padding: 14px 18px; font-weight: 600; width: 110px;">Licence</th>
+            <th style="padding: 14px 18px; font-weight: 600; width: 150px;">Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top: 1px solid var(--line); background: var(--wash);">
+            <td style="padding: 16px 18px; font-weight: 600;">Lucide</td>
+            <td style="padding: 16px 18px; color: var(--mid);">24 · 2 (re-set per size) · round caps and joins</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Closest. Same construction; several rc-icons glyphs are already Lucide paths.</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Has every glyph on both maps, including hand-heart, life-buoy, wallet-cards, door-open, signpost and footprints.</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Soft, low detail, rounded terminals</td>
+            <td style="padding: 16px 18px; color: var(--mid);">ISC</td>
+            <td style="padding: 16px 18px; font-weight: 600; color: var(--tealdeep);">Recommend, as the source for both sites</td>
+          </tr>
+          <tr style="border-top: 1px solid var(--line);">
+            <td style="padding: 16px 18px; font-weight: 600;">Tabler</td>
+            <td style="padding: 16px 18px; color: var(--mid);">24 · 2 · round caps</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Close but more geometric. Many glyphs are drawn for stroke 2 and look crowded at 16 px with a thinner stroke.</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Very broad; every concept is covered.</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Neutral, slightly technical</td>
+            <td style="padding: 16px 18px; color: var(--mid);">MIT</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Runner-up</td>
+          </tr>
+          <tr style="border-top: 1px solid var(--line);">
+            <td style="padding: 16px 18px; font-weight: 600;">Phosphor</td>
+            <td style="padding: 16px 18px; color: var(--mid);">256 grid · six weights</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Different grid. Paths must be rescaled before they can sit beside rc-icons glyphs.</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Broad, with a few naming gaps against the maps.</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Warm, more app-like</td>
+            <td style="padding: 16px 18px; color: var(--mid);">MIT</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Not chosen: grid mismatch</td>
+          </tr>
+          <tr style="border-top: 1px solid var(--line);">
+            <td style="padding: 16px 18px; font-weight: 600;">Extend rc-icons by hand</td>
+            <td style="padding: 16px 18px; color: var(--mid);">24 · 1.8 · round</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Perfect by definition.</td>
+            <td style="padding: 16px 18px; color: var(--mid);">About 30 missing glyphs (route, hand-heart, wallet-cards, layers, life-buoy, door-open, signpost…), each needing drawing and review.</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Matches</td>
+            <td style="padding: 16px 18px; color: var(--mid);">In-house</td>
+            <td style="padding: 16px 18px; color: var(--mid);">Keep rc-icons as the home; take the new glyphs from Lucide</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;">
+      <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px 28px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-weight: 600;">Same weight at 18 px: rc-icons today, then the proposed subset</div>
+        <div style="display: flex; align-items: center; gap: 28px; color: var(--mid);">
+          <svg class="ic s24" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.search}}"></path></svg>
+          <svg class="ic s24" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.toolbox}}"></path></svg>
+          <svg class="ic s24" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.recovery}}"></path></svg>
+          <span style="width: 1px; height: 28px; background: var(--line2);"></span>
+          <svg class="ic s24" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.today}}"></path></svg>
+          <svg class="ic s24" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.path}}"></path></svg>
+          <svg class="ic s24" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.care}}"></path></svg>
+          <svg class="ic s24" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.discharge}}"></path></svg>
+          <svg class="ic s24" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.aftercare}}"></path></svg>
+        </div>
+        <div style="font-size: 13px; color: var(--dim);">Left of the rule: rc-icons search, star, sprout (kept as is). Right: Lucide sun, route, hand-heart, door-open, signpost.</div>
+      </div>
+      <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px 28px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="font-weight: 600;">Patient crisis glyph: triangle out, life-buoy in</div>
+        <div style="display: flex; align-items: center; gap: 28px;">
+          <div style="display: flex; align-items: center; gap: 10px; color: var(--dim);"><svg class="ic s32" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.crisisOld}}"></path></svg><span style="font-size: 13px; text-decoration: line-through;">alarm</span></div>
+          <svg class="ic s24" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--dim);"><path d="{{i.arrowRight}}"></path></svg>
+          <div style="display: flex; align-items: center; gap: 10px; color: var(--danger);"><svg class="ic s32" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.crisis}}"></path></svg><span style="font-size: 13px;">support, still red</span></div>
+        </div>
+        <div style="font-size: 13px; color: var(--dim);">The life-buoy reads as "help is here", not "danger". Red stays reserved for safety. The triangle remains available for clinician-only alerts.</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 20px;">
+    <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 34px; font-weight: 700;">Graphic cues, ranked by navigation impact</h2>
+    <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background: var(--bg); color: var(--mid);">
+            <th style="padding: 12px 18px; font-weight: 600; width: 40px;">#</th>
+            <th style="padding: 12px 18px; font-weight: 600;">Cue</th>
+            <th style="padding: 12px 18px; font-weight: 600; width: 90px;">Site</th>
+            <th style="padding: 12px 18px; font-weight: 600; width: 190px;">Answers</th>
+            <th style="padding: 12px 18px; font-weight: 600; width: 230px;">Baseline cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">1</td><td style="padding: 12px 18px;">Icons on the phone dock / bottom tabs and desktop tabs (icon above label on phone, beside on desktop)</td><td style="padding: 12px 18px; color: var(--mid);">A + B</td><td style="padding: 12px 18px; color: var(--mid);">Apart · where</td><td style="padding: 12px 18px; color: var(--mid);">Every page (one re-baseline, shell PR)</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">2</td><td style="padding: 12px 18px;">Content-type icon column on Library rows, plus a corrected type word in the meta line</td><td style="padding: 12px 18px; color: var(--mid);">A</td><td style="padding: 12px 18px; color: var(--mid);">Apart · predict</td><td style="padding: 12px 18px; color: var(--mid);">Library only</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">3</td><td style="padding: 12px 18px;">Explore "All": crisis tools pinned in a calm band; category group headings; whole-card target; "Open in new tab ↗" reduced to a small icon</td><td style="padding: 12px 18px; color: var(--mid);">B</td><td style="padding: 12px 18px; color: var(--mid);">Apart · predict</td><td style="padding: 12px 18px; color: var(--mid);">Explore only</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">4</td><td style="padding: 12px 18px;">"You are here" kicker: Reader "‹ Library · Evidence &amp; exam"; tool header "‹ Explore tools · Exercises"</td><td style="padding: 12px 18px; color: var(--mid);">A + B</td><td style="padding: 12px 18px; color: var(--mid);">Where</td><td style="padding: 12px 18px; color: var(--mid);">Reader; about 80 tool headers (shared header file)</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">5</td><td style="padding: 12px 18px;">Phone filters for Site B: one scrolling row of category chips, with audience behind a "Showing: Everyone" button that opens a sheet</td><td style="padding: 12px 18px; color: var(--mid);">B</td><td style="padding: 12px 18px; color: var(--mid);">Predict (content above fold)</td><td style="padding: 12px 18px; color: var(--mid);">Explore phone</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">6</td><td style="padding: 12px 18px;">Home intent cards: icon plus a distinct subtitle each (proposed copy)</td><td style="padding: 12px 18px; color: var(--mid);">B</td><td style="padding: 12px 18px; color: var(--mid);">Apart</td><td style="padding: 12px 18px; color: var(--mid);">Home only</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">7</td><td style="padding: 12px 18px;">Section icons in the Library index (desktop sidebar and phone chips)</td><td style="padding: 12px 18px; color: var(--mid);">A</td><td style="padding: 12px 18px; color: var(--mid);">Apart</td><td style="padding: 12px 18px; color: var(--mid);">Ships with #2</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">8</td><td style="padding: 12px 18px;">Shared stepper for Site B multi-step tools; small optional line-art empty states</td><td style="padding: 12px 18px; color: var(--mid);">B (A empty states)</td><td style="padding: 12px 18px; color: var(--mid);">Where</td><td style="padding: 12px 18px; color: var(--mid);">Per tool; later</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin: 0; color: var(--mid);">Section colour stays off on Site A. On Site B, card spines and left rules are not used: category colour already appears on the badge, and the icon now carries the identity.</p>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 20px;">
+    <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 34px; font-weight: 700;">Owner decisions, each with a recommendation</h2>
+    <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background: var(--bg); color: var(--mid);">
+            <th style="padding: 12px 18px; font-weight: 600; width: 40px;">#</th>
+            <th style="padding: 12px 18px; font-weight: 600; width: 300px;">Decision</th>
+            <th style="padding: 12px 18px; font-weight: 600;">Recommendation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">1</td><td style="padding: 12px 18px;">One icon source or two?</td><td style="padding: 12px 18px; color: var(--mid);"><strong style="color: var(--text);">One:</strong> Lucide, with the same <code>wf-icons.js</code> copied into each repo (no shared runtime dependency). Site B adds it to rc-icons under <strong>prefixed names</strong> (<code>wf-home</code>, <code>wf-crisis</code>…), so the 10 names rc-icons already has keep their drawings; Site A gets it as its first icon module.</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">2</td><td style="padding: 12px 18px;">Site A: amend One Thread's "No new icons" rule (D7)</td><td style="padding: 12px 18px; color: var(--mid);"><strong style="color: var(--text);">Amend</strong>, scoped: the vendored subset only, fixed sizes, three colour roles, every icon paired with a visible label. Proposed D7 row on the Handoff board.</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">3</td><td style="padding: 12px 18px;">Site A section colour</td><td style="padding: 12px 18px; color: var(--mid);"><strong style="color: var(--text);">None. Icons only.</strong> Danger is keyed on the section name "Acute &amp; safety", never on the <code>accent</code> field (Pocket cards also carry <code>accent: safety</code>). Adding tool → teal would conflict with "teal = action".</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">4</td><td style="padding: 12px 18px;">Site B category colour</td><td style="padding: 12px 18px; color: var(--mid);"><strong style="color: var(--text);">Keep 8, fix the collision:</strong> Family moves to the dormant plum pair, <code>--rc-cat-family-strong</code> on <code>--rc-cat-family-light</code> (existing tokens, 6.46:1). Colour stays on the badge and icon only, never on card fills.</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">5</td><td style="padding: 12px 18px;">Site B crisis tools in Explore "All"</td><td style="padding: 12px 18px; color: var(--mid);"><strong style="color: var(--text);">Pin first</strong> as a calm "If you need help now" band (danger-wash, life-buoy, 4 compact links). They also stay under the Crisis filter.</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">6</td><td style="padding: 12px 18px;">Site B card target: same tab or new tab?</td><td style="padding: 12px 18px; color: var(--mid);"><strong style="color: var(--text);">Same tab</strong> for hub tools, so Back and the tool-header kicker lead home. Keep new tab for external sites only, marked with the external icon. This is a behaviour change, so it gets its own PR.</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">7</td><td style="padding: 12px 18px;">Phone dock layout</td><td style="padding: 12px 18px; color: var(--mid);"><strong style="color: var(--text);">Icon above label.</strong> Five items at 390 px leave 78 px each, and "Explore tools" does not fit beside an icon. The bar grows from 52 to 64 px (items stay 52 px; the two-line clamp moves to an inner label span).</td></tr>
+          <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 18px; font-weight: 600;">8</td><td style="padding: 12px 18px;">Site B crisis glyph</td><td style="padding: 12px 18px; color: var(--mid);"><strong style="color: var(--text);">life-buoy</strong> in danger for every patient and family context, as the new <code>wf-crisis</code>. Only 🆘 and 🚨 map to it; ⚠ and 🛑 ("May be outdated", "Are you sure?") get a calm notice icon instead (decision N5).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 12px; color: var(--mid);">
+    <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 24px; font-weight: 600; color: var(--text);">On this canvas</h2>
+    <div>Icon spec + glyph sheet · Site A map · Site A dock and tabs · Site A Library · Site A Reader kicker · Site B map · Site B Explore · Site B Home · Site B tool header · Handoff (README, prompts, icon subset, licence).</div>
+    <div style="font-size: 13px; color: var(--dim);">Every screen board has <strong>Tweaks</strong> for theme (light|dark), device (desktop|mobile) and state, and shows the shipped screenshot as "Before".</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":2900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var W = window.WFIcons;
+    return { i: W ? W.all() : {}, theme: this.props.theme === 'dark' ? 'dark' : '' };
+  }
+}
+</script>
+</body>
+</html>

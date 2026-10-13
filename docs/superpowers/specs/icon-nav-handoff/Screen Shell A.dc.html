@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Site A dock and tabs</title>
+<script src="./support.js"></script>
+<script src="icons/wf-icons.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.th{--bg:#f6f3ee;--surface:#ffffff;--bar:#fbf9f5;--text:#3b332c;--mid:#64574b;--dim:#76695d;--teal:#3a7d6e;--tealdeep:#2c6356;--wash:#edf4f2;--danger:#a34132;--dwash:#fbefec;--terra:#a9634b;--line:#ebe5da;--line2:#ddd3c6;--onfill:#ffffff}
+.th.dark{--bg:#211d1a;--surface:#2a2521;--bar:#26221e;--text:#ece5db;--mid:#bcb0a2;--dim:#a2968a;--teal:#5fa392;--tealdeep:#7fc0ae;--wash:#1d332e;--danger:#d97a68;--dwash:#3a231f;--terra:#d08a6f;--line:#3a332c;--line2:#4a4139;--onfill:#211d1a}
+.ic{display:block;flex:none;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.s14{width:14px;height:14px;stroke-width:2.1}.s16{width:16px;height:16px;stroke-width:2}.s18{width:18px;height:18px;stroke-width:1.8}.s22{width:22px;height:22px;stroke-width:1.6}
+.bold.s14{stroke-width:3.6}.bold.s16{stroke-width:3.4}.bold.s22{stroke-width:2.8}
+button{font:inherit;cursor:pointer}
+a{color:inherit}
+</style>
+</helmet>
+<div class="th {{theme}}" style="width: 2000px; height: 1100px; box-sizing: border-box; padding: 64px; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; display: flex; gap: 64px; align-items: flex-start;">
+
+  <div style="width: 560px; flex: none; display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-size: 14px; font-weight: 600; color: var(--mid);">Before — shipped</div>
+    <img src="{{beforeSrc}}" alt="Shipped screen: text-only navigation" style="width: 560px; border-radius: 10px; border: 1px solid var(--line2); display: block;">
+    <div style="font-size: 13px; color: var(--mid); line-height: 1.5;">The text-only dock and tabs. The active item is shown only by a wash pill (phone) or an underline (desktop). At 390 px the current stepper label wraps mid-word.</div>
+  </div>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-size: 14px; font-weight: 600; color: var(--tealdeep);">After — icons + label; active item = teal-deep icon and label in the existing wash pill</div>
+
+    <sc-if value="{{isDesktop}}" hint-placeholder-val="{{ true }}">
+      <div style="width: 1280px; background: var(--bg); border: 1px solid var(--line2); border-radius: 10px; overflow: hidden;">
+        <div style="background: var(--bar); border-bottom: 1px solid var(--line);">
+          <div style="height: 56px; padding: 0 32px; display: flex; align-items: center; gap: 24px;">
+            <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px;"><span style="width: 30px; height: 30px; border-radius: 8px; background: var(--teal); color: var(--onfill); display: flex; align-items: center; justify-content: center; font-family: 'Source Serif 4', Georgia, serif; font-size: 18px;">ψ</span>Inpatient Psychiatry</div>
+            <label style="flex: 1; max-width: 390px; height: 34px; border: 1px solid var(--line2); border-radius: 999px; background: var(--surface); display: flex; align-items: center; gap: 8px; padding: 0 14px; color: var(--dim); font-size: 13px;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.search}}"></path></svg><input type="search" placeholder="Search a symptom, drug, or task…" style="border: 0; background: transparent; outline: none; flex: 1; font: inherit; color: var(--text);"><span style="font-size: 11px; border: 1px solid var(--line2); border-radius: 4px; padding: 0 4px;">⌘K</span></label>
+            <div style="flex: 1;"></div>
+            <button type="button" style="height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line2); background: var(--surface); color: var(--text); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.ask}}"></path></svg>Ask a question</button>
+            <button type="button" style="height: 34px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--danger); color: var(--onfill); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;"><svg class="ic s14 bold" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.safety}}"></path></svg>Safety</button>
+            <button type="button" aria-label="Settings" style="width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--line2); background: var(--surface); color: var(--mid); display: flex; align-items: center; justify-content: center;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.settings}}"></path></svg></button>
+          </div>
+          <nav aria-label="Primary" style="height: 44px; padding: 0 22px; display: flex; align-items: stretch; gap: 4px;">
+            <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+              <a href="#" aria-current="{{t.current}}" onClick="{{t.pick}}" style="display: flex; align-items: center; gap: 6px; padding: 0 12px; font-size: 14px; font-weight: {{t.weight}}; color: {{t.color}}; text-decoration: none; box-shadow: inset 0 -2px 0 {{t.rule}};"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true" style="transform: translateY(-0.5px);"><path d="{{t.d}}"></path></svg>{{t.label}}</a>
+            </sc-for>
+            <div style="flex: 1;"></div>
+            <span style="width: 1px; margin: 10px 8px; background: var(--line2);"></span>
+            <a href="#" style="display: flex; align-items: center; gap: 6px; padding: 0 12px; font-size: 14px; font-weight: 500; color: var(--mid); text-decoration: none;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.care}}"></path></svg>Patient care resources</a>
+          </nav>
+        </div>
+        <div style="padding: 40px 120px 48px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 36px;">{{pageTitle}}</div>
+          <div style="color: var(--mid); font-size: 15px;">{{pageSub}}</div>
+          <div style="margin-top: 20px; display: flex; gap: 16px; font-size: 13px; color: var(--dim);">
+            <span>Tab icon 16 px (<code>--fd-glyph-sm</code>), gap 6 px · active: teal-deep icon + label + existing 2 px underline · inactive: text-mid</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isMobile}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; gap: 48px; align-items: flex-start;">
+        <div style="width: 390px; height: 844px; flex: none; border: 1px solid var(--line2); border-radius: 28px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column;">
+          <div style="height: 64px; flex: none; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: var(--bar); border-bottom: 1px solid var(--line);">
+            <span style="width: 30px; height: 30px; border-radius: 8px; background: var(--teal); color: var(--onfill); display: flex; align-items: center; justify-content: center; font-family: 'Source Serif 4', Georgia, serif; font-size: 18px;">ψ</span>
+            <label style="flex: 1; height: 38px; border: 1px solid var(--line2); border-radius: 999px; background: var(--surface); display: flex; align-items: center; gap: 8px; padding: 0 12px; color: var(--dim); font-size: 14px;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.search}}"></path></svg>Search</label>
+            <button type="button" style="height: 38px; padding: 0 12px; border-radius: 999px; border: 0; background: var(--danger); color: var(--onfill); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px;"><svg class="ic s14 bold" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.safety}}"></path></svg>Safety</button>
+            <button type="button" aria-label="Settings" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--line2); background: var(--surface); color: var(--mid); display: flex; align-items: center; justify-content: center;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.settings}}"></path></svg></button>
+          </div>
+
+          <div style="flex: 1; overflow: hidden; padding: 20px 18px; display: flex; flex-direction: column; gap: 14px;">
+            <sc-if value="{{isToday}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="font-size: 13px; color: var(--mid);">Week 2 of 6 · Thursday</div>
+                <div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 28px; line-height: 1.15;">Mood, Psychosis &amp; Pharm</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 6px; margin-top: 4px;">
+                  <sc-for list="{{weeks}}" as="w" hint-placeholder-count="6">
+                    <span style="width: 28px; height: 28px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: var(--surface); color: {{w.color}}; box-shadow: inset 0 0 0 {{w.ring}};">{{w.n}}</span>
+                  </sc-for>
+                </div>
+                <div style="font-size: 13px; font-weight: 600; color: var(--tealdeep); text-align: center; white-space: nowrap;">Week 2 · Mood, Psychosis &amp; Pharm</div>
+                <div style="font-size: 12px; color: var(--dim); text-align: center;">Fix: the current label moves to one centred line below the stepper and never wraps inside a word.</div>
+                <div style="margin-top: 6px; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--teal); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+                  <div style="font-size: 13px; font-weight: 600; color: var(--tealdeep);">Clear what's due</div>
+                  <div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 20px;">1 review due</div>
+                  <button type="button" style="height: 44px; border: 0; border-radius: 8px; background: var(--teal); color: var(--onfill); font-weight: 600; font-size: 15px;">Start review →</button>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{isLibrary}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 30px;">Library</div>
+                <div style="display: flex; gap: 8px; overflow: hidden;">
+                  <span style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1.5px solid var(--teal); background: var(--wash); color: var(--tealdeep); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; flex: none;">All <span style="font-weight: 400;">31</span></span>
+                  <span style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line2); background: var(--surface); color: var(--text); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; flex: none;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--mid);"><path d="{{i.thisWeek}}"></path></svg>This week <span style="color: var(--mid); font-weight: 400;">4</span></span>
+                  <span style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line2); background: var(--surface); color: var(--text); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; flex: none;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--mid);"><path d="{{i.startHere}}"></path></svg>Start here <span style="color: var(--mid); font-weight: 400;">2</span></span>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start; padding-top: 8px;">
+                  <span style="color: var(--mid); padding-top: 3px;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.reading}}"></path></svg></span>
+                  <div><div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 18px;">Welcome to the Rotation</div><div style="font-size: 13px; color: var(--mid); margin-top: 4px;">Reading · 3 min · Week 1</div></div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start; padding-top: 8px; border-top: 1px solid var(--line);">
+                  <span style="color: var(--mid); padding-top: 3px;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.pocketCard}}"></path></svg></span>
+                  <div><div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 18px;">Interview &amp; MSE</div><div style="font-size: 13px; color: var(--mid); margin-top: 4px;">Pocket card · 5 min · Week 1</div></div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <nav aria-label="Primary" style="height: 64px; flex: none; padding: 4px 6px 6px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; background: var(--bar); border-top: 1px solid var(--line);">
+            <sc-for list="{{dock}}" as="t" hint-placeholder-count="5">
+              <a href="#" aria-current="{{t.current}}" onClick="{{t.pick}}" style="min-height: 52px; border-radius: 12px; background: {{t.bg}}; color: {{t.color}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; font-weight: {{t.weight}}; text-decoration: none;"><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{t.d}}"></path></svg>{{t.label}}</a>
+            </sc-for>
+          </nav>
+        </div>
+
+        <div style="width: 420px; display: flex; flex-direction: column; gap: 16px; font-size: 14px; color: var(--mid); line-height: 1.55; padding-top: 8px;">
+          <div style="font-weight: 600; color: var(--text);">Dock anatomy</div>
+          <div>Five equal cells of about 76 px. Icon 22 px (<code>--fd-glyph-lg</code>) above a 12 px label, gap 3 px. The bar grows from 52 to 64 px including the safe-area padding; each item stays 52 px tall, and the two-line <code>-webkit-line-clamp</code> moves from the item to an inner label span (update <code>fd-phone-chrome</code>, <code>fd-shell</code> and <code>front-door.spec</code> DOCK_STANDARD/APP, including the APP-mode "On shift" label).</div>
+          <div>Active: the existing teal-wash pill now wraps icon and label, both in teal-deep. Inactive: text-mid. <code>aria-current="page"</code> on the active link; icons are <code>aria-hidden</code>, so the label is the accessible name.</div>
+          <div>"＋ Ask" becomes <strong style="color: var(--text);">Ask</strong> with the question-bubble icon. Flagged as a copy change: the ＋ was a glyph, and the word is unchanged.</div>
+          <div>The top bar keeps Search, Safety and Settings as they are. Safety keeps its red fill and ✚ (now an SVG); Settings becomes an icon-only button with <code>aria-label</code>.</div>
+          <div style="font-size: 13px; color: var(--dim);">Tap a dock item to switch the active state.</div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"device":{"editor":"enum","options":["mobile","desktop"],"default":"mobile"},"state":{"editor":"enum","options":["today","library"],"default":"today"},"$preview":{"width":2000,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { active: null };
+  }
+  renderVals() {
+    var self = this;
+    var W = window.WFIcons;
+    var all = W ? W.all() : {};
+    var device = this.props.device === 'desktop' ? 'desktop' : 'mobile';
+    var active = this.state.active || (this.props.state === 'library' ? 'library' : 'today');
+    function item(id, label) {
+      var on = id === active;
+      return {
+        label: label, d: all[id === 'path' ? 'path' : id],
+        current: on ? 'page' : 'false',
+        bg: on ? 'var(--wash)' : 'transparent',
+        color: on ? 'var(--tealdeep)' : 'var(--mid)',
+        rule: on ? 'var(--teal)' : 'transparent',
+        weight: on ? 600 : 500,
+        pick: function (e) { if (e && e.preventDefault) { e.preventDefault(); } self.setState({ active: id }); }
+      };
+    }
+    var dock = [item('today', 'Today'), item('path', 'Path'), item('library', 'Library'), item('care', 'Care'), item('ask', 'Ask')];
+    var tabs = [item('today', 'Today'), item('path', 'Path'), item('library', 'Library')];
+    var weeks = [1, 2, 3, 4, 5, 6].map(function (n) {
+      return { n: n, color: n === 2 ? 'var(--tealdeep)' : 'var(--mid)', ring: n === 2 ? '2px var(--teal)' : '1px var(--line2)' };
+    });
+    var titles = { today: ['Mood, Psychosis & Pharm', 'Week 2 of 6 · Dx frameworks · the top-10 drugs'],
+      path: ['Path', 'Six weeks, one thread.'], library: ['Library', 'Everything the rotation uses. Essentials is the short list; Everything is the full catalogue.'],
+      care: ['Patient care resources', ''], ask: ['Ask a question', ''] };
+    var tt = titles[active] || titles.today;
+    return {
+      i: all, dock: dock, tabs: tabs, weeks: weeks,
+      theme: this.props.theme === 'dark' ? 'dark' : '',
+      isDesktop: device === 'desktop', isMobile: device === 'mobile',
+      isToday: active !== 'library', isLibrary: active === 'library',
+      pageTitle: tt[0], pageSub: tt[1],
+      beforeSrc: device === 'desktop' ? '/_blob/3d56c6b58f89518cc2ee70e71ce9b926' : '/_blob/f9e2b8a6c52bd61eef94a7790594979b'
+    };
+  }
+}
+</script>
+</body>
+</html>

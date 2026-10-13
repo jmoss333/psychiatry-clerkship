@@ -21,6 +21,8 @@ if (careSrc) {
     ${dataSrc}
     ${navigatorSrc}
     ${packSrc}
+    // Explicit opt-in fixture; production default is covered by fd-care-sharing-gate.test.mjs.
+    FD_CARE_PATIENT_SHARING_ENABLED=true;
     ${careSearchSrc}
     ${careSrc}
     return {

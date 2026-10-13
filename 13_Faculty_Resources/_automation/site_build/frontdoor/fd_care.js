@@ -6,6 +6,7 @@
 
 function fdCareGroup(resources, group, title, intro, packIds){
   var rows=Array.isArray(resources)?resources:[], matched=[];
+  var sharing=fdCarePatientSharingEnabled();
   var selectedIds=Array.isArray(packIds)?packIds:[],selected=Object.create(null),limit=false;
   for(var s=0;s<selectedIds.length;s++) selected[selectedIds[s]]=true;
   limit=selectedIds.length>=FD_CARE_PACK_LIMIT;
@@ -21,13 +22,13 @@ function fdCareGroup(resources, group, title, intro, packIds){
       '<span class="fd-carelink__mark" aria-hidden="true">↗</span><span class="fd-carelink__copy">'+
       '<span class="fd-carelink__title">'+fdEsc(item.title)+'</span>'+
       '<span class="fd-carelink__description">'+fdEsc(item.description)+'</span></span></a>'+
-      '<div class="fd-careitem__actions"><button type="button" class="fd-careitem__qr" data-fd-care-share="'+
+      (sharing?'<div class="fd-careitem__actions"><button type="button" class="fd-careitem__qr" data-fd-care-share="'+
       fdEsc(item.id)+'" aria-label="'+fdEsc('Show QR for '+item.title)+'">Show QR</button>'+
       '<button type="button" class="fd-careitem__pack" data-fd-care-pack="'+
       fdEsc(item.id)+'" data-fd-care-pack-origin="group" aria-pressed="'+(isSelected?'true':'false')+'"'+
       ' aria-label="'+fdEsc((isSelected?'Remove ':'Add ')+item.title+' '+
         (isSelected?'from':'to')+' handout')+'" aria-describedby="fd-care-pack-limit"'+
-      (limit&&!isSelected?' disabled':'')+'>'+(isSelected?'Remove from handout':'Add to handout')+'</button></div></article>';
+      (limit&&!isSelected?' disabled':'')+'>'+(isSelected?'Remove from handout':'Add to handout')+'</button></div>':'')+'</article>';
   }
   return out+'</div></section>';
 }

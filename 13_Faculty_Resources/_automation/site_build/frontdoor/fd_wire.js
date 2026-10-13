@@ -739,6 +739,13 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-care-clear')){
     return {patch:{careIntentId:''},route:null,effect:null};
   }
+  /* Hidden patient-sharing controls must not dispatch from stale markup/state. */
+  if((typeof fdCarePatientSharingEnabled!=='function'||!fdCarePatientSharingEnabled())&&
+     (fdOwn(a,'data-fd-care-pack')||fdOwn(a,'data-fd-care-pack-print')||
+      fdOwn(a,'data-fd-care-share')||fdOwn(a,'data-fd-care-copy')||
+      fdOwn(a,'data-fd-care-copy-selected'))){
+    return {patch:{carePackIds:[],careShareId:''},route:null,effect:null};
+  }
   if(fdOwn(a,'data-fd-care-pack')){
     return {patch:{carePackIds:fdCarePackToggle(
       c.index||{},s.carePackIds||[],a['data-fd-care-pack'])},route:null,effect:null};

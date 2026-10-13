@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Site A section to icon map</title>
+<script src="./support.js"></script>
+<script src="icons/wf-icons.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.th{--bg:#f6f3ee;--surface:#ffffff;--text:#3b332c;--mid:#64574b;--dim:#76695d;--teal:#3a7d6e;--tealdeep:#2c6356;--wash:#edf4f2;--danger:#a34132;--line:#ebe5da;--line2:#ddd3c6}
+.th.dark{--bg:#211d1a;--surface:#2a2521;--text:#ece5db;--mid:#bcb0a2;--dim:#a2968a;--teal:#5fa392;--tealdeep:#7fc0ae;--wash:#1d332e;--danger:#d97a68;--line:#3a332c;--line2:#4a4139}
+.ic{display:block;flex:none;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.s18{width:18px;height:18px;stroke-width:1.8}.bold.s18{stroke-width:3.2}
+td,th{text-align:left;vertical-align:top}
+</style>
+</helmet>
+<div class="th {{theme}}" style="width: 1440px; min-height: 2700px; box-sizing: border-box; padding: 96px 120px; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.5; display: flex; flex-direction: column; gap: 48px;">
+  <header style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="font-size: 14px; color: var(--mid);">Site A · inpatient psychiatry learning site</div>
+    <h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 48px; line-height: 1.1;">Section → icon map</h1>
+    <p style="margin: 0; font-size: 17px; color: var(--mid); max-width: 900px;">Icons carry section identity on this site, and colour does not. Accent is "none" everywhere except the Acute &amp; safety section, which is already red. Labels are verbatim. Shared modules key icons by section <em>id</em>, never by label, so both builds use one table.</p>
+  </header>
+
+  <sc-for list="{{groups}}" as="grp" hint-placeholder-count="6">
+    <section style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 16px;">
+        <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 26px; font-weight: 600;">{{grp.title}}</h2>
+        <div style="font-size: 13px; color: var(--mid);">{{grp.note}}</div>
+      </div>
+      <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead><tr style="background: var(--bg); color: var(--mid);"><th style="padding: 10px 16px; font-weight: 600; width: 250px;">Section</th><th style="padding: 10px 16px; font-weight: 600; width: 230px;">Icon (registry · upstream)</th><th style="padding: 10px 16px; font-weight: 600; width: 130px;">Accent</th><th style="padding: 10px 16px; font-weight: 600;">Rationale</th></tr></thead>
+          <tbody>
+            <sc-for list="{{grp.rows}}" as="r" hint-placeholder-count="6">
+              <tr style="border-top: 1px solid var(--line);">
+                <td style="padding: 12px 16px;"><div style="display: flex; align-items: center; gap: 10px; font-weight: 500;"><span style="color: {{r.color}};"><svg class="ic s18 {{r.weight}}" viewBox="0 0 24 24" aria-hidden="true"><path d="{{r.d}}"></path></svg></span>{{r.label}}</div></td>
+                <td style="padding: 12px 16px; color: var(--mid);"><code>{{r.key}}</code> · {{r.up}}</td>
+                <td style="padding: 12px 16px; color: var(--mid);">{{r.accent}}</td>
+                <td style="padding: 12px 16px; color: var(--mid);">{{r.why}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </sc-for>
+
+  <section style="display: flex; flex-direction: column; gap: 10px; color: var(--mid); font-size: 14px;">
+    <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 22px; font-weight: 600; color: var(--text);">Glyph vocabulary: kept or replaced</h2>
+    <div>Kept as text: <strong style="color: var(--text);">ψ</strong> (brand, terracotta), ✓ (done marks), ⌄ (group disclosure). Redrawn as SVG from the subset, same meaning: ✚ → <code>safety</code> (danger, heavier stroke so it keeps the ✚ silhouette), ⚙ → <code>settings</code> (U+2699 can render as colour emoji on some Android builds), ‹ → <code>chevronLeft</code>, → → <code>arrowRight</code>, ↗ → <code>external</code>, ＋ (Ask) → <code>ask</code>, magnifier → <code>search</code> (same drawing; stroke 2 → per-size table). ▶ stays text inside podcast players only.</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":2700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var W = window.WFIcons;
+    var all = W ? W.all() : {};
+    var up = {};
+    (W ? W.sources() : []).forEach(function (s) { up[s.name] = s.sourceName; });
+    function row(label, key, accent, why) {
+      var red = key === 'safety';
+      return { label: label, key: key, d: all[key], up: up[key] || '', accent: accent || 'none', why: why,
+        color: red ? 'var(--danger)' : 'var(--mid)', weight: red ? 'bold' : '' };
+    }
+    var groups = [
+      { title: 'Shell: dock, tabs, header', note: 'Phone dock shows icon above label; desktop tabs show icon beside label.', rows: [
+        row('Today', 'today', '', 'Sun = the day you are in. Avoids calendar, which already means "This week" in the Library.'),
+        row('Path', 'path', '', 'Route (two waypoints and a winding line) says "sequence of weeks". Map is rejected because it collides with "Weekly Reading Map".'),
+        row('Library', 'library', '', 'Books on a shelf, legible at 16 px. Lucide "library" (4 bare strokes) is too abstract at tab size; it goes to Site B Reference instead.'),
+        row('Care / Patient care resources', 'care', '', 'Hand-heart = care for others, not a medical cross. Same glyph on the dock and the desktop right-hand link.'),
+        row('Ask (＋ Ask a question)', 'ask', '', 'Speech bubble with "?". Replaces ＋, which on its own predicts "add" rather than "ask". Label stays verbatim.'),
+        row('Safety', 'safety', 'danger (existing)', 'Keep ✚ in danger, redrawn from the subset at the same weight. This is the only red icon on the site.'),
+        row('Settings', 'settings', '', 'Two sliders: a recognisable "settings" mark that renders crisply and avoids emoji fallback. Icon-only button keeps aria-label="Settings".'),
+        row('Search', 'search', '', 'Existing magnifier geometry, same drawing as rc-icons; only the stroke follows the size table.')
+      ]},
+      { title: 'Library — Essentials (student build)', note: 'Index sidebar (desktop) and scrolling chips (phone). "All" gets no icon.', rows: [
+        row('This week', 'thisWeek', '', 'Calendar: time-scoped items.'),
+        row('Start here', 'startHere', '', 'Flag: a starting point.'),
+        row('Pocket cards', 'pocketCard', '', 'Wallet-cards: cards you carry. Also the row type icon.'),
+        row('Acute & safety', 'safety', 'danger (keyed on this section)', 'Danger is keyed on the section name, never on accent: safety (Pocket cards carry that value too). Needs a SAFETY allowlist entry in fd-tokens. Matches the header Safety button.'),
+        row('Core diagnoses', 'diagnoses', '', 'Brain: the conditions themselves. Line-only, so it reads neutral rather than anatomical.'),
+        row('Medications', 'medication', '', 'Pill: a clinician-facing site, so a medical symbol is fine here.'),
+        row('Family & discharge', 'family', '', 'Users: the people around the patient.'),
+        row('Exam', 'exam', '', 'Clipboard-check: assessment. Also the row type icon for exam and quiz pages.'),
+        row('Tools', 'tool', '', 'Wrench: interactive builders and calculators. Also the row type icon.'),
+        row('Teaching companion', 'teaching', '', 'Presentation board: faculty-facing material, set apart from learner sections.')
+      ]},
+      { title: 'Library — Essentials (resident build, where it differs)', note: 'Same ids where the meaning matches; new ids for the three differing sections.', rows: [
+        row('Diagnosis & meds', 'diagnoses', '', 'One icon per section: brain leads, because medication pages inside carry the pill type icon on their rows.'),
+        row('Systems & family', 'systems', '', 'Network: teams, services and family as connected nodes.'),
+        row('Scholarship', 'scholarship', '', 'Pen-line: writing and teaching work. Chosen over a microscope, which would imply bench research.')
+      ]},
+      { title: 'Library — Everything', note: 'Six sections; reuses the Essentials glyphs where the meaning matches.', rows: [
+        row('Interactive tools', 'tool', '', 'Same as Tools. Pharmacy and the interaction cards live here, but they are pages, so they get the pill row icon, not a section icon.'),
+        row('Acute & safety', 'safety', 'danger (keyed on this section)', 'Same as Essentials.'),
+        row('Core topics', 'diagnoses', '', 'Same family as Core diagnoses.'),
+        row('Clinical skills', 'skills', '', 'Two speech bubbles: interviewing, presenting, family meetings.'),
+        row('Evidence & exam', 'evidence', '', 'Mortarboard: study and exam preparation. The 19 rows inside are told apart by their type icons, not by this one.')
+      ]},
+      { title: 'Content types (row icon column)', note: 'Derived from page metadata (kind), with the type word leading the meta line.', rows: [
+        row('Reading', 'reading', '', 'Open book. The default type, so it is quiet by repetition.'),
+        row('Tool', 'tool', '', 'Wrench. Replaces the small "tool" chip, which is removed so rows don’t carry two cues.'),
+        row('Pocket card', 'pocketCard', '', 'Wallet-cards.'),
+        row('Flashcard deck', 'deck', '', 'Layers = a stack of cards. Fixes the Anki row, which is labelled "Reading" today.'),
+        row('Podcast', 'podcast', '', 'Headphones.'),
+        row('Book list', 'bookList', '', 'Book-marked: a curated list of books (the Book Library page).'),
+        row('Video', 'video', '', 'Camera.'),
+        row('Case', 'caseVignette', '', 'A single person: a practice vignette. Distinct from Case Journeys.'),
+        row('External link', 'external', '', 'Trailing 14 px mark with an accessible name ("opens in a new tab"). Never a leading type icon.'),
+        row('Medication / pharmacy', 'medication', '', 'Pill: Psychopharmacology primer, Pharmacy, interaction cards.')
+      ]},
+      { title: 'Surfaces', note: '', rows: [
+        row('Reader', 'reading', '', 'The kicker shows the section the reader came from ("‹ Library · Evidence & exam" with that section’s icon), not a Reader icon.'),
+        row('Case Journeys', 'journey', '', 'Footprints: one patient followed over six weeks. Phase 3 (content requires faculty re-attestation).'),
+        row('Teaching companion', 'teaching', '', 'As in Essentials.')
+      ]}
+    ];
+    return { i: all, groups: groups, theme: this.props.theme === 'dark' ? 'dark' : '' };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-10-11",
+  "refreshedAt": "2026-10-12",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -417,6 +417,30 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "31758858"
+    },
+    "10.1001/jamapsychiatry.2020.1586": {
+      "title": "Association of Suicide Prevention Interventions With Subsequent Suicide Attempts, Linkage to Follow-up Care, and Depression Symptoms for Acute Care Settings",
+      "container": "JAMA Psychiatry",
+      "containerAlt": [
+        "JAMA Psychiatry",
+        "JAMA psychiatry"
+      ],
+      "year": 2020,
+      "authors": [
+        "Doupnik",
+        "Rudd",
+        "Schmutte",
+        "Worsley",
+        "Bowden",
+        "McCarthy",
+        "Eggan",
+        "Bridge",
+        "Marcus"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-12",
+      "pmid": "32584936"
     },
     "10.1001/jamapsychiatry.2020.3650": {
       "title": "Sequential Combination of Pharmacotherapy and Psychotherapy in Major Depressive Disorder",
@@ -1420,6 +1444,25 @@
       "resolvedAt": "2026-09-27",
       "pmid": "39277317"
     },
+    "10.1016/j.copsyc.2017.07.002": {
+      "title": "Firearm suicide: pathways to risk and methods of prevention",
+      "container": "Current Opinion in Psychology",
+      "containerAlt": [
+        "Curr Opin Psychol",
+        "Current Opinion in Psychology",
+        "Current opinion in psychology"
+      ],
+      "year": 2018,
+      "authors": [
+        "Houtsma",
+        "Butterworth",
+        "Anestis"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-12",
+      "pmid": "30122279"
+    },
     "10.1016/j.cpr.2025.102656": {
       "title": "Associated factors of the quality of therapeutic alliance in people with severe mental illnesses: A systematic review",
       "container": "Clinical Psychology Review",
@@ -1587,6 +1630,28 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "28917389"
+    },
+    "10.1016/j.genhosppsych.2021.04.011": {
+      "title": "Lethal means counseling for suicide prevention: Views of emergency department clinicians",
+      "container": "General Hospital Psychiatry",
+      "containerAlt": [
+        "Gen Hosp Psychiatry",
+        "General Hospital Psychiatry",
+        "General hospital psychiatry"
+      ],
+      "year": 2021,
+      "authors": [
+        "Siry",
+        "Polzer",
+        "Omeragic",
+        "Knoepke",
+        "Matlock",
+        "Betz"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-12",
+      "pmid": "33971519"
     },
     "10.1016/j.genhosppsych.2021.11.005": {
       "title": "Effects of caffeine on anxiety and panic attacks in patients with panic disorder: A systematic review and meta-analysis",
@@ -3718,6 +3783,27 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "39876682"
+    },
+    "10.1176/appi.focus.20220072": {
+      "title": "Suicide Risk Assessment, Management, and Mitigation in the Emergency Setting",
+      "container": "FOC",
+      "containerAlt": [
+        "FOC",
+        "Focus",
+        "Focus (Am Psychiatr Publ)",
+        "Focus (American Psychiatric Publishing)"
+      ],
+      "year": 2023,
+      "authors": [
+        "Powsner",
+        "Goebert",
+        "Richmond",
+        "Takeshita"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-12",
+      "pmid": "37205029"
     },
     "10.1176/appi.focus.20230009": {
       "title": "The CANMAT and ISBD Guidelines for the Treatment of Bipolar Disorder: Summary and a 2023 Update of Evidence",
