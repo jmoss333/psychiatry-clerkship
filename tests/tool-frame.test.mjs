@@ -90,6 +90,7 @@ test('a mounted tool keeps its primary in the page -- never the dock -- and comp
     function renderGovernanceNotice(){return '';}
     function setLearnerTitle(){} function announceRoute(){} function focusGovernanceNotice(){}
     function fdRenderOverlays(){}
+    function fdSyncSafetyPause(){}
     function fdSyncOfflineVisit(){}
     var fdCareDirectory=fdCreateCareDirectory();
     ${shellFunction('fdMountCareDirectory')}
