@@ -6,6 +6,7 @@
 // tests read the governed file DIRECTLY as the oracle (never the payload) so a swapped, truncated or
 // stale contact cannot pass by agreeing with itself.
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -30,10 +31,10 @@ const NEEDLE = 'var FD_CARE_INSERTS=null;';
 const FLAG_OFF = 'var FD_CARE_PACKET_ENABLED=false;';
 const FLAG_ON = 'var FD_CARE_PACKET_ENABLED=true;';
 // What a built payload may never carry: the governed record's internal fields, the helpline rows' provenance, and a
-// unit profile's confirmation record (phoneConfirmedOn, phoneConfirmedBy).
+// unit profile's verification records (actual check dates, roles and evidence).
 const FORBIDDEN = ['alsoAvailable', 'verificationSource', 'verifiedOn', 'reconnectRecord', 'upstreamDiscrepancies',
-  'unitEscalationNote', 'verifiedDate', 'alsoSources', '"source"', 'phoneConfirmed'];
-const SHIPPED_PROFILE_KEYS = ['brandingApproved', 'callbackProgram', 'id', 'label', 'org', 'unitName', 'unitPhone', 'usableThrough'];
+  'unitEscalationNote', 'verifiedDate', 'alsoSources', '"source"', 'phoneConfirmed', '"verification"', '"checkedBy"', '"evidence"'];
+const SHIPPED_PROFILE_KEYS = ['brandingApproved', 'callbackProgram', 'callbackTeam', 'callbackPhone', 'callbackHours', 'callbackFallback', 'id', 'label', 'org', 'unitName', 'unitPhone', 'unitPurpose', 'unitHours', 'revision', 'expiresOn', 'usableThrough'].sort();
 
 // -B writes no __pycache__ into the tree. Not -I: isolated mode also hides the user site-packages, and on
 // a machine where jsonschema's own dependency (attrs) lives there the import fails for a reason that has
@@ -82,10 +83,26 @@ function addDays(iso, days) {
 }
 // A fixture profile (shipped shape) turned back into the SOURCE shape the profiles file holds.
 function sourceProfile(shipped, confirmedOn, extra = {}) {
-  const { usableThrough, ...rest } = shipped;
+  const { usableThrough, expiresOn, revision, ...rest } = shipped;
   assert.ok(usableThrough, 'the fixture is in the shipped shape');
-  return { ...rest, phoneConfirmedOn: confirmedOn, phoneConfirmedBy: 'unit charge nurse', ...extra };
+  const out = { unitPurpose: 'questions about your discharge papers', unitHours: 'Monday to Friday, 9 a.m. to 5 p.m.',
+    callbackTeam: 'Test follow-up team', callbackPhone: '(207) 555-0143', callbackHours: 'Monday to Friday, 9 a.m. to 5 p.m.',
+    callbackFallback: 'follow the contact instructions in your After Visit Summary', ...rest, ...extra };
+  out.verification = ['identity', 'contact', ...(out.callbackProgram ? ['callback'] : []), ...(out.brandingApproved ? ['branding'] : [])]
+    .map(field => ({ field, checkedOn: confirmedOn, checkedBy: 'unit charge nurse', evidence: 'Direct confirmation with the responsible unit team' }));
+  return out;
 }
+function changedCheck(profile, changes) {
+  return { ...profile, verification: profile.verification.map((entry, i) => i ? entry : { ...entry, ...changes }) };
+}
+// Independent cross-language oracle: Node crypto and serialization, exercised against the Python payload builder.
+function expectedRevision(profile) {
+  const covered = { ...profile, verification: [...profile.verification].sort((a, b) => a.field.localeCompare(b.field)) };
+  const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object'
+    ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
+  return createHash('sha256').update(JSON.stringify(canonical({ policyVersion: 1, profile: covered })), 'utf8').digest('hex');
+}
+
 function profilesFile(t, profiles) {
   const file = path.join(tempDir(t), 'profiles.json');
   fs.writeFileSync(file, JSON.stringify({ schemaVersion: 1, profiles }));
@@ -215,29 +232,84 @@ test('the real profiles file ships as data and none is invented: unitProfiles mi
   assert.deepEqual(built.unitProfiles.map(profile => profile.id), doc.profiles.map(profile => profile.id));
 });
 
-test('a confirmed profile ships in the browser\'s shape: no confirmation record, usableThrough = confirmed + 180 days', t => {
+test('candidate profiles ship exact content, a version digest and ninety calendar days from the oldest actual check; never an approval', t => {
   const data = readJson(DATA);
   const fixture = readJson(FIXTURE);
   const confirmedOn = addDays(data.generatedAt, -30);
-  const source = [sourceProfile(fixture.profile, confirmedOn), sourceProfile(fixture.expired, data.generatedAt)];
+  const first = sourceProfile(fixture.profile, data.generatedAt);
+  first.verification[0].checkedOn = confirmedOn;
+  const source = [first, sourceProfile(fixture.expired, data.generatedAt)];
   const run = buildWith('profiles_path=sys.argv[1]', [profilesFile(t, source)]);
   assert.equal(run.status, 0, run.stderr);
   const built = JSON.parse(run.stdout);
-  assert.equal(built.unitProfiles.length, 2);
   for (const [i, shipped] of built.unitProfiles.entries()) {
     assert.deepEqual(Object.keys(shipped).sort(), SHIPPED_PROFILE_KEYS);
-    const { phoneConfirmedOn, phoneConfirmedBy, ...rest } = source[i];
-    assert.ok(phoneConfirmedOn && phoneConfirmedBy, 'the source carried a confirmation record');
-    assert.deepEqual({ ...shipped, usableThrough: undefined }, { ...rest, usableThrough: undefined });
-    assert.equal(shipped.usableThrough, addDays(phoneConfirmedOn, 180), shipped.id);
+    const { verification, ...rest } = source[i];
+    const { revision, expiresOn, usableThrough, ...content } = shipped;
+    assert.deepEqual(content, rest, 'public content remains byte-exact');
+    const oldest = verification.map(entry => entry.checkedOn).sort()[0];
+    assert.equal(usableThrough, addDays(oldest, 89));
+    assert.equal(expiresOn, addDays(oldest, 90));
+    assert.equal(revision, expectedRevision(source[i]));
+    assert.equal('approved' in shipped, false);
   }
-  assert.equal(built.unitProfiles[0].usableThrough, addDays(data.generatedAt, 150));
-  // The fixture is the browser's test profile; the validator must accept it, so the two cannot drift apart.
-  const { usableThrough, ...fixtureRest } = fixture.profile;
-  assert.deepEqual({ ...built.unitProfiles[0], usableThrough: undefined }, { ...fixtureRest, usableThrough: undefined });
-  const shipped = JSON.stringify(built);
-  for (const key of FORBIDDEN) assert.ok(!shipped.includes(key), `${key} stays out of a payload that carries profiles`);
-  assert.ok(!shipped.includes('unit charge nurse'), 'the confirmer\'s role is not shipped');
+  assert.equal(built.unitProfiles[0].expiresOn, addDays(data.generatedAt, 60));
+  for (const key of FORBIDDEN) assert.ok(!run.stdout.includes(key), `${key} stays private`);
+});
+
+test('the payload carries the two approved missed-dose bullets and the complete optional callback template', () => {
+  const built = payload();
+  const meds = built.inserts.find(insert => insert.id === 'meds');
+  assert.equal(meds.bullets[2], 'If you miss a dose or have a break from a medicine, follow the instructions for missed doses or restarting in your After Visit Summary. If those instructions are missing or unclear, call your pharmacist or the person who prescribes it before taking it again.');
+  assert.equal(meds.bullets[3], 'Do not take extra medicine to catch up on your own. Some medicines need a different dose after even a short break.');
+  const callback = built.inserts.find(insert => insert.id === 'callback');
+  assert.equal(callback.defaultOn, false);
+  assert.equal(built.inserts.find(insert => insert.id === 'safety').defaultOn, false);
+  for (const token of ['callbackTeam', 'callbackPhone', 'callbackHours', 'callbackFallback', 'callWindow', 'callDeadline'])
+    assert.ok(callback.body.includes('{{' + token + '}}'), `${token} is present in the printed instructions`);
+  assert.match(callback.body, /Do not wait for this call/);
+  assert.doesNotMatch(JSON.stringify(built.inserts), /2 days or more|we will help you find another way|We can help|prior authorization/);
+  for (const id of ['intro', 'meds', 'rights'])
+    assert.ok(JSON.stringify(built.inserts.find(insert => insert.id === id)).includes('{{unitContact}}'));
+});
+
+test('profile revisions ignore object and verification order, but bind every covered value without normalization', t => {
+  const source = sourceProfile(readJson(FIXTURE).profile, readJson(DATA).generatedAt);
+  const reversed = Object.fromEntries(Object.entries(source).reverse());
+  reversed.verification = [...source.verification].reverse().map(entry => Object.fromEntries(Object.entries(entry).reverse()));
+  const build = profile => {
+    const run = buildWith('profiles_path=sys.argv[1]', [profilesFile(t, [profile])]);
+    assert.equal(run.status, 0, run.stderr);
+    return JSON.parse(run.stdout).unitProfiles[0];
+  };
+  const first = build(source);
+  assert.equal(build(reversed).revision, first.revision);
+  for (const changed of [{ ...source, unitPurpose: source.unitPurpose + ' ' }, changedCheck(source, { evidence: 'A different direct confirmation' }),
+    { ...source, unitPhone: '2075550142' }, { ...source, label: 'Fíxture unit' }]) {
+    const result = build(changed);
+    assert.notEqual(result.revision, first.revision);
+    assert.equal(result.revision, expectedRevision(changed));
+    assert.equal(result.expiresOn, first.expiresOn, 'editing content or evidence never refreshes actual check dates');
+  }
+});
+
+test('the canonical digest covers every profile and evidence field, so none can change under an old approval', () => {
+  const source = sourceProfile(readJson(FIXTURE).profile, readJson(DATA).generatedAt);
+  const changed = Object.keys(source).filter(key => key !== 'verification').map(key => ({
+    ...source, [key]: typeof source[key] === 'boolean' ? !source[key] : source[key] + ' changed',
+  }));
+  for (let index = 0; index < source.verification.length; index++) {
+    for (const key of ['field', 'checkedOn', 'checkedBy', 'evidence']) {
+      changed.push({ ...source, verification: source.verification.map((entry, i) => i === index ? { ...entry, [key]: entry[key] + ' changed' } : entry) });
+    }
+  }
+  // This exercises canonical identity alone; schema and semantic validity are exercised through build_payload above.
+  const inputs = [source, ...changed];
+  const run = py('print(json.dumps([p._validator.profile_revision(profile) for profile in json.loads(sys.argv[1])]))', [JSON.stringify(inputs)]);
+  assert.equal(run.status, 0, run.stderr);
+  const actual = JSON.parse(run.stdout);
+  assert.deepEqual(actual, inputs.map(expectedRevision));
+  assert.equal(new Set(actual).size, inputs.length, 'every isolated change invalidates the old revision');
 });
 
 test('a profile the validator rejects aborts the build (a registered crisis number as the unit phone)', t => {
@@ -309,9 +381,9 @@ test('profile validation matrix (check_profiles against the real inserts and gov
     ['N11 exchange', [{ ...base, unitPhone: '(207) 411-0142' }], /unitPhone/],
     ['N11 area code', [{ ...base, unitPhone: '(211) 555-0142' }], /unitPhone/],
     ['helpline-table number as the unit phone', [{ ...base, unitPhone: helpline }], /unitPhone.*helpline/],
-    ['future confirmation date', [{ ...base, phoneConfirmedOn: addDays(today, 1) }], /phoneConfirmedOn.*future/],
+    ['future confirmation date', [changedCheck(base, { checkedOn: addDays(today, 1) })], /checkedOn.*future/],
     ['markup in unitName', [{ ...base, unitName: 'Fixture Unit <b>' }], /unitName.*markup/],
-    ['role containing digits', [{ ...base, phoneConfirmedBy: 'nurse 2' }], /phoneConfirmedBy/],
+    ['role containing digits', [changedCheck(base, { checkedBy: 'nurse 2' })], /checkedBy/],
     ['brandingApproved with a null org', [{ ...base, org: null }], /brandingApproved/],
     ['duplicate id', [base, { ...base, unitPhone: '(207) 555-0143' }], /twice/],
     ['resident-rebrand phrase in label', [{ ...base, label: 'MS3 Clerkship unit' }], /label.*resident/],
@@ -325,10 +397,10 @@ test('profile validation matrix (check_profiles against the real inserts and gov
       assert.deepEqual(result, { errors: [], warnings: [] }, name);
     }
   }
-  const stale = checkProfiles(t, [{ ...base, phoneConfirmedOn: addDays(today, -181) }], today);
+  const stale = checkProfiles(t, [changedCheck(base, { checkedOn: addDays(today, -90) })], today);
   assert.deepEqual(stale.errors, [], 'a stale confirmation is not an error');
   assert.equal(stale.warnings.length, 1);
-  assert.match(stale.warnings[0], /181 days/);
+  assert.match(stale.warnings[0], /90 days/);
 });
 
 test('a stale profile warns but still builds, and ships a usableThrough already in the past', t => {
@@ -337,7 +409,7 @@ test('a stale profile warns but still builds, and ships a usableThrough already 
   const run = buildWith('profiles_path=sys.argv[1]', [profilesFile(t, [sourceProfile(readJson(FIXTURE).profile, confirmedOn)])]);
   assert.equal(run.status, 0, run.stderr);
   const [shipped] = JSON.parse(run.stdout).unitProfiles;
-  assert.equal(shipped.usableThrough, addDays(confirmedOn, 180));
+  assert.equal(shipped.usableThrough, addDays(confirmedOn, 89));
   assert.ok(shipped.usableThrough < data.generatedAt);
 });
 
@@ -453,18 +525,16 @@ for (const site of ['ms3', 'res']) {
   });
 }
 
-// Institutional branding is approval-pending. An organisation name the owner has not approved must not be in the page source of the
-// two public learner sites either, not only out of the printed header. Fails if _shipped_profile ships org without approval.
-test('a profile whose branding is not approved ships with no organisation name; an approved one ships it', t => {
+// Unapproved branding cannot enter public HTML or the source candidate the owner would approve.
+test('unapproved branding must be null; approved branding remains bound to the exact profile', t => {
   const data = readJson(DATA);
   const fixture = readJson(FIXTURE);
-  const confirmedOn = addDays(data.generatedAt, -30);
-  const unapproved = { ...sourceProfile(fixture.profile, confirmedOn), id: 'unapproved-unit', brandingApproved: false, org: 'Sentinel Health System' };
-  const approved = { ...sourceProfile(fixture.profile, confirmedOn), id: 'approved-unit', brandingApproved: true, org: 'Test Org' };
-  const run = buildWith('profiles_path=sys.argv[1]', [profilesFile(t, [unapproved, approved])]);
+  const date = addDays(data.generatedAt, -30);
+  const valid = sourceProfile(fixture.profile, date, { id: 'unapproved-unit', brandingApproved: false, org: null });
+  const run = buildWith('profiles_path=sys.argv[1]', [profilesFile(t, [valid])]);
   assert.equal(run.status, 0, run.stderr);
-  const built = JSON.parse(run.stdout);
-  assert.equal(built.unitProfiles.find(profile => profile.id === 'unapproved-unit').org, null);
-  assert.ok(!run.stdout.includes('Sentinel Health System'), 'the unapproved name is nowhere in the payload');
-  assert.equal(built.unitProfiles.find(profile => profile.id === 'approved-unit').org, 'Test Org');
+  assert.equal(JSON.parse(run.stdout).unitProfiles[0].org, null);
+  const rejected = buildWith('profiles_path=sys.argv[1]', [profilesFile(t, [{ ...valid, org: 'Sentinel Health System' }])]);
+  assert.notEqual(rejected.status, 0);
+  assert.match(rejected.stderr, /brandingApproved/);
 });

@@ -48,7 +48,7 @@ for (const site of ['ms3', 'res']) {
     assert.ok(!html.includes('analytics.js'), 'index.html must not load the emitter when disabled');
   });
 
-  test(`(build ${site}) CSP allows the metrics origin and nothing new besides`, (t) => {
+  test(`(build ${site}) CSP allows only the application services`, (t) => {
     const stale = staleBuildReason(repo, site, BUILD_INPUTS);
     if (stale) { t.skip(stale); return; }
     const headers = fs.readFileSync(path.join(out, '_headers'), 'utf8');
@@ -56,8 +56,8 @@ for (const site of ['ms3', 'res']) {
     assert.ok(connect, 'connect-src present');
     const origins = connect[1].trim().split(/\s+/);
     assert.deepEqual(origins.sort(), [
-      "'self'", METRICS_ORIGIN, 'https://sp-interview-proxy.netlify.app',
-    ].sort(), 'connect-src gained exactly the metrics origin');
+      "'self'", METRICS_ORIGIN, 'https://sp-interview-proxy.netlify.app', 'https://clerkship-faculty-attest.netlify.app',
+    ].sort(), 'connect-src contains only the exact application service origins');
   });
 
   test(`(build ${site}) index.html declares CW_SITE and loads the emitter`, (t) => {

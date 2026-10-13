@@ -2,6 +2,37 @@
 // Ordinary browser tests exercise the unmodified production default; only this fixture flips the literal
 // in the served HTML, and it fails loudly if that literal ever stops being unique.
 import { expect } from '@playwright/test';
+import fs from 'node:fs';
+
+export const UNIT_PROFILE_FIXTURE = JSON.parse(fs.readFileSync(new URL('../fixtures/care-unit-profile.json', import.meta.url), 'utf8'));
+export const PROFILE_AUTHORITY_URL = 'https://clerkship-faculty-attest.netlify.app/.netlify/functions/care-profile-status';
+const PUBLIC_PROFILE_FIELDS = ['id', 'label', 'org', 'brandingApproved', 'unitName', 'unitPhone', 'unitPurpose', 'unitHours',
+  'callbackProgram', 'callbackTeam', 'callbackPhone', 'callbackHours', 'callbackFallback'];
+
+// This independent authority is a test fixture, never an approval field in the served candidate.
+// The mutable verdict lets a test withdraw approval after Load without reloading the learner tab.
+export async function pinCareProfileAuthority(page, { profiles = [UNIT_PROFILE_FIXTURE.profile, UNIT_PROFILE_FIXTURE.expired], status = 'approved' } = {}) {
+  const authority = { status, requests: [] };
+  await page.route(url => url.origin + url.pathname === PROFILE_AUTHORITY_URL, async route => {
+    const request = route.request(), url = new URL(request.url());
+    expect(request.method(), 'authority checks are reads').toBe('GET');
+    expect([...url.searchParams.keys()].sort(), 'only profile identity and exact revision leave the page').toEqual(['profileId', 'revision']);
+    expect(request.postData(), 'no patient information or editable profile fields are sent').toBeNull();
+    const profileId = url.searchParams.get('profileId'), revision = url.searchParams.get('revision');
+    expect(profileId).toMatch(/^[a-z0-9-]{1,40}$/);
+    expect(revision).toMatch(/^[a-f0-9]{64}$/);
+    authority.requests.push({ profileId, revision });
+    const profile = profiles.find(item => item.id === profileId);
+    const checkedAt = await page.evaluate(() => new Date().toISOString());
+    const today = await page.evaluate(() => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()));
+    const verdict = !profile ? 'missing' : profile.revision !== revision ? 'changed' : today >= profile.expiresOn ? 'expired' : authority.status;
+    const ok = verdict === 'approved';
+    await route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': request.headers().origin || new URL(page.url()).origin, 'Cache-Control': 'no-store' },
+      body: JSON.stringify({ ok, status: verdict, profileId, revision, expiresOn: profile?.expiresOn || null, checkedAt,
+        approver: ok ? 'Joshua Moss, MD' : null, profile: ok ? Object.fromEntries(PUBLIC_PROFILE_FIELDS.map(key => [key, profile[key]])) : null }) });
+  });
+  return authority;
+}
 
 export function enableCarePacketHtml(html) {
   const flag = 'var FD_CARE_PACKET_ENABLED=false;';
@@ -10,9 +41,15 @@ export function enableCarePacketHtml(html) {
 }
 
 export async function enableCarePacket(page) {
+  await pinCareProfileAuthority(page);
   await page.route(url => url.pathname === '/', async route => {
     const response = await route.fetch();
-    await route.fulfill({ response, body: enableCarePacketHtml(await response.text()) });
+    const html = enableCarePacketHtml(await response.text());
+    const match = html.match(/var FD_CARE_INSERTS=(.*);\n/);
+    expect(match, 'the packet fixture supplies candidates in the real payload').toBeTruthy();
+    const payload = JSON.parse(match[1]);
+    payload.unitProfiles = [UNIT_PROFILE_FIXTURE.profile, UNIT_PROFILE_FIXTURE.expired];
+    await route.fulfill({ response, body: html.replace(match[0], () => 'var FD_CARE_INSERTS=' + JSON.stringify(payload) + ';\n') });
   });
 }
 

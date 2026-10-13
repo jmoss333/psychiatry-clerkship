@@ -300,7 +300,7 @@ function fdCarePacketBlocker(state,data,gate,sheet,forCopy){
   if(!sheet)return {code:'MEASURE_FAILED',message:'The packet could not be laid out, so it cannot print.'};
   if(!sheet.ok)return {code:sheet.code,message:sheet.message};
   list=sheet.blockers||[];
-  /* Copy names no unit and promises no contact, so the unit rules (scope print) do not stop it. */
+  /* Profile and callback approval apply to both output paths. Print-only layout limits can still exempt text. */
   for(i=0;i<list.length;i++)if(!(forCopy&&list[i].scope==='print'))return {code:list[i].code,message:list[i].message};
   if(forCopy&&state.mode!=='final')return {code:'NOT_FINAL',message:'Switch to the Final copy to copy text for the After Visit Summary.'};
   return null;
@@ -312,15 +312,16 @@ function fdCarePacketProfileStatus(info,profiles,typed,stale){
   if(stale)return 'The saved unit profile is not available in this version. Type your own details, or choose another profile and press Load profile.';
   if(info.loaded){
     for(i=0;i<profiles.length;i++)if(profiles[i].id===info.profile)found=profiles[i];
-    if(info.expired)return 'The loaded profile’s phone confirmation has lapsed'+(found&&found.usableThrough?' (it held through '+found.usableThrough+')':'')+'. A Final copy needs a current confirmation.';
-    return 'Loaded: '+(found?found.label:'unit profile')+'. Phone confirmed through '+(found?found.usableThrough:'')+'.';
+    if(info.expired)return 'This profile expired on '+(found?found.expiresOn:'')+' (America/New_York). A new verification and owner approval are required.';
+    return 'Loaded: '+(found?found.label:'unit profile')+'. '+(info.confirmed?'Approval checked.':'Approval has not been confirmed.')+' Expires on '+(found?found.expiresOn:'')+' (America/New_York).'+
+      (typeof info.daysToExpiry==='number'&&info.daysToExpiry>0&&info.daysToExpiry<=14?' Verification is due soon; arrange a new check before that date.':'');
   }
   return typed?'Using the details you typed. They are not a confirmed profile.':'';
 }
 /* What patients will be told, read back so a transposed digit is seen before printing. */
 function fdCarePacketReadback(info,mode){
-  if(info.phone)return 'Patients will be told to call '+info.phone+'.'+(info.confirmed?'':' This number is not confirmed.');
-  return mode==='final'?'':'No unit phone is filled in. The Review copy tells patients that a nurse will write it on the page.';
+  if(info.phone)return info.confirmed?'Approved unit contact: '+info.phone+'.':'Candidate phone: '+info.phone+'. It cannot be printed or copied until approved.';
+  return 'No approved unit contact is loaded. You can keep editing this draft.';
 }
 /* The preview's controls, as markup. Pure: every value comes in as an argument and every interpolation is escaped. The
    controller renders this once per opening and afterwards patches the nodes in place, because replacing a node that is
@@ -344,7 +345,7 @@ function fdCarePacketControls(state,data,payload,gate,ui){
   out+='<fieldset class="fd-care-packet-preview__mode"><legend>Copy to print</legend>'+
     radio('review','Review copy','Prints on the unit, with tick boxes for the patient to mark.')+
     radio('final','Final copy','Goes home with the After Visit Summary.')+
-    '<p class="fd-care-packet-preview__hint" id="fd-care-packet-modenote" data-fd-care-packet-modenote>A Final copy that names the unit or promises a call needs a confirmed unit profile. A Review copy does not.</p></fieldset>';
+    '<p class="fd-care-packet-preview__hint" id="fd-care-packet-modenote" data-fd-care-packet-modenote>Both copies need current owner approval of the unit profile before Print or Copy. Draft editing remains available.</p></fieldset>';
   if(payload&&Array.isArray(payload.inserts)){
     out+='<fieldset class="fd-care-packet-preview__pages"><legend>Pages to include</legend><p class="fd-care-packet-preview__always">Always included: the welcome and the crisis lines.</p>';
     for(i=0;i<payload.inserts.length;i++){
@@ -355,13 +356,20 @@ function fdCarePacketControls(state,data,payload,gate,ui){
     }
     out+='</fieldset>';
   }
+  out+='<fieldset class="fd-care-packet-preview__pages" data-fd-care-packet-callback-panel'+(fdCarePacketInsertOn(state,fdCarePacketInsertOf(payload,'callback'))?'':' hidden')+'><legend>Confirm the planned call</legend>';
+  var callbackKeys=['arranged','plan','preferences'],callbackLabels=[
+    'Staff have arranged this call for this discharge with the named team.',
+    'The agreed call window and deadline are recorded in the After Visit Summary or will be written on this page before handoff; the return number, hours and fallback have been confirmed.',
+    'The patient’s contact details and message preferences were agreed in the clinical workflow.'];
+  for(i=0;i<callbackKeys.length;i++)out+='<label class="fd-care-packet__check"><input type="checkbox" data-fd-care-packet-callback="'+callbackKeys[i]+'"'+(ui.callback&&ui.callback[callbackKeys[i]]?' checked':'')+'> <span>'+callbackLabels[i]+'</span></label>';
+  out+='<p class="fd-care-packet-preview__hint">Keep patient details in the clinical record or handwriting; do not enter them here.</p></fieldset>';
   out+='<div class="fd-care-packet-preview__profile" data-fd-care-packet-profile>';
   if(profiles.length){
-    out+='<label for="fd-care-packet-profile">Confirmed unit profile</label><div class="fd-care-packet-preview__profilerow"><select id="fd-care-packet-profile" data-fd-care-packet-profile-select>'+
+    out+='<label for="fd-care-packet-profile">Unit profile</label><div class="fd-care-packet-preview__profilerow"><select id="fd-care-packet-profile" data-fd-care-packet-profile-select>'+
       '<option value="">Choose a profile…</option>';
     for(i=0;i<profiles.length;i++)out+='<option value="'+fdEsc(profiles[i].id)+'"'+(info.loaded&&info.profile===profiles[i].id?' selected':'')+'>'+fdEsc(profiles[i].label)+'</option>';
     out+='</select><button type="button" data-fd-care-packet-profile-load>Load profile</button></div>';
-  }else out+='<p class="fd-care-packet-preview__hint" data-fd-care-packet-profile-none>No confirmed unit profile is set up yet. A Final copy that names the unit needs one; ask the project owner to add it.</p>';
+  }else out+='<p class="fd-care-packet-preview__hint" data-fd-care-packet-profile-none>No unit profile is set up yet. Print and Copy need an approved profile; draft editing remains available.</p>';
   out+='<p class="fd-care-packet-preview__hint" id="fd-care-packet-profile-status" data-fd-care-packet-profile-status>'+fdEsc(fdCarePacketProfileStatus(info,profiles,typed,!!raw.profile&&!info.loaded))+'</p>'+
     '<button type="button" data-fd-care-packet-profile-unlink'+(info.loaded?'':' hidden')+'>Use my own details instead</button></div>';
   out+='<div class="fd-care-packet-preview__unit">'+
@@ -421,6 +429,10 @@ function fdCreateCarePacket(options){
   var state=null,gate=fdCarePacketGateBlank(),root=null,live=null,notify=null,sayTimer=null;
   var previewRoot=null,controlsNode=null,pagesNode=null,controlsBuilt=false,previewOpen=false,draft={},pagesTimer=null,deferTimer=null,lastSheet=null;
   var printing=false,printStarted=0,printHost=null,pageStyle=null,savedTitle=null,printTitle='',printKind='',fallbackText='',cardMessage='',listening=false,lastPointer=null;
+  var copyEpoch=0;
+  var printPermit=false,printFingerprint='';
+  var authority=null,authorityBusy=false,authoritySerial=0,authorityTimer=null,reviewFingerprint='';
+  var callbackGate={arranged:false,plan:false,preferences:false};
   var getData=function(){return null;};
   /* Layout options for every sheet this controller builds. Production passes none; a test may hand in a measurer. */
   var sheetBase=(options&&options.sheet)||{};
@@ -428,6 +440,7 @@ function fdCreateCarePacket(options){
     var out={},key;
     for(key in sheetBase)if(Object.prototype.hasOwnProperty.call(sheetBase,key))out[key]=sheetBase[key];
     for(key in extra)if(Object.prototype.hasOwnProperty.call(extra,key))out[key]=extra[key];
+    out.authority=authority;out.callback=callbackGate;
     return out;
   }
   function current(){if(!state)state=fdCarePacketLoad(storage);return state;}
@@ -438,7 +451,8 @@ function fdCreateCarePacket(options){
 
   /* ---- print staging: ONE atomic set (container, body marker, page rule, title, flag), removed together ---- */
   function teardown(){
-    printing=false;
+    copyEpoch++;
+    printing=false;printPermit=false;printFingerprint='';
     if(printHost&&printHost.parentNode)printHost.parentNode.removeChild(printHost);
     printHost=null;
     if(pageStyle&&pageStyle.parentNode)pageStyle.parentNode.removeChild(pageStyle);
@@ -479,7 +493,7 @@ function fdCreateCarePacket(options){
     }
     return s;
   }
-  function unitInfo(s){return fdCarePacketUnitOf(s,payload,nowMs());}
+  function unitInfo(s){return fdCarePacketUnitOf(s,payload,nowMs(),authority);}
   function unitErrors(s){
     var info=unitInfo(s);
     return {name:info.nameError,phone:info.phoneError};
@@ -487,7 +501,7 @@ function fdCreateCarePacket(options){
   function controlUi(){
     var s=current(),data=getData();
     return {sheet:lastSheet,blocker:fdCarePacketBlocker(s,data,gate,lastSheet,false),copyBlocker:fdCarePacketBlocker(s,data,gate,lastSheet,true),
-      unitErrors:unitErrors(s),info:unitInfo(viewState()),fallback:fallbackText};
+      unitErrors:unitErrors(s),info:unitInfo(viewState()),fallback:fallbackText,callback:callbackGate};
   }
   function paintPages(){
     if(!pagesNode||!lastSheet)return;
@@ -550,6 +564,10 @@ function fdCreateCarePacket(options){
     for(k=0;k<nodes.length;k++)nodes[k].checked=nodes[k].getAttribute('data-fd-care-packet-mode')===s.mode;
     nodes=controlsNode.querySelectorAll('[data-fd-care-packet-insert]');
     for(k=0;k<nodes.length;k++)nodes[k].checked=fdCarePacketInsertOn(s,fdCarePacketInsertOf(payload,nodes[k].getAttribute('data-fd-care-packet-insert')));
+    input=q('[data-fd-care-packet-callback-panel]');
+    if(input)input.hidden=!fdCarePacketInsertOn(s,fdCarePacketInsertOf(payload,'callback'));
+    nodes=controlsNode.querySelectorAll('[data-fd-care-packet-callback]');
+    for(k=0;k<nodes.length;k++)nodes[k].checked=callbackGate[nodes[k].getAttribute('data-fd-care-packet-callback')]===true;
     if(fallback.getAttribute('data-shown')!==fallbackText){
       fallback.innerHTML=fallbackText?'<label for="fd-care-packet-copy-text">Copy this text</label><textarea id="fd-care-packet-copy-text" readonly rows="8">'+fdEsc(fallbackText)+'</textarea>':'';
       fallback.setAttribute('data-shown',fallbackText);
@@ -662,21 +680,72 @@ function fdCreateCarePacket(options){
   function nameOf(id){var record=fdCarePacketRecords(getData())[id];return record?record.name:'listing';}
   /* Anything staged for printing described the packet as it WAS, so every change removes it. */
   function commit(next,opts){
+    resetGate();callbackGate={arranged:false,plan:false,preferences:false};
     state=next;fdCarePacketSave(storage,state);
+    reviewFingerprint=packetFingerprint();
     teardown();
     fallbackText='';
     if(previewOpen&&!fdCarePacketIds(state,getData()).length)previewOpen=false;
     paint(opts);
     if(notify)notify();
   }
-  /* The four confirmations describe THE packet that was reviewed, so they reset whenever a listing is
-     added, a page is switched on, the ward's details change, or the packet is cleared (removing or reordering
-     adds nothing unreviewed). Returns whether anything was cleared so the announcement can say why "ready" went away. */
+  /* Review belongs to the exact packet: every content, order, mode or contact change clears it.
+     Returns whether anything was cleared so the announcement can say why "ready" went away. */
   function resetGate(){
     var any=false,key;
     for(key in gate)if(gate[key]===true)any=true;
     gate=fdCarePacketGateBlank();
     return any;
+  }
+  function packetFingerprint(){
+    var s=current(),data=getData(),byId=fdCarePacketRecords(data),rows=[],i;
+    for(i=0;i<s.ids.length;i++)rows.push(byId[s.ids[i]]||null);
+    return JSON.stringify([s,rows,data&&data.categories,data&&data.partial,payload]);
+  }
+  function syncReview(){
+    var fingerprint=packetFingerprint();
+    if(reviewFingerprint&&reviewFingerprint!==fingerprint){
+      resetGate();callbackGate={arranged:false,plan:false,preferences:false};authority=null;fallbackText='';teardown();
+    }
+    reviewFingerprint=fingerprint;
+  }
+  function checkApproval(action){
+    syncReview();
+    var profile=fdCarePacketProfileFind(payload,current().unit.profile),serial=++authoritySerial,epoch=copyEpoch,fingerprint=packetFingerprint(),result;
+    if(!fdCarePacketPayloadOk(payload)){say('Crisis contacts are unavailable. Reload the page before printing or copying.');return {ok:false,code:'CRISIS_UNAVAILABLE'};}
+    if(!count()){say('Add a listing to the packet to begin.');return {ok:false,code:'EMPTY'};}
+    if(!profile){authority=null;paint({patch:true});say('Print and Copy need an approved unit profile. You can keep editing this draft.');return {ok:false,code:'UNIT_UNCONFIRMED'};}
+    function received(value){
+      if(serial!==authoritySerial)return {ok:false,code:'STALE'};
+      if(epoch!==copyEpoch||fingerprint!==packetFingerprint()){
+        authorityBusy=false;
+        if(!action&&previewRoot&&current().unit.profile===profile.id)return checkApproval();
+        return {ok:false,code:'STALE'};
+      }
+      authorityBusy=false;
+      authority=fdCareProfileReceipt(profile,value,nowMs())?value:null;
+      if(!authority){resetGate();callbackGate={arranged:false,plan:false,preferences:false};fallbackText='';teardown();}
+      paint({patch:true});
+      if(!authority){say('Unit approval could not be confirmed. Print and Copy are unavailable; draft editing remains available.');return {ok:false,code:'UNIT_UNCONFIRMED'};}
+      return action?action():{ok:true,code:''};
+    }
+    authorityBusy=true;
+    try{result=options&&typeof options.authorizeProfile==='function'?options.authorizeProfile(profile):fdCareProfileRequest(profile);}
+    catch(ignoreAuthorityFailure){return received(null);}
+    if(result&&typeof result.then==='function')return result.then(received,function(){return received(null);});
+    return received(result);
+  }
+  function authorityWake(){
+    if(previewOpen&&(!document.visibilityState||document.visibilityState==='visible'))checkApproval();
+  }
+  function scheduleAuthority(){
+    if(typeof window==='undefined'||typeof window.setTimeout!=='function')return;
+    authorityTimer=window.setTimeout(function(){authorityWake();scheduleAuthority();},30000);
+  }
+  function setCallback(key,value){
+    if(!Object.prototype.hasOwnProperty.call(callbackGate,key))return false;
+    callbackGate[key]=value===true;resetGate();fallbackText='';teardown();paint({patch:true});
+    return true;
   }
   function cleared(was){return was?' Review confirmations cleared.':'';}
   function toggle(id){
@@ -741,6 +810,7 @@ function fdCreateCarePacket(options){
     paint({patch:true});
     var ui=controlUi();
     say('Preview open. '+(lastSheet&&lastSheet.ok?pagesLabel()+', '+modeLabel()+'. ':'')+fdCarePacketReason(ui.blocker,ui.copyBlocker));
+    if(current().unit.profile)checkApproval();
     return true;
   }
   function closePreview(silent){
@@ -807,6 +877,7 @@ function fdCreateCarePacket(options){
     next=fdCarePacketCopy(cur);next.unit={name:'',phone:'',profile:usable.id};
     commit(next,{patch:true});
     sayChanged(function(){return 'Loaded unit profile '+usable.label+'. '+fdCarePacketReadback(unitInfo(current()),current().mode)+cleared(was);},before);
+    checkApproval();
     return true;
   }
   /* Typed details start empty: nothing confirmed is carried into values that are not. */
@@ -829,11 +900,16 @@ function fdCreateCarePacket(options){
 
   /* ---- print and copy: the same answer the buttons show decides, so a stale button cannot print ---- */
   function prepare(forCopy){
+    syncReview();
     commitDrafts();
     var s=current(),data=getData(),sheet=fdCarePacketSheet(s,data,payload,layout({headingBase:forCopy?4:1}));
     return {sheet:sheet,state:s,data:data,blocker:fdCarePacketBlocker(s,data,gate,sheet,forCopy)};
   }
   function print(){
+    if(printing&&printStarted&&Date.now()-printStarted<30000)return {ok:false,code:'BUSY'};
+    commitDrafts();return checkApproval(printApproved);
+  }
+  function printApproved(){
     var r;
     if(printing&&printStarted&&Date.now()-printStarted<30000)return {ok:false,code:'BUSY'};
     r=prepare(false);
@@ -841,6 +917,7 @@ function fdCreateCarePacket(options){
     if(typeof document==='undefined'||!document.body||typeof window==='undefined'||typeof window.print!=='function')return {ok:false,code:'NO_DOCUMENT'};
     buildHost(r.sheet.html,false);
     printing=true;printStarted=Date.now();printKind='packet';
+    printPermit=true;printFingerprint=packetFingerprint();
     try{window.print();}catch(ignorePrintFailure){teardown();return {ok:false,code:'PRINT_FAILED'};}
     return {ok:true,code:''};
   }
@@ -868,8 +945,19 @@ function fdCreateCarePacket(options){
   }
   function copied(){fallbackText='';paintControls();say('Copied. Paste it into the After Visit Summary.');}
   function showFallback(text){fallbackText=text;paintControls();say('Copy is unavailable here. The text is shown below so you can copy it.');}
-  function copy(){
-    var r=prepare(true),t,clip,pending;
+  function copy(){commitDrafts();return checkApproval(copyApproved);}
+  function copyApproved(){
+    var request=++copyEpoch,r=prepare(true),t,clip,pending,fingerprint=packetFingerprint();
+    function stillCurrent(){
+      if(request!==copyEpoch)return false;
+      if(fingerprint!==packetFingerprint()){syncReview();paint({patch:true});return false;}
+      if(!unitInfo(current()).confirmed){
+        authority=null;resetGate();callbackGate={arranged:false,plan:false,preferences:false};fallbackText='';teardown();paint({patch:true});
+        say('Unit approval is no longer current. Check the profile before copying again.');
+        return false;
+      }
+      return true;
+    }
     if(r.blocker){say(r.blocker.message);return {ok:false,code:r.blocker.code};}
     t=fdCarePacketText(r.state,r.data,payload,layout({}));
     if(!t.ok||(t.blockers&&t.blockers.length)){
@@ -879,7 +967,15 @@ function fdCreateCarePacket(options){
     clip=typeof navigator!=='undefined'?navigator.clipboard:null;
     if(!clip||typeof clip.writeText!=='function'){showFallback(t.text);return {ok:false,code:'NO_CLIPBOARD'};}
     try{pending=clip.writeText(t.text);}catch(ignoreCopyFailure){showFallback(t.text);return {ok:false,code:'COPY_FAILED'};}
-    if(pending&&typeof pending.then==='function')pending.then(copied,function(){showFallback(t.text);});else copied();
+    if(pending&&typeof pending.then==='function')pending.then(function(){
+      if(stillCurrent())copied();
+    },function(){
+      /* A delayed fallback is new output. Recheck authority, since it may have been withdrawn after Copy began. */
+      if(stillCurrent())checkApproval(function(){
+        if(stillCurrent()){showFallback(t.text);return {ok:false,code:'COPY_FAILED'};}
+        return {ok:false,code:'STALE'};
+      });
+    });else copied();
     return {ok:true,code:''};
   }
   /* True when keyboard focus is inside the packet (its tray or its preview). A print started from anywhere else, including the
@@ -889,24 +985,29 @@ function fdCreateCarePacket(options){
     if(!active||active===document.body)return false;
     return !!((previewRoot&&typeof previewRoot.contains==='function'&&previewRoot.contains(active))||(root&&typeof root.contains==='function'&&root.contains(active)));
   }
-  /* A print the trainee started with Ctrl+P or the menu while working in the packet: with the preview open it prints the same
-     packet the button would (or only a notice while review is incomplete); otherwise any staged packet is removed and the
-     ordinary page prints. The inline preview itself is hidden in print always. */
+  /* Native print cannot await approval: inside the preview it receives a notice directing the trainee to the Print button.
+     A button-approved packet is staged for one print only. Outside the packet the ordinary page prints. */
   function onBefore(){
     var s,sheet,blocker;
     if(printing){
-      if(printStarted&&Date.now()-printStarted<30000)return;
-      /* afterprint never came (some browsers skip it): whatever is staged is stale and must not print again. */
-      teardown();
+      if(printKind==='packet'){
+        if(printPermit&&printStarted&&Date.now()-printStarted<30000&&unitInfo(current()).confirmed&&printFingerprint===packetFingerprint()){
+          printPermit=false;return;
+        }
+        teardown();
+      }else{
+        if(printStarted&&Date.now()-printStarted<30000)return;
+        /* afterprint never came (some browsers skip it): whatever is staged is stale and must not print again. */
+        teardown();
+      }
     }
     /* A mouse click on a button elsewhere does not always move focus (Safari, Firefox on macOS), so the last pointer-down also counts:
        a print that follows a click OUTSIDE the packet is that control's print (the older pack's), never the packet's. */
     if(lastPointer&&Date.now()-lastPointer.at<2000&&!lastPointer.inside){teardown();return;}
     if(!previewOpen||!focusInside()){teardown();return;}
     if(draft.name!==undefined||draft.phone!==undefined){buildHost('',true);return;}
-    s=current();sheet=fdCarePacketSheet(s,getData(),payload,layout({headingBase:1}));
-    blocker=fdCarePacketBlocker(s,getData(),gate,sheet,false);
-    if(blocker)buildHost('',true);else buildHost(sheet.html,false);
+    /* Native printing cannot await a fresh authority check. Only the Print button creates the one-shot staged packet. */
+    buildHost('',true);
   }
   function onAfter(){
     var fromButton=printing,kind=printKind,button;
@@ -963,7 +1064,7 @@ function fdCreateCarePacket(options){
     if(button.hasAttribute('data-fd-care-packet-clear')){clear();return {attr:'id',id:'fd-care-packet-title'};}
     return null;
   }
-  var OWNED=['data-fd-care-packet-gate','data-fd-care-packet-mode','data-fd-care-packet-insert','data-fd-care-packet-unit-field'];
+  var OWNED=['data-fd-care-packet-gate','data-fd-care-packet-mode','data-fd-care-packet-insert','data-fd-care-packet-unit-field','data-fd-care-packet-callback'];
   function owns(input){
     var i;
     if(!input||!input.hasAttribute)return false;
@@ -973,6 +1074,10 @@ function fdCreateCarePacket(options){
   function handleChange(input){
     var key,mode,id,field;
     if(!owns(input))return null;
+    if(input.hasAttribute('data-fd-care-packet-callback')){
+      key=input.getAttribute('data-fd-care-packet-callback');setCallback(key,input.checked===true);
+      return {attr:'data-fd-care-packet-callback',id:key,keep:true};
+    }
     if(input.hasAttribute('data-fd-care-packet-gate')){
       key=input.getAttribute('data-fd-care-packet-gate');
       setGate(key,input.checked===true);
@@ -997,6 +1102,7 @@ function fdCreateCarePacket(options){
     field=input.getAttribute('data-fd-care-packet-unit-field');
     if(field!=='name'&&field!=='phone')return false;
     draft[field]=String(input.value==null?'':input.value).slice(0,200);
+    copyEpoch++;fallbackText='';
     schedulePages();
     return true;
   }
@@ -1015,26 +1121,34 @@ function fdCreateCarePacket(options){
     lastPointer={at:Date.now(),inside:!!target&&((previewRoot&&typeof previewRoot.contains==='function'&&previewRoot.contains(target))||(root&&typeof root.contains==='function'&&root.contains(target)))};
   }
   function unlisten(){
+    clearTimeout(authorityTimer);authorityTimer=null;
     if(listening&&typeof window!=='undefined'&&window.removeEventListener){
       window.removeEventListener('beforeprint',onBefore);
       window.removeEventListener('afterprint',onAfter);
+      window.removeEventListener('focus',authorityWake);
     }
     if(listening&&typeof document!=='undefined'&&document&&typeof document.removeEventListener==='function')document.removeEventListener('pointerdown',onPointer,true);
+    if(listening&&typeof document!=='undefined'&&document&&typeof document.removeEventListener==='function')document.removeEventListener('visibilitychange',authorityWake);
     listening=false;lastPointer=null;
   }
   return {
     mount:function(node,status,dataGetter,onChange,previewNode){
+      copyEpoch++;
       unlisten();
       clearTimeout(deferTimer);deferTimer=null;
       /* A new preview node means none of the old pieces are in it. */
       controlsBuilt=false;controlsNode=null;pagesNode=null;lastSheet=null;fallbackText='';
       root=node||null;live=status||null;notify=onChange||null;previewRoot=previewNode||null;
       getData=typeof dataGetter==='function'?dataGetter:function(){return null;};
+      reviewFingerprint=packetFingerprint();
       if(previewRoot&&typeof window!=='undefined'&&window.addEventListener){
         window.addEventListener('beforeprint',onBefore);
         window.addEventListener('afterprint',onAfter);
+        window.addEventListener('focus',authorityWake);
         if(typeof document!=='undefined'&&document&&typeof document.addEventListener==='function')document.addEventListener('pointerdown',onPointer,true);
+        if(typeof document!=='undefined'&&document&&typeof document.addEventListener==='function')document.addEventListener('visibilitychange',authorityWake);
         listening=true;
+        scheduleAuthority();
       }
       paint();
     },
@@ -1047,9 +1161,10 @@ function fdCreateCarePacket(options){
       previewOpen=false;draft={};controlsBuilt=false;controlsNode=null;pagesNode=null;lastSheet=null;fallbackText='';cardMessage='';printKind='';
       if(previewRoot){previewRoot.hidden=true;previewRoot.innerHTML='';}
       previewRoot=null;root=null;live=null;notify=null;getData=function(){return null;};gate=fdCarePacketGateBlank();
+      authority=null;authoritySerial++;authorityBusy=false;callbackGate={arranged:false,plan:false,preferences:false};
     },
-    refresh:paint,
-    toggle:toggle,addMany:addMany,move:move,remove:remove,clear:clear,setGate:setGate,
+    refresh:function(){syncReview();paint();},
+    toggle:toggle,addMany:addMany,move:move,remove:remove,clear:clear,setGate:setGate,setCallback:setCallback,
     openPreview:openPreview,closePreview:closePreview,previewOpen:function(){return previewOpen;},
     setMode:setMode,setInsert:setInsert,setUnit:setUnit,loadProfile:loadProfile,unlinkProfile:unlinkProfile,print:print,printCard:printCard,copy:copy,
     owns:owns,handleClick:handleClick,handleChange:handleChange,handleInput:handleInput,handleKey:handleKey,

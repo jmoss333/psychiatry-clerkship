@@ -9,6 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { profileReceipt } from './helpers/care-profile-fixture.mjs';
 import { fileURLToPath } from 'node:url';
 
 const REPO = fileURLToPath(new URL('..', import.meta.url));
@@ -23,16 +24,18 @@ const DATA = readIf(path.join(FD, 'fd_data.js'));
 
 const built = spawnSync('python3', ['-B', '-c',
   `import json, sys\nsys.path.insert(0, ${JSON.stringify(AUTOMATION)})\nsys.path.insert(0, ${JSON.stringify(SITE_BUILD)})\nimport care_inserts_payload as p\nprint(json.dumps(p.build_payload()))`],
-{ cwd: SITE_BUILD, encoding: 'utf8' });
+{ cwd: SITE_BUILD, encoding: 'utf8', timeout:60000 });
 assert.equal(built.status, 0, built.stderr);
 const PAYLOAD = JSON.parse(built.stdout);
 const clone = value => JSON.parse(JSON.stringify(value));
-// The shipped payload carries no unit profile. A Final copy that names the unit needs one, so the tests that need a Final copy
-// use the payload with the TEST-ONLY fixture profiles in its unitProfiles (the shipped shape; a fictional 555-01xx number).
+// The shipped payload carries no unit profile. Either printable copy needs a profile and independent approval.
+// Positive tests use synthetic fixture profiles and matching authority receipts (fictional 555-01xx numbers).
 const FIXTURE = JSON.parse(readFileSync(path.join(REPO, 'tests/fixtures/care-unit-profile.json'), 'utf8'));
 const PROFILED = { ...clone(PAYLOAD), unitProfiles: [clone(FIXTURE.profile), clone(FIXTURE.expired)] };
 const PROFILE_UNIT = { name: '', phone: '', profile: 'fixture-unit' };
 const NOW = Date.UTC(2026, 9, 12);
+const ARRANGED_CALL = { arranged: true, plan: true, preferences: true };
+const approvedOptions = (profile = FIXTURE.profile, extra = {}) => ({ now: NOW, authority: profileReceipt(profile, NOW), ...extra });
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const EXPORTS = `;return typeof fdCarePacketControls === 'function' ? {
@@ -45,8 +48,9 @@ const EXPORTS = `;return typeof fdCarePacketControls === 'function' ? {
 // The shell's order. The QR generator and fd_care_pack.js are loaded because a sheet built without them has no codes at all.
 const QR = readFileSync(path.join(SITE_BUILD, 'vendor/qrcode-generator-1.4.4.js'), 'utf8');
 const PACK = readIf(path.join(FD, 'fd_care_pack.js'));
+const AUTHORITY = readIf(path.join(FD, 'fd_care_profile.js'));
 const load = (storage = undefined, global = PAYLOAD) =>
-  new Function('sessionStorage', 'FD_CARE_INSERTS', DATA + QR + PACK + PACKET + SHEET + SEARCH + EXPORTS)(storage, global);
+  new Function('sessionStorage', 'FD_CARE_INSERTS', DATA + QR + PACK + AUTHORITY + PACKET + SHEET + SEARCH + EXPORTS)(storage, global);
 const P = load();
 
 const store = () => {
@@ -111,7 +115,8 @@ function mounted(count = 6, options = {}) {
   return { c, storage, live, preview, data };
 }
 // The same, with the fixture profiles in the payload.
-const mountedP = (count = 6, options = {}) => mounted(count, { ...options, create: { payload: PROFILED, ...options.create } });
+const mountedP = (count = 6, options = {}) => mounted(count, { ...options, create: { payload: PROFILED,
+  authorizeProfile: profile => profileReceipt(profile,options.create?.sheet?.now ?? Date.now()), ...options.create } });
 const confirmAll = c => { for (const key of Object.keys(gateOn)) c.setGate(key, true); };
 const savedKey = storage => JSON.parse(storage.m.get('fd_care_packet_v1'));
 // A packet that can print as a Final copy: a listing, the confirmed fixture profile loaded, the copy, and the confirmations.
@@ -164,7 +169,7 @@ test('the profile id travels through copy, save and load; with one set the typed
   const unknown = P.normalize({ unit: { profile: 'not-shipped' } });
   assert.equal(unknown.unit.profile, 'not-shipped');
   assert.equal(P.unitOf(unknown, PROFILED, NOW).loaded, false);
-  assert.equal(P.unitOf({ unit: PROFILE_UNIT }, PROFILED, NOW).confirmed, true, 'the fixture profile is confirmed (precondition for the Final-copy tests)');
+  assert.equal(P.unitOf({ unit: PROFILE_UNIT }, PROFILED, NOW, profileReceipt(FIXTURE.profile, NOW)).confirmed, true, 'the fixture profile is confirmed (precondition for the Final-copy tests)');
   // The wallet card is no longer a page of the packet: a stored switch from an older tab is dropped.
   assert.equal(P.INSERTS.includes('card'), false);
   assert.deepEqual(P.normalize({ inserts: { card: true, safety: true } }).inserts, { safety: true });
@@ -216,9 +221,11 @@ test('Clear packet removes everything (listings, unit details, profile, copy, pa
 // ---- the markup ------------------------------------------------------------------------------------------
 const stateWith = (count, more = {}) => ({ ...P.blank(), ids: Array.from({ length: count }, (_, i) => 'a' + i), ...more });
 const readyUi = (state, payload = PAYLOAD) => {
-  const sheet = P.sheet(state, dataOf(6), payload, {});
+  const profile = payload.unitProfiles?.find(p => p.id === state.unit?.profile);
+  const options = profile ? approvedOptions(profile) : { now: NOW };
+  const sheet = P.sheet(state, dataOf(6), payload, options);
   return { sheet, blocker: P.blocker(state, dataOf(6), gateOn, sheet, false), copyBlocker: P.blocker(state, dataOf(6), gateOn, sheet, true), unitErrors: { name: '', phone: '' },
-    info: P.unitOf(state, payload, Date.now()) };
+    info: P.unitOf(state, payload, NOW, options.authority) };
 };
 // The text of the one element carrying this attribute in a piece of markup, or null.
 const textOf = (html, attr) => { const m = html.match(new RegExp('<(\\w+)[^>]*' + attr + '[^>]*>([^<]*)</\\1>')); return m ? m[2] : null; };
@@ -302,26 +309,26 @@ test('controls: a failed sheet shows its message as text and no pages, and the s
   assert.doesNotMatch(okHtml, /one-sided|wallet card/i, 'the packet controls say nothing about the wallet card: it is not part of the packet');
 });
 
-test('controls: the mode note says what a Final copy needs, beside the copy radios', () => {
+test('controls: the mode note requires approval for both copies, beside the copy radios', () => {
   const html = P.controls(stateWith(2), dataOf(6), PAYLOAD, gateOn, readyUi(stateWith(2)));
   assert.match(html, /<fieldset class="fd-care-packet-preview__mode"><legend>Copy to print<\/legend>[\s\S]*?<p[^>]*data-fd-care-packet-modenote[^>]*>[^<]*<\/p><\/fieldset>/,
     'inside the copy fieldset, after the radios');
-  assert.equal(textOf(html, 'data-fd-care-packet-modenote'), 'A Final copy that names the unit or promises a call needs a confirmed unit profile. A Review copy does not.');
+  assert.equal(textOf(html, 'data-fd-care-packet-modenote'), 'Both copies need current owner approval of the unit profile before Print or Copy. Draft editing remains available.');
 });
 
 test('controls: the profile section offers a select and an explicit Load button; the status, read-only fields, unlink button and readback follow what is loaded', () => {
   const data = dataOf(6);
-  const ui = (state, payload) => ({ ...readyUi(state, payload), info: P.unitOf(state, payload, NOW) });
+  const ui = (state, payload) => readyUi(state, payload);
   const typed = stateWith(2, { unit: { name: '4 East', phone: '(207) 555-0100', profile: '' } });
   const html = P.controls(typed, data, PROFILED, gateOn, ui(typed, PROFILED));
   assert.match(html, /<div class="fd-care-packet-preview__profile" data-fd-care-packet-profile>/);
-  assert.match(html, /<label for="fd-care-packet-profile">Confirmed unit profile<\/label>/, 'the select is labelled');
+  assert.match(html, /<label for="fd-care-packet-profile">Unit profile<\/label>/, 'the select is labelled');
   assert.match(html, /<select id="fd-care-packet-profile" data-fd-care-packet-profile-select><option value="">Choose a profile…<\/option><option value="fixture-unit">Fixture unit \(test only\)<\/option><option value="fixture-unit-expired">Expired fixture unit \(test only\)<\/option><\/select>/);
   assert.match(html, /<button type="button" data-fd-care-packet-profile-load>Load profile<\/button>/, 'loading is a button, never the select\'s change');
   assert.match(html, /<button type="button" data-fd-care-packet-profile-unlink hidden>/, 'nothing loaded, nothing to unlink');
   assert.doesNotMatch(html, /data-fd-care-packet-profile-none/);
   assert.equal(textOf(html, 'data-fd-care-packet-profile-status'), 'Using the details you typed. They are not a confirmed profile.');
-  assert.equal(textOf(html, 'data-fd-care-packet-readback'), 'Patients will be told to call (207) 555-0100. This number is not confirmed.');
+  assert.equal(textOf(html, 'data-fd-care-packet-readback'), 'Candidate phone: (207) 555-0100. It cannot be printed or copied until approved.');
   for (const key of ['name', 'phone']) assert.doesNotMatch(inputOf(html, key), /readonly/, key + ' can be typed in');
   assert.match(inputOf(html, 'name'), /value="4 East"/);
 
@@ -331,26 +338,26 @@ test('controls: the profile section offers a select and an explicit Load button;
   assert.match(on, /<button type="button" data-fd-care-packet-profile-unlink>Use my own details instead<\/button>/);
   assert.match(inputOf(on, 'name'), /readonly[^>]*value="Fixture Unit 4 East"/, 'the profile\'s name, read-only');
   assert.match(inputOf(on, 'phone'), /readonly[^>]*value="\(207\) 555-0142"/, 'the profile\'s phone, read-only');
-  assert.equal(textOf(on, 'data-fd-care-packet-profile-status'), 'Loaded: Fixture unit (test only). Phone confirmed through 2099-12-31.');
-  assert.equal(textOf(on, 'data-fd-care-packet-readback'), 'Patients will be told to call (207) 555-0142.', 'a confirmed number is not called unconfirmed');
+  assert.equal(textOf(on, 'data-fd-care-packet-profile-status'), 'Loaded: Fixture unit (test only). Approval checked. Expires on 2100-01-01 (America/New_York).');
+  assert.equal(textOf(on, 'data-fd-care-packet-readback'), 'Approved unit contact: (207) 555-0142.', 'a confirmed number is not called unconfirmed');
 
   const lapsed = stateWith(2, { unit: { name: '', phone: '', profile: 'fixture-unit-expired' } });
   const old = P.controls(lapsed, data, PROFILED, gateOn, ui(lapsed, PROFILED));
-  assert.equal(textOf(old, 'data-fd-care-packet-profile-status'), 'The loaded profile’s phone confirmation has lapsed (it held through 2020-01-01). A Final copy needs a current confirmation.');
-  assert.equal(textOf(old, 'data-fd-care-packet-readback'), 'Patients will be told to call (207) 555-0142. This number is not confirmed.');
+  assert.equal(textOf(old, 'data-fd-care-packet-profile-status'), 'This profile expired on 2020-01-02 (America/New_York). A new verification and owner approval are required.');
+  assert.equal(textOf(old, 'data-fd-care-packet-readback'), 'Candidate phone: (207) 555-0142. It cannot be printed or copied until approved.');
   assert.match(inputOf(old, 'phone'), /readonly/, 'still the profile\'s, still read-only');
   const noClock = P.controls(loaded, data, PROFILED, gateOn, { unitErrors: { name: '', phone: '' } });
-  assert.match(textOf(noClock, 'data-fd-care-packet-profile-status'), /has lapsed/, 'without a clock a confirmation is never assumed to hold');
+  assert.match(textOf(noClock, 'data-fd-care-packet-profile-status'), /expired/, 'without a clock a confirmation is never assumed to hold');
 
   const empty = stateWith(2);
   assert.equal(textOf(P.controls(empty, data, PROFILED, gateOn, ui(empty, PROFILED)), 'data-fd-care-packet-readback'),
-    'No unit phone is filled in. The Review copy tells patients that a nurse will write it on the page.');
+    'No approved unit contact is loaded. You can keep editing this draft.');
   const emptyFinal = { ...empty, mode: 'final' };
-  assert.equal(textOf(P.controls(emptyFinal, data, PROFILED, gateOn, ui(emptyFinal, PROFILED)), 'data-fd-care-packet-readback'), '', 'a Final copy promises no nurse');
+  assert.equal(textOf(P.controls(emptyFinal, data, PROFILED, gateOn, ui(emptyFinal, PROFILED)), 'data-fd-care-packet-readback'), 'No approved unit contact is loaded. You can keep editing this draft.', 'the Final copy has the same approval boundary');
   assert.equal(textOf(P.controls(empty, data, PROFILED, gateOn, ui(empty, PROFILED)), 'data-fd-care-packet-profile-status'), '');
 
   const shipped = P.controls(typed, data, PAYLOAD, gateOn, ui(typed, PAYLOAD));
-  assert.equal(textOf(shipped, 'data-fd-care-packet-profile-none'), 'No confirmed unit profile is set up yet. A Final copy that names the unit needs one; ask the project owner to add it.');
+  assert.equal(textOf(shipped, 'data-fd-care-packet-profile-none'), 'No unit profile is set up yet. Print and Copy need an approved profile; draft editing remains available.');
   assert.doesNotMatch(shipped, /data-fd-care-packet-profile-select|data-fd-care-packet-profile-load/, 'nothing to choose');
   const unusable = { ...clone(PAYLOAD), unitProfiles: [{ ...clone(FIXTURE.profile), id: 'Bad Id' }, { ...clone(FIXTURE.profile), id: 'short-phone', unitPhone: '555-0142' }] };
   const none = P.controls(typed, data, unusable, gateOn, ui(typed, unusable));
@@ -363,20 +370,20 @@ test('controls: every profile value is escaped, and a profile whose label carrie
   const markup = { ...clone(FIXTURE.profile), id: 'markup-label', label: '<img src=x onerror=alert(1)>' };
   const payload = { ...clone(PAYLOAD), unitProfiles: [hostile, markup] };
   const state = stateWith(2, { unit: { name: '', phone: '', profile: 'hostile-label' } });
-  const html = P.controls(state, dataOf(6), payload, gateOn, { ...readyUi(state, payload), info: P.unitOf(state, payload, NOW) });
+  const html = P.controls(state, dataOf(6), payload, gateOn, readyUi(state, payload));
   assert.match(html, /<option value="hostile-label" selected>Ward &quot;B&quot; &amp; &#39;C&#39;<\/option>/);
-  assert.equal(textOf(html, 'data-fd-care-packet-profile-status'), 'Loaded: Ward &quot;B&quot; &amp; &#39;C&#39;. Phone confirmed through 2099-12-31.');
+  assert.equal(textOf(html, 'data-fd-care-packet-profile-status'), 'Loaded: Ward &quot;B&quot; &amp; &#39;C&#39;. Approval checked. Expires on 2100-01-01 (America/New_York).');
   assert.match(inputOf(html, 'name'), /value="Unit &quot;B&quot; &amp; &#39;C&#39;"/);
   assert.doesNotMatch(html, /Ward "B"|Unit "B"/, 'nothing unescaped');
   assert.doesNotMatch(html, /markup-label|<img|onerror/, 'the profile with markup in its label is dropped, never rendered');
 });
 
 // ---- the blocker ------------------------------------------------------------------------------------------
-// Rewritten: the Final copy loads the fixture profile (a typed phone now stops a Final print), and the setup blockers are new.
+// Both modes require the exact approved profile; setup blockers precede review confirmations.
 test('the blocker names the first thing in the way, in a fixed order', () => {
   const data = dataOf(6);
   const state = stateWith(2, { mode: 'final', unit: { ...PROFILE_UNIT } });
-  const sheet = P.sheet(state, data, PROFILED, {});
+  const sheet = P.sheet(state, data, PROFILED, approvedOptions());
   assert.equal(sheet.ok, true, sheet.message);
   assert.deepEqual(sheet.blockers, [], 'a Final copy with the confirmed fixture profile has nothing in its way (precondition)');
   assert.equal(P.blocker(P.blank(), data, gateOn, sheet, false).code, 'EMPTY');
@@ -385,13 +392,13 @@ test('the blocker names the first thing in the way, in a fixed order', () => {
   assert.equal(P.blocker(state, data, gateOn, { ok: false, code: 'OVERFLOW', message: 'too long' }, false).code, 'OVERFLOW');
   assert.equal(P.blocker(state, data, gateOn, { ...sheet, blockers: [{ code: 'LISTING_TEXT', message: 'remove it' }] }, false).code, 'LISTING_TEXT');
   assert.equal(P.blocker(state, data, gateOn, sheet, false), null);
-  assert.equal(P.blocker({ ...state, mode: 'review' }, data, gateOn, P.sheet({ ...state, mode: 'review' }, data, PROFILED, {}), true).code, 'NOT_FINAL');
-  assert.equal(P.blocker({ ...state, mode: 'review' }, data, gateOn, P.sheet({ ...state, mode: 'review' }, data, PROFILED, {}), false), null, 'Print has no Final requirement');
+  assert.equal(P.blocker({ ...state, mode: 'review' }, data, gateOn, P.sheet({ ...state, mode: 'review' }, data, PROFILED, approvedOptions()), true).code, 'NOT_FINAL');
+  assert.equal(P.blocker({ ...state, mode: 'review' }, data, gateOn, P.sheet({ ...state, mode: 'review' }, data, PROFILED, approvedOptions()), false), null, 'Print has no Final requirement');
   assert.equal(P.blocker(state, data, gateOff, null, false).code, 'REVIEW', 'confirmations come before layout');
   assert.equal(P.blocker(P.blank(), data, gateOff, null, false).code, 'EMPTY', 'an empty packet comes first of all');
 });
 
-test('setup blockers (unit, call-back, an ineligible saved listing) come before the four confirmations; Copy is not held by the unit rules; NOT_FINAL is last', () => {
+test('setup blockers (unit, call-back, an ineligible saved listing) guard Print and Copy before the four confirmations; NOT_FINAL is last', () => {
   const data = dataOf(6);
   const state = stateWith(2, { mode: 'final', unit: { ...PROFILE_UNIT } });
   // A typed phone: never confirmed.
@@ -399,33 +406,36 @@ test('setup blockers (unit, call-back, an ineligible saved listing) come before 
   const typedSheet = P.sheet(typed, data, PROFILED, {});
   assert.equal(P.blocker(typed, data, gateOff, typedSheet, false).code, 'UNIT_UNCONFIRMED', 'named before the confirmations: confirming first and then fixing would re-arm them');
   assert.equal(P.blocker(typed, data, gateOn, typedSheet, false).code, 'UNIT_UNCONFIRMED');
-  assert.equal(P.blocker(typed, data, gateOff, typedSheet, true).code, 'REVIEW', 'Copy names no unit: the unit rule does not stop it');
-  assert.equal(P.blocker(typed, data, gateOn, typedSheet, true), null);
+  assert.equal(P.blocker(typed, data, gateOff, typedSheet, true).code, 'UNIT_UNCONFIRMED', 'Copy cannot bypass the unit approval rule');
+  assert.equal(P.blocker(typed, data, gateOn, typedSheet, true).code, 'UNIT_UNCONFIRMED');
   assert.equal(P.blocker(P.blank(), data, gateOff, typedSheet, false).code, 'EMPTY', 'still after an empty packet');
   // The call-back page: the fixture records a call-back program; a confirmed profile without one does not.
   const callback = { ...state, inserts: { callback: true } };
-  assert.deepEqual(P.sheet(callback, data, PROFILED, {}).blockers, [], 'the fixture profile records a call-back program');
-  const noCall = { ...clone(PAYLOAD), unitProfiles: [{ ...clone(FIXTURE.profile), id: 'fixture-no-callback', callbackProgram: false }] };
+  assert.deepEqual(P.sheet(callback, data, PROFILED, approvedOptions(FIXTURE.profile, { callback: ARRANGED_CALL })).blockers, [], 'an approved program and the specific arranged call are both confirmed');
+  assert.equal(P.sheet(callback, data, PROFILED, approvedOptions()).blockers[0].code, 'CALLBACK_UNCONFIRMED', 'a program alone never promises a call');
+  const noCallProfile = { ...clone(FIXTURE.profile), id: 'fixture-no-callback', callbackProgram: false,
+    callbackTeam: '', callbackPhone: '', callbackHours: '', callbackFallback: '', revision: 'c'.repeat(64) };
+  const noCall = { ...clone(PAYLOAD), unitProfiles: [noCallProfile] };
   const callbackNo = { ...callback, unit: { name: '', phone: '', profile: 'fixture-no-callback' } };
-  const callbackSheet = P.sheet(callbackNo, data, noCall, {});
+  const callbackSheet = P.sheet(callbackNo, data, noCall, approvedOptions(noCallProfile, { callback: ARRANGED_CALL }));
   assert.equal(P.blocker(callbackNo, data, gateOff, callbackSheet, false).code, 'CALLBACK_UNCONFIRMED');
-  assert.equal(P.blocker(callbackNo, data, gateOff, callbackSheet, true).code, 'REVIEW', 'Copy promises no call');
+  assert.equal(P.blocker(callbackNo, data, gateOff, callbackSheet, true).code, 'CALLBACK_UNCONFIRMED', 'Copy cannot bypass the arrangement rule');
   // A saved listing that has become ineligible: before the confirmations, for Print and Copy alike.
   const mixed = P.validate(feed([row(0), row(1, { category: 'crisis' })]));
   const inel = { ...state, ids: ['a0', 'a1'] };
-  const inelSheet = P.sheet(inel, mixed, PROFILED, {});
+  const inelSheet = P.sheet(inel, mixed, PROFILED, approvedOptions());
   assert.equal(P.blocker(inel, mixed, gateOff, inelSheet, false).code, 'INELIGIBLE');
   assert.equal(P.blocker(inel, mixed, gateOff, inelSheet, true).code, 'INELIGIBLE', 'an ineligible listing would be in the copied text too');
   // NOT_FINAL is the last thing Copy is told.
   const review = { ...state, mode: 'review' };
-  const reviewSheet = P.sheet(review, data, PROFILED, {});
+  const reviewSheet = P.sheet(review, data, PROFILED, approvedOptions());
   assert.equal(P.blocker(review, data, gateOn, { ...reviewSheet, blockers: [{ code: 'LISTING_TEXT', message: 'remove it' }] }, true).code, 'LISTING_TEXT');
   assert.equal(P.blocker(review, data, gateOff, reviewSheet, true).code, 'REVIEW');
   assert.equal(P.blocker(review, data, gateOn, reviewSheet, true).code, 'NOT_FINAL');
 });
 
 // ---- the gate is re-armed by anything that adds or changes what is printed ---------------------------------------
-test('any edit that adds or changes content re-arms the review confirmations; edits that add nothing do not', () => {
+test('every packet change re-arms all four review confirmations; unchanged values do not', () => {
   const rearmed = c => Object.values(c.gate()).every(v => v === false);
   const intact = c => Object.values(c.gate()).every(v => v === true);
   const { c } = mounted();
@@ -441,15 +451,15 @@ test('any edit that adds or changes content re-arms the review confirmations; ed
   arm(); c.setInsert('safety', true);
   assert.ok(rearmed(c), 'switching a page ON adds content nobody reviewed');
   arm(); c.setInsert('safety', false);
-  assert.ok(intact(c), 'switching a page OFF removes content: nothing unreviewed is added');
+  assert.ok(rearmed(c), 'removing a page changes the reviewed packet too');
   arm(); c.setInsert('warning', false);
-  assert.ok(intact(c));
+  assert.ok(rearmed(c));
   arm(); c.setInsert('warning', true);
   assert.ok(rearmed(c), 'switching a default page back on adds it again');
   arm(); c.setMode('final');
-  assert.ok(intact(c), 'the mode does not add content');
+  assert.ok(rearmed(c), 'the mode changes the reviewed packet');
   arm(); c.setMode('review');
-  assert.ok(intact(c));
+  assert.ok(rearmed(c));
   arm(); c.toggle('a2');
   assert.ok(rearmed(c), 'a new listing (PR B rule, unchanged)');
 });
@@ -479,13 +489,14 @@ test('an unfinished edit is committed before printing, and committing re-arms an
   c.handleInput(fakeField('name', 'Bed 4'));
   const result = c.print();
   assert.equal(result.ok, false);
-  assert.equal(result.code, 'REVIEW');
+  assert.equal(result.code, 'UNIT_UNCONFIRMED');
+  assert.deepEqual(c.gate(), gateOff, 'committing the pending draft invalidates all four confirmations');
   await settle();
   assert.equal(preview.pieces.controls.innerHTML.includes('Bed 4'), true, 'the committed value is what the controls now show');
 });
 
 // ---- typing, committing, Escape ---------------------------------------------------------------------------
-test('typing repaints the pages after a short delay and touches neither storage nor the announcer', async () => {
+test('typing repaints the draft without exposing unapproved details and touches neither storage nor the announcer', async () => {
   const { c, storage, live, preview } = mounted();
   c.toggle('a1');
   await settle();
@@ -499,7 +510,8 @@ test('typing repaints the pages after a short delay and touches neither storage 
   c.handleInput(fakeField('name', 'Unit 4 East'));
   assert.equal(storage.m.get('fd_care_packet_v1'), before, 'storage is written on change, not on input');
   await settle();
-  assert.match(preview.pieces.pages.innerHTML, /Unit 4 East/, 'the pages follow what is typed');
+  assert.doesNotMatch(preview.pieces.pages.innerHTML, /Unit 4 East/, 'unapproved details stay out of the patient pages');
+  assert.match(preview.pieces.pages.innerHTML, /Draft for editing/, 'the preview remains explicitly a draft');
   assert.ok(preview.pieces.pages.writes > pageWrites, 'and they really were repainted');
   assert.equal(preview.pieces.controls.writes, controlWrites, 'the controls (and the focused field in them) are not written to while typing');
   assert.equal(live.textContent, '', 'nothing is announced per keystroke');
@@ -515,7 +527,7 @@ test('committing the field saves it and re-arms the gate with an announcement', 
   assert.deepEqual(c.gate(), gateOff);
   assert.deepEqual(result, { attr: 'data-fd-care-packet-unit-field', id: 'phone', keep: true }, 'focus stays in the field');
   await settle();
-  assert.equal(live.textContent, 'Unit phone saved. Patients will be told to call (207) 555-0100. This number is not confirmed. Review confirmations cleared.',
+  assert.equal(live.textContent, 'Unit phone saved. Candidate phone: (207) 555-0100. It cannot be printed or copied until approved. Review confirmations cleared.',
     'the saved number is read back, so a transposed digit is heard before printing');
 });
 
@@ -577,12 +589,12 @@ test('loadProfile(id) replaces typed details with the profile, re-arms the confi
   assert.deepEqual(savedKey(storage).unit, PROFILE_UNIT, 'the typed values are dropped, not kept beside the profile');
   assert.deepEqual(c.gate(), gateOff, 'a new unit identity re-arms the confirmations');
   await settle();
-  assert.equal(live.textContent, 'Loaded unit profile Fixture unit (test only). Patients will be told to call (207) 555-0142. Review confirmations cleared.');
+  assert.equal(live.textContent, 'Loaded unit profile Fixture unit (test only). Approved unit contact: (207) 555-0142. Review confirmations cleared.');
   confirmAll(c);
-  assert.equal(c.loadProfile('fixture-unit-expired'), true, 'a lapsed profile still loads; its status and the Final rule say it lapsed');
+  assert.equal(c.loadProfile('fixture-unit-expired'), true, 'an expired candidate can load for editing but cannot gain approval');
   assert.deepEqual(c.gate(), gateOff);
   await settle();
-  assert.equal(live.textContent, 'Loaded unit profile Expired fixture unit (test only). Patients will be told to call (207) 555-0142. This number is not confirmed. Review confirmations cleared.');
+  assert.equal(live.textContent, 'Unit approval could not be confirmed. Print and Copy are unavailable; draft editing remains available.');
   // The shipped payload carries no profile, so every id is refused there.
   const shipped = mounted();
   shipped.c.toggle('a1');
@@ -644,10 +656,10 @@ test('the preview controls follow a load, an unlink and a typed commit IN PLACE 
   assert.equal(phone.value, '(207) 555-0142');
   assert.equal(name.readOnly, true);
   assert.equal(phone.readOnly, true);
-  assert.equal(status(), 'Loaded: Fixture unit (test only). Phone confirmed through 2099-12-31.');
+  assert.equal(status(), 'Loaded: Fixture unit (test only). Approval checked. Expires on 2100-01-01 (America/New_York).');
   assert.equal(n['[data-fd-care-packet-profile-unlink]'].hidden, false);
   assert.equal(n['[data-fd-care-packet-profile-select]'].value, 'fixture-unit');
-  assert.equal(readback(), 'Patients will be told to call (207) 555-0142.');
+  assert.equal(readback(), 'Approved unit contact: (207) 555-0142.');
   assert.equal(n['[data-fd-care-packet-print]'].disabled, true, 'the confirmations were re-armed');
   confirmAll(c);
   assert.equal(n['[data-fd-care-packet-print]'].disabled, false);
@@ -661,14 +673,14 @@ test('the preview controls follow a load, an unlink and a typed commit IN PLACE 
   assert.equal(n['[data-fd-care-packet-profile-unlink]'].hidden, true);
   assert.equal(n['[data-fd-care-packet-profile-select]'].hidden, false, 'the profile can still be chosen again');
   assert.equal(status(), '');
-  assert.equal(readback(), 'No unit phone is filled in. The Review copy tells patients that a nurse will write it on the page.');
+  assert.equal(readback(), 'No approved unit contact is loaded. You can keep editing this draft.');
 
   c.setUnit('phone', '(207) 555-0100');
   await settle();
   assert.equal(controls.writes, built);
   assert.equal(phone.value, '(207) 555-0100');
   assert.equal(status(), 'Using the details you typed. They are not a confirmed profile.');
-  assert.equal(readback(), 'Patients will be told to call (207) 555-0100. This number is not confirmed.');
+  assert.equal(readback(), 'Candidate phone: (207) 555-0100. It cannot be printed or copied until approved.');
 
   // A field with a pending draft keeps what the trainee is typing; one without follows the saved value.
   name.value = 'Ward 5 (still typing)';
@@ -739,8 +751,9 @@ test('removing the last listing while the preview is open closes it', () => {
 });
 
 test('announcements: opening says the page count and what is in the way; switching a page says the new count', async () => {
-  const { c, live } = mounted();
+  const { c, live } = mountedP();
   c.toggle('a1');
+  c.loadProfile('fixture-unit');
   await settle();
   c.openPreview();
   await settle();
@@ -827,24 +840,105 @@ function fakeBrowser(t) {
   return { handlers, doc, win, body, head, marks };
 }
 
+test('each output checks approval again and revocation blocks an already open packet in both modes', t => {
+  const env=fakeBrowser(t);
+  for(const mode of ['review','final']) {
+    let approved=true,calls=0;
+    const {c}=mountedP(6,{create:{sheet:FIXED_LAYOUT,authorizeProfile:profile=>{
+      calls++;return approved?profileReceipt(profile,FIXED_LAYOUT.now):{ok:false,status:'revoked'};
+    }}});
+    readyFinal(c,mode);c.openPreview();
+    const before=calls;
+    assert.equal(c.print().ok,true);
+    assert.equal(calls,before+1,'printing always rechecks');
+    env.handlers.afterprint();approved=false;
+    assert.equal(c.print().ok,false,'revocation takes effect without reload');
+    assert.equal(env.body.children.length,0,'old patient print removed');
+    assert.equal(c.copy().ok,false,'copy obeys the same authority');
+    c.leave();
+  }
+});
+
+test('a changed packet invalidates an outstanding approval response before any print is staged', async t => {
+  const env=fakeBrowser(t);let finish,pending=false;
+  const {c}=mountedP(6,{create:{sheet:FIXED_LAYOUT,authorizeProfile:profile=>pending?
+    new Promise(resolve=>{finish=()=>resolve(profileReceipt(profile,FIXED_LAYOUT.now));}):profileReceipt(profile,FIXED_LAYOUT.now)}});
+  readyFinal(c);c.openPreview();pending=true;
+  const result=c.print();
+  assert.equal(typeof result.then,'function');
+  c.clear();finish();
+  assert.equal((await result).ok,false);
+  assert.equal(env.win.printed,0);
+  assert.equal(env.body.children.length,0);
+  c.leave();
+});
+
 // Rewritten: the Final copy loads the fixture profile, and focus is put inside the preview (the print command stages the
 // packet only when it comes from inside the packet). The typing half runs on typed details, the only ones that can be typed.
-test('Ctrl+P with the preview open and focus in it prints the packet the button would; with a ward field still being typed it prints only the notice', t => {
+test('opening a saved selected profile checks its approval immediately without requiring Load again', t => {
+  const storage = store();
+  storage.setItem(P.KEY, JSON.stringify({ ...P.blank(), ids: ['a1'], mode: 'final', unit: { ...PROFILE_UNIT } }));
+  const checked = [];
+  const { c, preview } = mountedP(6, { storage, create: { sheet: FIXED_LAYOUT,
+    authorizeProfile: profile => { checked.push([profile.id, profile.revision]); return profileReceipt(profile, Date.now()); } } });
+  t.after(() => c.leave());
+  const before = checked.length;
+  assert.equal(c.openPreview(), true);
+  assert.equal(checked.length, before + 1, 'opening checks now, without waiting for the periodic refresh');
+  assert.deepEqual(checked.at(-1), [FIXTURE.profile.id, FIXTURE.profile.revision]);
+  assert.match(preview.pieces.controls.innerHTML, /Approval checked\./);
+  assert.deepEqual(c.gate(), gateOff, 'restoring a profile never restores review confirmations');
+});
+
+test('a staged packet cannot reach native print after its approved profile expires', t => {
+  const env = fakeBrowser(t);
+  const sheet = { ...FIXED_LAYOUT, now: Date.UTC(2100, 0, 1, 4, 59, 59, 999) };
+  const { c, preview } = mountedP(6, { create: { sheet } });
+  t.after(() => c.leave());
+  readyFinal(c); c.openPreview(); env.doc.activeElement = preview.inner;
+  assert.deepEqual(c.print(), { ok: true, code: '' });
+  assert.match(env.body.children[0].innerHTML, /fd-packet-page/, 'approved bytes were staged before expiry');
+  sheet.now += 1;
+  env.handlers.beforeprint();
+  const staged = env.body.children.map(node => node.innerHTML).join('');
+  assert.doesNotMatch(staged, /fd-packet-page|Fixture Unit 4 East|555-0142/, 'expiry is checked again at native print');
+});
+
+test('a staged packet is consumed by one native print event even when afterprint is missed', t => {
+  const env = fakeBrowser(t);
+  const { c, preview } = mountedP(6, { create: { sheet: FIXED_LAYOUT } });
+  t.after(() => c.leave());
+  readyFinal(c); c.openPreview(); env.doc.activeElement = preview.inner;
+  assert.deepEqual(c.print(), { ok: true, code: '' });
+  env.handlers.beforeprint();
+  assert.match(env.body.children[0].innerHTML, /fd-packet-page/, 'the first event consumes the freshly approved packet');
+  env.handlers.beforeprint();
+  const staged = env.body.children.map(node => node.innerHTML).join('');
+  assert.doesNotMatch(staged, /fd-packet-page|Fixture Unit 4 East|555-0142/, 'a second event cannot reuse those bytes');
+});
+
+test('Ctrl+P prints only a notice until the Print button checks approval and stages the packet; pending typed details also print only a notice', t => {
   const env = fakeBrowser(t);
   const { c, preview } = mountedP(6, { create: { sheet: FIXED_LAYOUT } });
   readyFinal(c);
   c.openPreview();
   env.doc.activeElement = preview.inner;
   env.handlers.beforeprint();
-  assert.match(env.body.children[0].innerHTML, /fd-packet-page/, 'nothing pending: the same packet the button prints');
-  assert.match(env.body.children[0].innerHTML, /Fixture Unit 4 East/, 'the Final copy with the loaded profile');
+  assert.match(env.body.children[0].innerHTML, /This is not the patient packet/, 'native printing cannot await a fresh approval check');
+  assert.doesNotMatch(env.body.children[0].innerHTML, /fd-packet-page|Fixture Unit 4 East/);
   env.handlers.afterprint();
   assert.equal(env.body.children.length, 0, 'and it is removed afterwards');
+  assert.deepEqual(c.print(), { ok: true, code: '' }, 'the button checks approval and stages the packet');
+  assert.match(env.body.children[0].innerHTML, /fd-packet-page/);
+  assert.match(env.body.children[0].innerHTML, /Fixture Unit 4 East/);
+  env.handlers.beforeprint();
+  assert.match(env.body.children[0].innerHTML, /fd-packet-page/, 'the one-shot staged packet survives the native print event');
+  env.handlers.afterprint();
   c.unlinkProfile();
   c.setMode('review');
   confirmAll(c);
   env.handlers.beforeprint();
-  assert.match(env.body.children[0].innerHTML, /fd-packet-page/, 'precondition: this Review copy prints');
+  assert.match(env.body.children[0].innerHTML, /This is not the patient packet/, 'an unapproved Review copy cannot print');
   env.handlers.afterprint();
   c.handleInput(fakeField('name', 'Bed 4'));
   env.handlers.beforeprint();
@@ -854,7 +948,7 @@ test('Ctrl+P with the preview open and focus in it prints the packet the button 
   assert.equal(env.marks.size, 0, 'the body marker goes with the container');
 });
 
-test('the print command stages the packet only from inside the packet: with focus elsewhere (an older pack\'s Print button) the ordinary page prints', t => {
+test('native print inside the packet stages its notice; with focus elsewhere the ordinary page prints', t => {
   const env = fakeBrowser(t);
   const tray = fakeTray();
   const { c, preview } = mountedP(6, { root: tray.root, create: { sheet: FIXED_LAYOUT } });
@@ -864,11 +958,13 @@ test('the print command stages the packet only from inside the packet: with focu
   const staged = () => env.body.children.length;
   env.doc.activeElement = preview.inner;
   env.handlers.beforeprint();
-  assert.equal(staged(), 1, 'focus in the preview: the packet');
+  assert.equal(staged(), 1, 'focus in the preview: the notice');
+  assert.match(env.body.children[0].innerHTML, /This is not the patient packet/);
   env.handlers.afterprint();
   env.doc.activeElement = tray.inner;
   env.handlers.beforeprint();
-  assert.equal(staged(), 1, 'focus in the tray: the packet');
+  assert.equal(staged(), 1, 'focus in the tray: the notice');
+  assert.doesNotMatch(env.body.children[0].innerHTML, /fd-packet-page|Fixture Unit 4 East/);
   env.handlers.afterprint();
   for (const [label, active] of [['a button outside the packet', olderPackPrint], ['the page body', env.doc.body], ['nothing focused', null]]) {
     env.doc.activeElement = active;
@@ -900,7 +996,7 @@ test('with no preview node mounted the controller adds no print listener, so the
   c.mount(fakeTray().root, fakeLive(), () => dataOf(3), null);
   assert.deepEqual(Object.keys(env.handlers), [], 'no preview: no listener');
   c.mount(null, fakeLive(), () => dataOf(3), null, fakePreview());
-  assert.deepEqual(Object.keys(env.handlers).sort(), ['afterprint', 'beforeprint']);
+  assert.deepEqual(Object.keys(env.handlers).sort(), ['afterprint', 'beforeprint', 'focus']);
   c.mount(null, fakeLive(), () => dataOf(3), null, null);
   assert.deepEqual(Object.keys(env.handlers), [], 'a remount without a preview removes them');
   c.mount(null, fakeLive(), () => dataOf(3), null, fakePreview());
@@ -908,7 +1004,7 @@ test('with no preview node mounted the controller adds no print listener, so the
   assert.deepEqual(Object.keys(env.handlers), [], 'leaving Care removes them');
 });
 
-// Rewritten: the Final copy loads the fixture profile (a typed phone now stops a Final print).
+// The printable packet loads the independently approved fixture profile.
 test('the page title is put back after printing only if nothing else changed it meanwhile', t => {
   const env = fakeBrowser(t);
   const { c } = mountedP(6, { create: { sheet: FIXED_LAYOUT } });
@@ -944,66 +1040,72 @@ test('a Final copy with the loaded fixture profile prints, naming the unit, and 
   assert.doesNotMatch(copied, /555-0142|Fixture Unit|Test Org/, 'the copied text names no unit');
 });
 
-test('a Final copy from typed details is refused for printing with UNIT_UNCONFIRMED and its exact message, before the confirmations; Copy and a Review copy are not', async t => {
+test('typed details block Print and Copy in both modes before the confirmations and keep the phone out of patient output', async t => {
   const env = fakeBrowser(t);
-  const profiled = mountedP(6, { create: { sheet: FIXED_LAYOUT } });
-  readyPacket(profiled.c); // a typed phone, Final, confirmed
-  assert.deepEqual(profiled.c.print(), { ok: false, code: 'UNIT_UNCONFIRMED' });
-  await settle();
-  assert.equal(profiled.live.textContent, 'A Final copy needs a confirmed unit profile. Load one in the unit details.', 'with profiles on offer it points at Load');
-  assert.equal(env.win.printed, 0);
-  assert.equal(env.body.children.length, 0, 'nothing staged');
-  profiled.c.setGate('region', false);
-  assert.equal(profiled.c.print().code, 'UNIT_UNCONFIRMED', 'named before the confirmations');
-  assert.equal(profiled.c.copy().code, 'REVIEW', 'Copy is held only by the confirmations');
-  confirmAll(profiled.c);
-  assert.equal(profiled.c.copy().code, 'NO_CLIPBOARD', 'and then nothing holds it');
-  profiled.c.setMode('review');
-  assert.deepEqual(profiled.c.print(), { ok: true, code: '' }, 'a Review copy from typed details prints');
-  env.handlers.afterprint();
-
+  const NEED_APPROVAL = 'Print and Copy need an approved unit profile. You can keep editing this draft.';
+  for (const mode of ['review', 'final']) {
+    const profiled = mountedP(6, { create: { sheet: FIXED_LAYOUT } });
+    readyPacket(profiled.c, mode);
+    profiled.c.openPreview();
+    assert.deepEqual(profiled.c.print(), { ok: false, code: 'UNIT_UNCONFIRMED' });
+    await settle();
+    assert.equal(profiled.live.textContent, NEED_APPROVAL, 'the refusal explains that draft editing remains available');
+    assert.match(profiled.preview.pieces.controls.innerHTML, /Load the profile to check its approval/);
+    assert.equal(env.win.printed, 0);
+    assert.equal(env.body.children.length, 0, 'nothing staged');
+    assert.doesNotMatch(profiled.preview.pieces.pages.innerHTML, /555-0100/, 'the candidate phone is not patient output');
+    profiled.c.setGate('region', false);
+    assert.equal(profiled.c.print().code, 'UNIT_UNCONFIRMED', 'named before the confirmations');
+    assert.equal(profiled.c.copy().code, 'UNIT_UNCONFIRMED', 'Copy cannot bypass approval');
+    confirmAll(profiled.c);
+    assert.equal(profiled.c.copy().code, 'UNIT_UNCONFIRMED', 'all four confirmations still cannot replace approval');
+    profiled.c.leave();
+  }
   const shipped = mounted(6, { create: { sheet: FIXED_LAYOUT } });
   readyPacket(shipped.c);
   assert.deepEqual(shipped.c.print(), { ok: false, code: 'UNIT_UNCONFIRMED' });
   await settle();
-  assert.equal(shipped.live.textContent, 'A Final copy needs a confirmed unit profile, and none is set up yet. Ask the project owner to add one.',
-    'with no profile shipped it says so and does not steer to the Review copy');
-  // A typed commit in a Final copy announces the setup blocker, not the confirmations.
+  assert.equal(shipped.live.textContent, NEED_APPROVAL, 'the shipped empty profile list leaves draft editing available');
   shipped.c.openPreview();
   await settle();
-  shipped.c.handleChange(fakeField('name', 'Bed 4'));
+  shipped.c.handleChange(fakeField('name', 'Ward 4'));
   await settle();
-  assert.equal(shipped.live.textContent, 'Unit name saved. Review confirmations cleared. A Final copy needs a confirmed unit profile, and none is set up yet. Ask the project owner to add one.');
+  assert.match(shipped.live.textContent, /Unit name saved\. Review confirmations cleared\./);
+  assert.equal(shipped.c.print().code, 'UNIT_UNCONFIRMED');
+  assert.equal(shipped.c.copy().code, 'UNIT_UNCONFIRMED');
+  assert.doesNotMatch(shipped.preview.pieces.pages.innerHTML, /Ward 4|555-0100/);
 });
 
-test('a Final copy with a lapsed profile is refused with the lapse message: the expired fixture, or a clock past its date', async t => {
+test('an expired profile blocks both outputs in both modes, with expiry at New York midnight after the last usable date', async t => {
   const env = fakeBrowser(t);
-  const LAPSE = 'The unit profile’s phone confirmation has lapsed. A Final copy needs a current one; ask the project owner to confirm it again.';
-  const expired = mountedP(6, { create: { sheet: FIXED_LAYOUT } });
-  expired.c.toggle('a1');
-  expired.c.loadProfile('fixture-unit-expired');
-  expired.c.setMode('final');
-  confirmAll(expired.c);
-  assert.deepEqual(expired.c.print(), { ok: false, code: 'UNIT_UNCONFIRMED' });
-  await settle();
-  assert.equal(expired.live.textContent, LAPSE);
-  assert.equal(expired.c.copy().code, 'NO_CLIPBOARD', 'Copy names no unit, so a lapse does not stop it');
-
-  const late = mountedP(6, { create: { sheet: { ...FIXED_LAYOUT, now: Date.UTC(2100, 0, 1) } } });
-  readyFinal(late.c);
-  assert.deepEqual(late.c.print(), { ok: false, code: 'UNIT_UNCONFIRMED' }, 'options.sheet.now past usableThrough');
-  await settle();
-  assert.equal(late.live.textContent, LAPSE);
-
-  const lastSecond = Date.UTC(2099, 11, 31, 23, 59, 59);
-  const onTime = mountedP(6, { create: { sheet: { ...FIXED_LAYOUT, now: lastSecond } } });
-  readyFinal(onTime.c);
-  assert.deepEqual(onTime.c.print(), { ok: true, code: '' }, 'the last second of the end date still holds');
-  env.handlers.afterprint();
-  const justAfter = mountedP(6, { create: { sheet: { ...FIXED_LAYOUT, now: lastSecond + 1 } } });
-  readyFinal(justAfter.c);
-  assert.equal(justAfter.c.print().code, 'UNIT_UNCONFIRMED', 'one millisecond later it has lapsed');
-  assert.equal(env.win.printed, 1, 'only the on-time copy reached the printer');
+  const DENIED = 'Unit approval could not be confirmed. Print and Copy are unavailable; draft editing remains available.';
+  const lastMillisecond = Date.UTC(2100, 0, 1, 4, 59, 59, 999);
+  for (const mode of ['review', 'final']) {
+    const expired = mountedP(6, { create: { sheet: FIXED_LAYOUT } });
+    expired.c.toggle('a1');
+    expired.c.loadProfile('fixture-unit-expired');
+    expired.c.setMode(mode);
+    confirmAll(expired.c);
+    expired.c.openPreview();
+    assert.deepEqual(expired.c.print(), { ok: false, code: 'UNIT_UNCONFIRMED' });
+    await settle();
+    assert.equal(expired.live.textContent, DENIED);
+    assert.equal(expired.c.copy().code, 'UNIT_UNCONFIRMED', 'an expired profile also blocks Copy');
+    assert.doesNotMatch(expired.preview.pieces.pages.innerHTML, /555-0142|Fixture Unit 4 East/);
+    assert.match(expired.preview.pieces.controls.innerHTML, /expired on 2020-01-02 \(America\/New_York\)/);
+    expired.c.leave();
+    const late = mountedP(6, { create: { sheet: { ...FIXED_LAYOUT, now: lastMillisecond + 1 } } });
+    readyFinal(late.c, mode);
+    assert.deepEqual(late.c.print(), { ok: false, code: 'UNIT_UNCONFIRMED' }, 'the first invalid New York millisecond');
+    assert.equal(late.c.copy().code, 'UNIT_UNCONFIRMED');
+    late.c.leave();
+    const onTime = mountedP(6, { create: { sheet: { ...FIXED_LAYOUT, now: lastMillisecond } } });
+    readyFinal(onTime.c, mode);
+    assert.deepEqual(onTime.c.print(), { ok: true, code: '' }, 'the last New York millisecond remains usable');
+    env.handlers.afterprint();
+    onTime.c.leave();
+  }
+  assert.equal(env.win.printed, 2, 'only the two unexpired copies reached the printer');
 });
 
 // ---- the wallet card ------------------------------------------------------------------------------------------
@@ -1059,8 +1161,10 @@ test('the wallet card never touches the review confirmations, the copy, the unit
   assert.equal(tray.cardButton.focused, 1, 'focus goes back to the card button, not to Print packet');
   c.setGate('region', false);
   c.setMode('review');
+  const beforeCard = c.gate();
+  assert.deepEqual(beforeCard, gateOff, 'changing mode legitimately resets all four confirmations');
   assert.deepEqual(c.printCard(), { ok: true, code: '' }, 'unconfirmed and a Review copy: the card still prints');
-  assert.deepEqual(c.gate(), { ...gateOn, region: false });
+  assert.deepEqual(c.gate(), beforeCard, 'the card preserves exactly the confirmations that preceded it');
   env.handlers.afterprint();
 });
 
@@ -1105,12 +1209,12 @@ test('mounting into a NEW preview node starts clean: nothing from the old node i
 });
 
 test('the copy fallback describes ONE packet: any change, a closed preview or a withdrawn confirmation removes it', async () => {
-  const { c, preview } = mounted();
-  readyPacket(c);
+  const { c, preview } = mountedP();
+  readyFinal(c);
   c.openPreview();
   const shown = () => preview.pieces.controls.innerHTML.includes('Copy this text');
-  const stage = () => { confirmAll(c); assert.equal(c.copy().code, 'NO_CLIPBOARD', 'this suite has no clipboard, so the text is shown instead'); assert.equal(shown(), true, 'precondition'); };
-  stage(); c.setUnit('name', 'Bed 4'); await settle();
+  const stage = () => { c.loadProfile('fixture-unit'); confirmAll(c); assert.equal(c.copy().code, 'NO_CLIPBOARD', 'this suite has no clipboard, so the text is shown instead'); assert.equal(shown(), true, 'precondition'); };
+  stage(); c.unlinkProfile(); c.setUnit('name', 'Ward 4'); await settle();
   assert.equal(shown(), false, 'a changed ward detail');
   stage(); c.setGate('region', false);
   assert.equal(shown(), false, 'a withdrawn confirmation');
@@ -1122,9 +1226,95 @@ test('the copy fallback describes ONE packet: any change, a closed preview or a 
   assert.equal(shown(), false, 'a changed page list');
 });
 
-// Rewritten to a Review copy: only typed details can be committed from a field (a loaded profile's fields are read-only and
-// setUnit ignores them), and with typed details only a Review copy has a Print button for focus to land on. The Final-copy
-// announcement for the same commit is pinned in the UNIT_UNCONFIRMED test.
+// A late clipboard result belongs to the packet that started it, never a new or abandoned packet.
+test('pending clipboard results cannot restore old text or announce success after the packet changes', async t => {
+  for (const outcome of ['resolve', 'reject']) for (const change of ['edit', 'uncheck', 'clear', 'close', 'leave']) {
+    await t.test(outcome + ' after ' + change, async t => {
+      const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+      let finish;
+      Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { clipboard: {
+        writeText: () => new Promise((resolve, reject) => { finish = outcome === 'resolve' ? resolve : reject; })
+      } } });
+      t.after(() => { if (original) Object.defineProperty(globalThis, 'navigator', original); else delete globalThis.navigator; });
+      const { c, preview, live, data } = mountedP(6, { create: { sheet: FIXED_LAYOUT } });
+      t.after(() => c.leave());
+      readyFinal(c); c.openPreview(); await settle();
+      assert.equal(c.copy().ok, true);
+      if (change === 'edit') c.toggle('a2');
+      if (change === 'uncheck') c.setGate('region', false);
+      if (change === 'clear') c.clear();
+      if (change === 'close') { c.closePreview(); c.openPreview(); }
+      if (change === 'leave') { c.leave(); c.mount(null, live, () => data, null, preview); c.openPreview(); }
+      await settle(); live.textContent = '';
+      finish(outcome === 'reject' ? new Error('clipboard refused') : undefined);
+      await settle();
+      assert.doesNotMatch(preview.pieces.controls.innerHTML, /Copy this text/, 'old text stays discarded');
+      assert.doesNotMatch(live.textContent, /Copied\.|Copy is unavailable/, 'no stale completion announcement');
+    });
+  }
+});
+
+test('pending clipboard rejection rechecks live authority before exposing manual fallback text', async t => {
+  for (const revoked of [true, false]) {
+    await t.test(revoked ? 'revocation blocks the delayed fallback' : 'current approval preserves the delayed fallback', async t => {
+      const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+      let rejectClipboard, approvalRevoked = false, checks = 0;
+      Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { clipboard: {
+        writeText: () => new Promise((_resolve, reject) => { rejectClipboard = reject; })
+      } } });
+      t.after(() => { if (original) Object.defineProperty(globalThis, 'navigator', original); else delete globalThis.navigator; });
+      const { c, preview, live } = mountedP(6, { create: { sheet: FIXED_LAYOUT,
+        authorizeProfile: profile => {
+          checks += 1;
+          return approvalRevoked ? { ok: false, status: 'revoked' } : profileReceipt(profile, Date.now());
+        } } });
+      t.after(() => c.leave());
+      readyFinal(c); c.openPreview(); await settle();
+      assert.equal(c.copy().ok, true, 'the clipboard write starts with current approval');
+      const checksBeforeRejection = checks;
+      approvalRevoked = revoked;
+      live.textContent = '';
+      rejectClipboard(new Error('clipboard permission denied'));
+      await settle();
+      if (revoked) {
+        assert.doesNotMatch(preview.pieces.controls.innerHTML, /Copy this text|id="fd-care-packet-copy-text"/, 'revoked patient text is never exposed as a manual fallback');
+        assert.deepEqual(c.gate(), gateOff, 'revocation invalidates the reviewed packet');
+        assert.doesNotMatch(live.textContent, /Copied\.|Copy is unavailable here\. The text is shown below/, 'revocation cannot announce a successful or manual copy');
+      } else {
+        assert.match(preview.pieces.controls.innerHTML, /id="fd-care-packet-copy-text"/, 'permission denial retains the practical fallback when approval is still current');
+        assert.match(live.textContent, /Copy is unavailable here\. The text is shown below/, 'the manual fallback is announced');
+        assert.deepEqual(c.gate(), gateOn, 'a still-current packet keeps its confirmations');
+      }
+      assert.equal(checks, checksBeforeRejection + 1, 'the delayed failure requests a second live approval check');
+    });
+  }
+});
+
+test('pending clipboard results cannot expose text or announce success after the profile expires', async t => {
+  for (const outcome of ['resolve', 'reject']) {
+    await t.test(outcome + ' after New York expiry', async t => {
+      const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+      let finish;
+      Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { clipboard: {
+        writeText: () => new Promise((resolve, reject) => { finish = outcome === 'resolve' ? resolve : reject; })
+      } } });
+      t.after(() => { if (original) Object.defineProperty(globalThis, 'navigator', original); else delete globalThis.navigator; });
+      const sheet = { ...FIXED_LAYOUT, now: Date.UTC(2100, 0, 1, 4, 59, 59, 999) };
+      const { c, preview, live } = mountedP(6, { create: { sheet } });
+      t.after(() => c.leave());
+      readyFinal(c); c.openPreview(); await settle();
+      assert.equal(c.copy().ok, true, 'the clipboard request begins while the profile is valid');
+      sheet.now += 1;
+      live.textContent = '';
+      finish(outcome === 'reject' ? new Error('clipboard refused') : undefined);
+      await settle();
+      assert.doesNotMatch(preview.pieces.controls.innerHTML, /Copy this text/, 'expired text is not exposed as a fallback');
+      assert.doesNotMatch(live.textContent, /Copied\.|Copy is unavailable/, 'an expired request never announces completion');
+    });
+  }
+});
+
+// Only typed details can be committed from a field. Draft editing keeps its focus even while Print and Copy remain blocked.
 test('a unit field commit brings the preview controls up to date a task later, so focus lands first; the announcement describes the settled screen', async () => {
   const { c, live, preview } = mounted();
   readyPacket(c, 'review');
@@ -1133,12 +1323,13 @@ test('a unit field commit brings the preview controls up to date a task later, s
   live.textContent = '';
   const writes = preview.pieces.controls.writes;
   c.handleChange(fakeField('name', 'Bed 4'));
-  assert.equal(preview.pieces.controls.writes, writes, 'not yet: Print is still there when focus lands on it');
+  assert.equal(preview.pieces.controls.writes, writes, 'not yet: the focused control is retained until the next task');
   assert.deepEqual(c.gate(), gateOff, 'but the gate is already re-armed, so a click in between is refused');
   await settle();
   assert.ok(preview.pieces.controls.writes > writes, 'then the controls follow');
-  assert.match(live.textContent, /Unit name saved\. Review confirmations cleared\. Finish the four review confirmations above\./, 'and what became unavailable is said');
-  assert.equal(c.print().code, 'REVIEW', 'a click on a stale Print is refused for the right reason');
+  assert.match(live.textContent, /Unit name saved\. Review confirmations cleared\./, 'the committed change and reset are announced');
+  assert.equal(c.print().code, 'UNIT_UNCONFIRMED', 'a click on a stale Print still requires an approved profile');
+  assert.doesNotMatch(preview.pieces.pages.innerHTML, /Bed 4/, 'the typed detail is not patient output');
 });
 
 // Rewritten: the Final copy that makes Copy (and Print) available now needs the fixture profile loaded.
@@ -1150,11 +1341,21 @@ test('an announcement adds what Print and Copy can now do only when that changed
   c.setInsert('warning', false);
   await settle();
   assert.match(live.textContent, /\d+ pages? · Review copy\./);
-  assert.doesNotMatch(live.textContent, /available/, 'Print is still available and Copy still is not: nothing changed, nothing added');
+  assert.match(live.textContent, /Finish the four review confirmations/, 'changing the page list invalidates its review');
+  confirmAll(c);
+  await settle();
+  assert.match(live.textContent, /Print is available/, 'reviewing the changed packet enables Print');
   c.setMode('final');
   await settle();
   assert.match(live.textContent, /Final copy selected\./);
-  assert.match(live.textContent, /Print and Copy are available\./, 'Copy became available, so the announcement says so');
+  assert.match(live.textContent, /Finish the four review confirmations/, 'changing the mode invalidates its review too');
+  confirmAll(c);
+  await settle();
+  assert.match(live.textContent, /Print and Copy are available\./, 'the newly reviewed Final copy enables both');
+  live.textContent = '';
+  c.setMode('final');
+  await settle();
+  assert.equal(live.textContent, '', 'an unchanged value announces nothing');
 });
 
 // A tray stand-in that records writes to its innerHTML and offers the pieces patchTray looks for, including the wallet
@@ -1288,7 +1489,7 @@ test('a unit value that will not print is announced as needing a fix, never as s
   c.setUnit('phone', '(207) 555-0142');
   await settle();
   assert.match(live.textContent, /Unit phone saved\./, 'a valid value is saved');
-  assert.match(live.textContent, /^Unit phone saved\. Patients will be told to call \(207\) 555-0142\. This number is not confirmed\./, 'and read back, unconfirmed');
+  assert.match(live.textContent, /^Unit phone saved\. Candidate phone: \(207\) 555-0142\. It cannot be printed or copied until approved\./, 'and read back, unconfirmed');
 });
 
 // Added with the owner's directions. The staged card is removed by the afterprint listener, which is mounted only with a preview
@@ -1382,7 +1583,8 @@ test('a print that follows a click outside the packet is never the packet\'s, ev
   assert.equal(env.body.children.length, 0, 'the older pack\'s Print button was clicked: nothing of the packet is staged');
   pointer.pointerdown({ target: preview.inner });
   env.handlers.beforeprint();
-  assert.equal(env.body.children.length, 1, 'a click inside the packet: its own print');
+  assert.equal(env.body.children.length, 1, 'a click inside the packet: its print notice');
+  assert.match(env.body.children[0].innerHTML, /This is not the patient packet/);
   c.leave();
   assert.equal(pointer.pointerdown, undefined, 'and leaving Care takes the listener away');
 });
@@ -1401,7 +1603,7 @@ test('a staged print whose afterprint never came is torn down by the next print 
   env.doc.activeElement = null;
   t.mock.timers.tick(5000);
   env.handlers.beforeprint();
-  assert.equal(env.body.children.length, 1, 'within 30 s it is the same print (the browser may fire beforeprint again)');
+  assert.equal(env.body.children.length, 1, 'the first native event consumes the button-approved print');
   t.mock.timers.tick(30000);
   env.handlers.beforeprint();
   assert.equal(env.body.children.length, 0, 'afterprint never came: the stale staged packet is removed, not printed again');
@@ -1417,7 +1619,7 @@ test('the card control is not between the preview toggle and the preview it open
 });
 
 // The fields and radios are described by the text that explains them (a screen reader hears WHY a field is read-only, what
-// will be read back to patients, and what a Final copy needs).
+// is an approved contact or only a candidate, and what both copies need).
 test('the unit fields point at the profile status (and the phone at its readback), and each copy radio at the mode note', () => {
   const state = stateWith(2, { unit: { name: '', phone: '', profile: 'fixture-unit' } });
   const html = P.controls(state, dataOf(6), PROFILED, gateOn, readyUi(state));

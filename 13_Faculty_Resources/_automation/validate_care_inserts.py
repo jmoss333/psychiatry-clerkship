@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate care-inserts.v1.json - the standard inserts of the Care aftercare packet - and its confirmed unit profiles.
+"""Validate care-inserts.v1.json - the standard inserts of the Care aftercare packet - and its unit-profile candidates.
 
 Runs in the build gate. The file holds patient-facing helpline numbers and advice that will be
 printed and sent home, so this checks what a JSON Schema cannot: that every number carries a real,
@@ -11,10 +11,11 @@ into prose; that no sentence about the unit promises round-the-clock cover and e
 the unit's token; that the wallet card's crisis lines fit it; and that the inserts are present, unique,
 in print order, and not empty.
 
-care-unit-profiles.v1.json (check_profiles) holds the units whose phone number someone on the unit
-confirmed. A profile is the only source of a CONFIRMED unit phone, so this checks that the number is
-one a patient can dial and is not a crisis or helpline number, that the confirmation is a real past
-date (warning when stale) made by a role, and that the names it prints obey the sheet's own rules.
+care-unit-profiles.v1.json holds candidate unit facts and actual-check records, never approval.
+The closed profile contract records contact purpose, staffed hours, and operational callback details.
+Identity and contact need evidence; callback and branding need it exactly when those features are on.
+The oldest required check starts a ninety-calendar-day window in America/New_York. Patient output
+still requires an independent, authenticated owner approval of the exact candidate revision.
 
 Prose may say "call 911" without typing it: `{{crisis:emergency_911}}` is replaced at render time
 by that resource's contact string from crisis_resources.json. Every scan runs on NORMALISED text
@@ -28,6 +29,7 @@ Exit 0 clean (warnings allowed), 1 a hard problem or, with --strict, any warning
 """
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -69,10 +71,13 @@ ALWAYS_ON = ("intro",)
 # (packet design, Revision 2: 194.5px of 204 in every face measured), so a sixth line is a data error here.
 CARD_MAX_CRISIS_LINES = 5
 
-# A unit profile's confirmed phone is usable for a Final copy for this many days after it was confirmed: the payload
-# ships phoneConfirmedOn plus this as `usableThrough`, and the browser refuses a Final copy after it. The same window
-# as STALE_AFTER_DAYS, past which the confirmation warns here.
-PROFILE_USABLE_DAYS = STALE_AFTER_DAYS
+# Candidate checks expire after ninety New York calendar days, including the actual check date.
+# This policy is independent of the 180-day helpline freshness warning. Approval never renews a check.
+PROFILE_USABLE_DAYS = 90
+PROFILE_POLICY_VERSION = 1
+PROFILE_KEYS = ("id", "label", "org", "brandingApproved", "unitName", "unitPhone", "unitPurpose", "unitHours",
+                "callbackProgram", "callbackTeam", "callbackPhone", "callbackHours", "callbackFallback", "verification")
+CALLBACK_FIELDS = ("callbackTeam", "callbackPhone", "callbackHours", "callbackFallback")
 
 # The resident build rewrites these phrases EVERYWHERE in the shell it copies (resident_section.py RESIDENT_REBRAND,
 # applied by common.apply_verified_replacements with str.replace), and the packet payload is inline in that shell, so
@@ -108,7 +113,8 @@ APPROVED_SOURCE_DOMAINS = (
     "samhsa.gov", "thehotline.org", "thetrevorproject.org",
 )
 
-PLAIN_PLACEHOLDERS = ("unitName", "unitPhone")
+PLAIN_PLACEHOLDERS = ("unitName", "unitPhone", "unitPurpose", "unitHours", "unitContact",
+                      "callbackTeam", "callbackPhone", "callbackHours", "callbackFallback", "callWindow", "callDeadline")
 PLACEHOLDER_RE = re.compile(r"\{\{([^{}]*)\}\}")
 CRISIS_PLACEHOLDER_RE = re.compile(r"crisis:([a-z0-9_]+)")
 
@@ -145,14 +151,14 @@ UNIT_PHONE_CHARS_RE = re.compile(r"[0-9\s().+\-]+")
 
 # Unit wording (packet design, direction 3 and Revision 2): a sentence that refers to the unit may not carry an
 # availability phrase, because the unit does not give round-the-clock crisis cover (only the crisis lines do).
-UNIT_REF_RE = re.compile(r"\b(?:us|we|our|ours|the\s+unit|our\s+team)\b|\{\{unit(?:Name|Phone)\}\}", re.I)
+UNIT_REF_RE = re.compile(r"\b(?:us|we|our|ours|the\s+unit|our\s+team)\b|\{\{unit(?:Name|Phone|Purpose|Hours|Contact)\}\}", re.I)
 AVAILABILITY_RE = re.compile(
     r"\bany[\s-]?time\b|(?<!\d)24\s*/\s*7(?!\d)|(?<!\d)24[\s-]hours?\b|\bday\s+or\s+night\b"
     r"|\b(?:a)?round[\s-]the[\s-]clock\b|\ball\s+hours\b", re.I)
 # Any sentence that says "the unit" must carry the unit's token, so the confirmed-phone rule (which reads tokens) can
 # see that the sentence names the unit or promises contact. Titles and headings are exempt.
 THE_UNIT_RE = re.compile(r"\bthe\s+unit\b", re.I)
-UNIT_TOKEN_RE = re.compile(r"\{\{unit(?:Name|Phone)\}\}")
+UNIT_TOKEN_RE = re.compile(r"\{\{unit(?:Name|Phone|Purpose|Hours|Contact)\}\}")
 SENTENCE_SPLIT_RE = re.compile(r"[.!?\n]+")
 # The printed sheet refuses every "verif-" word on paper (fd_care_packet_sheet.js FD_CARE_PACKET_FORBIDDEN).
 VERIF_RE = re.compile(r"\bverif\w*", re.I)
@@ -468,7 +474,7 @@ def check(data, schema, crisis, today):
                 continue
             if not crisis_ref:
                 errors.append("%s: unknown or malformed placeholder {{%s}}; allowed are {{unitName}}, "
-                              "{{unitPhone}} and {{crisis:<id>}}" % (pointer, inner))
+                              "{{unitPhone}}, approved unit/callback fields, labelled call blanks and {{crisis:<id>}}" % (pointer, inner))
             elif crisis_ref.group(1) not in resources:
                 errors.append("%s: placeholder {{%s}} names a line that does not exist in "
                               "crisis_resources.json" % (pointer, inner))
@@ -549,13 +555,11 @@ def check(data, schema, crisis, today):
 
 
 def name_problems(value, patterns):
-    """Why a profile's display text (label, org or unitName) cannot be shown or printed, as short phrases. The
-    browser re-checks a loaded profile with the sheet's own rules (fd_care_packet_sheet.js fdCarePacketUnitName);
-    this is a superset of them, so a profile that passes here is never refused there."""
+    """Patient-facing profile text must be plain, free of phone/dose literals and unsupported availability claims."""
     problems = []
     if not value.strip():
         problems.append("is blank")
-    if any(unicodedata.category(ch) in ("Cc", "Cf") for ch in value):
+    if any(unicodedata.category(ch) in ("Cc", "Cf", "Cs") for ch in value):
         problems.append("contains a control or invisible character")
     if "<" in value or ">" in value:
         problems.append("contains markup (< or >)")
@@ -583,84 +587,119 @@ def name_problems(value, patterns):
 
 
 def check_profiles(profiles_doc, profiles_schema, crisis, inserts_data, today):
-    """Validate care-unit-profiles.v1.json. Pure: no I/O, no clock (today is passed in).
-
-    A profile is the only source of a CONFIRMED unit phone, so its number must be one a patient can dial (the
-    browser's own rule) and must not be a crisis or helpline number the packet already prints, its confirmation must
-    be a real past date made by a role, and every name it shows must obey the sheet's rules."""
+    """Validate candidate facts and their actual-check evidence. This never creates owner approval."""
     report = Report()
     errors, warnings = report.errors, report.warnings
-
     for error in sorted(Draft7Validator(profiles_schema).iter_errors(profiles_doc),
                         key=lambda e: [str(p) for p in e.path]):
         pointer = "/" + "/".join(str(p) for p in error.path)
         errors.append("%s: %s" % (pointer, error.message))
-    if errors:  # shape is wrong, so semantic checks would only report noise
+    if errors:
         return report
 
     profiles = profiles_doc["profiles"]
     patterns = crisis_patterns(crisis_numbers(crisis))
     crisis_digits = set(registered_crisis_digits(crisis))
     helplines = helpline_digits(inserts_data)
-    seen = set()
-    dates = []
+    seen, dates = set(), []
     for n, profile in enumerate(profiles):
         where = "profile %d ('%s')" % (n, profile["id"])
         if profile["id"] in seen:
             errors.append("%s: id is listed twice" % where)
         seen.add(profile["id"])
-
-        for key in ("label", "org", "unitName"):
-            if profile[key] is not None:
-                errors.extend("%s: %s %s" % (where, key, problem) for problem in name_problems(profile[key], patterns))
+        for key in ("label", "org", "unitName", "unitPurpose", "unitHours", "callbackTeam", "callbackHours", "callbackFallback"):
+            value = profile[key]
+            if value is not None and (not key.startswith("callback") or profile["callbackProgram"]):
+                errors.extend("%s: %s %s" % (where, key, problem) for problem in name_problems(value, patterns))
         if profile["brandingApproved"] and profile["org"] is None:
-            errors.append("%s: brandingApproved is true but org is null; an approval needs the organization line "
-                          "it approves" % where)
+            errors.append("%s: brandingApproved is true but org is null; the checked branding needs its organization" % where)
+        if not profile["brandingApproved"] and profile["org"] is not None:
+            errors.append("%s: brandingApproved is false so org must be null; unapproved branding must not ship" % where)
+        if not profile["callbackProgram"]:
+            for key in CALLBACK_FIELDS:
+                if profile[key] != "":
+                    errors.append("%s: %s must be empty when callbackProgram is false" % (where, key))
+        elif profile["callbackFallback"].rstrip().endswith((".", "!", "?")):
+            errors.append("%s: callbackFallback is a clause without terminal punctuation; the template supplies its full stop" % where)
 
-        digits = unit_phone_digits(profile["unitPhone"])
-        if digits is None:
-            errors.append("%s: unitPhone %r is not a ten-digit North American number a patient can dial (digits and "
-                          "phone punctuation only; area code and exchange start 2-9 and neither is a service code "
-                          "such as 411)" % (where, profile["unitPhone"]))
-        elif digits in crisis_digits:
-            errors.append("%s: unitPhone %r is a crisis number registered in crisis_resources.json; a profile carries "
-                          "the unit's own number" % (where, profile["unitPhone"]))
-        elif digits in helplines:
-            errors.append("%s: unitPhone %r is a helpline-table number in care-inserts.v1.json; a profile carries the "
-                          "unit's own number" % (where, profile["unitPhone"]))
+        for key in ("unitPhone", "callbackPhone"):
+            if key == "callbackPhone" and not profile["callbackProgram"]:
+                continue
+            digits = unit_phone_digits(profile[key])
+            if digits is None:
+                errors.append("%s: %s %r is not a ten-digit North American number a patient can dial (digits and "
+                              "phone punctuation only; area code and exchange start 2-9 and neither is a service code "
+                              "such as 411)" % (where, key, profile[key]))
+            elif digits in crisis_digits:
+                errors.append("%s: %s %r is a crisis number registered in crisis_resources.json; use the unit's own contact" % (where, key, profile[key]))
+            elif digits in helplines:
+                errors.append("%s: %s %r is a helpline-table number; use the unit's own contact" % (where, key, profile[key]))
 
-        confirmed = check_date(where, profile["phoneConfirmedOn"], today, errors, "phoneConfirmedOn")
-        if confirmed is not None:
-            if confirmed < EARLIEST_VERIFICATION:
-                errors.append("%s: phoneConfirmedOn %s is before %s; that is a placeholder, not a confirmation"
-                              % (where, profile["phoneConfirmedOn"], EARLIEST_VERIFICATION))
-            else:
-                dates.append(confirmed)
-                age = (today - confirmed).days
-                if age > STALE_AFTER_DAYS:
-                    warnings.append("%s: unit phone last confirmed %s, %d days ago (limit %d) - re-confirm it; the "
-                                    "browser refuses a Final copy from this profile after %s"
-                                    % (where, profile["phoneConfirmedOn"], age, STALE_AFTER_DAYS,
-                                       usable_through(confirmed)))
-
-        role = profile["phoneConfirmedBy"]
-        role_scan = normalise(role)
-        if (not role.strip() or re.search(r"\d", role_scan) or "@" in role_scan
-                or any(unicodedata.category(ch) in ("Cc", "Cf") for ch in role)):
-            errors.append("%s: phoneConfirmedBy %r must name a role (for example 'unit charge nurse'), never a "
-                          "number, an email or blank" % (where, role))
-
-    report.stats = {
-        "profiles": len(profiles),
-        "oldestConfirmed": min(dates).isoformat() if dates else None,
-        "oldestAgeDays": (today - min(dates)).days if dates else None,
-    }
+        required = {"identity", "contact"}
+        if profile["callbackProgram"]:
+            required.add("callback")
+        if profile["brandingApproved"]:
+            required.add("branding")
+        fields, actual_dates = set(), []
+        for entry in profile["verification"]:
+            field = entry["field"]
+            label = "%s verification %s" % (where, field)
+            if field in fields:
+                errors.append("%s: verification field %s appears twice" % (where, field))
+            fields.add(field)
+            checked = check_date(label, entry["checkedOn"], today, errors, "checkedOn")
+            if checked is not None:
+                if checked < EARLIEST_VERIFICATION:
+                    errors.append("%s: checkedOn %s is before %s; that is a placeholder, not an actual check" % (label, checked, EARLIEST_VERIFICATION))
+                else:
+                    actual_dates.append(checked)
+            role, evidence = entry["checkedBy"], entry["evidence"]
+            if (not role.strip() or re.search(r"\d", normalise(role)) or "@" in normalise(role)
+                    or any(unicodedata.category(ch) in ("Cc", "Cf", "Cs") for ch in role)):
+                errors.append("%s: checkedBy must name a role, never a number, an email or blank" % label)
+            if (not evidence.strip() or any(unicodedata.category(ch) in ("Cc", "Cf", "Cs") for ch in evidence)
+                    or any(char in evidence for char in "<>{}")):
+                errors.append("%s: evidence must be nonblank plain text without markup, placeholders or control characters" % label)
+        for field in sorted(required - fields):
+            errors.append("%s: verification is missing required field %s" % (where, field))
+        for field in sorted(fields - required):
+            errors.append("%s: verification field %s is not applicable to this profile" % (where, field))
+        if actual_dates:
+            oldest = min(actual_dates)
+            dates.append(oldest)
+            age = (today - oldest).days
+            if age >= PROFILE_USABLE_DAYS:
+                warnings.append("%s: oldest actual verification %s, %d days ago (limit %d); suspended for patient output "
+                                "from %s in America/New_York until reverified and independently approved" %
+                                (where, oldest, age, PROFILE_USABLE_DAYS, expires_on(oldest)))
+    report.stats = {"profiles": len(profiles), "oldestConfirmed": min(dates).isoformat() if dates else None,
+                    "oldestAgeDays": (today - min(dates)).days if dates else None}
     return report
 
 
-def usable_through(confirmed):
-    """The last day a profile's confirmed phone may print on a Final copy (shipped as `usableThrough`)."""
-    return (confirmed + timedelta(days=PROFILE_USABLE_DAYS)).isoformat()
+def profile_revision(profile):
+    """Exact candidate identity, not approval: SHA256 of the policy-versioned canonical UTF-8 JSON."""
+    if set(profile) != set(PROFILE_KEYS):
+        raise ValueError("profile fields do not match the closed candidate contract")
+    covered = dict(profile, verification=sorted(profile["verification"], key=lambda entry: entry["field"]))
+    canonical = json.dumps({"policyVersion": PROFILE_POLICY_VERSION, "profile": covered},
+                           sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def oldest_verification(profile):
+    """Called after validation: the oldest actual required check, never the build or approval date."""
+    return min(parse_iso(entry["checkedOn"]) for entry in profile["verification"])
+
+
+def expires_on(checked):
+    """First invalid calendar date in America/New_York (the browser/server applies that timezone)."""
+    return (checked + timedelta(days=PROFILE_USABLE_DAYS)).isoformat()
+
+
+def usable_through(checked):
+    """Last valid New York calendar date; ninety dates including the actual verification day."""
+    return (checked + timedelta(days=PROFILE_USABLE_DAYS - 1)).isoformat()
 
 
 def iso_date_arg(text):
@@ -729,13 +768,12 @@ def main(argv=None):
           "(%d days ago)" % (label, stats["inserts"], stats["onByDefault"], stats["numbers"],
                              stats["crisisRefs"], stats["oldestVerified"], stats["oldestAgeDays"]))
     pstats = profile_report.stats
-    print("%s: OK - %d confirmed unit profile(s)%s" % (
+    print("%s: OK - %d candidate unit profile(s)%s" % (
         profiles_label, pstats["profiles"],
-        "; oldest phone confirmation %s (%d days ago)" % (pstats["oldestConfirmed"], pstats["oldestAgeDays"])
+        "; oldest actual verification %s (%d days ago)" % (pstats["oldestConfirmed"], pstats["oldestAgeDays"])
         if pstats["oldestConfirmed"] else ""))
     if args.strict and warnings:
-        print("%s: FAILED (--strict): %d check(s) past the %d-day limit"
-              % (label, len(warnings), STALE_AFTER_DAYS))
+        print("%s: FAILED (--strict): %d check(s) past their validity limit" % (label, len(warnings)))
         return 1
     return 0
 

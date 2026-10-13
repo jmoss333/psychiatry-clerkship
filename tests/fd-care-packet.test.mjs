@@ -43,7 +43,7 @@ const EXPORTS = `;return typeof fdCarePacketNormalize === 'function' ? {
 // The shell's order: fd_data (fdEsc), the packet, the sheet it prints with, the search that hosts it. `FD_CARE_INSERTS`
 // is the build-injected payload; passed as a parameter so the PRODUCTION default (the global) is the path under test.
 // `after` is in-memory test code run after the sheet's definitions (nothing on disk is changed).
-const moduleSource = (source = PACKET, after = '') => read('fd_data.js') + source + SHEET + after + read('fd_care_search.js') + EXPORTS;
+const moduleSource = (source = PACKET, after = '') => read('fd_data.js') + read('fd_care_profile.js') + source + SHEET + after + read('fd_care_search.js') + EXPORTS;
 const load = (source = PACKET, storage = undefined, payload = null, after = '') =>
   new Function('sessionStorage', 'FD_CARE_INSERTS', moduleSource(source, after))(storage, payload);
 const P = load();
@@ -411,9 +411,9 @@ test('the review confirmations are bound to the packet: adding or clearing reset
   c.addMany(['a5']);
   assert.equal(c.gate().verification, true, 'adding nothing new leaves the confirmations alone');
   c.move('a5', -1);
-  assert.equal(c.gate().verification, true, 'reordering adds no unconfirmed listing');
+  assert.equal(c.gate().verification, true, 'moving the only listing is a no-op');
   c.remove('a5');
-  assert.equal(c.gate().verification, true, 'removing adds no unconfirmed listing');
+  assert.equal(c.gate().verification, false, 'removing a listing changes the reviewed packet');
 });
 
 test('the confirmation boxes are disabled while the packet is empty and there is no live-region on the readiness line', () => {
@@ -993,9 +993,9 @@ test('the wallet card prints on its own with an empty packet and no review confi
   assert.deepEqual([env.body.children.length, env.head.children.length, env.marks.size], [0, 0, 0], 'everything staged goes afterwards');
   assert.equal(env.doc.title, 'Home');
   assert.deepEqual(focused, ['card'], 'focus returns to the card button');
-  // A listing nobody has reviewed: the packet waits for the four confirmations, the card does not.
+  // A listing without an approved profile: the packet waits, the governed crisis card does not.
   assert.equal(c.toggle('a1'), 'added');
-  assert.equal(c.print().code, 'REVIEW');
+  assert.equal(c.print().code, 'UNIT_UNCONFIRMED');
   assert.deepEqual(c.printCard(), { ok: true, code: '' });
   env.handlers.afterprint();
   c.setMode('final');

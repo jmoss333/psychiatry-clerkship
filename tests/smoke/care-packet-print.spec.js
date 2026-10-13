@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import { test, expect } from '@playwright/test';
 import { careDirectoryFixture, pinCareDirectory } from './care-directory-fixture.js';
-import { enableCarePacketHtml, printFeed, PRINT_LISTINGS } from './care-packet-fixture.js';
+import { enableCarePacketHtml, printFeed, PRINT_LISTINGS, UNIT_PROFILE_FIXTURE, pinCareProfileAuthority, PROFILE_AUTHORITY_URL } from './care-packet-fixture.js';
 import { enablePatientSharingHtml } from './care-patient-sharing-fixture.js';
 import { pdfPageCount } from './pdf-pages.js';
 import { probeContrastWithin, probeBoundariesWithin } from './contrast-probe.js';
@@ -23,12 +23,12 @@ const REPO_ROOT = new URL('../../', import.meta.url);
 const readJson = path => JSON.parse(fs.readFileSync(new URL(path, REPO_ROOT), 'utf8'));
 const INSERTS = readJson('13_Faculty_Resources/_automation/site_build/data/care-inserts.v1.json');
 const GOVERNED = readJson('crisis_resources.json');
-// TEST ONLY: unit profiles in the payload's shipped shape, with a fictional 555-01xx number. `profile` is confirmed through
-// 2099; `expired` is the same unit whose confirmation lapsed in 2020. The shipped payload carries no profile at all.
-const FIXTURE = readJson('tests/fixtures/care-unit-profile.json');
+// TEST ONLY: fictional candidate profiles. The separate authority fixture must approve an exact matching revision.
+const FIXTURE = UNIT_PROFILE_FIXTURE;
 const PROFILE = FIXTURE.profile, EXPIRED = FIXTURE.expired;
-// The confirmed profile without a call-back program, differing in that one field (and its id and label).
-const NO_CALLBACK = { ...PROFILE, id: 'fixture-unit-no-callback', label: 'Fixture unit without call-back (test only)', callbackProgram: false };
+// An approved fixture candidate without a call-back program or program fields.
+const NO_CALLBACK = { ...PROFILE, id: 'fixture-unit-no-callback', label: 'Fixture unit without call-back (test only)',
+  callbackProgram: false, callbackTeam: '', callbackPhone: '', callbackHours: '', callbackFallback: '', revision: 'c'.repeat(64) };
 const titleOf = id => INSERTS.inserts.find(insert => insert.id === id).title;
 const governed = id => GOVERNED.resources.find(resource => resource.id === id);
 const contactOf = id => governed(id).contact;
@@ -37,10 +37,10 @@ const defaultOn = id => { const insert = INSERTS.inserts.find(i => i.id === id);
 // The blocker messages, copied from fd_care_packet_sheet.js (fdCarePacketUnconfirmedMessage and the CALLBACK_UNCONFIRMED
 // blocker). A reworded message fails here and is re-read from the source, never guessed.
 const MSG = {
-  unconfirmed: 'A Final copy needs a confirmed unit profile. Load one in the unit details.',
-  noProfiles: 'A Final copy needs a confirmed unit profile, and none is set up yet. Ask the project owner to add one.',
-  lapsed: 'The unit profile’s phone confirmation has lapsed. A Final copy needs a current one; ask the project owner to confirm it again.',
-  callback: 'The call-back page promises a call from the unit. A Final copy needs a confirmed unit profile that records a call-back program, or switch that page off.',
+  unconfirmed: 'Print and Copy need current owner approval of this exact unit profile. Load the profile to check its approval.',
+  noProfiles: 'Print and Copy need an approved unit profile. None is set up yet; you can keep editing this draft.',
+  lapsed: 'This unit profile has expired. Print and Copy need a new verification and owner approval.',
+  callback: 'The follow-up page needs an approved program and a call arranged for this discharge, with a complete plan and agreed contact preferences. Confirm these or switch the page off.',
 };
 const KEY = 'fd_care_packet_v1';
 const GATES = ['verification', 'region', 'identifiers', 'supervisor'];
@@ -71,6 +71,7 @@ function rewritePayload(html, mutate) {
 }
 async function routeShell(page, opts = {}) {
   const { mutate, profiles = [PROFILE, EXPIRED], sharing = false } = typeof opts === 'function' ? { mutate: opts } : opts;
+  const authority = await pinCareProfileAuthority(page, { profiles });
   await page.route(url => url.pathname === '/', async route => {
     const response = await route.fetch();
     let html = enableCarePacketHtml(await response.text());
@@ -82,6 +83,7 @@ async function routeShell(page, opts = {}) {
     });
     await route.fulfill({ response, body: html });
   });
+  return authority;
 }
 // The payload exactly as the build serves it (no flag flip, no fixture), for numbers a test must not type.
 async function servedPayload(page) {
@@ -119,12 +121,17 @@ async function loadProfile(page, id) {
   await profileSelect(page).selectOption(id);
   await loadButton(page).click();
   await expect(unitField(page, 'name'), 'a loaded profile makes the unit fields read-only').not.toBeEditable();
+  if (id === EXPIRED.id) await expect(status(page), 'Load completes the expired-profile check').toHaveText('Unit approval could not be confirmed. Print and Copy are unavailable; draft editing remains available.');
+  else await expect(profileStatus(page), 'Load completes a live authority check').toHaveText(`Loaded: ${id === PROFILE.id ? PROFILE.label : NO_CALLBACK.label}. Approval checked. Expires on ${PROFILE.expiresOn} (America/New_York).`);
 }
-// Add every listing of the feed, open the preview, choose the copy, set the ward's details (a Final copy loads the confirmed
-// fixture profile through the real controls; a Review copy types them), then (last, because every one of those re-arms the
-// confirmations) tick the four confirmations.
+const callbackConfirm = (page, field) => page.locator(`[data-fd-care-packet-callback="${field}"]`);
+async function confirmCallback(page) {
+  for (const field of ['arranged', 'plan', 'preferences']) await callbackConfirm(page, field).check();
+}
+// Both output modes load a candidate and await independent approval. Tests of editing-only typed details pass profile:''.
+// The four review confirmations are last because adding content or loading a profile resets them.
 async function build(page, { mode = 'review', profile, name, phone, release = true, open = true, count = PRINT_LISTINGS.length, visit = true } = {}) {
-  if (profile === undefined) profile = mode === 'final' ? PROFILE.id : '';
+  if (profile === undefined) profile = PROFILE.id;
   if (name === undefined) name = profile ? '' : '4 East';
   if (phone === undefined) phone = profile ? '' : '(207) 555-0199';
   if (visit) await page.goto('/?tab=care');
@@ -280,9 +287,9 @@ test.describe('preview, print and copy', () => {
     await expect(status(page)).toContainText('Preview closed.');
   });
 
-  // ---- typing (a Review copy: the only copy whose unit details are typed): the controls are patched, not replaced ---------------
+  // ---- draft typing: the controls are patched, not replaced ---------------
   test('typing the ward\'s name keeps focus and the caret on every keystroke, saves on leaving the field, and writes nothing to the announcer', async ({ page }) => {
-    await build(page, { release: false, name: '', phone: '' });
+    await build(page, { release: false, profile: '', name: '', phone: '' });
     const name = unitField(page, 'name');
     await expect(status(page), 'opening is announced (after a short delay)').toContainText('Preview open.');
     await name.focus();
@@ -294,7 +301,9 @@ test.describe('preview, print and copy', () => {
       expect(at, `after ${i} character(s) the field is still active with the caret at the end`).toEqual({ id: 'fd-care-packet-unit-name', caret: i, length: i });
     }
     expect((await snapshot(page)).unit.name, 'nothing is saved while typing').toBe('');
-    await expect(page.locator('.fd-packet-sheet--screen .fd-packet-org').first(), 'the pages follow what is typed').toContainText('4 East');
+    await expect(name, 'typing remains visible in the editor').toHaveValue('4 East');
+    await expect(page.locator('.fd-packet-sheet--screen [data-fd-packet-draft]')).toHaveText('Draft for editing. Unit contact approval is required before this packet can be printed or copied.');
+    await expect(page.locator('.fd-packet-sheet--screen .fd-packet-org'), 'unapproved unit details stay off the patient sheet').toHaveCount(0);
     await expect(status(page)).toHaveText('');
     await page.keyboard.press('Tab');
     await expect(unitField(page, 'phone'), 'Tab moves on: a change event must not pull focus back to the field it fired from').toBeFocused();
@@ -318,13 +327,14 @@ test.describe('preview, print and copy', () => {
     await expect(status(page)).toContainText('Review confirmations cleared');
     await expect(loadButton(page), 'focus stays on the button that was pressed (patched in place, never replaced)').toBeFocused();
     expect(await page.evaluate(() => document.activeElement === document.body), 'focus is somewhere real').toBe(false);
-    // Switching a page ON adds content nobody reviewed; switching one OFF does not.
+    // Every page change changes the packet being reviewed, including removing a page.
     for (const g of GATES) await gate(page, g).check();
     await page.getByRole('checkbox', { name: titleOf('safety') }).check();
     await expect(printButton(page)).toBeDisabled();
     for (const g of GATES) await gate(page, g).check();
     await page.getByRole('checkbox', { name: titleOf('safety') }).uncheck();
-    await expect(printButton(page)).toBeEnabled();
+    for (const g of GATES) await expect(gate(page, g)).not.toBeChecked();
+    await expect(printButton(page)).toBeDisabled();
   });
 
   test('unticking any single confirmation disables Print and Copy, and ticking it back enables them (AC4)', async ({ page }) => {
@@ -340,17 +350,17 @@ test.describe('preview, print and copy', () => {
     await expect(printButton(page)).toBeEnabled();
   });
 
-  // Was a Final-copy test; a Final copy's phone is read-only (profile) or never printable (typed), so the edit-then-Tab path
-  // exists only in the Review copy now. The announcement also reads the typed number back.
-  test('in a Review copy, Tab out of an edited unit phone onto Print leaves focus on a real element that says why Print went away, and says it aloud with the number read back as not confirmed', async ({ page }) => {
-    await build(page);
-    await expect(printButton(page)).toBeEnabled();
+  test('a typed unit phone stays editable and is read back as an unapproved candidate; committing it cannot release Print or Copy', async ({ page }) => {
+    await build(page, { profile: '' });
     await unitField(page, 'phone').fill('(207) 555-0177');
-    await page.keyboard.press('Tab');
-    await expect(reason(page), 'the reason takes focus when the button under it is disabled').toBeFocused();
+    await expect(unitField(page, 'phone')).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(unitField(page, 'name'), 'committing must preserve backward keyboard navigation').toBeFocused();
     await expect(printButton(page)).toBeDisabled();
-    await expect(status(page)).toContainText('Unit phone saved. Patients will be told to call (207) 555-0177. This number is not confirmed. Review confirmations cleared. Finish the four review confirmations above.');
-    await expect(readback(page)).toHaveText('Patients will be told to call (207) 555-0177. This number is not confirmed.');
+    await expect(copyButton(page)).toBeDisabled();
+    await expect(reason(page)).toHaveText(MSG.unconfirmed);
+    await expect(status(page)).toContainText('Unit phone saved. Candidate phone: (207) 555-0177. It cannot be printed or copied until approved. Review confirmations cleared.');
+    await expect(readback(page)).toHaveText('Candidate phone: (207) 555-0177. It cannot be printed or copied until approved.');
   });
 
   // Replaces "the one-sided hint follows the wallet-card page": the card left the packet.
@@ -360,6 +370,7 @@ test.describe('preview, print and copy', () => {
     expect(offered, 'the page switches are the standard pages and nothing else').toEqual(INSERTS.inserts.filter(i => !i.core).map(i => i.id));
     await expect(page.getByRole('checkbox', { name: INSERTS.card.title })).toHaveCount(0);
     for (const id of offered) await insertBox(page, id).check();
+    await confirmCallback(page);
     for (const g of GATES) await gate(page, g).check();
     await expect(page.locator('[data-fd-care-packet-hint]')).not.toHaveText(/wallet|card|one-sided|double-sided|duplex/i);
     await expect(page.locator('.fd-packet-sheet--screen [data-fd-packet-card], .fd-packet-sheet--screen .fd-packet-cardsheet')).toHaveCount(0);
@@ -371,19 +382,23 @@ test.describe('preview, print and copy', () => {
     expect(text).not.toContain(INSERTS.card.mineTitle);
   });
 
-  // Was a Final-copy test that typed into a Final copy's unit field; that field is read-only now, so the draft case is Review.
-  test('in a Review copy, Ctrl+P while a ward field is still being typed prints only the notice, and the same packet prints whole once the field is committed and reviewed', async ({ page }) => {
-    await build(page);
+  test('Ctrl+P while a ward field is being typed or after draft review prints only the notice; loading approval and pressing Print releases the packet', async ({ page }) => {
+    await build(page, { profile: '' });
     await watchStaged(page);
     await unitField(page, 'name').fill('Bed 4');
-    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'an uncommitted field: one sheet, the notice').toBe(1);
-    expect((await staged(page))[0], 'what was staged is the notice, not a packet page').toEqual({ notice: true, pages: 0, card: 0 });
+    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'uncommitted typing: one notice sheet').toBe(1);
+    expect((await staged(page))[0]).toEqual({ notice: true, pages: 0, card: 0 });
     await expect(host(page)).toHaveCount(0);
     await page.keyboard.press('Tab');
     for (const g of GATES) await gate(page, g).check();
+    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'reviewed draft: still only the notice').toBe(1);
+    expect((await staged(page))[1]).toEqual({ notice: true, pages: 0, card: 0 });
+    await loadProfile(page, PROFILE.id);
+    for (const g of GATES) await gate(page, g).check();
     const shown = await page.locator('.fd-packet-sheet--screen .fd-packet-page').count();
-    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'committed and reviewed: the packet itself').toBe(shown);
-    expect((await staged(page))[1]).toEqual({ notice: false, pages: shown, card: 0 });
+    await stage(page);
+    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'the button grants one freshly checked print').toBe(shown);
+    expect((await staged(page))[2]).toEqual({ notice: false, pages: shown, card: 0 });
   });
 
   test('the preview lists the web address behind each QR code outside the sheet, and the sheet itself prints only the domain', async ({ page }) => {
@@ -420,9 +435,9 @@ test.describe('preview, print and copy', () => {
     await expect(host(page)).toHaveCount(0);
   });
 
-  // Was a Final-copy test; typing into a unit field is a Review-copy act now (the Final copy's fields are read-only).
+  // Typing remains available in an unapproved draft; it cannot authorize output.
   test('in a Review copy, a click on a tray control straight after typing in a unit field lands: the field\'s commit must not replace the tray under the pointer', async ({ page }) => {
-    await build(page, { release: false });
+    await build(page, { release: false, profile: '' });
     await unitField(page, 'name').fill('4 West');
     await gate(page, 'verification').click();
     await expect(gate(page, 'verification'), 'the click was not lost to a repaint').toBeChecked();
@@ -466,19 +481,22 @@ test.describe('preview, print and copy', () => {
     await stage(page);
     await page.getByRole('checkbox', { name: titleOf('warning') }).uncheck();
     await cleanOf(page, 'switching a page off')();
+    for (const g of GATES) await gate(page, g).check();
     await stage(page);
     await page.getByRole('radio', { name: /Review copy/ }).check();
     await cleanOf(page, 'changing the copy')();
+    for (const g of GATES) await gate(page, g).check();
     await stage(page);
     await page.locator('[data-fd-care-packet-remove]').first().click();
     await cleanOf(page, 'removing a listing')();
+    for (const g of GATES) await gate(page, g).check();
     await stage(page);
     await page.locator('[data-fd-tab="library"]:visible').click();
     await cleanOf(page, 'leaving Care')();
   });
 
   // ---- Ctrl+P ----------------------------------------------------------------------------------------------------------------
-  test('Ctrl+P with the preview open prints the packet the preview shows once review is complete, and only a notice before then', async ({ page }) => {
+  test('Ctrl+P with the preview open always prints only the notice, including after approval and all review confirmations', async ({ page }) => {
     await build(page, { mode: 'final', release: false });
     const shown = await page.locator('.fd-packet-sheet--screen .fd-packet-page').count();
     expect(shown).toBeGreaterThanOrEqual(2);
@@ -486,7 +504,7 @@ test.describe('preview, print and copy', () => {
     expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'review incomplete: one sheet, the notice').toBe(1);
     await expect(host(page), 'afterprint removed it').toHaveCount(0);
     for (const g of GATES) await gate(page, g).check();
-    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'review complete: the same sheets as the preview').toBe(shown);
+    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'review complete: native printing still has no output permission').toBe(1);
     await toggle(page).click();
     await expect(preview(page)).toBeHidden();
     await page.pdf({ preferCSSPageSize: true });
@@ -500,7 +518,7 @@ test.describe('preview, print and copy', () => {
   });
 
   // The older resource pack (patient sharing) has its own Print on the same Care page: its print must stay the ordinary page.
-  test('the older pack\'s own Print never prints the packet: beforeprint with focus on that button, or anywhere outside the packet, stages nothing, while the same event with focus in the packet stages the packet', async ({ page }) => {
+  test('the older pack\'s own Print never prints the packet: beforeprint with focus on that button, or anywhere outside the packet, stages nothing, while the same event with focus in the packet stages only its notice', async ({ page }) => {
     await routeShell(page, { sharing: true });
     await page.goto('/?tab=care');
     const pack = page.locator('.fd-care-pack');
@@ -522,9 +540,9 @@ test.describe('preview, print and copy', () => {
     expect(await beforeprint(), 'focus in the search box, outside the packet: nothing is staged').toBeNull();
     const shown = await page.locator('.fd-packet-sheet--screen .fd-packet-page').count();
     await printButton(page).focus();
-    expect(await beforeprint(), 'focus in the packet preview: the packet the preview shows').toEqual({ pages: shown, notice: false });
+    expect(await beforeprint(), 'focus in the packet preview: no one-shot Print permission').toEqual({ pages: 0, notice: true });
     await toggle(page).focus();
-    expect(await beforeprint(), 'focus in the packet tray is in the packet too').toEqual({ pages: shown, notice: false });
+    expect(await beforeprint(), 'focus in the packet tray is in the packet too').toEqual({ pages: 0, notice: true });
     await expect(host(page)).toHaveCount(0);
     // And the older pack's own button still prints through its own path, staging nothing of the packet.
     await packPrint.click();
@@ -567,10 +585,12 @@ test.describe('preview, print and copy', () => {
     });
     await build(page, { mode: 'final', release: false });
     await expect(printButton(page)).toBeDisabled();
-    await printButton(page).evaluate(b => { b.disabled = false; });
-    await copyButton(page).evaluate(b => { b.disabled = false; });
-    await printButton(page).click();
-    await copyButton(page).click();
+    for (const button of [printButton(page), copyButton(page)]) {
+      await button.evaluate(b => { b.disabled = false; });
+      await button.click();
+      await expect(button).toBeDisabled();
+      await expect(status(page)).toContainText('Finish the four review confirmations');
+    }
     expect(await prints(page)).toBe(0);
     expect(await page.evaluate(() => window.__copies)).toBe(0);
     await expect(host(page)).toHaveCount(0);
@@ -590,29 +610,24 @@ test.describe('preview, print and copy', () => {
   });
 
   // ---- what blocks Print, and why it says so -----------------------------------------------------------------------------------------
-  // Rewritten from "a Final copy needs the unit phone": a typed phone no longer makes a Final copy, a confirmed profile does.
-  test('a Final copy needs a confirmed unit profile, not typed details; a Review copy with no unit phone prints a draft line and a blank wherever the pages ask for the phone, and a typed phone prints with neither', async ({ page }) => {
+  test('both copies keep unapproved typed details as an editable draft and refuse patient printing with or without a phone', async ({ page }) => {
     await build(page, { mode: 'final', profile: '', name: '4 East', phone: '' });
-    await expect(printButton(page)).toBeDisabled();
-    await expect(reason(page)).toHaveText(MSG.unconfirmed);
-    await page.getByRole('radio', { name: /Review copy/ }).check();
-    await expect(printButton(page)).toBeEnabled();
-    await stage(page);
-    // Every {{unitPhone}} in the pages a fresh packet carries becomes a line to write on (unitName is filled by "4 East").
-    const asked = INSERTS.inserts.filter(insert => defaultOn(insert.id)).reduce((n, insert) => n + (JSON.stringify(insert).match(/\{\{unitPhone\}\}/g) || []).length, 0);
-    expect(asked, 'the default pages ask for the unit phone somewhere').toBeGreaterThan(0);
-    expect(await host(page).locator('.fd-packet-blank').count(), 'a line to write on for every unit phone the pages ask for').toBe(asked);
-    expect(await host(page).locator('.fd-packet-page').first().locator('[data-fd-packet-draft]').count(), 'the draft line is on page 1').toBe(1);
-    expect(await host(page).locator('[data-fd-packet-draft]').count(), 'and only there').toBe(1);
-    expect(await host(page).locator('[data-fd-packet-draft]').textContent()).toBe('Draft. Your nurse will write the unit’s phone number on the blank lines in this packet before you leave.');
-    await afterprint(page);
-    await unitField(page, 'phone').fill('(207) 555-0199');
-    await unitField(page, 'phone').press('Tab');
-    for (const g of GATES) await gate(page, g).check();
-    await stage(page);
-    expect(await host(page).locator('[data-fd-packet-draft]').count(), 'a typed number prints with no draft line').toBe(0);
-    expect(await host(page).locator('.fd-packet-blank').count(), 'and no blank where the number goes').toBe(0);
-    expect(await host(page).textContent()).toContain('(207) 555-0199');
+    for (const mode of ['final', 'review']) {
+      await page.getByRole('radio', { name: mode === 'final' ? /Final copy/ : /Review copy/ }).check();
+      for (const phone of ['', '(207) 555-0199']) {
+        await unitField(page, 'phone').fill(phone);
+        await unitField(page, 'phone').press('Tab');
+        for (const g of GATES) await gate(page, g).check();
+        await expect(printButton(page)).toBeDisabled();
+        await expect(copyButton(page)).toBeDisabled();
+        await expect(reason(page)).toHaveText(MSG.unconfirmed);
+        await expect(unitField(page, 'phone')).toBeEditable();
+        await expect(unitField(page, 'phone')).toHaveValue(phone);
+        await expect(preview(page)).toBeVisible();
+        await expect(host(page)).toHaveCount(0);
+      }
+    }
+    expect(await prints(page)).toBe(0);
   });
 
   test('a dose or a verification note in a listing\'s description is left off the paper, and the preview says what was left off', async ({ page }) => {
@@ -647,11 +662,15 @@ test.describe('preview, print and copy', () => {
     await expect(printButton(page)).toBeDisabled();
     await expect(reason(page), 'named before the confirmations, because removing it re-arms nothing').toContainText('Southern Maine Wellness Clinic');
     await expect(reason(page)).toContainText('crisis line number');
+    await loadProfile(page, PROFILE.id);
     for (const g of GATES) await gate(page, g).check();
     await expect(printButton(page)).toBeDisabled();
     await expect(reason(page)).toContainText('Southern Maine Wellness Clinic');
     await page.locator('[data-fd-care-packet-remove="r-2"]').click();
-    await expect(printButton(page), 'removing adds nothing unreviewed, so the confirmations stand').toBeEnabled();
+    for (const g of GATES) await expect(gate(page, g)).not.toBeChecked();
+    await expect(reason(page)).toContainText('Finish the four review confirmations');
+    for (const g of GATES) await gate(page, g).check();
+    await expect(printButton(page), 'the corrected packet can be reviewed and printed').toBeEnabled();
   });
 
   test('a directory that failed to load part of itself blocks printing instead of printing fewer listings', async ({ page }) => {
@@ -663,40 +682,40 @@ test.describe('preview, print and copy', () => {
     }, KEY);
     await page.goto('/?tab=care');
     await toggle(page).click();
+    await loadProfile(page, PROFILE.id);
     for (const g of GATES) await gate(page, g).check();
     await expect(printButton(page)).toBeDisabled();
     await expect(reason(page)).toContainText('hidden while the directory is incomplete');
   });
 
   // ---- the unit: a confirmed profile, or typed details that are never confirmed ------------------------------------------------------
-  test('a Final copy with typed unit details is refused with the unconfirmed-unit reason ahead of the confirmations and under Ctrl+P, while Copy (which names no unit) still works', async ({ page, baseURL }) => {
-    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(baseURL).origin });
+  test('typed unit details cannot authorize Print or Copy, even after review or when a disabled control is forced on', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__copies = [];
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: text => { window.__copies.push(text); return Promise.resolve(); } } });
+    });
     await build(page, { mode: 'final', profile: '', name: '4 East', phone: '(207) 555-0199', release: false });
-    await expect(printButton(page)).toBeDisabled();
     await expect(reason(page), 'the unit comes before the four confirmations').toHaveText(MSG.unconfirmed);
-    await expect(readback(page)).toHaveText('Patients will be told to call (207) 555-0199. This number is not confirmed.');
+    await expect(readback(page)).toHaveText('Candidate phone: (207) 555-0199. It cannot be printed or copied until approved.');
     await expect(profileStatus(page)).toHaveText('Using the details you typed. They are not a confirmed profile.');
-    await expect(page.locator('[data-fd-care-packet-modenote]')).toContainText('needs a confirmed unit profile');
+    await expect(page.locator('[data-fd-care-packet-modenote]')).toHaveText('Both copies need current owner approval of the unit profile before Print or Copy. Draft editing remains available.');
     for (const g of GATES) await gate(page, g).check();
-    await expect(printButton(page), 'confirming the review does not confirm the unit').toBeDisabled();
-    await expect(reason(page)).toHaveText(MSG.unconfirmed);
-    await expect(copyButton(page), 'Copy is blocked only by what the copy contains').toBeEnabled();
-    await printButton(page).evaluate(b => { b.disabled = false; });
-    await printButton(page).click();
+    for (const button of [printButton(page), copyButton(page)]) {
+      await expect(button).toBeDisabled();
+      await button.evaluate(b => { b.disabled = false; });
+      await button.click();
+      await expect(button).toBeDisabled();
+    }
     expect(await prints(page)).toBe(0);
+    expect(await page.evaluate(() => window.__copies)).toEqual([]);
     await expect(host(page)).toHaveCount(0);
-    await expect(status(page)).toContainText(MSG.unconfirmed);
+    await expect(page.locator('#fd-care-packet-copy-text')).toHaveCount(0);
     await watchStaged(page);
-    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'the print command gets the notice').toBe(1);
+    expect(pdfPageCount(await page.pdf({ preferCSSPageSize: true })), 'native print gets the notice').toBe(1);
     expect((await staged(page))[0]).toEqual({ notice: true, pages: 0, card: 0 });
-    await copyButton(page).click();
-    await expect(status(page)).toContainText('Copied.');
-    const text = await page.evaluate(() => navigator.clipboard.readText());
-    expect(text).toContain('Harbor Counseling Center');
-    expect(text, 'the copied text names no unit').not.toMatch(/4 East|555-0199/);
   });
 
-  test('with no unit profile in the payload (as shipped), the preview says none is set up, and a Final copy is refused even with nothing typed because the welcome asks for the unit phone', async ({ page }) => {
+  test('with no unit profile in the payload (as shipped), the preview says none is set up and both copies refuse output', async ({ page }) => {
     await routeShell(page, { profiles: [] });
     await build(page, { mode: 'final', profile: '', name: '', phone: '' });
     await expect(page.locator('[data-fd-care-packet-profile-none]')).toBeVisible();
@@ -706,20 +725,22 @@ test.describe('preview, print and copy', () => {
     await expect(printButton(page)).toBeDisabled();
     await expect(reason(page)).toHaveText(MSG.noProfiles);
     await page.getByRole('radio', { name: /Review copy/ }).check();
-    await expect(printButton(page), 'the Review copy is unaffected').toBeEnabled();
+    await expect(printButton(page), 'the same approval policy applies to Review').toBeDisabled();
+    await expect(copyButton(page)).toBeDisabled();
+    await expect(reason(page)).toHaveText(MSG.noProfiles);
   });
 
   test('the confirmed fixture profile prints a Final copy under its approved org; its lapsed twin is refused with the lapse reason, and loading the current one again restores Print', async ({ page }) => {
     await build(page, { mode: 'final' });
-    await expect(readback(page)).toHaveText(`Patients will be told to call ${PROFILE.unitPhone}.`);
+    await expect(readback(page)).toHaveText(`Approved unit contact: ${PROFILE.unitPhone}.`);
     await stage(page);
     expect(await prints(page)).toBe(1);
     expect(await host(page).locator('.fd-packet-org').first().textContent(), 'the org prints only from a profile with approved branding').toBe(`${PROFILE.org} · ${PROFILE.unitName}`);
     expect(await host(page).textContent()).toContain(PROFILE.unitPhone);
     await afterprint(page);
     await loadProfile(page, EXPIRED.id);
-    await expect(profileStatus(page)).toHaveText(`The loaded profile’s phone confirmation has lapsed (it held through ${EXPIRED.usableThrough}). A Final copy needs a current confirmation.`);
-    await expect(readback(page)).toHaveText(`Patients will be told to call ${EXPIRED.unitPhone}. This number is not confirmed.`);
+    await expect(profileStatus(page)).toHaveText(`This profile expired on ${EXPIRED.expiresOn} (America/New_York). A new verification and owner approval are required.`);
+    await expect(readback(page)).toHaveText(`Candidate phone: ${EXPIRED.unitPhone}. It cannot be printed or copied until approved.`);
     await expect(printButton(page)).toBeDisabled();
     await expect(reason(page), 'named before the confirmations').toHaveText(MSG.lapsed);
     for (const g of GATES) await gate(page, g).check();
@@ -734,7 +755,7 @@ test.describe('preview, print and copy', () => {
     await expect(printButton(page)).toBeEnabled();
   });
 
-  test('the call-back page in a Final copy needs a confirmed profile that records a call-back program: typed details are refused first, a profile without the program is refused, one with it prints the page', async ({ page }) => {
+  test('the call-back page needs an approved program and all discharge confirmations: typing and a profile without a program cannot authorize it', async ({ page }) => {
     await routeShell(page, { profiles: [PROFILE, NO_CALLBACK] });
     await build(page, { mode: 'final', profile: '', name: '4 East', phone: '(207) 555-0199', release: false });
     await insertBox(page, 'callback').check();
@@ -744,19 +765,22 @@ test.describe('preview, print and copy', () => {
     for (const g of GATES) await gate(page, g).check();
     await expect(printButton(page)).toBeDisabled();
     await expect(reason(page)).toHaveText(MSG.callback);
-    await expect(copyButton(page), 'the copied text promises no call').toBeEnabled();
+    await expect(copyButton(page), 'Copy follows the same packet approval gate').toBeDisabled();
     await insertBox(page, 'callback').uncheck();
+    for (const g of GATES) await gate(page, g).check();
     await expect(printButton(page), 'switching the page off is the other way out').toBeEnabled();
     await insertBox(page, 'callback').check();
     await loadProfile(page, PROFILE.id);
+    await expect(reason(page), 'program approval alone cannot promise a call for this discharge').toHaveText(MSG.callback);
+    await confirmCallback(page);
     for (const g of GATES) await gate(page, g).check();
     await stage(page);
     expect(await host(page).locator('[data-fd-packet-insert="callback"]').count(), 'the call-back page is in the print').toBeGreaterThan(0);
   });
 
   test('the unit profile is a native select loaded only by its button: choosing does nothing, Load makes the fields read-only (dashed) with a status and read-back, and "Use my own details instead" empties them and moves focus to the name field', async ({ page }) => {
-    await build(page, { release: false, name: '4 West', phone: '(207) 555-0177' });
-    await expect(page.getByLabel('Confirmed unit profile')).toHaveCount(1);
+    await build(page, { release: false, profile: '', name: '4 West', phone: '(207) 555-0177' });
+    await expect(page.getByLabel('Unit profile', { exact: true })).toHaveCount(1);
     expect(await profileSelect(page).evaluate(el => el.tagName)).toBe('SELECT');
     expect(await profileSelect(page).locator('option').allTextContents()).toEqual(['Choose a profile…', PROFILE.label, EXPIRED.label]);
     await expect(unlinkButton(page), 'nothing to unlink before a profile is loaded').toBeHidden();
@@ -773,8 +797,8 @@ test.describe('preview, print and copy', () => {
     }
     await expect(unitField(page, 'name')).toHaveValue(PROFILE.unitName);
     await expect(unitField(page, 'phone')).toHaveValue(PROFILE.unitPhone);
-    await expect(profileStatus(page)).toHaveText(`Loaded: ${PROFILE.label}. Phone confirmed through ${PROFILE.usableThrough}.`);
-    await expect(readback(page)).toHaveText(`Patients will be told to call ${PROFILE.unitPhone}.`);
+    await expect(profileStatus(page)).toHaveText(`Loaded: ${PROFILE.label}. Approval checked. Expires on ${PROFILE.expiresOn} (America/New_York).`);
+    await expect(readback(page)).toHaveText(`Approved unit contact: ${PROFILE.unitPhone}.`);
     await expect(status(page)).toContainText(`Loaded unit profile ${PROFILE.label}.`);
     await expect(loadButton(page), 'focus stays on Load').toBeFocused();
     expect((await snapshot(page)).unit, 'the typed details are dropped: the profile is the only source').toEqual({ name: '', phone: '', profile: PROFILE.id });
@@ -839,7 +863,73 @@ test.describe('preview, print and copy', () => {
     await expect(profileStatus(page)).toHaveText('');
     await expect(unlinkButton(page)).toBeHidden();
     await loadProfile(page, PROFILE.id);
-    await expect(profileStatus(page)).toHaveText(`Loaded: ${PROFILE.label}. Phone confirmed through ${PROFILE.usableThrough}.`);
+    await expect(profileStatus(page)).toHaveText(`Loaded: ${PROFILE.label}. Approval checked. Expires on ${PROFILE.expiresOn} (America/New_York).`);
+  });
+
+  for (const withdrawn of ['revoked', 'suspended']) {
+    for (const [mode, action] of [['review', 'Print'], ['final', 'Print'], ['final', 'Copy']]) {
+      test(`${withdrawn} after Load: the next ${mode} ${action} checks authority again and creates no patient output`, async ({ page }) => {
+        const authority = await routeShell(page);
+        await page.addInitScript(() => {
+          window.__copies = [];
+          Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: text => { window.__copies.push(text); return Promise.resolve(); } } });
+        });
+        await build(page, { mode });
+        const loadedChecks = authority.requests.length;
+        expect(loadedChecks, 'loading the candidate consulted its independent authority').toBeGreaterThan(0);
+        await expect(printButton(page)).toBeEnabled();
+        if (mode === 'final') await expect(copyButton(page)).toBeEnabled();
+        else await expect(copyButton(page)).toBeDisabled();
+        authority.status = withdrawn;
+        await (action === 'Print' ? printButton(page) : copyButton(page)).click();
+        await expect(status(page)).toHaveText('Unit approval could not be confirmed. Print and Copy are unavailable; draft editing remains available.');
+        expect(authority.requests.length, 'output cannot reuse the approval checked at Load').toBeGreaterThan(loadedChecks);
+        expect(authority.requests.at(-1)).toEqual({ profileId: PROFILE.id, revision: PROFILE.revision });
+        await expect(printButton(page)).toBeDisabled();
+        await expect(copyButton(page)).toBeDisabled();
+        await expect(profileStatus(page)).toHaveText(`Loaded: ${PROFILE.label}. Approval has not been confirmed. Expires on ${PROFILE.expiresOn} (America/New_York).`);
+        expect(await prints(page)).toBe(0);
+        expect(await page.evaluate(() => window.__copies)).toEqual([]);
+        await expect(host(page)).toHaveCount(0);
+        await expect(page.locator('#fd-care-packet-copy-text')).toHaveCount(0);
+        for (const g of GATES) await expect(gate(page, g)).not.toBeChecked();
+        await expect(preview(page), 'withdrawal leaves the editable draft available').toBeVisible();
+      });
+    }
+  }
+
+  test('callback confirmations exist only with that page, stay out of storage, and reset with the packet or a reload', async ({ page }) => {
+    await build(page, { mode: 'final', release: false });
+    const panel = page.locator('[data-fd-care-packet-callback-panel]');
+    await expect(panel).toBeHidden();
+    await insertBox(page, 'callback').check();
+    await expect(panel).toBeVisible();
+    await expect(panel.locator('input')).toHaveCount(3);
+    await expect(panel.locator('input:not([type="checkbox"]), textarea, select')).toHaveCount(0);
+    await expect(callbackConfirm(page, 'arranged')).toHaveAccessibleName('Staff have arranged this call for this discharge with the named team.');
+    await expect(callbackConfirm(page, 'plan')).toHaveAccessibleName('The agreed call window and deadline are recorded in the After Visit Summary or will be written on this page before handoff; the return number, hours and fallback have been confirmed.');
+    await expect(callbackConfirm(page, 'preferences')).toHaveAccessibleName('The patient’s contact details and message preferences were agreed in the clinical workflow.');
+    for (const missing of ['arranged', 'plan', 'preferences']) {
+      await confirmCallback(page);
+      await callbackConfirm(page, missing).uncheck();
+      for (const g of GATES) await gate(page, g).check();
+      await expect(printButton(page), `without ${missing}`).toBeDisabled();
+      await expect(copyButton(page), `without ${missing}`).toBeDisabled();
+      await expect(reason(page)).toHaveText(MSG.callback);
+    }
+    await confirmCallback(page);
+    for (const g of GATES) await gate(page, g).check();
+    await expect(printButton(page)).toBeEnabled();
+    expect(Object.keys(await snapshot(page)).sort()).toEqual(['ids', 'inserts', 'mode', 'unit', 'why']);
+    await insertBox(page, 'safety').check();
+    for (const field of ['arranged', 'plan', 'preferences']) await expect(callbackConfirm(page, field)).not.toBeChecked();
+    await confirmCallback(page);
+    await page.reload();
+    await toggle(page).click();
+    for (const field of ['arranged', 'plan', 'preferences']) await expect(callbackConfirm(page, field)).not.toBeChecked();
+    await expect(printButton(page)).toBeDisabled();
+    await insertBox(page, 'callback').uncheck();
+    await expect(panel).toBeHidden();
   });
 
   // ---- copy ------------------------------------------------------------------------------------------------------------------------------
@@ -865,6 +955,7 @@ test.describe('preview, print and copy', () => {
     expect(text).not.toMatch(/SENTINEL|2031-02-03|Verification due|\b\d+\s?mg\b/);
     expect(text).not.toMatch(/&amp;|&#39;|&lt;/);
     await page.getByRole('radio', { name: /Review copy/ }).check();
+    for (const g of GATES) await gate(page, g).check();
     await expect(copyButton(page), 'a Review draft never goes into the record').toBeDisabled();
     await expect(reason(page)).toContainText('Switch to the Final copy');
   });
@@ -877,6 +968,33 @@ test.describe('preview, print and copy', () => {
     await expect(page.locator('#fd-care-packet-copy-text')).toBeVisible();
     await expect(page.locator('#fd-care-packet-copy-text')).toHaveValue(/If things feel unsafe/);
     await expect(status(page)).not.toContainText('Copied.');
+  });
+
+  test('approval withdrawn while clipboard writing is pending prevents a delayed rejection from exposing manual-copy text', async ({ page }) => {
+    const authority = await routeShell(page);
+    await page.addInitScript(() => {
+      window.__copyAttempts = 0;
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => {
+        window.__copyAttempts++;
+        return new Promise((resolve, reject) => { window.__rejectCopy = reject; });
+      } } });
+    });
+    await build(page, { mode: 'final' });
+    await copyButton(page).click();
+    await expect.poll(() => page.evaluate(() => window.__copyAttempts)).toBe(1);
+    const copyChecks = authority.requests.length;
+    await expect(status(page)).not.toContainText('Copied.');
+    await expect(page.locator('#fd-care-packet-copy-text')).toHaveCount(0);
+    authority.status = 'revoked';
+    await page.evaluate(() => window.__rejectCopy(new Error('clipboard permission denied')));
+    await expect(status(page)).toHaveText('Unit approval could not be confirmed. Print and Copy are unavailable; draft editing remains available.');
+    expect(authority.requests.length, 'a clipboard failure cannot reuse the initial Copy receipt').toBeGreaterThan(copyChecks);
+    expect(authority.requests.at(-1)).toEqual({ profileId: PROFILE.id, revision: PROFILE.revision });
+    await expect(page.locator('#fd-care-packet-copy-text')).toHaveCount(0);
+    await expect(host(page)).toHaveCount(0);
+    await expect(copyButton(page)).toBeDisabled();
+    await expect(printButton(page)).toBeDisabled();
+    expect(await page.evaluate(() => window.__copyAttempts)).toBe(1);
   });
 
   // ---- announcements, tab order, and nothing leaves the page --------------------------------------------------------------------------
@@ -893,8 +1011,9 @@ test.describe('preview, print and copy', () => {
     test(`every checkbox and radio in the tray and the preview is at least 24 x 24 CSS px (WCAG 2.5.8), at ${width}px wide`, async ({ page }) => {
       await page.setViewportSize({ width, height: width === 320 ? 640 : 800 });
       await build(page, { mode: 'final', release: false });
+      await insertBox(page, 'callback').check();
       const small = await page.evaluate(() => [...document.querySelectorAll('[data-fd-care-packet-tray] input[type="checkbox"], #fd-care-packet-preview input[type="checkbox"], #fd-care-packet-preview input[type="radio"]')]
-        .map(el => ({ what: el.getAttribute('data-fd-care-packet-gate') || el.getAttribute('data-fd-care-packet-insert') || el.getAttribute('data-fd-care-packet-mode'), box: el.getBoundingClientRect() }))
+        .map(el => ({ what: el.getAttribute('data-fd-care-packet-gate') || el.getAttribute('data-fd-care-packet-insert') || el.getAttribute('data-fd-care-packet-callback') || el.getAttribute('data-fd-care-packet-mode'), box: el.getBoundingClientRect() }))
         .filter(item => item.box.width < 24 || item.box.height < 24).map(item => item.what + ' ' + item.box.width + 'x' + item.box.height));
       expect(small, `every box is at least 24px at ${width}px wide`).toEqual([]);
     });
@@ -922,9 +1041,9 @@ test.describe('preview, print and copy', () => {
     for (let i = 1; i < order.length; i++) expect(at(order[i]), `${order[i - 1]} comes before ${order[i]}`).toBeGreaterThan(at(order[i - 1]));
   });
 
-  test('nothing leaves the page: no request but same-origin reads, no new storage, one session key', async ({ page }) => {
+  test('only the exact profile identity leaves the page for approval: no write request, no new storage, one session key', async ({ page }) => {
     const requests = [];
-    page.on('request', r => requests.push({ method: r.method(), origin: new URL(r.url()).origin }));
+    page.on('request', r => requests.push({ method: r.method(), url: r.url(), origin: new URL(r.url()).origin }));
     await page.goto('/?tab=care');
     const baseline = await page.evaluate(() => ({ ...localStorage }));
     const origin = new URL(page.url()).origin;
@@ -932,7 +1051,10 @@ test.describe('preview, print and copy', () => {
     await stage(page);
     await afterprint(page);
     expect(requests.filter(r => r.method !== 'GET' && r.method !== 'HEAD'), 'no write ever leaves the browser').toEqual([]);
-    expect(new Set(requests.map(r => r.origin)), 'and nothing goes anywhere else').toEqual(new Set([origin]));
+    expect(new Set(requests.map(r => r.origin)), 'only the independent approval service is contacted').toEqual(new Set([origin, new URL(PROFILE_AUTHORITY_URL).origin]));
+    const approval = requests.filter(r => r.origin !== origin);
+    expect(approval.length, 'Load and Print each check approval').toBeGreaterThanOrEqual(2);
+    for (const request of approval) expect([...new URL(request.url).searchParams]).toEqual([['profileId', PROFILE.id], ['revision', PROFILE.revision]]);
     expect(await page.evaluate(() => ({ ...localStorage })), 'no durable storage').toEqual(baseline);
     expect(await page.evaluate(() => Object.keys(sessionStorage))).toEqual([KEY]);
     const saved = await snapshot(page);
@@ -998,6 +1120,7 @@ test.describe('preview, print and copy', () => {
     await pinCareDirectory(page, printFeed(careDirectoryFixture(), { long: true, count: 12 }));
     await build(page, { mode: 'final', count: 12, release: false });
     for (const insert of INSERTS.inserts) if (!insert.core) await insertBox(page, insert.id).check();
+    await confirmCallback(page);
     for (const g of GATES) await gate(page, g).check();
     await stage(page);
     await page.setViewportSize(PAPER);
@@ -1110,7 +1233,7 @@ test.describe('preview, print and copy', () => {
   });
 
   test('the wallet card names no unit: with typed ward details, and again with a confirmed profile loaded, nothing of the unit reaches the card', async ({ page }) => {
-    await build(page, { release: false });
+    await build(page, { release: false, profile: '' });
     for (const round of ['typed', 'profile']) {
       if (round === 'profile') await loadProfile(page, PROFILE.id);
       await cardButton(page).click();
@@ -1174,10 +1297,12 @@ test.describe('fail closed: the packet refuses to print without its crisis lines
       await expect(reason(page)).toContainText(/crisis/i);
       await expect(page.locator('.fd-care-packet-preview__fail')).toBeVisible();
       await expect(page.locator('.fd-packet-sheet--screen .fd-packet-page'), 'no pages at all: not a page without its crisis lines').toHaveCount(0);
-      await printButton(page).evaluate(b => { b.disabled = false; });
-      await copyButton(page).evaluate(b => { b.disabled = false; });
-      await printButton(page).click();
-      await copyButton(page).click();
+      for (const button of [printButton(page), copyButton(page)]) {
+        await button.evaluate(b => { b.disabled = false; });
+        await button.click();
+        if (!down) await expect(button, 'the completed authority check repaints the refusal').toBeDisabled();
+        await expect(status(page)).toContainText(/crisis/i);
+      }
       expect(await prints(page)).toBe(0);
       expect(await page.evaluate(() => window.__copies)).toBe(0);
       await expect(host(page)).toHaveCount(0);
@@ -1222,6 +1347,7 @@ test.describe('a real window.print()', () => {
     await watchBeforeprint(page);
     await build(page, { mode: 'final' });
     await printButton(page).click();
+    await expect.poll(() => page.evaluate(() => window.__seen.length)).toBe(1);
     const seen = await page.evaluate(() => window.__seen);
     expect(seen.length, 'the browser raised beforeprint once').toBe(1);
     expect(seen[0].host && seen[0].marked, 'the container and the marker were there when the engine looked').toBe(true);
@@ -1236,6 +1362,7 @@ test.describe('a real window.print()', () => {
     await watchBeforeprint(page);
     await page.goto('/?tab=care');
     await cardButton(page).click();
+    await expect.poll(() => page.evaluate(() => window.__seen.length)).toBe(1);
     const seen = await page.evaluate(() => window.__seen);
     expect(seen).toEqual([{ host: true, marked: true, rule: '@page{size:Letter;margin:0}', sheets: 1, cards: 1 }]);
     await expect(host(page), 'afterprint removed it').toHaveCount(0);
@@ -1320,7 +1447,7 @@ for (const [width, scheme] of [[1280, 'light'], [390, 'dark'], [320, 'light']]) 
       await expect(page.getByRole('radio', { checked: true })).toHaveCount(1);
       await expect(page.getByLabel(/^Unit name/)).toHaveCount(1);
       await expect(page.getByLabel(/^Unit phone/)).toHaveCount(1);
-      await expect(page.getByLabel('Confirmed unit profile')).toHaveCount(1);
+      await expect(page.getByLabel('Unit profile', { exact: true })).toHaveCount(1);
       const pages = await page.locator('.fd-packet-sheet--screen article.fd-packet-page').count();
       expect(pages).toBeGreaterThanOrEqual(2);
       for (let n = 1; n <= pages; n++) await expect(page.locator(`.fd-packet-sheet--screen article[aria-label="Page ${n} of ${pages}"]`)).toHaveCount(1);

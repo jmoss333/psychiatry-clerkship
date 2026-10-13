@@ -15,20 +15,18 @@ closed at the one place that can stop a page going home without its crisis lines
 `card` is the wallet card (a separate, optional print, not a packet page). `crisisNumbers` is every
 registered crisis number as digits (the validator's own registered_crisis_digits(): `contact` AND
 `alsoAvailable` of every governed resource), so the browser refuses exactly the numbers this build scans
-for without the governed record's other fields being shipped. `unitProfiles` is the confirmed unit
-profiles (data/care-unit-profiles.v1.json, validated by check_profiles), each with `usableThrough`, the
-confirmation date plus PROFILE_USABLE_DAYS: a fixed date, so the build stays reproducible, after which the
-browser refuses a Final copy from that profile.
+for without the governed record's other fields being shipped. `unitProfiles` carries candidate unit
+facts with an exact `revision` digest and ninety-day `expiresOn` / `usableThrough` dates derived from
+the oldest required actual verification. Those dates are New York calendar dates, not build dates.
 
-What is deliberately NOT shipped: each helpline row's `source` and `alsoSources` URLs and its
-`verifiedDate` (an internal provenance record: "neither is ever printed", so a browser that never
-receives them cannot print them), the governed record's `alsoAvailable` text, notes, sources and review
-dates (internal notes), and a profile's confirmation record (`phoneConfirmedOn`, `phoneConfirmedBy`).
+What is deliberately NOT shipped: helpline sources and verification dates, internal crisis records,
+and profile verification evidence. Profile content never grants approval: every permitted patient
+output requires a fresh independent owner-authenticated approval of the exact revision. Unapproved
+branding is rejected at validation unless org is null, so it cannot enter the public payload.
 
-Activation is coupled to a profile: every Final copy needs a confirmed unit phone, which only a profile
-provides, so the build fails when the packet module's FD_CARE_PACKET_ENABLED is anything but the literal
-false while the profiles file is empty. The check reads the source (fail closed: an unreadable or
-doubled declaration aborts too).
+Activation remains coupled to having candidates: a flag other than literal false with no candidate
+aborts. That build-time check is a prerequisite, never evidence of owner approval or permission to
+print. Missing or ambiguous flag declarations also abort.
 
 The payload is built from the validator's own loader and `check()`; there is no second token scanner to
 drift from it. `check()` is given the data's own `generatedAt` as "today" so the build stays
@@ -61,9 +59,8 @@ CRISIS_TOKEN = re.compile(r"\{\{crisis:([a-z0-9_]+)\}\}")
 PACKET_SOURCE = os.path.join(HERE, "frontdoor", "fd_care_packet.js")
 # Every assignment of the flag (never a comparison such as `FD_CARE_PACKET_ENABLED===true`), with its value.
 FLAG_ASSIGNMENT = re.compile(r"(?<![\w$.])FD_CARE_PACKET_ENABLED\s*=(?!=)\s*([^;\n]*)")
-# What a profile ships. Its confirmation record (phoneConfirmedOn, phoneConfirmedBy) stays in the source file; the
-# browser receives only `usableThrough`, derived from it.
-PROFILE_SHIPPED_KEYS = ("id", "label", "org", "brandingApproved", "unitName", "unitPhone", "callbackProgram")
+# Public candidates carry exact content plus a digest and dates. Evidence and owner authority are never shipped.
+PROFILE_SHIPPED_KEYS = tuple(key for key in _validator.PROFILE_KEYS if key != "verification")
 
 
 class PayloadError(ValueError):
@@ -111,13 +108,12 @@ def packet_enabled(source_path=None):
 
 
 def _shipped_profile(profile):
-    """A profile as the browser receives it: the confirmation record replaced by the last day it may be used."""
+    """Public candidate: no evidence or approval; exact identity and dates support the independent authority."""
     out = {key: profile[key] for key in PROFILE_SHIPPED_KEYS}
-    # Institutional branding is approval-pending until the owner says otherwise: an unapproved organisation name stays out of the
-    # page source of two public learner sites, not just out of the printed header.
-    if not profile["brandingApproved"]:
-        out["org"] = None
-    out["usableThrough"] = _validator.usable_through(_validator.parse_iso(profile["phoneConfirmedOn"]))
+    oldest = _validator.oldest_verification(profile)
+    out["revision"] = _validator.profile_revision(profile)
+    out["expiresOn"] = _validator.expires_on(oldest)
+    out["usableThrough"] = _validator.usable_through(oldest)
     return out
 
 
@@ -143,12 +139,12 @@ def build_payload(data_path=None, schema_path=None, crisis_path=None, today=None
         hint = ""
         if any("future" in error for error in profile_report.errors):
             hint = ("\n   (the build reads no clock: it dates profiles against care-inserts.v1.json's generatedAt, so a profile "
-                    "confirmed after that date needs generatedAt raised in the same change; never back-date the confirmation)")
+                    "checked after that date needs generatedAt raised in the same change; never back-date an actual check)")
         raise PayloadError("care-unit-profiles.v1.json failed validation:\n   - "
                            + "\n   - ".join(profile_report.errors) + hint)
     if packet_enabled(packet_source_path) and not profiles["profiles"]:
         raise PayloadError("FD_CARE_PACKET_ENABLED is on in fd_care_packet.js but care-unit-profiles.v1.json has no "
-                           "confirmed unit profile; every Final copy needs one, so the packet cannot be activated "
+                           "candidate unit profile; patient output needs an independently approved one, so the packet cannot be activated "
                            "without it")
 
     resources = {resource["id"]: resource for resource in crisis["resources"]}

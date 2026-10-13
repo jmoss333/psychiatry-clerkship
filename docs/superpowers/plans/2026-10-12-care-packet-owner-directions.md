@@ -1,5 +1,7 @@
 # Aftercare packet: the owner's directions for PR #1036 (design before code)
 
+**Superseded in part:** [Revision 4](2026-10-13-care-packet-revision-4.md) records the subsequently approved medication, unit-contact, callback, independent profile-approval and 90-day New York freshness rules. Those rules replace the corresponding Revision 2–3 choices and open questions below. This document retains the earlier implementation history.
+
 **Status: draft design. PR #1036 stays a draft and `FD_CARE_PACKET_ENABLED` stays `false`. Nothing here is approval
 for patient use or activation.** Gate G-C (ward printer, a nurse, a peer specialist) stays open; activation (G-D) is a
 separate decision.

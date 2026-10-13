@@ -99,11 +99,19 @@ def run_check(data=None, crisis=None, today=TODAY):
 
 
 def profile(**overrides):
-    """One confirmed unit profile in the SOURCE shape (care-unit-profiles.v1.json). Fictional 555-01xx number."""
+    """A candidate profile with fictional contacts and actual-check provenance, never owner approval."""
+    checked_on = overrides.pop("checkedOn", "2026-10-01")
+    checked_by = overrides.pop("checkedBy", "unit charge nurse")
     out = {"id": "test-unit", "label": "Test unit", "org": "Test Org", "brandingApproved": True,
-           "unitName": "Test Unit 4 East", "unitPhone": "(207) 555-0142", "callbackProgram": True,
-           "phoneConfirmedOn": "2026-10-01", "phoneConfirmedBy": "unit charge nurse"}
+           "unitName": "Test Unit 4 East", "unitPhone": "(207) 555-0142", "unitPurpose": "questions about your discharge papers",
+           "unitHours": "Monday to Friday, 9 a.m. to 5 p.m.", "callbackProgram": True,
+           "callbackTeam": "Test follow-up team", "callbackPhone": "(207) 555-0143",
+           "callbackHours": "Monday to Friday, 9 a.m. to 5 p.m.",
+           "callbackFallback": "follow the contact instructions in your After Visit Summary"}
     out.update(overrides)
+    fields = ["identity", "contact"] + (["callback"] if out["callbackProgram"] else []) + (["branding"] if out["brandingApproved"] else [])
+    out.setdefault("verification", [{"field": field, "checkedOn": checked_on, "checkedBy": checked_by,
+                                     "evidence": "Direct confirmation with the responsible unit team"} for field in fields])
     return out
 
 
@@ -923,8 +931,7 @@ class UnitProfiles(Base):
         self.assertEqual(1, run_profiles().stats["profiles"])
 
     def test_the_shape_is_closed_and_complete(self):
-        for key in ("id", "label", "org", "brandingApproved", "unitName", "unitPhone", "callbackProgram",
-                    "phoneConfirmedOn", "phoneConfirmedBy"):
+        for key in profile():
             with self.subTest(missing=key):
                 p = profile()
                 del p[key]
@@ -976,25 +983,25 @@ class UnitProfiles(Base):
         for value, needle in (("2026-02-30", "calendar"), ((TODAY + timedelta(days=1)).isoformat(), "future"),
                               ("2025-12-31", "before"), ("1970-01-01", "before")):
             with self.subTest(value=value):
-                self.assertErrorMentions(run_profiles([profile(phoneConfirmedOn=value)]), "phoneConfirmedOn", needle)
-        self.assertTrue(run_profiles([profile(phoneConfirmedOn="12 Oct 2026")]).errors)
-        self.assertClean(run_profiles([profile(phoneConfirmedOn=TODAY.isoformat())]))
+                self.assertErrorMentions(run_profiles([profile(checkedOn=value)]), "checkedOn", needle)
+        self.assertTrue(run_profiles([profile(checkedOn="12 Oct 2026")]).errors)
+        self.assertClean(run_profiles([profile(checkedOn=TODAY.isoformat())]))
 
     def test_a_confirmation_over_the_freshness_limit_warns_and_is_not_an_error(self):
-        self.assertClean(run_profiles([profile(phoneConfirmedOn=(TODAY - timedelta(days=180)).isoformat())]))
-        report = run_profiles([profile(phoneConfirmedOn=(TODAY - timedelta(days=181)).isoformat())])
+        self.assertClean(run_profiles([profile(checkedOn=(TODAY - timedelta(days=89)).isoformat())]))
+        report = run_profiles([profile(checkedOn=(TODAY - timedelta(days=90)).isoformat())])
         self.assertEqual([], report.errors)
         self.assertEqual(1, len(report.warnings))
-        self.assertIn("181 days", report.warnings[0])
+        self.assertIn("90 days", report.warnings[0])
         self.assertIn("test-unit", report.warnings[0])
 
     def test_the_confirmer_is_a_role_never_a_number_or_an_email(self):
         for role in ("nurse 2", "Jo at 207-555-0100", "x@example.org", "nurse＠ward", "   ", "nurse ３"):
             with self.subTest(role=role):
-                self.assertErrorMentions(run_profiles([profile(phoneConfirmedBy=role)]), "phoneConfirmedBy")
+                self.assertErrorMentions(run_profiles([profile(checkedBy=role)]), "checkedBy")
         for role in ("unit charge nurse", "nurse manager", "unit clerk"):
             with self.subTest(role=role):
-                self.assertClean(run_profiles([profile(phoneConfirmedBy=role)]))
+                self.assertClean(run_profiles([profile(checkedBy=role)]))
 
     def test_the_printed_names_are_held_to_the_sheet_rules(self):
         crisis_code = registered(3)
@@ -1029,8 +1036,62 @@ class UnitProfiles(Base):
     def test_approved_branding_needs_the_organization_it_approves(self):
         self.assertErrorMentions(run_profiles([profile(brandingApproved=True, org=None)]), "brandingApproved", "org")
         self.assertClean(run_profiles([profile(brandingApproved=False, org=None)]))
-        self.assertClean(run_profiles([profile(brandingApproved=False, org="Test Org")]))
+        self.assertErrorMentions(run_profiles([profile(brandingApproved=False, org="Test Org")]), "brandingApproved", "org")
         self.assertTrue(run_profiles([profile(org="")]).errors, "an empty org is not null")
+
+
+class ProfileSafetyContract(Base):
+    def test_required_verification_categories_are_exact_unique_and_conditional(self):
+        for field in ("identity", "contact", "callback", "branding"):
+            p = profile()
+            p["verification"] = [entry for entry in p["verification"] if entry["field"] != field]
+            self.assertErrorMentions(run_profiles([p]), "verification", field)
+        p = profile()
+        p["verification"][-1] = copy.deepcopy(p["verification"][0])
+        self.assertErrorMentions(run_profiles([p]), "verification", "twice")
+        p = profile(brandingApproved=False, org=None, callbackProgram=False,
+                    callbackTeam="", callbackPhone="", callbackHours="", callbackFallback="")
+        self.assertClean(run_profiles([p]))
+        p["verification"].append({"field": "branding", "checkedOn": "2026-10-01",
+                                  "checkedBy": "unit manager", "evidence": "Direct confirmation"})
+        self.assertErrorMentions(run_profiles([p]), "verification", "branding")
+
+    def test_no_callback_program_means_no_callback_claims(self):
+        for field in ("callbackTeam", "callbackPhone", "callbackHours", "callbackFallback"):
+            p = profile(callbackProgram=False, callbackTeam="", callbackPhone="", callbackHours="", callbackFallback="")
+            p[field] = profile()[field]
+            self.assertErrorMentions(run_profiles([p]), field, "callbackProgram")
+
+    def test_callback_program_needs_all_four_operational_fields(self):
+        for field in ("callbackTeam", "callbackPhone", "callbackHours", "callbackFallback"):
+            self.assertErrorMentions(run_profiles([profile(**{field: ""})]), field)
+        self.assertErrorMentions(run_profiles([profile(callbackPhone=registered(10))]), "callbackPhone", "crisis")
+        self.assertErrorMentions(run_profiles([profile(callbackFallback="call someone.")]), "callbackFallback", "punctuation")
+
+    def test_contact_purpose_and_staffed_hours_are_required_plain_text(self):
+        for field in ("unitPurpose", "unitHours", "callbackTeam", "callbackHours", "callbackFallback"):
+            for bad in (" ", "<b>Help</b>", "{{unitPhone}}", "help\u0007", "take 5 mg", "Call " + registered(3)):
+                self.assertErrorMentions(run_profiles([profile(**{field: bad})]), field)
+        self.assertErrorMentions(run_profiles([profile(unitHours="24/7")]), "unitHours", "availability")
+
+    def test_verification_evidence_is_not_blank_and_cannot_claim_approval(self):
+        p = profile()
+        p["verification"][0]["evidence"] = " "
+        self.assertErrorMentions(run_profiles([p]), "evidence")
+        p = profile()
+        p["verification"][0]["approved"] = True
+        self.assertErrorMentions(run_profiles([p]), "approved")
+        self.assertErrorMentions(run_profiles([profile(approved=True)]), "approved")
+
+    def test_oldest_actual_check_controls_the_ninety_calendar_day_window(self):
+        p = profile(checkedOn="2026-10-12")
+        p["verification"][0]["checkedOn"] = "2026-07-14"
+        report = run_profiles([p])
+        self.assertEqual("2026-07-14", report.stats.get("oldestConfirmed"))
+        self.assertEqual(1, len(report.warnings), "day 90 has expired even when the other checks are newer")
+        self.assertEqual("2026-10-11", validator.usable_through(date(2026, 7, 14)))
+        self.assertEqual("2026-10-12", validator.expires_on(date(2026, 7, 14)))
+        self.assertEqual(180, validator.STALE_AFTER_DAYS, "the unrelated helpline policy does not change")
 
 
 class BuildGateWiring(Base):
@@ -1096,12 +1157,12 @@ class CommandLine(Base):
         self.assertIn("OK", out)
         self.assertIn("11 insert", out)
         self.assertIn("3 number", out)
-        self.assertIn("p.json: OK - 1 confirmed unit profile", out)
+        self.assertIn("p.json: OK - 1 candidate unit profile", out)
 
     def test_an_empty_profiles_file_is_reported_not_skipped(self):
         code, out = self.run_main(profiles=[])
         self.assertEqual(0, code)
-        self.assertIn("p.json: OK - 0 confirmed unit profile", out)
+        self.assertIn("p.json: OK - 0 candidate unit profile", out)
 
     def test_a_bad_profile_fails_the_run_and_names_the_profiles_file(self):
         code, out = self.run_main(profiles=[profile(unitPhone="(207) 411-0142")])
@@ -1110,7 +1171,7 @@ class CommandLine(Base):
         self.assertIn("unitPhone", out)
 
     def test_a_stale_profile_warns_and_strict_fails_it(self):
-        old = [profile(phoneConfirmedOn=(TODAY - timedelta(days=200)).isoformat())]
+        old = [profile(checkedOn=(TODAY - timedelta(days=200)).isoformat())]
         code, out = self.run_main(profiles=old)
         self.assertEqual(0, code)
         self.assertIn("WARNING", out)

@@ -11,6 +11,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { profileReceipt } from './helpers/care-profile-fixture.mjs';
 import { fileURLToPath } from 'node:url';
 
 const REPO = fileURLToPath(new URL('..', import.meta.url));
@@ -24,7 +25,7 @@ const GOVERNED = JSON.parse(readFileSync(path.join(REPO, 'crisis_resources.json'
 
 function py(body, args = [], input = undefined) {
   const code = `import json, sys\nsys.path.insert(0, ${JSON.stringify(AUTOMATION)})\nsys.path.insert(0, ${JSON.stringify(SITE_BUILD)})\n${body}`;
-  return spawnSync('python3', ['-B', '-c', code, ...args], { cwd: SITE_BUILD, encoding: 'utf8', input });
+  return spawnSync('python3', ['-B', '-c', code, ...args], { cwd: SITE_BUILD, encoding: 'utf8', input, timeout: 60000 });
 }
 const built = py('import care_inserts_payload as p\nprint(json.dumps(p.build_payload()))');
 assert.equal(built.status, 0, built.stderr);
@@ -52,7 +53,7 @@ const EXPORTS = `;return typeof fdCarePacketSheet === 'function' ? {
 const src = name => readFileSync(path.join(SITE_BUILD, name), 'utf8');
 // The shell's order: fd_data (fdEsc), the QR generator, fd_care_pack (fdCarePackQrSvg), the packet, the sheet, the search (validate).
 const SOURCE = src('frontdoor/fd_data.js') + src('vendor/qrcode-generator-1.4.4.js') + src('frontdoor/fd_care_pack.js') +
-  PACKET_SRC + SHEET_SRC + src('frontdoor/fd_care_search.js') + EXPORTS;
+  src('frontdoor/fd_care_profile.js') + PACKET_SRC + SHEET_SRC + src('frontdoor/fd_care_search.js') + EXPORTS;
 const S = new Function(SOURCE)();
 
 // ---- fixtures ---------------------------------------------------------------------------------------------
@@ -81,12 +82,23 @@ const FIXTURE = JSON.parse(readFileSync(path.join(REPO, 'tests/fixtures/care-uni
 const withProfiles = (payload, ...profiles) => { const out = clone(payload); out.unitProfiles = profiles.map(clone); return out; };
 const PROFILED = withProfiles(PAYLOAD, FIXTURE.profile, FIXTURE.expired);
 const LOADED = { name: '', phone: '', profile: FIXTURE.profile.id };
-// Review drafts carry the trainee's typed (unconfirmed) unit details; a Final copy loads the fixture profile.
-const stateOf = (records, more = {}) => ({ ...S.blank(), ids: idsOf(records), unit: { name: '4 East', phone: '(207) 555-0100', profile: '' }, ...more });
+// Both printable modes use an independently approved profile. Typed values are an explicit negative fixture.
+const stateOf = (records, more = {}) => ({ ...S.blank(), ids: idsOf(records), unit: { ...LOADED }, ...more });
 const finalState = (records, more = {}) => stateOf(records, { mode: 'final', unit: { ...LOADED }, ...more });
-const typedFinal = (records, more = {}) => stateOf(records, { mode: 'final', ...more });
+const typedState = (records, more = {}) => stateOf(records, { unit: { name: '4 East', phone: '(207) 555-0100', profile: '' }, ...more });
+const typedFinal = (records, more = {}) => typedState(records, { mode: 'final', ...more });
 const MODES = ['review', 'final'];
 const render = (records, state, payload = PROFILED, opts = {}) => S.sheet(state, dataOf(records), payload, opts);
+const TEST_NOW = Date.UTC(2026, 9, 13, 12);
+const ARRANGED_CALL = { arranged: true, plan: true, preferences: true };
+function approvedOptions(extra = {}, profile = FIXTURE.profile) {
+  const now = Object.hasOwn(extra, 'now') ? extra.now : TEST_NOW;
+  return { now, authority: Number.isFinite(now) ? profileReceipt(profile, now) : null, ...extra };
+}
+function renderApproved(records, state, payload = PROFILED, opts = {}) {
+  const profile = payload?.unitProfiles?.find(candidate => candidate.id === state.unit?.profile) || FIXTURE.profile;
+  return render(records, state, payload, approvedOptions(opts, profile));
+}
 const codesOf = result => result.blockers.map(b => b.code);
 const governedName = id => GOVERNED.resources.find(r => r.id === id).name;
 // Plain-text view of the html, for oracle scans.
@@ -94,6 +106,49 @@ const governedName = id => GOVERNED.resources.find(r => r.id === id).name;
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
 const textOf = html => html.replace(/<[^>]*>/g, ' ').replace(/&(amp|lt|gt|quot|#39);/g, (whole, name) => ENTITIES[name]);
 const governed = id => GOVERNED.resources.find(r => r.id === id).contact;
+
+test('both packet modes require independent current approval of the exact profile for print and copy', () => {
+  const records = [row(0)], now = Date.UTC(2026,9,13,12);
+  for (const mode of MODES) {
+    const state = finalState(records,{mode});
+    const unapproved = render(records,state,PROFILED,{now});
+    assert.equal(unapproved.ok,true);
+    assert.ok(codesOf(unapproved).includes('UNIT_UNCONFIRMED'),mode+' cannot use editable data as approval');
+    assert.equal(unapproved.html.includes(FIXTURE.profile.unitPhone),false,'no unapproved phone in patient preview');
+    const authority = profileReceipt(FIXTURE.profile,now);
+    const approved = render(records,state,PROFILED,{now,authority});
+    assert.equal(approved.ok,true);
+    assert.equal(codesOf(approved).includes('UNIT_UNCONFIRMED'),false);
+    assert.ok(approved.html.includes(FIXTURE.profile.unitPurpose));
+    assert.ok(approved.html.includes(FIXTURE.profile.unitHours));
+    for (const patch of [{ok:false,status:'revoked'},{ok:false,status:'suspended'},{revision:'c'.repeat(64)}]) {
+      const denied = render(records,state,PROFILED,{now,authority:{...authority,...patch}});
+      assert.ok(codesOf(denied).includes('UNIT_UNCONFIRMED'));
+      assert.equal(denied.html.includes(FIXTURE.profile.unitPhone),false);
+    }
+    if(mode==='final') {
+      const text = S.text(state,dataOf(records),PROFILED,{now});
+      assert.ok(codesOf(text).includes('UNIT_UNCONFIRMED'),'copy cannot bypass the profile decision');
+    }
+  }
+});
+
+test('callback program alone never promises a discharge call in either packet mode', () => {
+  const records=[row(0)],now=Date.UTC(2026,9,13,12),authority=profileReceipt(FIXTURE.profile,now);
+  for(const mode of MODES) {
+    const state=finalState(records,{mode,inserts:{callback:true}});
+    const unarranged=render(records,state,PROFILED,{now,authority});
+    assert.ok(codesOf(unarranged).includes('CALLBACK_UNCONFIRMED'));
+    for(const missing of ['arranged','plan','preferences']) {
+      const callback={arranged:true,plan:true,preferences:true};callback[missing]=false;
+      assert.ok(codesOf(render(records,state,PROFILED,{now,authority,callback})).includes('CALLBACK_UNCONFIRMED'),missing);
+    }
+    const arranged=render(records,state,PROFILED,{now,authority,callback:{arranged:true,plan:true,preferences:true}});
+    assert.equal(codesOf(arranged).includes('CALLBACK_UNCONFIRMED'),false);
+    assert.match(arranged.html,/Your planned follow-up call/);
+    assert.match(arranged.html,/Do not wait for this call/);
+  }
+});
 
 test('textOf decodes entities once: "&amp;lt;" stays "&lt;" and is not turned into "<"', () => {
   assert.equal(textOf('a &amp;lt; b &amp;amp; c &lt;i&gt; &quot;q&quot; &#39;s&#39;'), `a &lt; b &amp; c <i> "q" 's'`);
@@ -128,7 +183,8 @@ test('source wording: no hard-coded organisation, no Review-copy promise of a "f
   for (const [label, text] of [['sheet module', SHEET_SRC], ['packet module', PACKET_SRC]]) {
     assert.doesNotMatch(text, /FD_CARE_PACKET_ORG|Maine Medical Center/, label + ': the organisation comes only from a loaded profile with approved branding');
     // The feed already dropped closed and withdrawn records and blanked blocked contacts; the packet reads verdicts, it does not re-decide them.
-    assert.doesNotMatch(text, /\.(?:status|closed|withdrawn|verificationRequired|verifiedDate|reviewAfter)\b/, label + ' reads no listing status or verification field');
+    const listingSource = text.replace(/\b(?:authority|receipt|profileAuthority)\.status\b/g, '__profile_authority_status');
+    assert.doesNotMatch(listingSource, /\.(?:status|closed|withdrawn|verificationRequired|verifiedDate|reviewAfter)\b/, label + ' reads no listing status or verification field (profile authority status is separate)');
   }
   for (const promise of ['finalize this together', 'print a final copy', 'for the final copy', 'keep what you tick']) {
     assert.equal(SHEET_SRC.toLowerCase().includes(promise), false, 'the Review copy no longer promises: ' + promise);
@@ -137,7 +193,7 @@ test('source wording: no hard-coded organisation, no Review-copy promise of a "f
 });
 
 // ---- fill --------------------------------------------------------------------------------------------------
-test('fill replaces the three tokens only, escapes values, and prints a handwriting blank for a missing unit value', () => {
+test('fill escapes unit and crisis token values and prints a handwriting blank for a missing unit value', () => {
   const ctx = { unitName: 'Unit <b>4</b> & "East"', unitPhone: '(207) 555-0100', contacts: PAYLOAD.contacts };
   const html = S.fill('Call {{unitPhone}} on {{unitName}}. In danger: {{crisis:emergency_911}}.', ctx, 'html');
   assert.equal(html.ok, true);
@@ -381,7 +437,7 @@ test('paginate FAILS CLOSED: oversize unit, zero/NaN/non-finite heights, bad cap
 test('the sheet renders for both modes: numbered pages, a footer on every page, and the crisis block on page 1', () => {
   const records = eight();
   for (const mode of MODES) {
-    const r = render(records, stateOf(records, { mode }));
+    const r = renderApproved(records, stateOf(records, { mode }));
     assert.equal(r.ok, true, mode + ': ' + r.message);
     assert.ok(r.count >= 2);
     const pages = r.html.split('data-fd-packet-page').length - 1;
@@ -401,8 +457,8 @@ test('the sheet renders for both modes: numbered pages, a footer on every page, 
 
 test('review mode carries the band and a tick box per listing on every page; final mode carries neither', () => {
   const records = eight();
-  const review = render(records, stateOf(records, { mode: 'review' }));
-  const final = render(records, finalState(records));
+  const review = renderApproved(records, stateOf(records, { mode: 'review' }));
+  const final = renderApproved(records, finalState(records));
   const bandText = S.BAND;
   assert.equal(review.html.split(bandText).length - 1, review.count, 'the band text is on every page');
   assert.equal(review.html.split('class="fd-packet-box"').length - 1, records.length, 'a tick box per listing');
@@ -418,7 +474,7 @@ test('review mode carries the band and a tick box per listing on every page; fin
 test('the crisis block is built from the payload: every crisis line with its governed contact and official name, on page 1, plus availability', () => {
   const records = eight();
   for (const mode of MODES) {
-    const r = render(records, mode === 'final' ? finalState(records) : stateOf(records));
+    const r = renderApproved(records, mode === 'final' ? finalState(records) : stateOf(records));
     const page1 = r.html.split('data-fd-packet-page')[1];
     for (const line of PAYLOAD.crisis) {
       const marker = new RegExp('data-fd-packet-crisis="' + line.ref + '"[\\s\\S]*?</li>');
@@ -436,25 +492,24 @@ test('the crisis block is built from the payload: every crisis line with its gov
 test('the standard pages follow the payload: defaults on, optional pages switchable, core pages never off', () => {
   const records = eight();
   const titles = html => (html.match(/data-fd-packet-insert="([a-z]+)"/g) || []).map(m => m.split('"')[1]);
-  const base = titles(render(records, stateOf(records)).html);
+  const base = titles(renderApproved(records, stateOf(records)).html);
   const defaults = PAYLOAD.inserts.filter(i => i.defaultOn || i.core).map(i => i.id);
   assert.deepEqual([...new Set(base)].sort(), defaults.sort(), 'exactly the default-on pages render');
-  const withSafety = titles(render(records, stateOf(records, { inserts: { safety: true } })).html);
+  const withSafety = titles(renderApproved(records, stateOf(records, { inserts: { safety: true } })).html);
   assert.ok(withSafety.includes('safety'));
-  const withoutWarning = titles(render(records, stateOf(records, { inserts: { warning: false } })).html);
+  const withoutWarning = titles(renderApproved(records, stateOf(records, { inserts: { warning: false } })).html);
   assert.ok(!withoutWarning.includes('warning'));
-  const coreOff = titles(render(records, stateOf(records, { inserts: { intro: false } })).html);
+  const coreOff = titles(renderApproved(records, stateOf(records, { inserts: { intro: false } })).html);
   assert.ok(coreOff.includes('intro'), 'a core page cannot be switched off');
   assert.equal(S.insertOn({ inserts: {} }, { id: 'x', core: false, defaultOn: true }), true);
   assert.equal(S.insertOn({ inserts: { x: false } }, { id: 'x', core: false, defaultOn: true }), false);
   assert.equal(S.insertOn({ inserts: { x: 'no' } }, { id: 'x', core: false, defaultOn: true }), true, 'only booleans override a default');
 });
 
-// REWRITTEN for Revision 2: this Final copy used to get its unit from a typed phone; it now loads the fixture profile,
-// because a typed phone never confirms the unit. The typed values still fill a Review draft.
+// Patient-facing unit fields resolve only from the exact independently approved profile in either mode.
 test('tokens in the standard pages resolve: the loaded profile\'s unit name and phone on a Final copy, and crisis contacts from the payload', () => {
   const records = eight();
-  const r = render(records, finalState(records, { inserts: { rights: true, safety: true } }));
+  const r = renderApproved(records, finalState(records, { inserts: { rights: true, safety: true } }));
   assert.equal(r.ok, true, r.message);
   assert.deepEqual(r.blockers, [], 'a confirmed profile leaves nothing in the way');
   const text = textOf(r.html);
@@ -462,9 +517,10 @@ test('tokens in the standard pages resolve: the loaded profile\'s unit name and 
   assert.ok(text.includes(FIXTURE.profile.unitName), 'unit name from the profile');
   assert.equal(/\{\{|\}\}/.test(r.html), false, 'no token survives');
   assert.ok(text.includes('call ' + governed('emergency_911')) || text.includes(governed('emergency_911')), 'a crisis token resolved');
-  const draft = textOf(render(records, stateOf(records, { inserts: { rights: true } })).html);
-  assert.ok(draft.includes('(207) 555-0100') && draft.includes('4 East'), 'a Review draft fills the typed values');
-  const blanks = render(records, typedFinal(records, { unit: { name: '', phone: '', profile: '' } }));
+  const draft = render(records, typedState(records, { inserts: { rights: true } }));
+  assert.equal(draft.html.includes('(207) 555-0100'), false, 'typed details never reach the Review patient preview');
+  assert.ok(codesOf(draft).includes('UNIT_UNCONFIRMED'));
+  const blanks = renderApproved(records, typedFinal(records, { unit: { name: '', phone: '', profile: '' } }));
   assert.equal(blanks.html.includes('class="fd-packet-blank"'), true, 'an unavailable unit value prints a blank to write in');
   assert.ok(codesOf(blanks).includes('UNIT_UNCONFIRMED'), 'and such a Final copy cannot print: the welcome page carries a unit token');
 });
@@ -476,7 +532,7 @@ test('every listing prints its name, phone, domain and area; the QR appears exac
     row(2, { name: 'No Site', website: '' }),
     row(3, { name: 'Bad Scheme', website: 'javascript:alert(1)' }),
   ];
-  const r = render(records, finalState(records));
+  const r = renderApproved(records, finalState(records));
   assert.equal(r.ok, true, r.message);
   const text = textOf(r.html);
   for (const name of ['Has Https', 'Has Http', 'No Site']) assert.ok(text.includes(name), name);
@@ -493,7 +549,7 @@ test('every listing prints its name, phone, domain and area; the QR appears exac
   assert.equal(r.html.includes('fd-packet-qrurl'), false, 'the full address is not part of the measured sheet (a preview-only line would measure differently from the paper)');
   assert.deepEqual(r.addresses, [{ name: 'Has Https', url: 'https://www.example.org/deep/link?x=1' }],
     'the address a QR encodes comes back as data, for the preview to show beside the sheet');
-  const preview = S.sheet(finalState(records), dataOf(records), PROFILED, { preview: true });
+  const preview = S.sheet(finalState(records), dataOf(records), PROFILED, approvedOptions({ preview: true }));
   assert.equal(preview.html.includes('/deep/link'), false, 'not even the preview sheet carries it: the sheet is the same bytes everywhere');
   assert.equal(preview.html, r.html);
 });
@@ -501,7 +557,7 @@ test('every listing prints its name, phone, domain and area; the QR appears exac
 test('a QR code that would be too dense to scan at the printed size is left off, and the domain still prints', () => {
   const longUrl = 'https://example.org/' + 'a'.repeat(190);
   const records = [row(0, { name: 'Short Link', website: 'https://example.org/x' }), row(1, { name: 'Long Link', website: longUrl })];
-  const r = render(records, finalState(records));
+  const r = renderApproved(records, finalState(records));
   assert.equal(r.html.split('<svg').length - 1, 1, 'only the short address gets a code');
   assert.ok(textOf(r.html).split('example.org').length - 1 >= 2, 'both domains still print');
   assert.ok(r.html.indexOf('Short Link') < r.html.indexOf('<svg') && r.html.indexOf('<svg') < r.html.indexOf('Long Link'), 'the code belongs to the short one');
@@ -510,17 +566,17 @@ test('a QR code that would be too dense to scan at the printed size is left off,
 test('heading levels are relative to a base: one h1 on paper, none in the preview, and never below h6', () => {
   const records = eight();
   const levels = html => (html.match(/<h([1-9])[\s>]/g) || []).map(h => Number(h[2]));
-  const paper = levels(render(records, stateOf(records), PAYLOAD, { headingBase: 1 }).html);
+  const paper = levels(renderApproved(records, stateOf(records), PROFILED, { headingBase: 1 }).html);
   assert.equal(paper.filter(n => n === 1).length, 1, 'exactly one h1 on the printed packet');
   assert.ok(paper.every(n => n >= 1 && n <= 6));
-  const inPage = levels(render(records, stateOf(records), PAYLOAD, { headingBase: 4, preview: true }).html);
+  const inPage = levels(renderApproved(records, stateOf(records), PROFILED, { headingBase: 4, preview: true }).html);
   assert.ok(inPage.length > 0 && inPage.every(n => n >= 4 && n <= 6), 'inside the Care page the sheet starts below its h3: ' + inPage);
 });
 
 test('hostile listing text is escaped and the sheet cannot be made to contain markup or script', () => {
   const evil = '<img src=x onerror=alert(1)> & "q" \'s\'';
   const records = [row(0, { name: evil, description: evil, area: evil, phone: '207-700-0123' })];
-  const r = render(records, finalState(records));
+  const r = renderApproved(records, finalState(records));
   assert.equal(r.ok, true, r.message);
   assert.equal(r.html.includes('<img'), false);
   assert.equal(/onerror=alert/.test(r.html.replace(/&lt;img[^&]*&gt;/g, '')), false);
@@ -555,12 +611,14 @@ test('AC5: no sheet and no copy text, in either mode and any page set, contains 
   for (const [setName, inserts] of Object.entries(insertSets)) {
     for (const mode of MODES) {
       const state = mode === 'final' ? finalState(records, { inserts }) : stateOf(records, { mode, inserts });
-      const r = S.sheet(state, dataOf(records), PROFILED, {});
+      const opts = approvedOptions(inserts.callback ? { callback: ARRANGED_CALL } : {});
+      const r = S.sheet(state, dataOf(records), PROFILED, opts);
       assert.equal(r.ok, true, setName + '/' + mode + ': ' + r.message);
-      if (mode === 'final') assert.deepEqual(r.blockers, [], setName + ': a Final copy with a confirmed profile can print');
+      assert.deepEqual(r.blockers, [], setName + '/' + mode + ': current approval and any required call arrangements permit output');
+      if (inserts.callback) assert.ok(r.html.includes('Your planned follow-up call'), 'all-on includes the callback text in the audit');
       outputs.push([setName + '/' + mode + '/html', r.html], [setName + '/' + mode + '/text', textOf(r.html)]);
       if (mode === 'final') {
-        const t = S.text(state, dataOf(records), PROFILED, {});
+        const t = S.text(state, dataOf(records), PROFILED, opts);
         assert.equal(t.ok, true, setName + ' text: ' + t.message);
         outputs.push([setName + '/text-copy', t.text]);
       }
@@ -587,7 +645,7 @@ test('AC5 on hostile feed text: every printed free-text field is filtered, and a
     row(3, { phone: '10 mcg line' }),
     row(4, { name: 'Zero' + ZWSP + 'width 1' + ZWJ + '0 mg Clinic' }),
   ];
-  const r = render(hostile, finalState(hostile));
+  const r = renderApproved(hostile, finalState(hostile));
   assert.equal(r.ok, true, r.message);
   assert.doesNotMatch(textOf(r.html), /10 mg|mcg|Verification|verify/i);
   assert.equal(r.html.includes('1' + ZWJ + '0'), false, 'and the hidden character itself is not printed either');
@@ -603,19 +661,19 @@ test('AC5 on hostile feed text: every printed free-text field is filtered, and a
 // current profile is blocked by UNIT_UNCONFIRMED (typed, missing or invalid alike), and the clean case loads the fixture.
 test('blockers: a crisis number in a listing, an unconfirmed unit on a Final copy, hidden saved listings, an empty packet', () => {
   const clean = eight();
-  assert.deepEqual(render(clean, finalState(clean)).blockers, [], 'a loaded, current profile: nothing in the way');
+  assert.deepEqual(renderApproved(clean, finalState(clean)).blockers, [], 'a loaded, current profile: nothing in the way');
   const withCrisis = [row(0, { phone: '207-799-4160 | Crisis Line: 888-568-1112' }), ...clean.slice(1)];
-  assert.ok(render(withCrisis, finalState(withCrisis)).blockers.some(b => b.code === 'CRISIS_NUMBER' && b.message.includes('Support 0')));
-  assert.deepEqual(codesOf(render(clean, typedFinal(clean))), ['UNIT_UNCONFIRMED'], 'a valid typed phone does not confirm the unit');
+  assert.ok(renderApproved(withCrisis, finalState(withCrisis)).blockers.some(b => b.code === 'CRISIS_NUMBER' && b.message.includes('Support 0')));
+  assert.deepEqual(codesOf(renderApproved(clean, typedFinal(clean))), ['UNIT_UNCONFIRMED'], 'a valid typed phone does not confirm the unit');
   const noPhone = typedFinal(clean, { unit: { name: '4 East', phone: '', profile: '' } });
-  assert.deepEqual(codesOf(render(clean, noPhone)), ['UNIT_UNCONFIRMED']);
-  assert.deepEqual(render(clean, { ...noPhone, mode: 'review' }).blockers, [], 'review copies may carry blanks and typed values');
+  assert.deepEqual(codesOf(renderApproved(clean, noPhone)), ['UNIT_UNCONFIRMED']);
+  assert.deepEqual(codesOf(renderApproved(clean, { ...noPhone, mode: 'review' })), ['UNIT_UNCONFIRMED'], 'Review has the same approval requirement');
   const badPhone = typedFinal(clean, { unit: { name: '', phone: governed('emergency_911'), profile: '' } });
-  assert.deepEqual(codesOf(render(clean, badPhone)), ['UNIT_UNCONFIRMED'], 'an invalid phone is no better');
-  assert.ok(render(clean, badPhone).blockers.every(b => b.scope === 'print'), 'the unit rule guards printing only');
-  const hidden = S.sheet(finalState(clean, { ids: [...idsOf(clean), 'gone-id'] }), dataOf(clean, undefined), PROFILED, {});
+  assert.deepEqual(codesOf(renderApproved(clean, badPhone)), ['UNIT_UNCONFIRMED'], 'an invalid phone is no better');
+  assert.ok(renderApproved(clean, badPhone).blockers.every(b => b.scope === undefined), 'the unit rule also guards Copy');
+  const hidden = S.sheet(finalState(clean, { ids: [...idsOf(clean), 'gone-id'] }), dataOf(clean, undefined), PROFILED, approvedOptions());
   assert.equal(hidden.blockers.some(b => b.code === 'HIDDEN_LISTINGS'), false, 'a COMPLETE feed that lacks the id simply drops it');
-  const partial = S.sheet(finalState(clean, { ids: [...idsOf(clean), 'gone-id'] }), S.validate(feed(clean, { categories: feed(clean).categories.map((c, i) => (i === 3 ? { ...c, available: false } : c)) })), PROFILED, {});
+  const partial = S.sheet(finalState(clean, { ids: [...idsOf(clean), 'gone-id'] }), S.validate(feed(clean, { categories: feed(clean).categories.map((c, i) => (i === 3 ? { ...c, available: false } : c)) })), PROFILED, approvedOptions());
   assert.ok(partial.blockers.some(b => b.code === 'HIDDEN_LISTINGS'), 'a PARTIAL feed holds saved listings back: printing is blocked, not silently shorter');
   assert.equal(S.sheet(stateOf([]), dataOf(clean), PAYLOAD, {}).code, 'EMPTY');
   assert.equal(S.sheet(stateOf([]), dataOf(clean), PAYLOAD, {}).ok, false);
@@ -649,7 +707,7 @@ test('FAIL CLOSED: a missing payload, missing `required`, a lost or blank contac
 test('FAIL CLOSED on layout: a measurer that fails, returns zeros, or reports an unreasonable capacity refuses to render', () => {
   const records = eight();
   const state = stateOf(records);
-  const run = measure => S.sheet(state, dataOf(records), PAYLOAD, { measure });
+  const run = measure => S.sheet(state, dataOf(records), PROFILED, approvedOptions({ measure }));
   assert.equal(run(() => null).code, 'MEASURE_FAILED');
   assert.equal(run(units => ({ heights: units.map(() => 0), capacity: 880 })).code, 'MEASURE_FAILED');
   assert.equal(run(units => ({ heights: units.map(() => 10), capacity: NaN })).code, 'MEASURE_FAILED');
@@ -663,7 +721,7 @@ test('the crisis block must land on page 1: a layout that pushes it later is ref
   const records = eight();
   const state = stateOf(records);
   // Header and intro fill sheet 1 completely, so the crisis block would start sheet 2.
-  const r = S.sheet(state, dataOf(records), PAYLOAD, { measure: units => ({ heights: units.map(u => (u.key === 'p1-header' || u.key === 'intro-0' ? 440 : 100)), capacity: 880 }) });
+  const r = S.sheet(state, dataOf(records), PROFILED, approvedOptions({ measure: units => ({ heights: units.map(u => (u.key === 'p1-header' || u.key === 'intro-0' ? 440 : 100)), capacity: 880 }) }));
   assert.equal(r.ok, false);
   assert.equal(r.code, 'CRISIS_NOT_PAGE_ONE');
 });
@@ -676,8 +734,9 @@ test('the default estimator is deterministic, fits every standard page on a shee
       for (const mode of MODES) {
         const label = count + '/' + name + '/' + mode;
         const state = mode === 'final' ? finalState(records, { inserts }) : stateOf(records, { inserts });
-        const a = render(records, state);
-        const b = render(records, state);
+        const options = inserts.callback ? { callback: ARRANGED_CALL } : {};
+        const a = renderApproved(records, state, PROFILED, options);
+        const b = renderApproved(records, state, PROFILED, options);
         assert.equal(a.html, b.html, label + ': same input, same bytes');
         assert.equal(a.ok, true, label + ': ' + a.message);
         assert.ok(a.count >= 1 && a.pages.length === a.count, label);
@@ -694,7 +753,7 @@ test('the default estimator is deterministic, fits every standard page on a shee
 test('copy text: crisis lines first by official name, then each listing, raw (never HTML-escaped), no unit details, Final only', () => {
   const records = [row(0, { name: "Children's Place & Co", area: 'York' }), ...eight().slice(1)];
   const state = finalState(records);
-  const t = S.text(state, dataOf(records), PROFILED, {});
+  const t = S.text(state, dataOf(records), PROFILED, approvedOptions());
   assert.equal(t.ok, true, t.message);
   assert.ok(t.text.includes("Children's Place & Co"), 'raw characters, not entities');
   assert.equal(/&#39;|&amp;|&lt;/.test(t.text), false);
@@ -705,16 +764,16 @@ test('copy text: crisis lines first by official name, then each listing, raw (ne
   }
   assert.doesNotMatch(t.text, /Not a medical record/, 'text that is going INTO the record cannot say it is not part of it');
   assert.match(t.text, /ReConnect community directory on 2026-10-12/);
-  assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PAYLOAD, {}).ok, false, 'a Review draft never goes into the record');
-  assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PAYLOAD, {}).code, 'NOT_FINAL');
-  const hidden = S.text(finalState([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), dataOf([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), PROFILED, {}).text;
+  assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PROFILED, approvedOptions()).ok, false, 'a Review draft never goes into the record');
+  assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PROFILED, approvedOptions()).code, 'NOT_FINAL');
+  const hidden = S.text(finalState([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), dataOf([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), PROFILED, approvedOptions()).text;
   assert.equal(hidden.includes(RLO) || hidden.includes(ZWSP), false, 'control and bidi characters are stripped');
   assert.ok(hidden.includes('ABC'), 'and what is left is the visible name');
 });
 
 test('the footer prints the directory copy date and the OLDEST helpline check date (never the file date) and never claims the listings were verified', () => {
   const records = eight();
-  const r = S.sheet(finalState(records), dataOf(records, { generatedAt: '2026-09-30T08:00:00Z' }), PROFILED, {});
+  const r = S.sheet(finalState(records), dataOf(records, { generatedAt: '2026-09-30T08:00:00Z' }), PROFILED, approvedOptions());
   const text = textOf(r.html);
   assert.match(text, /ReConnect community directory on 2026-09-30/);
   assert.match(text, /Call ahead to confirm hours, cost and availability/);
@@ -724,7 +783,7 @@ test('the footer prints the directory copy date and the OLDEST helpline check da
   assert.equal(text.includes('as of ' + PAYLOAD.generatedAt), false, 'the file date is not presented as a check date');
   assert.equal(text.split('Helpline numbers checked').length - 1, r.count, 'the line is on every page');
   assert.doesNotMatch(text, /verified/i);
-  const undated = S.sheet(finalState(records), dataOf(records), { ...PROFILED, checkedOn: undefined }, {});
+  const undated = S.sheet(finalState(records), dataOf(records), { ...PROFILED, checkedOn: undefined }, approvedOptions());
   assert.doesNotMatch(textOf(undated.html), /Helpline numbers checked/, 'no check date, no claim of a check');
 });
 
@@ -780,8 +839,8 @@ test('paper and copy print the SAME cleaned listings: one withheld field is with
     row(2, {}),
   ];
   const state = finalState(records);
-  const paper = render(records, state);
-  const copy = S.text(state, dataOf(records), PROFILED, {});
+  const paper = renderApproved(records, state);
+  const copy = S.text(state, dataOf(records), PROFILED, approvedOptions());
   assert.equal(paper.ok && copy.ok, true, paper.message + copy.message);
   const visible = textOf(paper.html);
   for (const [label, text] of [['paper', visible], ['copy', copy.text]]) {
@@ -801,7 +860,7 @@ test('paper and copy print the SAME cleaned listings: one withheld field is with
 test('a crisis number in a listing NAME blocks printing, like one in a phone field', () => {
   const clean = eight();
   const named = [row(0, { name: 'Hope Line 988' }), ...clean.slice(1)];
-  const r = render(named, finalState(named));
+  const r = renderApproved(named, finalState(named));
   assert.ok(r.blockers.some(b => b.code === 'CRISIS_NUMBER' && b.message.includes('Hope Line 988')));
   assert.equal(textOf(r.html).includes('Hope Line 988'), false, 'and the listing is not printed at all');
 });
@@ -858,7 +917,7 @@ test('every reason code has plain, specific text the trainee reads; any other co
 
 test('a saved listing that has become ineligible is not printed and blocks with INELIGIBLE and its reason; a crisis number keeps its own code', () => {
   const records = [...eight(), row(8, { category: 'crisis', name: 'Crisis Service 8' }), row(9, { name: 'Unreachable 9', contactHref: '', website: '' })];
-  const r = render(records, finalState(records));
+  const r = renderApproved(records, finalState(records));
   assert.equal(r.ok, true, r.message);
   const ineligible = r.blockers.filter(b => b.code === 'INELIGIBLE');
   assert.deepEqual(ineligible.map(b => b.id + ':' + b.reason).sort(), ['a8:CRISIS_CATEGORY', 'a9:NO_CONTACT']);
@@ -869,11 +928,11 @@ test('a saved listing that has become ineligible is not printed and blocks with 
   }
   const visible = textOf(r.html);
   assert.equal(visible.includes('Crisis Service 8') || visible.includes('Unreachable 9'), false, 'neither is printed');
-  const copy = S.text(finalState(records), dataOf(records), PROFILED, {});
+  const copy = S.text(finalState(records), dataOf(records), PROFILED, approvedOptions());
   assert.deepEqual(copy.blockers.map(b => b.code), ['INELIGIBLE', 'INELIGIBLE'], 'Copy carries the same listing blockers');
   assert.equal(copy.text.includes('Crisis Service 8') || copy.text.includes('Unreachable 9'), false);
   const numbered = [row(0, { contactHref: 'tel:+1' + crisisOfLength(10) })];
-  assert.deepEqual(codesOf(render(numbered, finalState(numbered))), ['CRISIS_NUMBER'], 'a crisis number keeps CRISIS_NUMBER, not INELIGIBLE');
+  assert.deepEqual(codesOf(renderApproved(numbered, finalState(numbered))), ['CRISIS_NUMBER'], 'a crisis number keeps CRISIS_NUMBER, not INELIGIBLE');
 });
 
 // ---- the printed phone comes only from the feed's dial link (Revision 2) -----------------------------------------------
@@ -899,8 +958,8 @@ test('paper and copy print the dial link\'s number, never the free-text phone; a
     row(2, { name: 'Bare Text', phone: '', contactHref: 'sms:55124' }),
     row(3, { name: 'Website Only', phone: '207-555-0188', contactHref: '', website: 'https://example.org/only' }),
   ];
-  const paper = render(records, finalState(records));
-  const copy = S.text(finalState(records), dataOf(records), PROFILED, {});
+  const paper = renderApproved(records, finalState(records));
+  const copy = S.text(finalState(records), dataOf(records), PROFILED, approvedOptions());
   assert.equal(paper.ok && copy.ok, true, paper.message + copy.message);
   assert.deepEqual(paper.blockers, []);
   const visible = textOf(paper.html);
@@ -922,8 +981,8 @@ test('paper and copy print the dial link\'s number, never the free-text phone; a
 
 test('a dial link whose keyword is internal text (a tier or verification note) is withheld whole, and the omission is recorded', () => {
   const records = [row(0, { name: 'Tier Keyword', contactHref: 'sms:55123?body=L3' }), row(1, { name: 'Second Keyword', contactHref: 'sms:55124?body=VERIFY' })];
-  const paper = render(records, finalState(records));
-  const copy = S.text(finalState(records), dataOf(records), PROFILED, {});
+  const paper = renderApproved(records, finalState(records));
+  const copy = S.text(finalState(records), dataOf(records), PROFILED, approvedOptions());
   assert.equal(paper.ok && copy.ok, true, paper.message + copy.message);
   for (const [label, text] of [['paper', textOf(paper.html)], ['copy', copy.text]]) {
     assert.doesNotMatch(text, /55123|55124|\(send|\bL3\b|VERIFY/, label + ': neither the keyword nor its number prints');
@@ -941,8 +1000,8 @@ test('the crisis block, the copy and the wallet card print each line\'s OFFICIAL
     line.label = 'SENTINEL-LABEL-' + i; // a stale label key, as the old payload carried: it must never print
   });
   const records = eight();
-  const paper = S.sheet(finalState(records), dataOf(records), sentinel, {});
-  const copy = S.text(finalState(records), dataOf(records), sentinel, {});
+  const paper = S.sheet(finalState(records), dataOf(records), sentinel, approvedOptions());
+  const copy = S.text(finalState(records), dataOf(records), sentinel, approvedOptions());
   const card = S.cardSheet(sentinel, {});
   for (const [label, r] of [['paper', paper], ['copy', copy], ['card', card]]) assert.equal(r.ok, true, label + ': ' + r.message);
   const page1 = paper.html.split('data-fd-packet-page')[1];
@@ -959,125 +1018,130 @@ test('the crisis block, the copy and the wallet card print each line\'s OFFICIAL
 });
 
 // ---- the unit: header, draft line, Review wording (Revision 2) -----------------------------------------------------
-test('the header names the organisation only from a loaded profile with approved branding; otherwise the unit name alone, or nothing', () => {
+test('the header uses only current independently approved unit identity and approved branding', () => {
   const records = eight();
   const orgLines = r => (r.html.match(/<p class="fd-packet-org">[^<]*<\/p>/g) || []).map(p => textOf(p).trim());
-  const none = render(records, stateOf(records, { unit: { name: '', phone: '', profile: '' } }));
-  assert.deepEqual(orgLines(none), [], 'no unit and no profile: no org line at all');
-  assert.deepEqual(orgLines(render(records, stateOf(records))), ['4 East'], 'a typed unit name prints alone');
-  assert.deepEqual(orgLines(render(records, finalState(records))), [FIXTURE.profile.org + ' · ' + FIXTURE.profile.unitName], 'approved branding: org and unit');
-  const unbranded = render(records, finalState(records), withProfiles(PAYLOAD, { ...FIXTURE.profile, brandingApproved: false }));
-  assert.deepEqual(orgLines(unbranded), [FIXTURE.profile.unitName], 'branding not approved: the unit name alone');
-  assert.equal(unbranded.html.includes(FIXTURE.profile.org), false, 'and the org appears nowhere');
-  const loose = render(records, finalState(records), withProfiles(PAYLOAD, { ...FIXTURE.profile, brandingApproved: 'true' }));
-  assert.equal(loose.html.includes(FIXTURE.profile.org), false, 'only the boolean true approves branding');
-  for (const r of [none, unbranded, loose]) assert.equal(r.html.includes('Maine Medical Center'), false, 'no hard-coded organisation');
+  const none = render(records, typedState(records, { unit: { name: '', phone: '', profile: '' } }));
+  const typed = render(records, typedState(records));
+  assert.deepEqual(orgLines(none), [], 'no unit and no profile: no org line');
+  assert.deepEqual(orgLines(typed), [], 'typed unit identity cannot reach the patient header');
+  assert.deepEqual(orgLines(renderApproved(records, finalState(records))), [FIXTURE.profile.org + ' · ' + FIXTURE.profile.unitName]);
+  const unbrandedProfile = { ...FIXTURE.profile, brandingApproved: false, org: null, revision: 'c'.repeat(64) };
+  const unbranded = renderApproved(records, finalState(records), withProfiles(PAYLOAD, unbrandedProfile));
+  assert.deepEqual(orgLines(unbranded), [FIXTURE.profile.unitName], 'approved unit without branding uses only its unit name');
+  assert.equal(unbranded.html.includes(FIXTURE.profile.org), false);
+  const loose = render(records, finalState(records), withProfiles(PAYLOAD, { ...FIXTURE.profile, brandingApproved: 'true' }), approvedOptions());
+  assert.ok(codesOf(loose).includes('UNIT_UNCONFIRMED'), 'an editable boolean-like value cannot match the approved profile');
+  assert.deepEqual(orgLines(loose), []);
+  for (const r of [none, typed, unbranded, loose]) assert.equal(r.html.includes('Maine Medical Center'), false, 'no hard-coded organisation');
 });
 
-test('a Review copy with no unit phone says, on paper, that the nurse will write it; a typed or profile phone, or a Final copy, prints no such line', () => {
-  const records = eight();
-  const DRAFT = /data-fd-packet-draft/;
-  const noPhone = render(records, stateOf(records, { unit: { name: '4 East', phone: '', profile: '' } }));
-  assert.equal(noPhone.html.split('data-fd-packet-draft').length - 1, 1, 'once');
-  assert.match(noPhone.html.split('data-fd-packet-page')[1], /<p class="fd-packet-draft" data-fd-packet-draft>/, 'on page 1');
-  assert.match(textOf(noPhone.html), /Draft\.\s+Your nurse will write the unit’s phone number on the blank lines in this packet before you leave\./);
-  const typed = render(records, stateOf(records));
-  assert.doesNotMatch(typed.html, DRAFT, 'a typed phone prints with no draft line');
-  assert.doesNotMatch(textOf(typed.html), /not confirmed/i, 'and the paper does not call a printed number unconfirmed (the preview says so)');
-  assert.doesNotMatch(render(records, stateOf(records, { unit: { ...LOADED } })).html, DRAFT, 'a profile phone prints with no draft line');
-  assert.doesNotMatch(render(records, typedFinal(records, { unit: { name: '', phone: '', profile: '' } })).html, DRAFT, 'a Final copy never carries it');
-  assert.match(render(records, stateOf(records, { unit: { name: '', phone: '555-0100', profile: '' } })).html, DRAFT, 'an invalid typed phone does not print, so the line does');
+test('both modes label unapproved previews as drafts for editing and withhold typed unit details', () => {
+  const records = eight(), draft = /data-fd-packet-draft/;
+  for (const mode of MODES) {
+    for (const unit of [{ name: '4 East', phone: '', profile: '' }, { name: '4 East', phone: '(207) 555-0100', profile: '' },
+      { name: '', phone: '', profile: '' }, { name: '', phone: '555-0100', profile: '' }]) {
+      const output = render(records, typedState(records, { mode, unit }));
+      assert.equal(output.html.split('data-fd-packet-draft').length - 1, 1, mode + ': draft warning once');
+      assert.match(output.html.split('data-fd-packet-page')[1], draft, 'draft warning is on page one');
+      assert.match(textOf(output.html), /Draft for editing.*approval is required before this packet can be printed or copied/);
+      assert.doesNotMatch(output.html, /4 East|555-0100|Your nurse will write/, 'no unsupported unit detail or handwritten-completion promise');
+      assert.ok(codesOf(output).includes('UNIT_UNCONFIRMED'));
+    }
+    assert.doesNotMatch(renderApproved(records, stateOf(records, { mode })).html, draft, 'current approval clears the editing-only warning');
+  }
 });
 
 test('the Review copy promises a talk before discharge, never a "final copy"; the Final copy carries neither the note nor the tip', () => {
   const records = eight();
-  const review = textOf(render(records, stateOf(records)).html);
+  const review = textOf(renderApproved(records, stateOf(records)).html);
   assert.doesNotMatch(review, /final copy|finali[sz]e|keep what you tick/i, 'no promise that depends on a Final copy existing');
   assert.match(review, /go over (?:this|your choices) with you before you leave/);
-  const final = textOf(render(records, finalState(records)).html);
+  const final = textOf(renderApproved(records, finalState(records)).html);
   assert.doesNotMatch(final, /While you are still here|Tick the ones/);
 });
 
-// ---- Final-copy rules: the unit must be confirmed by a loaded, current profile (Revision 2) ---------------------------
-// A payload whose pages carry no unit token, so the only things that name the unit or promise contact are what a test switches on.
+// Removing contact text never removes the independent output-approval requirement.
 const BARE = (() => {
   const out = clone(PROFILED);
-  out.inserts = JSON.parse(JSON.stringify(out.inserts).replace(/\{\{unit(?:Name|Phone)\}\}/g, 'your care team'));
+  out.inserts = JSON.parse(JSON.stringify(out.inserts).replace(/\{\{unit(?:Name|Phone|Purpose|Hours|Contact)\}\}/g, 'your care team'));
   return out;
 })();
-test('a Final copy that names no unit and promises no contact is NOT held back; a unit name, an included unit token or the call-back page each needs a confirmed profile', () => {
-  const records = eight();
-  const nobody = { name: '', phone: '', profile: '' };
-  const run = (payload, more = {}) => render(records, typedFinal(records, { unit: { ...nobody }, ...more }), payload);
-  assert.deepEqual(run(BARE).blockers, [], 'no unit name, no unit token, no call-back page: printable');
-  assert.deepEqual(codesOf(run(PROFILED)), ['UNIT_UNCONFIRMED'], 'the shipped welcome page carries a unit token, so a real Final copy always needs a profile');
-  assert.deepEqual(codesOf(run(BARE, { unit: { name: '4 East', phone: '', profile: '' } })), ['UNIT_UNCONFIRMED'], 'a unit NAME in the header names the unit');
-  const tokened = clone(BARE);
-  tokened.inserts.find(i => i.id === 'notes').body += ' Ask the team on {{unitName}}.';
-  assert.deepEqual(run(tokened).blockers, [], 'a token on a page that is switched off does not count');
-  assert.deepEqual(codesOf(run(tokened, { inserts: { notes: true } })), ['UNIT_UNCONFIRMED'], 'a token on a page that is included does');
-  assert.deepEqual(codesOf(run(BARE, { inserts: { callback: true } })), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED'], 'the call-back page promises contact even with no token in it');
-  assert.deepEqual(run(tokened, { unit: { ...LOADED }, inserts: { callback: true, notes: true } }).blockers, [], 'a loaded, current profile with a call-back program clears all of them');
-  for (const more of [{}, { unit: { name: '4 East', phone: '(207) 555-0100', profile: '' }, inserts: { callback: true } }]) {
-    assert.deepEqual(render(records, stateOf(records, more)).blockers, [], 'a Review copy is never held back by the unit rules');
+test('both modes require approval even with no unit tokens; optional tokens and callback cannot bypass it', () => {
+  const records = eight(), nobody = { name: '', phone: '', profile: '' };
+  for (const mode of MODES) {
+    const run = (payload, more = {}) => render(records, typedState(records, { mode, unit: { ...nobody }, ...more }), payload);
+    assert.deepEqual(codesOf(run(BARE)), ['UNIT_UNCONFIRMED'], 'absence of unit wording is not permission to output');
+    assert.deepEqual(codesOf(run(PROFILED)), ['UNIT_UNCONFIRMED']);
+    assert.deepEqual(codesOf(run(BARE, { unit: { name: '4 East', phone: '', profile: '' } })), ['UNIT_UNCONFIRMED']);
+    const tokened = clone(BARE);
+    tokened.inserts.find(i => i.id === 'notes').body += ' Ask the team on {{unitName}}.';
+    for (const on of [false, true]) assert.deepEqual(codesOf(run(tokened, { inserts: { notes: on } })), ['UNIT_UNCONFIRMED']);
+    assert.deepEqual(codesOf(run(BARE, { inserts: { callback: true } })), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED']);
+    assert.deepEqual(renderApproved(records, stateOf(records, { mode, inserts: { callback: true, notes: true } }), tokened,
+      { callback: ARRANGED_CALL }).blockers, [], 'independent approval plus a complete arranged call permits the selected pages');
   }
 });
 
-test('UNIT_UNCONFIRMED: typed values never confirm, and neither does a lapsed profile (the fixture, or opts.now); the message says what a Final copy needs', () => {
-  const records = eight();
-  const last = Date.UTC(2099, 11, 31, 23, 59, 59);
+test('UNIT_UNCONFIRMED: typed, expired, missing and unknown-clock profiles cannot produce unit details in either mode', () => {
+  const records = eight(), last = Date.UTC(2100, 0, 1, 4, 59, 59, 999);
   const msg = r => (r.blockers.find(b => b.code === 'UNIT_UNCONFIRMED') || {}).message || '';
-  assert.deepEqual(render(records, finalState(records), PROFILED, { now: last }).blockers, [], 'the last second of usableThrough still confirms');
-  const lapsed = render(records, finalState(records), PROFILED, { now: last + 1000 });
-  assert.deepEqual(codesOf(lapsed), ['UNIT_UNCONFIRMED'], 'the next second it has lapsed');
-  assert.match(msg(lapsed), /lapsed/);
-  assert.equal(lapsed.unit.loaded && lapsed.unit.expired && !lapsed.unit.confirmed, true);
-  assert.ok(textOf(lapsed.html).includes(FIXTURE.profile.unitPhone), 'a lapsed profile still fills the page: it is the print that is refused');
-  const expired = render(records, finalState(records, { unit: { name: '', phone: '', profile: FIXTURE.expired.id } }));
-  assert.deepEqual(codesOf(expired), ['UNIT_UNCONFIRMED'], 'the fixture whose usableThrough is past');
-  assert.match(msg(expired), /lapsed/);
-  assert.deepEqual(codesOf(render(records, finalState(records), PROFILED, { now: NaN })), ['UNIT_UNCONFIRMED'], 'an unknown clock is lapsed');
-  const noneShipped = render(records, typedFinal(records), PAYLOAD);
-  assert.match(msg(noneShipped), /none is set up yet/, 'no profile shipped: says so');
-  assert.match(msg(render(records, typedFinal(records), PROFILED)), /Load one/, 'profiles exist: says to load one');
-  for (const r of [lapsed, expired, noneShipped]) {
-    for (const b of r.blockers) {
-      assert.equal(b.scope, 'print', 'the unit rule guards printing only');
-      assert.doesNotMatch(b.message, /Review copy/, 'the message does not steer to the Review copy');
+  for (const mode of MODES) {
+    assert.deepEqual(renderApproved(records, stateOf(records, { mode }), PROFILED, { now: last }).blockers, [], 'last New York millisecond is valid');
+    const expired = renderApproved(records, stateOf(records, { mode }), PROFILED, { now: last + 1 });
+    assert.deepEqual(codesOf(expired), ['UNIT_UNCONFIRMED']);
+    assert.match(msg(expired), /expired/);
+    assert.equal(expired.unit.loaded && expired.unit.expired && !expired.unit.confirmed, true);
+    const oldFixture = renderApproved(records, stateOf(records, { mode, unit: { name: '', phone: '', profile: FIXTURE.expired.id } }));
+    const unknownClock = renderApproved(records, stateOf(records, { mode }), PROFILED, { now: NaN });
+    const noneShipped = render(records, typedState(records, { mode }), PAYLOAD);
+    const typed = render(records, typedState(records, { mode }));
+    for (const denied of [expired, oldFixture, unknownClock, noneShipped, typed]) {
+      assert.deepEqual(codesOf(denied), ['UNIT_UNCONFIRMED']);
+      assert.equal(denied.html.includes(FIXTURE.profile.unitPhone), false, 'no stale profile phone enters patient preview');
+      for (const blocker of denied.blockers) {
+        assert.equal(blocker.scope, undefined, 'Copy is subject to the same restriction');
+        assert.doesNotMatch(blocker.message, /switch.*Review copy/i);
+      }
+    }
+    assert.match(msg(noneShipped), /None is set up yet/i);
+    assert.match(msg(typed), /Load the profile/);
+  }
+});
+
+test('CALLBACK_UNCONFIRMED: current program approval and all discharge arrangements are required in both modes', () => {
+  const records = eight();
+  const noProgramProfile = { ...FIXTURE.profile, callbackProgram: false, callbackTeam: '', callbackPhone: '', callbackHours: '', callbackFallback: '', revision: 'c'.repeat(64) };
+  const noProgram = withProfiles(PAYLOAD, noProgramProfile);
+  for (const mode of MODES) {
+    const state = stateOf(records, { mode, inserts: { callback: true } });
+    assert.deepEqual(renderApproved(records, state, PROFILED, { callback: ARRANGED_CALL }).blockers, []);
+    assert.deepEqual(codesOf(renderApproved(records, state, noProgram, { callback: ARRANGED_CALL })), ['CALLBACK_UNCONFIRMED']);
+    assert.deepEqual(renderApproved(records, stateOf(records, { mode }), noProgram).blockers, [], 'disabled callback page needs no program');
+    const loose = render(records, state, withProfiles(PAYLOAD, { ...FIXTURE.profile, callbackProgram: 'true' }), approvedOptions({ callback: ARRANGED_CALL }));
+    const expired = renderApproved(records, stateOf(records, { mode, inserts: { callback: true }, unit: { name: '', phone: '', profile: FIXTURE.expired.id } }), PROFILED, { callback: ARRANGED_CALL });
+    const typed = render(records, typedState(records, { mode, inserts: { callback: true } }), PROFILED, { callback: ARRANGED_CALL });
+    for (const denied of [loose, expired, typed]) {
+      assert.deepEqual(codesOf(denied), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED']);
+      assert.equal(denied.html.includes('Your planned follow-up call'), false, 'no unapproved promise is rendered');
+      assert.ok(denied.blockers.every(b => b.scope === undefined && b.message.length > 0));
     }
   }
 });
 
-test('CALLBACK_UNCONFIRMED: the call-back page needs a confirmed profile that records a call-back program', () => {
-  const records = eight();
-  const callback = { inserts: { callback: true } };
-  assert.deepEqual(render(records, finalState(records, callback)).blockers, [], 'confirmed, with a program');
-  const noProgram = withProfiles(PAYLOAD, { ...FIXTURE.profile, callbackProgram: false });
-  assert.deepEqual(codesOf(render(records, finalState(records, callback), noProgram)), ['CALLBACK_UNCONFIRMED'], 'confirmed but no program: the call-back rule alone');
-  assert.deepEqual(render(records, finalState(records), noProgram).blockers, [], 'and with the page off, nothing');
-  const loose = withProfiles(PAYLOAD, { ...FIXTURE.profile, callbackProgram: 'true' });
-  assert.deepEqual(codesOf(render(records, finalState(records, callback), loose)), ['CALLBACK_UNCONFIRMED'], 'only the boolean true records a program');
-  const lapsed = finalState(records, { ...callback, unit: { name: '', phone: '', profile: FIXTURE.expired.id } });
-  assert.deepEqual(codesOf(render(records, lapsed)), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED'], 'a lapsed profile');
-  const typed = render(records, typedFinal(records, callback));
-  assert.deepEqual(codesOf(typed), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED'], 'typed values');
-  assert.ok(typed.blockers.every(b => b.scope === 'print' && b.message.length > 0));
-  assert.deepEqual(render(records, stateOf(records, callback)).blockers, [], 'a Review copy may carry the call-back page');
-});
-
-test('the unit rules guard printing only: Copy (fdCarePacketText) is never stopped by them, while listing blockers still apply to it', () => {
-  const records = eight();
-  const state = typedFinal(records, { inserts: { callback: true } });
-  assert.deepEqual(codesOf(render(records, state)), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED']);
+test('Copy retains unit and callback blockers as well as listing blockers; only an approved complete packet is clear', () => {
+  const records = eight(), state = typedFinal(records, { inserts: { callback: true } });
   const copy = S.text(state, dataOf(records), PROFILED, {});
   assert.equal(copy.ok, true, copy.message);
-  assert.deepEqual(copy.blockers, [], 'no unit blocker reaches Copy');
-  for (const value of ['4 East', '555-0100']) assert.equal(copy.text.includes(value), false, 'and the copied text names no unit: ' + value);
-  const lapsed = S.text(finalState(records, { unit: { name: '', phone: '', profile: FIXTURE.expired.id } }), dataOf(records), PROFILED, {});
-  assert.equal(lapsed.ok && lapsed.blockers.length === 0, true, 'a lapsed profile does not stop Copy either');
+  assert.deepEqual(codesOf(copy), ['UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED']);
+  for (const value of ['4 East', '555-0100']) assert.equal(copy.text.includes(value), false);
+  const expired = S.text(finalState(records, { unit: { name: '', phone: '', profile: FIXTURE.expired.id } }), dataOf(records), PROFILED, approvedOptions());
+  assert.deepEqual(codesOf(expired), ['UNIT_UNCONFIRMED']);
   const withIneligible = [...records, row(8, { category: 'crisis', name: 'Crisis Service 8' })];
   const mixed = S.text(typedFinal(withIneligible, { inserts: { callback: true } }), dataOf(withIneligible), PROFILED, {});
-  assert.deepEqual(mixed.blockers.map(b => b.code), ['INELIGIBLE'], 'a listing blocker is not scoped to print, so Copy keeps it');
+  assert.deepEqual(codesOf(mixed), ['INELIGIBLE', 'UNIT_UNCONFIRMED', 'CALLBACK_UNCONFIRMED']);
+  const approved = S.text(finalState(records), dataOf(records), PROFILED, approvedOptions());
+  assert.deepEqual(approved.blockers, []);
 });
 
 // ---- unit profiles: re-validated in the browser, resolved by one function (Revision 2) ---------------------------------
@@ -1085,6 +1149,8 @@ test('a unit profile is re-validated before it is offered: a crisis-number phone
   const base = FIXTURE.profile;
   assert.deepEqual(S.profileUsable(base, PAYLOAD), {
     id: base.id, label: base.label, name: base.unitName, phone: base.unitPhone, org: base.org, callbackProgram: true, usableThrough: base.usableThrough,
+    expiresOn: base.expiresOn, revision: base.revision, purpose: base.unitPurpose, hours: base.unitHours,
+    callbackTeam: base.callbackTeam, callbackPhone: base.callbackPhone, callbackHours: base.callbackHours, callbackFallback: base.callbackFallback,
   });
   const ten = crisisOfLength(10);
   const crisisPhone = '(' + ten.slice(0, 3) + ') ' + ten.slice(3, 6) + '-' + ten.slice(6);
@@ -1106,6 +1172,14 @@ test('a unit profile is re-validated before it is offered: a crisis-number phone
     ['no unit name', { unitName: '' }],
     ['no unit phone', { unitPhone: undefined }],
     ['no label', { label: '' }],
+    ['no confirmed purpose', { unitPurpose: '' }],
+    ['no staffed hours', { unitHours: '' }],
+    ['no exact version', { revision: '' }],
+    ['no expiry date', { expiresOn: '' }],
+    ['callback program without its team', { callbackTeam: '' }],
+    ['callback program without a return number', { callbackPhone: '' }],
+    ['callback program without staffed return hours', { callbackHours: '' }],
+    ['callback program without its fallback', { callbackFallback: '' }],
   ];
   for (const [why, change] of bad) {
     const profile = { ...base, ...change };
@@ -1114,42 +1188,55 @@ test('a unit profile is re-validated before it is offered: a crisis-number phone
     assert.deepEqual(S.profiles(withProfiles(PAYLOAD, profile, FIXTURE.expired)).map(p => p.id), [FIXTURE.expired.id], why + ': the others still are');
   }
   for (const junk of [null, undefined, 'fixture-unit', 7, []]) assert.equal(S.profileUsable(junk, PAYLOAD), null, JSON.stringify(junk));
-  assert.deepEqual(S.profileUsable({ ...base, org: null, callbackProgram: 'yes', unitPhone: '207-555-0142', usableThrough: 20991231 }, PAYLOAD),
-    { id: base.id, label: base.label, name: base.unitName, phone: '(207) 555-0142', org: '', callbackProgram: false, usableThrough: '' },
-    'no org is fine; only true records a program; the phone is normalised; a non-string date is empty (and so lapsed)');
-  assert.equal(S.profileUsable({ ...base, brandingApproved: false }, PAYLOAD).org, '', 'the org is kept only with approved branding');
+  const unbranded = { ...base, org: null, brandingApproved: false, callbackProgram: false,
+    callbackTeam: '', callbackPhone: '', callbackHours: '', callbackFallback: '', unitPhone: '207-555-0142', usableThrough: 20991231 };
+  const display = S.profileUsable(unbranded, PAYLOAD);
+  assert.equal(display.phone, '(207) 555-0142', 'a valid phone is formatted for the patient');
+  assert.equal(display.org, '', 'unapproved branding is absent');
+  assert.equal(display.callbackProgram, false);
+  assert.equal(display.usableThrough, '', 'a non-string date is empty and therefore expired');
+  assert.equal(S.unitOf({ unit: { profile: base.id } }, withProfiles(PAYLOAD, unbranded), TEST_NOW,
+    profileReceipt(unbranded, TEST_NOW)).confirmed, false, 'a bad expiry cannot be approved by a receipt');
   // A profile in state that fails re-validation is not loaded, and the Final copy is held back.
   const refused = withProfiles(PAYLOAD, { ...base, unitPhone: crisisPhone });
   const info = S.unitOf({ unit: { name: '', phone: '', profile: base.id } }, refused, Date.UTC(2026, 9, 12));
   assert.equal(info.loaded || info.confirmed || info.phone !== '', false, 'an unusable profile is "not loaded"');
-  assert.deepEqual(codesOf(render(eight(), finalState(eight()), refused)), ['UNIT_UNCONFIRMED']);
+  assert.deepEqual(codesOf(renderApproved(eight(), finalState(eight()), refused)), ['UNIT_UNCONFIRMED']);
   assert.equal(S.profileFind(PROFILED, base.id).id, base.id);
   for (const id of ['', 'no-such-unit', 'Fixture-Unit', null, 7, 'a'.repeat(41)]) assert.equal(S.profileFind(PROFILED, id), null, String(id));
   assert.equal(S.profileFind(PAYLOAD, base.id), null, 'the shipped payload carries none');
   assert.equal(S.profileFind(null, base.id), null);
 });
 
-test('a confirmation is usable through the last second of its usableThrough day (UTC) and lapsed the next; a bad date or an unknown clock is lapsed', () => {
+test('profile validity follows New York calendar-day boundaries, including both DST transitions, and fails on a bad date or clock', () => {
+  for (const [through, last, next] of [
+    ['2099-12-31', '2100-01-01T04:59:59.999Z', '2100-01-01T05:00:00.000Z'],
+    ['2026-03-07', '2026-03-08T04:59:59.999Z', '2026-03-08T05:00:00.000Z'],
+    ['2026-03-08', '2026-03-09T03:59:59.999Z', '2026-03-09T04:00:00.000Z'],
+    ['2026-10-31', '2026-11-01T03:59:59.999Z', '2026-11-01T04:00:00.000Z'],
+    ['2026-11-01', '2026-11-02T04:59:59.999Z', '2026-11-02T05:00:00.000Z'],
+  ]) {
+    assert.equal(S.expired(through, Date.parse(last)), false, through + ': last New York millisecond');
+    assert.equal(S.expired(through, Date.parse(next)), true, through + ': next New York day');
+  }
   const through = '2099-12-31';
-  assert.equal(S.expired(through, Date.UTC(2099, 11, 31, 0, 0, 0)), false, 'the first second of the last day');
-  assert.equal(S.expired(through, Date.UTC(2099, 11, 31, 23, 59, 59)), false, 'the last second of the last day');
-  assert.equal(S.expired(through, Date.UTC(2100, 0, 1, 0, 0, 0)), true, 'the next second');
-  assert.equal(S.expired(through, Date.UTC(2026, 9, 12)), false);
-  for (const bad of ['', undefined, null, 20991231, '2099-12-31T00:00:00Z', '2099/12/31', '31-12-2099', ' 2099-12-31', 'never']) {
-    assert.equal(S.expired(bad, Date.UTC(2026, 9, 12)), true, 'a bad or missing date is lapsed: ' + JSON.stringify(bad));
-  }
-  for (const clock of [NaN, Infinity, -Infinity, undefined, null, '1760000000000', new Date(Date.UTC(2026, 9, 12))]) {
-    assert.equal(S.expired(through, clock), true, 'an unknown clock is lapsed: ' + String(clock));
-  }
+  assert.equal(S.expired(through, TEST_NOW), false);
+  for (const bad of ['', undefined, null, 20991231, '2099-12-31T00:00:00Z', '2099/12/31', '31-12-2099', ' 2099-12-31', 'never'])
+    assert.equal(S.expired(bad, TEST_NOW), true, 'bad or missing date: ' + JSON.stringify(bad));
+  for (const clock of [NaN, Infinity, -Infinity, undefined, null, '2026-10-12'])
+    assert.equal(S.expired(through, clock), true, 'unknown clock: ' + String(clock));
 });
 
-test('who the packet names: a loaded, usable profile beats typed values; an unknown profile id is "not loaded"; typed values are never confirmed', () => {
+test('unit identity resolves from the loaded profile, but only the matching current receipt confirms it; typed values never confirm', () => {
   const now = Date.UTC(2026, 9, 12);
   const typed = { name: '4 West', phone: '(207) 555-0100' };
-  assert.deepEqual(S.unitOf({ unit: { ...typed, profile: FIXTURE.profile.id } }, PROFILED, now), {
+  assert.deepEqual(S.unitOf({ unit: { ...typed, profile: FIXTURE.profile.id } }, PROFILED, now, profileReceipt(FIXTURE.profile, now)), {
     name: FIXTURE.profile.unitName, phone: FIXTURE.profile.unitPhone, org: FIXTURE.profile.org, profile: FIXTURE.profile.id,
-    loaded: true, expired: false, confirmed: true, callbackProgram: true, nameError: '', phoneError: '',
+    loaded: true, expired: false, confirmed: true, callbackProgram: true, nameError: '', phoneError: '', daysToExpiry: 26745,
+    purpose: FIXTURE.profile.unitPurpose, hours: FIXTURE.profile.unitHours, callbackTeam: FIXTURE.profile.callbackTeam,
+    callbackPhone: FIXTURE.profile.callbackPhone, callbackHours: FIXTURE.profile.callbackHours, callbackFallback: FIXTURE.profile.callbackFallback,
   }, 'the profile wins and the typed values beside it are ignored');
+  assert.equal(S.unitOf({ unit: { ...LOADED } }, PROFILED, now).confirmed, false, 'loaded data without an independent receipt is unconfirmed');
   assert.deepEqual(S.unitOf({ unit: { ...typed, profile: 'no-such-unit' } }, PROFILED, now), {
     name: '4 West', phone: '(207) 555-0100', org: '', profile: '', loaded: false, expired: false, confirmed: false, callbackProgram: false, nameError: '', phoneError: '',
   }, 'an unknown id is not loaded, and typed values are not confirmed');
@@ -1162,7 +1249,7 @@ test('who the packet names: a loaded, usable profile beats typed values; an unkn
   assert.ok(bad.nameError.length > 0 && bad.phoneError.length > 0, 'and say why');
   for (const state of [null, undefined, {}, { unit: null }]) assert.equal(S.unitOf(state, PROFILED, now).loaded, false, JSON.stringify(state));
   const records = eight();
-  const printed = textOf(render(records, finalState(records, { unit: { ...typed, profile: FIXTURE.profile.id } })).html);
+  const printed = textOf(renderApproved(records, finalState(records, { unit: { ...typed, profile: FIXTURE.profile.id } })).html);
   assert.ok(printed.includes(FIXTURE.profile.unitPhone) && printed.includes(FIXTURE.profile.unitName), 'paper: the profile');
   assert.equal(printed.includes('4 West') || printed.includes('555-0100'), false, 'paper: typed values beside a loaded profile never print');
 });
@@ -1182,7 +1269,7 @@ test('Clear is offered whenever anything is saved: listings, a unit name, phone 
 test('a category label with a dose or a crisis number prints as "Other resources"', () => {
   const records = eight();
   const data = S.validate(feed(records, { categories: feed(records).categories.map(c => (c.id === 'aftercare' ? { ...c, label: 'Aftercare 10 mg' } : c.id === 'peer_support' ? { ...c, label: 'Peers: dial 988' } : c)) }));
-  const r = S.sheet(stateOf(records), data, PAYLOAD, {});
+  const r = S.sheet(stateOf(records), data, PROFILED, approvedOptions());
   assert.equal(r.ok, true, r.message);
   const visible = textOf(r.html);
   assert.equal(visible.includes('10 mg') || visible.includes('Peers: dial'), false);
@@ -1191,7 +1278,7 @@ test('a category label with a dose or a crisis number prints as "Other resources
 
 test('structure: the header and the crisis block are one bordered element inside an unmargined wrapper; categories are not headings; listing names are h3', () => {
   const records = eight();
-  const r = render(records, stateOf(records), PAYLOAD, { headingBase: 1 });
+  const r = renderApproved(records, stateOf(records), PROFILED, { headingBase: 1 });
   assert.match(r.html, /<header class="fd-packet-head"[^>]*><div class="fd-packet-head__box">/);
   assert.match(r.html, /<section class="fd-packet-crisis"[^>]*><div class="fd-packet-crisis__box">/);
   assert.match(r.html, /<p class="fd-packet-cat"[^>]*>Aftercare<\/p>/, 'a category is a label, not a heading level');
@@ -1201,7 +1288,7 @@ test('structure: the header and the crisis block are one bordered element inside
 
 test('every write-in row is announced: a labelled row by its label, an unlabelled one as "blank line to write in"', () => {
   const records = eight();
-  const r = render(records, stateOf(records, { inserts: insertSets.allOn }));
+  const r = renderApproved(records, stateOf(records, { inserts: insertSets.allOn }), PROFILED, { callback: ARRANGED_CALL });
   const rows = r.html.match(/<div class="fd-packet-row">[\s\S]*?<\/div>/g) || [];
   assert.ok(rows.length >= 6, 'the all-on set has write-in rows');
   for (const one of rows) assert.match(one, /^<div class="fd-packet-row"><span( class="fd-packet-vh")?>[^<]+<\/span><i aria-hidden="true"><\/i><\/div>$/, one);
@@ -1242,10 +1329,10 @@ test('after layout, the assembled pages are checked: too tall, too wide, or a di
   const records = eight();
   const state = stateOf(records);
   const measure = units => ({ heights: units.map(() => 90), capacity: 880 });
-  const dry = S.sheet(state, dataOf(records), PAYLOAD, { measure, verify: false });
+  const dry = S.sheet(state, dataOf(records), PROFILED, approvedOptions({ measure, verify: false }));
   assert.equal(dry.ok, true);
   const n = dry.count;
-  const run = pages => withDocument(pages, made => ({ result: S.sheet(state, dataOf(records), PAYLOAD, { measure }), made }));
+  const run = pages => withDocument(pages, made => ({ result: S.sheet(state, dataOf(records), PROFILED, approvedOptions({ measure })), made }));
   const fit = run(Array.from({ length: n }, () => stub(1056)));
   assert.equal(fit.result.ok, true, 'a page exactly one sheet tall passes');
   assert.ok(fit.made.length >= 1 && fit.made.every(node => node.parentNode === null), 'the hidden host is always removed');
@@ -1257,20 +1344,20 @@ test('after layout, the assembled pages are checked: too tall, too wide, or a di
   const missing = run(Array.from({ length: n - 1 }, () => stub(1056)));
   assert.equal(missing.result.code, 'MEASURE_FAILED', 'fewer pages than packed means the check could not run: refuse, never assume');
   assert.ok(missing.made.every(node => node.parentNode === null), 'removed on the failure path too');
-  assert.equal(S.sheet(state, dataOf(records), PAYLOAD, { measure }).ok, true, 'without a document there is nothing to check and the sheet stands');
+  assert.equal(S.sheet(state, dataOf(records), PROFILED, approvedOptions({ measure })).ok, true, 'without a document there is nothing to check and the sheet stands');
 });
 
 test('a measurer or a layout check that THROWS refuses the packet instead of escaping into the caller', () => {
   const records = eight();
   const state = stateOf(records);
-  const thrown = S.sheet(state, dataOf(records), PAYLOAD, { measure: () => { throw new Error('layout engine gone'); } });
+  const thrown = S.sheet(state, dataOf(records), PROFILED, approvedOptions({ measure: () => { throw new Error('layout engine gone'); } }));
   assert.equal(thrown.ok, false);
   assert.equal(thrown.code, 'MEASURE_FAILED');
   const measure = units => ({ heights: units.map(() => 90), capacity: 880 });
   const broken = { body: { appendChild() {}, removeChild() {} }, createElement: () => ({ setAttribute() {}, set innerHTML(value) {}, querySelectorAll() { throw new Error('no layout'); } }) };
   globalThis.document = broken;
   try {
-    assert.equal(S.sheet(state, dataOf(records), PAYLOAD, { measure }).code, 'MEASURE_FAILED', 'a check that cannot run is a refusal, never a pass');
+    assert.equal(S.sheet(state, dataOf(records), PROFILED, approvedOptions({ measure })).code, 'MEASURE_FAILED', 'a check that cannot run is a refusal, never a pass');
   } finally { delete globalThis.document; }
 });
 
@@ -1399,11 +1486,13 @@ test('the wallet card is never part of a packet: no page set, copy or stored swi
     for (const mode of MODES) {
       const label = setName + '/' + mode;
       const state = mode === 'final' ? finalState(records, { inserts }) : stateOf(records, { inserts });
-      const r = render(records, state);
+      const options = inserts.callback ? { callback: ARRANGED_CALL } : {};
+      const r = renderApproved(records, state, PROFILED, options);
       assert.equal(r.ok, true, label + ': ' + r.message);
+      assert.deepEqual(r.blockers, [], label + ': the whole selected packet is printable');
       assert.equal(r.html.includes('data-fd-packet-card') || r.html.includes('fd-packet-cardsheet'), false, label + ': no card in the packet');
       assert.equal(textOf(r.html).includes(PAYLOAD.card.title), false, label);
-      if (mode === 'final') assert.equal(S.text(state, dataOf(records), PROFILED, {}).text.includes(PAYLOAD.card.title), false, label + ' copy');
+      if (mode === 'final') assert.equal(S.text(state, dataOf(records), PROFILED, approvedOptions(options)).text.includes(PAYLOAD.card.title), false, label + ' copy');
     }
   }
 });
@@ -1501,7 +1590,7 @@ test('eligibility counts only contacts that will really print: a listing whose o
   // And the sheet agrees with the chooser: nothing eligible comes out with no contact, nothing refused goes in.
   for (const [more, expected] of [[{ website: 'https://hospital2.example.org/', contactHref: '', phone: '' }, 'NO_CONTACT'], [{}, '']]) {
     const records = [row(0, more)];
-    const r = render(records, stateOf(records));
+    const r = renderApproved(records, stateOf(records));
     assert.equal(r.blockers.some(b => b.code === 'INELIGIBLE' && b.reason === 'NO_CONTACT'), expected === 'NO_CONTACT', JSON.stringify(more));
   }
 });
@@ -1601,9 +1690,9 @@ test('a crisis number split by spaces or spelled with wide separators makes a li
   const d = longCrisis()[0];
   const wide = spaced(d, ' - ');
   const withDescription = [row(0, { description: 'Peer help, text ' + d.slice(0, 3) + ' ' + d.slice(3) + ' any time.' })];
-  assert.ok(render(withDescription, stateOf(withDescription)).withheld.some(w => w.field === 'description' && w.reason === 'crisis'), 'the description is left off the paper');
+  assert.ok(renderApproved(withDescription, stateOf(withDescription)).withheld.some(w => w.field === 'description' && w.reason === 'crisis'), 'the description is left off the paper');
   const withArea = [row(0, { area: 'Statewide, text ' + d.slice(0, 3) + '-' + d.slice(3) })];
-  assert.ok(render(withArea, stateOf(withArea)).withheld.some(w => w.field === 'area' && w.reason === 'crisis'), 'the area is left off the paper');
+  assert.ok(renderApproved(withArea, stateOf(withArea)).withheld.some(w => w.field === 'area' && w.reason === 'crisis'), 'the area is left off the paper');
   assert.equal(S.eligibility(row(0, { name: 'Maine line ' + wide }), PAYLOAD), 'CRISIS_NUMBER');
   const keyword = row(0, { phone: '', website: 'https://example.org/care', contactHref: 'sms:12345?body=TEXT%20' + d });
   assert.equal(S.eligibility(keyword, PAYLOAD), 'CRISIS_NUMBER', 'a text keyword that carries a crisis number');
@@ -1629,7 +1718,7 @@ test('a listing whose NAME holds a verification note or a dose is LISTING_TEXT i
   assert.equal(S.eligibility(row(0, { name: 'Recovery Hall L2 Group' }), PAYLOAD), 'LISTING_TEXT');
   assert.match(S.reasonText('LISTING_TEXT'), /cannot print on a patient page/);
   const withNote = [row(0, { phone: '207-700-0123 (verification due)' })];
-  const r = render(withNote, stateOf(withNote));
+  const r = renderApproved(withNote, stateOf(withNote));
   assert.deepEqual(codesOf(r), [], 'the free-text phone is not printed, so a note in it cannot reach the paper');
   assert.equal(textOf(r.html).includes('verification due'), false);
 });

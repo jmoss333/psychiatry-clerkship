@@ -238,17 +238,27 @@ function fdCarePacketProfileFind(payload,id){
   return null;
 }
 function fdCarePacketProfileUsable(p,payload){
-  var name,phone,label,org='';
+  var name,phone,label,org='',fields=['unitPurpose','unitHours'],i,value;
   if(!p||typeof p!=='object'||typeof p.id!=='string'||!/^[a-z0-9-]{1,40}$/.test(p.id))return null;
+  if(typeof p.callbackProgram!=='boolean'||typeof p.brandingApproved!=='boolean'||(!p.brandingApproved&&p.org!==null))return null;
+  if(!p.callbackProgram&&(p.callbackTeam!==''||p.callbackPhone!==''||p.callbackHours!==''||p.callbackFallback!==''))return null;
   name=fdCarePacketUnitName(p.unitName,payload);phone=fdCarePacketUnitPhone(p.unitPhone,payload);label=fdCarePacketUnitName(p.label,payload);
   if(!name.ok||!name.value||!phone.ok||!phone.value||!label.ok||!label.value)return null;
+  if(!/^[a-f0-9]{64}$/.test(p.revision||'')||!/^\d{4}-\d{2}-\d{2}$/.test(p.expiresOn||''))return null;
+  if(p.callbackProgram===true)fields=fields.concat(['callbackTeam','callbackPhone','callbackHours','callbackFallback']);
+  for(i=0;i<fields.length;i++){
+    value=p[fields[i]];
+    if(typeof value!=='string'||!value.trim()||value!==fdCarePacketStrip(value)||/[<>{}]/.test(value)||fdCarePacketForbidden(value)||fdCarePacketCrisisHit(value,payload))return null;
+  }
+  if(p.callbackProgram===true&&!fdCarePacketUnitPhone(p.callbackPhone,payload).value)return null;
   if(p.org!=null){
     org=fdCarePacketUnitName(p.org,payload);
     if(!org.ok)return null;
     org=org.value;
   }
   return {id:p.id,label:label.value,name:name.value,phone:phone.value,org:p.brandingApproved===true?org:'',callbackProgram:p.callbackProgram===true,
-    usableThrough:typeof p.usableThrough==='string'?p.usableThrough:''};
+    usableThrough:typeof p.usableThrough==='string'?p.usableThrough:'',expiresOn:p.expiresOn,revision:p.revision,
+    purpose:p.unitPurpose,hours:p.unitHours,callbackTeam:p.callbackTeam,callbackPhone:p.callbackPhone,callbackHours:p.callbackHours,callbackFallback:p.callbackFallback};
 }
 function fdCarePacketProfiles(payload){
   var list=payload&&Array.isArray(payload.unitProfiles)?payload.unitProfiles:[],out=[],i,u;
@@ -257,20 +267,23 @@ function fdCarePacketProfiles(payload){
 }
 /* A confirmation lapses on its end date. A missing date, a bad date or an unknown clock all count as lapsed. */
 function fdCarePacketExpired(through,now){
-  var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof through==='string'?through:''),end;
+  var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof through==='string'?through:''),end,day;
   if(!m||typeof now!=='number'||!isFinite(now))return true;
   end=new Date(Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3]),23,59,59));
   /* Date.UTC rolls a date that does not exist (02-30) into the next month; that is a bad date, so it counts as lapsed. */
   if(end.getUTCMonth()!==Number(m[2])-1||end.getUTCDate()!==Number(m[3]))return true;
-  return now>end.getTime();
+  day=typeof fdCareProfileDate==='function'?fdCareProfileDate(now):'';
+  return !day||day>through;
 }
-/* Who the packet names as the unit: a loaded, usable profile (confirmed unless its confirmation has lapsed) or the
-   trainee's own typed values (never confirmed). */
-function fdCarePacketUnitOf(state,payload,now){
+/* Loaded data remains a candidate until an independent, current approval matches its exact contents. */
+function fdCarePacketUnitOf(state,payload,now,authority){
   var u=state&&state.unit?state.unit:{},found=u.profile?fdCarePacketProfileFind(payload,u.profile):null,usable=found?fdCarePacketProfileUsable(found,payload):null,name,phone,lapsed;
   if(usable){
     lapsed=fdCarePacketExpired(usable.usableThrough,now);
-    return {name:usable.name,phone:usable.phone,org:usable.org,profile:usable.id,loaded:true,expired:lapsed,confirmed:!lapsed,callbackProgram:usable.callbackProgram,
+    return {name:usable.name,phone:usable.phone,org:usable.org,profile:usable.id,loaded:true,expired:lapsed,
+      daysToExpiry:typeof fdCareProfileDaysRemaining==='function'?fdCareProfileDaysRemaining(usable.expiresOn,now):null,
+      confirmed:!lapsed&&typeof fdCareProfileReceipt==='function'&&fdCareProfileReceipt(found,authority,now),callbackProgram:usable.callbackProgram,
+      purpose:usable.purpose,hours:usable.hours,callbackTeam:usable.callbackTeam,callbackPhone:usable.callbackPhone,callbackHours:usable.callbackHours,callbackFallback:usable.callbackFallback,
       nameError:'',phoneError:''};
   }
   name=fdCarePacketUnitName(u.name,payload);phone=fdCarePacketUnitPhone(u.phone,payload);
@@ -289,8 +302,15 @@ function fdCarePacketFill(text,ctx,mode){
   }
   function token(inner){
     var c,id,v;
-    if(inner==='unitName'||inner==='unitPhone'){
+    if(inner==='unitContact'){
+      if(!(ctx&&ctx.unitName&&ctx.unitPhone&&ctx.unitPurpose&&ctx.unitHours))return 'Unit contact awaiting approval.';
+      v='For '+ctx.unitPurpose+', call '+ctx.unitName+' at '+ctx.unitPhone+' during '+ctx.unitHours+(/[.!?]$/.test(ctx.unitHours)?'':'.')+' This is not a crisis line. For a mental health crisis, use the crisis contacts on page 1.';
+      return html?fdEsc(v):v;
+    }
+    if(inner==='callWindow'||inner==='callDeadline')return (html?FD_CARE_PACKET_BLANK:'______')+' ('+(inner==='callWindow'?'agreed day or time window':'agreed deadline')+')';
+    if(['unitName','unitPhone','unitPurpose','unitHours','callbackTeam','callbackPhone','callbackHours','callbackFallback'].indexOf(inner)!==-1){
       v=ctx&&typeof ctx[inner]==='string'?ctx[inner]:'';
+      if(v&&/\.$/.test(v)&&s.charAt(re.lastIndex)==='.')v=v.slice(0,-1);
       if(v)return html?fdEsc(v):v;
       return html?FD_CARE_PACKET_BLANK:'______';
     }
@@ -408,6 +428,7 @@ function fdCarePacketCrisisUnit(payload,ctx,st,hb){
 /* ---- the standard pages ------------------------------------------------------------------------------------- */
 function fdCarePacketInsertOn(state,ins){
   var o=state&&state.inserts;
+  if(!ins)return false;
   if(ins.core===true)return true;
   if(o&&Object.prototype.hasOwnProperty.call(o,ins.id)&&typeof o[ins.id]==='boolean')return o[ins.id];
   return ins.defaultOn===true;
@@ -534,34 +555,37 @@ function fdCarePacketDate(stamp){
 function fdCarePacketFail(code,message){return {ok:false,code:code,message:message,pages:[],count:0,html:'',text:'',withheld:[],blockers:[],addresses:[]};}
 
 function fdCarePacketUnconfirmedMessage(info,payload){
-  if(info.loaded&&info.expired)return 'The unit profile’s phone confirmation has lapsed. A Final copy needs a current one; ask the project owner to confirm it again.';
-  if(!fdCarePacketProfiles(payload).length)return 'A Final copy needs a confirmed unit profile, and none is set up yet. Ask the project owner to add one.';
-  return 'A Final copy needs a confirmed unit profile. Load one in the unit details.';
+  if(info.loaded&&info.expired)return 'This unit profile has expired. Print and Copy need a new verification and owner approval.';
+  if(!fdCarePacketProfiles(payload).length)return 'Print and Copy need an approved unit profile. None is set up yet; you can keep editing this draft.';
+  return 'Print and Copy need current owner approval of this exact unit profile. Load the profile to check its approval.';
 }
 function fdCarePacketBuild(state,data,payload,opts){
   if(!FD_CARE_PACKET_UNICODE)return fdCarePacketFail('CHECK_UNAVAILABLE','This browser cannot check the listings for text that must not print, so it cannot print the packet. Use Chrome or Edge.');
   var hb=(opts&&opts.headingBase)||1,mode=state&&state.mode==='final'?'final':'review';
   var now=opts&&typeof opts.now==='number'?opts.now:(typeof Date!=='undefined'?Date.now():NaN);
   var live,byId,cats,ctx,info,st={crisis:false,other:false},out={blockers:[],withheld:[]},units=[],i,j,k,ins,rest=[],item,label,groupCount;
-  var intro=null,week=null,crisisUnit,groups=[],members,addresses=[],included=[],orgText,draft='',callbackOn=false,namesUnit,usesTokens;
+  var intro=null,week=null,crisisUnit,groups=[],members,addresses=[],orgText,draft='',callbackOn=false;
   if(!fdCarePacketPayloadOk(payload))return fdCarePacketFail('CRISIS_UNAVAILABLE','The crisis lines did not load, so this packet cannot print. Reload the page and try again.');
   live=fdCarePacketDisplayOrder(state,data);
   if(!live.length)return fdCarePacketFail('EMPTY','Add a listing to the packet to preview it.');
   byId=fdCarePacketRecords(data);
-  info=fdCarePacketUnitOf(state,payload,now);
-  ctx={unitName:info.name,unitPhone:info.phone,contacts:payload.contacts};
-  orgText=info.org&&info.name?info.org+' · '+info.name:(info.org||info.name);
+  info=fdCarePacketUnitOf(state,payload,now,opts&&opts.authority);
+  ctx={unitName:info.confirmed?info.name:'',unitPhone:info.confirmed?info.phone:'',unitPurpose:info.confirmed?info.purpose:'',unitHours:info.confirmed?info.hours:'',
+    callbackTeam:info.callbackTeam||'',callbackPhone:info.callbackPhone||'',callbackHours:info.callbackHours||'',callbackFallback:info.callbackFallback||'',contacts:payload.contacts};
+  orgText=info.confirmed?(info.org&&info.name?info.org+' · '+info.name:(info.org||info.name)):'';
   /* A draft with no unit phone says so on the page, in ink. A typed number prints with no such line: "not confirmed" next to a
      printed number would contradict it, and the preview tells the trainee instead. */
-  if(mode==='review'&&!ctx.unitPhone)draft='<p class="fd-packet-draft" data-fd-packet-draft><b>Draft.</b> Your nurse will write the unit’s phone number on the blank lines in this packet before you leave.</p>';
+  if(!info.confirmed)draft='<p class="fd-packet-draft" data-fd-packet-draft><b>Draft for editing.</b> Unit contact approval is required before this packet can be printed or copied.</p>';
 
   units.push(fdCarePacketUnit('p1-header',null,false,'<header class="fd-packet-head" data-fd-packet-unit="header"><div class="fd-packet-head__box">'+(orgText?'<p class="fd-packet-org">'+fdEsc(orgText)+'</p>':'')+
     fdCarePacketHeading(hb,1,'fd-packet-title',FD_CARE_PACKET_TITLE)+draft+'</div></header>'));
   for(i=0;i<payload.inserts.length;i++){
     ins=payload.inserts[i];
     if(!fdCarePacketInsertOn(state,ins))continue;
-    included.push(ins);
-    if(ins.id==='callback')callbackOn=true;
+    if(ins.id==='callback'){
+      callbackOn=true;
+      if(!(info.confirmed&&info.callbackProgram&&opts&&opts.callback&&opts.callback.arranged&&opts.callback.plan&&opts.callback.preferences))continue;
+    }
     if(ins.id==='intro')intro=ins;else if(ins.id==='week')week=ins;else rest.push(ins);
   }
   if(intro)units=units.concat(fdCarePacketInsertUnits(intro,payload,ctx,st,hb,mode));
@@ -597,15 +621,11 @@ function fdCarePacketBuild(state,data,payload,opts){
   if(!fdCarePacketCheckCrisis(units,payload))return fdCarePacketFail('CRISIS_UNAVAILABLE','A required crisis line is missing from the packet, so it cannot print.');
   groupCount=state.ids.length;
   if(data&&data.partial&&groupCount>live.length)out.blockers.push({code:'HIDDEN_LISTINGS',id:'',message:(groupCount-live.length)+' saved listing'+(groupCount-live.length===1?' is':'s are')+' hidden while the directory is incomplete. Reload the directory before printing.'});
-  /* A Final copy that NAMES the unit or PROMISES contact (a unit token anywhere in the pages it carries, an org or unit name
-     in the header, or the call-back page) needs a confirmed unit phone, which only a loaded profile provides. These apply to
-     printing; the copied text names no unit and promises no contact, so they do not block Copy. */
-  namesUnit=!!(info.name||info.org);
-  usesTokens=/\{\{unit(?:Name|Phone)\}\}/.test(JSON.stringify(included));
-  if(mode==='final'&&(namesUnit||usesTokens||callbackOn)&&!info.confirmed)
-    out.blockers.push({code:'UNIT_UNCONFIRMED',scope:'print',id:'',message:fdCarePacketUnconfirmedMessage(info,payload)});
-  if(mode==='final'&&callbackOn&&!(info.confirmed&&info.callbackProgram))
-    out.blockers.push({code:'CALLBACK_UNCONFIRMED',scope:'print',id:'',message:'The call-back page promises a call from the unit. A Final copy needs a confirmed unit profile that records a call-back program, or switch that page off.'});
+  /* Both patient-facing copy modes require the current profile's independent approval, including plain-text Copy. */
+  if(!info.confirmed)
+    out.blockers.push({code:'UNIT_UNCONFIRMED',id:'',message:fdCarePacketUnconfirmedMessage(info,payload)});
+  if(callbackOn&&!(info.confirmed&&info.callbackProgram&&opts&&opts.callback&&opts.callback.arranged&&opts.callback.plan&&opts.callback.preferences))
+    out.blockers.push({code:'CALLBACK_UNCONFIRMED',id:'',message:'The follow-up page needs an approved program and a call arranged for this discharge, with a complete plan and agreed contact preferences. Confirm these or switch the page off.'});
   return {ok:true,mode:mode,units:units,groups:groups,blockers:out.blockers,withheld:out.withheld,addresses:addresses,ctx:ctx,unit:info,live:live,hb:hb,
     date:fdCarePacketDate(data&&data.generatedAt),checkedOn:fdCarePacketDate(payload.checkedOn)};
 }
@@ -841,7 +861,7 @@ function fdCarePacketText(state,data,payload,opts){
     if(lines.join('\n').indexOf(fdCarePacketStrip(contact.name))===-1||lines.join('\n').indexOf(fdCarePacketStrip(contact.contact))===-1)
       return fdCarePacketFail('CRISIS_UNAVAILABLE','A required crisis line is missing from the copied text, so it cannot be copied.');
   }
-  /* The copied text names no unit and promises no contact, so the blockers that guard printing a unit (scope print) do not apply to it. */
+  /* Text has no physical page limits; profile and callback approval still apply. */
   for(i=0,copyBlockers=[];i<model.blockers.length;i++)if(model.blockers[i].scope!=='print')copyBlockers.push(model.blockers[i]);
   return {ok:true,code:'',message:'',text:lines.join('\n'),blockers:copyBlockers,withheld:model.withheld,mode:model.mode};
 }

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { careDirectoryFixture, pinCareDirectory } from './care-directory-fixture.js';
-import { enableCarePacket, packetFeed } from './care-packet-fixture.js';
+import { enableCarePacket, packetFeed, UNIT_PROFILE_FIXTURE } from './care-packet-fixture.js';
 import { isResidentProject } from './audience.js';
 
 const KEY = 'fd_care_packet_v1';
@@ -18,12 +18,12 @@ const tray = page => page.locator('[data-fd-care-packet-tray]');
 const addButtons = page => page.locator('[data-fd-care-packet]');
 const trayNames = page => tray(page).locator('[data-fd-care-packet-item] .fd-care-packet__name').allTextContents();
 // The window's live beforeprint listeners (added minus removed) whose source is the packet's. The packet's own print hook is the
-// only one that names fdCarePacket*, so this counts it without reaching into the shell's closure.
+// only one that checks printFingerprint, so this counts it without reaching into the shell's closure.
 const watchPrintListeners = page => page.addInitScript(() => {
   const live = new Set(), add = EventTarget.prototype.addEventListener, remove = EventTarget.prototype.removeEventListener;
   EventTarget.prototype.addEventListener = function (type, fn, opts) { if (this === window && type === 'beforeprint' && fn) live.add(fn); return add.call(this, type, fn, opts); };
   EventTarget.prototype.removeEventListener = function (type, fn, opts) { if (this === window && type === 'beforeprint') live.delete(fn); return remove.call(this, type, fn, opts); };
-  window.__packetPrintHooks = () => [...live].filter(fn => /fdCarePacket/.test(String(fn))).length;
+  window.__packetPrintHooks = () => [...live].filter(fn => /printFingerprint/.test(String(fn))).length;
 });
 // The payload exactly as the build serves it, for numbers a test must not type.
 async function servedPayload(page) {
@@ -149,6 +149,10 @@ test.describe('flag on', () => {
     await expect(ready).toContainText('Add a listing');
     for (const key of GATES) await expect(gate(key)).toBeDisabled();
     await addButtons(page).first().click();
+    await tray(page).getByRole('button', { name: /Preview and print/ }).click();
+    await page.locator('[data-fd-care-packet-profile-select]').selectOption(UNIT_PROFILE_FIXTURE.profile.id);
+    await page.locator('[data-fd-care-packet-profile-load]').click();
+    await expect(page.locator('[data-fd-care-packet-profile-status]')).toHaveText(`Loaded: ${UNIT_PROFILE_FIXTURE.profile.label}. Approval checked. Expires on ${UNIT_PROFILE_FIXTURE.profile.expiresOn} (America/New_York).`);
     for (const key of GATES) await expect(gate(key)).toBeEnabled();
     await gate('verification').check();
     await expect(gate('verification')).toBeFocused();
