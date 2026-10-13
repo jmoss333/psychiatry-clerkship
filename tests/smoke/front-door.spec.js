@@ -1,3 +1,5 @@
+import { enablePatientSharing } from './care-patient-sharing-fixture.js';
+import { pinCareDirectory } from './care-directory-fixture.js';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -6,6 +8,7 @@ import { join } from 'node:path';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
 import { isResidentProject } from './audience.js';
 import { auditEverything, essentialsResourceRefs, essentialsResources, everythingResourceRefs } from './essentials-inventory.js';
+import { LANDING, TODAY_TAB } from './landing.js';
 
 const FROZEN_NOW = new Date('2026-08-17T12:00:00-04:00');
 const PHONE = { width: 390, height: 844 };
@@ -358,6 +361,9 @@ test('reading place: APP practice choices never enter the Front Door store', asy
   test.skip(!isResidentProject(testInfo.project.name), 'APP practice exists only on the resident build');
   await page.goto('/');
   await page.locator('[data-fd-role="app"]:visible').click();
+  // Setup ends on the landing (FD_LANDING_VIEW); On shift is APP's Today tab.
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  await page.locator(TODAY_TAB).click();
   await expect(page.locator('.fd-app')).toBeVisible();
   await page.locator('[data-fd-app-practice-open="training-briefing"]:visible').click();
   await expect(page.locator('.fd-app-practice')).toBeVisible();
@@ -499,6 +505,7 @@ test('capture Schedule review and Done move focus to the stable editor after the
 });
 
 test.beforeEach(async ({ page }) => {
+  await pinCareDirectory(page);
   // Netlify's deploy-preview review drawer overlaps the mobile dock; it is not learner UI.
   await page.route('**/.netlify/scripts/cdp', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   const errors = [];
@@ -831,7 +838,7 @@ test('a marked primary is metadata only: the controller ships no dock forwarding
   expect(await page.evaluate(() => FD_ACTION_SELECTOR.includes('dock-forward') || FD_ACTION_SELECTOR.includes('dock-browse'))).toBe(false);
 });
 
-test('first run reaches Today; browse mode exposes the exact audience Library', async ({ page }, testInfo) => {
+test('first run reaches the landing (FD_LANDING_VIEW); browse mode exposes the exact audience Library', async ({ page }, testInfo) => {
   const site = audience(testInfo);
   await freezeTime(page);
   await page.goto('/');
@@ -841,9 +848,13 @@ test('first run reaches Today; browse mode exposes the exact audience Library', 
   await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toBeFocused();
   await expect(page.locator('.fd-weektile[data-fd-week]')).toHaveCount(site.weekCount);
   await page.locator('[data-fd-week="1"]').click();
-  await expect(page.locator('.fd-today')).toBeVisible();
-  await expect(page.locator('[data-fd-tab="today"]:visible')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator(LANDING.surface)).toBeVisible();
+  await expect(page.locator(`[data-fd-tab="${LANDING.tab}"]:visible`)).toHaveAttribute('aria-current', 'page');
+  expect(new URL(page.url()).search).toBe(LANDING.search);
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBe('2026-08-17');
+  // The week just chosen is what Today shows, one tap away.
+  await page.locator(TODAY_TAB).click();
+  await expect(page.locator('.fd-today__sub')).toContainText('Week 1');
 
   await page.evaluate(() => localStorage.clear());
   await page.reload();
@@ -2973,7 +2984,7 @@ test('One Thing First B4: a block past its TTL is pruned; the planner returns an
 // A fresh browser that follows a link to one page reads it without the wizard and is assigned no
 // role (C1); a resource opened from the guest's Today pushes exactly one history entry and Back
 // restores the same primary (C4); the next plain visit asks "Who's this for?" (C2); and the wizard
-// from that state still lands on Today, not on the page read as a guest (C3).
+// from that state lands on the landing (FD_LANDING_VIEW), not on the page read as a guest (C3).
 test('One Thing First C1–C4: a guest reads one linked page, keeps no role, and meets the wizard on the next plain visit', async ({ page }, testInfo) => {
   const site = audience(testInfo);
   await freezeTime(page);
@@ -3008,11 +3019,11 @@ test('One Thing First C1–C4: a guest reads one linked page, keeps no role, and
   // C2 — the next plain visit asks
   await page.goto('/');
   await expect(page.getByRole('heading', { name: "Who's this for?" })).toBeVisible();
-  // C3 — the wizard from that state lands on Today, not on the page read as a guest
+  // C3 — the wizard from that state lands on the landing, not on the page read as a guest
   await page.locator(`[data-fd-role="${site.role}"]`).click();
   await expect(page.getByRole('heading', { name: 'Where in the rotation?' })).toBeVisible();
   await page.locator('[data-fd-week="1"]').click();
-  await expect(page.locator('.fd-today')).toBeVisible();
+  await expect(page.locator(LANDING.surface)).toBeVisible();
   expect(new URL(page.url()).searchParams.get('page')).toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1') || '{}').role)).toBe(site.role);
   await expectHealthy(page);
@@ -3346,7 +3357,7 @@ test('Patient care resources stays reachable through the dock\'s fixed Care slot
   await expect(page.locator('.fd-dock:visible button:visible')).toHaveCount(5);
   await entry.click();
   await expect(page.locator('.fd-care-page')).toBeVisible();
-  await expect(page.locator('.fd-care-pack')).toBeVisible();
+  await expect(page.locator('.fd-care-pack')).toHaveCount(0);
   expect(new URL(page.url()).searchParams.get('tab')).toBe('care');
   await expect(entry).toHaveAttribute('aria-current', 'page');
 
@@ -3359,6 +3370,7 @@ test('Patient care resources stays reachable through the dock\'s fixed Care slot
 });
 
 test('Care Quick Share keeps exact links transient, keyboard-safe, and usable at 320 px', async ({ page }, testInfo) => {
+  await enablePatientSharing(page);
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -3446,6 +3458,7 @@ test('Care Quick Share keeps exact links transient, keyboard-safe, and usable at
 });
 
 test('Supervised Resource Builder opens context-free without changing Care Quick Share', async ({ page }, testInfo) => {
+  await enablePatientSharing(page);
   const url = 'https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html';
   const launches = [];
   await page.context().route('https://reconnect-tools.netlify.app/**', async route => {
@@ -3595,7 +3608,7 @@ test('phone chrome: one dock stays at the bottom and the first screen belongs to
   await expect(page.locator('.fd-reader > .fd-reader__back')).toBeVisible();
   const h1 = await page.locator('.fd-article__h1').boundingBox();
   expect(h1.y, 'the topic title sits in the top quarter of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.25);
-  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(true);
+  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(false);
   // Progress retains its top Back link and the same dock.
   await page.goto('/?page=__progress__');
   await expect(page.locator('#pgRoot')).toBeVisible();
@@ -4964,13 +4977,12 @@ test('Care Playbook returns to Care with its existing transient reset; offline l
   await page.evaluate(()=>document.documentElement.style.fontSize='');
   await page.setViewportSize({width:1280,height:900});
   await page.locator('[data-fd-tab="care"]:visible').click();
-  await expect(page.getByRole('heading',{name:'Share resource websites',exact:true})).toBeVisible();
-  await expect(page.getByRole('link',{name:'Build a specific resource handout',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Share resource websites',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Build a specific resource handout',exact:true})).toHaveCount(0);
   for (const width of [1280,320,640]) {
     await page.setViewportSize({width,height:900});
     await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
     await page.locator('[data-fd-care-intent="family-conversation"]').click();
-    await page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]').click();
     const open=page.getByRole('button',{name:'Open Family Meeting Playbook',exact:true});
     await page.keyboard.press('Tab'); await open.focus();
     const paint=await open.evaluate(el=>({outline:getComputedStyle(el).outlineStyle, fits:document.documentElement.scrollWidth<=innerWidth,height:el.getBoundingClientRect().height}));
@@ -4982,7 +4994,7 @@ test('Care Playbook returns to Care with its existing transient reset; offline l
     await expect(page.getByRole('heading',{name:'Patient care resources',exact:true,level:1})).toBeVisible();
     await expect(open).toHaveCount(0);
     await expect(page.locator('[data-fd-care-intent="family-conversation"]')).toHaveAttribute('aria-pressed','false');
-    await expect(page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]')).toHaveAttribute('aria-pressed','false');
+    await expect(page.locator('.fd-care-pack')).toHaveCount(0);
     await expect(page.locator('#careNavigatorStatus')).toHaveText('');
   }
   await expectHealthy(page);
@@ -5565,3 +5577,71 @@ test('Library view switch fits at 320px with wider fallback font metrics', async
   await expect(buttons.nth(1)).toHaveAttribute('aria-pressed','true');
   await expectHealthy(page);
 });
+
+// The Ward accessory is a native disclosure; a new page mount never carries its expanded
+// presentation. Saved study records and the article's own disclosures are independent.
+for (const width of [320, 390, 1280]) {
+  test(`ward default: keyboard and every page visit stay independent at ${width}px`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: width < 1000 ? 740 : 800 });
+    const savedQuiz = { 't_mood.md': { seen: 2, wrong: 1, last: '2026-10-09' } };
+    const capture = { v: 2, items: [{ id: 'study-fixture', text: 'Synthetic study question?', at: 1,
+      ctx: null, route: null, state: 'open' }] };
+    await seedApp(page, testInfo, { storage: { cw_quiz_v1: savedQuiz, cw_capture_v1: capture } });
+    // A reload must preserve the existing synthetic records rather than reseeding them.
+    for (const ref of ['t_mood.md', 'pg_interview.md']) {
+      await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+      await page.route(`**/content/${ref}`, route => route.fulfill({ contentType: 'text/markdown',
+        body: '# Synthetic study notes\n\n<details id="unrelated-study" open><summary>Article study notes</summary><p>Synthetic notes remain available.</p></details>\n\n### Study section\n\nNeutral study text.' }));
+    }
+    const ward = page.locator('.fd-article__body > details.practice-panel');
+    const summary = ward.locator(':scope > summary');
+    async function ready(ref) {
+      await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', ref);
+      await expect(ward).toHaveCount(1);
+      await expect(ward).not.toHaveAttribute('open', '');
+      expect(await ward.evaluate(el => el.open)).toBe(false);
+      await expect(summary).toHaveAccessibleName(/^On the Unit Practice and Tools\b/);
+      await expect(page.locator('#unrelated-study')).toHaveAttribute('open', '');
+      await expect(page.locator('#unrelated-study p')).toBeVisible();
+    }
+    await page.goto('/?page=t_mood.md');
+    await ready('t_mood.md');
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await summary.focus();
+    await expect(summary).toBeFocused();
+    const box = await summary.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    await page.keyboard.press('Enter');
+    await expect(ward).toHaveAttribute('open', '');
+    await expect(ward.locator('.practice-body')).toBeVisible();
+    await page.keyboard.press('Space');
+    expect(await ward.evaluate(el => el.open)).toBe(false);
+    await page.keyboard.press('Enter');
+    await expect(ward).toHaveAttribute('open', '');
+    await page.screenshot({ path: testInfo.outputPath(`ward-expanded-${width}.png`) });
+    // A real routed reading link exercises the controller rather than page.goto().
+    await page.evaluate(() => {
+      const a = document.createElement('a');
+      a.id = 'ward-navigation-fixture'; a.href = '?page=pg_interview.md';
+      a.textContent = 'Open another synthetic reading';
+      document.querySelector('.fd-article__body').append(a);
+    });
+    await page.locator('#ward-navigation-fixture').click();
+    await ready('pg_interview.md');
+    await summary.click();
+    await expect(ward).toHaveAttribute('open', '');
+    await page.goBack();
+    await ready('t_mood.md');
+    await summary.click();
+    await page.goForward();
+    await ready('pg_interview.md');
+    await summary.click();
+    await page.reload();
+    await ready('pg_interview.md');
+    await page.screenshot({ path: testInfo.outputPath(`ward-collapsed-${width}.png`) });
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_quiz_v1')))).toEqual(savedQuiz);
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')))).toEqual(capture);
+    await expectHealthy(page);
+  });
+}
