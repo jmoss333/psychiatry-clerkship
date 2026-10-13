@@ -4125,6 +4125,51 @@ test('medication search: names reach readings while clinical context keeps its d
   await expectHealthy(page);
 });
 
+for (const [device, viewport] of [['phone', PHONE], ['desktop', DESKTOP]]) {
+  test(`medication search: punctuated context finds and opens the specific reading on ${device}`, async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.setViewportSize(viewport);
+    await page.goto('/?tab=library');
+    await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+    const dialog = page.getByRole('dialog', { name: 'Search' });
+    const input = dialog.getByRole('textbox', { name: 'Search resources' });
+    for (const [query, ref] of [
+      ['patient-suicidal', 'pg_suicide.md'],
+      ['lithium suicide-risk', 'pg_suicide.md'],
+      ['Ativan alcohol-withdrawal', 't_sud.md'],
+      ['Ativan pulled-out-iv', 'agitation.md'],
+      ['CIWA-Ar', 't_sud.md'],
+      ['patient-si', 'pg_suicide.md'],
+    ]) {
+      await input.fill(query);
+      await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', ref);
+      await expect(dialog.locator(`[data-fd-safety="${ref}"]`)).toHaveCount(1);
+      await expect(dialog.locator(`[data-fd-open="${ref}"]`)).toHaveCount(0);
+    }
+    await input.fill('patient-refuses-medication');
+    await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 'capacity.html');
+    await expect(dialog.locator('[data-fd-safety="exp_consult.md"]')).toBeVisible();
+    for (const [query, ref] of [
+      ['Ativan catatonia?', 'catatonia.md'],
+      ['lorazepam (catatonia)', 'catatonia.md'],
+      ['lithium/monitoring', 'med_monitoring.md'],
+      ['lithium—monitoring', 'med_monitoring.md'],
+      ['lithium monitoring?', 'med_monitoring.md'],
+    ]) {
+      await input.fill(query);
+      await expect(dialog.locator(`[data-fd-open="${ref}"]`)).toBeVisible();
+      const refs = await dialog.locator('.fd-result').evaluateAll(rows => rows.map(row => row.getAttribute('data-fd-open')));
+      expect(refs.indexOf(ref), query).toBeLessThan(3);
+      const primer = refs.indexOf('psychopharm_primer.md');
+      if (primer >= 0) expect(refs.indexOf(ref), query).toBeLessThan(primer);
+    }
+    await dialog.locator('[data-fd-open="med_monitoring.md"]').click();
+    await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', 'med_monitoring.md');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
+    await expectHealthy(page);
+  });
+}
+
 test.describe('Essentials Phase 2', () => {
   const rows = page => page.locator('.fd-kit .fd-kit__reading[data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
   const full = page => page.locator('[data-fd-library-view="full"]');
