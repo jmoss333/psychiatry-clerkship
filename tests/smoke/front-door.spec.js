@@ -45,8 +45,7 @@ async function readingReady(page, ref = READING_REF) {
   await expect(reader.locator('.fd-article__body h3')).toHaveCount(3);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveCount(1);
   await expect(reader).not.toHaveClass(/fd-reader--guide/);
-  // DOM readiness can precede the 8px entrance transform. Settle geometry
-  // before capturing a reading place or changing viewport; keep offset bounds.
+  // Settle fonts and entrance effects before measuring a reading place.
   await reader.evaluate(async el => {
     await document.fonts.ready;
     const animations = [];
@@ -119,14 +118,20 @@ test('reading place: reload and phone reflow restore the second heading; Start a
   await expect(reader.locator('[data-fd-reading-top]')).toBeVisible();
   await reader.locator('[data-fd-reading-top]').click();
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]).toBeUndefined();
+  const clearedY = await page.evaluate(() => window.scrollY);
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.reload();
   await readingReady(page);
+  // Native restoration may preserve the position, or startup may reset to document top.
+  // Neither route may drift downward or create a new bookmark.
+  const firstReloadY = await page.evaluate(() => window.scrollY);
+  expect(firstReloadY).toBeLessThanOrEqual(clearedY + 0.5);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   await page.reload();
   await readingReady(page);
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(firstReloadY + 0.5);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await scrollReadingTo(page, 2);
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]?.heading).toBe(
@@ -206,6 +211,8 @@ test('reading place: returning to the fresh position cancels an abandoned pendin
   await page.waitForTimeout(400);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.setViewportSize(PHONE);
+  // This next move is after resize, not during its one-frame restore window.
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
@@ -4231,9 +4238,9 @@ test.describe('Essentials Phase 2', () => {
       await page.locator('.fd-kit__peek[data-fd-kit-tool="t_mood.md"]').click();
       await expect(page.locator('.fd-kit__tool-preview .governance-badge')).toHaveText('Pending review · High risk');
     }
-    await expect(page.locator('.fd-kit__review')).toContainText(/^Faculty re-review in progress — \d+ of \d+ readings changed since they were last attested ·/);
+    await expect(page.locator('.fd-kit__review summary')).toHaveText(/^Faculty re-review · \d+ of \d+ readings$/);
     await page.locator('.fd-kit__review summary').click();
-    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings are marked pending review. Open a reading to see its full review notice.');
+    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings changed since they were last attested and are marked pending review. Open a reading to see its full review notice.');
     await expectHealthy(page);
   });
   test('summaries are byte-identical to topic_meta and the desktop preview pane follows the selected row', async ({ page }, info) => {
@@ -4398,10 +4405,28 @@ test.describe('Essentials Phase 2', () => {
   });
   test('responsive: targets, no horizontal overflow at 320/390/641/1280 and at 200% text, reduced motion, and actual evidence', async ({ page }, info) => {
     await seedApp(page, info);
-    await serveNothingPending(page);
+    // Always exercise the re-review notice, independent of the live faculty queue: every live pending
+    // row is first served as reviewed (main's serveNothingPending contract), then exactly one
+    // page -- the primer -- is served pending, so the notice is deterministic.
+    await page.route('**/*', async route => {
+      if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+      const response = await routeFetchWithRetry(route), body = await response.text();
+      const prefix = 'var FD_SITE_MANIFEST=', start = body.indexOf(prefix) + prefix.length;
+      expect(start).toBeGreaterThan(prefix.length);
+      const end = body.indexOf(';\n', start), manifest = JSON.parse(body.slice(start, end));
+      for (const list of [manifest.md || [], manifest.tools || []]) {
+        for (const entry of list) if (entry[3] && entry[3].status === 'pending') entry[3] = { ...entry[3], status: 'reviewed' };
+      }
+      const primer = manifest.md.find(entry => entry[1] === 'psychopharm_primer.md');
+      expect(primer).toBeTruthy();
+      primer[3] = { status: 'pending', riskKind: 'clinical', riskLevel: 'high' };
+      await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(manifest) + body.slice(end) });
+    });
     for (const width of [320, 390, 641, 1280]) {
       await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
       await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
+      await expect(page.locator('.fd-kit__review summary')).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       const desktop = width >= 1000;
       await expect(page.locator('.fd-kit__tool-preview')).toBeVisible({ visible: desktop });

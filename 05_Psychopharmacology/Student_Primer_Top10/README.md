@@ -1,3 +1,5 @@
-# Student Psychopharm Primer (Top-10 inpatient)
+# Student psychopharmacology primer
 
-Draws on the Core-Topics one-pagers (`03_Core_Topics/*`), the Protocol Library (above), and the ASCP Psychopharmacology Curriculum (iCloud › Gen Psych Resources). See `_source/` for pulled references.
+[Open the inpatient primer](psychopharmacology_primer_inpatient.md). It covers medication choice, monitoring, patient conversations, and recognition of urgent adverse effects, with resident-level nuances and question-led PubMed references. The historical directory name is retained so existing links keep working.
+
+Research checked 2026-10-11 against primary papers, full guidelines and official labels. The expansion is an educational draft for faculty review; it contains no numeric dosing or titration schedules.

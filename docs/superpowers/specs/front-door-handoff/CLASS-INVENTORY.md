@@ -627,8 +627,9 @@ the bare `.fd-library`.
         button.fd-kit__index-item[data-fd-kit-section][aria-pressed] ×N   + .is-active
           span / .fd-kit__index-count
     .fd-kit__readings
-      .fd-kit__review                    (only with pending readings; existing string verbatim)
-        span / details > summary "What that means" + p
+      .fd-kit__review                    (only with pending readings; compact olive notice)
+        details > summary "Faculty re-review · N of M readings" + p
+                                         (44px target; expanded text explains changed/awaiting-review state)
       details.fd-kit__group[open] ×N
         summary
           .fd-kit__group-name / .fd-kit__group-count ("· N") / .fd-kit__chevron
@@ -684,7 +685,7 @@ badges are byte-identical to their sources; `<mark>` wraps the matched run witho
 |---|---|
 | `.fd-library__views` | Re-valued (was a row of ghost buttons): `inline-grid 2 cols; padding:3px; radius 10` on `--fd-chip`; the active option lifts onto `--fd-surface` with a 1px/3px shadow, teal-deep 700. |
 | `.fd-library__filter` | The bordered box is the control (`flex:1 1 320px; min-height:44px; 1.5px --fd-line-strong; radius 10`); the input inside is borderless and `:focus-within` paints the ring on the box. |
-| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. |
+| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. At ≤640px, it and `.fd-library__head` use 8px bottom margins, and `.fd-library__body` uses an 8px row gap; text sizes and 44px controls remain unchanged so pending notices and wrapped resident titles fit above the dock. |
 | `.fd-kit__index-item` | One markup, two shapes: pill chip (phone) or sidebar row (desktop). `.is-active` is teal-wash + teal-deep 700 in both. Counts show matches while a query is live. |
 | `.fd-kit__review` | Existing string verbatim, now on `--fd-olive-wash` with `border-left:3px solid --fd-olive`; the summary is olive-deep 700 underlined. |
 | `.fd-kit__group > summary` | "Name · count", 13px/700 `--fd-text-mid`, `border-bottom:1px solid --fd-line-strong`; every group starts open. |
@@ -766,7 +767,8 @@ the Library.
 
 | Class | Notes |
 |---|---|
-| `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
+| `.fd-reader` | Opacity-only arrival (`fdBackdropIn`): vertical entrance movement changes heading geometry while saved reading positions restore, causing scroll drift on reload. |
+| `.fd-reader.is-nav-next` / `.is-nav-prev` | Horizontal slide-in direction. **Same element as `.fd-reader`.** Vertical heading geometry stays fixed. |
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
 | `html:has(.fd-reader--tool)` | `scroll-padding-top` = the sticky header's height (68px ≤640px, 112px above) while a tool is open. The frame is content-height, so the page is its only scroll surface and the tool cannot see the header: without this, focus or `scrollIntoView` inside the frame parks a control under the bar, where a tap lands on ✚ Safety (2026-10-04). In-page readers keep their own `scroll-margin-top`. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
