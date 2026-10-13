@@ -846,7 +846,7 @@ test('eligibility on partial rows: a dial link alone or a website alone is enoug
 });
 
 test('every reason code has plain, specific text the trainee reads; any other code has none', () => {
-  assert.deepEqual(Object.keys(S.REASONS).sort(), ['CRISIS_CATEGORY', 'CRISIS_NUMBER', 'NO_CONTACT', 'PAYLOAD']);
+  assert.deepEqual(Object.keys(S.REASONS).sort(), ['CRISIS_CATEGORY', 'CRISIS_NUMBER', 'LISTING_TEXT', 'NO_CONTACT', 'PAYLOAD']);
   for (const code of Object.keys(S.REASONS)) {
     const text = S.reasonText(code);
     assert.ok(text.length > 20, code);
@@ -1569,4 +1569,88 @@ test('PARITY: a unit phone may not be any helpline-table number, and the browser
 // fdCarePacketPayloadOk can make the loop and the output disagree (that is why it is defence in depth).
 test('the copied text is checked for every required line\'s official name and number before it is returned', () => {
   assert.match(SHEET_SRC, /missing from the copied text/);
+});
+
+// ---- round 2 of the review fixes (correctness lens) ----------------------------------------------------------------------------
+// Every number below is BUILT from the payload's registered numbers at run time; none is typed. The browser reads a long number the
+// way the validator's crisis_patterns does: any run of separators between its digits and an optional leading 1.
+const spaced = (digits, sep) => digits.split('').join(sep);
+const longCrisis = () => PAYLOAD.crisisNumbers.filter(d => d.length > 4);
+test('PARITY: a long registered crisis number is found however its digits are separated, in prose and in a listing, as the validator finds it', () => {
+  const probes = longCrisis().flatMap(d => [spaced(d, ' '), spaced(d, '-'), spaced(d, ' - '), d.slice(0, 3) + ' ' + d.slice(3), d.slice(0, 3) + '-' + d.slice(3), '1' + d, '1-' + d, d + '5', '5' + d]);
+  const python = py(
+    `import validate_care_inserts as v\nprobes = json.loads(sys.stdin.read())\n` +
+    `numbers = {'x': set(json.loads(sys.argv[1]))}\npats = [p for _, p in v.crisis_patterns(numbers)]\n` +
+    `print(json.dumps([any(p.search(v.normalise(s)) for p in pats) for s in probes]))`,
+    [JSON.stringify(longCrisis())], JSON.stringify(probes),
+  );
+  assert.equal(python.status, 0, python.stderr);
+  const theirs = JSON.parse(python.stdout);
+  probes.forEach((probe, i) => {
+    // The validator is the floor: whatever it finds, the browser finds. (The browser may be stricter, never looser.)
+    if (theirs[i]) assert.equal(S.crisisHit('call ' + probe + ' now', PAYLOAD), true, 'validator finds ' + JSON.stringify(probe));
+  });
+  assert.ok(theirs.some(Boolean), 'precondition: the validator finds some of them');
+  for (const d of longCrisis()) {
+    for (const sep of [' ', '-', ' - ', '.', '/']) assert.equal(S.crisisHit('Text ' + spaced(d, sep) + ' any time', PAYLOAD), true, d + ' with ' + JSON.stringify(sep));
+    assert.equal(S.crisisHit('ref ' + d + '5', PAYLOAD), false, 'a longer number that merely starts with it is not it');
+  }
+});
+
+test('a crisis number split by spaces or spelled with wide separators makes a listing ineligible, in its name, area, description or text keyword', () => {
+  const d = longCrisis()[0];
+  const wide = spaced(d, ' - ');
+  const withDescription = [row(0, { description: 'Peer help, text ' + d.slice(0, 3) + ' ' + d.slice(3) + ' any time.' })];
+  assert.ok(render(withDescription, stateOf(withDescription)).withheld.some(w => w.field === 'description' && w.reason === 'crisis'), 'the description is left off the paper');
+  const withArea = [row(0, { area: 'Statewide, text ' + d.slice(0, 3) + '-' + d.slice(3) })];
+  assert.ok(render(withArea, stateOf(withArea)).withheld.some(w => w.field === 'area' && w.reason === 'crisis'), 'the area is left off the paper');
+  assert.equal(S.eligibility(row(0, { name: 'Maine line ' + wide }), PAYLOAD), 'CRISIS_NUMBER');
+  const keyword = row(0, { phone: '', website: 'https://example.org/care', contactHref: 'sms:12345?body=TEXT%20' + d });
+  assert.equal(S.eligibility(keyword, PAYLOAD), 'CRISIS_NUMBER', 'a text keyword that carries a crisis number');
+  const short = PAYLOAD.crisisNumbers.find(n => n.length === 3);
+  assert.equal(S.eligibility(row(0, { phone: '', contactHref: 'tel:+1' + short }), PAYLOAD), 'CRISIS_NUMBER', 'a leading 1 before a short code does not hide it');
+  assert.equal(S.eligibility(row(0), PAYLOAD), '', 'an ordinary listing is untouched');
+});
+
+// The browser must read the payload's WHOLE list of registered numbers: some (the text line a veterans service also answers) are in
+// the governed record only as an alternate and are in no contact string. Fails if the browser stops reading `crisisNumbers`.
+test('a registered number that appears in no contact string, only in the shipped list of numbers, still refuses a listing', () => {
+  const inContacts = new Set(S.numbers(Object.values(PAYLOAD.contacts).map(c => c.contact).join(' ; ')));
+  const only = PAYLOAD.crisisNumbers.filter(d => d.length >= 5 && !inContacts.has(d));
+  assert.ok(only.length >= 1, 'precondition: the shipped list carries a number no contact string has');
+  for (const d of only) assert.equal(S.eligibility(row(0, { phone: 'Text ' + d, contactHref: 'tel:2077000123' }), PAYLOAD), 'CRISIS_NUMBER', d);
+  const withoutList = clone(PAYLOAD); delete withoutList.crisisNumbers;
+  assert.equal(S.eligibility(row(0, { phone: 'Text ' + only[0], contactHref: 'tel:2077000123' }), withoutList), '', 'without the list the browser cannot know it: that is why the build ships it');
+});
+
+// A name that trips the note scan is refused up front (the chooser and the tray say why), not discovered after four confirmations.
+test('a listing whose NAME holds a verification note or a dose is LISTING_TEXT in the chooser; its phone text, which no longer prints, does not block it', () => {
+  assert.equal(S.eligibility(row(0, { name: 'Verified Peer Support of York' }), PAYLOAD), 'LISTING_TEXT');
+  assert.equal(S.eligibility(row(0, { name: 'Recovery Hall L2 Group' }), PAYLOAD), 'LISTING_TEXT');
+  assert.match(S.reasonText('LISTING_TEXT'), /cannot print on a patient page/);
+  const withNote = [row(0, { phone: '207-700-0123 (verification due)' })];
+  const r = render(withNote, stateOf(withNote));
+  assert.deepEqual(codesOf(r), [], 'the free-text phone is not printed, so a note in it cannot reach the paper');
+  assert.equal(textOf(r.html).includes('verification due'), false);
+});
+
+// The payload's shape is checked, so a malformed insert is an unusable payload (fail closed), not an exception in a click handler.
+test('a payload whose inserts hold a null or an id-less entry is unusable', () => {
+  for (const bad of [null, 7, 'x', {}, { id: 3 }]) {
+    const p = clone(PAYLOAD); p.inserts = [bad, ...p.inserts];
+    assert.equal(S.payloadOk(p), false, JSON.stringify(bad));
+    assert.equal(S.sheet(stateOf([row(0)]), dataOf([row(0)]), p, {}).ok, false);
+  }
+});
+
+// The Arabic-Indic digits are digits to a reader. The validator's scan reads them as it reads ASCII ones (as the browser does).
+test('PARITY: the validator\'s prose scan reads non-ASCII decimal digits, so a crisis number written in them is found there too', () => {
+  const d = PAYLOAD.crisisNumbers.find(n => n.length === 3);
+  const arabic = d.split('').map(ch => String.fromCodePoint(0x660 + Number(ch))).join('');
+  const python = py(
+    `import validate_care_inserts as v\nprint(json.dumps(v.normalise(sys.argv[1])))`, [arabic],
+  );
+  assert.equal(python.status, 0, python.stderr);
+  assert.equal(JSON.parse(python.stdout), d, 'normalised to the ASCII digits');
+  assert.equal(S.crisisHit('call ' + arabic, PAYLOAD), true, 'and the browser agrees');
 });

@@ -25,6 +25,7 @@ var FD_CARE_PACKET_REASONS={
   PAYLOAD:'The crisis lines did not load, so listings cannot be added. Reload the page.',
   CRISIS_CATEGORY:'It is a crisis service. The packet carries only the crisis lines on page 1, so tell the patient about it yourself.',
   CRISIS_NUMBER:'It lists a crisis line number, and those print only in the crisis box.',
+  LISTING_TEXT:'Its name holds a verification note or a dose, which cannot print on a patient page.',
   NO_CONTACT:'It has no working phone or website on record.'
 };
 function fdCarePacketReasonText(code){return Object.prototype.hasOwnProperty.call(FD_CARE_PACKET_REASONS,code)?FD_CARE_PACKET_REASONS[code]:'';}
@@ -112,21 +113,37 @@ function fdCarePacketNumbers(text){
   while((m=re.exec(s)))out.push(m[2]+m[4]+m[5]+(m[6]||''));
   return out;
 }
-function fdCarePacketCrisisNumbers(payload){
-  var out=[],id,contacts=payload&&payload.contacts,list=payload&&payload.crisisNumbers,n,i;
+/* The registered numbers and one pattern per long number, built once per payload (eligibility asks per row, per keystroke).
+   The key is the numbers themselves, so a payload edited in place is read afresh. */
+var FD_CARE_PACKET_CRISIS_MEMO={key:null,numbers:[],patterns:[]};
+function fdCarePacketCrisisMemo(payload){
+  var out=[],id,contacts=payload&&payload.contacts,list=payload&&payload.crisisNumbers,n,i,key=[],patterns=[],digits;
+  if(Array.isArray(list))for(i=0;i<list.length;i++)key.push(String(list[i]));
+  if(contacts&&typeof contacts==='object')for(id in contacts)if(Object.prototype.hasOwnProperty.call(contacts,id)&&contacts[id])key.push(String(contacts[id].contact));
+  key=key.join('|');
+  if(key===FD_CARE_PACKET_CRISIS_MEMO.key)return FD_CARE_PACKET_CRISIS_MEMO;
   /* The build ships EVERY registered number (the validator reads contact and alsoAvailable of every governed resource). */
   if(Array.isArray(list))for(i=0;i<list.length;i++)if(typeof list[i]==='string'&&/^\d{3,}$/.test(list[i]))out.push(list[i]);
-  if(!contacts||typeof contacts!=='object')return out;
-  for(id in contacts){
+  if(contacts&&typeof contacts==='object')for(id in contacts){
     if(!Object.prototype.hasOwnProperty.call(contacts,id)||!contacts[id])continue;
     n=fdCarePacketNumbers(contacts[id].contact);
     for(i=0;i<n.length;i++)out.push(n[i]);
   }
-  return out;
+  /* A number of five or more digits may be written with any run of separators between its digits and an optional leading 1
+     (a six-digit text line split in two, a ten-digit line with spaces around its dashes), as the validator's crisis_patterns reads it; a short code is read by the tokenizer. */
+  for(i=0;i<out.length;i++){
+    digits=out[i];
+    if(digits.length>4)patterns.push(new RegExp('(^|[^0-9])(?:1[\\s.\\-()\\/]*)?'+digits.split('').join('[\\s.\\-()\\/]*')+'(?![0-9])'));
+  }
+  FD_CARE_PACKET_CRISIS_MEMO={key:key,numbers:out,patterns:patterns};
+  return FD_CARE_PACKET_CRISIS_MEMO;
 }
+function fdCarePacketCrisisNumbers(payload){return fdCarePacketCrisisMemo(payload).numbers;}
 function fdCarePacketCrisisHit(text,payload){
-  var registered=fdCarePacketCrisisNumbers(payload),found=fdCarePacketNumbers(text),i;
-  for(i=0;i<found.length;i++)if(registered.indexOf(found[i])!==-1)return true;
+  var memo=fdCarePacketCrisisMemo(payload),found=fdCarePacketNumbers(text),s,i;
+  for(i=0;i<found.length;i++)if(memo.numbers.indexOf(found[i])!==-1)return true;
+  s=fdCarePacketNorm(text);
+  for(i=0;i<memo.patterns.length;i++)if(memo.patterns[i].test(s))return true;
   return false;
 }
 /* The number a directory row can be dialled or texted at, from the feed's own contact link (which is non-empty only when
@@ -148,8 +165,10 @@ function fdCarePacketEligibility(row,payload){
   if(!row||typeof row!=='object')return 'NO_CONTACT';
   if(!fdCarePacketPayloadOk(payload))return 'PAYLOAD';
   if(row.category==='crisis')return 'CRISIS_CATEGORY';
+  if(fdCarePacketForbidden(fdCarePacketStrip(row.name)))return 'LISTING_TEXT';
   dial=fdCarePacketDial(row);
-  dialCrisis=!!dial&&fdCarePacketCrisisHit(dial.number,payload);
+  /* The number (also without a leading 1 before a short code) and the text keyword (it may carry a number too) are both scanned. */
+  dialCrisis=!!dial&&(fdCarePacketCrisisHit(dial.number.replace(/\D/g,'').replace(/^1(?=\d{3,})/,''),payload)||fdCarePacketCrisisHit(dial.keyword,payload));
   /* A contact the sheet would leave off the paper (a text keyword or an address that holds a note or a dose) is not a
      contact: a listing must keep at least one that will really print. */
   if(dial&&fdCarePacketForbidden(dial.keyword))dial=null;
@@ -433,7 +452,8 @@ function fdCarePacketInsertUnits(ins,payload,ctx,st,hb,mode){
    printing is blocked, naming it). A DESCRIPTION or AREA that does is left off and noted. */
 function fdCarePacketListing(row,payload,out){
   var name=fdCarePacketStrip(row.name),phone=fdCarePacketStrip(row.phone),area=fdCarePacketStrip(row.area),host=fdCarePacketHost(row.website),dial=fdCarePacketDial(row),reason,desc,svg,addr='';
-  if(fdCarePacketForbidden(name)||fdCarePacketForbidden(phone)){
+  /* The free-text phone is no longer printed (the dialable link is), so only the NAME can carry a note onto the paper. */
+  if(fdCarePacketForbidden(name)){
     out.blockers.push({code:'LISTING_TEXT',id:row.id,message:'“'+name+'” has text that cannot print on a patient page (a verification note or a dose). Remove it from the packet.'});
     return null;
   }
@@ -472,6 +492,7 @@ function fdCarePacketPayloadOk(payload){
   if(!payload||typeof payload!=='object'||!payload.contacts||typeof payload.contacts!=='object')return false;
   if(!Array.isArray(payload.required)||!payload.required.length||!Array.isArray(payload.crisis)||!payload.crisis.length)return false;
   if(!Array.isArray(payload.inserts)||!payload.crisisCopy||typeof payload.crisisCopy.heading!=='string')return false;
+  for(i=0;i<payload.inserts.length;i++)if(!payload.inserts[i]||typeof payload.inserts[i]!=='object'||typeof payload.inserts[i].id!=='string')return false;
   for(i=0;i<payload.crisis.length;i++){
     line=payload.crisis[i];
     if(!line||!payload.contacts[line.ref]||typeof payload.contacts[line.ref].contact!=='string'||!/\S/.test(payload.contacts[line.ref].contact))return false;

@@ -283,7 +283,7 @@ function fdCarePacketTray(state,data,gate,ui){
 
 /* Blockers whose fix re-arms the review gate (a unit that is not confirmed, a call-back page nobody can promise, a saved listing
    that cannot print) come BEFORE the four confirmations: confirming first and then being told to start again is the trap. */
-var FD_CARE_PACKET_SETUP=['INELIGIBLE','CRISIS_NUMBER','UNIT_UNCONFIRMED','CALLBACK_UNCONFIRMED'];
+var FD_CARE_PACKET_SETUP=['INELIGIBLE','LISTING_TEXT','CRISIS_NUMBER','UNIT_UNCONFIRMED','CALLBACK_UNCONFIRMED'];
 function fdCarePacketSetupBlocker(sheet,forCopy){
   var list=sheet&&sheet.ok&&sheet.blockers?sheet.blockers:[],i;
   for(i=0;i<list.length;i++)if(FD_CARE_PACKET_SETUP.indexOf(list[i].code)!==-1&&!(forCopy&&list[i].scope==='print'))return {code:list[i].code,message:list[i].message};

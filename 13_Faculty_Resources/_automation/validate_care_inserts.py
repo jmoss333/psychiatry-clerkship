@@ -183,6 +183,9 @@ def normalise(text):
         category = unicodedata.category(ch)
         if category == "Cf":
             continue
+        if category == "Nd":
+            out.append(str(unicodedata.digit(ch)))  # Arabic-Indic, Devanagari ... digits: the same number to a reader
+            continue
         out.append("-" if category == "Pd" or ch == "−" else ch)
     return "".join(out)
 
@@ -249,7 +252,10 @@ def unit_wording_problems(text, kind):
     """Why a patient-readable string breaks the unit-wording rules, one message per offending sentence.
     Titles and headings are exempt from the token rule only ("Reaching the unit and your rights")."""
     problems = []
-    for sentence in SENTENCE_SPLIT_RE.split(normalise(text)):
+    seen = normalise(text)
+    # Per sentence on purpose: the check cannot follow who "it" or "someone" is, and "Call us. The crisis lines answer any time." is
+    # honest. A promise two sentences after "the unit" is therefore a wording-review matter, not something this rule can see.
+    for sentence in SENTENCE_SPLIT_RE.split(seen):
         sentence = " ".join(sentence.split())
         if not sentence:
             continue

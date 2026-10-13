@@ -1428,3 +1428,39 @@ test('the unit fields point at the profile status (and the phone at its readback
     assert.equal((html.match(new RegExp('id="' + id + '"', 'g')) || []).length, 1, id + ' exists exactly once, so the reference resolves');
   }
 });
+
+// ---- round 2 of the review fixes ----------------------------------------------------------------------------------------------
+// onBefore keeps a staged print for 30 seconds (a browser may fire beforeprint twice), so the ONLY things that take a stale one down
+// quickly are the controller's own changes. Deleting teardown() from commit() or setGate() left every earlier test green.
+// Fails if a change to the packet no longer removes what was staged for the old packet.
+test('anything that changes the packet takes a staged print down at once: a listing change (commit) and a confirmation (setGate)', t => {
+  const env = fakeBrowser(t);
+  const { c } = mountedP(6, { create: { sheet: FIXED_LAYOUT } });
+  readyFinal(c);
+  c.openPreview();
+  assert.deepEqual(c.print(), { ok: true, code: '' });
+  assert.equal(env.body.children.length, 1, 'staged');
+  c.toggle('a2');
+  assert.equal(env.body.children.length, 0, 'a new listing: the staged packet described the old one');
+  confirmAll(c);
+  assert.equal(c.print().ok, true);
+  assert.equal(env.body.children.length, 1);
+  c.setGate('supervisor', false);
+  assert.equal(env.body.children.length, 0, 'a withdrawn confirmation: the staged packet was released under it');
+});
+
+// A saved listing whose NAME holds a verification note or a dose cannot print, and removing it is a setup step like any other
+// listing that cannot print: it is named before the four confirmations, for Print and for Copy. Fails if LISTING_TEXT leaves the
+// setup list (found by the mutation pass: nothing pinned its position).
+test('a saved listing whose name cannot print is named before the four confirmations, with the listing named in the message', () => {
+  const data = P.validate(feed([row(0, { name: 'Verified Peer Support of York' })]));
+  const state = { ...stateWith(1), ids: ['a0'] };
+  const sheet = P.sheet(state, data, PAYLOAD, {});
+  assert.equal(sheet.blockers[0].code, 'LISTING_TEXT');
+  for (const forCopy of [false, true]) {
+    const blocker = P.blocker(state, data, gateOff, sheet, forCopy);
+    assert.equal(blocker.code, 'LISTING_TEXT', forCopy ? 'Copy' : 'Print');
+    assert.match(blocker.message, /Verified Peer Support of York/, 'and it names the listing');
+  }
+  assert.equal(P.blocker(state, data, gateOn, sheet, false).code, 'LISTING_TEXT', 'still blocked once the confirmations are ticked');
+});

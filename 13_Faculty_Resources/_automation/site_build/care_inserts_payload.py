@@ -140,8 +140,12 @@ def build_payload(data_path=None, schema_path=None, crisis_path=None, today=None
         raise PayloadError("care-inserts.v1.json failed validation:\n   - " + "\n   - ".join(report.errors))
     profile_report = _validator.check_profiles(profiles, profiles_schema, crisis, data, when)
     if profile_report.errors:
+        hint = ""
+        if any("future" in error for error in profile_report.errors):
+            hint = ("\n   (the build reads no clock: it dates profiles against care-inserts.v1.json's generatedAt, so a profile "
+                    "confirmed after that date needs generatedAt raised in the same change; never back-date the confirmation)")
         raise PayloadError("care-unit-profiles.v1.json failed validation:\n   - "
-                           + "\n   - ".join(profile_report.errors))
+                           + "\n   - ".join(profile_report.errors) + hint)
     if packet_enabled(packet_source_path) and not profiles["profiles"]:
         raise PayloadError("FD_CARE_PACKET_ENABLED is on in fd_care_packet.js but care-unit-profiles.v1.json has no "
                            "confirmed unit profile; every Final copy needs one, so the packet cannot be activated "
