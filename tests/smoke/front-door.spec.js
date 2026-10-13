@@ -1,3 +1,5 @@
+import { enablePatientSharing } from './care-patient-sharing-fixture.js';
+import { pinCareDirectory } from './care-directory-fixture.js';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -422,6 +424,30 @@ async function pinGovernance(page, ref, status) {
   await page.route('**/governance.json', route => route.fulfill({ json: ledger }));
 }
 
+// A served shell whose embedded review state shows nothing pending. A layout assertion about the
+// ordinary Library must not depend on the faculty's queue: while any Essentials reading has
+// drifted, the "Faculty re-review in progress" banner (fd_library.js) sits above the first reading,
+// and that banner's own test pins it with the opposite fixture.
+async function serveNothingPending(page) {
+  await page.route('**/*', async route => {
+    if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+    const response = await routeFetchWithRetry(route);
+    const body = await response.text();
+    const prefix = 'var FD_SITE_MANIFEST=';
+    const at = body.indexOf(prefix);
+    expect(at, 'the served shell embeds FD_SITE_MANIFEST').toBeGreaterThan(-1);
+    const start = at + prefix.length;
+    const end = body.indexOf(';\n', start);
+    const manifest = JSON.parse(body.slice(start, end));
+    for (const list of [manifest.md || [], manifest.tools || []]) {
+      for (const entry of list) {
+        if (entry[3] && entry[3].status === 'pending') entry[3] = { ...entry[3], status: 'reviewed' };
+      }
+    }
+    await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(manifest) + body.slice(end) });
+  });
+}
+
 async function expectHealthy(page) {
   await expect(page.locator('.fd-fallback[role="alert"]')).toHaveCount(0);
   expect(runtimeErrors.get(page)).toEqual([]);
@@ -510,6 +536,7 @@ test('capture Schedule review and Done move focus to the stable editor after the
 });
 
 test.beforeEach(async ({ page }) => {
+  await pinCareDirectory(page);
   // Netlify's deploy-preview review drawer overlaps the mobile dock; it is not learner UI.
   await page.route('**/.netlify/scripts/cdp', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   const errors = [];
@@ -1340,6 +1367,213 @@ test('malformed built protocol fails closed with every canonical crisis resource
   await expect(page.locator('.fd-sheet__failure[role="alert"]')).toHaveText(FAILURE_COPY);
   const renderedResources = await page.locator('.fd-sheet .crisis-block li').allTextContents();
   expect(renderedResources.map(text => text.trim())).toEqual(expectedResources);
+  await expectHealthy(page);
+});
+
+// ---- Safety drawer decision trees (2026-10-10 spec) ----------------------------------------------
+// Review state is a FIXTURE, never the live ledger: the index is patched after it is built so the
+// kit items read attested (or not) and, for the preview case, the draft flag is on. Trees are
+// walked by STRUCTURE (always the last answer) so an owner edit to the wording or ids keeps
+// these green.
+const SAFETY_NEEDLE = [
+  'var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);',
+  '  var FD_INDEX=FD_CANONICAL_INDEX;',
+].join('\n');
+const SAFETY_MOUNTS = ['fdChromeMount', 'fdCaptureMount', 'fdDockMount', 'content', 'governanceMount'];
+const TREE_REFS = ['pg_suicide.md', 'agitation.md', 'delirium.md'];
+
+async function serveSafetyTrees(page, { attested = true, draft = false } = {}) {
+  await page.route((url) => url.pathname === '/', async (route) => {
+    const response = await routeFetchWithRetry(route);
+    const original = await response.text();
+    expect(original.split(SAFETY_NEEDLE)).toHaveLength(2);
+    const patch = `\n  FD_INDEX.kit.forEach(function(k){k.item.attested=${attested};});`
+      + (draft ? '\n  FD_DRAFT_TREES=true;' : '');
+    await route.fulfill({ response, body: original.replace(SAFETY_NEEDLE, SAFETY_NEEDLE + patch) });
+  });
+}
+async function openProtocol(page, ref) {
+  await page.locator('.fd-safetybtn[data-fd-safety]').click();
+  await page.locator(`.fd-kitrow[data-fd-safety="${ref}"]`).click();
+}
+async function walkToAction(page) {
+  const heading = page.locator('.fd-sheet .fd-tree__heading');
+  for (let step = 0; step < 6 && (await page.locator('.fd-tree__option').count()) > 0; step += 1) {
+    await page.locator('.fd-tree__option').last().focus();
+    await page.keyboard.press('Enter');
+    await expect(heading).toBeFocused();
+  }
+  await expect(page.locator('.fd-tree__verdict')).toBeVisible();
+}
+
+test('each safety tree walks by keyboard to its script and back', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  for (const ref of TREE_REFS) {
+    await page.locator('.fd-safetybtn[data-fd-safety]').click();
+    await page.locator(`.fd-kitrow[data-fd-safety="${ref}"]`).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.fd-sheet.fd-sheet--safety .fd-tree')).toBeVisible();
+    await walkToAction(page);
+    await page.locator('.fd-tree__escalate').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#fdScriptHeading')).toBeFocused();
+    await expect(page.locator('.fd-script__parts dt')).toHaveCount(6);
+    await expect(page.locator('.fd-script__blank').first()).toBeVisible();
+    await page.locator('[data-fd-escalate-close]').focus();
+    await page.keyboard.press('Enter');
+    // The script's own heading also carries .fd-tree__heading, so prove the script is gone and
+    // the verdict is back before trusting the focus check.
+    await expect(page.locator('#fdScriptHeading')).toHaveCount(0);
+    await expect(page.locator('.fd-tree__verdict')).toBeVisible();
+    await expect(page.locator('.fd-sheet .fd-tree__heading')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  }
+  await expectHealthy(page);
+});
+
+test('escalation is on the first screen, and Escape from a script closes the drawer', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'pg_suicide.md');
+  const escalate = page.locator('.fd-tree__escalate');
+  await expect(escalate).toHaveAttribute('data-fd-escalate', 'now');
+  await escalate.click();
+  await expect(page.locator('#fdScriptHeading')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  await expect(page.locator('.fd-safetybtn[data-fd-safety]')).toBeFocused();
+  await expectHealthy(page);
+});
+
+test('a double press advances one step', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'agitation.md');
+  await page.locator('.fd-tree__option').first().focus();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-tree__trail li')).toHaveCount(1);
+  await expectHealthy(page);
+});
+
+test('production hides an unattested tree behind its checklist', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page, { attested: false });
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'agitation.md');
+  await expect(page.locator('.fd-tree')).toHaveCount(0);
+  expect(await page.locator('.fd-step').count()).toBeGreaterThanOrEqual(3);
+  await expect(page.locator('.fd-sheet__pending')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('a deploy preview shows an unattested tree under the DRAFT banner', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page, { attested: false, draft: true });
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'agitation.md');
+  await expect(page.locator('.fd-tree__draft[role="note"]')).toBeVisible();
+  await expect(page.locator('.fd-tree__heading')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('tool inputs survive the drawer; the page is inert and paused while it is open', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/?tool=feedback.html');
+  const frameEl = page.locator('#content iframe.toolframe');
+  const tool = frameEl.contentFrame();
+  await tool.locator('#f_msg').fill('Typed before the drawer opened');
+  const before = await frameEl.elementHandle();
+  await tool.locator('body').evaluate(() => {
+    window.__cw = [];
+    window.addEventListener('message', (e) => {
+      if (e.data && /^cw-/.test(e.data.type || '')) window.__cw.push(e.data.type);
+    });
+  });
+  await page.evaluate(() => {
+    const a = document.createElement('audio');
+    let paused = false;
+    Object.defineProperty(a, 'paused', { get: () => paused });
+    a.pause = () => { paused = true; };
+    a.id = 'fdTestAudio';
+    document.getElementById('content').appendChild(a);
+  });
+  await page.locator('.fd-safetybtn[data-fd-safety]').click();
+  for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBe('');
+  expect(await page.locator('#fdOverlayMount').getAttribute('inert')).toBeNull();
+  expect(await page.evaluate(() => document.getElementById('fdTestAudio').paused)).toBe(true);
+  await page.locator('.fd-kitrow[data-fd-safety="agitation.md"]').click();
+  await page.locator('.fd-tree__option').first().click();
+  await page.keyboard.press('Escape');
+  for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBeNull();
+  await expect(page.locator('.fd-safetybtn[data-fd-safety]')).toBeFocused();
+  expect(await before.evaluate((el) => el.isConnected)).toBe(true);
+  expect(await frameEl.evaluate((el, b) => el === b, before)).toBe(true);
+  await expect(tool.locator('#f_msg')).toHaveValue('Typed before the drawer opened');
+  await expect.poll(() => tool.locator('body').evaluate(() => window.__cw)).toEqual(['cw-pause', 'cw-resume']);
+  await expectHealthy(page);
+});
+
+test('Open the full page from a tree releases the page before it mounts', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  // Served-ledger fixture, not live state: a pending high-risk page takes focus onto its notice
+  // when it mounts, and an inert #content silently refuses that focus -- so the focused notice
+  // is the observable proof the release landed BEFORE the mount, not merely at some point.
+  await pinGovernance(page, 'delirium.md', { status: 'pending', riskLevel: 'high' });
+  await page.goto('/');
+  await openProtocol(page, 'delirium.md');
+  await page.locator('.fd-sheet [data-fd-open="delirium.md"]').click();
+  await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBeNull();
+  await expect(page.locator('.fd-article')).toBeVisible();
+  await expect(page.locator('#content .governance-notice.pending-high')).toBeFocused();
+  await expectHealthy(page);
+});
+
+test('the safety skip control is the second Tab stop and opens the kit', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.skip-safety')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-sheet[role="dialog"]')).toHaveAttribute('aria-label', 'Safety kit');
+  await expectHealthy(page);
+});
+
+test('the drawer fits a 320px phone with 48px controls', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/');
+    for (const ref of TREE_REFS) {
+      await openProtocol(page, ref);
+      // Escape on the previous protocol (unread) raised the full-read toast; reopening Safety
+      // must clear it -- the drawer never shares the screen with the toast.
+      await expect(page.locator('.fd-nudge'), `${ref} toast at ${width}px`).toHaveCount(0);
+      for (const sel of ['.fd-tree__option', '.fd-tree__escalate']) {
+        // An empty set would pass the height loop vacuously.
+        expect(await page.locator(sel).count(), `${ref} ${sel} at ${width}px`).toBeGreaterThan(0);
+        for (const box of await page.locator(sel).evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) {
+          expect(box, `${ref} ${sel} at ${width}px`).toBeGreaterThanOrEqual(47.5);
+        }
+      }
+      await page.locator('.fd-tree__escalate').click();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${ref} page at ${width}px`).toBe(true);
+      expect(await page.locator('.fd-sheet__body').evaluate((el) => el.scrollWidth <= el.clientWidth), `${ref} sheet at ${width}px`).toBe(true);
+      await page.keyboard.press('Escape');
+    }
+  }
   await expectHealthy(page);
 });
 
@@ -3361,7 +3595,7 @@ test('Patient care resources stays reachable through the dock\'s fixed Care slot
   await expect(page.locator('.fd-dock:visible button:visible')).toHaveCount(5);
   await entry.click();
   await expect(page.locator('.fd-care-page')).toBeVisible();
-  await expect(page.locator('.fd-care-pack')).toBeVisible();
+  await expect(page.locator('.fd-care-pack')).toHaveCount(0);
   expect(new URL(page.url()).searchParams.get('tab')).toBe('care');
   await expect(entry).toHaveAttribute('aria-current', 'page');
 
@@ -3374,6 +3608,7 @@ test('Patient care resources stays reachable through the dock\'s fixed Care slot
 });
 
 test('Care Quick Share keeps exact links transient, keyboard-safe, and usable at 320 px', async ({ page }, testInfo) => {
+  await enablePatientSharing(page);
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -3461,6 +3696,7 @@ test('Care Quick Share keeps exact links transient, keyboard-safe, and usable at
 });
 
 test('Supervised Resource Builder opens context-free without changing Care Quick Share', async ({ page }, testInfo) => {
+  await enablePatientSharing(page);
   const url = 'https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html';
   const launches = [];
   await page.context().route('https://reconnect-tools.netlify.app/**', async route => {
@@ -3610,7 +3846,7 @@ test('phone chrome: one dock stays at the bottom and the first screen belongs to
   await expect(page.locator('.fd-reader > .fd-reader__back')).toBeVisible();
   const h1 = await page.locator('.fd-article__h1').boundingBox();
   expect(h1.y, 'the topic title sits in the top quarter of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.25);
-  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(true);
+  expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(false);
   // Progress retains its top Back link and the same dock.
   await page.goto('/?page=__progress__');
   await expect(page.locator('#pgRoot')).toBeVisible();
@@ -4169,13 +4405,18 @@ test.describe('Essentials Phase 2', () => {
   });
   test('responsive: targets, no horizontal overflow at 320/390/641/1280 and at 200% text, reduced motion, and actual evidence', async ({ page }, info) => {
     await seedApp(page, info);
-    // Always exercise the re-review notice, independent of the live faculty queue.
+    // Always exercise the re-review notice, independent of the live faculty queue: every live pending
+    // row is first served as reviewed (main's serveNothingPending contract), then exactly one
+    // page -- the primer -- is served pending, so the notice is deterministic.
     await page.route('**/*', async route => {
       if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
       const response = await routeFetchWithRetry(route), body = await response.text();
       const prefix = 'var FD_SITE_MANIFEST=', start = body.indexOf(prefix) + prefix.length;
       expect(start).toBeGreaterThan(prefix.length);
       const end = body.indexOf(';\n', start), manifest = JSON.parse(body.slice(start, end));
+      for (const list of [manifest.md || [], manifest.tools || []]) {
+        for (const entry of list) if (entry[3] && entry[3].status === 'pending') entry[3] = { ...entry[3], status: 'reviewed' };
+      }
       const primer = manifest.md.find(entry => entry[1] === 'psychopharm_primer.md');
       expect(primer).toBeTruthy();
       primer[3] = { status: 'pending', riskKind: 'clinical', riskLevel: 'high' };
@@ -4993,13 +5234,12 @@ test('Care Playbook returns to Care with its existing transient reset; offline l
   await page.evaluate(()=>document.documentElement.style.fontSize='');
   await page.setViewportSize({width:1280,height:900});
   await page.locator('[data-fd-tab="care"]:visible').click();
-  await expect(page.getByRole('heading',{name:'Share resource websites',exact:true})).toBeVisible();
-  await expect(page.getByRole('link',{name:'Build a specific resource handout',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Share resource websites',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Build a specific resource handout',exact:true})).toHaveCount(0);
   for (const width of [1280,320,640]) {
     await page.setViewportSize({width,height:900});
     await page.evaluate(value=>document.documentElement.style.fontSize=value,width===640?'200%':'');
     await page.locator('[data-fd-care-intent="family-conversation"]').click();
-    await page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]').click();
     const open=page.getByRole('button',{name:'Open Family Meeting Playbook',exact:true});
     await page.keyboard.press('Tab'); await open.focus();
     const paint=await open.evaluate(el=>({outline:getComputedStyle(el).outlineStyle, fits:document.documentElement.scrollWidth<=innerWidth,height:el.getBoundingClientRect().height}));
@@ -5011,7 +5251,7 @@ test('Care Playbook returns to Care with its existing transient reset; offline l
     await expect(page.getByRole('heading',{name:'Patient care resources',exact:true,level:1})).toBeVisible();
     await expect(open).toHaveCount(0);
     await expect(page.locator('[data-fd-care-intent="family-conversation"]')).toHaveAttribute('aria-pressed','false');
-    await expect(page.locator('.fd-care-pack__choice[data-fd-care-pack="resource-finder"]')).toHaveAttribute('aria-pressed','false');
+    await expect(page.locator('.fd-care-pack')).toHaveCount(0);
     await expect(page.locator('#careNavigatorStatus')).toHaveText('');
   }
   await expectHealthy(page);
@@ -5594,3 +5834,71 @@ test('Library view switch fits at 320px with wider fallback font metrics', async
   await expect(buttons.nth(1)).toHaveAttribute('aria-pressed','true');
   await expectHealthy(page);
 });
+
+// The Ward accessory is a native disclosure; a new page mount never carries its expanded
+// presentation. Saved study records and the article's own disclosures are independent.
+for (const width of [320, 390, 1280]) {
+  test(`ward default: keyboard and every page visit stay independent at ${width}px`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: width < 1000 ? 740 : 800 });
+    const savedQuiz = { 't_mood.md': { seen: 2, wrong: 1, last: '2026-10-09' } };
+    const capture = { v: 2, items: [{ id: 'study-fixture', text: 'Synthetic study question?', at: 1,
+      ctx: null, route: null, state: 'open' }] };
+    await seedApp(page, testInfo, { storage: { cw_quiz_v1: savedQuiz, cw_capture_v1: capture } });
+    // A reload must preserve the existing synthetic records rather than reseeding them.
+    for (const ref of ['t_mood.md', 'pg_interview.md']) {
+      await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+      await page.route(`**/content/${ref}`, route => route.fulfill({ contentType: 'text/markdown',
+        body: '# Synthetic study notes\n\n<details id="unrelated-study" open><summary>Article study notes</summary><p>Synthetic notes remain available.</p></details>\n\n### Study section\n\nNeutral study text.' }));
+    }
+    const ward = page.locator('.fd-article__body > details.practice-panel');
+    const summary = ward.locator(':scope > summary');
+    async function ready(ref) {
+      await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', ref);
+      await expect(ward).toHaveCount(1);
+      await expect(ward).not.toHaveAttribute('open', '');
+      expect(await ward.evaluate(el => el.open)).toBe(false);
+      await expect(summary).toHaveAccessibleName(/^On the Unit Practice and Tools\b/);
+      await expect(page.locator('#unrelated-study')).toHaveAttribute('open', '');
+      await expect(page.locator('#unrelated-study p')).toBeVisible();
+    }
+    await page.goto('/?page=t_mood.md');
+    await ready('t_mood.md');
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await summary.focus();
+    await expect(summary).toBeFocused();
+    const box = await summary.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    await page.keyboard.press('Enter');
+    await expect(ward).toHaveAttribute('open', '');
+    await expect(ward.locator('.practice-body')).toBeVisible();
+    await page.keyboard.press('Space');
+    expect(await ward.evaluate(el => el.open)).toBe(false);
+    await page.keyboard.press('Enter');
+    await expect(ward).toHaveAttribute('open', '');
+    await page.screenshot({ path: testInfo.outputPath(`ward-expanded-${width}.png`) });
+    // A real routed reading link exercises the controller rather than page.goto().
+    await page.evaluate(() => {
+      const a = document.createElement('a');
+      a.id = 'ward-navigation-fixture'; a.href = '?page=pg_interview.md';
+      a.textContent = 'Open another synthetic reading';
+      document.querySelector('.fd-article__body').append(a);
+    });
+    await page.locator('#ward-navigation-fixture').click();
+    await ready('pg_interview.md');
+    await summary.click();
+    await expect(ward).toHaveAttribute('open', '');
+    await page.goBack();
+    await ready('t_mood.md');
+    await summary.click();
+    await page.goForward();
+    await ready('pg_interview.md');
+    await summary.click();
+    await page.reload();
+    await ready('pg_interview.md');
+    await page.screenshot({ path: testInfo.outputPath(`ward-collapsed-${width}.png`) });
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_quiz_v1')))).toEqual(savedQuiz);
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_capture_v1')))).toEqual(capture);
+    await expectHealthy(page);
+  });
+}
