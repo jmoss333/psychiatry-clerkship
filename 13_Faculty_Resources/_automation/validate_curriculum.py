@@ -639,6 +639,27 @@ def main(argv):
             bad("safetyKit %s" % ref,
                 "evidenceIds contains no canonical evidence ID (got %r)" % refs)
 
+    # safetyTree (2026-10-10 safety-drawer spec §4.3): a branching protocol belongs to a KIT
+    # protocol only, and its `see` links may open only another kit protocol. The tree's own
+    # shape is validate_topic_meta.py's; this file owns what needs curriculum.json to answer.
+    if isinstance(topic_meta, dict):
+        for key in sorted(topic_meta):
+            meta = topic_meta[key]
+            if not isinstance(meta, dict) or "safetyTree" not in meta:
+                continue
+            if key not in SAFETY_KIT_REFS:
+                bad("safetyTree %s" % key, "only a safetyKit protocol may carry a safetyTree")
+                continue
+            tree = meta.get("safetyTree")
+            nodes = tree.get("nodes") if isinstance(tree, dict) else None
+            for node in nodes if isinstance(nodes, list) else []:
+                see = node.get("see") if isinstance(node, dict) else None
+                for target in see if isinstance(see, list) else []:
+                    if target == key or target not in SAFETY_KIT_REFS:
+                        bad("safetyTree %s" % key,
+                            "node %r: see %r must name another safetyKit protocol"
+                            % (node.get("id"), target))
+
     # ---- APP pathway: exactly two resident-preview bridges and three shared activities ----
     app_pathway = cur.get("appPathway")
     if not isinstance(app_pathway, dict):

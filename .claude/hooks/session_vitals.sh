@@ -62,18 +62,10 @@ else
   echo "         not a change. Never stage or checkout-restore them (clerkship-deploy skill, trap 1)."
 fi
 
-# Local gates.
-HOOK_DIR="$(git rev-parse --git-common-dir 2>/dev/null)/hooks"
-PRE_COMMIT="not installed"; PRE_PUSH="not installed"
-[ -f "$HOOK_DIR/pre-commit" ] && grep -q precommit_gate "$HOOK_DIR/pre-commit" 2>/dev/null && PRE_COMMIT="installed"
-[ -f "$HOOK_DIR/pre-push" ] && grep -q verify.sh "$HOOK_DIR/pre-push" 2>/dev/null && PRE_PUSH="installed"
-# Hooks installed before 2026-09-24 exit 0 when they cannot find the work tree, i.e. they gate
-# nothing exactly when the repository is broken. They are copies, so re-installing is the fix.
-[ "$PRE_COMMIT" = installed ] && ! grep -q 'FAILS CLOSED' "$HOOK_DIR/pre-commit" 2>/dev/null \
-  && PRE_COMMIT="installed but STALE (fails open)"
-[ "$PRE_PUSH" = installed ] && ! grep -q 'FAILS CLOSED' "$HOOK_DIR/pre-push" 2>/dev/null \
-  && PRE_PUSH="installed but STALE (fails open)"
-echo "git hooks: pre-commit $PRE_COMMIT · pre-push $PRE_PUSH  (install both: bash bin/install-hooks.sh)"
+# Local gates: compare the complete active hooks, not words that can survive an outdated
+# installation. Offline, read-only, and bounded; a broken checker must not interrupt startup.
+bounded 3 python3 "$(dirname "${BASH_SOURCE[0]}")/git_hook_health.py" 2>/dev/null \
+  || echo "git hooks: UNAVAILABLE (checker could not finish; work continues)"
 
 # Toolchain the gate needs.
 PY_DEPS="ok"
