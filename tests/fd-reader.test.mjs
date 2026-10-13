@@ -275,7 +275,7 @@ test('the last item in a week has a prev button but no next', () => {
 // ---- THE regression test: action-bar nesting, design handoff §6 ----------------------------
 //
 // A transformed ancestor silently breaks position:fixed. .fd-reader carries the
-// fdFadeUp/fdSlideL/fdSlideR animation (a transform), so if .fd-actionbar were nested inside it
+// fdSlideL/fdSlideR navigation animations (transforms), so if .fd-actionbar were nested inside it
 // the bar would stop tracking the *viewport* and scroll away with the article -- on exactly the
 // phones it exists for. This asserts on element ORDER and CONTAINMENT in the returned string, not
 // on styling, so it fails the moment someone nests the two back together, even though both

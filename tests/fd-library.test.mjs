@@ -163,8 +163,9 @@ test('pending and high-risk badges appear verbatim on every applicable row in bo
   assert.doesNotMatch(kit, /fd-kit__pending/, 'the compact dot form is gone from the Library');
   assert.ok(calls.every(([, opts]) => !opts || !opts.compact), 'the badge helper is never asked for its compact form');
   // The review banner counts pending READINGS: m1.md of the two readings in the kit.
-  assert.match(kit, /<div class="fd-kit__review"><span>Faculty re-review in progress — 1 of 2 readings changed since they were last attested ·<\/span> <details><summary>What that means<\/summary>/);
-  assert.match(full, /Faculty re-review in progress — 1 of 7 readings changed since they were last attested ·/);
+  assert.match(kit, /<div class="fd-kit__review"><details><summary>Faculty re-review · 1 of 2 readings<\/summary>/);
+  assert.match(full, /Faculty re-review · 1 of 7 readings/);
+  assert.match(kit, /These readings changed since they were last attested and are marked pending review\./);
 });
 
 test('summaries are byte-identical to topic_meta tldr (escaped only), and a filter adds tags without changing characters', () => {
@@ -590,7 +591,7 @@ for (const [site, pins] of Object.entries(SITES)) {
     // The pending count is derived from the same index, never pinned (#729).
     const readings = refs.filter((r) => idx.byRef[r].kind !== 'tool');
     const pending = readings.filter((r) => idx.byRef[r].governance?.status === 'pending').length;
-    if (pending) assert.match(html, new RegExp('Faculty re-review in progress — ' + pending + ' of ' + readings.length + ' readings'));
+    if (pending) assert.match(html, new RegExp('Faculty re-review · ' + pending + ' of ' + readings.length + ' readings'));
     else assert.doesNotMatch(html, /fd-kit__review/);
     // Every pending row (reading or tool) wears the full badge; no reviewed row does.
     for (const ref of refs) {

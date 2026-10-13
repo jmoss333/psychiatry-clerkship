@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(585 distinct `fd-*` selector names, 29 `is-*` state classes). Every class below has a rule in that file unless
+(645 distinct `fd-*` selector names, 30 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -627,8 +627,9 @@ the bare `.fd-library`.
         button.fd-kit__index-item[data-fd-kit-section][aria-pressed] ×N   + .is-active
           span / .fd-kit__index-count
     .fd-kit__readings
-      .fd-kit__review                    (only with pending readings; existing string verbatim)
-        span / details > summary "What that means" + p
+      .fd-kit__review                    (only with pending readings; compact olive notice)
+        details > summary "Faculty re-review · N of M readings" + p
+                                         (44px target; expanded text explains changed/awaiting-review state)
       details.fd-kit__group[open] ×N
         summary
           .fd-kit__group-name / .fd-kit__group-count ("· N") / .fd-kit__chevron
@@ -693,7 +694,7 @@ badges are byte-identical to their sources; `<mark>` wraps the matched run witho
 |---|---|
 | `.fd-library__views` | Re-valued (was a row of ghost buttons): `inline-grid 2 cols; padding:3px; radius 10` on `--fd-chip`; the active option lifts onto `--fd-surface` with a 1px/3px shadow, teal-deep 700. |
 | `.fd-library__filter` | The bordered box is the control (`flex:1 1 320px; min-height:44px; 1.5px --fd-line-strong; radius 10`); the input inside is borderless and `:focus-within` paints the ring on the box. |
-| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. |
+| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. At ≤640px, it and `.fd-library__head` use 8px bottom margins, and `.fd-library__body` uses an 8px row gap; text sizes and 44px controls remain unchanged so pending notices and wrapped resident titles fit above the dock. |
 | `.fd-kit__index-item` | One markup, two shapes: pill chip (phone) or sidebar row (desktop). `.is-active` is teal-wash + teal-deep 700 in both. Counts show matches while a query is live. |
 | `.fd-kit__review` | Existing string verbatim, now on `--fd-olive-wash` with `border-left:3px solid --fd-olive`; the summary is olive-deep 700 underlined. |
 | `.fd-kit__group > summary` | "Name · count", 13px/700 `--fd-text-mid`, `border-bottom:1px solid --fd-line-strong`; every group starts open. |
@@ -754,6 +755,27 @@ the Library.
             .fd-nextthread__mark          + --tool | --read
             .fd-nextthread__text
               .fd-nextthread__name / .fd-nextthread__meta
+      .fd-beyond <section>                (reads only; omitted unless the media index has this page)
+        .fd-beyond__head
+          .fd-beyond__title <h2> / .fd-beyond__tag
+        .fd-beyond__switch [role=group]   (only when BOTH sides exist)
+          .fd-beyond__opt <button data-media-side aria-pressed> ×2
+        .fd-beyond__panel [data-media-panel] ×1–2   (+ [hidden] on the unselected side)
+          .fd-beyond__cards
+            .fd-beyond__card [tabindex=-1] ×1–2
+              .fd-beyond__kicker            + --family
+              .fd-beyond__name
+                .fd-beyond__by              (book author)
+              .fd-beyond__meta              (episode) | .fd-beyond__desc (book, when the library has one)
+              .fd-beyond__link <a>
+          .fd-beyond__note                  (listen side: podcast safety line)
+          .fd-beyond__offer                 (family side: "How to offer it:" + book say line)
+          .fd-beyond__safety                (family side: book safety line)
+          .fd-beyond__actions
+            .fd-btn.fd-btn--ghost.fd-beyond__bring <button data-capture-open data-cap-prefill>
+            .fd-beyond__practice <a>
+          .fd-beyond__all
+            <a data-media-anchor>
       .fd-prevnext
         .fd-prevnext__btn                 (prev)
         .fd-prevnext__btn.is-next         (next)
@@ -775,7 +797,8 @@ the Library.
 
 | Class | Notes |
 |---|---|
-| `.fd-reader.is-nav-next` / `.is-nav-prev` | Slide-in direction. **Same element as `.fd-reader`.** |
+| `.fd-reader` | Opacity-only arrival (`fdBackdropIn`): vertical entrance movement changes heading geometry while saved reading positions restore, causing scroll drift on reload. |
+| `.fd-reader.is-nav-next` / `.is-nav-prev` | Horizontal slide-in direction. **Same element as `.fd-reader`.** Vertical heading geometry stays fixed. |
 | `.fd-reader--tool.is-tool-expanded` | Tool-only wide workspace state. The same state is mirrored on `.fd-main`; neither class is applied to reads. |
 | `html:has(.fd-reader--tool)` | `scroll-padding-top` = the sticky header's height (68px ≤640px, 112px above) while a tool is open. The frame is content-height, so the page is its only scroll surface and the tool cannot see the header: without this, focus or `scrollIntoView` inside the frame parks a control under the bar, where a tap lands on ✚ Safety (2026-10-04). In-page readers keep their own `scroll-margin-top`. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
@@ -791,6 +814,14 @@ the Library.
 | `.fd-article__next` | Link-styled navigation button inside `.fd-article__actions`, beside the primary: opens the POSITIONAL next item in the week (same target as `.fd-prevnext__btn.is-next`), never marks done. 44px target. The primary's label is unchanged because auto-advance can navigate on mark. |
 | `.fd-nextthread` | "Next in this thread": practice tool (toolRef, else first `role:'practice'` pairing), this week's Case Journeys step (a real `?tool=…&week=N` link, compact pending badge when pending), next item (in week, else first of next week). Rows are `<button data-fd-open>` except the case row (`<a>`). Hidden with the rest of reader chrome when a field guide prints. |
 | `.fd-nextthread__mark--tool` / `--read` | 10px dot: tool = `--fd-teal` fill, reading = `--fd-line-hover` ring. Decorative (`aria-hidden`); the meta line names the kind in text. |
+| `.fd-beyond` | "Beyond this page" (README_MEDIA.md, direction B): optional podcast/book picks from the build-inlined media index (`media_index.py` over `media_map.json`), after `.fd-nextthread`, before `.fd-prevnext`. Reads only, never tools. Absent when the index has no entry for the page — and while the map is a draft the index has none, so it is absent everywhere. Follows the article body, so it can never precede a crisis block or sit inside a governance notice. `margin-top` `--fd-space-11` (32px) + `padding-top` 20px over a `--fd-line-strong` rule. |
+| `.fd-beyond--quiet` | Safety-kit pages (`idx.kit`): cards become plain rows (no surface, border or radius; a `--fd-line` rule between rows) so the block carries no weight beyond the thread rows. |
+| `.fd-beyond__switch` / `.fd-beyond__opt` | Segmented control, two `<button aria-pressed>` with `data-media-side` (NOT a `data-fd-*` action: `spa_index.html` `fdMediaSwitch` flips buttons and `[data-media-panel][hidden]` in place and focuses the first `.fd-beyond__card`). Transient: no state, URL or storage; a re-render returns to "For you". Options are 44px; the selected one takes `--fd-surface` + `--fd-shadow-sm` + `--fd-teal-deep` 700. Full width below 1000px. |
+| `.fd-beyond__cards` / `.fd-beyond__card` | `repeat(auto-fit,minmax(min(240px,100%),1fr))`, 14px gap; cards 14px padding, `--fd-radius-md`, `--fd-surface`, 1px `--fd-line`. `tabindex="-1"` so the switch can move focus to the first card; it shows a 3px `--fd-focus` ring for keyboard focus only. |
+| `.fd-beyond__kicker` / `--family` | 12px/700. "For you" in `--fd-teal-deep`; "For the family" (`--family`) in `--fd-text-mid`. |
+| `.fd-beyond__link` / `.fd-beyond__practice` / `.fd-beyond__all a` | 44px-tall `--fd-teal-deep` 700 links. The episode link is external (`target=_blank`, `rel="noopener noreferrer"`, accessible name "Episode N on YouTube (opens in a new tab)"); the book and "All …" links are internal `?page=…#anchor` links carrying `data-media-anchor`, which the shell resolves against the target page's h2 labels after mount (`fdMediaHeadingFor`). No Amazon link is rendered. |
+| `.fd-beyond__offer` / `.fd-beyond__safety` / `.fd-beyond__note` | Guidance read verbatim from `topic_meta.json` (`book_library.md` / `podcast_library.md` → `clinicalWorkflow.say` / `.safety`) by the build: offer = `--fd-callout` with a 3px `--fd-teal` left rule; safety = `--fd-olive-wash` / `--fd-olive-deep`; note (listen side) = 13px `--fd-text-mid`. |
+| `.fd-beyond__bring` | Ghost button on `.fd-btn--ghost`: opens the existing capture dialog (`data-capture-open`) with `data-cap-prefill` = the books' "Title — Author" only. The dialog's own no-patient-details warning and PHI interstitial are unchanged; nothing is saved until Save. |
 | `.fd-article__body .practice-panel:not([open])` | Closed practice panel in the reader folds to one ≥52px row: `.practice-title` + `.practice-sub` (ellipsis) + `.practice-chev`. `.practice-tab` and `.practice-hint` are hidden in that state only; the markup (and `tests/__panels__` snapshots) are unchanged. The panel's own rules live in `spa_index.html`. |
 | `.fd-tip` (Reader instance) | The `←`/`→`/`1`/`2`/`3` keyboard hint. Hidden below 1000px via the descendant selector `.fd-article .fd-tip` — **do not** hide the bare `.fd-tip` class, which would also blank the wizard's `.fd-tip--setup` line (§2). |
 
@@ -1038,6 +1069,17 @@ reference its existing "reference · not reproduced" line. On phones the panel s
         .fd-seg__btn   <button> ×2             (On / Off; .is-active + aria-pressed on the chosen one)
       .fd-set__note                            (states what is true of THIS device in each state)
                                                (under a browser DNT/GPC signal: the note alone, no segments)
+    ── safety-tree variant ──
+    .fd-sheet--safety                  (modifier: kit list + kit protocols only)
+    .fd-tree                           (protocol body when the page carries an attested safetyTree)
+      .fd-tree__draft      [role=note] (deploy previews only, unattested tree)
+      .fd-tree__escalate               (every tree screen; the script's urgency upgrade too)
+      .fd-tree__trail                  (answers taken, only once there is one)
+      .fd-tree__heading    [tabindex=-1] (focused after every tree action)
+      .fd-tree__hint / .fd-tree__options > li > .fd-tree__option
+      .fd-tree__verdict(.is-danger) > .fd-tree__tone + .fd-tree__heading
+      .fd-tree__acts / .fd-tree__see / .fd-tree__nav
+      .fd-script > .fd-script__label + .fd-script__parts(dt/dd) > .fd-script__blank
 
 .fd-nudge                           (fixed, z-120, bottom-centre toast)
   .fd-nudge__text
@@ -1064,6 +1106,10 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 | `.fd-set__danger` | The destructive control, **outlined in both states** — calm ("Clear everything on this device") and armed ("Erase everything"). Never filled: a red slab under the fingertip that just armed the confirm invites the reflex second tap the two-tap pattern exists to prevent. Its armed partner is `.fd-btn.fd-btn--ghost`, so the pair still reads red-versus-neutral. |
 | `.fd-set__note--warn` | Modifier: the armed erase warning. **Apply alongside `.fd-set__note`**, not instead of it — it overrides the base note's `--fd-text-mid` ink to `--fd-text`, which is the gated pair against `--fd-danger-wash`. Carries `role="alert"`, and is rendered ONLY when armed: the panel is rebuilt on every render, so the button the learner pressed is gone and the generic focus restore has no equivalent to return to — the live region is the only thing that announces the arming. |
 | `.fd-set__row` | The armed pair's two-button row. Wraps at phone width; both children stretch. The only place in the panel where two controls share a line. |
+| `.fd-sheet--safety` | Scope for the high-contrast safety treatment; never on Settings or item previews. Under it the sheet's own chrome and kit text ink `--fd-text` (7:1+): `.fd-sheet__back`, `.fd-sheet__close`, `.fd-sheet__intro`, `.fd-kitrow__sub`, `.fd-sheet__attribution`, `.fd-sheet__pending`, `.fd-doccallout`. `.fd-sheet__back` and `.fd-sheet__close` are 48px targets (close 48px square), and every ghost button in the drawer (tree Back / Start over, the see links, "Back to where you were", "Open the full page") is 48px with a 2px `--fd-text-dim` border instead of the 1px `--fd-line-strong` hairline. Overrides sit after the base rules. |
+| `.fd-tree__heading` | The one focus target after an answer, back, restart or script toggle (fd_wire focusSheetHeading). |
+| `.fd-tree__verdict` | Action verdict: 6px tone bar + wash; `.is-danger` swaps teal for danger. Tone is also a word. |
+| `.fd-script__blank` | A spoken blank; keeps its brackets so it reads as a blank with styles off. |
 
 At the mobile breakpoint, primary actions, navigation controls, dialog close/back controls, and
 icon-sized controls have a minimum 44px hit target. Icon-sized controls also have a 44px minimum
@@ -1074,6 +1120,8 @@ text, so it stays a high-contrast slab in both themes. Do not override its colou
 
 ⚠ All three sheet variants share `.fd-sheet__head` / `.fd-sheet__body`; only the body contents
 differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
+
+⚠ Tone is never ink: neither --fd-danger nor --fd-teal reaches 7:1 as text on the dark sheet; `.fd-tree__tone` carries the word in --fd-text.
 
 ---
 
@@ -1100,6 +1148,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 | `.is-primary` | `.fd-due`, `.fd-resume`, `.fd-lastread` | this row is Today's primary action (kicker copy changes; the visual treatment comes from the `.fd-primary` wrapper) |
 | `.is-secondary` | `.fd-continue` | a device-store row won the primary slot; the Continue card drops its gradient and top accent |
 | `.is-print-ready` | `.fd-care-pack` | one to three valid resources and the governed crisis block are present; only this state activates isolated handout print styling |
+| `.is-danger` | `.fd-tree__verdict` | an "Act now" verdict: the tone bar and wash swap teal for danger (the word in `.fd-tree__tone` carries the meaning too) |
 | `.is-checking` / `.is-ready` / `.is-update` / `.is-not-ready` | `.fd-offline` | Worker check pending / all current-route eligible files verified / verified current copy with a waiting update / verification failed or files missing. Never color-only: compact and detailed text name each state. |
 
 ## Keyframes
@@ -1170,3 +1219,13 @@ since the one-thread redesign, Phase 2, 2026-10-04 -- see section 5); its two
 distant Everything footer and full-view return button. Existing Library routes remain unchanged.
 Same-route dock refreshes retain the disclosure and focused choice; route changes
 close it. Escape closes the disclosure and returns focus to its summary.
+
+## Care directory search (2026-10-12)
+
+`fd_care_search.js` renders `.fd-care-search`, `__head`, `__eyebrow`, `__finder`,
+`__form`, `__query`, `__filters`, `__privacy`, `__notice`, `__count`, `__list`,
+`__result`, `__meta`, `__details`, `__verification`, `__actions`, `__contact`,
+`__pages` and `__foot` beneath that prefix. The `.fd-care-search__retry` button
+uses the scoped button rule. Controls have 44px minimum targets and visible
+focus; filters and header reflow at 640px. Results alone update during typing.
+The persistent `#careDirectoryStatus.vh-live` announces result counts politely.
