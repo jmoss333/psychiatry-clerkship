@@ -61,6 +61,22 @@ test('original chapter sections and exact reviewed clinical strings remain uncha
  }
 });
 
+// Review state is the governance layer's to say, never authored copy's (2026-10-07). The boundary
+// hard-coded "New practice prompts · Pending faculty review." and kept saying it after Joshua
+// Moss, MD attested the tool on 2026-10-06. The shell already states the live state from the
+// ledger (pending notice + tool-governance.json when the row is pending or drifted, nothing when
+// it is reviewed), so a fixed phrase here can only ever be redundant or false.
+test('authored practice copy makes no claim about faculty review state',()=>{
+ const defs=definitions();
+ const passages=[defs.boundary,defs.reading,defs.exampleBoundary,defs.finishText,...Object.values(defs.tasks).flatMap(task=>[task.label,...Object.values(task.routes).flatMap(route=>[route.prompt,route.example,...Object.values(route.card)])])];
+ assert.ok(passages.length>=37,`every authored passage is checked (${passages.length})`); // 4 frames + 3 tasks × (label + 2 routes × 5)
+ for(const text of passages)assert.doesNotMatch(text,/pending|faculty review|attest|reviewed by|approved/i,text);
+ // The renderer once appended "New wording awaits faculty review." to every practice card too.
+ const renderer=fs.readFileSync(new URL('../08_Cases_and_Simulation/case-journeys/case-journeys.js',import.meta.url),'utf8').replace(/\/\*[\s\S]*?\*\/|^\s*\/\/[^\n]*/gm,'');
+ const claims=renderer.match(/'[^'\n]*(?:pending|faculty review|attested|awaits? review)[^'\n]*'/gi)||[];
+ assert.deepEqual(claims,[],'the renderer adds no review-state string either');
+});
+
 test('practice strings are escaped and invalid definitions preserve the case context',()=>{
  const defs=definitions();defs.tasks.note.routes['5'].prompt='<img src=x onerror="alert(1)">';
  const markup=api.practiceMarkup(defs,cases[0],cases[0].weeks[0],{...api.practiceInitial(),task:'note',minutes:5,step:'rehearse'});

@@ -35,7 +35,7 @@ SSRIs and SNRIs are common options for unipolar depression and several anxiety d
 
 Most familiar antipsychotics block dopamine D2 receptors; aripiprazole and cariprazine are partial agonists. Receptor actions help explain effects but do not by themselves rank benefit. Compare prior response, indication, metabolic and movement risks, prolactin, QT effects, sedation, and patient priorities.
 
-**What CATIE actually teaches:** Choose antipsychotics by side-effect profile (CATIE), not by recency — 74% stopped their drug within 18 months. That endpoint combined lack of benefit, adverse effects, and other reasons; it did not establish equal symptom efficacy. Olanzapine had longer treatment persistence than some comparators but greater metabolic burden[^lieberman-2005-catie]. A later network meta-analysis found efficacy differences as well as larger adverse-effect differences; its acute, multi-episode schizophrenia population should not be treated as every clinical setting[^huhn-2019-antipsychotics].
+**What CATIE actually teaches:** Choose antipsychotics by side-effect profile (CATIE), not by recency — 74% stopped their drug within 18 months. That endpoint combined lack of benefit, adverse effects, and other reasons; it did not establish equal symptom efficacy. Olanzapine had longer treatment persistence than some comparators but greater metabolic burden[^lieberman-2005-catie]. In a later network meta-analysis of acute, multi-episode schizophrenia, symptom-reduction estimates favored antipsychotics over placebo, but six drugs did not reach statistical significance; these findings should not be generalized to every clinical setting[^huhn-2019-antipsychotics].
 
 | Familiar options | Tradeoff to recognize | Practical observation |
 | --- | --- | --- |
@@ -81,7 +81,7 @@ First check pain, withdrawal, delirium, akathisia, mania, environmental disrupti
 | **Sleep-focused measures / melatonin** | Protect sleep opportunity, reduce overnight disruption and address the cause of insomnia. | Avoid accumulating sedatives without reviewing overnight response and next-day function. |
 | **Propranolol / benztropine** | May address particular medication-induced movement symptoms after assessment. | Akathisia, parkinsonism, dystonia and tardive dyskinesia are different. Benztropine is not universal “EPS” treatment and can worsen cognition/constipation. |
 
-**Two rules can both be true:** reduce unnecessary benzodiazepine exposure, and do not abruptly stop treatment in someone likely to be physically dependent. Withdrawal can be severe; use an individualized supervised taper[^brunner-2025-benzodiazepine-taper]. Catatonia guidance includes benzodiazepines and ECT as central treatments; a blanket ban on scheduled benzodiazepines would misteach that care[^bap-catatonia-2023].
+**Two rules can both be true:** reduce unnecessary benzodiazepine exposure. Do not abruptly stop treatment in someone likely to be physically dependent and at risk of withdrawal[^brunner-2025-benzodiazepine-taper]. Withdrawal can be severe; use an individualized supervised taper. Catatonia guidance includes benzodiazepines and ECT as central treatments; a blanket ban on scheduled benzodiazepines would misteach that care[^bap-catatonia-2023].
 
 ## Treat substance use disorders during the admission
 
@@ -95,7 +95,7 @@ Withdrawal treatment and longer-term addiction treatment are different jobs. Ask
 | **Nicotine replacement / varenicline** | Offer treatment for tobacco dependence and cravings. Separately review smoke-related drug interactions; nicotine replacement does not reproduce tobacco smoke's enzyme induction. |
 | **Naloxone** | Overdose rescue education and access belong in an OUD discharge plan; naloxone does not replace maintenance treatment. |
 
-Oral naltrexone and acamprosate have evidence for alcohol-use outcomes alongside psychosocial care[^mcpheeters-2023-aud]. Use [SAMHSA TIP 63](https://library.samhsa.gov/product/tip-63-medications-opioid-use-disorder/pep21-02-01-002) for OUD principles and the Library's [Substance Use & Withdrawal](?page=t_sud.md) and [withdrawal assessment tool](?tool=withdrawal.html) for further learning.
+Oral naltrexone and acamprosate have evidence for reducing return to any drinking[^mcpheeters-2023-aud]. Pair medication treatment with psychosocial care. Use [SAMHSA TIP 63](https://library.samhsa.gov/product/tip-63-medications-opioid-use-disorder/pep21-02-01-002) for OUD principles and the Library's [Substance Use & Withdrawal](?page=t_sud.md) and [withdrawal assessment tool](?tool=withdrawal.html) for further learning.
 
 ## ECT, TMS, and ketamine/esketamine
 

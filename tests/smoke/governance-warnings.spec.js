@@ -20,6 +20,20 @@ async function loadNavItems(request, baseURL) {
   return flattenNav(nav);
 }
 
+// The safety-kit protocol refs, read from the curriculum the built shell embeds. Search routes a
+// kit ref to its protocol (a data-fd-safety result), never to a plain page row, so a test about
+// page rows must not pick one -- and whether a kit page is pending is the faculty's queue, not
+// the code: re-attesting or drifting a protocol must not decide what this test checks.
+async function safetyKitRefs(request, baseURL) {
+  const body = await (await requestGetWithRetry(request, `${baseURL}/`)).text();
+  const prefix = 'var FD_CURRICULUM=';
+  const start = body.indexOf(prefix);
+  const end = start < 0 ? -1 : body.indexOf(';\n', start);
+  if (start < 0 || end < 0) throw new Error('FD_CURRICULUM is missing from the served shell');
+  const curriculum = JSON.parse(body.slice(start + prefix.length, end));
+  return new Set((curriculum.safetyKit || []).map((entry) => entry.ref));
+}
+
 async function seedCompleteSetup(page) {
   await page.addInitScript(() => {
     localStorage.setItem('cw_rotation_start', '2026-08-17');
@@ -114,6 +128,44 @@ test.describe('risk-aware review status (shared shell)', () => {
     await expect(page.locator('.surface-governance-direct:visible')).toHaveCount(1);
   });
 
+  // axe `region` (moderate), found by the 2026-10-07 axe run: the injected status block is the
+  // first child of <body>, outside the tool's own <main>, so on every directly-opened tool it was
+  // content outside all landmarks. role="status"/"alert" are not landmarks. This asserts what that
+  // rule checks, for the injected block only: it sits in exactly one named region landmark, and
+  // the governed embed hides that landmark with the block. Receipt and pending are both covered
+  // because they are separate markup branches; the receipt is the one on almost every tool.
+  test('the directly-opened status block, receipt or pending, sits inside a named landmark', async ({
+    page, request, baseURL,
+  }, testInfo) => {
+    const tools = (await loadNavItems(request, baseURL)).filter((it) => it.k === 'tool' && it.governance);
+    const pick = (status) => [...tools].sort((a, b) => a.f.localeCompare(b.f))
+      .find((it) => it.governance.status === status);
+    const targets = [pick('reviewed'), pick('pending')].filter(Boolean);
+    testInfo.annotations.push({ type: 'direct-status-landmark', description: targets.map((it) => it.f).join(', ') });
+    expect(targets.length, 'at least one directly-openable tool carries a status block').toBeGreaterThan(0);
+    const LANDMARK = 'main,header,footer,nav,aside,section[aria-label],section[aria-labelledby],'
+      + '[role="main"],[role="banner"],[role="contentinfo"],[role="navigation"],'
+      + '[role="complementary"],[role="search"],[role="form"],[role="region"][aria-label],'
+      + '[role="region"][aria-labelledby]';
+
+    for (const target of targets) {
+      await page.goto(`${baseURL}/tools/${target.f}`, { waitUntil: 'domcontentloaded' });
+      const region = page.getByRole('region', { name: 'Faculty review status', exact: true });
+      await expect(region, target.f).toHaveCount(1);
+      await expect(region.locator('.surface-governance-direct'), target.f).toBeVisible();
+      const orphans = await page.locator('.surface-governance-direct').evaluate((block, selector) => (
+        [block, ...block.querySelectorAll('*')].filter((el) => !el.closest(selector)).map((el) => el.tagName)
+      ), LANDMARK);
+      expect(orphans, `${target.f}: status content outside every landmark`).toEqual([]);
+
+      await page.goto(`${baseURL}/?tool=${encodeURIComponent(target.f)}`, { waitUntil: 'domcontentloaded' });
+      const frame = page.frameLocator('.toolframe');
+      await expect(frame.locator('.surface-governance-region'), target.f).toHaveCount(1);
+      await expect(frame.locator('.surface-governance-region'), target.f).toBeHidden();
+      await expect(frame.getByRole('region', { name: 'Faculty review status' }), target.f).toHaveCount(0);
+    }
+  });
+
   // How many pending moderate/low items this test actually loads. It used to visit EVERY one,
   // which was affordable while the ledger held a handful — and stopped being affordable the moment
   // drift projection landed: 70 (ms3) / 76 (res) placed items today, each a full page.goto inside
@@ -203,10 +255,11 @@ test.describe('risk-aware review status (shared shell)', () => {
     page, request, baseURL,
   }) => {
     const items = await loadPlacedNavItems(page, request, baseURL);
+    const kit = await safetyKitRefs(request, baseURL);
     const target = findItem(
       items,
-      (it) => it.governance && it.governance.status === 'pending',
-      'any pending item',
+      (it) => it.governance && it.governance.status === 'pending' && !kit.has(it.f),
+      'any pending page that search lists as a page row (not a safety-kit protocol)',
     );
     const label = target.governance.riskLevel === 'high' ? 'Pending review · High risk' : 'Pending review';
 
