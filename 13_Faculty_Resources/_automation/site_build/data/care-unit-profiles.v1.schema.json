@@ -1,54 +1,157 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Care aftercare packet - confirmed unit profiles (v1)",
-  "description": "The inpatient units whose own phone number someone on the unit confirmed. A loaded profile is the only source of a CONFIRMED unit phone, which a Final copy needs (it names the unit and promises a call to the unit's number). Shape only: validate_care_inserts.py (check_profiles) enforces what a schema cannot: unique ids; a ten-digit North American unitPhone a patient can dial (area code and exchange start 2-9, neither a service code such as 411) that is not a registered crisis number and not a helpline-table number; phoneConfirmedOn a real past date (a warning when stale); phoneConfirmedBy a role with no digits or email; label, org and unitName free of markup, braces, control characters, phone numbers, crisis numbers, dose literals, verification wording, availability promises and the phrases the resident build rewrites; and brandingApproved only with an org. The build ships id, label, org (only when brandingApproved is true; otherwise null), brandingApproved, unitName, unitPhone and callbackProgram, plus usableThrough (phoneConfirmedOn plus 180 days); the confirmation record (phoneConfirmedOn, phoneConfirmedBy) is never shipped. The build checks every date against the generatedAt of care-inserts.v1.json (the build reads no clock), so a profile confirmed after that date needs generatedAt raised in the same change; the date must be the real one, never back-dated. Profiles apply to both learner sites. Never a patient's details.",
+  "title": "Care aftercare packet - unit profile candidates (v1)",
+  "description": "Editable candidate content and actual verification evidence only. A candidate never grants permission to use it. An independent owner-authenticated exact-version approval is required at patient output. Verification must cover identity and contact, plus callback exactly when callbackProgram is true and branding exactly when brandingApproved is true. Expiration is the start of the New York calendar date ninety days after the oldest required actual check. Updating build or approval dates never renews a check. Patient-specific call windows and deadlines belong only in handwriting or the After Visit Summary, never this data.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "profiles"],
+  "required": [
+    "schemaVersion",
+    "profiles"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
     "profiles": {
-      "description": "Empty until the owner adds a profile whose phone was confirmed. The trainee loads one explicitly; nothing is loaded by default.",
+      "description": "Empty until real unit facts and the actual checks supporting them have been recorded. These remain candidates until independently approved.",
       "type": "array",
       "maxItems": 12,
-      "items": { "$ref": "#/definitions/profile" }
+      "items": {
+        "$ref": "#/definitions/profile"
+      }
     }
   },
   "definitions": {
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "label", "org", "brandingApproved", "unitName", "unitPhone", "callbackProgram",
-                   "phoneConfirmedOn", "phoneConfirmedBy"],
+      "required": [
+        "id",
+        "label",
+        "org",
+        "brandingApproved",
+        "unitName",
+        "unitPhone",
+        "unitPurpose",
+        "unitHours",
+        "callbackProgram",
+        "callbackTeam",
+        "callbackPhone",
+        "callbackHours",
+        "callbackFallback",
+        "verification"
+      ],
       "properties": {
-        "id": { "type": "string", "pattern": "^[a-z0-9-]{1,40}$" },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{1,40}$"
+        },
         "label": {
           "description": "What the trainee picks in the profile list. Not printed.",
-          "type": "string", "minLength": 1, "maxLength": 60
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
         },
         "org": {
           "description": "The organization or site line. Printed only when brandingApproved is true; null for none.",
-          "type": ["string", "null"], "minLength": 1, "maxLength": 60
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 60
         },
         "brandingApproved": {
-          "description": "True only once institutional branding approval for org is recorded. Requires a non-null org.",
+          "description": "Records a checked institutional branding fact, not owner approval of this candidate. False requires org=null.",
           "type": "boolean"
         },
-        "unitName": { "type": "string", "minLength": 1, "maxLength": 60 },
-        "unitPhone": { "type": "string", "minLength": 1, "maxLength": 30 },
+        "unitName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "unitPhone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "unitPurpose": {
+          "type": "string",
+          "maxLength": 160,
+          "minLength": 1
+        },
+        "unitHours": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1
+        },
         "callbackProgram": {
-          "description": "True only when the unit runs a call-back program; the callback page needs it in a Final copy.",
+          "description": "Records a checked operational callback program, not a patient-specific arranged call. False requires every callback text field to be empty.",
           "type": "boolean"
         },
-        "phoneConfirmedOn": {
-          "description": "The date someone on the unit confirmed unitPhone. Internal: never shipped.",
-          "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        "callbackTeam": {
+          "type": "string",
+          "maxLength": 100
         },
-        "phoneConfirmedBy": {
-          "description": "The ROLE that confirmed it (for example 'unit charge nurse'), never a person's name, number or email. Internal: never shipped.",
-          "type": "string", "minLength": 1, "maxLength": 60
+        "callbackPhone": {
+          "type": "string",
+          "maxLength": 30
+        },
+        "callbackHours": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "callbackFallback": {
+          "type": "string",
+          "maxLength": 240,
+          "description": "A confirmed noncrisis fallback clause without final punctuation. The standard sentence supplies its final full stop."
+        },
+        "verification": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/definitions/verification"
+          }
         }
       }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "checkedOn",
+        "checkedBy",
+        "evidence"
+      ],
+      "properties": {
+        "field": {
+          "enum": [
+            "identity",
+            "contact",
+            "callback",
+            "branding"
+          ]
+        },
+        "checkedOn": {
+          "$ref": "#/definitions/date"
+        },
+        "checkedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
     }
   }
 }
