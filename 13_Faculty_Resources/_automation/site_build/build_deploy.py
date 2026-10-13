@@ -664,6 +664,20 @@ try:
 except care_inserts_payload.PayloadError as _care_error:
     print("BUILD ABORTED — aftercare packet payload: %s"%_care_error)
     raise SystemExit(1)
+# "Beyond this page" (README_MEDIA.md M1): media_map.json stores keys only; media_index.py
+# resolves them against the two attested library pages and topic_meta.json (never written), fails
+# the build naming any key that does not resolve to a verified entry, and emits NO pages while the
+# map is a draft. Inlined like FD_PAIRINGS so the Reader renders it at first paint, and written
+# beside index.html as media_index.json. The resident build swaps in its own index (an anchor that
+# does not ship there is skipped), matching this exact inlined value.
+import media_index as _media_index
+_media_ms3=_media_index.build_or_abort(LIB,"ms3")
+open(OUT+"/media_index.json","w",encoding="utf-8").write(_media_index.serialize(_media_ms3))
+_media_needle="var FD_MEDIA=null;"
+if _spa_t.count(_media_needle)!=1:
+    print("BUILD ABORTED — FD_MEDIA needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+_spa_t=_spa_t.replace(_media_needle,"var FD_MEDIA=%s;"%frontdoor_catalog._inline_json(_media_ms3))
 # Safety-drawer draft trees: previews only (common.apply_draft_trees_flag). The resident build
 # copies this index.html, so both sites inherit the same value from the same CONTEXT.
 try:
@@ -678,6 +692,7 @@ print("practice-case-title injection:",len(_case_titles),"case(s)")
 print("case-arc injection:",len((_case_arc or {}).get("weeks") or []),"week(s)")
 print("pairings injection:",len((_pairings_inline or {}).get("pairings") or []),"pairing(s)")
 print("care-inserts injection:",len(_care_inserts["inserts"]),"insert(s),",len(_care_inserts["contacts"]),"crisis contact(s)")
+print("media index (ms3): status=%s, %d page(s) render"%(_media_ms3["status"],len(_media_ms3["pages"])))
 
 # ---- page->tool link divergence (report only; never fails the build) ----
 # The practice panel reconciles two sources that disagree in OPPOSITE directions:
