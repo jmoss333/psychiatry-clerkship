@@ -142,6 +142,19 @@ test('real block start serves scheduled due cards only, then applies its limit',
   assert.equal(block.fromBlock,true);
 });
 
+test('actual case-selection message branch rejects origin, frame, resource and payload mismatches',()=>{
+ const start=shell.indexOf('  function fdAuxMessage(event){'), end=shell.indexOf('\n\n  /* The root state',start);
+ const handler=shell.slice(start,end);
+ const selection=new Function(read(`${BUILD}/frontdoor/fd_wire.js`)+';return fdCaseSelection;')();
+ const frame={contentWindow:{}}, valid={type:'case-selection',case:'eli',chapter:4};
+ for(const change of [{},{origin:'https://other.test'},{source:{}},{frame:null},{item:'oral.html'},{openId:'oral.html'},{preview:{}},{data:{...valid,prompt:'free text'}},{data:{...valid,chapter:'4'}},{data:{...valid,case:'other'}}]) {
+   const calls=[], contentEl={querySelector:()=>Object.hasOwn(change,'frame')?change.frame:frame}, fdController={getState:()=>({openId:change.openId||'one-patient-six-weeks.html'}),replaceCaseSelection:v=>calls.push(v)};
+   const fn=new Function('contentEl','fdController','facultyPreviewRequest','currentItem','location','fdCaseSelection',handler+';return fdAuxMessage;')(contentEl,fdController,change.preview||null,{f:change.item||'one-patient-six-weeks.html'},{origin:'https://example.test'},selection);
+   fn({origin:change.origin||'https://example.test',source:change.source||frame.contentWindow,data:change.data||valid});
+   assert.deepEqual(calls,Object.keys(change).length?[]:[{slug:'eli',chapter:4}]);
+ }
+});
+
 test('actual preparation message branch rejects origin, frame, resource and payload mismatches',()=>{
  const start=shell.indexOf('  function fdAuxMessage(event){'), end=shell.indexOf('\n\n  /* The root state',start);
  assert.ok(start>=0&&end>start,'actual shell handler exists');

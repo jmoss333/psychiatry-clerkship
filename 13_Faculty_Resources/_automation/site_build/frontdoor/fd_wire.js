@@ -3,6 +3,20 @@
    pure; browser effects live in fdWire and fdOpenResource behind explicit options so the same
    decisions can be tested without a DOM. */
 
+/* Where the learner is put when nothing else says where to go (owner decision, 2026-10-08:
+   Essentials first while trainees get used to the site; maybe back to Today once it is routine).
+   This ONE build-time value is the whole switch -- no runtime toggle, nothing persisted, and the
+   smoke fixtures read it from here (tests/smoke/landing.js) rather than restating it:
+     'essentials'  the end of first-run setup (the role choice, plus the week step where there is
+                   one) and the brand/Home button open Library -> Essentials.
+     'today'       both open Today, the behaviour before 2026-10-08.
+   It is declared first because FD_ACTION_SEMANTICS below reads it at load. A deep link is never
+   overridden (fdSetupExit honours a routed tab), and neither is a returning learner's bare visit:
+   fdResolveState restores the stored tab exactly as it always has. */
+var FD_LANDING_VIEW='essentials';
+
+function fdLandsOnEssentials(){ return FD_LANDING_VIEW==='essentials'; }
+
 /* Every attribute the controller gives a meaning to. The exam-date input commits on change and
    is deliberately absent from FD_ACTION_SELECTOR below. */
 var FD_HANDLED_ATTRS=[
@@ -66,7 +80,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-role':'choose learner role',
   'data-fd-step':'toggle session protocol step',
   'data-fd-back':'return to originating tab',
-  'data-fd-home':'return to Today',
+  'data-fd-home':fdLandsOnEssentials()?'return to Library Essentials':'return to Today',
   'data-fd-search':'open search dialog',
   'data-fd-change-week':'reopen week setup',
   'data-fd-progress':'open Progress and mastery',
@@ -227,6 +241,39 @@ function fdResolveState(url, stored, options){
   return out;
 }
 
+/* The landing (FD_LANDING_VIEW) as a state patch and a route. */
+function fdLandingPatch(){
+  return fdLandsOnEssentials()?{tab:'library',libraryView:'essentials',kitSection:'all'}:{tab:'today'};
+}
+function fdLandingRoute(search){
+  return fdLandsOnEssentials()?fdRouteForTab('library',search,'essentials'):fdRouteForTab('today',search);
+}
+
+/* First-run setup ends here: the role step for APP (which has no week step) and the week step for
+   everyone else. A visit that arrived on a tab link (?tab= / ?library=full) reaches that tab --
+   whatever FD_LANDING_VIEW says; before 2026-10-08 such a visit was dropped on Today. Anything
+   else lands per FD_LANDING_VIEW. 'replace' keeps history as it was: setup and its result share
+   one entry, so Back from the landing leaves exactly as Back from Today used to. */
+function fdSetupExit(search, appMode){
+  var params;
+  try{ params=new URLSearchParams(String(search||'').replace(/^\?/,'')); }
+  catch(_){ params=new URLSearchParams(); }
+  var routed=params.get('tab');
+  if(params.get('library')==='full'&&(!fdValidTab(routed)||routed==='library')){
+    return {patch:{tab:'library',libraryView:'full',kitSection:'all'},
+      route:fdRouteForTab('library',search,'full'),history:'replace'};
+  }
+  if(routed==='library'){
+    return {patch:{tab:'library',libraryView:'essentials',kitSection:'all'},
+      route:fdRouteForTab('library',search,'essentials'),history:'replace'};
+  }
+  if(fdValidTab(routed)){
+    if(appMode&&routed==='path') routed='today';
+    return {patch:{tab:routed},route:fdRouteForTab(routed,search),history:'replace'};
+  }
+  return {patch:fdLandingPatch(),route:fdLandingRoute(search),history:'replace'};
+}
+
 /* Preparation choices are visit context, never answers or durable learning state. */
 function fdPrepareSelection(data){
   if(!data||typeof data!=='object'||Array.isArray(data))return null;
@@ -242,6 +289,26 @@ function fdPrepareSelectionRoute(search,selection){
   if(tools.length!==1||tools[0]!=='prepare-for-tomorrow.html'||params.has('page'))return null;
   ['prepareTask','prepareMinutes','block','n','limit','cat','resume'].forEach(function(key){params.delete(key);});
   params.set('prepareTask',selection.task);params.set('prepareMinutes',String(selection.minutes));
+  return '?'+params.toString();
+}
+/* Case Journeys selection (one-thread redesign, Phase 3). The case tool posts exactly
+   {type:'case-selection', case, chapter} when the learner changes chapter, so the shell can write
+   it onto ITS OWN history entry and Back from a linked page returns to that chapter. Allow-listed
+   keys and values only; anything else is ignored. Never stored -- the URL is the whole memory. */
+var FD_CASE_SLUGS=['jordan','eli','leah','marisol'];
+function fdCaseSelection(data){
+  if(!data||typeof data!=='object'||Array.isArray(data))return null;
+  if(Object.keys(data).sort().join(',')!=='case,chapter,type'||data.type!=='case-selection')return null;
+  if(FD_CASE_SLUGS.indexOf(data['case'])<0)return null;
+  if(typeof data.chapter!=='number'||Math.floor(data.chapter)!==data.chapter||data.chapter<1||data.chapter>6)return null;
+  return {slug:data['case'],chapter:data.chapter};
+}
+function fdCaseSelectionRoute(search,selection){
+  if(!selection||!fdCaseSelection({type:'case-selection','case':selection.slug,chapter:selection.chapter}))return null;
+  var params=new URLSearchParams(String(search||'').replace(/^\?/,'')),tools=params.getAll('tool');
+  if(tools.length!==1||tools[0]!=='one-patient-six-weeks.html'||params.has('page'))return null;
+  params.delete('week');
+  params.set('case',selection.slug);params.set('chapter',String(selection.chapter));
   return '?'+params.toString();
 }
 function fdPrepareFrameParams(search){
@@ -474,12 +541,23 @@ function fdDispatch(attrs, context, state){
        transition detail of an ordinary week choice stays exactly what it was. */
     patch={week:n,viewWeek:n,tab:'today',screen:'app',openId:null};
     if(s.browsing===true) patch.browsing=false;
+    /* Change week from inside the app (setupFrom:'app') still returns to Today, where the new week
+       shows. Only first-run / gate setup ends on the landing (fdSetupExit, FD_LANDING_VIEW). */
+    var weekRoute=fdRouteForTab('today',c.search), weekHistory=null;
     if(s.setupFrom) patch.setupFrom=null;
-    return {
+    else{
+      var weekExit=fdSetupExit(c.search,fdAppMode(s));
+      for(var weekKey in weekExit.patch){ if(fdOwn(weekExit.patch,weekKey)) patch[weekKey]=weekExit.patch[weekKey]; }
+      weekRoute=weekExit.route;
+      weekHistory=weekExit.history||null;
+    }
+    var weekResult={
       patch:patch,
-      route:fdRouteForTab('today',c.search),
+      route:weekRoute,
       effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.index.weeks,c.nowMs)}
     };
+    if(weekHistory) weekResult.history=weekHistory;
+    return weekResult;
   }
   if(fdOwn(a,'data-fd-setweek')){
     n=fdNumberAttr(a,'data-fd-setweek');
@@ -647,6 +725,13 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-care-clear')){
     return {patch:{careIntentId:''},route:null,effect:null};
   }
+  /* Hidden patient-sharing controls must not dispatch from stale markup/state. */
+  if((typeof fdCarePatientSharingEnabled!=='function'||!fdCarePatientSharingEnabled())&&
+     (fdOwn(a,'data-fd-care-pack')||fdOwn(a,'data-fd-care-pack-print')||
+      fdOwn(a,'data-fd-care-share')||fdOwn(a,'data-fd-care-copy')||
+      fdOwn(a,'data-fd-care-copy-selected'))){
+    return {patch:{carePackIds:[],careShareId:''},route:null,effect:null};
+  }
   if(fdOwn(a,'data-fd-care-pack')){
     return {patch:{carePackIds:fdCarePackToggle(
       c.index||{},s.carePackIds||[],a['data-fd-care-pack'])},route:null,effect:null};
@@ -715,10 +800,17 @@ function fdDispatch(attrs, context, state){
        rest of the state alone is what keeps the panel open on the chip it just filled. */
     picked=String(a['data-fd-role']||'');
     if(picked==='app'){
-      return {
-        patch:{role:'app',screen:'app',tab:'today',week:null,browsing:true,openId:null,searchOpen:false},
-        route:fdRouteForTab('today',c.search),effect:{type:'browse-without-rotation'}
-      };
+      var appPatch={role:'app',screen:'app',tab:'today',week:null,browsing:true,openId:null,searchOpen:false};
+      var appResult={patch:appPatch,route:fdRouteForTab('today',c.search),effect:{type:'browse-without-rotation'}};
+      /* APP has no week step, so in the wizard choosing the role IS the end of setup. Picking APP
+         in the settings panel is a change of workspace and still opens On shift. */
+      if(s.screen==='setup-role'){
+        var appExit=fdSetupExit(c.search,true);
+        for(var appKey in appExit.patch){ if(fdOwn(appExit.patch,appKey)) appPatch[appKey]=appExit.patch[appKey]; }
+        appResult.route=appExit.route;
+        if(appExit.history) appResult.history=appExit.history;
+      }
+      return appResult;
     }
     if(s.screen==='setup-role'){
       return {patch:{role:picked,screen:'setup-week'},route:null,effect:null};
@@ -749,6 +841,16 @@ function fdDispatch(attrs, context, state){
     return {patch:{openId:null,tab:tab},route:fdRouteForTab(tab,c.search,s.libraryView),effect:null};
   }
   if(fdOwn(a,'data-fd-home')){
+    /* Brand = Home = the landing (FD_LANDING_VIEW). The redesign spec's "Brand = Home (Today)" is
+       superseded while the landing is Essentials (owner, 2026-10-08; deviation recorded in
+       docs/superpowers/specs/one-thread-handoff/README.md). Home IS the Library tab's own
+       transition -- Essentials, All, no filter, no preview, Care's visit-only picks dropped --
+       plus closing a sheet, so the two can never disagree. Today stays one tap away on its tab. */
+    if(fdLandsOnEssentials()){
+      var home=fdDispatch({'data-fd-tab':'library'},c,s);
+      home.patch.sheet=null;
+      return home;
+    }
     return {
       patch:{tab:'today',openId:null,searchOpen:false,sheet:null},
       route:fdRouteForTab('today',c.search),effect:null
@@ -1451,6 +1553,13 @@ function fdWire(root, initialState, opts){
     if(!query)return false;
     try{win.history.replaceState(win.history.state,'',(win.location.pathname||'/')+query);return true;}
     catch(ignorePrepareHistory){return false;}
+  }
+  function replaceCaseSelection(selection){
+    if(destroyed||!startupCommitted||previewActive()||state.openId!=='one-patient-six-weeks.html'||!win||!win.location||!win.history||!win.history.replaceState)return false;
+    var query=fdCaseSelectionRoute(win.location.search,selection);
+    if(!query)return false;
+    try{win.history.replaceState(win.history.state,'',(win.location.pathname||'/')+query);return true;}
+    catch(ignoreCaseHistory){return false;}
   }
   function replaceHistorySnapshot(){
     if(!win||!win.history||!win.history.replaceState) return false;
@@ -2492,6 +2601,7 @@ function fdWire(root, initialState, opts){
       ok:ok===true,
       getState:function(){ return state; },
       replacePrepareSelection:replacePrepareSelection,
+      replaceCaseSelection:replaceCaseSelection,
       dispatch:function(attrs,c){
         if(destroyed||!startupCommitted) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);

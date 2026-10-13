@@ -18,7 +18,9 @@
    - question-bank-practice.html srsUpdate(): YES (ground-truth correctness).
    - review.html grade(): YES (ground-truth correctness).
    - family-systems-practice.html srsGradeFamily(): NO — cards only. A self-rating
-     has no ground truth, and review.html renders Retention as correct/seen.
+     has no ground truth to add to a correct/seen tally. (No surface renders
+     correct/seen as "Retention" any more — it mixed first exposures with reviews;
+     tests/srs-stat-honesty.test.mjs keeps it that way.)
    - Practice sims write cw_practice_events_v1 instead — never cw_srs_v1.stats.
 
    Per-event history (chosen grade vs. suggested grade, requeue flag) is a

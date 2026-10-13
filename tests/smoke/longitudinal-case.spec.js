@@ -89,18 +89,22 @@ test('Eli pilot: visible task/discussion, optional model and safe resource retur
       await expect(page.getByText(chapter.learnerTask,{exact:true})).toBeVisible();
       await expect(page.getByText(chapter.reflectionPrompt,{exact:true})).toBeVisible();
       await expect(page.locator('.opf-source-boundary')).toContainText(data.disclaimer);
-      const model = page.locator('.opf-model');
-      await expect(model).not.toHaveAttribute('open','');
-      const summary = model.locator('summary');
+      // One-thread Phase 3: the pilot's <details> is now the Try → Compare button every chapter uses.
+      const reveal = page.locator('[data-compare-example]').first();
+      const example = page.locator('.opf-example').first();
+      await expect(reveal).toHaveAttribute('aria-expanded','false');
+      await expect(example).toBeHidden();
       await page.keyboard.press('Tab');
-      await summary.focus();
-      await expect(summary).toBeFocused();
-      expect(await summary.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
-      expect((await summary.boundingBox()).height).toBeGreaterThanOrEqual(44);
-      await summary.press('Enter');
-      await expect(model.locator('blockquote')).toHaveText(chapter.checklist[0].example);
-      await summary.press('Enter');
-      await expect(model.locator('blockquote')).not.toBeVisible();
+      await reveal.focus();
+      await expect(reveal).toBeFocused();
+      expect(await reveal.evaluate(el=>getComputedStyle(el).outlineStyle)).not.toBe('none');
+      expect((await reveal.boundingBox()).height).toBeGreaterThanOrEqual(44);
+      await reveal.press('Enter');
+      await expect(reveal).toHaveAttribute('aria-expanded','true');
+      await expect(example).toHaveText(chapter.checklist[0].example);
+      await expect(example).toBeVisible();
+      await reveal.press('Enter');
+      await expect(example).toBeHidden();
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     }
   }
@@ -120,13 +124,14 @@ test('Eli pilot: visible task/discussion, optional model and safe resource retur
   await popup.close();
   await page.bringToFront();
   await expect(page.getByRole('tab').nth(1)).toHaveAttribute('aria-selected','true');
-  await expect(page.locator('.opf-model')).not.toHaveAttribute('open','');
+  await expect(page.locator('[data-compare-example]').first()).toHaveAttribute('aria-expanded','false');
   await page.getByRole('tab').nth(4).click();
   await expect(page.getByText('Reflect and explore',{exact:true})).toBeVisible();
   await expect(page.locator('.opf-model')).toHaveCount(0);
   await page.goto('/tools/one-patient-six-weeks.html?case=leah&chapter=3');
   await page.goBack();
-  await expect(page.getByRole('tab').nth(3)).toHaveAttribute('aria-selected','true');
+  // Phase 3: Back returns to the chapter the learner was on (chapter 5), not the link's chapter 4.
+  await expect(page.getByRole('tab').nth(4)).toHaveAttribute('aria-selected','true');
   await page.goForward();
   await expect(page.locator('.opf-case-card[aria-current="page"]')).toContainText('Leah');
   expect(await page.evaluate(()=>localStorage.getItem('cw_longitudinal_v1'))).toBe('existing-learner-value');
@@ -159,7 +164,7 @@ test('Eli pilot remains on the same chapter when launched inside the learner she
   await popup.close();
   await page.bringToFront();
   await expect(frame.getByRole('tab').nth(2)).toHaveAttribute('aria-selected','true');
-  await expect(frame.locator('.opf-model')).not.toHaveAttribute('open','');
+  await expect(frame.locator('[data-compare-example]').first()).toHaveAttribute('aria-expanded','false');
   await page.setViewportSize({width:640,height:900});
   await frame.locator('html').evaluate(el=>el.style.fontSize='200%');
   expect(await frame.locator('html').evaluate(el=>el.scrollWidth<=el.ownerDocument.defaultView.innerWidth)).toBe(true);
@@ -246,6 +251,91 @@ test('connected practice works in the shell and reflows on a phone in both theme
  await page.emulateMedia({media:'screen'});
  await frame.locator('html').evaluate(el=>el.setAttribute('data-theme','light'));
  await practice.screenshot({path:info.outputPath('connected-practice-mobile.png')});
+});
+
+// ---- One-thread redesign, Phase 3 acceptance --------------------------------------------------
+test('Phase 3: Try → Compare and Compare two chapters render verbatim, store nothing, and print every example',async({page})=>{
+ const data=JSON.parse(fs.readFileSync(new URL(files[0],import.meta.url),'utf8'));
+ await page.addInitScript(()=>localStorage.setItem('cw_longitudinal_v1','{"version":1,"current":3,"completed":{"week1":{"checks":{"c0":true,"c1":true,"c2":true},"at":"2026-09-01"}}}'));
+ const requests=[];page.on('request',r=>requests.push(r.method()));
+ await page.goto('/tools/one-patient-six-weeks.html?week=3');
+ await expect(page.getByRole('tab').nth(2)).toHaveAttribute('aria-selected','true');
+ const saved=await page.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}));
+ const chapter=data.weeks[2];
+ await expect(page.getByText('Try each one first — aloud or on paper. Then compare with one way to say it. Nothing you think or say is stored.',{exact:true})).toBeVisible();
+ const reveals=page.locator('[data-compare-example]');
+ await expect(reveals).toHaveCount(chapter.checklist.length);
+ for(const [i,item] of chapter.checklist.entries()){
+  await expect(page.getByText(item.prompt,{exact:true})).toBeVisible();
+  await expect(page.getByText(item.example,{exact:true})).toBeHidden();
+  await reveals.nth(i).click();
+  await expect(reveals.nth(i)).toHaveAttribute('aria-expanded','true');
+  await expect(page.getByText(item.example,{exact:true})).toBeVisible();
+ }
+ await page.getByRole('tab').nth(3).click();
+ await expect(page.locator('[data-compare-example][aria-expanded="true"]')).toHaveCount(0);
+ await page.emulateMedia({media:'print'});
+ for(const item of data.weeks[3].checklist) await expect(page.getByText(item.example,{exact:true})).toBeVisible();
+ await page.emulateMedia({media:'screen'});
+ const open=page.getByRole('button',{name:'Compare two chapters',exact:true});
+ await open.click();
+ await expect(open).toHaveAttribute('aria-expanded','true');
+ await expect(page.getByRole('heading',{name:'Compare two chapters',exact:true})).toBeFocused();
+ await page.getByLabel('Second chapter').selectOption('6');
+ const view=page.locator('#case-compare');
+ for(const n of [4,6]){const w=data.weeks[n-1];for(const text of [w.patientState,w.handoff,w.reflectionPrompt])await expect(view.getByText(text,{exact:true})).toBeVisible();}
+ await expect(page.locator('.opf-folio__chapter')).toBeHidden();
+ for(const width of [320,390]){await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+ await page.getByRole('button',{name:'Back to chapter 4',exact:true}).click();
+ await expect(open).toBeFocused();await expect(page.locator('.opf-folio__chapter')).toBeVisible();
+ // Existing progress is neither read, migrated nor changed; no new storage; nothing posted.
+ expect(await page.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}))).toBe(saved);
+ await expect(page.locator('input,textarea,[contenteditable="true"]')).toHaveCount(0);
+ expect(requests.every(m=>m==='GET')).toBe(true);
+ await expect(page).toHaveURL(/case=jordan&chapter=4/);
+});
+
+test('Phase 3: from a linked page inside the shell, Back restores the case, chapter and scroll',async({page},info)=>{
+ await page.addInitScript(role=>{
+  const now=new Date();now.setDate(now.getDate()-((now.getDay()+6)%7));
+  localStorage.setItem('cw_rotation_start',`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`);
+  localStorage.setItem('cw_frontdoor_v1',JSON.stringify({role,tab:'today',viewWeek:1,autoAdvance:false}));
+ },info.project.name==='nav-res'?'pgy1':'student');
+ await page.setViewportSize({width:1280,height:800});
+ await page.goto('/?tool=one-patient-six-weeks.html&case=leah&chapter=2');
+ const frame=page.frameLocator('iframe.toolframe');
+ await frame.getByRole('tab').nth(4).click();
+ await expect(page).toHaveURL(/[?&]case=leah&chapter=5/);
+ await expect(page).not.toHaveURL(/[?&]week=/);
+ await frame.getByText('Reflect and explore',{exact:true}).click();
+ const link=frame.locator('.opf-reflection a').first();
+ await link.scrollIntoViewIfNeeded();
+ const before=await page.evaluate(()=>scrollY);
+ expect(before).toBeGreaterThan(200);
+ await link.click();
+ await expect(page).toHaveURL(/[?&](page|tool)=(?!one-patient-six-weeks)/);
+ await page.goBack();
+ await expect(frame.getByRole('tab').nth(4)).toHaveAttribute('aria-selected','true');
+ await expect(frame.locator('.opf-case-card[aria-current="page"]')).toContainText('Leah');
+ await expect.poll(()=>page.evaluate(()=>scrollY),{timeout:5000}).toBeGreaterThan(before-120);
+});
+
+test('Phase 3: the shell shows the pending notice above the case tool from a controlled governance fixture',async({page},info)=>{
+ await page.addInitScript(role=>localStorage.setItem('cw_frontdoor_v1',JSON.stringify({role,tab:'today',viewWeek:1,autoAdvance:false})),info.project.name==='nav-res'?'pgy1':'student');
+ const reason='Content changed since faculty review on 2026-10-05; awaiting re-attestation.';
+ await page.route('**/governance.json',async route=>{
+  const response=await route.fetch();const ledger=await response.json();
+  ledger.items['one-patient-six-weeks.html']={...ledger.items['one-patient-six-weeks.html'],status:'pending',reason,riskKind:'clinical',riskLevel:'moderate'};
+  await route.fulfill({response,json:ledger});
+ });
+ await page.goto('/?tool=one-patient-six-weeks.html&week=2');
+ const notice=page.locator('.governance-notice.pending-compact');
+ await expect(notice).toBeVisible();
+ await expect(notice).toContainText('Pending faculty review');
+ await expect(notice).toContainText(reason);
+ const box=await notice.boundingBox(), frameBox=await page.locator('iframe.toolframe').boundingBox();
+ expect(box.y).toBeLessThan(frameBox.y);
+ await expect(page.frameLocator('iframe.toolframe').getByRole('tab').nth(1)).toHaveAttribute('aria-selected','true');
 });
 
 test('missing new practice pack keeps existing Case Journeys readable',async({page})=>{

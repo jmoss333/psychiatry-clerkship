@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-09-28",
+  "refreshedAt": "2026-10-11",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -468,6 +468,95 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "34076676"
+    },
+    "10.1001/jamapsychiatry.2021.3170": {
+      "title": "Lithium Treatment in the Prevention of Repeat Suicide-Related Outcomes in Veterans With Major Depression or Bipolar Disorder",
+      "container": "JAMA Psychiatry",
+      "containerAlt": [
+        "JAMA Psychiatry",
+        "JAMA psychiatry"
+      ],
+      "year": 2022,
+      "authors": [
+        "Katz",
+        "Rogers",
+        "Lew",
+        "Thwin",
+        "Doros",
+        "Ahearn",
+        "Ostacher",
+        "DeLisi",
+        "Smith",
+        "Ringer",
+        "Ferguson",
+        "Hoffman",
+        "Kaufman",
+        "Paik",
+        "Conrad",
+        "Holmberg",
+        "Boney",
+        "Huang",
+        "Liang",
+        "Agrawal",
+        "Akhtar",
+        "Androsenko",
+        "Berger",
+        "Bhat",
+        "Brenner",
+        "Chalasani",
+        "Chang",
+        "Chen",
+        "Cornejo",
+        "Cory",
+        "Davidson",
+        "Dickmann",
+        "Duncan",
+        "Fernando",
+        "Floyd",
+        "Forman",
+        "Gale",
+        "Geete",
+        "Ignatowski",
+        "Jones",
+        "Juergens",
+        "Jurjus",
+        "Khatkhate",
+        "Konicki",
+        "Krahn",
+        "Larson",
+        "Leckband",
+        "Mack",
+        "Matthews",
+        "Mayo",
+        "McGlade",
+        "Michalets",
+        "Miller",
+        "Muly",
+        "Niculescu",
+        "Ostacher",
+        "Padala",
+        "Padala",
+        "Pazzaglia",
+        "Raskind",
+        "Renshaw",
+        "Shivakumar",
+        "Smith",
+        "Sullivan",
+        "Suppes",
+        "Swann",
+        "Thomas",
+        "Thompson",
+        "Turner",
+        "Umbert",
+        "Westermeyer",
+        "Wood",
+        "Wortzel",
+        "Yurgelun-Todd"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "34787653"
     },
     "10.1001/jamapsychiatry.2023.3971": {
       "title": "Psychotherapies for Generalized Anxiety Disorder in Adults",
@@ -1606,6 +1695,37 @@
       "resolvedAt": "2026-09-27",
       "pmid": "39271062"
     },
+    "10.1016/j.jad.2025.119487": {
+      "title": "The efficacy of lithium in the treatment of suicidal ideation, behavior and suicide: An updated systematic review and meta-analysis of randomized controlled trials",
+      "container": "Journal of Affective Disorders",
+      "containerAlt": [
+        "J Affect Disord",
+        "Journal of Affective Disorders",
+        "Journal of affective disorders"
+      ],
+      "year": 2025,
+      "authors": [
+        "Wang",
+        "Le",
+        "Wong",
+        "Teopiz",
+        "Kwan",
+        "Rosenblat",
+        "Rhee",
+        "Ho",
+        "Lo",
+        "Goldberg",
+        "Vinberg",
+        "Grande",
+        "Mansur",
+        "Meyer",
+        "McIntyre"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "40441661"
+    },
     "10.1016/j.jceh.2022.03.003": {
       "title": "Management of Alcohol Withdrawal Syndrome in Patients with Alcoholic Liver Disease",
       "container": "Journal of Clinical and Experimental Hepatology",
@@ -1805,6 +1925,35 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "29150198"
+    },
+    "10.1016/s0140-6736(19)31135-3": {
+      "title": "Comparative efficacy and tolerability of 32 oral antipsychotics for the acute treatment of adults with multi-episode schizophrenia: a systematic review and network meta-analysis",
+      "container": "The Lancet",
+      "containerAlt": [
+        "Lancet",
+        "Lancet (London, England)",
+        "The Lancet"
+      ],
+      "year": 2019,
+      "authors": [
+        "Huhn",
+        "Nikolakopoulou",
+        "Schneider-Thoma",
+        "Krause",
+        "Samara",
+        "Peter",
+        "Arndt",
+        "Bäckers",
+        "Rothe",
+        "Cipriani",
+        "Davis",
+        "Salanti",
+        "Leucht"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "31303314"
     },
     "10.1016/s0140-6736(21)00476-1": {
       "title": "Borderline personality disorder",
@@ -2204,6 +2353,35 @@
       "resolvedAt": "2026-09-27",
       "pmid": "30743298"
     },
+    "10.1056/nejmoa051688": {
+      "title": "Effectiveness of Antipsychotic Drugs in Patients with Chronic Schizophrenia",
+      "container": "N Engl J Med",
+      "containerAlt": [
+        "N Engl J Med",
+        "New England Journal of Medicine",
+        "The New England journal of medicine"
+      ],
+      "year": 2005,
+      "authors": [
+        "Lieberman",
+        "Stroup",
+        "McEvoy",
+        "Swartz",
+        "Rosenheck",
+        "Perkins",
+        "Keefe",
+        "Davis",
+        "Davis",
+        "Lebowitz",
+        "Severe",
+        "Hsiao",
+        "Clinical Antipsychotic Trials of Intervention Effectiveness (CATIE) Investigators"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "16172203"
+    },
     "10.1056/nejmoa1612222": {
       "title": "Lithium Use in Pregnancy and the Risk of Cardiac Malformations",
       "container": "N Engl J Med",
@@ -2276,6 +2454,41 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "30346242"
+    },
+    "10.1056/nejmoa2204462": {
+      "title": "Antidepressant Augmentation versus Switch in Treatment-Resistant Geriatric Depression",
+      "container": "N Engl J Med",
+      "containerAlt": [
+        "N Engl J Med",
+        "New England Journal of Medicine",
+        "The New England journal of medicine"
+      ],
+      "year": 2023,
+      "authors": [
+        "Lenze",
+        "Mulsant",
+        "Roose",
+        "Lavretsky",
+        "Reynolds",
+        "Blumberger",
+        "Brown",
+        "Cristancho",
+        "Flint",
+        "Gebara",
+        "Gettinger",
+        "Lenard",
+        "Miller",
+        "Nicol",
+        "Oughli",
+        "Pham",
+        "Rollman",
+        "Yang",
+        "Karp"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-05",
+      "pmid": "36867173"
     },
     "10.1056/nejmra041867": {
       "title": "The Serotonin Syndrome",
@@ -2518,6 +2731,24 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "41906697"
+    },
+    "10.1080/15622975.2026.2617195": {
+      "title": "Beyond first-line antidepressants: lithium, quetiapine, or esketamine? Integrating meta-analyses and preliminary head-to-head evidence",
+      "container": "The World Journal of Biological Psychiatry",
+      "containerAlt": [
+        "The World Journal of Biological Psychiatry",
+        "The world journal of biological psychiatry : the official journal of the World Federation of Societies of Biological Psychiatry",
+        "World J Biol Psychiatry"
+      ],
+      "year": 2026,
+      "authors": [
+        "Eckert",
+        "Kasper"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-05",
+      "pmid": "41572784"
     },
     "10.1080/21548331.2019.1709359": {
       "title": "Delirium in hospitalized older adults",
@@ -3311,6 +3542,39 @@
       "resolvedAt": "2026-09-27",
       "pmid": "30897571"
     },
+    "10.1176/ajp.2006.163.11.1905": {
+      "title": "Acute and Longer-Term Outcomes in Depressed Outpatients Requiring One or Several Treatment Steps: A STAR*D Report",
+      "container": "AJP",
+      "containerAlt": [
+        "AJP",
+        "Am J Psychiatry",
+        "American Journal of Psychiatry",
+        "The American journal of psychiatry"
+      ],
+      "year": 2006,
+      "authors": [
+        "Rush",
+        "Trivedi",
+        "Wisniewski",
+        "Nierenberg",
+        "Stewart",
+        "Warden",
+        "Niederehe",
+        "Thase",
+        "Lavori",
+        "Lebowitz",
+        "McGrath",
+        "Rosenbaum",
+        "Sackeim",
+        "Kupfer",
+        "Luther",
+        "Fava"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-05",
+      "pmid": "17074942"
+    },
     "10.1176/appi.ajp.2011.10111704": {
       "title": "The Columbia–Suicide Severity Rating Scale: Initial Validity and Internal Consistency Findings From Three Multisite Studies With Adolescents and Adults",
       "container": "AJP",
@@ -3454,6 +3718,26 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "39876682"
+    },
+    "10.1176/appi.focus.20230009": {
+      "title": "The CANMAT and ISBD Guidelines for the Treatment of Bipolar Disorder: Summary and a 2023 Update of Evidence",
+      "container": "FOC",
+      "containerAlt": [
+        "FOC",
+        "Focus",
+        "Focus (Am Psychiatr Publ)",
+        "Focus (American Psychiatric Publishing)"
+      ],
+      "year": 2023,
+      "authors": [
+        "Keramatian",
+        "Chithra",
+        "Yatham"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "38695002"
     },
     "10.1176/appi.ps.201900633": {
       "title": "Psychoeducation for Inpatients With First-Episode Psychosis: Results From a Survey of Psychiatry Trainees in New York City",
@@ -3638,6 +3922,66 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "37551100"
+    },
+    "10.1177/07067437241245384": {
+      "title": "Canadian Network for Mood and Anxiety Treatments (CANMAT) 2023 Update on Clinical Guidelines for Management of Major Depressive Disorder in Adults: Réseau canadien pour les traitements de l'humeur et de l'anxiété (CANMAT) 2023 : Mise à jour des lignes directrices cliniques pour la prise en charge du trouble dépressif majeur chez les adultes",
+      "container": "Can J Psychiatry",
+      "containerAlt": [
+        "Can J Psychiatry",
+        "Canadian journal of psychiatry. Revue canadienne de psychiatrie",
+        "The Canadian Journal of Psychiatry"
+      ],
+      "year": 2024,
+      "authors": [
+        "Lam",
+        "Kennedy",
+        "Adams",
+        "Bahji",
+        "Beaulieu",
+        "Bhat",
+        "Blier",
+        "Blumberger",
+        "Brietzke",
+        "Chakrabarty",
+        "Do",
+        "Frey",
+        "Giacobbe",
+        "Gratzer",
+        "Grigoriadis",
+        "Habert",
+        "Ishrat Husain",
+        "Ismail",
+        "McGirr",
+        "McIntyre",
+        "Michalak",
+        "Müller",
+        "Parikh",
+        "Quilty",
+        "Ravindran",
+        "Ravindran",
+        "Renaud",
+        "Rosenblat",
+        "Samaan",
+        "Saraf",
+        "Schade",
+        "Schaffer",
+        "Sinyor",
+        "Soares",
+        "Swainson",
+        "Taylor",
+        "Tourjman",
+        "Uher",
+        "van Ameringen",
+        "Vazquez",
+        "Vigod",
+        "Voineskos",
+        "Yatham",
+        "Milev"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-05",
+      "pmid": "38711351"
     },
     "10.1177/08850666221114303": {
       "title": "Malignant Catatonia: A Review for the Intensivist",
@@ -3888,6 +4232,35 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "25252316"
+    },
+    "10.1192/j.eurpsy.2026.12229": {
+      "title": "Trajectory of response to esketamine nasal spray for treatment resistant depression: Findings from ESCAPE-TRD",
+      "container": "Eur. Psychiatr.",
+      "containerAlt": [
+        "Eur Psychiatry",
+        "Eur. Psychiatr.",
+        "European Psychiatry",
+        "European psychiatry : the journal of the Association of European Psychiatrists"
+      ],
+      "year": 2026,
+      "authors": [
+        "Young",
+        "Bartova",
+        "Cardoner",
+        "Demyttenaere",
+        "Fagiolini",
+        "Godinov",
+        "Golib Dzib",
+        "von Holt",
+        "McIntyre",
+        "Oliveira-Maia",
+        "Rive",
+        "Gorwood"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-05",
+      "pmid": "42298878"
     },
     "10.12788/jhm.3729": {
       "title": "Clinical guideline highlights for the hospitalist: 2020 American Society of Addiction Medicine clinical practice guideline on alcohol withdrawal management",
