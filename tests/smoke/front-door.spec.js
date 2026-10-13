@@ -45,8 +45,7 @@ async function readingReady(page, ref = READING_REF) {
   await expect(reader.locator('.fd-article__body h3')).toHaveCount(3);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveCount(1);
   await expect(reader).not.toHaveClass(/fd-reader--guide/);
-  // DOM readiness can precede the 8px entrance transform. Settle geometry
-  // before capturing a reading place or changing viewport; keep offset bounds.
+  // Settle fonts and entrance effects before measuring a reading place.
   await reader.evaluate(async el => {
     await document.fonts.ready;
     const animations = [];
@@ -119,14 +118,20 @@ test('reading place: reload and phone reflow restore the second heading; Start a
   await expect(reader.locator('[data-fd-reading-top]')).toBeVisible();
   await reader.locator('[data-fd-reading-top]').click();
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]).toBeUndefined();
+  const clearedY = await page.evaluate(() => window.scrollY);
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.reload();
   await readingReady(page);
+  // Native restoration may preserve the position, or startup may reset to document top.
+  // Neither route may drift downward or create a new bookmark.
+  const firstReloadY = await page.evaluate(() => window.scrollY);
+  expect(firstReloadY).toBeLessThanOrEqual(clearedY + 0.5);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   await page.reload();
   await readingReady(page);
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(firstReloadY + 0.5);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await scrollReadingTo(page, 2);
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]?.heading).toBe(
@@ -206,6 +211,8 @@ test('reading place: returning to the fresh position cancels an abandoned pendin
   await page.waitForTimeout(400);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.setViewportSize(PHONE);
+  // This next move is after resize, not during its one-frame restore window.
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
@@ -415,6 +422,30 @@ async function pinGovernance(page, ref, status) {
   if (!ledger.items[ref]) throw new Error(`Missing governance fixture row: ${ref}`);
   ledger.items[ref] = { ...ledger.items[ref], ...status };
   await page.route('**/governance.json', route => route.fulfill({ json: ledger }));
+}
+
+// A served shell whose embedded review state shows nothing pending. A layout assertion about the
+// ordinary Library must not depend on the faculty's queue: while any Essentials reading has
+// drifted, the "Faculty re-review in progress" banner (fd_library.js) sits above the first reading,
+// and that banner's own test pins it with the opposite fixture.
+async function serveNothingPending(page) {
+  await page.route('**/*', async route => {
+    if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+    const response = await routeFetchWithRetry(route);
+    const body = await response.text();
+    const prefix = 'var FD_SITE_MANIFEST=';
+    const at = body.indexOf(prefix);
+    expect(at, 'the served shell embeds FD_SITE_MANIFEST').toBeGreaterThan(-1);
+    const start = at + prefix.length;
+    const end = body.indexOf(';\n', start);
+    const manifest = JSON.parse(body.slice(start, end));
+    for (const list of [manifest.md || [], manifest.tools || []]) {
+      for (const entry of list) {
+        if (entry[3] && entry[3].status === 'pending') entry[3] = { ...entry[3], status: 'reviewed' };
+      }
+    }
+    await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(manifest) + body.slice(end) });
+  });
 }
 
 async function expectHealthy(page) {
@@ -1336,6 +1367,213 @@ test('malformed built protocol fails closed with every canonical crisis resource
   await expect(page.locator('.fd-sheet__failure[role="alert"]')).toHaveText(FAILURE_COPY);
   const renderedResources = await page.locator('.fd-sheet .crisis-block li').allTextContents();
   expect(renderedResources.map(text => text.trim())).toEqual(expectedResources);
+  await expectHealthy(page);
+});
+
+// ---- Safety drawer decision trees (2026-10-10 spec) ----------------------------------------------
+// Review state is a FIXTURE, never the live ledger: the index is patched after it is built so the
+// kit items read attested (or not) and, for the preview case, the draft flag is on. Trees are
+// walked by STRUCTURE (always the last answer) so an owner edit to the wording or ids keeps
+// these green.
+const SAFETY_NEEDLE = [
+  'var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);',
+  '  var FD_INDEX=FD_CANONICAL_INDEX;',
+].join('\n');
+const SAFETY_MOUNTS = ['fdChromeMount', 'fdCaptureMount', 'fdDockMount', 'content', 'governanceMount'];
+const TREE_REFS = ['pg_suicide.md', 'agitation.md', 'delirium.md'];
+
+async function serveSafetyTrees(page, { attested = true, draft = false } = {}) {
+  await page.route((url) => url.pathname === '/', async (route) => {
+    const response = await routeFetchWithRetry(route);
+    const original = await response.text();
+    expect(original.split(SAFETY_NEEDLE)).toHaveLength(2);
+    const patch = `\n  FD_INDEX.kit.forEach(function(k){k.item.attested=${attested};});`
+      + (draft ? '\n  FD_DRAFT_TREES=true;' : '');
+    await route.fulfill({ response, body: original.replace(SAFETY_NEEDLE, SAFETY_NEEDLE + patch) });
+  });
+}
+async function openProtocol(page, ref) {
+  await page.locator('.fd-safetybtn[data-fd-safety]').click();
+  await page.locator(`.fd-kitrow[data-fd-safety="${ref}"]`).click();
+}
+async function walkToAction(page) {
+  const heading = page.locator('.fd-sheet .fd-tree__heading');
+  for (let step = 0; step < 6 && (await page.locator('.fd-tree__option').count()) > 0; step += 1) {
+    await page.locator('.fd-tree__option').last().focus();
+    await page.keyboard.press('Enter');
+    await expect(heading).toBeFocused();
+  }
+  await expect(page.locator('.fd-tree__verdict')).toBeVisible();
+}
+
+test('each safety tree walks by keyboard to its script and back', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  for (const ref of TREE_REFS) {
+    await page.locator('.fd-safetybtn[data-fd-safety]').click();
+    await page.locator(`.fd-kitrow[data-fd-safety="${ref}"]`).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.fd-sheet.fd-sheet--safety .fd-tree')).toBeVisible();
+    await walkToAction(page);
+    await page.locator('.fd-tree__escalate').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#fdScriptHeading')).toBeFocused();
+    await expect(page.locator('.fd-script__parts dt')).toHaveCount(6);
+    await expect(page.locator('.fd-script__blank').first()).toBeVisible();
+    await page.locator('[data-fd-escalate-close]').focus();
+    await page.keyboard.press('Enter');
+    // The script's own heading also carries .fd-tree__heading, so prove the script is gone and
+    // the verdict is back before trusting the focus check.
+    await expect(page.locator('#fdScriptHeading')).toHaveCount(0);
+    await expect(page.locator('.fd-tree__verdict')).toBeVisible();
+    await expect(page.locator('.fd-sheet .fd-tree__heading')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  }
+  await expectHealthy(page);
+});
+
+test('escalation is on the first screen, and Escape from a script closes the drawer', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'pg_suicide.md');
+  const escalate = page.locator('.fd-tree__escalate');
+  await expect(escalate).toHaveAttribute('data-fd-escalate', 'now');
+  await escalate.click();
+  await expect(page.locator('#fdScriptHeading')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  await expect(page.locator('.fd-safetybtn[data-fd-safety]')).toBeFocused();
+  await expectHealthy(page);
+});
+
+test('a double press advances one step', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'agitation.md');
+  await page.locator('.fd-tree__option').first().focus();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-tree__trail li')).toHaveCount(1);
+  await expectHealthy(page);
+});
+
+test('production hides an unattested tree behind its checklist', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page, { attested: false });
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'agitation.md');
+  await expect(page.locator('.fd-tree')).toHaveCount(0);
+  expect(await page.locator('.fd-step').count()).toBeGreaterThanOrEqual(3);
+  await expect(page.locator('.fd-sheet__pending')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('a deploy preview shows an unattested tree under the DRAFT banner', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page, { attested: false, draft: true });
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await openProtocol(page, 'agitation.md');
+  await expect(page.locator('.fd-tree__draft[role="note"]')).toBeVisible();
+  await expect(page.locator('.fd-tree__heading')).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('tool inputs survive the drawer; the page is inert and paused while it is open', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  await page.goto('/?tool=feedback.html');
+  const frameEl = page.locator('#content iframe.toolframe');
+  const tool = frameEl.contentFrame();
+  await tool.locator('#f_msg').fill('Typed before the drawer opened');
+  const before = await frameEl.elementHandle();
+  await tool.locator('body').evaluate(() => {
+    window.__cw = [];
+    window.addEventListener('message', (e) => {
+      if (e.data && /^cw-/.test(e.data.type || '')) window.__cw.push(e.data.type);
+    });
+  });
+  await page.evaluate(() => {
+    const a = document.createElement('audio');
+    let paused = false;
+    Object.defineProperty(a, 'paused', { get: () => paused });
+    a.pause = () => { paused = true; };
+    a.id = 'fdTestAudio';
+    document.getElementById('content').appendChild(a);
+  });
+  await page.locator('.fd-safetybtn[data-fd-safety]').click();
+  for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBe('');
+  expect(await page.locator('#fdOverlayMount').getAttribute('inert')).toBeNull();
+  expect(await page.evaluate(() => document.getElementById('fdTestAudio').paused)).toBe(true);
+  await page.locator('.fd-kitrow[data-fd-safety="agitation.md"]').click();
+  await page.locator('.fd-tree__option').first().click();
+  await page.keyboard.press('Escape');
+  for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBeNull();
+  await expect(page.locator('.fd-safetybtn[data-fd-safety]')).toBeFocused();
+  expect(await before.evaluate((el) => el.isConnected)).toBe(true);
+  expect(await frameEl.evaluate((el, b) => el === b, before)).toBe(true);
+  await expect(tool.locator('#f_msg')).toHaveValue('Typed before the drawer opened');
+  await expect.poll(() => tool.locator('body').evaluate(() => window.__cw)).toEqual(['cw-pause', 'cw-resume']);
+  await expectHealthy(page);
+});
+
+test('Open the full page from a tree releases the page before it mounts', async ({ page }, testInfo) => {
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  // Served-ledger fixture, not live state: a pending high-risk page takes focus onto its notice
+  // when it mounts, and an inert #content silently refuses that focus -- so the focused notice
+  // is the observable proof the release landed BEFORE the mount, not merely at some point.
+  await pinGovernance(page, 'delirium.md', { status: 'pending', riskLevel: 'high' });
+  await page.goto('/');
+  await openProtocol(page, 'delirium.md');
+  await page.locator('.fd-sheet [data-fd-open="delirium.md"]').click();
+  await expect(page.locator('.fd-sheet')).toHaveCount(0);
+  for (const id of SAFETY_MOUNTS) expect(await page.locator(`#${id}`).getAttribute('inert'), id).toBeNull();
+  await expect(page.locator('.fd-article')).toBeVisible();
+  await expect(page.locator('#content .governance-notice.pending-high')).toBeFocused();
+  await expectHealthy(page);
+});
+
+test('the safety skip control is the second Tab stop and opens the kit', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/');
+  await expect(page.locator('.fd-today')).toBeVisible();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.skip-safety')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.fd-sheet[role="dialog"]')).toHaveAttribute('aria-label', 'Safety kit');
+  await expectHealthy(page);
+});
+
+test('the drawer fits a 320px phone with 48px controls', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await serveSafetyTrees(page);
+  await seedApp(page, testInfo);
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/');
+    for (const ref of TREE_REFS) {
+      await openProtocol(page, ref);
+      // Escape on the previous protocol (unread) raised the full-read toast; reopening Safety
+      // must clear it -- the drawer never shares the screen with the toast.
+      await expect(page.locator('.fd-nudge'), `${ref} toast at ${width}px`).toHaveCount(0);
+      for (const sel of ['.fd-tree__option', '.fd-tree__escalate']) {
+        // An empty set would pass the height loop vacuously.
+        expect(await page.locator(sel).count(), `${ref} ${sel} at ${width}px`).toBeGreaterThan(0);
+        for (const box of await page.locator(sel).evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) {
+          expect(box, `${ref} ${sel} at ${width}px`).toBeGreaterThanOrEqual(47.5);
+        }
+      }
+      await page.locator('.fd-tree__escalate').click();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${ref} page at ${width}px`).toBe(true);
+      expect(await page.locator('.fd-sheet__body').evaluate((el) => el.scrollWidth <= el.clientWidth), `${ref} sheet at ${width}px`).toBe(true);
+      await page.keyboard.press('Escape');
+    }
+  }
   await expectHealthy(page);
 });
 
@@ -3640,6 +3878,169 @@ test('one-thread Phase 3 reader: one status line, folded practice row, Next in t
   await expectHealthy(page);
 });
 
+// "Beyond this page" (README_MEDIA.md M2). The live media map is a DRAFT, so the built shell
+// inlines no pages and the block renders nowhere -- the first test pins that. The rest serve an
+// APPROVED fixture index by rewriting the inlined FD_MEDIA value on the document response (the
+// map file is never touched). Fixture items are real library entries; the guidance lines are
+// read from the site's own topic_meta.json, never retyped.
+async function serveApprovedMedia(page, testInfo) {
+  const meta = await (await requestGetWithRetry(page.request, '/topic_meta.json')).json();
+  const site = isResidentProject(testInfo.project.name) ? 'res' : 'ms3';
+  const fixture = {
+    version: 1, site, status: 'approved',
+    pages: {
+      't_mood.md': {
+        page: 't_mood.md', sites: ['ms3', 'res'],
+        guidance: {
+          familySay: meta['book_library.md'].clinicalWorkflow.say,
+          familySafety: meta['book_library.md'].clinicalWorkflow.safety,
+          listenSafety: meta['podcast_library.md'].clinicalWorkflow.safety,
+        },
+        listen: [
+          { n: 25, title: 'The History and Nuances of Bipolar Illness', category: 'Mood & bipolar; suicide', url: 'https://www.youtube.com/watch?v=vBeB6V-KA70' },
+          { n: 201, title: 'Psychotic Depression', category: 'Mood & bipolar; suicide', url: 'https://www.youtube.com/watch?v=OoXGcXxvojQ' },
+        ],
+        listenAll: { ref: 'podcast_library.md', category: 'Mood & bipolar; suicide', anchor: 'mood-bipolar-suicide' },
+        family: [
+          { isbn: '9781608822195', title: 'Loving Someone with Bipolar Disorder', author: 'Julie Fast & John Preston',
+            description: 'Family guide to understanding and supporting someone with bipolar disorder—covers symptoms, treatment, and daily living.',
+            category: 'Mood, bipolar & depression', anchor: 'mood-bipolar-depression' },
+        ],
+        familyAll: { ref: 'book_library.md', category: 'Mood, bipolar & depression', anchor: 'mood-bipolar-depression' },
+        practiceRef: 'family-systems.html',
+      },
+    },
+  };
+  await page.route(/\/(?:\?[^/]*)?$/, async route => {
+    const response = await routeFetchWithRetry(route);
+    const original = await response.text();
+    const inlined = original.match(/var FD_MEDIA=\{[^;]*\};/g) || [];
+    expect(inlined, 'exactly one inlined media index').toHaveLength(1);
+    await route.fulfill({ response, body: original.replace(inlined[0], `var FD_MEDIA=${JSON.stringify(fixture)};`) });
+  });
+  return { meta, fixture };
+}
+
+test('Beyond this page: the draft map renders the block nowhere', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Next in this thread' })).toBeVisible();
+  await expect(page.locator('.fd-beyond')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
+test('Beyond this page: after Next in this thread, keyboard switch, verbatim guidance, nothing stored', async ({ page }, testInfo) => {
+  await page.setViewportSize(DESKTOP);
+  await seedApp(page, testInfo);
+  const { meta } = await serveApprovedMedia(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  const block = page.getByRole('region', { name: 'Beyond this page' });
+  await expect(block).toBeVisible();
+  const order = await page.evaluate(() => {
+    const at = (sel) => [...document.querySelectorAll('.fd-article *')].indexOf(document.querySelector(sel));
+    return { thread: at('.fd-nextthread'), beyond: at('.fd-beyond'), footer: at('.fd-prevnext') };
+  });
+  expect(order.thread).toBeLessThan(order.beyond);
+  if (order.footer >= 0) expect(order.beyond).toBeLessThan(order.footer);
+  const before = await page.evaluate(() => JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])));
+
+  const forYou = block.getByRole('button', { name: 'For you · listen' });
+  const forFamily = block.getByRole('button', { name: 'For the family · read' });
+  await expect(forYou).toHaveAttribute('aria-pressed', 'true');
+  await expect(block.locator('#fd-beyond-family')).toBeHidden();
+  await expect(block.getByRole('link', { name: 'Episode 25 on YouTube (opens in a new tab)' })).toHaveAttribute('target', '_blank');
+  await expect(block.locator('.fd-beyond__note')).toHaveText(meta['podcast_library.md'].clinicalWorkflow.safety);
+  await forFamily.focus();
+  await page.keyboard.press('Enter');
+  await expect(forFamily).toHaveAttribute('aria-pressed', 'true');
+  await expect(block.locator('#fd-beyond-listen')).toBeHidden();
+  await expect(block.locator('#fd-beyond-family .fd-beyond__card').first()).toBeFocused();
+  await expect(block.locator('.fd-beyond__offer')).toHaveText(`How to offer it: ${meta['book_library.md'].clinicalWorkflow.say}`);
+  await expect(block.locator('.fd-beyond__safety')).toHaveText(meta['book_library.md'].clinicalWorkflow.safety);
+  await expect(block.locator('a[href*="amazon"]')).toHaveCount(0);
+  await forYou.focus();
+  await page.keyboard.press(' ');
+  await expect(block.locator('#fd-beyond-listen .fd-beyond__card').first()).toBeFocused();
+
+  // Bring to family meeting only PREPARES the existing capture dialog: title and author as a draft,
+  // the no-patient-details warning shown, Save still the learner's step. Opening it marks nothing
+  // read, assigned or done -- completion (cw_progress_v1) and the capture store (cw_capture_v1) are
+  // unchanged. (cw_frontdoor_v1 legitimately moves: the reading place saves the scroll position.)
+  const progressBefore = await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_capture_v1')]);
+  const doneBefore = await page.locator('.fd-article__actions [data-fd-toggle]').getAttribute('aria-pressed');
+  await forFamily.click();
+  await block.getByRole('button', { name: '＋ Bring to family meeting' }).click();
+  await expect(page.locator('#capText')).toHaveValue('Loving Someone with Bipolar Disorder — Julie Fast & John Preston');
+  await expect(page.locator('.cap-warn')).toBeVisible();
+  await expect(page.locator('#capSave')).toBeVisible();
+  await expect(page.locator('.cap-sheet')).not.toContainText(/assigned|completed|marked (as )?read/i);
+  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_capture_v1')]),
+    'opening the dialog changes no progress state').toEqual(progressBefore);
+  await page.locator('#capCancel').click();
+  await expect(page.locator('.fd-article__actions [data-fd-toggle]')).toHaveAttribute('aria-pressed', doneBefore || 'false');
+  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_capture_v1')]),
+    'cancelling stores nothing').toEqual(progressBefore);
+  const after = await page.evaluate(() => JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])));
+  expect(after.includes('Loving Someone'), 'no draft or capture stored').toBe(false);
+  expect(after.includes('fd-beyond') || after.includes('media'), 'no new persisted key').toBe(false);
+  expect(before.length).toBeGreaterThan(0);
+
+  await page.goto('/');
+  await expect(page.locator('.fd-beyond')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
+test('Beyond this page: no horizontal overflow at 320px or at 200% text, 44px targets', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await seedApp(page, testInfo);
+  await serveApprovedMedia(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  const block = page.locator('.fd-beyond');
+  await expect(block).toBeVisible();
+  const fits = () => block.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { block: el.scrollWidth <= el.clientWidth + 1, page: document.documentElement.scrollWidth <= window.innerWidth + 1, right: r.right <= window.innerWidth + 1 };
+  });
+  expect(await fits()).toEqual({ block: true, page: true, right: true });
+  for (const target of await block.locator('.fd-beyond__opt, .fd-beyond__link, .fd-beyond__all a').all()) {
+    if (!(await target.isVisible())) continue;
+    expect((await target.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  }
+  const sw = await block.locator('.fd-beyond__switch').boundingBox();
+  const bx = await block.boundingBox();
+  expect(Math.round(sw.width), 'the switch is full width on a phone').toBeGreaterThanOrEqual(Math.floor(bx.width) - 1);
+  await page.addStyleTag({ content: 'html{font-size:200% !important} .fd-beyond{font-size:200%}' });
+  await block.locator('.fd-beyond__opt[data-media-side="family"]').click();
+  expect(await fits()).toEqual({ block: true, page: true, right: true });
+  await expectHealthy(page);
+});
+
+test('Beyond this page: a Book Library link opens at the category, and Back returns to the reading at the same scroll', async ({ page }, testInfo) => {
+  await page.setViewportSize(DESKTOP);
+  await seedApp(page, testInfo);
+  await serveApprovedMedia(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  const block = page.locator('.fd-beyond');
+  await block.locator('.fd-beyond__opt[data-media-side="family"]').click();
+  const link = block.getByRole('link', { name: 'In the Book Library' });
+  await link.scrollIntoViewIfNeeded();
+  const origin = await page.evaluate(() => window.scrollY);
+  expect(origin).toBeGreaterThan(200);
+  await link.click();
+  await expect(page).toHaveURL(/[?&]page=book_library\.md/);
+  const heading = page.locator('.fd-article__body h2', { hasText: 'Mood, bipolar & depression' });
+  await expect(heading).toBeFocused();
+  await expect(heading).toBeInViewport();
+  await page.goBack();
+  await expect(page).toHaveURL(/[?&]page=t_mood\.md/);
+  await expect(page.locator('.fd-beyond')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 })
+    .toBeGreaterThan(origin - 80);
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(origin + 80);
+  await expectHealthy(page);
+});
+
 test('desktop chrome is untouched: tabs in the header, panel closed, top back link visible', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await seedApp(page, testInfo);
@@ -4000,9 +4401,9 @@ test.describe('Essentials Phase 2', () => {
       await page.locator('.fd-kit__peek[data-fd-kit-tool="t_mood.md"]').click();
       await expect(page.locator('.fd-kit__tool-preview .governance-badge')).toHaveText('Pending review · High risk');
     }
-    await expect(page.locator('.fd-kit__review')).toContainText(/^Faculty re-review in progress — \d+ of \d+ readings changed since they were last attested ·/);
+    await expect(page.locator('.fd-kit__review summary')).toHaveText(/^Faculty re-review · \d+ of \d+ readings$/);
     await page.locator('.fd-kit__review summary').click();
-    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings are marked pending review. Open a reading to see its full review notice.');
+    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings changed since they were last attested and are marked pending review. Open a reading to see its full review notice.');
     await expectHealthy(page);
   });
   test('summaries are byte-identical to topic_meta and the desktop preview pane follows the selected row', async ({ page }, info) => {
@@ -4167,9 +4568,28 @@ test.describe('Essentials Phase 2', () => {
   });
   test('responsive: targets, no horizontal overflow at 320/390/641/1280 and at 200% text, reduced motion, and actual evidence', async ({ page }, info) => {
     await seedApp(page, info);
+    // Always exercise the re-review notice, independent of the live faculty queue: every live pending
+    // row is first served as reviewed (main's serveNothingPending contract), then exactly one
+    // page -- the primer -- is served pending, so the notice is deterministic.
+    await page.route('**/*', async route => {
+      if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+      const response = await routeFetchWithRetry(route), body = await response.text();
+      const prefix = 'var FD_SITE_MANIFEST=', start = body.indexOf(prefix) + prefix.length;
+      expect(start).toBeGreaterThan(prefix.length);
+      const end = body.indexOf(';\n', start), manifest = JSON.parse(body.slice(start, end));
+      for (const list of [manifest.md || [], manifest.tools || []]) {
+        for (const entry of list) if (entry[3] && entry[3].status === 'pending') entry[3] = { ...entry[3], status: 'reviewed' };
+      }
+      const primer = manifest.md.find(entry => entry[1] === 'psychopharm_primer.md');
+      expect(primer).toBeTruthy();
+      primer[3] = { status: 'pending', riskKind: 'clinical', riskLevel: 'high' };
+      await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(manifest) + body.slice(end) });
+    });
     for (const width of [320, 390, 641, 1280]) {
       await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
       await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
+      await expect(page.locator('.fd-kit__review summary')).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       const desktop = width >= 1000;
       await expect(page.locator('.fd-kit__tool-preview')).toBeVisible({ visible: desktop });

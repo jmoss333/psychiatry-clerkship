@@ -294,8 +294,9 @@ first*
   patient. What should we do until you get here?"
 
 **Script `soon`** — label: *Ask them to see the patient today*
-- **Situation:** "They were agitated and are calmer now with verbal de-escalation. No one is in
-  immediate danger."
+- **Situation:** "They have been agitated, and no one is in immediate danger. Right now they are
+  [calmer with verbal de-escalation, or still agitated]." *(Owner ruling 2026-10-11: neither path
+  that reaches this script establishes "calmer now".)*
 - **Background:** as `now`.
 - **Assessment:** "Vitals and glucose are normal. I'm wondering about [akathisia, pain,
   retention, or a behavioral cause]."
@@ -365,21 +366,24 @@ now*
 2. Ask about past attempts and access to lethal means if you have not yet.
 
 **Script `now`** — label: *Ask them to come now*
-- **Situation:** "I'm calling about a suicide safety concern. They told me: '[their exact
-  words]'. I need you to assess them now."
+- **Situation:** "I'm calling about a suicide safety concern: [their exact words, what they did,
+  or what prompted my concern]. I need you to assess them now." *(Owner ruling 2026-10-11: this
+  script is reachable from the first question via the pinned Escalate button, so it must allow
+  unknowns.)*
 - **Background:** "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access
   to lethal means: [firearms, stockpiled medication, other, or unknown]."
-- **Assessment:** "I'm worried their acute risk is high because [plan, intent, preparation, an
-  acute risk factor, or contradicting collateral]. Right now [who is with them]."
+- **Assessment:** "I'm worried their acute risk may be high. What I know so far: [plan, intent,
+  preparation, an acute risk factor — or: I haven't asked yet]. Right now [who is with them]."
 - **Recommendation:** "Please come now. Should they be on closer observation until you get
   here?"
 
 **Script `soon`** — label: *Ask them to see the patient today*
-- **Situation:** "I want to report a safety concern from my interview. They told me: '[their
-  exact words]'."
+- **Situation:** "I want to report a safety concern from my interview: [their exact words, or
+  what prompted my concern]."
 - **Background:** as `now`.
-- **Assessment:** "I did not find a plan, intent, preparation, or acute risk factor, but I'm not
-  the one who decides their risk."
+- **Assessment:** "What I found: [no plan, intent, preparation or acute risk factor; or: denies
+  suicidal thoughts]. I'm not the one who decides their risk." *(Owner ruling 2026-10-11: the
+  `denies` path never asks about plan or intent.)*
 - **Recommendation:** "Can you assess them today — when? Is there anything I should do first?"
 
 ### 6.3 Delirium — `delirium.md` (start: `vitals`)
@@ -450,12 +454,13 @@ see: Agitation
   get here?"
 
 **Script `soon`** — label: *Ask them to see the patient today*
-- **Situation:** "I'm calling about a change in mental status I noticed: [what you saw]. Vitals
-  and glucose are normal and nothing is unsafe right now."
+- **Situation:** "I'm calling about their mental status: [what you saw, and whether it is new or
+  long-standing]. Vitals and glucose are normal and nothing is unsafe right now."
 - **Background:** as `now`.
-- **Assessment:** "Attention test: [result]. It started [when]. I'm not sure yet whether this is
-  delirium."
-- **Recommendation:** "Can you see them today — when? Should I retest attention later this
+- **Assessment:** "Attention test: [result, or not done]. Onset: [when it started, or
+  long-standing per collateral]. I'm not sure yet whether this is delirium." *(Owner ruling
+  2026-10-11: the `baseline` path is long-standing and skips the attention test.)*
+- **Recommendation:** "Can you see them today — when? Should I check attention later this
   shift?"
 
 ## 7. Decisions for the owner
