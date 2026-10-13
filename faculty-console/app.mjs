@@ -3843,6 +3843,18 @@ export function startFacultyConsole({
       if (!Array.isArray(data.sign) || !Array.isArray(data.excluded) || !text(data.statement)) {
         throw new Error('The server returned an incomplete list of items to sign.');
       }
+      const questions = data.questions;
+      const ids = new Set();
+      if (!questions || !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(text(questions.manifestRevision))
+          || !Array.isArray(questions.sign) || !Array.isArray(questions.excluded)
+          || questions.sign.length > 500 || questions.sign.some(item => {
+            if (!/^qb_[a-z]+_[0-9]{3}$/.test(text(item?.id))
+                || !/^[a-f0-9]{64}$/.test(text(item?.revision)) || ids.has(item.id)) return true;
+            ids.add(item.id);
+            return false;
+          })) {
+        throw new Error('Reload the baseline preview. The server did not provide exact question revisions.');
+      }
       next = { status: 'ready', data };
     } catch (error) {
       next = {
@@ -3872,8 +3884,9 @@ export function startFacultyConsole({
   function renderBaselineBody() {
     const children = [el('p', { class: 'hint' }, [
       'One press signs every page and tool that needs your signature — never signed, or changed '
-      + 'since you signed — exactly as each reads right now, and attests every draft question '
-      + 'that has no warning. Untick anything you have not read. Anything the site build would '
+      + 'since you signed — exactly as each reads right now, and attests the draft questions '
+      + 'listed below at their saved revisions. If a question changes, reload and review it again. '
+      + 'Untick any page you have not read. Anything the site build would '
       + 'refuse is listed under “Left out” with the reason, and is not signed.',
     ])];
     const view = state.baseline;
@@ -3979,6 +3992,10 @@ export function startFacultyConsole({
           mode: 'baseline',
           statement: text(data.statement),
           exclude: list(data.sign).map(item => text(item.slug)).filter(slug => state.baselineLeftOut.has(slug)),
+          questionSnapshot: {
+            manifestRevision: data.questions.manifestRevision,
+            items: data.questions.sign.map(({ id, revision }) => ({ id, revision })),
+          },
         }),
       }, [total
         ? `Sign ${contentNoun(chosen.length)}${questions.length ? ` and attest ${pluralize(questions.length, 'question')}` : ''}`

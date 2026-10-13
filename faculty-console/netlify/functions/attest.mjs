@@ -3062,6 +3062,33 @@ function batchIdList(value, field, pattern, required) {
   return new Set(value);
 }
 
+// The baseline statement covers the questions shown before the press, not a fresh queue
+// assembled afterward. An old console tab must reload rather than implicitly signing it.
+function requireQuestionSnapshot(value) {
+  if (value === undefined) {
+    throw new HttpError('batch.question_snapshot_required', 409,
+      'Reload the baseline preview before attesting its questions. Their saved revisions are required.');
+  }
+  const ids = new Set();
+  if (!isRecord(value) || typeof value.manifestRevision !== 'string'
+      || !GIT_OBJECT_ID_PATTERN.test(value.manifestRevision)
+      || !Array.isArray(value.items) || value.items.length > MAX_BATCH_LIST
+      || value.items.some(item => {
+        if (!isRecord(item) || typeof item.id !== 'string' || !/^qb_[a-z]+_[0-9]{3}$/.test(item.id)
+            || typeof item.revision !== 'string' || !/^[a-f0-9]{64}$/.test(item.revision)
+            || ids.has(item.id)) return true;
+        ids.add(item.id);
+        return false;
+      })) {
+    throw new HttpError('batch.invalid_question_snapshot', 400,
+      'Reload the baseline preview. Its question selection or saved revisions are incomplete.');
+  }
+  return {
+    manifestRevision: value.manifestRevision.toLowerCase(),
+    items: value.items.map(({ id, revision }) => ({ id, revision })),
+  };
+}
+
 /** The batch request, validated; `preview` skips the statement (a preview signs nothing). */
 function requireBatchRequest(body, { preview = false } = {}) {
   const { mode } = body;
@@ -3080,13 +3107,15 @@ function requireBatchRequest(body, { preview = false } = {}) {
   if (body.questions !== undefined && typeof body.questions !== 'boolean') {
     throw new HttpError('batch.invalid_questions', 400, '`questions` must be true or false.');
   }
+  const questions = mode === 'baseline' && body.questions !== false;
   return {
     mode,
     exclude: batchIdList(body.exclude, 'exclude', BATCH_SLUG, false),
     corrections: mode === 'correction'
       ? batchIdList(body.corrections, 'corrections', CORRECTION_ID, true)
       : new Set(),
-    questions: mode === 'baseline' && body.questions !== false,
+    questions,
+    questionSnapshot: questions && !preview ? requireQuestionSnapshot(body.questionSnapshot) : null,
   };
 }
 
@@ -3427,18 +3456,33 @@ async function readyQuestionPlan(repository, settings) {
   };
 }
 
+/** Refuse a stale baseline question selection before the first page signature is written. */
+async function checkQuestionSnapshot(repository, settings, snapshot) {
+  const plan = await readyQuestionPlan(repository, settings);
+  if (snapshot.manifestRevision !== plan.manifestRevision) throw manifestConflict();
+  const ready = new Map(plan.ready.map(item => [item.id, item]));
+  for (const entry of snapshot.items) {
+    const item = ready.get(entry.id);
+    if (!item || itemRevision(item) !== entry.revision) {
+      throw new QbankActionError('qbank.conflict',
+        `${entry.id} changed or is no longer eligible. Reload the baseline preview before signing.`, 409);
+    }
+  }
+  return plan;
+}
+
 /**
  * The baseline's question half. Runs AFTER the pages are signed and never undoes them: any
  * failure here is reported beside the signed pages, not as a failed press.
  */
-async function attestReadyQuestions({ repository, settings, attester }) {
-  let plan = null;
+async function attestReadyQuestions({ repository, settings, attester, snapshot, plan }) {
   try {
-    plan = await readyQuestionPlan(repository, settings);
-    if (!plan.ready.length) return { updated: 0, commit: null, signed: [], excluded: plan.excluded };
+    if (!snapshot.items.length) return { updated: 0, commit: null, signed: [], excluded: plan.excluded };
     const body = {
-      manifestRevision: plan.manifestRevision,
-      items: plan.ready.map(item => ({ id: item.id, revision: itemRevision(item), reviewedRevision: itemRevision(item) })),
+      manifestRevision: snapshot.manifestRevision,
+      // The faculty's baseline statement affirms these exact preview revisions. The usual
+      // mutation rechecks them at its own parent head and on retry; never renew this receipt.
+      items: snapshot.items.map(({ id, revision }) => ({ id, revision, reviewedRevision: revision })),
       confirmations: { ...QUESTION_CONFIRMATIONS },
     };
     const result = settings.ledger
@@ -3447,7 +3491,7 @@ async function attestReadyQuestions({ repository, settings, attester }) {
     return {
       updated: result.updated,
       commit: result.commit,
-      signed: plan.ready.map(item => item.id),
+      signed: snapshot.items.map(item => item.id),
       excluded: plan.excluded,
       ...(result.ledger ? { ledger: result.ledger } : {}),
     };
@@ -3473,6 +3517,11 @@ function publicSign(item) {
 
 async function commitContentBatch({ repository, settings, body, attester }) {
   const request = requireBatchRequest(body);
+  // Refuse an already stale question preview before signing pages. If a question changes
+  // during the subsequent writes, the ordinary question mutation still fails closed and
+  // reports its failure beside any page signatures already saved.
+  const questionPlan = request.questions
+    ? await checkQuestionSnapshot(repository, settings, request.questionSnapshot) : null;
   const at = today();
   // Change history is read once per press: which corrections touched which page does not
   // move between the two attempts; whether each page still needs a signature is re-read.
@@ -3505,7 +3554,9 @@ async function commitContentBatch({ repository, settings, body, attester }) {
       };
     }
   }
-  const questions = request.questions ? await attestReadyQuestions({ repository, settings, attester }) : null;
+  const questions = request.questions ? await attestReadyQuestions({
+    repository, settings, attester, snapshot: request.questionSnapshot, plan: questionPlan,
+  }) : null;
   return {
     ok: true,
     target: 'content',
@@ -3762,7 +3813,9 @@ async function buildBatchPreview(repository, settings, url) {
   if (request.mode === 'baseline') {
     const planned = await readyQuestionPlan(repository, settings);
     questions = {
-      sign: planned.ready.map(item => ({ id: item.id, category: item.category, stem: String(item.stem || '').slice(0, 160) })),
+      manifestRevision: planned.manifestRevision,
+      sign: planned.ready.map(item => ({ id: item.id, revision: itemRevision(item),
+        category: item.category, stem: String(item.stem || '').slice(0, 160) })),
       excluded: planned.excluded,
     };
   }
