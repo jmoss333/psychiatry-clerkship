@@ -410,3 +410,39 @@ test('describeBankFile never drops a file it cannot parse: it is shown as its te
   assert.equal(file.sections.length, 1);
   assert.equal(file.sections[0].text, '{"cases": [');
 });
+
+for (const renamed of ['bar', 'Foo']) {
+  test(`renaming a structured section to ${renamed} rejects the stale receipt and requires reopening after reload`, async () => {
+    const slug = 'family-systems.html';
+    const relative = 'family_systems_scenarios.json';
+    const mock = createRepoMock({ overrides: { [relative]: JSON.stringify({ foo: { note: 'same body' }, stable: { note: 'unchanged' } }) } });
+    const handler = handlerFor(mock);
+    const load = async () => {
+      const r = await call(handler, 'GET', { query: `?view=bank&slug=${slug}` });
+      assert.equal(r.status, 200);
+      return r.payload;
+    };
+    const before = await load();
+    const sections = view => view.files.flatMap(file => file.sections);
+    const opened = new Set(sections(before).map(section => section.key));
+    assert.equal(bankProgress(before, opened).complete, true);
+    mock.files.set(relative, Buffer.from(JSON.stringify({ [renamed]: { note: 'same body' }, stable: { note: 'unchanged' } })));
+    const stale = await call(handler, 'POST', { body: { target: 'content', changes: { [slug]: true }, bankReviews: { [slug]: before.bankRevision } } });
+    assert.equal(stale.status, 409);
+    assert.equal(stale.payload.error.code, 'content.bank_changed');
+    assert.equal(mock.writes.length, 0);
+    const after = await load();
+    const [item] = normalizeReviewItems({ items: [{ slug, kind: 'tool', status: 'unreviewed', bankFiles: [relative] }], qbank: [] });
+    const eligibility = () => deriveAttestationEligibility({ item, previewStatus: 'ready', completeItemReviewed: true,
+      contentChecks: { accuracy: true, interactions: true }, bankReview: bankProgress(after, opened) });
+    assert.equal(bankProgress(after, opened).opened, 1, 'unchanged section retains opening credit');
+    assert.deepEqual(eligibility().blockers, ['review.bank_sections_required']);
+    for (const section of sections(after)) opened.add(section.key);
+    assert.deepEqual(eligibility().blockers, []);
+    const signed = await call(handler, 'POST', { body: { target: 'content', changes: { [slug]: true }, bankReviews: { [slug]: after.bankRevision } } });
+    assert.equal(signed.status, 200);
+    const shared = await call(handler, 'GET', { query: '?view=bank&slug=review.html' });
+    assert.equal(shared.status, 200);
+    assert.deepEqual(shared.payload.files.find(file => file.path === relative).sections.map(section => section.key), sections(after).map(section => section.key), 'identical sections share credit across tools');
+  });
+}
