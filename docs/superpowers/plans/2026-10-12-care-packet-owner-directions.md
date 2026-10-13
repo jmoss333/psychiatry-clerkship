@@ -345,3 +345,75 @@ the matching part of section 3. Items marked **[owner]** are not settled by engi
 - Default-on set: with or without the first-week page; "Making home safer" default-on.
 - Profile governance: governed-list entry and owner-side code-owner rule.
 - The trainee-facing reason strings in the chooser.
+
+
+---
+
+# Revision 3: what the implementation and its independent reviews changed (2026-10-12)
+
+Five independent reviews (clinical safety, governance and trust, correctness and security, accessibility and
+print, and an adversarial generalist) read the implementation of Revision 2 against the owner's nine directions.
+None found a defect that could put wrong content in front of a patient (no P0). Everything below supersedes
+the matching part of Revision 2. Each item has a test that fails without it, and a mutation pass (78 deliberate
+breaks of the guards in the sheet and controller modules) is caught by at least one test.
+
+## R3.1 Behaviour that changed
+
+- **Eligibility judges what will print.** A contact the sheet leaves off the paper (a text keyword or an address
+  that trips the note scan) is not a contact, so a listing left with none is `NO_CONTACT` up front. A web
+  address, a text keyword and a leading-1 short code are scanned for registered crisis numbers. A listing whose
+  NAME holds a verification note or a dose is `LISTING_TEXT` in the chooser. The free-text phone is no longer
+  printed or scanned for notes (the dialable link is what prints).
+- **The browser reads a long crisis number as the validator does**: any run of separators between its digits and
+  an optional leading 1 (so a split six-digit text line or a ten-digit line with spaces around its dashes is
+  found). The list of registered numbers and its patterns are built once per payload.
+- **A typed unit name may not say when the unit answers** (24/7, any time, day or night ...), the same phrases
+  the validator refuses in a profile; **a typed or profile unit phone may not be a helpline-table number.** Parity
+  tests pin both against the Python side. A saved profile id the build no longer ships no longer freezes the
+  fields (the first edit drops it; the status line says so).
+- **The crisis checks test the pair**: each required line's number beside its own official name on the same
+  printed line, on page 1 and on the card. The card's panels must stay ID-1 sized when the card prints, not only
+  in CI. The copied text is checked against its own output.
+- **The older pack's Print is never swapped for the packet**: focus inside the packet is required AND a print that
+  follows a click outside it within two seconds is not the packet's (Safari and Firefox on macOS do not move
+  focus on a click). A staged print whose afterprint never came is torn down after 30 seconds.
+- **The wallet-card control sits before the review gate**, so "Preview and print" is the control that precedes its
+  preview in the Tab order. The card note carries the print settings that keep it card-sized (scale 100, margins
+  Default). A saved listing that can no longer print shows its reason and keeps the pressed button that takes it
+  out, in the chooser as well as the tray.
+- **The welcome page must keep a unit token** (that token is what makes every Final copy need a confirmed
+  profile), an unapproved organisation name is not shipped to the browser, a lapse date that is not a real day is
+  lapsed, and failure messages say what to do.
+
+## R3.2 What the reviews established that the owner should decide or know
+
+- **"Confirmed" is data.** A profile's confirmation is a role and a date typed into `care-unit-profiles.v1.json`;
+  nothing in the repository ties it to a human sign-off. One agent PR could add a valid profile with an invented
+  confirmer and, in the same PR, flip the flag (which satisfies the activation coupling) and merge on green
+  checks. Revision 2 named only the "loosen the validator" route. The close is owner-side: put the profiles file,
+  `validate_care_inserts.py` and `fd_care_packet.js` on the governed list and add a code-owner rule.
+- **Closed, withdrawn and invalid-contact exclusion is the directory feed's, and the packet cannot verify it.**
+  The feed carries no status field and the packet's validator strips unknown keys. The packet consumes the feed's
+  verdicts (a blocked contact is blank) and adds only the crisis direction and "will something print". Whether
+  closed and withdrawn records are excluded depends on the ReConnect exporter running the shared rule.
+- **Crisis exclusion follows the feed's category label, not the service.** About 40 eligible non-crisis listings
+  are crisis stabilization units, crisis receiving centers or hotlines, and the Maine warmline and domestic-violence
+  lines are refused under the crisis category but addable under other categories. This PR does NOT remove them.
+  Recategorising upstream, or a governed rule for what counts, is the owner's call.
+- **The Review copy can read like the take-home copy.** Page 1 still says "It goes home with your After Visit
+  Summary", and a Review copy prints a typed or lapsed phone with no mark on paper (the preview says it is not
+  confirmed). The draft line appears only when there is no phone. Whether to mark an unconfirmed number on paper
+  is a wording and design decision.
+- **The vocabulary rule is per sentence.** "Call the unit at ___. Someone will pick up any time" passes the
+  validator, because it cannot follow who "someone" is. Wording review stays human.
+- **The first profile needs `generatedAt` raised in the same change** (the build reads no clock and dates profiles
+  against the inserts file's `generatedAt`); never back-date the confirmation.
+- **A confirmation lapses at the end of its date in UTC**, so a status line "confirmed through 2026-10-12" lapses
+  at 20:00 Eastern that day.
+- **Performance**: one results repaint with the packet on is about 130-150 ms over 5,684 rows before the memo
+  (eligibility is computed per row; not re-measured since). The memo removes the repeated number-list builds; the
+  per-row rule still runs on every repaint. A cached packet view (section 3.1's original design) was dropped.
+- **The card text is small** (12px names, 13px numbers, about 9-10pt) and has no on-screen preview.
+- **Directions 8 and 9**: the older print workflow is byte-identical to main and unreachable from the flag-off
+  path. Axe checks (#1008) are not in this PR, and direction 9 stands: keyboard, screen-reader and real-print
+  testing (gate G-C) stay open.
