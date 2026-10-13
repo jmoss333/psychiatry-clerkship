@@ -284,7 +284,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Reif et al., NEJM 2023 (ESCAPE-TRD); see also Anand et al., NEJM 2023 — ketamine vs. ECT for nonpsychotic TRD.
 
-- **Pearl:** Esketamine requires a REMS program with 2-hour post-dose monitoring due to dissociation and sedation risk — it cannot be prescribed for home use.
+- **Pearl:** Esketamine requires a REMS program with at least 2 hours of on-site post-dose monitoring (including pulse oximetry) for sedation, dissociation, and respiratory depression in a REMS-certified healthcare setting — it cannot be prescribed for home use.
 
 **29. Does lithium reduce suicide risk?**
 
