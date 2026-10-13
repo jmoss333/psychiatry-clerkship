@@ -67,6 +67,14 @@ _LEDGER_DATE_FIELDS = ("at", "evidenceThrough")
 
 STATUS_START = "<!-- SURFACE-GOVERNANCE:START -->"
 STATUS_END = "<!-- SURFACE-GOVERNANCE:END -->"
+# The injected block lands as the first child of <body>, outside the tool's own <main>, so
+# without a landmark of its own it is "content not contained by landmarks" (axe `region`,
+# moderate; found by the 2026-10-07 axe run on directly-opened tools). It is a named region,
+# not banner/complementary: a tool may carry its own <header>, and the status is about this
+# page rather than supporting it. The wrapper is unstyled, so nothing moves on screen; it is
+# hidden with the block in a governed embed, so the iframe gains no empty landmark.
+STATUS_REGION_CLASS = "surface-governance-region"
+STATUS_REGION_LABEL = "Faculty review status"
 _STATUS_BLOCK_PATTERN = re.compile(
     re.escape(STATUS_START) + r".*?" + re.escape(STATUS_END), re.DOTALL
 )
@@ -106,6 +114,7 @@ _STATUS_STYLE = (
     '[data-theme="dark"] .surface-governance-receipt{border-bottom-color:#5aad8e;'
     "background:#1e2f27;color:#cdeadd}"
     "html.governed-embed .surface-governance-direct{display:none!important}"
+    "html.governed-embed .surface-governance-region{display:none!important}"
     "</style>"
 )
 # Defensive by design: a failure inside the try must never prevent the
@@ -462,7 +471,14 @@ def _render_direct_tool(source: str, slug: str, entry: dict) -> str:
     )
     # The head insertion shifted every later offset; re-find the body tag.
     body_match = _BODY_OPEN_PATTERN.search(source)
-    block = STATUS_START + _direct_status_markup(entry) + STATUS_END
+    block = (
+        STATUS_START
+        + f'<div class="{STATUS_REGION_CLASS}" role="region" '
+        f'aria-label="{escape(STATUS_REGION_LABEL)}">'
+        + _direct_status_markup(entry)
+        + "</div>"
+        + STATUS_END
+    )
     return source[: body_match.end()] + block + source[body_match.end() :]
 
 

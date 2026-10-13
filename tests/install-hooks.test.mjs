@@ -291,19 +291,131 @@ test('both hooks BLOCK when git cannot locate any repository', (t) => {
   assert.deepEqual(traceLines(fx), []);
 });
 
-test('the SessionStart vitals flag an installed hook that predates fail-closed as STALE', (t) => {
+function vitals(fx, cwd = fx.main) {
+  const r = run('bash', [path.join(ROOT, '.claude', 'hooks', 'session_vitals.sh')], {
+    cwd, env: { ...fx.env, CLAUDE_PROJECT_DIR: cwd, CLERKSHIP_SKIP_EGRESS_PROBE: '1' },
+  });
+  assert.equal(r.status, 0, `a startup warning must not block work: ${r.stderr}`);
+  assert.match(r.stdout, /== end vitals ==/, 'the remaining startup report must still run');
+  return r.stdout;
+}
+
+test('the SessionStart vitals flag an installed hook that predates fail-closed as outdated', (t) => {
   const fx = fixture(t);
-  const vitals = () => {
-    const r = run('bash', [path.join(ROOT, '.claude', 'hooks', 'session_vitals.sh')], {
-      cwd: fx.main, env: { CLAUDE_PROJECT_DIR: fx.main, CLERKSHIP_SKIP_EGRESS_PROBE: '1' },
-    });
-    assert.equal(r.status, 0, r.stderr);
-    return r.stdout.split('\n').find((l) => l.startsWith('git hooks:')) ?? '';
-  };
-  assert.match(vitals(), /^git hooks: pre-commit installed · pre-push installed /);
+  assert.match(vitals(fx), /git hooks: pre-commit current · pre-push current/);
   // The pre-push hook every clone carried until 2026-09-24, verbatim in its fail-open lines.
   fs.writeFileSync(path.join(fx.main, '.git', 'hooks', 'pre-push'),
     '#!/usr/bin/env bash\nset -uo pipefail\nTOP="$(git rev-parse --show-toplevel)"\n' +
     '[ -f "$TOP/bin/verify.sh" ] || exit 0\nbash "$TOP/bin/verify.sh" || exit 1\n');
-  assert.match(vitals(), /pre-commit installed · pre-push installed but STALE \(fails open\)/);
+  assert.match(vitals(fx), /pre-commit current · pre-push OUTDATED OR MODIFIED/);
+});
+
+test('startup catches a hook missing LFS upload, changes nothing, and normal commits and pushes still work', (t) => {
+  const fx = fixture(t);
+  // The existing LFS status probe initializes its format metadata on first use. Establish
+  // that baseline before measuring the warning's effect on this scratch repository.
+  vitals(fx, fx.wt);
+  const hook = path.join(fx.main, '.git/hooks/pre-push');
+  const original = fs.readFileSync(hook, 'utf8');
+  const old = original.replace(/^printf .*\| git lfs pre-push.*\n/m, '');
+  assert.notEqual(old, original, 'the fixture must actually remove the upload operation');
+  fs.writeFileSync(hook, old);
+  const config = fs.readFileSync(path.join(fx.main, '.git/config'));
+  const out = vitals(fx, fx.wt);
+  assert.match(out, /pre-push OUTDATED OR MODIFIED/);
+  assert.match(out, /cached origin\/main/);
+  assert.match(out, /update.*checkout.*bin\/install-hooks\.sh/i);
+  assert.equal(fs.readFileSync(hook, 'utf8'), old, 'the warning must not reinstall the hook');
+  assert.deepEqual(fs.readFileSync(path.join(fx.main, '.git/config')), config);
+  assert.deepEqual(traceLines(fx), [], 'the warning must not execute either installed hook');
+  assert.equal(commit(fx, fx.wt, 'ordinary.txt').status, 0);
+  const pushed = push(fx, fx.wt, 'feat');
+  assert.equal(pushed.status, 0, pushed.stderr);
+});
+
+test('startup recognizes current shared hooks from a linked worktree', (t) => {
+  const fx = fixture(t);
+  assert.match(vitals(fx, fx.wt), /pre-commit current · pre-push current/);
+});
+
+test('startup warns about missing and non-executable hooks without failing the session', (t) => {
+  const fx = fixture(t);
+  fs.unlinkSync(path.join(fx.main, '.git/hooks/pre-push'));
+  fs.chmodSync(path.join(fx.main, '.git/hooks/pre-commit'), 0o644);
+  assert.match(vitals(fx), /pre-commit NOT EXECUTABLE · pre-push MISSING/);
+});
+
+test('startup checks the active custom hooks directory rather than inactive default hooks', (t) => {
+  const fx = fixture(t);
+  const custom = path.join(fx.main, 'custom hooks');
+  fs.mkdirSync(custom);
+  for (const name of ['pre-commit', 'pre-push']) {
+    fs.copyFileSync(path.join(fx.main, '.git/hooks', name), path.join(custom, name));
+    fs.chmodSync(path.join(custom, name), 0o755);
+  }
+  fs.appendFileSync(path.join(custom, 'pre-push'), '\n# custom variation\n');
+  git(fx.main, 'config', 'core.hooksPath', 'custom hooks');
+  assert.match(vitals(fx), /pre-commit current · pre-push OUTDATED OR MODIFIED/);
+});
+
+test('startup uses cached main even when the active checkout carries an older installer', (t) => {
+  const fx = fixture(t);
+  fs.writeFileSync(path.join(fx.wt, 'bin/install-hooks.sh'), '# older checkout installer\n');
+  assert.match(vitals(fx, fx.wt), /pre-commit current · pre-push current/);
+});
+
+test('startup labels its local-checkout fallback when no cached main exists', (t) => {
+  const fx = fixture(t);
+  git(fx.main, 'update-ref', '-d', 'refs/remotes/origin/main');
+  const out = vitals(fx);
+  assert.match(out, /pre-commit current · pre-push current/);
+  assert.match(out, /this checkout; no cached origin\/main/);
+});
+
+test('startup reports unavailable when its reference cannot be parsed and never executes hook contents', (t) => {
+  const fx = fixture(t);
+  git(fx.main, 'update-ref', '-d', 'refs/remotes/origin/main');
+  fs.writeFileSync(path.join(fx.main, 'bin/install-hooks.sh'), '# no hook definitions\n');
+  const marker = path.join(fx.dir, 'hook-was-executed');
+  fs.writeFileSync(path.join(fx.main, '.git/hooks/pre-push'), `#!/bin/sh\ntouch '${marker}'\n`);
+  assert.match(vitals(fx), /git hooks: UNAVAILABLE/);
+  assert.equal(fs.existsSync(marker), false);
+});
+
+test('startup reports unavailable when the checker crashes and still completes normally', (t) => {
+  const fx = fixture(t);
+  const scripts = path.join(fx.dir, 'broken-checker');
+  write(path.join(scripts, 'session_vitals.sh'), fs.readFileSync(path.join(ROOT, '.claude/hooks/session_vitals.sh')));
+  write(path.join(scripts, 'git_hook_health.py'), 'raise RuntimeError("synthetic checker failure")\n');
+  const r = run('bash', [path.join(scripts, 'session_vitals.sh')], {
+    cwd: fx.main, env: { CLAUDE_PROJECT_DIR: fx.main, CLERKSHIP_SKIP_EGRESS_PROBE: '1' },
+  });
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /git hooks: UNAVAILABLE/);
+  assert.match(r.stdout, /== end vitals ==/);
+  assert.doesNotMatch(r.stderr, /Traceback/);
+});
+
+test('the standalone hook checker is read-only even before the first startup report', (t) => {
+  const fx = fixture(t);
+  const config = fs.readFileSync(path.join(fx.main, '.git/config'));
+  const r = run('python3', [path.join(ROOT, '.claude/hooks/git_hook_health.py')], { cwd: fx.wt });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /pre-commit current · pre-push current/);
+  assert.deepEqual(fs.readFileSync(path.join(fx.main, '.git/config')), config);
+  assert.deepEqual(traceLines(fx), []);
+});
+
+test('startup times out a hung checker and continues the rest of the report', (t) => {
+  const fx = fixture(t);
+  const scripts = path.join(fx.dir, 'slow-checker');
+  write(path.join(scripts, 'session_vitals.sh'), fs.readFileSync(path.join(ROOT, '.claude/hooks/session_vitals.sh')));
+  write(path.join(scripts, 'git_hook_health.py'), 'import time\ntime.sleep(60)\n');
+  const r = spawnSync('bash', [path.join(scripts, 'session_vitals.sh')], {
+    cwd: fx.main, encoding: 'utf8', timeout: 15_000,
+    env: { ...BASE_ENV, CLAUDE_PROJECT_DIR: fx.main, CLERKSHIP_SKIP_EGRESS_PROBE: '1' },
+  });
+  assert.equal(r.status, 0, `a hung checker must not hold startup: ${r.error || r.stderr}`);
+  assert.match(r.stdout, /git hooks: UNAVAILABLE/);
+  assert.match(r.stdout, /== end vitals ==/);
 });

@@ -354,6 +354,11 @@ step "label pins agree with the receipt"   python3 $A/pharmacy/check_label_drift
 step "unit — surface governance"            python3 $A/test_surface_governance.py
 step "unit — tool governance"               python3 $A/test_validate_tool_governance.py
 step "validate_tool_governance"             python3 $A/validate_tool_governance.py
+# Care aftercare packet inserts (PR A). build_and_check.sh runs these too, but its "$LIB/..." paths
+# are invisible to bin/check_vacuity.py, which then reports the test file as a falsification no
+# gate runs. Same defect, same fix as test_validate_curriculum.py above.
+step "unit — care inserts"                  python3 $A/test_validate_care_inserts.py
+step "validate_care_inserts"                python3 $A/validate_care_inserts.py
 step "lint — no hard-coded machine paths"   lint_machine_paths
 # ci.yml runs this with --compare-ref "$BASE_SHA" on PR events; the bare form is its own
 # else-branch, so local runs get the same immutability contract minus the base comparison.

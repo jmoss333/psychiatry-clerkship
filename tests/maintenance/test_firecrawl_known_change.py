@@ -15,7 +15,7 @@ class KnownChange(unittest.TestCase):
         import run_firecrawl_known_change as K
         self.K = K
 
-    def run_case(self, directory, statuses=None, stale=False, interrupt=False):
+    def run_case(self, directory, statuses=None, stale=False, interrupt=False, change_kind="wording"):
         K = self.K
         state = {'version': None, 'calls': 0, 'published': []}
         class Publisher:
@@ -34,8 +34,40 @@ class KnownChange(unittest.TestCase):
                 'metadata': {'statusCode': 200, 'sourceURL': source['url'], 'url': source['url']},
                 'changeTracking': {'changeStatus': statuses[i], 'previousScrapeAt': None if i == 0 else '2026-10-04T10:00:01Z'}}}
         with patch.object(K.R, 'fetch', side_effect=fetch), patch.object(K, 'now', return_value='2026-10-04T10:00:01+00:00'), patch.object(K, 'wait_for_fixture', return_value=True):
-            report = K.run_known_change(Path(directory)/'probe', 'synthetic-secret', Publisher(), 'synthetic-run')
+            report = K.run_known_change(Path(directory)/'probe', 'synthetic-secret', Publisher(), 'synthetic-run', change_kind=change_kind)
         return report, state
+
+    def test_emphasis_control_preserves_words_and_measures_packet_noise(self):
+        with tempfile.TemporaryDirectory() as d:
+            report, state = self.run_case(d, change_kind='emphasis')
+            self.assertEqual(state['published'][0], state['published'][1].replace('**Cedar**', 'Cedar'))
+            self.assertEqual(report['status'], 'complete')
+            self.assertEqual(report['apiRequests'], 4)
+            replay = report['facultyReplay']
+            self.assertEqual(replay['status'], 'complete')
+            self.assertEqual(replay['newPacketsByObservation'], [0,0,0,0])
+            self.assertEqual(replay['pendingPackets'], 0)
+            self.assertFalse(replay['formattingOnlyAlert'])
+            self.assertEqual(replay['candidateCount'], 0)
+            self.assertEqual(replay['productionInboxWrites'], 0)
+
+    def test_whitespace_control_replay_is_quiet_but_wording_control_is_not(self):
+        with tempfile.TemporaryDirectory() as d:
+            report,_ = self.run_case(d)
+            self.assertEqual(report['facultyReplay']['newPacketsByObservation'], [0,0,1,0])
+            baseline = report['observations'][0]['response']['data']['markdown']
+            for i, observation in enumerate(report['observations']):
+                observation['response']['data']['markdown'] = baseline if i < 2 else baseline.replace(' ', '  ')
+            replay = self.K.replay_faculty(report)
+            self.assertEqual(replay['newPacketsByObservation'], [0,0,0,0])
+            self.assertEqual(replay['pendingPackets'], 0)
+
+    def test_stale_emphasis_version_cannot_claim_no_alert(self):
+        with tempfile.TemporaryDirectory() as d:
+            report,_ = self.run_case(d, stale=True, change_kind='emphasis')
+            self.assertEqual(report['status'], 'incomplete')
+            self.assertEqual(report['facultyReplay']['status'], 'inconclusive')
+            self.assertIsNone(report['facultyReplay']['formattingOnlyAlert'])
 
     def test_four_observations_prove_same_changed_same(self):
         with tempfile.TemporaryDirectory() as d:
