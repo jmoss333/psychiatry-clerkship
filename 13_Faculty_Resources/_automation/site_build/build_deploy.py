@@ -664,6 +664,13 @@ try:
 except care_inserts_payload.PayloadError as _care_error:
     print("BUILD ABORTED — aftercare packet payload: %s"%_care_error)
     raise SystemExit(1)
+# Safety-drawer draft trees: previews only (common.apply_draft_trees_flag). The resident build
+# copies this index.html, so both sites inherit the same value from the same CONTEXT.
+try:
+    _spa_t=common.apply_draft_trees_flag(_spa_t)
+except ValueError as _draft_err:
+    print("BUILD ABORTED —",_draft_err)
+    raise SystemExit(1)
 open(_spa_out,"w",encoding="utf-8").write(_spa_t)
 print("retired-qb injection:",len(_retired_ids),"id(s)")
 print("draft-qb injection:",len(_draft_ids),"id(s)")

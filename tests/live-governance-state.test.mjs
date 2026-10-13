@@ -155,6 +155,11 @@ const REGISTRY = Object.freeze({
     why: 'Renders real protocols; the reviewed branch is pinned by ATTESTED_META, a controlled review state over '
       + "the real delirium.md content, instead of that page's live facultyReview.",
   },
+  'tests/fd-tree.test.mjs': {
+    kind: 'invariant',
+    why: 'Reads only the real safetyTree blocks (each passes the runtime check; none is copied into fd_tree.js), '
+      + 'never a facultyReview; the draft-banner branch is an inline `draft` render option, so no assertion depends on what is signed.',
+  },
   'tests/mse-rounds.test.mjs': {
     kind: 'invariant',
     why: 'Allows either ledger status for mse.html and oral.html and checks the pending sentinel only for a '
