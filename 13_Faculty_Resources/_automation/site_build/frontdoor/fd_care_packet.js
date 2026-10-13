@@ -16,10 +16,10 @@ var FD_CARE_PACKET_STALE_DAYS=7;
 /* The standard inserts (printed in the next release). Stored switches are limited to these names. */
 var FD_CARE_PACKET_INSERTS=['intro','week','callback','warning','safety','family','national','insurance','meds','rights','notes'];
 var FD_CARE_PACKET_GATES=[
-  ['verification','I confirmed each listing with the service or its website'],
-  ['region','The listings match where the patient will live'],
-  ['identifiers','No patient identifiers were typed anywhere in this packet'],
-  ['supervisor','My supervisor reviewed this packet']];
+  ['verification','I checked each listing’s contact details and access instructions with the service or on its website.'],
+  ['region','I checked that these options fit the patient’s needs, where they will live, and their practical ability to use the services.'],
+  ['identifiers','I checked that no patient-identifying information was entered into this tool.'],
+  ['supervisor','My supervising clinician reviewed this packet and approved it for this patient.']];
 
 function fdCarePacketBlank(){return {ids:[],why:{},inserts:{},mode:'review',unit:{name:'',phone:'',profile:''}};}
 /* Any saved state at all: Clear is offered whenever there is some, not only when there are listings. */
@@ -132,16 +132,40 @@ function fdCarePacketToggle(state,id,data,payload){
   return {state:next,result:'added'};
 }
 function fdCarePacketAddMany(state,ids,data,payload){
-  var byId=fdCarePacketRecords(data),next=fdCarePacketPrune(state,data),added=0,already=0,skipped=0,ineligible=0;
+  var byId=fdCarePacketRecords(data),next=fdCarePacketPrune(state,data),added=0,already=0,skipped=0,unavailable=0,ineligible=0,omitted=[],seen=Object.create(null);
   for(var i=0;i<ids.length;i++){
-    var id=ids[i];
-    if(!byId[id])continue;
+    var id=ids[i],record=byId[id];
+    if(seen[id])continue;seen[id]=true;
+    if(!record){unavailable++;omitted.push({id:id,name:'Unavailable listing',reason:'unavailable'});continue;}
     if(next.ids.indexOf(id)!==-1){already++;continue;}
-    if(fdCarePacketEligibility(byId[id],payload)){ineligible++;continue;}
-    if(next.ids.length>=FD_CARE_PACKET_LIMIT){skipped++;continue;}
+    var reason=fdCarePacketEligibility(record,payload);
+    if(reason){ineligible++;omitted.push({id:id,name:record.name,reason:reason});continue;}
+    if(next.ids.length>=FD_CARE_PACKET_LIMIT){skipped++;omitted.push({id:id,name:record.name,reason:'capacity'});continue;}
     next.ids.push(id);added++;
   }
-  return {state:next,added:added,already:already,skipped:skipped,ineligible:ineligible};
+  return {state:next,added:added,already:already,skipped:skipped,unavailable:unavailable,ineligible:ineligible,omitted:omitted};
+}
+function fdCarePacketBulkSummary(result){
+  return 'Added '+result.added+' listing'+(result.added===1?'':'s')+'.'+
+    (result.already?' '+result.already+(result.already===1?' was':' were')+' already in your packet.':'')+
+    (result.skipped?' '+result.skipped+(result.skipped===1?' was':' were')+' not added because the packet is full.':'')+
+    (result.unavailable?' '+result.unavailable+(result.unavailable===1?' was':' were')+' not added because the listing information is unavailable.':'')+
+    (result.ineligible?' '+result.ineligible+(result.ineligible===1?' was':' were')+' not added because the listing does not meet the packet’s eligibility rules.':'');
+}
+function fdCarePacketBulkOutcome(result){
+  if(!result)return '';
+  var out='<div class="fd-care-packet__outcome"><p>'+fdEsc(fdCarePacketBulkSummary(result))+'</p>',i,item,reason;
+  if(result.omitted.length){
+    out+='<details><summary>See what wasn’t added</summary><ul>';
+    for(i=0;i<result.omitted.length;i++){
+      item=result.omitted[i];
+      reason=item.reason==='capacity'?'packet is full':item.reason==='unavailable'?'listing information unavailable':
+        (typeof fdCarePacketReasonText==='function'?fdCarePacketReasonText(item.reason):'not eligible for this packet');
+      out+='<li>'+fdEsc(item.name)+' — '+fdEsc(reason)+'</li>';
+    }
+    out+='</ul></details>';
+  }
+  return out+'</div>';
 }
 function fdCarePacketRemove(state,id){
   var next=fdCarePacketCopy(state),at=next.ids.indexOf(id);
@@ -172,7 +196,7 @@ function fdCarePacketContext(state,data,payload){
   var live=fdCarePacketIds(state,data),ids=Object.create(null),byId=fdCarePacketRecords(data);
   for(var i=0;i<live.length;i++)ids[live[i]]=true;
   /* reason(id): why this listing cannot be in the packet, or ''. The payload being unusable is its own reason, shown once. */
-  return {ids:ids,count:live.length,full:fdCarePacketHeld(state,data)>=FD_CARE_PACKET_LIMIT,payloadOk:fdCarePacketPayloadOk(payload),
+  return {ids:ids,count:live.length,remaining:Math.max(0,FD_CARE_PACKET_LIMIT-fdCarePacketHeld(state,data)),full:fdCarePacketHeld(state,data)>=FD_CARE_PACKET_LIMIT,payloadOk:fdCarePacketPayloadOk(payload),
     reason:function(id){return byId[id]?fdCarePacketEligibility(byId[id],payload):'NO_CONTACT';}};
 }
 /* A context built by anything else than the controller has no rule to ask, and then nothing is offered. */
@@ -186,10 +210,9 @@ function fdCarePacketButton(row,ctx){
   note=reason?'<p class="fd-care-search__ineligible" data-fd-care-packet-ineligible="'+fdEsc(reason)+'">Can’t be added to the packet: '+fdEsc(fdCarePacketReasonText(reason))+'</p>':'';
   /* Not in the packet: nothing to press. In the packet: the same pressed button as ever, so the trainee can take it out here too. */
   if(reason&&!packed)return note;
-  /* The visible label never changes, so the accessible name always contains it (WCAG 2.5.3); the pressed
-     state, the "In packet" tag and the card border carry the state. */
+  var label=packed?'Remove from packet':'Add to packet';
   return note+'<button type="button" class="fd-care-search__pack" data-fd-care-packet="'+fdEsc(row.id)+'" aria-pressed="'+(packed?'true':'false')+
-    '" aria-label="'+fdEsc('Add to packet: '+row.name)+'"'+(locked?' disabled':'')+'>Add to packet</button>';
+    '" aria-label="'+fdEsc(label+': '+row.name)+'"'+(locked?' disabled':'')+'>'+label+'</button>';
 }
 function fdCarePacketBulk(result,ctx){
   if(!result||result.idle||!result.total)return '';
@@ -205,9 +228,16 @@ function fdCarePacketBulk(result,ctx){
     else if(!ctx.ids[id])all++;
   }
   if(blocked)note='<p class="fd-care-search__ineligible" data-fd-care-packet-ineligible-count>'+blocked+' result'+(blocked===1?'':'s')+' can’t go in the packet and '+(blocked===1?'is':'are')+' not counted.</p>';
+  return fdCarePacketBulkControls(page,all,ctx.remaining)+note;
+}
+
+function fdCarePacketBulkControls(page,all,remaining){
   return '<div class="fd-care-search__bulk" role="group" aria-label="Add listings to the packet">'+
-    '<button type="button" data-fd-care-packet-page'+(ctx.full||!page?' disabled':'')+'>Add this page ('+page+')</button>'+
-    '<button type="button" data-fd-care-packet-all'+(ctx.full||!all?' disabled':'')+'>Add all results ('+all+')</button></div>'+note;
+    '<p class="fd-care-search__capacity">Adds in result order · '+remaining+' space'+(remaining===1?'':'s')+' remaining.</p>'+
+    '<div><button type="button" data-fd-care-packet-page aria-describedby="fd-care-packet-page-capacity"'+(!remaining||!page?' disabled':'')+'>Add from this page</button>'+
+    '<p id="fd-care-packet-page-capacity">'+Math.min(page,remaining)+' of '+page+' new matches will fit.</p></div>'+
+    '<div><button type="button" data-fd-care-packet-all aria-describedby="fd-care-packet-all-capacity"'+(!remaining||!all?' disabled':'')+'>Add from all results</button>'+
+    '<p id="fd-care-packet-all-capacity">'+Math.min(all,remaining)+' of '+all+' new matches will fit.</p></div></div>';
 }
 
 /* Why the wallet card cannot print right now, or ''. It needs only the governed crisis lines and its own copy. */
@@ -231,10 +261,11 @@ function fdCarePacketTray(state,data,gate,ui){
   else if(held>FD_CARE_PACKET_SUGGEST)out+='<p class="fd-care-packet__hint">Eight or fewer is easier to read. You can still add up to '+FD_CARE_PACKET_LIMIT+'.</p>';
   if(held>n)out+='<p class="fd-care-packet__hint">'+(held-n)+' saved listing'+(held-n===1?' is':'s are')+' hidden while the directory is incomplete.</p>';
   if(payloadDown&&n)out+='<p class="fd-care-packet__hint" data-fd-care-packet-ineligible="PAYLOAD">'+fdEsc(fdCarePacketReasonText('PAYLOAD'))+'</p>';
-  out+='</header>';
+  out+='</header>'+fdCarePacketBulkOutcome(ui.bulkResult);
   if(!n){
     out+='<p class="fd-care-packet__empty">No listings yet. Choose “Add to packet” on a search result.</p>';
   }else{
+    out+='<p class="fd-care-packet__hint">Listings are grouped by service type. Use Move up or Move down to change their order within a group.</p>';
     var cats=(data&&data.categories)||[];
     for(g=0;g<cats.length;g++){
       var members=[];
@@ -256,7 +287,7 @@ function fdCarePacketTray(state,data,gate,ui){
     }
   }
   /* Offered whenever anything is saved (a unit, a profile, a Final copy, a page switch), not only when there are listings. */
-  if(fdCarePacketHasState(state))out+='<button type="button" class="fd-care-packet__clear" data-fd-care-packet-clear>Clear packet</button>';
+  out+='<button type="button" class="fd-care-packet__clear" data-fd-care-packet-clear'+(!fdCarePacketHasState(state)?' disabled':'')+'>Clear packet</button>';
   /* The wallet card is its own optional print, available with no listings, with its own note and reason line. It needs
      no review confirmations, mode or unit details: it carries only the governed crisis lines and write-in space. */
   out+='<div class="fd-care-packet__card"><button type="button" class="fd-care-packet__cardbtn" data-fd-care-packet-card-print aria-describedby="fd-care-packet-card-note"'+
@@ -429,7 +460,7 @@ function fdCreateCarePacket(options){
   var state=null,gate=fdCarePacketGateBlank(),root=null,live=null,notify=null,sayTimer=null;
   var previewRoot=null,controlsNode=null,pagesNode=null,controlsBuilt=false,previewOpen=false,draft={},pagesTimer=null,deferTimer=null,lastSheet=null;
   var printing=false,printStarted=0,printHost=null,pageStyle=null,savedTitle=null,printTitle='',printKind='',fallbackText='',cardMessage='',listening=false,lastPointer=null;
-  var copyEpoch=0;
+  var copyEpoch=0,bulkResult=null,clearDialog=null;
   var printPermit=false,printFingerprint='';
   var authority=null,authorityBusy=false,authoritySerial=0,authorityTimer=null,reviewFingerprint='';
   var callbackGate={arranged:false,plan:false,preferences:false};
@@ -629,7 +660,7 @@ function fdCreateCarePacket(options){
     var patched=false;
     if(root&&root.isConnected!==false){
       if(opts&&opts.patch)patched=patchTray();
-      if(!patched)root.innerHTML=fdCarePacketTray(current(),getData(),gate,{previewOpen:previewOpen,payload:payload,cardMessage:cardMessage});
+      if(!patched)root.innerHTML=fdCarePacketTray(current(),getData(),gate,{previewOpen:previewOpen,payload:payload,cardMessage:cardMessage,bulkResult:bulkResult});
     }
     clearTimeout(deferTimer);deferTimer=null;
     if(opts&&opts.defer&&previewOpen){
@@ -751,7 +782,7 @@ function fdCreateCarePacket(options){
   function toggle(id){
     var r=fdCarePacketToggle(current(),id,getData(),payload),was=false;
     if(r.result==='added'||r.result==='removed'){
-      if(r.result==='added')was=resetGate();
+      was=resetGate();bulkResult=null;
       commit(r.state);
       say((r.result==='added'?'Added ':'Removed ')+nameOf(id)+(r.result==='added'?' to':' from')+' the packet. '+plural(count())+' in packet.'+cleared(was));
     }else if(r.result==='full')say('The packet is full at '+FD_CARE_PACKET_LIMIT+'. Remove a listing to add another.');
@@ -763,17 +794,23 @@ function fdCreateCarePacket(options){
   }
   function addMany(ids){
     var r=fdCarePacketAddMany(current(),ids,getData(),payload),was=false;
-    if(r.added){was=resetGate();commit(r.state);}
-    say('Added '+plural(r.added)+'.'+(r.already?' '+r.already+' already in the packet.':'')+
-      (r.ineligible?' '+r.ineligible+' not added because '+(r.ineligible===1?'it can’t':'they can’t')+' go in the packet.':'')+
-      (r.skipped?' '+r.skipped+' not added because the packet is full at '+FD_CARE_PACKET_LIMIT+'.':'')+' '+plural(count())+' in packet.'+cleared(was));
+    bulkResult=r;
+    if(r.added){was=resetGate();commit(r.state);}else paint();
+    say(fdCarePacketBulkSummary(r)+' '+plural(count())+' in packet.'+cleared(was));
     return {added:r.added,already:r.already,skipped:r.skipped,ineligible:r.ineligible};
   }
   function move(id,delta){
     var next=fdCarePacketMove(current(),id,delta,getData());
-    if(next!==state){commit(next);say('Moved '+nameOf(id)+(delta<0?' up':' down')+'.');}
+    if(next!==state){
+      var was=resetGate();bulkResult=null;commit(next);
+      var byId=fdCarePacketRecords(getData()),members=fdCarePacketDisplayOrder(current(),getData()).filter(function(key){return byId[key].category===byId[id].category;});
+      say('Moved '+nameOf(id)+' to position '+(members.indexOf(id)+1)+' of '+members.length+' in its group.'+cleared(was));
+    }
   }
-  function remove(id){commit(fdCarePacketRemove(current(),id));say('Removed '+nameOf(id)+' from the packet. '+plural(count())+' in packet.');}
+  function remove(id){
+    if(current().ids.indexOf(id)===-1)return;
+    var was=resetGate();bulkResult=null;commit(fdCarePacketRemove(current(),id));say('Removed '+nameOf(id)+' from the packet. '+plural(count())+' in packet.'+cleared(was));
+  }
   /* Clear removes everything the packet holds: listings, the unit's details and any loaded profile, the copy and the page
      switches, and every confirmation. A verified profile can be loaded again, explicitly. */
   function clear(){
@@ -782,10 +819,40 @@ function fdCreateCarePacket(options){
     if(n)parts.push(plural(n));
     if(cur.unit.name||cur.unit.phone||cur.unit.profile)parts.push('unit details');
     if(switched)parts.push('copy and page choices');
-    draft={};cardMessage='';
+    bulkResult=null;draft={};cardMessage='';
     clearTimeout(pagesTimer);pagesTimer=null;
     commit(fdCarePacketBlank());
     say('Packet cleared'+(parts.length?': '+parts.join(', ')+' removed':'')+'.'+cleared(was));
+  }
+  function dismissClear(restore){
+    if(!clearDialog)return;
+    var d=clearDialog;clearDialog=null;d.close();d.remove();
+    if(restore&&root){var button=root.querySelector('[data-fd-care-packet-clear]');if(button)button.focus();}
+  }
+  function requestClear(){
+    if(clearDialog)return;
+    if(typeof document==='undefined'||!document.body)return;
+    var held=current().ids.length,d=document.createElement('dialog');
+    d.className='fd-care-packet__confirm';d.setAttribute('aria-labelledby','fd-care-packet-clear-title');
+    d.setAttribute('aria-describedby','fd-care-packet-clear-description');
+    d.innerHTML='<h2 id="fd-care-packet-clear-title">'+(held?'Clear all '+held+' listing'+(held===1?'':'s')+'?':'Clear this packet?')+'</h2>'+
+      '<p id="fd-care-packet-clear-description">This removes all selected listings and resets packet choices and review confirmations.</p>'+
+      '<button type="button" autofocus>Keep packet</button> <button type="button">Clear packet</button>';
+    if(typeof d.showModal!=='function'){say('Clear confirmation is unavailable in this browser. Your packet was kept.');return;}
+    clearDialog=d;document.body.appendChild(d);
+    d.addEventListener('cancel',function(event){event.preventDefault();dismissClear(true);});
+    d.addEventListener('click',function(event){
+      var buttons=d.querySelectorAll('button');
+      if(event.target===buttons[0])dismissClear(true);
+      else if(event.target===buttons[1]){
+        dismissClear(false);clear();
+        var search=document.getElementById('fd-care-directory-query');if(search)search.focus();
+      }else if(event.target===d){
+        var rect=d.getBoundingClientRect();
+        if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dismissClear(true);
+      }
+    });
+    d.showModal();d.querySelector('button').focus();
   }
   function readyMessage(){
     var ui;
@@ -1061,7 +1128,7 @@ function fdCreateCarePacket(options){
       remove(id);
       return neighbour?{attr:'data-fd-care-packet-remove',id:neighbour}:{attr:'id',id:'fd-care-packet-title'};
     }
-    if(button.hasAttribute('data-fd-care-packet-clear')){clear();return {attr:'id',id:'fd-care-packet-title'};}
+    if(button.hasAttribute('data-fd-care-packet-clear')){requestClear();return {};}
     return null;
   }
   var OWNED=['data-fd-care-packet-gate','data-fd-care-packet-mode','data-fd-care-packet-insert','data-fd-care-packet-unit-field','data-fd-care-packet-callback'];
@@ -1156,6 +1223,7 @@ function fdCreateCarePacket(options){
        removes anything staged for printing and drops any announcement still queued, so nothing is spoken or
        printed about a surface the trainee has left. */
     leave:function(){
+      dismissClear(false);bulkResult=null;
       clearTimeout(sayTimer);sayTimer=null;clearTimeout(pagesTimer);pagesTimer=null;clearTimeout(deferTimer);deferTimer=null;
       unlisten();teardown();
       previewOpen=false;draft={};controlsBuilt=false;controlsNode=null;pagesNode=null;lastSheet=null;fallbackText='';cardMessage='';printKind='';

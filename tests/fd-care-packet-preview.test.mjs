@@ -215,7 +215,7 @@ test('Clear packet removes everything (listings, unit details, profile, copy, pa
   assert.deepEqual(savedKey(storage).unit, { name: '', phone: '', profile: '' }, 'a confirmed profile comes back only when it is loaded again');
   // Clear is offered whenever anything is saved, not only listings.
   assert.match(P.tray({ ...P.blank(), unit: { ...PROFILE_UNIT } }, dataOf(3), gateOff, { payload: PROFILED }), /data-fd-care-packet-clear/);
-  assert.doesNotMatch(P.tray(P.blank(), dataOf(3), gateOff, { payload: PROFILED }), /data-fd-care-packet-clear/);
+  assert.match(P.tray(P.blank(), dataOf(3), gateOff, { payload: PROFILED }), /data-fd-care-packet-clear disabled/);
 });
 
 // ---- the markup ------------------------------------------------------------------------------------------

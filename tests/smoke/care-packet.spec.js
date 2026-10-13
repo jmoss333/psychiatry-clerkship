@@ -98,16 +98,16 @@ test.describe('flag on', () => {
   });
 
   // ---- AC2
-  test('"Add all results" adds min(N-k, 12-current) across pages, reports the skipped count, and never duplicates', async ({ page }) => {
+  test('"Add from all results" adds min(N-k, 12-current) across pages, reports the skipped count, and never duplicates', async ({ page }) => {
     const panel = await search(page);
     await addButtons(page).nth(0).click();
     await addButtons(page).nth(1).click();
-    await expect(panel.getByRole('button', { name: /^Add this page \(3\)$/ })).toBeVisible();
-    await expect(panel.getByRole('button', { name: /^Add all results \(21\)$/ })).toBeVisible();
-    await panel.getByRole('button', { name: /^Add all results/ }).click();
+    await expect(panel.getByRole('button', { name: /^Add from this page$/ })).toBeVisible();
+    await expect(panel.getByRole('button', { name: /^Add from all results$/ })).toBeVisible();
+    await panel.getByRole('button', { name: /^Add from all results/ }).click();
     await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('12');
     await expect(page.locator('#careDirectoryStatus')).toContainText('Added 10 listings.');
-    await expect(page.locator('#careDirectoryStatus')).toContainText('11 not added because the packet is full at 12');
+    await expect(page.locator('#careDirectoryStatus')).toContainText('11 were not added because the packet is full');
     await expect(page.locator('#careDirectoryStatus')).toContainText('12 listings in packet');
     // Both bulk buttons are now disabled, so focus lands on the tray heading, whose name carries the count.
     await expect(tray(page).locator('#fd-care-packet-title')).toBeFocused();
@@ -119,9 +119,9 @@ test.describe('flag on', () => {
   // ---- AC3
   test('at 12 every remaining add button is disabled and says why; removing one re-enables them', async ({ page }) => {
     const panel = await search(page);
-    await panel.getByRole('button', { name: /^Add all results/ }).click();
+    await panel.getByRole('button', { name: /^Add from all results/ }).click();
     await expect(tray(page)).toContainText('full at 12');
-    await expect(panel.getByRole('button', { name: /^Add all results/ })).toBeDisabled();
+    await expect(panel.getByRole('button', { name: /^Add from all results/ })).toBeDisabled();
     // Page 3 is where the three unpacked listings are, so the assertion below inspects real disabled buttons.
     await panel.getByRole('button', { name: 'Next', exact: true }).click();
     await panel.getByRole('button', { name: 'Next', exact: true }).click();
@@ -136,7 +136,7 @@ test.describe('flag on', () => {
     await expect(tray(page)).not.toContainText('full at 12');
     await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('11');
     for (const button of await unpacked.all()) await expect(button).toBeEnabled();
-    await expect(panel.getByRole('button', { name: /^Add all results/ })).toBeEnabled();
+    await expect(panel.getByRole('button', { name: /^Add from all results/ })).toBeEnabled();
   });
 
   // ---- AC4 (the review gate; what it does to the Print and Copy buttons is in care-packet-print.spec.js)
@@ -173,6 +173,7 @@ test.describe('flag on', () => {
     await tickAll();
     await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'true');
     await tray(page).getByRole('button', { name: 'Clear packet' }).click();
+    await page.getByRole('dialog').getByRole('button', {name:'Clear packet',exact:true}).click();
     await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'false');
     for (const key of GATES) { await expect(gate(key)).not.toBeChecked(); await expect(gate(key)).toBeDisabled(); }
     await addButtons(page).first().click();
@@ -193,7 +194,7 @@ test.describe('flag on', () => {
     page.on('request', r => requests.push(r.url()));
     await addButtons(page).nth(0).click();
     await addButtons(page).nth(1).click();
-    await panel.getByRole('button', { name: /^Add this page/ }).click();
+    await panel.getByRole('button', { name: /^Add from this page/ }).click();
     await tray(page).locator('[data-fd-care-packet-down]:not([disabled])').first().click();
     await tray(page).locator('[data-fd-care-packet-remove]').first().click();
     const during = await snapshot(page);
@@ -201,6 +202,7 @@ test.describe('flag on', () => {
     expect(during.local).toEqual(before.local);
     expect(Object.keys(during.packet).sort()).toEqual(['ids', 'inserts', 'mode', 'unit', 'why']);
     await tray(page).getByRole('button', { name: 'Clear packet' }).click();
+    await page.getByRole('dialog').getByRole('button', {name:'Clear packet',exact:true}).click();
     expect((await snapshot(page)).keys).toEqual([]);
     await page.waitForTimeout(400);
     expect(requests).toEqual([]);
@@ -243,14 +245,14 @@ test.describe('flag on', () => {
       expect(await row.locator('[data-fd-care-packet-ineligible]').evaluate(el => el.tagName + (el.tabIndex >= 0 ? ' focusable' : '')), `${name}: not a control`).toBe('P');
       await expect(row.locator('[data-fd-care-packet]'), `${name}: no add button`).toHaveCount(0);
     }
-    await expect(panel.getByRole('button', { name: 'Add this page (0)' })).toBeDisabled();
-    await expect(panel.getByRole('button', { name: 'Add all results (0)' })).toBeDisabled();
+    await expect(panel.getByRole('button', { name: 'Add from this page (0)' })).toBeDisabled();
+    await expect(panel.getByRole('button', { name: 'Add from all results (0)' })).toBeDisabled();
     await expect(panel.locator('[data-fd-care-packet-ineligible-count]')).toHaveText(`${odd.length} results can’t go in the packet and are not counted.`);
-    // Every listing matches "support" (the shared description), so "Add all results" counts the eligible ones only.
+    // Every listing matches "support" (the shared description), so "Add from all results" counts the eligible ones only.
     await panel.getByLabel('Resource name or service').fill('support');
     const eligible = feed.records.length - odd.length;
-    await expect(panel.getByRole('button', { name: `Add all results (${eligible})` })).toBeVisible();
-    await panel.getByRole('button', { name: /^Add all results/ }).click();
+    await expect(panel.getByRole('button', { name: `Add from all results (${eligible})` })).toBeVisible();
+    await panel.getByRole('button', { name: /^Add from all results/ }).click();
     await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('12');
     await expect(page.locator('#careDirectoryStatus')).toContainText(`Added 12 listings. ${odd.length} not added because they can’t go in the packet. ${eligible - 12} not added because the packet is full at 12.`);
     const packed = await trayNames(page);
@@ -278,7 +280,7 @@ test.describe('flag on', () => {
   test('reorder swaps the right neighbour within a category and keeps focus; Remove focuses the next row ON SCREEN', async ({ page }) => {
     const panel = await search(page, 'example');
     await panel.getByLabel('Category', { exact: true }).selectOption('peer_support');
-    await panel.getByRole('button', { name: /^Add all results/ }).click();
+    await panel.getByRole('button', { name: /^Add from all results/ }).click();
     await panel.getByLabel('Category', { exact: true }).selectOption('aftercare');
     await addButtons(page).first().click();
     expect(await tray(page).locator('.fd-care-packet__group h4').allTextContents()).toEqual(['Aftercare', 'Peer support']);
@@ -296,10 +298,11 @@ test.describe('flag on', () => {
     await item('p-0').locator('[data-fd-care-packet-remove]').click();
     await expect(item('peer-0').locator('[data-fd-care-packet-remove]')).toBeFocused();
     await tray(page).getByRole('button', { name: 'Clear packet' }).click();
-    await expect(tray(page).locator('#fd-care-packet-title')).toBeFocused();
+    await page.getByRole('dialog').getByRole('button', {name:'Clear packet',exact:true}).click();
+    await expect(page.getByLabel('Resource name or service')).toBeFocused();
   });
 
-  test('the directory\'s own controls still work with the packet on, and "Add this page" adds only the visible page', async ({ page }) => {
+  test('the directory\'s own controls still work with the packet on, and "Add from this page" adds only the visible page', async ({ page }) => {
     const panel = await search(page);
     const count = panel.locator('#fd-care-directory-count');
     await panel.getByRole('button', { name: 'Next', exact: true }).click();
@@ -307,7 +310,7 @@ test.describe('flag on', () => {
     await expect(count).toBeFocused();
     const visible = await panel.locator('.fd-care-search__result h4').allTextContents();
     expect(visible).toHaveLength(5);
-    await panel.getByRole('button', { name: /^Add this page \(5\)$/ }).click();
+    await panel.getByRole('button', { name: /^Add from this page$/ }).click();
     await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('5');
     expect((await trayNames(page)).sort()).toEqual([...visible].sort());
     await panel.getByRole('button', { name: 'Previous', exact: true }).click();
@@ -343,7 +346,7 @@ test.describe('flag on', () => {
     test(`targets are 44px, nothing overflows, focus is never hidden, and the tray is reachable by keyboard at ${width}px`, async ({ page }, info) => {
       await page.setViewportSize({ width, height: 900 });
       const panel = await search(page);
-      await panel.getByRole('button', { name: /^Add this page/ }).click();
+      await panel.getByRole('button', { name: /^Add from this page/ }).click();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       for (const element of await panel.locator('[data-fd-care-packet], .fd-care-search__bulk button, .fd-care-packet button, .fd-care-packet__check').all()) {
         if (!(await element.isVisible())) continue;
@@ -377,4 +380,68 @@ test.describe('flag on', () => {
       await panel.screenshot({ path: info.outputPath(`care-packet-${width}.png`) });
     });
   }
+});
+
+// Owner-approved G-B acceptance. The feature is enabled only in intercepted test HTML.
+test.describe('G-B acceptance', () => {
+  test.beforeEach(async ({ page }, info) => {
+    await seed(page, info); await enableCarePacket(page);
+    await pinCareDirectory(page, packetFeed(careDirectoryFixture()));
+    await page.goto('/?tab=care');
+    await page.getByLabel('Resource name or service').fill('support');
+    await expect(addButtons(page).first()).toBeVisible();
+  });
+  test('Clear requires a counted confirmation; Keep, Escape and backdrop preserve the packet', async ({ page }) => {
+    await addButtons(page).first().click(); await addButtons(page).nth(1).click();
+    for (const key of GATES) await tray(page).locator('[data-fd-care-packet-gate="'+key+'"]').check();
+    const saved = (await snapshot(page)).packet;
+    const clear = tray(page).getByRole('button', {name:'Clear packet',exact:true});
+    await clear.click(); const dialog=page.getByRole('dialog',{name:'Clear all 2 listings?'});
+    await expect(dialog).toBeVisible(); await expect(dialog.getByRole('button',{name:'Keep packet'})).toBeFocused();
+    await dialog.getByRole('button',{name:'Keep packet'}).click();
+    expect((await snapshot(page)).packet).toEqual(saved); await expect(clear).toBeFocused();
+    for (const key of GATES) await expect(tray(page).locator('[data-fd-care-packet-gate="'+key+'"]')).toBeChecked();
+    await clear.click(); await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0); expect((await snapshot(page)).packet).toEqual(saved);
+    await clear.click(); await page.mouse.click(1,1); await expect(dialog).toHaveCount(0); expect((await snapshot(page)).packet).toEqual(saved);
+    await clear.click(); await dialog.getByRole('button',{name:'Clear packet',exact:true}).click();
+    await expect(page.getByLabel('Resource name or service')).toBeFocused(); expect((await snapshot(page)).packet).toBeNull();
+    await expect(clear).toBeDisabled(); await page.reload(); expect((await snapshot(page)).packet).toBeNull();
+  });
+  test('bulk preview and omission details explain capacity without losing existing selections', async ({page})=>{
+    await addButtons(page).first().click();
+    await expect(page.locator('#fd-care-packet-all-capacity')).toHaveText('11 of 22 new matches will fit.');
+    await page.getByRole('button',{name:'Add from all results',exact:true}).click();
+    await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('12');
+    await expect(tray(page)).toContainText('Added 11 listings. 1 was already in your packet. 11 were not added because the packet is full.');
+    await tray(page).getByText('See what wasn’t added',{exact:true}).click();
+    await expect(tray(page).locator('details li')).toHaveCount(11);
+    await expect(tray(page).locator('details')).toContainText('packet is full');
+    await expect(page.getByRole('button',{name:'Add from all results',exact:true})).toBeDisabled();
+    await page.getByRole('button',{name:/^Remove from packet:/}).first().click();
+    await expect(page.getByRole('button',{name:'Add from all results',exact:true})).toBeEnabled();
+  });
+  for(const width of [390,320,1280]) test('phone walkthrough: adding and removing at '+width+'px',async({page},info)=>{
+    await page.setViewportSize({width,height:844});
+    const card=page.locator('.fd-care-search__result').first(); const button=card.locator('[data-fd-care-packet]');
+    await button.scrollIntoViewIfNeeded(); await expect(button).toHaveText('Add to packet');
+    await card.screenshot({path:info.outputPath('gb-add-before-'+width+'.png')});
+    await button.click();await expect(button).toHaveText('Remove from packet');await expect(button).toBeFocused();
+    await expect(card.getByText('In packet',{exact:true})).toBeVisible();await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('1');
+    await card.screenshot({path:info.outputPath('gb-add-after-'+width+'.png')});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await button.click();await expect(button).toHaveText('Add to packet');await expect(button).toBeFocused();
+    await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('0');
+    await button.click();await addButtons(page).nth(1).click();
+    await tray(page).getByRole('button',{name:'Clear packet',exact:true}).click();
+    const dialog=page.getByRole('dialog',{name:'Clear all 2 listings?'});
+    await expect(dialog).toBeVisible();await expect(dialog.getByRole('button',{name:'Keep packet'})).toBeFocused();
+    await page.keyboard.press('Tab');await expect(dialog.getByRole('button',{name:'Clear packet',exact:true})).toBeFocused();
+    await page.keyboard.press('Tab');
+    // Native dialogs may focus the dialog root on wrapping, but cannot reach the inert background.
+    expect(await page.evaluate(()=>document.querySelector('dialog').contains(document.activeElement)||document.activeElement===document.body)).toBe(true);
+    await page.screenshot({path:info.outputPath('gb-clear-dialog-'+width+'.png')});
+    expect(await dialog.evaluate(d=>d.getBoundingClientRect().left>=0&&d.getBoundingClientRect().right<=innerWidth)).toBe(true);
+    await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
+    await tray(page).screenshot({path:info.outputPath('gb-review-tray-'+width+'.png')});
+  });
 });

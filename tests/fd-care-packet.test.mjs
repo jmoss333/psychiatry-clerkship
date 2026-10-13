@@ -246,11 +246,11 @@ test('bulk buttons count only listings not already packed, across all pages, and
   const data = dataOf(20);
   const result = P.search(data, 'support', '', '', 1);
   const none = P.bulk(result, P.context(P.blank(), data, PAYLOAD));
-  assert.match(none, /Add this page \(5\)/);
-  assert.match(none, /Add all results \(20\)/);
+  assert.match(none, /5 of 5 new matches will fit/);
+  assert.match(none, /12 of 20 new matches will fit/);
   const some = P.bulk(result, P.context({ ...P.blank(), ids: ['a0', 'a1', 'a19'] }, data, PAYLOAD));
-  assert.match(some, /Add this page \(3\)/);
-  assert.match(some, /Add all results \(17\)/);
+  assert.match(some, /3 of 3 new matches will fit/);
+  assert.match(some, /9 of 17 new matches will fit/);
   const full = P.bulk(result, P.context({ ...P.blank(), ids: idsOf(12) }, data, PAYLOAD));
   assert.equal((full.match(/disabled/g) || []).length, 2, 'both bulk buttons are disabled when the packet is full');
   assert.equal(P.bulk(P.search(data, '', '', '', 1), P.context(P.blank(), data, PAYLOAD)), '', 'hidden while idle');
@@ -283,7 +283,7 @@ test('the tray is empty-state safe, grouped by category, escaped, and nudges at 
   const data = P.validate(feed([row(1), row(2, { category: 'peer_support', name: '<script>alert(1)</script>' }), row(3)]));
   const empty = P.tray(P.blank(), data, {}, UI);
   assert.match(empty, /No listings yet/);
-  assert.doesNotMatch(empty, /data-fd-care-packet-clear/, 'nothing saved, nothing to clear');
+  assert.match(empty, /data-fd-care-packet-clear disabled/, 'nothing saved, Clear is disabled');
   const html = P.tray({ ...P.blank(), ids: ['a1', 'a2', 'a3'] }, data, {}, UI);
   assert.doesNotMatch(html, /data-fd-care-packet-ineligible/, 'precondition: every listing here can print');
   assert.match(html, /Aftercare packet[\s\S]*>3</);
@@ -306,10 +306,10 @@ test('the review gate has four unticked-by-default checks and reports readiness;
   const html = P.tray(st, data, {}, UI);
   for (const k of ['verification', 'region', 'identifiers', 'supervisor']) assert.match(html, new RegExp('data-fd-care-packet-gate="' + k + '"'));
   assert.equal((html.match(/type="checkbox"/g) || []).length, 4);
-  assert.doesNotMatch(html, /checked/);
+  assert.doesNotMatch(html, /<input[^>]* checked/);
   assert.match(html, /data-fd-care-packet-ready="false"/);
   const ready = P.tray(st, data, gateOn, UI);
-  assert.equal((ready.match(/ checked/g) || []).length, 4);
+  assert.equal((ready.match(/<input[^>]* checked/g) || []).length, 4);
   assert.match(ready, /data-fd-care-packet-ready="true"/);
   assert.doesNotMatch(html + ready, /data-fd-care-packet-print|data-fd-care-packet-copy/, 'Print and Copy sit beside the reason they are unavailable, in the preview, not in the tray');
   assert.match(P.tray(P.blank(), data, gateOn, UI), /data-fd-care-packet-ready="false"/, 'an empty packet is never ready');
@@ -559,8 +559,8 @@ test('the nudge starts at 9 and not at 8; bulk buttons disable at (0) even when 
   assert.match(P.tray({ ...P.blank(), ids: idsOf(9) }, data, {}, UI), /Eight or fewer/);
   const result = P.search(data, 'support', '', '', 1);
   const pagePacked = P.bulk(result, P.context({ ...P.blank(), ids: result.rows.map(r => r.id) }, data, PAYLOAD));
-  assert.match(pagePacked, /data-fd-care-packet-page disabled>Add this page \(0\)/);
-  assert.doesNotMatch(pagePacked, /data-fd-care-packet-all disabled/);
+  assert.match(pagePacked, /data-fd-care-packet-page[^>]* disabled>Add from this page/);
+  assert.doesNotMatch(pagePacked, /data-fd-care-packet-all[^>]* disabled/);
 });
 
 test('up and down are disabled at the edge of each category group, not only at the ends of the whole list', () => {
@@ -573,12 +573,12 @@ test('up and down are disabled at the edge of each category group, not only at t
   assert.doesNotMatch(html, /data-fd-care-packet-up="a4"[^>]*disabled/);
 });
 
-test('a packed listing keeps the same visible label and says it is pressed', () => {
+test('a packed listing describes its removal action and says it is selected', () => {
   const data = dataOf(3);
   const html = P.button(data.records[0], P.context({ ...P.blank(), ids: ['a0'] }, data, PAYLOAD));
   assert.match(html, /aria-pressed="true"/);
-  assert.match(html, />Add to packet</, 'never flips to "In packet", or voice control (WCAG 2.5.3) loses the name');
-  assert.match(html, /aria-label="Add to packet: Support 0"/);
+  assert.match(html, />Remove from packet</);
+  assert.match(html, /aria-label="Remove from packet: Support 0"/);
 });
 
 test('fd_care_search.js stays ES5 and network-free too (PR B extends it)', () => {
@@ -672,12 +672,12 @@ test('bulk buttons count eligible listings only, and a note says how many result
   assert.equal(result.total, 9);
   assert.deepEqual(result.rows.map(r => r.id), ['a0', 'a1', 'a2', 'a3', 'a4'], 'precondition: page 1');
   const none = P.bulk(result, P.context(P.blank(), data, PAYLOAD));
-  assert.match(none, /Add this page \(2\)/, 'a0 and a1 are the only eligible rows on the page');
-  assert.match(none, /Add all results \(4\)/, 'a0, a1, a7 and a8 across all pages');
+  assert.match(none, /2 of 2 new matches will fit/, 'a0 and a1 are the only eligible rows on the page');
+  assert.match(none, /4 of 4 new matches will fit/, 'a0, a1, a7 and a8 across all pages');
   assert.match(none, /<p class="fd-care-search__ineligible" data-fd-care-packet-ineligible-count>5 results can’t go in the packet and are not counted\.<\/p>/);
   const some = P.bulk(result, P.context({ ...P.blank(), ids: ['a0', 'a7'] }, data, PAYLOAD));
-  assert.match(some, /Add this page \(1\)/);
-  assert.match(some, /Add all results \(2\)/);
+  assert.match(some, /1 of 1 new matches will fit/);
+  assert.match(some, /2 of 2 new matches will fit/);
   const one = P.validate(feed([row(0), row(1), row(2, { category: 'crisis' })]));
   assert.match(P.bulk(P.search(one, 'support', '', '', 1), P.context(P.blank(), one, PAYLOAD)),
     /data-fd-care-packet-ineligible-count>1 result can’t go in the packet and is not counted\./);
@@ -685,8 +685,8 @@ test('bulk buttons count eligible listings only, and a note says how many result
   assert.doesNotMatch(P.bulk(P.search(clean, 'support', '', '', 1), P.context(P.blank(), clean, PAYLOAD)), /ineligible/, 'no note when every result can go in');
   const blocked = P.validate(feed([row(0, { category: 'crisis' }), row(1, { contactHref: '', website: '' })]));
   const html = P.bulk(P.search(blocked, 'support', '', '', 1), P.context(P.blank(), blocked, PAYLOAD));
-  assert.match(html, /data-fd-care-packet-page disabled>Add this page \(0\)/);
-  assert.match(html, /data-fd-care-packet-all disabled>Add all results \(0\)/);
+  assert.match(html, /data-fd-care-packet-page[^>]* disabled>Add from this page/);
+  assert.match(html, /data-fd-care-packet-all[^>]* disabled>Add from all results/);
   assert.match(html, />2 results can’t go in the packet/);
 });
 
@@ -756,7 +756,7 @@ test('the controller adds nothing without a usable payload, and says why a listi
   assert.deepEqual(bare.addMany(['a0', 'a1']), { added: 0, already: 0, skipped: 0, ineligible: 2 });
   assert.equal(s.m.size, 0, 'nothing saved');
   await settle();
-  assert.equal(live.textContent, 'Added 0 listings. 2 not added because they can’t go in the packet. 0 listings in packet.');
+  assert.equal(live.textContent, 'Added 0 listings. 2 were not added because the listing does not meet the packet’s eligibility rules. 0 listings in packet.');
   bare.leave();
   const said = fakeLive();
   const c = P.create({ storage: s, payload: PAYLOAD });
@@ -767,7 +767,7 @@ test('the controller adds nothing without a usable payload, and says why a listi
   assert.equal(s.m.size, 0);
   assert.deepEqual(c.addMany(['a0', 'a6']), { added: 1, already: 0, skipped: 0, ineligible: 1 });
   await settle();
-  assert.equal(said.textContent, 'Added 1 listing. 1 not added because it can’t go in the packet. 1 listing in packet.');
+  assert.equal(said.textContent, 'Added 1 listing. 1 was not added because the listing does not meet the packet’s eligibility rules. 1 listing in packet.');
   c.leave();
 });
 
@@ -824,8 +824,8 @@ test('Clear packet is offered whenever anything is saved, not only listings, and
   const CLEAR = /<button type="button" class="fd-care-packet__clear" data-fd-care-packet-clear>Clear packet<\/button>/;
   assert.equal(P.hasState(P.blank()), false);
   assert.equal(P.hasState({ ids: [], inserts: {}, mode: 'review' }), false, 'a state with no unit at all is empty');
-  assert.doesNotMatch(P.tray(P.blank(), data, {}, UI), /data-fd-care-packet-clear/);
-  assert.doesNotMatch(P.tray({ ...P.blank(), unit: unit({}), inserts: {} }, data, {}, UI), /data-fd-care-packet-clear/);
+  assert.match(P.tray(P.blank(), data, {}, UI), /data-fd-care-packet-clear disabled/);
+  assert.match(P.tray({ ...P.blank(), unit: unit({}), inserts: {} }, data, {}, UI), /data-fd-care-packet-clear disabled/);
   const cases = {
     'a typed unit name': { ...P.blank(), unit: unit({ name: '4 East' }) },
     'a typed unit phone': { ...P.blank(), unit: unit({ phone: '(207) 555-0100' }) },
@@ -864,7 +864,7 @@ test('clear() empties everything the packet holds (listings, unit, profile, copy
   assert.deepEqual(c.ids(), []);
   assert.equal(c.mode, 'review');
   assert.deepEqual(c.gate(), GATE_OFF);
-  assert.doesNotMatch(tray.innerHTML, /data-fd-care-packet-clear/, 'nothing left to clear');
+  assert.match(tray.innerHTML, /data-fd-care-packet-clear disabled/, 'nothing left to clear');
   await settle();
   assert.equal(live.textContent, 'Packet cleared: 1 listing, unit details, copy and page choices removed. Review confirmations cleared.');
   c.setUnit('name', '4 East');

@@ -137,7 +137,7 @@ async function build(page, { mode = 'review', profile, name, phone, release = tr
   if (visit) await page.goto('/?tab=care');
   const panel = page.locator('[data-care-directory]');
   await panel.getByLabel('Resource name or service').fill('southern maine');
-  await panel.getByRole('button', { name: new RegExp(`^Add all results \\(${count}\\)$`) }).click();
+  await panel.getByRole('button', { name: new RegExp(`^Add from all results \\(${count}\\)$`) }).click();
   if (open) await toggle(page).click();
   if (open && mode === 'final') await page.getByRole('radio', { name: /Final copy/ }).check();
   if (open && profile) await loadProfile(page, profile);
@@ -269,7 +269,7 @@ test.describe('preview, print and copy', () => {
     await page.goto('/?tab=care');
     await expect(toggle(page)).toHaveCount(0);
     await page.locator('[data-care-directory]').getByLabel('Resource name or service').fill('southern maine');
-    await page.locator('[data-care-directory]').getByRole('button', { name: /^Add all results/ }).click();
+    await page.locator('[data-care-directory]').getByRole('button', { name: /^Add from all results/ }).click();
     await expect(toggle(page)).toHaveAttribute('aria-expanded', 'false');
     await expect(toggle(page)).toHaveAttribute('aria-controls', 'fd-care-packet-preview');
     await expect(preview(page), 'the controlled region exists while collapsed, so aria-controls never dangles').toBeHidden();
@@ -848,13 +848,14 @@ test.describe('preview, print and copy', () => {
     await insertBox(page, 'safety').check();
     for (const g of GATES) await gate(page, g).check();
     await tray(page).getByRole('button', { name: 'Clear packet' }).click();
+    await page.getByRole('dialog').getByRole('button', {name:'Clear packet',exact:true}).click();
     await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('0');
     for (const g of GATES) { await expect(gate(page, g)).not.toBeChecked(); await expect(gate(page, g)).toBeDisabled(); }
     await expect(preview(page)).toBeHidden();
     expect(await snapshot(page)).toBeNull();
     await expect(status(page)).toContainText(`Packet cleared: ${PRINT_LISTINGS.length} listings, unit details, copy and page choices removed. Review confirmations cleared.`);
     const panel = page.locator('[data-care-directory]');
-    await panel.getByRole('button', { name: /^Add all results \(8\)$/ }).click();
+    await panel.getByRole('button', { name: /^Add from all results \(8\)$/ }).click();
     await toggle(page).click();
     await expect(page.getByRole('radio', { name: /Review copy/ })).toBeChecked();
     await expect(insertBox(page, 'safety'), 'page switches are back to their defaults').not.toBeChecked();
@@ -1287,7 +1288,7 @@ test.describe('fail closed: the packet refuses to print without its crisis lines
         await expect(cardButton(page), 'the card needs the crisis lines as much as the packet does').toBeDisabled();
         await expect(page.locator('[data-fd-care-packet-card-note]')).toContainText('crisis lines did not load');
       } else {
-        await expect(panel.getByRole('button', { name: /^Add all results/ }), 'a usable payload still offers listings').toHaveCount(1);
+        await expect(panel.getByRole('button', { name: /^Add from all results/ }), 'a usable payload still offers listings').toHaveCount(1);
         await expect(cardButton(page), 'the card carries no standard page, so a broken page does not stop it').toBeEnabled();
       }
       await toggle(page).click();
