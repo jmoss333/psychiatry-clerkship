@@ -118,7 +118,7 @@ export default defineConfig({
       testMatch: 'prototypes.spec.js',
       use: { ...devices['Desktop Chrome'] },
     },
-    // No baseURL, like 'lfs' and 'prototypes': this spec serves sp-preview/dist itself,
+    // No baseURL, like 'lfs' and 'prototypes': each spec serves its own temporary preview build,
     // with the response headers read from the preview's own netlify.toml, because the
     // point is to exercise the page under the Content-Security-Policy it deploys with.
     // It needs no server from start-local-servers.sh and makes no network call.

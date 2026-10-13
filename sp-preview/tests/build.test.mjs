@@ -7,7 +7,32 @@ import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {build} from 'esbuild';
 import {runtimeEnvironment} from '../netlify/functions/dana-preview.mjs';
+import {buildPreviewFixture} from '../qa/build-fixture.mjs';
+import {existsSync} from 'node:fs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+test('parallel preview fixtures retain their assets and private source after another fixture is removed',async t=>{
+ const runs=await Promise.allSettled([0,1].map(async()=>{
+  const fixture=await buildPreviewFixture();t.after(fixture.cleanup);return fixture;
+ }));
+ for(const run of runs)assert.equal(run.status,'fulfilled',run.reason?.stack);
+ const [first,second]=runs.map(run=>run.value);
+ assert.notEqual(first.dist,second.dist);
+ for(const fixture of [first,second]){
+  assert.ok(existsSync(path.join(fixture.dist,'reading-companion.html')),'browser assets must use the isolated output');
+  assert.ok(existsSync(fixture.sourcePack),'the private source pack must also use the isolated output');
+  assert.ok(!existsSync(path.join(fixture.dist,'reading-companion.json')),'source pack stays outside the published files');
+ }
+ const assets=await readFile(path.join(second.dist,'reading-companion.html'));
+ const source=await readFile(second.sourcePack);
+ assert.ok(JSON.parse(source).units.length>0,'the isolated pack must contain the real reviewed excerpt');
+ await first.cleanup();
+ assert.ok(!existsSync(first.dist));
+ const replacement=await buildPreviewFixture();t.after(replacement.cleanup);
+ assert.deepEqual(await readFile(path.join(second.dist,'reading-companion.html')),assets);
+ assert.deepEqual(await readFile(second.sourcePack),source);
+ await second.cleanup();await replacement.cleanup();
+ assert.ok(!existsSync(second.dist));assert.ok(!existsSync(replacement.sourcePack));
+});
 test('runtime deployment binding comes from trusted invocation context, not build-only variables',()=>{
  const env=runtimeEnvironment({DEPLOY_ID:'stale-build',DANA_PREVIEW_ENABLED:'true'},{deploy:{id:'actual-deploy'},site:{url:'https://preview.test'}});
  assert.equal(env.DEPLOY_ID,'actual-deploy');assert.equal(env.URL,'https://preview.test');assert.equal(env.DANA_PREVIEW_ENABLED,'true');
