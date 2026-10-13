@@ -1,5 +1,68 @@
 # Faculty Attestation Console
 
+## Care-unit profile authority — implemented, inactive until owner enrollment
+
+`/care-profiles.html` is a separate owner review screen. It does not accept the shared
+faculty key and does not use `ATTESTER_NAME` as identity. Its server fixes the authorized
+principal to `joshua-moss` and displays Joshua Moss, MD. The profile file describes a
+candidate; no editable approval field in that file grants authority.
+
+Before use, **Joshua must enroll a personal credential kept only by him** as
+`CARE_PROFILE_OWNER_KEY` and a distinct service signing secret as
+`CARE_PROFILE_SIGNING_SECRET`, both at least 32 characters and both production-only
+Functions secrets on the existing faculty-console site. Neither has a default. Do not
+reuse `FACULTY_ATTEST_PASSWORD`, share the owner credential, or place either secret in
+Git, browser URLs or logs. This implementation creates no credentials or approvals.
+If either secret or the production context is absent, the service stays unavailable.
+Credential possession identifies the enrolled owner; this is not institutional SSO.
+
+The service uses the existing `GITHUB_TOKEN` only to read the candidate file from one
+immutable `main` commit. It never writes the repository, reviewed.json, or the existing
+attestation ledger. Missing candidate files and malformed profiles fail closed. The
+candidate contract and learner integration are delivered separately; no real profile
+or learner feature flag is activated by this change.
+
+Each decision replaces one complete signed authority snapshot in the faculty site's
+`care-profile-authority-v1` Netlify Blob store, using strong reads and an expected ETag.
+Concurrent decisions fail with a conflict and are never retried automatically. This
+is a current-state register, not a historical attestation ledger. The signing secret
+authenticates snapshots independently of editable profile JSON. Site-wide Blobs are
+shared across deploy contexts: previews cannot open the store through these handlers,
+and a production-only signing secret prevents preview code from forging approvals.
+Someone controlling production code or production secrets controls this authority.
+
+Approval binds SHA-256 of canonical UTF-8 JSON `{policyVersion:1,profile:...}`: recursively
+sorted object keys, no spaces, all public fields plus the full verification array sorted
+by `field`. No whitespace normalization is applied to values. Public fields are `id`,
+`label`, `org`, `brandingApproved`, `unitName`, `unitPhone`, `unitPurpose`, `unitHours`,
+`callbackProgram`, `callbackTeam`, `callbackPhone`, `callbackHours`, `callbackFallback`.
+Verification rows contain exactly `field`, `checkedOn`, `checkedBy`, `evidence`. The
+required groups are identity and contact, plus callback and branding when enabled.
+Disabled branding requires null `org`; disabled callback requires its four fields empty.
+
+Freshness ends at the **start of the New York calendar date** 90 days after the oldest
+required actual verification. Approval time never extends it. Any covered change needs
+a new approval. Suspend and Revoke immediately withdraw current authority without a
+learner rebuild; both remain withdrawn until an explicit fresh approval. An owner can
+withdraw a known saved revision even if its source candidate was removed.
+
+`GET /.netlify/functions/care-profile-status?profileId=...&revision=...` accepts only the
+two exact learner origins. Its no-store response has exactly `ok`, `status`, `profileId`,
+`revision`, `expiresOn`, `checkedAt`, `approver`, `profile`. Only `ok:true` carries the
+canonical public profile and approver. Private verification evidence never appears there.
+The learner must compare every returned public field and the revision to its candidate,
+then check again immediately before each permitted output. Cached approval cannot grant
+permission. Printed paper cannot be recalled.
+
+The owner endpoint is `/.netlify/functions/care-profile-approvals`, with the personal
+credential in `x-care-profile-owner-key`. GET lists candidates and their current approval
+version. POST accepts only `action`, `profileId`, `revision`, `expectedVersion`. Approve
+uses the displayed candidate revision; Suspend/Revoke use the existing authority revision.
+The browser clears its review after every attempt, including conflicts, and requires a
+fresh load. Locking the screen invalidates outstanding responses and clears its separate
+tab-only credential. Rotating the signing secret invalidates existing snapshots; recovery
+requires a deliberately reviewed migration or new approvals, never automatic re-signing.
+
 A standalone, shared-key faculty workbench for reviewing learner-facing pages, tools, and questions in one queue — **separate from the two student sites**. Each save or attestation commits `reviewed.json` (pages/tools) or `question_bank.json` (question drafts and status) to the rolling attestation branch through a Netlify function and the GitHub API. After the commit lands, the server makes a best-effort attempt to open or reuse the rolling pull request that brings those commits to protected `main`, where the normal student-site rebuild runs. No export → upload step.
 
 ```
