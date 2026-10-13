@@ -21,7 +21,7 @@ const spa = read('spa_index.html');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const make = new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${offline}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wire}\nreturn {
+const buildMake = (wireSrc) => new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${offline}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wireSrc}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -35,7 +35,19 @@ const make = new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n
   fdForwardDockAction: typeof fdForwardDockAction === 'function' ? fdForwardDockAction : null,
   fdThemeMode: fdThemeMode,
   fdClearDeviceData: fdClearDeviceData,
+  fdActionSemantic: fdActionSemantic,
 };`);
+const make = buildMake(wire);
+
+// FD_LANDING_VIEW (owner decision 2026-10-08) is ONE build-time constant in fd_wire.js. The suite
+// builds BOTH values explicitly: T pins the Today-first contract a revert must restore, E pins the
+// Essentials-first one. Only 'landing: the shipped build is ...' reads the shipped value, so it is
+// the one unit test that flips with the constant; every other test passes on either build.
+const LANDING_DECL = /var FD_LANDING_VIEW='(essentials|today)';/;
+const SHIPPED_LANDING = (wire.match(LANDING_DECL) || [])[1];
+const wireFor = (value) => wire.replace(LANDING_DECL, `var FD_LANDING_VIEW='${value}';`);
+const makeToday = buildMake(wireFor('today'));
+const makeEssentials = buildMake(wireFor('essentials'));
 
 // length/key(i) are part of the real Storage interface and are what any sweep over the store has
 // to walk. A fake without them makes a sweep silently a no-op -- it finds nothing, throws nothing,
@@ -53,6 +65,8 @@ function memStorage(seed = {}) {
 }
 
 const F = make(memStorage());
+const T = makeToday(memStorage());
+const E = makeEssentials(memStorage());
 // eslint-disable-next-line no-new-func
 const Offline = new Function(`${offline}\nreturn { fdOfflineMonitor };`)();
 
@@ -525,7 +539,8 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
   });
   assert.equal(F.fdDispatch({ 'data-fd-back': '' }, {}, { ...roleContext, openId: 'x.md', fromTab: 'path' }).route,
     '?tab=path');
-  assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
+  // Home follows FD_LANDING_VIEW: Today on the Today-first build (Essentials: landing tests below).
+  assert.equal(T.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
   assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, roleContext).patch, { searchOpen: true });
   assert.deepEqual(F.fdDispatch({ 'data-fd-change-week': '' }, {}, roleContext), {
     patch: { screen: 'setup-week', tab: 'today', openId: null, searchOpen: false, sheet: null, setupFrom: 'app' },
@@ -563,16 +578,31 @@ test('the patient-care destination survives direct links and reader return conte
 });
 
 test('choosing APP enters the On shift workspace without asking for a rotation week', () => {
-  assert.deepEqual(F.fdDispatch({ 'data-fd-role': 'app' }, { search: '' }, {
+  // The Today-first build (FD_LANDING_VIEW='today'); where the wizard ends on the shipped build is
+  // pinned in the landing tests. 'replace' is the setup exit's (fdSetupExit), a no-op on '/'.
+  assert.deepEqual(T.fdDispatch({ 'data-fd-role': 'app' }, { search: '' }, {
     ...roleContext, role: null, screen: 'setup-role', week: undefined,
   }), {
     patch: {
       role: 'app', screen: 'app', tab: 'today', week: null, browsing: true,
       openId: null, searchOpen: false,
     },
-    route: '/',
+    route: '/', history: 'replace',
     effect: { type: 'browse-without-rotation' },
   });
+  // Picking APP in the settings panel is a change of workspace, not setup: On shift on EITHER build.
+  for (const build of [T, E]) {
+    assert.deepEqual(build.fdDispatch({ 'data-fd-role': 'app' }, { search: '' }, {
+      ...roleContext, screen: 'app', tab: 'path',
+    }), {
+      patch: {
+        role: 'app', screen: 'app', tab: 'today', week: null, browsing: true,
+        openId: null, searchOpen: false,
+      },
+      route: '/',
+      effect: { type: 'browse-without-rotation' },
+    });
+  }
 });
 
 test('a stored APP never re-enters the rotation wizard or restores the Path tab', () => {
@@ -1171,11 +1201,14 @@ test('care selection rerenders, stays out of storage and history, and restores f
 });
 
 test('Home discards the visit-only Care intent', () => {
-  const home = fakeHarness({ ...roleContext, screen: 'app', tab: 'care',
-    careIntentId: 'services' }, { F, index: CARE_INDEX });
-  home.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
-  assert.equal(home.controller.getState().tab, 'today');
-  assert.equal(home.controller.getState().careIntentId, '');
+  // Both builds: Home lands on Today or Library -> Essentials, and either way drops the Care pick.
+  for (const [build, tab] of [[T, 'today'], [E, 'library']]) {
+    const home = fakeHarness({ ...roleContext, screen: 'app', tab: 'care',
+      careIntentId: 'services' }, { F: build, index: CARE_INDEX });
+    home.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
+    assert.equal(home.controller.getState().tab, tab);
+    assert.equal(home.controller.getState().careIntentId, '');
+  }
 });
 
 test('browser history discards the visit-only Care intent even when returning to Care', () => {
@@ -2229,6 +2262,8 @@ test('delegated and popstate aliases normalize with replace history and no inval
   assert.equal(ls.getItem('cw_last'), 'real-page.md');
 });
 
+// Home is Today on the Today-first build these two pin; the Essentials-first equivalents are the
+// 'landing:' history tests at the end of this file.
 test('history snapshots restore Today/page/Today across Back and Forward without duplicate pushes', () => {
   const location = {
     href: 'https://example.test/?case=c1', pathname: '/', search: '?case=c1',
@@ -2238,7 +2273,7 @@ test('history snapshots restore Today/page/Today across Back and Forward without
   const h = fakeHarness({
     ...roleContext, screen: 'app', tab: 'today', openId: null, fromTab: 'today',
   }, {
-    F, location, history: memory.history,
+    F: T, location, history: memory.history,
     openResource: (ref) => { opened.push(ref); return Promise.resolve(true); },
   });
   memory.bind(h.windowHandlers.popstate);
@@ -2303,7 +2338,7 @@ test('same-route Home replaces a bare restored-reader snapshot before later Back
   const memory = memoryHistory(location);
   const h = fakeHarness({
     ...roleContext, screen: 'app', tab: 'today', openId: 'saved.md', fromTab: 'today',
-  }, { F, location, history: memory.history });
+  }, { F: T, location, history: memory.history });
   memory.bind(h.windowHandlers.popstate);
   assert.equal(memory.entries[0].state.state.openId, 'saved.md');
   h.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
@@ -4550,4 +4585,218 @@ test('"/" focuses the Library filter instead of opening Search; ⌘K still opens
   h.controller.dispatch({ 'data-fd-tab': 'today' });
   h.windowHandlers.keydown({ key: '/', target: body, preventDefault() {} });
   assert.equal(h.controller.getState().searchOpen, true);
+});
+
+// ---- Landing: FD_LANDING_VIEW (owner decision 2026-10-08) ------------------------------------
+// The end of first-run setup (the role choice, plus the week step where there is one) and the
+// brand/Home button open Library -> Essentials. A returning learner's bare visit, every deep link,
+// reloads and Back/Forward keep their own rules. E is the Essentials-first build, T the Today-first
+// build a revert restores; SHIPPED_LANDING is the only reading of the shipped value.
+
+const SETUP_CTX = { search: '', index: { weeks: FOUR_INDEX.weeks }, nowMs: new Date(2026, 7, 12).getTime() };
+const returning = {
+  role: 'first-role', roles: [{ id: 'first-role' }], rotationStart: '2026-08-17', week: 2,
+  tab: 'path', openId: 'saved.md', fromTab: 'path', scrollPos: 420,
+};
+
+test('landing: the shipped build is Essentials-first, from ONE build-time constant', () => {
+  // THE line that flips with the constant. Revert = set FD_LANDING_VIEW to 'today' in fd_wire.js
+  // and this expectation to 'today'; nothing else in this file reads the shipped value.
+  assert.equal(SHIPPED_LANDING, 'essentials');
+  assert.equal(wire.split('var FD_LANDING_VIEW').length - 1, 1, 'declared exactly once');
+  assert.equal(wire.split(/FD_LANDING_VIEW\s*=[^=]/).length - 1, 1, 'assigned exactly once');
+  assert.equal(wire.split('FD_LANDING_VIEW===').length - 1, 1, 'read in one place (fdLandsOnEssentials)');
+  assert.ok(wire.indexOf('var FD_LANDING_VIEW') < wire.indexOf('var FD_ACTION_SEMANTICS'),
+    'declared before FD_ACTION_SEMANTICS, which reads it at load');
+  assert.notEqual(wireFor('today'), wireFor('essentials'), 'both builds really differ');
+  // Not a runtime toggle and not a setting: no persisted key, no storage or URL read of it.
+  assert.equal(/LANDING/.test(state), false, 'not in fd_state.js (FD_KEYS)');
+  assert.equal(/LANDING/.test(spa), false, 'the shell neither reads nor overrides it');
+  assert.equal(/landing/i.test(wire.slice(wire.indexOf('function fdResolveState'),
+    wire.indexOf('/* The landing (FD_LANDING_VIEW) as a state patch'))), false, 'fdResolveState (bare/returning visits) never consults it');
+  // No scattered literal: the Essentials patch for setup's end and Home comes from one helper.
+  assert.equal(F.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).patch.tab,
+    SHIPPED_LANDING === 'essentials' ? 'library' : 'today');
+});
+
+test('landing: choosing a role ends setup on Library -> Essentials (was: Today)', () => {
+  // Step 1 (role) still advances to the week question on the rotation sites.
+  assert.deepEqual(E.fdDispatch({ 'data-fd-role': 'first-role' }, SETUP_CTX, { screen: 'setup-role' }),
+    { patch: { role: 'first-role', screen: 'setup-week' }, route: null, effect: null });
+  // Step 2 (week) ends setup on Essentials, in place of the setup entry.
+  const done = E.fdDispatch({ 'data-fd-week': '2' }, SETUP_CTX, { role: 'first-role', screen: 'setup-week' });
+  assert.deepEqual(done.patch, {
+    week: 2, viewWeek: 2, tab: 'library', screen: 'app', openId: null,
+    libraryView: 'essentials', kitSection: 'all',
+  });
+  assert.equal(done.route, '?tab=library');
+  assert.equal(done.history, 'replace');
+  assert.equal(done.effect.type, 'set-rotation');
+  // APP has no week step: its role choice IS the end of setup, and lands the same way.
+  assert.deepEqual(E.fdDispatch({ 'data-fd-role': 'app' }, { search: '' }, { screen: 'setup-role' }), {
+    patch: {
+      role: 'app', screen: 'app', tab: 'library', libraryView: 'essentials', kitSection: 'all',
+      week: null, browsing: true, openId: null, searchOpen: false,
+    },
+    route: '?tab=library', history: 'replace', effect: { type: 'browse-without-rotation' },
+  });
+  // Query extras (a case, a campaign tag) ride along exactly as they did on Today's '/'.
+  assert.equal(E.fdDispatch({ 'data-fd-week': '2' }, { ...SETUP_CTX, search: '?case=c1' },
+    { role: 'first-role', screen: 'setup-week' }).route, '?tab=library&case=c1');
+  // Unchanged: "just browse" keeps its own owner decision (2026-09-26, the whole Library), and
+  // Change week from inside the app is not setup -- it returns to Today, where the new week shows.
+  const browse = E.fdDispatch({ 'data-fd-week': '0' }, SETUP_CTX, { role: 'first-role', screen: 'setup-week' });
+  assert.equal(browse.patch.libraryView, 'full');
+  const change = E.fdDispatch({ 'data-fd-week': '3' }, SETUP_CTX,
+    { role: 'first-role', screen: 'setup-week', setupFrom: 'app', week: 2 });
+  assert.equal(change.patch.tab, 'today');
+  assert.equal(change.route, '/');
+  assert.equal(change.history, undefined);
+});
+
+test('landing: Home opens Library -> Essentials (was: Today), as the Library tab itself does', () => {
+  const ctx = { search: '?case=c1' };
+  const from = { ...roleContext, screen: 'app', tab: 'today', sheet: 'kit', searchOpen: true };
+  const home = E.fdDispatch({ 'data-fd-home': '' }, ctx, from);
+  assert.deepEqual(home, {
+    patch: {
+      tab: 'library', openId: null, searchOpen: false, careIntentId: '', carePackIds: [],
+      libraryView: 'essentials', kitSection: 'all', sheet: null,
+    },
+    route: '?tab=library&case=c1', effect: null,
+  });
+  const tab = E.fdDispatch({ 'data-fd-tab': 'library' }, ctx, from);
+  assert.deepEqual({ ...home.patch, sheet: undefined }, { ...tab.patch, sheet: undefined },
+    'Home is the Library tab transition plus closing a sheet');
+  // From the whole Library, a filtered list, a preview, or a reader: back to Essentials, clean.
+  const busy = E.fdDispatch({ 'data-fd-home': '' }, {}, {
+    ...roleContext, screen: 'app', tab: 'library', libraryView: 'full', kitSection: 'meds',
+    libraryFilter: 'lithium', kitToolPreview: 'mse.html', openId: 'x.md', fromTab: 'library',
+  });
+  assert.equal(busy.patch.libraryView, 'essentials');
+  assert.equal(busy.patch.kitSection, 'all');
+  assert.equal(busy.patch.libraryFilter, '');
+  assert.equal(busy.patch.kitToolPreview, '');
+  assert.equal(busy.patch.openId, null);
+  assert.equal(busy.route, '?tab=library');
+  // The accessible action description follows the constant too.
+  assert.equal(E.fdActionSemantic('data-fd-home'), 'return to Library Essentials');
+  assert.equal(T.fdActionSemantic('data-fd-home'), 'return to Today');
+});
+
+test('landing: deep links reach their target, including through a role choice', () => {
+  const finish = (build, search, role = 'first-role') => (role === 'app'
+    ? build.fdDispatch({ 'data-fd-role': 'app' }, { search }, { screen: 'setup-role' })
+    : build.fdDispatch({ 'data-fd-week': '2' }, { ...SETUP_CTX, search }, { role, screen: 'setup-week' }));
+  for (const build of [E, T]) {
+    // A tab link that meets the setup gate reaches that tab when setup ends -- on either build.
+    // (Before 2026-10-08 every one of these was dropped on Today.)
+    for (const [search, tab, route] of [
+      ['?tab=care', 'care', '?tab=care'],
+      ['?tab=path&case=c1', 'path', '?tab=path&case=c1'],
+      ['?tab=library', 'library', '?tab=library'],
+      ['?tab=today', 'today', '/'],
+    ]) {
+      const out = finish(build, search);
+      assert.equal(out.patch.tab, tab, `${search} tab`);
+      assert.equal(out.route, route, `${search} route`);
+    }
+    const full = finish(build, '?tab=library&library=full');
+    assert.equal(full.patch.libraryView, 'full');
+    assert.equal(full.route, '?tab=library&library=full');
+    // APP has no Path: a Path link lands on On shift.
+    assert.equal(finish(build, '?tab=path', 'app').patch.tab, 'today');
+  }
+  // ?tab=today reaches Today directly, whatever the landing.
+  assert.equal(E.fdResolveState('/?tab=today', returning).tab, 'today');
+  // A page/tool link never meets the wizard: a role-less reader is a guest on the target, and a
+  // role chosen afterwards in Settings changes the role only -- the reader stays where it is.
+  for (const url of ['/?page=pg_suicide.md', '/?tool=mse.html&week=3',
+    '/?tool=one-patient-six-weeks.html&case=eli&chapter=2']) {
+    const guest = E.fdResolveState(url, {});
+    assert.equal(guest.guest, true, url);
+    assert.equal(guest.screen, 'app', url);
+    assert.equal(guest.openId, new URL(url, 'https://x.test/').searchParams.get('page') ||
+      new URL(url, 'https://x.test/').searchParams.get('tool'), url);
+    assert.deepEqual(E.fdDispatch({ 'data-fd-role': 'first-role' }, { search: url.slice(1) }, guest),
+      { patch: { role: 'first-role' }, route: null, effect: null }, url);
+  }
+});
+
+test('landing: a returning learner\'s bare visit is unchanged -- stored tab and reader restore', () => {
+  // Owner scope 2026-10-08: leave it as it is. E and T resolve every bare and routed visit alike.
+  for (const url of ['/', 'https://example.test/', '/?case=c1', '/?utm_source=qr', '/#edition=abc',
+    '/?page=pg_suicide.md', '/?tab=care', '/?page=__home__']) {
+    assert.deepEqual(E.fdResolveState(url, returning), T.fdResolveState(url, returning), url);
+  }
+  const bare = E.fdResolveState('/', returning);
+  assert.equal(bare.tab, 'path');
+  assert.equal(bare.openId, 'saved.md');
+  assert.equal(bare.screen, 'app');
+  // Setup gates are untouched: no role asks "Who's this for?", a role with no week asks the week.
+  assert.equal(E.fdResolveState('/', {}).screen, 'setup-role');
+  assert.equal(E.fdResolveState('/', { role: 'first-role', roles: [{ id: 'first-role' }], tab: 'today' }).screen,
+    'setup-week');
+});
+
+test('landing: Back from Essentials after setup leaves exactly as Back from Today used to', () => {
+  for (const [build, route, tab] of [[makeEssentials, '?tab=library', 'library'], [makeToday, '/', 'today']]) {
+    const location = { href: 'https://example.test/', pathname: '/', search: '' };
+    const memory = memoryHistory(location);
+    const h = fakeHarness({ roles: roleContext.roles, role: 'first-role', screen: 'setup-week', tab: 'today' },
+      { F: build(memStorage()), location, history: memory.history });
+    memory.bind(h.windowHandlers.popstate);
+    h.controller.dispatch({ 'data-fd-week': '2' }, { nowMs: SETUP_CTX.nowMs });
+    assert.equal(memory.entries.length, 1, 'setup and its result share one history entry');
+    assert.equal(memory.entries[0].route, route);
+    assert.equal(h.controller.getState().tab, tab);
+    // Open something from the landing; Back returns to the landing, not to setup or to Today.
+    h.controller.dispatch({ 'data-fd-open': 'orientation.md' });
+    assert.equal(memory.entries.length, 2);
+    memory.go(-1);
+    assert.equal(h.controller.getState().tab, tab);
+    assert.equal(h.controller.getState().screen, 'app');
+    assert.equal(h.controller.getState().openId ?? null, null);
+    if (tab === 'library') assert.equal(h.controller.getState().libraryView, 'essentials');
+  }
+});
+
+test('landing: Home pushes Essentials; Back and Forward walk Today, page and Essentials', () => {
+  const location = { href: 'https://example.test/?case=c1', pathname: '/', search: '?case=c1' };
+  const memory = memoryHistory(location);
+  const opened = [];
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'today', openId: null, fromTab: 'today' }, {
+    F: E, location, history: memory.history,
+    openResource: (ref) => { opened.push(ref); return Promise.resolve(true); },
+  });
+  memory.bind(h.windowHandlers.popstate);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-open': 'page.md' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-home': '' }), preventDefault() {} });
+  assert.deepEqual(memory.entries.map((entry) => entry.route),
+    ['/?case=c1', '?page=page.md&case=c1', '?tab=library&case=c1'], 'a second Home is not a second push');
+  assert.equal(h.controller.getState().tab, 'library');
+  memory.go(-1);
+  assert.equal(h.controller.getState().openId, 'page.md');
+  memory.go(-1);
+  assert.equal(h.controller.getState().tab, 'today', 'Today is still where Back leads');
+  assert.equal(h.controller.getState().openId, null);
+  memory.go(1);
+  memory.go(1);
+  assert.equal(h.controller.getState().tab, 'library');
+  assert.equal(h.controller.getState().libraryView, 'essentials');
+  // Today stays one tap away on its own tab.
+  h.controller.dispatch({ 'data-fd-tab': 'today' });
+  assert.equal(h.controller.getState().tab, 'today');
+  assert.equal(location.search, '?case=c1');
+});
+
+test('landing: flipping FD_LANDING_VIEW to today restores Today-first exactly where it decides', () => {
+  const done = T.fdDispatch({ 'data-fd-week': '2' }, SETUP_CTX, { role: 'first-role', screen: 'setup-week' });
+  assert.deepEqual(done.patch, { week: 2, viewWeek: 2, tab: 'today', screen: 'app', openId: null });
+  assert.equal(done.route, '/');
+  assert.deepEqual(T.fdDispatch({ 'data-fd-home': '' }, { search: '?case=c1' }, { ...roleContext, tab: 'library' }), {
+    patch: { tab: 'today', openId: null, searchOpen: false, sheet: null },
+    route: '/?case=c1', effect: null,
+  });
 });
