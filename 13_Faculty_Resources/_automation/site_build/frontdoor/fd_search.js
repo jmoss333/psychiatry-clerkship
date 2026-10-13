@@ -74,6 +74,20 @@ function fdSearchAliasHit(item, query){
   return false;
 }
 
+/* Medication names add ordinary reading matches, never priority aliases or safety
+   evidence. Whole names prevent look-alike/substring substitutions. An exact name
+   can rank its overview first among ordinary readings; added clinical context
+   keeps the usual title/summary ranking (e.g. Ativan catatonia -> Catatonia). */
+function fdSearchMedicationMatch(item, query){
+  var q=fdSearchNormalize(query), terms=item.medicationTerms||[], match=0;
+  for(var i=0;i<terms.length;i++){
+    var term=fdSearchNormalize(terms[i]);
+    if(term&&q===term) return 2;
+    if(term&&(' '+q+' ').indexOf(' '+term+' ')!==-1) match=1;
+  }
+  return match;
+}
+
 /* Words that carry no topic signal. Unguarded, "on" matched 70 of 83 items and "the" 59 --
    including as substrings inside other words -- so any multi-word query degenerated into a
    near-wildcard and the cap-at-8 dropped the intended page. The raw-query substring check in
@@ -363,11 +377,12 @@ function fdSearchResults(index, query, synonyms, state){
     if(seenRefs[refs[r]]) continue;
     var it=idx.byRef[refs[r]];
     var aliasHit=fdSearchAliasHit(it, rawQuery);
+    var medicationMatch=fdSearchMedicationMatch(it, rawQuery);
     var searchHay=fdSearchHaystack(it)+' '+String(it.searchTitle||'').toLowerCase();
-    if(aliasHit||fdSearchHits(searchHay, rawQuery, contentWords)){
+    if(aliasHit||medicationMatch||fdSearchHits(searchHay, rawQuery, contentWords)){
       itemResults.push({
         item: it, kind:'item', meta: fdSearchItemMeta(it),
-        _score: fdSearchScore(it, rawQuery, contentWords)+(aliasHit?120:0), _alias: !!aliasHit
+        _score: fdSearchScore(it, rawQuery, contentWords)+(aliasHit?120:0)+(medicationMatch===2?90:0), _alias: !!aliasHit
       });
     }
   }

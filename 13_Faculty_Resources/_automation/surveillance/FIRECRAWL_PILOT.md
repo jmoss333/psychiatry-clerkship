@@ -179,3 +179,19 @@ endpoint refuses synthetic packets. Run `node --test tests/firecrawl-*.test.mjs`
 and the faculty evidence review suites before activation. Live activation requires
 a successful manual run and inspection of the authenticated inbox, separately from
 code merge and deployment. A state file exceeding 8 MB fails without truncation.
+
+
+### Storage capacity warning
+
+After saving the inbox, each run measures its actual stored byte size (including
+any compact-JSON fallback). At 6,400,000 bytes, 80% of the unchanged 8,000,000-byte
+limit, it emits an Actions warning and records used/remaining capacity in the run
+summary, `receipt.json` (`storageCapacity`), and faculty brief. The receipt also
+reports capacity when a missing credential prevents examination; examination
+status remains incomplete. Capacity is operational information, not a new faculty
+packet or an approval. Nothing is pruned, dismissed, or marked reviewed.
+
+When warned, arrange reviewed expansion of evidence storage before the next large
+source change. The indicator describes the saved inbox, not a forecast of how many
+runs will fit. An oversized write still fails without replacing existing evidence;
+a run that fails before saving may not produce a fresh capacity reading.

@@ -14,17 +14,53 @@ import run_firecrawl_pilot as R
 from question_impact import scan_impacts
 from review_packets import merge_observation, validate_state
 
+STORAGE_LIMIT_BYTES = 8_000_000
+STORAGE_WARNING_BYTES = 6_400_000  # 80%; advisory, never a faculty disposition.
+
 DEFAULT_STATE = Path(L.SURV_ROOT) / 'history/firecrawl/inbox.json'
 
 
 def atomic_json(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(value, ensure_ascii=False, indent=2) + '\n'
-    if len(text.encode()) > 8_000_000:
+    if len(text.encode()) > STORAGE_LIMIT_BYTES:
+        # Keep every record and the existing byte cap; discard indentation only.
+        text = json.dumps(value, ensure_ascii=False, separators=(',', ':')) + '\n'
+    if len(text.encode()) > STORAGE_LIMIT_BYTES:
         raise ValueError('Evidence inbox exceeds supported size; retain existing state and review storage')
     temp = path.with_suffix('.tmp')
     temp.write_text(text)
     temp.replace(path)
+
+
+def storage_capacity(path):
+    """Measure persisted UTF-8 bytes, including whitespace; never rewrite evidence."""
+    used = path.stat().st_size
+    return {'usedBytes': used, 'limitBytes': STORAGE_LIMIT_BYTES,
+            'remainingBytes': max(0, STORAGE_LIMIT_BYTES - used),
+            'warningBytes': STORAGE_WARNING_BYTES,
+            'status': 'warning' if used >= STORAGE_WARNING_BYTES else 'ok'}
+
+
+def storage_message(capacity):
+    return (f"Evidence storage: {capacity['usedBytes']:,} / {capacity['limitBytes']:,} bytes "
+            f"({100 * capacity['usedBytes'] / capacity['limitBytes']:.1f}%); "
+            f"{capacity['remainingBytes']:,} bytes remaining. "
+            + ('Storage warning: at or above 80%. Arrange additional evidence storage before the limit is reached. '
+               if capacity['status'] == 'warning' else '')
+            + 'All review evidence is retained. Storage status does not establish examination completeness or faculty approval.')
+
+
+def report_storage(path):
+    capacity = storage_capacity(path)
+    message = storage_message(capacity)
+    print(message)
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+            summary.write('## Surveillance storage capacity\n\n' + message + '\n\n')
+    if capacity['status'] == 'warning' and os.environ.get('GITHUB_ACTIONS') == 'true':
+        print('::warning title=Surveillance storage capacity::' + message)
+    return capacity
 
 
 def change_passages(row, prior):
@@ -58,7 +94,8 @@ def collect(args):
         state['failures'] = [{'sourceId': s, 'reason': 'FIRECRAWL_API_KEY is not configured'} for s in R.DEFAULT_IDS]
         validate_state(state)
         atomic_json(args.state, state)
-        atomic_json(args.out_dir / 'receipt.json', {'status': 'incomplete', 'requested': list(R.DEFAULT_IDS), 'examined': [], 'apiRequests': 0})
+        capacity = report_storage(args.state)
+        atomic_json(args.out_dir / 'receipt.json', {'status': 'incomplete', 'requested': list(R.DEFAULT_IDS), 'examined': [], 'apiRequests': 0, 'storageCapacity': capacity})
         return 2
     cmd = [sys.executable, str(Path(__file__).with_name('run_firecrawl_pilot.py')), '--out-dir', str(args.out_dir / 'collection')]
     if previous and previous['latestValid']:
@@ -109,10 +146,11 @@ def collect(args):
         state['failures'].append({'sourceId': 'collector', 'reason': 'Examination incomplete; inspect collection report'})
     validate_state(state)
     atomic_json(args.state, state)
+    capacity = report_storage(args.state)
     atomic_json(args.out_dir / 'receipt.json', {'status': 'incomplete' if state['failures'] else 'complete',
         'requested': list(R.DEFAULT_IDS), 'examined': [r['source_id'] for r in report['results'] if r['status'] != 'unable-to-check'],
-        'apiRequests': 0 if args.responses else len(R.DEFAULT_IDS), 'pendingPackets': len(state['packets'])})
-    brief = ['# Faculty source-change inbox', '', 'Potential impact only; faculty judgment required.', '']
+        'apiRequests': 0 if args.responses else len(R.DEFAULT_IDS), 'pendingPackets': len(state['packets']), 'storageCapacity': capacity})
+    brief = ['# Faculty source-change inbox', '', 'Potential impact only; faculty judgment required.', '', storage_message(capacity), '']
     for packet in state['packets']:
         brief += ['## ' + packet['sourceName'], packet['sourceUrl'], '']
         for c in packet['candidates']:
