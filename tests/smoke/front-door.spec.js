@@ -4588,7 +4588,7 @@ test.describe('Essentials Phase 2', () => {
     for (const width of [320, 390, 641, 1280]) {
       await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
       await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
-      await expect(page.locator('.fd-kit__review')).toContainText(/^Faculty re-review in progress — 1 of \d+ readings changed since they were last attested ·/);
+      await expect(page.locator('.fd-kit__review summary')).toHaveText(/^Faculty re-review · 1 of \d+ readings$/);
       await expect(page.locator('.fd-kit__review summary')).toBeVisible();
       await page.evaluate(() => document.fonts.ready);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
@@ -4657,7 +4657,7 @@ test.describe('Essentials Phase 2', () => {
     expect(textSizes.after).toEqual(textSizes.before.map(size => size * 2));
     await page.locator('.fd-kit__review summary').click();
     await expect(page.locator('.fd-kit__review p')).toBeVisible();
-    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings are marked pending review. Open a reading to see its full review notice.');
+    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings changed since they were last attested and are marked pending review. Open a reading to see its full review notice.');
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
     await full(page).click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
