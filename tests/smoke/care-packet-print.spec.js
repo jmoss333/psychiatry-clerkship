@@ -137,7 +137,8 @@ async function build(page, { mode = 'review', profile, name, phone, release = tr
   if (visit) await page.goto('/?tab=care');
   const panel = page.locator('[data-care-directory]');
   await panel.getByLabel('Resource name or service').fill('southern maine');
-  await panel.getByRole('button', { name: new RegExp(`^Add from all results \\(${count}\\)$`) }).click();
+  await expect(panel.locator('#fd-care-packet-all-capacity')).toHaveText(`${Math.min(count, 12)} of ${count} new matches will fit.`);
+  await panel.getByRole('button', {name:'Add from all results',exact:true}).click();
   if (open) await toggle(page).click();
   if (open && mode === 'final') await page.getByRole('radio', { name: /Final copy/ }).check();
   if (open && profile) await loadProfile(page, profile);
@@ -822,7 +823,7 @@ test.describe('preview, print and copy', () => {
 
   test('Clear packet is offered with no listings whenever a unit profile, typed unit details, a Final copy or a page switch is saved, and it clears that', async ({ page }) => {
     await page.goto('/?tab=care');
-    await expect(tray(page).getByRole('button', { name: 'Clear packet' }), 'nothing saved, nothing to clear').toHaveCount(0);
+    await expect(tray(page).getByRole('button', { name: 'Clear packet' }), 'nothing saved, nothing to clear').toBeDisabled();
     const cases = [
       ['a loaded unit profile', { unit: { name: '', phone: '', profile: PROFILE.id } }, 'Packet cleared: unit details removed.'],
       ['a typed unit name', { unit: { name: '4 East', phone: '', profile: '' } }, 'Packet cleared: unit details removed.'],
@@ -836,9 +837,10 @@ test.describe('preview, print and copy', () => {
       const clear = tray(page).getByRole('button', { name: 'Clear packet' });
       await expect(clear, `${what}: Clear is offered`).toBeVisible();
       await clear.click();
+      await page.getByRole('dialog').getByRole('button',{name:'Clear packet',exact:true}).click();
       expect(await snapshot(page), `${what}: nothing is left`).toBeNull();
-      await expect(clear).toHaveCount(0);
-      await expect(page.locator('#fd-care-packet-title'), 'focus goes to the tray heading').toBeFocused();
+      await expect(clear).toBeDisabled();
+      await expect(page.getByLabel('Resource name or service'), 'focus returns to search').toBeFocused();
       await expect(status(page)).toContainText(said);
     }
   });
@@ -855,7 +857,7 @@ test.describe('preview, print and copy', () => {
     expect(await snapshot(page)).toBeNull();
     await expect(status(page)).toContainText(`Packet cleared: ${PRINT_LISTINGS.length} listings, unit details, copy and page choices removed. Review confirmations cleared.`);
     const panel = page.locator('[data-care-directory]');
-    await panel.getByRole('button', { name: /^Add from all results \(8\)$/ }).click();
+    await panel.getByRole('button', { name: /^Add from all results$/ }).click();
     await toggle(page).click();
     await expect(page.getByRole('radio', { name: /Review copy/ })).toBeChecked();
     await expect(insertBox(page, 'safety'), 'page switches are back to their defaults').not.toBeChecked();

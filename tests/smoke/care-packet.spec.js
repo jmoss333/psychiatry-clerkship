@@ -245,16 +245,18 @@ test.describe('flag on', () => {
       expect(await row.locator('[data-fd-care-packet-ineligible]').evaluate(el => el.tagName + (el.tabIndex >= 0 ? ' focusable' : '')), `${name}: not a control`).toBe('P');
       await expect(row.locator('[data-fd-care-packet]'), `${name}: no add button`).toHaveCount(0);
     }
-    await expect(panel.getByRole('button', { name: 'Add from this page (0)' })).toBeDisabled();
-    await expect(panel.getByRole('button', { name: 'Add from all results (0)' })).toBeDisabled();
+    await expect(panel.getByRole('button', { name: 'Add from this page', exact:true })).toBeDisabled();
+    await expect(panel.getByRole('button', { name: 'Add from all results', exact:true })).toBeDisabled();
     await expect(panel.locator('[data-fd-care-packet-ineligible-count]')).toHaveText(`${odd.length} results can’t go in the packet and are not counted.`);
     // Every listing matches "support" (the shared description), so "Add from all results" counts the eligible ones only.
     await panel.getByLabel('Resource name or service').fill('support');
     const eligible = feed.records.length - odd.length;
-    await expect(panel.getByRole('button', { name: `Add from all results (${eligible})` })).toBeVisible();
+    await expect(panel.locator('#fd-care-packet-all-capacity')).toHaveText(`12 of ${eligible} new matches will fit.`);
     await panel.getByRole('button', { name: /^Add from all results/ }).click();
     await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('12');
-    await expect(page.locator('#careDirectoryStatus')).toContainText(`Added 12 listings. ${odd.length} not added because they can’t go in the packet. ${eligible - 12} not added because the packet is full at 12.`);
+    await expect(page.locator('#careDirectoryStatus')).toContainText(`Added 12 listings. ${eligible - 12} were not added because the packet is full. ${odd.length} were not added because the listing does not meet the packet’s eligibility rules.`);
+    await tray(page).getByText('See what wasn’t added',{exact:true}).click();
+    for (const [, name] of odd) await expect(tray(page).locator('details')).toContainText(name);
     const packed = await trayNames(page);
     for (const [, name] of odd) expect(packed, `${name} never reaches the packet`).not.toContain(name);
     expect((await snapshot(page)).packet.ids.filter(id => ['p-0', 'p-1', 'p-2', 'p-3'].includes(id))).toEqual([]);
