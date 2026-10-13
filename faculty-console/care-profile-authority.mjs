@@ -70,8 +70,13 @@ export function validateProfile(profile, now) {
   return profile;
 }
 export function secretEqual(a,b) {
-  if(typeof a!=='string' || typeof b!=='string' || !a || a.length>4096 || !b) return false;
-  return timingSafeEqual(createHash('sha256').update(a).digest(),createHash('sha256').update(b).digest());
+  const maxCharacters=4096;
+  if(typeof a!=='string' || typeof b!=='string' || !a || !b || a.length>maxCharacters || b.length>maxCharacters) return false;
+  // UTF-8 needs at most three bytes per UTF-16 code unit. Compare a fixed allocation
+  // without truncation; the byte lengths distinguish real trailing NULs from padding.
+  const left=Buffer.alloc(maxCharacters*3), right=Buffer.alloc(maxCharacters*3);
+  const leftLength=left.write(a,'utf8'), rightLength=right.write(b,'utf8');
+  return timingSafeEqual(left,right) && leftLength===rightLength;
 }
 const ENVELOPE_FIELDS=['schemaVersion','profileId','revision','status','version','approvedAt','changedAt','principal','expiresOn','sourceCommit'];
 export function signAuthority(value,secret) {

@@ -48,6 +48,28 @@ async function approve(h) {
 }
 
 test('authority module is available', () => assert.equal(typeof authority.profileRevision, 'function'));
+test('secret comparison preserves exact UTF-8 bytes through the character limit', () => {
+  for(const value of ['owner-secret', 'é'.repeat(4096), '界'.repeat(4096), '🔐'.repeat(2048), 'x'.repeat(4095)+'é']) {
+    assert.equal(authority.secretEqual(value,value),true);
+  }
+  for(const [left,right] of [['é','e\u0301'], ['x'.repeat(4095)+'é','x'.repeat(4095)+'ê'],
+    ['é'.repeat(4095)+'a','é'.repeat(4095)+'b'], ['界'.repeat(4095)+'a','界'.repeat(4095)+'b'],
+    ['🔐'.repeat(2047)+'🔐','🔐'.repeat(2047)+'🔑']]) {
+    assert.equal(authority.secretEqual(left,right),false);
+    assert.equal(authority.secretEqual(right,left),false);
+  }
+  assert.equal(authority.secretEqual('a'.repeat(4097),'a'.repeat(4097)),false);
+  assert.equal(authority.secretEqual('a','a'.repeat(4097)),false);
+  for(const invalid of ['',null,undefined,42]) assert.equal(authority.secretEqual(invalid,invalid),false);
+});
+test('secret comparison does not confuse trailing NUL bytes with comparison padding', () => {
+  for(const value of ['owner-secret','é','🔐','x'.repeat(4095),'界'.repeat(4095)]) {
+    assert.equal(authority.secretEqual(value,value+'\u0000'),false);
+    assert.equal(authority.secretEqual(value+'\u0000',value),false);
+    assert.equal(authority.secretEqual(value+'\u0000',value+'\u0000'),true);
+  }
+  assert.equal(authority.secretEqual('a\u0000b','ab\u0000'),false);
+});
 test('canonical revision covers private verification and ignores object key order only', () => {
   const p=candidate(), revision=authority.profileRevision(p);
   assert.match(revision,/^[0-9a-f]{64}$/);
