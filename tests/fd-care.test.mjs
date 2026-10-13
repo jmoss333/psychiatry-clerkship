@@ -5,6 +5,7 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const careUrl = new URL(`${BUILD}/frontdoor/fd_care.js`, import.meta.url);
 const careSrc = existsSync(careUrl) ? readFileSync(careUrl, 'utf8') : '';
+const careSearchSrc = readFileSync(new URL(`${BUILD}/frontdoor/fd_care_search.js`, import.meta.url), 'utf8');
 const packUrl = new URL(`${BUILD}/frontdoor/fd_care_pack.js`, import.meta.url);
 const packSrc = existsSync(packUrl) ? readFileSync(packUrl, 'utf8') : '';
 const navigatorUrl = new URL(`${BUILD}/frontdoor/fd_care_navigator.js`, import.meta.url);
@@ -20,6 +21,9 @@ if (careSrc) {
     ${dataSrc}
     ${navigatorSrc}
     ${packSrc}
+    // Explicit opt-in fixture; production default is covered by fd-care-sharing-gate.test.mjs.
+    FD_CARE_PATIENT_SHARING_ENABLED=true;
+    ${careSearchSrc}
     ${careSrc}
     return {
       fdCare: typeof fdCare === 'function' ? fdCare : null,
@@ -251,7 +255,7 @@ test('the care page renders five static external links without forwarding contex
   assert.match(html, /Find support and follow-up/);
   assert.match(html, /Teach and share/);
   assert.equal((html.match(/class="fd-carelink"/g) || []).length, 5);
-  assert.equal((html.match(/target="_blank" rel="noopener noreferrer"/g) || []).length, 5);
+  assert.equal((html.match(/target="_blank" rel="noopener noreferrer"/g) || []).length, 6);
   assert.equal((html.match(/data-care-resource=/g) || []).length, 5);
   assert.equal((html.match(/data-fd-care-share=/g) || []).length, 5);
   assert.equal((html.match(/data-fd-care-pack=/g) || []).length, 10);

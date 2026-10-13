@@ -205,6 +205,24 @@ def derive(root=ROOT):
     except teaching_dependencies.DependencyError as error:
         raise ShippedPagesError(str(error)) from error
 
+    # 6 -- "Beyond this page" (README_MEDIA.md): once media_map.json is APPROVED, each anchor
+    # page that renders recommendations also signs its own generated media_resolved/<slug>.json
+    # (the complete resolved recommendation), so approving, changing or retiring a pick -- or an
+    # upstream library / guidance edit that changes what the page shows -- reopens exactly that
+    # page's review. A draft map binds nothing. media_index.py keeps the files in step and fails
+    # the build when they are not. (Read lazily: media_index imports this module.)
+    import media_index  # noqa: E402
+
+    try:
+        bound = media_index.bound_sources(root)
+    except media_index.MediaMapError as error:
+        raise ShippedPagesError(str(error)) from error
+    for slug, resolved in sorted(bound.items()):
+        page = by_slug.get(slug)
+        if page is None:
+            continue  # media_index's own validation names an anchor that does not ship
+        page["extraSources"] = sorted(set(page.get("extraSources", [])) | {resolved})
+
     generated_from = {}
     for relative in INPUT_FILES:
         digest = _sha256(os.path.join(root, relative))

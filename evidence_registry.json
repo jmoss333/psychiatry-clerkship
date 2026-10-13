@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-09-24",
+  "updated": "2026-10-11",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -10803,6 +10803,408 @@
             "date": "2026-09-28",
             "note": "Added for curriculum fine-tuning WP-I (FT-2): the communication case student_jargon_rupture_001 teaches repairing a rupture the student caused. Two meta-analyses. Rupture repair episodes were associated with better patient outcome (11 studies, 1,314 patients; r = .29, d = .62). Rupture-resolution training or supervision was NOT significantly related to patient outcome (6 studies, 276 trainees; r = .11, d = .22, p = .28). It licenses 'repair is associated with better outcomes', not 'training in repair improves outcomes'. The repair-outcome analysis is correlational; the training analysis compared trained groups with comparison groups. Annotation is AI-drafted and awaits faculty signature.",
             "reason": "curriculum fine-tuning WP-I (plan FT-2, approved by Josh 2026-09-28): new communication-practice case student_jargon_rupture_001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lam-2024-canmat-mdd",
+      "type": "guideline",
+      "citation": {
+        "title": "Canadian Network for Mood and Anxiety Treatments (CANMAT) 2023 Update on Clinical Guidelines for Management of Major Depressive Disorder in Adults: Réseau canadien pour les traitements de l'humeur et de l'anxiété (CANMAT) 2023 : Mise à jour des lignes directrices cliniques pour la prise en charge du trouble dépressif majeur chez les adultes.",
+        "authors": [
+          {
+            "family": "Lam",
+            "given": "RW"
+          },
+          {
+            "family": "Kennedy",
+            "given": "SH"
+          },
+          {
+            "family": "Adams",
+            "given": "C"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "",
+        "year": 2024,
+        "journal": "Can J Psychiatry",
+        "volume": "69",
+        "pages": "641-687",
+        "doi": "10.1177/07067437241245384",
+        "pmid": "38711351",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38711351/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed-indexed Europe PMC core record and linked primary text",
+        "verifiedAt": "2026-10-11",
+        "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 40490255, DOI 10.1177/07067437251349087: author middle initial corrected; recommendations unchanged. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC12149145/."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-11",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "psychopharmacology"
+        ],
+        "noteHistory": [
+          {
+            "date": "2026-10-11",
+            "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 40490255, DOI 10.1177/07067437251349087: author middle initial corrected; recommendations unchanged. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC12149145/.",
+            "reason": "Approved psychopharmacology primer expansion; bibliographic/source verification, not faculty attestation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "keramatian-2023-canmat-bipolar",
+      "type": "guideline",
+      "citation": {
+        "title": "The CANMAT and ISBD Guidelines for the Treatment of Bipolar Disorder: Summary and a 2023 Update of Evidence.",
+        "authors": [
+          {
+            "family": "Keramatian",
+            "given": "K"
+          },
+          {
+            "family": "Chithra",
+            "given": "NK"
+          },
+          {
+            "family": "Yatham",
+            "given": "LN"
+          }
+        ],
+        "organization": "",
+        "year": 2023,
+        "journal": "Focus (Am Psychiatr Publ)",
+        "volume": "21",
+        "pages": "344-353",
+        "doi": "10.1176/appi.focus.20230009",
+        "pmid": "38695002",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38695002/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed-indexed Europe PMC core record and linked primary text",
+        "verifiedAt": "2026-10-11",
+        "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-11",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "psychopharmacology"
+        ],
+        "noteHistory": [
+          {
+            "date": "2026-10-11",
+            "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.",
+            "reason": "Approved psychopharmacology primer expansion; bibliographic/source verification, not faculty attestation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "apa-2020-schizophrenia",
+      "type": "guideline",
+      "citation": {
+        "title": "The American Psychiatric Association Practice Guideline for the Treatment of Patients With Schizophrenia.",
+        "authors": [
+          {
+            "family": "Keepers",
+            "given": "GA"
+          },
+          {
+            "family": "Fochtmann",
+            "given": "LJ"
+          },
+          {
+            "family": "Anzia",
+            "given": "JM"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "Am J Psychiatry",
+        "volume": "177",
+        "pages": "868-872",
+        "doi": "10.1176/appi.ajp.2020.177901",
+        "pmid": "32867516",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/32867516/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed-indexed Europe PMC core record and linked primary text",
+        "verifiedAt": "2026-10-11",
+        "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-11",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "psychopharmacology"
+        ],
+        "noteHistory": [
+          {
+            "date": "2026-10-11",
+            "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.",
+            "reason": "Approved psychopharmacology primer expansion; bibliographic/source verification, not faculty attestation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "huhn-2019-antipsychotics",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Comparative efficacy and tolerability of 32 oral antipsychotics for the acute treatment of adults with multi-episode schizophrenia: a systematic review and network meta-analysis.",
+        "authors": [
+          {
+            "family": "Huhn",
+            "given": "M"
+          },
+          {
+            "family": "Nikolakopoulou",
+            "given": "A"
+          },
+          {
+            "family": "Schneider-Thoma",
+            "given": "J"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "",
+        "year": 2019,
+        "journal": "Lancet",
+        "volume": "394",
+        "pages": "939-951",
+        "doi": "10.1016/s0140-6736(19)31135-3",
+        "pmid": "31303314",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/31303314/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed-indexed Europe PMC core record and linked primary text",
+        "verifiedAt": "2026-10-11",
+        "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 31526735, DOI 10.1016/S0140-6736(19)31677-0: zotepine-versus-haloperidol Figure 3 estimate and funding/copyright statements corrected. The primer makes no claim about that pairwise estimate. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC8476989/."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-11",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "psychopharmacology"
+        ],
+        "noteHistory": [
+          {
+            "date": "2026-10-11",
+            "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 31526735, DOI 10.1016/S0140-6736(19)31677-0: zotepine-versus-haloperidol Figure 3 estimate and funding/copyright statements corrected. The primer makes no claim about that pairwise estimate. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC8476989/.",
+            "reason": "Approved psychopharmacology primer expansion; bibliographic/source verification, not faculty attestation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "wang-2025-lithium-suicidality",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The efficacy of lithium in the treatment of suicidal ideation, behavior and suicide: An updated systematic review and meta-analysis of randomized controlled trials.",
+        "authors": [
+          {
+            "family": "Wang",
+            "given": "JX"
+          },
+          {
+            "family": "Le",
+            "given": "GH"
+          },
+          {
+            "family": "Wong",
+            "given": "S"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "",
+        "year": 2025,
+        "journal": "J Affect Disord",
+        "volume": "387",
+        "pages": "119487",
+        "doi": "10.1016/j.jad.2025.119487",
+        "pmid": "40441661",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/40441661/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed-indexed Europe PMC core record and linked primary text",
+        "verifiedAt": "2026-10-11",
+        "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.Results excerpt is limited to the suicide-attempt estimate; it is not used to claim a significant benefit or absence of benefit."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-11",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "psychopharmacology"
+        ],
+        "noteHistory": [
+          {
+            "date": "2026-10-11",
+            "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.Results excerpt is limited to the suicide-attempt estimate; it is not used to claim a significant benefit or absence of benefit.",
+            "reason": "Approved psychopharmacology primer expansion; bibliographic/source verification, not faculty attestation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "brunner-2025-benzodiazepine-taper",
+      "type": "guideline",
+      "citation": {
+        "title": "Joint Clinical Practice Guideline on Benzodiazepine Tapering: Considerations When Risks Outweigh Benefits.",
+        "authors": [
+          {
+            "family": "Brunner",
+            "given": "E"
+          },
+          {
+            "family": "Chen",
+            "given": "CA"
+          },
+          {
+            "family": "Klein",
+            "given": "T"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "",
+        "year": 2025,
+        "journal": "J Gen Intern Med",
+        "volume": "40",
+        "pages": "2814-2859",
+        "doi": "10.1007/s11606-025-09499-2",
+        "pmid": "40526204",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/40526204/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed-indexed Europe PMC core record and linked primary text",
+        "verifiedAt": "2026-10-11",
+        "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-11",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "psychopharmacology"
+        ],
+        "noteHistory": [
+          {
+            "date": "2026-10-11",
+            "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.",
+            "reason": "Approved psychopharmacology primer expansion; bibliographic/source verification, not faculty attestation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "mcpheeters-2023-aud",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Pharmacotherapy for Alcohol Use Disorder: A Systematic Review and Meta-Analysis.",
+        "authors": [
+          {
+            "family": "McPheeters",
+            "given": "M"
+          },
+          {
+            "family": "O'Connor",
+            "given": "EA"
+          },
+          {
+            "family": "Riley",
+            "given": "S"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "",
+        "year": 2023,
+        "journal": "JAMA",
+        "volume": "330",
+        "pages": "1653-1665",
+        "doi": "10.1001/jama.2023.19761",
+        "pmid": "37934220",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/37934220/"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed-indexed Europe PMC core record and linked primary text",
+        "verifiedAt": "2026-10-11",
+        "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 39356516, DOI 10.1001/jama.2024.11331: author middle initial corrected; treatment findings unchanged. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC11447627/."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-11",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": true,
+        "relatedTopicTags": [
+          "psychopharmacology"
+        ],
+        "noteHistory": [
+          {
+            "date": "2026-10-11",
+            "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 39356516, DOI 10.1001/jama.2024.11331: author middle initial corrected; treatment findings unchanged. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC11447627/.",
+            "reason": "Approved psychopharmacology primer expansion; bibliographic/source verification, not faculty attestation."
           }
         ]
       }
