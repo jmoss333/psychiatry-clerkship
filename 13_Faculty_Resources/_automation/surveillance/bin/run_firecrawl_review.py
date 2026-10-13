@@ -12,6 +12,7 @@ import sys
 import lib_surveillance as L
 import run_firecrawl_pilot as R
 from question_impact import scan_impacts
+from evidence_storage import encode_inbox, decode_inbox
 from review_packets import merge_observation, validate_state
 
 STORAGE_LIMIT_BYTES = 8_000_000
@@ -20,9 +21,10 @@ STORAGE_WARNING_BYTES = 6_400_000  # 80%; advisory, never a faculty disposition.
 DEFAULT_STATE = Path(L.SURV_ROOT) / 'history/firecrawl/inbox.json'
 
 
-def atomic_json(path, value):
+def atomic_json(path, value, *, compact=False):
     path.parent.mkdir(parents=True, exist_ok=True)
-    text = json.dumps(value, ensure_ascii=False, indent=2) + '\n'
+    text = (json.dumps(value, ensure_ascii=False, separators=(',', ':')) if compact
+            else json.dumps(value, ensure_ascii=False, indent=2)) + '\n'
     if len(text.encode()) > STORAGE_LIMIT_BYTES:
         # Keep every record and the existing byte cap; discard indentation only.
         text = json.dumps(value, ensure_ascii=False, separators=(',', ':')) + '\n'
@@ -81,7 +83,7 @@ def change_passages(row, prior):
 
 
 def collect(args):
-    previous = json.loads(args.state.read_text()) if args.state.exists() else None
+    previous = decode_inbox(json.loads(args.state.read_text())) if args.state.exists() else None
     if previous is not None:
         validate_state(previous)
     mode = 'fixture' if args.responses else 'live'
@@ -93,7 +95,7 @@ def collect(args):
         state['generatedAt'] = L.utcnow()
         state['failures'] = [{'sourceId': s, 'reason': 'FIRECRAWL_API_KEY is not configured'} for s in R.DEFAULT_IDS]
         validate_state(state)
-        atomic_json(args.state, state)
+        atomic_json(args.state, encode_inbox(state), compact=True)
         capacity = report_storage(args.state)
         atomic_json(args.out_dir / 'receipt.json', {'status': 'incomplete', 'requested': list(R.DEFAULT_IDS), 'examined': [], 'apiRequests': 0, 'storageCapacity': capacity})
         return 2
@@ -145,7 +147,7 @@ def collect(args):
     if result.returncode not in (0, 1):
         state['failures'].append({'sourceId': 'collector', 'reason': 'Examination incomplete; inspect collection report'})
     validate_state(state)
-    atomic_json(args.state, state)
+    atomic_json(args.state, encode_inbox(state), compact=True)
     capacity = report_storage(args.state)
     atomic_json(args.out_dir / 'receipt.json', {'status': 'incomplete' if state['failures'] else 'complete',
         'requested': list(R.DEFAULT_IDS), 'examined': [r['source_id'] for r in report['results'] if r['status'] != 'unable-to-check'],

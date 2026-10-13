@@ -1,3 +1,4 @@
+import {decodeEvidenceResponse} from './evidence-response.mjs';
 import {reviewPriority,orderPackets} from './evidence-priority.mjs';
 const api='/api/attest?view=evidence';
 const inbox=document.querySelector('#inbox'),status=document.querySelector('#status');
@@ -12,7 +13,7 @@ function currentQuestion(question){
  for(const option of obj.options||obj.o||[]){details.append(node('p',(option.c?'Correct answer: ':'Option: ')+(option.t||'')));if(option.trap?.note||option.note)details.append(node('blockquote',option.trap?.note||option.note));}};
  teaching(question);if(question.tier2){details.append(node('p',question.tier2.q||'Second-tier question'));teaching(question.tier2);}return details;
 }
-async function request(body){const response=await fetch(api,{method:body?'POST':'GET',headers:{'x-faculty-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok)throw new Error(value.error?.message||'Evidence inbox unavailable. Retry after checking the collector.');return value;}
+async function request(body){const response=await fetch(api,{method:body?'POST':'GET',headers:{'x-faculty-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok)throw new Error(value.error?.message||'Evidence inbox unavailable. Retry after checking the collector.');return decodeEvidenceResponse(value);}
 async function load(){state=await request();render();status.textContent='Evidence inbox loaded.';}
 function render(){
  inbox.replaceChildren();const reload=node('button','Reload evidence');reload.onclick=()=>load().catch(e=>status.textContent=e.message);inbox.append(reload);
