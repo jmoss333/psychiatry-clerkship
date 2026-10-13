@@ -375,7 +375,9 @@ function fdSearchResults(index, query, synonyms, state){
   /* Reading discovery also sees punctuation-separated words. Keep the original query's
      matches and score for compound names; neither this query nor its expanded words feed
      the protocol pass above, whose safety evidence and ordering remain unchanged. */
-  var readingQuery=fdSearchNormalize(rawQuery);
+  /* Resource filenames stay literal: splitting their shared .md/.html extension would
+     match almost the whole library, even when the requested filename does not exist. */
+  var readingQuery=/\.(md|html)\b/.test(rawQuery)?rawQuery:fdSearchNormalize(rawQuery);
   var readingWords=fdSearchContentWords(fdExpandQuery(readingQuery, synonyms).split(/\s+/));
   var itemResults=[];
   for(var r=0;r<refs.length;r++){

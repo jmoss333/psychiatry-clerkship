@@ -48,6 +48,18 @@ for (const site of ['ms3','res']) {
   const p=projections[site], index=F.fdBuildIndex(p.curriculum,meta,tools,p.manifest);
   const results=q=>F.fdSearchResults(index,q,p.curriculum.synonyms,{});
   const oldIndex=F.fdBuildIndex({...p.curriculum,medicationTerms:{}},meta,tools,p.manifest);
+  test(`${site}: literal page and tool filenames do not broaden into extension matches`,()=>{
+    for (const ref of ['psychopharm_primer.md','med_monitoring.md','mse.html']) {
+      assert.deepEqual(results(ref).map(r=>r.item.ref),[ref],ref);
+      assert.deepEqual(results(' '+ref.toUpperCase()+' ').map(r=>r.item.ref),[ref],ref);
+    }
+    // A filename still retains any established safety routing; it is not an early return.
+    assert.deepEqual(results('withdrawal.html').map(r=>[r.item.ref,r.kind]),
+      [['t_sud.md','protocol'],['withdrawal.html','item']]);
+    for (const ref of ['unknown_reading.md','unknown-tool.html']) {
+      assert.deepEqual(results(ref),[],ref);
+    }
+  });
   test(`${site}: the documented medication audit has no unexpected empty searches`,()=>{
     assert.equal(new Set(audit.queries).size,audit.queries.length);
     const empty=audit.queries.filter(query=>results(query).length===0);
