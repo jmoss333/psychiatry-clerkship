@@ -186,10 +186,13 @@ function fdKitIndexButton(key,label,count,selected){
     '<span>'+fdEsc(label)+'</span><span class="fd-kit__index-count">'+count+'</span></button>';
 }
 
+/* The companion sits in the readings column between the page h1 and the preview pane h2, so it is
+   announced at level 2 (axe heading-order, 2026-10-07: h1 -> h3). aria-level keeps the h3 styling
+   and the essentials visual baselines unchanged; tests/a11y-heading-level.test.mjs pins it. */
 function fdEssentialsTeaching(resources){
   var rows=Array.isArray(resources)?resources:[];
   if(!rows.length) return '';
-  var out='<section class="fd-kit__teaching" aria-label="External teaching companion"><h3>Teaching companion</h3>';
+  var out='<section class="fd-kit__teaching" aria-label="External teaching companion"><h3 aria-level="2">Teaching companion</h3>';
   for(var i=0;i<rows.length;i++){
     out+='<a class="fd-teachinglink" data-teaching-resource="'+fdEsc(rows[i].id)+'" href="'+fdEsc(rows[i].url)+'" target="_blank" rel="noopener noreferrer">'+
       '<span class="fd-teachinglink__title">'+fdEsc(rows[i].title)+' <span class="fd-visually-hidden">(opens in a new tab)</span> <span aria-hidden="true">↗</span></span>'+

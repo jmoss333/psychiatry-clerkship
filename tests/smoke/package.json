@@ -15,6 +15,7 @@
     "update-baselines": "playwright test visual-regression.spec.js --project=visual --update-snapshots=all"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.63.0"
   }
 }
