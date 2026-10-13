@@ -372,6 +372,11 @@ function fdSearchResults(index, query, synonyms, state){
   for(var ref in idx.byRef){ if(!idx.byRef[ref].readerOnly) refs.push(ref); }
   refs.sort(function(a,b){ return a<b?-1:(a>b?1:0); });
 
+  /* Reading discovery also sees punctuation-separated words. Keep the original query's
+     matches and score for compound names; neither this query nor its expanded words feed
+     the protocol pass above, whose safety evidence and ordering remain unchanged. */
+  var readingQuery=fdSearchNormalize(rawQuery);
+  var readingWords=fdSearchContentWords(fdExpandQuery(readingQuery, synonyms).split(/\s+/));
   var itemResults=[];
   for(var r=0;r<refs.length;r++){
     if(seenRefs[refs[r]]) continue;
@@ -379,10 +384,12 @@ function fdSearchResults(index, query, synonyms, state){
     var aliasHit=fdSearchAliasHit(it, rawQuery);
     var medicationMatch=fdSearchMedicationMatch(it, rawQuery);
     var searchHay=fdSearchHaystack(it)+' '+String(it.searchTitle||'').toLowerCase();
-    if(aliasHit||medicationMatch||fdSearchHits(searchHay, rawQuery, contentWords)){
+    if(aliasHit||medicationMatch||fdSearchHits(searchHay, rawQuery, contentWords)||
+       fdSearchHits(searchHay, readingQuery, readingWords)){
       itemResults.push({
         item: it, kind:'item', meta: fdSearchItemMeta(it),
-        _score: fdSearchScore(it, rawQuery, contentWords)+(aliasHit?120:0)+(medicationMatch===2?90:0), _alias: !!aliasHit
+        _score: Math.max(fdSearchScore(it, rawQuery, contentWords), fdSearchScore(it, readingQuery, readingWords))+
+          (aliasHit?120:0)+(medicationMatch===2?90:0), _alias: !!aliasHit
       });
     }
   }

@@ -69,6 +69,37 @@ for (const site of ['ms3','res']) {
     if(query.includes('catatonia')||query.includes('monitoring'))
       assert.ok(!refs.includes('psychopharm_primer.md')||refs.indexOf(ref)<refs.indexOf('psychopharm_primer.md'),`${query}: ${refs}`);
   });
+  // Leaving punctuation attached to context words must fail these destination checks.
+  for (const [med, context, ref] of [
+    ['Ativan', 'catatonia', 'catatonia.md'],
+    ['lorazepam', 'catatonia', 'catatonia.md'],
+    ['lithium', 'monitoring', 'med_monitoring.md'],
+    ['lithium', 'level', 'med_monitoring.md'],
+  ]) test(`${site}: punctuation around ${med} ${context} keeps the specific reading ahead of the primer`,()=>{
+    for (const query of [
+      `${med} ${context}?`, `${med} ${context}!`, `${med}: ${context}.`,
+      `(${med}) [${context}]`, `${med} "${context}"`, `“${med} ${context}”`,
+      `${med}/${context}`, `${med}-${context}`, `${med}—${context}`,
+      `${med}, ${context};`,
+    ]) {
+      const rows=results(query), refs=rows.map(r=>r.item.ref);
+      assert.ok(refs.indexOf(ref)>=0&&refs.indexOf(ref)<3, `${query}: ${refs}`);
+      assert.ok(!refs.includes('psychopharm_primer.md')||refs.indexOf(ref)<refs.indexOf('psychopharm_primer.md'), `${query}: ${refs}`);
+      assert.equal(new Set(refs).size,refs.length);
+      assert.ok(refs.length<=8);
+    }
+  });
+  test(`${site}: recovering punctuated context does not invent or demote safety evidence`,()=>{
+    for (const [query, protocols] of [
+      ['Ativan catatonia?', []],
+      ['lithium monitoring?', []],
+      ['Ativan withdrawing from alcohol?', ['t_sud.md']],
+    ]) {
+      const rows=results(query);
+      assert.deepEqual(rows.filter(r=>r.kind==='protocol').map(r=>r.item.ref),protocols,query);
+      if(protocols.length) assert.equal(rows[0].item.ref,protocols[0],query);
+    }
+  });
   test(`${site}: medication vocabulary preserves all existing protocol matches and their order`,()=>{
     const phrases=['i want to kill myself','withdrawing from alcohol','confused at night',
       'violent','suicidal','overdose','catatonia','fever and rigidity'];

@@ -4125,6 +4125,35 @@ test('medication search: names reach readings while clinical context keeps its d
   await expectHealthy(page);
 });
 
+for (const [device, viewport] of [['phone', PHONE], ['desktop', DESKTOP]]) {
+  test(`medication search: punctuated context finds and opens the specific reading on ${device}`, async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.setViewportSize(viewport);
+    await page.goto('/?tab=library');
+    await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+    const dialog = page.getByRole('dialog', { name: 'Search' });
+    const input = dialog.getByRole('textbox', { name: 'Search resources' });
+    for (const [query, ref] of [
+      ['Ativan catatonia?', 'catatonia.md'],
+      ['lorazepam (catatonia)', 'catatonia.md'],
+      ['lithium/monitoring', 'med_monitoring.md'],
+      ['lithium—monitoring', 'med_monitoring.md'],
+      ['lithium monitoring?', 'med_monitoring.md'],
+    ]) {
+      await input.fill(query);
+      await expect(dialog.locator(`[data-fd-open="${ref}"]`)).toBeVisible();
+      const refs = await dialog.locator('.fd-result').evaluateAll(rows => rows.map(row => row.getAttribute('data-fd-open')));
+      expect(refs.indexOf(ref), query).toBeLessThan(3);
+      const primer = refs.indexOf('psychopharm_primer.md');
+      if (primer >= 0) expect(refs.indexOf(ref), query).toBeLessThan(primer);
+    }
+    await dialog.locator('[data-fd-open="med_monitoring.md"]').click();
+    await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', 'med_monitoring.md');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
+    await expectHealthy(page);
+  });
+}
+
 test.describe('Essentials Phase 2', () => {
   const rows = page => page.locator('.fd-kit .fd-kit__reading[data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
   const full = page => page.locator('[data-fd-library-view="full"]');
