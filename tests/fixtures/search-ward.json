@@ -410,6 +410,39 @@
         "ms3",
         "res"
       ]
+    },
+    {
+      "query": "ativan",
+      "acceptable": [
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 3,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "lamictal",
+      "acceptable": [
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 3,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "wellbutrin",
+      "acceptable": [
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 3,
+      "sites": [
+        "ms3",
+        "res"
+      ]
     }
   ],
   "crisis": [
@@ -535,10 +568,6 @@
       "reason": "Reached the serotonin syndrome / NMS cases only because 'ss' sat inside 'ssnms' in their filenames. Any real route touches the held placement above."
     },
     {
-      "query": "ativan",
-      "reason": "Benzodiazepine names: lorazepam at 3 a.m. is as often agitation, alcohol withdrawal or a catatonia challenge, and an alias would rank the primer above those protocols in combined queries ('lorazepam catatonia'). Faculty to choose the destination."
-    },
-    {
       "query": "cogentin",
       "reason": "Anticholinergics: the only page naming benztropine or diphenhydramine is the toxidromes page's anticholinergic-toxicity content; routing a dystonia question there could mislead. Acute dystonia is taught nowhere yet (review task #7)."
     },
@@ -553,14 +582,6 @@
     {
       "query": "clonus",
       "reason": "Serotonin syndrome sign; held with serotonin syndrome."
-    },
-    {
-      "query": "wellbutrin",
-      "reason": "The primer teaches SSRIs; bupropion, SNRIs, mirtazapine and trazodone are not named on any page."
-    },
-    {
-      "query": "lamictal",
-      "reason": "Only the resident advanced psychopharmacology page names lamotrigine; nothing on the MS3 site."
     },
     {
       "query": "anc",

@@ -176,6 +176,11 @@ const REGISTRY = Object.freeze({
     why: 'Requires only that the page marker never claims a review the ledger lacks, for either ledger status; '
       + "the rule's truth table is pinned beside it.",
   },
+  'tests/medication-search.test.mjs': {
+    kind: 'invariant',
+    why: 'Real topic_meta.json supplies medication search content; the audience projections use inline '
+      + 'governance fixtures, and discovery and protocol-order assertions do not depend on which pages are signed.',
+  },
   'tests/search-discovery.test.mjs': {
     kind: 'invariant',
     why: 'Real topic_meta.json supplies the search content; the governance triplets it attaches are inline '
