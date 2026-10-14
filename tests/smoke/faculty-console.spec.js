@@ -3761,9 +3761,9 @@ test.describe('individual medication review', () => {
   });
 });
 
-async function mockEvidencePages(page,state,{failFirstPacket=false,saveSucceeds=false}={}){
+async function mockEvidencePages(page,state,{failFirstPacket=false,saveSucceeds=false,revisionState}={}){
  const requests=[];let failed=false;
- const context={reportCommit:state.reportCommit||'r',teachingCommit:'t',decisionRevision:state.decisionRevision||'d'};
+ const context=revisionState||{reportCommit:state.reportCommit||'r',teachingCommit:'t',decisionRevision:state.decisionRevision||'d'};
  const decisions={version:1,decisions:state.packets.flatMap(p=>(p.targets||[]).filter(t=>t.decision).map(t=>({...t.decision,packetRevision:p.revision,itemKey:t.itemKey,itemRevision:t.revision,at:'2026-10-13'})))};
  await page.route('**/api/attest?view=evidence*',async route=>{
   const request=route.request(),params=new URL(request.url()).searchParams,section=params.get('section');requests.push({method:request.method(),section,packet:params.get('packetRevision')});
@@ -3776,6 +3776,7 @@ async function mockEvidencePages(page,state,{failFirstPacket=false,saveSucceeds=
    p.targets.find(t=>t.itemKey===d.itemKey).decision=decision;decisions.decisions.push(decision);context.decisionRevision='saved-'+decisions.decisions.length;
    return route.fulfill({json:{ok:true,commit:'saved',revision:context.decisionRevision}});
   }
+  if(['packet','history'].includes(section)&&Object.keys(context).some(k=>params.get(k)!==context[k]))return route.fulfill({status:409,json:{error:{message:'Evidence changed. Reload before deciding.'}}});
   if(section==='packet'&&failFirstPacket&&!failed){failed=true;return route.fulfill({status:503,json:{error:{message:'Temporary packet failure. Retry opening.'}}});}
   let data;
   if(section==='index')data={...context,section,failures:state.failures||[],packets:orderPackets(state.packets.map(p=>({...p,status:'not-assessed'}))).map(p=>({revision:p.revision,sourceName:p.sourceName,sourceUrl:p.sourceUrl,observedAt:p.observedAt,status:'not-assessed',priority:reviewPriority(p),decisionCount:decisions.decisions.filter(d=>d.packetRevision===p.revision).length,replacementRevision:p.replacementRevision}))};
@@ -3894,4 +3895,62 @@ test('evidence on demand locks submitted fields until a delayed save completes',
  await expect(page.getByLabel('Rationale')).not.toBeEditable();await expect(page.getByLabel('Disposition')).toBeDisabled();
  release();await expect(page.getByRole('status')).toContainText('Evidence changed');
  await expect(page.getByLabel('Rationale')).toBeEditable();await expect(page.getByLabel('Disposition')).toBeEnabled();await expect(page.getByLabel('Rationale')).toHaveValue('Submitted draft');
+});
+
+const resumeRevision='a'.repeat(64);
+function resumePacket(overrides={}){return {revision:resumeRevision,sourceId:'s',sourceName:'Resume source',sourceUrl:'https://example.org',observedAt:'2026-10-14',scanStatus:'complete',coverage:{active:1,scanned:1,errors:[]},passages:[{old:'Earlier evidence',new:'New evidence'}],candidates:[],readings:[],targets:[{itemKey:'source:s',revision:resumeRevision,current:null}],status:'pending',...overrides};}
+async function openResumeInbox(page){await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();await expect(page.locator('#inbox > article')).toHaveCount(1);}
+
+test('resume review remembers only a successful packet and reloads current evidence and decisions',async({page})=>{
+ const revisionState={reportCommit:'r',teachingCommit:'t',decisionRevision:'d'},packet=resumePacket(),requests=await mockEvidencePages(page,{packets:[packet]},{revisionState});
+ await openResumeInbox(page);await expect(page.getByRole('button',{name:'Resume review',exact:true})).toBeHidden();
+ await page.getByRole('button',{name:'Open packet',exact:true}).click();await expect(page.getByRole('heading',{name:'Packet details',exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>localStorage.getItem('cw_evidence_last_packet'))).toBe(resumeRevision);
+ packet.passages[0].new='Changed evidence on return';packet.targets[0].decision={actor:'Faculty',outcome:'needs-edit',rationale:'New decision on return'};
+ await openResumeInbox(page);await expect(page.getByRole('heading',{name:'Packet details',exact:true})).toHaveCount(0);
+ Object.assign(revisionState,{reportCommit:'new-report',teachingCommit:'new-teaching',decisionRevision:'new-decisions'});
+ await page.getByRole('button',{name:'Resume review',exact:true}).click();
+ await expect(page.getByText('Changed evidence on return',{exact:true})).toBeVisible();await expect(page.getByText('Faculty: New decision on return',{exact:true})).toBeVisible();
+ expect(requests.map(r=>r.section)).toEqual(['index','packet','index','index','packet']);
+ await page.getByText('Full retained packet evidence',{exact:true}).click();await expect(page.locator('article pre').last()).toContainText('Changed evidence on return');
+ await page.getByRole('button',{name:'Open audit history'}).click();await page.getByText('Source snapshots, mapping receipts, and collection history',{exact:true}).click();await expect(page.locator('#evidence-history pre')).toContainText('Synthetic audit retained');
+ await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('resume review preserves unsaved notes without a refresh',async({page})=>{
+ const requests=await mockEvidencePages(page,{packets:[resumePacket()]});await openResumeInbox(page);await page.getByRole('button',{name:'Open packet',exact:true}).click();await page.getByLabel('Rationale').fill('Unsaved review note');
+ await page.getByRole('button',{name:'Resume review',exact:true}).click();await expect(page.getByRole('status')).toContainText('Save your unsaved notes');await expect(page.getByLabel('Rationale')).toHaveValue('Unsaved review note');expect(requests).toHaveLength(2);
+});
+
+test('resume review preserves typing during its fresh index request',async({page})=>{
+ await mockEvidencePages(page,{packets:[resumePacket()]});await openResumeInbox(page);await page.getByRole('button',{name:'Open packet',exact:true}).click();await expect(page.getByLabel('Rationale')).toBeVisible();
+ let release,arrived;const held=new Promise(resolve=>release=resolve),arrival=new Promise(resolve=>arrived=resolve);
+ await page.route('**/api/attest?view=evidence&section=index',async route=>{arrived();await held;await route.fallback();});
+ await page.getByRole('button',{name:'Resume review',exact:true}).click();await arrival;await page.getByLabel('Rationale').fill('Typing during resume');release();await expect(page.getByRole('status')).toContainText('New typing was preserved');await expect(page.getByLabel('Rationale')).toHaveValue('Typing during resume');
+});
+
+test('resume review reports a missing packet and retains available history',async({page})=>{
+ await mockEvidencePages(page,{packets:[resumePacket({revision:'b'.repeat(64)})]});await page.addInitScript(revision=>localStorage.setItem('cw_evidence_last_packet',revision),resumeRevision);await openResumeInbox(page);
+ await page.getByRole('button',{name:'Resume review',exact:true}).click();await expect(page.getByRole('status')).toContainText('saved packet is unavailable');await expect(page.locator('#inbox > article')).toHaveCount(1);await expect(page.getByRole('button',{name:'Open audit history'})).toBeVisible();
+});
+
+test('resume review tolerates unavailable storage and does not remember a failed packet',async({page})=>{
+ await mockEvidencePages(page,{packets:[resumePacket()]},{failFirstPacket:true});await openResumeInbox(page);await page.getByRole('button',{name:'Open packet',exact:true}).click();await expect(page.getByText('Temporary packet failure. Retry opening.')).toBeVisible();expect(await page.evaluate(()=>localStorage.getItem('cw_evidence_last_packet'))).toBeNull();
+ await page.evaluate(()=>{Storage.prototype.setItem=()=>{throw new Error('Storage blocked');};Storage.prototype.getItem=()=>{throw new Error('Storage blocked');};});
+ await page.getByRole('button',{name:'Open packet',exact:true}).click();await expect(page.getByRole('heading',{name:'Packet details',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Resume review',exact:true})).toBeHidden();
+});
+
+
+for(const changed of ['reportCommit','teachingCommit','decisionRevision'])test(`resume review rejects ${changed} changing between list and detail`,async({page})=>{
+ const revisionState={reportCommit:'r',teachingCommit:'t',decisionRevision:'d'};
+ await mockEvidencePages(page,{packets:[resumePacket()]},{revisionState});await page.addInitScript(revision=>localStorage.setItem('cw_evidence_last_packet',revision),resumeRevision);await openResumeInbox(page);
+ await page.route('**/api/attest?view=evidence&section=packet&**',async route=>{revisionState[changed]='advanced';await route.fallback();});
+ await page.getByRole('button',{name:'Resume review',exact:true}).click();await expect(page.getByText('Evidence changed. Reload before deciding.',{exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'Packet details',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Save disposition'})).toHaveCount(0);
+});
+
+test('resume review keeps the earlier packet and its replacement visible',async({page})=>{
+ const earlier=resumePacket({replacementRevision:'b'.repeat(64)}),replacement=resumePacket({revision:'b'.repeat(64),sourceName:'Replacement source'});
+ await mockEvidencePages(page,{packets:[earlier,replacement]});await page.addInitScript(revision=>localStorage.setItem('cw_evidence_last_packet',revision),resumeRevision);
+ await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();await page.getByRole('button',{name:'Resume review',exact:true}).click();
+ await expect(page.getByText('A restored mapping has a newer review packet. Review that replacement to complete this examination.',{exact:true})).toBeVisible();await expect(page.locator('#inbox > article')).toHaveCount(2);await page.getByText('Full retained packet evidence',{exact:true}).click();await expect(page.locator('article pre').last()).toContainText('Earlier evidence');
 });

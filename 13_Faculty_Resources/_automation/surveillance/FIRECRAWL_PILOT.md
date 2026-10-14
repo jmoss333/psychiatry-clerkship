@@ -262,3 +262,19 @@ saves refresh and reopen the selected packet when no other forms contain unsaved
 work; otherwise those drafts remain in place, using only the exact ledger revision
 returned by that successful save. Concurrent external changes still fail revision
 checks. New typing during a pending reload cancels replacement of the view.
+
+### Resume review on the same browser
+
+After a packet opens successfully, the reader remembers only its 64-character
+revision in `cw_evidence_last_packet`. No key, rationale, evidence, or decision is
+stored with the bookmark. After login, **Resume review** reloads the index and
+requests that packet with fresh report, teaching, and decision revision pins.
+Changes between requests still fail the existing server checks. A replacement is
+identified on the earlier packet; both retained records remain in the list.
+Missing packets produce an explicit message while leaving available history open
+for inspection. Blocked or malformed browser storage does not prevent review.
+
+Resume refuses to replace a view containing unsaved notes. Typing while its index
+request is pending cancels the replacement through the existing draft-version
+check. The bookmark is local to that browser and origin, not an account-wide
+review status or evidence of clinical approval.
