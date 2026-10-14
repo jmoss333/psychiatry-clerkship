@@ -2176,6 +2176,8 @@
 
   /*__FD_CARE_PACK__*/
 
+  /*__FD_CARE_PACKET__*/
+
   /*__FD_CARE_SEARCH__*/
 
   /*__FD_CARE__*/
@@ -3042,7 +3044,9 @@
     if(retained&&replacement)replacement.parentNode.replaceChild(retained,replacement);
   }
 
-  var fdCareDirectory=fdCreateCareDirectory();
+  /* The aftercare packet exists only while its source gate is on; off, the directory behaves exactly as before. */
+  var fdCarePacket=(typeof fdCarePacketEnabled==='function'&&fdCarePacketEnabled())?fdCreateCarePacket():null;
+  var fdCareDirectory=fdCreateCareDirectory(fdCarePacket);
   function fdMountCareDirectory(state){
     if(state.screen==='app'&&state.tab==='care'&&!state.openId&&contentEl){
       fdCareDirectory.mount(contentEl.querySelector('[data-care-directory]'),document.getElementById('careDirectoryStatus'));

@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(645 distinct `fd-*` selector names, 30 `is-*` state classes). Every class below has a rule in that file unless
+(666 distinct `fd-*` selector names, 31 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -484,6 +484,7 @@ Omitting it collapses the rail underneath.
 | `.vh-live` (`#careNavigatorStatus`) | Persistent, initially empty shell status beside `#routeStatus`, outside replaceable `#content`. The shell updates its polite, atomic text after a valid Care choice and clears it when the choice or Care surface ends. It keeps the same DOM node through Care re-renders. |
 | `.fd-care-navigator__alternatives` | Zero to two secondary links; shares the responsive one-column phone layout. |
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
+
 | `.fd-care-builder` / `.fd-care-builder__link` | Fixed context-free ReConnect launcher before the local picker, outside the handout sheet. Copy is linked by `aria-describedby`; new-tab link has `noopener noreferrer`, 44px minimum height, wrapping and visible focus. Flex stacks at ≤640px; `@media print` hides it in every state. No selection, QR, storage or analytics hook. |
 | `.fd-care-pack__workbench` | Transient two-column builder: a flat choice list beside a paper-like preview, stacking to one column at ≤640px. It accepts only canonical `careResources` records and has no patient fields, route state, storage, analytics, or network request. |
 | `.fd-care-pack__choice.is-selected` | The active choice pairs `.is-selected` with `aria-pressed="true"`; its visible check and inset rule keep selection non-color-only. A fourth unselected choice disables until one of the three is removed. |
@@ -499,6 +500,51 @@ Omitting it collapses the rail underneath.
 | `.fd-careitem__actions` | Touch-sized “Show QR” and handout-toggle buttons for each canonical resource. The handout control shares the transient `carePackIds` state and disables an unselected fourth item at the limit. |
 | `.fd-care-share` | Transient accessible QR dialog, rendered in the overlay mount and bottom-docked at ≤640px. It shows one locally generated QR, description, exact canonical URL, Copy link, and the shared handout toggle; it adds no patient fields, storage, analytics, or network request. |
 | `.fd-care-sharebackdrop` | Separate fixed backdrop. Click closes the Quick Share dialog; Escape and the close button use the same controller action. |
+
+
+### 3a-i. Community directory search and the aftercare packet
+
+Added with the packet (PR B). The search panel (`fd_care_search.js`) was not inventoried when it shipped;
+the packet hooks into it, so both are recorded here. Everything marked **(packet)** renders only while
+`FD_CARE_PACKET_ENABLED` is true; with the gate off the markup is exactly the search panel without those nodes.
+
+```
+.fd-care-search [data-care-directory]
+  .fd-care-search__head / form.fd-care-search__form / .fd-care-search__privacy / __notice
+  [data-care-directory-results]                       the ONLY node repainted while typing
+    h3.fd-care-search__count#fd-care-directory-count   tabindex=-1; focus target after paging
+    .fd-care-search__bulk role="group"                 (packet) Add from this page / Add from all results, with capacity descriptions
+    ol.fd-care-search__list
+      li.fd-care-search__result
+        article[.is-packed]                            (packet) is-packed adds the left rule
+          p.fd-care-search__meta                       (packet) + span.fd-care-search__packed "In packet"
+          .fd-care-search__actions
+            a (Call / Text) / a (Website)
+            button.fd-care-search__pack                (packet) aria-pressed, action label "Add to packet" / "Remove from packet"
+    nav.fd-care-search__pages
+  .fd-care-search__tray [data-fd-care-packet-tray]     (packet) AFTER the results mount; never repainted by typing
+    section.fd-care-packet
+      header.fd-care-packet__head
+        h3#fd-care-packet-title (tabindex=-1) + span.fd-care-packet__count
+        p.fd-care-packet__hint                         at 9+ ("Eight or fewer…") and at 12 ("full at 12")
+      p.fd-care-packet__empty                          or:
+      section.fd-care-packet__group > h4 + ol.fd-care-packet__list
+        li.fd-care-packet__item [data-fd-care-packet-item]
+          .fd-care-packet__name / .fd-care-packet__btns > up / down / Remove <button>
+      button.fd-care-packet__clear
+      fieldset.fd-care-packet__gate > legend + label.fd-care-packet__check ×4 (input[type=checkbox])
+      p.fd-care-packet__ready [data-fd-care-packet-ready] role="status"
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-care-search__pack` | The label never changes ("Add to packet"), so the accessible name always contains the visible text (WCAG 2.5.3). State is `aria-pressed`, the `✓` painted by `::before`, and the `In packet` tag on the card, so it is never colour alone. Disabled only when the packet is full and this listing is not in it. |
+| `.fd-care-search__bulk` | Sits in the results bar above the list. "All" means every match across pages, not the visible five. Both buttons disable when the packet is full or nothing new would be added. |
+| `.fd-care-search__result article.is-packed` | 3px olive left rule; `padding-left` compensates so text does not shift on toggle. |
+| `.fd-care-search__tray` | Outside the results mount on purpose: typing repaints only results, so tray focus and the review checkboxes are never lost. |
+| `.fd-care-packet__item` | Wraps at phone width; the up/down/Remove buttons keep the 44px target (`.fd-care-search button`). Moving swaps within a category only, because the printed pages group by category. |
+| `.fd-care-packet__check` | The 44px target is the whole `<label>` row, not the small checkbox. Disabled while the packet is empty. The four confirmations describe the packet that was reviewed, so they reset when a listing is added, when the packet is cleared, and when you leave Care; removing or reordering does not reset them. The packet itself survives leaving Care (one `sessionStorage` key, tab-scoped). |
+| `.fd-care-packet__ready` | Plain visible text, deliberately NOT a live region: the node is recreated on every repaint, which screen readers announce unreliably. Readiness changes are spoken through the one persistent `#careDirectoryStatus` announcer. There is no Print or Copy button until the print PR; do not add an inert one. |
 
 ---
 
@@ -1220,3 +1266,10 @@ close it. Escape closes the disclosure and returns focus to its summary.
 uses the scoped button rule. Controls have 44px minimum targets and visible
 focus; filters and header reflow at 640px. Results alone update during typing.
 The persistent `#careDirectoryStatus.vh-live` announces result counts politely.
+
+## G-B owner-approved controls (2026-10-13)
+
+- `.fd-care-search__capacity` spans the bulk bar; each button has its own remaining-capacity description.
+- `.fd-care-packet__outcome` retains the last bulk result and an expandable omission list, outside patient output and storage.
+- `dialog.fd-care-packet__confirm` is a body-level native modal with counted heading, Keep packet first, Clear packet second; Escape/backdrop preserve state. It uses the shared theme and focus tokens.
+- Category order is fixed; moves operate within a category and clear review confirmations.
