@@ -5,6 +5,19 @@ const inbox=document.querySelector('#inbox'),status=document.querySelector('#sta
 let key='',state,loadVersion=0,draftVersion=0;
 const openContexts=new Set();
 const dirtyForms=new Set();
+const resumeKey='cw_evidence_last_packet';
+let resumeButton;
+function lastPacket(){try{const value=localStorage.getItem(resumeKey);return /^[a-f0-9]{64}$/.test(value||'')?value:null;}catch{return null;}}
+function rememberPacket(revision){
+ if(!/^[a-f0-9]{64}$/.test(revision))return;
+ try{localStorage.setItem(resumeKey,revision);}catch{/* Review remains available when storage is blocked. */}
+ if(resumeButton)resumeButton.hidden=!lastPacket();
+}
+async function resumeReview(){
+ const revision=lastPacket();if(!revision){status.textContent='No saved packet is available on this browser.';return;}
+ if(dirtyForms.size){status.textContent='Save your unsaved notes before resuming. Your notes remain here.';return;}
+ await load(revision,{resume:true});
+}
 const node=(tag,text,className)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(className)e.className=className;return e;};
 function link(text,href){const e=node('a',text);const u=new URL(href,location.href);if(u.protocol==='https:'||u.origin===location.origin){e.href=u.href;}return e;}
 function field(item,path){try{return path.slice(1).split('/').reduce((v,k)=>v[k.replace(/~1/g,'/').replace(/~0/g,'~')],item);}catch{return undefined;}}
@@ -16,13 +29,18 @@ function currentQuestion(question){
  teaching(question);if(question.tier2){details.append(node('p',question.tier2.q||'Second-tier question'));teaching(question.tier2);}return details;
 }
 async function request(body,params={}){const url=api+'&'+new URLSearchParams(params);const response=await fetch(url,{method:body?'POST':'GET',headers:{'x-faculty-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok)throw new Error(value.error?.message||'Evidence inbox unavailable. Retry after checking the collector.');return decodeEvidenceResponse(value);}
-async function load(openRevision){
+async function load(openRevision,{resume=false}={}){
  if(dirtyForms.size&&!window.confirm('Reloading will discard unsaved rationales. Continue?'))return;
  const drafts=draftVersion,version=++loadVersion,next=await request(null,{section:'index'});
  if(version!==loadVersion)return;
  if(drafts!==draftVersion){status.textContent='New typing was preserved. Reload again when ready.';return;}
  state=next;dirtyForms.clear();openContexts.clear();openContexts.add(state);render();status.textContent='Packet list loaded. Open a packet to check current teaching and review details.';
- if(openRevision){const button=[...inbox.querySelectorAll('button[data-packet]')].find(b=>b.dataset.packet===openRevision);button?.click();}
+ if(openRevision){
+  const button=[...inbox.querySelectorAll('button[data-packet]')].find(b=>b.dataset.packet===openRevision);
+  if(!button){if(resume)status.textContent='Your saved packet is unavailable in the current inbox. All available packets and audit history remain below.';return;}
+  const opened=await button.onclick();
+  if(resume&&opened&&state===next){button.scrollIntoView({block:'start'});button.focus({preventScroll:true});status.textContent='Review resumed with freshly checked evidence, teaching, and decisions.';}
+ }
 }
 function pins(context){return {reportCommit:context.reportCommit,teachingCommit:context.teachingCommit,decisionRevision:context.decisionRevision};}
 function rawRecord(title,value){
@@ -42,7 +60,7 @@ function lazyPanel(parent,label,params,renderDetails,context,id){
  button.type='button';if(params.packetRevision)button.dataset.packet=params.packetRevision;button.setAttribute('aria-controls',id);button.setAttribute('aria-expanded','false');
  let loaded=false;
  button.onclick=async()=>{
-  if(loaded){panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));return;}
+  if(loaded){panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden&&params.packetRevision)rememberPacket(params.packetRevision);return;}
   button.disabled=true;button.textContent='Loading…';
   try{
    const details=await request(null,{...params,...pins(context)});
@@ -50,6 +68,8 @@ function lazyPanel(parent,label,params,renderDetails,context,id){
    if(details.decisionRevision!==context.decisionRevision)throw new Error('Decisions changed while loading. Retry opening.');
    openContexts.add(details);
    panel.replaceChildren();renderDetails(panel,details);loaded=true;panel.hidden=false;button.setAttribute('aria-expanded','true');
+   if(params.packetRevision)rememberPacket(params.packetRevision);
+   return true;
   }catch(error){if(state===context){panel.replaceChildren(node('p',error.message,'failure'));panel.hidden=false;button.setAttribute('aria-expanded','true');}}
   finally{button.disabled=false;button.textContent=label;}
  };
@@ -58,6 +78,7 @@ function lazyPanel(parent,label,params,renderDetails,context,id){
 function render(){
  const context=state;
  inbox.replaceChildren();const reload=node('button','Reload evidence');reload.onclick=()=>load().catch(e=>status.textContent=e.message);inbox.append(reload);
+ resumeButton=node('button','Resume review');resumeButton.type='button';resumeButton.hidden=!lastPacket();resumeButton.onclick=()=>resumeReview().catch(e=>status.textContent=e.message);inbox.append(resumeButton);
  for(const failure of state.failures)inbox.append(node('p',`${failure.sourceId}: ${failure.reason}`,'failure'));
  if(!state.packets.length)inbox.append(node('p','No source-change packets yet. This does not establish clinical currency.'));
  lazyPanel(inbox,'Open audit history',{section:'history'},(panel,data)=>{
