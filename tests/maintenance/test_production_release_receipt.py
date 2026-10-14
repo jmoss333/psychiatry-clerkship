@@ -516,6 +516,10 @@ class CliArtifactTests(unittest.TestCase):
             self.assertEqual(exit_code, 0)
             written = json.loads(json_path.read_text(encoding="utf-8"))
             self.assertEqual(written["status"], "PASS")
+            # Old reports without query attachments must not claim stable rankings.
+            self.assertIn("medicationSearchRanking", written)
+            self.assertEqual(written["medicationSearchRanking"]["status"], "CURRENT_UNAVAILABLE")
+            self.assertIn("Medication-search ranking changes", markdown_path.read_text(encoding="utf-8"))
             expected_digest = receipt.sha256(json_path.read_bytes()).hexdigest()
             self.assertEqual(digest_path.read_text(encoding="utf-8").split()[0], expected_digest)
             self.assertIn("Production release verification: PASS", markdown_path.read_text(encoding="utf-8"))

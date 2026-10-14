@@ -85,6 +85,8 @@ class ProductionReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("steps.core.outputs.res_url", journey_env["RES_BASE_URL"])
 
         upload = self.steps[positions[4]]
+        self.assertEqual(self.steps[positions[3]]["env"]["GITHUB_TOKEN"], "${{ secrets.GITHUB_TOKEN }}",
+                         "ranking history discovery needs the existing read-only Actions permission at finalization")
         self.assertEqual(upload["if"], "always()")
         self.assertEqual(upload["with"]["retention-days"], 90)
         self.assertEqual(upload["with"]["if-no-files-found"], "error")
