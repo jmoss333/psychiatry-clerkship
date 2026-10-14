@@ -42,6 +42,11 @@ Subsequent evidence: in **Finish carer packet work**, thread
 portion of the ward-printer review for these samples. It does not assert QR scanning,
 staff review, native accessibility testing or activation approval.
 
+The owner then separately confirmed: "Both packets' printed QR codes scan correctly."
+Record that as a pass for scanning from both printed samples. These fictional example.org
+destinations do not establish real service-link or contact validity. The owner explicitly
+instructed that the flag stay off and G-C stay open.
+
 | Check | Recorded result |
 | --- | --- |
 | Default packet sheet count | Pass: owner reported exactly five sheets. |
@@ -51,13 +56,13 @@ staff review, native accessibility testing or activation approval.
 | Default page 3: dense grouping, QR clearance, small text and footer | Pass: owner answered yes to this outstanding check before subsequent service errors. |
 | Default pages 4–5 | Pass: owner confirmed all five default pages pass. |
 | Long-listing packet: printing and inspection of all seven pages | Pass: owner confirmed all seven long-packet pages pass. |
-| QR scanning from paper | Not yet reported; fixture links are fictional. |
+| QR scanning from paper | Pass: owner confirmed the printed codes scan correctly in both packets; fixture links are fictional. |
 | Printer model and actual settings used | Not recorded. Requested settings were Letter, portrait, 100%/Actual Size, single-sided, grayscale, one page per sheet. |
 
 No repeated review of the passed rows is needed unless the sample or print conditions change.
 All five default pages and all seven long-packet pages have passed the owner's page
-inspection. The next physical check is scanning QR codes from both printed samples;
-those fictional destinations do not verify real service links or contacts.
+inspection, and QR scanning has passed for both printed samples. The next G-C step is a
+ward nurse's review of both paper packets; the peer-specialist review remains separate.
 
 ## The two review samples
 
@@ -81,9 +86,9 @@ real service-contact validity. The optional wallet card is not in either sample.
 
 ## Remaining G-C evidence
 
-- Record paper QR scan results and actual printer model/settings. The owner has passed
-  every page of both samples; do not repeat page inspection or infer actual settings
-  from the requested settings.
+- Record actual printer model/settings when available. Page inspection and paper QR
+  scanning have passed for both samples; do not repeat them unless the samples or print
+  conditions change, or infer actual settings from the requested settings.
 - Have one nurse and one peer specialist read the paper output. Record each person's
   role, date, concerns and disposition. No staff review is recorded yet.
 - Exercise the native browser print dialog and return-to-app behavior on the ward setup;
@@ -96,6 +101,21 @@ real service-contact validity. The optional wallet card is not in either sample.
 Once observations are complete, reconcile any defects and present a concrete G-C closure
 recommendation. Paper acceptance alone does not close G-C. Keep its state open until an
 explicit closure decision is recorded.
+
+### Next guided step: nurse paper review
+
+Give one ward nurse both printed, fictional review packets. Ask the nurse to read them
+as they would when explaining the packet to someone leaving the unit, and check:
+
+- Whether the next action and relevant contact details are easy to find and explain.
+- Whether routine follow-up instructions and the urgent-help instructions are clearly
+  distinguishable, including any ambiguity about what the unit can provide.
+- Whether any wording, grouping, small text or checkbox is confusing or difficult to use.
+
+Record the reviewer's role, review date, whether the paper review passes or needs changes,
+and the page/section and requested revision for each concern. No patient details are
+needed. This records the nurse's review only; it does not close G-C or approve activation.
+The peer-specialist, native accessibility and live-browser print reviews remain pending.
 
 ## G-D remains a separate activation decision
 
