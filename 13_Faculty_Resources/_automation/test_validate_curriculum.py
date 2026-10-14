@@ -405,18 +405,29 @@ class ValidateCurriculumTest(unittest.TestCase):
         self.assertIn("appPathway", result.stdout)
 
     def test_search_aliases_reject_unknown_refs_empty_values_and_duplicate_vocabulary(self):
-        for aliases in ({"ghost.md": ["ghost"]}, {"mse.html": []},
-                        {"mse.html": ["mse", "mse"]}, {"mse.html": [" MSE "]}):
-            with self.subTest(aliases=aliases), tempfile.TemporaryDirectory() as tmp:
+        for field in ("searchAliases", "medicationTerms"):
+            for aliases in ({"ghost.md": ["ghost"]}, {"mse.html": []},
+                            {"mse.html": ["mse", "mse"]}, {"mse.html": [" MSE "]}):
+                with self.subTest(aliases=aliases), tempfile.TemporaryDirectory() as tmp:
+                    curriculum = _curriculum([])
+                    c, root = _write(tmp, curriculum)
+                    baseline = _run(c, root)
+                    self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+                    curriculum[field] = aliases
+                    c, root = _write(tmp, curriculum)
+                    result = _run(c, root)
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn(field, result.stdout)
+
+    def test_medication_terms_reject_short_fragments_and_prescribing_amounts(self):
+        for terms in (["li"], ["lithium 2 mg"]):
+            with self.subTest(terms=terms), tempfile.TemporaryDirectory() as tmp:
                 curriculum = _curriculum([])
-                c, root = _write(tmp, curriculum)
-                baseline = _run(c, root)
-                self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
-                curriculum["searchAliases"] = aliases
+                curriculum["medicationTerms"] = {"mse.html": terms}
                 c, root = _write(tmp, curriculum)
                 result = _run(c, root)
             self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-            self.assertIn("searchAliases", result.stdout)
+            self.assertIn("medicationTerms", result.stdout)
 
     def test_accepts_six_shipped_ms3_landing_refs_without_resident_landing_refs(self):
         with tempfile.TemporaryDirectory() as tmp:

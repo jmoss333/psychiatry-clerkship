@@ -28,7 +28,7 @@ function memStorage() {
 }
 
 const seedCode = slice(source, 'function topicHasQuiz(', '/* ---- end srs seed + phantom migration ----');
-// The servability block carries the build-injected RETIRED_QB_IDS / DRAFT_QB_IDS needles
+// The servability block carries the build-injected RELEASED_QB_IDS needles
 // plus the cw_qb_drafts_v1 opt-in reader; dueBreakdown consults it so home counters only
 // count QB# cards the practice tool would actually serve (WP-37 attested-only default).
 const servCode = slice(source, '/* ---- qb servability (shell parity) ----', '/* ---- end qb servability ----');
@@ -37,7 +37,7 @@ const dueCode = slice(source, 'function srsState(', '/* ---- end due breakdown -
 // RETIRED_IDS / DRAFT_IDS stand in for the build injection (the source literals stay
 // empty lists; build_deploy.py verified-replaces them).
 // eslint-disable-next-line no-new-func
-const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RETIRED_IDS', 'DRAFT_IDS', 'Clock', `
+const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RELEASED_IDS', 'Clock', `
   var Date = Clock || globalThis.Date;
   var window = {};
   var conceptDueState={status:"ready",releasedIds:new Set()};
@@ -45,8 +45,7 @@ const makeSrs = new Function('localStorage', 'TOPIC_META', 'document', 'RETIRED_
   ${seedCode}
   ${servCode}
   ${dueCode}
-  if (RETIRED_IDS) RETIRED_QB_IDS = RETIRED_IDS;
-  if (DRAFT_IDS) DRAFT_QB_IDS = DRAFT_IDS;
+  RELEASED_QB_IDS = RELEASED_IDS || [];
   return { topicHasQuiz: topicHasQuiz, seedSRS: seedSRS,
     srsDropPhantomTopics: srsDropPhantomTopics, srsBucket: srsBucket,
     dueBreakdown: dueBreakdown, dueCount: dueCount };
@@ -117,7 +116,7 @@ test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable onl
     'REASON#mania_psychosis_substance_001#problem_representation': { due: twoDaysAgo },
     'REAS#case#step': { due: past },
   } }));
-  const srs = makeSrs(ls, QUIZ_META, docStub, undefined, undefined, FixtureDate);
+  const srs = makeSrs(ls, QUIZ_META, docStub, ['qb_moo_001', 'qb_moo_002'], FixtureDate);
   const b = srs.dueBreakdown();
   assert.equal(b.daily.due, 1);
   assert.equal(b.daily.overdue, 1);
@@ -134,7 +133,7 @@ test('dueBreakdown buckets by prefix; dueCount reports Daily-Review-servable onl
   assert.deepEqual(srs.dueCount(), { due: 2, overdue: 1 });
 });
 
-test('dueBreakdown counts only servable QB# cards: retired never, drafts only when opted in', () => {
+test('dueBreakdown counts only servable QB# cards: only released IDs, regardless of historical opt-in', () => {
   // "Due today counts cards nothing can serve" is the defect class this guards. A card
   // whose item the practice tool will not serve (retired, or draft while the learner has
   // not opted in via cw_qb_drafts_v1) must not inflate the home qb counter.
@@ -146,16 +145,16 @@ test('dueBreakdown counts only servable QB# cards: retired never, drafts only wh
   };
   const ls = memStorage();
   ls.setItem('cw_srs_v1', JSON.stringify({ v: 1, cards }));
-  let srs = makeSrs(ls, QUIZ_META, docStub, ['qb_retired'], ['qb_draft']);
+  let srs = makeSrs(ls, QUIZ_META, docStub, ['qb_att']);
   assert.equal(srs.dueBreakdown().qb.due, 1, 'default: only the attested card counts');
 
   ls.setItem('cw_qb_drafts_v1', 'true');
-  srs = makeSrs(ls, QUIZ_META, docStub, ['qb_retired'], ['qb_draft']);
-  assert.equal(srs.dueBreakdown().qb.due, 2, 'opt-in adds the draft card back');
-  assert.equal(srs.dueBreakdown().qb.overdue, 2, 'overdue mirrors the same rule');
+  srs = makeSrs(ls, QUIZ_META, docStub, ['qb_att']);
+  assert.equal(srs.dueBreakdown().qb.due, 1, 'opt-in cannot add an unpublished card');
+  assert.equal(srs.dueBreakdown().qb.overdue, 1, 'overdue mirrors the same rule');
 
   ls.setItem('cw_qb_drafts_v1', 'nonsense');
-  srs = makeSrs(ls, QUIZ_META, docStub, ['qb_retired'], ['qb_draft']);
+  srs = makeSrs(ls, QUIZ_META, docStub, ['qb_att']);
   assert.equal(srs.dueBreakdown().qb.due, 1, 'anything but the exact opt-in value fails closed');
 });
 

@@ -4101,6 +4101,75 @@ test('returning from a Library resource restores the list position and focuses t
 // Library (one-thread redesign, Phase 2 -- spec docs/superpowers/specs/one-thread-handoff/README.md
 // section 2 and its Phase 2 acceptance block). Exercises the rendered controls against the actual
 // audience payload; governance branches use controlled fixtures (#729), never the live ledger.
+test('medication search: names reach readings while clinical context keeps its destination', async ({ page }, info) => {
+  await seedApp(page, info);
+  await page.setViewportSize(PHONE);
+  await page.goto('/?tab=library');
+  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  const input = dialog.getByRole('textbox', { name: 'Search resources' });
+  for (const query of ['Wellbutrin XL', 'LAMICTAL?', 'Suboxone', 'Ativan']) {
+    await input.fill(query);
+    await expect(dialog.locator('[data-fd-open="psychopharm_primer.md"]')).toBeVisible();
+  }
+  await input.fill('Ativan catatonia');
+  await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toBeVisible();
+  await input.fill('Spravato');
+  await expect(dialog.locator('[data-fd-open="ect_neuromodulation.md"]')).toBeVisible();
+  await input.fill('Ativan withdrawing from alcohol');
+  await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 't_sud.md');
+  await input.fill('Wellbutrin');
+  await dialog.locator('[data-fd-open="psychopharm_primer.md"]').click();
+  await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', 'psychopharm_primer.md');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
+  await expectHealthy(page);
+});
+
+for (const [device, viewport] of [['phone', PHONE], ['desktop', DESKTOP]]) {
+  test(`medication search: punctuated context finds and opens the specific reading on ${device}`, async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.setViewportSize(viewport);
+    await page.goto('/?tab=library');
+    await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+    const dialog = page.getByRole('dialog', { name: 'Search' });
+    const input = dialog.getByRole('textbox', { name: 'Search resources' });
+    for (const [query, ref] of [
+      ['patient-suicidal', 'pg_suicide.md'],
+      ['lithium suicide-risk', 'pg_suicide.md'],
+      ['Ativan alcohol-withdrawal', 't_sud.md'],
+      ['Ativan pulled-out-iv', 'agitation.md'],
+      ['CIWA-Ar', 't_sud.md'],
+      ['patient-si', 'pg_suicide.md'],
+    ]) {
+      await input.fill(query);
+      await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', ref);
+      await expect(dialog.locator(`[data-fd-safety="${ref}"]`)).toHaveCount(1);
+      await expect(dialog.locator(`[data-fd-open="${ref}"]`)).toHaveCount(0);
+    }
+    await input.fill('patient-refuses-medication');
+    await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 'capacity.html');
+    await expect(dialog.locator('[data-fd-safety="exp_consult.md"]')).toBeVisible();
+    for (const [query, ref] of [
+      ['Ativan catatonia?', 'catatonia.md'],
+      ['lorazepam (catatonia)', 'catatonia.md'],
+      ['lithium/monitoring', 'med_monitoring.md'],
+      ['lithium—monitoring', 'med_monitoring.md'],
+      ['lithium monitoring?', 'med_monitoring.md'],
+    ]) {
+      await input.fill(query);
+      await expect(dialog.locator(`[data-fd-open="${ref}"]`)).toBeVisible();
+      const refs = await dialog.locator('.fd-result').evaluateAll(rows => rows.map(row => row.getAttribute('data-fd-open')));
+      expect(refs.indexOf(ref), query).toBeLessThan(3);
+      const primer = refs.indexOf('psychopharm_primer.md');
+      if (primer >= 0) expect(refs.indexOf(ref), query).toBeLessThan(primer);
+    }
+    await dialog.locator('[data-fd-open="med_monitoring.md"]').click();
+    await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', 'med_monitoring.md');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
+    await expectHealthy(page);
+  });
+}
+
 test.describe('Essentials Phase 2', () => {
   const rows = page => page.locator('.fd-kit .fd-kit__reading[data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
   const full = page => page.locator('[data-fd-library-view="full"]');
@@ -4900,9 +4969,14 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: '
       && meta[f].shelfBlueprint.includes(cat));
     const mood = pick('mood'), psychosis = pick('psychosis');
     if (!mood || !psychosis) throw new Error('topic_meta.json serves no mood or psychosis blueprint page; the fixture needs both');
+    // The shell accepts history only for published questions. Keep performance
+    // controlled, but use released IDs so this measures layout after filtering.
+    const bank = await (await requestGetWithRetry(page.request, '/question_bank.json')).json();
+    const ids = bank.items.map(q => q.id);
+    expect(new Set(ids).size, 'the fixture needs 15 distinct published question IDs').toBeGreaterThanOrEqual(15);
     const qb = {};
-    for (let i = 0; i < 12; i++) qb[`fixture-mood-${i}`] = { correct: true, pages: [mood], confidence: 'certain' };
-    for (let i = 0; i < 3; i++) qb[`fixture-psych-${i}`] = { correct: i < 1, pages: [psychosis], confidence: 'guess' };
+    for (let i = 0; i < 12; i++) qb[ids[i]] = { correct: true, pages: [mood], confidence: 'certain' };
+    for (let i = 0; i < 3; i++) qb[ids[i + 12]] = { correct: i < 1, pages: [psychosis], confidence: 'guess' };
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await seedApp(page, testInfo, { storage: {
       cw_qb_v1: qb,
@@ -4913,7 +4987,9 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: '
     const mastery = page.locator('.hm-sec', { hasText: 'Mastery by blueprint' });
     await expect(mastery.locator('.pc', { hasText: /· few$/ })).toHaveCount(1);
     await expect(mastery.locator('.pc', { hasText: /^not started$/ }).first()).toBeVisible();
-    await expect(page.locator('.hm-sec', { hasText: 'Confidence calibration' }).locator('.pc', { hasText: /^\d+% · \d+$/ }).first()).toBeVisible();
+    const calibration = page.locator('.hm-sec', { hasText: 'Confidence calibration' });
+    await expect(calibration.locator('.pc', { hasText: /^100% · 12$/ })).toBeVisible();
+    await expect(calibration.locator('.pc', { hasText: /^33% · 3$/ })).toBeVisible();
     await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => null))));
 
     const report = await page.locator('.hm-bars').evaluateAll(sections => sections.map(bars => {

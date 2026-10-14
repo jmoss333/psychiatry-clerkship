@@ -179,3 +179,58 @@ endpoint refuses synthetic packets. Run `node --test tests/firecrawl-*.test.mjs`
 and the faculty evidence review suites before activation. Live activation requires
 a successful manual run and inspection of the authenticated inbox, separately from
 code merge and deployment. A state file exceeding 8 MB fails without truncation.
+
+
+### Storage capacity warning
+
+After saving the inbox, each run measures its actual stored byte size (including
+any compact-JSON fallback). At 6,400,000 bytes, 80% of the unchanged 8,000,000-byte
+limit, it emits an Actions warning and records used/remaining capacity in the run
+summary, `receipt.json` (`storageCapacity`), and faculty brief. The receipt also
+reports capacity when a missing credential prevents examination; examination
+status remains incomplete. Capacity is operational information, not a new faculty
+packet or an approval. Nothing is pruned, dismissed, or marked reviewed.
+
+When warned, arrange reviewed expansion of evidence storage before the next large
+source change. The indicator describes the saved inbox, not a forecast of how many
+runs will fit. An oversized write still fails without replacing existing evidence;
+a run that fails before saving may not produce a fresh capacity reading.
+
+### Lossless shared snapshots
+
+The collector accepts the original version-1 inbox and a `storageVersion: 1`
+envelope. The envelope contains `state`, `snapshots`, and `references`. Only exact,
+repeated values of at least 256 UTF-8 bytes are shared: packet `candidates`,
+`questionSnapshots`, `passages`, `diff`, `readings`, and latest-source `text`.
+Different wording is never merged. Values are serialized JSON strings keyed by
+SHA-256 of those exact UTF-8 bytes. References carry an explicit three-part path;
+the referenced field is absent from the stored state and restored on read.
+
+Both the Python collector and authenticated faculty reader verify checksums,
+reject missing or unused snapshots, duplicate/overwriting references, unsupported
+versions and paths, and cap reconstructed data at 64 MB. The stored inbox remains
+capped at 8 MB and is saved compactly. The capacity warning measures stored bytes.
+A valid reconstruction has the same packet IDs, ordering, occurrence counts,
+supersession links, question snapshots, and all audit/extension fields. Faculty
+decisions stay in their separate ledger and are not rewritten by this migration.
+No packet is marked reviewed or removed to save space.
+
+Rollout: deploy the faculty reader from this revision before running the new
+collector against live history. The first successful collection converts storage
+automatically; legacy inboxes still read normally. Verify the reconstructed inbox
+against the previous exact report-branch commit, and compare the faculty decision
+ledger separately. A code rollback after conversion requires a reader that still
+supports the envelope; do not restore an old inbox over newer review evidence.
+For offline inspection use `evidence_storage.decode_inbox(json.loads(...))`.
+The original packet schema validates the reconstructed state, not the envelope.
+
+The authenticated faculty GET response is also losslessly compressed, inside an
+explicit `evidence-gzip-base64-v1` JSON envelope. The browser restores the complete
+view before rendering or selecting dispositions. This avoids the provider's 6 MB
+buffered-response ceiling without relying on binary-response handling. The server
+rejects a wire payload over 5 MB (leaving provider overhead margin), and both ends
+reject an expanded view over 64 MB. These bounds fail explicitly; they never trim
+packets or decisions. As unique evidence grows, storage and response capacity still
+need monitoring; this change is not unbounded storage. Original JSON responses
+remain readable by the new browser client. Reload already-open faculty tabs after
+deployment so they load the new decoder.
