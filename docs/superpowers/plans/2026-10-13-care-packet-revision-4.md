@@ -2,7 +2,7 @@
 
 Revision 4 supersedes the profile, medication-restart, unit-contact, callback and contact-freshness rules in Revisions 2–3 of `2026-10-12-care-packet-owner-directions.md`. The owner approved these decisions in the review chat before this implementation. This record is not approval of any real profile or patient use.
 
-`FD_CARE_PACKET_ENABLED` remains `false`; real unit profiles remain empty. G-B, G-C and G-D remain open. The older `fd_care_pack.js` print workflow is unchanged. “Making home safer” remains off by default.
+`FD_CARE_PACKET_ENABLED` remains `false`; real unit profiles remain empty. G-B was closed by explicit owner approval on 2026-10-13; see [the closure record](2026-10-13-care-packet-gb-decisions.md). G-C and G-D remain open. The older `fd_care_pack.js` print workflow is unchanged. “Making home safer” remains off by default.
 
 ## Approved clinical copy
 
@@ -59,4 +59,4 @@ Automated acceptance covers:
 
 The current PR body records results at the tested revision. Previous mutation totals are historical reports, not evidence that Revision 4 has had a new exhaustive mutation pass. Build and browser evidence do not establish clinical approval, physical printer behavior, VoiceOver behavior or production activation.
 
-Still for human review: G-B (#1034 workflow), G-C (ward printer, nurse and peer specialist, screen reader and other browsers), and G-D activation. Upstream closed/withdrawn status and crisis-service categorization remain feed limitations; this implementation does not claim to identify every crisis-type service in other categories. No new decision was made about those categories or the “Making home safer” default.
+G-B (#1034 workflow) is closed for the reviewed revision; this does not approve a merge or activation. Still for human review: G-C (ward printer, nurse and peer specialist, screen reader and other browsers), and G-D activation. Upstream closed/withdrawn status and crisis-service categorization remain feed limitations; this implementation does not claim to identify every crisis-type service in other categories. No new decision was made about those categories or the “Making home safer” default.

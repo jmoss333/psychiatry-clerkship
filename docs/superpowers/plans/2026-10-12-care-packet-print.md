@@ -1,5 +1,7 @@
 # Aftercare packet, part 2: preview, print and copy (behind the same default-off flag)
 
+> Historical implementation plan. [Revision 4](2026-10-13-care-packet-revision-4.md) supersedes its clinical/profile rules; [the G-B closure record](2026-10-13-care-packet-gb-decisions.md) records owner workflow approval on 2026-10-13. G-C and G-D remain open.
+
 PR C of the Care aftercare packet (`_prototypes/care-packet/HANDOFF.md` §6–§7). It stacks on PR B (#1034, the
 chooser and review gate) and uses PR A's data (#1032, merged). **Nothing here is patient-facing** until an
 owner-approved source edit flips `FD_CARE_PACKET_ENABLED` (gate G-D). Gate G-C is a human one: Josh, one nurse
