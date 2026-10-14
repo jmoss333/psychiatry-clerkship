@@ -380,7 +380,7 @@ function installFailingPythonWrapper(context, deadPort) {
   fs.mkdirSync(bin);
   const wrapper = path.join(bin, 'python3');
   fs.writeFileSync(wrapper, `#!/usr/bin/env bash
-if [ "\${1:-}" = "-m" ] && [ "\${2:-}" = "http.server" ] && [ "\${3:-}" = "${deadPort}" ]; then
+if [ "\${1:-}" = "-c" ] && [ "\${3:-}" = "${deadPort}" ]; then
   echo "intentional test child death" >&2
   exit 23
 fi

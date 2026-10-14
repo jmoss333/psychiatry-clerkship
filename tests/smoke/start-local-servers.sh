@@ -260,7 +260,10 @@ start_server() {
   trap 'DEFERRED_SIGNAL_STATUS=129' HUP
   trap 'DEFERRED_SIGNAL_STATUS=130' INT
   trap 'DEFERRED_SIGNAL_STATUS=143' TERM
-  python3 -m http.server "$port" \
+  # The shell fetches many JSON assets at once. Python's five-connection default
+  # backlog resets requests during that burst on macOS, even with one browser.
+  # Set the inherited TCP backlog before the standard HTTP server is constructed.
+  python3 -c 'import runpy, socketserver, sys; socketserver.TCPServer.request_queue_size = 128; sys.argv = ["http.server"] + sys.argv[1:]; runpy.run_module("http.server", run_name="__main__")' "$port" \
     --bind 127.0.0.1 \
     --directory "$directory" >"$log" 2>&1 &
   pid=$!
