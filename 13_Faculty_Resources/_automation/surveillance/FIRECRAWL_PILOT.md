@@ -234,3 +234,31 @@ packets or decisions. As unique evidence grows, storage and response capacity st
 need monitoring; this change is not unbounded storage. Original JSON responses
 remain readable by the new browser client. Reload already-open faculty tabs after
 deployment so they load the new decoder.
+
+### On-demand faculty review
+
+The phone inbox requests `section=index`: every packet is represented by its ID,
+source, observation date, saved-scan priority, and recorded-decision count. This
+initial response loads neither current readings nor the question bank. List order
+is provisional: current teaching and resolution are assessed only when opened.
+Nothing is filtered out as resolved or superseded based on a lightweight summary.
+
+Opening a packet requests `section=packet` with its revision and the index's exact
+report commit, teaching commit, and decision-ledger revision. A mismatch returns
+409 and asks faculty to reload. Only that packet and its replacement chain are
+assessed; unrelated reading files are not fetched. The detail retains the prior
+comparison/decision flow, adds every historical decision for that packet, and
+exposes the complete original packet (including saved question snapshots and any
+additional audit fields). Collapsing an opened packet keeps its unsaved rationale;
+reload asks before discarding unsaved text. Failed loads remain retryable.
+
+`section=history`, with the same revision checks, exposes every non-packet inbox
+field, including source snapshots and reconciliation receipts, plus the complete
+separate decision ledger and a list of all packet revisions. Together with each
+packet's full retained record, this provides access to every stored record without
+sending it all on initial load. Neither view writes evidence or decisions. Existing
+clients without a section parameter retain the full-response contract. Successful
+saves refresh and reopen the selected packet when no other forms contain unsaved
+work; otherwise those drafts remain in place, using only the exact ledger revision
+returned by that successful save. Concurrent external changes still fail revision
+checks. New typing during a pending reload cancels replacement of the view.
