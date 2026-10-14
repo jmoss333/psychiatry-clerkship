@@ -2,10 +2,9 @@
 """Export question_bank.json to an Anki deck (.apkg) + CSV fallback.
 
 Design notes (see brainstorm 2026-07-12):
-- Attested-only by default. Draft items are excluded unless --include-drafts is
-  passed, in which case they are tagged `Status::draft` and title-prefixed so a
-  learner can never mistake an un-attested item for signed-off content. This is
-  the same attestation gate the SPA enforces via reviewed.json.
+- Only active, faculty-attested questions enter learner downloads. The shared
+  public-bank projector validates approval metadata and excludes drafts and
+  retired items. The former --include-drafts override is deliberately rejected.
 - Vignette Basic (Q/A) cards, not cloze: these items are full clinical vignettes,
   and Basic Q&A mirrors how the shelf/COMAT actually tests (recognition of the
   best next step), which is the point of the bank.
@@ -18,7 +17,7 @@ Design notes (see brainstorm 2026-07-12):
   Source::<page>, plus HighYield.
 
 Usage:
-  python3 export_anki.py [--bank PATH] [--out DIR] [--include-drafts]
+  python3 export_anki.py [--bank PATH] [--out DIR]
 """
 
 import argparse
@@ -29,6 +28,8 @@ import os
 import sys
 
 import genanki
+
+from qbank_public import project_question_bank
 
 # Stable IDs — NEVER change these once decks are in the wild, or Anki will treat
 # the model/deck as new and orphan every learner's review history.
@@ -272,8 +273,9 @@ def csv_rows(item, include_drafts):
 def build_deck(items, include_drafts=False, deck_id=DECK_ID, deck_name=DECK_NAME):
     """Build (and return) a genanki.Deck plus (selected_items, note_count).
     Importable by export_anki_all.py so the combined package reuses this logic."""
-    selected = [i for i in items
-                if include_drafts or i.get("status") == "attested"]
+    if include_drafts:
+        raise ValueError("Learner downloads cannot include unapproved drafts")
+    selected = project_question_bank({"_note": "Anki input", "version": 1, "items": items})["items"]
     deck = genanki.Deck(deck_id, deck_name)
     note_count = 0
     for it in selected:
@@ -290,21 +292,22 @@ def main():
     ap.add_argument("--bank", default=os.path.join(repo, "question_bank.json"))
     ap.add_argument("--out", default=os.path.join(repo, "09_Exam_Prep", "anki_export"))
     ap.add_argument("--include-drafts", action="store_true",
-                    help="include un-attested draft items (tagged/watermarked)")
+                    help="unsupported: learner downloads require faculty approval")
     args = ap.parse_args()
+    if args.include_drafts:
+        ap.error("--include-drafts is no longer supported: learner downloads require faculty approval")
 
     with open(args.bank) as f:
-        bank = json.load(f)
+        bank = project_question_bank(json.load(f))
     items = bank["items"]
     os.makedirs(args.out, exist_ok=True)
 
     deck, selected, note_count = build_deck(items, args.include_drafts)
 
-    suffix = "_with_drafts" if args.include_drafts else ""
-    apkg = os.path.join(args.out, f"psychiatry_clerkship_library{suffix}.apkg")
+    apkg = os.path.join(args.out, "psychiatry_clerkship_library.apkg")
     genanki.Package(deck).write_to_file(apkg)
 
-    csv_path = os.path.join(args.out, f"psychiatry_clerkship_library{suffix}.csv")
+    csv_path = os.path.join(args.out, "psychiatry_clerkship_library.csv")
     fields = ["id", "status", "category", "type", "difficulty", "high_yield",
               "competency", "source_pages", "stem", "options", "answer_key",
               "answer_text", "why", "pearl", "evidence"]
@@ -315,16 +318,11 @@ def main():
             for row in csv_rows(it, args.include_drafts):
                 w.writerow(row)
 
-    n_attested = sum(1 for i in items if i.get("status") == "attested")
-    n_draft = sum(1 for i in items if i.get("status") != "attested")
-    print(f"Items in bank: {len(items)}  (attested {n_attested}, draft {n_draft})")
+    print(f"Approved active items: {len(items)}")
     print(f"Exported items: {len(selected)}  ->  {note_count} Anki notes "
           f"(two-tier items emit a second card)")
     print(f"  .apkg: {apkg}")
     print(f"  .csv : {csv_path}")
-    if not args.include_drafts:
-        print("Attested-only (default). Re-run with --include-drafts to include "
-              f"the {n_draft} draft items (watermarked).")
 
 
 if __name__ == "__main__":

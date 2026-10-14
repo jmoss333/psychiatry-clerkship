@@ -129,8 +129,9 @@
   .pgfb{margin:30px 0 0;padding-top:16px;border-top:1px solid var(--border)}
   .pgfb-b{background:none;border:1px solid var(--border);border-radius:999px;padding:6px 15px;color:var(--text-light);cursor:pointer;font:inherit;font-size:var(--fd-font-sm)}
   .pgfb-b:hover{border-color:var(--accent);color:var(--accent-dark)}
-  .skip-link{position:absolute;left:12px;top:-52px;background:var(--surface);color:var(--text);border:2px solid var(--focus);border-radius:6px;padding:8px 12px;z-index:100;transition:top .15s}
-  .skip-link:focus{top:12px}
+  .skip-link,.skip-safety{position:absolute;left:12px;top:-52px;background:var(--surface);color:var(--text);border:2px solid var(--focus);border-radius:6px;padding:8px 12px;z-index:100;transition:top .15s}
+  .skip-link:focus,.skip-safety:focus{top:12px}
+  .skip-safety{font:inherit;cursor:pointer}
   /* Reduced motion (#428): the Front Door stylesheet zeroes its own motion under this query; the
      shell's remaining transitions -- the skip link above, the legacy sidebar chrome and the
      section chevrons -- live here and were the ones an audit found still animating. */
@@ -360,7 +361,7 @@
   }
   /* Reduced motion must be the LAST word on these transitions: the declarations it zeroes have the
      same specificity and sit later in this sheet, so an earlier override lost the cascade (#428). */
-  @media(prefers-reduced-motion:reduce){.skip-link,.layout,.layout>aside,.modetoggle .knob,.navgroupsec .chev,.navsec .chev,.practice-chev,.md-body .sec-chev,.fd-article__body .sec-chev{transition:none}}
+  @media(prefers-reduced-motion:reduce){.skip-link,.skip-safety,.layout,.layout>aside,.modetoggle .knob,.navgroupsec .chev,.navsec .chev,.practice-chev,.md-body .sec-chev,.fd-article__body .sec-chev{transition:none}}
 </style>
 <style>
   /* ===== Tool launcher badges (from Claude Design handoff, house-tokenized) ===== */
@@ -640,6 +641,7 @@
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
 <div id="fdApp" class="fd-shell" aria-busy="true" inert>
+  <button type="button" class="skip-safety" data-fd-safety>Safety protocols</button>
   <div id="fdChromeMount"></div>
   <span id="routeStatus" class="vh-live" aria-live="polite"></span>
   <span id="careNavigatorStatus" class="vh-live" role="status" aria-live="polite" aria-atomic="true"></span>
@@ -660,6 +662,7 @@
   try{contentEl=document.getElementById('content');}catch(ignoreContentElement){FD_RUNTIME_WIRING_OK=false;}
   var currentItem=null; var GOVERNANCE={status:'loading',items:{}}; var governanceFocusSlug=''; var SCROLL={};
   var FD_PROTOCOL_FAILURE_COPY='This safety protocol is unavailable right now—do not rely on this page for clinical guidance; use the crisis resources below and contact your supervising clinician.';
+  var FD_DRAFT_TREES=false;
   /* Fetch and capture callbacks live in this script; the Front Door controller is installed by
      the following IIFE. Keep one shared dispatcher that is safe until that controller is ready. */
   var specialRefresh=function(){};
@@ -674,7 +677,7 @@
   fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ specialRefresh(); }catch(_){ } }).catch(function(){});
   /* The longitudinal case (Case Journeys, "One Patient, Six Weeks"), READ-ONLY, for Today's "On the
      unit this week" (one-thread redesign, Phase 1). Build-injected by build_deploy.py through the
-     same verified-needle mechanism as RETIRED_QB_IDS (the resident build inherits it), so the
+     same verified-needle mechanism as RELEASED_QB_IDS (the resident build inherits it), so the
      section is there at FIRST render and Today's DOM never churns after boot -- a runtime fetch
      made the core render signature differ between two loads of the same page. A missing or
      malformed file injects null and fdWeekCaseStep renders no section. Nothing here writes to the
@@ -685,6 +688,13 @@
      reason: the Library renders at first paint from what is already on the page. Nothing here
      writes to the file; the week pages' pairing blocks are built from it separately. */
   var FD_PAIRINGS=null;
+  /* The "Beyond this page" media index (media_index.py over media_map.json), READ-ONLY, for the
+     Reader's optional podcast/book block. Same verified-needle injection as FD_PAIRINGS; the
+     resident build swaps in its own value. A draft map inlines {pages:{}}, so nothing renders. */
+  var FD_MEDIA=null;
+  /* One-shot arrival target for a "Beyond this page" library link: {ref, anchor}. Set by the
+     click, consumed by the next mount of that ref, never stored. */
+  var fdMediaArrival=null;
   var SEC_SEQ=0;
   function makeCollapsible(body){
     if(!body) return;
@@ -1390,6 +1400,23 @@
   }
   /* Faculty preview deliberately keeps its audited preflight/status/query path. Normal learner
      navigation never calls this function; fdOpenResource owns the mounted reader instead. */
+  /* "Beyond this page" in the faculty preview (Dr. Moss, 2026-10-06: show the actual
+     recommendations in page context before re-signing). The preview renders a page through this
+     legacy show(), not the Reader, so without this the block a signature now covers (its
+     media_resolved file) would be invisible exactly where faculty review the page. Same renderer,
+     same inlined data as the learner Reader; appended after the body, as on the Reader, and after
+     makeCollapsible so it is never folded into the last section. Draft map: renders nothing. */
+  /* fd_reader.js lives inside the Front Door script's closure, which this script cannot see, so
+     that script hands the renderer across through this one global (set right after the Reader is
+     injected). Null until then, and the preview simply shows no block. */
+  var fdMediaPreviewHtml=null;
+  function fdFacultyPreviewMedia(ref){
+    if(!facultyPreviewRequest||typeof fdMediaPreviewHtml!=='function')return;
+    var html=fdMediaPreviewHtml(ref);
+    if(!html)return;
+    var holder=document.createElement('div'); holder.innerHTML=html;
+    if(holder.firstChild)contentEl.appendChild(holder.firstChild);
+  }
   function show(item, btn, opts){
     if(!facultyPreviewMatchesItem(item,opts)){showFacultyPreviewLockNotice();return false;}
     if(facultyPreviewRequest&&currentItem&&currentItem.k==='tool'&&item.k==='tool'&&currentItem.f===item.f)return true;
@@ -1412,7 +1439,7 @@
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
-      makeCollapsible(contentEl); enhanceTables(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
+      makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
   }
@@ -1871,7 +1898,13 @@
     capRenderBody();
     if(invoker)invoker.setAttribute('aria-expanded','true');
     document.addEventListener('keydown',capKeydown,true);
-    var ta=capSheet.querySelector('#capText'); if(ta){ try{ ta.focus(); }catch(_){ } }
+    var ta=capSheet.querySelector('#capText');
+    /* "Bring to family meeting" (Reader, Beyond this page) opens this same dialog with the book
+       titles and authors as a starting draft -- titles only, never patient details, and nothing
+       is stored until the learner presses Save (which still runs the PHI interstitial). */
+    var prefill=invoker&&invoker.getAttribute&&invoker.getAttribute('data-cap-prefill');
+    if(ta&&prefill&&!ta.value)ta.value=String(prefill).slice(0,280);
+    if(ta){ try{ ta.focus(); }catch(_){ } }
     capSheet.addEventListener('click',function(e){
       var t=e.target;
       if(t.id==='capEmailSelect'){capEmailOpen(t);return;}
@@ -1990,22 +2023,12 @@
   /* ---- helpers reading existing storage ---- */
   function LS(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
   /* ---- qb servability (shell parity) ----
-     Which bank records/cards the shell may count, matching question-bank-practice.html's
-     activeItems(): retired items are never servable; un-attested drafts are servable only
-     while the learner's cw_qb_drafts_v1 opt-in is set (WP-37 attested-only default).
-     Both id lists are BUILD-INJECTED from question_bank.json (the source literals stay
-     empty; build_deploy.py hard-fails if either needle is missing or duplicated, and
-     check-static-site.mjs §6c cross-checks the built output). The resident shell inherits
-     the injected lists (it rebrands the MS3-built index.html). Counting a record the
-     practice tool will not serve re-opens the "Due today counts cards nothing can serve"
-     defect class. */
-  var RETIRED_QB_IDS=[];
-  function isRetiredQb(id){ return RETIRED_QB_IDS.indexOf(id)>=0; }
-  var DRAFT_QB_IDS=[];
-  function isDraftQb(id){ return DRAFT_QB_IDS.indexOf(id)>=0; }
-  function qbDraftsIncluded(){ try{ return localStorage.getItem('cw_qb_drafts_v1')==='true'; }catch(_){ return false; } }
-  /* id is the bank item id (no QB# prefix). */
-  function qbRecordServable(id){ if(isRetiredQb(id))return false; if(!qbDraftsIncluded()&&isDraftQb(id))return false; return true; }
+     Only IDs in this build's approved public question bank may count toward due
+     or confidently-wrong practice. Missing, withdrawn and old draft IDs stay in
+     local history but cannot become due work. The build verifies this allowlist
+     against question_bank.json; a historical draft opt-in cannot widen it. */
+  var RELEASED_QB_IDS=[];
+  function qbRecordServable(id){ return RELEASED_QB_IDS.indexOf(id)>=0; }
   /* ---- end qb servability ---- */
   /*__CONCEPT_RECALL__*/
   var conceptDueState={status:'checking',releasedIds:null};
@@ -2153,15 +2176,25 @@
 
   /*__FD_CARE_PACK__*/
 
+  /*__FD_CARE_PACKET__*/
+
   /*__FD_CARE_SEARCH__*/
 
   /*__FD_CARE__*/
 
   /*__FD_READER__*/
+  /* The faculty preview's "Beyond this page" (fdFacultyPreviewMedia, first script): the same
+     renderer and the same inlined index the learner Reader uses, read at call time. */
+  fdMediaPreviewHtml=function(ref){
+    if(typeof fdReaderMedia!=='function'||typeof FD_MEDIA==='undefined')return '';
+    return fdReaderMedia(FD_MEDIA,ref,typeof FD_INDEX!=='undefined'&&fdReaderIsSafetyPage(FD_INDEX,ref));
+  };
 
   /*__FD_GUIDE__*/
 
   /*__FD_SEARCH__*/
+
+  /*__FD_TREE__*/
 
   /*__FD_SHEET__*/
 
@@ -2180,7 +2213,7 @@
      for the confidently-wrong count, which intentionally reads cw_qb_v1 — same predicate as
      question-bank-practice.html's certWrongItems() (certWrong===true). Retired-item parity
      with certWrongItems() (which filters through activeItems()) is closed via the
-     build-injected RETIRED_QB_IDS — both counters skip since-retired records. */
+     build-injected RELEASED_QB_IDS — both counters skip unpublished records. */
   function renderCalibPanel(){
     var ledger=(typeof calibRead==='function')?calibRead():{qb:[],rev:[]};
     var qbEvents=ledger.qb||[];
@@ -2498,6 +2531,7 @@
        registries the Library already uses -- by reference, never copied into any store. */
     out.thread={caseArc:typeof FD_CASE_ARC!=='undefined'?FD_CASE_ARC:null,
       pairings:typeof FD_PAIRINGS!=='undefined'?FD_PAIRINGS:null,
+      media:typeof FD_MEDIA!=='undefined'?FD_MEDIA:null,
       audience:typeof FD_AUDIENCE!=='undefined'?FD_AUDIENCE:''};
     /* Supervisor feedback notes: read fresh on every render, the store staying their single home
        (fd_state.js). The controller writes it above the render, so the list a save repaints is
@@ -2559,6 +2593,7 @@
       :{checklist:{},resources:{}};
     out.crisisHtml=fdCrisisHtml;
     if(typeof FD_PROTOCOL_FAILURE_COPY==='string')out.protocolFailureCopy=FD_PROTOCOL_FAILURE_COPY;
+    if(typeof FD_DRAFT_TREES==='boolean')out.draftTrees=FD_DRAFT_TREES;
     return out;
   }
 
@@ -2771,6 +2806,46 @@
     return fdSurface('today',function(){ return fdTodayLive(state); });
   }
 
+  /* ---- safety pause (begin) ----
+     2026-10-10 safety-drawer spec §4.5. While a SAFETY sheet (the kit or a kit protocol) is
+     open, the page under it is frozen: the mounts below take `inert` (no focus, no pointer,
+     out of the accessibility tree, nothing unloaded, so a tool frame keeps every input),
+     playing media pauses and stays paused, and the tool frame is told {type:'cw-pause'} /
+     {type:'cw-resume'} the same way it is told the theme. Settings and item previews are not
+     safety sheets and pause nothing. #fdApp's own startup-gate `inert` is never touched; the
+     live regions, #fdOverlayMount and #fdNudgeMount are never inerted. fdSyncSafetyPause runs
+     FIRST in fdRender and fdRenderTransient so the release lands before a resource mounts: an
+     inert #content silently refuses the pending-high notice its focus. */
+  var FD_SAFETY_INERT_IDS=['fdChromeMount','fdCaptureMount','fdDockMount','content','governanceMount'];
+  var fdSafetyPaused=false;
+  function fdPauseMedia(doc){
+    var media=(doc&&doc.querySelectorAll)?doc.querySelectorAll('audio,video'):[];
+    for(var i=0;i<media.length;i++){
+      if(media[i]&&media[i].paused===false) try{media[i].pause();}catch(_){}
+    }
+  }
+  function fdSafetyPause(on){
+    for(var i=0;i<FD_SAFETY_INERT_IDS.length;i++){
+      var el=document.getElementById(FD_SAFETY_INERT_IDS[i]);
+      if(!el)continue;
+      if(on)el.setAttribute('inert','');else el.removeAttribute('inert');
+    }
+    var frame=(contentEl&&contentEl.querySelector)?contentEl.querySelector('iframe'):null;
+    if(on){
+      fdPauseMedia(document);
+      try{if(frame&&frame.contentDocument)fdPauseMedia(frame.contentDocument);}catch(_){}
+    }
+    if(frame&&frame.contentWindow)
+      try{frame.contentWindow.postMessage(on?{type:'cw-pause',reason:'safety'}:{type:'cw-resume'},'*');}catch(_){}
+  }
+  function fdSyncSafetyPause(state){
+    var want=!!(state&&state.sheet&&fdSheetIsSafety(FD_INDEX,state.sheet));
+    if(want===fdSafetyPaused)return;
+    fdSafetyPaused=want;
+    fdSafetyPause(want);
+  }
+  /* ---- safety pause (end) ---- */
+
   function fdRenderOverlays(state){
     var live=fdLiveState(state), overlays='';
     if(state.searchOpen)overlays+=fdSurface('search',function(){ return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live); });
@@ -2969,7 +3044,9 @@
     if(retained&&replacement)replacement.parentNode.replaceChild(retained,replacement);
   }
 
-  var fdCareDirectory=fdCreateCareDirectory();
+  /* The aftercare packet exists only while its source gate is on; off, the directory behaves exactly as before. */
+  var fdCarePacket=(typeof fdCarePacketEnabled==='function'&&fdCarePacketEnabled())?fdCreateCarePacket():null;
+  var fdCareDirectory=fdCreateCareDirectory(fdCarePacket);
   function fdMountCareDirectory(state){
     if(state.screen==='app'&&state.tab==='care'&&!state.openId&&contentEl){
       fdCareDirectory.mount(contentEl.querySelector('[data-care-directory]'),document.getElementById('careDirectoryStatus'));
@@ -2978,6 +3055,7 @@
 
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
+    fdSyncSafetyPause(state);
     fdPrepareRoute(state,detail);
     fdAdoptSpecialContext(state);
     if(!hydrate)fdRenderChrome(state);
@@ -3026,6 +3104,7 @@
 
   function fdRenderTransient(state,detail){
     var d=detail||{}, surfaces=d.surfaces||{};
+    fdSyncSafetyPause(state);
     /* An effect carries a MODE; a frame boundary can only carry a painted attribute. Resolve once
        here so the paint and what an embedded tool is told agree, and so 'system' never escapes as
        a value no stylesheet and no tool can act on. */
@@ -3133,6 +3212,9 @@
               }
             });
           };
+          /* A "Beyond this page" library link decides where its page opens: the category it
+             named (scrolled to below, after the reading place's own arrival). */
+          var mediaArrival=fdTakeMediaArrival(ref);
           fdGuideSession=fdGuideMount(body,{
             ref:ref,
             isPractice:function(target){return fdIsTool(target)&&!!((FD_INDEX.byRef||{})[target]||(FD_INDEX.known||{})[target]);},
@@ -3169,6 +3251,20 @@
               else guide.arrive(arrivalSearch,canFocus);
             });
           }else installReadingPlace(true);
+          if(mediaArrival){
+            /* Two frames: after the reading place's own arrival frame (which may restore a saved
+               place), so the category the learner asked for wins; reading on from it saves the
+               new place as usual. A heading that no longer slugs to the anchor leaves the page
+               where the reader put it. */
+            requestAnimationFrame(function(){ requestAnimationFrame(function(){
+              if(!currentItem||currentItem.f!==ref||!document.documentElement.contains(body))return;
+              var heading=fdMediaHeadingFor(body,mediaArrival.anchor);
+              if(!heading)return;
+              heading.scrollIntoView({block:'start'});
+              heading.setAttribute('tabindex','-1');
+              try{ heading.focus({preventScroll:true}); }catch(_){ heading.focus(); }
+            }); });
+          }
           fdGuideReturning=false;
         }else if(!facultyPreviewRequest&&fdGuideBookmark&&fdIsTool(ref)){
           var toolbar=contentEl.querySelector('.fd-reader__toolbar');
@@ -3275,6 +3371,8 @@
         fdRefreshLocalCompletion(localIdentity,localKind,localId);
       return;
     }
+    el=target.closest&&target.closest('[data-media-side]');
+    if(el){event.preventDefault();fdMediaSwitch(el);return;}
     el=target.closest&&target.closest('[data-capture-open]');
     if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
     el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
@@ -3327,8 +3425,47 @@
       var url;try{url=new URL(el.getAttribute('href'),location.href);}catch(_){return;}
       if(url.origin!==location.origin||url.pathname!==location.pathname)return;
       var ref=url.searchParams.get('page')||url.searchParams.get('tool');
-      if(ref){event.preventDefault();fdOpenRef(ref,url.search);}
+      if(ref){
+        event.preventDefault();
+        var mediaAnchor=el.getAttribute('data-media-anchor');
+        fdMediaArrival=mediaAnchor?{ref:ref,anchor:mediaAnchor}:null;
+        fdOpenRef(ref,url.search);
+      }
     }
+  }
+
+  /* "Beyond this page" audience switch: flips the two buttons and panels in place and moves focus
+     to the first card of the shown side. Transient by design -- no controller state, no URL, no
+     storage -- so a re-render returns to "For you". */
+  function fdMediaSwitch(button){
+    var section=button.closest&&button.closest('.fd-beyond');
+    if(!section)return;
+    var side=button.getAttribute('data-media-side');
+    var buttons=section.querySelectorAll('[data-media-side]'), panels=section.querySelectorAll('[data-media-panel]'), i, shown=null;
+    for(i=0;i<buttons.length;i++)buttons[i].setAttribute('aria-pressed',buttons[i].getAttribute('data-media-side')===side?'true':'false');
+    for(i=0;i<panels.length;i++){
+      var on=panels[i].getAttribute('data-media-panel')===side;
+      panels[i].hidden=!on;
+      if(on)shown=panels[i];
+    }
+    var card=shown&&shown.querySelector('.fd-beyond__card');
+    if(card){ try{ card.focus({preventScroll:false}); }catch(_){ card.focus(); } }
+  }
+  /* The heading a "Beyond this page" library link names: the first body h2 whose label slugs to
+     the anchor under the Reader's heading-slug rule (fd_reading_place.js; media_index.py
+     heading_anchor is the build twin). makeCollapsible's chevron is not part of the label. */
+  function fdMediaHeadingFor(body,anchor){
+    var heads=body?body.querySelectorAll('h2'):[], i, label;
+    for(i=0;i<heads.length;i++){
+      label=String(heads[i].textContent||'').replace(/^[\s▸]+/,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+      if(label&&label===anchor)return heads[i];
+    }
+    return null;
+  }
+  /* Take the arrival for THIS mount, or null. A different ref clears it: it is one click's intent. */
+  function fdTakeMediaArrival(ref){
+    var arrival=fdMediaArrival; fdMediaArrival=null;
+    return arrival&&arrival.ref===ref?arrival:null;
   }
 
   function fdAuxMessage(event){

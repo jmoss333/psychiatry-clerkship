@@ -72,7 +72,8 @@
           "direction": "negative",
           "usedBy": [
             "canon_200",
-            "AR-40"
+            "AR-40",
+            "psychopharm_primer.md"
           ]
         }
       ]
@@ -2759,7 +2760,8 @@
           "direction": "mixed",
           "usedBy": [
             "CONCEPT#t_psychosis-pearl3:1@2",
-            "AR-24#5"
+            "AR-24#5",
+            "psychopharm_primer.md"
           ]
         },
         {
@@ -2772,7 +2774,8 @@
           "direction": "descriptive",
           "usedBy": [
             "CONCEPT#t_psychosis-pearl3:1@2",
-            "AR-24#5"
+            "AR-24#5",
+            "psychopharm_primer.md"
           ]
         }
       ]
@@ -2823,6 +2826,216 @@
           "direction": "mixed",
           "usedBy": [
             "communication-practice"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "lam-2024-canmat-mdd",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11351064/",
+        "retrievedAt": "2026-10-11",
+        "pmid": "38711351",
+        "doi": "10.1177/07067437241245384",
+        "sourceSpan": "In some clinical situations, noninvasive neuromodulation treatments can be considered as first-choice treatments for MDD. For example, ECT can be used as first-line treatment in severe illness (e.g., MDE with psychotic or catatonic features, severe suicidal ideation, and deteriorating physical condition) or for patients who had a prior good response to ECT. Similarly, rTMS can be recommended as a first-choice treatment if there are tolerability concerns with medication options or if it was effective in a previous episode. Finally, except in emergent situations as mentioned above, rTMS should generally be considered before ECT, given its less invasive nature and that individuals may continue to work or attend school while undergoing rTMS. Although some studies show that prior poor response to ECT is associated with poor response to rTMS, other studies do not."
+      },
+      "claims": [
+        {
+          "claimId": "primer-neuromodulation-selection",
+          "claimText": "CANMAT permits ECT as an early treatment for severe depressive illness, including psychotic or catatonic features and urgent physical or suicide-risk concerns. Outside emergent situations, it generally places rTMS before ECT; tolerability and previous response also inform selection.",
+          "claimTerms": [
+            "ECT can be used as first-line treatment in severe illness",
+            "except in emergent situations",
+            "rTMS should generally be considered before ECT"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "keramatian-2023-canmat-bipolar",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11058959/",
+        "retrievedAt": "2026-10-11",
+        "pmid": "38695002",
+        "doi": "10.1176/appi.focus.20230009",
+        "sourceSpan": "Antidepressants should not be used as monotherapy for the treatment of bipolar I depression. Quetiapine, lithium, lamotrigine, and lurasidone are recommended as first-line monotherapy options; lurasidone and lamotrigine are also recommended as first-line adjunctive treatments."
+      },
+      "claims": [
+        {
+          "claimId": "primer-keramatian-2023-canmat-bipolar",
+          "claimText": "The guideline does not recommend antidepressant monotherapy for bipolar I depression.",
+          "claimTerms": [
+            "should not be used as monotherapy"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        },
+        {
+          "claimId": "primer-bipolar-depression-options",
+          "claimText": "The bipolar-depression recommendations include lamotrigine among first-line monotherapy and adjunctive options. This guideline recommendation is separate from the US maintenance indication.",
+          "claimTerms": [
+            "lamotrigine",
+            "first-line monotherapy options",
+            "first-line adjunctive treatments"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "apa-2020-schizophrenia",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://psychiatryonline.org/doi/10.1176/appi.ajp.2020.177901",
+        "retrievedAt": "2026-10-11",
+        "pmid": "32867516",
+        "doi": "10.1176/appi.ajp.2020.177901",
+        "sourceSpan": "long-acting injectable antipsychotic medication if they prefer such treatment or if they have a history of poor or uncertain adherence."
+      },
+      "claims": [
+        {
+          "claimId": "primer-apa-2020-schizophrenia",
+          "claimText": "APA suggests an LAI when the patient prefers it or has a history of poor or uncertain adherence.",
+          "claimTerms": [
+            "poor or uncertain adherence"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "huhn-2019-antipsychotics",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:31303314%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
+        "pmid": "31303314",
+        "doi": "10.1016/s0140-6736(19)31135-3",
+        "sourceSpan": "Effect size estimates suggested all antipsychotics reduced overall symptoms more than placebo (although not statistically significant for six drugs)"
+      },
+      "claims": [
+        {
+          "claimId": "primer-huhn-2019-antipsychotics",
+          "claimText": "In the network meta-analysis, symptom-reduction estimates favored antipsychotics over placebo, but six drugs did not reach statistical significance.",
+          "claimTerms": [
+            "reduced overall symptoms more than placebo",
+            "not statistically significant for six drugs"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "wang-2025-lithium-suicidality",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:40441661%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-11",
+        "pmid": "40441661",
+        "doi": "10.1016/j.jad.2025.119487",
+        "sourceSpan": "Lithium was associated with nonsignificant reductions in suicide attempts (OR = 0.73; 95 % CI = [0.41, 1.31]"
+      },
+      "claims": [
+        {
+          "claimId": "primer-wang-2025-lithium-suicidality",
+          "claimText": "The randomized-trial synthesis did not find a statistically significant reduction in suicide attempts with lithium.",
+          "claimTerms": [
+            "nonsignificant reductions in suicide attempts"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "brunner-2025-benzodiazepine-taper",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:40526204%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-11",
+        "pmid": "40526204",
+        "doi": "10.1007/s11606-025-09499-2",
+        "sourceSpan": "clinicians should not discontinue BZDs abruptly in patients who are likely to be physically dependent and at risk of withdrawal"
+      },
+      "claims": [
+        {
+          "claimId": "primer-brunner-2025-benzodiazepine-taper",
+          "claimText": "The guideline advises against abruptly stopping benzodiazepines in patients likely to be physically dependent and at risk of withdrawal.",
+          "claimTerms": [
+            "should not discontinue BZDs abruptly"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bap-catatonia-2023",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10101189/",
+        "retrievedAt": "2026-10-11",
+        "pmid": "37039129",
+        "doi": "10.1177/02698811231158232",
+        "sourceSpan": "In terms of first-line treatments, there is most evidence for benzodiazepines and ECT"
+      },
+      "claims": [
+        {
+          "claimId": "primer-bap-catatonia-2023",
+          "claimText": "The catatonia guideline identifies benzodiazepines and ECT as the first-line approaches with the most supporting evidence.",
+          "claimTerms": [
+            "most evidence for benzodiazepines and ECT"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "mcpheeters-2023-aud",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:37934220%20AND%20SRC:MED&resultType=core&format=json",
+        "retrievedAt": "2026-10-12",
+        "pmid": "37934220",
+        "doi": "10.1001/jama.2023.19761",
+        "sourceSpan": "to prevent 1 person from returning to any drinking were 11 (95% CI, 1-32) for acamprosate and 18 (95% CI, 4-32) for oral naltrexone"
+      },
+      "claims": [
+        {
+          "claimId": "primer-mcpheeters-2023-aud",
+          "claimText": "Oral naltrexone and acamprosate have evidence for reducing return to any drinking.",
+          "claimTerms": [
+            "returning to any drinking",
+            "acamprosate",
+            "oral naltrexone"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "psychopharm_primer.md"
           ]
         }
       ]

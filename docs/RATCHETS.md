@@ -53,6 +53,22 @@ entry) each have a case, and the last assertion runs the live tree against the c
 
 ## Lowering the ratchet
 
+### Question-bank review-only staging
+
+As of 2026-10-11, canonical `question_bank.json` is the faculty review source. Valid drafts
+are reported as **STAGED**, not as published items. `site_build/qbank_public.py` emits only
+active, explicitly attested questions. The QB exposure cap remains **0**, and the QB
+allowlist remains empty; this is a publication boundary, not an exception permitting drafts
+to ship. Static QA and Anki/CSV parity check the actual learner outputs against that complete
+approved projection. Unknown/missing review status and malformed records fail closed.
+
+The other five banks' item-metadata caps and named allowlists are unchanged. A successful
+source exposure check alone does not prove a successful build or current live-site contents.
+The staging design and approval-revision rules are recorded in
+`docs/superpowers/specs/2026-10-11-qbank-review-only-staging.md`.
+
+### Reviewed reductions
+
 After a reduction you made on purpose (a span re-quoted from the paper, an abstract added to
 the cache, a contradicting bank item fixed), re-pin from the current tree and commit the JSON
 diff **in the same PR** as the reduction:

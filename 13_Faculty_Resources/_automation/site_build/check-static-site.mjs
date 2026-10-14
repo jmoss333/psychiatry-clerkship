@@ -56,6 +56,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 import { evaluateInstrumentRights } from './instrument-rights-gate.mjs';
 import { checkBuiltSearch } from './frontdoor-search-gate.mjs';
 
@@ -568,35 +569,19 @@ if (existsSync(qbPath) && parsed[qbPath]) {
   }
 }
 
-/* ---------- 6c. shell retired/draft-ids parity injection (HARD) ---------- */
-// The shell's due counters and confidently-wrong calibration counters skip bank items the
-// practice tool will not serve via build-injected RETIRED_QB_IDS and DRAFT_QB_IDS lists
-// (build_deploy.py replaces the empty source literals; drafts additionally honour the
-// learner's cw_qb_drafts_v1 opt-in at runtime — WP-37 attested-only default). Drift
-// silently re-opens the parity gap with question-bank-practice.html's activeItems(), so
-// the two BUILT artifacts are cross-checked here: whatever question_bank.json ships,
-// index.html must carry exactly its retired ids and its non-retired draft ids. Fixture
-// sites without a bank skip the rule (scoped to real builds, like the pretest checks).
-if (existsSync(qbPath) && parsed[qbPath] && existsSync(p('index.html'))) {
-  const bankItems = (parsed[qbPath].items || []).filter(Boolean);
-  const expected = {
-    RETIRED_QB_IDS: bankItems.filter((it) => it.retired).map((it) => it.id).sort(),
-    DRAFT_QB_IDS: bankItems.filter((it) => !it.retired && it.status !== 'attested')
-      .map((it) => it.id).sort(),
-  };
-  const shellSrc = readFileSync(p('index.html'), 'utf8');
-  for (const [name, want] of Object.entries(expected)) {
-    const injected = shellSrc.match(new RegExp(`var ${name}=(\\[[^\\]]*\\]);`));
-    if (!injected) {
-      H(`index.html is missing the build-injected ${name} list (shell servability parity)`);
-      continue;
-    }
-    let ids = null;
-    try { ids = JSON.parse(injected[1]); } catch { /* falls through to the mismatch report */ }
-    if (!Array.isArray(ids) || JSON.stringify([...ids].sort()) !== JSON.stringify(want)) {
-      H(`${name} drift: index.html carries ${injected[1]} but question_bank.json expects ${JSON.stringify(want)}`);
-    }
-  }
+/* ---------- 6c. approved-only question-bank publication (HARD) ---------- */
+// Check the completed learner artifacts against canonical eligibility. The Python
+// boundary verifies the entire public bank, placement subset, shell allowlist,
+// Daily Review restore inventory and accidental raw copies anywhere in the site.
+// Small QA fixtures that publish no bank surface need no canonical bank fixture.
+if (existsSync(qbPath) || existsSync(p('pretest_pool.json')) ||
+    existsSync(p('tools', 'question-bank-practice.html'))) {
+  const check = spawnSync('python3', [
+    join(dirname(fileURLToPath(import.meta.url)), 'qbank_public.py'), SITE,
+  ], { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
+  if (check.error || check.status !== 0) {
+    H(`question bank publication failed: ${check.error?.message || check.stderr || check.stdout || 'checker did not complete'}`);
+  } else I(check.stdout.trim());
 }
 
 /* ---------- 7. orphaned source pages (HARD) ---------- */

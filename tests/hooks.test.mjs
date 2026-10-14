@@ -370,6 +370,10 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
     '13_Faculty_Resources/_automation/site_build/teaching_dependencies.py',
     '13_Faculty_Resources/_automation/site_build/site_extras.py',
     '13_Faculty_Resources/_automation/site_build/cotw_slug.py',
+    // derive() binds approved "Beyond this page" recommendations (media_index.bound_sources),
+    // which reads media_map.json; both travel with the producer so the derivation runs whole.
+    '13_Faculty_Resources/_automation/site_build/media_index.py',
+    'media_map.json',
     '13_Faculty_Resources/_automation/site_build/site_manifest.json',
     '13_Faculty_Resources/_automation/site_build/shipped_pages.json',
     '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json',

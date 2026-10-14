@@ -147,6 +147,12 @@ const REGISTRY = Object.freeze({
     why: 'Reads real topic_meta.json content for the Front Door index; the kit test requires `attested` to '
       + "follow each kit page's own facultyReview and reports an unattested kit protocol as a diagnostic.",
   },
+  'tests/fd-reader-media.test.mjs': {
+    kind: 'invariant',
+    why: 'Reads topic_meta.json only for the two libraries\' clinicalWorkflow say/safety lines, which no review '
+      + 'state changes; the media index it renders is resolved from the live map with status flipped in memory, and '
+      + "nothing it asserts reads a facultyReview block, a ledger row or a pending count.",
+  },
   'tests/fd-library.test.mjs': {
     kind: 'invariant',
     why: 'Real Essentials renders with its pending count computed from the same index and compared with the '
@@ -162,6 +168,11 @@ const REGISTRY = Object.freeze({
     why: 'Renders real protocols; the reviewed branch is pinned by ATTESTED_META, a controlled review state over '
       + "the real delirium.md content, instead of that page's live facultyReview.",
   },
+  'tests/fd-tree.test.mjs': {
+    kind: 'invariant',
+    why: 'Reads only the real safetyTree blocks (each passes the runtime check; none is copied into fd_tree.js), '
+      + 'never a facultyReview; the draft-banner branch is an inline `draft` render option, so no assertion depends on what is signed.',
+  },
   'tests/mse-rounds.test.mjs': {
     kind: 'invariant',
     why: 'Allows either ledger status for mse.html and oral.html and checks the pending sentinel only for a '
@@ -171,6 +182,11 @@ const REGISTRY = Object.freeze({
     kind: 'invariant',
     why: 'Requires only that the page marker never claims a review the ledger lacks, for either ledger status; '
       + "the rule's truth table is pinned beside it.",
+  },
+  'tests/medication-search.test.mjs': {
+    kind: 'invariant',
+    why: 'Real topic_meta.json supplies medication search content; the audience projections use inline '
+      + 'governance fixtures, and discovery and protocol-order assertions do not depend on which pages are signed.',
   },
   'tests/search-discovery.test.mjs': {
     kind: 'invariant',
@@ -186,6 +202,12 @@ const REGISTRY = Object.freeze({
     kind: 'fixture',
     why: 'Reads the served governance.json and topic_meta.json, then pins each governance branch with a '
       + 'controlled fixture (#729). Playwright, so not rehearsed here.',
+  },
+  'tests/smoke/faculty-console.spec.js': {
+    kind: 'invariant',
+    why: 'Reads the served topic_meta.json only for the two libraries\' clinicalWorkflow say/safety lines in the '
+      + '"Beyond this page" preview test, which no review state changes; every governance branch it exercises is a '
+      + 'synthetic ledger or bank it serves itself. Playwright, so not rehearsed here.',
   },
   'tests/smoke/qbank-retired.spec.js': {
     kind: 'fixture',

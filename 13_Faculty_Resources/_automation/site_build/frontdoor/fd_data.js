@@ -103,6 +103,7 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     if(!byRef[ref]){
       byRef[ref]=fdMakeItem(ref, kind, meta, toolIndex, manifestIndex, rightsRefs[ref]===true, libraryHints);
       byRef[ref].searchAliases=((cur.searchAliases||{})[ref]||[]).slice();
+      byRef[ref].medicationTerms=((cur.medicationTerms||{})[ref]||[]).slice();
       byRef[ref].searchTitle=(cur.searchTitles||{})[ref]||byRef[ref].title;
     }
     return byRef[ref];
