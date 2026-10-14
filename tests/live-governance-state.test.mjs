@@ -89,6 +89,13 @@ const KINDS = Object.freeze({
      detected      false for a test the scanner cannot see at all; it must stay undetected, or
                    the flag comes off. */
 const REGISTRY = Object.freeze({
+  'tests/cotw-20261012-safety.test.mjs': {
+    kind: 'fixture',
+    sources: ['ledger'],
+    why: 'Pins clinical/high risk independently of review status and derives a controlled pending fixture '
+      + 'for the warning. Built-page checks follow the served status and never require a pending queue; '
+      + 'a later faculty signature remains valid input to every assertion.',
+  },
   'tests/anki/test_qbank_governance.py': {
     kind: 'dormant',
     why: 'Pins live counts (192 items, 143 eligible, 49 drafts, 3 retired) and `_note` wording that main '
