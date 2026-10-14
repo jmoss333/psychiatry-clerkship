@@ -3954,3 +3954,12 @@ test('resume review keeps the earlier packet and its replacement visible',async(
  await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();await page.getByRole('button',{name:'Resume review',exact:true}).click();
  await expect(page.getByText('A restored mapping has a newer review packet. Review that replacement to complete this examination.',{exact:true})).toBeVisible();await expect(page.locator('#inbox > article')).toHaveCount(2);await page.getByText('Full retained packet evidence',{exact:true}).click();await expect(page.locator('article pre').last()).toContainText('Earlier evidence');
 });
+
+test('resume review remembers reopening an already loaded packet',async({page})=>{
+ const first=resumePacket(),second=resumePacket({revision:'b'.repeat(64),sourceName:'Second source'});
+ await mockEvidencePages(page,{packets:[first,second]});await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();
+ const a=page.locator('article').filter({has:page.getByRole('heading',{name:'Resume source',exact:true})}),b=page.locator('article').filter({has:page.getByRole('heading',{name:'Second source',exact:true})});
+ await a.getByRole('button',{name:'Open packet'}).click();await expect(a.getByRole('heading',{name:'Packet details',exact:true})).toBeVisible();await a.getByRole('button',{name:'Open packet'}).click();
+ await b.getByRole('button',{name:'Open packet'}).click();await expect(b.getByRole('heading',{name:'Packet details',exact:true})).toBeVisible();await a.getByRole('button',{name:'Open packet'}).click();
+ expect(await page.evaluate(()=>localStorage.getItem('cw_evidence_last_packet'))).toBe(resumeRevision);
+});

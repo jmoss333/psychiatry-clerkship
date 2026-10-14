@@ -60,7 +60,7 @@ function lazyPanel(parent,label,params,renderDetails,context,id){
  button.type='button';if(params.packetRevision)button.dataset.packet=params.packetRevision;button.setAttribute('aria-controls',id);button.setAttribute('aria-expanded','false');
  let loaded=false;
  button.onclick=async()=>{
-  if(loaded){panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));return;}
+  if(loaded){panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden&&params.packetRevision)rememberPacket(params.packetRevision);return;}
   button.disabled=true;button.textContent='Loading…';
   try{
    const details=await request(null,{...params,...pins(context)});
