@@ -60,3 +60,12 @@ Automated acceptance covers:
 The current PR body records results at the tested revision. Previous mutation totals are historical reports, not evidence that Revision 4 has had a new exhaustive mutation pass. Build and browser evidence do not establish clinical approval, physical printer behavior, VoiceOver behavior or production activation.
 
 G-B (#1034 workflow) is closed for the reviewed revision; this does not approve a merge or activation. Still for human review: G-C (ward printer, nurse and peer specialist, screen reader and other browsers), and G-D activation. Upstream closed/withdrawn status and crisis-service categorization remain feed limitations; this implementation does not claim to identify every crisis-type service in other categories. No new decision was made about those categories or the “Making home safer” default.
+
+
+## Implementation and merge authorization — 2026-10-13
+
+After explicitly closing G-B, the owner instructed this chat to complete the remaining implementation, push and merge without further approval requests. This authorizes technical integration of #1034, #1040 and #1036 after checks pass. It supersedes the earlier merge hold, while retaining the explicit flag-off requirement. Main was refreshed to `87759b2478a7` before integration; the core and authority branches were combined using ordinary merges, without rebasing.
+
+The integrated acceptance adds a cross-language/service/browser test using the actual Python profile projection, actual approval handlers and actual learner receipt check. Synthetic in-memory credentials and storage exercise unapproved, approved, suspended, revoked, source-replaced and expired states for both learner origins. No real credentials, approval store or unit profile are created.
+
+G-C remains an evidence gate for actual ward printing, nurse/peer-specialist review, native screen readers and other browsers. Technical merge authorization does not assert that those observations occurred. G-D remains open: the feature stays off, profiles stay empty, and service enrollment/configuration remain prerequisites to activation. Deferred UX ideas and the separate #1008 branch are outside this integration.
