@@ -69,6 +69,41 @@ SP_INTERVIEW_BASE_URL=http://127.0.0.1:4300/tools/ \
 The LFS browser project may skip locally when no deploy-preview URL is available. The sequential
 build gate's 105-real-file check is the authoritative local media evidence.
 
+## Verification after each production release
+
+The release train dispatches `production-release-verification.yml` after publishing a
+revision. Its focused `production-release.config.js` runs against the exact production
+deploy permalinks for both learner sites, checked against the requested `RELEASE_SHA`.
+It does not add another deployment or a scheduled browser crawl.
+
+Each site must report all three named journeys: Path/Care navigation, desktop medication
+search (1280 × 900), and phone medication search (320 × 844). The search journeys run
+126 cases apiece: generic/brand names and treatments, punctuation-sensitive context,
+safety-protocol priority, the capacity-tool exception, and literal/unknown filenames.
+They open the monitoring reading and the withdrawal protocol, then repeat a contextual
+query and a safety query after reload. Across both sites this is 504 matrix checks plus
+8 reload checks. Deliberate misspellings remain expected misses; fuzzy drug-name correction
+is not claimed.
+
+To run the same checks against already deployed revisions, supply both exact deploy
+permalinks and their full commit SHA:
+
+```bash
+cd tests/smoke
+MS3_BASE_URL="$MS3_DEPLOY_PERMALINK" \
+RES_BASE_URL="$RES_DEPLOY_PERMALINK" \
+RELEASE_SHA="$DEPLOYED_COMMIT_SHA" \
+  npx playwright test --config=production-release.config.js
+```
+
+The release receipt requires every named journey on **each** site. Missing, skipped,
+unknown, duplicated or substituted journeys cannot produce PASS; failures and flaky
+results produce FAIL. The uploaded Playwright report includes named query steps and
+`medication-search-results` JSON attachments with expected destinations and observed
+result order. Failure screenshots and traces remain in the existing 90-day release
+artifact. The consolidated Markdown receipt lists each journey and any missing one.
+This is technical search evidence; faculty review status remains separate.
+
 ## Visual baselines
 
 The visual project captures the resident Front Door plus **one page per structural
