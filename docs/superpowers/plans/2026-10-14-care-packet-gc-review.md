@@ -4,13 +4,16 @@
 The feature flag remains off and the real unit-profile list remains empty. This record
 preserves completed work and observations; it does not approve patient use or activation.
 
-## Software work is complete
+## Implementation history and evidence
 
-GitHub confirms [#1034](https://github.com/jmoss333/psychiatry-clerkship/pull/1034)
+GitHub confirms [#1032](https://github.com/jmoss333/psychiatry-clerkship/pull/1032)
+(PR A: standard inserts, schema, validator and freshness check),
+[#1034](https://github.com/jmoss333/psychiatry-clerkship/pull/1034)
 (core), [#1040](https://github.com/jmoss333/psychiatry-clerkship/pull/1040)
 (independent profile authority), and
-[#1036](https://github.com/jmoss333/psychiatry-clerkship/pull/1036) (print and inserts)
-merged. The final merge was `3f8c549a4c08f2481078d823d351f80bd115f958`,
+[#1036](https://github.com/jmoss333/psychiatry-clerkship/pull/1036) (print and Revision 4)
+merged. PR A first landed through #1032, not inside #1036. The final implementation
+merge was `3f8c549a4c08f2481078d823d351f80bd115f958`,
 October 13 at 10:21:56 PM America/New_York.
 
 Refreshed main at this review was `24a62138754faf21cece39f3279b3be816bfc0ad`.
@@ -99,8 +102,11 @@ real service-contact validity. The optional wallet card is not in either sample.
 - Have one peer specialist read both paper packets and record role, date, concerns and
   disposition. The ward-nurse review is complete; no peer-specialist review is recorded yet.
 - Exercise the native browser print dialog and return-to-app behavior on the ward setup;
-  frozen PDFs do not establish either. Check the separate single-sided wallet card if
-  it is to be used. Duplex remains unapproved unless separately tested.
+  frozen PDFs do not establish either. Use `?tab=care` in an isolated test build with
+  the flag enabled only by test interception and the existing fictional profile and
+  simulated authority fixtures, never by changing the source flag or real authority.
+  Check the separate single-sided wallet card if it is to be used. Duplex remains
+  unapproved unless separately tested.
 - Observe native screen-reader announcements and keyboard focus, and record actual
   browser/device coverage. Automated accessibility checks do not replace this evidence;
   Safari, Firefox and phone printing remain unproven in the current record.
@@ -128,6 +134,43 @@ history are needed. This records the peer specialist's review only; it does not 
 G-C or approve activation. Native accessibility and live-browser print reviews remain
 pending regardless of the peer-review result.
 
+## Contact verification: two separate contracts
+
+The October 14 review found 13 insert table rows with `verifiedDate: "2026-10-12"`
+and official source URLs. These record source-check dates; owner call verification is
+not recorded in this data. The absence of a verifier field does not establish who
+checked the facts or whether the owner has dialled a number.
+
+The [insert schema](../../../13_Faculty_Resources/_automation/site_build/data/care-inserts.v1.schema.json)
+requires checking both the number and every printed service fact in `what` against
+the operating organization or government `source` and `alsoSources`. It does not
+require an owner telephone call. Recheck against those sources and record only checks
+actually performed; a genuine call observation can also be recorded in the review
+evidence. Do not advance dates merely because the data is being approved or published.
+
+Insert table rows allow only `who`, `number`, `what`, `source`, optional `alsoSources`
+and `verifiedDate`. Adding `verifiedBy` or `evidence` while leaving the schema untouched
+would fail validation. If structured per-row verifier evidence is wanted, propose that
+schema change deliberately, in its own commit with an owner callout. The existing
+[owner directions](2026-10-12-care-packet-owner-directions.md) explain that insert data
+is neither governance nor classified page content: schema plus insert data does not
+itself trip L1. Commit separation follows the owner's direction, not that claimed L1
+restriction. This plan changes neither schema nor data.
+
+Unit profiles instead use the existing `verification` entries with `field`, `checkedOn`,
+`checkedBy` (a verifier role) and `evidence`; see the
+[profile schema](../../../13_Faculty_Resources/_automation/site_build/data/care-unit-profiles.v1.schema.json).
+Their oldest required actual verification date starts the **90-calendar-day** validity
+period. Approval and build dates do not start or renew that period. Expiry occurs at
+the start of the computed expiry date in **America/New_York**, as specified in Revision 4.
+Schedule actual verification near launch; delaying approval does not extend freshness.
+Insert rows have a separate **180-day freshness warning**, not this profile expiry.
+If genuine profile checks postdate the inserts payload's `generatedAt`, update
+`generatedAt` in the same data update; never backdate verification to satisfy validation.
+The [validator](../../../13_Faculty_Resources/_automation/validate_care_inserts.py) and
+[payload builder](../../../13_Faculty_Resources/_automation/site_build/care_inserts_payload.py)
+enforce these distinct rules.
+
 ## G-D remains a separate activation decision
 
 Before proposing activation, complete the owner-side authority enrollment and isolated
@@ -136,9 +179,70 @@ verify that previews cannot access it, and supply and independently approve a re
 profile backed by actual contact/operational verification. No credentials or approval
 records were inspected or created during this progress recovery.
 
-The feature stays off. Adding profile data, passing tests or closing G-C does not itself
-authorize activation. Existing clinical copy, defaults and approval rules remain intact.
+The candidate needs verified purpose, unit name, phone and staffed hours. Record callback
+team, return number, hours and fallback only when a real callback program applies.
+The patient's agreed day/time window and deadline stay handwritten or in the After Visit
+Summary; they are not profile data. The app retains only transient confirmations.
+The implementation supports `callbackProgram: false` with its four text fields empty
+and the callback page off; do not invent program facts to fill those fields.
+
+Obtain the applicable MaineHealth site/branding decision before launch. The implementation
+supports an approved unbranded profile (`brandingApproved: false`, `org: null`), but
+that technical option does not waive institutional permission or owner launch decisions.
+ReConnect app inclusion remains outside this work pending the applicable approval.
+
+After G-C is explicitly closed in writing and a current real profile has independent
+approval, present G-D for the owner's explicit activation decision. Only that decision
+authorizes a separate source edit enabling the flag. Adding profile data, passing tests,
+merging this record or closing G-C does not itself authorize activation. The feature
+stays off; existing clinical copy, defaults and approval rules remain intact.
+
+## Record delivery and separate preservation work
+
+Use the existing [PR #1055](https://github.com/jmoss333/psychiatry-clerkship/pull/1055)
+to land this documentation after all checks pass; do not open a duplicate. Before this
+correction, its head was `c89740284547fe1e45cc69f9abe94d5c5070bf38` with four documentation
+commits, including nurse acceptance. That is a historical snapshot, not the final PR
+head or a current check result; consult the PR for its latest revision, checks and merge.
+Mergeability alone does not establish passing checks.
+
+Repository cleanup is a separate operation, not a prerequisite for the remaining human
+review or authorization supplied by this plan. At the October 14 audit, remote main was
+`24a62138754faf21cece39f3279b3be816bfc0ad` and the primary checkout was
+`59518403fdeb2ac7e7b5e5333ba43379d8c8e4ac`: 0 ahead and 161 behind, with 235 untracked
+files. Five untracked paths overlapped paths newly tracked on main:
+
+- `13_Faculty_Resources/APA_Downloads_2026-06-29/_REFRESH_REPORT_2026-10-01.md`
+- `docs/superpowers/plans/2026-09-04-faculty-console-pending-pages-deeplinks.md`
+- `docs/superpowers/plans/2026-09-04-required-path-coverage-remediation.md`
+- `docs/superpowers/plans/2026-09-15-huggingface-private-infrastructure-plan.md`
+- `docs/superpowers/plans/2026-09-19-essentials-handoff.md`
+
+Their names were compared, not their contents. Refresh coordination and remote evidence,
+preserve and reconcile these files, then fast-forward only if safe. Do not reset, clean
+or overwrite them to make synchronization proceed.
+
+Seven locked care-related worktrees existed at that audit, but they were not all merged:
+the review branch still held the four commits above. The print and profile-authority
+worktrees also held untracked acceptance evidence. Preserve required evidence, including
+ignored files, before individually retiring any checkout. The frozen review PDFs live
+in the primary checkout's `output/pdf/care-gc-2026-10-14/` and are ignored by Git; committing
+the plan or archiving only tracked files does not preserve them. `git worktree prune`
+is not a safe removal procedure for these existing locked worktrees.
+
+At that audit, `care-1036-merge-verify` was already absent locally and remotely. The
+`codex/care-profile-authority-2026-10-13` branch remained checked out in its locked local
+worktree, while its remote branch was already absent. Recheck each branch before acting.
+The core and print plans still reference `_prototypes/care-packet/HANDOFF.md`: any later
+archive move must preserve the artifacts and update those references. Follow the home
+file-hygiene rules for a move log, rollback record and non-overwriting moves; deletion
+requires explicit in-session authorization. This documentation update performs no
+synchronization, archival, deletion or unlocking.
 
 Optional later idea: ask each staff reviewer to find the next action and contact details
 from a fictional scenario, and record where they hesitate. This is a usability exercise,
 not a new clinical score or required gate.
+
+Another optional improvement is a revision-stamped readiness summary that combines live
+repository facts with separately recorded human observations. It must never infer a
+review, approval or gate closure from automated checks.
