@@ -66,8 +66,19 @@ async function expectReleaseRevision(page) {
 // The same 126 cases that were checked manually after #1045: expectations are
 // curated destinations, not values calculated by the production search engine.
 const medicationAudit = JSON.parse(readFileSync(new URL('../fixtures/medication-search-audit.json', import.meta.url), 'utf8'));
+// Most names belong in the primer; these queries have a more specific authored
+// destination. Every positive audit case must reach its reading in the top three.
+const auditDestinations = {
+  carbamazepine: 'med_monitoring.md', Tegretol: 'med_monitoring.md',
+  esketamine: 'ect_neuromodulation.md', Spravato: 'ect_neuromodulation.md',
+  ECT: 'ect_neuromodulation.md', TMS: 'ect_neuromodulation.md',
+  'lithium monitoring': 'med_monitoring.md', 'clozapine constipation': 'med_monitoring.md',
+};
 const medicationCases = medicationAudit.queries.map(query => ({
-  category: 'name audit', query, empty: medicationAudit.deliberateMisspellings.includes(query),
+  category: 'name audit', query,
+  ...(medicationAudit.deliberateMisspellings.includes(query)
+    ? { empty: true }
+    : { topThree: auditDestinations[query] || 'psychopharm_primer.md' }),
 }));
 for (const query of ['Wellbutrin XL', 'LAMICTAL?', 'Suboxone', 'Ativan', 'lurasidone', 'Latuda', 'naltrexone']) {
   medicationCases.push({ category: 'medication destination', query, topThree: 'psychopharm_primer.md' });
