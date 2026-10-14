@@ -57,3 +57,9 @@ test('review wording and category-order guidance are presented, and unexpected r
   for(const copy of ["I checked each listing’s contact details and access instructions with the service or on its website.","I checked that these options fit the patient’s needs, where they will live, and their practical ability to use the services.","I checked that no patient-identifying information was entered into this tool.","My supervising clinician reviewed this packet and approved it for this patient.","Listings are grouped by service type."])assert.ok(html.includes(copy),copy);
   assert.deepEqual(P.normalize({...state(1),why:{a0:'private rationale'}}).why,{});
 });
+
+test('a later individual change removes an obsolete bulk outcome from the tray',()=>{
+  const {c}=make();const root={isConnected:true,innerHTML:''};c.mount(root,null,()=>data);
+  c.addMany(data.records.map(r=>r.id));assert.match(root.innerHTML,/Added 12 listings/);
+  c.toggle('a0');assert.doesNotMatch(root.innerHTML,/Added 12 listings|See what wasn’t added/);c.leave();
+});

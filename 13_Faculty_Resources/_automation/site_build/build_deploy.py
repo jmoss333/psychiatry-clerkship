@@ -626,6 +626,19 @@ if _spa_t.count(_pairings_needle)!=1:
     print("BUILD ABORTED — FD_PAIRINGS needle missing or duplicated in spa_index.html")
     raise SystemExit(1)
 _spa_t=_spa_t.replace(_pairings_needle,"var FD_PAIRINGS=%s;"%frontdoor_catalog._inline_json(_pairings_inline))
+# The aftercare packet's standard inserts plus the crisis contacts they reference (care_inserts_payload.py).
+# Validated here by the validator's own check(); a payload the packet cannot print safely aborts the
+# build, so the last good deploy stays live. Crisis numbers are copied from crisis_resources.json, never
+# typed. The resident build rebrands this index.html, so it inherits the payload and re-asserts the
+# postcondition (resident_section.py).
+import care_inserts_payload
+try:
+    _care_inserts=care_inserts_payload.build_payload()
+    _spa_t=care_inserts_payload.inject(_spa_t,_care_inserts)
+    care_inserts_payload.assert_injected(_spa_t)
+except care_inserts_payload.PayloadError as _care_error:
+    print("BUILD ABORTED — aftercare packet payload: %s"%_care_error)
+    raise SystemExit(1)
 # "Beyond this page" (README_MEDIA.md M1): media_map.json stores keys only; media_index.py
 # resolves them against the two attested library pages and topic_meta.json (never written), fails
 # the build naming any key that does not resolve to a verified entry, and emits NO pages while the
@@ -652,6 +665,7 @@ print("released-qb injection:",len(_released_ids),"id(s)")
 print("practice-case-title injection:",len(_case_titles),"case(s)")
 print("case-arc injection:",len((_case_arc or {}).get("weeks") or []),"week(s)")
 print("pairings injection:",len((_pairings_inline or {}).get("pairings") or []),"pairing(s)")
+print("care-inserts injection:",len(_care_inserts["inserts"]),"insert(s),",len(_care_inserts["contacts"]),"crisis contact(s)")
 print("media index (ms3): status=%s, %d page(s) render"%(_media_ms3["status"],len(_media_ms3["pages"])))
 
 # ---- page->tool link divergence (report only; never fails the build) ----
@@ -706,7 +720,7 @@ print("crisis block injected: shell index")
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
-open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app https://clerkship-metrics.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
+open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app https://clerkship-metrics.netlify.app https://clerkship-faculty-attest.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
 
 # Deploy-preview only (#430): Netlify injects /.netlify/scripts/cdp into preview HTML, whose
 # drawer frames https://app.netlify.com/ and trips the frame-src above. The literal written

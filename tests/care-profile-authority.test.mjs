@@ -178,6 +178,7 @@ test('production store adapter never falls back to preview-shared site storage',
   assert.throws(()=>service.authorityStoreOptions({...env,CARE_PROFILE_STORE_TOKEN:''}));
 });
 test('repository adapter binds the latest profile-file change rather than unrelated main changes',async()=>{
+  service.clearCandidateSnapshots();
   const paths=[],head='b'.repeat(40),pathCommit='a'.repeat(40);
   const read=service.githubCandidates({env:{GITHUB_TOKEN:'fixture-read-token'},fetchImpl:async(url,init)=>{
     paths.push(url);assert.equal(init.method,undefined);assert.equal(init.cache,'no-store');
@@ -193,4 +194,120 @@ test('restoring bytes between review and approval requires a fresh source-versio
   h.setProfiles([]);h.setProfiles([candidate()]);
   const response=await h.owner({action:'approve',profileId:row.profile.id,revision:row.revision,expectedVersion:null,expectedSourceCommit:row.sourceCommit});
   assert.equal(response.status,409);assert.equal(h.store.writes.length,0);
+});
+
+// ---- the repository adapter reads the immutable snapshot once per main tip (Codex review: an open preview polls every 30 s) ------------
+// A fake GitHub: the tip, its etag and the profile file can move; every request is recorded. Responses carry an etag for the ref only.
+function fakeGithub(initial = {}) {
+  const state = { tip: 'b'.repeat(40), etag: '"tip-1"', pathCommit: 'a'.repeat(40), profiles: [candidate()], requests: [], fail: null, ...initial };
+  const fetchImpl = async (url, init) => {
+    state.requests.push({ url, ifNoneMatch: init.headers['If-None-Match'] || null });
+    let body, headers = {};
+    if (url.includes('/git/ref/')) {
+      if (!state.fail && init.headers['If-None-Match'] === state.etag) return new Response(null, { status: 304 });
+      body = { object: { sha: state.tip } }; headers = { etag: state.etag };
+    } else if (url.includes('/commits?')) body = [{ sha: state.pathCommit }];
+    else body = { encoding: 'base64', content: Buffer.from(JSON.stringify({ schemaVersion: 1, profiles: state.profiles })).toString('base64') };
+    // A failing status may carry a body that LOOKS like a complete, valid answer (state.failWithAnswers): it is still a failure.
+    if (state.fail) return new Response(state.failWithAnswers ? JSON.stringify(body) : null, { status: state.fail });
+    return new Response(JSON.stringify(body), { headers });
+  };
+  return { state, fetchImpl };
+}
+const reads = github => github.state.requests.filter(r => !r.url.includes('/git/ref/')).length;
+
+test('an unchanged main tip costs one conditional request, not three reads; the answer is the same snapshot each time', async () => {
+  service.clearCandidateSnapshots();
+  const github = fakeGithub();
+  const read = service.githubCandidates({ env: { GITHUB_TOKEN: 'fixture-read-token' }, fetchImpl: github.fetchImpl });
+  const first = await read();
+  assert.equal(github.state.requests.length, 3, 'a cold read is the three reads');
+  assert.equal(github.state.requests[0].ifNoneMatch, null, 'nothing to be conditional on yet');
+  const second = await read(), third = await read();
+  assert.equal(github.state.requests.length, 5, 'each later poll is the ref read alone');
+  assert.deepEqual(github.state.requests.slice(3).map(r => r.ifNoneMatch), ['"tip-1"', '"tip-1"'], 'sent as a conditional request');
+  assert.deepEqual(second, first);
+  assert.deepEqual(third, first);
+  // The held snapshot cannot be altered through an answer.
+  second.profiles[0].unitPhone = 'tampered'; second.commit = 'f'.repeat(40);
+  assert.deepEqual(await read(), first, 'a caller that edits its copy does not edit the next one');
+});
+
+test('a moved main tip is read afresh at once: the new profile file and its last-change commit, never the held snapshot', async () => {
+  service.clearCandidateSnapshots();
+  const github = fakeGithub();
+  const read = service.githubCandidates({ env: { GITHUB_TOKEN: 'fixture-read-token' }, fetchImpl: github.fetchImpl });
+  const before = await read();
+  assert.equal(before.commit, 'a'.repeat(40));
+  const changed = candidate(); changed.unitHours = 'Changed hours';
+  Object.assign(github.state, { tip: 'c'.repeat(40), etag: '"tip-2"', pathCommit: 'd'.repeat(40), profiles: [changed] });
+  const after = await read();
+  assert.equal(after.commit, 'd'.repeat(40), 'the file\'s new last-change commit');
+  assert.equal(after.profiles[0].unitHours, 'Changed hours');
+  assert.equal(reads(github), 4, 'two snapshot reads for the first tip, two for the second');
+  assert.ok(github.state.requests.some(r => r.url.includes('sha=' + 'c'.repeat(40))) && github.state.requests.some(r => r.url.endsWith('ref=' + 'c'.repeat(40))), 'keyed to the new tip');
+});
+
+test('the same tip under a new etag keeps the snapshot and refreshes only the etag; a snapshot is held per repository', async () => {
+  service.clearCandidateSnapshots();
+  const github = fakeGithub();
+  const read = service.githubCandidates({ env: { GITHUB_TOKEN: 'fixture-read-token' }, fetchImpl: github.fetchImpl });
+  await read();
+  github.state.etag = '"tip-1-again"';
+  await read();
+  assert.equal(reads(github), 2, 'no new snapshot reads for an unchanged tip');
+  await read();
+  assert.equal(github.state.requests.at(-1).ifNoneMatch, '"tip-1-again"', 'the next poll is conditional on the new etag');
+  const other = fakeGithub();
+  const readOther = service.githubCandidates({ env: { GITHUB_TOKEN: 'fixture-read-token', GITHUB_REPO: 'someone/else' }, fetchImpl: other.fetchImpl });
+  await readOther();
+  assert.equal(other.state.requests[0].ifNoneMatch, null, 'another repository never reuses this one\'s etag');
+});
+
+test('the adapter fails closed: a failed or oversized read is an error and is never held; a 304 is only believed for a tip it holds', async () => {
+  service.clearCandidateSnapshots();
+  const github = fakeGithub();
+  const read = service.githubCandidates({ env: { GITHUB_TOKEN: 'fixture-read-token' }, fetchImpl: github.fetchImpl });
+  github.state.fail = 503;
+  await assert.rejects(read());
+  github.state.fail = null;
+  await read();
+  github.state.fail = 500;
+  await assert.rejects(read(), 'a server error on the conditional read is an error, not "unchanged"');
+  // Even a failing status whose body parses as a valid answer is a failure: only a success status is ever believed.
+  service.clearCandidateSnapshots();
+  github.state.failWithAnswers = true;
+  await assert.rejects(read(), 'a 500 whose every body is a complete, valid answer is still a failure');
+  github.state.failWithAnswers = false;
+  github.state.fail = null;
+  assert.equal((await read()).commit, 'a'.repeat(40), 'and the held snapshot was not poisoned by the failures');
+  service.clearCandidateSnapshots();
+  const cold = fakeGithub();
+  cold.fetchImpl = async () => new Response(null, { status: 304 });
+  await assert.rejects(service.githubCandidates({ env: { GITHUB_TOKEN: 'fixture-read-token' }, fetchImpl: cold.fetchImpl })(), 'with nothing held there is nothing a 304 could mean');
+});
+
+test('behind the real status handler an approval is still revoked at once: only the candidate snapshot is held, the authority is read every time', async () => {
+  service.clearCandidateSnapshots();
+  const github = fakeGithub();
+  const store = storage();
+  const env = { CONTEXT: 'production', CARE_PROFILE_OWNER_KEY: FIXTURE_OWNER_KEY, CARE_PROFILE_SIGNING_SECRET: FIXTURE_SIGNING_KEY, GITHUB_TOKEN: 'fixture-read-token' };
+  const handlers = service.createCareProfileHandlers({ env, store, now: () => now, readCandidates: service.githubCandidates({ env, fetchImpl: github.fetchImpl }) });
+  const owner = body => handlers.approvals(new Request(origin + '/.netlify/functions/care-profile-approvals', {
+    method: body ? 'POST' : 'GET', headers: { Origin: origin, 'x-care-profile-owner-key': FIXTURE_OWNER_KEY, 'Content-Type': 'application/json' },
+    ...(body ? { body: JSON.stringify(body) } : {}) }));
+  const statusOf = revision => handlers.status(new Request(origin + '/.netlify/functions/care-profile-status?profileId=fictional-unit&revision=' + revision, { headers: { Origin: learner } }));
+  const row = (await (await owner()).json()).profiles[0];
+  const approved = await owner({ action: 'approve', profileId: 'fictional-unit', revision: row.revision, expectedVersion: null, expectedSourceCommit: row.sourceCommit });
+  assert.equal(approved.status, 200);
+  const authorityReadsBefore = store.reads.length;
+  for (let i = 0; i < 5; i += 1) assert.equal((await (await statusOf(row.revision)).json()).status, 'approved');
+  assert.equal(store.reads.length - authorityReadsBefore, 5, 'the authority was read on every status check');
+  const revoked = await owner({ action: 'revoke', profileId: 'fictional-unit', revision: row.revision, expectedVersion: store.row.version, expectedSourceCommit: row.sourceCommit });
+  assert.equal(revoked.status, 200);
+  assert.equal((await (await statusOf(row.revision)).json()).status, 'revoked', 'a revocation is seen on the very next check');
+  assert.ok(github.state.requests.slice(3).every(r => r.url.includes('/git/ref/')), 'after the first snapshot only the tip was ever read');
+  // Snapshot calls: the owner list (cold: 3 reads), approve (twice: current and latest), five status checks, one more status check.
+  // Revoke reads no snapshot. So 3 cold reads + 2 + 5 + 1 cheap tip reads.
+  assert.equal(github.state.requests.length, 3 + 2 + 5 + 1);
 });

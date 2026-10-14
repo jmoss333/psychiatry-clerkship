@@ -129,7 +129,9 @@ function fdCareSearch(index){
     '<p class="fd-care-search__privacy" id="fd-care-directory-privacy">Use resource names or services. Keep patient details out of search. Your search stays in this tab.</p>'+
     '<div class="fd-care-search__notice" data-care-directory-notice></div><div data-care-directory-results aria-busy="true"><p>Loading directory…</p></div>'+
     /* The packet tray sits after the results and outside their mount, so typing never repaints it. */
-    (typeof fdCarePacketEnabled==='function'&&fdCarePacketEnabled()?'<div class="fd-care-search__tray" data-fd-care-packet-tray></div>':'')+
+    (typeof fdCarePacketEnabled==='function'&&fdCarePacketEnabled()?'<div class="fd-care-search__tray" data-fd-care-packet-tray></div>'+
+      /* The preview region is always present while the packet exists, hidden when closed, so the tray button's aria-controls never dangles. */
+      '<div class="fd-care-search__preview" id="fd-care-packet-preview" data-fd-care-packet-preview hidden></div>':'')+
     '<p class="fd-care-search__foot">Listings do not confirm availability, eligibility or referral acceptance. Maine region filters also include statewide listings. Use Safety for urgent guidance.</p></section>';
 }
 
@@ -196,9 +198,21 @@ function fdCreateCareDirectory(packet){
   function mount(node,live){
     root=node;status=live;if(!root)return;
     root.querySelector('#fd-care-directory-query').value=query;options();
-    root.oninput=function(event){if(event.target.id!=='fd-care-directory-query')return;query=event.target.value;page=1;clearTimeout(timer);timer=setTimeout(function(){paint(false);},180);};
+    root.oninput=function(event){
+      if(packet&&packet.handleInput(event.target))return;
+      if(event.target.id!=='fd-care-directory-query')return;query=event.target.value;page=1;clearTimeout(timer);timer=setTimeout(function(){paint(false);},180);};
+    /* The packet's own controls: a hit with keep:true is a control the packet patches in place, which keeps its focus (a
+       change event also fires when the trainee tabs AWAY from a field, so refocusing it would steal focus). */
+    root.onkeydown=function(event){
+      var hit=packet?packet.handleKey(event):null;
+      if(hit)focusAt(hit);
+    };
     root.onchange=function(event){
-      if(packet&&event.target.hasAttribute&&event.target.hasAttribute('data-fd-care-packet-gate')){focusAt(packet.handleChange(event.target));return;}
+      if(packet&&packet.owns(event.target)){
+        var owned=packet.handleChange(event.target);
+        if(owned&&!owned.keep)focusAt(owned);
+        return;
+      }
       if(event.target.id==='fd-care-directory-category')category=event.target.value;else if(event.target.id==='fd-care-directory-region')region=event.target.value;else return;page=1;paint(false);};
     root.querySelector('form').onsubmit=function(event){event.preventDefault();clearTimeout(timer);paint(false);};
     root.onclick=function(event){
@@ -214,13 +228,13 @@ function fdCreateCareDirectory(packet){
           return;
         }
         var hit=packet.handleClick(target);
-        if(hit){focusAt(hit);return;}
+        if(hit){if(!hit.keep)focusAt(hit);return;}
       }
       if(target.hasAttribute('data-care-directory-clear')){query='';category='';region='';page=1;root.querySelector('#fd-care-directory-query').value='';options();paint(false);root.querySelector('#fd-care-directory-query').focus();}
       else if(target.hasAttribute('data-care-directory-retry')){root.querySelector('#fd-care-directory-query').focus({preventScroll:true});load();}
       else if(target.hasAttribute('data-care-directory-page')){page=Number(target.getAttribute('data-care-directory-page'));paint(true);}
     };
-    if(packet)packet.mount(root.querySelector('[data-fd-care-packet-tray]'),status,function(){return data;},function(){paint(false,true);});
+    if(packet)packet.mount(root.querySelector('[data-fd-care-packet-tray]'),status,function(){return data;},function(){paint(false,true);},root.querySelector('[data-fd-care-packet-preview]'));
     if(!data&&!loading&&!error)load();else paint(false);
   }
   function leave(){if(packet)packet.leave();generation++;if(abort)abort.abort();clearTimeout(timeout);clearTimeout(timer);data=null;query='';category='';region='';page=1;loading=false;error=false;root=null;if(status)status.textContent='';status=null;}

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { careDirectoryFixture, pinCareDirectory } from './care-directory-fixture.js';
-import { enableCarePacket, packetFeed } from './care-packet-fixture.js';
+import { enableCarePacket, packetFeed, UNIT_PROFILE_FIXTURE } from './care-packet-fixture.js';
 import { isResidentProject } from './audience.js';
 
 const KEY = 'fd_care_packet_v1';
@@ -17,18 +17,41 @@ const snapshot = page => page.evaluate(k => ({ local: { ...localStorage }, keys:
 const tray = page => page.locator('[data-fd-care-packet-tray]');
 const addButtons = page => page.locator('[data-fd-care-packet]');
 const trayNames = page => tray(page).locator('[data-fd-care-packet-item] .fd-care-packet__name').allTextContents();
+// The window's live beforeprint listeners (added minus removed) whose source is the packet's. The packet's own print hook is the
+// only one that checks printFingerprint, so this counts it without reaching into the shell's closure.
+const watchPrintListeners = page => page.addInitScript(() => {
+  const live = new Set(), add = EventTarget.prototype.addEventListener, remove = EventTarget.prototype.removeEventListener;
+  EventTarget.prototype.addEventListener = function (type, fn, opts) { if (this === window && type === 'beforeprint' && fn) live.add(fn); return add.call(this, type, fn, opts); };
+  EventTarget.prototype.removeEventListener = function (type, fn, opts) { if (this === window && type === 'beforeprint') live.delete(fn); return remove.call(this, type, fn, opts); };
+  window.__packetPrintHooks = () => [...live].filter(fn => /printFingerprint/.test(String(fn))).length;
+});
+// The payload exactly as the build serves it, for numbers a test must not type.
+async function servedPayload(page) {
+  const html = await (await page.request.get('/')).text();
+  const match = html.match(/var FD_CARE_INSERTS=(.*);\n/);
+  expect(match, 'the served shell declares its payload on one line').toBeTruthy();
+  return JSON.parse(match[1]);
+}
 
 // ---- AC0: with the flag off (the production default) the packet does not exist at all
-test('flag off: no packet controls, no tray, and nothing in sessionStorage after a search', async ({ page }, info) => {
+test('flag off: no packet controls, no tray, no preview or card button, no print hook, nothing staged by a print, and nothing in sessionStorage after a search', async ({ page }, info) => {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await seed(page, info);
+  await watchPrintListeners(page);
   await pinCareDirectory(page, packetFeed(careDirectoryFixture()));
   await page.goto('/?tab=care');
   const panel = page.locator('[data-care-directory]');
   await panel.getByLabel('Resource name or service').fill('support');
   await expect(panel.locator('.fd-care-search__result')).toHaveCount(5);
-  await expect(page.locator('[data-fd-care-packet],[data-fd-care-packet-page],[data-fd-care-packet-all],[data-fd-care-packet-tray],.fd-care-packet,.fd-care-search__pack,.fd-care-search__bulk')).toHaveCount(0);
+  await expect(page.locator('[data-fd-care-packet],[data-fd-care-packet-page],[data-fd-care-packet-all],[data-fd-care-packet-tray],.fd-care-packet,.fd-care-search__pack,.fd-care-search__bulk,[data-fd-care-packet-preview],[data-fd-care-packet-card-print],[data-fd-care-packet-ineligible]')).toHaveCount(0);
+  expect(await page.evaluate(() => window.__packetPrintHooks()), 'no packet print hook is registered').toBe(0);
+  expect(await page.evaluate(() => {
+    window.dispatchEvent(new Event('beforeprint'));
+    const staged = !!document.getElementById('fdPacketPrint') || !!document.getElementById('fdPacketPageRule') || document.body.classList.contains('fd-packet-printing');
+    window.dispatchEvent(new Event('afterprint'));
+    return staged;
+  }), 'a print with the flag off stages nothing').toBe(false);
   expect(await page.evaluate(() => Object.keys(sessionStorage))).toEqual([]);
   expect(errors).toEqual([]);
 });
@@ -116,7 +139,7 @@ test.describe('flag on', () => {
     await expect(panel.getByRole('button', { name: /^Add from all results/ })).toBeEnabled();
   });
 
-  // ---- AC4 (the review gate; the Print and Copy buttons themselves arrive in the next PR)
+  // ---- AC4 (the review gate; what it does to the Print and Copy buttons is in care-packet-print.spec.js)
   test('the review confirmations are bound to the packet: disabled when empty, reset by adding or clearing, reset on leaving Care', async ({ page }) => {
     await search(page);
     const ready = tray(page).locator('[data-fd-care-packet-ready]');
@@ -126,6 +149,10 @@ test.describe('flag on', () => {
     await expect(ready).toContainText('Add a listing');
     for (const key of GATES) await expect(gate(key)).toBeDisabled();
     await addButtons(page).first().click();
+    await tray(page).getByRole('button', { name: /Preview and print/ }).click();
+    await page.locator('[data-fd-care-packet-profile-select]').selectOption(UNIT_PROFILE_FIXTURE.profile.id);
+    await page.locator('[data-fd-care-packet-profile-load]').click();
+    await expect(page.locator('[data-fd-care-packet-profile-status]')).toHaveText(`Loaded: ${UNIT_PROFILE_FIXTURE.profile.label}. Approval checked. Expires on ${UNIT_PROFILE_FIXTURE.profile.expiresOn} (America/New_York).`);
     for (const key of GATES) await expect(gate(key)).toBeEnabled();
     await gate('verification').check();
     await expect(gate('verification')).toBeFocused();
@@ -173,12 +200,66 @@ test.describe('flag on', () => {
     const during = await snapshot(page);
     expect(during.keys).toEqual([KEY]);
     expect(during.local).toEqual(before.local);
-    expect(Object.keys(during.packet).sort()).toEqual(['ids', 'inserts', 'mode', 'why']);
+    expect(Object.keys(during.packet).sort()).toEqual(['ids', 'inserts', 'mode', 'unit', 'why']);
     await tray(page).getByRole('button', { name: 'Clear packet' }).click();
     await page.getByRole('dialog').getByRole('button', {name:'Clear packet',exact:true}).click();
     expect((await snapshot(page)).keys).toEqual([]);
     await page.waitForTimeout(400);
     expect(requests).toEqual([]);
+  });
+
+  // The positive control for the flag-off test's zero: the same probe sees the packet's print hook exactly while Care is mounted.
+  test('the packet registers one print hook while Care is mounted and removes it on leaving Care', async ({ page }) => {
+    await watchPrintListeners(page);
+    await search(page);
+    expect(await page.evaluate(() => window.__packetPrintHooks()), 'one hook on Care').toBe(1);
+    await page.locator('[data-fd-tab="library"]:visible').click();
+    await expect.poll(() => page.evaluate(() => window.__packetPrintHooks()), { message: 'none after leaving Care' }).toBe(0);
+    await page.locator('[data-fd-tab="care"]:visible').click();
+    await expect.poll(() => page.evaluate(() => window.__packetPrintHooks()), { message: 'one again on returning' }).toBe(1);
+  });
+
+  // ---- eligibility: the chooser offers only what can print, and says why in plain text where the button would be
+  test('the chooser offers only listings that can print: a crisis service, a listing with no phone or website, and one whose phone or name carries a registered crisis number each say why, have no add button, and are left out of the Add counts', async ({ page }) => {
+    const payload = await servedPayload(page);
+    // Registered crisis numbers come from the served payload, never typed here.
+    const ten = payload.crisisNumbers.find(n => /^\d{10}$/.test(n)), short = payload.crisisNumbers.find(n => /^\d{3}$/.test(n));
+    expect(ten && short, 'the payload ships a ten-digit and a three-digit registered crisis number').toBeTruthy();
+    const feed = packetFeed(careDirectoryFixture());
+    const odd = [
+      ['CRISIS_CATEGORY', 'Unlisted Crisis Service', r => ({ ...r, category: 'crisis' })],
+      ['NO_CONTACT', 'Unlisted No Contact', r => ({ ...r, phone: '', contactHref: '', website: '' })],
+      ['CRISIS_NUMBER', 'Unlisted Crisis Phone', r => ({ ...r, phone: `${ten.slice(0, 3)}-${ten.slice(3, 6)}-${ten.slice(6)}`, contactHref: 'tel:' + ten })],
+      ['CRISIS_NUMBER', `Unlisted ${short} Partners`, r => r],
+    ];
+    odd.forEach(([, name, change], i) => { feed.records[i] = { ...change(feed.records[i]), name }; });
+    feed.categories = feed.categories.map(c => ({ ...c, count: feed.records.filter(r => r.category === c.id).length }));
+    await pinCareDirectory(page, feed);
+    const panel = await search(page, 'unlisted');
+    await expect(panel.locator('.fd-care-search__result')).toHaveCount(odd.length);
+    for (const [code, name] of odd) {
+      const row = panel.locator('.fd-care-search__result').filter({ has: page.getByRole('heading', { name, exact: true }) });
+      await expect(row, name).toHaveCount(1);
+      await expect(row.locator(`[data-fd-care-packet-ineligible="${code}"]`), `${name}: the reason, as plain text`).toHaveCount(1);
+      await expect(row.locator(`[data-fd-care-packet-ineligible="${code}"]`)).toHaveText(new RegExp('^Can’t be added to the packet: '));
+      expect(await row.locator('[data-fd-care-packet-ineligible]').evaluate(el => el.tagName + (el.tabIndex >= 0 ? ' focusable' : '')), `${name}: not a control`).toBe('P');
+      await expect(row.locator('[data-fd-care-packet]'), `${name}: no add button`).toHaveCount(0);
+    }
+    await expect(panel.getByRole('button', { name: 'Add from this page', exact:true })).toBeDisabled();
+    await expect(panel.getByRole('button', { name: 'Add from all results', exact:true })).toBeDisabled();
+    await expect(panel.locator('[data-fd-care-packet-ineligible-count]')).toHaveText(`${odd.length} results can’t go in the packet and are not counted.`);
+    // Every listing matches "support" (the shared description), so "Add from all results" counts the eligible ones only.
+    await panel.getByLabel('Resource name or service').fill('support');
+    const eligible = feed.records.length - odd.length;
+    await expect(panel.locator('#fd-care-packet-all-capacity')).toHaveText(`12 of ${eligible} new matches will fit.`);
+    await panel.getByRole('button', { name: /^Add from all results/ }).click();
+    await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('12');
+    await expect(page.locator('#careDirectoryStatus')).toContainText(`Added 12 listings. ${eligible - 12} were not added because the packet is full. ${odd.length} were not added because the listing does not meet the packet’s eligibility rules.`);
+    await tray(page).getByText('See what wasn’t added',{exact:true}).click();
+    for (const [, name] of odd) await expect(tray(page).locator('details')).toContainText(name);
+    const packed = await trayNames(page);
+    for (const [, name] of odd) expect(packed, `${name} never reaches the packet`).not.toContain(name);
+    expect((await snapshot(page)).packet.ids.filter(id => ['p-0', 'p-1', 'p-2', 'p-3'].includes(id))).toEqual([]);
   });
 
   test('the packet survives a reload and leaving Care, and a stale id never renders', async ({ page }) => {
@@ -352,5 +433,17 @@ test.describe('G-B acceptance', () => {
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     await button.click();await expect(button).toHaveText('Add to packet');await expect(button).toBeFocused();
     await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('0');
+    await button.click();await addButtons(page).nth(1).click();
+    await tray(page).getByRole('button',{name:'Clear packet',exact:true}).click();
+    const dialog=page.getByRole('dialog',{name:'Clear all 2 listings?'});
+    await expect(dialog).toBeVisible();await expect(dialog.getByRole('button',{name:'Keep packet'})).toBeFocused();
+    await page.keyboard.press('Tab');await expect(dialog.getByRole('button',{name:'Clear packet',exact:true})).toBeFocused();
+    await page.keyboard.press('Tab');
+    // Native dialogs may focus the dialog root on wrapping, but cannot reach the inert background.
+    expect(await page.evaluate(()=>document.querySelector('dialog').contains(document.activeElement)||document.activeElement===document.body)).toBe(true);
+    await page.screenshot({path:info.outputPath('gb-clear-dialog-'+width+'.png')});
+    expect(await dialog.evaluate(d=>d.getBoundingClientRect().left>=0&&d.getBoundingClientRect().right<=innerWidth)).toBe(true);
+    await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
+    await tray(page).screenshot({path:info.outputPath('gb-review-tray-'+width+'.png')});
   });
 });
