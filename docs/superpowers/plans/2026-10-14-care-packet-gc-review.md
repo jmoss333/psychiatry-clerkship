@@ -47,6 +47,12 @@ Record that as a pass for scanning from both printed samples. These fictional ex
 destinations do not establish real service-link or contact validity. The owner explicitly
 instructed that the flag stay off and G-C stay open.
 
+On October 14 the owner reported: "A ward nurse reviewed both packets today; both pass
+with no changes." Record the reviewer role as ward nurse, review date as October 14,
+2026, both samples as passed, and requested changes as none. This is the owner's report
+of the nurse's review; no peer-specialist or accessibility review is implied. The owner
+again explicitly retained the flag-off and G-C-open instructions.
+
 | Check | Recorded result |
 | --- | --- |
 | Default packet sheet count | Pass: owner reported exactly five sheets. |
@@ -57,12 +63,13 @@ instructed that the flag stay off and G-C stay open.
 | Default pages 4–5 | Pass: owner confirmed all five default pages pass. |
 | Long-listing packet: printing and inspection of all seven pages | Pass: owner confirmed all seven long-packet pages pass. |
 | QR scanning from paper | Pass: owner confirmed the printed codes scan correctly in both packets; fixture links are fictional. |
+| Ward-nurse paper review | Pass for both packets, no changes; ward nurse, October 14, 2026, reported by the owner. |
 | Printer model and actual settings used | Not recorded. Requested settings were Letter, portrait, 100%/Actual Size, single-sided, grayscale, one page per sheet. |
 
 No repeated review of the passed rows is needed unless the sample or print conditions change.
 All five default pages and all seven long-packet pages have passed the owner's page
-inspection, and QR scanning has passed for both printed samples. The next G-C step is a
-ward nurse's review of both paper packets; the peer-specialist review remains separate.
+inspection, QR scanning has passed for both printed samples, and a ward nurse has passed
+both packets with no changes. The next G-C step is a peer specialist's paper review.
 
 ## The two review samples
 
@@ -89,8 +96,8 @@ real service-contact validity. The optional wallet card is not in either sample.
 - Record actual printer model/settings when available. Page inspection and paper QR
   scanning have passed for both samples; do not repeat them unless the samples or print
   conditions change, or infer actual settings from the requested settings.
-- Have one nurse and one peer specialist read the paper output. Record each person's
-  role, date, concerns and disposition. No staff review is recorded yet.
+- Have one peer specialist read both paper packets and record role, date, concerns and
+  disposition. The ward-nurse review is complete; no peer-specialist review is recorded yet.
 - Exercise the native browser print dialog and return-to-app behavior on the ward setup;
   frozen PDFs do not establish either. Check the separate single-sided wallet card if
   it is to be used. Duplex remains unapproved unless separately tested.
@@ -102,20 +109,24 @@ Once observations are complete, reconcile any defects and present a concrete G-C
 recommendation. Paper acceptance alone does not close G-C. Keep its state open until an
 explicit closure decision is recorded.
 
-### Next guided step: nurse paper review
+### Next guided step: peer-specialist paper review
 
-Give one ward nurse both printed, fictional review packets. Ask the nurse to read them
-as they would when explaining the packet to someone leaving the unit, and check:
+Give one peer specialist both printed, fictional review packets, retaining their
+"Not for patient use" labels. Invite feedback from the perspective of someone using
+the packet after leaving the unit, focusing on:
 
-- Whether the next action and relevant contact details are easy to find and explain.
-- Whether routine follow-up instructions and the urgent-help instructions are clearly
-  distinguishable, including any ambiguity about what the unit can provide.
-- Whether any wording, grouping, small text or checkbox is confusing or difficult to use.
+- Whether the wording feels respectful, clear and manageable during a stressful transition.
+- Whether the first action and relevant routine or urgent-help contact are easy to find.
+- Whether the amount of information, wording or layout feels confusing or overwhelming.
+- Whether instructions assume access to a phone, internet, transportation or support
+  that could make them difficult to follow.
 
-Record the reviewer's role, review date, whether the paper review passes or needs changes,
-and the page/section and requested revision for each concern. No patient details are
-needed. This records the nurse's review only; it does not close G-C or approve activation.
-The peer-specialist, native accessibility and live-browser print reviews remain pending.
+These prompts guide the existing peer review; they introduce no new score or threshold.
+Record the reviewer's role, review date, pass or needs changes for each packet, and the
+page/section and suggested revision for each concern. No patient details or personal
+history are needed. This records the peer specialist's review only; it does not close
+G-C or approve activation. Native accessibility and live-browser print reviews remain
+pending regardless of the peer-review result.
 
 ## G-D remains a separate activation decision
 
