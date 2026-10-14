@@ -45,10 +45,10 @@ function reviewedPack(scenario = {}) {
   return pack;
 }
 
-async function installFakes(page, scenario = {}) {
+async function installFakes(page, scenario = {}, siteOrigin = '') {
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
-    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') await route.continue();
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.origin === siteOrigin) await route.continue();
     else await route.abort('blockedbyclient');
   });
   await page.route('**/sp-interview.pack.json', async (route) => {
@@ -621,6 +621,84 @@ async function beginTyped(page) {
 }
 
 /* ------------------------------------------------------------------ the spoken room */
+
+// These run in the existing provider-free Interview Room project, but load the tool INSIDE
+// each learner shell. Standalone tool tests cannot catch a late parent ledger taking focus.
+for (const [site, origin] of [
+  ['ms3', new URL(process.env.MS3_BASE_URL || 'http://localhost:4200').origin],
+  ['res', new URL(process.env.RES_BASE_URL || 'http://localhost:4201').origin],
+]) {
+  for (const width of [320, 1280]) {
+    for (const kind of ['spoken consent', 'Chart', 'Step out', 'typed patient-details alert', 'spoken patient-details alert']) {
+      test(`delayed dialog focus: Interview Room ${kind} / ${site} / ${width}px`, async ({ page }) => {
+        const spoken = kind.startsWith('spoken');
+        await page.setViewportSize({ width, height: 844 });
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await installFakes(page, { roomMode: spoken ? 'spoken' : 'typed', consented: kind === 'spoken patient-details alert', followUpReviewed: kind === 'Chart' }, origin);
+        await page.addInitScript(role => {
+          localStorage.setItem('cw_rotation_start', '2026-10-12');
+          localStorage.setItem('cw_frontdoor_v1', JSON.stringify({ role, tab: 'library', viewWeek: 1 }));
+        }, site === 'res' ? 'pgy1' : 'student');
+        const response = await page.request.get(origin + '/governance.json');
+        expect(response.ok()).toBe(true);
+        const ledger = await response.json();
+        expect(ledger.items['sp-interview.html']).toBeTruthy();
+        ledger.items['sp-interview.html'] = { ...ledger.items['sp-interview.html'], status: 'pending', riskLevel: 'high' };
+        let release;
+        const held = new Promise(resolve => { release = resolve; });
+        await page.route('**/governance.json', async route => { await held; await route.fulfill({ json: ledger }); });
+        try {
+          await page.goto(origin + '/?tool=sp-interview.html', { waitUntil: 'domcontentloaded' });
+          const element = await page.locator('iframe.toolframe').elementHandle();
+          const room = await element.contentFrame();
+          await expect(supportedButton(room)).toBeVisible();
+          if (kind === 'Chart') await room.getByLabel('Patient').selectOption(FOLLOW_UP_ID);
+          if (kind === 'spoken consent') await supportedButton(room).click();
+          else if (spoken) await enterSpokenRoom(room);
+          else await beginTyped(room);
+
+          let dialog;
+          if (kind === 'spoken consent') {
+            dialog = room.getByRole('dialog', { name: 'Before entering the spoken room' });
+            await expect(dialog).toBeFocused();
+          } else if (kind === 'Chart') {
+            await room.getByRole('button', { name: 'Chart', exact: true }).click();
+            dialog = room.getByRole('dialog', { name: 'Chart — Dana', exact: true });
+            await expect(dialog.getByRole('heading', { name: 'Chart — Dana', exact: true })).toBeFocused();
+          } else if (kind === 'Step out') {
+            await room.getByRole('button', { name: /Step out/i }).click();
+            dialog = room.getByRole('dialog', { name: 'Stepped out of the room', exact: true });
+            await expect(dialog.getByRole('button', { name: 'Return to the room' })).toBeFocused();
+          } else {
+            await room.getByLabel(spoken ? 'Or type to the patient' : 'Your next words to the patient').fill('Synthetic fixture MRN 1234567');
+            await room.getByRole('button', { name: spoken ? 'Send' : 'Say it', exact: true }).click();
+            dialog = room.getByRole('alertdialog', { name: 'Possible real-patient information', exact: true });
+            await dialog.getByRole('button', { name: 'Edit message' }).focus();
+          }
+          await expect(dialog).toBeVisible();
+          const focused = await room.evaluateHandle(() => document.activeElement);
+          release();
+          await expect(page.locator('.governance-notice.pending-high')).toBeVisible();
+          await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+          expect(await page.evaluate(() => document.activeElement.tagName), 'the parent keeps focus in the tool').toBe('IFRAME');
+          expect(await focused.evaluate(el => el.isConnected && el === document.activeElement)).toBe(true);
+          if (kind.endsWith('alert')) {
+            await page.keyboard.press('Enter');
+            await expect(dialog).toHaveCount(0);
+            expect(JSON.stringify((await log(room)).fetches)).not.toContain('1234567');
+          } else {
+            await page.keyboard.press('Tab');
+            expect(await dialog.evaluate(el => el.contains(document.activeElement))).toBe(true);
+            await page.keyboard.press('Escape');
+            await expect(dialog).toHaveCount(0);
+            if (kind === 'spoken consent') await expect(roomMode(room)).toHaveValue('typed');
+            else await expect(room.getByRole('button', { name: kind === 'Chart' ? 'Chart' : /Step out/i, exact: kind === 'Chart' })).toBeFocused();
+          }
+        } finally { release(); }
+      });
+    }
+  }
+}
 
 test('the spoken room is the default, chosen before a case, and its consent names the provider and binds to the model', async ({ page }) => {
   await openRoom(page);
