@@ -1,4 +1,5 @@
 // Used only behind attest.mjs authentication; no public function handler.
+import {reviewPriority,orderPackets} from '../../evidence-priority.mjs';
 import {createHash} from 'node:crypto';
 import {decodeEvidenceStorage} from './evidence-storage.mjs';
 import {itemRevision} from './qbank-actions.mjs';
@@ -16,27 +17,32 @@ function validState(state){
   ids.add(p.revision);
  }
 }
-export async function readEvidence(repository){
+async function loadEvidence(repository){
  const reportCommit=await repository.headOf(REPORT_BRANCH);
  const head=await repository.head();
  const teachingCommit=await repository.headOf('main');
- const [{json:stored},{json:decisions,sha:decisionRevision},{json:bank}]=await Promise.all([
+ const [{json:stored},{json:decisions,sha:decisionRevision}]=await Promise.all([
   repository.read(INBOX,{ref:reportCommit,maxBytes:8_000_000}),
-  repository.read(DECISIONS,{ref:head,maxBytes:2_000_000}),
-  repository.read('question_bank.json',{ref:teachingCommit,maxBytes:4_000_000})]);
+  repository.read(DECISIONS,{ref:head,maxBytes:2_000_000})]);
  let state;try{state=decodeEvidenceStorage(stored);}catch{fail('Evidence snapshot integrity check failed',503);}
  validState(state);
- if(decisions?.version!==1||!Array.isArray(decisions.decisions)||!Array.isArray(bank.items))fail('Review records unavailable',503);
+ if(decisions?.version!==1||!Array.isArray(decisions.decisions))fail('Review records unavailable',503);
+ return {state,decisions,reportCommit,head,teachingCommit,decisionRevision};
+}
+async function assembleEvidence(repository,loaded,selected=loaded.state.packets){
+ const {state,decisions,reportCommit,head,teachingCommit,decisionRevision}=loaded;
+ const {json:bank}=await repository.read('question_bank.json',{ref:teachingCommit,maxBytes:4_000_000});
+ if(!Array.isArray(bank.items))fail('Review records unavailable',503);
  const items=new Map(bank.items.filter(q=>!q.retired&&!q.retiredReason).map(q=>[q.id,q]));
  const readings=new Map();
- for(const p of state.packets)for(const reading of p.readings){
+ for(const p of selected)for(const reading of p.readings){
   if(typeof reading.source!=='string'||!/^\d\d_[A-Za-z0-9_/-]+\/[A-Za-z0-9_./-]+\.md$/.test(reading.source)||reading.source.split('/').includes('..'))fail('Reading path invalid',503);
   if(!readings.has(reading.source)){
    const {bytes}=await repository.readRaw(reading.source,{ref:teachingCommit,maxBytes:1_000_000});
    readings.set(reading.source,{revision:createHash('sha256').update(bytes).digest('hex'),text:Buffer.from(bytes).toString('utf8')});
   }
  }
- const packets=state.packets.map(packet=>{
+ const packets=selected.map(packet=>{
   const targets=[];
   for(const id of new Set(packet.candidates.map(c=>c.questionId))){
    const q=items.get(id);targets.push({itemKey:'question:'+id,revision:q?itemRevision(q):null,current:q||null});
@@ -55,12 +61,49 @@ export async function readEvidence(repository){
  }
  return {version:1,reportCommit,head,teachingCommit,decisionRevision,generatedAt:state.generatedAt,failures:state.failures,packets,decisions};
 }
+export async function readEvidence(repository){
+ return assembleEvidence(repository,await loadEvidence(repository));
+}
+function relatedPackets(state,revision){
+ const ids=new Set([revision]);let changed=true;
+ while(changed){changed=false;for(const packet of state.packets){
+  if(!ids.has(packet.revision)&&(packet.supersedes||[]).some(id=>ids.has(id))){ids.add(packet.revision);changed=true;}
+ }}
+ return state.packets.filter(packet=>ids.has(packet.revision));
+}
+export async function readEvidencePage(repository,options={}){
+ // Keep the full response for older clients; the phone UI explicitly requests an index.
+ if(!options.section)return readEvidence(repository);
+ if(!['index','packet','history'].includes(options.section))fail('Unknown evidence view');
+ const loaded=await loadEvidence(repository);
+ const {state,decisions,...context}=loaded;
+ if(options.section!=='index')for(const field of ['reportCommit','teachingCommit','decisionRevision']){
+  if(options[field]!==context[field])fail('Evidence or teaching changed. Reload the inbox before opening details.',409);
+ }
+ const common={version:1,...context,generatedAt:state.generatedAt};
+ if(options.section==='index')return {...common,section:'index',failures:state.failures,
+  packets:orderPackets(state.packets.map(packet=>({...packet,status:'not-assessed',targets:[]}))).map(packet=>({revision:packet.revision,sourceName:packet.sourceName,sourceUrl:packet.sourceUrl,
+   observedAt:packet.observedAt,scanStatus:packet.scanStatus,status:'not-assessed',priority:reviewPriority(packet),
+   decisionCount:decisions.decisions.filter(d=>d.packetRevision===packet.revision).length,
+   replacementRevision:state.packets.find(p=>(p.supersedes||[]).includes(packet.revision))?.revision||null})),
+  historyAvailable:true};
+ if(options.section==='history'){
+  const {packets,...history}=state;
+  return {...common,section:'history',history,decisions,packetRevisions:packets.map(p=>p.revision)};
+ }
+ const retainedPacket=state.packets.find(p=>p.revision===options.packetRevision);
+ if(!retainedPacket)fail('Evidence packet not found',404);
+ const view=await assembleEvidence(repository,loaded,relatedPackets(state,retainedPacket.revision));
+ return {...common,section:'packet',packet:view.packets.find(p=>p.revision===retainedPacket.revision),retainedPacket,
+  decisions:{...decisions,decisions:decisions.decisions.filter(d=>d.packetRevision===retainedPacket.revision)}};
+}
 export async function decideEvidence(repository,body,actor){
  const keys=['action','packetRevision','expectedReportCommit','expectedDecisionRevision','dispositions'];
  if(!body||Object.keys(body).some(k=>!keys.includes(k))||!actor)fail('Invalid disposition request');
  if(!Array.isArray(body.dispositions)||!body.dispositions.length||body.dispositions.length>100)fail('Choose review items');
  await repository.ensureBranchFresh();
- const state=await readEvidence(repository);
+ const loaded=await loadEvidence(repository);
+ const state=await assembleEvidence(repository,loaded,relatedPackets(loaded.state,body.packetRevision));
  if(body.expectedReportCommit!==state.reportCommit||body.expectedDecisionRevision!==state.decisionRevision)fail('Evidence changed. Reload before deciding.',409);
  const packet=state.packets.find(p=>p.revision===body.packetRevision);
  if(!packet||packet.replacementRevision)fail('Packet changed. Review its replacement before deciding.',409);

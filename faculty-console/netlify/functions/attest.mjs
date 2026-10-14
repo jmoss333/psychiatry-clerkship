@@ -1,5 +1,5 @@
 import {encodeEvidenceResponse} from './evidence-response.mjs';
-import { readEvidence, decideEvidence, EvidenceError } from './evidence-review.mjs';
+import { readEvidencePage, decideEvidence, EvidenceError } from './evidence-review.mjs';
 // Faculty attestation — authenticated commit-on-save (Netlify Functions v2, ESM).
 // Secrets remain server-side. The browser supplies only x-faculty-key.
 
@@ -3994,7 +3994,11 @@ export function createHandler({
         const evidenceRepository = createRepositoryGateway({settings:evidenceSettings,fetchImpl,treeCache});
         try {
           await evidenceRepository.ensureBranchFresh();
-          if (request.method === 'GET') return jsonResponse(context,200,encodeEvidenceResponse(await readEvidence(evidenceRepository)));
+          if (request.method === 'GET') {
+            const params=new URL(request.url).searchParams;
+            const options=Object.fromEntries(['section','packetRevision','reportCommit','teachingCommit','decisionRevision'].map(key=>[key,params.get(key)||undefined]));
+            return jsonResponse(context,200,encodeEvidenceResponse(await readEvidencePage(evidenceRepository,options)));
+          }
           if (request.method === 'POST') return jsonResponse(context,200,await decideEvidence(evidenceRepository,await readPostBody(request),settings.attester));
           throw new HttpError('method_not_allowed',405,'Method not allowed.');
         } catch (error) {

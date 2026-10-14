@@ -1,3 +1,5 @@
+import {reviewPriority,orderPackets} from '../../faculty-console/evidence-priority.mjs';
+import {encodeEvidenceResponse} from '../../faculty-console/netlify/functions/evidence-response.mjs';
 import { expect, test } from '@playwright/test';
 import { TODAY_TAB } from './landing.js';
 import { syntheticMedicationSnapshot } from '../fixtures/medication-review.mjs';
@@ -3759,12 +3761,40 @@ test.describe('individual medication review', () => {
   });
 });
 
+async function mockEvidencePages(page,state,{failFirstPacket=false,saveSucceeds=false}={}){
+ const requests=[];let failed=false;
+ const context={reportCommit:state.reportCommit||'r',teachingCommit:'t',decisionRevision:state.decisionRevision||'d'};
+ const decisions={version:1,decisions:state.packets.flatMap(p=>(p.targets||[]).filter(t=>t.decision).map(t=>({...t.decision,packetRevision:p.revision,itemKey:t.itemKey,itemRevision:t.revision,at:'2026-10-13'})))};
+ await page.route('**/api/attest?view=evidence*',async route=>{
+  const request=route.request(),params=new URL(request.url()).searchParams,section=params.get('section');requests.push({method:request.method(),section,packet:params.get('packetRevision')});
+  if(request.method()==='POST'){
+   if(!saveSucceeds)return route.fulfill({status:409,json:{error:{message:'Evidence changed. Reload before deciding.'}}});
+   const body=request.postDataJSON(),p=state.packets.find(p=>p.revision===body.packetRevision),d=body.dispositions[0];
+   const decision={...d,packetRevision:p.revision,actor:'Synthetic faculty',at:'2026-10-13'};
+   p.targets.find(t=>t.itemKey===d.itemKey).decision=decision;decisions.decisions.push(decision);context.decisionRevision='saved';
+   return route.fulfill({json:{ok:true,commit:'saved'}});
+  }
+  if(section==='packet'&&failFirstPacket&&!failed){failed=true;return route.fulfill({status:503,json:{error:{message:'Temporary packet failure. Retry opening.'}}});}
+  let data;
+  if(section==='index')data={...context,section,failures:state.failures||[],packets:orderPackets(state.packets.map(p=>({...p,status:'not-assessed'}))).map(p=>({revision:p.revision,sourceName:p.sourceName,sourceUrl:p.sourceUrl,observedAt:p.observedAt,status:'not-assessed',priority:reviewPriority(p),decisionCount:decisions.decisions.filter(d=>d.packetRevision===p.revision).length,replacementRevision:p.replacementRevision}))};
+  else if(section==='packet'){const packet=state.packets.find(p=>p.revision===params.get('packetRevision'));data={...context,section,packet,retainedPacket:packet,decisions:{...decisions,decisions:decisions.decisions.filter(d=>d.packetRevision===packet.revision)}};}
+  else data={...context,section,history:{mappingReceiptReconciliations:[{reason:'Synthetic audit retained'}],latestValid:{source:{text:'Synthetic complete source snapshot'}}},decisions,packetRevisions:state.packets.map(p=>p.revision)};
+  await route.fulfill({json:encodeEvidenceResponse(data)});
+ });return requests;
+}
+
 test('evidence review shows source and distractor feedback, preserves rationale on stale response', async ({page}) => {
  const state={reportCommit:'r',decisionRevision:'d',failures:[{sourceId:'s2',reason:'Retrieval incomplete'}],packets:[{revision:'p',sourceId:'s',sourceName:'Synthetic source',sourceUrl:'https://example.org',status:'pending',observedAt:'2026-10-03',scanStatus:'complete',coverage:{scanned:1,active:1,fields:1},passages:[{old:'Old synthetic guidance.',new:'New synthetic guidance.'}],candidates:[{questionId:'q1',fieldPath:'/options/0/trap/note',quote:'Synthetic distractor explanation.',kind:'possible-contradiction',reason:'Verify context.',context:'Fictional teaching scenario.'}],readings:[],targets:[{itemKey:'question:q1',revision:'qrev',current:{stem:'Current child scenario',options:[{t:'Current option',trap:{note:'Current feedback'}}]}}]}]};
- await page.route('**/api/attest?view=evidence',route=>route.fulfill({status:route.request().method()==='POST'?409:200,contentType:'application/json',body:JSON.stringify(route.request().method()==='POST'?{error:{message:'Evidence changed. Reload before deciding.'}}:state)}));
+ const requests=await mockEvidencePages(page,state,{failFirstPacket:true});
  await page.goto('/evidence.html');
  await page.getByLabel('Faculty key').fill(FACULTY_KEY);
  await page.getByRole('button',{name:'Open evidence inbox'}).click();
+ await expect(page.locator('#inbox > article')).toHaveCount(1);
+ expect(requests).toEqual([{method:'GET',section:'index',packet:null}]);
+ await expect(page.getByLabel('Rationale')).toHaveCount(0);
+ await page.getByRole('button',{name:'Open packet',exact:true}).click();
+ await expect(page.getByText('Temporary packet failure. Retry opening.')).toBeVisible();
+ await page.getByRole('button',{name:'Open packet',exact:true}).click();
  await expect(page.getByText('Possible contradiction',{exact:true})).toBeVisible();
  await expect(page.getByText('Current child scenario',{exact:true})).toBeVisible();
  await expect(page.getByText('Question changed since the scan',{exact:true})).toBeVisible();
@@ -3773,6 +3803,12 @@ test('evidence review shows source and distractor feedback, preserves rationale 
  await page.getByLabel('Rationale').fill('Keep this note while I reload.');
  await page.getByRole('button',{name:'Save disposition'}).click();
  await expect(page.getByRole('status')).toContainText('Evidence changed');
+ await expect(page.getByLabel('Rationale')).toHaveValue('Keep this note while I reload.');
+ await page.getByRole('button',{name:'Open packet',exact:true}).click();
+ await page.getByRole('button',{name:'Open packet',exact:true}).click();
+ await expect(page.getByLabel('Rationale')).toHaveValue('Keep this note while I reload.');
+ expect(requests.filter(r=>r.section==='packet')).toHaveLength(2);
+ page.once('dialog',dialog=>dialog.dismiss());await page.getByRole('button',{name:'Reload evidence'}).click();
  await expect(page.getByLabel('Rationale')).toHaveValue('Keep this note while I reload.');
  await expect(page.getByRole('button',{name:'Attest all'})).toHaveCount(0);
  await page.setViewportSize({width:390,height:844});
@@ -3783,15 +3819,37 @@ test('evidence review prioritizes transparently without hiding packets or changi
  const base={sourceUrl:'https://example.org',status:'pending',observedAt:'2026-10-04',scanStatus:'complete',coverage:{active:1,scanned:1,errors:[]},passages:[],candidates:[],readings:[],targets:[]};
  const safety={questionId:'q1',fieldPath:'/why',quote:'Synthetic overdose teaching.',context:'Synthetic fixture',kind:'possible-contradiction',itemRevision:'qrev',reason:'Verify context.'};
  const packets=[{...base,revision:'routine',sourceName:'Routine source',replacementRevision:'safety'}, {...base,revision:'safety',sourceName:'Safety source',candidates:[safety,safety],targets:[{itemKey:'question:q1',revision:'qrev',current:{stem:'Synthetic stem',why:safety.quote},decision:{outcome:'needs-edit',actor:'Faculty',rationale:'Review remains open'}}]}, {...base,revision:'incomplete',sourceName:'Incomplete source',scanStatus:'incomplete'}, {...base,revision:'history',sourceName:'Resolved source',status:'resolved'}];
- await page.route('**/api/attest?view=evidence',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({failures:[],packets})}));
+ const requests=await mockEvidencePages(page,{failures:[],packets});
  await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();
- await expect(page.locator('article h2')).toHaveText(['Incomplete source','Safety source','Routine source','Resolved source']);
+ await expect(page.locator('article h2')).toHaveText(['Incomplete source','Safety source','Resolved source','Routine source']);
  await expect(page.getByText('Review first: safety wording',{exact:true})).toBeVisible();
  await expect(page.getByText(/1 distinct question.*0 distinct readings/)).toBeVisible();
  await expect(page.getByText(/not a clinical risk score/)).toBeVisible();
+ expect(requests.filter(r=>r.section==='packet')).toHaveLength(0);
+ await page.locator('article').filter({has:page.getByRole('heading',{name:'Safety source',exact:true})}).getByRole('button',{name:'Open packet'}).click();
  await expect(page.getByLabel('Disposition')).toHaveValue('needs-edit');
  await expect(page.getByText('Faculty: Review remains open')).toBeVisible();
  await expect(page.locator('article')).toHaveCount(4);
+ await page.locator('article').filter({has:page.getByRole('heading',{name:'Routine source',exact:true})}).getByRole('button',{name:'Open packet'}).click();
  await expect(page.getByText('A restored mapping has a newer review packet. Review that replacement to complete this examination.',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Open audit history'}).click();
+ await page.locator('#evidence-history').getByText('Decision history (1)',{exact:true}).click();
+ await expect(page.locator('#evidence-history').getByText('Review remains open',{exact:true})).toBeVisible();
+ await page.getByText('Source snapshots, mapping receipts, and collection history',{exact:true}).click();
+ await expect(page.locator('#evidence-history pre')).toContainText('Synthetic audit retained');
+ expect(requests.filter(r=>r.section==='history')).toHaveLength(1);
  await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+
+test('evidence on demand refreshes only the saved packet and preserves decision history',async({page})=>{
+ const packet={revision:'p',sourceId:'s',sourceName:'Synthetic source',sourceUrl:'https://example.org',observedAt:'2026-10-13',scanStatus:'complete',coverage:{active:1,scanned:1,errors:[]},passages:[],candidates:[],readings:[],targets:[{itemKey:'source:s',revision:'p',current:null}],status:'pending'};
+ const requests=await mockEvidencePages(page,{packets:[packet]},{saveSucceeds:true});
+ await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();
+ await page.getByRole('button',{name:'Open packet',exact:true}).click();await page.getByLabel('Rationale').fill('Synthetic saved rationale');
+ await page.getByRole('button',{name:'Save disposition'}).click();
+ await expect(page.getByRole('status')).toContainText('Disposition saved');
+ await expect(page.getByText('Synthetic faculty: Synthetic saved rationale',{exact:true})).toBeVisible();
+ expect(requests.filter(r=>r.section==='index')).toHaveLength(2);expect(requests.filter(r=>r.section==='packet')).toHaveLength(2);expect(requests.filter(r=>r.method==='POST')).toHaveLength(1);
+ await page.getByText('Decision history (1)',{exact:true}).click();await expect(page.getByText('Synthetic saved rationale',{exact:true})).toBeVisible();
 });
