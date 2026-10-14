@@ -1,6 +1,6 @@
 /**
  * Deck governance — the red/green proofs for the two flash-card gates, run against a COPY of
- * the live tree so no registry is ever edited.
+ * the live card data and controlled review-state fixtures; no registry is ever edited.
  *
  *   bin/check_deck_card_stability.py   quizzes.schema.json + the positional-id pin
  *   bin/check_qbank_draft_exposure.py  items whose ITEM-LEVEL review flag is open (draft/pending/
@@ -10,7 +10,8 @@
  *
  * Both tools carry a --self-test over synthetic fixtures; what this file adds is the proof on
  * the REAL data shape: a malformed entry in a copy of quizzes.json fails the schema; swapping two
- * real questions fails naming the deck and both indices; a new open flag fails (unlisted, and over
+ * real questions fails naming the deck and both indices; a valid QB draft stages safely; a new
+ * open flag on the other banks fails (unlisted, and over
  * the cap); a swap fails; clearing a listed case's flag leaves a stale entry that WARNS and exits 0
  * (the follow-up is a governance PR, because bin/ and the banks may not share a diff); reality
  * below the cap WARNS and exits 0. Every copy lives in a mkdtemp that is
@@ -72,6 +73,53 @@ function withCopy(fn) {
     git('add', '.');
     git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'trusted base');
     git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+    return fn(root);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
+/** Review-state fixtures are independent of whichever questions faculty signed today. */
+function withExposureFixture(fn) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qbank-exposure-'));
+  try {
+    const draft = { status: 'draft', reviewer: '', lastReviewed: '' };
+    const rows = (prefix, count) => Array.from({ length: count }, (_, i) => ({
+      id: `${prefix}_${i}`, facultyReview: { ...draft },
+    }));
+    const question = (id, status, retired = false) => ({
+      id, status, retired, type: 'sba', category: 'mood', competency: ['dx'], difficulty: 2,
+      pages: ['t_mood.md'], stem: 'Which option completes this synthetic review fixture?',
+      options: [
+        { key: 'A', t: 'Correct fixture choice', c: true },
+        ...['B', 'C', 'D'].map(key => ({ key, t: `Fixture alternative ${key}`,
+          trap: { name: 'Fixture misconception', note: 'Synthetic explanation for the alternative.' } })),
+      ],
+      why: 'Synthetic rationale.', pearl: 'Synthetic teaching point.', evidence: 't_mood.md fixture evidence.',
+    });
+    const files = {
+      'question_bank.json': { version: 1, _note: 'Synthetic review-policy fixture.', items: [
+        question('qb_mood_001', 'attested'),
+        question('qb_mood_002', 'attested'),
+        question('qb_sud_015', 'draft', true),
+      ] },
+      'communication_cases.json': { cases: rows('comm', 16) },
+      'family_systems_scenarios.json': { scenarios: rows('fam', 8) },
+      'reasoning_cases.json': { cases: rows('reason', 4) },
+      'reasoning_cases_resident.json': { cases: rows('resident', 5) },
+      [QUIZZES]: { decks: [{ id: 'FIXTURE', questions: Array.from({ length: 437 }, () => ({ q: 'Fixture', o: [] })) }] },
+    };
+    files['bin/qbank_draft_exposure_allowlist.json'] = { banks: {
+      QB: [], COMM: files['communication_cases.json'].cases.map(x => x.id),
+      FAM: files['family_systems_scenarios.json'].scenarios.map(x => x.id),
+      REASON: files['reasoning_cases.json'].cases.map(x => x.id),
+      'REASON-RES': files['reasoning_cases_resident.json'].cases.map(x => x.id),
+      DECK: Array.from({ length: 437 }, (_, i) => `FIXTURE#${i}`),
+    } };
+    for (const [rel, data] of Object.entries(files)) {
+      fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+      fs.writeFileSync(path.join(root, rel), JSON.stringify(data));
+    }
     return fn(root);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -180,8 +228,8 @@ test('stability: the pin lives where it can ride in the same PR as the deck edit
   );
 });
 
-test('exposure: the live tree is green, and the per-bank numbers are the ones on record', () => {
-  withCopy(root => {
+test('exposure: the controlled fixture reports every bank and its named open flags', () => {
+  withExposureFixture(root => {
     const r = run('check_qbank_draft_exposure.py', root);
     assert.equal(r.status, 0, r.stdout);
     assert.match(r.stdout, /COMM\s+16\s+0\s+16\s+0\s+0\s+0\s+0\s+16\s+16\s+16/);
@@ -189,29 +237,58 @@ test('exposure: the live tree is green, and the per-bank numbers are the ones on
     assert.match(r.stdout, /REASON\s+4\s+0\s+4\s+0\s+0\s+0\s+0\s+4\s+4\s+4/);
     assert.match(r.stdout, /REASON-RES\s+5\s+0\s+5\s+0\s+0\s+0\s+0\s+5\s+5\s+5/);
     assert.match(r.stdout, /DECK\s+437\s+0\s+0\s+0\s+437\s+0\s+0\s+437\s+437\s+437/);
-    assert.match(r.stdout, /QB\s+192\s+189\s+0\s+0\s+0\s+0\s+0\s+0\s+0\s+0\s+\(3 retired QB draft\(s\) not shipping\)/);
+    assert.match(r.stdout, /QB\s+3\s+2\s+0\s+0\s+0\s+0\s+0\s+0\s+0\s+0\s+\(1 retired QB draft\(s\) not shipping\)/);
     assert.match(r.stdout, /OK -- 470 item\(s\) across 6 banks have an open item-level review flag, every one named and within cap \(item metadata only; tool-level signatures are bin\/check_attestation_hashes\.py's\)\./);
-    assert.doesNotMatch(r.stdout, /WARN/, 'the live tree carries no stale entry and no slack under a cap');
+    assert.doesNotMatch(r.stdout, /WARN/, 'the controlled fixture has no stale entry or slack under a cap');
   });
 });
 
-test('exposure: RED — a new open flag (unlisted, and one over the cap) fails, named, and the tool changes nothing', () => {
-  withCopy(root => {
+test('exposure: a revised question is named as review-only staging without changing approval or raising the zero cap', () => {
+  withExposureFixture(root => {
     const bank = readJson(root, 'question_bank.json');
     const live = bank.items.find(i => i.status === 'attested' && i.retired !== true);
     live.status = 'draft';
     writeJson(root, 'question_bank.json', bank);
     const before = fs.readFileSync(path.join(root, 'question_bank.json'), 'utf8');
     const r = run('check_qbank_draft_exposure.py', root);
-    assert.equal(r.status, 1, r.stdout);
-    assert.match(r.stdout, new RegExp(`FAIL  QB: ${live.id} has item-level flag \`draft\` and is not on the allowlist`));
-    assert.match(r.stdout, /FAIL  QB: 1 open, cap is 0/);
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.match(r.stdout, new RegExp(`STAGED  QB: ${live.id} .*faculty review only`));
+    assert.match(r.stdout, /QB\s+3\s+1\s+0\s+0\s+0\s+0\s+0\s+0\s+0\s+0/);
+    assert.doesNotMatch(r.stdout, /FAIL|raise CAPS/);
     assert.equal(fs.readFileSync(path.join(root, 'question_bank.json'), 'utf8'), before, 'report-only');
   });
 });
 
+test('exposure: unknown or missing approval and malformed retirement fail closed, even for withheld questions', () => {
+  for (const patch of [{ status: 'approved' }, { status: null }, { retired: 'true' }]) {
+    withExposureFixture(root => {
+      const bank = readJson(root, 'question_bank.json');
+      Object.assign(bank.items[0], patch);
+      writeJson(root, 'question_bank.json', bank);
+      const r = run('check_qbank_draft_exposure.py', root);
+      assert.equal(r.status, 2, r.stdout + r.stderr);
+      assert.match(r.stdout, /COULD NOT CHECK.*question_bank/);
+    });
+  }
+});
+
+test('exposure: staging never becomes an allowlist exception or a faculty signature', () => {
+  withExposureFixture(root => {
+    const bank = readJson(root, 'question_bank.json');
+    bank.items[0].status = 'draft';
+    writeJson(root, 'question_bank.json', bank);
+    const allow = readJson(root, 'bin/qbank_draft_exposure_allowlist.json');
+    allow.banks.QB = [bank.items[0].id];
+    writeJson(root, 'bin/qbank_draft_exposure_allowlist.json', allow);
+    const r = run('check_qbank_draft_exposure.py', root);
+    assert.equal(r.status, 1, r.stdout + r.stderr);
+    assert.match(r.stdout, /QB: allowlist has 1 entries, cap is 0/);
+    assert.equal(readJson(root, 'question_bank.json').items[0].status, 'draft');
+  });
+});
+
 test('exposure: RED — a swap (one listed case cleared, one new open case added) fails on the new id', () => {
-  withCopy(root => {
+  withExposureFixture(root => {
     const bank = readJson(root, 'communication_cases.json');
     const cleared = bank.cases[0].id;
     bank.cases[0].facultyReview = { status: 'reviewed', reviewer: 'Faculty', lastReviewed: '2026-10-05' };
@@ -228,7 +305,7 @@ test('exposure: RED — a swap (one listed case cleared, one new open case added
 });
 
 test('exposure: RED — open items above the cap fail (the ratchet only turns down), with the allowlist intact', () => {
-  withCopy(root => {
+  withExposureFixture(root => {
     // The caps live in the script; the fixture door is the allowlist, so lower the policy the
     // only way a copy can: import the module and call the gate with a cap under the real count.
     const snippet = [
@@ -253,7 +330,7 @@ test('exposure: WARN — clearing a listed case\'s flag (a content PR) leaves a 
   // The deadlock this proves gone: the allowlist is in bin/ (governance) and the bank is content,
   // and L1 forbids both in one diff. A content PR that clears a flag cannot delete the entry, so
   // it must pass; the deletion is a follow-up governance PR.
-  withCopy(root => {
+  withExposureFixture(root => {
     const bank = readJson(root, 'communication_cases.json');
     const id = bank.cases[0].id;
     bank.cases[0].facultyReview = { status: 'reviewed', reviewer: 'Faculty', lastReviewed: '2026-10-05' };
@@ -271,7 +348,7 @@ test('exposure: WARN — clearing a listed case\'s flag (a content PR) leaves a 
 
 test('exposure: WARN — reality below the cap (entry already deleted) warns that the cap can be lowered, exit 0', () => {
   // The follow-up governance PR's first commit: the stale entry is gone, the cap is not lowered yet.
-  withCopy(root => {
+  withExposureFixture(root => {
     const bank = readJson(root, 'family_systems_scenarios.json');
     const id = bank.scenarios[0].id;
     bank.scenarios[0].facultyReview = { status: 'reviewed', reviewer: 'Faculty', lastReviewed: '2026-10-05' };

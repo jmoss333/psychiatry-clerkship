@@ -1,4 +1,6 @@
 import copy
+import os
+import subprocess
 import json
 from pathlib import Path
 import sys
@@ -11,6 +13,7 @@ import export_anki_content as concepts
 from check_anki_parity import check_concepts, check_output, check_qbank, read_cards, FILES
 import export_anki as qb
 import concept_cards
+from test_qbank_downloads import item as synthetic_question, bank as synthetic_bank
 
 class PackageTests(unittest.TestCase):
     def setUp(self):
@@ -121,16 +124,19 @@ class PackageTests(unittest.TestCase):
         check_concepts(read_cards(self.package), feed, cw, concepts.DECK_ID)
 
     def test_exact_fallback_and_overlaid_question_bank(self):
-        root = Path(__file__).resolve().parents[3]
-        items = json.loads((root/'question_bank.json').read_text())['items']
-        item = copy.deepcopy(next(i for i in items if i['status']=='attested'))
+        item = synthetic_question(1)
         items = [item]
         out = Path(self.tmp.name)/'site'
         (out/'tools').mkdir(parents=True)
         (out/'anki').mkdir()
         (out/'tools/concepts.json').write_text(json.dumps(self.feed))
-        bank = out/'bank.json'
-        bank.write_text(json.dumps({'items':items}))
+        bank = out/'question_bank.json'
+        bank.write_text(json.dumps(synthetic_bank(items)))
+        def export_csv():
+            subprocess.run([sys.executable, str(Path(qb.__file__)), '--bank', str(bank),
+                            '--out', str(out/'anki')], check=True, capture_output=True,
+                           env={**os.environ, 'TMPDIR': self.tmp.name})
+        export_csv()
         q,_,_ = qb.build_deck(items)
         c,_ = concepts.build_deck(self.feed,crosswalk=self.crosswalk)
         cq,_,_ = qb.build_deck(items,deck_id=2059400193)
@@ -141,21 +147,22 @@ class PackageTests(unittest.TestCase):
             source = Path(self.tmp.name)/name
             genanki.Package(decks).write_to_file(str(source))
             shutil.copyfile(source,out/'anki'/name)
-        check_output(out,bank,self.crosswalk)
+        check_output(out,crosswalk=self.crosswalk)
         item['status']='draft'
-        bank.write_text(json.dumps({'items':items}))
+        bank.write_text(json.dumps(synthetic_bank(items)))
         with self.assertRaisesRegex(ValueError,'question-bank'):
-            check_output(out,bank,self.crosswalk)
+            check_output(out,crosswalk=self.crosswalk)
         item['status']='attested'
-        item['id'] += '-newly-attested'
-        bank.write_text(json.dumps({'items':items}))
+        item['id'] = 'qb_mood_004'
+        bank.write_text(json.dumps(synthetic_bank(items)))
         with self.assertRaisesRegex(ValueError,'question-bank'):
-            check_output(out,bank,self.crosswalk)
+            check_output(out,crosswalk=self.crosswalk)
+        export_csv()
         q,_,_=qb.build_deck(items)
         cq,_,_=qb.build_deck(items,deck_id=2059400193)
         genanki.Package(q).write_to_file(str(out/'anki'/FILES[0]))
         genanki.Package([cq,cc]).write_to_file(str(out/'anki'/FILES[2]))
-        check_output(out,bank,self.crosswalk)
+        check_output(out,crosswalk=self.crosswalk)
         rows=read_cards(out/'anki'/FILES[1])
         rows[0]['fields'][2]+='x'
         with self.assertRaises(ValueError):

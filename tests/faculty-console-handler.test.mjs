@@ -3758,6 +3758,122 @@ function uncuedBank() {
   ]);
 }
 
+async function baselineQuestionSnapshot(mock) {
+  const response = await handlerWith(mock)(viewRequest({ view: 'batch', mode: 'baseline' }));
+  assert.equal(response.status, 200);
+  const preview = await response.json();
+  return {
+    manifestRevision: preview.questions.manifestRevision,
+    items: preview.questions.sign.map(({ id, revision }) => ({ id, revision })),
+  };
+}
+
+test('baseline preview binds its question selection to exact item and manifest revisions', async () => {
+  const mock = batchMock({ files: defaultFiles(uncuedBank()) });
+  const snapshot = await baselineQuestionSnapshot(mock);
+  assert.equal(snapshot.manifestRevision, MANIFEST_SHA);
+  assert.deepEqual(snapshot.items, [{ id: 'qb_moo_900', revision: itemRevision(uncuedDraft()) }]);
+  assertReadOnly(mock);
+});
+
+test('a baseline rejects an edited, removed, retired, or already attested preview question before any write', async () => {
+  for (const mutate of [
+    bank => { bank.items[0].pearl = 'Changed after the faculty preview.'; },
+    bank => { bank.items.shift(); },
+    bank => { bank.items[0].retired = true; },
+    bank => { bank.items[0].status = 'attested'; },
+  ]) {
+    const mock = batchMock({ files: defaultFiles(uncuedBank()) });
+    const questionSnapshot = await baselineQuestionSnapshot(mock);
+    mock.advanceBranch(files => mutate(files[QBANK_PATH].json));
+    const response = await handlerWith(mock)(batchPress({
+      mode: 'baseline', statement: BASELINE_STATEMENT, questionSnapshot,
+    }));
+    await expectError(response, { status: 409, code: 'qbank.conflict' });
+    assertNoQbankWrite(mock);
+  }
+});
+
+test('baseline approves only the previewed questions, never a draft added after preview', async () => {
+  const mock = batchMock({ files: defaultFiles(uncuedBank()) });
+  const questionSnapshot = await baselineQuestionSnapshot(mock);
+  mock.advanceBranch(files => files[QBANK_PATH].json.items.push(uncuedDraft({
+    id: 'qb_moo_902', stem: stems[2], correctKey: 'B',
+  })));
+  const response = await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT, questionSnapshot,
+  }));
+  const payload = await response.json();
+  assert.equal(response.status, 200, JSON.stringify(payload));
+  assert.deepEqual(payload.questions.signed, ['qb_moo_900']);
+  assert.equal(mock.files[QBANK_PATH].json.items.find(item => item.id === 'qb_moo_902').status, 'draft');
+});
+
+test('baseline rejects a changed source manifest instead of replacing the preview revision', async () => {
+  const mock = batchMock({ files: defaultFiles(uncuedBank()) });
+  const questionSnapshot = await baselineQuestionSnapshot(mock);
+  mock.advanceBranch(files => { files[MANIFEST_PATH].sha = MANIFEST_RACE_SHA; });
+  await expectError(await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT, questionSnapshot,
+  })), { status: 409, code: 'qbank.conflict' });
+  assertNoQbankWrite(mock);
+});
+
+test('baseline requires a well-formed question snapshot before signing any content', async () => {
+  const entry = { id: 'qb_moo_900', revision: itemRevision(uncuedDraft()) };
+  for (const snapshot of [undefined, null, {}, { manifestRevision: MANIFEST_SHA },
+    { manifestRevision: 'bad', items: [entry] },
+    { manifestRevision: MANIFEST_SHA, items: [{ id: entry.id }] },
+    { manifestRevision: MANIFEST_SHA, items: [{ ...entry, revision: 'old' }] },
+    { manifestRevision: MANIFEST_SHA, items: [{ ...entry, id: 'wrong' }] },
+    { manifestRevision: MANIFEST_SHA, items: [entry, entry] },
+  ]) {
+    const mock = batchMock({ files: defaultFiles(uncuedBank()) });
+    const response = await handlerWith(mock)(batchPress({
+      mode: 'baseline', statement: BASELINE_STATEMENT,
+      ...(snapshot === undefined ? {} : { questionSnapshot: snapshot }),
+    }));
+    assert.ok(response.status === 400 || response.status === 409, `${JSON.stringify(snapshot)}: ${response.status}`);
+    assert.match((await response.json()).error.message, /reload/i);
+    assertNoQbankWrite(mock);
+  }
+});
+
+test('an explicitly empty baseline question snapshot never sweeps in current drafts', async () => {
+  const mock = batchMock({ files: defaultFiles(uncuedBank()) });
+  const response = await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT,
+    questionSnapshot: { manifestRevision: MANIFEST_SHA, items: [] },
+  }));
+  const payload = await response.json();
+  assert.equal(response.status, 200, JSON.stringify(payload));
+  assert.equal(payload.questions.updated, 0);
+  assert.deepEqual(payload.questions.signed, []);
+  assert.equal(mock.blobBodies.length, 0);
+  assert.equal(mock.files[QBANK_PATH].json.items[0].status, 'draft');
+});
+
+test('a baseline question retry never renews approval after the selected draft changes', async () => {
+  const mock = batchMock({
+    files: defaultFiles(uncuedBank()),
+    onRefUpdate: ({ attempt, advanceBranch }) => {
+      if (attempt !== 1) return;
+      advanceBranch(files => { files[QBANK_PATH].json.items[0].pearl = 'A concurrent edit.'; });
+      return jsonResponse(422, { message: 'Synthetic non-fast-forward ref update.' });
+    },
+  });
+  const questionSnapshot = await baselineQuestionSnapshot(mock);
+  const response = await handlerWith(mock)(batchPress({
+    mode: 'baseline', statement: BASELINE_STATEMENT, questionSnapshot,
+  }));
+  const payload = await response.json();
+  assert.equal(response.status, 200, JSON.stringify(payload));
+  assert.equal(payload.questions.updated, 0);
+  assert.equal(payload.questions.error.code, 'qbank.conflict');
+  assert.equal(mock.effectiveWrites.length, 0);
+  assert.equal(mock.files[QBANK_PATH].json.items[0].status, 'draft');
+});
+
 test('a baseline attests the structurally ready draft questions in the same press and lists the rest', async () => {
   const warned = validItem({
     id: 'qb_moo_903',
@@ -3777,8 +3893,9 @@ test('a baseline attests the structurally ready draft questions in the same pres
     cued,
   ]));
   const mock = batchMock({ files });
+  const questionSnapshot = await baselineQuestionSnapshot(mock);
   const payload = await (await handlerWith(mock)(batchPress({
-    mode: 'baseline', statement: BASELINE_STATEMENT,
+    mode: 'baseline', statement: BASELINE_STATEMENT, questionSnapshot,
   }))).json();
 
   assert.equal(payload.updated, 2, 'the pages are signed first');
@@ -3808,7 +3925,8 @@ test('a question half that fails is reported beside the signed pages, never as a
     files: defaultFiles(uncuedBank()),
     onRefUpdate: () => jsonResponse(500, { message: 'Synthetic ref failure.' }),
   });
-  const response = await handlerWith(mock)(batchPress({ mode: 'baseline', statement: BASELINE_STATEMENT }));
+  const questionSnapshot = await baselineQuestionSnapshot(mock);
+  const response = await handlerWith(mock)(batchPress({ mode: 'baseline', statement: BASELINE_STATEMENT, questionSnapshot }));
   const payload = await response.json();
   assert.equal(response.status, 200);
   assert.equal(payload.updated, 2);

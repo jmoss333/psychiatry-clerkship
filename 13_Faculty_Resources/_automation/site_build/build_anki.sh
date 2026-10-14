@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stage exactly three packages; routine builds never modify committed baselines.
+# Stage exactly three packages and the question CSV; routine builds never modify committed baselines.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB="$(cd "$HERE/../../.." && pwd)"
@@ -10,19 +10,23 @@ trap 'rm -rf "$STAGE"' EXIT
 export TMPDIR="$STAGE"
 mkdir -p "$STAGE/tools" "$STAGE/anki"
 cp "$OUT_DIR/tools/concepts.json" "$STAGE/tools/concepts.json"
+# Never fall back to the canonical faculty bank if learner projection is absent.
+cp "$OUT_DIR/question_bank.json" "$STAGE/question_bank.json"
 # Dependency absence is a hard failure, including when using committed fallback.
 python3 -c 'import genanki'
-if ! (python3 "$HERE/export_anki.py" --out "$STAGE/anki" &&
+if ! (python3 "$HERE/export_anki.py" --bank "$STAGE/question_bank.json" --out "$STAGE/anki" &&
       python3 "$HERE/export_anki_content.py" --feed "$STAGE/tools/concepts.json" --out "$STAGE/anki" &&
-      python3 "$HERE/export_anki_all.py" --feed "$STAGE/tools/concepts.json" --out "$STAGE/anki"); then
+      python3 "$HERE/export_anki_all.py" --bank "$STAGE/question_bank.json" --feed "$STAGE/tools/concepts.json" --out "$STAGE/anki"); then
   echo '[anki] generation failed; checking committed fallback for exact semantic equality'
   for name in psychiatry_clerkship_library psychiatry_clerkship_concepts psychiatry_clerkship_library_ALL; do
     cp "$LIB/09_Exam_Prep/anki_export/$name.apkg" "$STAGE/anki/$name.apkg"
   done
+  cp "$LIB/09_Exam_Prep/anki_export/psychiatry_clerkship_library.csv" "$STAGE/anki/psychiatry_clerkship_library.csv"
 fi
 python3 "$HERE/check_anki_parity.py" "$STAGE"
 mkdir -p "$OUT_DIR/anki"
 for name in psychiatry_clerkship_library psychiatry_clerkship_concepts psychiatry_clerkship_library_ALL; do
   cp "$STAGE/anki/$name.apkg" "$OUT_DIR/anki/$name.apkg"
 done
+cp "$STAGE/anki/psychiatry_clerkship_library.csv" "$OUT_DIR/anki/psychiatry_clerkship_library.csv"
 python3 "$HERE/check_anki_parity.py" "$OUT_DIR"
