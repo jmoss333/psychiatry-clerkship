@@ -121,27 +121,46 @@ export function createCareProfileHandlers({env,store,readCandidates,now=()=>new 
   return {status,approvals};
 }
 
+// The snapshot for one main tip is immutable, so it is read once per tip. The tip itself is read on EVERY call, as a conditional
+// request: an unchanged tip answers 304, which GitHub does not count against the primary rate limit (an open preview polls every
+// 30 seconds, and three full reads per poll would spend a token's 5,000 requests an hour on a dozen open previews). Only this
+// read-only candidate snapshot is held. The revocable authority is never cached; it is read from the store on every status check.
+const SNAPSHOTS=new Map();
+export function clearCandidateSnapshots() {SNAPSHOTS.clear();}
 // No candidate or authority is bundled into a deploy. Source is read from one immutable main snapshot.
 export function githubCandidates({env,fetchImpl=globalThis.fetch}) {
   return async () => {
     requireThat(typeof env.GITHUB_TOKEN==='string' && env.GITHUB_TOKEN.length>0);
     const repo=env.GITHUB_REPO||'jmoss333/psychiatry-clerkship';
     requireThat(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo));
-    async function get(path) {
-      const response=await fetchImpl('https://api.github.com/repos/'+repo+path,{headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+env.GITHUB_TOKEN,'X-GitHub-Api-Version':'2026-03-10'},cache:'no-store',signal:AbortSignal.timeout(10000)});
-      requireThat(response.ok);const text=await response.text();requireThat(Buffer.byteLength(text)<=256*1024);return JSON.parse(text);
+    // An etag is sent only for a tip this instance has already read, so a 304 always has something to answer with.
+    async function get(path,etag=null) {
+      const headers={Accept:'application/vnd.github+json',Authorization:'Bearer '+env.GITHUB_TOKEN,'X-GitHub-Api-Version':'2026-03-10',...(etag?{'If-None-Match':etag}:{})};
+      const response=await fetchImpl('https://api.github.com/repos/'+repo+path,{headers,cache:'no-store',signal:AbortSignal.timeout(10000)});
+      if(etag && response.status===304) return {unchanged:true};
+      requireThat(response.ok);const text=await response.text();requireThat(Buffer.byteLength(text)<=256*1024);
+      return {value:JSON.parse(text),etag:response.headers?.get?.('etag')||null};
     }
-    const ref=await get('/git/ref/heads/main'), commit=ref?.object?.sha;
+    const held=SNAPSHOTS.get(repo)||null;
+    const ref=await get('/git/ref/heads/main',held?.etag||null);
+    requireThat(!ref.unchanged || held);
+    const commit=ref.unchanged?held.tip:ref.value?.object?.sha;
     requireThat(typeof commit==='string' && /^[a-f0-9]{40}$/.test(commit));
-    const history=await get('/commits?path='+encodeURIComponent(PROFILE_PATH)+'&sha='+commit+'&per_page=1');
+    if(held && held.tip===commit) {
+      if(!ref.unchanged) SNAPSHOTS.set(repo,{...held,etag:ref.etag});
+      return structuredClone(held.snapshot);
+    }
+    const history=(await get('/commits?path='+encodeURIComponent(PROFILE_PATH)+'&sha='+commit+'&per_page=1')).value;
     requireThat(Array.isArray(history) && history.length===1 && /^[a-f0-9]{40}$/.test(history[0]?.sha));
-    const file=await get('/contents/'+PROFILE_PATH+'?ref='+commit);
+    const file=(await get('/contents/'+PROFILE_PATH+'?ref='+commit)).value;
     requireThat(file?.encoding==='base64' && typeof file.content==='string');
     const source=JSON.parse(Buffer.from(file.content,'base64').toString('utf8'));
     requireThat(exactKeys(source,['schemaVersion','profiles']) && source.schemaVersion===1 && Array.isArray(source.profiles));
     // Conservatively bind all profiles to this file's last change commit. Returning old bytes
     // in a later commit cannot resurrect an approval, while unrelated main commits leave it valid.
-    return {commit:history[0].sha,profiles:source.profiles};
+    const snapshot={commit:history[0].sha,profiles:source.profiles};
+    SNAPSHOTS.set(repo,{tip:commit,etag:ref.etag,snapshot});
+    return structuredClone(snapshot);
   };
 }
 export function authorityStoreOptions(env) {
