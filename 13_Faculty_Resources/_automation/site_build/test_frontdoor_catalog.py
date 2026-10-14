@@ -299,8 +299,10 @@ class FrontdoorCatalogTest(unittest.TestCase):
         listing = {"pages": [case, other] + [
             {"slug": ref, "title": "Full " + ref, "kind": "page", "sites": ["ms3"]}
             for ref in self.shared]}
+        self.curriculum["medicationTerms"] = {"case.md": ["lithium"], "resident-case.md": ["clozapine"]}
         payload = build_frontdoor_payload("ms3", self.curriculum,
             _catalog(self.shared + ["case.md"]), REVISION, shipped=listing)
+        self.assertEqual(payload["curriculum"]["medicationTerms"], {"case.md": ["lithium"]})
         self.assertIn("case.md", payload["curriculum"]["searchResources"])
         self.assertNotIn("resident-case.md", payload["curriculum"]["searchResources"])
         self.assertEqual(payload["curriculum"]["searchTitles"]["case.md"], "Full teaching case name")

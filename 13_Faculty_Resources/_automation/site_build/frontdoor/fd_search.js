@@ -74,6 +74,20 @@ function fdSearchAliasHit(item, query){
   return false;
 }
 
+/* Medication names add ordinary reading matches, never priority aliases or safety
+   evidence. Whole names prevent look-alike/substring substitutions. An exact name
+   can rank its overview first among ordinary readings; added clinical context
+   keeps the usual title/summary ranking (e.g. Ativan catatonia -> Catatonia). */
+function fdSearchMedicationMatch(item, query){
+  var q=fdSearchNormalize(query), terms=item.medicationTerms||[], match=0;
+  for(var i=0;i<terms.length;i++){
+    var term=fdSearchNormalize(terms[i]);
+    if(term&&q===term) return 2;
+    if(term&&(' '+q+' ').indexOf(' '+term+' ')!==-1) match=1;
+  }
+  return match;
+}
+
 /* Words that carry no topic signal. Unguarded, "on" matched 70 of 83 items and "the" 59 --
    including as substrings inside other words -- so any multi-word query degenerated into a
    near-wildcard and the cap-at-8 dropped the intended page. The raw-query substring check in
@@ -283,6 +297,10 @@ function fdSearchResults(index, query, synonyms, state){
   var qw=[];
   for(var e=0;e<expandedWords.length;e++){ if(expandedWords[e]) qw.push(expandedWords[e]); }
   var contentWords=fdSearchContentWords(qw);
+  /* Share punctuation boundaries between reading discovery and literal safety triggers.
+     Resource filenames stay literal: splitting their shared .md/.html extension would
+     match almost the whole library, even when the requested filename does not exist. */
+  var readingQuery=/\.(md|html)\b/.test(rawQuery)?rawQuery:fdSearchNormalize(rawQuery);
 
   /* Two ways into the safety kit, both deliberate.
 
@@ -319,6 +337,18 @@ function fdSearchResults(index, query, synonyms, state){
       }
     }
   }
+  /* Additional separator recovery may expose an authored abbreviation (patient-si) or
+     phrase (refuses-medication). Its expansion is discovery evidence, not a new crisis
+     trigger: keep the curated capacity alias ahead of the consult sheet it also finds. */
+  var recoveredSafetyWords=[], readingPadded=' '+readingQuery+' ';
+  if(readingQuery!==normalizedQuery){
+    for(var recoveredKey in safetySynonyms){
+      if(readingPadded.indexOf(' '+recoveredKey+' ')!==-1&&
+         normalizedPadded.indexOf(' '+recoveredKey+' ')===-1){
+        recoveredSafetyWords=recoveredSafetyWords.concat(fdSearchContentWords(safetySynonyms[recoveredKey].split(/\s+/)));
+      }
+    }
+  }
   /* Two tiers of protocol row, both placed by position rather than by score. Route (1) -- the
      explicit trigger vocabulary and the punctuation-recovered safety synonyms -- is the crisis
      contract and always comes first. Route (2), an ordinary haystack match on a content word, is
@@ -333,9 +363,11 @@ function fdSearchResults(index, query, synonyms, state){
     var kitItem=kit[kk].item;
     var triggered=fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
        fdSearchTriggerHit(kit[kk].triggers, ' '+normalizedQuery+' ')||
+       fdSearchTriggerHit(kit[kk].triggers, ' '+readingQuery+' ')||
        fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords, true);
     /* loose: see fdSearchWordIn. Protocol rows keep the pre-2026-09-24 substring test. */
-    var byHaystack=fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords, true);
+    var byHaystack=fdSearchHits(fdSearchHaystack(kitItem), rawQuery, contentWords, true)||
+       fdSearchHits(fdSearchHaystack(kitItem), '', recoveredSafetyWords, true);
     if(triggered){
       protoResults.push({ item: kitItem, kind:'protocol', meta:'safety · protocol' });
       seenRefs[kitItem.ref]=true;
@@ -358,16 +390,23 @@ function fdSearchResults(index, query, synonyms, state){
   for(var ref in idx.byRef){ if(!idx.byRef[ref].readerOnly) refs.push(ref); }
   refs.sort(function(a,b){ return a<b?-1:(a>b?1:0); });
 
+  /* Reading discovery also sees punctuation-separated words. Keep the original query's
+     matches and score for compound names. Only literal phrases can recover an authored
+     safety trigger above; these expanded words never feed the protocol haystack. */
+  var readingWords=fdSearchContentWords(fdExpandQuery(readingQuery, synonyms).split(/\s+/));
   var itemResults=[];
   for(var r=0;r<refs.length;r++){
     if(seenRefs[refs[r]]) continue;
     var it=idx.byRef[refs[r]];
     var aliasHit=fdSearchAliasHit(it, rawQuery);
+    var medicationMatch=fdSearchMedicationMatch(it, rawQuery);
     var searchHay=fdSearchHaystack(it)+' '+String(it.searchTitle||'').toLowerCase();
-    if(aliasHit||fdSearchHits(searchHay, rawQuery, contentWords)){
+    if(aliasHit||medicationMatch||fdSearchHits(searchHay, rawQuery, contentWords)||
+       fdSearchHits(searchHay, readingQuery, readingWords)){
       itemResults.push({
         item: it, kind:'item', meta: fdSearchItemMeta(it),
-        _score: fdSearchScore(it, rawQuery, contentWords)+(aliasHit?120:0), _alias: !!aliasHit
+        _score: Math.max(fdSearchScore(it, rawQuery, contentWords), fdSearchScore(it, readingQuery, readingWords))+
+          (aliasHit?120:0)+(medicationMatch===2?90:0), _alias: !!aliasHit
       });
     }
   }
@@ -390,7 +429,8 @@ function fdSearchResults(index, query, synonyms, state){
      before the Consult Questions sheet whose title merely contains the word. Trigger-matched
      protocols stay in kit order -- that block is the crisis contract and is never reordered. */
   for(var hp=0;hp<hayProtocols.length;hp++){
-    hayProtocols[hp]._score=fdSearchScore(hayProtocols[hp].item, rawQuery, contentWords, true);
+    hayProtocols[hp]._score=Math.max(fdSearchScore(hayProtocols[hp].item, rawQuery, contentWords, true),
+      fdSearchScore(hayProtocols[hp].item, '', recoveredSafetyWords, true));
   }
   hayProtocols.sort(function(a,b){
     return (b._score-a._score) ||

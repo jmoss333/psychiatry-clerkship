@@ -1130,9 +1130,9 @@ def inject_concept_digest(out_dir, expected):
 
 
 def inject_review_qb_inventory(out_dir, items):
-    """Embed the complete current QB ID set for local-only Daily Review restores."""
-    if not isinstance(items, list) or not items:
-        raise ValueError("review question-bank inventory is empty")
+    """Embed the complete released QB ID set for local-only Daily Review restores."""
+    if not isinstance(items, list):
+        raise ValueError("review question-bank inventory is not an array")
     inventory = []
     seen = set()
     for item in items:
