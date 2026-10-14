@@ -875,6 +875,7 @@
      silently refused — nothing thrown, nothing moved — while #fdApp still carries the edition
      startup gate's `inert`, which on a cold route is still set when the resource mounts. */
   function focusPendingHighNotice(){
+    if(!fdPageFocusAllowed())return false;
     var notice=contentEl.querySelector('.governance-notice.pending-high');
     if(!notice)return false;
     try{ notice.focus(); }catch(_){ }
@@ -1326,6 +1327,11 @@
     return item;
   }
   var activeRouteIdentity='',pendingRouteFocus=false;
+  /* Search, safety/settings sheets, patient sharing and Capture mount only while open.
+     A late reading/ledger/guide completion must not move focus behind any of them. */
+  function fdPageFocusAllowed(){
+    return !document.querySelector('[role="dialog"][aria-modal="true"]');
+  }
   function fdRouteIdentity(ref){
     var route='';
     try{route=(location.pathname||'/')+(location.search||'');}catch(_){route='';}
@@ -1357,7 +1363,10 @@
       activeRouteIdentity=routeIdentity;
     }
     if(pendingRouteFocus&&routeIdentity===activeRouteIdentity){
-      try{ contentEl.focus({preventScroll:true}); }catch(_){ try{ contentEl.focus(); }catch(__){ } }
+      if(fdPageFocusAllowed()){
+        try{ contentEl.focus({preventScroll:true}); }catch(_){ try{ contentEl.focus(); }catch(__){ } }
+      }
+      /* Closing a dialog restores its invoker; do not replay this superseded focus take. */
       pendingRouteFocus=false;
     }
   }
@@ -3212,7 +3221,7 @@
               canFocusOnRestore:function(){
                 return fdReadingFocusAllowed(readState(),{
                   ref:ref,currentRef:currentItem&&currentItem.f,
-                  facultyPreview:!!facultyPreviewRequest,externalModal:!!capSheet,
+                  facultyPreview:!!facultyPreviewRequest,externalModal:!fdPageFocusAllowed(),
                   pendingHigh:!!contentEl.querySelector('.governance-notice.pending-high'),
                   readerConnected:document.documentElement.contains(mountedReader)
                 });
@@ -3253,7 +3262,7 @@
               if(fdGuideSession!==guide||!document.documentElement.contains(body)||
                   !currentItem||currentItem.f!==ref)return;
               focusGovernanceNotice({fromHistory:!!options.fromHistory});
-              var canFocus=!contentEl.querySelector('.governance-notice.pending-high');
+              var canFocus=fdPageFocusAllowed()&&!contentEl.querySelector('.governance-notice.pending-high');
               if(returning){guide.arrive(bookmark.search,false);guide.restore(bookmark,canFocus);}
               else guide.arrive(arrivalSearch,canFocus);
             });
@@ -3264,7 +3273,7 @@
                new place as usual. A heading that no longer slugs to the anchor leaves the page
                where the reader put it. */
             requestAnimationFrame(function(){ requestAnimationFrame(function(){
-              if(!currentItem||currentItem.f!==ref||!document.documentElement.contains(body))return;
+              if(!currentItem||currentItem.f!==ref||!document.documentElement.contains(body)||!fdPageFocusAllowed())return;
               var heading=fdMediaHeadingFor(body,mediaArrival.anchor);
               if(!heading)return;
               heading.scrollIntoView({block:'start'});

@@ -3810,7 +3810,7 @@ test('a lead-promoted guide keeps its reading place; an H2 guide still drops it'
 
 test('the live reader install supplies current overlays and governance to the focus guard', () => {
   assert.match(spa, /canFocusOnRestore:function\(\)\{\s*return fdReadingFocusAllowed\(readState\(\),\{/);
-  assert.match(spa, /externalModal:!!capSheet/);
+  assert.match(spa, /externalModal:!fdPageFocusAllowed\(\)/);
   assert.match(spa, /pendingHigh:!!contentEl\.querySelector\('\.governance-notice\.pending-high'\)/);
   assert.match(spa, /readerConnected:document\.documentElement\.contains\(mountedReader\)/);
 });

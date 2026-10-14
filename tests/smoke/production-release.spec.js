@@ -176,7 +176,8 @@ for (const [device, viewport] of [
         await openSearch();
         await input.fill('Ativan alcohol-withdrawal');
         await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 't_sud.md');
-        await input.press('Enter');
+        await expect(input).toBeFocused();
+        await page.keyboard.press('Enter');
         const safety = page.getByRole('dialog', { name: 'Substance Use', exact: true });
         await expect(safety).toBeVisible();
         await expect(dialog).toHaveCount(0);

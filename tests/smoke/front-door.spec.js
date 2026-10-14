@@ -78,6 +78,64 @@ async function openHeaderSearch(page) {
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
+for (const scenario of [
+  { name: 'safety result', query: 'Ativan alcohol-withdrawal', ref: 't_sud.md', safety: true },
+  { name: 'reading result', query: 'Medication Monitoring & Labs', ref: 'med_monitoring.md' },
+  { name: 'pending-high reading', query: 'Ativan alcohol-withdrawal', ref: 't_sud.md', safety: true, pending: true },
+  { name: 'guide passage arrival', query: 'Ativan alcohol-withdrawal', ref: 't_sud.md', safety: true, guide: true },
+]) {
+  test(`phone search: Enter survives late reading completion — ${scenario.name}`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await seedApp(page, testInfo);
+    await pinGovernance(page, READING_REF, scenario.pending
+      ? { status: 'pending', riskLevel: 'high' }
+      : { status: 'reviewed', riskLevel: 'low' });
+    let releaseReading, requested = false;
+    const held = new Promise(resolve => { releaseReading = resolve; });
+    await page.route(`**/content/${READING_REF}`, async route => {
+      requested = true;
+      await held;
+      await route.fulfill({ contentType: 'text/markdown', body: scenario.guide
+        ? '# Study notes\n\n## Mood\n\nMood passage for testing navigation.\n\n## Next section\n\nMore study notes.'
+        : '# Study notes\n\n### Delayed reading\n\nA synthetic passage for testing navigation.' });
+    });
+    try {
+      await page.goto('/?tab=today');
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      await input.fill('mood');
+      const reading = search.locator(`[data-fd-open="${READING_REF}"]`);
+      await reading.click();
+      await expect.poll(() => requested).toBe(true);
+      await openHeaderSearch(page);
+      await input.fill(scenario.query);
+      await expect(search.locator('.fd-result').first()).toHaveAttribute(
+        scenario.safety ? 'data-fd-safety' : 'data-fd-open', scenario.ref);
+      await expect(input).toBeFocused();
+
+      releaseReading();
+      await expect(page.locator('#routeStatus')).toHaveText('Mood loaded');
+      // The guide/reading-place arrival runs on the next frame, after the load announcement.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      if (scenario.pending) await expect(page.locator('.governance-notice.pending-high')).toBeVisible();
+      if (scenario.guide) {
+        await expect(page.getByLabel('Find in this guide', { exact: true })).toHaveValue('mood');
+        await expect(page.locator('.fd-guide-arrival')).toContainText('1 matching passage in this guide.');
+      }
+      await expect(input).toBeFocused();
+      // locator.press() would refocus the field and conceal a stolen-focus regression.
+      await page.keyboard.press('Enter');
+      await expect(search).toHaveCount(0);
+      if (scenario.safety) await expect(page.getByRole('dialog', { name: 'Substance Use', exact: true })).toBeVisible();
+      else await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', scenario.ref);
+      await expectHealthy(page);
+    } finally {
+      releaseReading();
+    }
+  });
+}
+
 async function expectReadingAnchor(page, index, ref = READING_REF) {
   const id = await page.locator('.fd-article__body h3').nth(index).getAttribute('id');
   await expect.poll(async () => (await readingPlaces(page))[ref]?.heading).toBe(id);
