@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "sourceId": "interview-opening-v1",
+  "slug": "pg_interview.md",
+  "source": "14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md",
+  "audience": "ms3",
+  "sections": [
+    {
+      "id": "frame",
+      "heading": "The Interview Frame"
+    },
+    {
+      "id": "opening",
+      "heading": "High-Yield Opening Questions"
+    },
+    {
+      "id": "permission",
+      "heading": "Trauma-Informed Moves"
+    },
+    {
+      "id": "closing",
+      "heading": "Closing The Interview"
+    }
+  ],
+  "presets": [
+    {
+      "id": "frame",
+      "sectionId": "frame",
+      "instruction": "Explain role, purpose, time, and consent in plain language using only the supplied source.",
+      "label": "Explain the four parts of the opening"
+    },
+    {
+      "id": "opening",
+      "sectionId": "opening",
+      "instruction": "Briefly paraphrase what the supplied opening questions ask. Do not invent efficacy claims.",
+      "label": "Summarize these opening questions"
+    },
+    {
+      "id": "permission",
+      "sectionId": "permission",
+      "instruction": "Paraphrase the supplied trauma-informed moves with citations. Add no clinical recommendations.",
+      "label": "Explain the trauma-informed moves"
+    },
+    {
+      "id": "closing",
+      "sectionId": "closing",
+      "instruction": "Explain the source's summary, correction invitation, and next step.",
+      "label": "Summarize how to close"
+    },
+    {
+      "id": "recall",
+      "sectionId": "frame",
+      "question": "What four things should the opening cover?",
+      "instruction": "Explain the source-backed answer to: What four things should the opening cover?",
+      "label": "Check my recall"
+    }
+  ]
+}

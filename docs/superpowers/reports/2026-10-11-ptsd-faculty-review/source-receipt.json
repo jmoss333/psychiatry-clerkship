@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "caseId": "vadod-ptsd-2017-2023",
+  "preparedAt": "2026-10-11T16:45:33.186495+00:00",
+  "status": "faculty-review-pending",
+  "caseCount": 1,
+  "clinicalApproval": null,
+  "facultyLabel": null,
+  "benchmarkEligibility": "pending-faculty-and-excerpt-review",
+  "features": {
+    "readingCompanionEnabled": false,
+    "facultyEvidenceBriefEnabled": false,
+    "configPath": "sp-preview/netlify.toml",
+    "configSha256": "1471884389584f34b68a53de0f2fd183e55e9004c587956d914c1be38300be2a"
+  },
+  "runtimeProviderCalls": 0,
+  "scope": "Historical source comparison and review packet; no runtime evaluation, clinical edits or attestation changes.",
+  "primarySourceIds": [
+    "2017-va",
+    "2023-july-archive"
+  ],
+  "sourceArtifacts": [
+    {
+      "id": "2017-va",
+      "url": "https://www.ptsd.va.gov/professional/articles/article-pdf/id88366.pdf",
+      "finalUrl": "https://www.ptsd.va.gov/professional/articles/article-pdf/id88366.pdf",
+      "bytes": 2490576,
+      "sha256": "22579ed04ba25c38e74e4e858afefa4ca78331595ab6e2ef5a70176ad90a2213",
+      "localReviewCopy": "output/ai-pilot/ptsd-faculty-review/sources/2017-va.pdf",
+      "sha256VerifiedLocally": true,
+      "layoutTextSha256": "c5fda0db301c0e3a17cd874523e586711c4c19ba0e830d64fa8eb5215fb9984b"
+    },
+    {
+      "id": "2017-gpo",
+      "url": "https://www.govinfo.gov/content/pkg/GOVPUB-VA-PURL-gpo115018/pdf/GOVPUB-VA-PURL-gpo115018.pdf",
+      "finalUrl": "https://www.govinfo.gov/content/pkg/GOVPUB-VA-PURL-gpo115018/pdf/GOVPUB-VA-PURL-gpo115018.pdf",
+      "bytes": 2598587,
+      "sha256": "7d44336a33a59c4b6bb249344c400223324e16d99e414ad86247f361f9cb9e9a",
+      "localReviewCopy": "output/ai-pilot/ptsd-faculty-review/sources/2017-gpo.pdf",
+      "sha256VerifiedLocally": true,
+      "layoutTextSha256": "cba68c3f099a51c4de9bfc2838f7229f7de6a8146719f44588cd564d8d56f74b"
+    },
+    {
+      "id": "2023-original",
+      "url": "https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPGAug242023.pdf",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "id": "2023-original-uppercase",
+      "url": "https://www.healthquality.va.gov/HEALTHQUALITY/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPGAug242023.pdf",
+      "error": "HTTP Error 404: "
+    },
+    {
+      "id": "2023-current-edited",
+      "url": "https://www.healthquality.va.gov/HEALTHQUALITY/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG-Edited-111624-V5-81825.pdf",
+      "finalUrl": "https://www.healthquality.va.gov/HEALTHQUALITY/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG-Edited-111624-V5-81825.pdf",
+      "bytes": 1868043,
+      "sha256": "dee4846f80f105b497cad73c6f2361f1583193082b153e4f52ccaa4b74ddff92",
+      "localReviewCopy": "output/ai-pilot/ptsd-faculty-review/sources/2023-current-edited.pdf",
+      "sha256VerifiedLocally": true,
+      "layoutTextSha256": "ccec2ddb2c36b843fa7867b03ffe1c659f015595daad02fc2e14828c441e6326"
+    },
+    {
+      "id": "2023-mirror",
+      "url": "https://www.addicto-knowledge.ch/_files/ugd/5f2734_4240169a726949068c67b570a850d6eb.pdf",
+      "finalUrl": "https://www.addicto-knowledge.ch/_files/ugd/5f2734_4240169a726949068c67b570a850d6eb.pdf",
+      "bytes": 1868043,
+      "sha256": "dee4846f80f105b497cad73c6f2361f1583193082b153e4f52ccaa4b74ddff92",
+      "localReviewCopy": "output/ai-pilot/ptsd-faculty-review/sources/2023-mirror.pdf",
+      "sha256VerifiedLocally": true
+    },
+    {
+      "id": "2023-wayback-index",
+      "url": "https://web.archive.org/cdx/search/cdx?url=healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPGAug242023.pdf&output=json&filter=statuscode:200&filter=mimetype:application/pdf&collapse=digest",
+      "finalUrl": "https://web.archive.org/cdx/search/cdx?url=healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPGAug242023.pdf&output=json&filter=statuscode:200&filter=mimetype:application/pdf&collapse=digest",
+      "bytes": 1386,
+      "sha256": "e5700eae685ffbe65ac85e72125ae26fd0f13c8e856d9374a0fc8017ea0eb620",
+      "localReviewCopy": "output/ai-pilot/ptsd-faculty-review/sources/2023-wayback-index.json"
+    },
+    {
+      "id": "2023-wayback-base-index",
+      "url": "https://web.archive.org/cdx/search/cdx?url=www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG.pdf&output=json&filter=statuscode:200&filter=mimetype:application/pdf&collapse=digest",
+      "finalUrl": "https://web.archive.org/cdx/search/cdx?url=www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG.pdf&output=json&filter=statuscode:200&filter=mimetype:application/pdf&collapse=digest",
+      "bytes": 809,
+      "sha256": "ed0e435882bb85991e1780ecb2da76b1397f0a6e68fd296ec5e96bc03c5d84d6",
+      "localReviewCopy": "output/ai-pilot/ptsd-faculty-review/sources/2023-wayback-base-index.json"
+    },
+    {
+      "id": "2023-july-archive",
+      "url": "https://web.archive.org/web/20230721190354id_/https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG.pdf",
+      "finalUrl": "https://web.archive.org/web/20230721190354id_/https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG.pdf",
+      "originalUrl": "https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG.pdf",
+      "captureTimestamp": "20230721190354",
+      "bytes": 1876491,
+      "sha256": "6e41b72b9eb6b59184e6d04091639c0e26e4c0c3ecfa270d923eda3af9c9edb8",
+      "cdxDigest": "LYIWQTU37UIBNBGXZADOWG2CJZ34KXJU",
+      "computedCdxDigest": "LYIWQTU37UIBNBGXZADOWG2CJZ34KXJU",
+      "cdxDigestMatches": true,
+      "metadata": "Title:           VA/DoD Clinical Practice Guideline for Management of Posttraumatic Stress Disorder and Acute Stress Disorder\nSubject:         Clinical Practice Guideline for PTSD\nKeywords:        Department of Veterans Affairs (VA); Department of Defense (DoD); Clinical Practice Guideline (CPG); Posttraumatic Stress Disorder (PTSD); Acute Stress Disorder\nAuthor:          VA/DoD, The Lewin Group\nCreator:         Acrobat PDFMaker 17 for Word\nProducer:        Adobe PDF Library 17.11.238\nCreationDate:    Fri Jul  7 23:10:33 2023 EDT\nModDate:         Thu Jul 13 13:23:26 2023 EDT\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          yes\nUserProperties:  no\nSuspects:        no\nForm:            AcroForm\nJavaScript:      no\nPages:           167\nEncrypted:       no\nPage size:       612 x 792 pts (letter)\nPage rot:        0\nFile size:       1876491 bytes\nOptimized:       no\nPDF version:     1.6\n",
+      "localReviewCopy": "output/ai-pilot/ptsd-faculty-review/sources/2023-july-archive.pdf",
+      "sha256VerifiedLocally": true,
+      "layoutTextSha256": "c13864e9b5b7e954ff35bcf54740ddfea6413b9c29e3b832873be7cf0f85e3f0"
+    },
+    {
+      "id": "2023-august-archive",
+      "url": "https://web.archive.org/web/20231015025608id_/https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPGAug242023.pdf",
+      "finalUrl": "https://web.archive.org/web/20231015025608id_/https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPGAug242023.pdf",
+      "originalUrl": "https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPGAug242023.pdf",
+      "captureTimestamp": "20231015025608",
+      "bytes": 1968689,
+      "sha256": "9528b3c9cc9b1dc495d7a3d621e1fcec3ea22773d2b73573c77560a59cff2fe6",
+      "cdxDigest": "JV6ADPSMEMKYKD52C5UPGJLI7CHP6YKV",
+      "computedCdxDigest": "JV6ADPSMEMKYKD52C5UPGJLI7CHP6YKV",
+      "cdxDigestMatches": true,
+      "metadata": "Title:           VA/DoD Clinical Practice Guideline for Management of Posttraumatic Stress Disorder and Acute Stress Disorder\nSubject:         Clinical Practice Guideline for PTSD\nKeywords:        Department of Veterans Affairs (VA); Department of Defense (DoD); Clinical Practice Guideline (CPG); Posttraumatic Stress Disorder (PTSD); Acute Stress Disorder\nAuthor:          VA/DoD, The Lewin Group\nCreator:         Acrobat PDFMaker 17 for Word\nProducer:        Adobe PDF Library 17.11.238\nCreationDate:    Fri Jul  7 23:10:33 2023 EDT\nModDate:         Thu Aug 24 15:55:47 2023 EDT\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          yes\nUserProperties:  no\nSuspects:        no\nForm:            AcroForm\nJavaScript:      no\nPages:           167\nEncrypted:       no\nPage size:       612 x 792 pts (letter)\nPage rot:        0\nFile size:       1968689 bytes\nOptimized:       no\nPDF version:     1.6\n",
+      "localReviewCopy": "output/ai-pilot/ptsd-faculty-review/sources/2023-august-archive.pdf",
+      "sha256VerifiedLocally": true,
+      "layoutTextSha256": "566e17c5f03ad5648a1fbe079253171efb2b008f5c573857551a6293db09b3aa"
+    }
+  ],
+  "extraction": {
+    "tool": "pdftotext version 26.04.0",
+    "mode": "layout; PDF form-feed page boundaries retained",
+    "fallbackReason": "Adobe PDF-to-Markdown rejected public URLs with MISMATCHED_INPUT_STORAGE_TYPE on initial and retry calls",
+    "visualInspection": [
+      {
+        "sourceId": "2017-va",
+        "page": 35
+      },
+      {
+        "sourceId": "2023-july-archive",
+        "page": 38
+      }
+    ]
+  },
+  "sourceTableComparisons": [
+    {
+      "old": "2017-va",
+      "comparison": "2017-gpo",
+      "method": "pdftotext -layout; compare page text split on whitespace; not full-PDF identity",
+      "pages": [
+        33,
+        34,
+        35,
+        36
+      ],
+      "allEqual": true
+    },
+    {
+      "old": "2023-july-archive",
+      "comparison": "2023-august-archive",
+      "method": "pdftotext -layout; compare page text split on whitespace; not full-PDF identity",
+      "pages": [
+        35,
+        36,
+        37,
+        38
+      ],
+      "allEqual": true
+    },
+    {
+      "old": "2023-july-archive",
+      "comparison": "2023-current-edited",
+      "method": "pdftotext -layout; compare page text split on whitespace; not full-PDF identity",
+      "pages": [
+        35,
+        36,
+        37,
+        38
+      ],
+      "allEqual": true
+    }
+  ],
+  "teachingBaseline": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+  "refreshedMain": "615b8c838c6cf6f7d96ff3e9e4acfe6fabec1baf",
+  "teachingFiles": [
+    {
+      "path": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "6927eb99482cfe5f418d212c066e57660a07d96d14c79d296a4629651f16bd02",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "6927eb99482cfe5f418d212c066e57660a07d96d14c79d296a4629651f16bd02"
+    },
+    {
+      "path": "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "d8ccfd0c7f63d98e0fc875e84732d210ee0ad673483967b9b7a7473570820e1f",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "d8ccfd0c7f63d98e0fc875e84732d210ee0ad673483967b9b7a7473570820e1f"
+    },
+    {
+      "path": "09_Exam_Prep/Shelf_High_Yield/rapid_review_buzzwords.md",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "2c2a853f749767e3b2d4316453bf86f38166e22fded452c130e55af93ea20b9e",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "2c2a853f749767e3b2d4316453bf86f38166e22fded452c130e55af93ea20b9e"
+    },
+    {
+      "path": "14_Tracks/Resident/canon_200.md",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "41adc1a77307b5b1d36698b083d138beed94b72061761579658cbe03a07baadd",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "41adc1a77307b5b1d36698b083d138beed94b72061761579658cbe03a07baadd"
+    },
+    {
+      "path": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "25518671971d74aae9ec5038085a5edd870cf582e398b94d9d9eea6ed9ae9cf0",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "25518671971d74aae9ec5038085a5edd870cf582e398b94d9d9eea6ed9ae9cf0"
+    },
+    {
+      "path": "08_Cases_and_Simulation/case-of-the-week/2026-07-27_opioid-use-disorder_Resident.md",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "655e6e249904dfc67dcf32b63629118dd706ad06a815cdb7f1a413d4b64a751b",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "655e6e249904dfc67dcf32b63629118dd706ad06a815cdb7f1a413d4b64a751b"
+    },
+    {
+      "path": "question_bank.json",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "4890b54675635a6d78c41eeb71b6546144a5d545d2a2f37d38e614f0c1c122cc",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "4890b54675635a6d78c41eeb71b6546144a5d545d2a2f37d38e614f0c1c122cc"
+    },
+    {
+      "path": "evidence_registry.json",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "d565b41c944a92f532d4de8ece1e075506377d9f64c7247cfdabd4095469be6b",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "d565b41c944a92f532d4de8ece1e075506377d9f64c7247cfdabd4095469be6b"
+    },
+    {
+      "path": "evidence_annotations.json",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "e28e4e927b4b9fd4ee338812afb1edd0c52519a2766a8077b42feea89bc4f4d2",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "e28e4e927b4b9fd4ee338812afb1edd0c52519a2766a8077b42feea89bc4f4d2"
+    },
+    {
+      "path": "pharmacy.json",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "451af26732d45cdf78bf88a4565371e7b28efaa0b2fcddeb3163b24759533b9d",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "451af26732d45cdf78bf88a4565371e7b28efaa0b2fcddeb3163b24759533b9d"
+    },
+    {
+      "path": "13_Faculty_Resources/_automation/site_build/concept_candidates.json",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "10e0a0ea79aab2bd6af817f91723e6bb32c75a6e95abcaea8643326c7bc29fbc",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "10e0a0ea79aab2bd6af817f91723e6bb32c75a6e95abcaea8643326c7bc29fbc"
+    },
+    {
+      "path": "13_Faculty_Resources/_automation/site_build/concept_guid_crosswalk.json",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "8f0624b6f1d00549d517bb1d33f1e87a87a82818c7168b7a0b7b6532065570a5",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "8f0624b6f1d00549d517bb1d33f1e87a87a82818c7168b7a0b7b6532065570a5"
+    },
+    {
+      "path": "13_Faculty_Resources/_automation/site_build/pearl_cards.json",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "970dccf3c36c29833c5e0e5622f22ac0627e71806fb090964c45d06a29de7219",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "970dccf3c36c29833c5e0e5622f22ac0627e71806fb090964c45d06a29de7219"
+    },
+    {
+      "path": "13_Faculty_Resources/_automation/site_build/shipped_pages.json",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "0e4cdf8a9e62781dc55b794e606770abcbcaf56bceb590d4d5298707a89d0e8f",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": true,
+      "refreshedMainSha256": "0e4cdf8a9e62781dc55b794e606770abcbcaf56bceb590d4d5298707a89d0e8f"
+    },
+    {
+      "path": "13_Faculty_Resources/reviewed.json",
+      "sourceCommit": "70e7b5ef63be1254984f97cbe4362bfa9d8b1d04",
+      "sha256": "07b06895c0aee96ba3917081b335c7cf0d717aa350456f852310d0cf5cdd246e",
+      "matchesLocalFile": true,
+      "matchesRefreshedMain": false,
+      "refreshedMainSha256": "8979bbb5205c9c97905a12f02fafb31c291b4cd9d71f13bf9c184b97b6f0fa3c"
+    }
+  ],
+  "rights": {
+    "policyUrl": "https://department.va.gov/copyright-policy/",
+    "assessment": "Government-produced recommendation text is the proposed scope. Embedded DSM material, instrument items and third-party excerpts are excluded. Complete artifact hosting is not blanket permission.",
+    "providerExcerptApproval": null,
+    "approvedExcerptIds": []
+  },
+  "excludedClaims": [
+    "Faculty-approved clinical correctness",
+    "Validated model quality",
+    "Current served-content verification",
+    "Complete audit of all HTML, audio, slides and archived curriculum",
+    "Systematic evidence update through 2026"
+  ],
+  "selectedLedgerRows": [
+    {
+      "slug": "t_anxiety.md",
+      "matchesRefreshedMain": true,
+      "statusAtBaseline": "reviewed",
+      "reviewDateAtBaseline": "2026-09-25"
+    },
+    {
+      "slug": "rounds_questions.md",
+      "matchesRefreshedMain": true,
+      "statusAtBaseline": "reviewed",
+      "reviewDateAtBaseline": "2026-09-26"
+    },
+    {
+      "slug": "rapid_review.md",
+      "matchesRefreshedMain": true,
+      "statusAtBaseline": "reviewed",
+      "reviewDateAtBaseline": "2026-09-25"
+    },
+    {
+      "slug": "t_sud.md",
+      "matchesRefreshedMain": true,
+      "statusAtBaseline": "reviewed",
+      "reviewDateAtBaseline": "2026-09-26"
+    },
+    {
+      "slug": "question-bank-practice.html",
+      "matchesRefreshedMain": true,
+      "statusAtBaseline": "reviewed",
+      "reviewDateAtBaseline": "2026-09-28"
+    },
+    {
+      "slug": "shelf-mode.html",
+      "matchesRefreshedMain": true,
+      "statusAtBaseline": "reviewed",
+      "reviewDateAtBaseline": "2026-09-28"
+    },
+    {
+      "slug": "canon_200.md",
+      "matchesRefreshedMain": true,
+      "statusAtBaseline": "reviewed",
+      "reviewDateAtBaseline": "2026-09-26"
+    }
+  ],
+  "ledgerFreshnessNote": "Whole ledger differs for two unrelated October 5 MDD case pages; selected PTSD teaching rows are identical at refreshed main.",
+  "localAttestationCheck": {
+    "exitCode": 0,
+    "stale": {},
+    "selected": {
+      "t_anxiety.md": "bound",
+      "rounds_questions.md": "boundClinical",
+      "rapid_review.md": "bound",
+      "t_sud.md": "bound",
+      "question-bank-practice.html": "bound",
+      "shelf-mode.html": "bound",
+      "canon_200.md": "bound"
+    }
+  },
+  "validation": {
+    "focusedFacultyCollectionTests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "sourceAndTeachingReview": "Independent second agent review found no consequential source or clinical errors; this is not human faculty approval.",
+    "links": "Packet-relative links and pinned teaching link line anchors checked",
+    "mainFreshness": "All selected teaching/evidence bytes match refreshed main; selected ledger rows also match."
+  }
+}

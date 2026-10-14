@@ -12,14 +12,13 @@
 // the optional positioning fixture decodes a local synthetic tone in native Audio.
 import { test, expect } from '@playwright/test';
 import { createServer } from 'node:http';
-import { execFileSync } from 'node:child_process';
+import { buildPreviewFixture } from '../../sp-preview/qa/build-fixture.mjs';
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PREVIEW = path.join(ROOT, 'sp-preview');
-const DIST = path.join(PREVIEW, 'dist');
 const TYPES = {'.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8'};
 
 // Mute Chromium's output device, not HTMLMediaElement: native fixture samples
@@ -74,11 +73,11 @@ function nativeTone() {
   return wav.toString('base64');
 }
 
-let server, base;
+let server, base, fixture;
 
 test.beforeAll(async () => {
-  // build.mjs imports only node: modules, so this needs no install.
-  execFileSync(process.execPath, [path.join(PREVIEW, 'build.mjs')], {cwd: PREVIEW, stdio: 'pipe'});
+  fixture = await buildPreviewFixture();
+  const DIST = fixture.dist;
   if (!existsSync(path.join(DIST, 'index.html'))) throw new Error('preview dist was not built');
   const headers = deployedHeaders();
   server = createServer((req, res) => {
@@ -92,7 +91,10 @@ test.beforeAll(async () => {
   base = `http://127.0.0.1:${server.address().port}`;
 });
 
-test.afterAll(async () => { if (server) await new Promise(resolve => server.close(resolve)); });
+test.afterAll(async () => {
+  try { if (server) await new Promise(resolve => server.close(resolve)); }
+  finally { await fixture?.cleanup(); }
+});
 
 async function openPreview(page, {recognition = 'unavailable', manualAudio = false, momentsEnabled = false, capabilityResponse, capabilityStatus = 200, holdCapabilities = false, familyBidTurn = null, stubCueAudio = false, nativeAudio = false, positioningUnsupported = false} = {}) {
   const violations = [], errors = [];

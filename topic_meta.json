@@ -944,11 +944,11 @@
   },
   "t_anxiety.md": {
     "read": 4,
-    "tldr": "SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are alternatives for anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.",
+    "tldr": "SSRIs are first-line medication options for anxiety disorders and OCD; SNRIs are options for anxiety disorders, not OCD. For PTSD, prioritize CPT, PE, or EMDR; choose sertraline, paroxetine, or venlafaxine when medication is selected, considering preference and access. Routine benzodiazepines are not recommended for PTSD.",
     "points": [
       "Rule out medical mimics (hyperthyroidism, arrhythmia, substance withdrawal).",
       "OCD: exposure and response prevention plus a higher-dose SSRI.",
-      "PTSD: trauma-focused therapy (CPT/PE) is first-line."
+      "PTSD: individual trauma-focused psychotherapy (CPT/PE/EMDR) is preferred; sertraline, paroxetine, or venlafaxine when medication is chosen."
     ],
     "cant": "Don't start scheduled benzodiazepines for PTSD — they don't treat core symptoms and carry dependence risk.",
     "quiz": {
@@ -1023,7 +1023,8 @@
     "safetyLevel": "high",
     "evidenceIds": [
       "lima-2004-betablockers-akathisia",
-      "project-beta-psychopharm-agitation-2012"
+      "project-beta-psychopharm-agitation-2012",
+      "vadod-2023-ptsd-cpg"
     ],
     "facultyReview": {
       "status": "reviewed",

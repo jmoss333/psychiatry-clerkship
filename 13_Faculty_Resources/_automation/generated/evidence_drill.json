@@ -692,14 +692,14 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Boggs et al. · 2020 · J Gen Intern Med",
-     "sourceId": "boggs-2020-lethal-means-assessment",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "c": true,
      "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "Chung et al. · 2017 · JAMA Psychiatry",
+     "sourceId": "chung-2017-postdischarge-suicide",
      "key": "B"
     },
     {
@@ -732,19 +732,19 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Alon et al. · 2024 · Psychiatry Res",
-     "sourceId": "alon-2024-sdoh-mdd-umbrella",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "c": true,
      "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "Cuijpers et al. · 2007 · Clin Psychol Rev",
+     "sourceId": "cuijpers-2007",
      "key": "C"
     },
     {
@@ -782,14 +782,14 @@
      "key": "B"
     },
     {
-     "t": "McPheeters et al. · 2023 · JAMA",
-     "sourceId": "mcpheeters-2023-aud",
-     "key": "C"
-    },
-    {
      "t": "Nolen et al. · 2019 · Bipolar Disord",
      "c": true,
      "sourceId": "nolen-2019-lithium-levels",
+     "key": "C"
+    },
+    {
+     "t": "Rush et al. · 2006 · American Journal of Psychiatry",
+     "sourceId": "rush-2006-stard",
      "key": "D"
     }
    ],
@@ -972,24 +972,24 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "Schneider et al. · 2005 · JAMA",
+     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
      "key": "A"
+    },
+    {
+     "t": "Studdert et al. · 2020 · The New England Journal of Medicine",
+     "sourceId": "studdert-2020-handgun-suicide",
+     "key": "B"
     },
     {
      "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
      "c": true,
      "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
-     "key": "B"
+     "key": "C"
     },
     {
      "t": "Wesseloo et al. · 2016 · The American Journal of Psychiatry",
      "sourceId": "wesseloo-2016-postpartum-relapse",
-     "key": "C"
-    },
-    {
-     "t": "Xia et al. · 2011 · Cochrane Database Syst Rev",
-     "sourceId": "xia-2011",
      "key": "D"
     }
    ],
@@ -1012,18 +1012,18 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Bot et al. · 2026 · Acta Psychiatr Scand",
-     "sourceId": "bot-2026-benzodiazepines-catatonia",
+     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
+     "sourceId": "project-beta-psychopharm-agitation-2012",
      "key": "A"
-    },
-    {
-     "t": "Soler et al. · 2022 · Acta Psychiatr Scand",
-     "sourceId": "soler-2022",
-     "key": "B"
     },
     {
      "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
      "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Wampold et al. · 1997 · Psychological Bulletin",
+     "sourceId": "wampold-1997-bona-fide-psychotherapies",
      "key": "C"
     },
     {

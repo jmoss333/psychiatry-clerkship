@@ -1,0 +1,29 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createReadingHandler} from '../lib/reading-companion/handler.mjs';
+const now=()=>Date.parse('2026-10-10T12:00:00Z');
+const unit={id:'frame-1',text:'State your role.',sourceRef:'pg_interview.md',revision:'a'.repeat(40),sectionId:'frame'};
+const pack={version:1,sourceId:'interview-opening-v1',slug:'pg_interview.md',audience:'ms3',sourceCommit:'a'.repeat(40),sourceHash:'b'.repeat(64),attestationHash:'c'.repeat(40),reviewedAt:'2026-09-21',attribution:'CC BY-NC-SA 4.0',units:[unit],presets:[{id:'frame',label:'Explain the opening',instruction:'Explain the source.',unitIds:['frame-1']}]};
+const env={READING_COMPANION_ENABLED:'true',AI_PILOT_READER_PASSCODE:'test-passcode',AI_PILOT_PROVIDER_KEY:'test-only',AI_PILOT_BUDGET_NAMESPACE:'test-pilot',AI_PILOT_STARTED_AT:'2026-10-10T00:00:00Z',AI_PILOT_EXPIRES_AT:'2026-10-24T00:00:00Z',URL:'https://preview.test'};
+const body={version:1,sourceId:pack.sourceId,sourceHash:pack.sourceHash,presetId:'frame',requestId:'00000000-0000-4000-8000-000000000001'};
+function setup(overrides={}) {const calls=[],reservations=[];const handler=createReadingHandler({env:{...env,...overrides.env},pack:overrides.pack??pack,now,budget:overrides.budget??{reserve:async v=>{reservations.push(v);return {reserved:true};}},provider:{generate:async v=>{calls.push(v);return {value:overrides.value??{result:'answered',points:[{text:'Explain who you are.',evidenceIds:['frame-1']}]}};}}});return {handler,calls,reservations};}
+function request(value=body,options={}) {return new Request('https://preview.test/api/reading-companion',{method:'POST',headers:{'content-type':'application/json','origin':'https://preview.test','x-ai-pilot-key':'test-passcode',...options.headers},body:JSON.stringify(value),...options});}
+for(const [name,changes,req,status] of [
+ ['disabled',{env:{READING_COMPANION_ENABLED:'false'}},body,503],
+ ['missing expiry',{env:{AI_PILOT_EXPIRES_AT:undefined}},body,503],
+ ['expired',{env:{AI_PILOT_EXPIRES_AT:'2026-10-09T00:00:00Z'}},body,503],
+ ['overlong pilot',{env:{AI_PILOT_EXPIRES_AT:'2026-11-10T00:00:00Z'}},body,503],
+ ['unavailable source',{pack:{version:1,available:false,reason:'source_unavailable'}},body,503],
+ ['free text',{}, {...body,text:'patient note'},400],
+ ['URL input',{}, {...body,url:'https://elsewhere.test'},400],
+ ['unknown preset',{}, {...body,presetId:'all-pages'},400],
+ ['source drift',{}, {...body,sourceHash:'d'.repeat(64)},409],
+ ['invalid UUID',{}, {...body,requestId:'repeat-me'},400],
+ ]) test(`${name} makes no paid request or reservation`,async()=>{const s=setup(changes);const r=await s.handler(request(req));assert.equal(r.status,status);assert.equal(s.calls.length,0);assert.equal(s.reservations.length,0);assert.equal(r.headers.get('cache-control'),'no-store');});
+test('wrong access and cross-origin are rejected before reservation',async()=>{for(const [headers,status] of [[{'x-ai-pilot-key':'wrong'},401],[{origin:'https://evil.test'},403]]){const s=setup();const r=await s.handler(request(body,{headers:{'content-type':'application/json',origin:'https://preview.test','x-ai-pilot-key':'test-passcode',...headers}}));assert.equal(r.status,status);assert.equal(s.calls.length,0);assert.equal(s.reservations.length,0);}});
+test('oversized and non-JSON input stop before accounting',async()=>{const s=setup();for(const r of [new Request('https://preview.test/api/reading-companion',{method:'POST',body:'x'.repeat(2000)}),request(body,{headers:{'content-type':'text/plain',origin:'https://preview.test','x-ai-pilot-key':'test-passcode'}})])assert.equal((await s.handler(r)).status,400);assert.equal(s.calls.length,0);});
+test('authenticated GET exposes source and labels but no instructions or keys',async()=>{const s=setup();const r=await s.handler(new Request('https://preview.test/api/reading-companion',{headers:{'x-ai-pilot-key':'test-passcode'}}));assert.equal(r.status,200);const b=await r.json();assert.equal(b.units[0].text,unit.text);assert.equal(b.presets[0].instruction,undefined);assert.equal(JSON.stringify(b).includes('test-passcode'),false);assert.equal(s.calls.length,0);});
+test('a bounded answer uses server-owned quotations after durable reservation',async()=>{const s=setup();const r=await s.handler(request());assert.equal(r.status,200);const b=await r.json();assert.equal(s.reservations.length,1);assert.equal(s.calls.length,1);assert.equal(s.calls[0].kind,'reader');assert.deepEqual(b.points[0].evidence,[unit]);assert.equal(b.sourceHash,pack.sourceHash);assert.equal(b.status,'answered');});
+test('quota, duplicate and changed request never reach provider',async()=>{for(const [code,status] of [['budget_exhausted',429],['already_submitted',409],['request_conflict',409],['budget_unavailable',503]]){const s=setup({budget:{reserve:async()=>{throw Object.assign(new Error('private detail'),{code,status});}}});const r=await s.handler(request());assert.equal(r.status,status);assert.equal(s.calls.length,0);assert.equal((await r.text()).includes('private detail'),false);}});
+for(const value of [{result:'answered',points:[{text:'Invented',evidenceIds:['fiction']}]},{result:'answered',points:[]},{result:'answered',points:[{text:'x'.repeat(601),evidenceIds:['frame-1']}]},{result:'insufficient_source',points:[{text:'still answering',evidenceIds:['frame-1']}]},{result:'answered',points:[{text:'Good',evidenceIds:['frame-1']}],extra:'bad'}]) test('malformed or unsupported output is entirely withheld '+JSON.stringify(value).slice(0,60),async()=>{const s=setup({value});const r=await s.handler(request());assert.equal(r.status,503);assert.equal((await r.json()).points,undefined);});
+test('honest abstention is preserved',async()=>{const s=setup({value:{result:'insufficient_source',points:[]}});const r=await s.handler(request());assert.equal((await r.json()).status,'insufficient_source');});

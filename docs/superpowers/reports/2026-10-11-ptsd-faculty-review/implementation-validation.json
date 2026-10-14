@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-11T20:12:01.659271+00:00",
+  "contentCommit": "f956508b7818967d4d58a083f19919e2946032e1",
+  "baselineCommit": "15ec232b2b34d1245d32bfd62a11ae2ec685adc8",
+  "facultyApproval": null,
+  "fullLocalVerification": {
+    "command": "bash bin/verify.sh",
+    "exitCode": 1,
+    "passedSteps": 126,
+    "failedSteps": [
+      "unit \u2014 qbank draft exposure",
+      "qbank draft exposure (ratchet)",
+      "node --test tests/*.test.mjs",
+      "build_and_check ms3",
+      "build_and_check res"
+    ],
+    "failureCause": "qb_anx_002 is draft; QB open=1, cap=0, listed=0.",
+    "freshSiteAssembly": {
+      "ms3": false,
+      "res": false
+    },
+    "buildLimit": "Both audience commands stop at root tests before site assembly; existing-output checks are not fresh build proof."
+  },
+  "rootSuiteDiagnostic": {
+    "command": "node --test --test-reporter=tap tests/*.test.mjs",
+    "nodeVersion": "v25.9.0",
+    "exitCode": 1,
+    "totals": {
+      "tests": 3746,
+      "suites": 0,
+      "pass": 3726,
+      "fail": 5,
+      "cancelled": 0,
+      "skipped": 15,
+      "todo": 0
+    },
+    "failures": [
+      {
+        "name": "exposure: the live tree is green, and the per-bank numbers are the ones on record",
+        "location": "tests/deck-governance.test.mjs:170:1"
+      },
+      {
+        "name": "exposure: RED \u2014 a new open flag (unlisted, and one over the cap) fails, named, and the tool changes nothing",
+        "location": "tests/deck-governance.test.mjs:185:1"
+      },
+      {
+        "name": "exposure: WARN \u2014 clearing a listed case's flag (a content PR) leaves a stale entry that warns and exits 0",
+        "location": "tests/deck-governance.test.mjs:239:1"
+      },
+      {
+        "name": "exposure: WARN \u2014 reality below the cap (entry already deleted) warns that the cap can be lowered, exit 0",
+        "location": "tests/deck-governance.test.mjs:259:1"
+      },
+      {
+        "name": "both tools: --self-test exits 0 so the falsifications stay wired",
+        "location": "tests/deck-governance.test.mjs:277:1"
+      }
+    ],
+    "cleanupPassed": true,
+    "temporaryDirectoryRemoved": true
+  },
+  "hostVersionsObserved": {
+    "node": "25.9.0",
+    "python": "3.13.7",
+    "bash": "3.2.57"
+  },
+  "runtimeContractLimit": "Default contract check validates declarations; this is not proof of execution under the declared CI runtime.",
+  "sourceChecks": {
+    "details": "implementation-source-checks.json",
+    "newGuidelineSpans": {
+      "2017": "clean",
+      "2023": "clean"
+    },
+    "wholeCorpusSpanRatchet": {
+      "passed": true,
+      "cleanSources": 89,
+      "flaggedSources": 11,
+      "truncatedSentences": 9,
+      "editedSentences": 6,
+      "rewordedSentences": 0,
+      "uncachedSources": 0
+    },
+    "facultyReviewStatus": "pending"
+  },
+  "scopeChecks": {
+    "onlyChangedQuestion": "qb_anx_002",
+    "stemUnchanged": true,
+    "answerKey": "B",
+    "questionStatus": "draft",
+    "q39Unchanged": true,
+    "attestationLedgerUnchanged": true,
+    "pilotConfigUnchanged": true,
+    "readingCompanionEnabled": false,
+    "facultyEvidenceBriefEnabled": false
+  },
+  "reviewImpact": [
+    "t_anxiety.md",
+    "rounds_questions.md",
+    "question-bank-practice.html",
+    "shelf-mode.html",
+    "review.html"
+  ],
+  "governanceSeparation": {
+    "passed": true,
+    "approvalPromotions": 0,
+    "attestationLedgerChanged": false,
+    "capOrAllowlistChanged": false
+  },
+  "mergeAnalysis": {
+    "againstMain": "615b8c838c6cf6f7d96ff3e9e4acfe6fabec1baf",
+    "conflicts": false,
+    "mergePerformed": false
+  },
+  "delivery": {
+    "status": "held_locally",
+    "existingDraftPr": 1015,
+    "remotePrContainsThisCommit": false,
+    "pushed": false,
+    "merged": false,
+    "deployed": false
+  },
+  "pilots": {
+    "readingCompanionEnabled": false,
+    "facultyEvidenceBriefEnabled": false,
+    "providerCalls": 0,
+    "hostingSettingsChanged": false
+  },
+  "logs": [
+    {
+      "path": "output/ai-pilot/ptsd-faculty-review/verify-f01-f03-final.log",
+      "sha256": "1b8fef40b4b9bd930cd0613684eba70a76a091390ca33a407a642b058362991c",
+      "tracked": false
+    },
+    {
+      "path": "output/ai-pilot/ptsd-faculty-review/root-node-full-f956508b.log",
+      "sha256": "a9fca34a15b45d5a72e35b2d9a137d1541db7a1de0c68d2d373e423154e4cb93",
+      "tracked": false
+    }
+  ]
+}
