@@ -2,7 +2,7 @@
 """Build and publish an exact-revision production release verification receipt.
 
 The receipt is technical evidence only. It binds CI, both learner-site Netlify
-deploys, served revision, the content-free production canary, and two focused
+deploys, served revision, the content-free production canary, and focused
 browser journeys to one full Git commit SHA. It never deploys or changes learner
 content, and it does not imply faculty approval, clinical approval, or native
 assistive-technology verification.
@@ -40,6 +40,11 @@ NETLIFY_API = "https://api.netlify.com/api/v1"
 MAX_JSON_BYTES = 16 * 1024 * 1024
 COMMENT_MARKER_PREFIX = "<!-- production-release-verification:"
 EXPECTED_JOURNEY_PROJECTS = ("release-ms3", "release-res")
+EXPECTED_JOURNEY_TITLES = (
+    "production release journey binds the Path and Care interactions to the served revision",
+    "production medication search verifies names, punctuation and safety priority on desktop",
+    "production medication search verifies names, punctuation and safety priority on phone",
+)
 VALID_STATUSES = {"PASS", "FAIL", "UNKNOWN"}
 EXIT_BY_STATUS = {"PASS": 0, "FAIL": 1, "UNKNOWN": 2}
 
@@ -261,7 +266,12 @@ def _walk_specs(suites):
 
 
 def summarize_playwright(report):
-    """Reduce a Playwright JSON report to the two required production journeys."""
+    """Require every named journey on both sites, never just a passing row count."""
+    expected = [
+        {"project": project, "title": title}
+        for project in EXPECTED_JOURNEY_PROJECTS
+        for title in EXPECTED_JOURNEY_TITLES
+    ]
     if not isinstance(report, dict):
         return {
             "status": "UNKNOWN",
@@ -270,6 +280,7 @@ def summarize_playwright(report):
             "skipped": 0,
             "projects": [],
             "missingProjects": list(EXPECTED_JOURNEY_PROJECTS),
+            "missingJourneys": expected,
             "error": "Playwright report is unavailable",
         }
     rows = []
@@ -304,12 +315,20 @@ def summarize_playwright(report):
             )
     projects = [name for name in EXPECTED_JOURNEY_PROJECTS if any(row["project"] == name for row in rows)]
     missing = [name for name in EXPECTED_JOURNEY_PROJECTS if name not in projects]
+    missing_journeys = [item for item in expected if not any(
+        row["project"] == item["project"] and row["title"] == item["title"] for row in rows
+    )]
+    duplicates = [item for item in expected if sum(
+        row["project"] == item["project"] and row["title"] == item["title"] for row in rows
+    ) > 1]
+    unexpected = [row for row in rows if row["title"] not in EXPECTED_JOURNEY_TITLES]
     passed = sum(row["state"] == "passed" for row in rows)
     failed = sum(row["state"] == "failed" for row in rows)
     skipped = sum(row["state"] in {"skipped", "unknown"} for row in rows)
-    if failed:
+    runner_errors = report.get("errors", [])
+    if failed or runner_errors:
         status = "FAIL"
-    elif missing or skipped or passed != len(EXPECTED_JOURNEY_PROJECTS):
+    elif missing_journeys or duplicates or unexpected or skipped or passed != len(expected):
         status = "UNKNOWN"
     else:
         status = "PASS"
@@ -320,6 +339,10 @@ def summarize_playwright(report):
         "skipped": skipped,
         "projects": projects,
         "missingProjects": missing,
+        "missingJourneys": missing_journeys,
+        "duplicateJourneys": duplicates,
+        "unexpectedJourneys": unexpected,
+        "runnerErrors": runner_errors,
         "journeys": rows,
     }
 
@@ -418,6 +441,14 @@ def render_markdown(receipt):
             "",
         ]
     )
+    lines.extend(["## Required browser journeys", "", "| Site | Journey | Result |", "|---|---|---|"])
+    for row in journeys.get("journeys", []):
+        lines.append(f"| {row['project']} | {row['title']} | {row['state']} |")
+    for row in journeys.get("missingJourneys", []):
+        lines.append(f"| {row['project']} | {row['title']} | **missing** |")
+    if journeys.get("runnerErrors"):
+        lines.extend(["", "Browser runner errors are recorded in the JSON receipt."])
+    lines.append("")
     return "\n".join(lines)
 
 
