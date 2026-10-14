@@ -87,6 +87,28 @@ query and a safety query after reload. Across both sites this is 504 matrix chec
 8 reload checks. Deliberate misspellings remain expected misses; fuzzy drug-name correction
 is not claimed.
 
+The consolidated JSON and Markdown receipt also include an advisory medication-search
+ranking comparison. It matches queries by site, screen dimensions, phase, category, and
+exact query text. The baseline is the nearest earlier release in first-parent Git history
+with a retained receipt from a successful `main` verification run created in the last
+90 days. Same-release reruns, unrelated branches, and newer releases are excluded;
+rechecking an older release does not move it ahead of a nearer ancestor. Baseline release,
+verifier, run, artifact, and history-window identifiers are retained in the JSON.
+
+Missing or demoted safety protocols and protocols converted to ordinary reading actions
+appear first. Removed safety queries are labeled **coverage gaps**, separately from
+observed ranking regressions. Added/removed queries, changed expectations, and changed
+screen dimensions make the comparison partial. The Markdown shows at most 60 changed
+queries, with an explicit omitted count; the JSON retains every change and current snapshot.
+Unmet new or changed safety expectations are labeled separately from an observed drop
+in a safety result's position.
+
+Unavailable, expired, malformed, or incomplete history is labeled **comparison unavailable**,
+never “no changes.” Older receipts without medication observations cannot serve as a
+baseline. Discovery reads at most 300 runs in the retention window and reports unavailable
+if that bound prevents a complete scan. This report does not change the existing release
+verdict or search logic; medication and safety assertions remain the release checks.
+
 To run the same checks against already deployed revisions, supply both exact deploy
 permalinks and their full commit SHA:
 

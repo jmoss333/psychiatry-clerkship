@@ -26,9 +26,11 @@ from urllib.request import Request
 try:
     from . import production_canary
     from . import production_revision_parity
+    from . import medication_search_ranking
 except ImportError:  # Direct workflow/CLI invocation.
     import production_canary
     import production_revision_parity
+    import medication_search_ranking
 
 
 SCHEMA_VERSION = 1
@@ -448,6 +450,8 @@ def render_markdown(receipt):
         lines.append(f"| {row['project']} | {row['title']} | **missing** |")
     if journeys.get("runnerErrors"):
         lines.extend(["", "Browser runner errors are recorded in the JSON receipt."])
+    if receipt.get("medicationSearchRanking"):
+        lines.extend(["", medication_search_ranking.render_markdown(receipt["medicationSearchRanking"])])
     lines.append("")
     return "\n".join(lines)
 
@@ -794,6 +798,7 @@ def _command_collect(args):
 
 
 def _command_finalize(args):
+    journey_report = None
     try:
         core = _load_json(args.core, "core evidence")
     except ReceiptError as exc:
@@ -812,6 +817,7 @@ def _command_finalize(args):
         trigger=args.trigger,
         generated_at=args.generated_at,
     )
+    medication_search_ranking.add_report(combined, journey_report)
     _write_json(args.json_out, combined)
     args.markdown_out.parent.mkdir(parents=True, exist_ok=True)
     args.markdown_out.write_text(render_markdown(combined), encoding="utf-8")
