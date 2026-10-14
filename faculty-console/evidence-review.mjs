@@ -2,7 +2,8 @@ import {decodeEvidenceResponse} from './evidence-response.mjs';
 import {reviewPriority} from './evidence-priority.mjs';
 const api='/api/attest?view=evidence';
 const inbox=document.querySelector('#inbox'),status=document.querySelector('#status');
-let key='',state,loadVersion=0;
+let key='',state,loadVersion=0,draftVersion=0;
+const openContexts=new Set();
 const dirtyForms=new Set();
 const node=(tag,text,className)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(className)e.className=className;return e;};
 function link(text,href){const e=node('a',text);const u=new URL(href,location.href);if(u.protocol==='https:'||u.origin===location.origin){e.href=u.href;}return e;}
@@ -17,9 +18,10 @@ function currentQuestion(question){
 async function request(body,params={}){const url=api+'&'+new URLSearchParams(params);const response=await fetch(url,{method:body?'POST':'GET',headers:{'x-faculty-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await response.json();if(!response.ok)throw new Error(value.error?.message||'Evidence inbox unavailable. Retry after checking the collector.');return decodeEvidenceResponse(value);}
 async function load(openRevision){
  if(dirtyForms.size&&!window.confirm('Reloading will discard unsaved rationales. Continue?'))return;
- const version=++loadVersion,next=await request(null,{section:'index'});
+ const drafts=draftVersion,version=++loadVersion,next=await request(null,{section:'index'});
  if(version!==loadVersion)return;
- state=next;dirtyForms.clear();render();status.textContent='Packet list loaded. Open a packet to check current teaching and review details.';
+ if(drafts!==draftVersion){status.textContent='New typing was preserved. Reload again when ready.';return;}
+ state=next;dirtyForms.clear();openContexts.clear();openContexts.add(state);render();status.textContent='Packet list loaded. Open a packet to check current teaching and review details.';
  if(openRevision){const button=[...inbox.querySelectorAll('button[data-packet]')].find(b=>b.dataset.packet===openRevision);button?.click();}
 }
 function pins(context){return {reportCommit:context.reportCommit,teachingCommit:context.teachingCommit,decisionRevision:context.decisionRevision};}
@@ -45,6 +47,8 @@ function lazyPanel(parent,label,params,renderDetails,context,id){
   try{
    const details=await request(null,{...params,...pins(context)});
    if(state!==context)return;
+   if(details.decisionRevision!==context.decisionRevision)throw new Error('Decisions changed while loading. Retry opening.');
+   openContexts.add(details);
    panel.replaceChildren();renderDetails(panel,details);loaded=true;panel.hidden=false;button.setAttribute('aria-expanded','true');
   }catch(error){if(state===context){panel.replaceChildren(node('p',error.message,'failure'));panel.hidden=false;button.setAttribute('aria-expanded','true');}}
   finally{button.disabled=false;button.textContent=label;}
@@ -90,8 +94,8 @@ function renderPacket(article,packet,context){
    const form=node('form',undefined,'candidate');form.append(node('h4',target.itemKey));
    const select=node('select');select.setAttribute('aria-label','Disposition');for(const [value,label] of [['no-change','Current teaching needs no change'],['needs-edit','Teaching needs editing'],['defer','Defer for further review']]){const option=node('option',label);option.value=value;select.append(option);}select.value=target.decision?.outcome||'defer';
    const label=node('label','Rationale'),area=node('textarea');area.setAttribute('aria-label','Rationale');area.required=true;area.maxLength=2000;label.append(area);const save=node('button','Save disposition');save.disabled=!target.revision;form.append(select,label,save);if(target.decision)form.append(node('p',`${target.decision.actor}: ${target.decision.rationale}`));
-   form.addEventListener('input',()=>dirtyForms.add(form));
-   form.onsubmit=async event=>{event.preventDefault();save.disabled=true;try{await request({action:'evidence.decide',packetRevision:packet.revision,expectedReportCommit:context.reportCommit,expectedDecisionRevision:context.decisionRevision,dispositions:[{itemKey:target.itemKey,itemRevision:target.revision,outcome:select.value,rationale:area.value}]});dirtyForms.delete(form);save.textContent='Saved';select.disabled=true;area.readOnly=true;let message='Disposition saved. Clinical attestation remains in the faculty console.';if(!dirtyForms.size){try{await load(packet.revision);}catch(error){message+=' Refresh failed: '+error.message;}}else{message+=' Other unsaved rationales remain here; reload when ready.';}status.textContent=message;}catch(error){status.textContent=error.message+' Your rationale remains here; copy it before reloading.';}finally{save.disabled=save.textContent==='Saved';}};article.append(form);
+   form.addEventListener('input',()=>{dirtyForms.add(form);draftVersion++;});
+   form.onsubmit=async event=>{event.preventDefault();save.disabled=true;const submitted=context.decisionRevision;try{const result=await request({action:'evidence.decide',packetRevision:packet.revision,expectedReportCommit:context.reportCommit,expectedDecisionRevision:submitted,dispositions:[{itemKey:target.itemKey,itemRevision:target.revision,outcome:select.value,rationale:area.value}]});if(result.revision){for(const opened of openContexts)if(opened.decisionRevision===submitted&&opened.reportCommit===context.reportCommit&&opened.teachingCommit===context.teachingCommit)opened.decisionRevision=result.revision;}dirtyForms.delete(form);save.textContent='Saved';select.disabled=true;area.readOnly=true;let message='Disposition saved. Clinical attestation remains in the faculty console.';if(!dirtyForms.size){try{await load(packet.revision);}catch(error){message+=' Refresh failed: '+error.message;}}else{message+=' Other unsaved rationales remain ready to save. Reload afterward to refresh history.';}status.textContent=message;}catch(error){status.textContent=error.message+' Your rationale remains here; copy it before reloading.';}finally{save.disabled=save.textContent==='Saved';}};article.append(form);
   }
 }
 document.querySelector('#login').onsubmit=async event=>{event.preventDefault();key=document.querySelector('#key').value;try{await load();document.querySelector('#login').hidden=true;document.querySelector('#key').value='';}catch(error){status.textContent=error.message;}};

@@ -259,5 +259,6 @@ packet's full retained record, this provides access to every stored record witho
 sending it all on initial load. Neither view writes evidence or decisions. Existing
 clients without a section parameter retain the full-response contract. Successful
 saves refresh and reopen the selected packet when no other forms contain unsaved
-work; otherwise those drafts remain in place and faculty are prompted to reload
-when ready. Existing revision checks still prevent writing from stale details.
+work; otherwise those drafts remain in place, using only the exact ledger revision
+returned by that successful save. Concurrent external changes still fail revision
+checks. New typing during a pending reload cancels replacement of the view.

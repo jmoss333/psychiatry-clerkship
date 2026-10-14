@@ -3769,10 +3769,12 @@ async function mockEvidencePages(page,state,{failFirstPacket=false,saveSucceeds=
   const request=route.request(),params=new URL(request.url()).searchParams,section=params.get('section');requests.push({method:request.method(),section,packet:params.get('packetRevision')});
   if(request.method()==='POST'){
    if(!saveSucceeds)return route.fulfill({status:409,json:{error:{message:'Evidence changed. Reload before deciding.'}}});
-   const body=request.postDataJSON(),p=state.packets.find(p=>p.revision===body.packetRevision),d=body.dispositions[0];
+   const body=request.postDataJSON();
+   if(body.expectedDecisionRevision!==context.decisionRevision)return route.fulfill({status:409,json:{error:{message:'Evidence changed. Reload before deciding.'}}});
+   const p=state.packets.find(p=>p.revision===body.packetRevision),d=body.dispositions[0];
    const decision={...d,packetRevision:p.revision,actor:'Synthetic faculty',at:'2026-10-13'};
-   p.targets.find(t=>t.itemKey===d.itemKey).decision=decision;decisions.decisions.push(decision);context.decisionRevision='saved';
-   return route.fulfill({json:{ok:true,commit:'saved'}});
+   p.targets.find(t=>t.itemKey===d.itemKey).decision=decision;decisions.decisions.push(decision);context.decisionRevision='saved-'+decisions.decisions.length;
+   return route.fulfill({json:{ok:true,commit:'saved',revision:context.decisionRevision}});
   }
   if(section==='packet'&&failFirstPacket&&!failed){failed=true;return route.fulfill({status:503,json:{error:{message:'Temporary packet failure. Retry opening.'}}});}
   let data;
@@ -3852,4 +3854,31 @@ test('evidence on demand refreshes only the saved packet and preserves decision 
  await expect(page.getByText('Synthetic faculty: Synthetic saved rationale',{exact:true})).toBeVisible();
  expect(requests.filter(r=>r.section==='index')).toHaveLength(2);expect(requests.filter(r=>r.section==='packet')).toHaveLength(2);expect(requests.filter(r=>r.method==='POST')).toHaveLength(1);
  await page.getByText('Decision history (1)',{exact:true}).click();await expect(page.getByText('Synthetic saved rationale',{exact:true})).toBeVisible();
+});
+
+
+test('evidence on demand saves consecutive drafts without losing another rationale',async({page})=>{
+ const packet={revision:'p',sourceId:'s',sourceName:'Synthetic source',sourceUrl:'https://example.org',observedAt:'2026-10-13',scanStatus:'complete',coverage:{active:1,scanned:1,errors:[]},passages:[],candidates:[],readings:[],targets:[{itemKey:'source:s',revision:'p',current:null},{itemKey:'question:q',revision:'q',current:null}],status:'pending'};
+ const requests=await mockEvidencePages(page,{packets:[packet]},{saveSucceeds:true});
+ await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();
+ await page.getByRole('button',{name:'Open packet',exact:true}).click();
+ await page.getByLabel('Rationale').nth(0).fill('First draft');await page.getByLabel('Rationale').nth(1).fill('Second draft');
+ await page.getByRole('button',{name:'Save disposition'}).nth(0).click();
+ await expect(page.getByRole('status')).toContainText('remain ready to save');
+ await expect(page.getByLabel('Rationale').nth(1)).toHaveValue('Second draft');
+ await page.getByRole('button',{name:'Save disposition'}).click();
+ await expect(page.getByText('Synthetic faculty: Second draft',{exact:true})).toBeVisible();
+ expect(requests.filter(r=>r.method==='POST')).toHaveLength(2);
+});
+
+test('evidence on demand preserves typing while a reload is pending',async({page})=>{
+ const packet={revision:'p',sourceId:'s',sourceName:'Synthetic source',sourceUrl:'https://example.org',observedAt:'2026-10-13',scanStatus:'complete',coverage:{active:1,scanned:1,errors:[]},passages:[],candidates:[],readings:[],targets:[{itemKey:'source:s',revision:'p',current:null}],status:'pending'};
+ await mockEvidencePages(page,{packets:[packet]});
+ await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();await page.getByRole('button',{name:'Open packet',exact:true}).click();
+ let release;const held=new Promise(resolve=>release=resolve);let arrived;const arrival=new Promise(resolve=>arrived=resolve);
+ await page.route('**/api/attest?view=evidence&section=index',async route=>{arrived();await held;await route.fallback();});
+ await page.getByRole('button',{name:'Reload evidence'}).click();await arrival;
+ await page.getByLabel('Rationale').fill('Typed during refresh');release();
+ await expect(page.getByRole('status')).toContainText('New typing was preserved');
+ await expect(page.getByLabel('Rationale')).toHaveValue('Typed during refresh');
 });
