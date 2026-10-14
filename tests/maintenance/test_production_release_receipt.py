@@ -214,41 +214,33 @@ class CollectionWindowTests(unittest.TestCase):
 
 
 class JourneyAndReceiptTests(unittest.TestCase):
-    @staticmethod
-    def _playwright_report(ms3_status="expected", res_status="expected", include_res=True):
-        specs = [
-            {
-                "title": "MS3 release journey",
-                "tests": [
-                    {
-                        "projectName": "release-ms3",
-                        "expectedStatus": "passed",
-                        "status": ms3_status,
-                        "results": [{"status": "passed" if ms3_status == "expected" else "failed", "duration": 120}],
-                    }
-                ],
-            }
-        ]
-        if include_res:
-            specs.append(
-                {
-                    "title": "Resident release journey",
-                    "tests": [
-                        {
-                            "projectName": "release-res",
-                            "expectedStatus": "passed",
-                            "status": res_status,
-                            "results": [{"status": "passed" if res_status == "expected" else "failed", "duration": 130}],
-                        }
-                    ],
-                }
-            )
-        return {"suites": [{"title": "production-release.spec.js", "specs": specs}]}
+    # Literal expectations: unrelated passing tests cannot stand in for these journeys.
+    PATH_CARE = "production release journey binds the Path and Care interactions to the served revision"
+    MED_DESKTOP = "production medication search verifies names, punctuation and safety priority on desktop"
+    MED_PHONE = "production medication search verifies names, punctuation and safety priority on phone"
 
-    def test_journeys_require_one_passing_result_for_each_learner_site(self):
+    @classmethod
+    def _playwright_report(cls, ms3_status="expected", res_status="expected", include_res=True):
+        specs = []
+        for project, status in [("release-ms3", ms3_status), ("release-res", res_status)]:
+            if project == "release-res" and not include_res:
+                continue
+            for title in (cls.PATH_CARE, cls.MED_DESKTOP, cls.MED_PHONE):
+                specs.append({
+                    "title": title,
+                    "tests": [{
+                        "projectName": project,
+                        "expectedStatus": "passed",
+                        "status": status,
+                        "results": [{"status": "passed" if status == "expected" else "failed", "duration": 120}],
+                    }],
+                })
+        return {"suites": [{"title": "production-release.spec.js", "specs": specs}], "errors": []}
+
+    def test_journeys_require_navigation_and_both_medication_viewports_for_each_site(self):
         passed = receipt.summarize_playwright(self._playwright_report())
         self.assertEqual(passed["status"], "PASS")
-        self.assertEqual(passed["passed"], 2)
+        self.assertEqual(passed["passed"], 6)
         self.assertEqual(passed["projects"], ["release-ms3", "release-res"])
 
         missing = receipt.summarize_playwright(self._playwright_report(include_res=False))
@@ -257,7 +249,40 @@ class JourneyAndReceiptTests(unittest.TestCase):
 
         failed = receipt.summarize_playwright(self._playwright_report(res_status="unexpected"))
         self.assertEqual(failed["status"], "FAIL")
-        self.assertEqual(failed["failed"], 1)
+        self.assertEqual(failed["failed"], 3)
+
+    def test_old_navigation_only_report_does_not_claim_medication_coverage(self):
+        report = self._playwright_report()
+        report["suites"][0]["specs"] = [s for s in report["suites"][0]["specs"] if s["title"] == self.PATH_CARE]
+        result = receipt.summarize_playwright(report)
+        self.assertEqual(result["status"], "UNKNOWN")
+        self.assertEqual(len(result["missingJourneys"]), 4)
+        self.assertIn({"project": "release-res", "title": self.MED_PHONE}, result["missingJourneys"])
+
+    def test_one_omitted_medication_journey_cannot_be_replaced_by_an_unrelated_or_duplicate_pass(self):
+        for replacement in ("an unrelated passing test", self.MED_DESKTOP):
+            with self.subTest(replacement=replacement):
+                report = self._playwright_report()
+                report["suites"][0]["specs"][-1]["title"] = replacement
+                result = receipt.summarize_playwright(report)
+                self.assertEqual(result["status"], "UNKNOWN")
+                self.assertEqual(result["missingJourneys"], [{"project": "release-res", "title": self.MED_PHONE}])
+
+    def test_failed_flaky_skipped_and_expected_failure_medication_results_are_not_passes(self):
+        for outcome, final_status, expected in [
+            ("unexpected", "failed", "FAIL"), ("flaky", "passed", "FAIL"),
+            ("skipped", "skipped", "UNKNOWN"), ("expected", "failed", "FAIL"),
+        ]:
+            with self.subTest(outcome=outcome, final_status=final_status):
+                report = self._playwright_report()
+                row = report["suites"][0]["specs"][-1]["tests"][0]
+                row.update(status=outcome, results=[{"status": final_status, "duration": 120}])
+                self.assertEqual(receipt.summarize_playwright(report)["status"], expected)
+
+    def test_runner_errors_prevent_green_even_when_all_listed_tests_pass(self):
+        report = self._playwright_report()
+        report["errors"] = [{"message": "browser runner interrupted"}]
+        self.assertEqual(receipt.summarize_playwright(report)["status"], "FAIL")
 
     def test_receipt_uses_fail_before_unknown_and_binds_every_group_to_the_sha(self):
         core = {
@@ -329,6 +354,10 @@ class JourneyAndReceiptTests(unittest.TestCase):
         self.assertIn("https://github.example/runs/100", markdown)
         self.assertIn("does not establish faculty approval", markdown)
         self.assertIn("native VoiceOver", markdown)
+        self.assertIn(self.MED_DESKTOP, markdown)
+        self.assertIn(self.MED_PHONE, markdown)
+        self.assertIn("release-ms3", markdown)
+        self.assertIn("release-res", markdown)
 
 
 class PullRequestAttachmentTests(unittest.TestCase):
