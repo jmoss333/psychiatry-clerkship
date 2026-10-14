@@ -101,6 +101,8 @@ jobs:
       - name: Build consolidated release receipt
         id: receipt
         if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +e
           python3 13_Faculty_Resources/_automation/maintenance/production_release_receipt.py finalize \
