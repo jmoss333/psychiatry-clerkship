@@ -3882,3 +3882,16 @@ test('evidence on demand preserves typing while a reload is pending',async({page
  await expect(page.getByRole('status')).toContainText('New typing was preserved');
  await expect(page.getByLabel('Rationale')).toHaveValue('Typed during refresh');
 });
+
+
+test('evidence on demand locks submitted fields until a delayed save completes',async({page})=>{
+ const packet={revision:'p',sourceId:'s',sourceName:'Synthetic source',sourceUrl:'https://example.org',observedAt:'2026-10-13',scanStatus:'complete',coverage:{active:1,scanned:1,errors:[]},passages:[],candidates:[],readings:[],targets:[{itemKey:'source:s',revision:'p',current:null}],status:'pending'};
+ await mockEvidencePages(page,{packets:[packet]});
+ await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();await page.getByRole('button',{name:'Open packet',exact:true}).click();
+ let release;const held=new Promise(resolve=>release=resolve);
+ await page.route('**/api/attest?view=evidence*',async route=>{if(route.request().method()==='POST')await held;await route.fallback();});
+ await page.getByLabel('Rationale').fill('Submitted draft');await page.getByRole('button',{name:'Save disposition'}).click();
+ await expect(page.getByLabel('Rationale')).not.toBeEditable();await expect(page.getByLabel('Disposition')).toBeDisabled();
+ release();await expect(page.getByRole('status')).toContainText('Evidence changed');
+ await expect(page.getByLabel('Rationale')).toBeEditable();await expect(page.getByLabel('Disposition')).toBeEnabled();await expect(page.getByLabel('Rationale')).toHaveValue('Submitted draft');
+});
