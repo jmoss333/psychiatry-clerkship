@@ -36,6 +36,12 @@ task**, thread `01a1322b-aba0-7101-8c83-57af9356897b`. The later chat service er
 not undo the user's responses. These are owner-reported observations, not observations
 made by the coding agent.
 
+Subsequent evidence: in **Finish carer packet work**, thread
+`01a13a7d-fbda-72c0-8926-17fd260957e3`, the owner confirmed on October 14:
+"All 5 default pages and all 7 long-packet pages pass." This completes the page-inspection
+portion of the ward-printer review for these samples. It does not assert QR scanning,
+staff review, native accessibility testing or activation approval.
+
 | Check | Recorded result |
 | --- | --- |
 | Default packet sheet count | Pass: owner reported exactly five sheets. |
@@ -43,14 +49,15 @@ made by the coding agent.
 | Default page 1: readability under ward lighting | Pass: owner reported all checks pass. |
 | Default page 2: grouping, clipping/overlap and small contact text | Pass: owner answered yes. |
 | Default page 3: dense grouping, QR clearance, small text and footer | Pass: owner answered yes to this outstanding check before subsequent service errors. |
-| Default pages 4–5 | Not yet reported. |
-| Long-listing packet: printing and inspection of all seven pages | Not yet reported. |
+| Default pages 4–5 | Pass: owner confirmed all five default pages pass. |
+| Long-listing packet: printing and inspection of all seven pages | Pass: owner confirmed all seven long-packet pages pass. |
 | QR scanning from paper | Not yet reported; fixture links are fictional. |
 | Printer model and actual settings used | Not recorded. Requested settings were Letter, portrait, 100%/Actual Size, single-sided, grayscale, one page per sheet. |
 
 No repeated review of the passed rows is needed unless the sample or print conditions change.
-The next physical step is to inspect default pages 4–5, then print the long sample with
-the same settings and inspect all seven pages, especially dense rows and page breaks.
+All five default pages and all seven long-packet pages have passed the owner's page
+inspection. The next physical check is scanning QR codes from both printed samples;
+those fictional destinations do not verify real service links or contacts.
 
 ## The two review samples
 
@@ -74,9 +81,9 @@ real service-contact validity. The optional wallet card is not in either sample.
 
 ## Remaining G-C evidence
 
-- Complete the paper checks above, including margins, footers, readability and usable
-  checkboxes. Record actual printer settings and observations; do not infer them from
-  the requested settings.
+- Record paper QR scan results and actual printer model/settings. The owner has passed
+  every page of both samples; do not repeat page inspection or infer actual settings
+  from the requested settings.
 - Have one nurse and one peer specialist read the paper output. Record each person's
   role, date, concerns and disposition. No staff review is recorded yet.
 - Exercise the native browser print dialog and return-to-app behavior on the ward setup;
