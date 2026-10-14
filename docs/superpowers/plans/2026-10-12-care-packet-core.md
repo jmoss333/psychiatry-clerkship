@@ -1,6 +1,6 @@
 # Aftercare packet, part 1: choose, order, review (behind a default-off flag)
 
-> The G-B choices below are historical. The approved replacement is [G-B decisions, 2026-10-13](2026-10-13-care-packet-gb-decisions.md); the visual review remains open.
+> The G-B choices below are historical. The approved replacement is [G-B decisions, 2026-10-13](2026-10-13-care-packet-gb-decisions.md); G-B was closed by explicit owner approval on 2026-10-13. G-C and G-D remain open.
 
 PR B of the Care aftercare packet (`_prototypes/care-packet/HANDOFF.md` §2). A trainee searching the
 ReConnect directory on `?tab=care` can add listings to a running packet, reorder them, and complete a
