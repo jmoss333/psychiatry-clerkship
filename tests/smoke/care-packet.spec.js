@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { careDirectoryFixture, pinCareDirectory } from './care-directory-fixture.js';
-import { enableCarePacket, packetFeed, UNIT_PROFILE_FIXTURE } from './care-packet-fixture.js';
+import { enableCarePacket, disableCarePacket, packetFeed, UNIT_PROFILE_FIXTURE } from './care-packet-fixture.js';
 import { isResidentProject } from './audience.js';
 
 const KEY = 'fd_care_packet_v1';
@@ -33,11 +33,12 @@ async function servedPayload(page) {
   return JSON.parse(match[1]);
 }
 
-// ---- AC0: with the flag off (the production default) the packet does not exist at all
+// ---- AC0: an explicit flag-off fixture removes the packet, independent of the production default.
 test('flag off: no packet controls, no tray, no preview or card button, no print hook, nothing staged by a print, and nothing in sessionStorage after a search', async ({ page }, info) => {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await seed(page, info);
+  await disableCarePacket(page);
   await watchPrintListeners(page);
   await pinCareDirectory(page, packetFeed(careDirectoryFixture()));
   await page.goto('/?tab=care');

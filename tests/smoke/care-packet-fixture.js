@@ -1,6 +1,5 @@
-// Explicit test-only opt-in for the aftercare packet (default OFF in production).
-// Ordinary browser tests exercise the unmodified production default; only this fixture flips the literal
-// in the served HTML, and it fails loudly if that literal ever stops being unique.
+// Explicit test-only flag selection, independent of the production default.
+// The fixture changes exactly one boolean literal in served HTML and fails loudly if it is not unique.
 import { expect } from '@playwright/test';
 import fs from 'node:fs';
 
@@ -34,10 +33,18 @@ export async function pinCareProfileAuthority(page, { profiles = [UNIT_PROFILE_F
   return authority;
 }
 
-export function enableCarePacketHtml(html) {
-  const flag = 'var FD_CARE_PACKET_ENABLED=false;';
-  expect(html.split(flag)).toHaveLength(2);
-  return html.replace(flag, 'var FD_CARE_PACKET_ENABLED=true;');
+function carePacketHtml(html, enabled) {
+  const flags = html.match(/var FD_CARE_PACKET_ENABLED=(?:true|false);/g) || [];
+  expect(flags, 'exactly one boolean packet flag in the served HTML').toHaveLength(1);
+  return html.replace(flags[0], 'var FD_CARE_PACKET_ENABLED=' + enabled + ';');
+}
+export const enableCarePacketHtml = html => carePacketHtml(html, true);
+
+export async function disableCarePacket(page) {
+  await page.route(url => url.pathname === '/', async route => {
+    const response = await route.fetch();
+    await route.fulfill({ response, body: carePacketHtml(await response.text(), false) });
+  });
 }
 
 export async function enableCarePacket(page) {

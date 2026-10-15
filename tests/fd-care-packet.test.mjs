@@ -20,6 +20,11 @@ const read = name => {
 };
 const PACKET = read('fd_care_packet.js');
 const SHEET = read('fd_care_packet_sheet.js');
+const packetWithFlag = literal => {
+  const flags = PACKET.match(/var FD_CARE_PACKET_ENABLED=(?:true|false);/g) || [];
+  assert.equal(flags.length, 1, 'exactly one boolean source flag');
+  return PACKET.replace(flags[0], 'var FD_CARE_PACKET_ENABLED=' + literal + ';');
+};
 const EXPORTS = `;return typeof fdCarePacketNormalize === 'function' ? {
   controls: typeof fdCarePacketControls === 'function' ? fdCarePacketControls : null,
   blocker: typeof fdCarePacketBlocker === 'function' ? fdCarePacketBlocker : null,
@@ -126,10 +131,10 @@ const loadInBrowser = env =>
   new Function('sessionStorage', 'FD_CARE_INSERTS', 'document', 'window', moduleSource())(undefined, null, env.doc, env.win);
 const FIXED_LAYOUT = { verify: false, measure: units => ({ heights: units.map(() => 90), capacity: 880 }) };
 
-test('the module exists and the gate is OFF in the shipped source (production default)', () => {
+test('the module exists and the gate is ON in the activation source', () => {
   assert.ok(P, 'fd_care_packet.js exists and exports the packet API');
-  assert.equal(P.enabled(), false);
-  assert.equal(PACKET.split('var FD_CARE_PACKET_ENABLED=false;').length, 2, 'exactly one literal flag, so the test fixture can flip it');
+  assert.equal(P.enabled(), true);
+  assert.equal(PACKET.split('var FD_CARE_PACKET_ENABLED=true;').length, 2, 'exactly one enabled literal flag');
   assert.equal(P.LIMIT, 12);
   assert.equal(P.SUGGEST, 8);
   assert.equal(P.KEY, 'fd_care_packet_v1');
@@ -316,9 +321,9 @@ test('the review gate has four unticked-by-default checks and reports readiness;
 });
 
 test('the search panel gets a tray mount only when the packet flag is on', () => {
-  const off = P.shell({ careResources: [] });
+  const off = load(packetWithFlag('false')).shell({ careResources: [] });
   assert.doesNotMatch(off, /data-fd-care-packet/);
-  const on = load(PACKET.replace('var FD_CARE_PACKET_ENABLED=false;', 'var FD_CARE_PACKET_ENABLED=true;')).shell({ careResources: [] });
+  const on = load(packetWithFlag('true')).shell({ careResources: [] });
   assert.match(on, /data-fd-care-packet-tray/);
   assert.ok(on.indexOf('data-care-directory-results') < on.indexOf('data-fd-care-packet-tray'), 'the tray sits after the results, outside the results mount');
 });
@@ -523,9 +528,9 @@ test('only the literal true opens the gate; no URL, storage or cookie value can'
   const loc = { search: '?tab=care&packet=1', hash: '#packet', href: 'https://x/?packet=1#packet' };
   const gate = src => new Function('sessionStorage', 'localStorage', 'location', 'window', 'document',
     read('fd_data.js') + src + ';return fdCarePacketEnabled();')(anyKey(), anyKey(), loc, { location: loc, sessionStorage: anyKey() }, { cookie: 'packet=1' });
-  assert.equal(gate(PACKET), false);
-  assert.equal(gate(PACKET.replace('var FD_CARE_PACKET_ENABLED=false;', 'var FD_CARE_PACKET_ENABLED="true";')), false, 'truthy is not true');
-  assert.equal(gate(PACKET.replace('var FD_CARE_PACKET_ENABLED=false;', 'var FD_CARE_PACKET_ENABLED=true;')), true);
+  assert.equal(gate(packetWithFlag('false')), false);
+  assert.equal(gate(packetWithFlag('"true"')), false, 'truthy is not true');
+  assert.equal(gate(packetWithFlag('true')), true);
 });
 
 test('ids and category labels from the feed are escaped everywhere they are written into markup', () => {

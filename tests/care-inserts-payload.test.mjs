@@ -108,12 +108,13 @@ function profilesFile(t, profiles) {
   fs.writeFileSync(file, JSON.stringify({ schemaVersion: 1, profiles }));
   return file;
 }
-// A temp copy of the packet module with its flag literal set; the real file must declare it off exactly once.
+// A temp copy with an explicit flag, independent of the real source's current boolean default.
 function packetSource(t, flag) {
   const text = fs.readFileSync(PACKET_SOURCE, 'utf8');
-  assert.equal(text.split(FLAG_OFF).length, 2, 'fd_care_packet.js declares the flag off exactly once');
+  const flags = text.match(/var FD_CARE_PACKET_ENABLED=(?:true|false);/g) || [];
+  assert.equal(flags.length, 1, 'fd_care_packet.js declares exactly one boolean flag');
   const file = path.join(tempDir(t), 'fd_care_packet.js');
-  fs.writeFileSync(file, flag === FLAG_OFF ? text : text.replace(FLAG_OFF, flag));
+  fs.writeFileSync(file, text.replace(flags[0], flag));
   return file;
 }
 function buildWith(kwargs, args) {
@@ -359,12 +360,13 @@ test('the activation check fails closed: a respaced or unreadable flag counts as
   assert.match(missing.stderr + missing.stdout, /fd_care_packet|nope\.js/);
 });
 
-test('the production default reads the real packet module, whose flag is off today', () => {
+test('the activation default reads the real packet module, whose flag is on', () => {
   const run = py('print(json.dumps([p.PACKET_SOURCE, p.packet_enabled()]))');
   assert.equal(run.status, 0, run.stderr);
   const [source, enabled] = JSON.parse(run.stdout);
   assert.equal(path.resolve(source), path.resolve(PACKET_SOURCE));
-  assert.equal(enabled, fs.readFileSync(PACKET_SOURCE, 'utf8').includes(FLAG_ON));
+  assert.equal(enabled, true);
+  assert.equal(fs.readFileSync(PACKET_SOURCE, 'utf8').includes(FLAG_ON), true);
 });
 
 test('profile validation matrix (check_profiles against the real inserts and governed record)', t => {
