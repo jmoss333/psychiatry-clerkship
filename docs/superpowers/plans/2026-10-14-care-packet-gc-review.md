@@ -17,8 +17,9 @@ morning of October 15, America/New_York. Do not request the waived reviews again
 record unperformed checks as passed.
 
 Activation is authorized; it is not complete. A real unit candidate, private owner
-enrollment, isolated production authority storage and an approval matching that candidate
-are still absent. The initial launch preparation uses no organization branding and no
+enrollment, storage access token and an approval matching that candidate are still absent.
+The empty storage project and service signing configuration are prepared as recorded
+below. The initial launch preparation uses no organization branding and no
 optional callback program; no institutional branding permission or callback facts are
 inferred. Do not invent contact facts, verification evidence, credentials or approvals,
 or bypass the existing output guard to meet the requested date.
@@ -171,8 +172,8 @@ enforce these distinct rules.
 ## G-D: activation authorized, setup and publication pending
 
 The owner has authorized activation for the morning launch. Complete the owner-side
-authority enrollment and isolated
-production storage setup described in [the faculty-console README](../../../faculty-console/README.md),
+authority enrollment and isolated production storage setup described in
+[the faculty-console README](../../../faculty-console/README.md),
 verify that previews cannot access it, and supply and independently approve a real unit
 profile backed by actual contact/operational verification. No credentials or approval
 records were inspected or created during this progress recovery.
@@ -199,6 +200,26 @@ returning HTTP 503 `authority-unavailable` and the candidate list empty. This do
 identify which configuration or storage dependency is missing. No credential, store,
 real profile or approval was created during that check.
 
+Subsequent launch preparation, on the owner's authority, created the empty Netlify
+project `clerkship-care-profile-store`, site ID `4b4d23f6-8637-4999-a5b2-367800802be6`,
+in the existing team. No repository connection or application code was added to it.
+On the existing faculty-console project, site ID `295ae8dd-412c-47ad-aac3-7e7cd4b3110d`,
+the agent installed `CARE_PROFILE_STORE_SITE_ID` and an independent random
+`CARE_PROFILE_SIGNING_SECRET`. A subsequent metadata read confirmed both are scoped
+only to Functions in production, with the signing value marked secret. No secret
+value is recorded in this document, Git or chat output.
+
+The owner must privately add `CARE_PROFILE_OWNER_KEY` and `CARE_PROFILE_STORE_TOKEN`
+as production-only Functions secrets on the faculty-console project. The owner key
+must be a new, privately held credential of at least 32 characters; the storage token
+must be a Netlify personal access token able to access the storage project, not a
+random application string. The current command-line Netlify login is expired and the
+in-app project tab requires sign-in; the connected Netlify service performed the
+preparation above. No login credential or token was extracted or reused. Redeploy the
+console after all configuration is complete, then use its existing `/care-profiles.html`
+screen to bind the owner's approval to the real candidate on main. This setup does
+not reopen G-C or ask for another general activation decision.
+
 Publish through the existing production release train after the activation commit's
 required checks pass. The next scheduled run is October 15 at 5:05 AM America/New_York,
 but scheduling and build delays mean this is not a delivery guarantee. Use the existing
@@ -215,8 +236,8 @@ America/New_York, after its required checks passed. Its final head was
 `66159b3cfb06ab8094328525d96a8f2d7a9f9e33`. The owner-directed activation update is
 subsequent work; #1055 itself did not enable the packet.
 
-Repository cleanup is a separate operation, not a prerequisite for the remaining human
-review or authorization supplied by this plan. At the October 14 audit, remote main was
+Repository cleanup is a separate operation, not a prerequisite for activation setup.
+At the October 14 audit, remote main was
 `24a62138754faf21cece39f3279b3be816bfc0ad` and the primary checkout was
 `59518403fdeb2ac7e7b5e5333ba43379d8c8e4ac`: 0 ahead and 161 behind, with 235 untracked
 files. Five untracked paths overlapped paths newly tracked on main:
