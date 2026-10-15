@@ -179,7 +179,9 @@ export async function productionHandlers(env=process.env) {
   const store=getStore(options);
   return createCareProfileHandlers({env,store,readCandidates:githubCandidates({env})});
 }
-export async function routeProduction(request,route) {
-  try{return await (await productionHandlers())[route](request);}
+export async function routeProduction(request,route,context) {
+  // Netlify exposes runtime deploy context on the handler, not in the build-only
+  // CONTEXT environment variable. Never fall back to an environment claim.
+  try{return await (await productionHandlers({...process.env,CONTEXT:context?.deploy?.context}))[route](request);}
   catch{return json({ok:false,status:'authority-unavailable',profileId:null,revision:null,expiresOn:null,checkedAt:null,approver:null,profile:null},503);}
 }

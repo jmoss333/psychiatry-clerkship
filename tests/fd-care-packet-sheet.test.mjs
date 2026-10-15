@@ -30,6 +30,7 @@ function py(body, args = [], input = undefined) {
 const built = py('import care_inserts_payload as p\nprint(json.dumps(p.build_payload()))');
 assert.equal(built.status, 0, built.stderr);
 const PAYLOAD = JSON.parse(built.stdout);
+const SOURCE_PROFILES = JSON.parse(readFileSync(path.join(SITE_BUILD, 'data/care-unit-profiles.v1.json'), 'utf8')).profiles;
 const clone = value => JSON.parse(JSON.stringify(value));
 // Invisible and direction-changing characters are built from code points and never typed: nobody reviewing this file
 // could see them, which is exactly the property under test. A raw-source scan below keeps it that way.
@@ -75,11 +76,12 @@ const eight = () => [
   row(7, { category: 'community_services', name: 'Services 7' }),
 ];
 const idsOf = records => records.map(r => r.id);
-// The shipped payload carries no unit profile (unitProfiles is []), and a typed phone never confirms the unit, so a
-// printable Final copy needs a profile. PROFILED is the real build payload plus the TEST-ONLY fixture profiles (the
-// payload's own shape, a fictional 555-01xx number); nothing else differs. A test about the shipped payload passes PAYLOAD.
+// A typed phone never confirms the unit: either printable copy needs a profile and independent approval.
+// PROFILED replaces the real build's candidates with TEST-ONLY profiles (fictional 555-01xx numbers), while
+// EMPTY_PROFILES explicitly exercises absence. Tests of the real candidates keep PAYLOAD.
 const FIXTURE = JSON.parse(readFileSync(path.join(REPO, 'tests/fixtures/care-unit-profile.json'), 'utf8'));
 const withProfiles = (payload, ...profiles) => { const out = clone(payload); out.unitProfiles = profiles.map(clone); return out; };
+const EMPTY_PROFILES = withProfiles(PAYLOAD);
 const PROFILED = withProfiles(PAYLOAD, FIXTURE.profile, FIXTURE.expired);
 const LOADED = { name: '', phone: '', profile: FIXTURE.profile.id };
 // Both printable modes use an independently approved profile. Typed values are an explicit negative fixture.
@@ -225,15 +227,21 @@ test('payload validity: every crisis line and every required line resolves, and 
   for (const bad of [null, undefined, 7, 'x', [], {}]) assert.equal(S.payloadOk(bad), false, JSON.stringify(bad));
 });
 
-test('the shipped payload: crisis lines carry a ref and no label, each contact carries the GOVERNED name, the card is not an insert, no unit profile', () => {
+test('the shipped payload: governed crisis names, a separate card, and source candidates survive browser re-validation', () => {
   assert.deepEqual(Object.keys(PAYLOAD).sort(), ['card', 'checkedOn', 'contacts', 'crisis', 'crisisCopy', 'crisisNumbers', 'generatedAt', 'inserts', 'required', 'unitProfiles']);
   for (const line of PAYLOAD.crisis) {
     assert.deepEqual(Object.keys(line).sort(), ['ref', 'when'], line.ref + ' carries no label to print');
     assert.equal(PAYLOAD.contacts[line.ref].name, governedName(line.ref), line.ref + ': the official name from crisis_resources.json');
   }
   assert.equal(PAYLOAD.inserts.some(i => i.id === 'card'), false, 'the wallet card is its own print, not a page of the packet');
-  assert.deepEqual(PAYLOAD.unitProfiles, [], 'no unit profile ships');
-  assert.deepEqual(S.profiles(PAYLOAD), []);
+  assert.deepEqual(PAYLOAD.unitProfiles.map(p => p.id), SOURCE_PROFILES.map(p => p.id), 'only the source candidates ship');
+  for (const [index, profile] of PAYLOAD.unitProfiles.entries()) {
+    const { verification, ...sourceContent } = SOURCE_PROFILES[index];
+    const { revision, usableThrough, expiresOn, ...publicContent } = profile;
+    assert.deepEqual(publicContent, sourceContent, 'candidate content survives the public projection without verification records');
+  }
+  assert.deepEqual(S.profiles(PAYLOAD).map(p => [p.id, p.revision]), PAYLOAD.unitProfiles.map(p => [p.id, p.revision]), 'every real candidate survives browser re-validation with its revision');
+  assert.deepEqual(S.profiles(EMPTY_PROFILES), [], 'an explicitly empty payload still offers no profile');
   assert.deepEqual(S.profiles(PROFILED).map(p => p.id), [FIXTURE.profile.id, FIXTURE.expired.id], 'the test-only fixture is in the shipped shape and survives re-validation');
 });
 
@@ -1094,9 +1102,9 @@ test('UNIT_UNCONFIRMED: typed, expired, missing and unknown-clock profiles canno
     assert.equal(expired.unit.loaded && expired.unit.expired && !expired.unit.confirmed, true);
     const oldFixture = renderApproved(records, stateOf(records, { mode, unit: { name: '', phone: '', profile: FIXTURE.expired.id } }));
     const unknownClock = renderApproved(records, stateOf(records, { mode }), PROFILED, { now: NaN });
-    const noneShipped = render(records, typedState(records, { mode }), PAYLOAD);
+    const noneAvailable = render(records, typedState(records, { mode }), EMPTY_PROFILES);
     const typed = render(records, typedState(records, { mode }));
-    for (const denied of [expired, oldFixture, unknownClock, noneShipped, typed]) {
+    for (const denied of [expired, oldFixture, unknownClock, noneAvailable, typed]) {
       assert.deepEqual(codesOf(denied), ['UNIT_UNCONFIRMED']);
       assert.equal(denied.html.includes(FIXTURE.profile.unitPhone), false, 'no stale profile phone enters patient preview');
       for (const blocker of denied.blockers) {
@@ -1104,7 +1112,7 @@ test('UNIT_UNCONFIRMED: typed, expired, missing and unknown-clock profiles canno
         assert.doesNotMatch(blocker.message, /switch.*Review copy/i);
       }
     }
-    assert.match(msg(noneShipped), /None is set up yet/i);
+    assert.match(msg(noneAvailable), /None is set up yet/i);
     assert.match(msg(typed), /Load the profile/);
   }
 });
@@ -1204,7 +1212,7 @@ test('a unit profile is re-validated before it is offered: a crisis-number phone
   assert.deepEqual(codesOf(renderApproved(eight(), finalState(eight()), refused)), ['UNIT_UNCONFIRMED']);
   assert.equal(S.profileFind(PROFILED, base.id).id, base.id);
   for (const id of ['', 'no-such-unit', 'Fixture-Unit', null, 7, 'a'.repeat(41)]) assert.equal(S.profileFind(PROFILED, id), null, String(id));
-  assert.equal(S.profileFind(PAYLOAD, base.id), null, 'the shipped payload carries none');
+  assert.equal(S.profileFind(EMPTY_PROFILES, base.id), null, 'an explicitly empty payload carries none');
   assert.equal(S.profileFind(null, base.id), null);
 });
 
@@ -1240,7 +1248,7 @@ test('unit identity resolves from the loaded profile, but only the matching curr
   assert.deepEqual(S.unitOf({ unit: { ...typed, profile: 'no-such-unit' } }, PROFILED, now), {
     name: '4 West', phone: '(207) 555-0100', org: '', profile: '', loaded: false, expired: false, confirmed: false, callbackProgram: false, nameError: '', phoneError: '',
   }, 'an unknown id is not loaded, and typed values are not confirmed');
-  assert.equal(S.unitOf({ unit: { ...typed, profile: FIXTURE.profile.id } }, PAYLOAD, now).loaded, false, 'a profile id the payload does not carry');
+  assert.equal(S.unitOf({ unit: { ...typed, profile: FIXTURE.profile.id } }, EMPTY_PROFILES, now).loaded, false, 'a profile id the payload does not carry');
   const lapsed = S.unitOf({ unit: { profile: FIXTURE.expired.id } }, PROFILED, now);
   assert.equal(lapsed.loaded && lapsed.expired && !lapsed.confirmed, true, 'loaded but lapsed is not confirmed');
   assert.equal(S.unitOf({ unit: { profile: FIXTURE.profile.id } }, PROFILED, NaN).confirmed, false, 'no clock, no confirmation');
@@ -1402,7 +1410,7 @@ test('the wallet card names no unit: no unit name, phone, org or blank, even wit
     assert.equal(card.html.includes(S.esc(value)), false, value);
   }
   for (const cls of ['fd-packet-blank', 'fd-packet-org', 'fd-packet-draft']) assert.equal(card.html.includes(cls), false, cls);
-  assert.equal(card.html, S.cardSheet(PAYLOAD, {}).html, 'the same bytes with or without profiles');
+  assert.equal(card.html, S.cardSheet(EMPTY_PROFILES, {}).html, 'the same bytes with or without profiles');
 });
 
 test('the wallet card refuses rather than print without its lines: an unusable payload, a lost required line, a nameless contact, no card copy, more than five lines', () => {

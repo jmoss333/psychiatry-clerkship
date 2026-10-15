@@ -554,7 +554,7 @@ def check(data, schema, crisis, today):
     return report
 
 
-def name_problems(value, patterns):
+def name_problems(value, patterns, *, allow_staffed_hours=False):
     """Patient-facing profile text must be plain, free of phone/dose literals and unsupported availability claims."""
     problems = []
     if not value.strip():
@@ -577,7 +577,7 @@ def name_problems(value, patterns):
         problems.append("contains verification metadata or a review tier")
     if VERIF_RE.search(scan):
         problems.append("uses a 'verif-' word, which the printed sheet forbids")
-    if AVAILABILITY_RE.search(scan):
+    if not allow_staffed_hours and AVAILABILITY_RE.search(scan):
         problems.append("carries an availability phrase; a unit's name must not promise round-the-clock cover")
     folded = scan.casefold()
     for needle in RESIDENT_REBRAND_NEEDLES:
@@ -610,7 +610,10 @@ def check_profiles(profiles_doc, profiles_schema, crisis, inserts_data, today):
         for key in ("label", "org", "unitName", "unitPurpose", "unitHours", "callbackTeam", "callbackHours", "callbackFallback"):
             value = profile[key]
             if value is not None and (not key.startswith("callback") or profile["callbackProgram"]):
-                errors.extend("%s: %s %s" % (where, key, problem) for problem in name_problems(value, patterns))
+                # Verified staffed hours may be 24/7 without promising crisis care. Only the
+                # two hours fields get this allowance; every other text guard still applies.
+                errors.extend("%s: %s %s" % (where, key, problem) for problem in name_problems(
+                    value, patterns, allow_staffed_hours=key in ("unitHours", "callbackHours")))
         if profile["brandingApproved"] and profile["org"] is None:
             errors.append("%s: brandingApproved is true but org is null; the checked branding needs its organization" % where)
         if not profile["brandingApproved"] and profile["org"] is not None:

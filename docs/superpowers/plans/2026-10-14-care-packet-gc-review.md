@@ -1,10 +1,11 @@
 # Care packet: review record and owner-directed activation
 
-**As of October 14, 2026: implementation merged; G-B closed; G-C closed by owner
+**As of October 15, 2026: implementation merged; G-B closed; G-C closed by owner
 waiver of remaining review; production activation requested and awaiting setup.**
-The feature flag remains off and the real unit-profile list remains empty. The owner's
+The feature flag remains off. The Sanford Behavioral Health Unit 2 candidate now records
+the owner's supplied and verified facts; it has no production approval yet. The owner's
 latest direction supersedes the earlier instruction to keep G-C open and the flag off;
-it does not supply missing unit facts or create a production profile approval.
+it does not itself create a production profile approval.
 
 ## Latest owner direction
 
@@ -16,13 +17,49 @@ of the remaining G-C review and authorization to proceed toward activation for t
 morning of October 15, America/New_York. Do not request the waived reviews again or
 record unperformed checks as passed.
 
-Activation is authorized; it is not complete. A real unit candidate, private owner
-enrollment, storage access token and an approval matching that candidate are still absent.
+Activation is authorized; it is not complete. Private owner enrollment, storage access
+and an approval matching the real unit candidate remain to be completed and verified.
 The empty storage project and service signing configuration are prepared as recorded
 below. The initial launch preparation uses no organization branding and no
 optional callback program; no institutional branding permission or callback facts are
 inferred. Do not invent contact facts, verification evidence, credentials or approvals,
 or bypass the existing output guard to meet the requested date.
+
+## October 15: real unit candidate supplied by the owner
+
+The owner supplied these facts in the same chat and confirmed that he verified them:
+
+| Field | Owner-confirmed value |
+| --- | --- |
+| Unit | Sanford Behavioral Health Unit 2 |
+| Phone | 207-490-7702 |
+| Staffed hours | 24/7 |
+| Purpose | Non-urgent calls, medication refill difficulties, and follow-up questions within 30 days |
+
+Candidate `sanford-bhu-2` records identity and contact confirmation by faculty owner
+Joshua Moss, MD, on October 15, 2026. The verification method was not specified; do not
+claim a telephone call or directory check. No callback program or branding is inferred.
+The 30-day purpose describes routine incoming calls, not a promise that the unit will
+place a callback. The existing crisis-line boundary stays in the printed contact text.
+
+The inserts payload's `generatedAt` moves to October 15 to include this candidate;
+existing insert `verifiedDate` values are unchanged. The candidate's actual-check
+dates yield expiry at the start of January 13, 2027, America/New_York. Approval cannot
+extend that date. The owner must authorize the exact candidate through the existing
+profile screen after it reaches main and the production service is configured.
+
+The Python validator incorrectly applied a name-specific availability restriction to
+the hours fields, rejecting the owner's `24/7` value. The correction permits availability
+phrases in hours only while retaining the phone, dose, markup and other text checks.
+It does not bypass independent profile approval or enable the feature flag.
+
+The production entrypoints also discarded Netlify's handler context while the service
+expected a `CONTEXT` environment value. The correction forwards the documented
+`context.deploy.context` and gives it precedence over any environment value; missing
+context and preview, branch or development deployments stay denied. Synthetic adapter
+tests distinguish reaching owner authentication in production from denial before storage
+in other contexts. This contract correction is not proof that the live service is
+configured or that a real unit approval exists.
 
 ## Implementation history and evidence
 
@@ -178,7 +215,7 @@ verify that previews cannot access it, and supply and independently approve a re
 profile backed by actual contact/operational verification. No credentials or approval
 records were inspected or created during this progress recovery.
 
-The candidate needs verified purpose, unit name, phone and staffed hours. Record callback
+The candidate above supplies purpose, unit name, phone and staffed hours. Record callback
 team, return number, hours and fallback only when a real callback program applies.
 The patient's agreed day/time window and deadline stay handwritten or in the After Visit
 Summary; they are not profile data. The app retains only transient confirmations.
@@ -213,17 +250,18 @@ The owner must privately add `CARE_PROFILE_OWNER_KEY` and `CARE_PROFILE_STORE_TO
 as production-only Functions secrets on the faculty-console project. The owner key
 must be a new, privately held credential of at least 32 characters; the storage token
 must be a Netlify personal access token able to access the storage project, not a
-random application string. The current command-line Netlify login is expired and the
-in-app project tab requires sign-in; the connected Netlify service performed the
-preparation above. No login credential or token was extracted or reused. Redeploy the
+random application string. The October 14 command-line Netlify login was expired and the
+in-app project tab required sign-in; the connected Netlify service performed the
+preparation above. On October 15 the owner requested Chrome, where the project opened
+with an existing signed-in session. No login credential or token was extracted or reused. Redeploy the
 console after all configuration is complete, then use its existing `/care-profiles.html`
 screen to bind the owner's approval to the real candidate on main. This setup does
 not reopen G-C or ask for another general activation decision.
 
 Publish through the existing production release train after the activation commit's
-required checks pass. The next scheduled run is October 15 at 5:05 AM America/New_York,
-but scheduling and build delays mean this is not a delivery guarantee. Use the existing
-publish-now workflow once the activation commit is eligible. Verify both learner sites
+required checks pass. The October 15 morning train published the current main revision
+without packet activation; the flag was still off. Use the existing publish-now workflow
+once the activation commit is eligible. Verify both learner sites
 serve that exact release and exercise the real packet controls without test interception
 before describing the packet as live. A normal Care-navigation smoke test alone does
 not establish packet activation.
@@ -235,6 +273,10 @@ review record at `f13b8b8cd9deba3a8c520b32e5088b46d1f69de5` on October 14 at 8:3
 America/New_York, after its required checks passed. Its final head was
 `66159b3cfb06ab8094328525d96a8f2d7a9f9e33`. The owner-directed activation update is
 subsequent work; #1055 itself did not enable the packet.
+
+[PR #1059](https://github.com/jmoss333/psychiatry-clerkship/pull/1059) merged the owner's
+waiver and initial authority setup record at `eb0cb049e3db1bf6ffae638813c4b6f1f4d0dcbc`
+on October 14 at 10:37 PM America/New_York. It also did not activate the packet.
 
 Repository cleanup is a separate operation, not a prerequisite for activation setup.
 At the October 14 audit, remote main was
