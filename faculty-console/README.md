@@ -16,6 +16,12 @@ Git, browser URLs or logs. This implementation creates no credentials or approva
 If either secret or the production context is absent, the service stays unavailable.
 Credential possession identifies the enrolled owner; this is not institutional SSO.
 
+If the public service reports `authority-unavailable`, the private function logs may
+contain `care-profile-startup`, a fixed startup stage, and fixed configuration-failure
+labels. These logs never include credential values or caught exception text. Check the
+named setting, then deploy again to load saved environment changes. The diagnostic
+does not relax approval requirements or expose setup details in the public response.
+
 The service uses the existing `GITHUB_TOKEN` only to read the candidate file from one
 immutable `main` commit. It never writes the repository, reviewed.json, or the existing
 attestation ledger. Missing candidate files and malformed profiles fail closed. The
