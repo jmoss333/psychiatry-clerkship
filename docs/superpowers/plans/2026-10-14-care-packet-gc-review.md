@@ -1,8 +1,27 @@
-# Care packet: remaining review and recovered progress
+# Care packet: review record and owner-directed activation
 
-**As of October 14, 2026: implementation merged; G-B closed; G-C and G-D open.**
-The feature flag remains off and the real unit-profile list remains empty. This record
-preserves completed work and observations; it does not approve patient use or activation.
+**As of October 14, 2026: implementation merged; G-B closed; G-C closed by owner
+waiver of remaining review; production activation requested and awaiting setup.**
+The feature flag remains off and the real unit-profile list remains empty. The owner's
+latest direction supersedes the earlier instruction to keep G-C open and the flag off;
+it does not supply missing unit facts or create a production profile approval.
+
+## Latest owner direction
+
+In **Finish carer packet work**, thread `01a13a7d-fbda-72c0-8926-17fd260957e3`,
+the owner first clarified that approval applied to the updated plan, retaining G-C open
+and the flag off. Later on October 14, the owner directed: "i want this live on the site
+by the morniing", followed by "no more review needed". Record this as the owner's waiver
+of the remaining G-C review and authorization to proceed toward activation for the
+morning of October 15, America/New_York. Do not request the waived reviews again or
+record unperformed checks as passed.
+
+Activation is authorized; it is not complete. A real unit candidate, private owner
+enrollment, isolated production authority storage and an approval matching that candidate
+are still absent. The initial launch preparation uses no organization branding and no
+optional callback program; no institutional branding permission or callback facts are
+inferred. Do not invent contact facts, verification evidence, credentials or approvals,
+or bypass the existing output guard to meet the requested date.
 
 ## Implementation history and evidence
 
@@ -47,14 +66,15 @@ staff review, native accessibility testing or activation approval.
 
 The owner then separately confirmed: "Both packets' printed QR codes scan correctly."
 Record that as a pass for scanning from both printed samples. These fictional example.org
-destinations do not establish real service-link or contact validity. The owner explicitly
-instructed that the flag stay off and G-C stay open.
+destinations do not establish real service-link or contact validity. At that stage the
+owner explicitly instructed that the flag stay off and G-C stay open; the later direction
+above supersedes it.
 
 On October 14 the owner reported: "A ward nurse reviewed both packets today; both pass
 with no changes." Record the reviewer role as ward nurse, review date as October 14,
 2026, both samples as passed, and requested changes as none. This is the owner's report
 of the nurse's review; no peer-specialist or accessibility review is implied. The owner
-again explicitly retained the flag-off and G-C-open instructions.
+again explicitly retained the flag-off and G-C-open instructions at that stage.
 
 | Check | Recorded result |
 | --- | --- |
@@ -72,7 +92,7 @@ again explicitly retained the flag-off and G-C-open instructions.
 No repeated review of the passed rows is needed unless the sample or print conditions change.
 All five default pages and all seven long-packet pages have passed the owner's page
 inspection, QR scanning has passed for both printed samples, and a ward nurse has passed
-both packets with no changes. The next G-C step is a peer specialist's paper review.
+both packets with no changes. The owner subsequently waived the remaining G-C review.
 
 ## The two review samples
 
@@ -94,45 +114,22 @@ supersedes its initial statement that physical review had not started.
 These frozen PDFs test physical printing, not the ward browser's live print flow or
 real service-contact validity. The optional wallet card is not in either sample.
 
-## Remaining G-C evidence
+## G-C closure: remaining review waived by owner
 
-- Record actual printer model/settings when available. Page inspection and paper QR
-  scanning have passed for both samples; do not repeat them unless the samples or print
-  conditions change, or infer actual settings from the requested settings.
-- Have one peer specialist read both paper packets and record role, date, concerns and
-  disposition. The ward-nurse review is complete; no peer-specialist review is recorded yet.
-- Exercise the native browser print dialog and return-to-app behavior on the ward setup;
-  frozen PDFs do not establish either. Use `?tab=care` in an isolated test build with
-  the flag enabled only by test interception and the existing fictional profile and
-  simulated authority fixtures, never by changing the source flag or real authority.
-  Check the separate single-sided wallet card if it is to be used. Duplex remains
-  unapproved unless separately tested.
-- Observe native screen-reader announcements and keyboard focus, and record actual
-  browser/device coverage. Automated accessibility checks do not replace this evidence;
-  Safari, Firefox and phone printing remain unproven in the current record.
+G-C is closed by the owner's October 14 direction above. The completed observations
+remain recorded as passes; the following evidence remains unavailable and its collection
+is waived for this launch:
 
-Once observations are complete, reconcile any defects and present a concrete G-C closure
-recommendation. Paper acceptance alone does not close G-C. Keep its state open until an
-explicit closure decision is recorded.
+- Actual printer model and settings. Requested settings are not proof of settings used.
+- Peer-specialist paper review of either sample.
+- Native ward-browser print dialog, return-to-app and separate single-sided wallet-card
+  observations. Frozen PDFs do not establish these behaviors.
+- Native screen-reader and keyboard observations, and actual Safari, Firefox and phone
+  print coverage. Automated checks do not establish native coverage.
 
-### Next guided step: peer-specialist paper review
-
-Give one peer specialist both printed, fictional review packets, retaining their
-"Not for patient use" labels. Invite feedback from the perspective of someone using
-the packet after leaving the unit, focusing on:
-
-- Whether the wording feels respectful, clear and manageable during a stressful transition.
-- Whether the first action and relevant routine or urgent-help contact are easy to find.
-- Whether the amount of information, wording or layout feels confusing or overwhelming.
-- Whether instructions assume access to a phone, internet, transportation or support
-  that could make them difficult to follow.
-
-These prompts guide the existing peer review; they introduce no new score or threshold.
-Record the reviewer's role, review date, pass or needs changes for each packet, and the
-page/section and suggested revision for each concern. No patient details or personal
-history are needed. This records the peer specialist's review only; it does not close
-G-C or approve activation. Native accessibility and live-browser print reviews remain
-pending regardless of the peer-review result.
+The waiver is an owner decision, not a technical test result. Duplex remains untested;
+do not describe it as validated. No additional peer-specialist walkthrough or G-C
+approval request is required under the latest direction.
 
 ## Contact verification: two separate contracts
 
@@ -171,9 +168,10 @@ The [validator](../../../13_Faculty_Resources/_automation/validate_care_inserts.
 [payload builder](../../../13_Faculty_Resources/_automation/site_build/care_inserts_payload.py)
 enforce these distinct rules.
 
-## G-D remains a separate activation decision
+## G-D: activation authorized, setup and publication pending
 
-Before proposing activation, complete the owner-side authority enrollment and isolated
+The owner has authorized activation for the morning launch. Complete the owner-side
+authority enrollment and isolated
 production storage setup described in [the faculty-console README](../../../faculty-console/README.md),
 verify that previews cannot access it, and supply and independently approve a real unit
 profile backed by actual contact/operational verification. No credentials or approval
@@ -186,25 +184,36 @@ Summary; they are not profile data. The app retains only transient confirmations
 The implementation supports `callbackProgram: false` with its four text fields empty
 and the callback page off; do not invent program facts to fill those fields.
 
-Obtain the applicable MaineHealth site/branding decision before launch. The implementation
-supports an approved unbranded profile (`brandingApproved: false`, `org: null`), but
-that technical option does not waive institutional permission or owner launch decisions.
+Prepare an unbranded profile (`brandingApproved: false`, `org: null`) for this initial
+launch. The implementation supports this option; it does not assert institutional
+branding permission. Any later branded profile needs the applicable branding decision.
 ReConnect app inclusion remains outside this work pending the applicable approval.
 
-After G-C is explicitly closed in writing and a current real profile has independent
-approval, present G-D for the owner's explicit activation decision. Only that decision
-authorizes a separate source edit enabling the flag. Adding profile data, passing tests,
-merging this record or closing G-C does not itself authorize activation. The feature
-stays off; existing clinical copy, defaults and approval rules remain intact.
+Once a current real profile has independent approval, the owner's latest direction
+authorizes the separate source edit enabling the flag. Do not request another general
+activation approval. Keep the flag off until the required profile and authority are
+usable; existing clinical copy, defaults and approval rules remain intact.
+
+October 14 activation preparation found the public production profile-status service
+returning HTTP 503 `authority-unavailable` and the candidate list empty. This does not
+identify which configuration or storage dependency is missing. No credential, store,
+real profile or approval was created during that check.
+
+Publish through the existing production release train after the activation commit's
+required checks pass. The next scheduled run is October 15 at 5:05 AM America/New_York,
+but scheduling and build delays mean this is not a delivery guarantee. Use the existing
+publish-now workflow once the activation commit is eligible. Verify both learner sites
+serve that exact release and exercise the real packet controls without test interception
+before describing the packet as live. A normal Care-navigation smoke test alone does
+not establish packet activation.
 
 ## Record delivery and separate preservation work
 
-Use the existing [PR #1055](https://github.com/jmoss333/psychiatry-clerkship/pull/1055)
-to land this documentation after all checks pass; do not open a duplicate. Before this
-correction, its head was `c89740284547fe1e45cc69f9abe94d5c5070bf38` with four documentation
-commits, including nurse acceptance. That is a historical snapshot, not the final PR
-head or a current check result; consult the PR for its latest revision, checks and merge.
-Mergeability alone does not establish passing checks.
+[PR #1055](https://github.com/jmoss333/psychiatry-clerkship/pull/1055) merged the corrected
+review record at `f13b8b8cd9deba3a8c520b32e5088b46d1f69de5` on October 14 at 8:31 PM
+America/New_York, after its required checks passed. Its final head was
+`66159b3cfb06ab8094328525d96a8f2d7a9f9e33`. The owner-directed activation update is
+subsequent work; #1055 itself did not enable the packet.
 
 Repository cleanup is a separate operation, not a prerequisite for the remaining human
 review or authorization supplied by this plan. At the October 14 audit, remote main was
