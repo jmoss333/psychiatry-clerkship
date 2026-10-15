@@ -61,7 +61,7 @@ const prints = page => page.evaluate(() => window.__prints);
 const afterprint = page => page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
 
 // One route does every job the shell needs here: flip the packet's source flag (served HTML only, never source), offer the
-// fixture unit profiles (the shipped payload has none), optionally flip the older patient-sharing flag, and, for the
+// fixture unit profiles, optionally flip the older patient-sharing flag, and, for the
 // fail-closed tests, rewrite the injected payload on its single line.
 function rewritePayload(html, mutate) {
   const match = html.match(/var FD_CARE_INSERTS=(.*);\n/);
@@ -716,7 +716,7 @@ test.describe('preview, print and copy', () => {
     expect((await staged(page))[0]).toEqual({ notice: true, pages: 0, card: 0 });
   });
 
-  test('with no unit profile in the payload (as shipped), the preview says none is set up and both copies refuse output', async ({ page }) => {
+  test('with an explicitly empty unit-profile payload, the preview says none is set up and both copies refuse output', async ({ page }) => {
     await routeShell(page, { profiles: [] });
     await build(page, { mode: 'final', profile: '', name: '', phone: '' });
     await expect(page.locator('[data-fd-care-packet-profile-none]')).toBeVisible();

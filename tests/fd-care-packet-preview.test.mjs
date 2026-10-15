@@ -28,9 +28,10 @@ const built = spawnSync('python3', ['-B', '-c',
 assert.equal(built.status, 0, built.stderr);
 const PAYLOAD = JSON.parse(built.stdout);
 const clone = value => JSON.parse(JSON.stringify(value));
-// The shipped payload carries no unit profile. Either printable copy needs a profile and independent approval.
+// Either printable copy needs a profile and independent approval; absence uses an explicit empty fixture.
 // Positive tests use synthetic fixture profiles and matching authority receipts (fictional 555-01xx numbers).
 const FIXTURE = JSON.parse(readFileSync(path.join(REPO, 'tests/fixtures/care-unit-profile.json'), 'utf8'));
+const EMPTY_PROFILES = { ...clone(PAYLOAD), unitProfiles: [] };
 const PROFILED = { ...clone(PAYLOAD), unitProfiles: [clone(FIXTURE.profile), clone(FIXTURE.expired)] };
 const PROFILE_UNIT = { name: '', phone: '', profile: 'fixture-unit' };
 const NOW = Date.UTC(2026, 9, 12);
@@ -356,9 +357,9 @@ test('controls: the profile section offers a select and an explicit Load button;
   assert.equal(textOf(P.controls(emptyFinal, data, PROFILED, gateOn, ui(emptyFinal, PROFILED)), 'data-fd-care-packet-readback'), 'No approved unit contact is loaded. You can keep editing this draft.', 'the Final copy has the same approval boundary');
   assert.equal(textOf(P.controls(empty, data, PROFILED, gateOn, ui(empty, PROFILED)), 'data-fd-care-packet-profile-status'), '');
 
-  const shipped = P.controls(typed, data, PAYLOAD, gateOn, ui(typed, PAYLOAD));
-  assert.equal(textOf(shipped, 'data-fd-care-packet-profile-none'), 'No unit profile is set up yet. Print and Copy need an approved profile; draft editing remains available.');
-  assert.doesNotMatch(shipped, /data-fd-care-packet-profile-select|data-fd-care-packet-profile-load/, 'nothing to choose');
+  const noProfiles = P.controls(typed, data, EMPTY_PROFILES, gateOn, ui(typed, EMPTY_PROFILES));
+  assert.equal(textOf(noProfiles, 'data-fd-care-packet-profile-none'), 'No unit profile is set up yet. Print and Copy need an approved profile; draft editing remains available.');
+  assert.doesNotMatch(noProfiles, /data-fd-care-packet-profile-select|data-fd-care-packet-profile-load/, 'nothing to choose');
   const unusable = { ...clone(PAYLOAD), unitProfiles: [{ ...clone(FIXTURE.profile), id: 'Bad Id' }, { ...clone(FIXTURE.profile), id: 'short-phone', unitPhone: '555-0142' }] };
   const none = P.controls(typed, data, unusable, gateOn, ui(typed, unusable));
   assert.match(none, /data-fd-care-packet-profile-none/, 'a payload whose profiles all fail the browser re-check offers none');
@@ -595,11 +596,11 @@ test('loadProfile(id) replaces typed details with the profile, re-arms the confi
   assert.deepEqual(c.gate(), gateOff);
   await settle();
   assert.equal(live.textContent, 'Unit approval could not be confirmed. Print and Copy are unavailable; draft editing remains available.');
-  // The shipped payload carries no profile, so every id is refused there.
-  const shipped = mounted();
-  shipped.c.toggle('a1');
-  assert.equal(shipped.c.loadProfile('fixture-unit'), false);
-  assert.equal(savedKey(shipped.storage).unit.profile, '');
+  // An explicitly empty payload refuses every profile id.
+  const noProfiles = mounted(6, { create: { payload: EMPTY_PROFILES } });
+  noProfiles.c.toggle('a1');
+  assert.equal(noProfiles.c.loadProfile('fixture-unit'), false);
+  assert.equal(savedKey(noProfiles.storage).unit.profile, '');
 });
 
 test('unlinkProfile() starts the typed details empty, re-arms the confirmations and says so; without a loaded profile it does nothing', async () => {
@@ -1065,7 +1066,7 @@ test('typed details block Print and Copy in both modes before the confirmations 
   readyPacket(shipped.c);
   assert.deepEqual(shipped.c.print(), { ok: false, code: 'UNIT_UNCONFIRMED' });
   await settle();
-  assert.equal(shipped.live.textContent, NEED_APPROVAL, 'the shipped empty profile list leaves draft editing available');
+  assert.equal(shipped.live.textContent, NEED_APPROVAL, 'typed details remain unconfirmed with the real candidate list');
   shipped.c.openPreview();
   await settle();
   shipped.c.handleChange(fakeField('name', 'Ward 4'));

@@ -1271,7 +1271,7 @@ class ProductionDefaults(Base):
         doc = json.loads(validator.PROFILES.read_text(encoding="utf-8"))
         report = validator.check_profiles(doc, profiles_schema(),
                                           json.loads(validator.CRISIS.read_text(encoding="utf-8")),
-                                          json.loads(validator.DATA.read_text(encoding="utf-8")), TODAY)
+                                          json.loads(validator.DATA.read_text(encoding="utf-8")), date.today())
         self.assertEqual([], report.errors)
         text = validator.PROFILES.read_text(encoding="utf-8")
         self.assertNotRegex(text, r"555\D{0,3}01\d\d", "555-01xx is the reserved fictional range")
@@ -1308,7 +1308,7 @@ class ProductionDefaults(Base):
     def test_the_real_crisis_block_resolves_to_both_required_numbers(self):
         report = validator.check(json.loads(validator.DATA.read_text(encoding="utf-8")),
                                  json.loads(validator.SCHEMA.read_text(encoding="utf-8")),
-                                 json.loads(validator.CRISIS.read_text(encoding="utf-8")), TODAY)
+                                 json.loads(validator.CRISIS.read_text(encoding="utf-8")), date.today())
         self.assertEqual([], report.errors)
         self.assertIn("lifeline_988", report.stats["crisisResolved"])
         self.assertIn("maine_crisis_line", report.stats["crisisResolved"])
