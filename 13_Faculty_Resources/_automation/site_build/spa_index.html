@@ -152,9 +152,15 @@
   #content.toolmode .governance-notice{margin:0;border-radius:0}
   /* .58rem computed to 9.28px -- the smallest type anywhere in the product, carrying its most
      safety-relevant signal ("Pending review · High risk"). .68rem (10.9px) is still clearly
-     subordinate to the row it annotates without falling under the legibility floor. */
-  .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:var(--fd-font-2xs);font-weight:800;line-height:1.35;color:var(--warning);background:var(--warning-light);vertical-align:middle;margin-left:5px}
-  .governance-badge.high{color:var(--danger);background:var(--danger-light)}
+     subordinate to the row it annotates without falling under the legibility floor.
+     Colours are the OPAQUE front-door wash/ink pairs, gated in both themes by
+     tests/fd-contrast.test.mjs (fd-olive-deep/fd-olive-wash, fd-danger-dark/fd-danger-wash).
+     The old dark --danger-light/--warning-light were 16% alpha, so the badge took on whatever
+     row it sat in: in dark mode the high badge measured 3.96:1 on the rose first search result
+     and 3.71:1 on a hovered row (axe, #1008, 2026-10-12). An opaque ground makes the ratio
+     independent of the row: dark 6.10 (high) / 7.64 (pending), light 6.79 / 5.67. */
+  .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:var(--fd-font-2xs);font-weight:800;line-height:1.35;color:var(--fd-olive-deep);background:var(--fd-olive-wash);vertical-align:middle;margin-left:5px}
+  .governance-badge.high{color:var(--fd-danger-dark);background:var(--fd-danger-wash)}
   .navitem.on .governance-badge{color:var(--text);background:var(--surface)}
   .md-body{max-width:820px;margin:0 auto;padding:26px 28px 60px}
   .md-body h1{font-family:var(--font-head);color:var(--primary);font-size:var(--fd-font-3xl);margin:.2em 0 .4em}
