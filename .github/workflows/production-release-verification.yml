@@ -23,7 +23,7 @@ concurrency:
 jobs:
   verify-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 105
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -93,7 +93,23 @@ jobs:
         run: |
           set +e
           cd tests/smoke
-          npx playwright test --config=production-release.config.js
+          npx playwright test --config=production-release.config.js --global-timeout=600000
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Run production dialog-focus regression checks
+        id: dialogs
+        env:
+          MS3_BASE_URL: ${{ steps.core.outputs.ms3_url }}
+          RES_BASE_URL: ${{ steps.core.outputs.res_url }}
+          RELEASE_SHA: ${{ steps.release.outputs.release_sha }}
+          RELEASE_DIALOG_REPORT: ${{ runner.temp }}/production-release-dialogs.json
+          RELEASE_DIALOG_TARGETS: ${{ runner.temp }}/production-dialog-targets.json
+        run: |
+          set +e
+          cd tests/smoke
+          npx playwright test --config=production-dialog-focus.config.js --retries=0 --workers=1 --global-timeout=900000
           code=$?
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
@@ -108,6 +124,8 @@ jobs:
           python3 13_Faculty_Resources/_automation/maintenance/production_release_receipt.py finalize \
             --core "$RUNNER_TEMP/production-release-core.json" \
             --journeys "$RUNNER_TEMP/production-release-journeys.json" \
+            --dialogs "$RUNNER_TEMP/production-release-dialogs.json" \
+            --dialog-targets "$RUNNER_TEMP/production-dialog-targets.json" \
             --release-sha "${{ steps.release.outputs.release_sha }}" \
             --repository "$GITHUB_REPOSITORY" \
             --trigger "$GITHUB_EVENT_NAME" \
@@ -130,10 +148,13 @@ jobs:
           path: |
             ${{ runner.temp }}/production-release-core.json
             ${{ runner.temp }}/production-release-journeys.json
+            ${{ runner.temp }}/production-release-dialogs.json
+            ${{ runner.temp }}/production-dialog-targets.json
             ${{ runner.temp }}/production-release-receipt.json
             ${{ runner.temp }}/production-release-receipt.md
             ${{ runner.temp }}/production-release-receipt.json.sha256
             tests/smoke/test-results/production-release-artifacts/
+            tests/smoke/test-results/production-dialog-artifacts/
           if-no-files-found: error
           retention-days: 90
 

@@ -95,6 +95,32 @@ class ProductionReleaseWorkflowTests(unittest.TestCase):
         gate = self.steps[positions[6]]["run"]
         self.assertIn("steps.receipt.outputs.exit_code", gate)
 
+    def test_dialog_run_is_exact_targeted_zero_retry_and_always_retained(self):
+        names = [step.get("name", "") for step in self.steps]
+        dialog = next(step for step in self.steps if step.get("id") == "dialogs")
+        self.assertLess(names.index("Run focused production browser journeys"), names.index(dialog["name"]))
+        self.assertLess(names.index(dialog["name"]), names.index("Build consolidated release receipt"))
+        self.assertIn("production-dialog-focus.config.js", dialog["run"])
+        self.assertIn("--retries=0", dialog["run"])
+        self.assertIn("--workers=1", dialog["run"])
+        for key, value in [("MS3_BASE_URL", "steps.core.outputs.ms3_url"), ("RES_BASE_URL", "steps.core.outputs.res_url"),
+                           ("RELEASE_SHA", "steps.release.outputs.release_sha")]:
+            self.assertIn(value, dialog["env"][key])
+        self.assertIn("RELEASE_DIALOG_REPORT", dialog["env"])
+        self.assertIn("RELEASE_DIALOG_TARGETS", dialog["env"])
+        finalize = next(step for step in self.steps if step.get("id") == "receipt")
+        self.assertIn('--dialogs "$RUNNER_TEMP/production-release-dialogs.json"', finalize["run"])
+        self.assertIn('--dialog-targets "$RUNNER_TEMP/production-dialog-targets.json"', finalize["run"])
+        upload = next(step for step in self.steps if step.get("id") == "upload")
+        for artifact in ["production-release-dialogs.json", "production-dialog-targets.json", "production-dialog-artifacts/"]:
+            self.assertIn(artifact, upload["with"]["path"])
+        # Leave 20 minutes beyond core's one-hour wait and both browser budgets for setup,
+        # canary probes, teardown, receipt generation and artifact retention on failure.
+        journeys = next(step for step in self.steps if step.get("id") == "journeys")
+        self.assertIn("--global-timeout=600000", journeys["run"])
+        self.assertIn("--global-timeout=900000", dialog["run"])
+        self.assertGreaterEqual(self.job["timeout-minutes"], 60 + 10 + 15 + 20)
+
     def test_actions_are_immutable_and_browser_journey_files_exist(self):
         for step in self.steps:
             uses = step.get("uses")

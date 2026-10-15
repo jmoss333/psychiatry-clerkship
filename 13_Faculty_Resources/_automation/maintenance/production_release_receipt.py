@@ -27,10 +27,12 @@ try:
     from . import production_canary
     from . import production_revision_parity
     from . import medication_search_ranking
+    from . import dialog_focus_report
 except ImportError:  # Direct workflow/CLI invocation.
     import production_canary
     import production_revision_parity
     import medication_search_ranking
+    import dialog_focus_report
 
 
 SCHEMA_VERSION = 1
@@ -349,7 +351,7 @@ def summarize_playwright(report):
     }
 
 
-def build_receipt(core, journeys, *, trigger, generated_at=None):
+def build_receipt(core, journeys, *, trigger, generated_at=None, dialog_focus=None):
     if not isinstance(core, dict):
         raise ReceiptError("core evidence must be an object")
     release_sha = validate_sha(core.get("releaseSha"))
@@ -367,6 +369,7 @@ def build_receipt(core, journeys, *, trigger, generated_at=None):
         "staticCanary": core.get(
             "staticCanary", {"status": "UNKNOWN", "error": "canary evidence missing"}
         ),
+        "dialogFocus": dialog_focus if isinstance(dialog_focus, dict) else dialog_focus_report.summarize(core, None, None),
         "browserJourneys": journeys if isinstance(journeys, dict) else {
             "status": "UNKNOWN", "error": "browser evidence missing"
         },
@@ -450,6 +453,8 @@ def render_markdown(receipt):
         lines.append(f"| {row['project']} | {row['title']} | **missing** |")
     if journeys.get("runnerErrors"):
         lines.extend(["", "Browser runner errors are recorded in the JSON receipt."])
+    if evidence.get("dialogFocus"):
+        lines.extend(["", dialog_focus_report.render_markdown(evidence["dialogFocus"])])
     if receipt.get("medicationSearchRanking"):
         lines.extend(["", medication_search_ranking.render_markdown(receipt["medicationSearchRanking"])])
     lines.append("")
@@ -811,11 +816,19 @@ def _command_finalize(args):
     except ReceiptError as exc:
         journeys = summarize_playwright(None)
         journeys["error"] = str(exc)
+    def optional_report(path, label):
+        try:
+            return _load_json(path, label) if path else None
+        except ReceiptError:
+            return None
+    dialogs = dialog_focus_report.summarize(
+        core, optional_report(args.dialogs, "dialog report"), optional_report(args.dialog_targets, "dialog targets"))
     combined = build_receipt(
         core,
         journeys,
         trigger=args.trigger,
         generated_at=args.generated_at,
+        dialog_focus=dialogs,
     )
     medication_search_ranking.add_report(combined, journey_report)
     _write_json(args.json_out, combined)
@@ -863,6 +876,8 @@ def _parser():
     finalize = subparsers.add_parser("finalize", help="combine core evidence and browser journeys")
     finalize.add_argument("--core", type=Path, required=True)
     finalize.add_argument("--journeys", type=Path, required=True)
+    finalize.add_argument("--dialogs", type=Path)
+    finalize.add_argument("--dialog-targets", type=Path)
     finalize.add_argument("--trigger", required=True)
     finalize.add_argument("--json-out", type=Path, required=True)
     finalize.add_argument("--markdown-out", type=Path, required=True)
