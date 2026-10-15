@@ -89,6 +89,21 @@ const KINDS = Object.freeze({
      detected      false for a test the scanner cannot see at all; it must stay undetected, or
                    the flag comes off. */
 const REGISTRY = Object.freeze({
+  'tests/smoke/dialog-loading-focus.spec.js': {
+    kind: 'fixture',
+    why: 'Reads served content and pins the target ledger row to pending/high or attested before holding its response; '
+      + 'dialog focus never depends on the current faculty queue.',
+  },
+  'tests/smoke/interview-room.spec.js': {
+    kind: 'fixture',
+    why: 'Embedded dialog timing tests pin the Interview Room ledger row to pending/high before releasing it; '
+      + 'provider, consent and case fixtures are independent of faculty sign-offs.',
+  },
+  'tests/smoke/rotation-edition-v2.spec.js': {
+    kind: 'fixture',
+    why: 'Edition-switch timing tests pin the mood reading ledger row to pending/high before releasing it; '
+      + 'the fixture editions and focus assertions do not require a live pending page.',
+  },
   'tests/cotw-20261012-safety.test.mjs': {
     kind: 'fixture',
     sources: ['ledger'],

@@ -18,6 +18,39 @@ workspace, the Interview Room served under the MS3 `/tools/` path, and offline b
 
 ## Running functional projects locally
 
+### Delayed-loading dialog focus
+
+`dialog-loading-focus.spec.js` and the `delayed dialog focus:` cases in
+`rotation-edition-v2.spec.js` run for both `nav-ms3` and `nav-res`. They hold a reading,
+review-status ledger, or Care directory response until a dialog is open, then release it.
+Assertions require the completion to appear in the DOM, preserve the exact focused control,
+and exercise actual keyboard input without a locator refocusing the control.
+
+The inventory covers Search; Settings; the Safety kit and all five protocol sheets; Capture;
+its nested patient-details warning and email review; the retained item-preview renderer;
+Care Quick Share; clear-packet confirmation; edition-switch confirmation; and the embedded
+Communication Practice case browser. The `interview-room` project also checks spoken consent,
+Chart, Step out, and both typed and spoken patient-information alerts inside each learner shell,
+using its existing provider-free fixtures. Shell and Interview Room dialogs run at 320px and 1280px; the embedded case
+browser is a phone-only control. A closed case browser is the positive control proving that a
+normal high-risk warning still receives focus. Existing `front-door.spec.js` cases also pin
+ordinary high-risk warning focus and route announcements.
+
+Optional Care and edition dialogs use their existing explicit opt-in fixtures. Their production
+flags do not change. The retained item-preview modifier has no current authored opener, so its
+test adds that modifier to a real search result. The nested patient-details alert belongs to the
+Capture modal rather than owning a separate focus trap. Browser-owned `confirm()` prompts suspend
+page JavaScript and are outside this asynchronous DOM-dialog inventory; the existing
+Communication Practice suite checks their accept/cancel behavior. Capture separately checks
+persistence-failure handling with an accepted confirmation. This is automated Chromium coverage,
+not physical iPhone keyboard or native VoiceOver evidence.
+
+Run the complete timing inventory with `npx playwright test dialog-loading-focus.spec.js
+rotation-edition-v2.spec.js --project=nav-ms3 --project=nav-res --grep 'delayed dialog focus:'
+--retries=0`, followed by `npx playwright test interview-room.spec.js --project=interview-room
+--grep 'delayed dialog focus:' --retries=0`. Set `MS3_BASE_URL` and `RES_BASE_URL` when using
+nondefault ports or hosted previews. Service workers must remain blocked for controlled-response tests.
+
 From the repository root:
 
 ```bash

@@ -31,6 +31,32 @@ function shellFunction(name) {
   return match[0];
 }
 
+const pageFocusAllowed = new Function('document', `${shellFunction('fdPageFocusAllowed')}\nreturn fdPageFocusAllowed();`);
+const focusDocument = (frames = [], modal = null, alerts = []) => ({
+  querySelector: () => modal,
+  querySelectorAll: selector => selector === 'iframe.toolframe' ? frames : alerts,
+  defaultView: { getComputedStyle: alert => ({ visibility: alert.visibility }) },
+});
+
+test('page focus tolerates unloaded and unreadable tool documents without hiding later modals', () => {
+  const unavailable = { get contentDocument() { throw new Error('cross-origin document'); } };
+  const unloaded = { contentDocument: null };
+  const ordinary = { contentDocument: focusDocument() };
+  const modal = { contentDocument: focusDocument([], {}) };
+  assert.equal(pageFocusAllowed(focusDocument([unavailable, unloaded, ordinary])), true,
+    'an inaccessible frame alone must not suppress a normal warning');
+  assert.equal(pageFocusAllowed(focusDocument([unavailable, unloaded, ordinary, modal])), false,
+    'an earlier unreadable frame must not conceal a later same-origin modal');
+  assert.equal(pageFocusAllowed(focusDocument([], {})), false, 'a page-level modal still owns focus');
+});
+
+test('only visible patient-information alerts prevent page focus', () => {
+  const alert = (rects, visibility = 'visible') => ({ getClientRects: () => rects, visibility });
+  assert.equal(pageFocusAllowed(focusDocument([], null, [alert([]), alert([{}], 'hidden')])), true);
+  assert.equal(pageFocusAllowed(focusDocument([], null, [alert([{}])])), false);
+  assert.equal(pageFocusAllowed(focusDocument([{ contentDocument: focusDocument([], null, [alert([{}])]) }])), false);
+});
+
 // Root tests have no DOM dependency. Keep a narrow host for the real emitted buttons/iframe;
 // never invent the final reader or its primary action. Replacing innerHTML creates new nodes,
 // while a completion patch must retain the same iframe object and its simulated session.

@@ -15,9 +15,10 @@ function harness() {
   const document = {
     getElementById: id => id === 'routeStatus' ? status : null,
     querySelector: selector => {
-      assert.equal(selector, '[role="dialog"][aria-modal="true"]');
+      assert.ok(selector.includes('[role="dialog"][aria-modal="true"]'));
       return state.modal;
     },
+    querySelectorAll: () => [],
   };
   const notice = { focus() { state.focus = 'notice'; document.activeElement = notice; } };
   const content = {

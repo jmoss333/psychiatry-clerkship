@@ -1327,10 +1327,28 @@
     return item;
   }
   var activeRouteIdentity='',pendingRouteFocus=false;
-  /* Search, safety/settings sheets, patient sharing and Capture mount only while open.
-     A late reading/ledger/guide completion must not move focus behind any of them. */
+  /* Custom overlays mount only while open; native dialogs stay mounted after closing.
+     A late reading/ledger/guide completion must also respect dialogs inside our tool frames:
+     the native dialog makes its own document inert, not this parent document. */
   function fdPageFocusAllowed(){
-    return !document.querySelector('[role="dialog"][aria-modal="true"]');
+    function hasDialog(doc){
+      if(doc.querySelector('[role="dialog"][aria-modal="true"],dialog[open]'))return true;
+      /* Interview Room information alerts mount without aria-modal. Hidden alerts must
+         not prevent an ordinary warning from receiving focus. */
+      var alerts=doc.querySelectorAll('[role="alertdialog"]');
+      for(var a=0;a<alerts.length;a++){
+        if(alerts[a].getClientRects().length&&doc.defaultView.getComputedStyle(alerts[a]).visibility==='visible')return true;
+      }
+      return false;
+    }
+    if(hasDialog(document))return false;
+    var frames=document.querySelectorAll('iframe.toolframe');
+    for(var i=0;i<frames.length;i++){
+      /* Only same-origin tool documents are readable. An unloaded or external frame must
+         not throw or suppress an ordinary page warning. Never inspect an external window. */
+      try{var doc=frames[i].contentDocument;if(doc&&hasDialog(doc))return false;}catch(_){}
+    }
+    return true;
   }
   function fdRouteIdentity(ref){
     var route='';
