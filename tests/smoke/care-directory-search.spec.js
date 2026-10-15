@@ -41,7 +41,15 @@ for(const width of [1280,390,320])test(`local Care search, paging and native fil
   await expect(panel.locator('.fd-care-search__result')).toHaveCount(5);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   for(const element of await panel.locator('input,select,button:not(:disabled),a').all()){
-    if(await element.isVisible()){const box=await element.boundingBox();expect(box.height).toBeGreaterThanOrEqual(44);}
+    if(await element.isVisible()){
+      const height=await element.evaluate(node=>{
+        // A wrapping label is the clickable target for the packet's native controls.
+        const target=node.matches('input[type="checkbox"],input[type="radio"]')
+          ? node.closest('label')||node : node;
+        return target.getBoundingClientRect().height;
+      });
+      expect(height).toBeGreaterThanOrEqual(44);
+    }
   }
   expect(await page.evaluate(()=>({local:{...localStorage},session:{...sessionStorage},url:location.href,history:JSON.stringify(history.state)}))).toEqual(before);
   expect(requests.some(r=>(r.url+r.body).includes('support%20counseling')||(r.url+r.body).includes('support counseling'))).toBe(false);

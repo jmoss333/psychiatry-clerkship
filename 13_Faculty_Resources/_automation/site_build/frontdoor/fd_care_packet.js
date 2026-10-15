@@ -7,7 +7,7 @@
    Not patient-facing until FD_CARE_PACKET_ENABLED is changed by an owner-approved source edit. */
 
 /* This gate has no URL, storage or learner-facing override. Tests flip the literal in served HTML. */
-var FD_CARE_PACKET_ENABLED=false;
+var FD_CARE_PACKET_ENABLED=true;
 function fdCarePacketEnabled(){return FD_CARE_PACKET_ENABLED===true;}
 
 var FD_CARE_PACKET_LIMIT=12,FD_CARE_PACKET_SUGGEST=8,FD_CARE_PACKET_KEY='fd_care_packet_v1';
