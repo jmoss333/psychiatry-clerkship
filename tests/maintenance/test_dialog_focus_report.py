@@ -74,6 +74,12 @@ class DialogFocusReportTests(unittest.TestCase):
                 core, report, proof = fixture()
                 report["suites"][0]["specs"][0]["tests"][0]["results"][0][field] = value
                 self.assertEqual(dialogs.summarize(core, report, proof)["status"], "UNKNOWN")
+            core, report, proof = fixture()
+            report["suites"][0]["specs"][0]["tests"][0]["results"][0].pop(field)
+            self.assertEqual(dialogs.summarize(core, report, proof)["status"], "UNKNOWN")
+        core, report, proof = fixture()
+        report.pop("errors")
+        self.assertEqual(dialogs.summarize(core, report, proof)["status"], "UNKNOWN")
 
     def test_empty_spec_and_invalid_or_reversed_probe_times_cannot_pass(self):
         core, report, proof = fixture()

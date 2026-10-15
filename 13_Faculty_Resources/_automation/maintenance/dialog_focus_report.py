@@ -89,7 +89,7 @@ def summarize(core, report, proof):
     except (KeyError, TypeError, ValueError, AttributeError):
         problems.append("Exact-release target evidence is missing, malformed, or mismatched.")
     try:
-        runner_errors = report.get("errors", [])
+        runner_errors = report.get("errors")
         if not isinstance(runner_errors, list):
             raise ValueError("runner errors are malformed")
         for spec in _specs(report["suites"]):
@@ -100,7 +100,7 @@ def summarize(core, report, proof):
                 results = test.get("results", [])
                 if not isinstance(results, list) or any(not isinstance(r, dict) for r in results):
                     raise ValueError("test attempts are malformed")
-                if any(not isinstance(r.get(field, []), list) or
+                if any(not isinstance(r.get(field), list) or
                        any(not isinstance(item, dict) for item in r.get(field, []))
                        for r in results for field in ("errors", "attachments")):
                     raise ValueError("attempt errors or attachments are malformed")
