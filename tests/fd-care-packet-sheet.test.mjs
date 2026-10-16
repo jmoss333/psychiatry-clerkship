@@ -160,9 +160,10 @@ test('the module exists, exports the sheet API, and is a front-door module (ES5,
   assert.ok(S, 'fd_care_packet_sheet.js exists and exports the sheet API');
   for (const [label, text] of [['sheet module', SHEET_SRC], ['packet module', PACKET_SRC]]) {
     assert.doesNotMatch(text, /=>|\blet\b\s|\bconst\b\s|`/, label + ' is ES5');
-    assert.doesNotMatch(text, /\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|localStorage|document\.cookie|\.href\s*=/, label + ' uses no network, durable storage or navigation');
+    assert.doesNotMatch(text, /\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|document\.cookie|\.href\s*=/, label + ' uses no network or navigation');
   }
-  assert.doesNotMatch(SHEET_SRC, /sessionStorage/, 'storage stays in fd_care_packet.js');
+  assert.doesNotMatch(SHEET_SRC, /sessionStorage|localStorage/, 'the sheet reads and writes no storage');
+  // The controller keeps tab state and an ID-only device preference, covered by fd-care-packet-preference.test.mjs.
   // No registered crisis contact, anywhere it could be typed (comments included): the governed record is the only home.
   const css = readIf(path.join(FD, 'frontdoor.css'));
   const digitsOf = text => text.replace(/\D/g, '');
