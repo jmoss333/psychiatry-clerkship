@@ -2843,7 +2843,7 @@
       "claims": [
         {
           "claimId": "primer-neuromodulation-selection",
-          "claimText": "CANMAT permits ECT as an early treatment for severe depressive illness, including psychotic or catatonic features and urgent physical or suicide-risk concerns. Outside emergent situations, it generally places rTMS before ECT; tolerability and previous response also inform selection.",
+          "claimText": "For adults with major depression, CANMAT supports ECT as a first-line option in severe illness — psychotic or catatonic features, severe suicidal ideation, or a deteriorating physical condition — and otherwise generally recommends considering rTMS before ECT because it is less invasive.",
           "claimTerms": [
             "ECT can be used as first-line treatment in severe illness",
             "except in emergent situations",
