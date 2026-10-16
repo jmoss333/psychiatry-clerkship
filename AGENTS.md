@@ -276,7 +276,8 @@ the container when the Bash 5 environment is part of the evidence.
 - `faculty-console/rolling-pr-sweep.mjs` + `bin/check_attestation_delivery.py` — **signatures
   deliver themselves**. The sweep (a Netlify scheduled function on the console site, every 15 min)
   opens or reopens the rolling `attest/pending` PR when that branch is ahead of `main` and arms
-  auto-merge with a **merge commit** (L4 reads the console identity per commit; never squash). The
+  auto-merge with a **merge commit** (L4 reads the console identity per commit; never squash).
+  `reviewed.json` is code-owned, so that PR merges when Josh approves it (one tap per sitting). The
   daily check (step 2 of `maintenance-release-watch.yml`) compares, page by page, what is signed
   against what each learner site serves and names where anything is stuck — stranded (no PR, red
   after 30 min), in the PR (6 h), merged but unpublished (24 h), published but not shown (at once);
@@ -439,12 +440,38 @@ the container when the Bash 5 environment is part of the evidence.
   prefix: it is what makes ownership legible in `git branch -a` and what
   `automation_branch_prs.py` matches on.
 - **Never merge to `main` locally and never force-push.** `main` is covered by the active
-  ruleset *main protection* (verified 2026-09-27): **no bypass actors**, `deletion` and
-  `non_fast_forward` blocked, **0 required approvals**, **strict mode OFF**, and **4 required
+  ruleset *main protection*: `deletion` and `non_fast_forward` blocked, **0 required
+  approvals but code-owner review required** (stale approvals dismissed on push; the last push
+  must be approved by someone other than its pusher), **strict mode OFF**, **4 required
   checks** — `build-test-validate`, `Smoke tests (nav crawl · faculty console · LFS · visual)`,
-  and both Netlify deploy previews. Strict mode being off is the operationally important half:
-  a PR merges on green checks **without** re-syncing, so re-sync only a PR that conflicts or
-  shares files with what just merged.
+  and both Netlify deploy previews — and one bypass actor, the repository Admin role in
+  pull-request mode (Josh's logged break-glass). Strict mode being off is the operationally
+  important half: a PR merges on green checks **without** re-syncing, so re-sync only a PR
+  that conflicts or shares files with what just merged. `release` and `attestation ledger`
+  have their own rulesets (no deletion, no force-push).
+- **Merge authority: agents are `jmoss333-agents`, Josh is `jmoss333` (T4, 2026-10).** Every
+  agent — Codex, Claude Code, Cowork, scheduled tasks, the self-hosted runners — acts as the
+  Write-only machine account; Josh's own credential is not on any agent path. `.github/CODEOWNERS`
+  names `@jmoss333` on governance (`CLAUDE.md`/`AGENTS.md`, `.github/**`), deploy
+  (`netlify.toml`, `**/netlify/functions/**`), faculty authority and attestation
+  (`faculty-console/**`, `reviewed.json`, the attestation scripts), crisis surfaces and the
+  release train. A PR that touches none of those merges itself on green, as before. One that
+  does waits for Josh's tap. So:
+  1. **Split early.** If a diff touches a CODEOWNERS path, that part goes in its own small PR
+     (`…-governance`, `…-crisis`, `…-console`); routine work in the same task rides its own PR.
+  2. **Request, arm, move on.** Once verified, mark it ready, then
+     `gh pr edit <n> --add-reviewer jmoss333 --add-label needs-josh` and
+     `gh pr merge <n> --auto --squash` (`--merge` for anything attestation). GitHub lands it the
+     moment Josh approves and checks are green; nobody polls. Keep working on a branch stacked
+     on the pending one.
+  3. **The PR body is the review packet:** what changed · why · risk · rollback · the
+     verification receipt (command + result). Josh approves from his phone; write for that.
+  4. **Never** pass `--admin`, approve anything, edit rulesets or repo settings, switch `gh`
+     accounts, or read any credential other than the one already in your environment. A
+     permission error is the design working — report it, don't route around it.
+  5. **Workflow files are Josh's to push.** The machine account has no `workflow` scope, so a
+     push touching `.github/workflows/**` is refused. Put the workflow change on its own branch,
+     commit it locally, and name the branch in your handoff; Josh pushes it.
 - **Worktrees live in one of three pools**, each registered in `.git/worktrees`:
   `.worktrees/<topic>/` (in-repo), `.claude/worktrees/<name>/`, or a loose sibling checkout
   `~/Psychiatry-Clerkship-Library-<purpose>/`. Remove with `git worktree remove <path>` once
