@@ -613,10 +613,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-21",
+    "at": "2026-10-16",
     "by": "Joshua Moss, MD",
-    "contentHash": "b3b10db05db142b14bad904f7c76c47639d38901",
-    "clinicalHash": "4c7b3f3bd2e6a5a4733283941b8e755ea0fcec26"
+    "contentHash": "489c581ebc87a2be8ed4745ff58a4c9f2b090dae",
+    "clinicalHash": "e9337f4da03121356a40f4fc04f3685ee7487f4c"
   },
   "agitation.md": {
     "status": "reviewed",
@@ -624,10 +624,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-25",
+    "at": "2026-10-16",
     "by": "Joshua Moss, MD",
-    "contentHash": "226f92a906df894c97018289de25e104a21ce3dd",
-    "clinicalHash": "cf62d5eb4880027d5970f3fb31a6ef6ffd1f1245"
+    "contentHash": "9f3a96ec5a2ce77017cebfb90b1d0cf79bd7dd51",
+    "clinicalHash": "3d4a6a255eabb28699f810b072de90b4e9437aff"
   },
   "catatonia.md": {
     "status": "reviewed",
