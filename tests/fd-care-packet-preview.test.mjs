@@ -1323,6 +1323,8 @@ function fakeTray() {
   const reminder = node({ 'data-fd-care-packet-reminder': '' });
   const cardNote = node({ 'data-fd-care-packet-card-note': '' });
   const cardButton = node({ 'data-fd-care-packet-card-print': '' });
+  const starterButton = node({ 'data-fd-care-packet-starter': '' });
+  const starterNote = node({ 'data-fd-care-packet-starter-note': '' });
   const inner = { insideTray: true };
   let html = '';
   const root = { isConnected: true, writes: 0, get innerHTML() { return html; }, set innerHTML(value) { root.writes += 1; html = value; },
@@ -1331,6 +1333,8 @@ function fakeTray() {
       if (/reminder/.test(selector)) return reminder;
       if (/card-note/.test(selector)) return cardNote;
       if (/card-print/.test(selector)) return cardButton;
+      if (selector === '[data-fd-care-packet-starter]') return /data-fd-care-packet-starter aria-describedby/.test(html) ? starterButton : null;
+      if (selector === '[data-fd-care-packet-starter-note]') return /data-fd-care-packet-starter-note>/.test(html) ? starterNote : null;
       return /preview-toggle/.test(selector) && /data-fd-care-packet-preview-toggle/.test(html) ? toggle : null;
     }, querySelectorAll() { return []; } };
   return { root, toggle, cardNote, cardButton, inner };
