@@ -1,5 +1,5 @@
 // Contract for the Search renderer -- synonym expansion, protocol-first ranking, the cap-at-8
-// safety contract, and the ⌘K overlay markup. Evaluates the real snippet body via new Function,
+// default view, explicit expansion, and the ⌘K overlay markup. Evaluates the real snippet body via new Function,
 // following tests/fd-library.test.mjs, tests/fd-reader.test.mjs. Concatenated in the same
 // dependency order inject_shared_snippets() uses on the built page: phase_policy.js ->
 // fd_state.js -> fd_data.js (the join layer fd_search.js's fdBuildIndex comes from) ->
@@ -797,3 +797,105 @@ test('the Playbook remains discoverable on both audiences after Care gains direc
       `${site}: searching "${query}" must put the Family Meeting Playbook first`);
   }
 });
+
+// An independently countable corpus makes a silently capped "all" result list observable.
+function overflowIndex(count) {
+  const byRef = {};
+  for (let n = 1; n <= count; n++) {
+    const ref = `quasar-${String(n).padStart(2, '0')}.md`;
+    byRef[ref] = { ref, title: 'Quasar reference', summary: '', kind: 'read', minutes: 3 };
+  }
+  return { byRef, weeks: [], columns: [], kit: [] };
+}
+const ELEVEN_MATCH_REFS = [
+  'quasar-01.md', 'quasar-02.md', 'quasar-03.md', 'quasar-04.md', 'quasar-05.md',
+  'quasar-06.md', 'quasar-07.md', 'quasar-08.md', 'quasar-09.md', 'quasar-10.md', 'quasar-11.md',
+];
+
+test('Show all matches exposes every match in ranked order while the default remains eight', () => {
+  const index = overflowIndex(11);
+  const refs = (state) => F.fdSearchResults(index, 'quasar', {}, state).map((row) => row.item.ref);
+  assert.deepEqual(refs({}), ELEVEN_MATCH_REFS.slice(0, 8));
+  assert.deepEqual(refs({ searchExpanded: true }), ELEVEN_MATCH_REFS);
+  assert.deepEqual(refs({ searchExpanded: false }), ELEVEN_MATCH_REFS.slice(0, 8));
+  assert.deepEqual(refs({ searchExpanded: 'true' }), ELEVEN_MATCH_REFS.slice(0, 8),
+    'only the explicit boolean opt-in expands the default view');
+});
+
+test('overflow search tells learners how many matches exist and exposes an accessible reversible toggle', () => {
+  const index = overflowIndex(11);
+  for (const [expanded, count, label, summary] of [
+    [false, 8, 'Show all matches', 'Showing the top 8 of 11 matches'],
+    [true, 11, 'Show top 8', 'Showing all 11 matches'],
+  ]) {
+    const html = F.fdSearchOverlay(index, 'quasar', {}, { searchExpanded: expanded });
+    assert.ok(html.includes(summary), summary);
+    const toggle = html.match(/<button\b[^>]*data-fd-search-expand=""[^>]*>[\s\S]*?<\/button>/)?.[0];
+    assert.ok(toggle, 'the same delegated control must exist before and after expansion');
+    assert.match(toggle, new RegExp(`aria-expanded="${expanded}"`));
+    assert.match(toggle, /aria-controls="fd-search-results"/);
+    assert.ok(toggle.includes(label), label);
+    assert.match(html, /id="fd-search-results"/);
+    const visible = [...html.matchAll(/class="fd-result[^\"]*" data-fd-open="([^\"]+)"/g)]
+      .map((match) => match[1]);
+    assert.deepEqual(visible, ELEVEN_MATCH_REFS.slice(0, count),
+      'the visible count must describe actual rows, including the previously hidden tail');
+  }
+});
+
+test('searches with eight or fewer matches never offer an empty expansion action', () => {
+  for (const count of [1, 8]) {
+    for (const searchExpanded of [false, true]) {
+      const index = overflowIndex(count);
+      const html = F.fdSearchOverlay(index, 'quasar', {}, { searchExpanded });
+      assert.equal(F.fdSearchResults(index, 'quasar', {}, { searchExpanded }).length, count);
+      assert.equal((html.match(/class="fd-result(?:\s|\")/g) || []).length, count);
+      assert.doesNotMatch(html, /data-fd-search-expand/);
+    }
+  }
+  const empty = F.fdSearchOverlay(overflowIndex(11), 'no-such-resource', {}, { searchExpanded: true });
+  assert.match(empty, /Nothing for/);
+  assert.doesNotMatch(empty, /data-fd-search-expand/);
+});
+
+test('clearing an expanded query retains the bounded useful defaults and removes the toggle', () => {
+  const expected = ['pg_suicide.md', 'agitation.md', 'exp_consult.md', 't_sud.md', 'delirium.md'];
+  for (const query of ['', '   ']) {
+    const results = F.fdSearchResults(REAL_INDEX, query, SYN, { searchExpanded: true, week: 1, done: {} });
+    assert.equal(results.length, 8);
+    assert.deepEqual(results.slice(0, 5).map((row) => row.item.ref), expected);
+    assert.deepEqual(results.slice(5).map((row) => row.item.ref), ['welcome.md', 'mse.html', 'withdrawal.html']);
+    const html = F.fdSearchOverlay(REAL_INDEX, query, SYN, { searchExpanded: true, week: 1, done: {} });
+    assert.doesNotMatch(html, /data-fd-search-expand|Showing (?:the top|all) .*matches/);
+  }
+});
+
+for (const site of ['ms3', 'resident']) {
+  const projection = SITE_PROJECTIONS[site];
+  const projectedIndex = F.fdBuildIndex(projection.curriculum, REAL_META, REAL_TOOLS, projection.manifest);
+  test(`[${site}] expanded search retains the original top eight and reveals additional real resources`, () => {
+    const synonyms = projection.curriculum.synonyms;
+    const compact = F.fdSearchResults(projectedIndex, 'treatment', synonyms, {});
+    const expanded = F.fdSearchResults(projectedIndex, 'treatment', synonyms, { searchExpanded: true });
+    assert.equal(compact.length, 8, 'this real audience query exercises overflow');
+    assert.ok(expanded.length > 8, 'Show all must reveal additional audience-visible resources');
+    assert.deepEqual(expanded.slice(0, 8), compact, 'expansion changes the limit, never the ranking');
+    const refs = expanded.map((row) => row.item.ref || row.item.id);
+    assert.equal(new Set(refs).size, refs.length, 'protocols also in the curriculum stay deduplicated');
+  });
+
+  test(`[${site}] expanded search preserves crisis priority and the curated tool exception`, () => {
+    for (const [query, ref, kind] of [
+      ['patient is suicidal', 'pg_suicide.md', 'protocol'],
+      ['confused patient', 'delirium.md', 'protocol'],
+      ['patient refuses medication', 'capacity.html', 'item'],
+    ]) {
+      const rows = F.fdSearchResults(projectedIndex, query, projection.curriculum.synonyms, { searchExpanded: true });
+      assert.equal(rows[0].item.ref, ref, `${site}: ${query}`);
+      assert.equal(rows[0].kind, kind, `${site}: ${query}`);
+      const html = F.fdSearchOverlay(projectedIndex, query, projection.curriculum.synonyms, { searchExpanded: true });
+      const first = html.match(/class="fd-result[^\"]*" data-fd-(?:open|safety)="([^\"]+)"/)?.[1];
+      assert.equal(first, ref, 'the first visible result must remain the one Enter opens');
+    }
+  });
+}
