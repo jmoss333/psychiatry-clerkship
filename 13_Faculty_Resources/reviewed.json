@@ -624,10 +624,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-25",
+    "at": "2026-10-16",
     "by": "Joshua Moss, MD",
-    "contentHash": "226f92a906df894c97018289de25e104a21ce3dd",
-    "clinicalHash": "cf62d5eb4880027d5970f3fb31a6ef6ffd1f1245"
+    "contentHash": "9f3a96ec5a2ce77017cebfb90b1d0cf79bd7dd51",
+    "clinicalHash": "3d4a6a255eabb28699f810b072de90b4e9437aff"
   },
   "catatonia.md": {
     "status": "reviewed",
