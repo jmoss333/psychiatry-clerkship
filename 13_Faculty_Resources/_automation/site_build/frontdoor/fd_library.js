@@ -139,6 +139,11 @@ function fdLibraryRow(item, ctx){
   if(c.preview){
     out+='<button type="button" class="fd-kit__peek" data-fd-kit-tool="'+fdEsc(item.ref)+'" aria-pressed="'+(selected?'true':'false')+'" aria-label="Preview '+fdEsc(item.title)+'">Preview</button>';
   }
+  /* The desktop Essentials pane keeps its Preview action. At compact widths, and in
+     Everything at every width, pilot rows offer a separate dialog without changing title taps. */
+  if(fdResourcePreviewCopy(item.ref)){
+    out+='<button type="button" class="fd-library__details" data-fd-library-details="'+fdEsc(item.ref)+'" aria-haspopup="dialog" aria-label="Details for '+fdEsc(item.title)+'">Details</button>';
+  }
   return out+'</div>';
 }
 

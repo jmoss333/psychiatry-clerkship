@@ -13,6 +13,19 @@ function fdEsc(s){
 
 function fdIsTool(ref){ return /\.html$/.test(ref); }
 
+/* Four-resource Library preview pilot. Only navigational context lives here; the projected
+   catalogue still owns each resource's title, purpose, duration and review status. Returning
+   null keeps unpiloted rows and item sheets unchanged. No learner or patient data is used. */
+function fdResourcePreviewCopy(ref){
+  var copy={
+    'pg_interview.md':'You’re preparing for an interview or reviewing how to describe your observations.',
+    'case_formulation.md':'You’re preparing a case presentation or discussing your formulation in supervision.',
+    'collateral_workflow.md':'You’re preparing to gather collateral or bring an update back to the team.',
+    'mse.html':'You’re looking for words to describe observations in a mental status exam.'
+  };
+  return Object.prototype.hasOwnProperty.call(copy,ref)?copy[ref]:null;
+}
+
 /* A page with no topic_meta entry still has to render -- the Library carries every shipped page
    and not all of them are topic-template pages. Degrade to a titled row rather than throwing:
    renderHome()'s history in this repo is that one unguarded throw blanks the whole surface. */

@@ -1216,6 +1216,122 @@ function fakeHarness(initial, options = {}) {
   return { root, rootHandlers, fakeWindow, windowHandlers, controller };
 }
 
+const LIBRARY_DETAILS_ITEMS = [
+  { ref: 'pg_interview.md', kind: 'read', title: 'Interview' },
+  { ref: 'case_formulation.md', kind: 'read', title: 'Case formulation' },
+  { ref: 'collateral_workflow.md', kind: 'read', title: 'Collateral' },
+  { ref: 'mse.html', kind: 'tool', title: 'Mental status examination' },
+  { ref: 'other.md', kind: 'read', title: 'Outside this pilot' },
+];
+const LIBRARY_DETAILS_INDEX = {
+  byRef: Object.fromEntries(LIBRARY_DETAILS_ITEMS.map(item => [item.ref, item])),
+  columns: [{ name: 'Skills', items: LIBRARY_DETAILS_ITEMS }], weeks: [], kit: [],
+};
+
+test('Library Details opens only a catalogued pilot resource without navigating', () => {
+  const initial = { ...roleContext, screen: 'app', tab: 'library', openId: null };
+  for (const ref of ['pg_interview.md', 'case_formulation.md', 'collateral_workflow.md', 'mse.html']) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-library-details': ref }, { index: LIBRARY_DETAILS_INDEX }, initial), {
+      patch: { sheet: `item:${ref}`, sheetFrom: 'library', stepsDone: {}, treePath: [],
+        escalate: null, nudge: null, searchOpen: false },
+      route: null, effect: { type: 'open-sheet', ref },
+    });
+  }
+  for (const [ref, index, state] of [
+    ['other.md', LIBRARY_DETAILS_INDEX, initial],
+    ['missing.md', LIBRARY_DETAILS_INDEX, initial],
+    ['', LIBRARY_DETAILS_INDEX, initial],
+    ['__proto__', LIBRARY_DETAILS_INDEX, initial],
+    ['pg_interview.md', { ...LIBRARY_DETAILS_INDEX, columns: [] }, initial],
+    ['pg_interview.md', { ...LIBRARY_DETAILS_INDEX, byRef: {} }, initial],
+    ['pg_interview.md', LIBRARY_DETAILS_INDEX, { ...initial, screen: 'setup' }],
+    ['pg_interview.md', LIBRARY_DETAILS_INDEX, { ...initial, tab: 'today' }],
+    ['pg_interview.md', LIBRARY_DETAILS_INDEX, { ...initial, openId: 'mse.html' }],
+  ]) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-library-details': ref }, { index }, state),
+      { patch: {}, route: null, effect: null }, `${ref}: invalid or unavailable details stay inert`);
+  }
+});
+
+test('Library Details dismisses after resizing onto the visible title instead of its hidden opener', () => {
+  const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'library', openId: null }) });
+  const LocalF = make(storage), baseRenders = [], transientRenders = [], historyCalls = [];
+  let shown = true;
+  const details = actionTarget({ 'data-fd-library-details': 'pg_interview.md' }, {
+    getClientRects: () => shown ? [{}] : [],
+  });
+  const title = actionTarget({ 'data-fd-open': 'pg_interview.md' }, { getClientRects: () => [{}] });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'library', openId: null,
+    libraryView: 'essentials', kitSection: 'skills', libraryFilter: 'interview' }, {
+    F: LocalF, index: LIBRARY_DETAILS_INDEX,
+    render: (...args) => baseRenders.push(args), renderTransient: (...args) => transientRenders.push(args),
+    querySelector: selector => selector === '.fd-kit__item [data-fd-open="pg_interview.md"]' ? title : null,
+    history: { replaceState: (...args) => historyCalls.push(args), pushState: (...args) => historyCalls.push(args) },
+  });
+  const beforeStorage = storage.dump(), beforeHistory = historyCalls.length;
+  h.rootHandlers.click({ target: details, preventDefault() {} });
+  assert.equal(h.controller.getState().sheet, 'item:pg_interview.md');
+  shown = false; // Desktop Essentials hides Details but preserves the direct-opening title.
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-close-sheet': '' }), preventDefault() {} });
+  assert.equal(title.focused, 1);
+  assert.equal(details.focused, undefined);
+  assert.equal(h.controller.getState().sheet, null);
+  assert.equal(h.controller.getState().nudge, null, 'a resource preview is not a safety protocol');
+  assert.equal(h.controller.getState().kitSection, 'skills');
+  assert.equal(h.controller.getState().libraryFilter, 'interview');
+  assert.deepEqual(storage.dump(), beforeStorage);
+  assert.equal(historyCalls.length, beforeHistory);
+  assert.equal(baseRenders.length, 0, 'the original row and scroll remain mounted');
+  assert.equal(transientRenders.length, 2);
+});
+
+test('Library Details keeps a visible opener and unwinds Search before returning to it', () => {
+  const details = actionTarget({ 'data-fd-library-details': 'mse.html' }, { getClientRects: () => [{}] });
+  const title = actionTarget({ 'data-fd-open': 'mse.html' }, { getClientRects: () => [{}] });
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'library', openId: null }, {
+    F, index: LIBRARY_DETAILS_INDEX,
+    querySelector: selector => selector === '.fd-kit__item [data-fd-open="mse.html"]' ? title : null,
+  });
+  h.rootHandlers.click({ target: details, preventDefault() {} });
+  h.windowHandlers.keydown({ key: 'k', metaKey: true, target: { tagName: 'BUTTON' }, preventDefault() {} });
+  assert.equal(h.controller.getState().searchOpen, true);
+  assert.equal(h.controller.getState().sheet, 'item:mse.html');
+  h.windowHandlers.keydown({ key: 'Escape', target: { tagName: 'INPUT' }, preventDefault() {} });
+  assert.equal(h.controller.getState().searchOpen, false);
+  assert.equal(h.controller.getState().sheet, 'item:mse.html');
+  assert.equal(details.focused, undefined);
+  h.windowHandlers.keydown({ key: 'Escape', target: { tagName: 'BUTTON' }, preventDefault() {} });
+  assert.equal(details.focused, 1);
+  assert.equal(title.focused, undefined, 'ordinary visible Details focus does not move to the title');
+});
+
+test('Library Details full-page Open records the list title for Back, not the transient drawer control', () => {
+  const details = actionTarget({ 'data-fd-library-details': 'mse.html' }, { getClientRects: () => [{}] });
+  const title = actionTarget({ 'data-fd-open': 'mse.html' }, { getClientRects: () => [{}] });
+  const desktopPane = actionTarget({ 'data-fd-open': 'mse.html' }, { getClientRects: () => [{}] });
+  const drawerOpen = actionTarget({ 'data-fd-open': 'mse.html' }, { getClientRects: () => [{}] });
+  let drawer = false, scrollY = 640;
+  const h = fakeHarness({ ...roleContext, screen: 'app', tab: 'library', openId: null,
+    libraryView: 'essentials', kitSection: 'tools', libraryFilter: 'mental' }, {
+    F, index: LIBRARY_DETAILS_INDEX, openResource: () => {},
+    scrollY: () => scrollY, scrollTo: (_x, y) => { scrollY = y; },
+    render: next => { drawer = !!next.sheet; }, renderTransient: next => { drawer = !!next.sheet; },
+    querySelector: selector => selector === '.fd-kit__item [data-fd-open="mse.html"]' ? title : null,
+    querySelectorAll: () => drawer ? [title, desktopPane, drawerOpen] : [title, desktopPane],
+  });
+  h.rootHandlers.click({ target: details, preventDefault() {} });
+  h.rootHandlers.click({ target: drawerOpen, preventDefault() {} });
+  assert.equal(h.controller.getState().openId, 'mse.html');
+  assert.equal(h.controller.getState().sheetFrom, null, 'leaving Details clears its transient origin');
+  scrollY = 0;
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-back': '' }), preventDefault() {} });
+  assert.equal(title.focused, 1);
+  assert.equal(desktopPane.focused, undefined);
+  assert.equal(scrollY, 640);
+  assert.equal(h.controller.getState().kitSection, 'tools');
+  assert.equal(h.controller.getState().libraryFilter, 'mental');
+});
+
 test('care selection rerenders, stays out of storage and history, and restores focus', () => {
   const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'care' }) });
   const LocalF = make(storage);

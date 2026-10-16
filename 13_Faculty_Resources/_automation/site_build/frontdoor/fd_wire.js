@@ -30,7 +30,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-search-expand','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
-  'data-fd-kit-section','data-fd-kit-tool',
+  'data-fd-kit-section','data-fd-kit-tool','data-fd-library-details',
   'data-fd-library-filter','data-fd-library-filter-clear','data-fd-search-query',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
@@ -51,6 +51,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-library-view':'choose Library view',
   'data-fd-kit-section':'choose a Library section',
   'data-fd-kit-tool':'preview an Essentials item',
+  'data-fd-library-details':'open Library resource details',
   /* The filter field commits on input events, like the exam-date field, and is deliberately
      absent from FD_ACTION_SELECTOR. data-fd-search-query rides on a data-fd-search control and
      seeds the dialog with the Library filter's query (zero results, filtered footer). */
@@ -722,6 +723,21 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-kit-tool')){
     return {patch:{kitToolPreview:String(a['data-fd-kit-tool']||'')},route:null,effect:null};
   }
+  if(fdOwn(a,'data-fd-library-details')){
+    ref=String(a['data-fd-library-details']||'');
+    var detailColumns=c.index&&c.index.columns||[];
+    var detailAvailable=detailColumns.some(function(column){
+      return (column.items||[]).some(function(item){ return item.ref===ref; });
+    });
+    if(s.screen!=='app'||s.tab!=='library'||s.openId||!detailAvailable||
+       !fdOwn(c.index&&c.index.byRef,ref)||typeof fdResourcePreviewCopy!=='function'||
+       !fdResourcePreviewCopy(ref)) return {patch:{},route:null,effect:null};
+    return {
+      patch:{sheet:'item:'+ref,sheetFrom:'library',stepsDone:{},treePath:[],
+        escalate:null,nudge:null,searchOpen:false},
+      route:null,effect:{type:'open-sheet',ref:ref}
+    };
+  }
   /* The Library filter (one-thread redesign, Phase 2). Both are visit-only like kitSection: no
      route, no save; apply() mirrors them onto the Library's history entry (D3). */
   if(fdOwn(a,'data-fd-library-filter-clear')){
@@ -1251,7 +1267,7 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-library-filter-clear],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-library-details],[data-fd-library-filter-clear],'+
   '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
   '[data-fd-care-share],[data-fd-care-share-close],[data-fd-care-copy],[data-fd-care-copy-selected],'+
   '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
@@ -1554,8 +1570,15 @@ function fdWire(root, initialState, opts){
      falls through to the next entry on the stack, as it always did. */
   function restoreInvoker(){
     while(invokers.length){
-      var el=invokers.pop();
+      var original=invokers.pop(), el=original;
       if(el&&el.isConnected===false) el=equivalentControl(el,root);
+      /* Essentials hides Details when the desktop preview appears. Keep focus on the same
+         resource's title if that breakpoint was crossed while its drawer was open. */
+      if(original&&original.hasAttribute&&original.hasAttribute('data-fd-library-details')&&
+         state.tab==='library'&&!state.openId&&!isShown(el)){
+        el=libraryRowOpener(original.getAttribute('data-fd-library-details'));
+        if(!isShown(el)) el=null;
+      }
       if(el&&el.focus){
         try{el.focus();}catch(_){}
         return;
@@ -1940,6 +1963,10 @@ function fdWire(root, initialState, opts){
     if('offsetParent' in el) return el.offsetParent!==null;
     return true; /* no layout information (a test stub): treat as shown */
   }
+  function libraryRowOpener(ref){
+    if(!root||!root.querySelector||!ref||/["\\]/.test(ref)) return null;
+    return root.querySelector('.fd-kit__item [data-fd-open="'+ref+'"]');
+  }
   function rememberOpener(ref, invoker){
     originOpener=null;
     if(!invoker) return;
@@ -2071,6 +2098,10 @@ function fdWire(root, initialState, opts){
       state.searchExpanded=false;
       patch.searchExpanded=false;
     }
+    if(!state.sheet&&state.sheetFrom==='library'){
+      state.sheetFrom=null;
+      patch.sheetFrom=null;
+    }
     if(state.screen!=='app'||state.tab!=='today'||state.openId)state.offlineOpen=false;
     if(beforeRefreshScope&&beforeRefreshScope!==offlineRefreshScope(state))cancelOfflineRefresh();
     if(state.tab!=='care'||state.openId){
@@ -2084,7 +2115,14 @@ function fdWire(root, initialState, opts){
     /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
        by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
        opens another reader keeps the origin -- "back" still means the tab it all started from. */
-    if(!before.openId&&state.openId){ state.scrollPos=currentScrollY(); rememberOpener(state.openId,invoker); }
+    if(!before.openId&&state.openId){
+      state.scrollPos=currentScrollY();
+      /* The drawer's Open control disappears with the drawer. Back belongs to the resource's
+         original Library row, even when a desktop preview offers a second visible opener. */
+      var resourceInvoker=before.sheetFrom==='library'&&before.sheet==='item:'+state.openId
+        ?libraryRowOpener(state.openId)||invoker:invoker;
+      rememberOpener(state.openId,resourceInvoker);
+    }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
     /* Returning from an item keeps the Library's section and filter (spec section 2 acceptance:

@@ -1303,6 +1303,8 @@
 .fd-kit__title mark,.fd-collink__label mark,.fd-kit__summary mark{background:var(--fd-teal-wash);color:inherit;border-radius:calc(var(--fd-radius-2xs) - 1px);padding:0 var(--fd-space-1)}
 /* The desktop-only Preview control (Essentials). Hidden until the preview column exists. */
 .fd-kit__peek{display:none}
+.fd-library__details{display:inline-flex;align-items:center;justify-content:center;align-self:center;min-height:var(--fd-target-touch);margin-left:var(--fd-space-4);padding:0 var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-xs);font-weight:700;cursor:pointer}
+.fd-library__details:hover{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
 /* Zero results and the filtered footer. */
 .fd-library__empty{max-width:560px;padding:var(--fd-space-10) 0 var(--fd-space-4);border-top:1px solid var(--fd-line-strong)}
 .fd-library__empty-h{margin:0 0 var(--fd-space-4);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:600;font-size:calc(var(--fd-font-xl) + 1px);line-height:1.3;color:var(--fd-text)}
@@ -1650,6 +1652,23 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-sheet__pending{margin:12px 0 0;font-size:var(--fd-font-xs);color:var(--fd-olive-deep);font-weight:600}
 .fd-sheet__failure{margin:0 0 14px;padding:12px 15px;border:1px solid var(--fd-danger);border-radius:var(--fd-radius-md);background:var(--fd-danger-wash);color:var(--fd-text);font-size:var(--fd-font-sm);line-height:1.55}
 .fd-sheet__lead{margin:0 0 16px;font-size:var(--fd-font-md);line-height:1.65;color:var(--fd-text)}
+
+/* Resource Details: a bounded Library pilot, with the Open action outside the scroll body. */
+.fd-sheet--resource .fd-sheet__head{align-items:flex-start}
+.fd-sheet--resource .fd-sheet__title{min-width:0;overflow-wrap:anywhere}
+.fd-sheet--resource .fd-sheet__close{width:var(--fd-target-touch);height:var(--fd-target-touch)}
+.fd-sheet--resource .fd-sheet__body{min-height:0}
+.fd-resource__kind{margin:0 0 var(--fd-space-6);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
+.fd-resource__label{margin:0 0 var(--fd-space-2);font:inherit;font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text-mid)}
+.fd-resource__text{margin:0 0 var(--fd-space-7);font-size:var(--fd-font-base);line-height:1.6;color:var(--fd-text);overflow-wrap:anywhere}
+.fd-resource__when{padding:var(--fd-space-6);margin:0 0 var(--fd-space-7);border-left:3px solid var(--fd-teal);background:var(--fd-teal-wash)}
+.fd-resource__when .fd-resource__text{margin-bottom:0}
+.fd-resource__placement{margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
+.fd-resource__footer{flex:0 0 auto;padding:var(--fd-space-6) var(--fd-space-7) max(var(--fd-space-6),env(safe-area-inset-bottom));border-top:1px solid var(--fd-line);background:var(--fd-surface-warm)}
+.fd-resource__footer .fd-btn{width:100%;min-height:48px}
+@media (max-width:640px){
+  .fd-sheet--resource{top:auto;left:0;right:0;bottom:0;width:auto;max-height:92vh;max-height:92dvh;border-left:0;border-top:3px solid var(--fd-teal);border-radius:20px 20px 0 0;animation:none}
+}
 
 .fd-kitrow{
   display:flex;align-items:center;gap:var(--fd-space-6);width:100%;text-align:left;
@@ -2419,6 +2438,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   .fd-library__body.has-preview .fd-kit__tool-preview{display:block}
   .fd-library__body.has-preview .fd-kit__peek{display:inline-flex;align-items:center;align-self:center;min-height:var(--fd-target-touch);margin-left:var(--fd-space-4);padding:0 var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-xs);font-weight:700;cursor:pointer;transition:color var(--fd-dur-fast) var(--fd-ease-standard),border-color var(--fd-dur-fast) var(--fd-ease-standard)}
   .fd-library__body.has-preview .fd-kit__peek:hover{border-color:var(--fd-line-hover);color:var(--fd-text)}
+  .fd-library__body.has-preview .fd-library__details{display:none}
   .fd-library__body.has-preview .fd-kit__peek[aria-pressed="true"]{border-color:var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
   .fd-library__body.has-preview .fd-kit__item.is-selected{background:var(--fd-selected);border-radius:var(--fd-radius-sm);box-shadow:inset 3px 0 0 var(--fd-teal);margin:0 calc(-1 * var(--fd-space-7));padding:0 var(--fd-space-7)}
   /* The index is a sidebar of rows here: the track stacks, chips become flat rows. Rows keep a
